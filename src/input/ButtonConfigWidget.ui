@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Button</class>
+ <widget class="QWidget" name="Button">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>410</width>
+    <height>231</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Preferences</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac" stdset="0">
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QScrollArea" name="scrollArea_InputButton">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetInputButtonContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>376</width>
+        <height>534</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_8" columnstretch="0,0,0,0">
+       <item row="18" column="0">
+        <widget class="QLabel" name="labelInputButton2">
+         <property name="text">
+          <string>Button 2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="22" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton6"/>
+       </item>
+       <item row="25" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton9"/>
+       </item>
+       <item row="19" column="0">
+        <widget class="QLabel" name="labelInputButton3">
+         <property name="text">
+          <string>Button 3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="23" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton7"/>
+       </item>
+       <item row="24" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton8"/>
+       </item>
+       <item row="21" column="0">
+        <widget class="QLabel" name="labelInputButton5">
+         <property name="text">
+          <string>Button 5</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton2"/>
+       </item>
+       <item row="22" column="0">
+        <widget class="QLabel" name="labelInputButton6">
+         <property name="text">
+          <string>Button 6</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton1"/>
+       </item>
+       <item row="20" column="0">
+        <widget class="QLabel" name="labelInputButton4">
+         <property name="text">
+          <string>Button 4</string>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton0"/>
+       </item>
+       <item row="20" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton4"/>
+       </item>
+       <item row="25" column="0">
+        <widget class="QLabel" name="labelInputButton9">
+         <property name="text">
+          <string>Button 9</string>
+         </property>
+        </widget>
+       </item>
+       <item row="24" column="0">
+        <widget class="QLabel" name="labelInputButton8">
+         <property name="text">
+          <string>Button 8</string>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton3"/>
+       </item>
+       <item row="23" column="0">
+        <widget class="QLabel" name="labelInputButton7">
+         <property name="text">
+          <string>Button 7</string>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton5"/>
+       </item>
+       <item row="16" column="0">
+        <widget class="QLabel" name="labelInputButton0">
+         <property name="text">
+          <string>Button 0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="0">
+        <widget class="QLabel" name="labelInputButton1">
+         <property name="text">
+          <string>Button 1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="32" column="0">
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="28" column="0">
+        <widget class="QLabel" name="labelInputButton12">
+         <property name="text">
+          <string>Button 12</string>
+         </property>
+        </widget>
+       </item>
+       <item row="26" column="0">
+        <widget class="QLabel" name="labelInputButton10">
+         <property name="text">
+          <string>Button 10</string>
+         </property>
+        </widget>
+       </item>
+       <item row="27" column="0">
+        <widget class="QLabel" name="labelInputButton11">
+         <property name="text">
+          <string>Button 11</string>
+         </property>
+        </widget>
+       </item>
+       <item row="29" column="0">
+        <widget class="QLabel" name="labelInputButton13">
+         <property name="text">
+          <string>Button 13</string>
+         </property>
+        </widget>
+       </item>
+       <item row="30" column="0">
+        <widget class="QLabel" name="labelInputButton14">
+         <property name="text">
+          <string>Button 14</string>
+         </property>
+        </widget>
+       </item>
+       <item row="31" column="0">
+        <widget class="QLabel" name="labelInputButton15">
+         <property name="text">
+          <string>Button 15</string>
+         </property>
+        </widget>
+       </item>
+       <item row="26" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton10"/>
+       </item>
+       <item row="27" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton11"/>
+       </item>
+       <item row="28" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton12"/>
+       </item>
+       <item row="29" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton13"/>
+       </item>
+       <item row="30" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton14"/>
+       </item>
+       <item row="31" column="1" colspan="3">
+        <widget class="QComboBox" name="comboBoxButton15"/>
+       </item>
+       <item row="32" column="1">
+        <spacer name="horizontalSpacer_33">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

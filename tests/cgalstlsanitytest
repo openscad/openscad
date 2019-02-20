@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
 import re, sys, subprocess, os
+from validatestl import validateSTL
 
 stlfile = sys.argv[3] + '.stl'
 
 subprocess.check_call([sys.argv[2], sys.argv[1], '-o', stlfile])
 
-result = open(stlfile).read()
-
+ret = validateSTL(stlfile)
 os.unlink(stlfile)
 
-if 'nan' in result or 'inf' in result:
+if not ret:
     sys.exit(1)
-
-open(sys.argv[3], 'w').write('') # this check only works on return values

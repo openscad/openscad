@@ -5,8 +5,6 @@
 /*.png
 /*.pyc
 out.*
-/CMakeFiles
-/CMakeCache.txt
 /CTestTestfile.cmake
 /Testing
 /cmake_install.cmake
@@ -26,3 +24,8 @@ out.*
 /csgtermtest
 /echotest
 /dumptest
+/cgalpngtest
+/cgaltest
+/moduledumptest
+/opencsgtest
+/Testing

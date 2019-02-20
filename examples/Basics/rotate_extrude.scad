@@ -1,8 +1,8 @@
 echo(version=version());
 
-// rotate_extrude() always rotates the 2D shape 360 degrees
-// around the Z axis. Note that the 2D shape must be either
-// completely on the positive or negative side of the X axis.
+// rotate_extrude() rotates a 2D shape around the Z axis. 
+// Note that the 2D shape must be either completely on the 
+// positive or negative side of the X axis.
 color("red")
     rotate_extrude()
         translate([10, 0])
@@ -21,6 +21,26 @@ color("green")
     translate([0, 30, 0])
         rotate_extrude($fn = 80)
             polygon( points=[[0,0],[8,4],[4,8],[4,12],[12,16],[0,20]] );
+
+
+// By default rotate_extrude forms a full 360 degree circle, 
+// but a partial rotation can be performed by using the angle parameter.
+// Positive angles create an arc starting from the X axis, going counter-clockwise.
+// Negative angles generate an arc in the clockwise direction.
+color("magenta") 
+  translate([40,40]){
+    rotate_extrude(angle=180)
+      translate([12.5,0])
+        square(5);
+    translate([7.5,0])
+      rotate_extrude(angle=180)
+        translate([5,0])
+          square(5);
+    translate([-7.5,0])
+      rotate_extrude(angle=-180)
+        translate([5,0])
+          square(5);
+  }
 
 
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>

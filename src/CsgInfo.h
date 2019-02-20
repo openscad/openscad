@@ -1,77 +1,62 @@
 #pragma once
 
-#include "OffscreenView.h"
-#include "csgterm.h"
+#include "csgnode.h"
 #include "Tree.h"
 #include "GeometryEvaluator.h"
-#include "CSGTermEvaluator.h"
-#include "csgtermnormalizer.h"
+#include "CSGTreeEvaluator.h"
+#include "CSGTreeNormalizer.h"
 #include "rendersettings.h"
 #include "printutils.h"
 
+/*
+	Small helper class for compiling and normalizing node trees into CSG products
+*/
 class CsgInfo
 {
 public:
-    CsgInfo() : glview(NULL), root_chain(NULL), highlights_chain(NULL), background_chain(NULL), progress_function(NULL)
-	{
-		normalizelimit = RenderSettings::inst()->openCSGTermLimit;
-	}
-	OffscreenView *glview;
-	shared_ptr<CSGTerm> root_norm_term;    // Normalized CSG products
-	class CSGChain *root_chain;
-	std::vector<shared_ptr<CSGTerm> > highlight_terms;
-	CSGChain *highlights_chain;
-	std::vector<shared_ptr<CSGTerm> > background_terms;
-	CSGChain *background_chain;
-	int normalizelimit;
+	CsgInfo() {}
+	shared_ptr<class CSGProducts> root_products;
+	shared_ptr<CSGProducts> highlights_products;
+	shared_ptr<CSGProducts> background_products;
 
-	void (*progress_function)();
-	void call_progress_function()
-	{
-		if (progress_function) progress_function();
-	}
-
-	bool compile_chains( const Tree &tree )
-	{
+	bool compile_products(const Tree &tree) {
 		const AbstractNode *root_node = tree.root();
 		GeometryEvaluator geomevaluator(tree);
-		CSGTermEvaluator evaluator(tree, &geomevaluator);
-		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
+		CSGTreeEvaluator evaluator(tree, &geomevaluator);
+		shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
+		std::vector<shared_ptr<CSGNode> > highlightNodes = evaluator.getHighlightNodes();
+		std::vector<shared_ptr<CSGNode> > backgroundNodes = evaluator.getBackgroundNodes();
 
 		PRINT("Compiling design (CSG Products normalization)...");
-		call_progress_function();
-		CSGTermNormalizer normalizer( normalizelimit );
-		if (root_raw_term) {
-			this->root_norm_term = normalizer.normalize(root_raw_term);
-			if (this->root_norm_term) {
-				this->root_chain = new CSGChain();
-				this->root_chain->import(this->root_norm_term);
-				PRINTB("Normalized CSG tree has %d elements", int(this->root_chain->objects.size()));
+		CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
+		if (csgRoot) {
+			shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
+			if (normalizedRoot) {
+				this->root_products.reset(new CSGProducts());
+				this->root_products->import(normalizedRoot);
+				PRINTB("Normalized CSG tree has %d elements", int(this->root_products->size()));
 			}
 			else {
-				this->root_chain = NULL;
+				this->root_products.reset();
 				PRINT("WARNING: CSG normalization resulted in an empty tree");
-				call_progress_function();
 			}
 		}
 
-		if (this->highlight_terms.size() > 0) {
-			PRINTB("Compiling highlights (%i CSG Trees)...", this->highlight_terms.size() );
-			call_progress_function();
-			this->highlights_chain = new CSGChain();
-			for (unsigned int i = 0; i < this->highlight_terms.size(); i++) {
-				this->highlight_terms[i] = normalizer.normalize(this->highlight_terms[i]);
-				this->highlights_chain->import(this->highlight_terms[i]);
+		if (highlightNodes.size() > 0) {
+			PRINTB("Compiling highlights (%i CSG Trees)...", highlightNodes.size() );
+			this->highlights_products.reset(new CSGProducts());
+			for (unsigned int i = 0; i < highlightNodes.size(); i++) {
+				highlightNodes[i] = normalizer.normalize(highlightNodes[i]);
+				this->highlights_products->import(highlightNodes[i]);
 			}
 		}
 
-		if (this->background_terms.size() > 0) {
-			PRINTB("Compiling background (%i CSG Trees)...", this->background_terms.size());
-			call_progress_function();
-			this->background_chain = new CSGChain();
-			for (unsigned int i = 0; i < this->background_terms.size(); i++) {
-				this->background_terms[i] = normalizer.normalize(this->background_terms[i]);
-				this->background_chain->import(this->background_terms[i]);
+		if (backgroundNodes.size() > 0) {
+			PRINTB("Compiling background (%i CSG Trees)...", backgroundNodes.size());
+			this->background_products.reset(new CSGProducts());
+			for (unsigned int i = 0; i < backgroundNodes.size(); i++) {
+				backgroundNodes[i] = normalizer.normalize(backgroundNodes[i]);
+				this->background_products->import(backgroundNodes[i]);
 			}
 		}
 		return true;

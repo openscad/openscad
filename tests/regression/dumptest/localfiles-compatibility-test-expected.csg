@@ -1,21 +1,19 @@
 group() {
-	group() {
-		linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			import(file = "localfile.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
+	linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		import(file = "localfile.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1369404980);
+	}
+	multmatrix([[1, 0, 0, -250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		linear_extrude(file = "localfile.dxf", layer = "", origin = [0, 0], timestamp = 1369404980, height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 350], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		rotate_extrude(file = "localfile.dxf", layer = "", origin = [0, 0], scale = 1, timestamp = 1369404980, angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		multmatrix([[200, 0, 0, 0], [0, 200, 0, 0], [0, 0, 50, 0], [0, 0, 0, 1]]) {
+			surface(file = "localfile.dat", center = false, invert = false, timestamp = 1369404980);
 		}
-		multmatrix([[1, 0, 0, -250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			linear_extrude(file = "localfile.dxf", layer = "", origin = [0, 0], height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
-		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 350], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			rotate_extrude(file = "localfile.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
-		}
-		multmatrix([[1, 0, 0, 250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			multmatrix([[200, 0, 0, 0], [0, 200, 0, 0], [0, 0, 50, 0], [0, 0, 0, 1]]) {
-				surface(file = "localfile.dat", center = false, invert = false);
-			}
-		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, -200], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			sphere($fn = 0, $fa = 12, $fs = 2, r = 100);
-		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -200], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 100);
 	}
 }

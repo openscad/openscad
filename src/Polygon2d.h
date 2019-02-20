@@ -18,12 +18,12 @@ class Polygon2d : public Geometry
 {
 public:
 	Polygon2d() : sanitized(false) {}
-	virtual size_t memsize() const;
-	virtual BoundingBox getBoundingBox() const;
-	virtual std::string dump() const;
-	virtual unsigned int getDimension() const { return 2; }
-	virtual bool isEmpty() const;
-	virtual Geometry *copy() const { return new Polygon2d(*this); }
+	size_t memsize() const override;
+	BoundingBox getBoundingBox() const override;
+	std::string dump() const override;
+	unsigned int getDimension() const override { return 2; }
+	bool isEmpty() const override;
+	Geometry *copy() const override { return new Polygon2d(*this); }
 
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
 	class PolySet *tessellate() const;
@@ -32,7 +32,7 @@ public:
 	const Outlines2d &outlines() const { return theoutlines; }
 
 	void transform(const Transform2d &mat);
-	void resize(Vector2d newsize, const Eigen::Matrix<bool,2,1> &autosize);
+	void resize(const Vector2d &newsize, const Eigen::Matrix<bool,2,1> &autosize);
 
 	bool isSanitized() const { return this->sanitized; }
 	void setSanitized(bool s) { this->sanitized = s; }

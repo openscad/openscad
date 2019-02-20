@@ -1,49 +1,47 @@
-group() {
-	projection(cut = true, convexity = 0) {
-		square(size = [1, 1], center = false);
+projection(cut = true, convexity = 0) {
+	square(size = [1, 1], center = false);
+}
+projection(cut = true, convexity = 0) {
+	multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		cube(size = [10, 10, 10], center = true);
 	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	projection(cut = true, convexity = 0) {
-		multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -5], [0, 0, 0, 1]]) {
 			cube(size = [10, 10, 10], center = true);
 		}
 	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		projection(cut = true, convexity = 0) {
-			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -4.999999], [0, 0, 0, 1]]) {
-				cube(size = [10, 10, 10], center = true);
-			}
-		}
+}
+projection(cut = true, convexity = 0) {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
+		cube(size = [5, 5, 5], center = true);
 	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	projection(cut = true, convexity = 0) {
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
-			cube(size = [5, 5, 5], center = true);
-		}
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		projection(cut = true, convexity = 0) {
-			union() {
+		union() {
+			difference() {
+				cube(size = [5, 5, 5], center = true);
+				cube(size = [4, 4, 4], center = true);
+			}
+			multmatrix([[1, 0, 0, 2.1], [0, 1, 0, 2.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				difference() {
 					cube(size = [5, 5, 5], center = true);
 					cube(size = [4, 4, 4], center = true);
 				}
-				multmatrix([[1, 0, 0, 2.1], [0, 1, 0, 2.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					difference() {
-						cube(size = [5, 5, 5], center = true);
-						cube(size = [4, 4, 4], center = true);
-					}
-				}
 			}
 		}
 	}
-	multmatrix([[1, 0, 0, -15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		minkowski(convexity = 0) {
-			projection(cut = true, convexity = 0) {
-				difference() {
-					cube(size = [10, 10, 10], center = true);
-					cube(size = [5, 5, 20], center = true);
-				}
+}
+multmatrix([[1, 0, 0, -15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	minkowski(convexity = 0) {
+		projection(cut = true, convexity = 0) {
+			difference() {
+				cube(size = [10, 10, 10], center = true);
+				cube(size = [5, 5, 20], center = true);
 			}
-			square(size = [1, 1], center = false);
 		}
+		square(size = [1, 1], center = false);
 	}
 }

@@ -90,7 +90,7 @@
     "import"                                                            ;;import.cc
     "group"                                                             ;;builtin.cc
     "projection"                                                        ;;projection.cc
-    "minkowski" "glide" "subdiv" "hull" "resize"                        ;;cgaladv.cc
+    "minkowski" "hull" "resize"                                         ;;cgaladv.cc
     "parent_module"                                                     ;;2014.03
     "let" "offset" "text"                                               ;;2015.03
     )
@@ -141,9 +141,6 @@
     (modify-syntax-entry ?|  "." st)
     (modify-syntax-entry ?=  "." st)
     (modify-syntax-entry ?\;  "." st)
-
-    ;; _ allowed in word (alternatively "_" as symbol constituent?)
-    (modify-syntax-entry ?_  "w" st)
 
     st)
   "Syntax table for `scad-mode'.")
@@ -213,5 +210,5 @@ Key bindings:
   (interactive)
   (call-process scad-command nil 0 nil (buffer-file-name)))
 
-(provide 'scad)
+(provide 'scad-mode)
 ;;; scad-mode.el ends here

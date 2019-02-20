@@ -3,57 +3,18 @@
 #include <stdio.h>
 #include <iostream>
 
-// If the given (absolute) path is relative to the relative_to path, return a new
-// relative path. Will normalize the given path first
-fs::path boostfs_relative_path(const fs::path &path, const fs::path &relative_to)
-{
-	// create absolute paths
-	fs::path p = boosty::absolute(boostfs_normalize(path));
-	fs::path r = boosty::absolute(relative_to);
-	
-	// if root paths are different, return absolute path
-	if (p.root_path() != r.root_path())
-		return p;
-	
-	// initialize relative path
-	fs::path result;
-	
-	// find out where the two paths diverge
-	fs::path::const_iterator itr_path = p.begin();
-	fs::path::const_iterator itr_relative_to = r.begin();
-	while (*itr_path == *itr_relative_to && itr_path != p.end() && itr_relative_to != r.end()) {
-		++itr_path;
-		++itr_relative_to;
-	}
-	
-	// add "../" for each remaining token in relative_to
-	if (itr_relative_to != r.end()) {
-		++itr_relative_to;
-		while (itr_relative_to != r.end()) {
-			result /= "..";
-			++itr_relative_to;
-		}
-	}
-	
-	// add remaining path
-	while (itr_path != p.end()) {
-		result /= *itr_path;
-		++itr_path;
-	}
-	
-	return result;
-}
+namespace fs=boost::filesystem;
 
 // Will normalize the given path, i.e. remove any redundant ".." path elements.
 fs::path boostfs_normalize(const fs::path &path)
 {
-	fs::path absPath = boosty::absolute(path);
-	fs::path::iterator it = absPath.begin();
-	fs::path result = *it;
-	if (it!=absPath.end()) it++;
+	auto absPath = fs::absolute(path);
+	auto it = absPath.begin();
+	auto result = *it;
+	if (it != absPath.end()) it++;
 
 	// Get canonical version of the existing part
-	for(;exists(result) && it != absPath.end(); ++it) {
+	for (;exists(result) && it != absPath.end(); ++it) {
 		result /= *it;
 	}
 	result = boosty::canonical(result.parent_path());
@@ -88,7 +49,7 @@ fs::path boostfs_normalize(const fs::path &path)
  *  iterate path and base
  * compare all elements so far of path and base
  * whilst they are the same, no write to output
-x2 * when they change, or one runs out:
+ * when they change, or one runs out:
  *   write to output, ../ times the number of remaining elements in base
  *   write to output, the remaining elements in path
  */
@@ -100,8 +61,8 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 		which it most likely is... but then base shouldn't be a filename so... */
 
 	// create absolute paths
-	fs::path abs_p = boosty::absolute(boostfs_normalize(p));
-	fs::path abs_base = boosty::absolute(base);
+	fs::path abs_p = fs::absolute(boostfs_normalize(p));
+	fs::path abs_base = fs::absolute(boostfs_normalize(base));
 
 	fs::path from_path, from_base, output;
 

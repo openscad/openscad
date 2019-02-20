@@ -9,9 +9,14 @@
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
+#include <glib.h>
+
 #endif
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include "memory.h"
+
+class tostring_visitor;
+class tostream_visitor;
 
 class QuotedString : public std::string
 {
@@ -29,77 +34,137 @@ public:
 };
 std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
-class Value
-{
+class RangeType {
+private:
+	double begin_val;
+	double step_val;
+	double end_val;
+	
+	/// inverse begin/end if begin is upper than end
+	void normalize();
+	
 public:
-  class RangeType {
-  private:
-    double begin_val;
-    double step_val;
-    double end_val;
- 
-    /// inverse begin/end if begin is upper than end
-    void normalize();
-
-  public:
-    typedef enum { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END } type_t;
+	enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
+  
+	class iterator {
+	public:
+		typedef iterator self_type;
+		typedef double value_type;
+		typedef double& reference;
+		typedef double* pointer;
+		typedef std::forward_iterator_tag iterator_category;
+		typedef double difference_type;
+		iterator(RangeType &range, type_t type);
+		self_type operator++();
+		self_type operator++(int junk);
+		reference operator*();
+		pointer operator->();
+		bool operator==(const self_type& other) const;
+		bool operator!=(const self_type& other) const;
+	private:
+		RangeType &range;
+		double val;
+		type_t type;
     
-    class iterator {
-    public:
-        typedef iterator self_type;
-        typedef double value_type;
-        typedef double& reference;
-        typedef double* pointer;
-        typedef std::forward_iterator_tag iterator_category;
-        typedef double difference_type;
-        iterator(RangeType &range, type_t type);
-        self_type operator++();
-        self_type operator++(int junk);
-        reference operator*();
-        pointer operator->();
-        bool operator==(const self_type& other) const;
-        bool operator!=(const self_type& other) const;
-    private:
-      RangeType &range;
-      double val;
-      type_t type;
-      
-      void update_type();
-    };
-        
-    RangeType(double begin, double end)
-      : begin_val(begin), step_val(1.0), end_val(end)
+		void update_type();
+	};
+  
+	RangeType(double begin, double end)
+		: begin_val(begin), step_val(1.0), end_val(end)
     {
       normalize();
     }
+	
+	RangeType(double begin, double step, double end)
+		: begin_val(begin), step_val(step), end_val(end) {}
+	
+	bool operator==(const RangeType &other) const {
+		return this == &other ||
+			(this->begin_val == other.begin_val &&
+			 this->step_val == other.step_val &&
+			 this->end_val == other.end_val);
+	}
+	
+	double begin_value() { return begin_val; }
+	double step_value() { return step_val; }
+	double end_value() { return end_val; }
+	
+	iterator begin() { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
+	iterator end() { return iterator(*this, type_t::RANGE_TYPE_END); }
+	
+	/// return number of values, max uint32_t value if step is 0 or range is infinite
+	uint32_t numValues() const;
+  
+	friend class chr_visitor;
+	friend class tostring_visitor;
+	friend class tostream_visitor;
+	friend class bracket_visitor;
+};
 
-    RangeType(double begin, double step, double end)
-      : begin_val(begin), step_val(step), end_val(end) {}
+class ValuePtr : public shared_ptr<const class Value>
+{
+public:
+  static const ValuePtr undefined;
 
-    bool operator==(const RangeType &other) const {
-      return this->begin_val == other.begin_val &&
-        this->step_val == other.step_val &&
-        this->end_val == other.end_val;
-    }
+	ValuePtr();
+	explicit ValuePtr(const Value &v);
+  ValuePtr(bool v);
+  ValuePtr(int v);
+  ValuePtr(double v);
+  ValuePtr(const std::string &v);
+  ValuePtr(const char *v);
+  ValuePtr(const char v);
+  ValuePtr(const class std::vector<ValuePtr> &v);
+  ValuePtr(const class RangeType &v);
 
-    double begin_value() { return begin_val; }
-    double step_value() { return step_val; }
-    double end_value() { return end_val; }
+	operator bool() const;
 
-    iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
-    iterator end() { return iterator(*this, RANGE_TYPE_END); }
+  bool operator==(const ValuePtr &v) const;
+  bool operator!=(const ValuePtr &v) const;
+  bool operator<(const ValuePtr &v) const;
+  bool operator<=(const ValuePtr &v) const;
+  bool operator>=(const ValuePtr &v) const;
+  bool operator>(const ValuePtr &v) const;
+  ValuePtr operator-() const;
+  ValuePtr operator!() const;
+  ValuePtr operator[](const ValuePtr &v) const;
+  ValuePtr operator+(const ValuePtr &v) const;
+  ValuePtr operator-(const ValuePtr &v) const;
+  ValuePtr operator*(const ValuePtr &v) const;
+  ValuePtr operator/(const ValuePtr &v) const;
+  ValuePtr operator%(const ValuePtr &v) const;
 
-    /// return number of steps, max uint32_t value if step is 0
-    boost::uint32_t nbsteps() const;
-    
-    friend class chr_visitor;
-    friend class tostring_visitor;
-    friend class bracket_visitor;
-  };
+  const Value &operator*() const;
 
-  typedef std::vector<Value> VectorType;
+private:
+};
 
-  enum ValueType {
+
+class str_utf8_wrapper : public std::string
+{
+public:
+	str_utf8_wrapper() : std::string(), cached_len(-1) { }
+	str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
+	str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
+	~str_utf8_wrapper() {}
+	
+	glong get_utf8_strlen() const {
+		if (cached_len < 0) {
+			cached_len = g_utf8_strlen(this->c_str(), this->size());
+		}
+		return cached_len;
+	};
+private:
+	mutable glong cached_len;
+};
+
+
+class Value
+{
+public:
+	typedef std::vector<ValuePtr> VectorType;
+
+  enum class ValueType {
     UNDEFINED,
     BOOL,
     NUMBER,
@@ -107,7 +172,7 @@ public:
     VECTOR,
     RANGE
   };
-  static Value undefined;
+  static const Value undefined;
 
   Value();
   Value(bool v);
@@ -127,12 +192,19 @@ public:
 
   double toDouble() const;
   bool getDouble(double &v) const;
+  bool getFiniteDouble(double &v) const;
   bool toBool() const;
   std::string toString() const;
+  std::string toString(const tostring_visitor *visitor) const;
+  std::string toEchoString() const;
+  std::string toEchoString(const tostring_visitor *visitor) const;
+  void toStream(std::ostringstream &stream) const;
+  void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   const VectorType &toVector() const;
-  bool getVec2(double &x, double &y) const;
-  bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
+  bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
+  bool getVec3(double &x, double &y, double &z) const;
+  bool getVec3(double &x, double &y, double &z, double defaultval) const;
   RangeType toRange() const;
 
 	operator bool() const { return this->toBool(); }
@@ -153,12 +225,12 @@ public:
   Value operator%(const Value &v) const;
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
-    if (value.type() == Value::STRING) stream << QuotedString(value.toString());
+    if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
     else stream << value.toString();
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType > Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
@@ -168,40 +240,4 @@ private:
   Variant value;
 };
 
-class ValuePtr : public shared_ptr<const Value>
-{
-public:
-  static ValuePtr undefined;
-
-	ValuePtr();
-	explicit ValuePtr(const Value &v);
-  ValuePtr(bool v);
-  ValuePtr(int v);
-  ValuePtr(double v);
-  ValuePtr(const std::string &v);
-  ValuePtr(const char *v);
-  ValuePtr(const char v);
-  ValuePtr(const Value::VectorType &v);
-  ValuePtr(const Value::RangeType &v);
-
-	operator bool() const { return **this; }
-
-  bool operator==(const ValuePtr &v) const;
-  bool operator!=(const ValuePtr &v) const;
-  bool operator<(const ValuePtr &v) const;
-  bool operator<=(const ValuePtr &v) const;
-  bool operator>=(const ValuePtr &v) const;
-  bool operator>(const ValuePtr &v) const;
-  ValuePtr operator-() const;
-  ValuePtr operator!() const;
-  ValuePtr operator[](const ValuePtr &v) const;
-  ValuePtr operator+(const ValuePtr &v) const;
-  ValuePtr operator-(const ValuePtr &v) const;
-  ValuePtr operator*(const ValuePtr &v) const;
-  ValuePtr operator/(const ValuePtr &v) const;
-  ValuePtr operator%(const ValuePtr &v) const;
-
-  const Value &operator*() const { return *this->get(); }
-
-private:
-};
+void utf8_split(const std::string& str, std::function<void(ValuePtr)> f);

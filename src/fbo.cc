@@ -6,7 +6,7 @@ using namespace std;
 
 fbo_t *fbo_new()
 {
-  fbo_t *fbo = new fbo_t;
+  auto fbo = new fbo_t;
   fbo->fbo_id = 0;
   fbo->old_fbo_id = 0;
   fbo->renderbuf_id = 0;
@@ -18,8 +18,7 @@ fbo_t *fbo_new()
 bool use_ext()
 {
   // do we need to use the EXT or ARB version?
-  if (!glewIsSupported("GL_ARB_framebuffer_object") &&
-        glewIsSupported("GL_EXT_framebuffer_object")) {
+  if (!glewIsSupported("GL_ARB_framebuffer_object") && glewIsSupported("GL_EXT_framebuffer_object")) {
     return true;
   } else {
     return false;
@@ -32,34 +31,46 @@ bool check_fbo_status()
 	http://www.opengl.org/wiki/GL_EXT_framebuffer_multisample
 	See also: http://www.songho.ca/opengl/gl_fbo.html */
 	GLenum status;
-	bool result = false;
-	if (use_ext())
+	auto result = false;
+	if (use_ext()) {
 		status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	else
+	}
+	else {
 		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	}
 
 	if (report_glerror("checking framebuffer status")) return false;
 
-	if (status == GL_FRAMEBUFFER_COMPLETE)
+	if (status == GL_FRAMEBUFFER_COMPLETE) {
 		result = true;
-	else if (status == GL_FRAMEBUFFER_UNSUPPORTED)
+	}
+	else if (status == GL_FRAMEBUFFER_UNSUPPORTED) {
 		cerr << "GL_FRAMEBUFFER_UNSUPPORTED\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n";
-	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT)
+	}
+	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT) {
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT\n";
-	else
+	}
+	else {
 		cerr << "Unknown Code: glCheckFramebufferStatusEXT returned:" << status <<"\n";
+	}
 	return result;
 }
 
@@ -173,13 +184,16 @@ bool fbo_init(fbo_t *fbo, size_t width, size_t height)
   http://www.devmaster.net/forums/showthread.php?t=10967
   */
 
-  bool result = false;
-  if (glewIsSupported("GL_ARB_framebuffer_object"))
+  auto result = false;
+  if (glewIsSupported("GL_ARB_framebuffer_object")) {
     result = fbo_arb_init(fbo, width, height);
-  else if (use_ext())
+	}
+  else if (use_ext()) {
     result = fbo_ext_init(fbo, width, height);
-  else
+	}
+  else {
     cerr << "Framebuffer Object extension not found by GLEW\n";
+	}
   return result;
 }
 
@@ -220,18 +234,22 @@ void fbo_delete(fbo_t *fbo)
 
 GLuint fbo_bind(fbo_t *fbo)
 {
-  glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&fbo->old_fbo_id);
-  if (use_ext())
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint *>(&fbo->old_fbo_id));
+  if (use_ext()) {
     glBindFramebufferEXT(GL_FRAMEBUFFER, fbo->fbo_id);
-  else
+	}
+  else {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo_id);
+	}
   return fbo->old_fbo_id;
 }
 
 void fbo_unbind(fbo_t *fbo)
 {
-  if (use_ext())
+  if (use_ext()) {
     glBindFramebufferEXT(GL_FRAMEBUFFER, fbo->old_fbo_id);
-  else
+	}
+  else {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->old_fbo_id);
+	}
 }

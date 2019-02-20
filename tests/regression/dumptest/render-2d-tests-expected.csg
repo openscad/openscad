@@ -1,14 +1,12 @@
-group() {
-	render(convexity = 1) {
-		difference() {
-			square(size = [10, 10], center = true);
-			circle($fn = 0, $fa = 12, $fs = 2, r = 3);
-		}
+render(convexity = 1) {
+	difference() {
+		square(size = [10, 10], center = true);
+		circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 	}
-	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		render(convexity = 1) {
-			square(size = [10, 10], center = true);
-			circle($fn = 0, $fa = 12, $fs = 2, r = 3);
-		}
+}
+multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	render(convexity = 1) {
+		square(size = [10, 10], center = true);
+		circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 	}
 }

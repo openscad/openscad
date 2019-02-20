@@ -4,6 +4,9 @@
 #  include <winver.h>
 # endif
 
+#include "winuser.h"
+1 RT_MANIFEST "scripts/winmanifest.xml"
+
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION 0,0,0,0
 	PRODUCTVERSION 0,0,0,0

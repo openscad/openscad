@@ -2,39 +2,35 @@
 #include "function.h"
 #include "module.h"
 #include "expression.h"
-#include <boost/foreach.hpp>
 
 Builtins *Builtins::instance(bool erase)
 {
-	static Builtins *s_builtins = new Builtins;
+	static Builtins *builtins = new Builtins;
 	if (erase) {
-		delete s_builtins;
-		s_builtins = NULL;
+		delete builtins;
+		builtins = nullptr;
 	}
-	return s_builtins;
+	return builtins;
 }
 
-void Builtins::init(const char *name, class AbstractModule *module)
+void Builtins::init(const std::string &name, class AbstractModule *module)
 {
 #ifndef ENABLE_EXPERIMENTAL
-	if (module->is_experimental()) {
-		return;
-	}
+	if (module->is_experimental()) return;
 #endif
-	Builtins::instance()->globalscope.modules[name] = module;
+	Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const char *name, class AbstractFunction *function)
+void Builtins::init(const std::string &name, class AbstractFunction *function)
 {
 #ifndef ENABLE_EXPERIMENTAL
-	if (function->is_experimental()) {
-		return;
-	}
+	if (function->is_experimental()) return;
 #endif
-	Builtins::instance()->globalscope.functions[name] = function;
+	Builtins::instance()->functions.emplace(name, function);
 }
 
 extern void register_builtin_functions();
+extern void register_builtin_group();
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_color();
@@ -60,8 +56,7 @@ void Builtins::initialize()
 	register_builtin_functions();
 	initialize_builtin_dxf_dim();
 
-	init("group", new AbstractModule());
-
+	register_builtin_group();
 	register_builtin_csgops();
 	register_builtin_transform();
 	register_builtin_color();
@@ -77,39 +72,32 @@ void Builtins::initialize()
 	register_builtin_dxf_rotate_extrude();
 	register_builtin_text();
 
-	this->deprecations["dxf_linear_extrude"] = "linear_extrude()";
-	this->deprecations["dxf_rotate_extrude"] = "rotate_extrude()";
-	this->deprecations["import_stl"] = "import()";
-	this->deprecations["import_dxf"] = "import()";
-	this->deprecations["import_off"] = "import()";
-	this->deprecations["assign"] = "a regular assignment";
+	this->deprecations.emplace("dxf_linear_extrude", "linear_extrude()");
+	this->deprecations.emplace("dxf_rotate_extrude", "rotate_extrude()");
+	this->deprecations.emplace("import_stl", "import()");
+	this->deprecations.emplace("import_dxf", "import()");
+	this->deprecations.emplace("import_off", "import()");
+	this->deprecations.emplace("assign", "a regular assignment");
 }
 
-std::string Builtins::isDeprecated(const std::string &name)
+std::string Builtins::isDeprecated(const std::string &name) const
 {
 	if (this->deprecations.find(name) != this->deprecations.end()) {
-		return this->deprecations[name];
+		return this->deprecations.at(name);
 	}
-	return std::string();
+	return {};
 }
 
 Builtins::Builtins()
 {
-	this->globalscope.assignments.push_back(Assignment("$fn", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(0.0)))));
-	this->globalscope.assignments.push_back(Assignment("$fs", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(2.0)))));
-	this->globalscope.assignments.push_back(Assignment("$fa", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(12.0)))));
-	this->globalscope.assignments.push_back(Assignment("$t", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(0.0)))));
+	this->assignments.emplace_back("$fn", make_shared<Literal>(0.0));
+	this->assignments.emplace_back("$fs", make_shared<Literal>(2.0));
+	this->assignments.emplace_back("$fa", make_shared<Literal>(12.0));
+	this->assignments.emplace_back("$t", make_shared<Literal>(0.0));
+	this->assignments.emplace_back("$preview", make_shared<Literal>(ValuePtr::undefined)); //undef as should always be overwritten.
 
-	Value::VectorType zero3;
-	zero3.push_back(Value(0.0));
-	zero3.push_back(Value(0.0));
-	zero3.push_back(Value(0.0));
-	ValuePtr zero3val(zero3);
-	this->globalscope.assignments.push_back(Assignment("$vpt", boost::shared_ptr<Expression>(new ExpressionConst(zero3val))));
-	this->globalscope.assignments.push_back(Assignment("$vpr", boost::shared_ptr<Expression>(new ExpressionConst(zero3val))));
-	this->globalscope.assignments.push_back(Assignment("$vpd", boost::shared_ptr<Expression>(new ExpressionConst(ValuePtr(500)))));
-}
-
-Builtins::~Builtins()
-{
+	Value::VectorType zero3{0.0, 0.0, 0.0};
+	this->assignments.emplace_back("$vpt", make_shared<Literal>(zero3));
+	this->assignments.emplace_back("$vpr", make_shared<Literal>(zero3));
+	this->assignments.emplace_back("$vpd", make_shared<Literal>(500));
 }

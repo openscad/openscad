@@ -1,29 +1,27 @@
 #include "handle_dep.h"
+#include "printutils.h"
 #include <string>
 #include <sstream>
 #include <stdlib.h> // for system()
-#include <boost/unordered_set.hpp>
-#include <boost/foreach.hpp>
+#include <unordered_set>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
-boost::unordered_set<std::string> dependencies;
-const char *make_command = NULL;
+std::unordered_set<std::string> dependencies;
+const char *make_command = nullptr;
 
 void handle_dep(const std::string &filename)
 {
 	fs::path filepath(filename);
-	std::string dep;
-	if (boosty::is_absolute(filepath)) dep = filename;
-	else dep = (fs::current_path() / filepath).string();
-	dependencies.insert(boost::regex_replace(filename, boost::regex("\\ "), "\\\\ "));
+	std::string dep = boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ ");
+	if (dependencies.find(dep) != dependencies.end()) {
+		return; // included and used files are very likely to be added many times by the parser
+	}
+	dependencies.insert(dep);
 
-	if (!fs::exists(filepath) && make_command) {
-		std::stringstream buf;
-		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
-		system(buf.str().c_str()); // FIXME: Handle error
+	if (make_command && !fs::exists(filepath)) {
+		system(STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'").c_str()); // FIXME: Handle error
 	}
 }
 
@@ -36,7 +34,7 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	}
 	fprintf(fp, "%s:", output_file.c_str());
 
-	BOOST_FOREACH(const std::string &str, dependencies) {
+	for(const auto &str : dependencies) {
 		fprintf(fp, " \\\n\t%s", str.c_str());
 	}
 	fprintf(fp, "\n");

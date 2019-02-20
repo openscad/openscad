@@ -27,6 +27,8 @@
 #
 # 1. why is hash differing
 
+from __future__ import print_function
+
 import string
 import sys
 import re
@@ -35,6 +37,8 @@ import hashlib
 import subprocess
 import time
 import platform
+import html
+import base64
 try:
     from urllib.error import URLError
     from urllib.request import urlopen
@@ -67,11 +71,11 @@ def trysave(filename, data):
                 debug( 'creating' + dir)
                 os.mkdir(dir)
         f=open(filename,'wb')
-        f.write(data)
+        f.write(data.encode('utf-8'))
         f.close()
     except Exception as e:
-        print 'problem writing to',filename
-        print type(e), e
+        print('problem writing to',filename)
+        print(type(e), e)
         return None
     return True
 
@@ -83,10 +87,10 @@ def ezsearch(pattern, str):
 def read_gitinfo():
     # won't work if run from outside of branch. 
     try:
-        data = subprocess.Popen(['git', 'remote', '-v'], stdout=subprocess.PIPE).stdout.read()
+        data = subprocess.Popen(['git', 'remote', '-v'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
         origin = ezsearch('^origin *?(.*?)\(fetch.*?$', data)
         upstream = ezsearch('^upstream *?(.*?)\(fetch.*?$', data)
-        data = subprocess.Popen(['git', 'branch'], stdout=subprocess.PIPE).stdout.read()
+        data = subprocess.Popen(['git', 'branch'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
         branch = ezsearch('^\*(.*?)$', data)
         out = 'Git branch: ' + branch + ' from origin ' + origin + '\n'
         out += 'Git upstream: ' + upstream + '\n'
@@ -103,6 +107,7 @@ def read_sysinfo(filename):
         sysid = platform.sys.platform+'_no_GL_renderer'
         return sinfo, sysid
 
+    data = data.decode('utf-8')
     machine = ezsearch('Machine:(.*?)\n',data)
     machine = machine.replace(' ','-').replace('/','-')
 
@@ -113,7 +118,7 @@ def read_sysinfo(filename):
 
     renderer = ezsearch('GL Renderer:(.*?)\n',data)
     tmp = renderer.split(' ')
-    tmp = string.join(tmp[0:min(len(tmp),4)],'-')
+    tmp = "-".join(tmp[0:min(len(tmp),4)])
     tmp = tmp.split('/')[0]
     renderer = tmp
 
@@ -122,7 +127,7 @@ def read_sysinfo(filename):
 
     # create 4 letter hash and stick on end of sysid
     nondate_data = re.sub("\n.*?ompile date.*?\n", "\n", data).strip()
-    hexhash = hashlib.md5(nondate_data).hexdigest()[-4:].upper()
+    hexhash = hashlib.md5(nondate_data.encode('utf-8')).hexdigest()[-4:].upper()
     hash_ = ''.join(chr(ord(c) + 97 - 48) for c in hexhash)
 
     sysid = '_'.join([osplain, machine, renderer, hash_])
@@ -142,7 +147,7 @@ class Test:
         self.actualfile_data = None
         self.expectedfile_data = None
         
-    def __str__(self):
+    def info(self):
         x = 'fullname: ' + self.fullname
         x+= '\nactualfile: ' + self.actualfile
         x+= '\nexpectedfile: ' + self.expectedfile
@@ -168,25 +173,26 @@ def parsetest(teststring):
         "^ expected .*?:(.*?)\n",
         'Command:.*?(testdata.*?)"' # scadfile 
         ]
-    hits = map( lambda pattern: ezsearch(pattern, teststring), patterns)
+    hits = list(map(lambda pattern: ezsearch(pattern, teststring), patterns))
     test = Test(hits[0], hits[1], hits[2]=='Passed', hits[3], hits[4], hits[5], 
                 hits[6], hits[7], teststring)
     if len(test.actualfile) > 0:
         test.actualfile_data = tryread(test.actualfile)
     if len(test.expectedfile) > 0:
         test.expectedfile_data = tryread(test.expectedfile)
-    debug(" Parsed test\n" + str(test)+'\n')
+    debug(" Parsed test\n" + test.info() + '\n')
     return test
 
 def parselog(data):
-    startdate = ezsearch('Start testing: (.*?)\n', data)
-    enddate = ezsearch('End testing: (.*?)\n', data)
+    text = data.decode('utf-8', 'replace')
+    startdate = ezsearch('Start testing: (.*?)\n', text)
+    enddate = ezsearch('End testing: (.*?)\n', text)
     pattern = '([0-9]*/[0-9]* Testing:.*?time elapsed.*?\n)'
-    test_chunks = re.findall(pattern,data, re.S)
+    test_chunks = re.findall(pattern,text, re.S)
     tests = map( parsetest, test_chunks )
     tests = sorted(tests, key = lambda t: t.passed)
     imgcomparer='ImageMagick'
-    if '--comparator=diffpng' in data: imgcomparer='diffpng'
+    if '--comparator=diffpng' in text: imgcomparer='diffpng'
     return startdate, tests, enddate, imgcomparer
 
 def load_makefiles(builddir):
@@ -204,8 +210,8 @@ def load_makefiles(builddir):
 
 def png_encode64(fname, width=512, data=None, alt=''):
     # en.wikipedia.org/wiki/Data_URI_scheme
-    data = data or tryread(fname) or ''
-    data_uri = data.encode('base64').replace('\n', '')
+    data = data or tryread(fname) or b''
+    data_uri = base64.b64encode(data).decode('ascii')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
     if alt=="": alt = 'alt="openscad_test_image:' + fname + '" '
     tag %= (data_uri, width, alt)
@@ -218,7 +224,7 @@ def findlogfile(builddir):
     if not os.path.isfile(logfilename):
         logfilename = os.path.join(logpath, 'LastTest.log')
     if not os.path.isfile(logfilename):
-        print 'can\'t find and/or open logfile', logfilename
+        print('can\'t find and/or open logfile', logfilename)
         sys.exit()
     return logfilename
 
@@ -227,6 +233,7 @@ def findlogfile(builddir):
 class Templates(object):
     html_template = '''<html>
     <head><title>Test run for {sysid}</title>
+    <meta charset="utf-8" />
     {style}
     </head>
     <body>
@@ -344,11 +351,11 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
     templates = Templates()
     for test in report_tests:
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo'):
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf'):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
-                          test_log=test.fulltestlog)
+                          test_log=html.escape(test.fulltestlog))
         elif test.type == 'png':
             image_test_count += 1
             alttxt = 'OpenSCAD test image'
@@ -423,8 +430,8 @@ def upload_html(page_url, title, html):
     }
     try:
         response = urlopen(page_url, data=postify(data))
-    except URLError, e:
-        print 'Upload error: ' + str(e)
+    except (URLError) as e:
+        print('Upload error: ' + str(e))
         return False
     return 'success' in response.read().decode()
 
@@ -436,8 +443,8 @@ debugfile = None
 def debug(x):
     global debugfile
     if debug_test_pp:
-        print 'test_pretty_print debug: ' + x
-    debugfile.write(x+'\n')
+        print('test_pretty_print debug: ' + x)
+    debugfile.write((x + '\n').encode('utf-8'))
 
 builddir = os.getcwd()
 include_passed = False
@@ -468,8 +475,7 @@ def main():
     builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
-        print 'warning: couldnt find --builddir, trying to use current dir:',
-        print builddir
+        print('warning: couldnt find --builddir, trying to use current dir:', builddir)
     debug('build dir set to ' +  builddir)
 
     upload = False
@@ -491,16 +497,16 @@ def main():
     debug('found log file: '+logfilename+'\n')
     startdate, tests, enddate, imgcomparer = parselog(testlog)
     if debug_test_pp:
-        print 'found sysinfo.txt,',
-        print 'found', len(makefiles),'makefiles,',
-        print 'found', len(tests),'test results'
-        print 'comparer', imgcomparer
+        print('found sysinfo.txt,', end=" ")
+        print('found', len(makefiles),'makefiles,', end=" ")
+        print('found', len(tests),'test results')
+        print('comparer', imgcomparer)
     html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer, makefiles)
     html_basename = sysid + '_report.html'
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
-    print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
+    print("report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,''))
 
     failed_tests = [test for test in tests if not test.passed]
     if upload and failed_tests:
@@ -510,19 +516,19 @@ def main():
         os.system('scp "%s" "%s:%s"' %
                   (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
         share_url = 'http://files.openscad.org/tests/' + filename;
-        print 'html report uploaded:'
-        print share_url
+        print('html report uploaded:')
+        print(share_url)
 
 #        page_url = create_page()
 #        if upload_html(page_url, title='OpenSCAD test results', html=html):
 #            share_url = page_url.partition('?')[0]
-#            print 'html report uploaded at', share_url
+#            print('html report uploaded at', share_url)
 #        else:
-#            print 'could not upload html report'
+#            print('could not upload html report')
 
     debug('test_pretty_print complete')
 
 if __name__=='__main__':
-    debugfile = open('test_pretty_print.log.txt','w')
+    debugfile = open('test_pretty_print.log.txt','wb')
     main()
     debugfile.close()

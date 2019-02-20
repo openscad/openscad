@@ -25,19 +25,21 @@
  */
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "node.h"
 #include "polyset.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "fileutils.h"
-#include "handle_dep.h" // handle_dep()
-#include "visitor.h"
-#include "lodepng.h"
+#include "handle_dep.h"
+#include "ext/lodepng/lodepng.h"
 
+#include <cstdint>
+#include <array>
 #include <sstream>
-#include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -53,69 +55,66 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
-typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
+typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {
 public:
-	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	virtual std::string toString() const;
-	virtual std::string name() const { return "surface"; }
+	VISITABLE();
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
+	std::string toString() const override;
+	std::string name() const override { return "surface"; }
 
 	Filename filename;
 	bool center;
 	bool invert;
 	int convexity;
 	
-	virtual Geometry *createGeometry() const;
+	const Geometry *createGeometry() const override;
 private:
-	void convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
-	bool is_png(std::vector<unsigned char> &img) const;
+	void convert_image(img_data_t &data, std::vector<uint8_t> &img, unsigned int width, unsigned int height) const;
+	bool is_png(std::vector<uint8_t> &img) const;
 	img_data_t read_dat(std::string filename) const;
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	SurfaceNode *node = new SurfaceNode(inst);
-	node->center = false;
-	node->invert = false;
-	node->convexity = 1;
+	auto node = new SurfaceNode(inst);
 
-	AssignmentList args;
-	args += Assignment("file"), Assignment("center"), Assignment("convexity");
+	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
+	AssignmentList optargs{Assignment("center"),Assignment("invert")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 
-	ValuePtr fileval = c.lookup_variable("file");
-	node->filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	auto fileval = c.lookup_variable("file");
+	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	node->filename = filename;
+	handle_dep(fs::path(filename).generic_string());
 
-	ValuePtr center = c.lookup_variable("center", true);
-	if (center->type() == Value::BOOL) {
+	auto center = c.lookup_variable("center", true);
+	if (center->type() == Value::ValueType::BOOL) {
 		node->center = center->toBool();
 	}
 
-	ValuePtr convexity = c.lookup_variable("convexity", true);
-	if (convexity->type() == Value::NUMBER) {
-		node->convexity = (int)convexity->toDouble();
+	auto convexity = c.lookup_variable("convexity", true);
+	if (convexity->type() == Value::ValueType::NUMBER) {
+		node->convexity = static_cast<int>(convexity->toDouble());
 	}
 
-	ValuePtr invert = c.lookup_variable("invert", true);
-	if (invert->type() == Value::BOOL) {
+	auto invert = c.lookup_variable("invert", true);
+	if (invert->type() == Value::ValueType::BOOL) {
 		node->invert = invert->toBool();
 	}
 
 	return node;
 }
 
-void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
+void SurfaceNode::convert_image(img_data_t &data, std::vector<uint8_t> &img, unsigned int width, unsigned int height) const
 {
 	for (unsigned int y = 0;y < height;y++) {
 		for (unsigned int x = 0;x < width;x++) {
@@ -127,17 +126,11 @@ void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &im
 	}
 }
 
-bool SurfaceNode::is_png(std::vector<unsigned char> &png) const
+bool SurfaceNode::is_png(std::vector<uint8_t> &png) const
 {
-	return (png.size() >= 8)
-		&& (png[0] == 0x89)
-		&& (png[1] == 0x50)
-		&& (png[2] == 0x4e)
-		&& (png[3] == 0x47)
-		&& (png[4] == 0x0d)
-		&& (png[5] == 0x0a)
-		&& (png[6] == 0x1a)
-		&& (png[7] == 0x0a);
+	return (png.size() >= 8 &&
+					std::memcmp(png.data(),
+											std::array<uint8_t, 8>({{0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}}).data(), 8) == 0);
 }
 
 static void load_png_file(std::vector<unsigned char>& buffer, const std::string& filename)
@@ -161,7 +154,7 @@ static void load_png_file(std::vector<unsigned char>& buffer, const std::string&
 img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 {
 	img_data_t data;
-	std::vector<unsigned char> png;
+	std::vector<uint8_t> png;
 	
 	load_png_file(png, filename);
 	
@@ -171,8 +164,8 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 	}
 	
 	unsigned int width, height;
-	std::vector<unsigned char> img;
-	unsigned error = lodepng::decode(img, width, height, png);
+	std::vector<uint8_t> img;
+	auto error = lodepng::decode(img, width, height, png);
 	if (error) {
 		PRINTB("ERROR: Can't read PNG image '%s'", filename);
 		data.clear();
@@ -211,8 +204,8 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		int col = 0;
 		tokenizer tokens(line, sep);
 		try {
-			BOOST_FOREACH(const std::string &token, tokens) {
-				double v = boost::lexical_cast<double>(token);
+			for(const auto &token : tokens) {
+				auto v = boost::lexical_cast<double>(token);
 				data[std::make_pair(lines, col++)] = v;
 				if (col > columns) columns = col;
 				min_val = std::min(v-1, min_val);
@@ -230,20 +223,20 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	return data;
 }
 
-Geometry *SurfaceNode::createGeometry() const
+const Geometry *SurfaceNode::createGeometry() const
 {
-	img_data_t data = read_png_or_dat(filename);
+	auto data = read_png_or_dat(filename);
 
-	PolySet *p = new PolySet(3);
+	auto p = new PolySet(3);
 	p->setConvexity(convexity);
 	
 	int lines = 0;
 	int columns = 0;
 	double min_val = 0;
-	for (img_data_t::iterator it = data.begin();it != data.end();it++) {
-		lines = std::max(lines, (*it).first.first + 1);
-		columns = std::max(columns, (*it).first.second + 1);
-		min_val = std::min((*it).second - 1, min_val);
+	for (const auto &entry : data) {
+		lines = std::max(lines, entry.first.first + 1);
+		columns = std::max(columns, entry.first.second + 1);
+		min_val = std::min(entry.second - 1, min_val);
 	}
 
 	double ox = center ? -(columns-1)/2.0 : 0;
@@ -309,6 +302,7 @@ Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
 
+	if (columns > 1 && lines > 1) {
 	p->append_poly();
 	for (int i = 0; i < columns-1; i++)
 		p->insert_vertex(ox + i, oy + 0, min_val);
@@ -318,14 +312,15 @@ Geometry *SurfaceNode::createGeometry() const
 		p->insert_vertex(ox + i, oy + lines-1, min_val);
 	for (int i = lines-1; i > 0; i--)
 		p->insert_vertex(ox + 0, oy + i, min_val);
+	}
 
 	return p;
 }
 
 std::string SurfaceNode::toString() const
 {
-	std::stringstream stream;
-	fs::path path((std::string)this->filename);
+	std::ostringstream stream;
+	fs::path path{static_cast<std::string>(this->filename)}; // gcc-4.6
 
 	stream << this->name() << "(file = " << this->filename
 		<< ", center = " << (this->center ? "true" : "false")

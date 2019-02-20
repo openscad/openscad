@@ -151,7 +151,10 @@ int main(int argc, char **argv)
 			text += buffer;
 		}
 		fclose(fp);
-		root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+		if(!parse(root_module, (text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false)) {
+			delete root_module; // parse failed
+			root_module = NULL;
+		}
 		if (!root_module) {
 			exit(1);
 		}

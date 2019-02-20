@@ -1,17 +1,21 @@
 EXAMPLES := ../../examples
+LOG := out.log
 SRC=$(wildcard $(EXAMPLES)/*/*.scad)
 PNG=$(patsubst $(EXAMPLES)/%.scad,html/%.png,$(SRC))
 HTML=$(patsubst $(EXAMPLES)/%.scad,html/%.html,$(SRC))
 
-OPENSCAD := ../../OpenSCAD.app/Contents/MacOS/OpenSCAD
-#OPENSCAD := openscad
+OPENSCAD := $(shell ls ../../openscad ../../OpenSCAD.app/Contents/MacOS/OpenSCAD 2>/dev/null | head -n 1)
 ARGS := --imgsize=1200,900 --camera=0,0,0,55,0,25,180 --viewall --autocenter
 
-all : $(PNG) $(HTML) example-data.js assets
+all : info $(PNG) $(HTML) example-data.js assets
+
+.PHONY: info
+info:
+	@echo Using $(OPENSCAD)
 
 .PHONY: clean
 clean :
-	rm -rf html
+	rm -rf html $(LOG)
 
 .PHONY: assets
 assets :
@@ -21,7 +25,7 @@ assets :
 example-data.js :
 	( \
 	echo "openscad_examples = ["; \
-	for a in Basics Functions Shapes Extrusion Advanced; \
+	for a in `grep '\[' ../../examples/examples.json | tr -d ' \t":[]'`; \
 	do \
 		echo "  {"; \
 		echo "    name : \"$$a\","; \
@@ -38,7 +42,7 @@ example-data.js :
 
 html/%.png : $(EXAMPLES)/%.scad
 	mkdir -p `dirname $@`
-	$(OPENSCAD) $(ARGS) -o $@ $< > out.log 2>&1
+	$(OPENSCAD) $(ARGS) -o $@ $< > $(LOG) 2>&1
 
 html/%.html : $(EXAMPLES)/%.scad template-pre.html template-post.html
 	#echo $(notdir $(patsubst %.scad,%.png,$<))

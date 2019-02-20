@@ -8,9 +8,9 @@ class CGALRenderer : public Renderer
 public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
 	~CGALRenderer();
-	virtual void draw(bool showfaces, bool showedges) const;
-	virtual void setColorScheme(const ColorScheme &cs);
-	virtual BoundingBox getBoundingBox() const;
+	void draw(bool showfaces, bool showedges) const override;
+	void setColorScheme(const ColorScheme &cs) override;
+	BoundingBox getBoundingBox() const override;
 
 private:
 	shared_ptr<class CGAL_OGL_Polyhedron> getPolyhedron() const;

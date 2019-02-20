@@ -26,45 +26,22 @@
 
 #include "node.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "progress.h"
-#include "visitor.h"
-#include "stl-utils.h"
-
+#include "printutils.h"
+#include <functional>
 #include <iostream>
 #include <algorithm>
-#include <boost/foreach.hpp>
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), progress_mark(0), idx(idx_counter++)
 {
-	modinst = mi;
-	idx = idx_counter++;
 }
 
 AbstractNode::~AbstractNode()
 {
-	std::for_each(this->children.begin(), this->children.end(), del_fun<AbstractNode>());
-}
-
-Response AbstractNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractIntersectionNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
-}
-
-Response LeafNode::accept(class State &state, Visitor &visitor) const
-{
-	return visitor.visit(state, *this);
+	std::for_each(this->children.begin(), this->children.end(), std::default_delete<AbstractNode>());
 }
 
 std::string AbstractNode::toString() const
@@ -72,9 +49,14 @@ std::string AbstractNode::toString() const
 	return this->name() + "()";
 }
 
-std::string AbstractNode::name() const
+std::string GroupNode::name() const
 {
 	return "group";
+}
+
+std::string RootNode::name() const
+{
+	return "root";
 }
 
 std::string AbstractIntersectionNode::toString() const
@@ -109,10 +91,22 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 // Do we have an explicit root node (! modifier)?
 AbstractNode *find_root_tag(AbstractNode *n)
 {
-  BOOST_FOREACH(AbstractNode *v, n->children) {
-    if (v->modinst->tag_root) return v;
-    if (AbstractNode *vroot = find_root_tag(v)) return vroot;
-  }
-  return NULL;
-}
+	std::vector<AbstractNode*> rootTags;
 
+	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
+		for (auto v : n->children) {
+			if (v->modinst->tag_root) rootTags.push_back(v);
+			find_root_tags(v);
+		}
+	};
+
+	find_root_tags(n);
+
+	if (rootTags.size() == 0) return nullptr;
+	if (rootTags.size() > 1) {
+		for (const auto& rootTag : rootTags) {
+			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
+		}
+	}
+	return rootTags.front();
+}

@@ -11,7 +11,7 @@
 #include "scadlexer.h"
 #include "parsersettings.h"
 
-#include <boost/shared_ptr.hpp>
+#include "memory.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -39,22 +39,24 @@ class ScintillaEditor : public EditorInterface
 {        
 	Q_OBJECT;
 
-        typedef std::multimap<int, boost::shared_ptr<EditorColorScheme>, std::less<int> > colorscheme_set_t;
+        using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>>;
         
 public:
 	ScintillaEditor(QWidget *parent);
-	virtual ~ScintillaEditor() {}
+	~ScintillaEditor() {}
 	QsciScintilla *qsci;
-	QString toPlainText();
+	QString toPlainText() override;
 	void initMargin();
 	void initLexer();
-	void noColor();
-	QString selectedText();
-	bool find(const QString &, bool findNext = false, bool findBackwards = false);
-	void replaceSelectedText(const QString&);
-	void replaceAll(const QString &findText, const QString &replaceText);
-	QStringList colorSchemes();
-        
+
+	QString selectedText() override;
+	int updateFindIndicators(const QString &findText, bool visibility = true) override;
+    bool find(const QString &, bool findNext = false, bool findBackwards = false) override;
+	void replaceSelectedText(const QString&) override;
+	void replaceAll(const QString &findText, const QString &replaceText) override;
+	QStringList colorSchemes() override;
+    bool canUndo() override;
+
 private:
         void getRange(int *lineFrom, int *lineTo);
         void setColormap(const EditorColorScheme *colorScheme);
@@ -63,28 +65,36 @@ private:
         QColor readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t enumerateColorSchemes();
+
+        bool eventFilter(QObject* obj, QEvent *event) override;
+        void navigateOnNumber(int key);
+        bool modifyNumber(int key);
+        void noColor();
+
+signals:
+	void previewRequest(void);
 	
 public slots:
-	void zoomIn();
-	void zoomOut();  
-	void setPlainText(const QString&);
-	void setContentModified(bool);
-	bool isContentModified();
-	void highlightError(int);
-	void unhighlightLastError();
-	void setHighlightScheme(const QString&);
-	void indentSelection();
-	void unindentSelection();
-	void commentSelection();
-	void uncommentSelection();
-	void insert(const QString&);
-	void setText(const QString&);
-	void undo();
-	void redo();
-	void cut();
-	void copy();
-	void paste();
-	void initFont(const QString&, uint);
+	void zoomIn() override;
+	void zoomOut() override;  
+	void setPlainText(const QString&) override;
+	void setContentModified(bool) override;
+	bool isContentModified() override;
+	void highlightError(int) override;
+	void unhighlightLastError() override;
+	void setHighlightScheme(const QString&) override;
+	void indentSelection() override;
+	void unindentSelection() override;
+	void commentSelection() override;
+	void uncommentSelection() override;
+	void insert(const QString&) override;
+	void setText(const QString&) override;
+	void undo() override;
+	void redo() override;
+	void cut() override;
+	void copy() override;
+	void paste() override;
+	void initFont(const QString&, uint) override;
 
 private slots:
 	void onTextChanged();
@@ -92,7 +102,8 @@ private slots:
 
 private:
 	QVBoxLayout *scintillaLayout;
-	static const int indicatorNumber = 8; // first 8 are used by lexers
+    static const int errorIndicatorNumber = 8; // first 8 are used by lexers 
+    static const int findIndicatorNumber = 9; 
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;

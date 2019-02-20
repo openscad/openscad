@@ -1,9 +1,9 @@
 Some work is needed to include these into the automated test suite.
 For now, run them manually according to these instructions:
 
-Compile OpenSCAD in debug mode. This will give console output related to module caching, e.g.:
-/path/to/used.scad: 0x103612f70
-Module cache size: 1 modules
+Compile OpenSCAD in debug mode and always run OpenSCAD from the cmd-line using the argument --debug=FileModule.
+This will give console output related to module caching, e.g.:
+    FileModule: /path/to/used.scad: 0x103612f70
 
 Test1: Basic cache
 ------
@@ -131,10 +131,9 @@ Test 15: Correct handling of compile errors in auto-reloaded modules
 o Turn on Automatic Reload and Compile
 o Open mainusingerror.scad
 o Verify that you get:
-  - Compiling library '.../error.scad'.
-  - Parser error in line 3: syntax error
+  - ERROR: Parser error in file ".../error.scad", line 3: syntax error
   - WARNING: Failed to compile library '.../error.scad'.
-  - Main file should keep compiling
+  - Main file should keep compiling and ECHO the OpenSCAD version
 o Verify that the above doesn't repeat
 
 Test 16: Dependency tracking of underlying dependencies
@@ -144,3 +143,33 @@ o Open mainsubsub.scad
 o Verify that you see a red cylinder
 o edit subdir/subsub.scad: Change color
 o Verify that color changes
+
+Test 17: Dependency tracking with two open files
+--------
+o Turn on Automatic Reload and Compile
+o Open these 3 files: main-use-include.scad used.scad included.scad
+o Verify that you see 1) A red cube and sphere 2) A red sphere 3) a red cube
+o In an external editor, edit used.scad: Change color
+o Verify that color changed also in main-use-include
+o In an external editor, edit included.scad: Change color
+o Verify that color changed also in main-use-include
+
+Test 18: Correct auto-reload of errors in includes from main
+--------
+o Turn on Automatic Reload and Compile
+o Open mainincludingerror.scad
+o Verify that you get:
+  - ERROR: Parser error in file ".../error.scad", line 3: syntax error
+  - ERROR: Compilation failed
+o edit error.scad: fix the syntax error (add semicolon)
+o Verify that you now see a cube
+
+Test 19: Correct auto-reload of errors in includes from sub modules
+--------
+o Turn on Automatic Reload and Compile
+o Open mainuseincludingerror.scad
+o Verify that you get:
+  - ERROR: Parser error in file ".../error.scad", line 3: syntax error
+  - WARNING: Failed to compile library ...mainincludingerror.scad
+o edit error.scad: fix the syntax error (add semicolon)
+o Verify that you now see a cube

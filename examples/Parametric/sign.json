@@ -1,0 +1,26 @@
+{
+    "parameterSets": {
+        "Welcome sign": {
+            "Message": "Welcome to...",
+            "To": "Parametric Designs",
+            "height": "2",
+            "radius": "80",
+            "resolution": "30"
+        },
+        "Congo Sign": {
+            "Message": "Congratulations",
+            "To": "openSCAD",
+            "height": "2",
+            "radius": "67",
+            "resolution": "20"
+        },
+        "Happy birthday sign": {
+            "Message": "Happy Birthday!",
+            "To": "To Me",
+            "height": "2",
+            "radius": "67",
+            "resolution": "10"
+        }
+    },
+    "fileFormatVersion": "1"
+}

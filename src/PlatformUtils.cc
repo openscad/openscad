@@ -2,6 +2,7 @@
 #include <iomanip>
 
 #include "PlatformUtils.h"
+#include "boosty.h"
 
 #ifdef INSTALL_SUFFIX
 #define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
@@ -23,14 +24,14 @@ const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 static std::string lookupResourcesPath()
 {
 	fs::path resourcedir(applicationpath);
-	PRINTDB("Looking up resource folder with application path '%s'", boosty::stringy(resourcedir).c_str());
+	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.generic_string().c_str());
 	
 #ifdef __APPLE__
 	const char *searchpath[] = {
 	    "../Resources", 	// Resources can be bundled on Mac.
 	    "../../..",       // Dev location
 	    "..",          // Test location
-	    NULL
+	    nullptr
 	};
 #else
 #ifdef _WIN32
@@ -38,7 +39,7 @@ static std::string lookupResourcesPath()
         ".", // Release location
         RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
         "..", // Dev location
-        NULL
+        nullptr
     };
 #else
     const char *searchpath[] = {
@@ -47,29 +48,29 @@ static std::string lookupResourcesPath()
 	    ".",
 	    "..",
 	    "../..",
-	    NULL
+	    nullptr
 	};
 #endif	
 #endif
 
 	fs::path tmpdir;
-	for (int a = 0;searchpath[a] != NULL;a++) {
+	for (int a = 0;searchpath[a] != nullptr;a++) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
 			// The resource folder is the folder which contains "color-schemes" (as well as 
 			// "examples" and "locale", and optionally "libraries" and "fonts")
 	    const fs::path checkdir = tmpdir / "color-schemes";
-	    PRINTDB("Checking '%s'", boosty::stringy(checkdir).c_str());
+	    PRINTDB("Checking '%s'", checkdir.generic_string().c_str());
 
 	    if (is_directory(checkdir)) {
 		resourcedir = tmpdir;
-		PRINTDB("Found resource folder '%s'", boosty::stringy(tmpdir).c_str());
+		PRINTDB("Found resource folder '%s'", tmpdir.generic_string().c_str());
 		break;
 	    }
 	}
 
 	// resourcedir defaults to applicationPath
-	std::string result = boosty::stringy(boosty::canonical(resourcedir));
+	std::string result = boosty::canonical(resourcedir).generic_string();
 	PRINTDB("Using resource folder '%s'", result);
 	return result;
 }
@@ -126,7 +127,7 @@ std::string PlatformUtils::userLibraryPath()
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
 	}
-	return boosty::stringy( path );
+	return path.generic_string();
 }
 
 
@@ -145,7 +146,7 @@ std::string PlatformUtils::backupPath()
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
 	}
-	return boosty::stringy( path );
+	return path.generic_string();
 }
 
 bool PlatformUtils::createBackupPath()
@@ -193,7 +194,7 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 {
 #if defined(_WIN32)
     const char *ptr = getenv(name);
-    if ((overwrite == 0) && (ptr != NULL)) {
+    if ((overwrite == 0) && (ptr != nullptr)) {
 	return 0;
     }
 
@@ -207,7 +208,7 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 
 std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
 {
-	static const char *units[] = { "B", "kB", "MB", "GB", "TB", NULL };
+	static const char *units[] = { "B", "kB", "MB", "GB", "TB", nullptr };
 	
 	int idx = 0;
 	double val = bytes;
@@ -215,7 +216,7 @@ std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
 		if (val < 1024.0) {
 			break;
 		}
-		if (units[idx + 1] == NULL) {
+		if (units[idx + 1] == nullptr) {
 			break;
 		}
 		idx++;

@@ -26,12 +26,13 @@
 
 #include "rotateextrudenode.h"
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
-#include "visitor.h"
+#include "handle_dep.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -44,39 +45,49 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
+	auto node = new RotateExtrudeNode(inst);
 
-	AssignmentList args;
-	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale");
+	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale")};
+	AssignmentList optargs{Assignment("convexity"), Assignment("angle")};
 
 	Context c(ctx);
-	c.setVariables(args, evalctx);
+	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
 	node->fn = c.lookup_variable("$fn")->toDouble();
 	node->fs = c.lookup_variable("$fs")->toDouble();
 	node->fa = c.lookup_variable("$fa")->toDouble();
+    
 
-	ValuePtr file = c.lookup_variable("file");
-	ValuePtr layer = c.lookup_variable("layer", true);
-	ValuePtr convexity = c.lookup_variable("convexity", true);
-	ValuePtr origin = c.lookup_variable("origin", true);
-	ValuePtr scale = c.lookup_variable("scale", true);
-
+	auto file = c.lookup_variable("file");
+	auto layer = c.lookup_variable("layer", true);
+	auto convexity = c.lookup_variable("convexity", true);
+	auto origin = c.lookup_variable("origin", true);
+	auto scale = c.lookup_variable("scale", true);
+	auto angle = c.lookup_variable("angle", true);
+    
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		node->filename = filename;
+		handle_dep(filename);
 	}
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
-	node->convexity = (int)convexity->toDouble();
-	origin->getVec2(node->origin_x, node->origin_y);
+	node->convexity = static_cast<int>(convexity->toDouble());
+	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
+	if(origin!=ValuePtr::undefined && !originOk){
+		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	}
 	node->scale = scale->toDouble();
+	node->angle = 360;
+	angle->getFiniteDouble(node->angle);
 
 	if (node->convexity <= 0)
 		node->convexity = 2;
@@ -84,8 +95,11 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->scale <= 0)
 		node->scale = 1;
 
+	if ((node->angle <= -360) || (node->angle > 360))
+		node->angle = 360;
+
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		auto instantiatednodes = inst->instantiateChildren(evalctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 
@@ -94,7 +108,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 std::string RotateExtrudeNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << this->name() << "(";
 	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
@@ -108,6 +122,7 @@ std::string RotateExtrudeNode::toString() const
 			;
 	}
 	stream <<
+		"angle = " << this->angle << ", "
 		"convexity = " << this->convexity << ", "
 		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 

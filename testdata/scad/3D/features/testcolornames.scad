@@ -156,4 +156,22 @@ translate([4,13]) color("LightSlateGray") sphere(radius);
 translate([5,13]) color("SlateGray") sphere(radius);
 translate([6,13]) color("DarkSlateGray") sphere(radius);
 translate([7,13]) color("Black") sphere(radius);
-
+// hex colors
+translate([0,14]) color("#ff0000") sphere(radius);
+translate([1,14]) color("#ff7f00") sphere(radius);
+translate([2,14]) color("#ffff00") sphere(radius);
+translate([3,14]) color("#00FF00") sphere(radius);
+translate([4,14]) color("#0000ff") sphere(radius);
+translate([5,14]) color("#4b00ff") sphere(radius);
+translate([6,14]) color("#9400d3") sphere(radius);
+translate([7,14]) color("#000000Ff") sphere(radius);
+translate([8,14]) color("#00000080") sphere(radius);
+translate([0,15]) color("#f00") sphere(radius);
+translate([1,15]) color("#f70") sphere(radius);
+translate([2,15]) color("#ff0") sphere(radius);
+translate([3,15]) color("#0F0") sphere(radius);
+translate([4,15]) color("#00f") sphere(radius);
+translate([5,15]) color("#40f") sphere(radius);
+translate([6,15]) color("#90d") sphere(radius);
+translate([7,15]) color("#000F") sphere(radius);
+translate([8,15]) color("#0008") sphere(radius);

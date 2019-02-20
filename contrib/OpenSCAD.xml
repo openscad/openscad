@@ -1,5 +1,5 @@
 <!-- (C) 2011 tjhowse tjhowse@gmail.com, published under the terms of the GNU GPL version 2 or later --> 
-
+<!-- 2017 michael.frey@gmx.ch Updated for OpenSCAD 2015.03 -->
 <NotepadPlus>
     <UserLang name="OpenSCAD" ext="scad">
         <Settings>
@@ -13,7 +13,7 @@
             <Keywords name="Folder-">}</Keywords>
             <Keywords name="Operators"># % ( ) ; [ ] &lt; &gt;</Keywords>
             <Keywords name="Comment"> 1/* 2*/ 0//</Keywords>
-            <Keywords name="Words1">abs acos asin atan atan ceil cos exp floor ln log lookup max min pow rands round sign sin sqrt tan str scale rotate translate mirror multmatrix color minkowski hull union difference intersection render echo use include module builtin_dxf_cross for intersection_for if else assign surface</Keywords>
+            <Keywords name="Words1">abs acos asin atan atan ceil cos exp floor ln log lookup max min pow rands round sign sin sqrt tan str scale rotate translate mirror multmatrix color minkowski hull union difference intersection render echo use include module builtin_dxf_cross for intersection_for if else assign surface let text offset concat chr</Keywords>
             <Keywords name="Words2">sphere cylinder polyhedron cube</Keywords>
             <Keywords name="Words3"></Keywords>
             <Keywords name="Words4"></Keywords>

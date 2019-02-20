@@ -56,16 +56,16 @@ bool save_framebuffer_common(OffscreenContext *ctx, std::ostream &output)
 //	Called by create_offscreen_context() from platform-specific code.
 OffscreenContext *create_offscreen_context_common(OffscreenContext *ctx)
 {
-	if (!ctx) return NULL;
+	if (!ctx) return nullptr;
 	GLenum err = glewInit(); // must come after Context creation and before FBO c$
 	if (GLEW_OK != err) {
 		std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
-		return NULL;
+		return nullptr;
 	}
 
 	ctx->fbo = fbo_new();
 	if (!fbo_init(ctx->fbo, ctx->width, ctx->height)) {
-		return NULL;
+		return nullptr;
 	}
 
 	return ctx;

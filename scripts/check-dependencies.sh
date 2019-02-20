@@ -34,6 +34,16 @@ debug()
 }
 
 
+doubleconversion_sysver()
+{
+  debug double-conversion
+  doubleconvpath=$1/include/double-conversion/double-conversion.h
+  if [ ! -e $doubleconvpath ]; then return; fi
+  # No version info in headers, not sure what to check here
+  # Just assume version 2.0.1 (version available in trusty) if file exists?
+  doubleconversion_sysver_result="2.0.1"
+}
+
 eigen_sysver()
 {
   debug eigen
@@ -60,6 +70,14 @@ cgal_sysver()
   cgalpath=$1/include/CGAL/version.h
   if [ ! -e $cgalpath ]; then return; fi
   cgal_sysver_result=`grep "define  *CGAL_VERSION  *[0-9.]*" $cgalpath | awk '{print $3}'`
+}
+
+libzip_sysver()
+{
+  libzippath="$1/include/zipconf.h"
+  if [ ! -e "$libzippath" ]; then libzippath="$1/include/`gcc -dumpmachine 2>/dev/null`/zipconf.h"; fi
+  if [ ! -e "$libzippath" ]; then return; fi
+  libzip_sysver_result="`grep 'define  *LIBZIP_VERSION *"[0-9.]*"' "$libzippath" | awk '{print $3}' | tr -d '"' `"
 }
 
 glib2_sysver()
@@ -163,43 +181,57 @@ gmp_sysver()
 qt_sysver()
 {
   if [ "`command -v qtchooser`" ]; then
-    if qtchooser -run-tool=qmake -qt=5 -v >/dev/null 2>&1 ; then
+    qtver=`qtchooser -run-tool=qmake -qt=5 -v 2>&1`
+    if [ $? -eq 0 ] ; then
       export QT_SELECT=5
-      qtpath="`qtchooser -run-tool=qmake -qt=5 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
-    fi
-    if [ ! -e "$qtpath" ]; then
-      if qtchooser -run-tool=qmake -qt=4 -v >/dev/null 2>&1 ; then
-        export QT_SELECT=4
-        qtpath="`qtchooser -run-tool=qmake -qt=4 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
+    else
+      qtver=`qtchooser -run-tool=qmake -qt=4 -v 2>&1`
+      if [ $? -eq 0 ] ; then
+	export QT_SELECT=4
       fi
     fi
+    qtver=`echo "$qtver" | grep "Using Qt version" | awk '{print $4}'`
   else
     export QT_SELECT=5
-    qtpath=$1/include/qt5/QtCore/qglobal.h
+    qtpath=$1/include/qt5/QtCore
     if [ ! -e $qtpath ]; then
-      qtpath=$1/include/i686-linux-gnu/qt5/QtCore/qglobal.h
+      qtpath=$1/include/i686-linux-gnu/qt5/QtCore
     fi
     if [ ! -e $qtpath ]; then
-      qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h
+      qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore
     fi
     if [ ! -e $qtpath ]; then
       export QT_SELECT=4
-      qtpath=$1/include/qt4/QtCore/qglobal.h
+      qtpath=$1/include/qt4/QtCore/
     fi
     if [ ! -e $qtpath ]; then
-      qtpath=$1/include/QtCore/qglobal.h
+      qtpath=$1/include/QtCore
     fi
     if [ ! -e $qtpath ]; then
       # netbsd
-      qtpath=$1/qt4/include/QtCore/qglobal.h 
+      qtpath=$1/qt4/include/QtCore
     fi
   fi
-  if [ ! -e "$qtpath" ]; then
-    unset QT_SELECT
-    return
+  if [ -z "$qtver" ]; then
+    if [ ! -e "$qtpath" ]; then
+      unset QT_SELECT
+      return
+    fi
+    qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/qglobal.h`
+    # fix for Qt 5.7
+    if [ -z "$qtver" ]; then
+      if [ -e "$qtpath/qconfig-32.h" ]; then
+        QCONFIG="qconfig-32.h"
+      elif [ -e "$qtpath/qconfig-64.h" ]; then
+        QCONFIG="qconfig-64.h"
+      else
+        QCONFIG="qconfig.h"
+      fi
+      qtver=`grep 'define  *QT_VERSION_STR  *' "$qtpath"/$QCONFIG`
+    fi
+
+    qtver=`echo $qtver | awk '{print $3}' | sed s/'"'//g`
   fi
-  qtver=`grep 'define  *QT_VERSION_STR  *' $qtpath | awk '{print $3}'`
-  qtver=`echo $qtver | sed s/'"'//g`
   qt_sysver_result=$qtver
 }
 
@@ -515,7 +547,7 @@ pretty_print()
   gray="\033[40;37m"
   nocolor="\033[0m"
 
-  ppstr="%s%-12s"
+  ppstr="%s%-18s"
   pp_format='{printf("'$ppstr$ppstr$ppstr$ppstr$nocolor'\n",$1,$2,$3,$4,$5,$6,$7,$8)}'
   pp_title="$gray depname $gray minimum $gray found $gray OKness"
   if [ $1 ]; then pp_depname=$1; fi
@@ -554,9 +586,11 @@ find_installed_version()
   if [ ! $fsv_tmp ]; then
     for syspath in $OPENSCAD_LIBRARIES "/usr/local" "/opt/local" "/usr/pkg" "/usr"; do
       if [ -e $syspath ]; then
-        debug $depname"_sysver" $syspath
-        eval $depname"_sysver" $syspath
-        fsv_tmp=`eval echo "$"$depname"_sysver_result"`
+        # strip hyphens from dependency name
+        depnameclean=`echo $depname | sed s/-//g`
+        debug $depnameclean"_sysver" $syspath
+        eval $depnameclean"_sysver" $syspath
+        fsv_tmp=`eval echo "$"$depnameclean"_sysver_result"`
         if [ $fsv_tmp ]; then break; fi
       fi
     done
@@ -640,7 +674,7 @@ checkargs()
 
 main()
 {
-  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz bison flex make"
+  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz libzip bison flex make double-conversion"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

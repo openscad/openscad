@@ -1,0 +1,3 @@
+use <file.scad
+
+sphere();

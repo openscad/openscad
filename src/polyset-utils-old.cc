@@ -45,8 +45,6 @@ public:
 	Is_bad is_bad_object() const { return Is_bad(); }
 };
 
-#include <boost/foreach.hpp>
-
 namespace PolysetUtils {
 
 	// Project all polygons (also back-facing) into a Polygon2d instance.
@@ -55,9 +53,9 @@ namespace PolysetUtils {
 	Polygon2d *project(const PolySet &ps) {
 		Polygon2d *poly = new Polygon2d;
 
-		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+		for(const auto &p : ps.polygons) {
 			Outline2d outline;
-			BOOST_FOREACH(const Vector3d &v, p) {
+			for(const auto &v : p) {
 				outline.vertices.push_back(Vector2d(v[0], v[1]));
 			}
 			poly->addOutline(outline);

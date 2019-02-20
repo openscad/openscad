@@ -2,10 +2,11 @@
 
 #include <string>
 
-#include "boosty.h"
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
 
 #define STACK_BUFFER_SIZE (64 * 1024)
-#define STACK_LIMIT_DEFAULT (8 * 1024 * 1024 - STACK_BUFFER_SIZE)
+#define STACK_LIMIT_DEFAULT (STACKSIZE - STACK_BUFFER_SIZE)
 
 namespace PlatformUtils {
         extern const char *OPENSCAD_FOLDER_NAME;
@@ -13,7 +14,25 @@ namespace PlatformUtils {
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();
 
+        /**
+         * The OpenSCAD document path which is used for searching user
+         * libraries and storing backup files.
+         * On Linux this is $HOME/.local/share, on Windows the CSIDL_PERSONAL
+         * directory (My Documents) and on MacOS it is the NSDocumentDirectory
+         * ($HOME/Documents).
+         *
+         * @return the application documents path
+         */
 	std::string documentsPath();
+        /**
+         * The user documents path where files are saved/exported to by
+         * default. On Linux this is the $XDG_DOCUMENTS_DIR, if this is
+         * not set, the $XDG_CONFIG_HOME/user-dirs.dirs file will be checked.
+         * On Windows and MacOS this is currently identical to documentsPath().
+         *
+         * @return the path for saving user documents
+         */
+	std::string userDocumentsPath();
         std::string resourceBasePath();
 	fs::path resourcePath(const std::string& resource);
 	std::string userLibraryPath();
@@ -44,11 +63,20 @@ namespace PlatformUtils {
          * OS type is reported based on what platform the application was
          * built for.
          * 
-				 * Extended sysinfo will return more info, like CPUs and RAM
-				 *
+         * Extended sysinfo will return more info, like CPUs and RAM
          * @return system information.
          */
-        std::string sysinfo(bool extended = true);
+        const std::string sysinfo(bool extended = true);
+
+		/**
+		 * Return short text describing the operating system usable as
+		 * UserAgent string for networking purposes. This is intended
+		 * to not leak too detail data about the system but still enough
+		 * to give some indication for troubleshooting on server side.
+		 *
+		 * @return the short system infor
+		 */
+		const std::string user_agent();
 
         /**
          * Platform abstraction to set environment variables. Windows/MinGW

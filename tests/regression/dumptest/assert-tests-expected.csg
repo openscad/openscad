@@ -1,0 +1,18 @@
+group();
+group();
+group();
+group();
+group() {
+	cube(size = [8, 8, 8], center = true);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	group() {
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		cylinder($fn = 0, $fa = 12, $fs = 2, h = 8, r1 = 5, r2 = 1, center = true);
+	}
+}
+group();

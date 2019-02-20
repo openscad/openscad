@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/format.hpp>
 #include "printutils.h"
 
@@ -52,19 +52,18 @@ template <class Key, class T>
 class Cache
 {
 	struct Node {
-		inline Node() : keyPtr(0) {}
-		inline Node(T *data, int cost)
-			: keyPtr(0), t(data), c(cost), p(0), n(0) {}
-		const Key *keyPtr; T *t; int c; Node *p,*n;
+		inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {}
+		inline Node(T *data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
+		const Key *keyPtr; T *t; size_t c; Node *p,*n;
 	};
-	typedef typename boost::unordered_map<Key, Node> map_type;
+	typedef typename std::unordered_map<Key, Node> map_type;
 	typedef typename map_type::iterator iterator_type;
 	typedef typename map_type::value_type value_type;
 
-	boost::unordered_map<Key, Node> hash;
+	std::unordered_map<Key, Node> hash;
 	Node *f, *l;
 	void *unused;
-	int mx, total;
+	size_t mx, total;
 
 	inline void unlink(Node &n) {
 		if (n.p) n.p->n = n.n;
@@ -78,14 +77,14 @@ class Cache
 	}
 	inline T *relink(const Key &key) {
 		iterator_type i = hash.find(key);
-		if (i == hash.end()) return 0;
+		if (i == hash.end()) return nullptr;
 
 		Node &n = i->second;
 		if (f != &n) {
 			if (n.p) n.p->n = n.n;
 			if (n.n) n.n->p = n.p;
 			if (l == &n) l = n.p;
-			n.p = 0;
+			n.p = nullptr;
 			n.n = f;
 			f->p = &n;
 			f = &n;
@@ -94,23 +93,23 @@ class Cache
 	}
 
 public:
-	inline explicit Cache(int maxCost = 100)
-		: f(0), l(0), unused(0), mx(maxCost), total(0) { }
+	inline explicit Cache(size_t maxCost = 100)
+		: f(nullptr), l(nullptr), unused(nullptr), mx(maxCost), total(0) { }
 	inline ~Cache() { clear(); }
 
-	inline int maxCost() const { return mx; }
-	void setMaxCost(int m) { mx = m; trim(mx); }
-	inline int totalCost() const { return total; }
+	inline size_t maxCost() const { return mx; }
+	void setMaxCost(size_t m) { mx = m; trim(mx); }
+	inline size_t totalCost() const { return total; }
 
-	inline int size() const { return hash.size(); }
+	inline size_t size() const { return hash.size(); }
 	inline bool empty() const { return hash.empty(); }
 
 	void clear() {
 		while (f) { delete f->t; f = f->n; }
-		hash.clear(); l = 0; total = 0;
+		hash.clear(); l = nullptr; total = 0;
 	}
 
-	bool insert(const Key &key, T *object, int cost = 1);
+	bool insert(const Key &key, T *object, size_t cost);
 	T *object(const Key &key) const { return const_cast<Cache<Key,T>*>(this)->relink(key); }
 	inline bool contains(const Key &key) const { return hash.find(key) != hash.end(); }
 	T *operator[](const Key &key) const { return object(key); }
@@ -119,7 +118,7 @@ public:
 	T *take(const Key &key);
 
 private:
-	void trim(int m);
+	void trim(size_t m);
 };
 
 template <class Key, class T>
@@ -148,7 +147,7 @@ inline T *Cache<Key,T>::take(const Key &key)
 }
 
 template <class Key, class T>
-bool Cache<Key,T>::insert(const Key &akey, T *aobject, int acost)
+bool Cache<Key,T>::insert(const Key &akey, T *aobject, size_t acost)
 {
 	remove(akey);
 	if (acost > mx) {
@@ -170,14 +169,14 @@ bool Cache<Key,T>::insert(const Key &akey, T *aobject, int acost)
 }
 
 template <class Key, class T>
-void Cache<Key,T>::trim(int m)
+void Cache<Key,T>::trim(size_t m)
 {
 	Node *n = l;
 	while (n && total > m) {
 		Node *u = n;
 		n = n->p;
 #ifdef DEBUG
-		PRINTB("Trimming cache: %1% (%2% bytes)", u->keyPtr->substr(0, 40) % u->c);
+		PRINTB("Trimming cache: %1$X (%2% bytes)", *u->keyPtr % u->c);
 #endif
 		unlink(*u);
 	}

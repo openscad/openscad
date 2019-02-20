@@ -1,6 +1,4 @@
-group() {
-	difference() {
-		cube(size = [1, 1, 1], center = true);
-		cube(size = [2, 2, 2], center = true);
-	}
+difference() {
+	cube(size = [1, 1, 1], center = true);
+	cube(size = [2, 2, 2], center = true);
 }

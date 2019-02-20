@@ -7,10 +7,10 @@
 #include <sstream>
 #include "printutils.h"
 
-OffscreenView::OffscreenView(size_t width, size_t height)
+OffscreenView::OffscreenView(int width, int height)
 {
   this->ctx = create_offscreen_context(width, height);
-  if ( this->ctx == NULL ) throw -1;
+  if ( this->ctx == nullptr ) throw -1;
   GLView::initializeGL();
   GLView::resizeGL(width, height);
 }
@@ -39,10 +39,5 @@ bool OffscreenView::save(std::ostream &output)
 
 std::string OffscreenView::getRendererInfo() const
 {
-  std::stringstream out;
-
-  out << glew_dump()
-      << offscreen_context_getinfo(this->ctx);
-
-  return out.str();
+  return STR(glew_dump() << offscreen_context_getinfo(this->ctx));
 }

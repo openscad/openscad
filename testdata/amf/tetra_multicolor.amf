@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<amf unit="inch" version="1.1">
+  <metadata type="name">Color Tetrahedron</metadata>
+  <object id="1">
+    <color><r>1</r><g>1</g><b>1</b></color>
+    <mesh>
+      <vertices>
+        <vertex><coordinates><x>0</x><y>0</y><z>0</z></coordinates></vertex>
+        <vertex><coordinates><x>1</x><y>0.25</y><z>0</z></coordinates></vertex>
+        <vertex><coordinates><x>0.25</x><y>1</y><z>0</z></coordinates></vertex>
+        <vertex><coordinates><x>0.4</x><y>0.4</y><z>0.5</z></coordinates></vertex>
+      </vertices>
+      <volume>
+        <metadata type="name">Hard side</metadata> 
+        <triangle><v1>2</v1><v2>1</v2><v3>0</v3><color><r>1</r><g>0</g><b>0</b></color></triangle>
+        <triangle><v1>0</v1><v2>1</v2><v3>3</v3><color><r>0</r><g>1</g><b>0</b></color></triangle>
+        <triangle><v1>3</v1><v2>1</v2><v3>2</v3><color><r>0</r><g>0</g><b>1</b></color></triangle>
+        <triangle><v1>0</v1><v2>3</v2><v3>2</v3></triangle>
+      </volume>
+    </mesh>
+  </object>
+</amf>

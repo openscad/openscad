@@ -31,56 +31,6 @@ namespace fs = boost::filesystem;
 
 namespace boosty {
 
-#if BOOST_VERSION >= 104400 && BOOST_FILESYSTEM_VERSION >= 3
-
-inline bool is_absolute( fs::path p )
-{
-	return p.is_absolute();
-}
-
-inline fs::path absolute( fs::path p )
-{
-	return fs::absolute( p );
-}
-
-inline std::string stringy( fs::path p )
-{
-	return p.generic_string();
-}
-
-inline std::string extension_str( fs::path p)
-{
-	return p.extension().generic_string();
-}
-
-#else
-
-inline bool is_absolute( fs::path p )
-{
-	return p.is_complete();
-}
-
-inline fs::path absolute( fs::path p )
-{
-	return fs::complete(p, fs::current_path());
-}
-
-inline std::string stringy( fs::path p )
-{
-	return p.string();
-}
-
-inline std::string extension_str( fs::path p)
-{
-	return p.extension();
-}
-
-#endif
-
-
-
-
-
 #if BOOST_VERSION >= 104800
 
 inline fs::path canonical( fs::path p, fs::path p2 )
@@ -106,7 +56,7 @@ inline fs::path canonical( fs::path p, fs::path p2 )
 	std::string result_s;
 	std::vector<std::string> resultv, pieces;
 	std::vector<std::string>::iterator pi;
-	std::string tmps = boosty::stringy( p );
+	std::string tmps = p.generic_string();
 	boost::split( pieces, tmps, boost::is_any_of("/") );
 	for ( pi = pieces.begin(); pi != pieces.end(); ++pi )
 	{

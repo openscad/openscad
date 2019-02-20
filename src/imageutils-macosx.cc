@@ -23,7 +23,7 @@ size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
 CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream &output)
 {
 	dc_callbacks.putBytes = write_bytes_to_ostream;
-	dc_callbacks.releaseConsumer = NULL; // ostream closed by caller of write_png
+	dc_callbacks.releaseConsumer = nullptr; // ostream closed by caller of write_png
 	CGDataConsumerRef dc = CGDataConsumerCreate ( (void *)(&output), &dc_callbacks );
 	return dc;
 }
@@ -63,7 +63,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   */
 
   CFIndex                 fileImageIndex = 1;
-  CFMutableDictionaryRef  fileDict       = NULL;
+  CFMutableDictionaryRef  fileDict       = nullptr;
   CFStringRef             fileUTType     = kUTTypePNG;
   // Create an image destination opaque reference for authoring an image file
   CGImageDestinationRef imageDest = CGImageDestinationCreateWithDataConsumer(dataconsumer,

@@ -14,9 +14,9 @@ public:
 	~CSGTextCache() {}
 
 	bool contains(const AbstractNode &node) const;
-  string operator[](const AbstractNode &node) const;
-  void insert(const class AbstractNode &node, const string & value);
-  void remove(const class AbstractNode &node);
+	string operator[](const AbstractNode &node) const;
+	void insert(const class AbstractNode &node, const string &value);
+	void remove(const class AbstractNode &node);
 	void clear();
 
 private:

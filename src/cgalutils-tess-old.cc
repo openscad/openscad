@@ -2,7 +2,7 @@
 
 This is our custom tessellator of Nef Polyhedron faces. The problem with 
 Nef faces is that sometimes the 'default' tessellator of Nef Polyhedron 
-doesnt work. This is particularly true with situations where the polygon 
+doesn't work. This is particularly true with situations where the polygon
 face is not, actually, 'simple', according to CGAL itself. This can 
 occur on a bad quality STL import but also for other reasons. The 
 resulting Nef face will appear to the average human eye as an ordinary, 
@@ -340,7 +340,7 @@ namespace CGALUtils {
 		PRINTDB("plane %s",plane );
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector< std::vector<CGAL_Point_2> > polygons2d;
+		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i=0;i<polygons.size();i++) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;
@@ -459,7 +459,7 @@ namespace CGALUtils {
 		PRINTDB("plane %s",plane );
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector< std::vector<CGAL_Point_2> > polygons2d;
+		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i=0;i<polygons.size();i++) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;

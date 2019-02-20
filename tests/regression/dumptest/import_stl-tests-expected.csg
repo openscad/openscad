@@ -1,20 +1,18 @@
-group() {
-	multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		import(file = "import.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	}
-	multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		import(file = "import_bin.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, 4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		import(file = "import_bin_solid.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	}
-	multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		import(file = "import.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-	}
-	multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		difference() {
-			import(file = "not-found.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-			cube(size = [1, 1, 4], center = true);
-		}
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1444756256);
+}
+multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import_bin.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1444756256);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import_bin_solid.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1444756256);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1444756256);
+}
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		import(file = "not-found.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
+		cube(size = [1, 1, 4], center = true);
 	}
 }

@@ -23,7 +23,7 @@
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
-#include "convex_hull_3_bugfix.h"
+#include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
 
 #include "svg.h"
@@ -32,8 +32,7 @@
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
-#include <boost/unordered_set.hpp>
+#include <unordered_set>
 
 namespace CGALUtils {
 
@@ -47,7 +46,7 @@ namespace CGALUtils {
 			}
 		}
 		// Also make sure that there is only one shell:
-		boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
+		std::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
 		// c++11
 		// visited.reserve(p.size_of_facets());
 
@@ -77,16 +76,16 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	CGAL_Nef_polyhedron *applyOperator(const Geometry::ChildList &children, OpenSCADOperator op)
+	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-		CGAL_Nef_polyhedron *N = NULL;
+		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			// Speeds up n-ary union operations significantly
 			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 			int nary_union_num_inserted = 0;
 			
-			BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
@@ -95,7 +94,7 @@ namespace CGALUtils {
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
 				
-				if (op == OPENSCAD_UNION) {
+				if (op == OpenSCADOperator::UNION) {
 					if (!chN->isEmpty()) {
 						// nary_union.add_polyhedron() can issue assertion errors:
 						// https://github.com/openscad/openscad/issues/802
@@ -112,7 +111,7 @@ namespace CGALUtils {
 				
 				// Intersecting something with nothing results in nothing
 				if (chN->isEmpty()) {
-					if (op == OPENSCAD_INTERSECTION) *N = *chN;
+					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
 					continue;
 				}
 				
@@ -120,28 +119,28 @@ namespace CGALUtils {
 				if (N->isEmpty()) continue;
 				
 				switch (op) {
-				case OPENSCAD_INTERSECTION:
+				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;
 					break;
-				case OPENSCAD_DIFFERENCE:
+				case OpenSCADOperator::DIFFERENCE:
 					*N -= *chN;
 					break;
-				case OPENSCAD_MINKOWSKI:
+				case OpenSCADOperator::MINKOWSKI:
 					N->minkowski(*chN);
 					break;
 				default:
-					PRINTB("ERROR: Unsupported CGAL operator: %d", op);
+					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
 				}
 				item.first->progress_report();
 			}
 
-			if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
+			if (op == OpenSCADOperator::UNION && nary_union_num_inserted > 0) {
 				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
 			}
 		}
 	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
-			std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_UNION ? "union" : "UNKNOWN";
+			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -150,7 +149,7 @@ namespace CGALUtils {
 
 
 
-	bool applyHull(const Geometry::ChildList &children, PolySet &result)
+	bool applyHull(const Geometry::Geometries &children, PolySet &result)
 	{
 		typedef CGAL::Epick K;
 		// Collect point cloud
@@ -158,7 +157,7 @@ namespace CGALUtils {
 		// instead.
 		std::list<K::Point_3> points;
 
-		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+		for(const auto &item : children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
@@ -170,8 +169,8 @@ namespace CGALUtils {
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
-					BOOST_FOREACH(const Polygon &p, ps->polygons) {
-						BOOST_FOREACH(const Vector3d &v, p) {
+					for(const auto &p : ps->polygons) {
+						for(const auto &v : p) {
 							points.push_back(K::Point_3(v[0], v[1], v[2]));
 						}
 					}
@@ -194,7 +193,7 @@ namespace CGALUtils {
                             PRINTDB("After hull valid: %d", r.is_valid());
 				success = !createPolySetFromPolyhedron(r, result);
 			}
-			catch (const CGAL::Assertion_exception &e) {
+			catch (const CGAL::Failure_exception &e) {
 				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
 			}
 			CGAL::set_error_behaviour(old_behaviour);
@@ -204,15 +203,16 @@ namespace CGALUtils {
 
 
 	/*!
-		children cannot contain NULL objects
+		children cannot contain nullptr objects
 	*/
-	Geometry const * applyMinkowski(const Geometry::ChildList &children)
+	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
-		Geometry::ChildList::const_iterator it = children.begin();
+		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), NULL};
+		Geometry const* operands[2] = {it->second.get(), nullptr};
 		try {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
@@ -220,7 +220,7 @@ namespace CGALUtils {
 				typedef CGAL::Epick Hull_kernel;
 
 				std::list<CGAL_Polyhedron> P[2];
-				std::list<CGAL::Polyhedron_3<Hull_kernel> > result_parts;
+				std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;
 
 				for (size_t i = 0; i < 2; i++) {
 					CGAL_Polyhedron poly;
@@ -375,15 +375,15 @@ namespace CGALUtils {
 				} else if (!result_parts.empty()) {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
-					Geometry::ChildList fake_children;
-					for (std::list<CGAL::Polyhedron_3<Hull_kernel> >::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+					Geometry::Geometries fake_children;
+					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(*i, ps);
-						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
+						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
-					// FIXME: This hould really never throw.
+					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
+					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
 					t.stop();
@@ -398,13 +398,15 @@ namespace CGALUtils {
 			t_tot.stop();
 			PRINTDB("Minkowski: Total execution time %f s", t_tot.time());
 			t_tot.reset();
+			CGAL::set_error_behaviour(old_behaviour);
 			return operands[0];
 		}
 		catch (...) {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+			CGAL_Nef_polyhedron *N = applyOperator(children, OpenSCADOperator::MINKOWSKI);
+			CGAL::set_error_behaviour(old_behaviour);
 			return N;
 		}
 	}

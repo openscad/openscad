@@ -1,0 +1,9 @@
+<!-- Copyright 2013 Richard Hughes <richard@hughsie.com> -->
+<its:rules
+  xmlns:its="http://www.w3.org/2005/11/its"
+  version="1.0">
+  <its:translateRule translate="no" selector="/component"/>
+  <its:translateRule translate="yes"
+    selector="/component/summary |
+              /component/description"/>
+</its:rules>

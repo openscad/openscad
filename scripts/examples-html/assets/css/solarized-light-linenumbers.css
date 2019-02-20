@@ -1,0 +1,20 @@
+.rainbow {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.rainbow .line:hover {
+  background-color: #eee8d5;
+}
+.rainbow .line .line-number {
+  text-align: right;
+  background-color: #eee8d5;
+  padding-left: 0.8em;
+  padding-right: 0.8em;
+}
+.rainbow .line .line-number:before {
+  content: attr(data-line-number);
+}
+.rainbow .line .line-code {
+  padding-left: 1em;
+  width: 100%;
+}

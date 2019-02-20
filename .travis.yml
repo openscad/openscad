@@ -1,41 +1,70 @@
 language: cpp
-cache: apt
-compiler: gcc
+
+matrix:
+  include:
+    - if: NOT branch = coverity_scan
+      os: linux
+      compiler: gcc
+      dist: trusty
+      env:
+        - DIST="trusty"
+        - PARALLEL_CTEST=-j1
+      sudo: required
+      cache:
+        - apt
+        - ccache
+    - os: linux
+      compiler: gcc
+      dist: xenial
+      env:
+        - DIST="xenial"
+        - PARALLEL_CTEST=-j1
+      sudo: required
+      cache:
+        - apt
+        - ccache
+    - if: NOT branch = coverity_scan
+      os: osx
+      compiler: clang
+      env:
+        - DIST="osx"
+        - PARALLEL_CTEST=-j4
+      cache:
+        - ccache
+        - directories:
+          - $HOME/Library/Caches/Homebrew
 
 notifications:
   irc:
     channels:
       - "chat.freenode.net#openscad"
     on_success: change
-    use_notice: true
+    use_notice: false
     skip_join: true
 
 before_install:
- - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
- - sudo apt-get update -qq
- - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev
- - sudo apt-get install -qq libopencsg-dev
- - echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk
- - sudo apt-get update -qq
- - sudo apt-get install -qq libharfbuzz-dev
- - echo 'yes' | sudo add-apt-repository ppa:oibaf/graphics-drivers
- - sudo apt-get update -qq
- - sudo apt-get install --install-recommends libgl1-mesa-dev-lts-quantal
+ # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
+ - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
+ - if [[ "$DIST" == "trusty" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev libdouble-conversion-dev; fi
+ - if [[ "$DIST" == "xenial" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_16.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libqt5scintilla2-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libcgal-qt5-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev libdouble-conversion-dev; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/macosx-build-homebrew.sh ; fi
 
 branches:
   only:
     - master
+    - coverity_scan
 
 before_script:
  - echo -e "Host files.openscad.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
- - echo -n $openscad_rsa_{00..40} >> ~/.ssh/openscad_rsa_base64
- - base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
+ - for i in {0..40}; do eval $(printf "echo \$openscad_rsa_%02d\n" $i) >> ~/.ssh/openscad_rsa_base64; done
+ - base64 --decode ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
  - chmod 600 ~/.ssh/id_rsa
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
+script: if [ "${COVERITY_SCAN_BRANCH}" = 1 ]; then ./scripts/coverity.sh ; else ./scripts/travis-ci.sh ; fi
 
 env:
  global:
+ - QT_SELECT=qt5
  - OPENSCAD_UPLOAD_TESTS=yes 
  - secure: "mBWdnkXe8BL1SqYRBnOOpXn60xtHGfpeVOh+HrK8xZPflLyJLdgAz3jsrgPaaMibfuygOEfn86jm8dFZPDJSeGh+gGbcjbtOywvYtr0d/KJPk2ccCavlGEBsTSdfWVBMH2hqZ+OXrSn4amx12fmcF/rnpRZu0jHxRWrL4SbouXM="
  - secure: "gYPUvQekTxYW4bNIDvL6MFdPihd0HFGIq2saEbcOVyGYuZTdyBIzoh3tLIdG6jJNLWb/Nn2iWEsbsSsSIVk9UowW2qmuKVmzOyezKiu7wO2bdk08zeNtZLdFU4f8NsPz/ODXGQBCbjrBr8csnczQ9DKcxQeG2Lr9z1PjpJE43zY="
@@ -84,6 +113,6 @@ addons:
       name: "openscad/openscad"
       description: "The Programmers Solid 3D CAD Modeller"
     notification_email: dev@openscad.org
-    build_command_prepend: qmake
+    build_command_prepend: qmake CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot
     build_command: make
     branch_pattern: coverity_scan

@@ -23,18 +23,14 @@
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
 #else
-#include "convex_hull_3_bugfix.h"
+#include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
 
 #include "svg.h"
-#include "Reindexer.h"
 #include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
-#include <boost/foreach.hpp>
-#include <boost/unordered_set.hpp>
-
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
 								CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
@@ -109,8 +105,8 @@ OGL_helper.h
 class ZRemover {
 public:
 	CGAL_Nef_polyhedron2::Boundary boundary;
-	boost::shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
-	boost::shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
+	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
+	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
 	CGAL::Direction_3<CGAL_Kernel3> up;
 	ZRemover()
 	{
@@ -186,7 +182,7 @@ namespace CGALUtils {
 
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
 	{
-		Polygon2d *poly = NULL;
+		Polygon2d *poly = nullptr;
 		if (N.getDimension() != 3) return poly;
 
 		CGAL_Nef_polyhedron newN;
@@ -233,7 +229,7 @@ namespace CGALUtils {
 				for (i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i) {
 					PRINTDB("<!-- volume. mark: %s -->",i->mark());
 					for (j = i->shells_begin(); j != i->shells_end(); ++j) {
-						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());;
+						PRINTDB("<!-- shell. (vol mark was: %i)", i->mark());
 						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle(j);
 						newN.p3->visit_shell_objects(sface_handle , zremover);
 						PRINTD("<!-- shell. end. -->");
