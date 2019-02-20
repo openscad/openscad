@@ -95,23 +95,6 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	}
 }
 
-std::string two_digit_exp_format( std::string doublestr )
-{
-#ifdef _WIN32
-	size_t exppos = doublestr.find('e');
-	if ( exppos != std::string::npos) {
-		exppos += 2;
-		if ( doublestr[exppos] == '0' ) doublestr.erase(exppos,1);
-	}
-#endif
-	return doublestr;
-}
-
-std::string two_digit_exp_format(double x)
-{
-	return two_digit_exp_format(std::to_string(x));
-}
-
 #include <set>
 
 std::set<std::string> printedDeprecations;
