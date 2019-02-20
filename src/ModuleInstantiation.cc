@@ -1,3 +1,4 @@
+#include "compiler_specific.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "expression.h"
@@ -70,6 +71,17 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
 	}
 }
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive modules are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const Context *ctx){
+	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
+}
+
 AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	EvalContext c(ctx, this->arguments, this->loc, &this->scope);
@@ -83,7 +95,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			PRINTB("TRACE: called by '%s', %s.", name() % this->loc.toRelativeString(ctx->documentPath()));
+			print_trace(this, ctx);
 			e.traceDepth--;
 		}
 		throw;

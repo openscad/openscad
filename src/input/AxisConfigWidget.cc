@@ -140,6 +140,30 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
 	initizalied = true;
+	
+	//use a custom style for the axis indicators,
+	//to prevent getting operating specific
+	//(potentially animated) progressbars
+    QString style = "QProgressBar::chunk {"
+                    "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66d9ff,stop: 1 #ccf2ff );"
+                    "border-radius: 5px;"
+                    "border: 1px solid #007399;"
+                    "}";
+    int light = this->progressBarAxis0->palette().text().color().lightness();
+    if(light>165){
+        style = "QProgressBar::chunk {"
+            "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #001a33,stop: 1 #0069cc );"
+            "border-radius: 5px;"
+            "border: 1px solid #000d1a;"
+            "}";
+    }
+
+
+	auto progressbars = this->findChildren<QProgressBar *>();
+	for (auto progressbar : progressbars) {
+		progressbar->setStyleSheet(style);
+		progressbar->setAlignment(Qt::AlignCenter);
+	}
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
