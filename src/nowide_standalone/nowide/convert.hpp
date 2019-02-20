@@ -14,13 +14,13 @@
 
 namespace nowide {
     ///
-    /// \brief Template function that converts a buffer of UTF sequence in range [source_begin,source_end)
+    /// \brief Template function that converts a buffer of UTF sequences in range [source_begin,source_end)
     /// to the output \a buffer of size \a buffer_size.
     ///
-    /// In case of success a NUL terminated string returned (buffer), otherwise 0 is returned.
+    /// In case of success a NULL terminated string is returned (buffer), otherwise 0 is returned.
     ///
-    /// If there is not enough room in the buffer or the source sequence contains invalid UTF
-    /// 0 is returned, and the contend of the buffer is undefined.
+    /// If there is not enough room in the buffer or the source sequence contains invalid UTF,
+    /// 0 is returned, and the contents of the buffer are undefined.
     ///
     template<typename CharOut,typename CharIn>
     CharOut *basic_convert(CharOut *buffer,size_t buffer_size,CharIn const *source_begin,CharIn const *source_end)
@@ -64,10 +64,10 @@ namespace nowide {
     /// \endcond
 
     ///
-    /// Convert NUL terminated UTF source string to NUL terminated \a output string of size at
-    /// most output_size (including NUL)
+    /// Convert NULL terminated UTF source string to NULL terminated \a output string of size at
+    /// most output_size (including NULL)
     /// 
-    /// In case of surcess output is returned, if the input sequence is illegal,
+    /// In case of success output is returned, if the input sequence is illegal,
     /// or there is not enough room NULL is returned 
     ///
     inline char *narrow(char *output,size_t output_size,wchar_t const *source)
@@ -75,10 +75,10 @@ namespace nowide {
         return basic_convert(output,output_size,source,details::basic_strend(source));
     }
     ///
-    /// Convert UTF text in range [begin,end) to NUL terminated \a output string of size at
-    /// most output_size (including NUL)
+    /// Convert UTF text in range [begin,end) to NULL terminated \a output string of size at
+    /// most output_size (including NULL)
     /// 
-    /// In case of surcess output is returned, if the input sequence is illegal,
+    /// In case of success output is returned, if the input sequence is illegal,
     /// or there is not enough room NULL is returned 
     ///
     inline char *narrow(char *output,size_t output_size,wchar_t const *begin,wchar_t const *end)
@@ -86,10 +86,10 @@ namespace nowide {
         return basic_convert(output,output_size,begin,end);
     }
     ///
-    /// Convert NUL terminated UTF source string to NUL terminated \a output string of size at
-    /// most output_size (including NUL)
+    /// Convert NULL terminated UTF source string to NULL terminated \a output string of size at
+    /// most output_size (including NULL)
     /// 
-    /// In case of surcess output is returned, if the input sequence is illegal,
+    /// In case of success output is returned, if the input sequence is illegal,
     /// or there is not enough room NULL is returned 
     ///
     inline wchar_t *widen(wchar_t *output,size_t output_size,char const *source)
@@ -97,10 +97,10 @@ namespace nowide {
         return basic_convert(output,output_size,source,details::basic_strend(source));
     }
     ///
-    /// Convert UTF text in range [begin,end) to NUL terminated \a output string of size at
-    /// most output_size (including NUL)
+    /// Convert UTF text in range [begin,end) to NULL terminated \a output string of size at
+    /// most output_size (including NULL)
     /// 
-    /// In case of surcess output is returned, if the input sequence is illegal,
+    /// In case of success output is returned, if the input sequence is illegal,
     /// or there is not enough room NULL is returned 
     ///
     inline wchar_t *widen(wchar_t *output,size_t output_size,char const *begin,char const *end)

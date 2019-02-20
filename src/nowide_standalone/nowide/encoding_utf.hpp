@@ -46,7 +46,7 @@ namespace nowide{
         }
 
         ///
-        /// Convert a Unicode NUL terminated string \a str other Unicode encoding
+        /// Convert a Unicode NULL terminated string \a str other Unicode encoding
         ///
         template<typename CharOut,typename CharIn>
         std::basic_string<CharOut>

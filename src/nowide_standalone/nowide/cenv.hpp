@@ -49,7 +49,7 @@ namespace nowide {
             return 0;
         if(n >= buf_size) {
             tmp.resize(n+1,L'\0');
-            n = GetEnvironmentVariableW(name.c_str(),&tmp[0],tmp.size() - 1);
+            n = GetEnvironmentVariableW(name.c_str(),&tmp[0],static_cast<unsigned>(tmp.size() - 1));
             // The size may have changed
             if(n >= tmp.size() - 1)
                 return 0;

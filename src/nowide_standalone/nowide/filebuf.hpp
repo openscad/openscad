@@ -17,7 +17,7 @@
 
 #ifdef NOWIDE_MSVC
 #  pragma warning(push)
-#  pragma warning(disable : 4996 4244)
+#  pragma warning(disable : 4996 4244 4800)
 #endif
 
 
@@ -87,6 +87,9 @@ namespace nowide {
                 ::fclose(file_);
                 file_ = 0;
             }
+            bool ate = bool(mode & std::ios_base::ate);
+            if(ate)
+                mode = mode ^ std::ios_base::ate;
             wchar_t const *smode = get_mode(mode);
             if(!smode)
                 return 0;
@@ -100,6 +103,10 @@ namespace nowide {
             #endif
             if(!f)
                 return 0;
+            if(ate && fseek(f,0,SEEK_END)!=0) {
+                fclose(f);
+                return 0;
+            }
             file_ = f;
             return this;
         }

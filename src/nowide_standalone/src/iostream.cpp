@@ -23,16 +23,23 @@
 
 namespace nowide {
 namespace details {
+
+	namespace {
+		bool is_atty_handle(HANDLE h) 
+		{
+            if(h) {
+                DWORD dummy;
+                return GetConsoleMode(h,&dummy) == TRUE;
+            }
+			return false;
+		}
+	}
+
     class console_output_buffer : public std::streambuf {
     public:
         console_output_buffer(HANDLE h) :
-            handle_(h),
-            isatty_(false)
+            handle_(h)
         {
-            if(handle_) {
-                DWORD dummy;
-                isatty_ = GetConsoleMode(handle_,&dummy) == TRUE;
-            }
         }
     protected:
         int sync()
@@ -64,12 +71,7 @@ namespace details {
             namespace uf = nowide::utf;
             char const *b = p;
             char const *e = p+n;
-            if(!isatty_) {
-                DWORD size=0;
-                if(!WriteFile(handle_,p,n,&size,0) || static_cast<int>(size) != n)
-                    return -1;
-                return n;
-            }
+            DWORD size=0;
             if(n > buffer_size)
                 return -1;
             wchar_t *out = wbuffer_;
@@ -81,7 +83,7 @@ namespace details {
             }
             if(c==uf::illegal)
                 return -1;
-            if(!WriteConsoleW(handle_,wbuffer_,out - wbuffer_,0,0))
+            if(!WriteConsoleW(handle_,wbuffer_,out - wbuffer_,&size,0))
                 return -1;
             return decoded;
         }
@@ -90,20 +92,14 @@ namespace details {
         char buffer_[buffer_size];
         wchar_t wbuffer_[buffer_size]; // for null
         HANDLE handle_;
-        bool isatty_;
     };
     
     class console_input_buffer: public std::streambuf {
     public:
         console_input_buffer(HANDLE h) :
             handle_(h),
-            isatty_(false),
             wsize_(0)
         {
-            if(handle_) {
-                DWORD dummy;
-                isatty_ = GetConsoleMode(handle_,&dummy) == TRUE;
-            }
         } 
         
     protected:
@@ -160,12 +156,6 @@ namespace details {
         size_t read()
         {
             namespace uf = nowide::utf;
-            if(!isatty_) {
-                DWORD read_bytes = 0;
-                if(!ReadFile(handle_,buffer_,buffer_size,&read_bytes,0))
-                    return 0;
-                return read_bytes;
-            }
             DWORD read_wchars = 0;
             size_t n = wbuffer_size - wsize_;
             if(!ReadConsoleW(handle_,wbuffer_,n,&read_wchars,0))
@@ -183,7 +173,7 @@ namespace details {
             }
             
             if(c==uf::illegal)
-                return -1;
+                return 0;
             
             
             if(c==uf::incomplete) {
@@ -198,7 +188,6 @@ namespace details {
         char buffer_[buffer_size];
         wchar_t wbuffer_[buffer_size]; // for null
         HANDLE handle_;
-        bool isatty_;
         int wsize_;
         std::vector<char> pback_buffer_;
     };
@@ -214,19 +203,32 @@ namespace details {
             h = GetStdHandle(STD_ERROR_HANDLE);
             break;
         }
-        d.reset(new console_output_buffer(h));
-        std::ostream::rdbuf(d.get());
+		if(is_atty_handle(h)) {
+			d.reset(new console_output_buffer(h));
+			std::ostream::rdbuf(d.get());
+		}
+		else {
+			std::ostream::rdbuf( fd == 1 ? std::cout.rdbuf() : std::cerr.rdbuf() );
+		}
     }
-    
     winconsole_ostream::~winconsole_ostream()
     {
+		try {
+			flush();
+		}
+		catch(...){}
     }
 
     winconsole_istream::winconsole_istream() : std::istream(0)
     {
         HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-        d.reset(new console_input_buffer(h));
-        std::istream::rdbuf(d.get());
+		if(is_atty_handle(h)) {
+			d.reset(new console_input_buffer(h));
+			std::istream::rdbuf(d.get());
+		}
+		else {
+			std::istream::rdbuf(std::cin.rdbuf());
+		}
     }
     
     winconsole_istream::~winconsole_istream()
