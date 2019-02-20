@@ -23,7 +23,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+ 
+#include "compiler_specific.h"
 #include "context.h"
 #include "evalcontext.h"
 #include "expression.h"
@@ -183,27 +184,30 @@ bool Context::has_local_variable(const std::string &name) const
  * This is separated because PRINTB uses quite a lot of stack space
  * and the methods using it evaluate_function() and instantiate_module()
  * are called often when recursive functions or modules are evaluated.
+ * noinline prevents compiler optimization, as we here specifically
+ * optimize for stack usage during normal operating, not runtime during
+ * error handling.
  * 
  * @param what what is ignored
  * @param name name of the ignored object
  * @param loc location of the function/modul call
  * @param docPath document path of the root file, used to calculate the relative path
  */
-static void print_ignore_warning(const char *what, const char *name, const Location &loc, const std::string &docPath){
+static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
 	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
-	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath());
+	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath().c_str());
 	return ValuePtr::undefined;
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
-	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath());
+	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath().c_str());
 	return nullptr;
 }
 
