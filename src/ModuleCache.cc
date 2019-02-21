@@ -125,10 +125,7 @@ void ModuleCache::clear()
 
 FileModule *ModuleCache::lookup(const std::string &filename)
 {
-	return isCached(filename) ? this->entries[filename].module : nullptr;
+	auto it = this->entries.find(filename);
+	return it != this->entries.end() ? it->second.module : nullptr;
 }
 
-bool ModuleCache::isCached(const std::string &filename)
-{
-	return this->entries.find(filename) != this->entries.end();
-}

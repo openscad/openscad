@@ -120,8 +120,9 @@ time_t FileModule::handleDependencies()
 			wasmissing = true;
 			auto fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
-				updates.emplace_back(filename, fullpath.generic_string());
-				filename = fullpath.generic_string();
+				auto newfilename = fullpath.generic_string();
+				updates.emplace_back(filename, newfilename);
+				filename = newfilename;
 			}
 			else {
 				found = false;
@@ -129,7 +130,6 @@ time_t FileModule::handleDependencies()
 		}
 
 		if (found) {
-			auto wascached = ModuleCache::instance()->isCached(filename);
 			auto oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
 			auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
@@ -144,14 +144,13 @@ time_t FileModule::handleDependencies()
 				PRINTDB("  %s: %p", filename % oldmodule);
 			}
 			// Only print warning if we're not part of an automatic reload
-			if (!newmodule && !wascached && !wasmissing) {
+			if (!newmodule && !oldmodule && !wasmissing) {
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 			}
 		}
 	}
 
 	// Relative filenames which were located are reinserted as absolute filenames
-	typedef std::pair<std::string,std::string> stringpair;
 	for (const auto &files : updates) {
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);
