@@ -100,3 +100,10 @@ TotalWidth2 = dxf_dim(file=dxf,
     layer="SCAD.Origin",
     scale=1,
     notSupported="test"); 
+
+cube()
+cylinder();
+
+sphere()
+cylinder()
+cube();
