@@ -154,17 +154,8 @@ echo "Checking pre-requisites..."
 case $OS in
     UNIX_CROSS_WIN)
         MAKENSIS=
-        if [ "`command -v makensis`" ]; then
-            MAKENSIS=makensis
-        elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
-            # we cant find systems nsis so look for the MXE's version.
-            # MXE has its own makensis, but its only available under
-            # 32-bit MXE. note that the cross-version in theory works
-            # the same as the linux version so we can use them, in
-            # theory, interchangeably. its not really a 'cross' nsis
-            # todo - when doing 64 bit mingw build, see if we can call
-            # 32bit nsis here.
-            MAKENSIS=i686-pc-mingw32-makensis
+        if [ "`command -v $MXE_TARGETS-makensis`" ]; then
+            MAKENSIS=$MXE_TARGETS-makensis
         else
             echo "makensis not found. please install nsis on your system."
             echo "(for example, on debian linux, try apt-get install nsis)"

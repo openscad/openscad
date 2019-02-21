@@ -1,3 +1,4 @@
+Unicode true
 InstallDir ""
 !include "LogicLib.nsh"
 !include "mingw-file-association.nsh"
