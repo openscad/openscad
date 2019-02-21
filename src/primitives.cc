@@ -147,6 +147,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	AssignmentList args;
 	AssignmentList optargs;
+	if(inst->scope.hasChildren()){
+		PRINTB("WARNING: modul does not support child modules, %s", inst->location().toRelativeString(ctx->documentPath()));
+	}
 
 	switch (this->type) {
 	case primitive_type_e::CUBE:
