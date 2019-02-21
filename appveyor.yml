@@ -38,7 +38,7 @@ test_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T test started'
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/release && cp -v /mingw64/bin/opengl32.dll ."
   - ps: Get-Date -UFormat '### %Y-%m-%d %T ctest'
-  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe -j2 -E 'opencsgtest_issue1165|opencsgtest_issue1215|throwntogethertest_issue1089|throwntogethertest_issue1215|openscad-nonascii|import_3mf|3mfpngtest|3mfexport'"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad/tests && /mingw64/bin/ctest.exe -j2"
   - ps: Get-Date -UFormat '### %Y-%m-%d %T test finished'
 
 artifacts:
