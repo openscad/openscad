@@ -332,7 +332,7 @@ public:
 */
 
 string copyright(
-	"diffpng version 2014,\n\
+"diffpng version 2014,\n\
 based on PerceptualDiff Copyright (C) 2006 Yangli Hector Yee\n\
 diffpng and PerceptualDiff comes with ABSOLUTELY NO WARRANTY;\n\
 This is free software, and you are welcome\n\
@@ -346,13 +346,13 @@ Compares image1 and image2 using modified Yee's perceptual difference engine.\n\
 Returns 0 on MATCH (perceptually similar), 1 on DIFFERS \n\
 \n\
 Options:\n\
- --fov deg	 Field of view in degrees (0.1 to 89.9)\n\
+ --fov deg       Field of view in degrees (0.1 to 89.9)\n\
  --threshold p   % of pixels p below which differences are ignored\n\
- --gamma g	 Value to convert rgb into linear space (default 2.2)\n\
+ --gamma g       Value to convert rgb into linear space (default 2.2)\n\
  --luminance l   White luminance (default 100.0 cdm^-2)\n\
  --luminanceonly Only consider luminance; ignore chroma (color) in the comparison\n\
  --colorfactor   How much of color to use, 0.0 to 1.0, 0.0 = ignore color.\n\
- --sum-errors	 Print a sum of the luminance and color differences.\n\
+ --sum-errors    Print a sum of the luminance and color differences.\n\
  --output o.png  Write difference image to o.png (black=same, red=differ)\n\
  --initmax n     Set the initial maximum number of Laplacian Pyramid Levels\n\
  --finalmax n    Set the final maximum number of Laplacian Pyramid Levels\n\
@@ -592,7 +592,7 @@ public:
 	RGBAImage *ImgA;	 // Image A
 	RGBAImage *ImgB;	 // Image B
 	RGBAImage *ImgDiff;  // Diff image
-	bool Verbose;						// Print lots of text or not
+	bool Verbose;		 // Print lots of text or not
 	bool LuminanceOnly;  // Only consider luminance; ignore chroma channels in
 						 // the
 						 // comparison.
@@ -1267,7 +1267,7 @@ int main(int argc, char **argv)
 //	{
 		if (not args.Parse_Args(argc, argv))
 		{
-			nowide::cout << args.ErrorStr << "\n";
+			cout << args.ErrorStr << "\n";
 			return -1;
 		}
 		else
@@ -1278,22 +1278,22 @@ int main(int argc, char **argv)
 			}
 		}
 
-		nowide::cout << "\n";
+		cout << "\n";
 		bool matches = diffpng::LevelClimberCompare(args);
 		if (matches)
 		{
 			if (args.Verbose)
 			{
-				if (interactive()) nowide::cout << green;
-				nowide::cout << "MATCHES: result: " << args.ErrorStr << "\n";
-				if (interactive()) nowide::cout << nocolor;
+				if (interactive()) cout << green;
+				cout << "MATCHES: result: " << args.ErrorStr << "\n";
+				if (interactive()) cout << nocolor;
 			}
 		}
 		else
 		{
-			if (interactive()) nowide::cout << red;
-			nowide::cout << "DIFFERS: result: " << args.ErrorStr << "\n";
-			if (interactive()) nowide::cout << nocolor;
+			if (interactive()) cout << red;
+			cout << "DIFFERS: result: " << args.ErrorStr << "\n";
+			if (interactive()) cout << nocolor;
 		}
 
 	if (args.FlipExit) matches = !matches;
@@ -1302,7 +1302,7 @@ int main(int argc, char **argv)
 //	}
 /*	catch (...)
 	{
-		nowide::cerr << "Exception" << std::endl;
+		cerr << "Exception" << endl;
 		return 1;
 	}
 */
