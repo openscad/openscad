@@ -1267,7 +1267,7 @@ int main(int argc, char **argv)
 //	{
 		if (not args.Parse_Args(argc, argv))
 		{
-			cout << args.ErrorStr << "\n";
+			std::cout << args.ErrorStr << "\n";
 			return -1;
 		}
 		else
@@ -1278,22 +1278,22 @@ int main(int argc, char **argv)
 			}
 		}
 
-		cout << "\n";
+		std::cout << "\n";
 		bool matches = diffpng::LevelClimberCompare(args);
 		if (matches)
 		{
 			if (args.Verbose)
 			{
-				if (interactive()) cout << green;
-				cout << "MATCHES: result: " << args.ErrorStr << "\n";
-				if (interactive()) cout << nocolor;
+				if (interactive()) std::cout << green;
+				std::cout << "MATCHES: result: " << args.ErrorStr << "\n";
+				if (interactive()) std::cout << nocolor;
 			}
 		}
 		else
 		{
-			if (interactive()) cout << red;
-			cout << "DIFFERS: result: " << args.ErrorStr << "\n";
-			if (interactive()) cout << nocolor;
+			if (interactive()) std::cout << red;
+			std::cout << "DIFFERS: result: " << args.ErrorStr << "\n";
+			if (interactive()) std::cout << nocolor;
 		}
 
 	if (args.FlipExit) matches = !matches;
@@ -1302,7 +1302,7 @@ int main(int argc, char **argv)
 //	}
 /*	catch (...)
 	{
-		cerr << "Exception" << endl;
+		std::cerr << "Exception" << std::endl;
 		return 1;
 	}
 */
