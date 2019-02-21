@@ -411,6 +411,7 @@ set(CGAL_SOURCES
   src/GeometryEvaluator.cc)
 
 include_directories("src/ext/libtess2/Include")
+include_directories("src/nowide_standalone")
 set(COMMON_SOURCES
   src/nodedumper.cc 
   src/GeometryCache.cc 
@@ -426,6 +427,7 @@ set(COMMON_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
+  src/nowide_standalone/src/iostream.cpp
   src/Tree.cc)
 
 #
@@ -572,6 +574,8 @@ endif()
 if(ENABLE_SPNAV)
   target_link_libraries(OpenSCAD spnav)
 endif()
+
+target_link_libraries(OpenSCAD double-conversion)
 
 set(COMMON_LIBRARIES
     ${CGAL_LIBRARY}
