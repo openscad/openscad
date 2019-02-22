@@ -1,9 +1,13 @@
 function f1(x) = [for(a = x) (echo(a = a) a)];
 function f2(x, i = 0) = ((echo(i) len(x) > i) ? (x[i] + f2(x, (i + 1))) : 0);
 function f3(x, i = 0) = ((len(x) > i) ? let(a = (x[i] + f3(x, (i + 1)))) echo(a) a : 0);
+//Parameter("")
 a = 3;
+//Parameter("")
 b = 6;
+//Parameter("")
 c = 8;
+//Parameter("")
 v = [2, 5, 7];
 t0 = echo();
 t1 = echo() undef;

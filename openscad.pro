@@ -68,7 +68,12 @@ deploy {
 snapshot {
   DEFINES += OPENSCAD_SNAPSHOT
 }
-  
+# add CONFIG+=idprefix to the qmake command-line to debug node ID's in csg output
+idprefix {
+  DEFINES += IDPREFIX
+  message("Setting IDPREFIX for csg debugging")
+  warning("Setting IDPREFIX will negatively affect cache hits")
+}  
 macx {
   TARGET = OpenSCAD
 }
@@ -91,7 +96,7 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
 }
 
 # Set same stack size for the linker and #define used in PlatformUtils.h
@@ -148,6 +153,11 @@ netbsd* {
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
+
+  # Disable attributes warnings on MSYS/MXE due to gcc bug spamming the logs: Issue #2771
+  win* | CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
+    QMAKE_CXXFLAGS += -Wno-attributes
+  }
 }
 
 *clang* {
@@ -187,6 +197,7 @@ CONFIG += libxml2
 CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
+CONFIG += double-conversion
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {

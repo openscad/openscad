@@ -106,6 +106,8 @@ def normalize_string(s):
     This also normalizes away import paths from 'file = ' arguments."""
 
     s = re.sub(', timestamp = [0-9]+', '', s)
+    
+    """ Don't replace floats after implementing double-conversion library
     def floatrep(match):
         value = float(match.groups()[0])
         if abs(value) < 10**-12:
@@ -114,18 +116,10 @@ def normalize_string(s):
             return "%d"%value
         return "%.6g"%value
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
-
+    """
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
-
-    """C++ ... does not explicitly specify the representation ...
-    of nonfinite values, leaving it implementation-defined.
-    So without some specific action, input and output of
-    nonfinite values is not portable. 
-    https://www.boost.org/doc/libs/1_51_0/libs/math/doc/sf_and_dist/html/math_toolkit/utils/fp_facets/intro.html"""
-    s = re.sub('=-nan, ','=nan, ', s)
-    s = re.sub('=-nan\)','=nan)', s)
 
     return s
 
@@ -183,8 +177,7 @@ def compare_png(resultfilename):
       args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
 
-    print('Image comparison cmdline: ', file=sys.stderr)
-    print('["'+str(options.comparison_exec) + '"],' + str(args), file=sys.stderr)
+    print('Image comparison cmdline: ' + options.comparison_exec + ' ' + ' '.join(args), file=sys.stderr)
 
     # these two lines are parsed by the test_pretty_print.py
     print(' actual image: ' + resultfilename + '\n', file=sys.stderr)
@@ -224,7 +217,8 @@ def compare_with_expected(resultfilename):
 #
 def post_process_3mf(filename):
     print('post processing 3MF file (extracting XML data from ZIP): ', filename)
-    xml_content = subprocess.check_output(["unzip", "-p", filename, "3D/3dmodel.model"])
+    from zipfile import ZipFile
+    xml_content = ZipFile(filename).read("3D/3dmodel.model")
     xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
     with open(filename, 'wb') as xml_file:
         xml_file.write(xml_content.encode('utf-8'))
@@ -253,7 +247,7 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         sys.stderr.flush()
-        print('run_test() cmdline:',cmdline)
+        print('run_test() cmdline:', ' '.join(cmdline))
         fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir

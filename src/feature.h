@@ -16,7 +16,6 @@ public:
 
         static const Feature Experimental3dPrint;
         static const Feature ExperimentalSvgImport;
-        static const Feature ExperimentalCustomizer;
         static const Feature ExperimentalInputDriverDBus;
 
 	const std::string& get_name() const;

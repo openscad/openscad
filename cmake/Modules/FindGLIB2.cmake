@@ -1,4 +1,4 @@
-message(STATUS "running openscad/tests/FindGLIB2.cmake ...")
+message(STATUS "running openscad/cmake/Modules/FindGLIB2.cmake ...")
 
 include(PkgConfigTools)
 save_pkg_config_env()

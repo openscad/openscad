@@ -1,3 +1,7 @@
+WARNING: rands() number of parameters does not match, in file rands.scad, line 24
+WARNING: rands() number of parameters does not match, in file rands.scad, line 25
+WARNING: rands() number of parameters does not match, in file rands.scad, line 26
+WARNING: rands() number of parameters does not match, in file rands.scad, line 27
 WARNING: Ignoring unknown variable 'v', in file rands.scad, line 28.
 ECHO: "i hope rands() did not crash"
 ECHO: [1, 1, 1, 1]

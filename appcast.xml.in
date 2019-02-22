@@ -8,7 +8,7 @@
       <title>OpenSCAD @VERSION@</title>
       <pubDate>@VERSIONDATE@</pubDate>
       <sparkle:releaseNotesLink>https://raw.githubusercontent.com/openscad/openscad/openscad-@VERSION@/releases/@SHORTVERSION@.md</sparkle:releaseNotesLink>
-      <sparkle:minimumSystemVersion>10.7.0</sparkle:minimumSystemVersion>
+      <sparkle:minimumSystemVersion>10.9.0</sparkle:minimumSystemVersion>
       <enclosure url="https://files.openscad.org/OpenSCAD-@VERSION@.dmg"
                  sparkle:version="@VERSIONDATE@"
                  sparkle:shortVersionString="@VERSION@"

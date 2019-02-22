@@ -1,4 +1,6 @@
+//Parameter("")
 $a = 1;
+//Parameter("")
 b = 1;
 echo(let() ($a * b));
 echo(let($a = 2, b = 3) ($a * b));

@@ -8,6 +8,46 @@
 #include <assert.h>
 #include <boost/regex.hpp>
 
+
+void GroupNodeChecker::incChildCount(int groupNodeIndex) {
+	auto search = this->groupChildCounts.find(groupNodeIndex);
+	// if no entry then given node wasn't a group node
+	if (search != this->groupChildCounts.end()) {
+		++(search->second);
+	}
+}
+
+int GroupNodeChecker::getChildCount(int groupNodeIndex) const {
+	auto search = this->groupChildCounts.find(groupNodeIndex);
+	if (search != this->groupChildCounts.end()) {
+		return search->second;
+	} else {
+		return -1;
+	}
+}
+
+Response GroupNodeChecker::visit(State &state, const GroupNode &node)
+{
+	if (state.isPrefix()) {
+		// create entry for group node, which children may increment
+		this->groupChildCounts.emplace(node.index(),0);
+	} else if (state.isPostfix()) {
+		if ((this->getChildCount(node.index()) > 0) && state.parent()) {
+		    this->incChildCount(state.parent()->index());
+		}
+	}
+	return Response::ContinueTraversal;
+}
+
+Response GroupNodeChecker::visit(State &state, const AbstractNode &)
+{
+	if (state.isPostfix() && state.parent()) {
+		this->incChildCount(state.parent()->index());
+	}
+	return Response::ContinueTraversal;
+}
+
+
 /*!
 	\class NodeDumper
 
@@ -33,9 +73,56 @@ bool NodeDumper::isCached(const AbstractNode &node) const
 	return this->cache.contains(node);
 }
 
+Response NodeDumper::visit(State &state, const GroupNode &node)
+{
+	if (!this->idString) {
+		return NodeDumper::visit(state, (const AbstractNode &)node);
+	}
+	if (state.isPrefix()) {
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and init cache
+		if (this->root == &node) {
+			this->initCache();
+		}
+
+		if (node.modinst->isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight()) this->dumpstream << "#";
+
+// If IDPREFIX is set, we will output "/*id*/" in front of each node
+// which is useful for debugging.
+#ifdef IDPREFIX
+		if (this->idString) this->dumpstream << "\n";	
+		this->dumpstream << "/*" << node.index() << "*/";
+#endif
+
+		// insert start index
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
+		
+		if(this->groupChecker.getChildCount(node.index()) > 1) {
+			this->dumpstream << node << "{";
+		}
+		this->currindent++;
+	} else if (state.isPostfix()) {
+		this->currindent--;
+		if (this->groupChecker.getChildCount(node.index()) > 1) {
+			this->dumpstream << "}";
+		}
+		// insert end index
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and finalize cache
+		if (this->root == &node) {
+			this->finalizeCache();
+		}
+	}
+
+	return Response::ContinueTraversal;
+}
+
+
 /*!
 	Called for each node in the tree.
-	Will abort traversal if we're cached
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
@@ -50,12 +137,19 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 		if (node.modinst->isBackground()) this->dumpstream << "%";
 		if (node.modinst->isHighlight()) this->dumpstream << "#";
 
+// If IDPREFIX is set, we will output "/*id*/" in front of each node
+// which is useful for debugging.
+#ifdef IDPREFIX
+		if (this->idString) this->dumpstream << "\n";	
+		this->dumpstream << "/*" << node.index() << "*/";
+#endif
+
 		// insert start index
 		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 		
 		if (this->idString) {
 			
-			const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
+			static const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
 			const auto name = STR(node);
 			boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
 			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
@@ -74,8 +168,6 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 				this->dumpstream << " {\n";
 			}
 		}
-
-		if (this->idprefix) this->dumpstream << "n" << node.index() << ":";
 
 		this->currindent++;
 

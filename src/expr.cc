@@ -23,6 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "compiler_specific.h"
 #include "expression.h"
 #include "value.h"
 #include "evalcontext.h"
@@ -430,11 +431,33 @@ FunctionCall::FunctionCall(const std::string &name,
 {
 }
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_err(const char *name, const Location &loc,const Context *ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+}
+
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
+	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
+}
+
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst()->check()) {
-		std::string locs = this->loc.toRelativeString(context->documentPath());
-		PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
+		print_err(this->name.c_str(),loc,context);
 		throw RecursionException::create("function", this->name,this->loc);
 	}
 	try{
@@ -443,7 +466,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 		return result;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			PRINTB("TRACE: called by '%s', %s.", this->name % this->loc.toRelativeString(context->documentPath()));
+			print_trace(this, context);
 			e.traceDepth--;
 		}
 		throw;
@@ -578,7 +601,7 @@ ValuePtr LcEach::evaluate(const Context *context) const
         RangeType range = v->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", loc.toRelativeString(context->documentPath()));
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
                 vec.push_back(ValuePtr(*it));
@@ -682,11 +705,12 @@ ValuePtr LcForC::evaluate(const Context *context) const
     while (this->cond->evaluate(&c)) {
         vec.push_back(this->expr->evaluate(&c));
 
-		if (counter++ == 1000000) {
-			std::string locs = loc.toRelativeString(context->documentPath());
-			PRINTB("ERROR: Recursion detected calling for loop, %s", locs);
-			throw RecursionException::create("for loop", "", loc);
-		}
+        if (counter++ == 1000000) {
+            std::string locs = loc.toRelativeString(context->documentPath());
+            PRINTB("ERROR: for loop counter exceeded limit, %s", locs);
+            throw LoopCntException::create("for", loc);
+        }
+
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);
         c.apply_variables(tmp);

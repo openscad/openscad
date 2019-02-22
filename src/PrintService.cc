@@ -38,7 +38,7 @@ PrintService::PrintService()
 		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
 	}
 	if (enabled) {
-		PRINTB("External print service available: %s (url = %s, upload limit = %d MB)", displayName.toStdString() % infoUrl.toStdString() % fileSizeLimitMB);
+		PRINTB("External print service available: %s (upload limit = %d MB)", displayName.toStdString() % fileSizeLimitMB);
 	}
 }
 
