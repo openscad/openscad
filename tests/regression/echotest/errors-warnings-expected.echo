@@ -46,5 +46,5 @@ ECHO: undef
 WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 75
 ECHO: undef
 ECHO: "dim-all.dxf"
-WARNING: module does not support child modules, in file errors-warnings.scad, line 104
-WARNING: module does not support child modules, in file errors-warnings.scad, line 107
+WARNING: module cube() does not support child modules, in file errors-warnings.scad, line 104
+WARNING: module sphere() does not support child modules, in file errors-warnings.scad, line 107
