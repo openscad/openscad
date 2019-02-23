@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <tuple>
 #include <hidapi.h>
 
 #include "input/InputDriver.h"
@@ -54,7 +55,7 @@ public:
     void hidapi_decode_button2(const unsigned char *buf, unsigned int len);
 
 private:
-	bool enumerate();
+	std::pair<hid_device *, const struct device_id *> enumerate() const;
     void hidapi_input(hid_device* hid_dev);
 };
 

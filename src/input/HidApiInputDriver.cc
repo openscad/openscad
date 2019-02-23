@@ -40,7 +40,8 @@
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
 
-static const int BUFLEN = 32;
+static constexpr int BUFLEN = 64;
+static constexpr int MAX_LOG_SIZE = 20 * 1024;
 
 static std::ofstream logstream;
 
@@ -70,19 +71,53 @@ static const struct device_id device_ids[] = {
     { -1, -1, nullptr, nullptr, nullptr},
 };
 
-#define L(f) l(boost::format(f))
-#define LL(f,a) l(boost::format(f) % a)
+#define HIDAPI_LOG(f) hidapi_log(boost::format(f))
+#define HIDAPI_LOGP(f,a) hidapi_log(boost::format(f) % a)
 
-static void l(boost::format format) {
+static void hidapi_log(boost::format format) {
 	if (logstream) {
 		logstream << format.str() << std::endl;
+		if (logstream.tellp() > MAX_LOG_SIZE) {
+			logstream.close();
+		}
 	}
+}
+
+static void hidapi_log_input(unsigned char *buf, int len)
+{
+	if (logstream) {
+		std::stringstream s;
+
+		s << (boost::format("R: %1$2d/%1$02x:") % len).str();
+		for (int idx = 0;idx < len;idx++) {
+			s << (boost::format(" %1$02x") % (int)buf[idx]).str();
+		}
+		HIDAPI_LOG(s.str());
+	}
+}
+
+static std::string to_string(const wchar_t *wstr)
+{
+	if (wstr) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+		return conv.to_bytes(wstr);
+	}
+	return "<null>";
+}
+
+static const device_id * match_device(const struct hid_device_info *info)
+{
+	for (int idx = 0;device_ids[idx].name != nullptr;idx++) {
+		if ((device_ids[idx].vendor_id == info->vendor_id) && (device_ids[idx].product_id == info->product_id)) {
+			return &device_ids[idx];
+		}
+	}
+	return nullptr;
 }
 
 HidApiInputDriver::HidApiInputDriver() : buttons(0), hid_dev(0), dev(0)
 {
     name = "HidApiInputDriver";
-	logstream.open(PlatformUtils::applicationPath() + "/hidapi.log");
 }
 
 HidApiInputDriver::~HidApiInputDriver()
@@ -192,57 +227,27 @@ void HidApiInputDriver::hidapi_decode_button2(const unsigned char *buf, unsigned
     buttons = current;
 }
 
-static void log_input(unsigned char *buf, int len)
-{
-	std::stringstream s;
-
-	s << (boost::format("R: %1$2d/%1$02x:") % len).str();
-	for (int idx = 0;idx < len;idx++) {
-		s << (boost::format(" %1$02x") % (int)buf[idx]).str();
-	}
-	L(s.str());
-}
-
 void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
 {
     unsigned char buf[BUFLEN];
     unsigned int len;
     while ((len = hid_read(hid_dev, buf, BUFLEN)) > 0) {
-		log_input(buf, len);
+		hidapi_log_input(buf, len);
         (this->*(dev->axis_decoder))(buf, len);
         (this->*(dev->button_decoder))(buf, len);
     }
     hid_close(hid_dev);
 }
 
-static const device_id * match_device(const struct hid_device_info *info)
+std::pair<hid_device *, const struct device_id *> HidApiInputDriver::enumerate() const
 {
-	for (int idx = 0;device_ids[idx].name != nullptr;idx++) {
-		if ((device_ids[idx].vendor_id == info->vendor_id) && (device_ids[idx].product_id == info->product_id)) {
-			return &device_ids[idx];
-		}
-	}
-	return nullptr;
-}
+	hid_device *ret_hid_dev = nullptr;
+	const struct device_id *ret_dev = nullptr;
 
-static std::string to_string(const wchar_t *wstr)
-{
-	if (wstr) {
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
-		return conv.to_bytes(wstr);
-	}
-	return "<null>";
-}
-
-bool HidApiInputDriver::enumerate()
-{
-	dev = nullptr;
-	hid_dev = nullptr;
-
-	L("Enumerating HID devices...");
+	HIDAPI_LOG("Enumerating HID devices...");
 	struct hid_device_info *info = hid_enumerate(0, 0);
 	for (;info != nullptr;info = info->next) {
-		LL("D: %04x:%04x | path = %s, serial = %s, manufacturer = %s, product = %s",
+		HIDAPI_LOGP("D: %04x:%04x | path = %s, serial = %s, manufacturer = %s, product = %s",
 				info->vendor_id % info->product_id % info->path
 				% to_string(info->serial_number)
 				% to_string(info->manufacturer_string)
@@ -254,64 +259,69 @@ bool HidApiInputDriver::enumerate()
 
 		hid_device *hid_dev;
 
-		LL("P: %04x:%04x | %s", info->vendor_id % info->product_id % info->path);
+		HIDAPI_LOGP("P: %04x:%04x | %s", info->vendor_id % info->product_id % info->path);
 		hid_dev = hid_open_path(info->path);
 
 		if (!hid_dev) {
-			LL("O: %04x:%04x | %s", info->vendor_id % info->product_id % to_string(info->serial_number));
+			HIDAPI_LOGP("O: %04x:%04x | %s", info->vendor_id % info->product_id % to_string(info->serial_number));
 			hid_dev = hid_open(info->vendor_id, info->product_id, info->serial_number);
 			if (!hid_dev) {
 				continue;
 			}
 		}
 
-		LL("R: %04x:%04x | %s", info->vendor_id % info->product_id % to_string(info->serial_number));
+		HIDAPI_LOGP("R: %04x:%04x | %s", info->vendor_id % info->product_id % to_string(info->serial_number));
 		unsigned char buf[BUFLEN];
 		const int len = hid_read_timeout(hid_dev, buf, BUFLEN, 100);
-		LL("?: %d", len);
+		HIDAPI_LOGP("?: %d", len);
 
 		if (len < 0) {
-			LL("E: %s", to_string(hid_error(hid_dev)));
+			HIDAPI_LOGP("E: %s", to_string(hid_error(hid_dev)));
 			hid_close(hid_dev);
 			continue;
 		}
 
-		this->dev = dev;
-		this->hid_dev = hid_dev;
+		ret_dev = dev;
+		ret_hid_dev = hid_dev;
 		break;
 	}
 	hid_free_enumeration(info);
-	const bool ret = this->hid_dev != nullptr;
-	LL("Done enumerating (status = %s).", (ret ? "ok" : "failed"));
-	return ret;
+	HIDAPI_LOGP("Done enumerating (status = %s).", (ret_hid_dev != nullptr ? "ok" : "failed"));
+	return std::make_pair(ret_hid_dev, ret_dev);
 }
 
 bool HidApiInputDriver::open()
 {
-	L("HidApiInputDriver::open()");
+	logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
+
+	HIDAPI_LOG("HidApiInputDriver::open()");
     if (hid_init() < 0) {
-		L("hid_init() failed");
+		HIDAPI_LOG("hid_init() failed");
         PRINTD("Can't hid_init().\n");
         return false;
     }
 
-	if (enumerate()) {
+	std::tie(this->hid_dev, this->dev) = enumerate();
+	if (this->dev) {
 		name = STR(std::setfill('0') << std::setw(4) << std::hex
 		<< "HidApiInputDriver (" << dev->vendor_id << ":" << dev->product_id
 		<< " - " << dev->name << ")");
 		start();
-		LL("HidApiInputDriver::open(): %s", name);
+		HIDAPI_LOGP("HidApiInputDriver::open(): %s", name);
 		return true;
     }
 
-	L("HidApiInputDriver::open(): No matching device found.");
+	HIDAPI_LOG("HidApiInputDriver::open(): No matching device found.");
     return false;
 }
 
 void HidApiInputDriver::close()
 {
-	dev = nullptr;
-	hid_dev = nullptr;
+	this->dev = nullptr;
+	this->hid_dev = nullptr;
+	this->name = "HidApiInputDriver";
+	HIDAPI_LOG("HidApiInputDriver::close()");
+	logstream.close();
 }
 
 const std::string & HidApiInputDriver::get_name() const
