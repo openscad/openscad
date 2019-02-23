@@ -293,6 +293,7 @@ void Preferences::on_stackedWidget_currentChanged(int)
 	hidePasswords();
 	this->labelOctoPrintCheckConnection->setText("");
 	this->AxisConfig->updateStates();
+	this->ButtonConfig->updateStates();
 }
 
 /**

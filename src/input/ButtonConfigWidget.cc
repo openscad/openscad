@@ -224,3 +224,15 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 
 	updateComboBox(comboBox, entry);
 }
+
+void ButtonConfigWidget::updateStates(){
+	int cnt = InputDriverManager::instance()->getButtonCnt();
+	for (int i=0;i<16;i++) {
+		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
+		QString Style = ButtonConfigWidget::EmptyString;
+		if( cnt <= i){
+			Style = ButtonConfigWidget::DisabledStyleString;
+		}
+		label->setStyleSheet(Style);
+	}
+}
