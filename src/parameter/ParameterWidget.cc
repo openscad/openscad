@@ -121,19 +121,11 @@ void ParameterWidget::onSetDelete()
 //adds a new parameter set
 void ParameterWidget::onSetAdd()
 {
-	if (this->setMgr->isEmpty()) {
-		pt::ptree setRoot;
-		this->setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
-	}
 	updateParameterSet("",true);
 }
 
 void ParameterWidget::onSetSaveButton()
 {
-	if (this->setMgr->isEmpty()) {
-		pt::ptree setRoot;
-		this->setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
-	}
 	updateParameterSet(comboBoxPreset->itemData(this->comboBoxPreset->currentIndex()).toString().toStdString());
 }
 
@@ -196,9 +188,11 @@ void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 //This is e.g. useful when saving hidden back up files.
 void ParameterWidget::writeBackupFile(QString scadFile)
 {
-	boost::filesystem::path p = scadFile.toStdString();
-	auto jsonFile = p.replace_extension(".json").string();
-	this->setMgr->writeParameterSet(jsonFile);
+	if (!this->setMgr->isEmpty()){
+		boost::filesystem::path p = scadFile.toStdString();
+		auto jsonFile = p.replace_extension(".json").string();
+		this->setMgr->writeParameterSet(jsonFile);
+	}
 }
 
 void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
@@ -508,6 +502,11 @@ void ParameterWidget::applyParameterSet(std::string setName)
 
 void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 {
+	if (this->setMgr->isEmpty()) {
+		pt::ptree setRoot;
+		this->setMgr->addChild(ParameterSet::parameterSetsKey, setRoot);
+	}
+
 	if (newSet && setName == "") {
 		QInputDialog *setDialog = new QInputDialog();
 
