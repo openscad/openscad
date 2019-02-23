@@ -42,6 +42,13 @@ public:
 
     const std::string & get_name() const override;
 
+	int getButtonCnt() const override{
+		return 16;
+	};
+	int getAxisCnt() const override{
+		return 6;
+	};
+
 private:
     bool spnav_input();
     bool dominantAxisOnly{true};

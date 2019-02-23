@@ -38,6 +38,13 @@ public:
     const std::string & get_name() const  override;
     void setJoystickNr(std::string jnr);
 
+    int getButtonCnt() const override{
+		return buttons;
+    }
+    int getAxisCnt() const override{
+		return axes;
+    }
+
 private:
     int fd;
     int version;

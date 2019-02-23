@@ -568,3 +568,17 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 	}
 	updateComboBox(comboBox, entry);
 }
+
+void AxisConfigWidget::updateStates(){
+	int cnt = InputDriverManager::instance()->getAxisCnt();
+	for (int i=0;i<9;i++) {
+		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
+		if( cnt <= i){
+			progressbar->setEnabled(false);
+			progressbar->setMinimum(0);
+		}else{
+			progressbar->setEnabled(true);
+			progressbar->setMinimum(-100);
+		}
+	}
+}

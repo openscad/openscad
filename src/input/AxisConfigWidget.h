@@ -15,6 +15,8 @@ public:
 	void AxesChanged(int nr, double val) const;
 	void init();
 
+	void updateStates();
+
 public slots:
 	// Input Driver
         void on_AxisTrim();
