@@ -139,8 +139,6 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
-	initizalied = true;
-	
 	//use a custom style for the axis indicators,
 	//to prevent getting operating specific
 	//(potentially animated) progressbars
@@ -158,12 +156,13 @@ void AxisConfigWidget::init() {
             "}";
     }
 
-
 	auto progressbars = this->findChildren<QProgressBar *>();
 	for (auto progressbar : progressbars) {
 		progressbar->setStyleSheet(style);
 		progressbar->setAlignment(Qt::AlignCenter);
 	}
+
+	initizalied = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -570,6 +569,8 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 }
 
 void AxisConfigWidget::updateStates(){
+	if(!initizalied) return;
+
 	int cnt = InputDriverManager::instance()->getAxisCnt();
 	for (int i=0;i<9;i++) {
 		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));

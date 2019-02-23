@@ -48,4 +48,6 @@ private:
 	const QString EmptyString= QString("");
 	const QString ActiveStyleString= QString("font-weight: bold; color: red");
 	const QString DisabledStyleString= QString("color: gray");
+
+	bool initizalied = false;
 };

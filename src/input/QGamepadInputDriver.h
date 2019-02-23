@@ -41,11 +41,11 @@ public:
 
     const std::string & get_name() const override;
 
-	int getButtonCnt() const override{
-		return 16;
+    int getButtonCnt() const override{
+        return 16;
     }
-	int getAxisCnt() const override{
-		return 6;
+    int getAxisCnt() const override{
+        return 6;
     }
 
 private:

@@ -39,10 +39,10 @@ public:
     void setJoystickNr(std::string jnr);
 
     int getButtonCnt() const override{
-		return buttons;
+        return buttons;
     }
     int getAxisCnt() const override{
-		return axes;
+        return axes;
     }
 
 private:

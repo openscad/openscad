@@ -68,6 +68,8 @@ void ButtonConfigWidget::init() {
 	for (auto comboBox : comboBoxes) {
 		comboBox->installEventFilter(wheelIgnorer);
 	}
+
+	initizalied = true;
 }
 
 void ButtonConfigWidget::on_comboBoxButton0_activated(int val)
@@ -226,6 +228,8 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 }
 
 void ButtonConfigWidget::updateStates(){
+	if(!initizalied) return;
+
 	int cnt = InputDriverManager::instance()->getButtonCnt();
 	for (int i=0;i<16;i++) {
 		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
