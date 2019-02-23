@@ -17,6 +17,7 @@ public:
 	void addFunction(class UserFunction *function);
 	void addAssignment(const class Assignment &ass);
 	void apply(Context &ctx) const;
+	bool hasChildren() const {return !(children.empty());};
 
 	AssignmentList assignments;
 	std::vector<ModuleInstantiation*> children;
