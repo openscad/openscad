@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <tuple>
+#include <utility>
 #include <hidapi.h>
 
 #include "input/InputDriver.h"

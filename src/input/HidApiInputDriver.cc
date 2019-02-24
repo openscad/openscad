@@ -87,7 +87,7 @@ static void hidapi_log(boost::format format) {
 static void hidapi_log_input(unsigned char *buf, int len)
 {
 	if (logstream) {
-		std::stringstream s;
+		std::ostringstream s;
 
 		s << (boost::format("R: %1$2d/%1$02x:") % len).str();
 		for (int idx = 0;idx < len;idx++) {
@@ -288,7 +288,7 @@ std::pair<hid_device *, const struct device_id *> HidApiInputDriver::enumerate()
 	}
 	hid_free_enumeration(info);
 	HIDAPI_LOGP("Done enumerating (status = %s).", (ret_hid_dev != nullptr ? "ok" : "failed"));
-	return std::make_pair(ret_hid_dev, ret_dev);
+	return {ret_hid_dev, ret_dev};
 }
 
 bool HidApiInputDriver::open()
