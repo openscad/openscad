@@ -128,12 +128,12 @@ SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 	return nullptr;
 }
 
-const Value &Settings::defaultValue(const SettingsEntry& entry)
+const Value &Settings::defaultValue(const SettingsEntry& entry) const
 {
 	return entry._default;
 }
 
-const Value &Settings::get(const SettingsEntry& entry)
+const Value &Settings::get(const SettingsEntry& entry) const
 {
 	return entry._value;
 }
