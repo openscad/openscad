@@ -24,7 +24,7 @@ public:
 	void registerUse(const std::string path);
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	std::time_t includesChanged() const;
-	std::time_t handleDependencies();
+	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
@@ -34,6 +34,7 @@ public:
 	LocalScope scope;
 	typedef std::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
+	bool is_handling_dependencies;
 
 private:
 	struct IncludeFile {
@@ -44,7 +45,6 @@ private:
 
 	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
-	bool is_handling_dependencies;
 
 	std::string path;
 	std::string filename;

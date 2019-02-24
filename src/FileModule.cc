@@ -99,9 +99,12 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
 */
-time_t FileModule::handleDependencies()
+time_t FileModule::handleDependencies(bool is_root)
 {
-	if (this->is_handling_dependencies) return 0;
+	if(is_root)
+		ModuleCache::clear_markers();
+	else
+		if (this->is_handling_dependencies) return 0;
 	this->is_handling_dependencies = true;
 
 	std::vector<std::pair<std::string,std::string>> updates;
@@ -155,7 +158,6 @@ time_t FileModule::handleDependencies()
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);
 	}
-	this->is_handling_dependencies = false;
 	return latest;
 }
 

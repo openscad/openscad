@@ -16,6 +16,7 @@ public:
 	class FileModule *lookup(const std::string &filename);
 	size_t size() { return this->entries.size(); }
 	void clear();
+	static void clear_markers();
 
 private:
 	ModuleCache() {}

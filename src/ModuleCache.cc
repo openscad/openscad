@@ -104,16 +104,17 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		
 		delete cacheEntry.parsed_module;
 		lib_mod = parse(cacheEntry.parsed_module, text, filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
-		PRINTDB("  compiled module: %p", lib_mod);
+		PRINTB("compiled module: %s", filename);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
-		
+		if(!found)
+			cacheEntry.includes_mtime = lib_mod->includesChanged();
 		print_messages_pop();
 	}
 	
 	module = lib_mod;
 	// FIXME: Do we need to handle include-only cases?
-	std::time_t deps_mtime = lib_mod ? lib_mod->handleDependencies() : 0;
+	std::time_t deps_mtime = lib_mod ? lib_mod->handleDependencies(false) : 0;
 
 	return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }
@@ -129,3 +130,7 @@ FileModule *ModuleCache::lookup(const std::string &filename)
 	return it != this->entries.end() ? it->second.module : nullptr;
 }
 
+void ModuleCache::clear_markers() {
+	for (auto entry : instance()->entries)
+		entry.second.module->is_handling_dependencies = false;
+}
