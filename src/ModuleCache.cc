@@ -104,7 +104,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		
 		delete cacheEntry.parsed_module;
 		lib_mod = parse(cacheEntry.parsed_module, text, filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
-		PRINTB("compiled module: %s", filename);
+		PRINTDB("compiled module: %s", filename);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
 		if(!found)
