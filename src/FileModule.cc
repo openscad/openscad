@@ -115,12 +115,10 @@ time_t FileModule::handleDependencies(bool is_root)
 	time_t latest = 0;
 	for (auto filename : this->usedlibs) {
 
-		auto wasmissing = false;
 		auto found = true;
 
 		// Get an absolute filename for the module
 		if (!fs::path(filename).is_absolute()) {
-			wasmissing = true;
 			auto fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
 				auto newfilename = fullpath.generic_string();
@@ -145,10 +143,6 @@ time_t FileModule::handleDependencies(bool is_root)
 			}
 			else {
 				PRINTDB("  %s: %p", filename % oldmodule);
-			}
-			// Only print warning if we're not part of an automatic reload
-			if (!newmodule && !oldmodule && !wasmissing) {
-				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 			}
 		}
 	}
