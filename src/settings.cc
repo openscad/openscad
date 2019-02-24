@@ -128,12 +128,12 @@ SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 	return nullptr;
 }
 
-const Value &Settings::defaultValue(const SettingsEntry& entry)
+const Value &Settings::defaultValue(const SettingsEntry& entry) const
 {
 	return entry._default;
 }
 
-const Value &Settings::get(const SettingsEntry& entry)
+const Value &Settings::get(const SettingsEntry& entry) const
 {
 	return entry._value;
 }
@@ -189,6 +189,7 @@ SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfi
 SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
 
 SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", Value(true), Value(false));
