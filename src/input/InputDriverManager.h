@@ -67,6 +67,7 @@ public:
 
     void init();
     std::string listDrivers() const;
+    std::string listDriverInfos() const;
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
     void closeDrivers();

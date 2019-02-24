@@ -56,6 +56,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 void AxisConfigWidget::init() {
 	connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
 	connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
+	connect(this->pushButtonUpdate, SIGNAL(clicked()), this, SLOT(updateStates()));
 
 	initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
 	initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
@@ -567,4 +568,10 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 		comboBox->addItem(qtext, val);
 	}
 	updateComboBox(comboBox, entry);
+}
+
+void AxisConfigWidget::updateStates(){
+	auto manager = InputDriverManager::instance();
+	std::string infos = manager->listDriverInfos();
+	label_driverInfo->setText(QString::fromStdString(infos));
 }

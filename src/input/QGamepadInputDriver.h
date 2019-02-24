@@ -40,6 +40,7 @@ public:
     void close() override;
 
     const std::string & get_name() const override;
+    std::string get_info() const override;
 private:
 	std::unique_ptr<QGamepad> gamepad;
 };

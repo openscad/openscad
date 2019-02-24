@@ -130,6 +130,17 @@ std::string InputDriverManager::listDrivers() const
     return stream.str();
 }
 
+std::string InputDriverManager::listDriverInfos() const
+{
+    std::ostringstream stream;
+    const char *sep = "";
+    for (auto driver : drivers) {
+        stream << sep << driver->get_info();
+        sep = "\n";
+    }
+    return stream.str();
+}
+
 void InputDriverManager::closeDrivers()
 {
     if (timer != nullptr) {

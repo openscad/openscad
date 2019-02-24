@@ -66,6 +66,8 @@ public slots:
 	void on_checkBoxQGamepad_toggled(bool);
 	void on_checkBoxDBus_toggled(bool);
 
+	void updateStates();
+
 signals:
         void inputMappingChanged() const;
         void inputCalibrationChanged() const;

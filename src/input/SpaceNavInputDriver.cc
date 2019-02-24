@@ -165,3 +165,10 @@ const std::string & SpaceNavInputDriver::get_name() const
     static std::string name = "SpaceNavInputDriver";
     return name;
 }
+
+std::string SpaceNavInputDriver::get_info() const
+{
+	std::ostringstream stream;
+	stream << get_name() << " " << (isOpen() ? "open" : "not open") << " ";
+	return stream.str();
+}
