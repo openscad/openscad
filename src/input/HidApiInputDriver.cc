@@ -31,11 +31,17 @@
 
 #include <iomanip>
 #include <bitset>
+#include <ostream>
 
+#include <boost/format.hpp>
+
+#include "PlatformUtils.h"
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
 
-static const int BUFLEN = 16;
+static const int BUFLEN = 32;
+
+static std::ofstream logstream;
 
 using namespace std;
 
@@ -60,12 +66,22 @@ static const struct device_id device_ids[] = {
     { 0x256f, 0xc635, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Space Mouse Compact"},
     // This is reported to be used with a 3Dconnexion Space Mouse Wireless 256f:c62e
     { 0x256f, 0xc652, &HidApiInputDriver::hidapi_decode_axis2, &HidApiInputDriver::hidapi_decode_button2, "3Dconnexion Universal Receiver"},
-    { -1, -1, NULL, NULL, NULL},
+    { -1, -1, nullptr, nullptr, nullptr},
 };
+
+#define L(f) l(boost::format(f))
+#define LL(f,a) l(boost::format(f) % a)
+
+static void l(boost::format format) {
+	if (logstream) {
+		logstream << format.str() << std::endl;
+	}
+}
 
 HidApiInputDriver::HidApiInputDriver() : buttons(0), hid_dev(0), dev(0)
 {
     name = "HidApiInputDriver";
+	logstream.open(PlatformUtils::applicationPath() + "/hidapi.log");
 }
 
 HidApiInputDriver::~HidApiInputDriver()
@@ -175,27 +191,53 @@ void HidApiInputDriver::hidapi_decode_button2(const unsigned char *buf, unsigned
     buttons = current;
 }
 
+static void log_input(unsigned char *buf, int len)
+{
+	std::stringstream s;
+
+	s << (boost::format("R: %1$2d/%1$02x:") % len).str();
+	for (int idx = 0;idx < len;idx++) {
+		s << (boost::format(" %1$02x") % (int)buf[idx]).str();
+	}
+	L(s.str());
+}
+
 void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
 {
     unsigned char buf[BUFLEN];
     unsigned int len;
     while ((len = hid_read(hid_dev, buf, BUFLEN)) > 0) {
+		log_input(buf, len);
         (this->*(dev->axis_decoder))(buf, len);
         (this->*(dev->button_decoder))(buf, len);
     }
     hid_close(hid_dev);
 }
 
+static void enumerate() {
+	L("Enumerating HID devices...");
+	struct hid_device_info *dev = hid_enumerate(0, 0);
+	for (;dev != nullptr;dev = dev->next) {
+		LL("D: %04x:%04x %s", dev->vendor_id % dev->product_id % dev->path);
+	}
+	L("Done enumerating.");
+}
+
 bool HidApiInputDriver::open()
 {
     if (hid_init() < 0) {
+		L("hid_init() failed");
         PRINTD("Can't hid_init().\n");
         return false;
     }
 
-    for (int idx = 0;device_ids[idx].name != NULL;idx++) {
-        hid_dev = hid_open(device_ids[idx].vendor_id, device_ids[idx].product_id, NULL);
-        if (hid_dev != NULL) {
+	enumerate();
+
+	L("Checking for HID devices...");
+    for (int idx = 0;device_ids[idx].name != nullptr;idx++) {
+        hid_dev = hid_open(device_ids[idx].vendor_id, device_ids[idx].product_id, nullptr);
+		LL("Trying to open %04x:%04x: %s", device_ids[idx].vendor_id % device_ids[idx].product_id % (hid_dev == nullptr ? "failed" : "ok"));
+        if (hid_dev != nullptr) {
             dev = &device_ids[idx];
             name = STR(std::setfill('0') << std::setw(4) << std::hex
 											 << "HidApiInputDriver (" << dev->vendor_id << ":" << dev->product_id
@@ -204,6 +246,7 @@ bool HidApiInputDriver::open()
             return true;
         }
     }
+	L("No matching device found.");
     return false;
 }
 
