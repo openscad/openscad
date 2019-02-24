@@ -46,8 +46,8 @@ private:
 	void writeSettings();
 
 	const QString EmptyString= QString("");
-	const QString ActivestyleString= QString("font-weight: bold; color: red");
-	const QString DisabledstyleString= QString("color: gray");
+	const QString ActiveStyleString= QString("font-weight: bold; color: red");
+	const QString DisabledStyleString= QString("color: gray");
 
 	bool initialized = false;
 };

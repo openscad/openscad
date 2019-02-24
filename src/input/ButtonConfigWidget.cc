@@ -233,10 +233,7 @@ void ButtonConfigWidget::updateStates(){
 	int cnt = InputDriverManager::instance()->getButtonCount();
 	for (int i=0;i<16;i++) {
 		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
-		QString style = ButtonConfigWidget::EmptyString;
-		if( cnt <= i){
-			style = ButtonConfigWidget::DisabledstyleString;
-		}
+		QString style =(cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
 		label->setStyleSheet(style);
 	}
 }
