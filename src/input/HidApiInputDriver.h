@@ -53,10 +53,10 @@ public:
     void hidapi_decode_axis2(const unsigned char *buf, unsigned int len);
     void hidapi_decode_button2(const unsigned char *buf, unsigned int len);
 
-    int getButtonCnt() const override{
+    int getButtonCount() const override{
         return 16;
     }
-    int getAxisCnt() const override{
+    int getAxisCount() const override{
         return 6;
     }
 

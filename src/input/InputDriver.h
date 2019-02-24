@@ -52,6 +52,6 @@ public:
      */
     virtual bool openOnce() const;
 
-    virtual int getButtonCnt() const {return 0;}
-    virtual int getAxisCnt() const {return 0;}
+    virtual int getButtonCount() const {return 0;}
+    virtual int getAxisCount() const {return 0;}
 };

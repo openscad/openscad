@@ -78,8 +78,8 @@ public:
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
 	
-	int getButtonCnt();
-	int getAxisCnt();
+	int getButtonCount();
+	int getAxisCount();
 
 public slots:
     void onInputMappingUpdated();

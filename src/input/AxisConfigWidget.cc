@@ -162,7 +162,7 @@ void AxisConfigWidget::init() {
 		progressbar->setAlignment(Qt::AlignCenter);
 	}
 
-	initizalied = true;
+	initialized = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -441,7 +441,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 
 void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
 		writeSettings();
 
@@ -453,7 +453,7 @@ void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
 		writeSettings();
 		QFont font;
@@ -464,7 +464,7 @@ void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
 		writeSettings();
 		QFont font;
@@ -475,7 +475,7 @@ void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
 		writeSettings();
 		QFont font;
@@ -486,7 +486,7 @@ void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
 		writeSettings();
 		QFont font;
@@ -569,9 +569,9 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 }
 
 void AxisConfigWidget::updateStates(){
-	if(!initizalied) return;
+	if(!initialized) return;
 
-	int cnt = InputDriverManager::instance()->getAxisCnt();
+	int cnt = InputDriverManager::instance()->getAxisCount();
 	for (int i=0;i<9;i++) {
 		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
 		if( cnt <= i){

@@ -88,7 +88,7 @@ private:
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 	void writeSettings();
 	
-	bool initizalied = false;
+	bool initialized = false;
 
 	QString NotEnabledDuringBuild =_("This driver was not enabled during build time and is thus not available.");
 

@@ -42,10 +42,10 @@ public:
 
     const std::string & get_name() const override;
 
-    int getButtonCnt() const override{
+    int getButtonCount() const override{
         return 16;
     };
-    int getAxisCnt() const override{
+    int getAxisCount() const override{
         return 6;
     };
 

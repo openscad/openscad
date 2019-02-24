@@ -38,10 +38,10 @@ public:
     const std::string & get_name() const  override;
     void setJoystickNr(std::string jnr);
 
-    int getButtonCnt() const override{
+    int getButtonCount() const override{
         return buttons;
     }
-    int getAxisCnt() const override{
+    int getAxisCount() const override{
         return axes;
     }
 
