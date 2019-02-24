@@ -107,7 +107,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		PRINTDB("compiled module: %s", filename);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
-		if(!found)
+		if(!found && lib_mod)
 			cacheEntry.includes_mtime = lib_mod->includesChanged();
 		print_messages_pop();
 	}
@@ -132,5 +132,6 @@ FileModule *ModuleCache::lookup(const std::string &filename)
 
 void ModuleCache::clear_markers() {
 	for (auto entry : instance()->entries)
-		entry.second.module->clearHandlingDependencies();
+        if(auto lib = entry.second.module)
+            lib->clearHandlingDependencies();
 }
