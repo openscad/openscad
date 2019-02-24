@@ -102,7 +102,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		else if (ext == ".nef3") actualtype = ImportType::NEF3;
 		else if (ext == ".3mf") actualtype = ImportType::_3MF;
 		else if (ext == ".amf") actualtype = ImportType::AMF;
-		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
+		else if (ext == ".svg") actualtype = ImportType::SVG;
 	}
 
 	auto node = new ImportNode(inst, actualtype);
