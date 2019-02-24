@@ -132,5 +132,5 @@ FileModule *ModuleCache::lookup(const std::string &filename)
 
 void ModuleCache::clear_markers() {
 	for (auto entry : instance()->entries)
-		entry.second.module->is_handling_dependencies = false;
+		entry.second.module->clearHandlingDependencies();
 }

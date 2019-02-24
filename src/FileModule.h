@@ -28,13 +28,13 @@ public:
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+	void clearHandlingDependencies() { this->is_handling_dependencies = false; }
 	void setFilename(const std::string &filename) { this->filename = filename; }
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;
 	LocalScope scope;
 	typedef std::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
-	bool is_handling_dependencies;
 
 private:
 	struct IncludeFile {
@@ -45,6 +45,7 @@ private:
 
 	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
+	bool is_handling_dependencies;
 
 	std::string path;
 	std::string filename;
