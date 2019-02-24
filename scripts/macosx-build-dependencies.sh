@@ -46,7 +46,7 @@ PACKAGES=(
     "glib2 2.56.3"
     "boost 1.65.1"
     "cgal 4.13"
-    "qt5 5.12.1"
+    "qt5 5.9.7"
     "opencsg 1.4.2"
     "qscintilla 2.10.8"
 )
@@ -156,63 +156,6 @@ build_double_conversion()
   make install
 }
 
-patch_qt_disable_core_wlan()
-{
-  version="$1"
-
-  patch -p1 <<END-OF-PATCH
---- qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro.orig	2013-11-01 19:04:29.000000000 +0100
-+++ qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro	2013-10-31 21:53:00.000000000 +0100
-@@ -12,7 +12,7 @@
- #win32:SUBDIRS += nla
- win32:SUBDIRS += generic
- win32:!wince*:SUBDIRS += nativewifi
--macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
-+#macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
- macx:SUBDIRS += generic
- symbian:SUBDIRS += symbian
- blackberry:SUBDIRS += blackberry
-END-OF-PATCH
-}
-
-build_qt()
-{
-  version=$1
-
-  if [ -d $DEPLOYDIR/lib/QtCore.framework ]; then
-    echo "qt already installed. not building"
-    return
-  fi
-
-  echo "Building Qt" $version "..."
-  cd $BASEDIR/src
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-     curl -O -L http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
-  fi
-  tar xzf qt-everywhere-opensource-src-$version.tar.gz
-  cd qt-everywhere-opensource-src-$version
-  patch -p0 < $OPENSCADDIR/patches/qt4/patch-src_corelib_global_qglobal.h.diff
-  patch -p0 < $OPENSCADDIR/patches/qt4/patch-libtiff.diff
-  patch -p0 < $OPENSCADDIR/patches/qt4/patch-src_plugins_bearer_corewlan_qcorewlanengine.mm.diff
-  # FIX for clang
-  sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
-  PLATFORM="-platform unsupported/macx-clang"
-  case "$OSX_VERSION" in
-    9)
-      # libtiff fails in the linker step with Mavericks / XCode 5.0.1
-      MACOSX_RELEASE_OPTIONS=-no-libtiff
-      # wlan support bails out with lots of compiler errors, disable it for the build
-      patch_qt_disable_core_wlan "$version"
-      ;;
-    *)
-      MACOSX_RELEASE_OPTIONS=
-      ;;
-  esac
-  ./configure -prefix $DEPLOYDIR -release -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
-  make -j"$NUMCPU" install
-}
-
 check_qt5()
 {
     check_dir lib/QtCore.framework
@@ -225,12 +168,13 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-opensource-src-$version
-  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
-      curl -O -L http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
+  rm -rf qt-opensource-opensource-src-$version
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
+      curl -LO http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
   fi
-  tar xzf qt-everywhere-src-$version.tar.xz
-  cd qt-everywhere-src-$version
+  tar xzf qt-everywhere-opensource-src-$version.tar.xz
+  cd qt-everywhere-opensource-src-$version
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.9.7-macos.patch 
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
