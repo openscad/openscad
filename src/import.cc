@@ -73,7 +73,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	
 	AssignmentList optargs{
 		Assignment("width"), Assignment("height"),
-		Assignment("filename"), Assignment("layername"), Assignment("center")
+		Assignment("filename"), Assignment("layername"), Assignment("center"), Assignment("dpi")
 	};
 
 	Context c(ctx);
@@ -90,7 +90,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 			printDeprecation("filename= is deprecated. Please use file=");
 		}
 	}
-	std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
+	const std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
 	if (!filename.empty()) handle_dep(filename);
 	ImportType actualtype = this->type;
 	if (actualtype == ImportType::UNKNOWN) {
@@ -102,7 +102,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		else if (ext == ".nef3") actualtype = ImportType::NEF3;
 		else if (ext == ".3mf") actualtype = ImportType::_3MF;
 		else if (ext == ".amf") actualtype = ImportType::AMF;
-		else if (Feature::ExperimentalSvgImport.is_enabled() && ext == ".svg") actualtype = ImportType::SVG;
+		else if (ext == ".svg") actualtype = ImportType::SVG;
 	}
 
 	auto node = new ImportNode(inst, actualtype);
@@ -124,7 +124,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	auto origin = c.lookup_variable("origin", true);
+	const auto origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
@@ -132,11 +132,25 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 
-	auto center = c.lookup_variable("center", true);
+	const auto center = c.lookup_variable("center", true);
 	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
 
 	node->scale = c.lookup_variable("scale", true)->toDouble();
 	if (node->scale <= 0) node->scale = 1;
+
+	node->dpi = ImportNode::SVG_DEFAULT_DPI;
+	const auto dpi = c.lookup_variable("dpi", true);
+	if (dpi->type() == Value::ValueType::NUMBER) {
+		double val = dpi->toDouble();
+		if (val < 0.001) {
+			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
+					node->dpi %
+					inst->location().toRelativeString(ctx->documentPath()) %
+					inst->location().firstLine());
+		} else {
+			node->dpi = val;
+		}
+	}
 
 	auto width = c.lookup_variable("width", true);
 	auto height = c.lookup_variable("height", true);
@@ -172,7 +186,7 @@ const Geometry *ImportNode::createGeometry() const
 		break;
 	}
 	case ImportType::SVG: {
-		g = import_svg(this->filename, this->center, loc);
+		g = import_svg(this->filename, this->dpi, this->center, loc);
  		break;
 	}
 	case ImportType::DXF: {
@@ -205,7 +219,8 @@ std::string ImportNode::toString() const
 		<< ", layer = " << QuotedString(this->layername)
 		<< ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
 	if (this->type == ImportType::SVG) {
-		stream << ", center = " << (this->center ? "true" : "false");
+		stream << ", center = " << (this->center ? "true" : "false")
+			   << ", dpi = " << this->dpi;
 	}
 	stream << ", scale = " << this->scale
 		<< ", convexity = " << this->convexity

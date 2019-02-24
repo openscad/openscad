@@ -263,7 +263,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
-	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
+	knownFileExtensions["svg"] = importStatement;
 	knownFileExtensions["amf"] = importStatement;
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;

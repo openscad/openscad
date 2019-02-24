@@ -87,8 +87,8 @@ parse_length(const std::string& value)
 	libsvg::length_struct parsed;
 	qi::phrase_parse(it, end, length, qi::space, parsed);
 
-	length_t result;
-	if (it == end) {
+	length_t result{0.0, unit_t::UNDEFINED};
+	if ((it != value.begin()) && (it == end)) {
 		result.number = parsed.number;
 		result.unit = get_unit(parsed.unit);
 	}
