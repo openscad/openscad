@@ -36,6 +36,7 @@
 
 #include <boost/format.hpp>
 
+#include "settings.h"
 #include "PlatformUtils.h"
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
@@ -292,7 +293,10 @@ std::pair<hid_device *, const struct device_id *> HidApiInputDriver::enumerate()
 
 bool HidApiInputDriver::open()
 {
-	logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
+	const auto *s = Settings::Settings::inst();
+	if (s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool()) {
+		logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
+	}
 
 	HIDAPI_LOG("HidApiInputDriver::open()");
     if (hid_init() < 0) {

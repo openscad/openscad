@@ -64,6 +64,7 @@ public:
 	static SettingsEntry octoPrintSlicerProfileDesc;
 
     static SettingsEntry inputEnableDriverHIDAPI;
+    static SettingsEntry inputEnableDriverHIDAPILog;
     static SettingsEntry inputEnableDriverSPNAV;
     static SettingsEntry inputEnableDriverJOYSTICK;
     static SettingsEntry inputEnableDriverQGAMEPAD;
