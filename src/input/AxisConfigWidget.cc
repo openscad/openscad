@@ -51,6 +51,18 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	if(progressBar==nullptr) return;
 	progressBar->setValue(value);
 	progressBar->setFormat(s);
+	
+	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+number));
+	if(deadzone){
+		QString style;
+		bool active = deadzone->value() < std::abs(val);
+		if(this->darkModeDetected){
+			style = active ? ProgressbarStyleDarkActive : ProgressbarStyleDark;
+		}else{
+			style = active ? ProgressbarStyleLightActive : ProgressbarStyleLight;
+		}
+		progressBar->setStyleSheet(style);
+	}
 }
 
 void AxisConfigWidget::init() {

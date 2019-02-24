@@ -99,6 +99,7 @@ private:
 	QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
 
 	bool darkModeDetected=false;
+
 	QString ProgressbarStyleLight =
 		"QProgressBar::chunk {"
 		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66d9ff,stop: 1 #ccf2ff );"
@@ -106,9 +107,23 @@ private:
 		"border: 1px solid #007399;"
 		"}";
 
+	QString ProgressbarStyleLightActive =
+		"QProgressBar::chunk {"
+		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66ff66,stop: 1 #ccffcc );"
+		"border-radius: 5px;"
+		"border: 1px solid #007399;"
+		"}";
+
 	QString ProgressbarStyleDark  =
 		"QProgressBar::chunk {"
 		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #001a33,stop: 1 #0069cc );"
+		"border-radius: 5px;"
+		"border: 1px solid #000d1a;"
+		"}";
+
+	QString ProgressbarStyleDarkActive  =
+		"QProgressBar::chunk {"
+		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #00331a,stop: 1 #00cc69 );"
 		"border-radius: 5px;"
 		"border: 1px solid #000d1a;"
 		"}";
