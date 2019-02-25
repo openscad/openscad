@@ -46,13 +46,12 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val *100;
 
 	QString s =  QString::number(val, 'f', 2 );
-	std::string number = std::to_string(nr);
-	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString::fromStdString("progressBarAxis"+number));
+	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis")+nr);
 	if(progressBar==nullptr) return;
 	progressBar->setValue(value);
 	progressBar->setFormat(s);
 	
-	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+number));
+	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone")+nr);
 	if(deadzone){
 		QString style;
 		bool active = deadzone->value() < std::abs(val);
