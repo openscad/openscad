@@ -13,6 +13,7 @@ public:
 	virtual ~ButtonConfigWidget();
 	void updateButtonState(int,bool) const;
 	void init();
+	void updateStates();
 
 public slots:
         void on_comboBoxButton0_activated(int val);
@@ -46,4 +47,7 @@ private:
 
 	const QString EmptyString= QString("");
 	const QString ActiveStyleString= QString("font-weight: bold; color: red");
+	const QString DisabledStyleString= QString("color: gray");
+
+	bool initialized = false;
 };

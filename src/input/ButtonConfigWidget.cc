@@ -42,15 +42,12 @@ ButtonConfigWidget::~ButtonConfigWidget()
 }
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
-	QString Style = ButtonConfigWidget::EmptyString;
-	if(pressed){
-		Style=ButtonConfigWidget::ActiveStyleString;
-	}
+	QString style = pressed ? ButtonConfigWidget::ActiveStyleString : ButtonConfigWidget::EmptyString;
 	std::string number = std::to_string(nr);
 
 	auto label = this->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
 	if(label==nullptr) return;
-	label->setStyleSheet(Style);
+	label->setStyleSheet(style);
 }
 
 void ButtonConfigWidget::init() {
@@ -68,6 +65,8 @@ void ButtonConfigWidget::init() {
 	for (auto comboBox : comboBoxes) {
 		comboBox->installEventFilter(wheelIgnorer);
 	}
+
+	initialized = true;
 }
 
 void ButtonConfigWidget::on_comboBoxButton0_activated(int val)
@@ -223,4 +222,15 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 	}
 
 	updateComboBox(comboBox, entry);
+}
+
+void ButtonConfigWidget::updateStates(){
+	if(!initialized) return;
+
+	int cnt = InputDriverManager::instance()->getButtonCount();
+	for (int i=0;i<16;i++) {
+		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
+		QString style =(cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
+		label->setStyleSheet(style);
+	}
 }

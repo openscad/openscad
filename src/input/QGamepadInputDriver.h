@@ -40,6 +40,14 @@ public:
     void close() override;
 
     const std::string & get_name() const override;
+
+    int getButtonCount() const override{
+        return 16;
+    }
+    int getAxisCount() const override{
+        return 6;
+    }
+
 private:
 	std::unique_ptr<QGamepad> gamepad;
 };
