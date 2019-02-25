@@ -27,7 +27,7 @@
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
 #include "degree_trig.h"
-#include "math.h"
+#include <math.h>
 #include <limits>
 
 #define M_SQRT3   1.73205080756887719318 /* sqrt(3)   */

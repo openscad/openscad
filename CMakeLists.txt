@@ -14,53 +14,46 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 cmake_minimum_required(VERSION 3.3)
-cmake_policy(SET CMP0071 OLD)
+#cmake_policy(SET CMP0071 OLD)
 
-if(NULLGL)
-  list(APPEND CONFIG_OPTIONS "NULLGL")
-  set(HEADLESS ON)
-endif()
-if(HEADLESS)
-  list(APPEND CONFIG_OPTIONS "HEADLESS")
-endif(HEADLESS)
-if(SNAPSHOT)
-  list(APPEND CONFIG_OPTIONS "SNAPSHOT")
-endif()
 
 
 project(openscad)
 
+option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
+option(HEADLESS "Build without GUI frontend" OFF)
+option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
+option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" )
+
+if (NULLGL)
+  set(HEADLESS ON)
+endif()
 if(EXPERIMENTAL)
   add_definitions(-DENABLE_EXPERIMENTAL)
-  list(APPEND CONFIG_OPTIONS "EXPERIMENTAL")
 endif()
-
 if(IDPREFIX)
   add_definitions(-DIDPREFIX)
-  list(APPEND CONFIG_OPTIONS "IDPREFIX")
-  message(WARNING "IDPREFIX set, this will negatively affect cache hits")
 endif()
 
-message(STATUS "Configuration: ${CONFIG_OPTIONS}")
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
-set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/objects")
+set(AUTOGEN_BUILD_DIR "${CMAKE_SOURCE_DIR}/objects")
 file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 # Default to Release build
-if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
-  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
-  set(CMAKE_BUILD_TYPE Release)
-else()
-  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-endif()
+#if(NOT CMAKE_BUILD_TYPE)
+#  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
+#  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
+#  set(CMAKE_BUILD_TYPE Release)
+#else()
+#  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+#endif()
 
-add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
+#add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 # cmake default flags include -DNDEBUG for non-Debug builds.
 # NDEBUG is known to cause OpenSCAD to crash in some case, so make sure it is unset.  Issue #2180 for details.
-add_compile_options("-UNDEBUG")
+#add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -69,52 +62,108 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQ
 endif()
 add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
-
-find_package(Eigen3 REQUIRED QUIET)
-message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
-include_directories(${EIGEN3_INCLUDE_DIRS})
-add_definitions(-DEIGEN_DONT_ALIGN)
-
-find_package(CGAL REQUIRED QUIET)
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-include_directories(${CGAL_INCLUDE_DIRS})
-add_definitions(-DENABLE_CGAL)
-
-# NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
-#   because it looks for Boost itself, so it has to be called
-#   before we look for our own required boost libraries.
 set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_options)
-find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
-message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-include_directories(${Boost_INCLUDE_DIRS})
 
-# Check if boost dependency libraries have been found too
-list(LENGTH BOOST_DIRECTLY_REQUIRED_LIBRARIES BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
-list(LENGTH Boost_LIBRARIES Boost_LIBRARIES_LENGTH)
-if(Boost_LIBRARIES_LENGTH EQUAL BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
-  message(FATAL_ERROR "No dependent Boost libraries found. Your CMake (${CMAKE_VERSION}) version might be too old for the version of boost you are using (${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}). In that case, you should have received warnings above of the type: 'Imported targets not available for Boost version ${Boost_VERSION}'")
+if (MSVC)
+
+  message("MODULE PATH: ${CMAKE_MODULE_PATH}")
+  #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+  message("OPENSCAD_LIBRARIES $ENV{OPENSCAD_LIBRARIES}")
+
+  set(WINCOMPAT "--wincompat --nounistd")
+  message("_MSC_VER: ${_MSC_VER}")
+
+  #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ""
+  add_definitions(-D_USE_MATH_DEFINES)
+  
+  #find_package(unofficial-gettext CONFIG REQUIRED)
+  #list(APPEND COMMON_LIBRARIES unofficial::gettext::libintl)
+
+  find_package(Eigen3 CONFIG REQUIRED)
+  list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
+
+  find_package(CGAL CONFIG REQUIRED)
+  # Note: 5 target(s) were omitted.
+  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+  include_directories(${CGAL_INCLUDE_DIRS})
+  add_definitions(-DENABLE_CGAL)
+  list(APPEND COMMON_LIBRARIES CGAL::CGAL)
+  
+  set(Boost_USE_STATIC_LIBS ON)
+  find_package(Boost REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES})
+  find_path(BOOST_INCLUDE_DIR boost)
+  include_directories(${BOOST_INCLUDE_DIR})
+  list(APPEND COMMON_LIBRARIES ${Boost_LIBRARIES})    
+  
+  find_package(harfbuzz CONFIG REQUIRED)
+  find_path(HARFBUZZ_INCLUDE_DIRS harfbuzz)
+  include_directories(${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
+  list(APPEND COMMON_LIBRARIES harfbuzz::harfbuzz)
+
+  find_package(unofficial-fontconfig CONFIG REQUIRED)
+  list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
+  
+  find_package(unofficial-glib CONFIG REQUIRED)
+  include_directories(${GLIB2_INCLUDE_DIRS})
+  # Note: 1 target(s) were omitted.
+  list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+
+  find_package(double-conversion CONFIG REQUIRED)
+  list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
+  
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+else()
+  set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+
+  find_package(Eigen3 CONFIG REQUIRED)
+  message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
+  include_directories(${EIGEN3_INCLUDE_DIRS})
+  add_definitions(-DEIGEN_DONT_ALIGN)
+
+  find_package(CGAL REQUIRED QUIET)
+  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+  include_directories(${CGAL_INCLUDE_DIRS})
+  list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
+  add_definitions(-DENABLE_CGAL)
+
+  # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
+  #   because it looks for Boost itself, so it has to be called
+  #   before we look for our own required boost libraries.
+  find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
+  message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+  include_directories(${Boost_INCLUDE_DIRS})
+
+  # Check if boost dependency libraries have been found too
+  list(LENGTH BOOST_DIRECTLY_REQUIRED_LIBRARIES BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
+  list(LENGTH Boost_LIBRARIES Boost_LIBRARIES_LENGTH)
+  if(Boost_LIBRARIES_LENGTH EQUAL BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
+    message(FATAL_ERROR "No dependent Boost libraries found. Your CMake (${CMAKE_VERSION}) version might be too old for the version of boost you are using (${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}). In that case, you should have received warnings above of the type: 'Imported targets not available for Boost version ${Boost_VERSION}'")
+  endif()
+
+  find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
+  message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
+  include_directories(${HARFBUZZ_INCLUDE_DIRS})
+
+  find_package(FontConfig 2.8.0 REQUIRED QUIET)
+  message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
+
+  find_package(GLIB2 2.26 REQUIRED QUIET)
+  message(STATUS "Glib: ${GLIB2_VERSION}")
+  include_directories(${GLIB2_INCLUDE_DIRS})
+
 endif()
-
-find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
-message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
-include_directories(${HARFBUZZ_INCLUDE_DIRS})
-
-find_package(FontConfig 2.8.0 REQUIRED QUIET)
-message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
 message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
 include_directories(${FREETYPE_INCLUDE_DIRS})
-
-find_package(GLIB2 2.26 REQUIRED QUIET)
-message(STATUS "Glib: ${GLIB2_VERSION}")
-include_directories(${GLIB2_INCLUDE_DIRS})
+list(APPEND COMMON_LIBRARIES ${FREETYPE_LIBRARIES})
 
 find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
+list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
 find_package(FLEX REQUIRED QUIET)
 message(STATUS "Flex: ${FLEX_VERSION}")
@@ -126,10 +175,13 @@ find_package(LibZip REQUIRED QUIET)
 message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
+message("LIBZIP LIBRARY: ${LIBZIP_LIBRARY}")
+list(APPEND COMMON_LIBRARIES ${LIBZIP_LIBRARY})
 
-find_package(Lib3MF REQUIRED QUIET)
-add_definitions(${LIB3MF_CFLAGS})
-include_directories(${LIB3MF_INCLUDE_DIRS})
+#find_package(Lib3MF REQUIRED QUIET)
+#add_definitions(${LIB3MF_CFLAGS})
+#include_directories(${LIB3MF_INCLUDE_DIRS})
+#list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
@@ -145,11 +197,11 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(src)
 
-FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.hxx)
+FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
 BISON_TARGET(openscad_parser src/parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.hxx COMPILE_FLAGS "-d -p parser")
 ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
 
-FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.hxx)
+FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
 BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
 ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
@@ -553,6 +605,7 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+set_property(TARGET OpenSCAD PROPERTY CMAKE_CXX_STANDARD 11)
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
@@ -573,26 +626,23 @@ if(ENABLE_SPNAV)
   target_link_libraries(OpenSCAD spnav)
 endif()
 
-set(COMMON_LIBRARIES
-    ${CGAL_LIBRARY}
-    ${GMP_LIBRARIES}
-    ${MPFR_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${HARFBUZZ_LIBRARIES}
-    ${FONTCONFIG_LIBRARIES}
-    ${FREETYPE_LIBRARIES}
-    ${GLIB2_LIBRARIES}
-    ${LIBXML2_LIBRARIES}
-    ${LIB3MF_LIBRARIES}
-    ${LIBZIP_LIBRARY}
-    ${OPENGL_LIBRARIES}
-    ${GLEW_LIBRARY}
-    ${OPENCSG_LIBRARY}
-    ${PLATFORM_LIBS})
+#set(COMMON_LIBRARIES
+#    ${CGAL_LIBRARY}
+#    ${GMP_LIBRARIES}
+#    ${MPFR_LIBRARIES}
+#    ${HARFBUZZ_LIBRARIES}
+#    ${FONTCONFIG_LIBRARIES}
+#    ${FREETYPE_LIBRARIES}
+#    ${GLIB2_LIBRARIES}
+#    ${LIB3MF_LIBRARIES}
+#    ${OPENGL_LIBRARIES}
+#    ${GLEW_LIBRARY}
+#    ${OPENCSG_LIBRARY}
+#    ${PLATFORM_LIBS})
 
-target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
+target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
 endif()
 
 if(INFO)

@@ -37,7 +37,7 @@
 
 std::deque<std::string> UserModule::module_stack;
 
-static void __attribute__ ((noinline)) print_err(std::string name, const Location &loc,const Context *ctx){
+static void /*__attribute__ ((noinline))*/ print_err(std::string name, const Location &loc,const Context *ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
 	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
 }

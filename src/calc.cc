@@ -26,7 +26,7 @@
 
 #include "calc.h"
 #include "grid.h"
-#include <cmath>
+#include <math.h>
 
 /*!
 	Returns the number of subdivision of a whole circle, given radius and

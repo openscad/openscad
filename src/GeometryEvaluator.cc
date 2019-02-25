@@ -27,7 +27,7 @@
 #include "calc.h"
 #include "dxfdata.h"
 #include "degree_trig.h"
-
+#include "iso646.h" // C alternative tokens (xor)
 #include <algorithm>
 
 #include <CGAL/convex_hull_2.h>

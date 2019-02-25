@@ -30,6 +30,7 @@
 #include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <cctype>
 #include <sstream>
 #include <assert.h>
 #include <iterator>

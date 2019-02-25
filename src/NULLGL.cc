@@ -18,7 +18,11 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<class CSGProducts> roo
                         shared_ptr<CSGProducts> highlight_products,
                         shared_ptr<CSGProducts> background_products) {}
 void ThrownTogetherRenderer::draw(bool showfaces, bool showedges) const {};
-BoundingBox ThrownTogetherRenderer::getBoundingBox() const {assert(false && "not implemented");}
+BoundingBox ThrownTogetherRenderer::getBoundingBox() const
+{
+	assert(false && "not implemented");
+	return BoundingBox();
+}
 void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool highlight_mode, bool background_mode, bool showedges, 
                         bool fberror) const {}
 void ThrownTogetherRenderer::renderChainObject(const class CSGChainObject &csgobj, bool highlight_mode,
@@ -29,7 +33,10 @@ void ThrownTogetherRenderer::renderChainObject(const class CSGChainObject &csgob
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) {}
 CGALRenderer::~CGALRenderer() {}
 void CGALRenderer::draw(bool showfaces, bool showedges) const {}
-BoundingBox CGALRenderer::getBoundingBox() const {assert(false && "not implemented");}
+BoundingBox CGALRenderer::getBoundingBox() const {
+  assert(false && "not implemented");
+	return BoundingBox();
+}
 void CGALRenderer::setColorScheme(const ColorScheme &cs){assert(false && "not implemented");}
 
 

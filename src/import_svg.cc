@@ -4,6 +4,7 @@
 #include "libsvg/libsvg.h"
 #include "clipper-utils.h"
 #include "AST.h"
+#include <limits>
 
 Polygon2d *import_svg(const std::string &filename, const double dpi, const bool center, const Location &loc)
 {
@@ -12,10 +13,10 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 
 		double scale = 1.0;
 
-		double x_min = 1.0/0.0;
-		double x_max = -1.0/0.0;
-		double y_min = 1.0/0.0;
-		double y_max = -1.0/0.0;
+		double x_min = std::numeric_limits<double>::max();
+		double x_max = std::numeric_limits<double>::lowest();
+		double y_min = std::numeric_limits<double>::max();
+		double y_max = std::numeric_limits<double>::lowest();
 		double height = 0;
 		for (const auto& shape_ptr : *shapes) {
 			PRINTD("SVG shape");
