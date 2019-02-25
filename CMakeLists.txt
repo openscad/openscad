@@ -16,8 +16,6 @@ endif()
 cmake_minimum_required(VERSION 3.3)
 #cmake_policy(SET CMP0071 OLD)
 
-
-
 project(openscad)
 
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
@@ -67,24 +65,18 @@ set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_opt
 if (MSVC)
 
   message("MODULE PATH: ${CMAKE_MODULE_PATH}")
-  #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
   message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
   message("OPENSCAD_LIBRARIES $ENV{OPENSCAD_LIBRARIES}")
 
   set(WINCOMPAT "--wincompat --nounistd")
   message("_MSC_VER: ${_MSC_VER}")
 
-  #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ""
   add_definitions(-D_USE_MATH_DEFINES)
   
-  #find_package(unofficial-gettext CONFIG REQUIRED)
-  #list(APPEND COMMON_LIBRARIES unofficial::gettext::libintl)
-
   find_package(Eigen3 CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
   find_package(CGAL CONFIG REQUIRED)
-  # Note: 5 target(s) were omitted.
   message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
   include_directories(${CGAL_INCLUDE_DIRS})
   add_definitions(-DENABLE_CGAL)
@@ -106,12 +98,14 @@ if (MSVC)
   
   find_package(unofficial-glib CONFIG REQUIRED)
   include_directories(${GLIB2_INCLUDE_DIRS})
-  # Note: 1 target(s) were omitted.
   list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
 
   find_package(double-conversion CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
-  
+
+  find_library(GETTEXT_LIBRARY libintl)
+  list(APPEND COMMON_LIBRARIES ${GETTEXT_LIBRARY})
+
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 else()
@@ -175,7 +169,6 @@ find_package(LibZip REQUIRED QUIET)
 message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
-message("LIBZIP LIBRARY: ${LIBZIP_LIBRARY}")
 list(APPEND COMMON_LIBRARIES ${LIBZIP_LIBRARY})
 
 #find_package(Lib3MF REQUIRED QUIET)
@@ -626,6 +619,7 @@ if(ENABLE_SPNAV)
   target_link_libraries(OpenSCAD spnav)
 endif()
 
+# Add to list as we find them (as needed) instead of all at once here
 #set(COMMON_LIBRARIES
 #    ${CGAL_LIBRARY}
 #    ${GMP_LIBRARIES}
