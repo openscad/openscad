@@ -675,7 +675,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   fs::path parser_sourcefile = fs::absolute(fs::path(filename));
   main_file_folder = parser_sourcefile.parent_path().generic_string();
   lexer_set_parser_sourcefile(parser_sourcefile);
-  mainFilePath = mainFile;
+  mainFilePath = fs::absolute(fs::path(mainFile));
 
   lexerin = NULL;
   parser_error_pos = -1;
