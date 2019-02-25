@@ -3,16 +3,16 @@
 // the file named 'COPYING' in OpenSCAD's project root.
 
 /* This file will check versions of libraries at compile time. If they
-are too old, the user will be warned. If the user wishes to force
-compilation, they can run
+   are too old, the user will be warned. If the user wishes to force
+   compilation, they can run
 
- qmake CONFIG+=skip-version-check
+   qmake CONFIG+=skip-version-check
 
-Otherwise they will be guided to README.md and an -build-dependencies script.
+   Otherwise they will be guided to README.md and an -build-dependencies script.
 
-The extensive #else #endif is to ensure only a single error is printed at
-a time, to avoid confusion.
-*/
+   The extensive #else #endif is to ensure only a single error is printed at
+   a time, to avoid confusion.
+ */
 
 #pragma once
 
@@ -31,13 +31,13 @@ a time, to avoid confusion.
 
 
 #include <mpfr.h>
-#if MPFR_VERSION < MPFR_VERSION_NUM( 3,0,0 )
+#if MPFR_VERSION < MPFR_VERSION_NUM(3, 0, 0)
 #error GNU MPFR library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <Eigen/Core>
-#if not EIGEN_VERSION_AT_LEAST( 3,0,0 )
+#if not EIGEN_VERSION_AT_LEAST(3, 0, 0)
 #error eigen library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
@@ -112,8 +112,8 @@ a time, to avoid confusion.
 
 // see github issue #552
 #define GCC_VERSION (__GNUC__ * 10000 \
-                   + __GNUC_MINOR__ * 100 \
-                   + __GNUC_PATCHLEVEL__)
+                     + __GNUC_MINOR__ * 100 \
+                     + __GNUC_PATCHLEVEL__)
 #if GCC_VERSION == 40802
 #warning "gcc 4.8.2 contains a bug causing a crash in CGAL."
 #endif

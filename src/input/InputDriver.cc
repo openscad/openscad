@@ -49,10 +49,10 @@ InputDriver::~InputDriver()
 
 bool InputDriver::isOpen() const
 {
-    return isRunning();
+  return isRunning();
 }
 
 bool InputDriver::openOnce() const
 {
-    return false;
+  return false;
 }

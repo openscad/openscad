@@ -28,5 +28,5 @@
 class SettingsWriter : public Settings::SettingsVisitor
 {
 public:
-    virtual void handle(Settings::SettingsEntry& entry) const;
+  virtual void handle(Settings::SettingsEntry &entry) const;
 };

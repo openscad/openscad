@@ -15,25 +15,25 @@ StackCheck::~StackCheck()
 
 void StackCheck::init()
 {
-	unsigned char c;
-	ptr = &c;
+  unsigned char c;
+  ptr = &c;
 }
 
 unsigned long StackCheck::size()
 {
-	unsigned char c;
-	return std::labs(ptr - &c);
+  unsigned char c;
+  return std::labs(ptr - &c);
 }
 
 bool StackCheck::check()
 {
-	return size() >= PlatformUtils::stackLimit();
+  return size() >= PlatformUtils::stackLimit();
 }
 
 StackCheck *StackCheck::inst()
 {
-	if (self == nullptr) {
-		self = new StackCheck();
-	}
-	return self;
+  if (self == nullptr) {
+    self = new StackCheck();
+  }
+  return self;
 }

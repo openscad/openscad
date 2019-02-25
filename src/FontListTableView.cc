@@ -37,29 +37,29 @@ FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent)
 
 void FontListTableView::setDragText(const QString &text)
 {
-	this->text = text.trimmed();
+  this->text = text.trimmed();
 }
 
 void FontListTableView::startDrag(Qt::DropActions supportedActions)
 {
-	if (text.isEmpty()) return;
+  if (text.isEmpty()) return;
 
-	auto mimeData = new QMimeData;
-	mimeData->setText(text);
+  auto mimeData = new QMimeData;
+  mimeData->setText(text);
 
-	QFontMetrics fm(font());
-	QRect rect(0, 0, fm.width(text) + 8, fm.height() + 8);
-	QPixmap pixmap(rect.width(), rect.height());
-	pixmap.fill({240, 240, 240, 160});
+  QFontMetrics fm(font());
+  QRect rect(0, 0, fm.width(text) + 8, fm.height() + 8);
+  QPixmap pixmap(rect.width(), rect.height());
+  pixmap.fill({240, 240, 240, 160});
 
-	QPainter painter(&pixmap);
-	painter.setFont(font());
-	painter.drawText(rect, Qt::AlignCenter, text);
-	painter.drawRect(0, 0, rect.width() - 1, rect.height() - 1);
+  QPainter painter(&pixmap);
+  painter.setFont(font());
+  painter.drawText(rect, Qt::AlignCenter, text);
+  painter.drawRect(0, 0, rect.width() - 1, rect.height() - 1);
 
-	auto drag = new QDrag(this);
-	drag->setPixmap(pixmap);
-	drag->setMimeData(mimeData);
-	drag->setHotSpot({-10, rect.height() + 6});
-	drag->exec(supportedActions, Qt::CopyAction);
+  auto drag = new QDrag(this);
+  drag->setPixmap(pixmap);
+  drag->setMimeData(mimeData);
+  drag->setHotSpot({-10, rect.height() + 6});
+  drag->exec(supportedActions, Qt::CopyAction);
 }

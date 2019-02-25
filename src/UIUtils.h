@@ -29,19 +29,19 @@
 #include <QFileInfoList>
 
 namespace UIUtils {
-    static const int maxRecentFiles = 10;
+static const int maxRecentFiles = 10;
 
-    QFileInfo openFile(QWidget *parent = nullptr);
-    
-    QStringList recentFiles();
-    
-    QStringList exampleCategories();
-    
-    QFileInfoList exampleFiles(const QString &category);
+QFileInfo openFile(QWidget *parent = nullptr);
 
-    void openHomepageURL();
+QStringList recentFiles();
 
-    void openUserManualURL();
+QStringList exampleCategories();
 
-    void openCheatSheetURL();
+QFileInfoList exampleFiles(const QString &category);
+
+void openHomepageURL();
+
+void openUserManualURL();
+
+void openCheatSheetURL();
 }

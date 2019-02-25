@@ -41,7 +41,7 @@ namespace fs = boost::filesystem;
 #include <sys/stat.h>
 
 FileModule::FileModule(const std::string &path, const std::string &filename)
-	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
+  : ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
 {
 }
 
@@ -51,151 +51,156 @@ FileModule::~FileModule()
 
 void FileModule::print(std::ostream &stream, const std::string &indent) const
 {
-	scope.print(stream, indent);
+  scope.print(stream, indent);
 }
 
 void FileModule::registerUse(const std::string path)
 {
-	auto ext = fs::path(path).extension().generic_string();
-	
-	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
-		if (fs::is_regular(path)) {
-			FontCache::instance()->register_font_file(path);
-		} else {
-			PRINTB("ERROR: Can't read font with path '%s'", path);
-		}
-	} else {
-		usedlibs.insert(path);
-	}
+  auto ext = fs::path(path).extension().generic_string();
+
+  if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
+    if (fs::is_regular(path)) {
+      FontCache::instance()->register_font_file(path);
+    }
+    else {
+      PRINTB("ERROR: Can't read font with path '%s'", path);
+    }
+  }
+  else {
+    usedlibs.insert(path);
+  }
 }
 
 void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
 {
-	this->includes[localpath] = {fullpath};
+  this->includes[localpath] = {fullpath};
 }
 
 time_t FileModule::includesChanged() const
 {
-	time_t latest = 0;
-	for (const auto &item : this->includes) {
-		auto mtime = include_modified(item.second);
-		if (mtime > latest) latest = mtime;
-	}
-	return latest;
+  time_t latest = 0;
+  for (const auto &item : this->includes) {
+    auto mtime = include_modified(item.second);
+    if (mtime > latest) latest = mtime;
+  }
+  return latest;
 }
 
 time_t FileModule::include_modified(const IncludeFile &inc) const
 {
-	struct stat st;
+  struct stat st;
 
-	if (StatCache::stat(inc.filename.c_str(), st) == 0) {
-		return st.st_mtime;
-	}
-	
-	return 0;
+  if (StatCache::stat(inc.filename.c_str(), st) == 0) {
+    return st.st_mtime;
+  }
+
+  return 0;
 }
 
 /*!
-	Check if any dependencies have been modified and recompile them.
-	Returns true if anything was recompiled.
-*/
+   Check if any dependencies have been modified and recompile them.
+   Returns true if anything was recompiled.
+ */
 time_t FileModule::handleDependencies()
 {
-	if (this->is_handling_dependencies) return 0;
-	this->is_handling_dependencies = true;
+  if (this->is_handling_dependencies) return 0;
+  this->is_handling_dependencies = true;
 
-	std::vector<std::pair<std::string,std::string>> updates;
+  std::vector<std::pair<std::string, std::string>> updates;
 
-	// If a lib in usedlibs was previously missing, we need to relocate it
-	// by searching the applicable paths. We can identify a previously missing module
-	// as it will have a relative path.
-	time_t latest = 0;
-	for (auto filename : this->usedlibs) {
+  // If a lib in usedlibs was previously missing, we need to relocate it
+  // by searching the applicable paths. We can identify a previously missing module
+  // as it will have a relative path.
+  time_t latest = 0;
+  for (auto filename : this->usedlibs) {
 
-		auto wasmissing = false;
-		auto found = true;
+    auto wasmissing = false;
+    auto found = true;
 
-		// Get an absolute filename for the module
-		if (!fs::path(filename).is_absolute()) {
-			wasmissing = true;
-			auto fullpath = find_valid_path(this->path, filename);
-			if (!fullpath.empty()) {
-				updates.emplace_back(filename, fullpath.generic_string());
-				filename = fullpath.generic_string();
-			}
-			else {
-				found = false;
-			}
-		}
+    // Get an absolute filename for the module
+    if (!fs::path(filename).is_absolute()) {
+      wasmissing = true;
+      auto fullpath = find_valid_path(this->path, filename);
+      if (!fullpath.empty()) {
+        updates.emplace_back(filename, fullpath.generic_string());
+        filename = fullpath.generic_string();
+      }
+      else {
+        found = false;
+      }
+    }
 
-		if (found) {
-			auto wascached = ModuleCache::instance()->isCached(filename);
-			auto oldmodule = ModuleCache::instance()->lookup(filename);
-			FileModule *newmodule;
-			auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
-			if (mtime > latest) latest = mtime;
-			auto changed = newmodule && newmodule != oldmodule;
-			// Detect appearance but not removal of files, and keep old module
-			// on compile errors (FIXME: Is this correct behavior?)
-			if (changed) {
-				PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
-			}
-			else {
-				PRINTDB("  %s: %p", filename % oldmodule);
-			}
-			// Only print warning if we're not part of an automatic reload
-			if (!newmodule && !wascached && !wasmissing) {
-				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
-			}
-		}
-	}
+    if (found) {
+      auto wascached = ModuleCache::instance()->isCached(filename);
+      auto oldmodule = ModuleCache::instance()->lookup(filename);
+      FileModule *newmodule;
+      auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(), filename, newmodule);
+      if (mtime > latest) latest = mtime;
+      auto changed = newmodule && newmodule != oldmodule;
+      // Detect appearance but not removal of files, and keep old module
+      // on compile errors (FIXME: Is this correct behavior?)
+      if (changed) {
+        PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
+      }
+      else {
+        PRINTDB("  %s: %p", filename % oldmodule);
+      }
+      // Only print warning if we're not part of an automatic reload
+      if (!newmodule && !wascached && !wasmissing) {
+        PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
+      }
+    }
+  }
 
-	// Relative filenames which were located are reinserted as absolute filenames
-	typedef std::pair<std::string,std::string> stringpair;
-	for (const auto &files : updates) {
-		this->usedlibs.erase(files.first);
-		this->usedlibs.insert(files.second);
-	}
-	this->is_handling_dependencies = false;
-	return latest;
+  // Relative filenames which were located are reinserted as absolute filenames
+  typedef std::pair<std::string, std::string> stringpair;
+  for (const auto &files : updates) {
+    this->usedlibs.erase(files.first);
+    this->usedlibs.insert(files.second);
+  }
+  this->is_handling_dependencies = false;
+  return latest;
 }
 
 AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst,
-																			EvalContext *evalctx) const
+                                      EvalContext *evalctx) const
 {
-	assert(evalctx == nullptr);
-	
-	FileContext context(ctx);
-	return this->instantiateWithFileContext(&context, inst, evalctx);
+  assert(evalctx == nullptr);
+
+  FileContext context(ctx);
+  return this->instantiateWithFileContext(&context, inst, evalctx);
 }
 
 AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const ModuleInstantiation *inst,
-																										 EvalContext *evalctx) const
+                                                     EvalContext *evalctx) const
 {
-	assert(evalctx == nullptr);
-	
-	auto node = new RootNode(inst);
-	try {
-		ctx->initializeModule(*this); // May throw an ExperimentalFeatureException
-		// FIXME: Set document path to the path of the module
-		auto instantiatednodes = this->scope.instantiateChildren(ctx);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	} catch (EvaluationException &e) {
-		//PRINT(e.what()); //please output the message before throwing the exception
-	}
+  assert(evalctx == nullptr);
 
-	return node;
+  auto node = new RootNode(inst);
+  try {
+    ctx->initializeModule(*this); // May throw an ExperimentalFeatureException
+    // FIXME: Set document path to the path of the module
+    auto instantiatednodes = this->scope.instantiateChildren(ctx);
+    node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+  }
+  catch (EvaluationException &e) {
+    //PRINT(e.what()); //please output the message before throwing the exception
+  }
+
+  return node;
 }
 
 //please preferably use getFilename
 //if you compare filenames (which is the origin of this methode),
 //please call getFilename first and use this methode only as a fallback
 const std::string FileModule::getFullpath() const {
-	if(fs::path(this->filename).is_absolute()){
-		return this->filename;
-	}else if(!this->path.empty()){
-		return (fs::path(this->path) / fs::path(this->filename)).generic_string();
-	}else{
-		return "";
-	}
+  if (fs::path(this->filename).is_absolute()) {
+    return this->filename;
+  }
+  else if (!this->path.empty()) {
+    return (fs::path(this->path) / fs::path(this->filename)).generic_string();
+  }
+  else {
+    return "";
+  }
 }

@@ -44,93 +44,90 @@ namespace fs = boost::filesystem;
 class RotateExtrudeModule : public AbstractModule
 {
 public:
-	RotateExtrudeModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+  RotateExtrudeModule() { }
+  AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	auto node = new RotateExtrudeNode(inst);
+  auto node = new RotateExtrudeNode(inst);
 
-	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale")};
-	AssignmentList optargs{Assignment("convexity"), Assignment("angle")};
+  AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale")};
+  AssignmentList optargs{Assignment("convexity"), Assignment("angle")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
-	inst->scope.apply(*evalctx);
+  Context c(ctx);
+  c.setVariables(evalctx, args, optargs);
+  inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
-    
+  node->fn = c.lookup_variable("$fn")->toDouble();
+  node->fs = c.lookup_variable("$fs")->toDouble();
+  node->fa = c.lookup_variable("$fa")->toDouble();
 
-	auto file = c.lookup_variable("file");
-	auto layer = c.lookup_variable("layer", true);
-	auto convexity = c.lookup_variable("convexity", true);
-	auto origin = c.lookup_variable("origin", true);
-	auto scale = c.lookup_variable("scale", true);
-	auto angle = c.lookup_variable("angle", true);
-    
-	if (!file->isUndefined()) {
-		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
-		node->filename = filename;
-		handle_dep(filename);
-	}
 
-	node->layername = layer->isUndefined() ? "" : layer->toString();
-	node->convexity = static_cast<int>(convexity->toDouble());
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
-	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
-	}
-	node->scale = scale->toDouble();
-	node->angle = 360;
-	angle->getFiniteDouble(node->angle);
+  auto file = c.lookup_variable("file");
+  auto layer = c.lookup_variable("layer", true);
+  auto convexity = c.lookup_variable("convexity", true);
+  auto origin = c.lookup_variable("origin", true);
+  auto scale = c.lookup_variable("scale", true);
+  auto angle = c.lookup_variable("angle", true);
 
-	if (node->convexity <= 0)
-		node->convexity = 2;
+  if (!file->isUndefined()) {
+    printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+    auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+    node->filename = filename;
+    handle_dep(filename);
+  }
 
-	if (node->scale <= 0)
-		node->scale = 1;
+  node->layername = layer->isUndefined() ? "" : layer->toString();
+  node->convexity = static_cast<int>(convexity->toDouble());
+  bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+  originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
+  if (origin != ValuePtr::undefined && !originOk) {
+    PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+  }
+  node->scale = scale->toDouble();
+  node->angle = 360;
+  angle->getFiniteDouble(node->angle);
 
-	if ((node->angle <= -360) || (node->angle > 360))
-		node->angle = 360;
+  if (node->convexity <= 0) node->convexity = 2;
 
-	if (node->filename.empty()) {
-		auto instantiatednodes = inst->instantiateChildren(evalctx);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	}
+  if (node->scale <= 0) node->scale = 1;
 
-	return node;
+  if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
+
+  if (node->filename.empty()) {
+    auto instantiatednodes = inst->instantiateChildren(evalctx);
+    node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+  }
+
+  return node;
 }
 
 std::string RotateExtrudeNode::toString() const
 {
-	std::ostringstream stream;
+  std::ostringstream stream;
 
-	stream << this->name() << "(";
-	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
-		fs::path path((std::string)this->filename);
-		stream <<
-			"file = " << this->filename << ", "
-			"layer = " << QuotedString(this->layername) << ", "
-			"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
-			"scale = " << this->scale << ", "
-			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
-			;
-	}
-	stream <<
-		"angle = " << this->angle << ", "
-		"convexity = " << this->convexity << ", "
-		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+  stream << this->name() << "(";
+  if (!this->filename.empty()) { // Ignore deprecated parameters if empty
+    fs::path path((std::string)this->filename);
+    stream <<
+      "file = " << this->filename << ", "
+      "layer = " << QuotedString(this->layername) << ", "
+      "origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
+      "scale = " << this->scale << ", "
+           << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
+    ;
+  }
+  stream <<
+    "angle = " << this->angle << ", "
+    "convexity = " << this->convexity << ", "
+    "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
-	return stream.str();
+  return stream.str();
 }
 
 void register_builtin_dxf_rotate_extrude()
 {
-	Builtins::init("dxf_rotate_extrude", new RotateExtrudeModule());
-	Builtins::init("rotate_extrude", new RotateExtrudeModule());
+  Builtins::init("dxf_rotate_extrude", new RotateExtrudeModule());
+  Builtins::init("rotate_extrude", new RotateExtrudeModule());
 }

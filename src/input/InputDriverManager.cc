@@ -27,7 +27,7 @@
 
 #include "printutils.h"
 
-InputDriverManager * InputDriverManager::self = 0;
+InputDriverManager *InputDriverManager::self = 0;
 
 /**
  * This can be called from non-GUI context, so no Qt initialization is done
@@ -42,180 +42,180 @@ InputDriverManager::~InputDriverManager(void)
 
 }
 
-InputDriverManager * InputDriverManager::instance()
+InputDriverManager *InputDriverManager::instance()
 {
-    if (!self) {
-        self = new InputDriverManager();
-    }
-    return self;
+  if (!self) {
+    self = new InputDriverManager();
+  }
+  return self;
 }
 
 void InputDriverManager::registerDriver(InputDriver *driver)
 {
-    this->drivers.push_back(driver);
+  this->drivers.push_back(driver);
 }
 
 void InputDriverManager::unregisterDriver(InputDriver *driver)
 {
-    this->drivers.remove(driver);
+  this->drivers.remove(driver);
 }
 
 void InputDriverManager::registerActions(const QList<QAction *> &actions, const QString parent)
 {
-	for (const auto action : actions) {
-		const auto description = parent + action->text();
-		if (!action->objectName().isEmpty()) {
-			this->actions.push_back({action->objectName(), description, action->icon()});
-		}
-		if (action->menu()) {
-			registerActions(action->menu()->actions(), description +  QString::fromUtf8(" \u2192 "));
-		}
-	}
+  for (const auto action : actions) {
+    const auto description = parent + action->text();
+    if (!action->objectName().isEmpty()) {
+      this->actions.push_back({action->objectName(), description, action->icon()});
+    }
+    if (action->menu()) {
+      registerActions(action->menu()->actions(), description + QString::fromUtf8(" \u2192 "));
+    }
+  }
 }
 
 void InputDriverManager::init()
 {
-    timer = new QTimer(this);
-    connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
+  timer = new QTimer(this);
+  connect(QApplication::instance(), SIGNAL(focusChanged(QWidget *,QWidget *)), this, SLOT(onFocusChanged(QWidget *,QWidget *)));
 
-    doOpen(true);
-    connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
-    timer->start(10 * 1000);
+  doOpen(true);
+  connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+  timer->start(10 * 1000);
 }
 
 void InputDriverManager::onTimeout()
 {
-    for (auto driver : drivers) {
-        if (driver->openOnce()) {
-            continue;
-        }
-        if (driver->isOpen()) {
-            return;
-        }
+  for (auto driver : drivers) {
+    if (driver->openOnce()) {
+      continue;
     }
-    doOpen(false);
+    if (driver->isOpen()) {
+      return;
+    }
+  }
+  doOpen(false);
 }
 
 void InputDriverManager::doOpen(bool firstOpen)
 {
-    for (auto driver : drivers) {
-        if (driver->openOnce()) {
-            continue;
-        }
-        if (driver->open()) {
-            break;
-        }
+  for (auto driver : drivers) {
+    if (driver->openOnce()) {
+      continue;
     }
+    if (driver->open()) {
+      break;
+    }
+  }
 
-    if (firstOpen) {
-        for (auto driver : drivers) {
-            if (driver->openOnce()) {
-                driver->open();
-            }
-        }
+  if (firstOpen) {
+    for (auto driver : drivers) {
+      if (driver->openOnce()) {
+        driver->open();
+      }
     }
+  }
 }
 
 std::string InputDriverManager::listDrivers() const
 {
-    std::ostringstream stream;
-    const char *sep = "";
-    for (auto driver : drivers) {
-        stream << sep << driver->get_name();
-        if (driver->isOpen()) {
-            stream << "*";
-        }
-        sep = ", ";
+  std::ostringstream stream;
+  const char *sep = "";
+  for (auto driver : drivers) {
+    stream << sep << driver->get_name();
+    if (driver->isOpen()) {
+      stream << "*";
     }
-    return stream.str();
+    sep = ", ";
+  }
+  return stream.str();
 }
 
 void InputDriverManager::closeDrivers()
 {
-    if (timer != nullptr) {
-        timer->stop();
-    }
-    InputEventMapper::instance()->stop();
+  if (timer != nullptr) {
+    timer->stop();
+  }
+  InputEventMapper::instance()->stop();
 
-    for (auto driver : drivers) {
-        driver->close();
-    }
+  for (auto driver : drivers) {
+    driver->close();
+  }
 }
 
 void InputDriverManager::sendEvent(InputEvent *event)
 {
-    event->deliver(&mapper);
+  event->deliver(&mapper);
 }
 
 void InputDriverManager::postEvent(InputEvent *event)
 {
-    QWidget *window = event->activeOnly ? QApplication::activeWindow() : currentWindow;
-    if (window) {
-        QCoreApplication::postEvent(window, event);
-    }
+  QWidget *window = event->activeOnly ? QApplication::activeWindow() : currentWindow;
+  if (window) {
+    QCoreApplication::postEvent(window, event);
+  }
 }
 
-const std::list<ActionStruct> & InputDriverManager::getActions() const
+const std::list<ActionStruct> &InputDriverManager::getActions() const
 {
-    return actions;
+  return actions;
 }
 
 QList<double> InputDriverManager::getTranslation() const
 {
-    const MainWindow *window = currentWindow;
-    if (window) {
-        return window->getTranslation();
-    }
-    return QList<double>({0.0, 0.0, 0.0});
+  const MainWindow *window = currentWindow;
+  if (window) {
+    return window->getTranslation();
+  }
+  return QList<double>({0.0, 0.0, 0.0});
 }
 
 QList<double> InputDriverManager::getRotation() const
 {
-    const MainWindow *window = currentWindow;
-    if (window) {
-        return window->getRotation();
-    }
-    return QList<double>({0.0, 0.0, 0.0});
+  const MainWindow *window = currentWindow;
+  if (window) {
+    return window->getRotation();
+  }
+  return QList<double>({0.0, 0.0, 0.0});
 }
 
 void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)
 {
-    if (current) {
-        currentWindow = dynamic_cast<MainWindow *>(current->window());
-    }
+  if (current) {
+    currentWindow = dynamic_cast<MainWindow *>(current->window());
+  }
 }
 
 void InputDriverManager::onInputMappingUpdated()
 {
-    mapper.onInputMappingUpdated();
+  mapper.onInputMappingUpdated();
 }
 
 void InputDriverManager::onInputCalibrationUpdated()
 {
-    mapper.onInputCalibrationUpdated();
+  mapper.onInputCalibrationUpdated();
 }
 
 void InputDriverManager::onInputGainUpdated()
 {
-    mapper.onInputGainUpdated();
+  mapper.onInputGainUpdated();
 }
 
 int InputDriverManager::getButtonCount(){
-    int max=0;
-    for (auto driver : drivers) {
-        if(driver->isOpen()){
-            max = std::max(max, driver->getButtonCount());
-        }
+  int max = 0;
+  for (auto driver : drivers) {
+    if (driver->isOpen()) {
+      max = std::max(max, driver->getButtonCount());
     }
-    return max;
+  }
+  return max;
 }
 
 int InputDriverManager::getAxisCount(){
-    int max=0;
-    for (auto driver : drivers) {
-        if(driver->isOpen()){
-            max = std::max(max, driver->getAxisCount());
-        }
+  int max = 0;
+  for (auto driver : drivers) {
+    if (driver->isOpen()) {
+      max = std::max(max, driver->getAxisCount());
     }
-    return max;
+  }
+  return max;
 }

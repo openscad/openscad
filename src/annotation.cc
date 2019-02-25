@@ -30,7 +30,7 @@
 #include "context.h"
 
 Annotation::Annotation(const std::string &name, shared_ptr<class Expression> expr)
-	: name(name), expr(expr)
+  : name(name), expr(expr)
 {
 }
 
@@ -40,15 +40,15 @@ Annotation::~Annotation()
 
 ValuePtr Annotation::evaluate(class Context *ctx) const
 {
-	return this->expr->evaluate(ctx);
+  return this->expr->evaluate(ctx);
 }
 
-const std::string & Annotation::getName() const
+const std::string &Annotation::getName() const
 {
-	return name;
+  return name;
 }
 
 void Annotation::print(std::ostream &stream, const std::string &indent) const
 {
-	stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
+  stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
 }

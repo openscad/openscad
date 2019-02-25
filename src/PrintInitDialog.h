@@ -33,18 +33,18 @@ enum class print_service_t { PRINT_SERVICE, OCTOPRINT };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 {
-	Q_OBJECT;
+  Q_OBJECT;
 public:
-	PrintInitDialog();
-	~PrintInitDialog();
-	print_service_t getResult() const { return this->result; }
+  PrintInitDialog();
+  ~PrintInitDialog();
+  print_service_t getResult() const { return this->result; }
 
 public slots:
-	void on_printServiceButton_clicked();
-	void on_octoPrintButton_clicked();
-	void on_okButton_clicked();
-	void on_cancelButton_clicked();
+  void on_printServiceButton_clicked();
+  void on_octoPrintButton_clicked();
+  void on_okButton_clicked();
+  void on_cancelButton_clicked();
 private:
-	print_service_t result;
-	QString htmlTemplate;
+  print_service_t result;
+  QString htmlTemplate;
 };

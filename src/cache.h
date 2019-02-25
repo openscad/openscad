@@ -51,133 +51,136 @@
 template <class Key, class T>
 class Cache
 {
-	struct Node {
-		inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {}
-		inline Node(T *data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
-		const Key *keyPtr; T *t; size_t c; Node *p,*n;
-	};
-	typedef typename std::unordered_map<Key, Node> map_type;
-	typedef typename map_type::iterator iterator_type;
-	typedef typename map_type::value_type value_type;
+  struct Node {
+    inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {}
+    inline Node(T *data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
+    const Key *keyPtr; T *t; size_t c; Node *p, *n;
+  };
+  typedef typename std::unordered_map<Key, Node> map_type;
+  typedef typename map_type::iterator iterator_type;
+  typedef typename map_type::value_type value_type;
 
-	std::unordered_map<Key, Node> hash;
-	Node *f, *l;
-	void *unused;
-	size_t mx, total;
+  std::unordered_map<Key, Node> hash;
+  Node *f, *l;
+  void *unused;
+  size_t mx, total;
 
-	inline void unlink(Node &n) {
-		if (n.p) n.p->n = n.n;
-		if (n.n) n.n->p = n.p;
-		if (l == &n) l = n.p;
-		if (f == &n) f = n.n;
-		total -= n.c;
-		T *obj = n.t;
-		hash.erase(*n.keyPtr);
-		delete obj;
-	}
-	inline T *relink(const Key &key) {
-		iterator_type i = hash.find(key);
-		if (i == hash.end()) return nullptr;
+  inline void unlink(Node &n) {
+    if (n.p) n.p->n = n.n;
+    if (n.n) n.n->p = n.p;
+    if (l == &n) l = n.p;
+    if (f == &n) f = n.n;
+    total -= n.c;
+    T *obj = n.t;
+    hash.erase(*n.keyPtr);
+    delete obj;
+  }
+  inline T *relink(const Key &key) {
+    iterator_type i = hash.find(key);
+    if (i == hash.end()) return nullptr;
 
-		Node &n = i->second;
-		if (f != &n) {
-			if (n.p) n.p->n = n.n;
-			if (n.n) n.n->p = n.p;
-			if (l == &n) l = n.p;
-			n.p = nullptr;
-			n.n = f;
-			f->p = &n;
-			f = &n;
-		}
-		return n.t;
-	}
+    Node &n = i->second;
+    if (f != &n) {
+      if (n.p) n.p->n = n.n;
+      if (n.n) n.n->p = n.p;
+      if (l == &n) l = n.p;
+      n.p = nullptr;
+      n.n = f;
+      f->p = &n;
+      f = &n;
+    }
+    return n.t;
+  }
 
 public:
-	inline explicit Cache(size_t maxCost = 100)
-		: f(nullptr), l(nullptr), unused(nullptr), mx(maxCost), total(0) { }
-	inline ~Cache() { clear(); }
+  inline explicit Cache(size_t maxCost = 100)
+    : f(nullptr), l(nullptr), unused(nullptr), mx(maxCost), total(0) { }
+  inline ~Cache() { clear(); }
 
-	inline size_t maxCost() const { return mx; }
-	void setMaxCost(size_t m) { mx = m; trim(mx); }
-	inline size_t totalCost() const { return total; }
+  inline size_t maxCost() const { return mx; }
+  void setMaxCost(size_t m) { mx = m; trim(mx); }
+  inline size_t totalCost() const { return total; }
 
-	inline size_t size() const { return hash.size(); }
-	inline bool empty() const { return hash.empty(); }
+  inline size_t size() const { return hash.size(); }
+  inline bool empty() const { return hash.empty(); }
 
-	void clear() {
-		while (f) { delete f->t; f = f->n; }
-		hash.clear(); l = nullptr; total = 0;
-	}
+  void clear() {
+    while (f) {
+      delete f->t; f = f->n;
+    }
+    hash.clear(); l = nullptr; total = 0;
+  }
 
-	bool insert(const Key &key, T *object, size_t cost);
-	T *object(const Key &key) const { return const_cast<Cache<Key,T>*>(this)->relink(key); }
-	inline bool contains(const Key &key) const { return hash.find(key) != hash.end(); }
-	T *operator[](const Key &key) const { return object(key); }
+  bool insert(const Key &key, T *object, size_t cost);
+  T *object(const Key &key) const { return const_cast<Cache<Key, T> *>(this)->relink(key); }
+  inline bool contains(const Key &key) const { return hash.find(key) != hash.end(); }
+  T *operator[](const Key &key) const { return object(key); }
 
-	bool remove(const Key &key);
-	T *take(const Key &key);
+  bool remove(const Key &key);
+  T *take(const Key &key);
 
 private:
-	void trim(size_t m);
+  void trim(size_t m);
 };
 
 template <class Key, class T>
-inline bool Cache<Key,T>::remove(const Key &key)
+inline bool Cache<Key, T>::remove(const Key &key)
 {
-	iterator_type i = hash.find(key);
-	if (i == hash.end()) {
-		return false;
-	} else {
-		unlink(i->second);
-		return true;
-	}
+  iterator_type i = hash.find(key);
+  if (i == hash.end()) {
+    return false;
+  }
+  else {
+    unlink(i->second);
+    return true;
+  }
 }
 
 template <class Key, class T>
-inline T *Cache<Key,T>::take(const Key &key)
+inline T *Cache<Key, T>::take(const Key &key)
 {
-	iterator_type i = hash.find(key);
-	if (i == hash.end()) return 0;
+  iterator_type i = hash.find(key);
+  if (i == hash.end()) return 0;
 
-	Node &n = *i;
-	T *t = n.t;
-	n.t = 0;
-	unlink(n);
-	return t;
+  Node &n = *i;
+  T *t = n.t;
+  n.t = 0;
+  unlink(n);
+  return t;
 }
 
 template <class Key, class T>
-bool Cache<Key,T>::insert(const Key &akey, T *aobject, size_t acost)
+bool Cache<Key, T>::insert(const Key &akey, T *aobject, size_t acost)
 {
-	remove(akey);
-	if (acost > mx) {
-		delete aobject;
-		return false;
-	}
-	trim(mx - acost);
-	Node node(aobject, acost);
-	hash[akey] = node;
-	iterator_type i = hash.find(akey);
-	total += acost;
-	Node *n = &i->second;
-	n->keyPtr = &i->first;
-	if (f) f->p = n;
-	n->n = f;
-	f = n;
-	if (!l) l = f;
-	return true;
+  remove(akey);
+  if (acost > mx) {
+    delete aobject;
+    return false;
+  }
+  trim(mx - acost);
+  Node node(aobject, acost);
+  hash[akey] = node;
+  iterator_type i = hash.find(akey);
+  total += acost;
+  Node *n = &i->second;
+  n->keyPtr = &i->first;
+  if (f) f->p = n;
+  n->n = f;
+  f = n;
+  if (!l) l = f;
+  return true;
 }
 
 template <class Key, class T>
-void Cache<Key,T>::trim(size_t m)
+void Cache<Key, T>::trim(size_t m)
 {
-	Node *n = l;
-	while (n && total > m) {
-		Node *u = n;
-		n = n->p;
+  Node *n = l;
+  while (n && total > m) {
+    Node *u = n;
+    n = n->p;
 #ifdef DEBUG
-		PRINTB("Trimming cache: %1% (%2% bytes)", u->keyPtr->substr(0, 40) % u->c);
+    PRINTB("Trimming cache: %1% (%2% bytes)", u->keyPtr->substr(0, 40) % u->c);
 #endif
-		unlink(*u);
-	}
+    unlink(*u);
+  }
 }

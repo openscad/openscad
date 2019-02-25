@@ -39,43 +39,43 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class ProjectionModule : public AbstractModule
 {
 public:
-	ProjectionModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+  ProjectionModule() { }
+  AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	auto node = new ProjectionNode(inst);
+  auto node = new ProjectionNode(inst);
 
-	AssignmentList args{Assignment("cut")};
-	AssignmentList optargs{Assignment("convexity")};
-	
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
-	inst->scope.apply(*evalctx);
+  AssignmentList args{Assignment("cut")};
+  AssignmentList optargs{Assignment("convexity")};
 
-	auto convexity = c.lookup_variable("convexity", true);
-	auto cut = c.lookup_variable("cut", true);
+  Context c(ctx);
+  c.setVariables(evalctx, args, optargs);
+  inst->scope.apply(*evalctx);
 
-	node->convexity = static_cast<int>(convexity->toDouble());
+  auto convexity = c.lookup_variable("convexity", true);
+  auto cut = c.lookup_variable("cut", true);
 
-	if (cut->type() == Value::ValueType::BOOL) {
-		node->cut_mode = cut->toBool();
-	}
+  node->convexity = static_cast<int>(convexity->toDouble());
 
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+  if (cut->type() == Value::ValueType::BOOL) {
+    node->cut_mode = cut->toBool();
+  }
 
-	return node;
+  auto instantiatednodes = inst->instantiateChildren(evalctx);
+  node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+
+  return node;
 }
 
 std::string ProjectionNode::toString() const
 {
-	return STR("projection(cut = " << (this->cut_mode ? "true" : "false")
-						 << ", convexity = " << this->convexity << ")");
+  return STR("projection(cut = " << (this->cut_mode ? "true" : "false")
+                                 << ", convexity = " << this->convexity << ")");
 }
 
 void register_builtin_projection()
 {
-	Builtins::init("projection", new ProjectionModule());
+  Builtins::init("projection", new ProjectionModule());
 }

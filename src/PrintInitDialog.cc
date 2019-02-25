@@ -31,19 +31,20 @@
 
 PrintInitDialog::PrintInitDialog()
 {
-	setupUi(this);
+  setupUi(this);
 
-	const auto printService = PrintService::inst();
-	this->textBrowser->setSource(QUrl{"qrc:/src/PrintInitDialog.html"});
+  const auto printService = PrintService::inst();
+  this->textBrowser->setSource(QUrl{"qrc:/src/PrintInitDialog.html"});
 
-	this->okButton->setEnabled(false);
+  this->okButton->setEnabled(false);
 
-	if (printService->isEnabled()) {
-		this->printServiceButton->setText(this->printServiceButton->text().arg(printService->getDisplayName()));
-	} else {
-		this->printServiceButton->setText(_("Print Service not available"));
-		this->printServiceButton->setEnabled(false);
-	}
+  if (printService->isEnabled()) {
+    this->printServiceButton->setText(this->printServiceButton->text().arg(printService->getDisplayName()));
+  }
+  else {
+    this->printServiceButton->setText(_("Print Service not available"));
+    this->printServiceButton->setEnabled(false);
+  }
 }
 
 PrintInitDialog::~PrintInitDialog()
@@ -52,24 +53,24 @@ PrintInitDialog::~PrintInitDialog()
 
 void PrintInitDialog::on_printServiceButton_clicked()
 {
-	this->textBrowser->setHtml(PrintService::inst()->getInfoHtml());
-	this->result = print_service_t::PRINT_SERVICE;
-	this->okButton->setEnabled(true);
+  this->textBrowser->setHtml(PrintService::inst()->getInfoHtml());
+  this->result = print_service_t::PRINT_SERVICE;
+  this->okButton->setEnabled(true);
 }
 
 void PrintInitDialog::on_octoPrintButton_clicked()
 {
-	this->textBrowser->setSource(QUrl{"qrc:/src/OctoPrintInfo.html"});
-	this->result = print_service_t::OCTOPRINT;
-	this->okButton->setEnabled(true);
+  this->textBrowser->setSource(QUrl{"qrc:/src/OctoPrintInfo.html"});
+  this->result = print_service_t::OCTOPRINT;
+  this->okButton->setEnabled(true);
 }
 
 void PrintInitDialog::on_okButton_clicked()
 {
-	accept();
+  accept();
 }
 
 void PrintInitDialog::on_cancelButton_clicked()
 {
-	reject();
+  reject();
 }

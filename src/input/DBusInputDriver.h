@@ -30,34 +30,34 @@
 
 class DBusInputDriver : public InputDriver
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    bool is_open;
+  bool is_open;
 
-    std::string name;
+  std::string name;
 
 public:
-    DBusInputDriver();
-    ~DBusInputDriver();
-    void run() override;
-    bool open() override;
-    void close() override;
-    bool isOpen() const override;
-    bool openOnce() const override;
+  DBusInputDriver();
+  ~DBusInputDriver();
+  void run() override;
+  bool open() override;
+  void close() override;
+  bool isOpen() const override;
+  bool openOnce() const override;
 
-    const std::string & get_name() const override;
+  const std::string &get_name() const override;
 
 public slots:
-    void zoom(double zoom) const;
-    void zoomTo(double zoom) const;
-    void rotate(double x, double y, double z) const;
-    void rotateTo(double x, double y, double z) const;
-    void rotateByVector(double x, double y, double z) const;
-    void translate(double x, double y, double z) const;
-    void translateTo(double x, double y, double z) const;
-    void action(QString action) const;
-    void buttonPress(uint idx) const;
-    const QList<double> getRotation() const;
-    const QList<double> getTranslation() const;
-    const QStringList getActions() const;
+  void zoom(double zoom) const;
+  void zoomTo(double zoom) const;
+  void rotate(double x, double y, double z) const;
+  void rotateTo(double x, double y, double z) const;
+  void rotateByVector(double x, double y, double z) const;
+  void translate(double x, double y, double z) const;
+  void translateTo(double x, double y, double z) const;
+  void action(QString action) const;
+  void buttonPress(uint idx) const;
+  const QList<double> getRotation() const;
+  const QList<double> getTranslation() const;
+  const QStringList getActions() const;
 };

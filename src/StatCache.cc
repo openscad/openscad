@@ -37,13 +37,13 @@ const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be sh
 
 double millis_clock(void)
 {
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 struct CacheEntry
 {
-	struct stat st;        // result from stat
-	double timestamp;      // the time stat was called
+  struct stat st;        // result from stat
+  double timestamp;      // the time stat was called
 };
 
 std::unordered_map<std::string, CacheEntry> statMap;
@@ -54,17 +54,17 @@ namespace StatCache {
 
 int stat(const std::string &path, struct ::stat &st)
 {
-	auto iter = statMap.find(path);
-	if (iter != statMap.end()) {                      // Have we got an entry for this file?
-		if (millis_clock() - iter->second.timestamp < stale) {
-			st = iter->second.st;                        // Not stale yet so return it
-			return 0;
-		}
-		statMap.erase(iter);                            // Remove stale entry
-	}
-	if (auto rv = ::stat(path.c_str(), &st)) return rv; // stat failed
-	statMap[path] = {st, millis_clock()};
-	return 0;
-}   
+  auto iter = statMap.find(path);
+  if (iter != statMap.end()) {                      // Have we got an entry for this file?
+    if (millis_clock() - iter->second.timestamp < stale) {
+      st = iter->second.st;                        // Not stale yet so return it
+      return 0;
+    }
+    statMap.erase(iter);                            // Remove stale entry
+  }
+  if (auto rv = ::stat(path.c_str(), &st)) return rv; // stat failed
+  statMap[path] = {st, millis_clock()};
+  return 0;
+}
 
 } // namespace StatCache

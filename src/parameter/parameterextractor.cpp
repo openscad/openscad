@@ -10,7 +10,7 @@ ParameterExtractor::~ParameterExtractor()
 {
 }
 
-void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& entries)
+void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t &entries)
 {
   if (!fileModule) return;
 
@@ -25,7 +25,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
+void ParameterExtractor::setParameters(const FileModule *module, entry_map_t &entries, std::vector<std::string> &ParameterPos, bool &rebuildParameterWidget)
 {
   if (!module) return;
 
@@ -46,14 +46,16 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
       //if object doesn't exist, add new entry
       entries[assignment.name] = entryObject;
       rebuildParameterWidget = true;
-    } else {
+    }
+    else {
       //if entry object already exists, we check if its modified
       //or not
       if (*entryObject == *entries[assignment.name]) {
         delete entryObject;
         //if entry is not modified, then we don't add new entry
         entryObject = entries[assignment.name];
-      } else {
+      }
+      else {
         delete entries[assignment.name];
         //if entry is modified, then we add new entry
         entries[assignment.name] = entryObject;

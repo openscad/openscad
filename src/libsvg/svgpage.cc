@@ -29,7 +29,7 @@
 
 namespace libsvg {
 
-const std::string svgpage::name("svg"); 
+const std::string svgpage::name("svg");
 
 svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEFINED})
 {
@@ -40,24 +40,24 @@ svgpage::~svgpage()
 }
 
 void
-svgpage::set_attrs(attr_map_t& attrs)
+svgpage::set_attrs(attr_map_t &attrs)
 {
-	this->x = 0;
-	this->y = 0;
-	this->width = parse_length(attrs["width"]);
-	this->height = parse_length(attrs["height"]);
+  this->x = 0;
+  this->y = 0;
+  this->width = parse_length(attrs["width"]);
+  this->height = parse_length(attrs["height"]);
 }
 
 const std::string
 svgpage::dump() const
 {
-	std::stringstream s;
-	s << get_name()
-		<< ": x = " << this->x
-		<< ": y = " << this->y
-		<< ": width = " << this->width.number
-		<< ": height = " << this->height.number;
-	return s.str();
+  std::stringstream s;
+  s << get_name()
+    << ": x = " << this->x
+    << ": y = " << this->y
+    << ": width = " << this->width.number
+    << ": height = " << this->height.number;
+  return s.str();
 }
 
-}
+} // namespace libsvg

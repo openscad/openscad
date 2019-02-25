@@ -41,55 +41,55 @@ struct ActionStruct {
 
 class InputDriverManager : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 private:
-    using drivers_t = std::list<InputDriver *>;
+  using drivers_t = std::list<InputDriver *>;
 
-    drivers_t drivers;
+  drivers_t drivers;
 
-    std::list<ActionStruct> actions;
+  std::list<ActionStruct> actions;
 
-    InputEventMapper mapper;
+  InputEventMapper mapper;
 
-    MainWindow *currentWindow;
+  MainWindow *currentWindow;
 
-    QTimer *timer;
+  QTimer *timer;
 
-    static InputDriverManager *self;
+  static InputDriverManager *self;
 
-    void postEvent(InputEvent *event);
+  void postEvent(InputEvent *event);
 
 public:
-    InputDriverManager(void);
-    virtual ~InputDriverManager(void);
+  InputDriverManager(void);
+  virtual ~InputDriverManager(void);
 
-    void sendEvent(InputEvent *event);
+  void sendEvent(InputEvent *event);
 
-    void init();
-    std::string listDrivers() const;
-    void registerDriver(InputDriver *driver);
-    void unregisterDriver(InputDriver *driver);
-    void closeDrivers();
-    void registerActions(const QList<QAction *> &actions, const QString parent = QString(""));
+  void init();
+  std::string listDrivers() const;
+  void registerDriver(InputDriver *driver);
+  void unregisterDriver(InputDriver *driver);
+  void closeDrivers();
+  void registerActions(const QList<QAction *> &actions, const QString parent = QString(""));
 
-    static InputDriverManager * instance();
+  static InputDriverManager *instance();
 
-	const std::list<ActionStruct> & getActions() const;
-	QList<double> getTranslation() const;
-	QList<double> getRotation() const;
-	
-	int getButtonCount();
-	int getAxisCount();
+  const std::list<ActionStruct> &getActions() const;
+  QList<double> getTranslation() const;
+  QList<double> getRotation() const;
+
+  int getButtonCount();
+  int getAxisCount();
 
 public slots:
-    void onInputMappingUpdated();
-    void onInputCalibrationUpdated();
-    void onInputGainUpdated();
+  void onInputMappingUpdated();
+  void onInputCalibrationUpdated();
+  void onInputGainUpdated();
 
 private slots:
-    void onTimeout();
-    void doOpen(bool firstOpen);
-    void onFocusChanged(QWidget *, QWidget *);
+  void onTimeout();
+  void doOpen(bool firstOpen);
+  void onFocusChanged(QWidget *, QWidget *);
 
-    friend class InputEventMapper;
+  friend class InputEventMapper;
 };

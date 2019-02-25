@@ -27,17 +27,18 @@
 #include "SettingsWriter.h"
 #include "QSettingsCached.h"
 
-void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
-	Settings::Settings *s = Settings::Settings::inst();
+void SettingsWriter::handle(Settings::SettingsEntry &entry) const {
+  Settings::Settings *s = Settings::Settings::inst();
 
-	QSettingsCached settings;
-	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
-	if (entry.is_default()) {
-	    settings.remove(key);
-	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
-	} else {
-	    const Value &value = s->get(entry);
-	    settings.setValue(key, QString::fromStdString(value.toString()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
-	}
+  QSettingsCached settings;
+  QString key = QString::fromStdString(entry.category() + "/" + entry.name());
+  if (entry.is_default()) {
+    settings.remove(key);
+    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
+  }
+  else {
+    const Value &value = s->get(entry);
+    settings.setValue(key, QString::fromStdString(value.toString()));
+    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
+  }
 }

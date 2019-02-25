@@ -36,7 +36,7 @@ void DBusInputDriver::run()
 
 DBusInputDriver::DBusInputDriver() : is_open(false)
 {
-    name = "DBusInputDriver";
+  name = "DBusInputDriver";
 }
 
 DBusInputDriver::~DBusInputDriver()
@@ -46,34 +46,34 @@ DBusInputDriver::~DBusInputDriver()
 
 bool DBusInputDriver::openOnce() const
 {
-    return true;
+  return true;
 }
 
 bool DBusInputDriver::isOpen() const
 {
-    return is_open;
+  return is_open;
 }
 
 bool DBusInputDriver::open()
 {
-    if (is_open) {
-        return true;
-    }
-
-    QDBusConnection connection = QDBusConnection::sessionBus();
-    if (!connection.isConnected()) {
-        return false;
-    }
-
-    new OpenSCADAdaptor(this);
-    connection.registerObject("/org/openscad/OpenSCAD/Application", this);
-    connection.registerService("org.openscad.OpenSCAD");
-    new org::openscad::OpenSCAD(QString(), QString(), connection, this);
-
-    name = "DBusInputDriver (" + connection.baseService().toStdString() + ")";
-
-    is_open = true;
+  if (is_open) {
     return true;
+  }
+
+  QDBusConnection connection = QDBusConnection::sessionBus();
+  if (!connection.isConnected()) {
+    return false;
+  }
+
+  new OpenSCADAdaptor(this);
+  connection.registerObject("/org/openscad/OpenSCAD/Application", this);
+  connection.registerService("org.openscad.OpenSCAD");
+  new org::openscad::OpenSCAD(QString(), QString(), connection, this);
+
+  name = "DBusInputDriver (" + connection.baseService().toStdString() + ")";
+
+  is_open = true;
+  return true;
 }
 
 void DBusInputDriver::close()
@@ -83,70 +83,70 @@ void DBusInputDriver::close()
 
 void DBusInputDriver::zoom(double zoom) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventZoom(zoom, true, false));
+  InputDriverManager::instance()->sendEvent(new InputEventZoom(zoom, true, false));
 }
 
 void DBusInputDriver::zoomTo(double zoom) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventZoom(zoom, false, false));
+  InputDriverManager::instance()->sendEvent(new InputEventZoom(zoom, false, false));
 }
 
 void DBusInputDriver::rotate(double x, double y, double z) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, true, false));
+  InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, true, false));
 }
 
 void DBusInputDriver::rotateTo(double x, double y, double z) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, false, false));
+  InputDriverManager::instance()->sendEvent(new InputEventRotate(x, y, z, false, false));
 }
 
 void DBusInputDriver::rotateByVector(double x, double y, double z) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventRotate2(x, y, z, false));
+  InputDriverManager::instance()->sendEvent(new InputEventRotate2(x, y, z, false));
 }
 
 void DBusInputDriver::translate(double x, double y, double z) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, true, false, false));
+  InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, true, false, false));
 }
 
 void DBusInputDriver::translateTo(double x, double y, double z) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false, false));
+  InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false, false));
 }
 
 void DBusInputDriver::action(QString name) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
+  InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
 
 const QStringList DBusInputDriver::getActions() const
 {
-	QStringList ret;
-	for (const auto &action : InputDriverManager::instance()->getActions()) {
-		ret << action.name;
-	}
-	return ret;
+  QStringList ret;
+  for (const auto &action : InputDriverManager::instance()->getActions()) {
+    ret << action.name;
+  }
+  return ret;
 }
 
 void DBusInputDriver::buttonPress(uint idx) const
 {
-    InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, true, false));
-    InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, false, false));
+  InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, true, false));
+  InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(idx, false, false));
 }
 
 const QList<double> DBusInputDriver::getRotation() const
 {
-	return InputDriverManager::instance()->getRotation();;
+  return InputDriverManager::instance()->getRotation();
 }
 
 const QList<double> DBusInputDriver::getTranslation() const
 {
-	return InputDriverManager::instance()->getTranslation();;
+  return InputDriverManager::instance()->getTranslation();
 }
 
-const std::string & DBusInputDriver::get_name() const
+const std::string &DBusInputDriver::get_name() const
 {
-    return name;
+  return name;
 }

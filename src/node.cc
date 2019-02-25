@@ -41,72 +41,72 @@ AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), progres
 
 AbstractNode::~AbstractNode()
 {
-	std::for_each(this->children.begin(), this->children.end(), std::default_delete<AbstractNode>());
+  std::for_each(this->children.begin(), this->children.end(), std::default_delete<AbstractNode>());
 }
 
 std::string AbstractNode::toString() const
 {
-	return this->name() + "()";
+  return this->name() + "()";
 }
 
 std::string GroupNode::name() const
 {
-	return "group";
+  return "group";
 }
 
 std::string RootNode::name() const
 {
-	return "root";
+  return "root";
 }
 
 std::string AbstractIntersectionNode::toString() const
 {
-	return this->name() + "()";
+  return this->name() + "()";
 }
 
 std::string AbstractIntersectionNode::name() const
 {
   // We write intersection here since the module will have to be evaluated
-	// before we get here and it will not longer retain the intersection_for parameters
-	return "intersection";
+  // before we get here and it will not longer retain the intersection_for parameters
+  return "intersection";
 }
 
 void AbstractNode::progress_prepare()
 {
-	std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));
-	this->progress_mark = ++progress_report_count;
+  std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));
+  this->progress_mark = ++progress_report_count;
 }
 
 void AbstractNode::progress_report() const
 {
-	progress_update(this, this->progress_mark);
+  progress_update(this, this->progress_mark);
 }
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 {
-	stream << node.toString();
-	return stream;
+  stream << node.toString();
+  return stream;
 }
 
 // Do we have an explicit root node (! modifier)?
 AbstractNode *find_root_tag(AbstractNode *n)
 {
-	std::vector<AbstractNode*> rootTags;
+  std::vector<AbstractNode *> rootTags;
 
-	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
-		for (auto v : n->children) {
-			if (v->modinst->tag_root) rootTags.push_back(v);
-			find_root_tags(v);
-		}
-	};
+  std::function<void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
+      for (auto v : n->children) {
+        if (v->modinst->tag_root) rootTags.push_back(v);
+        find_root_tags(v);
+      }
+    };
 
-	find_root_tags(n);
+  find_root_tags(n);
 
-	if (rootTags.size() == 0) return nullptr;
-	if (rootTags.size() > 1) {
-		for (const auto& rootTag : rootTags) {
-			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
-		}
-	}
-	return rootTags.front();
+  if (rootTags.size() == 0) return nullptr;
+  if (rootTags.size() > 1) {
+    for (const auto &rootTag : rootTags) {
+      PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
+    }
+  }
+  return rootTags.front();
 }

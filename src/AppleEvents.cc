@@ -6,30 +6,30 @@
 #include "MainWindow.h"
 
 extern "C" {
-	OSErr eventHandler(const AppleEvent *ev, AppleEvent *reply, SRefCon refcon);
+OSErr eventHandler(const AppleEvent *ev, AppleEvent *reply, SRefCon refcon);
 }
 
-OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon )
+OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon)
 {
 // FIXME: Ugly hack; just using the first MainWindow we can find
-	MainWindow *mainwin = nullptr;
-	for (auto &w : QApplication::topLevelWidgets()) {
-		mainwin = qobject_cast<MainWindow*>(w);
-		if (mainwin) break;
-	}
-	if (mainwin) {
-		mainwin->actionReloadRenderPreview();
-	}
-	return noErr;
+  MainWindow *mainwin = nullptr;
+  for (auto &w : QApplication::topLevelWidgets()) {
+    mainwin = qobject_cast<MainWindow *>(w);
+    if (mainwin) break;
+  }
+  if (mainwin) {
+    mainwin->actionReloadRenderPreview();
+  }
+  return noErr;
 }
 
 void installAppleEventHandlers()
 {
-	// Reload handler
+  // Reload handler
   auto err = AEInstallEventHandler('SCAD', 'relo', NewAEEventHandlerUPP(eventHandler), nullptr, true);
   __Require_noErr(err, CantInstallAppleEventHandler);
-	return;
+  return;
 
 CantInstallAppleEventHandler:
-	fprintf(stderr, "AEInstallEventHandler() failed: %d\n", err);	;
+  fprintf(stderr, "AEInstallEventHandler() failed: %d\n", err);
 }

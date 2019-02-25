@@ -40,73 +40,73 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class TextModule : public AbstractModule
 {
 public:
-	TextModule() : AbstractModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+  TextModule() : AbstractModule() { }
+  AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	auto node = new TextNode(inst);
+  auto node = new TextNode(inst);
 
-	AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
-	AssignmentList optargs{
-		Assignment("direction"), Assignment("language"), Assignment("script"),
-		Assignment("halign"), Assignment("valign"), Assignment("spacing")
-	};
+  AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
+  AssignmentList optargs{
+    Assignment("direction"), Assignment("language"), Assignment("script"),
+    Assignment("halign"), Assignment("valign"), Assignment("spacing")
+  };
 
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
+  Context c(ctx);
+  c.setVariables(evalctx, args, optargs);
 
-	auto fn = c.lookup_variable("$fn")->toDouble();
-	auto fa = c.lookup_variable("$fa")->toDouble();
-	auto fs = c.lookup_variable("$fs")->toDouble();
+  auto fn = c.lookup_variable("$fn")->toDouble();
+  auto fa = c.lookup_variable("$fa")->toDouble();
+  auto fs = c.lookup_variable("$fs")->toDouble();
 
-	node->params.set_fn(fn);
-	node->params.set_fa(fa);
-	node->params.set_fs(fs);
+  node->params.set_fn(fn);
+  node->params.set_fa(fa);
+  node->params.set_fs(fs);
 
-	auto size = c.lookup_variable_with_default("size", 10.0);
-	auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
-	// The curved segments of most fonts are relatively short, so
-	// by using a fraction of the number of full circle segments
-	// the resolution will be better matching the detail level of
-	// other objects.
-	auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
+  auto size = c.lookup_variable_with_default("size", 10.0);
+  auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
+  // The curved segments of most fonts are relatively short, so
+  // by using a fraction of the number of full circle segments
+  // the resolution will be better matching the detail level of
+  // other objects.
+  auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
 
-	node->params.set_size(size);
-	node->params.set_segments(text_segments);
-	node->params.set_text(c.lookup_variable_with_default("text", ""));
-	node->params.set_spacing(c.lookup_variable_with_default("spacing", 1.0));
-	node->params.set_font(c.lookup_variable_with_default("font", ""));
-	node->params.set_direction(c.lookup_variable_with_default("direction", ""));
-	node->params.set_language(c.lookup_variable_with_default("language", "en"));
-	node->params.set_script(c.lookup_variable_with_default("script", ""));
-	node->params.set_halign(c.lookup_variable_with_default("halign", "left"));
-	node->params.set_valign(c.lookup_variable_with_default("valign", "baseline"));
+  node->params.set_size(size);
+  node->params.set_segments(text_segments);
+  node->params.set_text(c.lookup_variable_with_default("text", ""));
+  node->params.set_spacing(c.lookup_variable_with_default("spacing", 1.0));
+  node->params.set_font(c.lookup_variable_with_default("font", ""));
+  node->params.set_direction(c.lookup_variable_with_default("direction", ""));
+  node->params.set_language(c.lookup_variable_with_default("language", "en"));
+  node->params.set_script(c.lookup_variable_with_default("script", ""));
+  node->params.set_halign(c.lookup_variable_with_default("halign", "left"));
+  node->params.set_valign(c.lookup_variable_with_default("valign", "baseline"));
 
-	FreetypeRenderer renderer;
-	renderer.detect_properties(node->params);
+  FreetypeRenderer renderer;
+  renderer.detect_properties(node->params);
 
-	return node;
+  return node;
 }
 
 std::vector<const Geometry *> TextNode::createGeometryList() const
 {
-	FreetypeRenderer renderer;
-	return renderer.render(this->get_params());
+  FreetypeRenderer renderer;
+  return renderer.render(this->get_params());
 }
 
 FreetypeRenderer::Params TextNode::get_params() const
 {
-	return params;
+  return params;
 }
 
 std::string TextNode::toString() const
 {
-	return STR(name() << "(" << this->params << ")");
+  return STR(name() << "(" << this->params << ")");
 }
 
 void register_builtin_text()
 {
-	Builtins::init("text", new TextModule());
+  Builtins::init("text", new TextModule());
 }

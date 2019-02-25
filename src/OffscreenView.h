@@ -11,15 +11,15 @@
 class OffscreenView : public GLView
 {
 public:
-	OffscreenView(int width, int height);
-	~OffscreenView();
-	bool save(std::ostream &output);
-	OffscreenContext *ctx;
+  OffscreenView(int width, int height);
+  ~OffscreenView();
+  bool save(std::ostream &output);
+  OffscreenContext *ctx;
 
-	// overrides
-	bool save(const char *filename) override;
-	std::string getRendererInfo() const override;
+  // overrides
+  bool save(const char *filename) override;
+  std::string getRendererInfo() const override;
 #ifdef ENABLE_OPENCSG
-	void display_opencsg_warning() override;
+  void display_opencsg_warning() override;
 #endif
 };

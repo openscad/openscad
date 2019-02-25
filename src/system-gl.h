@@ -13,11 +13,11 @@
 #else // NULLGL
 #define GLint int
 #define GLuint unsigned int
-inline void glColor4fv( float *c ) {}
+inline void glColor4fv(float *c) {}
 #endif // NULLGL
 
 #include <string>
 
 std::string glew_dump();
 std::string glew_extensions_dump();
-bool report_glerror(const char * function);
+bool report_glerror(const char *function);

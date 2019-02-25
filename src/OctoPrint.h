@@ -33,17 +33,17 @@
 // Dummy class for compiling Preferences.cc for Qt4
 struct OctoPrint
 {
-	OctoPrint() {}
-	~OctoPrint() {}
+  OctoPrint() {}
+  ~OctoPrint() {}
 
-	const std::pair<const QString, const QString> getVersion() const { return {}; }
-	const std::vector<std::pair<const QString, const QString>> getSlicers() const { return {}; }
-	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString) const { return {}; }
+  const std::pair<const QString, const QString> getVersion() const { return {}; }
+  const std::vector<std::pair<const QString, const QString>> getSlicers() const { return {}; }
+  const std::vector<std::pair<const QString, const QString>> getProfiles(const QString) const { return {}; }
 };
 
 struct NetworkException
 {
-	const QString getErrorMessage() const { return ""; }
+  const QString getErrorMessage() const { return ""; }
 };
 
 #else
@@ -59,19 +59,19 @@ struct NetworkException
 class OctoPrint
 {
 public:
-	OctoPrint();
-	virtual ~OctoPrint();
+  OctoPrint();
+  virtual ~OctoPrint();
 
-	const QString url() const;
-	const std::string apiKey() const;
-	const std::pair<const QString, const QString> getVersion() const;
-	const std::vector<std::pair<const QString, const QString>> getSlicers() const;
-	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString slicer) const;
-	const QString upload(const QString exportFileName, const QString fileName, network_progress_func_t progress_func) const;
-	void slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const;
+  const QString url() const;
+  const std::string apiKey() const;
+  const std::pair<const QString, const QString> getVersion() const;
+  const std::vector<std::pair<const QString, const QString>> getSlicers() const;
+  const std::vector<std::pair<const QString, const QString>> getProfiles(const QString slicer) const;
+  const QString upload(const QString exportFileName, const QString fileName, network_progress_func_t progress_func) const;
+  void slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const;
 
 private:
-	const QJsonDocument getJsonData(const QString endpoint) const;
+  const QJsonDocument getJsonData(const QString endpoint) const;
 };
 
-#endif
+#endif // if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))

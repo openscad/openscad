@@ -4,14 +4,14 @@
 
 class ParameterVector : public ParameterVirtualWidget
 {
-	Q_OBJECT
+  Q_OBJECT
 public:
-	ParameterVector(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
-	void setValue() override;
+  ParameterVector(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+  void setValue() override;
 
 protected slots:
-	void onChanged(double);
+  void onChanged(double);
 
 private:
-	bool volatile suppressUpdate; 
+  bool volatile suppressUpdate;
 };
