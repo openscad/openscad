@@ -29,6 +29,7 @@
  *  Public Domain.
  */
 
+#include <chrono>
 #include <iomanip>
 #include <bitset>
 #include <ostream>
@@ -44,9 +45,10 @@
 static constexpr int BUFLEN = 64;
 static constexpr int MAX_LOG_SIZE = 20 * 1024;
 
-static std::ofstream logstream;
+namespace ch = std::chrono;
 
-using namespace std;
+static std::ofstream logstream;
+static ch::system_clock::time_point logtime;
 
 // http://www.linux-usb.org/usb.ids
 // http://www.3dconnexion.eu/nc/service/faq/show_faq/7ece50ed-0b39-b57e-d3b2-4afd9420604e.html
@@ -77,7 +79,9 @@ static const struct device_id device_ids[] = {
 
 static void hidapi_log(boost::format format) {
 	if (logstream) {
-		logstream << format.str() << std::endl;
+		const ch::system_clock::duration time = ch::system_clock::now() - logtime;
+
+		logstream << ch::duration_cast<ch::milliseconds>(time).count() << ": " << format.str() << std::endl;
 		if (logstream.tellp() > MAX_LOG_SIZE) {
 			logstream.close();
 		}
@@ -255,6 +259,7 @@ bool HidApiInputDriver::open()
 {
 	const auto *s = Settings::Settings::inst();
 	if (s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool()) {
+		logtime = ch::system_clock::now();
 		logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
 	}
 
