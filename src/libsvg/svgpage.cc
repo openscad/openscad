@@ -31,7 +31,7 @@ namespace libsvg {
 
 const std::string svgpage::name("svg"); 
 
-svgpage::svgpage() : width({0, unit_t::NONE}), height({0, unit_t::NONE})
+svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEFINED})
 {
 }
 

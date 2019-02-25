@@ -78,6 +78,9 @@ public:
 	const std::list<ActionStruct> & getActions() const;
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
+	
+	int getButtonCount();
+	int getAxisCount();
 
 public slots:
     void onInputMappingUpdated();

@@ -28,7 +28,19 @@
 
 namespace libsvg {
 
-enum class unit_t { NONE, EM, EX, PX, IN, CM, MM, PT, PC };
+// https://oreillymedia.github.io/Using_SVG/guide/units.html
+//
+// Points (pt)
+//
+// 1pt ≅ 1.3333px or user units (1px = 0.75pt)
+// 1pt = 1/72in
+//
+// Picas (pc)
+//
+// 1pc = 16px or user units
+// 1pc = 1/6in
+//
+enum class unit_t { UNDEFINED, NONE, EM, EX, PX, IN, CM, MM, PT, PC };
 
 struct length_struct {
 	double number;

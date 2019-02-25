@@ -52,4 +52,7 @@ public:
      * application start. No attempt to re-open is made.
      */
     virtual bool openOnce() const;
+
+    virtual int getButtonCount() const {return 0;}
+    virtual int getAxisCount() const {return 0;}
 };

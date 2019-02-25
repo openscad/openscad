@@ -37,8 +37,8 @@ public:
     svgpage();
     ~svgpage() override;
 
-    double get_width() const { return width.number; }
-    double get_height() const { return height.number; }
+    const length_t& get_width() const { return width; }
+    const length_t& get_height() const { return height; }
     bool is_container() const override { return true; }
     
     void set_attrs(attr_map_t& attrs) override;
