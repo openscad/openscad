@@ -11,18 +11,18 @@
 
 
 enum class FileFormat {
-	STL,
-	OFF,
-	AMF,
-	_3MF,
-	DXF,
-	SVG,
-	NEFDBG,
-	NEF3
+  STL,
+  OFF,
+  AMF,
+  _3MF,
+  DXF,
+  SVG,
+  NEFDBG,
+  NEF3
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
-											const char *name2open, const char *name2display);
+                      const char *name2open, const char *name2display);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -39,37 +39,37 @@ enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 
 struct ViewOption {
-	const std::string name;
-	bool& value;
+  const std::string name;
+  bool &value;
 };
 
 struct ViewOptions {
-	Previewer previewer{Previewer::OPENCSG};
-	RenderType renderer{RenderType::OPENCSG};
+  Previewer previewer{Previewer::OPENCSG};
+  RenderType renderer{RenderType::OPENCSG};
 
-	std::map<std::string, bool> flags{
-		{"axes", false},
-		{"scales", false},
-		{"edges", false},
-		{"wireframe", false},
-		{"crosshairs", false},
-	};
+  std::map<std::string, bool> flags{
+    {"axes", false},
+    {"scales", false},
+    {"edges", false},
+    {"wireframe", false},
+    {"crosshairs", false},
+  };
 
-	const std::vector<std::string> names() {
-		std::vector<std::string> names;
-		boost::copy(flags | boost::adaptors::map_keys, std::back_inserter(names));
-		return names;
-	}
+  const std::vector<std::string> names() {
+    std::vector<std::string> names;
+    boost::copy(flags | boost::adaptors::map_keys, std::back_inserter(names));
+    return names;
+  }
 
-	bool &operator[](const std::string &name) {
-		return flags.at(name);
-	}
+  bool &operator[](const std::string &name) {
+    return flags.at(name);
+  }
 
-	bool operator[](const std::string &name) const {
-		return flags.at(name);
-	}
-	
+  bool operator[](const std::string &name) const {
+    return flags.at(name);
+  }
+
 };
 
-bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
-bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output);
+bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions &options, Camera camera, std::ostream &output);
+bool export_preview_png(Tree &tree, const ViewOptions &options, Camera camera, std::ostream &output);

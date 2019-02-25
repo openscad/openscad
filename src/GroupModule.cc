@@ -32,17 +32,17 @@
 
 AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	(void)ctx; // avoid unusued parameter warning
-	
-	auto node = new GroupNode(inst);
-	inst->scope.apply(*evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+  (void)ctx; // avoid unusued parameter warning
 
-	return node;
+  auto node = new GroupNode(inst);
+  inst->scope.apply(*evalctx);
+  auto instantiatednodes = inst->instantiateChildren(evalctx);
+  node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+
+  return node;
 }
 
 void register_builtin_group()
 {
-	Builtins::init("group", new GroupModule());
+  Builtins::init("group", new GroupModule());
 }

@@ -36,33 +36,33 @@
 class PrintService
 {
 public:
-	static PrintService * inst();
+  static PrintService *inst();
 
-	bool isEnabled() const { return enabled; }
-	const QString getService() const { return service; }
-	const QString getDisplayName() const { return displayName; }
-	const QString getApiUrl() const { return apiUrl; }
-	long getFileSizeLimit() const { return fileSizeLimitMB * 1024 * 1024; }
-	long getFileSizeLimitMB() const { return fileSizeLimitMB; }
-	const QString getInfoHtml() const { return infoHtml; }
-	const QString getInfoUrl() const { return infoUrl; }
+  bool isEnabled() const { return enabled; }
+  const QString getService() const { return service; }
+  const QString getDisplayName() const { return displayName; }
+  const QString getApiUrl() const { return apiUrl; }
+  long getFileSizeLimit() const { return fileSizeLimitMB * 1024 * 1024; }
+  long getFileSizeLimitMB() const { return fileSizeLimitMB; }
+  const QString getInfoHtml() const { return infoHtml; }
+  const QString getInfoUrl() const { return infoUrl; }
 
-	const QString upload(const QString& exportFileName, const QString& fileName, network_progress_func_t progress_func);
+  const QString upload(const QString &exportFileName, const QString &fileName, network_progress_func_t progress_func);
 
 private:
-	PrintService();
-	virtual ~PrintService();
+  PrintService();
+  virtual ~PrintService();
 
-	void init();
-	void initService(const QJsonObject& serviceObject);
+  void init();
+  void initService(const QJsonObject &serviceObject);
 
-	bool enabled;
-	QString service;
-	QString displayName;
-	QString apiUrl;
-	int fileSizeLimitMB;
-	QString infoUrl;
-	QString infoHtml;
+  bool enabled;
+  QString service;
+  QString displayName;
+  QString apiUrl;
+  int fileSizeLimitMB;
+  QString infoUrl;
+  QString infoHtml;
 
-	static std::mutex printServiceMutex;
+  static std::mutex printServiceMutex;
 };

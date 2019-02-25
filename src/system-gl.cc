@@ -14,43 +14,44 @@
 
 double gl_version()
 {
-	std::string tmp((const char*)glGetString( GL_VERSION ));
-	std::vector<std::string> strs;
-	boost::split(strs, tmp, boost::is_any_of("."));
-	std::stringstream out;
-	if (strs.size() >= 2) {
-		out << strs[0] << "." << strs[1];
-	}
-	else {
-		out << "0.0";
-	}
-	double d;
-	out >> d;
-	return d;
+  std::string tmp((const char *)glGetString(GL_VERSION));
+  std::vector<std::string> strs;
+  boost::split(strs, tmp, boost::is_any_of("."));
+  std::stringstream out;
+  if (strs.size() >= 2) {
+    out << strs[0] << "." << strs[1];
+  }
+  else {
+    out << "0.0";
+  }
+  double d;
+  out >> d;
+  return d;
 }
 
 std::string glew_extensions_dump()
 {
-	std::string tmp;
-	if ( gl_version() >= 3.0 ) {
+  std::string tmp;
+  if (gl_version() >= 3.0) {
     GLint numexts = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &numexts);
-    for ( int i=0;i<numexts;i++ ) {
-			tmp += (const char *) glGetStringi(GL_EXTENSIONS, i);
-			tmp += " ";
-		}
-	} else {
- 	 tmp = (const char *) glGetString(GL_EXTENSIONS);
-	}
-	std::vector<std::string> extensions;
-	boost::split(extensions, tmp, boost::is_any_of(" "));
-	std::sort(extensions.begin(), extensions.end());
-	std::ostringstream out;
-	out << "GL Extensions:";
-	for (unsigned int i=0;i<extensions.size();i++) {
-		out << extensions[i] << "\n";
-	}
-	return out.str();
+    for (int i = 0; i < numexts; i++) {
+      tmp += (const char *) glGetStringi(GL_EXTENSIONS, i);
+      tmp += " ";
+    }
+  }
+  else {
+    tmp = (const char *) glGetString(GL_EXTENSIONS);
+  }
+  std::vector<std::string> extensions;
+  boost::split(extensions, tmp, boost::is_any_of(" "));
+  std::sort(extensions.begin(), extensions.end());
+  std::ostringstream out;
+  out << "GL Extensions:";
+  for (unsigned int i = 0; i < extensions.size(); i++) {
+    out << extensions[i] << "\n";
+  }
+  return out.str();
 }
 
 std::string glew_dump()
@@ -63,28 +64,28 @@ std::string glew_dump()
   glGetIntegerv(GL_DEPTH_BITS, &dbits);
   glGetIntegerv(GL_STENCIL_BITS, &sbits);
 
-	std::ostringstream out;
+  std::ostringstream out;
   out << "GLEW version: " << glewGetString(GLEW_VERSION)
       << "\nOpenGL Version: " << (const char *)glGetString(GL_VERSION)
       << "\nGL Renderer: " << (const char *)glGetString(GL_RENDERER)
       << "\nGL Vendor: " << (const char *)glGetString(GL_VENDOR)
       << boost::format("\nRGBA(%d%d%d%d), depth(%d), stencil(%d)") %
-          rbits % gbits % bbits % abits % dbits % sbits;
+    rbits % gbits % bbits % abits % dbits % sbits;
   out << "\nGL_ARB_framebuffer_object: "
       << (glewIsSupported("GL_ARB_framebuffer_object") ? "yes" : "no")
       << "\nGL_EXT_framebuffer_object: "
       << (glewIsSupported("GL_EXT_framebuffer_object") ? "yes" : "no")
       << "\nGL_EXT_packed_depth_stencil: "
       << (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no")
-	    << "\n";
+      << "\n";
   return out.str();
-};
+}
 
-bool report_glerror(const char * function)
+bool report_glerror(const char *function)
 {
   GLenum tGLErr = glGetError();
   if (tGLErr != GL_NO_ERROR) {
-		std::cerr << "OpenGL error 0x" << STR(std::hex << tGLErr) << ": " << gluErrorString(tGLErr) << " after " << function << std::endl;
+    std::cerr << "OpenGL error 0x" << STR(std::hex << tGLErr) << ": " << gluErrorString(tGLErr) << " after " << function << std::endl;
     return true;
   }
   return false;

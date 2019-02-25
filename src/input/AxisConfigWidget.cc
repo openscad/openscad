@@ -35,551 +35,554 @@
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
-	setupUi(this);
+  setupUi(this);
 }
 
 AxisConfigWidget::~AxisConfigWidget()
 {
 }
 
-void AxisConfigWidget::AxesChanged(int nr, double val) const{
-	int value = val *100;
+void AxisConfigWidget::AxesChanged(int nr, double val) const {
+  int value = val * 100;
 
-	QString s =  QString::number(val, 'f', 2 );
-	std::string number = std::to_string(nr);
-	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString::fromStdString("progressBarAxis"+number));
-	if(progressBar==nullptr) return;
-	progressBar->setValue(value);
-	progressBar->setFormat(s);
+  QString s = QString::number(val, 'f', 2);
+  std::string number = std::to_string(nr);
+  QProgressBar *progressBar = this->findChild<QProgressBar *>(QString::fromStdString("progressBarAxis" + number));
+  if (progressBar == nullptr) return;
+  progressBar->setValue(value);
+  progressBar->setFormat(s);
 }
 
 void AxisConfigWidget::init() {
-	connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
-	connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
+  connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
+  connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
 
-	initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
-	initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
-	initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
-	initComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
-	initComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
-	initComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
-	initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
-	initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
-	initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
-	initComboBox(this->comboBoxRotationXVPRel, Settings::Settings::inputRotateXVPRel);
-	initComboBox(this->comboBoxRotationYVPRel, Settings::Settings::inputRotateYVPRel);
-	initComboBox(this->comboBoxRotationZVPRel, Settings::Settings::inputRotateZVPRel);
-	initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
-	initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
+  initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
+  initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
+  initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
+  initComboBox(this->comboBoxTranslationXVPRel, Settings::Settings::inputTranslationXVPRel);
+  initComboBox(this->comboBoxTranslationYVPRel, Settings::Settings::inputTranslationYVPRel);
+  initComboBox(this->comboBoxTranslationZVPRel, Settings::Settings::inputTranslationZVPRel);
+  initComboBox(this->comboBoxRotationX, Settings::Settings::inputRotateX);
+  initComboBox(this->comboBoxRotationY, Settings::Settings::inputRotateY);
+  initComboBox(this->comboBoxRotationZ, Settings::Settings::inputRotateZ);
+  initComboBox(this->comboBoxRotationXVPRel, Settings::Settings::inputRotateXVPRel);
+  initComboBox(this->comboBoxRotationYVPRel, Settings::Settings::inputRotateYVPRel);
+  initComboBox(this->comboBoxRotationZVPRel, Settings::Settings::inputRotateZVPRel);
+  initComboBox(this->comboBoxZoom, Settings::Settings::inputZoom);
+  initComboBox(this->comboBoxZoom2, Settings::Settings::inputZoom2);
 
 #ifdef ENABLE_HIDAPI
-	this->checkBoxHIDAPI->setEnabled(true);
-	this->checkBoxHIDAPI->setToolTip(HidApiInputDriverDescription);
+  this->checkBoxHIDAPI->setEnabled(true);
+  this->checkBoxHIDAPI->setToolTip(HidApiInputDriverDescription);
 #else
-	this->checkBoxHIDAPI->setToolTip(HidApiInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+  this->checkBoxHIDAPI->setToolTip(HidApiInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
 #endif
 
 #ifdef ENABLE_SPNAV
-	this->checkBoxSpaceNav->setEnabled(true);
-	this->checkBoxSpaceNav->setToolTip(SpaceNavInputDriverDescription);
+  this->checkBoxSpaceNav->setEnabled(true);
+  this->checkBoxSpaceNav->setToolTip(SpaceNavInputDriverDescription);
 #else
-	this->checkBoxSpaceNav->setToolTip(SpaceNavInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+  this->checkBoxSpaceNav->setToolTip(SpaceNavInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
 #endif
 
 #ifdef ENABLE_JOYSTICK
-	this->checkBoxJoystick->setEnabled(true);
-	this->checkBoxJoystick->setToolTip(JoystickInputDriverDescription);
+  this->checkBoxJoystick->setEnabled(true);
+  this->checkBoxJoystick->setToolTip(JoystickInputDriverDescription);
 #else
-	this->checkBoxJoystick->setToolTip(JoystickInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+  this->checkBoxJoystick->setToolTip(JoystickInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
 #endif
 
 #ifdef ENABLE_QGAMEPAD
-	this->checkBoxQGamepad->setEnabled(true);
-	this->checkBoxQGamepad->setToolTip(QGamepadInputDriverDescription );
+  this->checkBoxQGamepad->setEnabled(true);
+  this->checkBoxQGamepad->setToolTip(QGamepadInputDriverDescription);
 #else
-	this->checkBoxQGamepad->setToolTip(QGamepadInputDriverDescription  + "\n\r" + NotEnabledDuringBuild);
+  this->checkBoxQGamepad->setToolTip(QGamepadInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
 #endif
 
 #ifdef ENABLE_DBUS
-	this->checkBoxDBus->setEnabled(true);
-	this->checkBoxDBus->setToolTip(DBusInputDriverDescription);
+  this->checkBoxDBus->setEnabled(true);
+  this->checkBoxDBus->setToolTip(DBusInputDriverDescription);
 #else
-	this->checkBoxDBus->setToolTip(DBusInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
+  this->checkBoxDBus->setToolTip(DBusInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
 #endif
 
-	initCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
-	initCheckBox(this->checkBoxSpaceNav, Settings::Settings::inputEnableDriverSPNAV);
-	initCheckBox(this->checkBoxJoystick, Settings::Settings::inputEnableDriverJOYSTICK);
-	initCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
-	initCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
+  initCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
+  initCheckBox(this->checkBoxSpaceNav, Settings::Settings::inputEnableDriverSPNAV);
+  initCheckBox(this->checkBoxJoystick, Settings::Settings::inputEnableDriverJOYSTICK);
+  initCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
+  initCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
 
-	auto *wheelIgnorer = new WheelIgnorer(this);
-	auto comboBoxes = this->findChildren<QComboBox *>();
-	for (auto comboBox : comboBoxes) {
-		comboBox->installEventFilter(wheelIgnorer);
-	}
+  auto *wheelIgnorer = new WheelIgnorer(this);
+  auto comboBoxes = this->findChildren<QComboBox *>();
+  for (auto comboBox : comboBoxes) {
+    comboBox->installEventFilter(wheelIgnorer);
+  }
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
+  for (int i = 0; i < InputEventMapper::getMaxAxis(); i++) {
+    std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-		if(spin && ent){
-			initDoubleSpinBox(spin,*ent);
-		}
-		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
-		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
-		if(spin && ent){
-			initDoubleSpinBox(spin,*ent);
-		}
-	}
-
-	initDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
-	initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
-	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
-	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
-
-	//use a custom style for the axis indicators,
-	//to prevent getting operating specific
-	//(potentially animated) progressbars
-    QString style = "QProgressBar::chunk {"
-                    "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66d9ff,stop: 1 #ccf2ff );"
-                    "border-radius: 5px;"
-                    "border: 1px solid #007399;"
-                    "}";
-    int light = this->progressBarAxis0->palette().text().color().lightness();
-    if(light>165){
-        style = "QProgressBar::chunk {"
-            "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #001a33,stop: 1 #0069cc );"
-            "border-radius: 5px;"
-            "border: 1px solid #000d1a;"
-            "}";
+    auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim" + s));
+    auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" + s);
+    if (spin && ent) {
+      initDoubleSpinBox(spin, *ent);
     }
+    spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone" + s));
+    ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" + s);
+    if (spin && ent) {
+      initDoubleSpinBox(spin, *ent);
+    }
+  }
 
-	auto progressbars = this->findChildren<QProgressBar *>();
-	for (auto progressbar : progressbars) {
-		progressbar->setStyleSheet(style);
-		progressbar->setAlignment(Qt::AlignCenter);
-	}
+  initDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
+  initDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
+  initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
+  initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
-	initialized = true;
+  //use a custom style for the axis indicators,
+  //to prevent getting operating specific
+  //(potentially animated) progressbars
+  QString style = "QProgressBar::chunk {"
+    "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66d9ff,stop: 1 #ccf2ff );"
+    "border-radius: 5px;"
+    "border: 1px solid #007399;"
+    "}";
+  int light = this->progressBarAxis0->palette().text().color().lightness();
+  if (light > 165) {
+    style = "QProgressBar::chunk {"
+      "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #001a33,stop: 1 #0069cc );"
+      "border-radius: 5px;"
+      "border: 1px solid #000d1a;"
+      "}";
+  }
+
+  auto progressbars = this->findChildren<QProgressBar *>();
+  for (auto progressbar : progressbars) {
+    progressbar->setStyleSheet(style);
+    progressbar->setAlignment(Qt::AlignCenter);
+  }
+
+  initialized = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
 {
-	applyComboBox(comboBoxTranslationX, val, Settings::Settings::inputTranslationX);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxTranslationX, val, Settings::Settings::inputTranslationX);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxTranslationY_activated(int val)
 {
-	applyComboBox(comboBoxTranslationY, val, Settings::Settings::inputTranslationY);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxTranslationY, val, Settings::Settings::inputTranslationY);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxTranslationZ_activated(int val)
 {
-	applyComboBox(comboBoxTranslationZ, val, Settings::Settings::inputTranslationZ);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxTranslationZ, val, Settings::Settings::inputTranslationZ);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxTranslationXVPRel_activated(int val)
 {
-	applyComboBox(comboBoxTranslationXVPRel, val, Settings::Settings::inputTranslationXVPRel);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxTranslationXVPRel, val, Settings::Settings::inputTranslationXVPRel);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxTranslationYVPRel_activated(int val)
 {
-	applyComboBox(comboBoxTranslationYVPRel, val, Settings::Settings::inputTranslationYVPRel);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxTranslationYVPRel, val, Settings::Settings::inputTranslationYVPRel);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxTranslationZVPRel_activated(int val)
 {
-	applyComboBox(comboBoxTranslationZVPRel, val, Settings::Settings::inputTranslationZVPRel);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxTranslationZVPRel, val, Settings::Settings::inputTranslationZVPRel);
+  emit inputMappingChanged();
 }
 void AxisConfigWidget::on_comboBoxRotationX_activated(int val)
 {
-	applyComboBox(comboBoxRotationX, val, Settings::Settings::inputRotateX);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxRotationX, val, Settings::Settings::inputRotateX);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxRotationY_activated(int val)
 {
-	applyComboBox(comboBoxRotationY, val, Settings::Settings::inputRotateY);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxRotationY, val, Settings::Settings::inputRotateY);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxRotationZ_activated(int val)
 {
-	applyComboBox(comboBoxRotationZ, val, Settings::Settings::inputRotateZ);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxRotationZ, val, Settings::Settings::inputRotateZ);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxRotationXVPRel_activated(int val)
 {
-	applyComboBox(comboBoxRotationXVPRel, val, Settings::Settings::inputRotateXVPRel);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxRotationXVPRel, val, Settings::Settings::inputRotateXVPRel);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxRotationYVPRel_activated(int val)
 {
-	applyComboBox(comboBoxRotationYVPRel, val, Settings::Settings::inputRotateYVPRel);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxRotationYVPRel, val, Settings::Settings::inputRotateYVPRel);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxRotationZVPRel_activated(int val)
 {
-	applyComboBox(comboBoxRotationZVPRel, val, Settings::Settings::inputRotateZVPRel);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxRotationZVPRel, val, Settings::Settings::inputRotateZVPRel);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxZoom_activated(int val)
 {
-	applyComboBox(comboBoxZoom, val, Settings::Settings::inputZoom);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxZoom, val, Settings::Settings::inputZoom);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_comboBoxZoom2_activated(int val)
 {
-	applyComboBox(comboBoxZoom2, val, Settings::Settings::inputZoom2);
-        emit inputMappingChanged();
+  applyComboBox(comboBoxZoom2, val, Settings::Settings::inputZoom2);
+  emit inputMappingChanged();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim0_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim0, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim0, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim1_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim1, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim1, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim2_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim2, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim2, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim3_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim3, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim3, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim4_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim4, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim4, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim5_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim5, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim5, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim6_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim6, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim6, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim7_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim7, Value(val));
-	emit inputCalibrationChanged();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim7, Value(val));
+  emit inputCalibrationChanged();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim8_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisTrim8, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisTrim8, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone0_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone0, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone0, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone1_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone1, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone1, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone2_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone2, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone2, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone3_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone3, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone3, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone4_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone4, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone4, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone5_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone5, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone5, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone6_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone6, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone6, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone7_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone7, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone7, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxDeadzone8_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::axisDeadzone8, Value(val));
-	emit inputCalibrationChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::axisDeadzone8, Value(val));
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxRotateGain_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputRotateGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::inputRotateGain, Value(val));
+  emit inputGainChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTranslationGain_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputTranslationGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::inputTranslationGain, Value(val));
+  emit inputGainChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputTranslationVPRelGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::inputTranslationVPRelGain, Value(val));
+  emit inputGainChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxZoomGain_valueChanged(double val)
 {
-	Settings::Settings::inst()->set(Settings::Settings::inputZoomGain, Value(val));
-	emit inputGainChanged();
-	writeSettings();
+  Settings::Settings::inst()->set(Settings::Settings::inputZoomGain, Value(val));
+  emit inputGainChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_AxisTrim()
 {
-	InputEventMapper::instance()->onAxisAutoTrim();
+  InputEventMapper::instance()->onAxisAutoTrim();
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
+  for (int i = 0; i < InputEventMapper::getMaxAxis(); i++) {
+    std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
+    auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim" + s));
+    auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" + s);
 
-		if(spin && ent){
-			spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
-		}
-	}
-	emit inputCalibrationChanged();
-	writeSettings();
+    if (spin && ent) {
+      spin->setValue((double)Settings::Settings::inst()->get(*ent).toDouble());
+    }
+  }
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_AxisTrimReset()
 {
-	InputEventMapper::instance()->onAxisTrimReset();
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
-		std::string s = std::to_string(i);
+  InputEventMapper::instance()->onAxisTrimReset();
+  for (int i = 0; i < InputEventMapper::getMaxAxis(); i++) {
+    std::string s = std::to_string(i);
 
-		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
-		if(ent){
-			Settings::Settings::inst()->set(*ent, 0.00);
-		}
+    auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" + s);
+    if (ent) {
+      Settings::Settings::inst()->set(*ent, 0.00);
+    }
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
-		if(spin){
-			spin->setValue(0.00);
-		}
-	}
-	emit inputCalibrationChanged();
-	writeSettings();
+    auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim" + s));
+    if (spin) {
+      spin->setValue(0.00);
+    }
+  }
+  emit inputCalibrationChanged();
+  writeSettings();
 }
 
 void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 {
-	if(initialized){
-		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
-		writeSettings();
+  if (initialized) {
+    Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
+    writeSettings();
 
-		QFont font;
-		font.setItalic(true);
-		checkBoxHIDAPI->setFont(font);
-	}
+    QFont font;
+    font.setItalic(true);
+    checkBoxHIDAPI->setFont(font);
+  }
 }
 
 void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 {
-	if(initialized){
-		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
-		writeSettings();
-		QFont font;
-		font.setItalic(true);
-		checkBoxSpaceNav->setFont(font);
-	}
+  if (initialized) {
+    Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
+    writeSettings();
+    QFont font;
+    font.setItalic(true);
+    checkBoxSpaceNav->setFont(font);
+  }
 }
 
 void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 {
-	if(initialized){
-		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
-		writeSettings();
-		QFont font;
-		font.setItalic(true);
-		checkBoxJoystick->setFont(font);
-	}
+  if (initialized) {
+    Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
+    writeSettings();
+    QFont font;
+    font.setItalic(true);
+    checkBoxJoystick->setFont(font);
+  }
 }
 
 void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 {
-	if(initialized){
-		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
-		writeSettings();
-		QFont font;
-		font.setItalic(true);
-		checkBoxQGamepad->setFont(font);
-	}
+  if (initialized) {
+    Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
+    writeSettings();
+    QFont font;
+    font.setItalic(true);
+    checkBoxQGamepad->setFont(font);
+  }
 }
 
 void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
 {
-	if(initialized){
-		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
-		writeSettings();
-		QFont font;
-		font.setItalic(true);
-		checkBoxDBus->setFont(font);
-	}
+  if (initialized) {
+    Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
+    writeSettings();
+    QFont font;
+    font.setItalic(true);
+    checkBoxDBus->setFont(font);
+  }
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry &entry)
 {
-	QString s = comboBox->itemData(val).toString();
-	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
-	writeSettings();
+  QString s = comboBox->itemData(val).toString();
+  Settings::Settings::inst()->set(entry, Value(s.toStdString()));
+  writeSettings();
 }
 
-void AxisConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
+void AxisConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry &entry)
 {
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
+  RangeType range = entry.range().toRange();
+  spinBox->setMinimum(range.begin_value());
+  spinBox->setMaximum(range.end_value());
 }
 
-void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry)
+void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry &entry)
 {
-	Settings::Settings *s = Settings::Settings::inst();
+  Settings::Settings *s = Settings::Settings::inst();
 
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setSingleStep(range.step_value());
-	spinBox->setMaximum(range.end_value());
-	spinBox->setValue((double)s->get(entry).toDouble());
+  RangeType range = entry.range().toRange();
+  spinBox->setMinimum(range.begin_value());
+  spinBox->setSingleStep(range.step_value());
+  spinBox->setMaximum(range.end_value());
+  spinBox->setValue((double)s->get(entry).toDouble());
 }
 
-void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry)
+void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry &entry)
 {
-	Settings::Settings *s = Settings::Settings::inst();
-	const Value &value = s->get(entry);
-	bool state = value.toBool();
+  Settings::Settings *s = Settings::Settings::inst();
+  const Value &value = s->get(entry);
+  bool state = value.toBool();
 
-	checkBox->setChecked(state);
+  checkBox->setChecked(state);
 }
 
-void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry)
 {
-	Settings::Settings *s = Settings::Settings::inst();
+  Settings::Settings *s = Settings::Settings::inst();
 
-	const Value &value = s->get(entry);
-	QString text = QString::fromStdString(value.toString());
-	int idx = comboBox->findData(text);
-	if (idx >= 0) {
-		comboBox->setCurrentIndex(idx);
-	} else {
-		const Value &defaultValue = entry.defaultValue();
-		QString defaultText = QString::fromStdString(defaultValue.toString());
-		int defIdx = comboBox->findData(defaultText);
-		if (defIdx >= 0) {
-			comboBox->setCurrentIndex(defIdx);
-		} else {
-			comboBox->setCurrentIndex(0);
-		}
-	}
+  const Value &value = s->get(entry);
+  QString text = QString::fromStdString(value.toString());
+  int idx = comboBox->findData(text);
+  if (idx >= 0) {
+    comboBox->setCurrentIndex(idx);
+  }
+  else {
+    const Value &defaultValue = entry.defaultValue();
+    QString defaultText = QString::fromStdString(defaultValue.toString());
+    int defIdx = comboBox->findData(defaultText);
+    if (defIdx >= 0) {
+      comboBox->setCurrentIndex(defIdx);
+    }
+    else {
+      comboBox->setCurrentIndex(0);
+    }
+  }
 }
 
 void AxisConfigWidget::writeSettings()
 {
-	SettingsWriter settingsWriter;
-	Settings::Settings::inst()->visit(settingsWriter);
+  SettingsWriter settingsWriter;
+  Settings::Settings::inst()->visit(settingsWriter);
 }
 
-void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry)
 {
-	comboBox->clear();
-	// Range is a vector of 2D vectors: [[name, value], ...]
-	for(const auto &v : entry.range().toVector()) {
-		QString val = QString::fromStdString(v[0]->toString());
-		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
-		comboBox->addItem(qtext, val);
-	}
-	updateComboBox(comboBox, entry);
+  comboBox->clear();
+  // Range is a vector of 2D vectors: [[name, value], ...]
+  for (const auto &v : entry.range().toVector()) {
+    QString val = QString::fromStdString(v[0]->toString());
+    QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
+    comboBox->addItem(qtext, val);
+  }
+  updateComboBox(comboBox, entry);
 }
 
 void AxisConfigWidget::updateStates(){
-	if(!initialized) return;
+  if (!initialized) return;
 
-	int cnt = InputDriverManager::instance()->getAxisCount();
-	for (int i=0;i<9;i++) {
-		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
-		if( cnt <= i){
-			progressbar->setEnabled(false);
-			progressbar->setMinimum(0);
-		}else{
-			progressbar->setEnabled(true);
-			progressbar->setMinimum(-100);
-		}
-	}
+  int cnt = InputDriverManager::instance()->getAxisCount();
+  for (int i = 0; i < 9; i++) {
+    auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
+    if (cnt <= i) {
+      progressbar->setEnabled(false);
+      progressbar->setMinimum(0);
+    }
+    else {
+      progressbar->setEnabled(true);
+      progressbar->setMinimum(-100);
+    }
+  }
 }

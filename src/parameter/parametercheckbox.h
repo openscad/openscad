@@ -4,14 +4,14 @@
 
 class ParameterCheckBox : public ParameterVirtualWidget
 {
-	Q_OBJECT
+  Q_OBJECT
 public:
-	ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
-	void setValue() override;
+  ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+  void setValue() override;
 
 protected slots:
-	void onChanged();
+  void onChanged();
 
 private:
-	bool volatile suppressUpdate; 
+  bool volatile suppressUpdate;
 };

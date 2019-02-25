@@ -8,11 +8,11 @@
 
 class LibraryInfoDialog : public QDialog, public Ui::LibraryInfoDialog
 {
-    Q_OBJECT;
+  Q_OBJECT;
 
 public:
-    LibraryInfoDialog(const QString& rendererInfo);
-    ~LibraryInfoDialog();
+  LibraryInfoDialog(const QString &rendererInfo);
+  ~LibraryInfoDialog();
 
-    void update_library_info(const QString& rendererInfo);
+  void update_library_info(const QString &rendererInfo);
 };

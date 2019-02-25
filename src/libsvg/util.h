@@ -43,16 +43,16 @@ namespace libsvg {
 enum class unit_t { UNDEFINED, NONE, EM, EX, PX, IN, CM, MM, PT, PC };
 
 struct length_struct {
-	double number;
-	std::string unit;
+  double number;
+  std::string unit;
 };
 
 struct length_t {
-	double number;
-	unit_t unit;
+  double number;
+  unit_t unit;
 };
 
-double parse_double(const std::string& number);
-const length_t parse_length(const std::string& value);
+double parse_double(const std::string &number);
+const length_t parse_length(const std::string &value);
 
 }

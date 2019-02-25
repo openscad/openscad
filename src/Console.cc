@@ -33,9 +33,9 @@
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
-	setupUi(this);
-	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
-	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
+  setupUi(this);
+  connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
+  connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
 }
 
 Console::~Console()
@@ -44,32 +44,32 @@ Console::~Console()
 
 void Console::actionClearConsole_triggered()
 {
-	this->document()->clear();
+  this->document()->clear();
 }
 
 void Console::actionSaveAs_triggered()
 {
-	const auto& text = this->document()->toPlainText();
-	const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));
-	QFile file(fileName);
-	if (file.open(QIODevice::ReadWrite)) {
-		QTextStream stream(&file);
-		stream << text;
-		stream.flush();
-		PRINTB("Console content saved to '%s'.", fileName.toStdString());
-	}
+  const auto &text = this->document()->toPlainText();
+  const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));
+  QFile file(fileName);
+  if (file.open(QIODevice::ReadWrite)) {
+    QTextStream stream(&file);
+    stream << text;
+    stream.flush();
+    PRINTB("Console content saved to '%s'.", fileName.toStdString());
+  }
 }
 
 void Console::contextMenuEvent(QContextMenuEvent *event)
 {
-	// Clear leaves characterCount() at 1, not 0
-	const bool hasContent = this->document()->characterCount() > 1;
-	this->actionClear->setEnabled(hasContent);
-	this->actionSaveAs->setEnabled(hasContent);
-	QMenu *menu = createStandardContextMenu();
-	menu->insertAction(menu->actions().at(0), this->actionClear);
-	menu->addSeparator();
-	menu->addAction(this->actionSaveAs);
-    menu->exec(event->globalPos());
-	delete menu;
+  // Clear leaves characterCount() at 1, not 0
+  const bool hasContent = this->document()->characterCount() > 1;
+  this->actionClear->setEnabled(hasContent);
+  this->actionSaveAs->setEnabled(hasContent);
+  QMenu *menu = createStandardContextMenu();
+  menu->insertAction(menu->actions().at(0), this->actionClear);
+  menu->addSeparator();
+  menu->addAction(this->actionSaveAs);
+  menu->exec(event->globalPos());
+  delete menu;
 }

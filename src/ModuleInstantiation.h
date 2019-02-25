@@ -4,46 +4,47 @@
 #include "localscope.h"
 #include <vector>
 
-typedef std::vector<class ModuleInstantiation*> ModuleInstantiationList;
+typedef std::vector<class ModuleInstantiation *> ModuleInstantiationList;
 
 class ModuleInstantiation : public ASTNode
 {
 public:
-	ModuleInstantiation(const std::string &name, const AssignmentList &args = AssignmentList(), const std::string &source_path = std::string(), const Location &loc = Location::NONE)
-		: ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name), modpath(source_path) { }
-	~ModuleInstantiation();
+  ModuleInstantiation(const std::string &name, const AssignmentList &args = AssignmentList(), const std::string &source_path = std::string(), const Location &loc = Location::NONE)
+    : ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name), modpath(source_path) { }
+  ~ModuleInstantiation();
 
-	virtual void print(std::ostream &stream, const std::string &indent) const;
-	class AbstractNode *evaluate(const class Context *ctx) const;
-	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
+  virtual void print(std::ostream &stream, const std::string &indent) const;
+  class AbstractNode *evaluate(const class Context *ctx) const;
+  std::vector<AbstractNode *> instantiateChildren(const Context *evalctx) const;
 
-	// This is only needed for import() and the deprecated *_extrude() modules
-	const std::string &path() const { return this->modpath; }
-	std::string getAbsolutePath(const std::string &filename) const;
+  // This is only needed for import() and the deprecated *_extrude() modules
+  const std::string &path() const { return this->modpath; }
+  std::string getAbsolutePath(const std::string &filename) const;
 
-	const std::string &name() const { return this->modname; }
-	bool isBackground() const { return this->tag_background; }
-	bool isHighlight() const { return this->tag_highlight; }
-	bool isRoot() const { return this->tag_root; }
+  const std::string &name() const { return this->modname; }
+  bool isBackground() const { return this->tag_background; }
+  bool isHighlight() const { return this->tag_highlight; }
+  bool isRoot() const { return this->tag_root; }
 
-	AssignmentList arguments;
-	LocalScope scope;
+  AssignmentList arguments;
+  LocalScope scope;
 
-	bool tag_root;
-	bool tag_highlight;
-	bool tag_background;
+  bool tag_root;
+  bool tag_highlight;
+  bool tag_background;
 protected:
-	std::string modname;
-	std::string modpath;
+  std::string modname;
+  std::string modpath;
 };
 
-class IfElseModuleInstantiation : public ModuleInstantiation {
+class IfElseModuleInstantiation : public ModuleInstantiation
+{
 public:
-	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
-	~IfElseModuleInstantiation();
-	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
-	void print(std::ostream &stream, const std::string &indent) const override;
+  IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
+  ~IfElseModuleInstantiation();
+  std::vector<AbstractNode *> instantiateElseChildren(const Context *evalctx) const;
+  void print(std::ostream &stream, const std::string &indent) const override;
 
-	LocalScope else_scope;
+  LocalScope else_scope;
 };
 

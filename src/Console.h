@@ -33,15 +33,15 @@
 
 class Console : public QPlainTextEdit, public Ui::Console
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	Console(QWidget *parent = nullptr);
-	virtual ~Console();
+  Console(QWidget *parent = nullptr);
+  virtual ~Console();
 
-	void contextMenuEvent(QContextMenuEvent *event) override;
+  void contextMenuEvent(QContextMenuEvent *event) override;
 
 public slots:
-	void actionClearConsole_triggered();
-	void actionSaveAs_triggered();
+  void actionClearConsole_triggered();
+  void actionSaveAs_triggered();
 };

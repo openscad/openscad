@@ -6,95 +6,95 @@
 
 class AxisConfigWidget : public QWidget, public Ui::Axis
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	AxisConfigWidget(QWidget *parent = 0);
-	virtual ~AxisConfigWidget();
-	void updateButtonState(int,bool) const;
-	void AxesChanged(int nr, double val) const;
-	void init();
+  AxisConfigWidget(QWidget *parent = 0);
+  virtual ~AxisConfigWidget();
+  void updateButtonState(int, bool) const;
+  void AxesChanged(int nr, double val) const;
+  void init();
 
-	void updateStates();
+  void updateStates();
 
 public slots:
-	// Input Driver
-        void on_AxisTrim();
-        void on_AxisTrimReset();
-        void on_comboBoxTranslationX_activated(int val);
-        void on_comboBoxTranslationY_activated(int val);
-        void on_comboBoxTranslationZ_activated(int val);
-        void on_comboBoxTranslationXVPRel_activated(int val);
-        void on_comboBoxTranslationYVPRel_activated(int val);
-        void on_comboBoxTranslationZVPRel_activated(int val);
-        void on_comboBoxRotationX_activated(int val);
-        void on_comboBoxRotationY_activated(int val);
-        void on_comboBoxRotationZ_activated(int val);
-        void on_comboBoxRotationXVPRel_activated(int val);
-        void on_comboBoxRotationYVPRel_activated(int val);
-        void on_comboBoxRotationZVPRel_activated(int val);
-        void on_comboBoxZoom_activated(int val);
-        void on_comboBoxZoom2_activated(int val);
+  // Input Driver
+  void on_AxisTrim();
+  void on_AxisTrimReset();
+  void on_comboBoxTranslationX_activated(int val);
+  void on_comboBoxTranslationY_activated(int val);
+  void on_comboBoxTranslationZ_activated(int val);
+  void on_comboBoxTranslationXVPRel_activated(int val);
+  void on_comboBoxTranslationYVPRel_activated(int val);
+  void on_comboBoxTranslationZVPRel_activated(int val);
+  void on_comboBoxRotationX_activated(int val);
+  void on_comboBoxRotationY_activated(int val);
+  void on_comboBoxRotationZ_activated(int val);
+  void on_comboBoxRotationXVPRel_activated(int val);
+  void on_comboBoxRotationYVPRel_activated(int val);
+  void on_comboBoxRotationZVPRel_activated(int val);
+  void on_comboBoxZoom_activated(int val);
+  void on_comboBoxZoom2_activated(int val);
 
 
-	void on_doubleSpinBoxRotateGain_valueChanged(double val);
-	void on_doubleSpinBoxTranslationGain_valueChanged(double val);
-	void on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val);
-	void on_doubleSpinBoxZoomGain_valueChanged(double val);
+  void on_doubleSpinBoxRotateGain_valueChanged(double val);
+  void on_doubleSpinBoxTranslationGain_valueChanged(double val);
+  void on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val);
+  void on_doubleSpinBoxZoomGain_valueChanged(double val);
 
-	void on_doubleSpinBoxDeadzone0_valueChanged(double);
-	void on_doubleSpinBoxDeadzone1_valueChanged(double);
-	void on_doubleSpinBoxDeadzone2_valueChanged(double);
-	void on_doubleSpinBoxDeadzone3_valueChanged(double);
-	void on_doubleSpinBoxDeadzone4_valueChanged(double);
-	void on_doubleSpinBoxDeadzone5_valueChanged(double);
-	void on_doubleSpinBoxDeadzone6_valueChanged(double);
-	void on_doubleSpinBoxDeadzone7_valueChanged(double);
-	void on_doubleSpinBoxDeadzone8_valueChanged(double);
+  void on_doubleSpinBoxDeadzone0_valueChanged(double);
+  void on_doubleSpinBoxDeadzone1_valueChanged(double);
+  void on_doubleSpinBoxDeadzone2_valueChanged(double);
+  void on_doubleSpinBoxDeadzone3_valueChanged(double);
+  void on_doubleSpinBoxDeadzone4_valueChanged(double);
+  void on_doubleSpinBoxDeadzone5_valueChanged(double);
+  void on_doubleSpinBoxDeadzone6_valueChanged(double);
+  void on_doubleSpinBoxDeadzone7_valueChanged(double);
+  void on_doubleSpinBoxDeadzone8_valueChanged(double);
 
-	void on_doubleSpinBoxTrim0_valueChanged(double);
-	void on_doubleSpinBoxTrim1_valueChanged(double);
-	void on_doubleSpinBoxTrim2_valueChanged(double);
-	void on_doubleSpinBoxTrim3_valueChanged(double);
-	void on_doubleSpinBoxTrim4_valueChanged(double);
-	void on_doubleSpinBoxTrim5_valueChanged(double);
-	void on_doubleSpinBoxTrim6_valueChanged(double);
-	void on_doubleSpinBoxTrim7_valueChanged(double);
-	void on_doubleSpinBoxTrim8_valueChanged(double);
+  void on_doubleSpinBoxTrim0_valueChanged(double);
+  void on_doubleSpinBoxTrim1_valueChanged(double);
+  void on_doubleSpinBoxTrim2_valueChanged(double);
+  void on_doubleSpinBoxTrim3_valueChanged(double);
+  void on_doubleSpinBoxTrim4_valueChanged(double);
+  void on_doubleSpinBoxTrim5_valueChanged(double);
+  void on_doubleSpinBoxTrim6_valueChanged(double);
+  void on_doubleSpinBoxTrim7_valueChanged(double);
+  void on_doubleSpinBoxTrim8_valueChanged(double);
 
-	void on_checkBoxHIDAPI_toggled(bool);
-	void on_checkBoxSpaceNav_toggled(bool);
-	void on_checkBoxJoystick_toggled(bool);
-	void on_checkBoxQGamepad_toggled(bool);
-	void on_checkBoxDBus_toggled(bool);
+  void on_checkBoxHIDAPI_toggled(bool);
+  void on_checkBoxSpaceNav_toggled(bool);
+  void on_checkBoxJoystick_toggled(bool);
+  void on_checkBoxQGamepad_toggled(bool);
+  void on_checkBoxDBus_toggled(bool);
 
 signals:
-        void inputMappingChanged() const;
-        void inputCalibrationChanged() const;
-        void inputGainChanged() const;
+  void inputMappingChanged() const;
+  void inputCalibrationChanged() const;
+  void inputGainChanged() const;
 
 private:
-	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize double spinbox min/max/step values from the settings range values */
-	void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize checkbox from the settings */
-	void initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry);
-	/** Update combobox from current settings */
-	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
-	void writeSettings();
-	
-	bool initialized = false;
+  /** Initialize combobox list values from the settings range values */
+  void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry);
+  /** Initialize spinbox min/max values from the settings range values */
+  void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry &entry);
+  /** Initialize double spinbox min/max/step values from the settings range values */
+  void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry &entry);
+  /** Initialize checkbox from the settings */
+  void initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry &entry);
+  /** Update combobox from current settings */
+  void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry);
+  /** Set value from combobox to settings */
+  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry &entry);
+  void writeSettings();
 
-	QString NotEnabledDuringBuild =_("This driver was not enabled during build time and is thus not available.");
+  bool initialized = false;
 
-	QString DBusInputDriverDescription     = _("The DBUS driver is not for actual devices but for remote control, Linux only.");
-	QString HidApiInputDriverDescription   = _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
-	QString SpaceNavInputDriverDescription = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
-	QString JoystickInputDriverDescription = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
-	QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
+  QString NotEnabledDuringBuild = _("This driver was not enabled during build time and is thus not available.");
+
+  QString DBusInputDriverDescription = _("The DBUS driver is not for actual devices but for remote control, Linux only.");
+  QString HidApiInputDriverDescription = _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
+  QString SpaceNavInputDriverDescription = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
+  QString JoystickInputDriverDescription = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
+  QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
 };

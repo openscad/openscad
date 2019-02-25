@@ -38,37 +38,37 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class RenderModule : public AbstractModule
 {
 public:
-	RenderModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+  RenderModule() { }
+  AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
 };
 
 AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	auto node = new RenderNode(inst);
+  auto node = new RenderNode(inst);
 
-	AssignmentList args{Assignment("convexity")};
+  AssignmentList args{Assignment("convexity")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args);
-	inst->scope.apply(*evalctx);
+  Context c(ctx);
+  c.setVariables(evalctx, args);
+  inst->scope.apply(*evalctx);
 
-	auto v = c.lookup_variable("convexity");
-	if (v->type() == Value::ValueType::NUMBER) {
-		node->convexity = static_cast<int>(v->toDouble());
-	}
+  auto v = c.lookup_variable("convexity");
+  if (v->type() == Value::ValueType::NUMBER) {
+    node->convexity = static_cast<int>(v->toDouble());
+  }
 
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+  auto instantiatednodes = inst->instantiateChildren(evalctx);
+  node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
-	return node;
+  return node;
 }
 
 std::string RenderNode::toString() const
 {
-	return STR(this->name() << "(convexity = " << convexity << ")");
+  return STR(this->name() << "(convexity = " << convexity << ")");
 }
 
 void register_builtin_render()
 {
-	Builtins::init("render", new RenderModule());
+  Builtins::init("render", new RenderModule());
 }

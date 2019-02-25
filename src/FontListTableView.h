@@ -4,15 +4,15 @@
 
 class FontListTableView : public QTableView
 {
-	Q_OBJECT;
+  Q_OBJECT;
 
 public:
-        FontListTableView(QWidget *parent = nullptr);
-        void setDragText(const QString &text);
+  FontListTableView(QWidget *parent = nullptr);
+  void setDragText(const QString &text);
 
 protected:
-        void startDrag(Qt::DropActions supportedActions) override;
+  void startDrag(Qt::DropActions supportedActions) override;
 
 private:
-        QString text;
+  QString text;
 };

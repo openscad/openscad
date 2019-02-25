@@ -43,12 +43,12 @@ using namespace NMR;
  * windows types when compiling with MinGW.
  */
 const std::string get_lib3mf_version() {
-	DWORD major, minor, micro;
-	NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
+  DWORD major, minor, micro;
+  NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
 
-	const OpenSCAD::library_version_number header_version{NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO};
-	const OpenSCAD::library_version_number runtime_version{major, minor, micro};
-	return OpenSCAD::get_version_string(header_version, runtime_version);
+  const OpenSCAD::library_version_number header_version{NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO};
+  const OpenSCAD::library_version_number runtime_version{major, minor, micro};
+  return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 #ifdef ENABLE_CGAL
@@ -57,166 +57,169 @@ const std::string get_lib3mf_version() {
 
 typedef std::list<std::shared_ptr<PolySet>> polysets_t;
 
-static Geometry * import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
+static Geometry *import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
-	if (model) {
-		lib3mf_release(model);
-	}
-	if (object_it) {
-		lib3mf_release(object_it);
-	}
-	if (mesh) {
-		delete mesh;
-	}
-	if (mesh2) {
-		delete mesh2;
-	}
+  if (model) {
+    lib3mf_release(model);
+  }
+  if (object_it) {
+    lib3mf_release(object_it);
+  }
+  if (mesh) {
+    delete mesh;
+  }
+  if (mesh2) {
+    delete mesh2;
+  }
 
-	return new PolySet(3);
+  return new PolySet(3);
 }
 
-Geometry * import_3mf(const std::string &filename, const Location &loc)
+Geometry *import_3mf(const std::string &filename, const Location &loc)
 {
-	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
-	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
-	if (result != LIB3MF_OK) {
-		PRINT("ERROR: Error reading 3MF library version");
-		return new PolySet(3);
-	}
+  DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
+  HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
+  if (result != LIB3MF_OK) {
+    PRINT("ERROR: Error reading 3MF library version");
+    return new PolySet(3);
+  }
 
-	if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-		PRINTB("ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
-                        interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
-                        NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
-		return new PolySet(3);
-	}
+  if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
+    PRINTB("ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
+           interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
+           NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
+    return new PolySet(3);
+  }
 
-	PLib3MFModel *model;
-	result = lib3mf_createmodel(&model);
-	if (result != LIB3MF_OK) {
-		PRINTB("ERROR: Could not create model: %08lx", result);
-		return import_3mf_error();
-	}
+  PLib3MFModel *model;
+  result = lib3mf_createmodel(&model);
+  if (result != LIB3MF_OK) {
+    PRINTB("ERROR: Could not create model: %08lx", result);
+    return import_3mf_error();
+  }
 
-	PLib3MFModelReader *reader;
-	result = lib3mf_model_queryreader(model, "3mf", &reader);
-	if (result != LIB3MF_OK) {
-		PRINTB("ERROR: Could not create 3MF reader: %08lx", result);
-		return import_3mf_error(model);
-	}
+  PLib3MFModelReader *reader;
+  result = lib3mf_model_queryreader(model, "3mf", &reader);
+  if (result != LIB3MF_OK) {
+    PRINTB("ERROR: Could not create 3MF reader: %08lx", result);
+    return import_3mf_error(model);
+  }
 
-	result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
-	lib3mf_release(reader);
-	if (result != LIB3MF_OK) {
-		PRINTB("WARNING: Could not read file '%s', import() at line %d", filename.c_str() % loc.firstLine());
-		return import_3mf_error(model);
-	}
+  result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
+  lib3mf_release(reader);
+  if (result != LIB3MF_OK) {
+    PRINTB("WARNING: Could not read file '%s', import() at line %d", filename.c_str() % loc.firstLine());
+    return import_3mf_error(model);
+  }
 
-	PLib3MFModelResourceIterator *object_it;
-	result = lib3mf_model_getmeshobjects(model, &object_it);
-	if (result != LIB3MF_OK) {
-		return import_3mf_error(model);
-	}
+  PLib3MFModelResourceIterator *object_it;
+  result = lib3mf_model_getmeshobjects(model, &object_it);
+  if (result != LIB3MF_OK) {
+    return import_3mf_error(model);
+  }
 
-	PolySet *first_mesh = 0;
-	polysets_t meshes;
-	unsigned int mesh_idx = 0;
-	while (true) {
-		int has_next;
-		result = lib3mf_resourceiterator_movenext(object_it, &has_next);
-		if (result != LIB3MF_OK) {
-			return import_3mf_error(model, object_it, first_mesh);
-		}
-		if (!has_next) {
-			break;
-		}
+  PolySet *first_mesh = 0;
+  polysets_t meshes;
+  unsigned int mesh_idx = 0;
+  while (true) {
+    int has_next;
+    result = lib3mf_resourceiterator_movenext(object_it, &has_next);
+    if (result != LIB3MF_OK) {
+      return import_3mf_error(model, object_it, first_mesh);
+    }
+    if (!has_next) {
+      break;
+    }
 
-		PLib3MFModelResource *object;
-		result = lib3mf_resourceiterator_getcurrent(object_it, &object);
-		if (result != LIB3MF_OK) {
-			return import_3mf_error(model, object_it, first_mesh);
-		}
+    PLib3MFModelResource *object;
+    result = lib3mf_resourceiterator_getcurrent(object_it, &object);
+    if (result != LIB3MF_OK) {
+      return import_3mf_error(model, object_it, first_mesh);
+    }
 
-		DWORD vertex_count;
-		result = lib3mf_meshobject_getvertexcount(object, &vertex_count);
-		if (result != LIB3MF_OK) {
-			return import_3mf_error(model, object_it, first_mesh);
-		}
-		DWORD triangle_count;
-		result = lib3mf_meshobject_gettrianglecount(object, &triangle_count);
-		if (result != LIB3MF_OK) {
-			return import_3mf_error(model, object_it, first_mesh);
-		}
+    DWORD vertex_count;
+    result = lib3mf_meshobject_getvertexcount(object, &vertex_count);
+    if (result != LIB3MF_OK) {
+      return import_3mf_error(model, object_it, first_mesh);
+    }
+    DWORD triangle_count;
+    result = lib3mf_meshobject_gettrianglecount(object, &triangle_count);
+    if (result != LIB3MF_OK) {
+      return import_3mf_error(model, object_it, first_mesh);
+    }
 
-		PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
+    PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
-		PolySet *p = new PolySet(3);
-		for (DWORD idx = 0;idx < triangle_count;idx++) {
-			MODELMESHTRIANGLE triangle;
-			if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh, p);
-			}
-			
-			MODELMESHVERTEX vertex1, vertex2, vertex3;
-			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[0], &vertex1) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh, p);
-			}
-			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[1], &vertex2) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh, p);
-			}
-			if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[2], &vertex3) != LIB3MF_OK) {
-				return import_3mf_error(model, object_it, first_mesh, p);
-			}
-			
-			p->append_poly();
-			p->append_vertex(vertex1.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2]);
-			p->append_vertex(vertex2.m_fPosition[0], vertex2.m_fPosition[1], vertex2.m_fPosition[2]);
-			p->append_vertex(vertex3.m_fPosition[0], vertex3.m_fPosition[1], vertex3.m_fPosition[2]);
-		}
+    PolySet *p = new PolySet(3);
+    for (DWORD idx = 0; idx < triangle_count; idx++) {
+      MODELMESHTRIANGLE triangle;
+      if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
+        return import_3mf_error(model, object_it, first_mesh, p);
+      }
 
-		if (first_mesh) {
-			meshes.push_back(std::shared_ptr<PolySet>(p));
-		} else {
-			first_mesh = p;
-		}
-		mesh_idx++;
-	}
+      MODELMESHVERTEX vertex1, vertex2, vertex3;
+      if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[0], &vertex1) != LIB3MF_OK) {
+        return import_3mf_error(model, object_it, first_mesh, p);
+      }
+      if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[1], &vertex2) != LIB3MF_OK) {
+        return import_3mf_error(model, object_it, first_mesh, p);
+      }
+      if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[2], &vertex3) != LIB3MF_OK) {
+        return import_3mf_error(model, object_it, first_mesh, p);
+      }
 
-	lib3mf_release(object_it);
-	lib3mf_release(model);
+      p->append_poly();
+      p->append_vertex(vertex1.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2]);
+      p->append_vertex(vertex2.m_fPosition[0], vertex2.m_fPosition[1], vertex2.m_fPosition[2]);
+      p->append_vertex(vertex3.m_fPosition[0], vertex3.m_fPosition[1], vertex3.m_fPosition[2]);
+    }
 
-	if (first_mesh == 0) {
-		return new PolySet(3);
-	} else if (meshes.empty()) {
-		return first_mesh;
-	} else {
-		PolySet *p = new PolySet(3);
+    if (first_mesh) {
+      meshes.push_back(std::shared_ptr<PolySet>(p));
+    }
+    else {
+      first_mesh = p;
+    }
+    mesh_idx++;
+  }
+
+  lib3mf_release(object_it);
+  lib3mf_release(model);
+
+  if (first_mesh == 0) {
+    return new PolySet(3);
+  }
+  else if (meshes.empty()) {
+    return first_mesh;
+  }
+  else {
+    PolySet *p = new PolySet(3);
 #ifdef ENABLE_CGAL
-		Geometry::Geometries children;
-		children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(first_mesh)));
-		for (polysets_t::iterator it = meshes.begin();it != meshes.end();it++) {
-			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
-		}
-		CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OpenSCADOperator::UNION);
+    Geometry::Geometries children;
+    children.push_back(std::make_pair((const AbstractNode *)NULL,  shared_ptr<const Geometry>(first_mesh)));
+    for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); it++) {
+      children.push_back(std::make_pair((const AbstractNode *)NULL,  shared_ptr<const Geometry>(*it)));
+    }
+    CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, OpenSCADOperator::UNION);
 
-		CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *p);
-		delete N;
+    CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *p);
+    delete N;
 #endif
-		return p;
-	}
+    return p;
+  }
 }
 
 #else // ENABLE_LIB3MF
 
 const std::string get_lib3mf_version() {
-	const std::string lib3mf_version = "(not enabled)";
-	return lib3mf_version;
+  const std::string lib3mf_version = "(not enabled)";
+  return lib3mf_version;
 }
 
-Geometry * import_3mf(const std::string &, const Location &loc)
+Geometry *import_3mf(const std::string &, const Location &loc)
 {
-	PRINTB("WARNING: Import from 3MF format was not enabled when building the application, import() at line %d", loc.firstLine());
-	return new PolySet(3);
+  PRINTB("WARNING: Import from 3MF format was not enabled when building the application, import() at line %d", loc.firstLine());
+  return new PolySet(3);
 }
 
 #endif // ENABLE_LIB3MF

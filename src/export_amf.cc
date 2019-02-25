@@ -38,9 +38,9 @@
 #define QUOTED(x__) QUOTE(x__)
 
 struct triangle {
-    std::string vs1;
-    std::string vs2;
-    std::string vs3;
+  std::string vs1;
+  std::string vs2;
+  std::string vs3;
 };
 
 static int objectid;
@@ -51,138 +51,137 @@ static int objectid;
  */
 static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
-	if (!root_N.p3->is_simple()) {
-		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
-		return;
-	}
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-		CGAL_Polyhedron P;
-		root_N.p3->convert_to_Polyhedron(P);
+  if (!root_N.p3->is_simple()) {
+    PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
+    return;
+  }
+  CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+  try {
+    CGAL_Polyhedron P;
+    root_N.p3->convert_to_Polyhedron(P);
 
-		typedef CGAL_Polyhedron::Vertex Vertex;
-		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
-		typedef CGAL_Polyhedron::Facet_const_iterator FCI;
-		typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+    typedef CGAL_Polyhedron::Vertex Vertex;
+    typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
+    typedef CGAL_Polyhedron::Facet_const_iterator FCI;
+    typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 
-		std::vector<std::string> vertices;
-		std::vector<triangle> triangles;
+    std::vector<std::string> vertices;
+    std::vector<triangle> triangles;
 
-		for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
-			HFCC hc = fi->facet_begin();
-			HFCC hc_end = hc;
-			Vertex v1, v2, v3;
-			v1 = *VCI((hc++)->vertex());
-			v3 = *VCI((hc++)->vertex());
-			do {
-				v2 = v3;
-				v3 = *VCI((hc++)->vertex());
-				double x1 = CGAL::to_double(v1.point().x());
-				double y1 = CGAL::to_double(v1.point().y());
-				double z1 = CGAL::to_double(v1.point().z());
-				double x2 = CGAL::to_double(v2.point().x());
-				double y2 = CGAL::to_double(v2.point().y());
-				double z2 = CGAL::to_double(v2.point().z());
-				double x3 = CGAL::to_double(v3.point().x());
-				double y3 = CGAL::to_double(v3.point().y());
-				double z3 = CGAL::to_double(v3.point().z());
-				std::string vs1{STR(x1 << " " << y1 << " " << z1)};
-				std::string vs2{STR(x2 << " " << y2 << " " << z2)};
-				std::string vs3{STR(x3 << " " << y3 << " " << z3)};
-				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
-					vertices.push_back(vs1);
-				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
-					vertices.push_back(vs2);
-				if (std::find(vertices.begin(), vertices.end(), vs3) == vertices.end())
-					vertices.push_back(vs3);
+    for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+      HFCC hc = fi->facet_begin();
+      HFCC hc_end = hc;
+      Vertex v1, v2, v3;
+      v1 = *VCI((hc++)->vertex());
+      v3 = *VCI((hc++)->vertex());
+      do {
+        v2 = v3;
+        v3 = *VCI((hc++)->vertex());
+        double x1 = CGAL::to_double(v1.point().x());
+        double y1 = CGAL::to_double(v1.point().y());
+        double z1 = CGAL::to_double(v1.point().z());
+        double x2 = CGAL::to_double(v2.point().x());
+        double y2 = CGAL::to_double(v2.point().y());
+        double z2 = CGAL::to_double(v2.point().z());
+        double x3 = CGAL::to_double(v3.point().x());
+        double y3 = CGAL::to_double(v3.point().y());
+        double z3 = CGAL::to_double(v3.point().z());
+        std::string vs1{STR(x1 << " " << y1 << " " << z1)};
+        std::string vs2{STR(x2 << " " << y2 << " " << z2)};
+        std::string vs3{STR(x3 << " " << y3 << " " << z3)};
+        if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end()) vertices.push_back(vs1);
+        if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end()) vertices.push_back(vs2);
+        if (std::find(vertices.begin(), vertices.end(), vs3) == vertices.end()) vertices.push_back(vs3);
 
-				if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
-					// The above condition ensures that there are 3 distinct vertices, but
-					// they may be collinear. If they are, the unit normal is meaningless
-					// so the default value of "1 0 0" can be used. If the vertices are not
-					// collinear then the unit normal must be calculated from the
-					// components.
-					triangle tri = {vs1, vs2, vs3};
-					triangles.push_back(tri);
-				}
-			} while (hc != hc_end);
-		}
+        if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
+          // The above condition ensures that there are 3 distinct vertices, but
+          // they may be collinear. If they are, the unit normal is meaningless
+          // so the default value of "1 0 0" can be used. If the vertices are not
+          // collinear then the unit normal must be calculated from the
+          // components.
+          triangle tri = {vs1, vs2, vs3};
+          triangles.push_back(tri);
+        }
+      } while (hc != hc_end);
+    }
 
-		output << " <object id=\"" << objectid++ << "\">\r\n"
-					 << "  <mesh>\r\n";
-		output << "   <vertices>\r\n";
-		for (size_t i = 0; i < vertices.size(); i++) {
-			std::string s = vertices[i];
-			output << "    <vertex><coordinates>\r\n";
-			char* chrs = new char[s.length() + 1];
-			strcpy(chrs, s.c_str());
-			std::string coords = strtok(chrs, " ");
-			output << "     <x>" << coords << "</x>\r\n";
-			coords = strtok(nullptr, " ");
-			output << "     <y>" << coords << "</y>\r\n";
-			coords = strtok(nullptr, " ");
-			output << "     <z>" << coords << "</z>\r\n";
-			output << "    </coordinates></vertex>\r\n";
-			delete[] chrs;
-		}
-		output << "   </vertices>\r\n";
-		output << "   <volume>\r\n";
-		for (size_t i = 0; i < triangles.size(); i++) {
-			triangle t = triangles[i];
-			output << "    <triangle>\r\n";
-			size_t index;
-			index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs1));
-			output << "     <v1>" << index << "</v1>\r\n";
-			index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs2));
-			output << "     <v2>" << index << "</v2>\r\n";
-			index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs3));
-			output << "     <v3>" << index << "</v3>\r\n";
-			output << "    </triangle>\r\n";
-		}
-		output << "   </volume>\r\n";
-		output << "  </mesh>\r\n"
-					 << " </object>\r\n";
-	} catch (CGAL::Assertion_exception& e) {
-		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
-	}
-	CGAL::set_error_behaviour(old_behaviour);
+    output << " <object id=\"" << objectid++ << "\">\r\n"
+           << "  <mesh>\r\n";
+    output << "   <vertices>\r\n";
+    for (size_t i = 0; i < vertices.size(); i++) {
+      std::string s = vertices[i];
+      output << "    <vertex><coordinates>\r\n";
+      char *chrs = new char[s.length() + 1];
+      strcpy(chrs, s.c_str());
+      std::string coords = strtok(chrs, " ");
+      output << "     <x>" << coords << "</x>\r\n";
+      coords = strtok(nullptr, " ");
+      output << "     <y>" << coords << "</y>\r\n";
+      coords = strtok(nullptr, " ");
+      output << "     <z>" << coords << "</z>\r\n";
+      output << "    </coordinates></vertex>\r\n";
+      delete[] chrs;
+    }
+    output << "   </vertices>\r\n";
+    output << "   <volume>\r\n";
+    for (size_t i = 0; i < triangles.size(); i++) {
+      triangle t = triangles[i];
+      output << "    <triangle>\r\n";
+      size_t index;
+      index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs1));
+      output << "     <v1>" << index << "</v1>\r\n";
+      index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs2));
+      output << "     <v2>" << index << "</v2>\r\n";
+      index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs3));
+      output << "     <v3>" << index << "</v3>\r\n";
+      output << "    </triangle>\r\n";
+    }
+    output << "   </volume>\r\n";
+    output << "  </mesh>\r\n"
+           << " </object>\r\n";
+  }
+  catch (CGAL::Assertion_exception &e) {
+    PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+  }
+  CGAL::set_error_behaviour(old_behaviour);
 }
 
 static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		if (!N->isEmpty()) append_amf(*N, output);
-	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
-		// FIXME: Implement this without creating a Nef polyhedron
-		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
-		if (!N->isEmpty()) append_amf(*N, output);
-		delete N;
-	}
-	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
-		assert(false && "Unsupported file format");
-	} else {
-		assert(false && "Not implemented");
-	}
+  if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+    if (!N->isEmpty()) append_amf(*N, output);
+  }
+  else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+    // FIXME: Implement this without creating a Nef polyhedron
+    CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
+    if (!N->isEmpty()) append_amf(*N, output);
+    delete N;
+  }
+  else if (dynamic_cast<const Polygon2d *>(geom.get())) {
+    assert(false && "Unsupported file format");
+  }
+  else {
+    assert(false && "Not implemented");
+  }
 }
 
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+  setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
-	output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-				 << "<amf unit=\"millimeter\">\r\n"
-				 << " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
+  output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+         << "<amf unit=\"millimeter\">\r\n"
+         << " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
 #ifdef OPENSCAD_COMMIT
-				 << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
+    << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
 #endif
-				 << "</metadata>\r\n";
+    << "</metadata>\r\n";
 
-	objectid = 0;
-	append_amf(geom, output);
+  objectid = 0;
+  append_amf(geom, output);
 
-	output << "</amf>\r\n";
-	setlocale(LC_NUMERIC, ""); // Set default locale
+  output << "</amf>\r\n";
+  setlocale(LC_NUMERIC, ""); // Set default locale
 }
 
 #endif // ENABLE_CGAL

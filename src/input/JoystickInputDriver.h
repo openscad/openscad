@@ -30,27 +30,27 @@
 class JoystickInputDriver : public InputDriver
 {
 public:
-    JoystickInputDriver();
-    ~JoystickInputDriver();
-    void run() override;
-    bool open() override;
-    void close() override;
-    const std::string & get_name() const  override;
-    void setJoystickNr(std::string jnr);
+  JoystickInputDriver();
+  ~JoystickInputDriver();
+  void run() override;
+  bool open() override;
+  void close() override;
+  const std::string &get_name() const override;
+  void setJoystickNr(std::string jnr);
 
-    int getButtonCount() const override{
-        return buttons;
-    }
-    int getAxisCount() const override{
-        return axes;
-    }
+  int getButtonCount() const override {
+    return buttons;
+  }
+  int getAxisCount() const override {
+    return axes;
+  }
 
 private:
-    int fd;
-    int version;
-    std::string nr{"0"};
-    unsigned char axes;
-    unsigned char buttons;
-    char name[1024];
-    volatile bool stopRequest;
+  int fd;
+  int version;
+  std::string nr{"0"};
+  unsigned char axes;
+  unsigned char buttons;
+  char name[1024];
+  volatile bool stopRequest;
 };

@@ -31,6 +31,6 @@
 
 namespace StatCache {
 
-	int stat(const std::string &path, struct ::stat &st);
+int stat(const std::string &path, struct ::stat &st);
 
 }

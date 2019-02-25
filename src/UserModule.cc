@@ -37,58 +37,58 @@
 
 std::deque<std::string> UserModule::module_stack;
 
-static void __attribute__ ((noinline)) print_err(std::string name, const Location &loc,const Context *ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
+static void __attribute__ ((noinline)) print_err(std::string name, const Location &loc, const Context *ctx){
+  std::string locs = loc.toRelativeString(ctx->documentPath());
+  PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
 }
 
 AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	if (StackCheck::inst()->check()) {
-		print_err(inst->name(),loc,ctx);
-		throw RecursionException::create("module", inst->name(),loc);
-		return nullptr;
-	}
+  if (StackCheck::inst()->check()) {
+    print_err(inst->name(), loc, ctx);
+    throw RecursionException::create("module", inst->name(), loc);
+    return nullptr;
+  }
 
-	// At this point we know that nobody will modify the dependencies of the local scope
-	// passed to this instance, so we can populate the context
-	inst->scope.apply(*evalctx);
-    
-	ModuleContext c(ctx, evalctx);
-	// set $children first since we might have variables depending on it
-	c.set_variable("$children", ValuePtr(double(inst->scope.children.size())));
-	module_stack.push_back(inst->name());
-	c.set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
-	c.initializeModule(*this);
-	// FIXME: Set document path to the path of the module
+  // At this point we know that nobody will modify the dependencies of the local scope
+  // passed to this instance, so we can populate the context
+  inst->scope.apply(*evalctx);
+
+  ModuleContext c(ctx, evalctx);
+  // set $children first since we might have variables depending on it
+  c.set_variable("$children", ValuePtr(double(inst->scope.children.size())));
+  module_stack.push_back(inst->name());
+  c.set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
+  c.initializeModule(*this);
+  // FIXME: Set document path to the path of the module
 #if 0 && DEBUG
-	c.dump(this, inst);
+  c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new GroupNode(inst);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	module_stack.pop_back();
+  AbstractNode *node = new GroupNode(inst);
+  std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
+  node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+  module_stack.pop_back();
 
-	return node;
+  return node;
 }
 
 void UserModule::print(std::ostream &stream, const std::string &indent) const
 {
-	std::string tab;
-	if (!this->name.empty()) {
-		stream << indent << "module " << this->name << "(";
-		for (size_t i=0; i < this->definition_arguments.size(); i++) {
-			const Assignment &arg = this->definition_arguments[i];
-			if (i > 0) stream << ", ";
-			stream << arg.name;
-			if (arg.expr) stream << " = " << *arg.expr;
-		}
-		stream << ") {\n";
-		tab = "\t";
-	}
-	scope.print(stream, indent + tab);
-	if (!this->name.empty()) {
-		stream << indent << "}\n";
-	}
+  std::string tab;
+  if (!this->name.empty()) {
+    stream << indent << "module " << this->name << "(";
+    for (size_t i = 0; i < this->definition_arguments.size(); i++) {
+      const Assignment &arg = this->definition_arguments[i];
+      if (i > 0) stream << ", ";
+      stream << arg.name;
+      if (arg.expr) stream << " = " << *arg.expr;
+    }
+    stream << ") {\n";
+    tab = "\t";
+  }
+  scope.print(stream, indent + tab);
+  if (!this->name.empty()) {
+    stream << indent << "}\n";
+  }
 }

@@ -31,66 +31,67 @@ std::mutex PrintService::printServiceMutex;
 
 PrintService::PrintService()
 {
-	enabled = false;
-	try {
-		init();
-	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
-	}
-	if (enabled) {
-		PRINTB("External print service available: %s (upload limit = %d MB)", displayName.toStdString() % fileSizeLimitMB);
-	}
+  enabled = false;
+  try {
+    init();
+  }
+  catch (const NetworkException &e) {
+    PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+  }
+  if (enabled) {
+    PRINTB("External print service available: %s (upload limit = %d MB)", displayName.toStdString() % fileSizeLimitMB);
+  }
 }
 
 PrintService::~PrintService()
 {
 }
 
-PrintService * PrintService::inst()
+PrintService *PrintService::inst()
 {
-	static PrintService *instance = nullptr;
+  static PrintService *instance = nullptr;
 
-	std::lock_guard<std::mutex> lock(printServiceMutex);
-	
-	if (instance == nullptr) {
-		instance = new PrintService();
-	}
+  std::lock_guard<std::mutex> lock(printServiceMutex);
 
-	return instance;
+  if (instance == nullptr) {
+    instance = new PrintService();
+  }
+
+  return instance;
 }
 
 void PrintService::init()
 {
-	auto networkRequest = NetworkRequest<void>{QUrl{"https://files.openscad.org/print-service.json"}, { 200 }, 30};
-	return networkRequest.execute(
-			[](QNetworkRequest& request) {
-				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-			},
-			[](QNetworkAccessManager& nam, QNetworkRequest& request) {
-				return nam.get(request);
-			},
-			[&](QNetworkReply *reply) {
-				const auto doc = QJsonDocument::fromJson(reply->readAll());
-				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-				const QStringList services = doc.object().keys();
-				if (services.length() >= 1) {
-					service = services.at(0);
-					if (!service.isEmpty()) {
-						initService(doc.object().value(service).toObject());
-					}
-				}
-			}
-	);
+  auto networkRequest = NetworkRequest<void>{QUrl{"https://files.openscad.org/print-service.json"}, { 200 }, 30};
+  return networkRequest.execute(
+    [](QNetworkRequest &request) {
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+  },
+    [](QNetworkAccessManager &nam, QNetworkRequest &request) {
+    return nam.get(request);
+  },
+    [&](QNetworkReply *reply) {
+    const auto doc = QJsonDocument::fromJson(reply->readAll());
+    PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+    const QStringList services = doc.object().keys();
+    if (services.length() >= 1) {
+      service = services.at(0);
+      if (!service.isEmpty()) {
+        initService(doc.object().value(service).toObject());
+      }
+    }
+  }
+    );
 }
 
-void PrintService::initService(const QJsonObject& serviceObject)
+void PrintService::initService(const QJsonObject &serviceObject)
 {
-	displayName = serviceObject.value("displayName").toString();
-	apiUrl = serviceObject.value("apiUrl").toString();
-	fileSizeLimitMB = serviceObject.value("fileSizeLimitMB").toInt();
-	infoHtml = serviceObject.value("infoHtml").toString();
-	infoUrl = serviceObject.value("infoUrl").toString();
-	enabled = !displayName.isEmpty() && !apiUrl.isEmpty() && !infoHtml.isEmpty() && !infoUrl.isEmpty() && fileSizeLimitMB != 0;
+  displayName = serviceObject.value("displayName").toString();
+  apiUrl = serviceObject.value("apiUrl").toString();
+  fileSizeLimitMB = serviceObject.value("fileSizeLimitMB").toInt();
+  infoHtml = serviceObject.value("infoHtml").toString();
+  infoUrl = serviceObject.value("infoUrl").toString();
+  enabled = !displayName.isEmpty() && !apiUrl.isEmpty() && !infoHtml.isEmpty() && !infoUrl.isEmpty() && fileSizeLimitMB != 0;
 }
 
 /**
@@ -105,44 +106,44 @@ void PrintService::initService(const QJsonObject& serviceObject)
  * Outputs:
  *    The resulting url to go to next to continue the order process.
  */
-const QString PrintService::upload(const QString& fileName, const QString& contentBase64, network_progress_func_t progress_func)
+const QString PrintService::upload(const QString &fileName, const QString &contentBase64, network_progress_func_t progress_func)
 {
-	QJsonObject jsonInput;
-	jsonInput.insert("fileName", fileName);
-	jsonInput.insert("file", contentBase64);
+  QJsonObject jsonInput;
+  jsonInput.insert("fileName", fileName);
+  jsonInput.insert("file", contentBase64);
 
-    // Safe guard against QJson silently dropping the file content if it's
-	// too big. This seems to be configured at MaxSize = (1<<27) - 1 in Qt
-	// via qtbase/src/corelib/json/qjson_p.h
-	// Due to the base64 encoding having 33% overhead, that should allow for
-	// about 96MB data.
-    if (jsonInput.value("file") == QJsonValue::Undefined) {
-		const QString msg = "Could not encode STL into JSON. Perhaps it is too large of a file? Maybe try reducing the model resolution.";
-        throw NetworkException(QNetworkReply::ProtocolFailure, msg);
-	}
+  // Safe guard against QJson silently dropping the file content if it's
+  // too big. This seems to be configured at MaxSize = (1<<27) - 1 in Qt
+  // via qtbase/src/corelib/json/qjson_p.h
+  // Due to the base64 encoding having 33% overhead, that should allow for
+  // about 96MB data.
+  if (jsonInput.value("file") == QJsonValue::Undefined) {
+    const QString msg = "Could not encode STL into JSON. Perhaps it is too large of a file? Maybe try reducing the model resolution.";
+    throw NetworkException(QNetworkReply::ProtocolFailure, msg);
+  }
 
-	auto networkRequest = NetworkRequest<const QString>{QUrl{apiUrl}, { 200, 201 }, 180};
-	networkRequest.set_progress_func(progress_func);
-	return networkRequest.execute(
-			[](QNetworkRequest& request) {
-				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-			},
-			[&](QNetworkAccessManager& nam, QNetworkRequest& request) {
-				return nam.post(request, QJsonDocument(jsonInput).toJson());
-			},
-			[](QNetworkReply *reply) {
-				const auto doc = QJsonDocument::fromJson(reply->readAll());
-				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+  auto networkRequest = NetworkRequest<const QString>{QUrl{apiUrl}, { 200, 201 }, 180};
+  networkRequest.set_progress_func(progress_func);
+  return networkRequest.execute(
+    [](QNetworkRequest &request) {
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+  },
+    [&](QNetworkAccessManager &nam, QNetworkRequest &request) {
+    return nam.post(request, QJsonDocument(jsonInput).toJson());
+  },
+    [](QNetworkReply *reply) {
+    const auto doc = QJsonDocument::fromJson(reply->readAll());
+    PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
 
-				// Extract cartUrl which gives the page to open in a webbrowser to view uploaded part
-				const auto cartUrlValue = doc.object().value("data").toObject().value("cartUrl");
-				const auto cartUrl = cartUrlValue.toString();
-				if ((cartUrlValue == QJsonValue::Undefined) || (cartUrl.isEmpty())) {
-					const QString msg = "Could not get data.cartUrl field from response.";
-					throw NetworkException(QNetworkReply::ProtocolFailure, msg);
-				}
-				PRINTB("Upload finished, opening URL %s.", cartUrl.toStdString());
-				return cartUrl;
-			}
-	);
+    // Extract cartUrl which gives the page to open in a webbrowser to view uploaded part
+    const auto cartUrlValue = doc.object().value("data").toObject().value("cartUrl");
+    const auto cartUrl = cartUrlValue.toString();
+    if ((cartUrlValue == QJsonValue::Undefined) || (cartUrl.isEmpty())) {
+      const QString msg = "Could not get data.cartUrl field from response.";
+      throw NetworkException(QNetworkReply::ProtocolFailure, msg);
+    }
+    PRINTB("Upload finished, opening URL %s.", cartUrl.toStdString());
+    return cartUrl;
+  }
+    );
 }

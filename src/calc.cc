@@ -29,14 +29,14 @@
 #include <cmath>
 
 /*!
-	Returns the number of subdivision of a whole circle, given radius and
-	the three special variables $fn, $fs and $fa
-*/
+   Returns the number of subdivision of a whole circle, given radius and
+   the three special variables $fn, $fs and $fa
+ */
 int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
 {
-	// FIXME: It would be better to refuse to create an object. Let's do more strict error handling
-	// in future versions of OpenSCAD
-	if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return 3;
-	if (fn > 0.0) return static_cast<int>(fn >= 3 ? fn : 3);
-	return static_cast<int>(ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5)));
+  // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
+  // in future versions of OpenSCAD
+  if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return 3;
+  if (fn > 0.0) return static_cast<int>(fn >= 3 ? fn : 3);
+  return static_cast<int>(ceil(fmax(fmin(360.0 / fa, r * 2 * M_PI / fs), 5)));
 }
