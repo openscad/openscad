@@ -45,11 +45,17 @@ AxisConfigWidget::~AxisConfigWidget()
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val *100;
 
-	QString s =  QString::number(val, 'f', 2 );
 	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis")+nr);
 	if(progressBar==nullptr) return;
-	progressBar->setValue(value);
-	progressBar->setFormat(s);
+	progressBar->setValue(value); //set where the bar is
+
+	//QProgressBar generates the shown string form the format string.
+	//By setting a format string without a place holder,
+	//we can set arbitrary text, like a custom formated double.
+	//(Note: QProgressBar internally works on int, so has no formating for double values)
+	//(Note: The text of a QProgressBar can not be set directly)
+	QString s =  QString::number(val, 'f', 2 );
+	progressBar->setFormat(s); 
 	
 	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone")+nr);
 	if(deadzone){
