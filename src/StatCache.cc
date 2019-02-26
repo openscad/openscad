@@ -33,7 +33,7 @@
 
 namespace {
 
-const float stale = 0.190;  // Maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
+const float stale = 190;  // 190ms, maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
 
 double millis_clock(void)
 {
