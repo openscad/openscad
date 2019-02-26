@@ -104,7 +104,7 @@ private:
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
-	void compileTopLevelDocument(bool rebuildParameterWidget);
+	void parseTopLevelDocument(bool rebuildParameterWidget);
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
@@ -306,6 +306,7 @@ private:
 	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
 	void clearExportPaths(); // clear exports paths when main file is changed by open, new, etc.
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
+	int last_parser_error_pos; // last highlighted error position
 
 signals:
 	void highlightError(int);

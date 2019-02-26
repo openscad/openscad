@@ -177,7 +177,8 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
 } // namespace
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr), progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0)
+	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr),
+      progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
 
@@ -892,7 +893,7 @@ void MainWindow::openFile(const QString &new_filename)
 	clearExportPaths();
 
 	try {
-		compileTopLevelDocument(true);
+		parseTopLevelDocument(true);
 	} catch (const HardWarningException&) {
 		exceptionCleanup();
 	}
@@ -1084,7 +1085,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 
 		if (shouldcompiletoplevel) {
 			if (editor->isContentModified()) saveBackup();
-			compileTopLevelDocument(rebuildParameterWidget);
+			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
 		}
 
@@ -1097,6 +1098,13 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			}
 		}
 
+		if (didcompile && parser_error_pos != last_parser_error_pos) {
+			emit unhighlightLastError();
+			if (!this->root_module) {
+				last_parser_error_pos = parser_error_pos;
+				emit highlightError( parser_error_pos );
+			}
+		}
 		// If we're auto-reloading, listen for a cascade of changes by starting a timer
 		// if something changed _and_ there are any external dependencies
 		if (reload && didcompile && this->root_module) {
@@ -1108,14 +1116,6 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			}
 		}
 
-		if (!reload && didcompile) {
-			if (!animate_panel->isVisible()) {
-				emit unhighlightLastError();
-				if (!this->root_module) {
-					emit highlightError( parser_error_pos );
-				}
-			}
-		}
 
 		compileDone(didcompile | forcedone);
 	}catch(const HardWarningException&){
@@ -1261,7 +1261,6 @@ void MainWindow::instantiateRoot()
 	}
 
 	if (!this->root_node) {
-		this->last_compiled_doc = ""; // undo the damage so F4 works
 		if (parser_error_pos < 0) {
 			PRINT("ERROR: Compilation failed! (no top level object found)");
 		} else {
@@ -1896,7 +1895,7 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
+void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 {
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
