@@ -48,6 +48,7 @@ public:
     int getAxisCount() const override{
         return 6;
     }
+
 private:
 	std::unique_ptr<QGamepad> gamepad;
 };
