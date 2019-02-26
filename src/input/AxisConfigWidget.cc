@@ -45,7 +45,7 @@ AxisConfigWidget::~AxisConfigWidget()
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val *100;
 
-	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis")+nr);
+	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
 	if(progressBar==nullptr) return;
 	progressBar->setValue(value); //set where the bar is
 
@@ -57,7 +57,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	QString s =  QString::number(val, 'f', 2 );
 	progressBar->setFormat(s); 
 	
-	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone")+nr);
+	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
 	if(deadzone){
 		QString style;
 		bool active = deadzone->value() < std::abs(val);
@@ -140,12 +140,12 @@ void AxisConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
 		}
-		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
+		spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
@@ -159,7 +159,7 @@ void AxisConfigWidget::init() {
 
 	//use a custom style for the axis indicators,
 	//to prevent getting operating specific
-	//(potentially animated) progressbars
+	//(potentially animated) ProgressBars
 	int light = this->progressBarAxis0->palette().text().color().lightness();
 	this->darkModeDetected = light>165;
 	QString style = (this-> darkModeDetected) ? ProgressbarStyleDark : ProgressbarStyleLight;
@@ -416,7 +416,7 @@ void AxisConfigWidget::on_AxisTrim()
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 
 		if(spin && ent){
@@ -438,7 +438,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 			Settings::Settings::inst()->set(*ent, 0.00);
 		}
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
 		if(spin){
 			spin->setValue(0.00);
 		}
@@ -580,7 +580,7 @@ void AxisConfigWidget::updateStates(){
 	if(!initialized) return;
 
 	int cnt = InputDriverManager::instance()->getAxisCount();
-	for (int i=0;i<9;i++) {
+	for (int i=0;i<InputEventMapper::getMaxAxis();i++) {
 		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
 		if( cnt <= i){
 			progressbar->setEnabled(false);
