@@ -889,7 +889,6 @@ void MainWindow::openFile(const QString &new_filename)
 
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
-	clearCurrentOutput();
 	clearExportPaths();
 
 	try {
@@ -897,6 +896,8 @@ void MainWindow::openFile(const QString &new_filename)
 	} catch (const HardWarningException&) {
 		exceptionCleanup();
 	}
+	this->last_compiled_doc = ""; // undo the damage so F4 works
+	clearCurrentOutput();
 }
 
 void MainWindow::setFileName(const QString &filename)
@@ -1260,6 +1261,7 @@ void MainWindow::instantiateRoot()
 	}
 
 	if (!this->root_node) {
+		this->last_compiled_doc = ""; // undo the damage so F4 works
 		if (parser_error_pos < 0) {
 			PRINT("ERROR: Compilation failed! (no top level object found)");
 		} else {
