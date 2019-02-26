@@ -139,7 +139,7 @@ void HidApiInputDriver::hidapi_decode_axis(const unsigned char *buf, unsigned in
 {
     if ((buf[0] == 1 || buf[0] == 2) && len == 7) {
         // Values are in the range -10..10 at min. speed and -2595..2595
-		// at max. speed.
+        // at max. speed.
         const int16_t x_value = buf[1] | buf[2] << 8;
         const int16_t y_value = buf[3] | buf[4] << 8;
         const int16_t z_value = buf[5] | buf[6] << 8;
@@ -197,7 +197,7 @@ void HidApiInputDriver::hidapi_input(hid_device* hid_dev)
     unsigned char buf[BUFLEN];
     unsigned int len;
     while ((len = hid_read(hid_dev, buf, BUFLEN)) > 0) {
-		hidapi_log_input(buf, len);
+        hidapi_log_input(buf, len);
         (this->*(dev->axis_decoder))(buf, len);
         (this->*(dev->button_decoder))(buf, len);
     }
@@ -264,11 +264,11 @@ bool HidApiInputDriver::open()
 	}
 
 	HIDAPI_LOG("HidApiInputDriver::open()");
-    if (hid_init() < 0) {
+	if (hid_init() < 0) {
 		HIDAPI_LOG("hid_init() failed");
-        PRINTD("Can't hid_init().\n");
-        return false;
-    }
+		PRINTD("Can't hid_init().\n");
+		return false;
+	}
 
 	std::tie(this->hid_dev, this->dev) = enumerate();
 	if (this->dev) {
@@ -281,7 +281,7 @@ bool HidApiInputDriver::open()
     }
 
 	HIDAPI_LOG("HidApiInputDriver::open(): No matching device found.");
-    return false;
+	return false;
 }
 
 void HidApiInputDriver::close()

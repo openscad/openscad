@@ -216,7 +216,7 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 
 	for (const auto &action : InputDriverManager::instance()->getActions()) {
 		const auto icon = action.icon;
-                const auto effectiveIcon = icon.isNull() ? emptyIcon : icon;
+		const auto effectiveIcon = icon.isNull() ? emptyIcon : icon;
 		const auto desc = QString(action.description).remove(QChar('&'));
 		comboBox->addItem(effectiveIcon, desc, action.name);
 	}

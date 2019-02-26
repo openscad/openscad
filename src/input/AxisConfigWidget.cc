@@ -43,10 +43,10 @@ AxisConfigWidget::~AxisConfigWidget()
 }
 
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
-	int value = val *100;
-
 	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
 	if(progressBar==nullptr) return;
+
+	int value = val * 100;
 	progressBar->setValue(value); //set where the bar is
 
 	//QProgressBar generates the shown string form the format string.
@@ -59,8 +59,8 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	
 	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
 	if(deadzone){
-		QString style;
 		bool active = deadzone->value() < std::abs(val);
+		QString style;
 		if(this->darkModeDetected){
 			style = active ? ProgressbarStyleDarkActive : ProgressbarStyleDark;
 		}else{
@@ -160,9 +160,9 @@ void AxisConfigWidget::init() {
 	//use a custom style for the axis indicators,
 	//to prevent getting operating specific
 	//(potentially animated) ProgressBars
-	int light = this->progressBarAxis0->palette().text().color().lightness();
-	this->darkModeDetected = light>165;
-	QString style = (this-> darkModeDetected) ? ProgressbarStyleDark : ProgressbarStyleLight;
+	int textLightness = this->progressBarAxis0->palette().text().color().lightness();
+	this->darkModeDetected = textLightness>165;
+	QString style = (this->darkModeDetected) ? ProgressbarStyleDark : ProgressbarStyleLight;
 
 	auto progressbars = this->findChildren<QProgressBar *>();
 	for (auto progressbar : progressbars) {
@@ -309,6 +309,7 @@ void AxisConfigWidget::on_doubleSpinBoxTrim7_valueChanged(double val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::axisTrim7, Value(val));
 	emit inputCalibrationChanged();
+	writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim8_valueChanged(double val)
