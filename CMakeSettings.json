@@ -9,7 +9,7 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DNULLGL=ON",
+      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -22,7 +22,7 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DNULLGL=ON",
+      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -35,7 +35,7 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DNULLGL=ON",
+      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -48,7 +48,7 @@
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DNULLGL=ON",
+      "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     }

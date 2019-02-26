@@ -7,6 +7,7 @@
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
+#include "iso646.h" // C alternative tokens (xor)
 #include <boost/filesystem.hpp>
 namespace fs=boost::filesystem;
 

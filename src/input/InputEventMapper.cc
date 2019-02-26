@@ -29,7 +29,7 @@
 #include "Preferences.h"
 #include "AxisConfigWidget.h"
 #include "ButtonConfigWidget.h"
-
+#include "iso646.h" // C alternative tokens
 #include <math.h>
 #include <QSettings>
 

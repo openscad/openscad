@@ -14,7 +14,7 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 cmake_minimum_required(VERSION 3.3)
-#cmake_policy(SET CMP0071 OLD)
+cmake_policy(SET CMP0071 OLD)
 
 project(openscad)
 
@@ -64,6 +64,7 @@ set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_opt
 
 if (MSVC)
 
+  add_definitions(-DNOGDI)
   message("MODULE PATH: ${CMAKE_MODULE_PATH}")
   message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
   message("OPENSCAD_LIBRARIES $ENV{OPENSCAD_LIBRARIES}")
@@ -252,11 +253,18 @@ if(NULLGL)
   add_definitions(-DNULLGL)
 else()
   find_package(OpenGL REQUIRED QUIET)
+  list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
 
   find_package(GLEW REQUIRED QUIET)
   message(STATUS "GLEW: ${GLEW_FOUND}")
+  list(APPEND COMMON_LIBRARIES ${GLEW_LIBRARY})
 
-  find_package(OpenCSG REQUIRED QUIET)
+  find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
+  #message("OPENCSG_INCLUDE_DIRS ${OPENCSG_INCLUDE_DIRS}")
+  include_directories(${OPENCSG_INCLUDE_DIRS}/opencsg)
+  find_library(OPENCSG_LIBRARY opencsg)
+  list(APPEND COMMON_LIBRARIES ${OPENCSG_LIBRARY})
+
   message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
   add_definitions(-DENABLE_OPENCSG)
 endif()
@@ -621,22 +629,14 @@ endif()
 
 # Add to list as we find them (as needed) instead of all at once here
 #set(COMMON_LIBRARIES
-#    ${CGAL_LIBRARY}
 #    ${GMP_LIBRARIES}
 #    ${MPFR_LIBRARIES}
-#    ${HARFBUZZ_LIBRARIES}
-#    ${FONTCONFIG_LIBRARIES}
-#    ${FREETYPE_LIBRARIES}
-#    ${GLIB2_LIBRARIES}
 #    ${LIB3MF_LIBRARIES}
-#    ${OPENGL_LIBRARIES}
-#    ${GLEW_LIBRARY}
-#    ${OPENCSG_LIBRARY}
-#    ${PLATFORM_LIBS})
+#    )
 
-target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES})
+target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
 endif()
 
 if(INFO)
