@@ -145,6 +145,6 @@ std::string QGamepadInputDriver::get_info() const
 	return STR(
 		get_name() << " " <<
 		(this->gamepad->isConnected() ? "connected" : "not connected") << " " << 
-		"Name: " <<this->gamepad->name() 
+		"Name: " <<this->gamepad->name().toUtf8().constData() 
 	);
 }
