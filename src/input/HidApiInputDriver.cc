@@ -301,7 +301,7 @@ const std::string & HidApiInputDriver::get_name() const
 std::string HidApiInputDriver::get_info() const
 {
 	std::ostringstream stream;
-	stream << get_name() << " " ;
+	stream << get_name() << " ";
 	if(isOpen()){
 		stream << "open" << " ";
 		if(dev){

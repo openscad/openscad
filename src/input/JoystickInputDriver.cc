@@ -105,12 +105,12 @@ const std::string & JoystickInputDriver::get_name() const
 
 std::string JoystickInputDriver::get_info() const
 {
-	std::ostringstream stream;
-	stream << get_name() << " " << (isOpen() ? "open" : "not open") << " ";
-	stream << "Name: " << name << " ";
-	stream << "Axis: " << (int) axes << " ";
-	stream << "Buttons: " << (int) buttons << " ";
-	return stream.str();
+	return STR(
+		get_name() << " " << (isOpen() ? "open" : "not open") << " " <<
+		"Name: " << name << " " <<
+		"Axis: " << (int) axes << " " <<
+		"Buttons: " << (int) buttons << " "
+	);
 }
 
 void JoystickInputDriver::setJoystickNr(std::string jnr)

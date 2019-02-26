@@ -137,7 +137,5 @@ const std::string & QGamepadInputDriver::get_name() const
 
 std::string QGamepadInputDriver::get_info() const
 {
-	std::ostringstream stream;
-	stream << get_name() << " " << (isOpen() ? "open" : "not open") << " ";
-	return stream.str();
+	return STR(get_name() << " " << (isOpen() ? "open" : "not open") << " ");
 }
