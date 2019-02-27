@@ -12,7 +12,7 @@ shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) cons
 {
 	const auto &N = this->cache[id]->N;
 #ifdef DEBUG
-	PRINTB("CGAL Cache hit: %1$X (%2% bytes)", id % (N ? N->memsize() : 0));
+	PRINTB("CGAL Cache hit: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
 #endif
 	return N;
 }
@@ -21,20 +21,20 @@ bool CGALCache::insert(const std::string &id, const shared_ptr<const CGAL_Nef_po
 {
 	auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
 #ifdef DEBUG
-	if (inserted) PRINTB("CGAL Cache insert: %1$X (%2% bytes)", id % (N ? N->memsize() : 0));
-	else PRINTB("CGAL Cache insert failed: %1$X (%2% bytes)", id % (N ? N->memsize() : 0));
+	if (inserted) PRINTB("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
+	else PRINTB("CGAL Cache insert failed: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
 #endif
 	return inserted;
 }
 
-size_t CGALCache::maxSize() const
+size_t CGALCache::maxSizeMB() const
 {
-	return this->cache.maxCost();
+	return this->cache.maxCost()/(1024*1024);
 }
 
-void CGALCache::setMaxSize(size_t limit)
+void CGALCache::setMaxSizeMB(size_t limit)
 {
-	this->cache.setMaxCost(limit);
+	this->cache.setMaxCost(limit*1024*1024);
 }
 
 void CGALCache::clear()

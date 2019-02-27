@@ -3,21 +3,45 @@
 #
 # Configuration variables
 #   -DHEADLESS=<ON|OFF>
+#   -DNULLGL=<ON|OFF>
+#   -DSNAPSHOT=<ON|OFF>
+#   -DEXPERIMENTAL=<ON|OFF>
 #
-#
+#  TODO
+#   find packages for spnav, hidapi
 
 if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
-cmake_minimum_required(VERSION 3.2.2)
+cmake_minimum_required(VERSION 3.3)
+cmake_policy(SET CMP0071 OLD)
 
-
+if(NULLGL)
+  list(APPEND CONFIG_OPTIONS "NULLGL")
+  set(HEADLESS ON)
+endif()
 if(HEADLESS)
   list(APPEND CONFIG_OPTIONS "HEADLESS")
 endif(HEADLESS)
-message(STATUS "Configuration: ${CONFIG_OPTIONS}")
+if(SNAPSHOT)
+  list(APPEND CONFIG_OPTIONS "SNAPSHOT")
+endif()
+
 
 project(openscad)
+
+if(EXPERIMENTAL)
+  add_definitions(-DENABLE_EXPERIMENTAL)
+  list(APPEND CONFIG_OPTIONS "EXPERIMENTAL")
+endif()
+
+if(IDPREFIX)
+  add_definitions(-DIDPREFIX)
+  list(APPEND CONFIG_OPTIONS "IDPREFIX")
+  message(WARNING "IDPREFIX set, this will negatively affect cache hits")
+endif()
+
+message(STATUS "Configuration: ${CONFIG_OPTIONS}")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
 set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
@@ -39,10 +63,6 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 add_compile_options("-UNDEBUG")
 
 set(CMAKE_CXX_STANDARD 11)
-if(APPLE)
-  # Needed for deployment target 10.8 as cmake doesn't know about the libc++
-  set(CMAKE_CXX_FLAGS "-stdlib=libc++")
-endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -107,6 +127,10 @@ message(STATUS "LibZip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 
+find_package(Lib3MF REQUIRED QUIET)
+add_definitions(${LIB3MF_CFLAGS})
+include_directories(${LIB3MF_INCLUDE_DIRS})
+
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
@@ -133,7 +157,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
-  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent REQUIRED QUIET)
+  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -161,18 +185,20 @@ if(NOT HEADLESS)
     message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
   endif()
   
+  find_package(Qt5Gamepad QUIET)
+  if (Qt5Gamepad_FOUND)
+    message(STATUS "Gamepad input driver enabled")
+    set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
+    add_definitions(-DENABLE_QGAMEPAD)
+  else()
+    message(STATUS "Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+  endif()
+
 #  add_definitions(${Qt5Widgets_DEFINITIONS})
 #  add_definitions(${Qt5OpenGL_DEFINITIONS})
 #  add_definitions(${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
 #  add_definitions(${Qt5OpenGL_EXECUTABLE_COMPILE_FLAGS})
 
-  find_package(OpenGL REQUIRED QUIET)
-
-  find_package(GLEW REQUIRED QUIET)
-  message(STATUS "GLEW: ${GLEW_FOUND}")
-
-  find_package(OpenCSG REQUIRED QUIET)
-  message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
 endif()
 
 # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
@@ -180,11 +206,17 @@ endif()
 if(NULLGL)
   add_definitions(-DNULLGL)
 else()
+  find_package(OpenGL REQUIRED QUIET)
+
+  find_package(GLEW REQUIRED QUIET)
+  message(STATUS "GLEW: ${GLEW_FOUND}")
+
+  find_package(OpenCSG REQUIRED QUIET)
+  message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
   add_definitions(-DENABLE_OPENCSG)
 endif()
 
 add_definitions(-DENABLE_LIBZIP)
-add_definitions(-DENABLE_EXPERIMENTAL)
 
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
@@ -218,23 +250,41 @@ add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_SHORTVERSION=${OPENSCAD
 if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
+if(DEFINED OPENSCAD_COMMIT)
+  add_definitions(-DOPENSCAD_COMMIT=${OPENSCAD_COMMIT})
+endif()
 
 #
 # Platform specific settings
 #
 if(APPLE)
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/OffscreenContextCGL.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc)
+  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/imageutils-macosx.cc src/CocoaUtils.mm src/AppleEvents.cc)
+  if(NULLGL)
+    add_definitions(-DOPENSCAD_OS="Mac OS X")
+  else()
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextCGL.mm)
+  endif()
   find_library(COCOA_LIBRARY Cocoa)
   set(PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
   message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-  set(PLATFORM_SOURCES src/OffscreenContextGLX.cc src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
-  find_library(X11_LIBRARY X11)
-  set(PLATFORM_LIBS ${X11_LIBRARY})
+  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
+  if(NULLGL)
+    add_definitions(-DOPENSCAD_OS="Unix")
+  else()
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextGLX.cc)
+    find_library(X11_LIBRARY X11)
+    set(PLATFORM_LIBS ${X11_LIBRARY})
+  endif()
 elseif(WIN32)
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-  set(PLATFORM_SOURCES src/OffscreenContextWGL.cc src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
+  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
+  if(NULLGL)
+    add_definitions(-DOPENSCAD_OS="Windows")
+  else()
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextWGL.cc)
+  endif()
 endif()
 
 set(CORE_SOURCES
@@ -283,7 +333,6 @@ set(CORE_SOURCES
   src/control.cc 
   src/render.cc 
   src/rendersettings.cc 
-  src/settings.cc
   src/dxfdata.cc 
   src/dxfdim.cc 
   src/offset.cc 
@@ -304,6 +353,9 @@ set(CORE_SOURCES
   src/libsvg/group.cc
   src/libsvg/libsvg.cc
   src/libsvg/line.cc
+  src/libsvg/text.cc
+  src/libsvg/tspan.cc
+  src/libsvg/data.cc
   src/libsvg/path.cc
   src/libsvg/polygon.cc
   src/libsvg/polyline.cc
@@ -365,6 +417,8 @@ set(COMMON_SOURCES
   src/GeometryCache.cc 
   src/clipper-utils.cc 
   src/Tree.cc
+  src/comment.cpp
+  src/parameter/parameterset.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c
   src/ext/libtess2/Source/dict.c
@@ -378,32 +432,56 @@ set(COMMON_SOURCES
 #
 # Offscreen OpenGL context source code
 #
-set(OFFSCREEN_SOURCES
-  src/GLView.cc
-  src/OffscreenView.cc
-  src/imageutils.cc
-  src/fbo.cc
-  src/system-gl.cc
-  src/export_png.cc
-  src/CGALRenderer.cc
-  src/ThrownTogetherRenderer.cc
-  src/renderer.cc
-  src/render.cc
-  src/OpenCSGRenderer.cc)
+if(NULLGL)
+  message(STATUS "NULLGL is set. Overriding OpenGL(TM) settings")
+  set(OFFSCREEN_SOURCES
+    src/NULLGL.cc # contains several 'nullified' versions of above .cc files
+    src/OffscreenView.cc
+    src/OffscreenContextNULL.cc
+    src/export_png.cc
+    src/${OFFSCREEN_IMGUTILS_SOURCE}
+    src/imageutils.cc
+    src/renderer.cc
+    src/render.cc)
+else()
+  set(OFFSCREEN_SOURCES
+    src/GLView.cc
+    src/OffscreenView.cc
+    src/imageutils.cc
+    src/fbo.cc
+    src/system-gl.cc
+    src/export_png.cc
+    src/CGALRenderer.cc
+    src/ThrownTogetherRenderer.cc
+    src/renderer.cc
+    src/render.cc
+    src/OpenCSGRenderer.cc)
+endif()
+
+
+if(UNIX AND (NOT HEADLESS))
+  set(PLATFORM_INPUT_DRIVER_SOURCES src/input/JoystickInputDriver.cc)
+  add_definitions(-DENABLE_JOYSTICK)
+endif()
 
 set(INPUT_DRIVER_SOURCES
+  ${PLATFORM_INPUT_DRIVER_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
+  ${GUI_SOURCES}
   src/mainwin.cc
   src/OpenSCADApp.cc
   src/EventFilter.h
   src/WindowManager.cc
+  src/settings.cc
   src/Preferences.cc
   src/SettingsWriter.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
+  src/OctoPrint.cc
   src/PrintInitDialog.cc
+  src/PrintService.cc
   src/LibraryInfoDialog.cc
   src/OpenCSGWarningDialog.cc
   src/ProgressWidget.cc
@@ -421,7 +499,6 @@ set(GUI_SOURCES
   src/launchingscreen.cc
   src/QWordSearchField.cc
   src/QSettingsCached.cc
-  src/comment.cpp
   src/parameter/ParameterWidget.cc
   src/parameter/groupwidget.cpp
   src/parameter/ignoreWheelWhenNotFocused.cpp
@@ -429,7 +506,6 @@ set(GUI_SOURCES
   src/parameter/parametercombobox.cpp
   src/parameter/parameterextractor.cpp
   src/parameter/parameterobject.cpp
-  src/parameter/parameterset.cpp
   src/parameter/parameterslider.cpp
   src/parameter/parameterspinbox.cpp
   src/parameter/parametertext.cpp
@@ -448,20 +524,9 @@ set(GUI_SOURCES
 set(GUI_HEADERS
   src/AboutDialog.h
   src/MainWindow.h
+  src/Network.h
+  src/NetworkSignal.h
   )
-
-if(NULLGL)
-  message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
-  set(OFFSCREEN_SOURCES
-    src/NULLGL.cc # contains several 'nullified' versions of above .cc files
-    src/OffscreenView.cc
-    src/OffscreenContextNULL.cc
-    src/export_png.cc
-    src/${OFFSCREEN_IMGUTILS_SOURCE}
-    src/imageutils.cc
-    src/renderer.cc
-    src/render.cc)
-endif()
 
 #file(GLOB Headers src/*.h src/*.hpp src/polyclipping/*.hpp)
 #list(REMOVE_ITEM Headers ${CMAKE_SOURCE_DIR}/src/SparkleAutoUpdater.h)
@@ -476,7 +541,12 @@ else()
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
 endif()
 
-set(RESOURCE_FILES icons/OpenSCAD.icns)
+if (SNAPSHOT)
+  add_definitions(-DOPENSCAD_SNAPSHOT)
+  set(RESOURCE_FILES icons/icon-nightly.icns)
+else()
+  set(RESOURCE_FILES icons/OpenSCAD.icns)
+endif()
 
 if(ENABLE_SPNAV)
   add_definitions(-DENABLE_SPNAV)
@@ -485,8 +555,6 @@ endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
 target_link_libraries(OpenSCAD pthread)
-
-# FIXME: snapshot, ICON = icons/icon-nightly.icns
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
@@ -517,6 +585,7 @@ set(COMMON_LIBRARIES
     ${FREETYPE_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${LIBXML2_LIBRARIES}
+    ${LIB3MF_LIBRARIES}
     ${LIBZIP_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARY}
@@ -525,6 +594,9 @@ set(COMMON_LIBRARIES
 
 target_link_libraries(OpenSCAD ${COMMON_LIBRARIES})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
+  target_link_libraries(OpenSCAD Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES})
 endif()
 
+if(INFO)
+  include(info)
+endif()

@@ -24,7 +24,6 @@
  *
  */
 
-#include <QFile>
 #include <QString>
 
 #include "PrintService.h"
@@ -33,46 +32,40 @@
 PrintInitDialog::PrintInitDialog()
 {
 	setupUi(this);
-	this->textBrowser->setOpenExternalLinks(true);
-	this->radioButtonCancel->setChecked(true);
 
 	const auto printService = PrintService::inst();
-	QFile html(":/src/PrintInitDialog.html");
+	this->textBrowser->setSource(QUrl{"qrc:/src/PrintInitDialog.html"});
 
-	if (html.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		QString infoHtml = printService->isEnabled() ? printService->getInfoHtml() : "";
-		this->textBrowser->setHtml(QString{html.readAll()}.replace("@@PrintServiceInfoHtml@@", infoHtml));
-	}
+	this->okButton->setEnabled(false);
 
 	if (printService->isEnabled()) {
-		this->radioButtonPrintService->setText(this->radioButtonPrintService->text().arg(printService->getDisplayName()));
+		this->printServiceButton->setText(this->printServiceButton->text().arg(printService->getDisplayName()));
 	} else {
-		this->radioButtonPrintService->setText(_("Upload to Print Service not available"));
-		this->radioButtonPrintService->setEnabled(false);
+		this->printServiceButton->setText(_("Print Service not available"));
+		this->printServiceButton->setEnabled(false);
 	}
-
-	result = { print_service_t::NONE, false };
 }
 
 PrintInitDialog::~PrintInitDialog()
 {
 }
 
-const PrintServiceResult PrintInitDialog::get_result() const
+void PrintInitDialog::on_printServiceButton_clicked()
 {
-	return result;
+	this->textBrowser->setHtml(PrintService::inst()->getInfoHtml());
+	this->result = print_service_t::PRINT_SERVICE;
+	this->okButton->setEnabled(true);
+}
+
+void PrintInitDialog::on_octoPrintButton_clicked()
+{
+	this->textBrowser->setSource(QUrl{"qrc:/src/OctoPrintInfo.html"});
+	this->result = print_service_t::OCTOPRINT;
+	this->okButton->setEnabled(true);
 }
 
 void PrintInitDialog::on_okButton_clicked()
 {
-	const bool remember = this->checkBoxRemember->isChecked();
-	if (this->radioButtonPrintService->isChecked()) {
-		result = { print_service_t::PRINT_SERVICE, remember };
-	} else if (this->radioButtonOctoPrint->isChecked()) {
-		result = { print_service_t::OCTOPRINT, remember };
-	} else {
-		result = { print_service_t::NONE, remember };
-	}
 	accept();
 }
 

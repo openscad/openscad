@@ -109,13 +109,30 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 
 	if (!allownef) {
 		if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-			PolySet *ps = new PolySet(3);
-			ps->setConvexity(N->getConvexity());
-			this->root.reset(ps);
-			if (!N->isEmpty()) {
-				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-				if (err) {
-					PRINT("ERROR: Nef->PolySet failed");
+			{
+				PolySet *ps = new PolySet(3);
+				ps->setConvexity(N->getConvexity());
+				this->root.reset(ps);
+				if (!N->isEmpty()) {
+					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+					if (err) {
+						PRINT("ERROR: Nef->PolySet failed");
+					}
+				}
+			}
+
+			// We cannot render concave polygons, so tessellate any 3D PolySets
+			auto ps = dynamic_pointer_cast<const PolySet>(this->root);
+			if (ps && !ps->isEmpty()) {
+				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
+				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
+				bool convex{ps->convexValue()};
+				if (!convex) {
+					assert(ps->getDimension() == 3);
+					auto ps_tri = new PolySet(3, ps->convexValue());
+					ps_tri->setConvexity(ps->getConvexity());
+					PolysetUtils::tessellate_faces(*ps, *ps_tri);
+					this->root.reset(ps_tri);
 				}
 			}
 		}

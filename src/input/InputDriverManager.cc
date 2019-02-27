@@ -199,3 +199,23 @@ void InputDriverManager::onInputGainUpdated()
 {
     mapper.onInputGainUpdated();
 }
+
+int InputDriverManager::getButtonCount(){
+    int max=0;
+    for (auto driver : drivers) {
+        if(driver->isOpen()){
+            max = std::max(max, driver->getButtonCount());
+        }
+    }
+    return max;
+}
+
+int InputDriverManager::getAxisCount(){
+    int max=0;
+    for (auto driver : drivers) {
+        if(driver->isOpen()){
+            max = std::max(max, driver->getAxisCount());
+        }
+    }
+    return max;
+}

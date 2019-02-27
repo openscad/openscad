@@ -39,8 +39,9 @@ public:
 	Console(QWidget *parent = nullptr);
 	virtual ~Console();
 
-	void on_actionClearConsole_triggered();
-	void on_actionSaveAs_triggered();
-
 	void contextMenuEvent(QContextMenuEvent *event) override;
+
+public slots:
+	void actionClearConsole_triggered();
+	void actionSaveAs_triggered();
 };

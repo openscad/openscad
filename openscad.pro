@@ -71,7 +71,12 @@ deploy {
 snapshot {
   DEFINES += OPENSCAD_SNAPSHOT
 }
-  
+# add CONFIG+=idprefix to the qmake command-line to debug node ID's in csg output
+idprefix {
+  DEFINES += IDPREFIX
+  message("Setting IDPREFIX for csg debugging")
+  warning("Setting IDPREFIX will negatively affect cache hits")
+}  
 macx {
   TARGET = OpenSCAD
 }
@@ -94,7 +99,7 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
 }
 
 # Set same stack size for the linker and #define used in PlatformUtils.h
@@ -115,7 +120,7 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
-CONFIG += qt
+CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
 
 netbsd* {
@@ -146,6 +151,11 @@ netbsd* {
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
+
+  # Disable attributes warnings on MSYS/MXE due to gcc bug spamming the logs: Issue #2771
+  win* | CONFIG(mingw-cross-env)|CONFIG(mingw-cross-env-shared) {
+    QMAKE_CXXFLAGS += -Wno-attributes
+  }
 }
 
 *clang* {
@@ -185,6 +195,7 @@ CONFIG += libxml2
 CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
+CONFIG += double-conversion
 
 #Uncomment the following line to enable the QScintilla editor
 !nogui {
@@ -285,7 +296,6 @@ HEADERS += src/version_check.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
-           src/PrintInitDialog.h \
            src/GroupModule.h \
            src/FileModule.h \
            src/StatCache.h \
@@ -400,6 +410,9 @@ SOURCES += \
            src/libsvg/circle.cc \
            src/libsvg/ellipse.cc \
            src/libsvg/line.cc \
+           src/libsvg/text.cc \
+           src/libsvg/tspan.cc \
+           src/libsvg/data.cc \
            src/libsvg/polygon.cc \
            src/libsvg/polyline.cc \
            src/libsvg/rect.cc \
@@ -523,7 +536,6 @@ SOURCES += \
            src/Console.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
-           src/PrintInitDialog.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc\
@@ -586,8 +598,8 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/tess.h
 
 has_qt5 {
-  HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h
-  SOURCES += src/PrintService.cc src/OctoPrint.cc
+  HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h src/PrintInitDialog.h
+  SOURCES += src/PrintService.cc src/OctoPrint.cc src/PrintInitDialog.cc
 }
 
 has_qt5:unix:!macx {

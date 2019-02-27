@@ -1,5 +1,8 @@
+//Parameter("")
 a = 1;
+//Parameter("")
 b = 2;
+//Parameter("")
 c = 3;
 echo(a, b, c);
 let(a = 5, b = (a + 8), c = (a + b)) {

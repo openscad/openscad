@@ -70,24 +70,42 @@ int process_id = getpid();
 boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
 
-ValuePtr builtin_abs(const Context *, const EvalContext *evalctx)
+static void print_argCnt_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
+	PRINTB("WARNING: %s() number of parameters does not match, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
+}
+
+static void print_argConvert_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
+	PRINTB("WARNING: %s() parameter could not be converted, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
+}
+
+ValuePtr builtin_abs(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(std::fabs(v->toDouble()));
+		}else{
+			print_argConvert_warning("abs", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("abs", ctx, evalctx);
 	}
+
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sign(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_sign(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() == Value::ValueType::NUMBER) {
 			double x = v->toDouble();
 			return ValuePtr((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
+		}else{
+			print_argConvert_warning("sign", ctx, evalctx);
 		}
+	}else{
+		print_argCnt_warning("sign", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
@@ -149,12 +167,14 @@ ValuePtr builtin_rands(const Context *ctx, const EvalContext *evalctx)
 			}
 		}
 		return ValuePtr(vec);
+	}else{
+		print_argCnt_warning("rands", ctx, evalctx);
 	}
 quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_min(const Context *ctx, const EvalContext *evalctx)
 {
 	// preserve special handling of the first argument
 	// as a template for vector processing
@@ -181,12 +201,17 @@ ValuePtr builtin_min(const Context *, const EvalContext *evalctx)
 			}
 			return ValuePtr(val);
 		}
+		
+	}else{
+		print_argCnt_warning("min", ctx, evalctx);
+		return ValuePtr::undefined;
 	}
 quit:
+	print_argConvert_warning("min", ctx, evalctx);
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_max(const Context *ctx, const EvalContext *evalctx)
 {
 	// preserve special handling of the first argument
 	// as a template for vector processing
@@ -213,143 +238,212 @@ ValuePtr builtin_max(const Context *, const EvalContext *evalctx)
 			}
 			return ValuePtr(val);
 		}
+	}else{
+		print_argCnt_warning("max", ctx, evalctx);
+		return ValuePtr::undefined;
 	}
 quit:
+	print_argConvert_warning("max", ctx, evalctx);
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sin(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_sin(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(sin_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("sin", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("sin", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
 
-ValuePtr builtin_cos(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_cos(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(cos_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("cos", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("cos", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_asin(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_asin(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(asin_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("asin", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("asin", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_acos(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_acos(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(acos_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("acos", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("acos", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_tan(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_tan(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(tan_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("tan", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("tan", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_atan(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_atan(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(atan_degrees(v->toDouble()));
+		}else{
+			print_argConvert_warning("atan", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("atan", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_atan2(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_atan2(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
+		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER){
 			return ValuePtr(atan2_degrees(v0->toDouble(), v1->toDouble()));
+		}else{
+			print_argConvert_warning("atan2", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("atan2", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_pow(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_pow(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER)
+		if (v0->type() == Value::ValueType::NUMBER && v1->type() == Value::ValueType::NUMBER){
 			return ValuePtr(pow(v0->toDouble(), v1->toDouble()));
+		}else{
+			print_argConvert_warning("pow", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("pow", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_round(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_round(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(round(v->toDouble()));
+		}else{
+			print_argConvert_warning("round", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("round", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_ceil(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_ceil(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(ceil(v->toDouble()));
+		}else{
+			print_argConvert_warning("ceil", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("ceil", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_floor(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_floor(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(floor(v->toDouble()));
+		}else{
+			print_argConvert_warning("floor", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("floor", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sqrt(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_sqrt(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(sqrt(v->toDouble()));
+		}else{
+			print_argConvert_warning("sqrt", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("sqrt", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_exp(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_exp(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(exp(v->toDouble()));
+		}else{
+			print_argConvert_warning("exp", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("exp", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_length(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_length(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -359,11 +453,14 @@ ValuePtr builtin_length(const Context *, const EvalContext *evalctx)
 			std::string text = v->toString();
 			return ValuePtr(int( g_utf8_strlen( text.c_str(), text.size() ) ));
 		}
+		print_argConvert_warning("len", ctx, evalctx);
+	}else{
+		print_argCnt_warning("len", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_log(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_log(const Context *ctx, const EvalContext *evalctx)
 {
 	size_t n = evalctx->numArgs();
 	if (n == 1 || n == 2) {
@@ -377,17 +474,26 @@ ValuePtr builtin_log(const Context *, const EvalContext *evalctx)
 			}
 			return ValuePtr(log(y) / log(x));
 		}
+	}else{
+		print_argCnt_warning("log", ctx, evalctx);
+		return ValuePtr::undefined;
 	}
 quit:
+	print_argConvert_warning("log", ctx, evalctx);
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_ln(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_ln(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
-		if (v->type() == Value::ValueType::NUMBER)
+		if (v->type() == Value::ValueType::NUMBER){
 			return ValuePtr(log(v->toDouble()));
+		}else{
+			print_argConvert_warning("ln", ctx, evalctx);
+		}
+	}else{
+		print_argCnt_warning("ln", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
@@ -462,12 +568,17 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_lookup(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_lookup(const Context *ctx, const EvalContext *evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
-	if (evalctx->numArgs() < 2 ||                     // Needs two args
-	    !evalctx->getArgValue(0)->getDouble(p)) // First must be a number
+	if (evalctx->numArgs() != 2){ // Needs two args
+		print_argCnt_warning("lookup", ctx, evalctx);
 		return ValuePtr::undefined;
+	}
+	if(!evalctx->getArgValue(0)->getDouble(p) || !std::isfinite(p)){ // First arg must be a number
+		PRINTB("WARNING: lookup(%s, ...) first argument is not a number, %s", evalctx->getArgValue(0)->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
+	}
 
 	ValuePtr v1 = evalctx->getArgValue(1);
 	const Value::VectorType &vec = v1->toVector();
@@ -630,7 +741,10 @@ static Value::VectorType search(const str_utf8_wrapper &find, const Value::Vecto
 
 ValuePtr builtin_search(const Context *ctx, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() < 2) return ValuePtr::undefined;
+	if (evalctx->numArgs() < 2){
+		print_argCnt_warning("search", ctx, evalctx);
+		return ValuePtr::undefined;
+	}
 
 	ValuePtr findThis = evalctx->getArgValue(0);
 	ValuePtr searchTable = evalctx->getArgValue(1);
@@ -734,8 +848,10 @@ ValuePtr builtin_parent_module(const Context *ctx, const EvalContext *evalctx)
 		ValuePtr v = evalctx->getArgValue(0);
 		if (v->type() != Value::ValueType::NUMBER) return ValuePtr::undefined;
 		v->getDouble(d);
-	} else
-			return ValuePtr::undefined;
+	} else {
+		print_argCnt_warning("parent_module", ctx, evalctx);
+		return ValuePtr::undefined;
+	}
 	n=trunc(d);
 	if (n < 0) {
 		PRINTB("WARNING: Negative parent module index (%d) not allowed, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
@@ -767,6 +883,8 @@ ValuePtr builtin_norm(const Context *ctx, const EvalContext *evalctx)
 				}
 			return ValuePtr(sqrt(sum));
 		}
+	}else{
+		print_argCnt_warning("norm", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
@@ -804,11 +922,11 @@ ValuePtr builtin_cross(const Context *ctx, const EvalContext *evalctx)
 		double d0 = v0[a]->toDouble();
 		double d1 = v1[a]->toDouble();
 		if (std::isnan(d0) || std::isnan(d1)) {
-			PRINTB("WARNING: Invalid value (NaN) in parameter vector for cross(), %s", evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: Invalid value (NaN) in parameter vector for cross(), %s", loc.toRelativeString(ctx->documentPath()));
 			return ValuePtr::undefined;
 		}
 		if (std::isinf(d0) || std::isinf(d1)) {
-			PRINTB("WARNING: Invalid value (INF) in parameter vector for cross(), %s", evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: Invalid value (INF) in parameter vector for cross(), %s", loc.toRelativeString(ctx->documentPath()));
 			return ValuePtr::undefined;
 		}
 	}
@@ -824,7 +942,7 @@ ValuePtr builtin_cross(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_is_undef(const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->getArgs()[0];
@@ -835,8 +953,70 @@ ValuePtr builtin_is_undef(const Context *, const EvalContext *evalctx)
 			v = evalctx->getArgValue(0);
 		}
 		return ValuePtr(v == ValuePtr::undefined);
+	}else{
+		print_argCnt_warning("is_undef", ctx, evalctx);
 	}
 
+	return ValuePtr::undefined;
+}
+
+ValuePtr builtin_is_list(const Context *ctx, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::VECTOR){
+			return ValuePtr(true);
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_list", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
+ValuePtr builtin_is_num(const Context *ctx, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::NUMBER){
+			return ValuePtr(!std::isnan(v->toDouble()));
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_num", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
+ValuePtr builtin_is_bool(const Context *ctx, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::BOOL){
+			return ValuePtr(true);
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_bool", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
+ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::STRING){
+			return ValuePtr(true);
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_string", ctx, evalctx);
+	}
 	return ValuePtr::undefined;
 }
 
@@ -875,4 +1055,8 @@ void register_builtin_functions()
 	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
+	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list));
+	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num));
+	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool));
+	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string));
 }

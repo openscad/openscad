@@ -28,3 +28,8 @@ https://openclipart.org/detail/2281/information-icons-set-by-kuba / public domai
 https://openclipart.org/detail/171382/cross-icon-by-zawertun-171382 / public domain:
 
 - close.png
+
+octoprint.png:
+* Copyright Gina Häußge
+* OctoPrint is a registered trademark owned by Gina Häußge.
+* https://octoprint.org/trademark-rules

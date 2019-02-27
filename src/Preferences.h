@@ -38,8 +38,8 @@ public slots:
 	void on_syntaxHighlight_activated(const QString &);
 	void on_openCSGWarningBox_toggled(bool);
 	void on_enableOpenCSGBox_toggled(bool);
-	void on_cgalCacheSizeEdit_textChanged(const QString &);
-	void on_polysetCacheSizeEdit_textChanged(const QString &);
+	void on_cgalCacheSizeMBEdit_textChanged(const QString &);
+	void on_polysetCacheSizeMBEdit_textChanged(const QString &);
 	void on_opencsgLimitEdit_textChanged(const QString &);
 	void on_forceGoldfeatherBox_toggled(bool);
 	void on_mouseWheelZoomBox_toggled(bool);
@@ -56,7 +56,10 @@ public slots:
 	void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
 	void on_enableHardwarningsCheckBox_toggled(bool);
 	void on_enableParameterCheckBox_toggled(bool);
+	void on_enableRangeCheckBox_toggled(bool);
+	void on_enableHidapiTraceCheckBox_toggled(bool);
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
+	void on_checkBoxMouseCentricZoom_toggled(bool);
   //
 	// editor settings
   //
@@ -84,7 +87,6 @@ public slots:
 	void on_checkBoxEnableLineNumbers_toggled(bool);
 
 	// Print
-	void on_checkBoxShowPrintServiceSelectionDialog_toggled(bool);
 	void on_pushButtonOctoPrintCheckConnection_clicked();
 	void on_pushButtonOctoPrintSlicingEngine_clicked();
 	void on_comboBoxOctoPrintSlicingEngine_activated(int);
@@ -108,6 +110,7 @@ signals:
 	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
+	void updateMouseCentricZoom(bool state) const;
 
 private:
     Preferences(QWidget *parent = nullptr);

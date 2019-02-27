@@ -30,7 +30,7 @@
 
  Speed Note:
 
- setFormat() is very slow. normally this doesnt matter because we
+ setFormat() is very slow. normally this doesn't matter because we
  only highlight a block or two at once. But when OpenSCAD first starts,
  QT automagically calls 'highlightBlock' on every single textblock in the file
  even if it's not visible in the window. On a large file (50,000 lines) this
@@ -219,7 +219,8 @@ Highlighter::Highlighter(QTextDocument *parent)
 {
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil"
-                           << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands" << "chr" << "ord" << "is_undef";
+                           << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands" << "chr" << "ord"
+                           << "is_undef" << "is_list" << "is_num" << "is_bool" << "is_string";
 	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let" << "each" << "assert";
 	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";

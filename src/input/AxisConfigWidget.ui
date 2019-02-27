@@ -241,7 +241,7 @@
          <item row="13" column="6" colspan="3">
           <widget class="QPushButton" name="pushButtonAxisTrim">
            <property name="text">
-            <string>Auto Trim Axis</string>
+            <string>Auto Trim Axes</string>
            </property>
           </widget>
          </item>
@@ -1127,7 +1127,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Axis Mapping:</string>
+          <string>Axes Mapping:</string>
          </property>
         </widget>
        </item>

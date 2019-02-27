@@ -5,7 +5,7 @@ OpenSCAD runs as expected from release to release, and from platform to
 platform. To use this test suite you must also have the following 
 systems installed on your machine:
 
-   Python 2      http://www.python.org
+   Python 3      http://www.python.org
    CMake         http://www.cmake.org
    ImageMagick   http://www.imagemagick.org
 
@@ -32,5 +32,5 @@ tests-build directory.
 
 -'Diff' text-tests may not run properly on Windows(TM). 
 
--Detection of ctest, python, and imagemagick doesnt always work properly
+-Detection of ctest, python, and imagemagick doesn't always work properly
 

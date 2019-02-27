@@ -147,7 +147,7 @@
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2018 The OpenSCAD Developers\n\n"
+	"Copyright (C) 2009-2019 The OpenSCAD Developers\n\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
@@ -156,6 +156,7 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
+QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
 
@@ -259,11 +260,11 @@ MainWindow::MainWindow(const QString &filename)
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
 	knownFileExtensions["stl"] = importStatement;
-	if (Feature::Experimental3mfImport.is_enabled()) knownFileExtensions["3mf"] = importStatement;
+	knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
 	knownFileExtensions["dxf"] = importStatement;
-	if (Feature::ExperimentalSvgImport.is_enabled()) knownFileExtensions["svg"] = importStatement;
-	if (Feature::ExperimentalAmfImport.is_enabled()) knownFileExtensions["amf"] = importStatement;
+	knownFileExtensions["svg"] = importStatement;
+	knownFileExtensions["amf"] = importStatement;
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
@@ -277,6 +278,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->qglview->statusLabel = new QLabel(this);
 	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
+
+	auto s = Settings::Settings::inst();
+	this->qglview->setMouseCentricZoom(s->get(Settings::Settings::mouseCentricZoom).toBool());
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -296,6 +300,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
 	connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
 	connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+
+	progressThrottle->start();
 
 	animate_panel->hide();
 	this->hideFind(); 
@@ -388,20 +394,14 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
-#ifdef ENABLE_LIB3MF
-	bool export3mfVisible = Feature::Experimental3mfExport.is_enabled();
-#else
-	bool export3mfVisible = false;
+#ifndef ENABLE_LIB3MF
+	this->fileActionExport3MF->setVisible(false);
 #endif
-	this->fileActionExport3MF->setVisible(export3mfVisible);
 
-#ifdef ENABLE_3D_PRINTING
-	bool enable3dPrinting = Feature::Experimental3dPrint.is_enabled();
-#else
-	bool enable3dPrinting = false;
+#ifndef ENABLE_3D_PRINTING
+	this->designAction3DPrint->setVisible(false);
+	this->designAction3DPrint->setEnabled(false);
 #endif
-	this->designAction3DPrint->setVisible(enable3dPrinting);
-	this->designAction3DPrint->setEnabled(enable3dPrinting);
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -458,7 +458,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	setCurrentOutput();
 
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttp://www.openscad.org\n";
+	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 
@@ -475,6 +475,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
+	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
@@ -624,7 +625,7 @@ MainWindow::MainWindow(const QString &filename)
 	setAcceptDrops(true);
 	clearCurrentOutput();
 
-	this->console->setMaximumBlockCount(500);
+	this->console->setMaximumBlockCount(5000);
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -670,15 +671,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	hideEditor();
 	viewActionHideToolBars->setChecked(toolbar);
 	hideToolbars();
-
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		viewActionHideParameters->setChecked(customizer);
-		hideParameters();
-	} else {
-		viewActionHideParameters->setChecked(true);
-		hideParameters();
-		viewActionHideParameters->setVisible(false);
-	}
+	viewActionHideParameters->setChecked(customizer);
+	hideParameters();
 }
 
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
@@ -764,11 +758,11 @@ void MainWindow::loadDesignSettings()
 	if (settings.value("design/autoReload", true).toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
-	auto polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
-	GeometryCache::instance()->setMaxSize(polySetCacheSize);
+	auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
+	GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
 #ifdef ENABLE_CGAL
-	auto cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
-	CGALCache::instance()->setMaxSize(cgalCacheSize);
+	auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
+	CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
 #endif
 }
 
@@ -837,17 +831,23 @@ void MainWindow::showProgress()
 
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
-	auto thisp = static_cast<MainWindow*>(vp);
-	auto v = static_cast<int>((mark*1000.0) / progress_report_count);
-	auto permille = v < 1000 ? v : 999;
-	if (permille > thisp->progresswidget->value()) {
-		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
-															Q_ARG(int, permille));
-		QApplication::processEvents();
-	}
+	// limit to progress bar update calls to 5 per second
+	static const qint64 MIN_TIMEOUT = 200;
+	if (progressThrottle->hasExpired(MIN_TIMEOUT)) {
+		progressThrottle->start();
 
-	// FIXME: Check if cancel was requested by e.g. Application quit
-	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+		auto thisp = static_cast<MainWindow*>(vp);
+		auto v = static_cast<int>((mark*1000.0) / progress_report_count);
+		auto permille = v < 1000 ? v : 999;
+		if (permille > thisp->progresswidget->value()) {
+			QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
+																Q_ARG(int, permille));
+			QApplication::processEvents();
+		}
+
+		// FIXME: Check if cancel was requested by e.g. Application quit
+		if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+	}
 }
 
 bool MainWindow::network_progress_func(const double permille)
@@ -892,12 +892,10 @@ void MainWindow::openFile(const QString &new_filename)
 	clearCurrentOutput();
 	clearExportPaths();
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		try{
-			compileTopLevelDocument(true);
-		}catch(const HardWarningException&){
-			exceptionCleanup();
-		}
+	try {
+		compileTopLevelDocument(true);
+	} catch (const HardWarningException&) {
+		exceptionCleanup();
 	}
 }
 
@@ -912,9 +910,7 @@ void MainWindow::setFileName(const QString &filename)
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.absoluteFilePath();
 		setWindowFilePath(this->fileName);
-		if (Feature::ExperimentalCustomizer.is_enabled()) {
-			this->parameterWidget->readFile(this->fileName);
-		}
+		this->parameterWidget->readFile(this->fileName);
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
@@ -995,7 +991,7 @@ void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps == 0) return;
 
-	if (Feature::ExperimentalCustomizer.is_enabled() && viewActionHideParameters->isVisible()) {
+	if (viewActionHideParameters->isVisible()) {
 		if (this->parameterWidget->childHasFocus()) return;
 	}
 	
@@ -1042,6 +1038,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+	OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
 	try{
 		bool shouldcompiletoplevel = false;
@@ -1313,7 +1310,7 @@ void MainWindow::compileCSG()
 		catch (const ProgressCancelException &) {
 			PRINT("CSG generation cancelled.");
 		}catch(const HardWarningException &){
-			PRINT("CSG generation cancelled due to hardwarning beeing enabled.");
+			PRINT("CSG generation cancelled due to hardwarning being enabled.");
 		}
 		progress_report_fin();
 		updateStatusBar(nullptr);
@@ -1499,10 +1496,7 @@ void MainWindow::writeBackup(QFile *file)
 	QTextStream writer(file);
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
-
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		this->parameterWidget->writeBackupFile(file->fileName());
-	}
+	this->parameterWidget->writeBackupFile(file->fileName());
 	
 	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
 }
@@ -1607,9 +1601,7 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
-		if (Feature::ExperimentalCustomizer.is_enabled()) {
-			this->parameterWidget->writeFileIfNotEmpty(new_filename);
-		}
+		this->parameterWidget->writeFileIfNotEmpty(new_filename);
 		setFileName(new_filename);
 		clearExportPaths();
 		actionSave();
@@ -1620,7 +1612,7 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("UI-WARNING: Library path %s doesnt exist. Creating", path);
+		PRINTB("UI-WARNING: Library path %s doesn't exist. Creating", path);
 		if (!PlatformUtils::createUserLibraryPath()) {
 			PRINTB("UI-ERROR: Cannot create library path: %s",path);
 		}
@@ -1904,10 +1896,7 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 {
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		this->parameterWidget->setEnabled(false);
-	}
-
+	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = editor->toPlainText();
@@ -1921,27 +1910,18 @@ void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (this->root_module!=nullptr) {
-			//add parameters as annotation in AST
-			CommentParser::collectParameters(fulltext,this->root_module);
-			this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
-			this->parameterWidget->applyParameters(this->root_module);
-			this->parameterWidget->setEnabled(true);
-		}
+	if (this->root_module!=nullptr) {
+		//add parameters as annotation in AST
+		CommentParser::collectParameters(fulltext,this->root_module);
+		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
+		this->parameterWidget->applyParameters(this->root_module);
+		this->parameterWidget->setEnabled(true);
 	}
 }
 
 void MainWindow::changeParameterWidget()
 {
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		viewActionHideParameters->setVisible(true);
-	}
-	else {
-		viewActionHideParameters->setChecked(true);
-		hideParameters();
-		viewActionHideParameters->setVisible(false);
-	}
+	viewActionHideParameters->setVisible(true);
 }
 
 void MainWindow::checkAutoReload()
@@ -1989,7 +1969,6 @@ void MainWindow::actionReloadRenderPreview()
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx.set_variable("$preview", ValuePtr(true));
-
 	compile(true);
 }
 
@@ -2076,63 +2055,25 @@ void MainWindow::csgRender()
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
-	if (!Feature::Experimental3dPrint.is_enabled()) {
-		return;
-	}
-
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
 
 	setCurrentOutput();
 
 	//Make sure we can export:
-	unsigned int dim = 3;
-	if (!canExport(dim))
-	{
-		PRINT("Cannot 3D Print due to errors.");
-		return;
-    }
+	const unsigned int dim = 3;
+	if (!canExport(dim)) return;
 
-	Settings::Settings *s = Settings::Settings::inst();
-	const bool showDialog = s->get(Settings::Settings::printServiceShowDialog).toBool();
-
-	print_service_t selectedService;
 	const auto printService = PrintService::inst();
-	if (showDialog) {
-		auto printInitDialog = new PrintInitDialog();
-		auto printInitResult = printInitDialog->exec();
-		printInitDialog->deleteLater();
-		if (printInitResult == QDialog::Rejected) {
-			return;
-		}
-
-		const auto dialog_result = printInitDialog->get_result();
-		selectedService = dialog_result.service;
-		if (dialog_result.rememberDecision) {
-			switch (dialog_result.service) {
-			case print_service_t::PRINT_SERVICE:
-				s->set(Settings::Settings::printService, printService->getService().toStdString());
-				break;
-			case print_service_t::OCTOPRINT:
-				s->set(Settings::Settings::printService, "OctoPrint");
-				break;
-			default:
-				s->set(Settings::Settings::printService, "None");
-				break;
-			}
-			s->set(Settings::Settings::printServiceShowDialog, false);
-		}
-		Preferences::Preferences::inst()->updateGUI();
-	} else {
-		const auto service = s->get(Settings::Settings::printService).toString();
-		if (service == printService->getService().toStdString()) {
-			selectedService = print_service_t::PRINT_SERVICE;
-		} else if (service == "OctoPrint") {
-			selectedService = print_service_t::OCTOPRINT;
-		} else {
-			selectedService = print_service_t::NONE;
-		}
+	auto printInitDialog = new PrintInitDialog();
+	auto printInitResult = printInitDialog->exec();
+	printInitDialog->deleteLater();
+	if (printInitResult == QDialog::Rejected) {
+		return;
 	}
+
+	const auto selectedService = printInitDialog->getResult();
+	Preferences::Preferences::inst()->updateGUI();
 
 	switch (selectedService) {
 	case print_service_t::PRINT_SERVICE:
@@ -2144,9 +2085,6 @@ void MainWindow::action3DPrint()
 		sendToOctoPrint();
 		break;
 	default:
-		if (!showDialog) {
-			PRINT("Sending design to print services is disabled, check Preferences to enable.");
-		}
 		break;
 	}
 #endif
@@ -2155,6 +2093,13 @@ void MainWindow::action3DPrint()
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
+	OctoPrint octoPrint;
+
+	if (octoPrint.url().trimmed().isEmpty()) {
+		PRINT("ERROR: OctoPrint connection not configured. Please check preferences.");
+		return;
+	}
+
 	Settings::Settings *s = Settings::Settings::inst();
 	const QString fileFormat = QString::fromStdString(s->get(Settings::Settings::octoPrintFileFormat).toString());
 	FileFormat exportFileFormat{FileFormat::STL};
@@ -2186,7 +2131,6 @@ void MainWindow::sendToOctoPrint()
 
 	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
 
-	OctoPrint octoPrint;
 	try {
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2405,6 +2349,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 void MainWindow::exceptionCleanup(){
 	PRINT("Execution aborted");
 	GuiLocker::unlock();
+	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::actionDisplayAST()
@@ -2531,7 +2476,7 @@ bool MainWindow::canExport(unsigned int dim)
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+		PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
 	return true;
@@ -3170,6 +3115,8 @@ void MainWindow::consoleOutput(const QString &msg)
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
+	} else if (msg.startsWith("TRACE:")) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>");
 	} else {
 		QString qmsg = msg;
 		if(qmsg.contains('\t') && !qmsg.contains("<pre>", Qt::CaseInsensitive))

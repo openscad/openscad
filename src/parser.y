@@ -156,13 +156,13 @@ bool fileEnded=false;
 %%
 
 input:    /* empty */
-        | TOK_USE
+        | input
+          TOK_USE
             {
-              rootmodule->registerUse(std::string($1));
-              free($1);
+              rootmodule->registerUse(std::string($2));
+              free($2);
             }
-          input
-        | statement input
+        | input statement
         ;
 
 statement:
@@ -227,7 +227,7 @@ assignment:
                                     LOC(@$).firstLine());
                         }else if(uncPathCurr == uncPathPrev){
                             //assigment overwritten within the same file
-                            //the line number beeing equal happens, when a file is included multiple times
+                            //the line number being equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
                                 PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
                                         assignment.name%

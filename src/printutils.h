@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 
 #include <libintl.h>
+#undef snprintf
 #include <locale.h>
 inline char * _( const char * msgid ) { return gettext( msgid ); }
 inline const char * _( const char * msgid, const char *msgctxt) {
@@ -31,6 +32,7 @@ namespace OpenSCAD {
 	extern bool quiet;
 	extern bool hardwarnings;
 	extern bool parameterCheck;
+	extern bool rangeCheck;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);

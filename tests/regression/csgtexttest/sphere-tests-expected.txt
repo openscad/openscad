@@ -1,1 +1,0 @@
-group1(sphere+transform3(sphere)+transform5(sphere)+transform7(sphere))

@@ -26,7 +26,7 @@ void ParameterSpinBox::onEditingFinished()
 
 void ParameterSpinBox::setValue()
 {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	if (object->values->toDouble() > 0) {
 		setPrecision(object->values->toDouble());
 		this->doubleSpinBox->setSingleStep(object->values->toDouble());
@@ -41,5 +41,5 @@ void ParameterSpinBox::setValue()
 	this->stackedWidgetBelow->hide();
 	this->doubleSpinBox->setRange(object->value->toDouble()-1000, object->value->toDouble()+1000);
 	this->doubleSpinBox->setValue(object->value->toDouble());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

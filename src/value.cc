@@ -26,6 +26,9 @@
 
 #include "value.h"
 #include "printutils.h"
+#include "double-conversion/double-conversion.h"
+#include "double-conversion/utils.h"
+#include "double-conversion/ieee.h"
 #include <cmath>
 #include <assert.h>
 #include <sstream>
@@ -35,12 +38,100 @@
 #include <boost/format.hpp>
 #include "boost-utils.h"
 #include <boost/filesystem.hpp>
+
 namespace fs=boost::filesystem;
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
+
+/* Define values for double-conversion library. */
+#define DC_BUFFER_SIZE 128
+#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
+#define DC_INF "inf"
+#define DC_NAN "nan"
+#define DC_EXP 'e'
+#define DC_DECIMAL_LOW_EXP -6
+#define DC_DECIMAL_HIGH_EXP 21
+#define DC_MAX_LEADING_ZEROES 5
+#define DC_MAX_TRAILING_ZEROES 0
+
+/* WARNING: using values > 8 will significantly slow double to string 
+ * conversion, defeating the purpose of using double-conversion library */
+#define DC_PRECISION_REQUESTED 6
+
+
+inline void trimTrailingZeroes(char *buffer, const int pos) {
+  char *decimal = strchr(buffer, '.');
+  if (decimal) {
+    char *ptr = decimal;
+    while (*(++ptr) != '\0') {
+      char *zero = strchr(ptr, '0');
+      if (zero) {
+        ptr = zero;
+        char ch;
+        while ((ch = *(++ptr))) {
+          if (ch == DC_EXP) {
+            // found exponent character after all zeroes, 
+            // move chunk from exponent to end of string to replace decimal
+            memmove((zero-1 == decimal) ? decimal : zero, ptr, &buffer[pos]-ptr+1);
+            return;
+          } else if (ch != '0') {
+            // found non-zero digit, start over looking for zeroes
+            break;
+          }
+        }
+        if (ch == '\0') {
+          // reached end of string with all zeroes
+          if (zero-1 == decimal) {
+            // first zero was immediately after decimal
+            *decimal = '\0'; // replace decimal with terminator
+            return;
+          } else {
+            // replace zero with terminator
+            *zero = '\0';
+            return;
+          }
+        }
+      } else {
+        // no zeroes after decimal
+        return;
+      }
+    }
+  }
+}
+
+inline bool HandleSpecialValues(const double &value, double_conversion::StringBuilder &builder) {
+  double_conversion::Double double_inspect(value);
+  if (double_inspect.IsInfinite()) {
+    if (value < 0) {
+      builder.AddCharacter('-');
+    }
+    builder.AddString(DC_INF);
+    return true;
+  }
+  if (double_inspect.IsNan()) {
+    builder.AddString(DC_NAN);
+    return true;
+  }
+  return false;
+}
+
+inline char* DoubleConvert(const double &value, char *buffer, 
+    double_conversion::StringBuilder &builder, const double_conversion::DoubleToStringConverter &dc) {
+  builder.Reset();
+  if (double_conversion::Double(value).IsSpecial()) {
+    HandleSpecialValues(value, builder);
+    builder.Finalize();
+    return buffer;
+  }
+  dc.ToPrecision(value, DC_PRECISION_REQUESTED, &builder);
+  int pos = builder.position(); // get position before Finalize destroys it
+  builder.Finalize();
+  trimTrailingZeroes(buffer, pos);
+  return buffer;
+}
 
 void utf8_split(const std::string& str, std::function<void(ValuePtr)> f)
 {
@@ -233,18 +324,11 @@ public:
   }
 
   std::string operator()(const double &op1) const {
-    if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
-      return "nan";
-    }
-    if (op1 == 0) {
-      return "0"; // Don't return -0 (exactly -0 and 0 equal 0)
-    }
-    // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
-    // see https://github.com/openscad/openscad/issues/158
-    std::ostringstream tmp;
-    tmp.unsetf(std::ios::floatfield);
-    tmp << op1;
-    return tmp.str();
+    char buffer[DC_BUFFER_SIZE];
+    double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
+      DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
+    return DoubleConvert(op1, buffer, builder, dc);
   }
 
   std::string operator()(const boost::blank &) const {
@@ -256,11 +340,12 @@ public:
   }
 
   std::string operator()(const Value::VectorType &v) const {
+    // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      stream << v[i]->toEchoString();
+      v[i]->toStream(stream);
     }
     stream << ']';
     return stream.str();
@@ -270,14 +355,88 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
-  std::string operator()(const ValuePtr &v) const {
-    return v->toString();
-  }
 };
+
+// Optimization to avoid multiple stream instantiations and copies to str for long vectors.
+// Functions identically to "class tostring_visitor", except outputting to stream and not returning strings
+class tostream_visitor : public boost::static_visitor<>
+{
+public:
+  std::ostringstream &stream;
+  
+
+  mutable char buffer[DC_BUFFER_SIZE];
+  mutable double_conversion::StringBuilder builder;
+  double_conversion::DoubleToStringConverter dc;
+
+  tostream_visitor(std::ostringstream& stream) 
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE), 
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES) 
+    {};
+
+  template <typename T> void operator()(const T &op1) const {
+    //    std::cout << "[generic tostream_visitor]\n";
+    stream << boost::lexical_cast<std::string>(op1);
+  }
+
+  void operator()(const double &op1) const {
+    stream << DoubleConvert(op1, buffer, builder, dc);
+  }
+
+  void operator()(const boost::blank &) const {
+    stream << "undef";
+  }
+
+  void operator()(const bool &v) const {
+    stream << (v ? "true" : "false");
+  }
+
+  void operator()(const Value::VectorType &v) const {
+    stream << '[';
+    for (size_t i = 0; i < v.size(); i++) {
+      if (i > 0) stream << ", ";
+      v[i]->toStream(this);
+    }
+    stream << ']';
+  }
+
+  void operator()(const str_utf8_wrapper &v) const {
+    stream << '"' << v << '"';
+  }
+
+  void operator()(const RangeType &v) const {
+    stream << "[";
+    this->operator()(v.begin_val);
+    stream << " : ";
+    this->operator()(v.step_val);
+    stream << " : ";
+    this->operator()(v.end_val);
+    stream << "]";
+  }
+
+};
+
 
 std::string Value::toString() const
 {
   return boost::apply_visitor(tostring_visitor(), this->value);
+}
+
+// helper called by tostring_visitor methods to avoid extra instantiations
+std::string Value::toString(const tostring_visitor *visitor) const
+{
+  return boost::apply_visitor(*visitor, this->value);
+}
+
+void Value::toStream(std::ostringstream &stream) const
+{
+  boost::apply_visitor(tostream_visitor(stream), this->value);
+}
+
+// helper called by tostream_visitor methods to avoid extra instantiations
+void Value::toStream(const tostream_visitor *visitor) const
+{
+  boost::apply_visitor(*visitor, this->value);
 }
 
 std::string Value::toEchoString() const
@@ -286,6 +445,16 @@ std::string Value::toEchoString() const
 		return std::string("\"") + toString() + '"';
 	} else {
 		return toString();
+	}
+}
+
+// helper called by tostring_visitor methods to avoid extra instantiations
+std::string Value::toEchoString(const tostring_visitor *visitor) const
+{
+	if (type() == Value::ValueType::STRING) {
+		return std::string("\"") + toString(visitor) + '"';
+	} else {
+		return toString(visitor);
 	}
 }
 

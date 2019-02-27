@@ -27,7 +27,7 @@ To translate the strings:
 =========================
 
 Use a text editor or special program (poedit or lokalize) to edit the .po file.
-( See http://en.opensuse.org/SDB:Localization_work_with_po_files )
+( See https://en.opensuse.org/SDB:Localization_work_with_po_files )
 Then submit your new .po file as an OpenSCAD github issue or pull request:
 
 https://github.com/openscad/openscad/issues/ 

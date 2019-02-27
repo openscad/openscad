@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
-    <height>480</height>
+    <width>581</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -97,6 +97,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxMouseCentricZoom">
+          <property name="text">
+           <string>mouse centric zoom</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
@@ -126,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>435</width>
-             <height>563</height>
+             <width>547</width>
+             <height>751</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -244,7 +254,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Nimbus Sans L</family>
+                    <family>Lucida Grande</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1220,8 +1230,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>98</width>
+               <height>36</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1255,13 +1265,6 @@
       </widget>
       <widget class="QWidget" name="page3DPrint">
        <layout class="QVBoxLayout" name="verticalLayout_5">
-        <item>
-         <widget class="QCheckBox" name="checkBoxShowPrintServiceSelectionDialog">
-          <property name="text">
-           <string>Show Print Service Selection Dialog</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QGroupBox" name="groupBoxOctoPrint">
           <property name="title">
@@ -1495,6 +1498,13 @@
              </item>
             </layout>
            </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="labelOctoPrintApiKeyNote">
+             <property name="text">
+              <string>Note: The API key is stored unencrypted in the application settings.</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1543,8 +1553,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>355</width>
-             <height>409</height>
+             <width>456</width>
+             <height>563</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1618,7 +1628,7 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_14">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSize">
+                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSizeMB">
                  <item>
                   <widget class="QLabel" name="label_4">
                    <property name="text">
@@ -1627,19 +1637,19 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="cgalCacheSizeEdit"/>
+                  <widget class="QLineEdit" name="cgalCacheSizeMBEdit"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_2">
                    <property name="text">
-                    <string>bytes</string>
+                    <string>MB</string>
                    </property>
                   </widget>
                  </item>
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSize">
+                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSizeMB">
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
@@ -1651,12 +1661,12 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="polysetCacheSizeEdit"/>
+                  <widget class="QLineEdit" name="polysetCacheSizeMBEdit"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_6">
                    <property name="text">
-                    <string>bytes</string>
+                    <string>MB</string>
                    </property>
                   </widget>
                  </item>
@@ -1758,6 +1768,16 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="enableRangeCheckBox">
+                 <property name="text">
+                  <string>Check the parameter range for builtin modules</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1773,6 +1793,22 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_Debug">
+              <property name="title">
+               <string>Debugging</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_16">
+               <item>
+                <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
+                 <property name="text">
+                  <string>Enable tracing of HIDAPI events (requires restart of OpenSCAD)</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -1956,7 +1992,7 @@
      <normaloff>:/icons/prefsInputAxis.png</normaloff>:/icons/prefsInputAxis.png</iconset>
    </property>
    <property name="text">
-    <string>Axis</string>
+    <string>Axes</string>
    </property>
    <property name="toolTip">
     <string>Input driver configuration and Axis mapping</string>
