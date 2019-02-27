@@ -47,6 +47,8 @@ namespace fs = boost::filesystem;
 #if defined __WIN32__ || defined _MSC_VER
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
+#define strdup _strdup
+#define fileno _fileno
 #endif
 
 std::string stringcontents;
@@ -82,7 +84,7 @@ extern FileModule *rootmodule;
   Note: Since flex doesn't handle column numbers, we deal with those manually.
   The yycolumn is manually reset for each encountered newline.
 */
-extern YYLTYPE parserlloc;
+extern PARSERLTYPE parserlloc;
 int yycolumn = 1;
 #define YY_USER_ACTION {              \
   parserlloc.first_line = yylineno;   \

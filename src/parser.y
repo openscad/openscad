@@ -23,6 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+%define api.prefix {parser}
 
 %expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
@@ -30,7 +31,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#define strdup _strdup
+#else
 #include <unistd.h>
 #endif
 

@@ -16,6 +16,8 @@
     #if defined __WIN32__ || defined _MSC_VER
     extern "C" int __cdecl _isatty(int _FileHandle);
     #define isatty _isatty
+    #define strdup _strdup
+    #define fileno _fileno
     #endif
 
 %}
@@ -78,5 +80,7 @@ int yywrap(void) {
 return 1;
 }
 
-
-
+void comment_scan_string(const char* str)
+{
+    yy_switch_to_buffer(yy_scan_string(str));
+}
