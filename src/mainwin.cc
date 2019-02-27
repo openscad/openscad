@@ -892,6 +892,7 @@ void MainWindow::openFile(const QString &new_filename)
 	refreshDocument();
 	clearExportPaths();
 
+	hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
 	try {
 		parseTopLevelDocument(true);
 	} catch (const HardWarningException&) {
@@ -3133,6 +3134,11 @@ void MainWindow::consoleOutput(const QString &msg)
 void MainWindow::setCurrentOutput()
 {
 	set_output_handler(&MainWindow::consoleOutput, this);
+}
+
+void MainWindow::hideCurrentOutput()
+{
+	set_output_handler(&MainWindow::noOutput, this);
 }
 
 void MainWindow::clearCurrentOutput()

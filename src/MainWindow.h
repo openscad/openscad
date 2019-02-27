@@ -113,6 +113,7 @@ private:
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
+	static void noOutput(const std::string &, void*) {};  // /dev/null
 	void loadViewSettings();
 	void loadDesignSettings();
 	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
@@ -211,6 +212,7 @@ public:
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
+	void hideCurrentOutput();
   bool isEmpty();
 
 	void onAxisChanged(InputEventAxisChanged *event) override;
