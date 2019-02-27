@@ -239,7 +239,7 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 
 	// number of characters per color channel
 	const int stride = short_syntax ? 1 : 2;
-	const float channel_max = short_syntax ? 15 : 255;
+	const float channel_max = short_syntax ? 15.0f : 255.0f;
 
 	Color4f rgba;
 	rgba[3] = 1.0; // default alpha to 100%
@@ -267,7 +267,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	auto v = c.lookup_variable("c");
 	if (v->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
-			node->color[i] = i < v->toVector().size() ? v->toVector()[i]->toDouble() : 1.0;
+			node->color[i] = i < v->toVector().size() ? (float)v->toVector()[i]->toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
 				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toRelativeString(ctx->documentPath()));
 			}
