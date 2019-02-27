@@ -64,11 +64,11 @@ private:
 class CSGLeaf : public CSGNode
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	CSGLeaf(const shared_ptr<const class Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label);
 	~CSGLeaf() {}
 	void initBoundingBox() override;
 	std::string dump() override;
-
 	std::string label;
 	shared_ptr<const Geometry> geom;
 	Transform3d matrix;
