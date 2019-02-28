@@ -651,6 +651,10 @@ elseif(UNIX)
   set_target_properties(OpenSCAD PROPERTIES
     OUTPUT_NAME openscad
   )
+elseif(MSVC)
+  set_target_properties(OpenSCAD PROPERTIES
+    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup"
+  )
 endif()
 
 if(ENABLE_SPNAV)
