@@ -49,7 +49,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 	int value = val * 100;
 	progressBar->setValue(value); //set where the bar is
 
-	//QProgressBar generates the shown string form the format string.
+	//QProgressBar generates the shown string from the format string.
 	//By setting a format string without a place holder,
 	//we can set arbitrary text, like a custom formated double.
 	//(Note: QProgressBar internally works on int, so has no formating for double values)
@@ -158,7 +158,7 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
 	//use a custom style for the axis indicators,
-	//to prevent getting operating specific
+	//to prevent getting operating system specific
 	//(potentially animated) ProgressBars
 	int textLightness = this->progressBarAxis0->palette().text().color().lightness();
 	this->darkModeDetected = textLightness>165;
