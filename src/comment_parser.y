@@ -1,5 +1,3 @@
-%define api.prefix {comment_parser}
-
 %{
     #include <sstream>
     #include <string.h>

@@ -84,7 +84,7 @@ extern FileModule *rootmodule;
   Note: Since flex doesn't handle column numbers, we deal with those manually.
   The yycolumn is manually reset for each encountered newline.
 */
-extern PARSERLTYPE parserlloc;
+extern YYLTYPE parserlloc;
 int yycolumn = 1;
 #define YY_USER_ACTION {              \
   parserlloc.first_line = yylineno;   \

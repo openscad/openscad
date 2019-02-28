@@ -243,11 +243,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(src)
 
 FLEX_TARGET(openscad_lexer src/lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(openscad_parser src/parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.hxx COMPILE_FLAGS "")
+BISON_TARGET(openscad_parser src/parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/parser.hxx COMPILE_FLAGS "-d -p parser")
 ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
 
 FLEX_TARGET(comment_lexer src/comment_lexer.l ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.hxx COMPILE_FLAGS "")
+BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.cxx DEFINES_FILE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
 ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
 if(NOT HEADLESS)

@@ -23,7 +23,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-%define api.prefix {parser}
 
 %expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
