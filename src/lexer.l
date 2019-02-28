@@ -146,8 +146,9 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
           PRINTB("WARNING: Can't open library '%s'.", filename);
           parserlval.text = strdup(filename.c_str());
 	} else {
-          handle_dep(fullpath.generic_string());
-          parserlval.text = strdup(fullpath.string().c_str());
+          auto used_path = fullpath.generic_string();
+          handle_dep(used_path);
+          parserlval.text = strdup(used_path.c_str());
 	}
         return TOK_USE;
     }

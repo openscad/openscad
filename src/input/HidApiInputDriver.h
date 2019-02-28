@@ -49,10 +49,15 @@ public:
 
     const std::string & get_name() const override;
 
-    void hidapi_decode_axis1(const unsigned char *buf, unsigned int len);
-    void hidapi_decode_button1(const unsigned char *buf, unsigned int len);
-    void hidapi_decode_axis2(const unsigned char *buf, unsigned int len);
-    void hidapi_decode_button2(const unsigned char *buf, unsigned int len);
+    void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
+    void hidapi_decode_button(const unsigned char *buf, unsigned int len);
+
+    int getButtonCount() const override{
+        return 16;
+    }
+    int getAxisCount() const override{
+        return 6;
+    }
 
 private:
 	std::pair<hid_device *, const struct device_id *> enumerate() const;

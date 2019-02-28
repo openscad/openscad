@@ -625,7 +625,7 @@ MainWindow::MainWindow(const QString &filename)
 	setAcceptDrops(true);
 	clearCurrentOutput();
 
-	this->console->setMaximumBlockCount(500);
+	this->console->setMaximumBlockCount(5000);
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -1971,7 +1971,6 @@ void MainWindow::actionReloadRenderPreview()
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx.set_variable("$preview", ValuePtr(true));
-
 	compile(true);
 }
 

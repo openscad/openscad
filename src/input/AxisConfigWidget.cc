@@ -139,8 +139,6 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
-	initizalied = true;
-	
 	//use a custom style for the axis indicators,
 	//to prevent getting operating specific
 	//(potentially animated) progressbars
@@ -158,12 +156,13 @@ void AxisConfigWidget::init() {
             "}";
     }
 
-
 	auto progressbars = this->findChildren<QProgressBar *>();
 	for (auto progressbar : progressbars) {
 		progressbar->setStyleSheet(style);
 		progressbar->setAlignment(Qt::AlignCenter);
 	}
+
+	initialized = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -442,7 +441,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 
 void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
 		writeSettings();
 
@@ -454,7 +453,7 @@ void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
 		writeSettings();
 		QFont font;
@@ -465,7 +464,7 @@ void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
 		writeSettings();
 		QFont font;
@@ -476,7 +475,7 @@ void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
 		writeSettings();
 		QFont font;
@@ -487,7 +486,7 @@ void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
 		writeSettings();
 		QFont font;
@@ -567,4 +566,20 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 		comboBox->addItem(qtext, val);
 	}
 	updateComboBox(comboBox, entry);
+}
+
+void AxisConfigWidget::updateStates(){
+	if(!initialized) return;
+
+	int cnt = InputDriverManager::instance()->getAxisCount();
+	for (int i=0;i<9;i++) {
+		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
+		if( cnt <= i){
+			progressbar->setEnabled(false);
+			progressbar->setMinimum(0);
+		}else{
+			progressbar->setEnabled(true);
+			progressbar->setMinimum(-100);
+		}
+	}
 }
