@@ -653,7 +653,7 @@ elseif(UNIX)
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
-    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup"
+    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:8388608"
   )
 endif()
 
