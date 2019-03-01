@@ -68,6 +68,8 @@ get_unit(const std::string& value)
 		return unit_t::PT;
 	} else if (value == "pc") {
 		return unit_t::PC;
+	} else if (value == "%") {
+		return unit_t::PERCENT;
 	} else {
 		return unit_t::NONE;
 	}
@@ -82,7 +84,7 @@ parse_length(const std::string& value)
 	qi::rule<std::string::const_iterator, std::vector<char>> unit;
 
 	length = qi::double_ >> -unit;
-	unit = qi::string("em") | qi::string("ex") | qi::string("px") | qi::string("in") | qi::string("cm") | qi::string("mm") | qi::string("pt") | qi::string("pc");
+	unit = qi::string("em") | qi::string("ex") | qi::string("px") | qi::string("in") | qi::string("cm") | qi::string("mm") | qi::string("pt") | qi::string("pc") | qi::string("%");
 
 	libsvg::length_struct parsed;
 	qi::phrase_parse(it, end, length, qi::space, parsed);

@@ -40,7 +40,7 @@ namespace libsvg {
 // 1pc = 16px or user units
 // 1pc = 1/6in
 //
-enum class unit_t { UNDEFINED, NONE, EM, EX, PX, IN, CM, MM, PT, PC };
+enum class unit_t { UNDEFINED, NONE, PERCENT, EM, EX, PX, IN, CM, MM, PT, PC };
 
 struct length_struct {
 	double number;
