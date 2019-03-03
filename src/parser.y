@@ -672,8 +672,8 @@ void yyerror (char const *s)
 
 bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
-  fs::path parser_sourcefile = fs::absolute(fs::path(filename));
-  main_file_folder = parser_sourcefile.parent_path().generic_string();
+  fs::path parser_sourcefile = fs::path(fs::absolute(fs::path(filename)).generic_string());
+  main_file_folder = parser_sourcefile.parent_path().string();
   lexer_set_parser_sourcefile(parser_sourcefile);
   mainFilePath = fs::absolute(fs::path(mainFile));
 
@@ -682,7 +682,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   parser_input_buffer = text.c_str();
   fileEnded=false;
 
-  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().generic_string());
+  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
