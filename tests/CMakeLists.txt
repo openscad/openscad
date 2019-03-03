@@ -1428,6 +1428,7 @@ list(APPEND SVG_VIEWBOX_TESTS
 foreach(TEST ${SVG_VIEWBOX_TESTS})
     add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox/${TEST}.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/viewbox-test.scad)
 endforeach()
+add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox/box-w-holes.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/box-w-holes.scad)
 
 #
 # Trivial Export/Import files
