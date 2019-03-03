@@ -946,6 +946,8 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-t
                ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342-template.py
                ${CMAKE_SOURCE_DIR}/../testdata/python/gen_issue2342.py)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/python/gen_svg_viewbox_tests-template.py
+               ${CMAKE_SOURCE_DIR}/../testdata/python/gen_svg_viewbox_tests.py)
 
 # Find all scad files
 file(GLOB FEATURES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/*.scad)
@@ -954,7 +956,7 @@ file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated
 file(GLOB ISSUES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
-file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/*.scad)
+file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad)
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
@@ -1400,6 +1402,11 @@ add_custom_target(issue2342 ALL
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
+add_custom_target(svg_viewbox_tests ALL
+  COMMAND ${GEN_SCRIPT_DIR}/gen_svg_viewbox_tests.py "${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox" "${CMAKE_SOURCE_DIR}/../testdata/scad/svg"
+  WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
+  COMMENT "Generating svg viewbox tests"
+)
 
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
@@ -1410,6 +1417,17 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+
+list(APPEND SVG_VIEWBOX_TESTS
+    viewbox_300x400_none viewbox_600x200_none
+    viewbox_300x400_meet_xMinYMin viewbox_300x400_meet_xMidYMin viewbox_300x400_meet_xMaxYMin
+    viewbox_600x200_meet_xMinYMin viewbox_600x200_meet_xMinYMid viewbox_600x200_meet_xMinYMax
+    viewbox_600x200_slice_xMinYMin viewbox_600x200_slice_xMidYMin viewbox_600x200_slice_xMaxYMin
+    viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax)
+
+foreach(TEST ${SVG_VIEWBOX_TESTS})
+    add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox/${TEST}.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/viewbox-test.scad)
+endforeach()
 
 #
 # Trivial Export/Import files
