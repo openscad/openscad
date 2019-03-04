@@ -36,6 +36,8 @@ namespace OpenSCAD {
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
+void no_exceptions_for_warnigs();
+bool would_have_thrown();
 
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
