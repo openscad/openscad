@@ -48,6 +48,7 @@ public:
     void close() override;
 
     const std::string & get_name() const override;
+    std::string get_info() const override;
 
     void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
     void hidapi_decode_button(const unsigned char *buf, unsigned int len);

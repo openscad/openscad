@@ -198,6 +198,8 @@ else()
   message(STATUS "Glib: ${GLIB2_VERSION}")
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
+
+  list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
  
   find_graphics()
 endif()

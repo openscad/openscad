@@ -1,4 +1,5 @@
 .uuid
+.vs/
 /*.scad
 **/out*.*
 *.dmg
@@ -11,7 +12,6 @@ objects
 .gdbinit
 .qmake.stash
 .tags*
-.uuid
 **/#*#
 /.dir-locals.el
 testdata/scad/2D/features/import_dxf-tests.scad
@@ -19,6 +19,7 @@ testdata/scad/3D/features/import_stl-tests.scad
 testdata/scad/3D/features/import_3mf-tests.scad
 testdata/scad/misc/include-tests.scad
 testdata/scad/misc/use-tests.scad
+testdata/svg/viewbox/viewbox_*.svg
 **/project.xcworkspace
 **/xcuserdata
 /*.stl
@@ -72,4 +73,4 @@ OpenSCAD_autogen
 /local.pri
 testdata/scad/issues/issue2342.scad
 testdata/python/gen_issue2342.py
-.vs/
+testdata/python/gen_svg_viewbox_tests.py

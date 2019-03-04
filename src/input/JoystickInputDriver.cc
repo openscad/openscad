@@ -103,6 +103,16 @@ const std::string & JoystickInputDriver::get_name() const
     return name;
 }
 
+std::string JoystickInputDriver::get_info() const
+{
+	return STR(
+		get_name() << " " << (isOpen() ? "open" : "not open") << " " <<
+		"Name: " << name << " " <<
+		"Axis: " << (int) axes << " " <<
+		"Buttons: " << (int) buttons << " "
+	);
+}
+
 void JoystickInputDriver::setJoystickNr(std::string jnr)
 {
     this->nr=jnr;
