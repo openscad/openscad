@@ -73,17 +73,17 @@ macro(find_graphics)
     find_package(OpenGL REQUIRED QUIET)
     list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
 
-    find_package(GLEW CONFIG REQUIRED QUIET)
     if(MSVC) 
+      find_package(GLEW CONFIG REQUIRED QUIET)
       message("using target GLEW::GLEW")
       list(APPEND COMMON_LIBRARIES GLEW::GLEW)
     else()
+      find_package(GLEW REQUIRED QUIET)
       list(APPEND COMMON_LIBRARIES ${GLEW_LIBRARY})
     endif()
 
-    find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
-    message("OPENCSG_INCLUDE_DIRS ${OPENCSG_INCLUDE_DIRS}")
-    include_directories("${OPENCSG_INCLUDE_DIRS}/opencsg")
+    find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
+    include_directories("${OPENCSG_INCLUDE_DIRS}")
     find_library(OPENCSG_LIBRARY opencsg)
     list(APPEND COMMON_LIBRARIES ${OPENCSG_LIBRARY})
 
@@ -157,6 +157,7 @@ if (MSVC)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 else()
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
   set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
 
   find_package(Eigen3 CONFIG REQUIRED)
@@ -168,6 +169,8 @@ else()
   message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
   include_directories(${CGAL_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
+  list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
+  list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
   add_definitions(-DENABLE_CGAL)
 
   # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
@@ -199,7 +202,7 @@ else()
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
 
-  list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
+  list(APPEND COMMON_LIBRARIES double-conversion)
  
   find_graphics()
 endif()
