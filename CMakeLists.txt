@@ -49,10 +49,6 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 #add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-# cmake default flags include -DNDEBUG for non-Debug builds.
-# NDEBUG is known to cause OpenSCAD to crash in some case, so make sure it is unset.  Issue #2180 for details.
-#add_compile_options("-UNDEBUG")
-
 set(CMAKE_CXX_STANDARD 11)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -166,7 +162,6 @@ else()
   find_package(Eigen3 CONFIG REQUIRED)
   message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
   include_directories(${EIGEN3_INCLUDE_DIRS})
-  add_definitions(-DEIGEN_DONT_ALIGN)
 
   find_package(CGAL REQUIRED QUIET)
   message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
@@ -231,10 +226,12 @@ message(STATUS "Flex: ${FLEX_VERSION}")
 find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
-#find_package(Lib3MF REQUIRED QUIET)
-#add_definitions(${LIB3MF_CFLAGS})
-#include_directories(${LIB3MF_INCLUDE_DIRS})
-#list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+if(NOT MSVC)
+  find_package(Lib3MF REQUIRED QUIET)
+  add_definitions(${LIB3MF_CFLAGS})
+  include_directories(${LIB3MF_INCLUDE_DIRS})
+  list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+endif()
 
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")

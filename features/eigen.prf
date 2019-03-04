@@ -36,13 +36,6 @@ isEmpty(EIGEN_INCLUDEPATH) {
   EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
 }
 
-# disable Eigen SIMD optimizations for platforms where it breaks compilation
-!macx {
-  !freebsd-g++ {
-    QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
-  }
-}
-
 # EIGEN being under 'include/eigen3' needs special prepending
 has_qt5 {
   QMAKE_INCDIR = $$EIGEN_INCLUDEPATH $$QMAKE_INCDIR
