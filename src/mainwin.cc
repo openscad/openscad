@@ -1092,6 +1092,14 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			didcompile = true;
 		}
 
+		if (didcompile && parser_error_pos != last_parser_error_pos) {
+			if(last_parser_error_pos >= 0)
+				emit unhighlightLastError();
+			if (parser_error_pos >= 0)
+				emit highlightError( parser_error_pos );
+			last_parser_error_pos = parser_error_pos;
+		}
+
 		if (this->root_module) {
 			auto mtime = this->root_module->handleDependencies();
 			if (mtime > this->deps_mtime) {
@@ -1101,13 +1109,6 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			}
 		}
 
-		if (didcompile && parser_error_pos != last_parser_error_pos) {
-			if(last_parser_error_pos >= 0)
-				emit unhighlightLastError();
-			if (parser_error_pos >= 0)
-				emit highlightError( parser_error_pos );
-			last_parser_error_pos = parser_error_pos;
-		}
 		// Had any errors in the parse that would have caused exceptions via PRINT.
 		if(would_have_thrown())
 			throw HardWarningException("");
