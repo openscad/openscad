@@ -300,7 +300,7 @@ set(CORE_SOURCES
   src/degree_trig.cc
   src/func.cc 
   src/function.cc 
-  src/stackcheck.cc 
+  src/stackcheck.h
   src/localscope.cc 
   src/module.cc 
   src/FileModule.cc 

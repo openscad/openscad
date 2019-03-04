@@ -35,7 +35,7 @@
 #include "printutils.h"
 #include <sstream>
 
-std::deque<std::string> UserModule::module_stack;
+std::vector<std::string> UserModule::module_stack;
 
 static void __attribute__ ((noinline)) print_err(std::string name, const Location &loc,const Context *ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
@@ -44,7 +44,7 @@ static void __attribute__ ((noinline)) print_err(std::string name, const Locatio
 
 AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	if (StackCheck::inst()->check()) {
+	if (StackCheck::inst().check()) {
 		print_err(inst->name(),loc,ctx);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
