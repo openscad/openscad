@@ -11,7 +11,10 @@
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#pragma pop_macro("NDEBUG")
 
 using namespace CGALUtils;
 namespace fs=boost::fileystem;

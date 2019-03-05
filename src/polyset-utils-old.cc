@@ -4,10 +4,8 @@
 #include "printutils.h"
 #include "cgal.h"
 
-#ifdef NDEBUG
-#define PREV_NDEBUG NDEBUG
+#pragma push_macro("NDEBUG")
 #undef NDEBUG
-#endif
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Delaunay_mesher_2.h>
@@ -15,9 +13,7 @@
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Delaunay_mesh_criteria_2.h>
 #include <CGAL/Mesh_2/Face_badness.h>
-#ifdef PREV_NDEBUG
-#define NDEBUG PREV_NDEBUG
-#endif
+#pragma pop_macro("NDEBUG")
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef CGAL::Triangulation_vertex_base_2<K> Vb;

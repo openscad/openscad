@@ -1,3 +1,5 @@
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Gmpq.h>
 #include <CGAL/Lazy_exact_nt.h>
 #include <CGAL/Simple_cartesian.h>
@@ -5,6 +7,7 @@
 #include <CGAL/Nef_polyhedron_2.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#pragma pop_macro("NDEBUG")
 
 typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> FT;
 typedef CGAL::Simple_cartesian<FT> Kernel;

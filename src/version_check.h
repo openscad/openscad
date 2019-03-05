@@ -50,7 +50,10 @@ a time, to avoid confusion.
 
 
 #ifdef ENABLE_CGAL
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/version.h>
+#pragma pop_macro("NDEBUG")
 
 #if CGAL_VERSION_NR < 1030601000
 #error CGAL library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check

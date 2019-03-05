@@ -30,8 +30,11 @@
 
 #include <algorithm>
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
+#pragma pop_macro("NDEBUG")
 
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 	tree(tree)
