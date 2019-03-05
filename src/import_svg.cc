@@ -4,13 +4,10 @@
 #include "libsvg/libsvg.h"
 #include "clipper-utils.h"
 #include "AST.h"
-#include <limits>
 
 namespace {
 
 constexpr double INCH_TO_MM = 25.4;
-constexpr double MAX_DOUBLE = std::numeric_limits<double>::max();
-constexpr double MIN_DOUBLE = std::numeric_limits<double>::lowest();
 
 struct dim_t {
 	double x;
@@ -54,8 +51,8 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 		double width_mm = 0.0;
 		double height_mm = 0.0;
 
-		dim_t min{MAX_DOUBLE, MAX_DOUBLE};
-		dim_t max{MIN_DOUBLE, MIN_DOUBLE};
+		dim_t min{1.0/0.0, 1.0/0.0};
+		dim_t max{-1.0/0.0, -1.0/0.0};
 		dim_t scale{0.0, 0.0};
 		dim_t align{0.0, 0.0};
 		dim_t viewbox{0.0, 0.0};
