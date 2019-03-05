@@ -641,7 +641,6 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
-set_property(TARGET OpenSCAD PROPERTY CMAKE_CXX_STANDARD 11)
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
