@@ -24,8 +24,6 @@
  *
  */
 
-#include "math.h"
-
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
