@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 {
 	const char *filename, *outfilename = NULL;
 	size_t cgalcachesize = 1;
-	StackCheck::inst()->init();
+	StackCheck::inst().init();
 
 	po::variables_map vm;
 	try {

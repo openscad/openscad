@@ -426,7 +426,6 @@ SOURCES += \
            src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
-           src/stackcheck.cc \
            src/degree_trig.cc \
            src/func.cc \
            src/localscope.cc \
