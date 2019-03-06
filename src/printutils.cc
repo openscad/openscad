@@ -32,7 +32,7 @@ void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 }
 
 
-void no_exceptions_for_warnigs()
+void no_exceptions_for_warnings()
 {
 	no_throw = true;
 	deferred = false;

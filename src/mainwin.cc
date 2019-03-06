@@ -1085,7 +1085,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		}
 		// Parsing and dependency handling must run to completion even with stop on errors to prevent auto
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
-		no_exceptions_for_warnigs();
+		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
 			if (editor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
@@ -1130,7 +1130,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 
 void MainWindow::waitAfterReload()
 {
-	no_exceptions_for_warnigs();
+	no_exceptions_for_warnings();
 	auto mtime = this->root_module->handleDependencies();
 	auto stop = would_have_thrown();
 	if (mtime > this->deps_mtime)
