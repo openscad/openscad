@@ -44,8 +44,6 @@ public:
 	~IfElseModuleInstantiation();
 	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
 	void print(std::ostream &stream, const std::string &indent, const bool inlined) const final;
-	void print(std::ostream &stream, const std::string &indent) const final { print(stream, indent, false); };
 
 	LocalScope else_scope;
 };
-
