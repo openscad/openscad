@@ -1069,6 +1069,7 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/ifelse-ast-dump.scad
             )
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES})
