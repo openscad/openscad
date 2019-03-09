@@ -1066,7 +1066,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			// if we haven't yet compiled the current text.
 			else {
 				auto current_doc = editor->toPlainText();
-				if (current_doc != last_compiled_doc && last_compiled_doc.size() == 0) {
+				if (current_doc.size() && last_compiled_doc.size() == 0) {
 					shouldcompiletoplevel = true;
 				}
 			}
@@ -1075,18 +1075,28 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			shouldcompiletoplevel = true;
 		}
 
-		if (!shouldcompiletoplevel && this->parsed_module) {
+		if (this->parsed_module) {
 			auto mtime = this->parsed_module->includesChanged();
 			if (mtime > this->includes_mtime) {
 				this->includes_mtime = mtime;
 				shouldcompiletoplevel = true;
 			}
 		}
-
+		// Parsing and dependency handling must run to completion even with stop on errors to prevent auto
+		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
+		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
 			if (editor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
+		}
+
+		if (didcompile && parser_error_pos != last_parser_error_pos) {
+			if(last_parser_error_pos >= 0)
+				emit unhighlightLastError();
+			if (parser_error_pos >= 0)
+				emit highlightError( parser_error_pos );
+			last_parser_error_pos = parser_error_pos;
 		}
 
 		if (this->root_module) {
@@ -1098,24 +1108,18 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			}
 		}
 
-		if (didcompile && parser_error_pos != last_parser_error_pos) {
-			emit unhighlightLastError();
-			if (!this->root_module) {
-				last_parser_error_pos = parser_error_pos;
-				emit highlightError( parser_error_pos );
-			}
-		}
+		// Had any errors in the parse that would have caused exceptions via PRINT.
+		if(would_have_thrown())
+			throw HardWarningException("");
 		// If we're auto-reloading, listen for a cascade of changes by starting a timer
 		// if something changed _and_ there are any external dependencies
 		if (reload && didcompile && this->root_module) {
-			if (this->root_module->hasIncludes() ||
-					this->root_module->usesLibraries()) {
+			if (this->root_module->hasIncludes() ||	this->root_module->usesLibraries()) {
 				this->waitAfterReloadTimer->start();
 				this->procevents = false;
 				return;
 			}
 		}
-
 
 		compileDone(didcompile | forcedone);
 	}catch(const HardWarningException&){
@@ -1125,15 +1129,17 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 
 void MainWindow::waitAfterReload()
 {
+	no_exceptions_for_warnings();
 	auto mtime = this->root_module->handleDependencies();
-	if (mtime > this->deps_mtime) {
+	auto stop = would_have_thrown();
+	if (mtime > this->deps_mtime)
 		this->deps_mtime = mtime;
-		this->waitAfterReloadTimer->start();
-		return;
-	}
-	else {
-		compile(true, true); // In case file itself or top-level includes changed during dependency updates
-	}
+	else
+		if(!stop) {
+			compile(true, true); // In case file itself or top-level includes changed during dependency updates
+			return;
+		}
+	this->waitAfterReloadTimer->start();
 }
 
 void MainWindow::on_toolButtonCompileResultClose_clicked()
@@ -2351,6 +2357,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 
 void MainWindow::exceptionCleanup(){
 	PRINT("Execution aborted");
+	PRINT(" ");
 	GuiLocker::unlock();
 	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }

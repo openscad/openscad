@@ -107,8 +107,9 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		PRINTDB("compiled module: %s", filename);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;
-		if(!found && lib_mod)
-			cacheEntry.includes_mtime = lib_mod->includesChanged();
+		auto mod = lib_mod ? lib_mod : cacheEntry.parsed_module;
+		if(!found && mod)
+			cacheEntry.includes_mtime = mod->includesChanged();
 		print_messages_pop();
 	}
 	
