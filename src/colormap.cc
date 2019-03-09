@@ -242,7 +242,7 @@ Color4f ColorMap::getColorHSV(const Color4f &col)
 Color4f ColorMap::getContrastColor(const Color4f &col)
 {
 	Color4f hsv = ColorMap::getColorHSV(col);
-	float Y = 0.2126 * col[0] + 0.7152 * col[1] + 0.0722 * col[2];
+	float Y = 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
 	float S = hsv[1];
 
 	if (S < 0.5) {

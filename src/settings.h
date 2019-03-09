@@ -64,6 +64,7 @@ public:
 	static SettingsEntry octoPrintSlicerProfileDesc;
 
     static SettingsEntry inputEnableDriverHIDAPI;
+    static SettingsEntry inputEnableDriverHIDAPILog;
     static SettingsEntry inputEnableDriverSPNAV;
     static SettingsEntry inputEnableDriverJOYSTICK;
     static SettingsEntry inputEnableDriverQGAMEPAD;
@@ -131,8 +132,8 @@ public:
     void visit(class SettingsVisitor& visitor);
     SettingsEntry* getSettingEntryByName(const std::string &name);
 
-    const Value &defaultValue(const SettingsEntry& entry);
-    const Value &get(const SettingsEntry& entry);
+    const Value &defaultValue(const SettingsEntry& entry) const;
+    const Value &get(const SettingsEntry& entry) const;
     void set(SettingsEntry& entry, const Value &val);
 
 private:

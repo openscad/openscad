@@ -17,6 +17,7 @@ import sys
 import os
 import subprocess
 import re
+from distutils.version import StrictVersion
 
 DEBUG = False
 
@@ -90,8 +91,8 @@ def validate_lib(lib):
     if p.returncode != 0: return False
     # Check deployment target
     m = re.search("LC_VERSION_MIN_MACOSX.*\n(.*)\n\s+version (.*)", output, re.MULTILINE)
-    deploymenttarget = float(m.group(2))
-    if deploymenttarget > 10.9:
+    deploymenttarget = m.group(2)
+    if StrictVersion(deploymenttarget) > StrictVersion('10.9'):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 # We don't support Snow Leopard anymore

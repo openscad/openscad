@@ -66,6 +66,8 @@ public slots:
 	void on_checkBoxQGamepad_toggled(bool);
 	void on_checkBoxDBus_toggled(bool);
 
+	void updateStates();
+
 signals:
         void inputMappingChanged() const;
         void inputCalibrationChanged() const;
@@ -86,7 +88,7 @@ private:
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 	void writeSettings();
 	
-	bool initizalied = false;
+	bool initialized = false;
 
 	QString NotEnabledDuringBuild =_("This driver was not enabled during build time and is thus not available.");
 
@@ -95,4 +97,34 @@ private:
 	QString SpaceNavInputDriverDescription = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
 	QString JoystickInputDriverDescription = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
 	QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
+
+	bool darkModeDetected=false;
+
+	QString ProgressbarStyleLight =
+		"QProgressBar::chunk {"
+		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66d9ff,stop: 1 #ccf2ff );"
+		"border-radius: 5px;"
+		"border: 1px solid #007399;"
+		"}";
+
+	QString ProgressbarStyleLightActive =
+		"QProgressBar::chunk {"
+		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66ff66,stop: 1 #ccffcc );"
+		"border-radius: 5px;"
+		"border: 1px solid #007399;"
+		"}";
+
+	QString ProgressbarStyleDark  =
+		"QProgressBar::chunk {"
+		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #001a33,stop: 1 #0069cc );"
+		"border-radius: 5px;"
+		"border: 1px solid #000d1a;"
+		"}";
+
+	QString ProgressbarStyleDarkActive  =
+		"QProgressBar::chunk {"
+		"background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #00331a,stop: 1 #00cc69 );"
+		"border-radius: 5px;"
+		"border: 1px solid #000d1a;"
+		"}";
 };

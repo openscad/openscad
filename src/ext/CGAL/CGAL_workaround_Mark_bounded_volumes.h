@@ -25,10 +25,14 @@
 #define CGAL_NEF3_MARK_BOUNDED_VOLUMES_H
 
 #include <set>
+
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 //#include <CGAL/Nef_polyhedron_3.h>
 #include <CGAL/Modifier_base.h>
 #include <CGAL/Nef_3/SNC_iteration.h>
 #include <CGAL/assertions.h>
+#pragma pop_macro("NDEBUG")
 
 namespace CGAL {
 

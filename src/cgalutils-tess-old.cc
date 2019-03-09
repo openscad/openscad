@@ -51,8 +51,11 @@ much slower in many cases.
 */
 
 #include "cgalutils.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Delaunay_mesher_no_edge_refinement_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
+#pragma pop_macro("NDEBUG")
 
 typedef CGAL_Kernel3 Kernel;
 //typedef CGAL::Triangulation_vertex_base_2<Kernel> Vb;

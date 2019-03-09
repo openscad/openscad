@@ -38,8 +38,18 @@ public:
     void run() override;
     bool open() override;
     void close() override;
+    bool isOpen() const;
 
     const std::string & get_name() const override;
+    std::string get_info() const override;
+
+    int getButtonCount() const override{
+        return 16;
+    }
+    int getAxisCount() const override{
+        return 6;
+    }
+
 private:
 	std::unique_ptr<QGamepad> gamepad;
 };

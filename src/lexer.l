@@ -47,6 +47,8 @@ namespace fs = boost::filesystem;
 #if defined __WIN32__ || defined _MSC_VER
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
+#define strdup _strdup
+#define fileno _fileno
 #endif
 
 std::string stringcontents;
@@ -144,8 +146,9 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
           PRINTB("WARNING: Can't open library '%s'.", filename);
           parserlval.text = strdup(filename.c_str());
 	} else {
-          handle_dep(fullpath.generic_string());
-          parserlval.text = strdup(fullpath.string().c_str());
+          auto used_path = fullpath.generic_string();
+          handle_dep(used_path);
+          parserlval.text = strdup(used_path.c_str());
 	}
         return TOK_USE;
     }

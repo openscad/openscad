@@ -64,7 +64,7 @@ static const std::string getFolderPath(int nFolder)
 	HWND hwndOwner = 0;
 	HANDLE hToken = nullptr;
 	DWORD dwFlags = SHGFP_TYPE_CURRENT;
-	LPTSTR pszPath = &path[0];
+	LPWSTR pszPath = &path[0];
 
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 

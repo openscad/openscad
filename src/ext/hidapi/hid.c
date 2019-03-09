@@ -36,6 +36,10 @@ typedef LONG NTSTATUS;
 #define _wcsdup wcsdup
 #endif
 
+/* The maximum number of characters that can be passed into the
+   HidD_Get*String() functions without it failing.*/
+#define MAX_STRING_WCHARS 0xFFF
+
 /*#define HIDAPI_USE_DDK*/
 
 #ifdef __cplusplus
@@ -61,6 +65,9 @@ extern "C" {
 
 
 #include "hidapi.h"
+
+#undef MIN
+#define MIN(x,y) ((x) < (y)? (x): (y))
 
 #ifdef _MSC_VER
 	/* Thanks Microsoft, but I know how to use strncpy(). */
@@ -148,7 +155,7 @@ static hid_device *new_hid_device()
 	dev->read_pending = FALSE;
 	dev->read_buf = NULL;
 	memset(&dev->ol, 0, sizeof(dev->ol));
-	dev->ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*inital state f=nonsignaled*/, NULL);
+	dev->ol.hEvent = CreateEvent(NULL, FALSE, FALSE /*initial state f=nonsignaled*/, NULL);
 
 	return dev;
 }
@@ -222,9 +229,7 @@ static HANDLE open_device(const char *path, BOOL enumerate)
 {
 	HANDLE handle;
 	DWORD desired_access = (enumerate)? 0: (GENERIC_WRITE | GENERIC_READ);
-	DWORD share_mode = (enumerate)?
-	                      FILE_SHARE_READ|FILE_SHARE_WRITE:
-	                      FILE_SHARE_READ;
+	DWORD share_mode = FILE_SHARE_READ|FILE_SHARE_WRITE;
 
 	handle = CreateFileA(path,
 		desired_access,
@@ -813,7 +818,7 @@ int HID_API_EXPORT_CALL HID_API_CALL hid_get_manufacturer_string(hid_device *dev
 {
 	BOOL res;
 
-	res = HidD_GetManufacturerString(dev->device_handle, string, sizeof(wchar_t) * maxlen);
+	res = HidD_GetManufacturerString(dev->device_handle, string, sizeof(wchar_t) * MIN(maxlen, MAX_STRING_WCHARS));
 	if (!res) {
 		register_error(dev, "HidD_GetManufacturerString");
 		return -1;
@@ -826,7 +831,7 @@ int HID_API_EXPORT_CALL HID_API_CALL hid_get_product_string(hid_device *dev, wch
 {
 	BOOL res;
 
-	res = HidD_GetProductString(dev->device_handle, string, sizeof(wchar_t) * maxlen);
+	res = HidD_GetProductString(dev->device_handle, string, sizeof(wchar_t) * MIN(maxlen, MAX_STRING_WCHARS));
 	if (!res) {
 		register_error(dev, "HidD_GetProductString");
 		return -1;
@@ -839,7 +844,7 @@ int HID_API_EXPORT_CALL HID_API_CALL hid_get_serial_number_string(hid_device *de
 {
 	BOOL res;
 
-	res = HidD_GetSerialNumberString(dev->device_handle, string, sizeof(wchar_t) * maxlen);
+	res = HidD_GetSerialNumberString(dev->device_handle, string, sizeof(wchar_t) * MIN(maxlen, MAX_STRING_WCHARS));
 	if (!res) {
 		register_error(dev, "HidD_GetSerialNumberString");
 		return -1;
@@ -852,7 +857,7 @@ int HID_API_EXPORT_CALL HID_API_CALL hid_get_indexed_string(hid_device *dev, int
 {
 	BOOL res;
 
-	res = HidD_GetIndexedString(dev->device_handle, string_index, string, sizeof(wchar_t) * maxlen);
+	res = HidD_GetIndexedString(dev->device_handle, string_index, string, sizeof(wchar_t) * MIN(maxlen, MAX_STRING_WCHARS));
 	if (!res) {
 		register_error(dev, "HidD_GetIndexedString");
 		return -1;

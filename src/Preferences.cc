@@ -292,6 +292,8 @@ void Preferences::on_stackedWidget_currentChanged(int)
 {
 	hidePasswords();
 	this->labelOctoPrintCheckConnection->setText("");
+	this->AxisConfig->updateStates();
+	this->ButtonConfig->updateStates();
 }
 
 /**
@@ -656,6 +658,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
+void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
+{
+	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPILog, Value(checked));
+	writeSettings();
+}
+
 void Preferences::on_comboBoxOctoPrintAction_activated(int val)
 {
 	applyComboBox(comboBoxOctoPrintAction, val, Settings::Settings::octoPrintAction);
@@ -828,6 +836,8 @@ QVariant Preferences::getValue(const QString &key) const
 
 void Preferences::updateGUI()
 {
+	const Settings::Settings *s = Settings::Settings::inst();
+
 	QList<QListWidgetItem *> found = 
 		this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(),
 																				Qt::MatchExactly);
@@ -888,8 +898,9 @@ void Preferences::updateGUI()
 	this->enableHardwarningsCheckBox->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	this->enableParameterCheckBox->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	this->enableRangeCheckBox->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
-	
-	Settings::Settings *s = Settings::Settings::inst();
+
+	this->enableHidapiTraceCheckBox->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
+
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
 	updateComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);

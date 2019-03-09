@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1771,7 +1771,7 @@
                <item>
                 <widget class="QCheckBox" name="enableRangeCheckBox">
                  <property name="text">
-                  <string>check the parameter range for builtin modules</string>
+                  <string>Check the parameter range for builtin modules</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -1793,6 +1793,22 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_Debug">
+              <property name="title">
+               <string>Debugging</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_16">
+               <item>
+                <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
+                 <property name="text">
+                  <string>Enable tracing of HIDAPI events (requires restart of OpenSCAD)</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </item>
            </layout>
           </widget>

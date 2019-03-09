@@ -21,9 +21,13 @@
 
 #pragma once
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Nef_S2/OGL_base_object.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Nef_3/SNC_decorator.h>
+#pragma pop_macro("NDEBUG")
+
 #include "system-gl.h"
 #include <cstdlib>
 

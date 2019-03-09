@@ -36,7 +36,15 @@ public:
     bool open() override;
     void close() override;
     const std::string & get_name() const  override;
+    std::string get_info() const  override;
     void setJoystickNr(std::string jnr);
+
+    int getButtonCount() const override{
+        return buttons;
+    }
+    int getAxisCount() const override{
+        return axes;
+    }
 
 private:
     int fd;

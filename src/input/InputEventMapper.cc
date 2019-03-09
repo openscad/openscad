@@ -29,8 +29,8 @@
 #include "Preferences.h"
 #include "AxisConfigWidget.h"
 #include "ButtonConfigWidget.h"
-
-#include <math.h>
+#include <ciso646> // C alternative tokens
+#include <cmath>
 #include <QSettings>
 
 InputEventMapper * InputEventMapper::self = nullptr;

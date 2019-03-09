@@ -5,11 +5,15 @@
     #include "expression.h"
     #include "printutils.h"
     #include "value.h" 
-    #include "comment.h" 
+    #include "comment.h"
+    #ifdef _MSC_VER
+    #define strdup _strdup
+    #endif
+
     void yyerror(const char *);
     int comment_lexerlex(void);
     int comment_parserlex(void);
-    extern void comment_lexer_scan_string ( const char *str );
+    extern void comment_scan_string ( const char *str );
     shared_ptr<Expression> params;
 %}
 %union {
@@ -174,7 +178,7 @@ void yyerror(const char * /*msg*/) {
 
 shared_ptr<Expression> CommentParser::parser(const char *text)
 {
-  comment_lexer_scan_string(text);
+  comment_scan_string(text);
   int parserretval = comment_parserparse();
   if (parserretval != 0) return nullptr;
   return params;

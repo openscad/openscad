@@ -10,13 +10,14 @@ public:
 	~LocalScope();
 
 	size_t numElements() const { return assignments.size() + children.size(); }
-	void print(std::ostream &stream, const std::string &indent) const;
+	void print(std::ostream &stream, const std::string &indent, const bool inlined = false) const;
 	std::vector<class AbstractNode*> instantiateChildren(const class Context *evalctx) const;
 	void addChild(class ModuleInstantiation *astnode);
 	void addModule(const std::string &name, class UserModule *module);
 	void addFunction(class UserFunction *function);
 	void addAssignment(const class Assignment &ass);
 	void apply(Context &ctx) const;
+	bool hasChildren() const {return !(children.empty());};
 
 	AssignmentList assignments;
 	std::vector<ModuleInstantiation*> children;

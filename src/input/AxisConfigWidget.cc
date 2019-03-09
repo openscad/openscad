@@ -43,19 +43,37 @@ AxisConfigWidget::~AxisConfigWidget()
 }
 
 void AxisConfigWidget::AxesChanged(int nr, double val) const{
-	int value = val *100;
-
-	QString s =  QString::number(val, 'f', 2 );
-	std::string number = std::to_string(nr);
-	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString::fromStdString("progressBarAxis"+number));
+	QProgressBar* progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
 	if(progressBar==nullptr) return;
-	progressBar->setValue(value);
-	progressBar->setFormat(s);
+
+	int value = val * 100;
+	progressBar->setValue(value); //set where the bar is
+
+	//QProgressBar generates the shown string from the format string.
+	//By setting a format string without a place holder,
+	//we can set arbitrary text, like a custom formated double.
+	//(Note: QProgressBar internally works on int, so has no formating for double values)
+	//(Note: The text of a QProgressBar can not be set directly)
+	QString s =  QString::number(val, 'f', 2 );
+	progressBar->setFormat(s); 
+	
+	QDoubleSpinBox* deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
+	if(deadzone){
+		bool active = deadzone->value() < std::abs(val);
+		QString style;
+		if(this->darkModeDetected){
+			style = active ? ProgressbarStyleDarkActive : ProgressbarStyleDark;
+		}else{
+			style = active ? ProgressbarStyleLightActive : ProgressbarStyleLight;
+		}
+		progressBar->setStyleSheet(style);
+	}
 }
 
 void AxisConfigWidget::init() {
 	connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
 	connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
+	connect(this->pushButtonUpdate, SIGNAL(clicked()), this, SLOT(updateStates()));
 
 	initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
 	initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
@@ -122,12 +140,12 @@ void AxisConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
 		}
-		spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxDeadzone"+s));
+		spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
 		ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" +s);
 		if(spin && ent){
 			initDoubleSpinBox(spin,*ent);
@@ -139,31 +157,20 @@ void AxisConfigWidget::init() {
 	initDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
 	initDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
-	initizalied = true;
-	
 	//use a custom style for the axis indicators,
-	//to prevent getting operating specific
-	//(potentially animated) progressbars
-    QString style = "QProgressBar::chunk {"
-                    "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #66d9ff,stop: 1 #ccf2ff );"
-                    "border-radius: 5px;"
-                    "border: 1px solid #007399;"
-                    "}";
-    int light = this->progressBarAxis0->palette().text().color().lightness();
-    if(light>165){
-        style = "QProgressBar::chunk {"
-            "background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #001a33,stop: 1 #0069cc );"
-            "border-radius: 5px;"
-            "border: 1px solid #000d1a;"
-            "}";
-    }
-
+	//to prevent getting operating system specific
+	//(potentially animated) ProgressBars
+	int textLightness = this->progressBarAxis0->palette().text().color().lightness();
+	this->darkModeDetected = textLightness>165;
+	QString style = (this->darkModeDetected) ? ProgressbarStyleDark : ProgressbarStyleLight;
 
 	auto progressbars = this->findChildren<QProgressBar *>();
 	for (auto progressbar : progressbars) {
 		progressbar->setStyleSheet(style);
 		progressbar->setAlignment(Qt::AlignCenter);
 	}
+
+	initialized = true;
 }
 
 void AxisConfigWidget::on_comboBoxTranslationX_activated(int val)
@@ -302,6 +309,7 @@ void AxisConfigWidget::on_doubleSpinBoxTrim7_valueChanged(double val)
 {
 	Settings::Settings::inst()->set(Settings::Settings::axisTrim7, Value(val));
 	emit inputCalibrationChanged();
+	writeSettings();
 }
 
 void AxisConfigWidget::on_doubleSpinBoxTrim8_valueChanged(double val)
@@ -409,7 +417,7 @@ void AxisConfigWidget::on_AxisTrim()
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 
 		if(spin && ent){
@@ -431,7 +439,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 			Settings::Settings::inst()->set(*ent, 0.00);
 		}
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString::fromStdString("doubleSpinBoxTrim"+s));
+		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
 		if(spin){
 			spin->setValue(0.00);
 		}
@@ -442,7 +450,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 
 void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPI, Value(val));
 		writeSettings();
 
@@ -454,7 +462,7 @@ void AxisConfigWidget::on_checkBoxHIDAPI_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverSPNAV, Value(val));
 		writeSettings();
 		QFont font;
@@ -465,7 +473,7 @@ void AxisConfigWidget::on_checkBoxSpaceNav_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverJOYSTICK, Value(val));
 		writeSettings();
 		QFont font;
@@ -476,7 +484,7 @@ void AxisConfigWidget::on_checkBoxJoystick_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverQGAMEPAD, Value(val));
 		writeSettings();
 		QFont font;
@@ -487,7 +495,7 @@ void AxisConfigWidget::on_checkBoxQGamepad_toggled(bool val)
 
 void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
 {
-	if(initizalied){
+	if(initialized){
 		Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverDBUS, Value(val));
 		writeSettings();
 		QFont font;
@@ -567,4 +575,24 @@ void AxisConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setting
 		comboBox->addItem(qtext, val);
 	}
 	updateComboBox(comboBox, entry);
+}
+
+void AxisConfigWidget::updateStates(){
+	if(!initialized) return;
+
+	int cnt = InputDriverManager::instance()->getAxisCount();
+	for (int i=0;i<InputEventMapper::getMaxAxis();i++) {
+		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
+		if( cnt <= i){
+			progressbar->setEnabled(false);
+			progressbar->setMinimum(0);
+		}else{
+			progressbar->setEnabled(true);
+			progressbar->setMinimum(-100);
+		}
+	}
+
+	auto manager = InputDriverManager::instance();
+	std::string infos = manager->listDriverInfos();
+	label_driverInfo->setText(QString::fromStdString(infos));
 }

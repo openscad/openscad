@@ -1,0 +1,56 @@
+﻿{
+  "configurations": [
+		{
+			"name": "x86-Debug",
+			"generator": "Ninja",
+			"configurationType": "Debug",
+			"inheritEnvironments": [
+				"msvc_x86"
+			],
+			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\installDebug\\${name}",
+			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
+			"buildCommandArgs": "-v",
+			"ctestCommandArgs": ""
+		},
+		{
+			"name": "x86-Release",
+			"generator": "Ninja",
+			"configurationType": "Release",
+			"inheritEnvironments": [
+				"msvc_x86"
+			],
+			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\installRelease\\${name}",
+			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
+			"buildCommandArgs": "-v",
+			"ctestCommandArgs": ""
+		},
+		{
+			"name": "x64-Debug",
+			"generator": "Ninja",
+			"configurationType": "Debug",
+			"inheritEnvironments": [
+				"msvc_x64_x64"
+			],
+			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
+			"buildCommandArgs": "-v",
+			"ctestCommandArgs": ""
+		},
+		{
+			"name": "x64-Release",
+			"generator": "Ninja",
+			"configurationType": "Release",
+			"inheritEnvironments": [
+				"msvc_x64_x64"
+			],
+			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
+			"buildCommandArgs": "-v",
+			"ctestCommandArgs": ""
+		}
+  ]
+}

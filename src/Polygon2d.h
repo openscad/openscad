@@ -1,8 +1,8 @@
 #pragma once
 
+#include <vector>
 #include "Geometry.h"
 #include "linalg.h"
-#include <vector>
 
 /*!
 	A single contour.
@@ -10,7 +10,7 @@
 */
 struct Outline2d {
 	Outline2d() : positive(true) {}
-	std::vector<Vector2d> vertices;
+	VectorOfVector2d vertices;
 	bool positive;
 };
 

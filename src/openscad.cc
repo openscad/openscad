@@ -828,7 +828,7 @@ bool flagConvert(std::string str){
 int main(int argc, char **argv)
 {
 	int rc = 0;
-	StackCheck::inst()->init();
+	StackCheck::inst();
 
 #ifdef OPENSCAD_QTGUI
 	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
@@ -863,9 +863,9 @@ int main(int argc, char **argv)
 	desc.add_options()
 		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
-#ifdef ENABLE_EXPERIMENTAL
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
+#ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), ("enable experimental features: " +
 		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
 		                                               [](const Feature *feature) {
@@ -1013,13 +1013,11 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
-#ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
 		for(const auto &feature : vm["enable"].as<vector<string>>()) {
 			Feature::enable_feature(feature);
 		}
 	}
-#endif
 
 	string parameterFile;
 	if (vm.count("p")) {

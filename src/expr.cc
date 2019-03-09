@@ -456,7 +456,7 @@ static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
 
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
-	if (StackCheck::inst()->check()) {
+	if (StackCheck::inst().check()) {
 		print_err(this->name.c_str(),loc,context);
 		throw RecursionException::create("function", this->name,this->loc);
 	}

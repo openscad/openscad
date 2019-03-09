@@ -144,8 +144,8 @@ def compare_default(resultfilename):
     if not expected_text == actual_text:
         if resultfilename: 
             differences = difflib.unified_diff(
-                [line.strip() for line in expected_text.splitlines()],
-                [line.strip() for line in actual_text.splitlines()])
+                [line for line in expected_text.splitlines()],
+                [line for line in actual_text.splitlines()])
             line = None
             for line in differences: sys.stderr.write(line + '\n')
             if not line: return True
@@ -248,7 +248,7 @@ def run_test(testname, cmd, args):
         cmdline = [cmd] + args + [outputname]
         sys.stderr.flush()
         print('run_test() cmdline:', ' '.join(cmdline))
-        fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata/ttf");
+        fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "testdata/ttf"))
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print('using font directory:', fontdir)
