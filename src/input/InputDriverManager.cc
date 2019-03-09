@@ -68,7 +68,7 @@ void InputDriverManager::registerActions(const QList<QAction *> &actions, const 
 			this->actions.push_back({action->objectName(), description, action->icon()});
 		}
 		if (action->menu()) {
-			registerActions(action->menu()->actions(), description +  QString::fromUtf8(" \u2192 "));
+			registerActions(action->menu()->actions(), description +  QString::fromUtf8(u8" \u2192 "));
 		}
 	}
 }

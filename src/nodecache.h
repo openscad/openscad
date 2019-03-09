@@ -2,9 +2,8 @@
 
 #include <string>
 #include <unordered_map>
+#include <assert.h>
 #include "node.h"
-#include "memory.h"
-#include "assert.h"
 #include "printutils.h"
 
 /*!

@@ -304,16 +304,6 @@ if(APPLE)
   FIND_LIBRARY(APP_SERVICES_LIBRARY ApplicationServices)
 endif()
 
-
-# Eigen
-
-# Turn off Eigen SIMD optimization
-if(NOT APPLE)
-  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "^FreeBSD")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
-  endif()
-endif()
-
 # Priority
 # 3. EIGENDIR if set
 # 1. OPENSCAD_LIBRARIES eigen3

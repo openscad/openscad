@@ -47,6 +47,8 @@ namespace fs = boost::filesystem;
 #if defined __WIN32__ || defined _MSC_VER
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
+#define strdup _strdup
+#define fileno _fileno
 #endif
 
 std::string stringcontents;

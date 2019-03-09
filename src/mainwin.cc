@@ -1006,8 +1006,7 @@ void MainWindow::updateTVal()
 		this->anim_step = 0;
 		this->anim_tval = 0.0;
 	}
-	QString txt;
-	txt.sprintf("%.5f", this->anim_tval);
+	QString txt = QString::number(this->anim_tval, 'g', 5);
 	this->e_tval->setText(txt);
 }
 
@@ -1634,24 +1633,27 @@ void MainWindow::actionReload()
 
 void MainWindow::copyViewportTranslation()
 {
-	QString txt;
 	auto vpt = qglview->cam.getVpt();
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpt.x(), vpt.y(), vpt.z());
+	QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpt.x(), 0, 'g', 2)
+		.arg(vpt.y(), 0, 'g', 2)
+		.arg(vpt.z(), 0, 'g', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportRotation()
 {
-	QString txt;
 	auto vpr = qglview->cam.getVpr();
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpr.x(), vpr.y(), vpr.z());
+	QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpr.x(), 0, 'g', 2)
+		.arg(vpr.y(), 0, 'g', 2)
+		.arg(vpr.z(), 0, 'g', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportDistance()
 {
-	QString txt;
-	txt.sprintf("%.2f", qglview->cam.zoomValue());
+	QString txt = QString::number(qglview->cam.zoomValue(), 'g', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
@@ -2045,8 +2047,7 @@ void MainWindow::csgRender()
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
 			QImage img = this->qglview->grabFrameBuffer();
-			QString filename;
-			filename.sprintf("frame%05d.png", this->anim_step);
+			QString filename = QString("frame%1.png").arg(this->anim_step, 5, QChar('0'));
 			img.save(filename, "PNG");
 		}
 	}

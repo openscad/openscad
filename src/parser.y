@@ -30,7 +30,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#define strdup _strdup
+#else
 #include <unistd.h>
 #endif
 

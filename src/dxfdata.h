@@ -1,7 +1,7 @@
 #pragma once
 
-#include "linalg.h"
 #include <vector>
+#include "linalg.h"
 
 class DxfData
 {
@@ -27,7 +27,7 @@ public:
 		}
 	};
 
-	std::vector<Vector2d> points;
+	VectorOfVector2d points;
 	std::vector<Path> paths;
 	std::vector<Dim> dims;
 

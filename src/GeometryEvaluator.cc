@@ -27,7 +27,7 @@
 #include "calc.h"
 #include "dxfdata.h"
 #include "degree_trig.h"
-
+#include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 
 #pragma push_macro("NDEBUG")
@@ -848,7 +848,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	
 	double min_x = 0;
 	double max_x = 0;
-	int fragments = 0;
+	unsigned int fragments = 0;
 	for(const auto &o : poly.outlines()) {
 		for(const auto &v : o.vertices) {
 			min_x = fmin(min_x, v[0]);
@@ -860,7 +860,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return nullptr;
 			}
 		}
-		fragments = fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
+		fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 	}
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
@@ -896,7 +896,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[1].resize(o.vertices.size());
 
 		fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
-		for (int j = 0; j < fragments; j++) {
+		for (unsigned int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
 			    a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support

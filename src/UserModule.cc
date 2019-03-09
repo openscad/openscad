@@ -33,11 +33,12 @@
 #include "modcontext.h"
 #include "expression.h"
 #include "printutils.h"
+#include "compiler_specific.h"
 #include <sstream>
 
 std::vector<std::string> UserModule::module_stack;
 
-static void __attribute__ ((noinline)) print_err(std::string name, const Location &loc,const Context *ctx){
+static void NOINLINE print_err(std::string name, const Location &loc,const Context *ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
 	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
 }
