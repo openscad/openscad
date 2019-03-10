@@ -43,7 +43,7 @@ isEmpty(LIB3MF_LIBPATH) {
 isEmpty(ENABLE_LIB3MF) {
   exists(/usr/include/lib3mf/Model/COM/NMR_DLLInterfaces.h) {
     LIB3MF_CFLAGS = -I/usr/include/lib3mf
-    LIB3MF_LIBS = -L/usr/lib
+    LIB3MF_LIBS = -L/usr/lib -l3MF
     ENABLE_LIB3MF=yes
   }
 }
