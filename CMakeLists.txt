@@ -109,7 +109,7 @@ if (MSVC)
 
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
-  add_definitions(-D_USE_MATH_DEFINES -DNOGDI)
+  add_definitions(-D_USE_MATH_DEFINES)
 
   message("COMMON_LIBRARIES ${COMMON_LIBRARIES}")
   find_package(Eigen3 CONFIG REQUIRED)
@@ -389,6 +389,7 @@ elseif(UNIX)
     set(PLATFORM_LIBS ${X11_LIBRARY})
   endif()
 elseif(WIN32)
+  add_definitions(-DNOGDI)
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
   set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
   if(NULLGL)
