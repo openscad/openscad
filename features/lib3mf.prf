@@ -39,6 +39,14 @@ isEmpty(LIB3MF_LIBPATH) {
   LIB3MF_LIBS = -L$$LIB3MF_LIBPATH -l3MF
 }
 
+# FIXME: Until we get an upgraded lib3mf w/pkg-config everywhere:
+isEmpty(ENABLE_LIB3MF) {
+  exists(/usr/include/lib3mf/Model/COM/NMR_DLLInterfaces.h) {
+    LIB3MF_CFLAGS = -I/usr/include/lib3mf
+    LIB3MF_LIBS = -L/usr/lib
+  }
+}
+
 !isEmpty(ENABLE_LIB3MF) {
   DEFINES += ENABLE_LIB3MF
   QMAKE_CXXFLAGS += $$LIB3MF_CFLAGS
