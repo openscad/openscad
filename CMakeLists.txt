@@ -85,7 +85,7 @@ macro(find_graphics)
       find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
       include_directories("${OPENCSG_INCLUDE_DIRS}/opencsg")
     else()
-      find_package(GLEW REQUIRED QUIET)
+      find_package(GLEW REQUIRED)
       list(APPEND COMMON_LIBRARIES ${GLEW_LIBRARY})
 
       find_path(OPENCSG_INCLUDE_DIRS opencsg.h)

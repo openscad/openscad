@@ -30,7 +30,7 @@ install:
 build_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T build started'
   - ps: Get-Date -UFormat '### %Y-%m-%d %T cmake'
-  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && cmake -G \"$GENERATOR\" -DCMAKE_BUILD_TYPE=\"$BUILD_TYPE\" -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DINFO=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
+  - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && cmake -G \"$GENERATOR\" -DCMAKE_BUILD_TYPE=\"$BUILD_TYPE\" -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DINFO=ON"
   - ps: Get-Date -UFormat '### %Y-%m-%d %T make'
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe -j2"
   - ps: Get-Date -UFormat '### %Y-%m-%d %T prepare test build'
