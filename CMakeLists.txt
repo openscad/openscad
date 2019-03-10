@@ -61,6 +61,9 @@ set(CMAKE_CXX_STANDARD 11)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
+  if (WIN32) # gcc bug spams warnings, See issue #2771
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
+  endif()
 endif()
 add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
 
