@@ -115,7 +115,7 @@ if (MSVC)
   find_package(Eigen3 CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
-  find_package(CGAL CONFIG REQUIRED)
+  find_package(CGAL 4.7 CONFIG REQUIRED)
   message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
   add_definitions(-DENABLE_CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL)
