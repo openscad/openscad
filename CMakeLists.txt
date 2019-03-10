@@ -190,9 +190,9 @@ else()
   message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
   include_directories(${CGAL_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
-  # Bug in path for GMP on AppVeyor?
+  # Bug in path for GMP/MPFR on AppVeyor
   string(REPLACE "/lib/lib/" "/lib/" GMP_LIBRARIES ${GMP_LIBRARIES})
-  message("GMP_LIBRARIES: ${GMP_LIBRARIES}")
+  string(REPLACE "/lib/lib/" "/lib/" MPFR_LIBRARIES ${MPFR_LIBRARIES})
   list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
   list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
   add_definitions(-DENABLE_CGAL)
