@@ -23,6 +23,8 @@ install:
 build_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T build started'
   - ps: Get-Date -UFormat '### %Y-%m-%d %T cmake'
+  - C:\msys64\usr\bin\bash -lc "whereis cmake"
+  - C:\msys64\usr\bin\bash -lc "cmake --version"
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DINFO=ON"
   - ps: Get-Date -UFormat '### %Y-%m-%d %T make'
   - C:\msys64\usr\bin\bash -lc "cd /c/projects/openscad && mingw32-make.exe -j2"
