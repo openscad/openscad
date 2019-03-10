@@ -41,6 +41,7 @@ public:
     void setDominantAxisOnly(bool var);
 
     const std::string & get_name() const override;
+    std::string get_info() const override;
 
     int getButtonCount() const override{
         return 16;

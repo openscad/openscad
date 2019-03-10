@@ -30,11 +30,12 @@
 #include "csgnode.h"
 
 #ifdef ENABLE_OPENCSG
-#  include <opencsg.h>
+#include <opencsg.h>
 
 class OpenCSGPrim : public OpenCSG::Primitive
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
 			OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE) { }
 	shared_ptr<const Geometry> geom;

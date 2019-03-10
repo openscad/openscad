@@ -120,7 +120,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		}
 	}
 	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
-	node->convexity = c.lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)c.lookup_variable("convexity", true)->toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 

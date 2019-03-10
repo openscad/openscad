@@ -32,6 +32,8 @@ class svgpage : public shape {
 protected:
     length_t width;
     length_t height;
+	viewbox_t viewbox;
+	alignment_t alignment;
 
 public:
     svgpage();
@@ -39,6 +41,8 @@ public:
 
     const length_t& get_width() const { return width; }
     const length_t& get_height() const { return height; }
+	const viewbox_t& get_viewbox() const { return viewbox; }
+	const alignment_t& get_alignment() const { return alignment; }
     bool is_container() const override { return true; }
     
     void set_attrs(attr_map_t& attrs) override;

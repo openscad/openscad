@@ -40,7 +40,9 @@ namespace libsvg {
 // 1pc = 16px or user units
 // 1pc = 1/6in
 //
-enum class unit_t { UNDEFINED, NONE, EM, EX, PX, IN, CM, MM, PT, PC };
+enum class unit_t { UNDEFINED, NONE, PERCENT, EM, EX, PX, IN, CM, MM, PT, PC };
+
+enum class align_t { UNDEFINED, NONE, MIN, MID, MAX };
 
 struct length_struct {
 	double number;
@@ -52,7 +54,28 @@ struct length_t {
 	unit_t unit;
 };
 
+struct viewbox_t {
+	double x;
+	double y;
+	double width;
+	double height;
+	bool is_valid;
+};
+
+struct alignment_t {
+	align_t x;
+	align_t y;
+	bool defer;
+	bool meet;
+};
+
 double parse_double(const std::string& number);
 const length_t parse_length(const std::string& value);
+const viewbox_t parse_viewbox(const std::string& value);
+const alignment_t parse_alignment(const std::string& value);
+
+std::ostream &operator<<(std::ostream &stream, const unit_t &unit);
+std::ostream &operator<<(std::ostream &stream, const length_t &length);
+std::ostream &operator<<(std::ostream &stream, const align_t &align);
 
 }

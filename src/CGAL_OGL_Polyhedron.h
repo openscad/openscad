@@ -129,7 +129,10 @@ private:
 
 #else // NULLGL
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Bbox_3.h>
+#pragma pop_macro("NDEBUG")
 
 class CGAL_OGL_Polyhedron
 {

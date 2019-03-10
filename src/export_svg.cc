@@ -68,10 +68,10 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	
 	BoundingBox bbox = geom->getBoundingBox();
-	int minx = floor(bbox.min().x());
-	int miny = floor(-bbox.max().y());
-	int maxx = ceil(bbox.max().x());
-	int maxy = ceil(-bbox.min().y());
+	int minx = (int)floor(bbox.min().x());
+	int miny = (int)floor(-bbox.max().y());
+	int maxx = (int)ceil(bbox.max().x());
+	int maxy = (int)ceil(-bbox.min().y());
 	int width = maxx - minx;
 	int height = maxy - miny;
 

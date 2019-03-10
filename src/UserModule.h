@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <deque>
+#include <vector>
 
 #include "module.h"
 #include "localscope.h"
@@ -23,5 +23,5 @@ public:
 	LocalScope scope;
 
 private:
-	static std::deque<std::string> module_stack;
+	static std::vector<std::string> module_stack;
 };

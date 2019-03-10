@@ -46,6 +46,7 @@ public:
     bool openOnce() const override;
 
     const std::string & get_name() const override;
+    std::string get_info() const override;
 
 public slots:
     void zoom(double zoom) const;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0510"
+   LastUpgradeVersion = "1010"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
+               BlueprintIdentifier = "E02C806B220D34B900F412CD"
                BuildableName = "OpenSCAD.app"
-               BlueprintName = "OpenSCAD.app"
+               BlueprintName = "OpenSCAD"
                ReferencedContainer = "container:OpenSCAD.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
+            BlueprintIdentifier = "E02C806B220D34B900F412CD"
             BuildableName = "OpenSCAD.app"
-            BlueprintName = "OpenSCAD.app"
+            BlueprintName = "OpenSCAD"
             ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -49,63 +49,27 @@
       useCustomWorkingDirectory = "YES"
       customWorkingDirectory = "$(PROJECT_DIR)/.."
       ignoresPersistentStateOnLaunch = "NO"
-      debugDocumentVersioning = "YES"
+      debugDocumentVersioning = "NO"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
+            BlueprintIdentifier = "E02C806B220D34B900F412CD"
             BuildableName = "OpenSCAD.app"
-            BlueprintName = "OpenSCAD.app"
+            BlueprintName = "OpenSCAD"
             ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/kintel/code/OpenSCAD/statistics-scripts/unpacked/130629/Customizable_Stone_Turret/turret.scad -o out.png"
+            argument = "text.scad -o out.png"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = " testdata/scad/misc/bad-stl-tardis.scad -o out.off --render=cgal"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/3D/issues/issue1061.scad -o out.png"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/3D/issues/minkowski-thin-cylinder.scad -o out.png"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/misc/allmodules.scad"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "non-manifold2.scad -o non-manifold2.stl --debug=GeometryUtils"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "issue925.scad -o out.stl --debug=GeometryUtils"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/bugs/issue1225.scad -o out.stl --debug=export"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/misc/bad-stl-wing.scad -o out.stl --render=cgal --debug=GeometryUtils"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/misc/bad-stl-wing.scad -o out.off"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "testdata/scad/2D/features/text-font-tests.scad "
-            isEnabled = "NO">
+            argument = "svg-graffle.scad -o out.png"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
@@ -121,9 +85,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
+            BlueprintIdentifier = "E02C806B220D34B900F412CD"
             BuildableName = "OpenSCAD.app"
-            BlueprintName = "OpenSCAD.app"
+            BlueprintName = "OpenSCAD"
             ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

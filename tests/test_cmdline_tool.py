@@ -144,8 +144,8 @@ def compare_default(resultfilename):
     if not expected_text == actual_text:
         if resultfilename: 
             differences = difflib.unified_diff(
-                [line.strip() for line in expected_text.splitlines()],
-                [line.strip() for line in actual_text.splitlines()])
+                [line for line in expected_text.splitlines()],
+                [line for line in actual_text.splitlines()])
             line = None
             for line in differences: sys.stderr.write(line + '\n')
             if not line: return True

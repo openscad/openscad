@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 
-	StackCheck::inst()->init();
+	StackCheck::inst();
 	Builtins::instance()->initialize();
 
 	fs::path original_path = fs::current_path();

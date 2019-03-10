@@ -99,8 +99,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 
   // create window
 
-  HINSTANCE inst = GetModuleHandle(0);
-  WNDCLASS wc;
+  HINSTANCE inst = GetModuleHandleW(0);
+  WNDCLASSW wc;
   ZeroMemory( &wc, sizeof( wc ) );
   wc.style = CS_OWNDC;
   wc.lpfnWndProc = WndProc;
@@ -114,8 +114,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
     return false;
   }
 
-  LPCTSTR lpClassName = L"OpenSCAD";
-  LPCTSTR lpWindowName = L"OpenSCAD";
+  wchar_t *lpClassName = L"OpenSCAD";
+  wchar_t *lpWindowName = L"OpenSCAD";
   DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
   int x = 0;
   int y = 0;

@@ -24,8 +24,6 @@
  *
  */
 
-#include "math.h"
-
 #include "function.h"
 #include "expression.h"
 #include "evalcontext.h"
@@ -58,7 +56,7 @@
 // hash double
 #include "linalg.h"
 
-#ifdef __WIN32__
+#if defined __WIN32__ || defined _MSC_VER
 #include <process.h>
 int process_id = _getpid();
 #else
@@ -748,8 +746,8 @@ ValuePtr builtin_search(const Context *ctx, const EvalContext *evalctx)
 
 	ValuePtr findThis = evalctx->getArgValue(0);
 	ValuePtr searchTable = evalctx->getArgValue(1);
-	unsigned int num_returns_per_match = (evalctx->numArgs() > 2) ? evalctx->getArgValue(2)->toDouble() : 1;
-	unsigned int index_col_num = (evalctx->numArgs() > 3) ? evalctx->getArgValue(3)->toDouble() : 0;
+	unsigned int num_returns_per_match = (evalctx->numArgs() > 2) ? (unsigned int)evalctx->getArgValue(2)->toDouble() : 1;
+	unsigned int index_col_num = (evalctx->numArgs() > 3) ? (unsigned int)evalctx->getArgValue(3)->toDouble() : 0;
 
 	Value::VectorType returnvec;
 

@@ -2,10 +2,8 @@
 #include "state.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "memory.h"
 #include <string>
 #include <sstream>
-#include <assert.h>
 #include <boost/regex.hpp>
 
 

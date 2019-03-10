@@ -333,7 +333,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	}
 
-	node->convexity = c.lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)c.lookup_variable("convexity", true)->toDouble();
 	if (node->convexity < 1) node->convexity = 1;
 
 	return node;
@@ -365,7 +365,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3,true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
-			!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
+			!std::isinf(this->x) && !std::isinf(this->y) && !std::isinf(this->z)) {
 			double x1, x2, y1, y2, z1, z2;
 			if (this->center) {
 				x1 = -this->x/2;
@@ -562,7 +562,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			p->append_poly();
 			const auto &vec = this->faces->toVector()[i]->toVector();
 			for (size_t j=0; j<vec.size(); j++) {
-				size_t pt = vec[j]->toDouble();
+				size_t pt = (size_t)vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
@@ -636,7 +636,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				for (const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
 					for (const auto &index : polygon->toVector()) {
-						unsigned int idx = index->toDouble();
+						unsigned int idx = (unsigned int)index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						}
