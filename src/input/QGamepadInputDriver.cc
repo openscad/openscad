@@ -137,14 +137,14 @@ const std::string & QGamepadInputDriver::get_name() const
 
 bool QGamepadInputDriver::isOpen() const
 {
-    return this->gamepad->isConnected();
+    return this->gamepad ? this->gamepad->isConnected() : false;
 }
 
 std::string QGamepadInputDriver::get_info() const
 {
-	return STR(
-		get_name() << " " <<
-		(this->gamepad->isConnected() ? "connected" : "not connected") << " " << 
-		"Name: " <<this->gamepad->name().toUtf8().constData() 
-	);
+	const auto status = isOpen()
+			? std::string{"connected: "} + this->gamepad->name().toUtf8().constData()
+			: std::string{"not connected"};
+
+	return get_name() + " " + status;
 }
