@@ -108,7 +108,7 @@ endmacro(find_graphics)
 # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
 #   because it looks for Boost itself, so it has to be called
 #   before we look for our own required boost libraries.
-find_package(CGAL CONFIG REQUIRED)
+find_package(CGAL REQUIRED)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
 if(TARGET CGAL::CGAL)
