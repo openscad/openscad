@@ -89,6 +89,7 @@ macro(find_graphics)
       include_directories("${OPENCSG_INCLUDE_DIRS}/opencsg")
     else()
       find_package(GLEW REQUIRED)
+      include_directories("${GLEW_INCLUDE_DIRS}")
       list(APPEND COMMON_LIBRARIES ${GLEW_LIBRARY})
 
       find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
@@ -101,6 +102,14 @@ macro(find_graphics)
     add_definitions(-DENABLE_OPENCSG)
   endif()
 endmacro(find_graphics)
+
+# NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
+#   because it looks for Boost itself, so it has to be called
+#   before we look for our own required boost libraries.
+find_package(CGAL CONFIG REQUIRED)
+message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+add_definitions(-DENABLE_CGAL)
+list(APPEND COMMON_LIBRARIES CGAL::CGAL)
 
 if (MSVC)
 
@@ -118,17 +127,7 @@ if (MSVC)
   find_package(Eigen3 CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
-  find_package(CGAL CONFIG REQUIRED)
-  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-  add_definitions(-DENABLE_CGAL)
-  list(APPEND COMMON_LIBRARIES CGAL::CGAL)
-  
   set(Boost_USE_STATIC_LIBS TRUE)
-  #set(BOOST_STATIC TRUE)
-  #set(BOOST_THREAD_USE_LIB TRUE)
-  # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
-  #   because it looks for Boost itself, so it has to be called
-  #   before we look for our own required boost libraries.
   find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
   message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
   message("BOOST DIRS ${Boost_INCLUDE_DIRS}")
@@ -186,20 +185,6 @@ else()
   include_directories(${EIGEN3_INCLUDE_DIR})
   add_definitions(-DEIGEN_DONT_ALIGN)
 
-  find_package(CGAL REQUIRED)
-  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-  include_directories(${CGAL_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
-  # Bug in path for GMP/MPFR on AppVeyor
-  string(REPLACE "/lib/lib/" "/lib/" GMP_LIBRARIES ${GMP_LIBRARIES})
-  string(REPLACE "/lib/lib/" "/lib/" MPFR_LIBRARIES ${MPFR_LIBRARIES})
-  list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
-  list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
-  add_definitions(-DENABLE_CGAL)
-
-  # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
-  #   because it looks for Boost itself, so it has to be called
-  #   before we look for our own required boost libraries.
   find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
   message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
   include_directories(${Boost_INCLUDE_DIRS})
@@ -227,7 +212,7 @@ else()
   list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
 
   list(APPEND COMMON_LIBRARIES double-conversion)
- 
+
   find_graphics()
 endif()
 
