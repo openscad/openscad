@@ -383,6 +383,8 @@ namespace OGL {
 	return c;
     }
 
+    virtual void draw(bool) const = 0;
+
     void draw(Vertex_iterator v) const { 
       PRINTD("draw( Vertex_iterator )");
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
