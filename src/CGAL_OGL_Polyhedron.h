@@ -60,7 +60,7 @@ public:
 		PRINTD("CGAL_OGL_Polyhedron() end");
 	}
 
-	void draw(bool showedges) const {
+	void draw(bool showedges) const override {
 		PRINTD("draw()");
 		if(this->style == SNC_BOUNDARY) {
 			glCallList(this->object_list_+2);

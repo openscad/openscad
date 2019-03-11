@@ -21,7 +21,6 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 		return N;
 	}
 	
-	bool succes{true};
 	std::string msg="";
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try{

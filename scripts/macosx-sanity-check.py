@@ -91,6 +91,9 @@ def validate_lib(lib):
     if p.returncode != 0: return False
     # Check deployment target
     m = re.search("LC_VERSION_MIN_MACOSX.*\n(.*)\n\s+version (.*)", output, re.MULTILINE)
+    if not m:
+        print("Error: LC_VERSION_MIN_MACOSX not found in " + lib)
+        return False
     deploymenttarget = m.group(2)
     if StrictVersion(deploymenttarget) > StrictVersion('10.9'):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
