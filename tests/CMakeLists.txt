@@ -1389,12 +1389,12 @@ add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --check-parameter-ranges=
 # this is for stress-testing the parser
 set(GEN_SCRIPT_DIR ${CMAKE_SOURCE_DIR}/../testdata/python)
 add_custom_target(issue2342 ALL 
-  COMMAND ${GEN_SCRIPT_DIR}/gen_issue2342.py ">${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad"
+  COMMAND ${PYTHON_EXECUTABLE} ${GEN_SCRIPT_DIR}/gen_issue2342.py ">${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${GEN_SCRIPT_DIR}/gen_svg_viewbox_tests.py "${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox" "${CMAKE_SOURCE_DIR}/../testdata/scad/svg"
+  COMMAND ${PYTHON_EXECUTABLE} ${GEN_SCRIPT_DIR}/gen_svg_viewbox_tests.py "${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox" "${CMAKE_SOURCE_DIR}/../testdata/scad/svg"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
