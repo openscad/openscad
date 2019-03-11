@@ -27,7 +27,7 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
-option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" )
+option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 
 if (NULLGL)
   set(HEADLESS ON)
@@ -57,6 +57,9 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
 set(CMAKE_CXX_STANDARD 11)
+add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
+# Stack size 8MB; github issue 116
+add_definitions(-DSTACKSIZE=8388608)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -64,11 +67,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
   endif()
 endif()
-add_definitions(-DSTACKSIZE=8388608 -D_REENTRANT)
 
 set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_options)
 
-add_definitions(-DUNICODE -D_UNICODE)
 
 macro(find_graphics)
   # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
@@ -118,13 +119,13 @@ else()
   list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
   list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
 endif()
+# revert any changes to module path from CGAL_Macros.cmake
+if (CGAL_MODULE_PATH_IS_SET)
+  set(CMAKE_MODULE_PATH ORIGINAL_CMAKE_MODULE_PATH)
+endif()
+
 
 if (MSVC)
-  message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}")
-  message("MODULE PATH: ${CMAKE_MODULE_PATH}")
-  message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-  message("OPENSCAD_LIBRARIES $ENV{OPENSCAD_LIBRARIES}")
-
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
   add_definitions(-D_USE_MATH_DEFINES)
@@ -321,10 +322,6 @@ if(NOT HEADLESS)
 
 endif()
 
-
-
-# Stack size 8MB; github issue 116
-add_definitions(-DSTACKSIZE=8388608)
 
 # Setup ccache (if available) to speed up recompiles. It's especially useful
 # when switching back and forth between branches where large numbers of files
