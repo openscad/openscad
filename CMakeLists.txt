@@ -56,7 +56,6 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 # Use same optimization as qmake build
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
-
 set(CMAKE_CXX_STANDARD 11)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -82,7 +81,7 @@ macro(find_graphics)
 
     if(MSVC) 
       find_package(GLEW CONFIG REQUIRED QUIET)
-      message("using target GLEW::GLEW")
+      message(STATUS "GLEW: Using target GLEW::GLEW")
       list(APPEND COMMON_LIBRARIES GLEW::GLEW)
 
       find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
@@ -90,7 +89,7 @@ macro(find_graphics)
     else()
       find_package(GLEW REQUIRED)
       include_directories("${GLEW_INCLUDE_DIRS}")
-      list(APPEND COMMON_LIBRARIES ${GLEW_LIBRARY})
+      list(APPEND COMMON_LIBRARIES ${GLEW_LIBRARIES})
 
       find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
       include_directories("${OPENCSG_INCLUDE_DIRS}")
@@ -111,7 +110,7 @@ message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL)
-  message(STATUS "CGAL: Using CGAL::CGAL target")
+  message(STATUS "CGAL: Using target CGAL::CGAL")
 else()
   list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
   list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
@@ -119,9 +118,7 @@ else()
 endif()
 
 if (MSVC)
-
   message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}")
-
   message("MODULE PATH: ${CMAKE_MODULE_PATH}")
   message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
   message("OPENSCAD_LIBRARIES $ENV{OPENSCAD_LIBRARIES}")
