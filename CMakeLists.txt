@@ -565,7 +565,7 @@ else()
 endif()
 
 
-if(UNIX AND (NOT HEADLESS))
+if(UNIX AND (NOT APPLE) AND (NOT HEADLESS))
   set(PLATFORM_INPUT_DRIVER_SOURCES src/input/JoystickInputDriver.cc)
   add_definitions(-DENABLE_JOYSTICK)
 endif()
