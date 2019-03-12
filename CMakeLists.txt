@@ -70,6 +70,7 @@ endif()
 
 set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_options)
 
+find_package(PkgConfig)
 
 macro(find_graphics)
   # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
@@ -275,6 +276,10 @@ BISON_TARGET(comment_parser src/comment_parser.y ${CMAKE_LIBRARY_OUTPUT_DIRECTOR
 ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
 if(NOT HEADLESS)
+  if (APPLE AND EXISTS /usr/local/opt/qt)
+    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
+  endif()
+
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)

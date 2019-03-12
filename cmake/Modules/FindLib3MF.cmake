@@ -11,6 +11,11 @@
 
 message(STATUS "Searching for lib3mf.")
 
+pkg_check_modules(LIB3MF REQUIRED lib3mf>=1.8.1)
+if (LIB3MF_VERSION)
+  message("lib3MF ${LIB3MF_VERSION} found: ${LIB3MF_INCLUDE_DIRS}")
+endif()
+
 if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   if (EXISTS "$ENV{OPENSCAD_LIBRARIES}/include/lib3mf/Model/COM/NMR_DLLInterfaces.h")
     message(STATUS "found lib3mf (NMR_DLLInterfaces.h) in OPENSCAD_LIBRARIES.")
