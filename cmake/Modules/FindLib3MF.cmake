@@ -11,7 +11,7 @@
 
 message(STATUS "Searching for lib3mf.")
 
-pkg_check_modules(LIB3MF REQUIRED lib3mf>=1.8.1)
+pkg_check_modules(LIB3MF REQUIRED lib3MF>=1.8.1)
 if (LIB3MF_VERSION)
   message("lib3MF ${LIB3MF_VERSION} found: ${LIB3MF_INCLUDE_DIRS}")
 endif()
