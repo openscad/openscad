@@ -30,7 +30,7 @@
 #include "printutils.h"
 #include "AST.h"
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "cgalutils.h"
 #endif
 
@@ -261,10 +261,11 @@ PolySet * AmfImporter::read(const std::string filename)
 	vertex_list.clear();
 
 	PolySet *p = nullptr;
-#ifdef ENABLE_CGAL
 	if (polySets.size() == 1) {
 		p = polySets[0];
-	} if (polySets.size() > 1) {
+	}
+#ifdef ENABLE_CGALNEF
+	else if (polySets.size() > 1) {
 		Geometry::Geometries children;
 		for (std::vector<PolySet *>::iterator it = polySets.begin();it != polySets.end();it++) {
 			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));

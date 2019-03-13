@@ -45,7 +45,6 @@
 #include "CocoaUtils.h"
 #include "FontCache.h"
 #include "OffscreenView.h"
-#include "GeometryEvaluator.h"
 
 #include"parameter/parameterset.h"
 #include <string>
@@ -53,9 +52,18 @@
 #include <fstream>
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "cgalutils.h"
+	#ifdef ENABLE_CGALNEF
+		#include "CGAL_Nef_polyhedron.h"
+		#include "cgalutils.h"
+	#else
+		/*#pragma push_macro("NDEBUG")
+		#undef NDEBUG
+		#include <CGAL/assertions_behaviour.h>
+		#include <CGAL/exceptions.h>
+		#pragma pop_macro("NDEBUG")*/
+	#endif
 #endif
+#include "GeometryEvaluator.h"
 
 #include "csgnode.h"
 #include "CSGTreeEvaluator.h"
@@ -274,9 +282,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	Tree tree;
 	boost::filesystem::path doc(filename);
 	tree.setDocumentPath(doc.remove_filename().string());
-#ifdef ENABLE_CGAL
-	GeometryEvaluator geomevaluator(tree);
-#endif
+	geom_eval_t geomevaluator(tree);
 	
 	const char *stl_output_file = nullptr;
 	const char *off_output_file = nullptr;
@@ -429,12 +435,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		}
 	}
 	else {
-#ifdef ENABLE_CGAL
 		if ((echo_output_file || png_output_file) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			#ifdef ENABLE_CGALNEF
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
@@ -444,10 +450,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 					PRINT("Converted to Nef polyhedron");
 				}
 			}
+			#endif
 		}
 
 		fs::current_path(original_path);
-
 		if (stl_output_file) {
 			if (!checkAndExport(root_geom, 3, FileFormat::STL, stl_output_file)) {
 				return 1;
@@ -460,6 +466,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			}
 		}
 
+		#ifdef ENABLE_CGALNEF
 		if (amf_output_file) {
 			if (!checkAndExport(root_geom, 3, FileFormat::AMF, amf_output_file)) {
 				return 1;
@@ -470,19 +477,19 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			if (!checkAndExport(root_geom, 3, FileFormat::_3MF, _3mf_output_file))
 				return 1;
 		}
-
+		#endif
 		if (dxf_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::DXF, dxf_output_file)) {
 				return 1;
 			}
 		}
-
+		#ifdef ENABLE_CGALNEF
 		if (svg_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
 				return 1;
 			}
 		}
-
+		#endif
 		if (png_output_file) {
 			auto success = true;
 			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
@@ -500,7 +507,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			}
 			return success ? 0 : 1;
 		}
-
+#ifdef ENABLE_CGALNEF
 		if (nefdbg_output_file) {
 			if (!checkAndExport(root_geom, 3, FileFormat::NEFDBG, nefdbg_output_file)) {
 				return 1;
@@ -512,9 +519,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 				return 1;
 			}
 		}
-#else
-		PRINT("OpenSCAD has been compiled without CGAL support!\n");
-		return 1;
 #endif
 	}
 	delete root_node;

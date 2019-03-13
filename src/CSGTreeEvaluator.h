@@ -7,11 +7,13 @@
 #include "NodeVisitor.h"
 #include "memory.h"
 #include "csgnode.h"
+#include "Tree.h"
+#include "GeometryEvaluator.h"
 
 class CSGTreeEvaluator : public NodeVisitor
 {
 public:
-	CSGTreeEvaluator(const class Tree &tree, class GeometryEvaluator *geomevaluator = nullptr)
+	CSGTreeEvaluator(const Tree &tree, geom_eval_t *geomevaluator = nullptr)
 		: tree(tree), geomevaluator(geomevaluator) {
 	}
 	~CSGTreeEvaluator() {}
@@ -51,7 +53,7 @@ private:
 
 protected:
 	const Tree &tree;
-	class GeometryEvaluator *geomevaluator;
+	geom_eval_t *geomevaluator;
 	shared_ptr<CSGNode> rootNode;
 	std::vector<shared_ptr<CSGNode>> highlightNodes;
 	std::vector<shared_ptr<CSGNode>> backgroundNodes;

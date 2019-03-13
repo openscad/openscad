@@ -26,8 +26,9 @@ public:
 	Geometry *copy() const override { return new Polygon2d(*this); }
 
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
+#ifdef ENABLE_CGAL2D
 	class PolySet *tessellate() const;
-
+#endif
 	typedef std::vector<Outline2d> Outlines2d;
 	const Outlines2d &outlines() const { return theoutlines; }
 

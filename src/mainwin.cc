@@ -126,16 +126,17 @@
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
-
-#include "CGALCache.h"
 #include "CGALRenderer.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
 #include "cgalworker.h"
-#include "cgalutils.h"
-#include "CGALNefEvaluator.h"
-#else
-#include "GeometryEvaluator.h"
+	#ifdef ENABLE_CGALNEF
+		#include "CGALCache.h"
+		#include "CGAL_Nef_polyhedron.h"
+		#include "cgal.h"
+		#include "cgalutils.h"
+		#include "CGALNefEvaluator.h"
+	#else
+		#include "GeometryEvaluator.h"
+	#endif // ENABLE_CGALNEF
 #endif // ENABLE_CGAL
 
 #include "FontCache.h"
@@ -415,7 +416,7 @@ MainWindow::MainWindow(const QString &filename)
 	}
 #endif
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	connect(this->viewActionSurfaces, SIGNAL(triggered()), this, SLOT(viewModeSurface()));
 	connect(this->viewActionWireframe, SIGNAL(triggered()), this, SLOT(viewModeWireframe()));
 #else
@@ -762,7 +763,7 @@ void MainWindow::loadDesignSettings()
 	}
 	auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
 	GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
 	CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
 #endif
@@ -810,7 +811,7 @@ MainWindow::~MainWindow()
 	// so no need to delete it.
 	delete parsed_module;
 	delete root_node;
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	this->root_geom.reset();
 	delete this->cgalRenderer;
 #endif
@@ -1293,11 +1294,7 @@ void MainWindow::compileCSG()
 		// Main CSG evaluation
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-#ifdef ENABLE_CGAL
-		CGALNefEvaluator geomevaluator(this->tree);
-#else
-		GeometryEvaluator geomevaluator(this->tree);
-#endif
+		geom_eval_t geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
 		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
@@ -1309,7 +1306,7 @@ void MainWindow::compileCSG()
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
 			GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 			CGALCache::instance()->print();
 #endif
 			this->processEvents();
@@ -2261,15 +2258,19 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	if (root_geom) {
 		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
+		#ifdef ENABLE_CGALNEF
 		CGALCache::instance()->print();
-#endif
-
+		#endif
 		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 
 		if (root_geom && !root_geom->isEmpty()) {
-			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
+			if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
+				PRINT("   Top level object is a 2D object:");
+				PRINTB("   Contours:     %6d", poly->outlines().size());
+			} 
+			#ifdef ENABLE_CGALNEF
+			else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
 					bool simple = N->p3->is_simple();
 					PRINT("   Top level object is a 3D object:");
@@ -2285,14 +2286,13 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 					}
 				}
 			}
+			#endif
 			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
 				assert(ps->getDimension() == 3);
 				PRINT("   Top level object is a 3D object:");
 				PRINTB("   Facets:     %6d", ps->numPolygons());
-			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
-				PRINT("   Top level object is a 2D object:");
-				PRINTB("   Contours:     %6d", poly->outlines().size());
-			} else {
+			}
+			else {
 				assert(false && "Unknown geometry type");
 			}
 		}
@@ -2301,8 +2301,10 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
 		// Go to CGAL view mode
+		#ifdef ENABLE_CGALNEF
 		if (viewActionWireframe->isChecked()) viewModeWireframe();
 		else viewModeSurface();
+		#endif
 	}
 	else {
 		PRINT("UI-WARNING: No top level geometry to render");
@@ -2423,7 +2425,7 @@ void MainWindow::actionCheckValidity()
 {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	setCurrentOutput();
 
 	if (!this->root_geom) {
@@ -2488,21 +2490,17 @@ bool MainWindow::canExport(unsigned int dim)
 		clearCurrentOutput();
 		return false;
 	}
-
+	#ifdef ENABLE_CGALNEF
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 		PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
-	
+	#endif
 	return true;
 #endif
 }
 
-#ifdef ENABLE_CGAL
 void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
-#else
-	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
-#endif
 {
     //Setting filename skips the file selection dialog and uses the path provided instead.
     
@@ -2621,7 +2619,7 @@ void MainWindow::actionCopyViewport()
 void MainWindow::actionFlushCaches()
 {
 	GeometryCache::instance()->clear();
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	CGALCache::instance()->clear();
 #endif
 	dxf_dim_cache.clear();
@@ -2632,7 +2630,7 @@ void MainWindow::actionFlushCaches()
 void MainWindow::viewModeActionsUncheck()
 {
 	viewActionPreview->setChecked(false);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	viewActionSurfaces->setChecked(false);
 	viewActionWireframe->setChecked(false);
 #endif
@@ -2660,7 +2658,7 @@ void MainWindow::viewModePreview()
 
 #endif /* ENABLE_OPENCSG */
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 
 void MainWindow::viewModeSurface()
 {

@@ -1,7 +1,7 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 
 #include "cgalutils.h"
 #include "polyset.h"
@@ -416,7 +416,7 @@ namespace CGALUtils {
 }; // namespace CGALUtils
 
 
-#endif // ENABLE_CGAL
+#endif // ENABLE_CGALNEF
 
 
 

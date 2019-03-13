@@ -49,7 +49,7 @@ a time, to avoid confusion.
 #else
 
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/version.h>
@@ -75,7 +75,7 @@ a time, to avoid confusion.
 #error For Clang to work, CGAL must be >= 4.0.2
 #endif
 #endif // CGAL_VERSION_NR < 10400010000
-#endif //ENABLE_CGAL
+#endif //ENABLE_CGALNEF
 
 #ifdef ENABLE_OPENCSG
 #include <GL/glew.h>
@@ -104,9 +104,9 @@ a time, to avoid confusion.
 #endif // GLEW
 #endif // ENABLE_OPENCSG
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #endif // CGAL error
-#endif // ENABLE_CGAL
+#endif // ENABLE_CGALNEF
 
 #endif // Boost
 #endif // Eigen

@@ -30,7 +30,7 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "polyset.h"
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGAL_Nef_polyhedron.h"
 #endif
 #include "Polygon2d.h"
@@ -194,7 +194,7 @@ const Geometry *ImportNode::createGeometry() const
 		g = dd.toPolygon2d();
 		break;
 	}
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	case ImportType::NEF3: {
 		g = import_nef3(this->filename, loc);
 		break;

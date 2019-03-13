@@ -14,7 +14,7 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "cgal.h"
 #include <boost/algorithm/string.hpp>
 #if defined(__GNUG__)
@@ -24,7 +24,7 @@
 #define __openscad_info_demangle__ 1
 #endif // GCC_INT_VERSION
 #endif // GNUG
-#endif // ENABLE_CGAL
+#endif // ENABLE_CGALNEF
 
 #ifdef ENABLE_LIBZIP
 #include <zip.h>
@@ -86,7 +86,7 @@ std::string LibraryInfo::info()
 	std::string qtVersion = "Qt disabled - Commandline Test Version";
 #endif
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	std::string cgal_3d_kernel = typeid(CGAL_Kernel3).name();
 	std::string cgal_2d_kernel = typeid(CGAL_Kernel2).name();
 	std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
@@ -99,11 +99,11 @@ std::string LibraryInfo::info()
 	boost::replace_all( cgal_3d_kernel, "CGAL::", "" );
 	boost::replace_all( cgal_2d_kernel, "CGAL::", "" );
 	boost::replace_all( cgal_2d_kernelEx, "CGAL::", "" );
-#else // ENABLE_CGAL
+#else // ENABLE_CGALNEF
 	std::string cgal_3d_kernel = "";
 	std::string cgal_2d_kernel = "";
 	std::string cgal_2d_kernelEx = "";
-#endif // ENABLE_CGAL
+#endif // ENABLE_CGALNEF
 
 	const char *env_path = getenv("OPENSCADPATH");
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");

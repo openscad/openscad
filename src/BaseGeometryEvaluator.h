@@ -15,9 +15,9 @@ class GeometryEvaluator : public NodeVisitor
 {
 public:
 	GeometryEvaluator(const class Tree &tree);
-	~GeometryEvaluator() {}
+	~GeometryEvaluator() = default;
 
-	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
+	virtual shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
 
 	Response visit(State &state, const AbstractNode &node) override;
 	Response visit(State &state, const AbstractIntersectionNode &node) override;
@@ -37,7 +37,7 @@ public:
 
 	const Tree &getTree() const { return this->tree; }
 
-private:
+protected:
 	class ResultObject {
 	public:
 		ResultObject() : is_const(true) {}
@@ -56,15 +56,15 @@ private:
 		shared_ptr<const Geometry> const_pointer;
 	};
 
-	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
-	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
-	bool isSmartCached(const AbstractNode &node);
+	virtual void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
+	virtual shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
+	virtual bool isSmartCached(const AbstractNode &node);
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
 	Geometry::Geometries collectChildren3D(const AbstractNode &node);
 	Polygon2d *applyMinkowski2D(const AbstractNode &node);
-	void applyResize3D(Geometry &N, const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
+	Polygon2d *applyHull2D(const AbstractNode &node);
 	Polygon2d *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
-	ResultObject applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
+	virtual ResultObject applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
@@ -72,5 +72,4 @@ private:
 	const Tree &tree;
 	shared_ptr<const Geometry> root;
 
-public:
 };

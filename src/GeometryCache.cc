@@ -2,8 +2,8 @@
 #include "printutils.h"
 #include "Geometry.h"
 #ifdef DEBUG
-  #ifndef ENABLE_CGAL
-  #define ENABLE_CGAL
+  #ifndef ENABLE_CGALNEF
+  #define ENABLE_CGALNEF
   #endif
   #include "CGAL_Nef_polyhedron.h"
 #endif

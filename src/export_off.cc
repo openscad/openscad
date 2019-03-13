@@ -29,10 +29,11 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#endif
 
 #include "Reindexer.h"
 #include "grid.h"
@@ -59,7 +60,11 @@ static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 
 void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 {
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+		append_geometry(*ps, mesh);
+	} 
+#ifdef ENABLE_CGALNEF
+	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
 		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
@@ -67,9 +72,7 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 			append_geometry(ps, mesh);
 		}
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
-		append_geometry(*ps, mesh);
-	}
+#endif
 	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
@@ -101,4 +104,3 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 
 }
 
-#endif // ENABLE_CGAL

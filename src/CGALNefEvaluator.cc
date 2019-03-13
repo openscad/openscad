@@ -5,14 +5,10 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "state.h"
-#include "offsetnode.h"
 #include "transformnode.h"
-#include "linearextrudenode.h"
-#include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "projectionnode.h"
 #include "csgops.h"
-#include "textnode.h"
 #include "rendernode.h"
 #include "clipper-utils.h"
 #include "polyset-utils.h"
@@ -21,29 +17,21 @@
 #include "printutils.h"
 #include "svg.h"
 #include "calc.h"
-#include "dxfdata.h"
-#include "degree_trig.h"
 
-#ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALCache.h"
 #include "cgaladvnode.h"
-#pragma push_macro("NDEBUG")
-#undef NDEBUG
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/Point_2.h>
-#pragma pop_macro("NDEBUG")
-#endif // ENABLE_CGAL
 
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 
 
 CGALNefEvaluator::CGALNefEvaluator(const class Tree &tree):
-	tree(tree)
+	GeometryEvaluator(tree)
 {
 }
+
 /*!
 	Set allownef to false to force the result to _not_ be a Nef polyhedron
 */
@@ -90,10 +78,10 @@ shared_ptr<const Geometry> CGALNefEvaluator::evaluateGeometry(const AbstractNode
 	
 	May return nullptr or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
 */
-CGALNefEvaluator::NefResult CGALNefEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
+GeometryEvaluator::ResultObject CGALNefEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
 	Geometry::Geometries children = collectChildren3D(node);
-	if (children.size() == 0) return NefResult();
+	if (children.size() == 0) return GeometryEvaluator::ResultObject();
 
 	if (op == OpenSCADOperator::HULL) {
 		PolySet *ps = new PolySet(3, true);
@@ -103,63 +91,26 @@ CGALNefEvaluator::NefResult CGALNefEvaluator::applyToChildren3D(const AbstractNo
 		}
 
 		delete ps;
-		return NefResult();
+		return GeometryEvaluator::ResultObject();
 	}
 	
 	// Only one child -> this is a noop
-	if (children.size() == 1) return NefResult(children.front().second);
+	if (children.size() == 1) return GeometryEvaluator::ResultObject(children.front().second);
 
 	if (op == OpenSCADOperator::MINKOWSKI) {
 		Geometry::Geometries actualchildren;
 		for(const auto &item : children) {
 			if (!item.second->isEmpty()) actualchildren.push_back(item);
 		}
-		if (actualchildren.empty()) return NefResult();
-		if (actualchildren.size() == 1) return NefResult(actualchildren.front().second);
-		return NefResult(CGALUtils::applyMinkowski(actualchildren));
+		if (actualchildren.empty()) return GeometryEvaluator::ResultObject();
+		if (actualchildren.size() == 1) return GeometryEvaluator::ResultObject(actualchildren.front().second);
+		return GeometryEvaluator::ResultObject(CGALUtils::applyMinkowski(actualchildren));
 	}
 
 	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
 	// FIXME: Clarify when we can return nullptr and what that means
 	if (!N) N = new CGAL_Nef_polyhedron;
-	return NefResult(N);
-}
-
-
-
-/*!
-	Apply 2D hull.
-
-	May return an empty geometry but will not return nullptr.
-*/
-Polygon2d *CGALNefEvaluator::applyHull2D(const AbstractNode &node)
-{
-	std::vector<const Polygon2d *> children = collectChildren2D(node);
-	Polygon2d *geometry = new Polygon2d();
-
-	typedef CGAL::Point_2<CGAL::Cartesian<double>> CGALPoint2;
-	// Collect point cloud
-	std::list<CGALPoint2> points;
-	for(const auto &p : children) {
-		for(const auto &o : p->outlines()) {
-			for(const auto &v : o.vertices) {
-				points.push_back(CGALPoint2(v[0], v[1]));
-			}
-		}
-	}
-	if (points.size() > 0) {
-		// Apply hull
-		std::list<CGALPoint2> result;
-		CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
-
-		// Construct Polygon2d
-		Outline2d outline;
-		for(const auto &p : result) {
-			outline.vertices.push_back(Vector2d(p[0], p[1]));
-		}
-		geometry->addOutline(outline);
-	}
-	return geometry;
+	return GeometryEvaluator::ResultObject(N);
 }
 
 Geometry *CGALNefEvaluator::applyHull3D(const AbstractNode &node)
@@ -179,8 +130,8 @@ Geometry *CGALNefEvaluator::applyHull3D(const AbstractNode &node)
 	the appropriate cache.
 	This method inserts the geometry into the appropriate cache if it's not already cached.
 */
-void CGALNefEvaluator::smartCacheInsert(const AbstractNode &node, 
-																				 const shared_ptr<const Geometry> &geom)
+void CGALNefEvaluator::smartCacheInsert(const AbstractNode &node,
+																			const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
 
@@ -197,35 +148,22 @@ void CGALNefEvaluator::smartCacheInsert(const AbstractNode &node,
 	}
 }
 
-/*!
-	Returns a list of 3D Geometry children of the given node.
-	May return empty geometries, but not nullptr objects
-*/
-Geometry::Geometries CGALNefEvaluator::collectChildren3D(const AbstractNode &node)
+bool CGALNefEvaluator::isSmartCached(const AbstractNode &node)
 {
-	Geometry::Geometries children;
-	for(const auto &item : this->visitedchildren[node.index()]) {
-		const AbstractNode *chnode = item.first;
-		const shared_ptr<const Geometry> &chgeom = item.second;
-		if (chnode->modinst->isBackground()) continue;
+	const std::string &key = this->tree.getIdString(node);
+	return (GeometryCache::instance()->contains(key) ||
+					CGALCache::instance()->contains(key));
+}
 
-		// NB! We insert into the cache here to ensure that all children of
-		// a node is a valid object. If we inserted as we created them, the 
-		// cache could have been modified before we reach this point due to a large
-		// sibling object. 
-		smartCacheInsert(*chnode, chgeom);
-		
-		if (chgeom) {
-			if (chgeom->getDimension() == 2) {
-				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
-			}
-			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
-				children.push_back(item);
-			}
-		}
-	}
-	return children;
+shared_ptr<const Geometry> CGALNefEvaluator::smartCacheGet(const AbstractNode &node, bool preferNef)
+{
+	const std::string &key = this->tree.getIdString(node);
+	shared_ptr<const Geometry> geom;
+	bool hasgeom = GeometryCache::instance()->contains(key);
+	bool hascgal = CGALCache::instance()->contains(key);
+	if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
+	else if (hasgeom) geom = GeometryCache::instance()->get(key);
+	return geom;
 }
 
 /*!
@@ -240,7 +178,7 @@ Response CGALNefEvaluator::visit(State &state, const RenderNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
-			NefResult res = applyToChildren(node, OpenSCADOperator::UNION);
+			GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 
 			geom = res.constptr();
 			if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
@@ -291,7 +229,7 @@ Response CGALNefEvaluator::visit(State &state, const TransformNode &node)
 			}
 			else {
 				// First union all children
-				NefResult res = applyToChildren(node, OpenSCADOperator::UNION);
+				GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 				if ((geom = res.constptr())) {
 					if (geom->getDimension() == 2) {
 						shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
@@ -474,7 +412,7 @@ Response CGALNefEvaluator::visit(State &state, const CgaladvNode &node)
 		if (!isSmartCached(node)) {
 			switch (node.type) {
 			case CgaladvType::MINKOWSKI: {
-				NefResult res = applyToChildren(node, OpenSCADOperator::MINKOWSKI);
+				GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::MINKOWSKI);
 				geom = res.constptr();
 				// If we added convexity, we need to pass it on
 				if (geom && geom->getConvexity() != node.convexity) {
@@ -492,7 +430,7 @@ Response CGALNefEvaluator::visit(State &state, const CgaladvNode &node)
 				break;
 			}
 			case CgaladvType::RESIZE: {
-				NefResult res = applyToChildren(node, OpenSCADOperator::UNION);
+				GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 				geom = res.constptr();
 				if (geom) {
 					shared_ptr<Geometry> editablegeom;
@@ -537,22 +475,3 @@ Response CGALNefEvaluator::visit(State &state, const CgaladvNode &node)
 	return Response::ContinueTraversal;
 }
 
-Response CGALNefEvaluator::visit(State &state, const AbstractIntersectionNode &node)
-{
-	if (state.isPrefix()) {
-		if (isSmartCached(node)) return Response::PruneTraversal;
-		state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
-	}
-	if (state.isPostfix()) {
-		shared_ptr<const class Geometry> geom;
-		if (!isSmartCached(node)) {
-			geom = applyToChildren(node, OpenSCADOperator::INTERSECTION).constptr();
-		}
-		else {
-			geom = smartCacheGet(node, state.preferNef());
-		}
-		addToParent(state, node, geom);
-		node.progress_report();
-	}
-	return Response::ContinueTraversal;
-}

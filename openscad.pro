@@ -474,9 +474,9 @@ SOURCES += \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
-	       src/DrawingCallback.cc \
-	       src/FreetypeRenderer.cc \
-	       src/FontCache.cc \
+           src/DrawingCallback.cc \
+           src/FreetypeRenderer.cc \
+           src/FontCache.cc \
            \
            src/settings.cc \
            src/rendersettings.cc \

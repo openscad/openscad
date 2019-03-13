@@ -2,14 +2,14 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "AST.h"
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "cgalutils.h"
 #endif
 
 PolySet *import_off(const std::string &filename, const Location &loc)
 {
 	PolySet *p = new PolySet(3);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	CGAL_Polyhedron poly;
 	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
 	if (!file.good()) {

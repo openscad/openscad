@@ -7,11 +7,13 @@
 #include "rendersettings.h"
 
 #ifdef ENABLE_CGAL
-#include "CGALRenderer.h"
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
-#endif
+	#include "CGALRenderer.h"
+	#ifdef ENABLE_CGALNEF
+		#include "cgal.h"
+		#include "cgalutils.h"
+		#include "CGAL_Nef_polyhedron.h"
+	#endif /* ENABLE_CGALNEF */
+#endif // ENABLE_CGAL
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
@@ -46,7 +48,7 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& 
 	glview->save(output);
 	return true;
 }
-#endif
+#endif /* ENABLE_CGAL */
 
 
 #ifdef ENABLE_OPENCSG

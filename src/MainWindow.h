@@ -49,8 +49,8 @@ public:
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;
 
-#ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
+#ifdef ENABLE_CGAL
 	class CGALRenderer *cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -242,7 +242,7 @@ public slots:
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	void viewModeSurface();
 	void viewModeWireframe();
 #endif

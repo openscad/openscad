@@ -1,4 +1,4 @@
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 
 #include "cgalutils.h"
 #include "polyset.h"
@@ -352,5 +352,5 @@ namespace CGALUtils {
 
 }; // namespace CGALUtils
 
-#endif /* ENABLE_CGAL */
+#endif /* ENABLE_CGALNEF */
 

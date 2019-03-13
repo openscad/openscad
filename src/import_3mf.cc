@@ -51,7 +51,7 @@ const std::string get_lib3mf_version() {
 	return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "cgalutils.h"
 #endif
 
@@ -191,7 +191,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 		return first_mesh;
 	} else {
 		PolySet *p = new PolySet(3);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 		Geometry::Geometries children;
 		children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(first_mesh)));
 		for (polysets_t::iterator it = meshes.begin();it != meshes.end();it++) {
