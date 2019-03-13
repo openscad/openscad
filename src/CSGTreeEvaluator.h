@@ -38,7 +38,7 @@ public:
 	}
 
 private:
-  void addToParent(const State &state, const AbstractNode &node);
+	void addToParent(const State &state, const AbstractNode &node);
 	void applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op);
 	shared_ptr<CSGNode> evaluateCSGNodeFromGeometry(State &state, 
 																									const shared_ptr<const class Geometry> &geom,

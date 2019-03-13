@@ -22,6 +22,7 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
+option(ENABLE_CGAL "Enable CGAL, default ON " ON)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" )
 
 if (NULLGL)
@@ -107,11 +108,13 @@ if (MSVC)
   find_package(Eigen3 CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
-  find_package(CGAL CONFIG REQUIRED)
-  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-  add_definitions(-DENABLE_CGAL)
-  list(APPEND COMMON_LIBRARIES CGAL::CGAL)
-  
+  if(ENABLE_CGAL)
+    find_package(CGAL CONFIG REQUIRED)
+    message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+    add_definitions(-DENABLE_CGAL)
+    list(APPEND COMMON_LIBRARIES CGAL::CGAL)
+  endif()
+
   set(Boost_USE_STATIC_LIBS TRUE)
   #set(BOOST_STATIC TRUE)
   #set(BOOST_THREAD_USE_LIB TRUE)
@@ -163,13 +166,15 @@ else()
   message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
   include_directories(${EIGEN3_INCLUDE_DIRS})
 
-  find_package(CGAL REQUIRED QUIET)
-  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-  include_directories(${CGAL_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
-  list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
-  list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
-  add_definitions(-DENABLE_CGAL)
+  if (ENABLE_CGAL)
+    find_package(CGAL REQUIRED QUIET)
+    message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+    include_directories(${CGAL_INCLUDE_DIRS})
+    list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
+    list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
+    list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
+    add_definitions(-DENABLE_CGAL)
+  endif()
 
   # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
   #   because it looks for Boost itself, so it has to be called
@@ -415,7 +420,6 @@ set(CORE_SOURCES
   src/color.cc 
   src/primitives.cc 
   src/projection.cc 
-  src/cgaladv.cc 
   src/surface.cc 
   src/control.cc 
   src/render.cc 
@@ -480,10 +484,12 @@ set(NOCGAL_SOURCES
   src/polyset.cc
   src/polyset-gl.cc
   src/polyset-utils.cc
-  src/GeometryUtils.cc)
+  src/GeometryUtils.cc
+  src/GeometryEvaluator.cc)
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
+  src/cgaladv.cc
   src/CSGTreeEvaluator.cc 
   src/CGAL_Nef_polyhedron.cc 
   src/export_nef.cc
@@ -496,7 +502,7 @@ set(CGAL_SOURCES
   src/CGALCache.cc
   src/Polygon2d-CGAL.cc
   src/svg.cc
-  src/GeometryEvaluator.cc)
+  src/CGALNefEvaluator.cc)
 
 include_directories("src/ext/libtess2/Include")
 set(COMMON_SOURCES
@@ -538,11 +544,13 @@ else()
     src/fbo.cc
     src/system-gl.cc
     src/export_png.cc
-    src/CGALRenderer.cc
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
     src/render.cc
     src/OpenCSGRenderer.cc)
+  if(ENABLE_CGAL)
+    list(APPEND OFFSCREEN_SOURCES src/CGALRenderer.cc)
+  endif()
 endif()
 
 
@@ -621,7 +629,12 @@ set(GUI_HEADERS
 file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
-set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
+if (ENABLE_CGAL)
+  set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
+else()
+  set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${NOCGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
+endif()
+
 if(HEADLESS)
   add_definitions(-DOPENSCAD_NOGUI)
 else()

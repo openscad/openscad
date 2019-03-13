@@ -128,13 +128,14 @@
 #ifdef ENABLE_CGAL
 
 #include "CGALCache.h"
-#include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalworker.h"
 #include "cgalutils.h"
-
+#include "CGALNefEvaluator.h"
+#else
+#include "GeometryEvaluator.h"
 #endif // ENABLE_CGAL
 
 #include "FontCache.h"
@@ -1292,14 +1293,13 @@ void MainWindow::compileCSG()
 		// Main CSG evaluation
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-
 #ifdef ENABLE_CGAL
-			GeometryEvaluator geomevaluator(this->tree);
+		CGALNefEvaluator geomevaluator(this->tree);
 #else
-			// FIXME: Will we support this?
+		GeometryEvaluator geomevaluator(this->tree);
 #endif
 #ifdef ENABLE_OPENCSG
-			CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
 
 		progress_report_prep(this->root_node, report_func, this);
@@ -2455,6 +2455,11 @@ void MainWindow::actionCheckValidity()
 //Separated into it's own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
+#ifndef ENABLE_CGAL
+	PRINT("ERROR: CGAL currently required for export.  Set ENABLE_CGAL in build.");
+	return false;
+#else
+
 	if (!this->root_geom) {
 		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
 		clearCurrentOutput();
@@ -2490,6 +2495,7 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 	
 	return true;
+#endif
 }
 
 #ifdef ENABLE_CGAL
