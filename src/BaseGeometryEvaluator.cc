@@ -85,12 +85,12 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			}
 		}
 	}
-	  if (dim == 2) {
-	      Polygon2d *p2d = applyToChildren2D(node, op);
-	      assert(p2d);
-	      return ResultObject(p2d);
-	  }
-	  else if (dim == 3) return applyToChildren3D(node, op);
+	if (dim == 2) {
+		Polygon2d *p2d = applyToChildren2D(node, op);
+		assert(p2d);
+		return ResultObject(p2d);
+	}
+	else if (dim == 3) return applyToChildren3D(node, op);
 	return ResultObject();
 }
 
@@ -885,7 +885,7 @@ Geometry *GeometryEvaluator::rotatePolygon(const RotateExtrudeNode &node, const 
 		for (unsigned int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-			    a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
+				a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
 			else
 				a = 90 - (j+1)* node.angle / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
