@@ -72,4 +72,8 @@ protected:
 	const Tree &tree;
 	shared_ptr<const Geometry> root;
 
+private:
+	Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly);
+	Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly);
+
 };

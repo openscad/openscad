@@ -198,7 +198,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 	Polygon2d *geometry = new Polygon2d();
-
+#ifdef ENABLE_CGAL2D
 	typedef CGAL::Point_2<CGAL::Cartesian<double>> CGALPoint2;
 	// Collect point cloud
 	std::list<CGALPoint2> points;
@@ -221,6 +221,10 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 		}
 		geometry->addOutline(outline);
 	}
+#else
+	std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+	PRINTB("ERROR: 2D hull() not supported. Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
+#endif
 	return geometry;
 }
 
@@ -297,13 +301,13 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		return applyMinkowski2D(node);
 	}
 	else if (op == OpenSCADOperator::HULL) {
-		#ifdef ENABLE_CGAL2D
+	#ifdef ENABLE_CGAL2D
 		return applyHull2D(node);
-		#else
+	#else
 		std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
-		PRINT("ERROR: 2D hull() not supported. Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
-		return nullptr;
-		#endif
+		PRINTB("ERROR: 2D hull() not supported. Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
+		return new Polygon2d(); // return empty polygon so we don't trigger assertion
+	#endif
 	}
 
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
@@ -671,11 +675,12 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	}
 }
 
+#ifdef ENABLE_CGAL2D
 /*!
 	Input to extrude should be sanitized. This means non-intersecting, correct winding order
 	etc., the input coming from a library like Clipper.
 */
-static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
+Geometry *GeometryEvaluator::extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
 	boost::tribool isConvex{poly.is_convex()};
 	// Twise or non-uniform scale makes convex polygons into unknown polyhedrons
@@ -729,6 +734,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 
 	return ps;
 }
+#endif
 
 /*!
 	input: List of 2D objects
@@ -755,11 +761,17 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 				geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			}
 			if (geometry) {
+			#ifdef ENABLE_CGAL2D
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
 				Geometry *extruded = extrudePolygon(node, *polygons);
 				assert(extruded);
 				geom.reset(extruded);
 				delete geometry;
+			#else
+				std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+				PRINTB("ERROR: Can't tessellate Polygon2d for linear_extrude(). Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
+				geom.reset(new PolySet(3, true));
+			#endif
 			}
 		}
 		else {
@@ -807,7 +819,7 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 	Currently, we generate a lot of zero-area triangles
 
 */
-static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
+Geometry *GeometryEvaluator::rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
 	if (node.angle == 0) return nullptr; 
 
@@ -833,7 +845,9 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 	
+
 	if (node.angle != 360) {
+	#ifdef ENABLE_CGAL2D
 		PolySet *ps_start = poly.tessellate(); // starting face
 		Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
 		ps_start->transform(rot);
@@ -856,6 +870,10 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		}
 		ps->append(*ps_end);
 		delete ps_end;
+	#else
+		std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+		PRINTB("ERROR: Can't tesselate Polygon2d for rotate_extrude() with angle. Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
+	#endif
 	}
 
 	for(const auto &o : poly.outlines()) {

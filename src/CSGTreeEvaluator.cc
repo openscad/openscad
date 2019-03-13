@@ -162,9 +162,14 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	auto g = geom;
 	if (!g->isEmpty()) {
 		auto p2d = dynamic_pointer_cast<const Polygon2d>(geom);
+	#ifdef ENABLE_CGAL2D
 		if (p2d) {
 			g.reset(p2d->tessellate());
 		}
+	#else
+		std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+		PRINTB("ERROR: Can't tessellate Polygon2d for OpenCSG. Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
+	#endif
 		// 3D Polysets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
 	}
 

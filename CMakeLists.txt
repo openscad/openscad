@@ -586,10 +586,8 @@ else()
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
     src/render.cc
-    src/OpenCSGRenderer.cc)
-  if(ENABLE_CGAL)
-    list(APPEND OFFSCREEN_SOURCES src/CGALRenderer.cc)
-  endif()
+    src/OpenCSGRenderer.cc
+    src/CGALRenderer.cc)
 endif()
 
 

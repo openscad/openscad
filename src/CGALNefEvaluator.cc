@@ -49,7 +49,7 @@ shared_ptr<const Geometry> CGALNefEvaluator::evaluateGeometry(const AbstractNode
 		if (N) {
 			this->root = N;
 		}	
-    else {
+        else {
 			this->traverse(node);
 		}
 
@@ -65,6 +65,22 @@ shared_ptr<const Geometry> CGALNefEvaluator::evaluateGeometry(const AbstractNode
 					}
 				}
 			}
+
+            // We cannot render concave polygons, so tessellate any 3D PolySets
+            auto ps = dynamic_pointer_cast<const PolySet>(this->root);
+            if (ps && !ps->isEmpty()) {
+                // Since is_convex() doesn't handle non-planar faces, we need to tessellate
+                // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
+                bool convex{ps->convexValue()};
+                if (!convex) {
+                    assert(ps->getDimension() == 3);
+                    auto ps_tri = new PolySet(3, ps->convexValue());
+                    ps_tri->setConvexity(ps->getConvexity());
+                    PolysetUtils::tessellate_faces(*ps, *ps_tri);
+                    this->root.reset(ps_tri);
+                }
+            }
+
 		}
 		smartCacheInsert(node, this->root);
 		return this->root;

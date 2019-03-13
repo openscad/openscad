@@ -56,11 +56,11 @@
 		#include "CGAL_Nef_polyhedron.h"
 		#include "cgalutils.h"
 	#else
-		/*#pragma push_macro("NDEBUG")
+		#pragma push_macro("NDEBUG")
 		#undef NDEBUG
 		#include <CGAL/assertions_behaviour.h>
 		#include <CGAL/exceptions.h>
-		#pragma pop_macro("NDEBUG")*/
+		#pragma pop_macro("NDEBUG")
 	#endif
 #endif
 #include "GeometryEvaluator.h"

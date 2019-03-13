@@ -6,8 +6,8 @@
 #include "polyset.h"
 #include "rendersettings.h"
 
+#include "CGALRenderer.h"
 #ifdef ENABLE_CGAL
-	#include "CGALRenderer.h"
 	#ifdef ENABLE_CGALNEF
 		#include "cgal.h"
 		#include "cgalutils.h"
@@ -20,7 +20,6 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox)
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-#ifdef ENABLE_CGAL
 bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output)
 {
 	PRINTD("export_png geom");
@@ -48,8 +47,6 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& 
 	glview->save(output);
 	return true;
 }
-#endif /* ENABLE_CGAL */
-
 
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
