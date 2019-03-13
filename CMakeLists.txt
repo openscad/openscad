@@ -523,7 +523,6 @@ set(CORE_SOURCES
 if(ENABLE_CGALNEF)
   set(CGAL_SOURCES
     ${CGAL_SOURCES}
-    src/cgaladv.cc
     src/CGAL_Nef_polyhedron.cc
     src/export_nef.cc
     src/import_nef.cc

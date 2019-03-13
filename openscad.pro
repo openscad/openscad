@@ -45,6 +45,7 @@ debug {
   }
 }
   
+
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
@@ -54,6 +55,25 @@ TEMPLATE = app
 
 INCLUDEPATH += src
 DEPENDPATH += src
+
+# Not sure how to have CONFIG options that default to on, 
+# but can be disabled via command line. So the logic is inverted from cmake's
+no_cgal {
+  CONFIG += no_cgalnef
+  CONFIG += no_cgal2d
+}
+!no_cgalnef {
+  DEFINES += ENABLE_CGALNEF   
+}
+!no_cgal2d {
+  DEFINES += ENABLE_CGAL2D
+}
+no_cgal2d:no_cgalnef {
+  CONFIG += no_cgal
+} else {
+  CONFIG += cgal
+  # cgal.prf defines ENABLE_CGAL
+}
 
 # add CONFIG+=deploy to the qmake command-line to make a deployment build
 deploy {
@@ -73,7 +93,7 @@ idprefix {
   DEFINES += IDPREFIX
   message("Setting IDPREFIX for csg debugging")
   warning("Setting IDPREFIX will negatively affect cache hits")
-}  
+}
 macx {
   TARGET = OpenSCAD
 }
@@ -177,7 +197,6 @@ isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
 
 # Application configuration
 CONFIG += c++11
-CONFIG += cgal
 CONFIG += opencsg
 CONFIG += glew
 CONFIG += boost
@@ -281,7 +300,8 @@ HEADERS += src/version_check.h \
            src/rendersettings.h \
            src/colormap.h \
            src/ThrownTogetherRenderer.h \
-           src/CGAL_OGL_Polyhedron.h \
+           src/CGALRenderer.h \
+           src/cgalworker.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
@@ -348,6 +368,7 @@ HEADERS += src/version_check.h \
            src/nodedumper.h \
            src/ModuleCache.h \
            src/GeometryCache.h \
+           src/BaseGeometryEvaluator.h \
            src/GeometryEvaluator.h \
            src/Tree.h \
            src/DrawingCallback.h \
@@ -470,7 +491,7 @@ SOURCES += \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
-           src/GeometryEvaluator.cc \
+           src/BaseGeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
@@ -502,7 +523,6 @@ SOURCES += \
            src/export_off.cc \
            src/export_dxf.cc \
            src/export_svg.cc \
-           src/export_nef.cc \
            src/export_png.cc \
            src/import.cc \
            src/import_stl.cc \
@@ -513,6 +533,8 @@ SOURCES += \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
+           src/CGALRenderer.cc \
+           src/cgalworker.cc \
            src/svg.cc \
            src/OffscreenView.cc \
            src/fbo.cc \
@@ -557,12 +579,6 @@ SOURCES += \
            src/input/AxisConfigWidget.cc \
            src/input/ButtonConfigWidget.cc \
            src/input/WheelIgnorer.cc
-
-# CGAL
-HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
-           src/ext/CGAL/OGL_helper.h \
-           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \
-           src/ext/CGAL/CGAL_Nef3_workaround.h
 
 # LodePNG
 SOURCES += src/ext/lodepng/lodepng.cpp
@@ -639,16 +655,19 @@ opencsg {
   SOURCES += src/OpenCSGRenderer.cc
 }
 
-cgal {
+!no_cgalnef {
 HEADERS += src/cgal.h \
            src/cgalfwd.h \
            src/cgalutils.h \
            src/Reindexer.h \
            src/CGALCache.h \
-           src/CGALRenderer.h \
+           src/CGALNefEvaluator.h \
            src/CGAL_Nef_polyhedron.h \
-           src/cgalworker.h \
-           src/Polygon2d-CGAL.h
+           src/CGAL_OGL_Polyhedron.h \
+           src/ext/CGAL/convex_hull_3_bugfix.h \
+           src/ext/CGAL/OGL_helper.h \
+           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \
+           src/ext/CGAL/CGAL_Nef3_workaround.h
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-applyops.cc \
@@ -656,12 +675,16 @@ SOURCES += src/cgalutils.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \
-           src/CGALRenderer.cc \
+           src/CGALNefEvaluator.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/cgalworker.cc \
-           src/Polygon2d-CGAL.cc \
+           src/export_nef.cc \
            src/import_nef.cc
 }
+!no_cgal2d {
+  HEADERS += src/Polygon2d-CGAL.h
+  SOURCES += src/Polygon2d-CGAL.cc
+}
+
 
 macx {
   HEADERS += src/AppleEvents.h \
