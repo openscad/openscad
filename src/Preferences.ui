@@ -1730,14 +1730,25 @@
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="enableSoundOnRenderCompleteCheckBox">
-                 <property name="text">
-                  <string>Play sound notification on render complete</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_timeThresholdOnRenderCompleteSound">
+                 <item>
+                  <widget class="QLabel" name="label_17">
+                   <property name="text">
+                    <string>Time threshold to play sound notification on render complete</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="timeThresholdOnRenderCompleteSoundEdit"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_18">
+                   <property name="text">
+                    <string>sec</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
