@@ -81,7 +81,7 @@ shared_ptr<const Geometry> CGALNefEvaluator::evaluateGeometry(const AbstractNode
 GeometryEvaluator::ResultObject CGALNefEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
 	Geometry::Geometries children = collectChildren3D(node);
-	if (children.size() == 0) return GeometryEvaluator::ResultObject();
+	if (children.size() == 0) return ResultObject();
 
 	if (op == OpenSCADOperator::HULL) {
 		PolySet *ps = new PolySet(3, true);
@@ -91,26 +91,26 @@ GeometryEvaluator::ResultObject CGALNefEvaluator::applyToChildren3D(const Abstra
 		}
 
 		delete ps;
-		return GeometryEvaluator::ResultObject();
+		return ResultObject();
 	}
 	
 	// Only one child -> this is a noop
-	if (children.size() == 1) return GeometryEvaluator::ResultObject(children.front().second);
+	if (children.size() == 1) return ResultObject(children.front().second);
 
 	if (op == OpenSCADOperator::MINKOWSKI) {
 		Geometry::Geometries actualchildren;
 		for(const auto &item : children) {
 			if (!item.second->isEmpty()) actualchildren.push_back(item);
 		}
-		if (actualchildren.empty()) return GeometryEvaluator::ResultObject();
-		if (actualchildren.size() == 1) return GeometryEvaluator::ResultObject(actualchildren.front().second);
-		return GeometryEvaluator::ResultObject(CGALUtils::applyMinkowski(actualchildren));
+		if (actualchildren.empty()) return ResultObject();
+		if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
+		return ResultObject(CGALUtils::applyMinkowski(actualchildren));
 	}
 
 	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
 	// FIXME: Clarify when we can return nullptr and what that means
 	if (!N) N = new CGAL_Nef_polyhedron;
-	return GeometryEvaluator::ResultObject(N);
+	return ResultObject(N);
 }
 
 Geometry *CGALNefEvaluator::applyHull3D(const AbstractNode &node)
@@ -178,7 +178,7 @@ Response CGALNefEvaluator::visit(State &state, const RenderNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
-			GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+			ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 
 			geom = res.constptr();
 			if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
@@ -229,7 +229,7 @@ Response CGALNefEvaluator::visit(State &state, const TransformNode &node)
 			}
 			else {
 				// First union all children
-				GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+				ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 				if ((geom = res.constptr())) {
 					if (geom->getDimension() == 2) {
 						shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
@@ -412,7 +412,7 @@ Response CGALNefEvaluator::visit(State &state, const CgaladvNode &node)
 		if (!isSmartCached(node)) {
 			switch (node.type) {
 			case CgaladvType::MINKOWSKI: {
-				GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::MINKOWSKI);
+				ResultObject res = applyToChildren(node, OpenSCADOperator::MINKOWSKI);
 				geom = res.constptr();
 				// If we added convexity, we need to pass it on
 				if (geom && geom->getConvexity() != node.convexity) {
@@ -430,7 +430,7 @@ Response CGALNefEvaluator::visit(State &state, const CgaladvNode &node)
 				break;
 			}
 			case CgaladvType::RESIZE: {
-				GeometryEvaluator::ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+				ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
 				geom = res.constptr();
 				if (geom) {
 					shared_ptr<Geometry> editablegeom;

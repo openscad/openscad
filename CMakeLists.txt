@@ -511,7 +511,7 @@ set(CORE_SOURCES
   src/polyset-gl.cc
   src/polyset-utils.cc
   src/GeometryUtils.cc
-  src/GeometryEvaluator.cc
+  src/BaseGeometryEvaluator.cc
   src/CSGTreeEvaluator.cc
   src/ext/polyclipping/clipper.cpp
   ${PLATFORM_SOURCES}

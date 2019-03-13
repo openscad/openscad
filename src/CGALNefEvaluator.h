@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GeometryEvaluator.h"
+#include "BaseGeometryEvaluator.h"
 
 class CGALNefEvaluator : public GeometryEvaluator
 {

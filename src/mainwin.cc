@@ -133,10 +133,8 @@
 		#include "CGAL_Nef_polyhedron.h"
 		#include "cgal.h"
 		#include "cgalutils.h"
-		#include "CGALNefEvaluator.h"
-	#else
-		#include "GeometryEvaluator.h"
 	#endif // ENABLE_CGALNEF
+	#include "GeometryEvaluator.h"
 #endif // ENABLE_CGAL
 
 #include "FontCache.h"
