@@ -664,6 +664,8 @@ HEADERS += src/cgal.h \
            src/CGALNefEvaluator.h \
            src/CGAL_Nef_polyhedron.h \
            src/CGAL_OGL_Polyhedron.h \
+           src/export_nef.h \
+           src/import_nef.h \
            src/ext/CGAL/convex_hull_3_bugfix.h \
            src/ext/CGAL/OGL_helper.h \
            src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \

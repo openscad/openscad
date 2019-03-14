@@ -53,10 +53,10 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::DXF:
 		export_dxf(root_geom, output);
 		break;
-	#ifdef ENABLE_CGALNEF
 	case FileFormat::SVG:
 		export_svg(root_geom, output);
 		break;
+	#ifdef ENABLE_CGALNEF
 	case FileFormat::NEFDBG:
 		export_nefdbg(root_geom, output);
 		break;
@@ -65,7 +65,7 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 		break;
 	#endif
 	default:
-		assert(false && "Unsupported file format");
+		PRINT("ERROR: Unsupported file format");
 	}
 }
 

@@ -50,9 +50,7 @@ public:
 	Tree tree;
 
 	shared_ptr<const class Geometry> root_geom;
-#ifdef ENABLE_CGAL
 	class CGALRenderer *cgalRenderer;
-#endif
 #ifdef ENABLE_OPENCSG
 	class OpenCSGRenderer *opencsgRenderer;
 #endif
@@ -186,11 +184,9 @@ private slots:
 	void action3DPrint();
 	void sendToOctoPrint();
 	void sendToPrintService();
-#ifdef ENABLE_CGAL
 	void actionRender();
 	void actionRenderDone(shared_ptr<const class Geometry>);
 	void cgalRender();
-#endif
 	void actionCheckValidity();
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
@@ -242,10 +238,8 @@ public slots:
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
-#ifdef ENABLE_CGALNEF
 	void viewModeSurface();
 	void viewModeWireframe();
-#endif
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
 	void viewModeShowAxes();

@@ -478,18 +478,17 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 				return 1;
 		}
 		#endif
+		
 		if (dxf_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::DXF, dxf_output_file)) {
 				return 1;
 			}
 		}
-		#ifdef ENABLE_CGALNEF
 		if (svg_output_file) {
 			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
 				return 1;
 			}
 		}
-		#endif
 		if (png_output_file) {
 			auto success = true;
 			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);

@@ -20,7 +20,6 @@
 #include "polyset.h"
 #include "calc.h"
 #include "printutils.h"
-//#include "svg.h"
 #include "calc.h"
 #include "dxfdata.h"
 #include "degree_trig.h"
