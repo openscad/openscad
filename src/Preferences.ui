@@ -1754,7 +1754,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QLabel" name="label_timeThresholdOnRenderCompleteSound">
+                  <widget class="QLabel" name="timeThresholdOnRenderCompleteSoundLabel">
                    <property name="text">
                     <string>Play sound when render completion time is at least</string>
                    </property>
@@ -1764,7 +1764,7 @@
                   <widget class="QLineEdit" name="timeThresholdOnRenderCompleteSoundEdit"/>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_sec">
+                  <widget class="QLabel" name="secLabel">
                    <property name="text">
                     <string>sec</string>
                    </property>

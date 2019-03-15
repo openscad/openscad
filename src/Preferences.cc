@@ -169,9 +169,9 @@ void Preferences::init() {
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
 
 	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)),
-		        this->label_timeThresholdOnRenderCompleteSound, SLOT(setEnabled(bool)));
+		        this->timeThresholdOnRenderCompleteSoundLabel, SLOT(setEnabled(bool)));
 	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)), 
-		        this->label_sec, SLOT(setEnabled(bool)));
+		        this->secLabel, SLOT(setEnabled(bool)));
 	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)), 
 		        this->timeThresholdOnRenderCompleteSoundEdit, SLOT(setEnabled(bool)));
 
@@ -910,8 +910,8 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
-	this->label_timeThresholdOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
-	this->label_sec->setEnabled(getValue("advanced/enableSoundNotification").toBool());
+	this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
+	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->timeThresholdOnRenderCompleteSoundEdit->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
 	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->enableHardwarningsCheckBox->setChecked(getValue("advanced/enableHardwarnings").toBool());
