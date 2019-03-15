@@ -42,12 +42,12 @@ UserFunction::~UserFunction()
 {
 }
 
-ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
+Value UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
-	if (!expr) return ValuePtr::undefined;
+	if (!expr) return Value::undefined;
 	Context c(ctx);
 	c.setVariables(evalctx, definition_arguments);
-	ValuePtr result = expr->evaluate(&c);
+	Value result = expr->evaluate(&c);
 
 	return result;
 }
@@ -83,8 +83,8 @@ public:
 
 	~FunctionTailRecursion() { }
 
-	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override {
-		if (!expr) return ValuePtr::undefined;
+	Value evaluate(const Context *ctx, const EvalContext *evalctx) const override {
+		if (!expr) return Value::undefined;
 		
 		Context c(ctx);
 		c.setVariables(evalctx, definition_arguments);
@@ -103,7 +103,7 @@ public:
 			}
 		}
 		
-		ValuePtr result = endexpr->evaluate(&c);
+		Value result = endexpr->evaluate(&c);
 		
 		return result;
 	}
@@ -131,7 +131,7 @@ BuiltinFunction::~BuiltinFunction()
 {
 }
 
-ValuePtr BuiltinFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
+Value BuiltinFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
 	return eval_func(ctx, evalctx);
 }

@@ -12,10 +12,10 @@ BuiltinContext::BuiltinContext()
 		this->set_variable(ass.name, ass.expr->evaluate(this));
 	}
 	
-	this->set_constant("PI", ValuePtr(M_PI));
+	this->set_constant("PI", Value(M_PI));
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+Value BuiltinContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {

@@ -50,16 +50,16 @@ namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			if (vec[i]->type() == Value::ValueType::VECTOR) {
-				n += vec[i]->toVector().size();
+			if (vec[i].type() == Value::ValueType::VECTOR) {
+				n += vec[i].toVector().size();
 			} else {
 				n++;
 			}
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			if (vec[i]->type() == Value::ValueType::VECTOR) {
-				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			if (vec[i].type() == Value::ValueType::VECTOR) {
+				std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
 			} else {
 				ret.push_back(vec[i]);
 			}
@@ -96,7 +96,7 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expres
 {
 }
 
-ValuePtr UnaryOp::evaluate(const Context *context) const
+Value UnaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case (Op::Not):
@@ -104,7 +104,7 @@ ValuePtr UnaryOp::evaluate(const Context *context) const
 	case (Op::Negate):
 		return -this->expr->evaluate(context);
 	default:
-		return ValuePtr::undefined;
+		return Value::undefined;
 		// FIXME: error:
 	}
 }
@@ -141,7 +141,7 @@ BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const L
 {
 }
 
-ValuePtr BinaryOp::evaluate(const Context *context) const
+Value BinaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
@@ -184,7 +184,7 @@ ValuePtr BinaryOp::evaluate(const Context *context) const
 		return this->left->evaluate(context) != this->right->evaluate(context);
 		break;
 	default:
-		return ValuePtr::undefined;
+		return Value::undefined;
 		// FIXME: Error: unknown op
 	}
 }
@@ -247,7 +247,7 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 {
 }
 
-ValuePtr TernaryOp::evaluate(const Context *context) const
+Value TernaryOp::evaluate(const Context *context) const
 {
 	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
 }
@@ -262,7 +262,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 {
 }
 
-ValuePtr ArrayLookup::evaluate(const Context *context) const {
+Value ArrayLookup::evaluate(const Context *context) const {
 	return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
@@ -271,18 +271,18 @@ void ArrayLookup::print(std::ostream &stream, const std::string &) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(const ValuePtr &val, const Location &loc) : Expression(loc), value(val)
+Literal::Literal(const Value &val, const Location &loc) : Expression(loc), value(val)
 {
 }
 
-ValuePtr Literal::evaluate(const class Context *) const
+Value Literal::evaluate(const class Context *) const
 {
 	return this->value;
 }
 
 void Literal::print(std::ostream &stream, const std::string &) const
 {
-    stream << *this->value;
+    stream << this->value;
 }
 
 Range::Range(Expression *begin, Expression *end, const Location &loc)
@@ -295,25 +295,25 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 {
 }
 
-ValuePtr Range::evaluate(const Context *context) const
+Value Range::evaluate(const Context *context) const
 {
-	ValuePtr beginValue = this->begin->evaluate(context);
-	if (beginValue->type() == Value::ValueType::NUMBER) {
-		ValuePtr endValue = this->end->evaluate(context);
-		if (endValue->type() == Value::ValueType::NUMBER) {
+	Value beginValue = this->begin->evaluate(context);
+	if (beginValue.type() == Value::ValueType::NUMBER) {
+		Value endValue = this->end->evaluate(context);
+		if (endValue.type() == Value::ValueType::NUMBER) {
 			if (!this->step) {
-				RangeType range(beginValue->toDouble(), endValue->toDouble());
-				return ValuePtr(range);
+				RangeType range(beginValue.toDouble(), endValue.toDouble());
+				return Value(range);
 			} else {
-				ValuePtr stepValue = this->step->evaluate(context);
-				if (stepValue->type() == Value::ValueType::NUMBER) {
-					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
-					return ValuePtr(range);
+				Value stepValue = this->step->evaluate(context);
+				if (stepValue.type() == Value::ValueType::NUMBER) {
+					RangeType range(beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble());
+					return Value(range);
 				}
 			}
 		}
 	}
-	return ValuePtr::undefined;
+	return Value::undefined;
 }
 
 void Range::print(std::ostream &stream, const std::string &) const
@@ -353,13 +353,13 @@ void Vector::push_back(Expression *expr)
 	this->children.push_back(shared_ptr<Expression>(expr));
 }
 
-ValuePtr Vector::evaluate(const Context *context) const
+Value Vector::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 	for(const auto &e : this->children) {
-		ValuePtr tmpval = e->evaluate(context);
+		Value tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const Value::VectorType result = tmpval->toVector();
+			const Value::VectorType result = tmpval.toVector();
 			for (size_t i = 0;i < result.size();i++) {
 				vec.push_back(result[i]);
 			}
@@ -367,7 +367,7 @@ ValuePtr Vector::evaluate(const Context *context) const
 			vec.push_back(tmpval);
 		}
 	}
-	return ValuePtr(vec);
+	return Value(vec);
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -384,12 +384,12 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 {
 }
 
-ValuePtr Lookup::evaluate(const Context *context) const
+Value Lookup::evaluate(const Context *context) const
 {
 	return context->lookup_variable(this->name,false,loc);
 }
 
-ValuePtr Lookup::evaluateSilently(const Context *context) const
+Value Lookup::evaluateSilently(const Context *context) const
 {
 	return context->lookup_variable(this->name,true);
 }
@@ -404,20 +404,20 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 {
 }
 
-ValuePtr MemberLookup::evaluate(const Context *context) const
+Value MemberLookup::evaluate(const Context *context) const
 {
-	ValuePtr v = this->expr->evaluate(context);
+	Value v = this->expr->evaluate(context);
 
-	if (v->type() == Value::ValueType::VECTOR) {
+	if (v.type() == Value::ValueType::VECTOR) {
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v->type() == Value::ValueType::RANGE) {
+	} else if (v.type() == Value::ValueType::RANGE) {
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
 	}
-	return ValuePtr::undefined;
+	return Value::undefined;
 }
 
 void MemberLookup::print(std::ostream &stream, const std::string &) const
@@ -454,7 +454,7 @@ static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
 	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
 }
 
-ValuePtr FunctionCall::evaluate(const Context *context) const
+Value FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst().check()) {
 		print_err(this->name.c_str(),loc,context);
@@ -462,7 +462,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 	}
 	try{
 		EvalContext c(context, this->arguments, this->loc);
-		ValuePtr result = context->evaluate_function(this->name, &c);
+		Value result = context->evaluate_function(this->name, &c);
 		return result;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
@@ -498,14 +498,14 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
-ValuePtr Assert::evaluate(const Context *context) const
+Value Assert::evaluate(const Context *context) const
 {
 	EvalContext assert_context(context, this->arguments, this->loc);
 
 	Context c(&assert_context);
 	evaluate_assert(c, &assert_context);
 
-	ValuePtr result = expr ? expr->evaluate(&c) : ValuePtr::undefined;
+	Value result = expr ? expr->evaluate(&c) : Value::undefined;
 	return result;
 }
 
@@ -521,12 +521,12 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 }
 
-ValuePtr Echo::evaluate(const Context *context) const
+Value Echo::evaluate(const Context *context) const
 {
 	EvalContext echo_context(context, this->arguments, this->loc);	
 	PRINTB("%s", STR("ECHO: " << echo_context));
 
-	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
+	Value result = expr ? expr->evaluate(context) : Value::undefined;
 	return result;
 }
 
@@ -541,7 +541,7 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr Let::evaluate(const Context *context) const
+Value Let::evaluate(const Context *context) const
 {
 	Context c(context);
 	evaluate_sequential_assignment(this->arguments, &c, this->loc);
@@ -563,7 +563,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 {
 }
 
-ValuePtr LcIf::evaluate(const Context *context) const
+Value LcIf::evaluate(const Context *context) const
 {
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
@@ -576,7 +576,7 @@ ValuePtr LcIf::evaluate(const Context *context) const
         }
     }
 
-    return ValuePtr(vec);
+    return Value(vec);
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
@@ -591,39 +591,39 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 {
 }
 
-ValuePtr LcEach::evaluate(const Context *context) const
+Value LcEach::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 
-    ValuePtr v = this->expr->evaluate(context);
+    Value v = this->expr->evaluate(context);
 
-    if (v->type() == Value::ValueType::RANGE) {
-        RangeType range = v->toRange();
+    if (v.type() == Value::ValueType::RANGE) {
+        RangeType range = v.toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                vec.push_back(ValuePtr(*it));
+                vec.push_back(Value(*it));
             }
         }
-    } else if (v->type() == Value::ValueType::VECTOR) {
-        Value::VectorType vector = v->toVector();
-        for (size_t i = 0; i < v->toVector().size(); i++) {
+    } else if (v.type() == Value::ValueType::VECTOR) {
+        Value::VectorType vector = v.toVector();
+        for (size_t i = 0; i < v.toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
-    } else if (v->type() == Value::ValueType::STRING) {
-        utf8_split(v->toString(), [&](ValuePtr v) {
+    } else if (v.type() == Value::ValueType::STRING) {
+        utf8_split(v.toString(), [&](Value v) {
             vec.push_back(v);
         });
-    } else if (v->type() != Value::ValueType::UNDEFINED) {
+    } else if (v.type() != Value::ValueType::UNDEFINED) {
         vec.push_back(v);
     }
 
     if (isListComprehension(this->expr)) {
-        return ValuePtr(flatten(vec));
+        return Value(flatten(vec));
     } else {
-        return ValuePtr(vec);
+        return Value(vec);
     }
 }
 
@@ -637,7 +637,7 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr LcFor::evaluate(const Context *context) const
+Value LcFor::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 
@@ -647,40 +647,40 @@ ValuePtr LcFor::evaluate(const Context *context) const
 
     // comprehension for statements are by the parser reduced to only contain one single element
     const std::string &it_name = for_context.getArgName(0);
-    ValuePtr it_values = for_context.getArgValue(0, &assign_context);
+    Value it_values = for_context.getArgValue(0, &assign_context);
 
     Context c(context);
 
-    if (it_values->type() == Value::ValueType::RANGE) {
-        RangeType range = it_values->toRange();
+    if (it_values.type() == Value::ValueType::RANGE) {
+        RangeType range = it_values.toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                c.set_variable(it_name, ValuePtr(*it));
+                c.set_variable(it_name, Value(*it));
                 vec.push_back(this->expr->evaluate(&c));
             }
         }
-    } else if (it_values->type() == Value::ValueType::VECTOR) {
-        for (size_t i = 0; i < it_values->toVector().size(); i++) {
-            c.set_variable(it_name, it_values->toVector()[i]);
+    } else if (it_values.type() == Value::ValueType::VECTOR) {
+        for (size_t i = 0; i < it_values.toVector().size(); i++) {
+            c.set_variable(it_name, it_values.toVector()[i]);
             vec.push_back(this->expr->evaluate(&c));
         }
-    } else if (it_values->type() == Value::ValueType::STRING) {
-        utf8_split(it_values->toString(), [&](ValuePtr v) {
+    } else if (it_values.type() == Value::ValueType::STRING) {
+        utf8_split(it_values.toString(), [&](Value v) {
             c.set_variable(it_name, v);
             vec.push_back(this->expr->evaluate(&c));
         });
-    } else if (it_values->type() != Value::ValueType::UNDEFINED) {
+    } else if (it_values.type() != Value::ValueType::UNDEFINED) {
         c.set_variable(it_name, it_values);
         vec.push_back(this->expr->evaluate(&c));
     }
 
     if (isListComprehension(this->expr)) {
-        return ValuePtr(flatten(vec));
+        return Value(flatten(vec));
     } else {
-        return ValuePtr(vec);
+        return Value(vec);
     }
 }
 
@@ -694,7 +694,7 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 {
 }
 
-ValuePtr LcForC::evaluate(const Context *context) const
+Value LcForC::evaluate(const Context *context) const
 {
 	Value::VectorType vec;
 
@@ -717,9 +717,9 @@ ValuePtr LcForC::evaluate(const Context *context) const
     }    
 
     if (isListComprehension(this->expr)) {
-        return ValuePtr(flatten(vec));
+        return Value(flatten(vec));
     } else {
-        return ValuePtr(vec);
+        return Value(vec);
     }
 }
 
@@ -737,7 +737,7 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr LcLet::evaluate(const Context *context) const
+Value LcLet::evaluate(const Context *context) const
 {
     Context c(context);
     evaluate_sequential_assignment(this->arguments, &c, this->loc);
@@ -764,16 +764,16 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 		}
 	}
 	
-	const ValuePtr condition = c.lookup_variable("condition", false, evalctx->loc);
+	const Value condition = c.lookup_variable("condition", false, evalctx->loc);
 
-	if (!condition->toBool()) {
+	if (!condition.toBool()) {
 		const Expression *expr = assignments["condition"];
-		const ValuePtr message = c.lookup_variable("message", true);
+		const Value message = c.lookup_variable("message", true);
 		
 		const auto locs = evalctx->loc.toRelativeString(context.documentPath());
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
-		if (message->isDefined()) {
-			PRINTB("ERROR: Assertion%s failed: %s %s", exprText % message->toEchoString() % locs);
+		if (message.isDefined()) {
+			PRINTB("ERROR: Assertion%s failed: %s %s", exprText % message.toEchoString() % locs);
 		} else {
 			PRINTB("ERROR: Assertion%s failed %s", exprText % locs);
 		}

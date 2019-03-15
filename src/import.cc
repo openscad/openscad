@@ -84,13 +84,13 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 #endif
 
 	auto v = c.lookup_variable("file", true);
-	if (v->isUndefined()) {
+	if (v.isUndefined()) {
 		v = c.lookup_variable("filename", true);
-		if (!v->isUndefined()) {
+		if (!v.isUndefined()) {
 			printDeprecation("filename= is deprecated. Please use file=");
 		}
 	}
-	const std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
+	const std::string filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->path(), ctx->documentPath());
 	if (!filename.empty()) handle_dep(filename);
 	ImportType actualtype = this->type;
 	if (actualtype == ImportType::UNKNOWN) {
@@ -107,41 +107,41 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	auto node = new ImportNode(inst, actualtype);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	node->filename = filename;
 	auto layerval = c.lookup_variable("layer", true);
-	if (layerval->isUndefined()) {
+	if (layerval.isUndefined()) {
 		layerval = c.lookup_variable("layername", true);
-		if (!layerval->isUndefined()) {
+		if (!layerval.isUndefined()) {
 			printDeprecation("layername= is deprecated. Please use layer=");
 		}
 	}
-	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
-	node->convexity = (int)c.lookup_variable("convexity", true)->toDouble();
+	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
+	node->convexity = (int)c.lookup_variable("convexity", true).toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 
 	const auto origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	if(origin!=Value::undefined && !originOk){
+		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 
 	const auto center = c.lookup_variable("center", true);
-	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
+	node->center = center.type() == Value::ValueType::BOOL ? center.toBool() : false;
 
-	node->scale = c.lookup_variable("scale", true)->toDouble();
+	node->scale = c.lookup_variable("scale", true).toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	node->dpi = ImportNode::SVG_DEFAULT_DPI;
 	const auto dpi = c.lookup_variable("dpi", true);
-	if (dpi->type() == Value::ValueType::NUMBER) {
-		double val = dpi->toDouble();
+	if (dpi.type() == Value::ValueType::NUMBER) {
+		double val = dpi.toDouble();
 		if (val < 0.001) {
 			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
 					node->dpi %
@@ -154,8 +154,8 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	auto width = c.lookup_variable("width", true);
 	auto height = c.lookup_variable("height", true);
-	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
+	node->width = (width.type() == Value::ValueType::NUMBER) ? width.toDouble() : -1;
+	node->height = (height.type() == Value::ValueType::NUMBER) ? height.toDouble() : -1;
 	
 	return node;
 }

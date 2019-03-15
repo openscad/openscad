@@ -57,9 +57,9 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	Context c(ctx);
 	c.setVariables(evalctx, args, optargs);
 
-	auto fn = c.lookup_variable("$fn")->toDouble();
-	auto fa = c.lookup_variable("$fa")->toDouble();
-	auto fs = c.lookup_variable("$fs")->toDouble();
+	auto fn = c.lookup_variable("$fn").toDouble();
+	auto fa = c.lookup_variable("$fa").toDouble();
+	auto fs = c.lookup_variable("$fs").toDouble();
 
 	node->params.set_fn(fn);
 	node->params.set_fa(fa);

@@ -57,10 +57,10 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 	auto convexity = c.lookup_variable("convexity", true);
 	auto cut = c.lookup_variable("cut", true);
 
-	node->convexity = static_cast<int>(convexity->toDouble());
+	node->convexity = static_cast<int>(convexity.toDouble());
 
-	if (cut->type() == Value::ValueType::BOOL) {
-		node->cut_mode = cut->toBool();
+	if (cut.type() == Value::ValueType::BOOL) {
+		node->cut_mode = cut.toBool();
 	}
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);

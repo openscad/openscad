@@ -44,7 +44,6 @@ namespace fs=boost::filesystem;
 #include <glib.h>
 
 const Value Value::undefined;
-const ValuePtr ValuePtr::undefined;
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE 128
@@ -133,14 +132,14 @@ inline char* DoubleConvert(const double &value, char *buffer,
   return buffer;
 }
 
-void utf8_split(const std::string& str, std::function<void(ValuePtr)> f)
+void utf8_split(const std::string& str, std::function<void(Value)> f)
 {
     const char *ptr = str.c_str();
 
     while (*ptr) {
         auto next = g_utf8_next_char(ptr);
         const size_t length = next - ptr;
-        f(ValuePtr(std::string{ptr, length}));
+        f(Value(std::string{ptr, length}));
         ptr = next;
     }
 }
@@ -345,7 +344,7 @@ public:
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      v[i]->toStream(stream);
+      v[i].toStream(stream);
     }
     stream << ']';
     return stream.str();
@@ -395,7 +394,7 @@ public:
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
-      v[i]->toStream(this);
+      v[i].toStream(this);
     }
     stream << ']';
   }
@@ -483,7 +482,7 @@ public:
 		{
 			std::ostringstream stream;
 			for (size_t i = 0; i < v.size(); i++) {
-				stream << v[i]->chrString();
+				stream << v[i].chrString();
 			}
 			return stream.str();
 		}
@@ -530,8 +529,8 @@ bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 
   double rx, ry;
   bool valid = ignoreInfinite
-	  ? v[0]->getFiniteDouble(rx) && v[1]->getFiniteDouble(ry)
-	  : v[0]->getDouble(rx) && v[1]->getDouble(ry);
+	  ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
+	  : v[0].getDouble(rx) && v[1].getDouble(ry);
 
   if (valid) {
     x = rx;
@@ -549,7 +548,7 @@ bool Value::getVec3(double &x, double &y, double &z) const
 
   if (v.size() != 3) return false;
 
-  return (v[0]->getDouble(x) && v[1]->getDouble(y) && v[2]->getDouble(z));
+  return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
 bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
@@ -567,7 +566,7 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
     if (v.size() != 3) return false;
   }
 
-  return (v[0]->getDouble(x) && v[1]->getDouble(y) && v[2]->getDouble(z));
+  return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
 RangeType Value::toRange() const
@@ -677,7 +676,7 @@ public:
 	Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
 		Value::VectorType sum;
 		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
-			sum.push_back(ValuePtr(*op1[i] + *op2[i]));
+			sum.push_back(Value(op1[i] + op2[i]));
 		}
 		return {sum};
 	}
@@ -702,7 +701,7 @@ public:
 	Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
 		Value::VectorType sum;
 		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
-			sum.push_back(ValuePtr(*op1[i] - *op2[i]));
+			sum.push_back(Value(op1[i] - op2[i]));
 		}
 		return {sum};
 	}
@@ -718,7 +717,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 // Vector * Number
 	VectorType dstv;
 	for(const auto &val : vecval.toVector()) {
-		dstv.push_back(ValuePtr(*val * numval));
+		dstv.push_back(Value(val * numval));
 	}
 	return {dstv};
 }
@@ -728,18 +727,18 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 // Matrix * Vector
 	VectorType dstv;
 	for (size_t i=0;i<matrixvec.size();i++) {
-		if (matrixvec[i]->type() != ValueType::VECTOR || 
-				matrixvec[i]->toVector().size() != vectorvec.size()) {
+		if (matrixvec[i].type() != ValueType::VECTOR || 
+				matrixvec[i].toVector().size() != vectorvec.size()) {
 			return Value();
 		}
 		double r_e = 0.0;
-		for (size_t j=0;j<matrixvec[i]->toVector().size();j++) {
-			if (matrixvec[i]->toVector()[j]->type() != ValueType::NUMBER || vectorvec[j]->type() != ValueType::NUMBER) {
+		for (size_t j=0;j<matrixvec[i].toVector().size();j++) {
+			if (matrixvec[i].toVector()[j].type() != ValueType::NUMBER || vectorvec[j].type() != ValueType::NUMBER) {
 				return Value();
 			}
-			r_e += matrixvec[i]->toVector()[j]->toDouble() * vectorvec[j]->toDouble();
+			r_e += matrixvec[i].toVector()[j].toDouble() * vectorvec[j].toDouble();
 		}
-		dstv.push_back(ValuePtr(r_e));
+		dstv.push_back(Value(r_e));
 	}
 	return {dstv};
 }
@@ -749,17 +748,17 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 	assert(vectorvec.size() == matrixvec.size());
 // Vector * Matrix
 	VectorType dstv;
-	for (size_t i=0;i<matrixvec[0]->toVector().size();i++) {
+	for (size_t i=0;i<matrixvec[0].toVector().size();i++) {
 		double r_e = 0.0;
 		for (size_t j=0;j<vectorvec.size();j++) {
-			if (matrixvec[j]->type() != ValueType::VECTOR ||
-					matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER || 
-					vectorvec[j]->type() != ValueType::NUMBER) {
+			if (matrixvec[j].type() != ValueType::VECTOR ||
+					matrixvec[j].toVector()[i].type() != ValueType::NUMBER || 
+					vectorvec[j].type() != ValueType::NUMBER) {
 				return Value::undefined;
 			}
-			r_e += vectorvec[j]->toDouble() * matrixvec[j]->toVector()[i]->toDouble();
+			r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
 		}
-		dstv.push_back(ValuePtr(r_e));
+		dstv.push_back(Value(r_e));
 	}
 	return {dstv};
 }
@@ -780,31 +779,31 @@ Value Value::operator*(const Value &v) const
 		const auto &vec2 = v.toVector();
 		if (vec1.size() == 0 || vec2.size() == 0) return Value::undefined;
 		
-		if (vec1[0]->type() == ValueType::NUMBER && vec2[0]->type() == ValueType::NUMBER &&
+		if (vec1[0].type() == ValueType::NUMBER && vec2[0].type() == ValueType::NUMBER &&
 				vec1.size() == vec2.size()) { 
 			// Vector dot product.
 			auto r = 0.0;
 			for (size_t i=0;i<vec1.size();i++) {
-				if (vec1[i]->type() != ValueType::NUMBER || vec2[i]->type() != ValueType::NUMBER) {
+				if (vec1[i].type() != ValueType::NUMBER || vec2[i].type() != ValueType::NUMBER) {
 					return Value::undefined;
 				}
-				r += (vec1[i]->toDouble() * vec2[i]->toDouble());
+				r += (vec1[i].toDouble() * vec2[i].toDouble());
 			}
 			return Value(r);
-		} else if (vec1[0]->type() == ValueType::VECTOR && vec2[0]->type() == ValueType::NUMBER &&
-							 vec1[0]->toVector().size() == vec2.size()) {
+		} else if (vec1[0].type() == ValueType::VECTOR && vec2[0].type() == ValueType::NUMBER &&
+							 vec1[0].toVector().size() == vec2.size()) {
 			return multmatvec(vec1, vec2);
-		} else if (vec1[0]->type() == ValueType::NUMBER && vec2[0]->type() == ValueType::VECTOR &&
+		} else if (vec1[0].type() == ValueType::NUMBER && vec2[0].type() == ValueType::VECTOR &&
 							 vec1.size() == vec2.size()) {
 			return multvecmat(vec1, vec2);
-		} else if (vec1[0]->type() == ValueType::VECTOR && vec2[0]->type() == ValueType::VECTOR &&
-							 vec1[0]->toVector().size() == vec2.size()) {
+		} else if (vec1[0].type() == ValueType::VECTOR && vec2[0].type() == ValueType::VECTOR &&
+							 vec1[0].toVector().size() == vec2.size()) {
 			// Matrix * Matrix
 			VectorType dstv;
 			for (const auto &srcrow : vec1) {
-				const auto &srcrowvec = srcrow->toVector();
+				const auto &srcrowvec = srcrow.toVector();
 				if (srcrowvec.size() != vec2.size()) return Value::undefined;
-				dstv.push_back(ValuePtr(multvecmat(srcrowvec, vec2)));
+				dstv.push_back(Value(multvecmat(srcrowvec, vec2)));
 			}
 			return {dstv};
 		}
@@ -821,7 +820,7 @@ Value Value::operator/(const Value &v) const
     const auto &vec = this->toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
-      dstv.push_back(ValuePtr(*vecval / v));
+      dstv.push_back(Value(vecval / v));
     }
     return {dstv};
   }
@@ -829,7 +828,7 @@ Value Value::operator/(const Value &v) const
     const auto &vec = v.toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
-      dstv.push_back(ValuePtr(*this / *vecval));
+      dstv.push_back(Value(*this / vecval));
     }
     return {dstv};
   }
@@ -853,7 +852,7 @@ Value Value::operator-() const
     const auto &vec = this->toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
-      dstv.push_back(ValuePtr(-*vecval));
+      dstv.push_back(Value(-vecval));
     }
     return {dstv};
   }
@@ -900,7 +899,7 @@ public:
 
   Value operator()(const Value::VectorType &vec, const double &idx) const {
     const auto i = convert_to_uint32(idx);
-    if (i < vec.size()) return *vec[i];
+    if (i < vec.size()) return vec[i];
     return Value::undefined;
   }
 
@@ -1025,134 +1024,4 @@ bool RangeType::iterator::operator==(const self_type &other) const
 bool RangeType::iterator::operator!=(const self_type &other) const
 {
 	return !(*this == other);
-}
-
-ValuePtr::ValuePtr()
-{
-	this->reset(new Value());
-}
-
-ValuePtr::ValuePtr(const Value &v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(bool v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(int v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(double v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(const std::string &v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(const char *v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(const char v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(const Value::VectorType &v)
-{
-	this->reset(new Value(v));
-}
-
-ValuePtr::ValuePtr(const RangeType &v)
-{
-	this->reset(new Value(v));
-}
-
-bool ValuePtr::operator==(const ValuePtr &v) const
-{
-	return **this == *v;
-}
-
-bool ValuePtr::operator!=(const ValuePtr &v) const
-{
-	return **this != *v;
-}
-
-bool ValuePtr::operator<(const ValuePtr &v) const
-{
-	return **this < *v;
-}
-
-bool ValuePtr::operator<=(const ValuePtr &v) const
-{
-	return **this <= *v;
-}
-
-bool ValuePtr::operator>=(const ValuePtr &v) const
-{
-	return **this >= *v;
-}
-
-bool ValuePtr::operator>(const ValuePtr &v) const
-{
-	return **this > *v;
-}
-
-ValuePtr ValuePtr::operator-() const
-{
-	return ValuePtr(-**this);
-}
-
-ValuePtr ValuePtr::operator!() const
-{
-	return ValuePtr(!**this);
-}
-
-ValuePtr ValuePtr::operator[](const ValuePtr &v) const
-{
-	return ValuePtr((**this)[*v]);
-}
-
-ValuePtr ValuePtr::operator+(const ValuePtr &v) const
-{
-	return ValuePtr(**this + *v);
-}
-
-ValuePtr ValuePtr::operator-(const ValuePtr &v) const
-{
-	return ValuePtr(**this - *v);
-}
-
-ValuePtr ValuePtr::operator*(const ValuePtr &v) const
-{
-	return ValuePtr(**this * *v);
-}
-
-ValuePtr ValuePtr::operator/(const ValuePtr &v) const
-{
-	return ValuePtr(**this / *v);
-}
-
-ValuePtr ValuePtr::operator%(const ValuePtr &v) const
-{
-	return ValuePtr(**this % *v);
-}
-
-ValuePtr::operator bool() const
-{
-	return **this;
-}
-
-const Value &ValuePtr::operator*() const
-{
-	return *this->get();
 }

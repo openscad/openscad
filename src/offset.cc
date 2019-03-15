@@ -60,9 +60,9 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	// default with no argument at all is (r = 1, chamfer = false)
 	// radius takes precedence if both r and delta are given.
@@ -73,12 +73,12 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	const auto delta = c.lookup_variable("delta", true);
 	const auto chamfer = c.lookup_variable("chamfer", true);
 	
-	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
-		r->getDouble(node->delta);
-	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
-		delta->getDouble(node->delta);
+	if (r.isDefinedAs(Value::ValueType::NUMBER)) {
+		r.getDouble(node->delta);
+	} else if (delta.isDefinedAs(Value::ValueType::NUMBER)) {
+		delta.getDouble(node->delta);
 		node->join_type = ClipperLib::jtMiter;
-		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+		if (chamfer.isDefinedAs(Value::ValueType::BOOL) && chamfer.toBool()) {
 			node->chamfer = true;
 			node->join_type = ClipperLib::jtSquare;
 		}

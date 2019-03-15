@@ -483,16 +483,16 @@ void ParameterWidget::applyParameterSet(std::string setName)
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
 			if (entry->second->dvt == Value::ValueType::STRING) {
-				entry->second->value=ValuePtr(v.second.data());
+				entry->second->value=Value(v.second.data());
 			} else if (entry->second->dvt == Value::ValueType::BOOL) {
-				entry->second->value = ValuePtr(v.second.get_value<bool>());
+				entry->second->value = Value(v.second.get_value<bool>());
 			} else {
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 				
 				ModuleContext ctx;
-				ValuePtr newValue = params->evaluate(&ctx);
-				if (entry->second->dvt == newValue->type()) {
+				Value newValue = params->evaluate(&ctx);
+				if (entry->second->dvt == newValue.type()) {
 					entry->second->value = newValue;
 				}
 			}
@@ -548,7 +548,7 @@ void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 		pt::ptree iroot;
 		for (const auto &entry : entries) {
 			const auto &VariableName = entry.first;
-			const auto &VariableValue = entry.second->value->toString();
+			const auto &VariableValue = entry.second->value.toString();
 			iroot.put(VariableName, VariableValue);
 		}
 		this->setMgr->addParameterSet(setName, iroot);

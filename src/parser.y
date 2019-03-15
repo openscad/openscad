@@ -362,15 +362,15 @@ single_module_instantiation:
 expr:
           TOK_TRUE
             {
-              $$ = new Literal(ValuePtr(true), LOC(@$));
+              $$ = new Literal(Value(true), LOC(@$));
             }
         | TOK_FALSE
             {
-              $$ = new Literal(ValuePtr(false), LOC(@$));
+              $$ = new Literal(Value(false), LOC(@$));
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(ValuePtr::undefined, LOC(@$));
+              $$ = new Literal(Value::undefined, LOC(@$));
             }
         | TOK_ID
             {
@@ -384,12 +384,12 @@ expr:
             }
         | TOK_STRING
             {
-              $$ = new Literal(ValuePtr(std::string($1)), LOC(@$));
+              $$ = new Literal(Value(std::string($1)), LOC(@$));
               free($1);
             }
         | TOK_NUMBER
             {
-              $$ = new Literal(ValuePtr($1), LOC(@$));
+              $$ = new Literal(Value($1), LOC(@$));
             }
         | '[' expr ':' expr ']'
             {
@@ -401,7 +401,7 @@ expr:
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(ValuePtr(Value::VectorType()), LOC(@$));
+              $$ = new Literal(Value(Value::VectorType()), LOC(@$));
             }
         | '[' vector_expr optional_commas ']'
             {

@@ -20,11 +20,11 @@ const std::string &EvalContext::getArgName(size_t i) const
 	return this->eval_arguments[i].name;
 }
 
-ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
+Value EvalContext::getArgValue(size_t i, const Context *ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
-	ValuePtr v;
+	Value v;
 	if (arg.expr) {
 		v = arg.expr->evaluate(ctx ? ctx : this);
 	}
@@ -86,13 +86,13 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 void EvalContext::assignTo(Context &target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
-		ValuePtr v;
+		Value v;
 		if (assignment.expr) v = assignment.expr->evaluate(&target);
 		
 		if(assignment.name.empty()){
-			PRINTB("WARNING: Assignment without variable name %s, %s", v->toEchoString() % this->loc.toRelativeString(target.documentPath()));
+			PRINTB("WARNING: Assignment without variable name %s, %s", v.toEchoString() % this->loc.toRelativeString(target.documentPath()));
 		}else if (target.has_local_variable(assignment.name)) {
-			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment.name % v->toEchoString() % this->loc.toRelativeString(target.documentPath()));
+			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment.name % v.toEchoString() % this->loc.toRelativeString(target.documentPath()));
 		} else {
 			target.set_variable(assignment.name, v);
 		}
@@ -105,7 +105,7 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 		if (i > 0) stream << ", ";
 		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
 		auto val = ec.getArgValue(i);
-		stream << val->toEchoString();
+		stream << val.toEchoString();
 	}
 	return stream;
 }

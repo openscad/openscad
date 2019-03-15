@@ -91,23 +91,23 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(evalctx, args, optargs);
 
 	auto fileval = c.lookup_variable("file");
-	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	auto filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 
 	auto center = c.lookup_variable("center", true);
-	if (center->type() == Value::ValueType::BOOL) {
-		node->center = center->toBool();
+	if (center.type() == Value::ValueType::BOOL) {
+		node->center = center.toBool();
 	}
 
 	auto convexity = c.lookup_variable("convexity", true);
-	if (convexity->type() == Value::ValueType::NUMBER) {
-		node->convexity = static_cast<int>(convexity->toDouble());
+	if (convexity.type() == Value::ValueType::NUMBER) {
+		node->convexity = static_cast<int>(convexity.toDouble());
 	}
 
 	auto invert = c.lookup_variable("invert", true);
-	if (invert->type() == Value::ValueType::BOOL) {
-		node->invert = invert->toBool();
+	if (invert.type() == Value::ValueType::BOOL) {
+		node->invert = invert.toBool();
 	}
 
 	return node;

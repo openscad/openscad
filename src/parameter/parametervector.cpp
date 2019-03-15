@@ -21,7 +21,7 @@ void ParameterVector::onChanged(double)
 {
 	if(!this->suppressUpdate){
 		if (object->target == ParameterObject::NUMBER) {
-			object->value = ValuePtr(doubleSpinBox1->value());
+			object->value = Value(doubleSpinBox1->value());
 		} else {
 			Value::VectorType vt;
 			vt.push_back(this->doubleSpinBox1->value());
@@ -34,7 +34,7 @@ void ParameterVector::onChanged(double)
 			if (!this->doubleSpinBox4->isReadOnly()) {
 				vt.push_back(this->doubleSpinBox4->value());
 			}
-			object->value = ValuePtr(vt);
+			object->value = Value(vt);
 		}
 		emit changed();
 	}
@@ -47,14 +47,14 @@ void ParameterVector::setValue()
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 
-	Value::VectorType vec = object->value->toVector();
+	Value::VectorType vec = object->value.toVector();
 
-	double minV = object->values->toRange().begin_value();
-	double step = object->values->toRange().step_value();
-	double maxV = object->values->toRange().end_value();
+	double minV = object->values.toRange().begin_value();
+	double step = object->values.toRange().step_value();
+	double maxV = object->values.toRange().end_value();
 	if(step==0){
 		step=1;
-		setPrecision(vec.at(0)->toDouble());
+		setPrecision(vec.at(0).toDouble());
 	}else{
 		setPrecision(step);
 	}
@@ -63,9 +63,9 @@ void ParameterVector::setValue()
 
 	for(unsigned int i = 0; i < vec.size(); i++) {
 		boxes[i]->setDecimals(decimalPrecision);
-		boxes[i]->setValue(vec.at(i)->toDouble());
+		boxes[i]->setValue(vec.at(i).toDouble());
 		if(minV==0 && maxV ==0){
-			boxes[i]->setRange(vec.at(i)->toDouble()-1000,vec.at(i)->toDouble()+1000);
+			boxes[i]->setRange(vec.at(i).toDouble()-1000,vec.at(i).toDouble()+1000);
 		}else{
 			boxes[i]->setMinimum(minV);
 			boxes[i]->setMaximum(maxV);

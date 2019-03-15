@@ -59,9 +59,9 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	c.setVariables(evalctx, args, optargs);
 	inst->scope.apply(*evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
     
 
 	auto file = c.lookup_variable("file");
@@ -71,23 +71,23 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	auto scale = c.lookup_variable("scale", true);
 	auto angle = c.lookup_variable("angle", true);
     
-	if (!file->isUndefined()) {
+	if (!file.isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}
 
-	node->layername = layer->isUndefined() ? "" : layer->toString();
-	node->convexity = static_cast<int>(convexity->toDouble());
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->convexity = static_cast<int>(convexity.toDouble());
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	if(origin!=Value::undefined && !originOk){
+		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
-	node->scale = scale->toDouble();
+	node->scale = scale.toDouble();
 	node->angle = 360;
-	angle->getFiniteDouble(node->angle);
+	angle.getFiniteDouble(node->angle);
 
 	if (node->convexity <= 0)
 		node->convexity = 2;

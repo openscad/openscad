@@ -57,9 +57,9 @@ AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiat
     
 	ModuleContext c(ctx, evalctx);
 	// set $children first since we might have variables depending on it
-	c.set_variable("$children", ValuePtr(double(inst->scope.children.size())));
+	c.set_variable("$children", Value(double(inst->scope.children.size())));
 	module_stack.push_back(inst->name());
-	c.set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
+	c.set_variable("$parent_modules", Value(double(module_stack.size())));
 	c.initializeModule(*this);
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG

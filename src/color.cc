@@ -265,15 +265,15 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	inst->scope.apply(*evalctx);
 
 	auto v = c.lookup_variable("c");
-	if (v->type() == Value::ValueType::VECTOR) {
+	if (v.type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
-			node->color[i] = i < v->toVector().size() ? (float)v->toVector()[i]->toDouble() : 1.0f;
+			node->color[i] = i < v.toVector().size() ? (float)v.toVector()[i].toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
 				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
-	} else if (v->type() == Value::ValueType::STRING) {
-		auto colorname = v->toString();
+	} else if (v.type() == Value::ValueType::STRING) {
+		auto colorname = v.toString();
 		boost::algorithm::to_lower(colorname);
 		if (webcolors.find(colorname) != webcolors.end())	{
 			node->color = webcolors.at(colorname);
@@ -289,8 +289,8 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 		}
 	}
 	auto alpha = c.lookup_variable("alpha");
-	if (alpha->type() == Value::ValueType::NUMBER) {
-		node->color[3] = alpha->toDouble();
+	if (alpha.type() == Value::ValueType::NUMBER) {
+		node->color[3] = alpha.toDouble();
 	}
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);

@@ -18,7 +18,7 @@ public:
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;
-	ValuePtr getArgValue(size_t i, const Context *ctx = nullptr) const;
+	Value getArgValue(size_t i, const Context *ctx = nullptr) const;
 	const AssignmentList & getArgs() const { return this->eval_arguments; }
 
 	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const;

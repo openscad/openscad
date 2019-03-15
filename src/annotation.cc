@@ -38,7 +38,7 @@ Annotation::~Annotation()
 {
 }
 
-ValuePtr Annotation::evaluate(class Context *ctx) const
+Value Annotation::evaluate(class Context *ctx) const
 {
 	return this->expr->evaluate(ctx);
 }
