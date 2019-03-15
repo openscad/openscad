@@ -8,8 +8,8 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 	setValue();
 
 	double max=32767;
-	if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
-		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+	if(object->values.toVector().size() == 1){ // [max] format from makerbot customizer
+		max = std::stoi(object->values.toVector()[0].toString(),nullptr,0);
 	}
 	this->lineEdit->setMaxLength(max);
 
@@ -21,13 +21,13 @@ void ParameterText::onChanged(QString)
 {
 	if(!this->suppressUpdate){
 		if (object->dvt == Value::Type::STRING) {
-			object->value = ValuePtr(lineEdit->text().toStdString());
+			object->value = Value(lineEdit->text().toStdString());
 		}else{
 			ContextHandle<Context> ctx{Context::create<Context>()};
 			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
 			if (!params) return;
-			ValuePtr newValue = params->evaluate(ctx.ctx);
-			if (object->dvt == newValue->type()) {
+			Value newValue = params->evaluate(ctx.ctx);
+			if (object->dvt == newValue.type()) {
 				object->value = newValue;
 			}
 		}
@@ -45,9 +45,9 @@ void ParameterText::setValue()
 	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
 	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
-	this->lineEdit->setText(QString::fromStdString(object->value->toString()));
-	if (object->values->toDouble() > 0) {
-		this->lineEdit->setMaxLength(object->values->toDouble());
+	this->lineEdit->setText(QString::fromStdString(object->value.toString()));
+	if (object->values.toDouble() > 0) {
+		this->lineEdit->setMaxLength(object->values.toDouble());
 	}
 	this->suppressUpdate=false;
 }

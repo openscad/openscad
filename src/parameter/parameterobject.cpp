@@ -4,27 +4,27 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const ValuePtr defaultValue)
+ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const Value defaultValue)
 {
   this->set = false;
   this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
-  const ValuePtr values = param->evaluate(ctx);
+  const Value values = param->evaluate(ctx);
   setValue(defaultValue, values);
   const Annotation *desc = assignment->annotation("Description");
 
   if (desc) {
-    const ValuePtr v = desc->evaluate(ctx);
-    if (v->type() == Value::Type::STRING) {
-      description=QString::fromStdString(v->toString());
+    const Value v = desc->evaluate(ctx);
+    if (v.type() == Value::Type::STRING) {
+      description=QString::fromStdString(v.toString());
     }
   }
   
   const Annotation *group = assignment->annotation("Group");
   if (group) {
-    const ValuePtr v = group->evaluate(ctx);
-    if (v->type() == Value::Type::STRING) {
-      groupName=v->toString();
+    const Value v = group->evaluate(ctx);
+    if (v.type() == Value::Type::STRING) {
+      groupName=v.toString();
     }
   } else {
     groupName="Parameters";
@@ -34,26 +34,26 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
 void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
 {
   ContextHandle<Context> ctx{Context::create<Context>()};
-  const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+  const Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
   
-  if (defaultValue->type() == dvt) {
+  if (defaultValue.type() == dvt) {
     assignment->setExpr(make_shared<Literal>(value));
   }
 }
 
-void ParameterObject::setValue(const class ValuePtr defaultValue, const class ValuePtr values)
+void ParameterObject::setValue(const class Value defaultValue, const class Value values)
 {
   this->values = values;
   this->value = defaultValue;
   this->defaultValue = defaultValue;
-  this->vt = values->type();
-  this->dvt = defaultValue->type();
+  this->vt = values.type();
+  this->dvt = defaultValue.type();
  
-  bool makerBotMax = (vt == Value::Type::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->type() == Value::Type::NUMBER); // [max] format from makerbot customizer
+  bool makerBotMax = (vt == Value::Type::VECTOR && values.toVector().size() == 1 && values.toVector()[0].type() == Value::Type::NUMBER); // [max] format from makerbot customizer
 
   if (dvt == Value::Type::BOOL) {
     this->target = CHECKBOX;
-  } else if ((dvt == Value::Type::VECTOR) && (defaultValue->toVector().size() <= 4)) {
+  } else if ((dvt == Value::Type::VECTOR) && (defaultValue.toVector().size() <= 4)) {
     this->target = checkVectorWidget();
   } else if ((vt == Value::Type::RANGE || makerBotMax) && (dvt == Value::Type::NUMBER)) {
     this->target = SLIDER;
@@ -76,10 +76,10 @@ bool ParameterObject::operator == (const ParameterObject &second)
 
 ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
 {
-  VectorType vec = defaultValue->toVector();
+  VectorType vec = defaultValue.toVector();
   if(vec.size()==0) return TEXT;
   for (unsigned int i = 0;i < vec.size();i++) {
-    if (vec[i]->type() != Value::Type::NUMBER) {
+    if (vec[i].type() != Value::Type::NUMBER) {
       return TEXT;
     }
   }

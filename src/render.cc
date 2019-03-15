@@ -53,8 +53,8 @@ AbstractNode *RenderModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	inst->scope.apply(evalctx);
 
 	auto v = c->lookup_variable("convexity");
-	if (v->type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(v->toDouble());
+	if (v.type() == Value::Type::NUMBER) {
+		node->convexity = static_cast<int>(v.toDouble());
 	}
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);

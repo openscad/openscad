@@ -339,7 +339,7 @@ expr
               } else {
                 PRINTB("WARNING: Support for function literals is disabled %s",
                 LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
-                $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+                $$ = new Literal(Value::undefined, LOCD("literal", @$));
               }
               delete $3;
             }
@@ -486,23 +486,23 @@ call
 primary
         : TOK_TRUE
             {
-              $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
+              $$ = new Literal(Value(true), LOCD("literal", @$));
             }
         | TOK_FALSE
             {
-              $$ = new Literal(ValuePtr(false), LOCD("literal", @$));
+              $$ = new Literal(Value(false), LOCD("literal", @$));
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+              $$ = new Literal(Value::undefined, LOCD("literal", @$));
             }
         | TOK_NUMBER
             {
-              $$ = new Literal(ValuePtr($1), LOCD("literal", @$));
+              $$ = new Literal(Value($1), LOCD("literal", @$));
             }
         | TOK_STRING
             {
-              $$ = new Literal(ValuePtr(std::string($1)), LOCD("string", @$));
+              $$ = new Literal(Value(std::string($1)), LOCD("string", @$));
               free($1);
             }
         | TOK_ID
@@ -524,7 +524,7 @@ primary
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(ValuePtr(VectorType()), LOCD("vector", @$));
+              $$ = new Literal(Value(VectorType()), LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {

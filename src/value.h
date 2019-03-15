@@ -149,45 +149,6 @@ public:
 	friend class bracket_visitor;
 };
 
-class ValuePtr : public shared_ptr<const class Value>
-{
-public:
-  static const ValuePtr undefined;
-
-	ValuePtr();
-	explicit ValuePtr(const Value &v);
-  ValuePtr(bool v);
-  ValuePtr(int v);
-  ValuePtr(double v);
-  ValuePtr(const std::string &v);
-  ValuePtr(const char *v);
-  ValuePtr(const char v);
-  ValuePtr(const class std::vector<ValuePtr> &v);
-  ValuePtr(const class RangeType &v);
-  ValuePtr(const class FunctionType &v);
-
-	operator bool() const;
-
-  bool operator==(const ValuePtr &v) const;
-  bool operator!=(const ValuePtr &v) const;
-  bool operator<(const ValuePtr &v) const;
-  bool operator<=(const ValuePtr &v) const;
-  bool operator>=(const ValuePtr &v) const;
-  bool operator>(const ValuePtr &v) const;
-  ValuePtr operator-() const;
-  ValuePtr operator!() const;
-  ValuePtr operator[](const ValuePtr &v) const;
-  ValuePtr operator+(const ValuePtr &v) const;
-  ValuePtr operator-(const ValuePtr &v) const;
-  ValuePtr operator*(const ValuePtr &v) const;
-  ValuePtr operator/(const ValuePtr &v) const;
-  ValuePtr operator%(const ValuePtr &v) const;
-
-  const Value &operator*() const;
-
-private:
-};
-
 class FunctionType {
 public:
 	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, AssignmentList args)
@@ -228,7 +189,7 @@ private:
 class Value
 {
 public:
-	typedef std::vector<ValuePtr> VectorType;
+	typedef std::vector<Value> VectorType;
 
   enum class Type {
     UNDEFINED,
@@ -308,5 +269,5 @@ private:
   Variant value;
 };
 
-void utf8_split(const std::string& str, std::function<void(ValuePtr)> f);
+void utf8_split(const std::string& str, std::function<void(Value)> f);
 using VectorType = Value::VectorType;

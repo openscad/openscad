@@ -15,7 +15,7 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, ParameterObject *parameterob
 void ParameterSpinBox::onChanged(double)
 {
 	if(!this->suppressUpdate){
-		object->value = ValuePtr(doubleSpinBox->value());
+		object->value = Value(doubleSpinBox->value());
 	}
 }
 
@@ -27,19 +27,19 @@ void ParameterSpinBox::onEditingFinished()
 void ParameterSpinBox::setValue()
 {
 	this->suppressUpdate=true;
-	if (object->values->toDouble() > 0) {
-		setPrecision(object->values->toDouble());
-		this->doubleSpinBox->setSingleStep(object->values->toDouble());
+	if (object->values.toDouble() > 0) {
+		setPrecision(object->values.toDouble());
+		this->doubleSpinBox->setSingleStep(object->values.toDouble());
 	}
 	else {
-		setPrecision(object->defaultValue->toDouble());
+		setPrecision(object->defaultValue.toDouble());
 		this->doubleSpinBox->setSingleStep(1/pow(10,decimalPrecision));
 	}
 	this->doubleSpinBox->setDecimals(decimalPrecision);
 	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
 	this->pageSpin->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 	this->stackedWidgetBelow->hide();
-	this->doubleSpinBox->setRange(object->value->toDouble()-1000, object->value->toDouble()+1000);
-	this->doubleSpinBox->setValue(object->value->toDouble());
+	this->doubleSpinBox->setRange(object->value.toDouble()-1000, object->value.toDouble()+1000);
+	this->doubleSpinBox->setValue(object->value.toDouble());
 	this->suppressUpdate=false;
 }

@@ -125,9 +125,9 @@ int main(int argc, char **argv)
 
 	Value zero3;
 	zero3.type = Value::VECTOR;
-	zero3.vec.append(new Value(0.0));
-	zero3.vec.append(new Value(0.0));
-	zero3.vec.append(new Value(0.0));
+	zero3.vec.append(Value(0.0));
+	zero3.vec.append(Value(0.0));
+	zero3.vec.append(Value(0.0));
 	root_ctx.set_variable("$vpt", zero3);
 	root_ctx.set_variable("$vpr", zero3);
 

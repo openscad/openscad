@@ -97,18 +97,13 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 	}
 }
 
-void Context::set_variable(const std::string &name, const ValuePtr &value)
+void Context::set_variable(const std::string &name, const Value &value)
 {
 	if (is_config_variable(name)) this->config_variables[name] = value;
 	else this->variables[name] = value;
 }
 
-void Context::set_variable(const std::string &name, const Value &value)
-{
-	set_variable(name, ValuePtr(value));
-}
-
-void Context::set_constant(const std::string &name, const ValuePtr &value)
+void Context::set_constant(const std::string &name, const Value &value)
 {
 	if (this->constants.find(name) != this->constants.end()) {
 		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
@@ -116,11 +111,6 @@ void Context::set_constant(const std::string &name, const ValuePtr &value)
 	else {
 		this->constants[name] = value;
 	}
-}
-
-void Context::set_constant(const std::string &name, const Value &value)
-{
-	set_constant(name, ValuePtr(value));
 }
 
 void Context::apply_variables(const std::shared_ptr<Context> other)
@@ -148,11 +138,11 @@ void Context::apply_config_variables(const std::shared_ptr<Context> other)
 	}
 }
 
-ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
+Value Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
 	if (!this->ctx_stack) {
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return ValuePtr::undefined;
+		return Value::undefined;
 	}
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
@@ -164,7 +154,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 		if (!silent) {
 			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
 		}
-		return ValuePtr::undefined;
+		return Value::undefined;
 	}
 	if (!this->parent && this->constants.find(name) != this->constants.end()) {
 		return this->constants.find(name)->second;
@@ -178,20 +168,20 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 	if (!silent) {
 		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
 	}
-	return ValuePtr::undefined;
+	return Value::undefined;
 }
 
 
 double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
 {
-	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::Type::NUMBER) ? v->toDouble() : def;
+	Value v = this->lookup_variable(variable, true, loc);
+	return (v.type() == Value::Type::NUMBER) ? v.toDouble() : def;
 }
 
 std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
 {
-	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::Type::STRING) ? v->toString() : def;
+	Value v = this->lookup_variable(variable, true, loc);
+	return (v.type() == Value::Type::STRING) ? v.toString() : def;
 }
 
 bool Context::has_local_variable(const std::string &name) const
@@ -222,11 +212,11 @@ static void NOINLINE print_ignore_warning(const char *what, const char *name, co
 	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
-ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
+Value Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath().c_str());
-	return ValuePtr::undefined;
+	return Value::undefined;
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
@@ -269,16 +259,16 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 			}
 		}
 	}
-	typedef std::pair<std::string, ValuePtr> ValueMapType;
+	typedef std::pair<std::string, Value> ValueMapType;
 	s << "  vars:\n";
 	for(const auto &v : constants) {
-		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
+		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
 	}
 	for(const auto &v : variables) {
-		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
+		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
 	}
 	for(const auto &v : config_variables) {
-		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
+		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
 	}
 	return s.str();
 }

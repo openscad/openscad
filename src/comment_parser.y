@@ -74,7 +74,7 @@ expr:
 num:
     NUM
     {
-        $$ = new Literal(ValuePtr($1));
+        $$ = new Literal(Value($1));
     }
     ;
 
@@ -136,7 +136,7 @@ labeled_vectors:
 wordexpr:
     word
     {
-        $$ = new Literal(ValuePtr(std::string($1)));
+        $$ = new Literal(Value(std::string($1)));
         free($1);
     }
     ;

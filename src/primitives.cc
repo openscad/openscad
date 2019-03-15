@@ -104,7 +104,7 @@ public:
 	double fn, fs, fa;
 	primitive_type_e type;
 	int convexity;
-	ValuePtr points, paths, faces;
+	Value points, paths, faces;
 	const Geometry *createGeometry() const override;
 };
 
@@ -123,16 +123,16 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 {
 	auto d = ctx->lookup_variable(diameter_var, true);
 	auto r = ctx->lookup_variable(radius_var, true);
-	const auto r_defined = (r->type() == Value::Type::NUMBER);
+	const auto r_defined = (r.type() == Value::Type::NUMBER);
 
-	if (d->type() == Value::Type::NUMBER) {
+	if (d.type() == Value::Type::NUMBER) {
 		if (r_defined) {
 			std::string locStr = loc.toRelativeString(ctx->documentPath());
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
 		}
-		return {d->toDouble() / 2.0};
+		return {d.toDouble() / 2.0};
 	} else if (r_defined) {
-		return *r;
+		return r;
 	} else {
 		return Value::undefined;
 	}
@@ -184,9 +184,9 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);
 
-	node->fn = c->lookup_variable("$fn")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
 
 	if (node->fs < F_MINIMUM) {
 		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
@@ -201,25 +201,25 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::CUBE: {
 		auto size = c->lookup_variable("size");
 		auto center = c->lookup_variable("center");
-		if(size != ValuePtr::undefined){
+		if(size != Value::undefined){
 			bool converted=false;
-			converted |= size->getDouble(node->x);
-			converted |= size->getDouble(node->y);
-			converted |= size->getDouble(node->z);
-			converted |= size->getVec3(node->x, node->y, node->z);
+			converted |= size.getDouble(node->x);
+			converted |= size.getDouble(node->y);
+			converted |= size.getDouble(node->z);
+			converted |= size.getVec3(node->x, node->y, node->z);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}else if(OpenSCAD::rangeCheck){
 				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
 					PRINTB("WARNING: cube(size=%s, ...), %s",
-						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+						size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
 		}
-		if (center->type() == Value::Type::BOOL) {
-			node->center = center->toBool();
+		if (center.type() == Value::Type::BOOL) {
+			node->center = center.toBool();
 		}
 		break;
 	}
@@ -236,8 +236,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	}
 	case primitive_type_e::CYLINDER: {
 		const auto h = c->lookup_variable("h");
-		if (h->type() == Value::Type::NUMBER) {
-			node->h = h->toDouble();
+		if (h.type() == Value::Type::NUMBER) {
+			node->h = h.toDouble();
 		}
 
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
@@ -263,7 +263,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if(OpenSCAD::rangeCheck){
 			if (node->h <= 0 || !std::isfinite(node->h)){
 				PRINTB("WARNING: cylinder(h=%s, ...), %s",
-					h->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					h.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
 				PRINTB("WARNING: cylinder(r1=%s, r2=%s, ...), %s",
@@ -274,18 +274,18 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		}
 
 		auto center = c->lookup_variable("center");
-		if (center->type() == Value::Type::BOOL) {
-			node->center = center->toBool();
+		if (center.type() == Value::Type::BOOL) {
+			node->center = center.toBool();
 		}
 		break;
 	}
 	case primitive_type_e::POLYHEDRON: {
 		node->points = c->lookup_variable("points");
 		node->faces = c->lookup_variable("faces");
-		if (node->faces->type() == Value::Type::UNDEFINED) {
+		if (node->faces.type() == Value::Type::UNDEFINED) {
 			// backwards compatible
 			node->faces = c->lookup_variable("triangles", true);
-			if (node->faces->type() != Value::Type::UNDEFINED) {
+			if (node->faces.type() != Value::Type::UNDEFINED) {
 				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
@@ -294,25 +294,25 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::SQUARE: {
 		auto size = c->lookup_variable("size");
 		auto center = c->lookup_variable("center");
-		if(size != ValuePtr::undefined){
+		if(size != Value::undefined){
 			bool converted=false;
-			converted |= size->getDouble(node->x);
-			converted |= size->getDouble(node->y);
-			converted |= size->getVec2(node->x, node->y);
+			converted |= size.getDouble(node->x);
+			converted |= size.getDouble(node->y);
+			converted |= size.getVec2(node->x, node->y);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}else if(OpenSCAD::rangeCheck){
 				bool ok = true;
 				ok &= (node->x > 0) && (node->y > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y);
 				if(!ok){
 					PRINTB("WARNING: square(size=%s, ...), %s",
-						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+						size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
 		}
-		if (center->type() == Value::Type::BOOL) {
-			node->center = center->toBool();
+		if (center.type() == Value::Type::BOOL) {
+			node->center = center.toBool();
 		}
 		break;
 	}
@@ -334,7 +334,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	}
 	}
 
-	node->convexity = (int)c->lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)c->lookup_variable("convexity", true).toDouble();
 	if (node->convexity < 1) node->convexity = 1;
 
 	return node;
@@ -551,14 +551,14 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces->toVector().size(); i++)	{
+		for (size_t i=0; i<this->faces.toVector().size(); i++)	{
 			p->append_poly();
-			const auto &vec = this->faces->toVector()[i]->toVector();
+			const auto &vec = this->faces.toVector()[i].toVector();
 			for (size_t j=0; j<vec.size(); j++) {
-				size_t pt = (size_t)vec[j]->toDouble();
-				if (pt < this->points->toVector().size()) {
+				size_t pt = (size_t)vec[j].toDouble();
+				if (pt < this->points.toVector().size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
+					if (!this->points.toVector()[pt].getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
 						return p;
@@ -611,25 +611,24 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			Outline2d outline;
 			double x,y;
-			const auto &vec = this->points->toVector();
+			const auto &vec = this->points.toVector();
 			for (unsigned int i=0;i<vec.size();i++) {
-				const auto &val = *vec[i];
+				const auto &val = vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s",
-								 val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
+					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
 			}
 
-			if (this->paths->toVector().size() == 0 && outline.vertices.size() > 2) {
+			if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
-				for (const auto &polygon : this->paths->toVector()) {
+				for (const auto &polygon : this->paths.toVector()) {
 					Outline2d curroutline;
-					for (const auto &index : polygon->toVector()) {
-						unsigned int idx = (unsigned int)index->toDouble();
+					for (const auto &index : polygon.toVector()) {
+						unsigned int idx = (unsigned int)index.toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						}
@@ -670,9 +669,9 @@ std::string PrimitiveNode::toString() const
 			break;
 	case primitive_type_e::POLYHEDRON:
 		stream << "(points = ";
-		this->points->toStream(stream);
+		this->points.toStream(stream);
 		stream << ", faces = ";
-		this->faces->toStream(stream);
+		this->faces.toStream(stream);
 		stream << ", convexity = " << this->convexity << ")";
 			break;
 	case primitive_type_e::SQUARE:
@@ -685,9 +684,9 @@ std::string PrimitiveNode::toString() const
 		break;
 	case primitive_type_e::POLYGON:
 		stream << "(points = ";
-		this->points->toStream(stream);
+		this->points.toStream(stream);
 		stream << ", paths = ";
-		this->paths->toStream(stream);
+		this->paths.toStream(stream);
 		stream << ", convexity = " << this->convexity << ")";
 			break;
 	default:

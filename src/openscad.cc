@@ -329,7 +329,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	// Top context - this context only holds builtins
 	ContextHandle<BuiltinContext> top_ctx{Context::create<BuiltinContext>()};
 	const bool preview = canPreview(curFormat) ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-	top_ctx->set_variable("$preview", ValuePtr(preview));
+	top_ctx->set_variable("$preview", Value(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx->dump(nullptr, nullptr));
 #endif

@@ -62,9 +62,9 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	c->setVariables(evalctx, args, optargs);
 	inst->scope.apply(evalctx);
 
-	node->fn = c->lookup_variable("$fn")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
 
 	auto file = c->lookup_variable("file");
 	auto layer = c->lookup_variable("layer", true);
@@ -76,46 +76,46 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	auto twist = c->lookup_variable("twist", true);
 	auto slices = c->lookup_variable("slices", true);
 
-	if (!file->isUndefined() && file->type() == Value::Type::STRING) {
+	if (!file.isUndefined() && file.type() == Value::Type::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
+		auto filename = lookup_file(file.toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}
 
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
-	if (c->lookup_variable("height")->isUndefined() &&
+	if (c->lookup_variable("height").isUndefined() &&
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		auto val = evalctx->getArgValue(0);
-		if (val->type() == Value::Type::NUMBER) height = val;
+		if (val.type() == Value::Type::NUMBER) height = val;
 	}
 
-	node->layername = layer->isUndefined() ? "" : layer->toString();
+	node->layername = layer.isUndefined() ? "" : layer.toString();
 	node->height = 100;
-	height->getFiniteDouble(node->height);
+	height.getFiniteDouble(node->height);
 	double tmp_convexity;
-	if (convexity->getFiniteDouble(tmp_convexity)) {
+	if (convexity.getFiniteDouble(tmp_convexity)) {
 	  node->convexity = static_cast<int>(tmp_convexity);
 	} else {
 	  node->convexity = 0;
 	}
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	if(origin!=Value::undefined && !originOk){
+		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 	node->scale_x = node->scale_y = 1;
-	bool scaleOK = scale->getFiniteDouble(node->scale_x);
-	scaleOK &= scale->getFiniteDouble(node->scale_y);
-	scaleOK |= scale->getVec2(node->scale_x, node->scale_y, true);
-	if((origin!=ValuePtr::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
-		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	bool scaleOK = scale.getFiniteDouble(node->scale_x);
+	scaleOK &= scale.getFiniteDouble(node->scale_y);
+	scaleOK |= scale.getVec2(node->scale_x, node->scale_y, true);
+	if((origin!=Value::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
+		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 
-	if (center->type() == Value::Type::BOOL)
-		node->center = center->toBool();
+	if (center.type() == Value::Type::BOOL)
+		node->center = center.toBool();
 
 	if (node->height <= 0) node->height = 0;
 
@@ -126,11 +126,11 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	if (node->scale_y < 0) node->scale_y = 0;
 
 	double slicesVal = 0;
-	slices->getFiniteDouble(slicesVal);
+	slices.getFiniteDouble(slicesVal);
 	node->slices = static_cast<int>(slicesVal);
 
 	node->twist = 0.0;
-	twist->getFiniteDouble(node->twist);
+	twist.getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
 		if (node->slices == 0) {
 			node->slices = static_cast<int>(fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360)));

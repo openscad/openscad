@@ -3,8 +3,6 @@
 #include "module.h"
 #include "expression.h"
 
-std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
-
 Builtins *Builtins::instance(bool erase)
 {
 	static Builtins *builtins = new Builtins;
@@ -23,22 +21,12 @@ void Builtins::init(const std::string &name, class AbstractModule *module)
 	Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList)
-{
-#ifndef ENABLE_EXPERIMENTAL
-	if (module->is_experimental()) return;
-#endif
-	Builtins::instance()->modules.emplace(name, module);
-	Builtins::keywordList.insert({name, calltipList});
-}
-
-void Builtins::init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList)
+void Builtins::init(const std::string &name, class AbstractFunction *function)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (function->is_experimental()) return;
 #endif
 	Builtins::instance()->functions.emplace(name, function);
-	Builtins::keywordList.insert({name, calltipList});
 }
 
 extern void register_builtin_functions();
@@ -65,8 +53,6 @@ extern void initialize_builtin_dxf_dim();
 */
 void Builtins::initialize()
 {
-	Builtins::initKeywordList();
-
 	register_builtin_functions();
 	initialize_builtin_dxf_dim();
 

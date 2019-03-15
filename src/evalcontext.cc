@@ -19,11 +19,11 @@ const std::string &EvalContext::getArgName(size_t i) const
 	return this->eval_arguments[i]->getName();
 }
 
-ValuePtr EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) const
+Value EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
-	ValuePtr v;
+	Value v;
 	if (arg->getExpr()) {
 		v = arg->getExpr()->evaluate(ctx ? ctx : (const_cast<EvalContext *>(this))->get_shared_ptr());
 	}
@@ -85,13 +85,13 @@ shared_ptr<ModuleInstantiation> EvalContext::getChild(size_t i) const
 void EvalContext::assignTo(std::shared_ptr<Context> target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
-		ValuePtr v;
+		Value v;
 		if (assignment->getExpr()) v = assignment->getExpr()->evaluate(target);
 		
 		if (assignment->getName().empty()){
-			PRINTB("WARNING: Assignment without variable name %s, %s", v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
+			PRINTB("WARNING: Assignment without variable name %s, %s", v.toEchoString() % this->loc.toRelativeString(target->documentPath()));
 		} else if (target->has_local_variable(assignment->getName())) {
-			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment->getName() % v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
+			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment->getName() % v.toEchoString() % this->loc.toRelativeString(target->documentPath()));
 		} else {
 			target->set_variable(assignment->getName(), v);
 		}
@@ -104,7 +104,7 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 		if (i > 0) stream << ", ";
 		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
 		auto val = ec.getArgValue(i);
-		stream << val->toEchoString();
+		stream << val.toEchoString();
 	}
 	return stream;
 }

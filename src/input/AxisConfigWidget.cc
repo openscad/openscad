@@ -50,7 +50,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 
 	int value = val * 100;
 	progressBar->setValue(value); //set where the bar is
-	
+
 	//QProgressBar generates the shown string from the format string.
 	//By setting a format string without a place holder,
 	//we can set arbitrary text, like a custom formatted double.

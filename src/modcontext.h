@@ -16,7 +16,7 @@ public:
 	~ModuleContext();
 
 	void initializeModule(const class UserModule &m);
-	ValuePtr evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const override;
+	Value evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const override;
 	AbstractNode *instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 
 	shared_ptr<const UserModule> findLocalModule(const std::string &name) const;
@@ -47,7 +47,7 @@ class FileContext : public ModuleContext
 public:
 	~FileContext() {}
 	void initializeModule(const FileModule &module);
-	ValuePtr evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const override;
+	Value evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const override;
 	AbstractNode *instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 
 protected:
@@ -57,7 +57,7 @@ private:
 	const FileModule::ModuleContainer *usedlibs_p;
 
 	// This sub_* method is needed to minimize stack usage only.
-	ValuePtr sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx, FileModule *usedmod) const;
+	Value sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx, FileModule *usedmod) const;
 
 	friend class Context;
 };
