@@ -1079,32 +1079,32 @@ ValuePtr::ValuePtr(const RangeType &v)
 
 bool ValuePtr::operator==(const ValuePtr &v) const
 {
-	return ValuePtr(**this == *v);
+	return **this == *v;
 }
 
 bool ValuePtr::operator!=(const ValuePtr &v) const
 {
-	return ValuePtr(**this != *v);
+	return **this != *v;
 }
 
 bool ValuePtr::operator<(const ValuePtr &v) const
 {
-	return ValuePtr(**this < *v);
+	return **this < *v;
 }
 
 bool ValuePtr::operator<=(const ValuePtr &v) const
 {
-	return ValuePtr(**this <= *v);
+	return **this <= *v;
 }
 
 bool ValuePtr::operator>=(const ValuePtr &v) const
 {
-	return ValuePtr(**this >= *v);
+	return **this >= *v;
 }
 
 bool ValuePtr::operator>(const ValuePtr &v) const
 {
-	return ValuePtr(**this > *v);
+	return **this > *v;
 }
 
 ValuePtr ValuePtr::operator-() const
