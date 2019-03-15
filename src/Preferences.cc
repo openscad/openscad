@@ -162,10 +162,18 @@ void Preferences::init() {
 	this->defaultmap["launcher/showOnStartup"] = true;
 	this->defaultmap["advanced/localization"] = true;
 	this->defaultmap["advanced/autoReloadRaise"] = false;
+	this->defaultmap["advanced/enableSoundNotification"] = true;
 	this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
 	this->defaultmap["advanced/enableHardwarnings"] = false;
 	this->defaultmap["advanced/enableParameterCheck"] = true;
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
+
+	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)),
+		        this->label_timeThresholdOnRenderCompleteSound, SLOT(setEnabled(bool)));
+	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)), 
+		        this->label_sec, SLOT(setEnabled(bool)));
+	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)), 
+		        this->timeThresholdOnRenderCompleteSoundEdit, SLOT(setEnabled(bool)));
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -635,6 +643,12 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 	writeSettings();
 }
 
+void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/enableSoundNotification", state);
+}
+
 void Preferences::on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString &text)
 {
 	QSettingsCached settings;
@@ -895,7 +909,11 @@ void Preferences::updateGUI()
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
+	this->enableSoundOnRenderCompleteCheckBox->setChecked(getValue("advanced/enableSoundNotification").toBool());
+	this->label_timeThresholdOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
+	this->label_sec->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->timeThresholdOnRenderCompleteSoundEdit->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
+	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->enableHardwarningsCheckBox->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	this->enableParameterCheckBox->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	this->enableRangeCheckBox->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
@@ -927,6 +945,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
 	updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine);
 	updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile);
+
 }
 
 void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

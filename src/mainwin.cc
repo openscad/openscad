@@ -2312,7 +2312,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
-	if (Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
+	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
+		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
 	{
 		QSound::play(":sounds/complete.wav");
 	}

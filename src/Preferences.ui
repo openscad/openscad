@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>581</width>
+    <width>636</width>
     <height>498</height>
    </rect>
   </property>
@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>547</width>
-             <height>751</height>
+             <width>512</width>
+             <height>793</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1230,8 +1230,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>36</height>
+               <width>84</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1553,8 +1553,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>456</width>
-             <height>563</height>
+             <width>602</width>
+             <height>891</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1730,11 +1730,33 @@
                 </widget>
                </item>
                <item>
+                <widget class="QCheckBox" name="enableSoundOnRenderCompleteCheckBox">
+                 <property name="text">
+                  <string>Play sound notification on render complete</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_timeThresholdOnRenderCompleteSound">
+                 <property name="leftMargin">
+                  <number>40</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>30</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
                  <item>
-                  <widget class="QLabel" name="label_17">
+                  <widget class="QLabel" name="label_timeThresholdOnRenderCompleteSound">
                    <property name="text">
-                    <string>Time threshold to play sound notification on render complete</string>
+                    <string>Play sound when render completion time is at least</string>
                    </property>
                   </widget>
                  </item>
@@ -1742,7 +1764,7 @@
                   <widget class="QLineEdit" name="timeThresholdOnRenderCompleteSoundEdit"/>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_18">
+                  <widget class="QLabel" name="label_sec">
                    <property name="text">
                     <string>sec</string>
                    </property>
