@@ -370,7 +370,7 @@ expr:
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(Value::undefined, LOC(@$));
+              $$ = new Literal(Value{}, LOC(@$));
             }
         | TOK_ID
             {

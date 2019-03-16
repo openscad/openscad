@@ -44,12 +44,10 @@ UserFunction::~UserFunction()
 
 Value UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
-	if (!expr) return Value::undefined;
+	if (!expr) return {};
 	Context c(ctx);
 	c.setVariables(evalctx, definition_arguments);
-	Value result = expr->evaluate(&c);
-
-	return result;
+	return { expr->evaluate(&c) };
 }
 
 void UserFunction::print(std::ostream &stream, const std::string &indent) const
@@ -84,7 +82,7 @@ public:
 	~FunctionTailRecursion() { }
 
 	Value evaluate(const Context *ctx, const EvalContext *evalctx) const override {
-		if (!expr) return Value::undefined;
+		if (!expr) return {};
 		
 		Context c(ctx);
 		c.setVariables(evalctx, definition_arguments);
@@ -94,7 +92,7 @@ public:
 		unsigned int counter = 0;
 		while (invert ^ this->op->cond->evaluate(&c)) {
 			tmp.setVariables(&ec, definition_arguments);
-			c.apply_variables(tmp);
+			c.take_variables(tmp);
 			
 			if (counter++ == 1000000){
 				std::string locs = loc.toRelativeString(ctx->documentPath());

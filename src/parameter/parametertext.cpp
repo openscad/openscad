@@ -28,7 +28,7 @@ void ParameterText::onChanged(QString)
 			if (!params) return;
 			Value newValue = params->evaluate(&ctx);
 			if (object->dvt == newValue.type()) {
-				object->value = newValue;
+				object->value = std::move(newValue);
 			}
 		}
 	}

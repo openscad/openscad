@@ -36,10 +36,10 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
     const Annotation *param = assignment.annotation("Parameter");
     if (!param) continue;
 
-    const Value defaultValue = assignment.expr->evaluate(&ctx);
+    Value defaultValue = assignment.expr->evaluate(&ctx);
     if (defaultValue.type() == Value::ValueType::UNDEFINED) continue;
 
-    ParameterObject *entryObject = new ParameterObject(&ctx, assignment, defaultValue);
+    ParameterObject *entryObject = new ParameterObject(&ctx, assignment, std::move(defaultValue));
 
     //check whether object exist or not previously
     if (entries.find(assignment.name) == entries.end()) {

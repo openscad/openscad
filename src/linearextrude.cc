@@ -89,7 +89,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		auto val = evalctx->getArgValue(0);
-		if (val.type() == Value::ValueType::NUMBER) height = val;
+		if (val.type() == Value::ValueType::NUMBER) height = std::move(val);
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
@@ -105,7 +105,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	bool scaleOK = scale.getFiniteDouble(node->scale_x);
 	scaleOK &= scale.getFiniteDouble(node->scale_y);
 	scaleOK |= scale.getVec2(node->scale_x, node->scale_y, true);
-	if((origin!=Value::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
+	if((origin!=Value::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
 		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 

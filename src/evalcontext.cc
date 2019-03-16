@@ -24,11 +24,10 @@ Value EvalContext::getArgValue(size_t i, const Context *ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
-	Value v;
 	if (arg.expr) {
-		v = arg.expr->evaluate(ctx ? ctx : this);
+		return arg.expr->evaluate(ctx ? ctx : this);
 	}
-	return v;
+	return {};
 }
 
 /*!
@@ -86,15 +85,13 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 void EvalContext::assignTo(Context &target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
-		Value v;
-		if (assignment.expr) v = assignment.expr->evaluate(&target);
-		
+		Value v = (assignment.expr) ? assignment.expr->evaluate(&target) : Value{};
 		if(assignment.name.empty()){
 			PRINTB("WARNING: Assignment without variable name %s, %s", v.toEchoString() % this->loc.toRelativeString(target.documentPath()));
 		}else if (target.has_local_variable(assignment.name)) {
 			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment.name % v.toEchoString() % this->loc.toRelativeString(target.documentPath()));
 		} else {
-			target.set_variable(assignment.name, v);
+			target.set_variable(assignment.name, std::move(v));
 		}
 	}
 }

@@ -9,8 +9,8 @@ ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, con
   this->set = false;
   this->name = assignment.name;
   const Annotation *param = assignment.annotation("Parameter");
-  const Value values = param->evaluate(ctx);
-  setValue(defaultValue, values);
+  Value values = param->evaluate(ctx);
+  setValue(defaultValue.clone(), std::move(values));
   const Annotation *desc = assignment.annotation("Description");
 
   if (desc) {
@@ -37,15 +37,15 @@ void ParameterObject::applyParameter(Assignment &assignment)
   const Value defaultValue = assignment.expr->evaluate(&ctx);
   
   if (defaultValue.type() == dvt) {
-    assignment.expr = shared_ptr<Expression>(new Literal(value));
+    assignment.expr = shared_ptr<Expression>(new Literal(value.clone()));
   }
 }
 
 void ParameterObject::setValue(const class Value defaultValue, const class Value values)
 {
-  this->values = values;
-  this->value = defaultValue;
-  this->defaultValue = defaultValue;
+  this->values = values.clone();
+  this->value = defaultValue.clone();
+  this->defaultValue = defaultValue.clone();
   this->vt = values.type();
   this->dvt = defaultValue.type();
  
@@ -76,7 +76,7 @@ bool ParameterObject::operator == (const ParameterObject &second)
 
 ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
 {
-  Value::VectorType vec = defaultValue.toVector();
+  const Value::VectorType &vec = defaultValue.toVector();
   if(vec.size()==0) return TEXT;
   for (unsigned int i = 0;i < vec.size();i++) {
     if (vec[i].type() != Value::ValueType::NUMBER) {

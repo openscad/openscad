@@ -47,7 +47,8 @@ namespace {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
 
-	Value::VectorType flatten(Value::VectorType const& vec) {
+	// vec should be a local temporary vector whose values will be moved
+	Value::VectorType flatten(Value::VectorType vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			if (vec[i].type() == Value::ValueType::VECTOR) {
@@ -59,9 +60,12 @@ namespace {
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			if (vec[i].type() == Value::ValueType::VECTOR) {
-				std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
+				Value::VectorType moved_vec = vec[i].moveVector();
+				for(unsigned int j = 0; j < moved_vec.size(); ++j) {
+					ret.emplace_back(std::move(moved_vec[j]));
+				}
 			} else {
-				ret.push_back(vec[i]);
+				ret.emplace_back(std::move(vec[i]));
 			}
 		}
 		return ret;
@@ -100,11 +104,11 @@ Value UnaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case (Op::Not):
-		return !this->expr->evaluate(context);
+		return {!this->expr->evaluate(context)};
 	case (Op::Negate):
-		return -this->expr->evaluate(context);
+		return {-this->expr->evaluate(context)};
 	default:
-		return Value::undefined;
+		return {};
 		// FIXME: error:
 	}
 }
@@ -184,7 +188,7 @@ Value BinaryOp::evaluate(const Context *context) const
 		return this->left->evaluate(context) != this->right->evaluate(context);
 		break;
 	default:
-		return Value::undefined;
+		return {};
 		// FIXME: Error: unknown op
 	}
 }
@@ -261,9 +265,10 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 	: Expression(loc), array(array), index(index)
 {
 }
-
+ 
 Value ArrayLookup::evaluate(const Context *context) const {
-	return this->array->evaluate(context)[this->index->evaluate(context)];
+	const Value &array = this->array->evaluate(context);
+	return array[this->index->evaluate(context)];
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
@@ -271,13 +276,13 @@ void ArrayLookup::print(std::ostream &stream, const std::string &) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(const Value &val, const Location &loc) : Expression(loc), value(val)
+Literal::Literal(Value val, const Location &loc) : Expression(loc), value(val.clone())
 {
 }
 
 Value Literal::evaluate(const class Context *) const
 {
-	return this->value;
+	return this->value.clone();
 }
 
 void Literal::print(std::ostream &stream, const std::string &) const
@@ -313,7 +318,7 @@ Value Range::evaluate(const Context *context) const
 			}
 		}
 	}
-	return Value::undefined;
+	return {};
 }
 
 void Range::print(std::ostream &stream, const std::string &) const
@@ -359,15 +364,15 @@ Value Vector::evaluate(const Context *context) const
 	for(const auto &e : this->children) {
 		Value tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const Value::VectorType result = tmpval.toVector();
+			Value::VectorType result = tmpval.moveVector();
 			for (size_t i = 0;i < result.size();i++) {
-				vec.push_back(result[i]);
+				vec.emplace_back(std::move(result[i]));
 			}
 		} else {
-			vec.push_back(tmpval);
+			vec.emplace_back(std::move(tmpval));
 		}
 	}
-	return Value(vec);
+	return {std::move(vec)};
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -386,12 +391,12 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 Value Lookup::evaluate(const Context *context) const
 {
-	return context->lookup_variable(this->name,false,loc);
+	return std::move(context->lookup_variable(this->name,false,loc));
 }
 
 Value Lookup::evaluateSilently(const Context *context) const
 {
-	return context->lookup_variable(this->name,true);
+	return std::move(context->lookup_variable(this->name,true));
 }
 
 void Lookup::print(std::ostream &stream, const std::string &) const
@@ -406,18 +411,18 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 
 Value MemberLookup::evaluate(const Context *context) const
 {
-	Value v = this->expr->evaluate(context);
+	const Value &v = this->expr->evaluate(context);
 
 	if (v.type() == Value::ValueType::VECTOR) {
-		if (this->member == "x") return v[0];
-		if (this->member == "y") return v[1];
-		if (this->member == "z") return v[2];
+		if (this->member == "x") return v[0].clone();
+		if (this->member == "y") return v[1].clone();
+		if (this->member == "z") return v[2].clone();
 	} else if (v.type() == Value::ValueType::RANGE) {
-		if (this->member == "begin") return v[0];
-		if (this->member == "step") return v[1];
-		if (this->member == "end") return v[2];
+		if (this->member == "begin") return v[0].clone();
+		if (this->member == "step") return v[1].clone();
+		if (this->member == "end") return v[2].clone();
 	}
-	return Value::undefined;
+	return {};
 }
 
 void MemberLookup::print(std::ostream &stream, const std::string &) const
@@ -505,8 +510,7 @@ Value Assert::evaluate(const Context *context) const
 	Context c(&assert_context);
 	evaluate_assert(c, &assert_context);
 
-	Value result = expr ? expr->evaluate(&c) : Value::undefined;
-	return result;
+	return expr ? std::move(expr->evaluate(&c)) : Value::undefined.clone();
 }
 
 void Assert::print(std::ostream &stream, const std::string &) const
@@ -526,7 +530,7 @@ Value Echo::evaluate(const Context *context) const
 	EvalContext echo_context(context, this->arguments, this->loc);	
 	PRINTB("%s", STR("ECHO: " << echo_context));
 
-	Value result = expr ? expr->evaluate(context) : Value::undefined;
+	Value result = expr ? std::move(expr->evaluate(context)) : Value::undefined.clone();
 	return result;
 }
 
@@ -572,11 +576,11 @@ Value LcIf::evaluate(const Context *context) const
         if (isListComprehension(expr)) {
             return expr->evaluate(context);
         } else {
-           vec.push_back(expr->evaluate(context));
+           vec.emplace_back(expr->evaluate(context));
         }
     }
 
-    return Value(vec);
+    return vec;
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
@@ -604,26 +608,26 @@ Value LcEach::evaluate(const Context *context) const
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                vec.push_back(Value(*it));
+                vec.emplace_back(*it);
             }
         }
     } else if (v.type() == Value::ValueType::VECTOR) {
-        Value::VectorType vector = v.toVector();
-        for (size_t i = 0; i < v.toVector().size(); i++) {
-            vec.push_back(vector[i]);
+        const Value::VectorType &vector = v.toVector();
+        for (size_t i = 0; i < vector.size(); i++) {
+            vec.emplace_back(vector[i].clone());
         }
     } else if (v.type() == Value::ValueType::STRING) {
         utf8_split(v.toString(), [&](Value v) {
-            vec.push_back(v);
+            vec.emplace_back(v.clone());
         });
     } else if (v.type() != Value::ValueType::UNDEFINED) {
-        vec.push_back(v);
+        vec.emplace_back(v.clone());
     }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
+        return flatten(std::move(vec));
     } else {
-        return Value(vec);
+        return vec;
     }
 }
 
@@ -659,28 +663,28 @@ Value LcFor::evaluate(const Context *context) const
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
                 c.set_variable(it_name, Value(*it));
-                vec.push_back(this->expr->evaluate(&c));
+                vec.emplace_back(this->expr->evaluate(&c));
             }
         }
-    } else if (it_values.type() == Value::ValueType::VECTOR) {
+    } /*else if (it_values.type() == Value::ValueType::VECTOR) {
         for (size_t i = 0; i < it_values.toVector().size(); i++) {
-            c.set_variable(it_name, it_values.toVector()[i]);
-            vec.push_back(this->expr->evaluate(&c));
+            c.set_variable(it_name, { std::move(it_values.toVector()[i]) } );
+            vec.emplace_back(this->expr->evaluate(&c));
         }
-    } else if (it_values.type() == Value::ValueType::STRING) {
+    }*/ else if (it_values.type() == Value::ValueType::STRING) {
         utf8_split(it_values.toString(), [&](Value v) {
-            c.set_variable(it_name, v);
-            vec.push_back(this->expr->evaluate(&c));
+            c.set_variable(it_name, std::move(v));
+            vec.emplace_back(this->expr->evaluate(&c));
         });
     } else if (it_values.type() != Value::ValueType::UNDEFINED) {
-        c.set_variable(it_name, it_values);
-        vec.push_back(this->expr->evaluate(&c));
+        c.set_variable(it_name, std::move(it_values));
+        vec.emplace_back(this->expr->evaluate(&c));
     }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
+        return flatten(std::move(vec));
     } else {
-        return Value(vec);
+        return vec;
     }
 }
 
@@ -703,7 +707,7 @@ Value LcForC::evaluate(const Context *context) const
 
 	unsigned int counter = 0;
     while (this->cond->evaluate(&c)) {
-        vec.push_back(this->expr->evaluate(&c));
+        vec.emplace_back(this->expr->evaluate(&c));
 
         if (counter++ == 1000000) {
             std::string locs = loc.toRelativeString(context->documentPath());
@@ -713,13 +717,13 @@ Value LcForC::evaluate(const Context *context) const
 
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);
-        c.apply_variables(tmp);
+        c.take_variables(tmp);
     }    
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
+        return flatten(std::move(vec));
     } else {
-        return Value(vec);
+        return vec;
     }
 }
 

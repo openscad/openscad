@@ -1,7 +1,7 @@
 /*
  *  OpenSCAD (www.openscad.org)
  *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
- *                          Marius Kintel <marius@kintel.net>
+ *						  Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ public: // types
 		LET,
 		INT_FOR,
 		IF
-    };
+	};
 public: // methods
 	ControlModule(Type type) : type(type) { }
 
@@ -60,7 +60,7 @@ public: // methods
 
 	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
 	
-	static AbstractNode* getChild(const Value &value, const EvalContext* modulectx);
+	static AbstractNode* getChild(Value value, const EvalContext* modulectx);
 
 private: // data
 	Type type;
@@ -87,19 +87,20 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			}
 		}
 		else if (it_values.type() == Value::ValueType::VECTOR) {
-			for (size_t i = 0; i < it_values.toVector().size(); i++) {
-				c.set_variable(it_name, it_values.toVector()[i]);
+			Value::VectorType moved_vec = it_values.moveVector();
+			for (size_t i = 0; i < moved_vec.size(); i++) {
+				c.set_variable(it_name, std::move(moved_vec[i]));
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
-                else if (it_values.type() == Value::ValueType::STRING) {
-                        utf8_split(it_values.toString(), [&](Value v) {
-                            c.set_variable(it_name, v);
-                            for_eval(node, inst, l+1, &c, evalctx);
-                        });
-                }
+		else if (it_values.type() == Value::ValueType::STRING) {
+			utf8_split(it_values.toString(), [&](Value v) {
+				c.set_variable(it_name, std::move(v));
+				for_eval(node, inst, l+1, &c, evalctx);
+			});
+		}
 		else if (it_values.type() != Value::ValueType::UNDEFINED) {
-			c.set_variable(it_name, it_values);
+			c.set_variable(it_name, std::move(it_values));
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
@@ -136,7 +137,7 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 }
 
 // static
-AbstractNode* ControlModule::getChild(const Value &value, const EvalContext* modulectx)
+AbstractNode* ControlModule::getChild(Value value, const EvalContext* modulectx)
 {
 	if (value.type()!=Value::ValueType::NUMBER) {
 		// Invalid parameter
@@ -192,12 +193,12 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
-        if (n < (int)modulectx->numChildren()) {
+		if (n < (int)modulectx->numChildren()) {
 			node = modulectx->getChild(n)->evaluate(modulectx);
 		}
 		else {
 			// How to deal with negative objects in this case?
-            // (e.g. first child of difference is invalid)
+			// (e.g. first child of difference is invalid)
 			PRINTB("WARNING: Child index (%d) out of bounds (%d children), %s", 
 				   n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
@@ -226,13 +227,13 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 			// one (or more ignored) parameter
 			Value value = evalctx->getArgValue(0);
 			if (value.type() == Value::ValueType::NUMBER) {
-				return getChild(value, modulectx);
+				return getChild(std::move(value), modulectx);
 			}
 			else if (value.type() == Value::ValueType::VECTOR) {
 				AbstractNode* node = new GroupNode(inst);
-				const Value::VectorType& vect = value.toVector();
-				for(const auto &vectvalue : vect) {
-					AbstractNode* childnode = getChild(vectvalue,modulectx);
+				Value::VectorType vect = value.moveVector();
+				for(auto it = vect.begin(); it != vect.end(); it++) {
+					AbstractNode* childnode = getChild(std::move(*it), modulectx);
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}

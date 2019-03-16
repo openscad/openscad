@@ -94,10 +94,14 @@ Builtins::Builtins()
 	this->assignments.emplace_back("$fs", make_shared<Literal>(2.0));
 	this->assignments.emplace_back("$fa", make_shared<Literal>(12.0));
 	this->assignments.emplace_back("$t", make_shared<Literal>(0.0));
-	this->assignments.emplace_back("$preview", make_shared<Literal>(Value::undefined)); //undef as should always be overwritten.
+	this->assignments.emplace_back("$preview", make_shared<Literal>(Value::undefined.clone())); //undef as should always be overwritten.
 
-	Value::VectorType zero3{0.0, 0.0, 0.0};
-	this->assignments.emplace_back("$vpt", make_shared<Literal>(zero3));
-	this->assignments.emplace_back("$vpr", make_shared<Literal>(zero3));
+	Value::VectorType zero3v;
+	zero3v.emplace_back(0.0);
+	zero3v.emplace_back(0.0);
+	zero3v.emplace_back(0.0);
+	Value zero3{ std::move(zero3v) };
+	this->assignments.emplace_back("$vpt", make_shared<Literal>(zero3.clone()));
+	this->assignments.emplace_back("$vpr", make_shared<Literal>(zero3.clone()));
 	this->assignments.emplace_back("$vpd", make_shared<Literal>(500));
 }

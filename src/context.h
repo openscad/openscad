@@ -22,10 +22,11 @@ public:
 
 	void setVariables(const class EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
 
-	void set_variable(const std::string &name, const Value &value);
-	void set_constant(const std::string &name, const Value &value);
+	void set_variable(const std::string &name, Value value);
+	void set_constant(const std::string &name, Value value);
 
-	void apply_variables(const Context &other);
+	// takes Values from other(temporary) Context and performs move into this Context
+	void take_variables(Context &other);
 	Value lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
 	double lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc=Location::NONE) const;
 	std::string lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc=Location::NONE) const;
@@ -42,7 +43,7 @@ protected:
 	const Context *parent;
 	Stack *ctx_stack;
 
-	typedef std::unordered_map<std::string, ValuePtr> ValueMap;
+	typedef std::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;
 	ValueMap variables;
 	ValueMap config_variables;

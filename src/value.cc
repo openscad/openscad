@@ -139,7 +139,7 @@ void utf8_split(const std::string& str, std::function<void(Value)> f)
     while (*ptr) {
         auto next = g_utf8_next_char(ptr);
         const size_t length = next - ptr;
-        f(Value(std::string{ptr, length}));
+        f({ std::string{ptr, length} });
         ptr = next;
     }
 }
@@ -230,14 +230,52 @@ Value::Value(char v) : value(str_utf8_wrapper(1, v))
   //  std::cout << "creating string from char\n";
 }
 
-Value::Value(const VectorType &v) : value(v)
-{
+//Value::Value(const VectorType &v) : value(v)
+//{
   //  std::cout << "creating vector\n";
+//}
+
+Value::Value(VectorType &&v) : value(std::move(v))
+{
+  static unsigned count = 0;
+  count++;
+  //std::cout << "Value::Value(VectorType&&) " << count << " : " << *this << '\n';
 }
 
 Value::Value(const RangeType &v) : value(v)
 {
   //  std::cout << "creating range\n";
+}
+
+Value Value::clone(bool log) const {
+  Value c{};
+  VectorType vec;
+  switch (this->type()) {
+    case ValueType::UNDEFINED : 
+    break;
+    case ValueType::BOOL :
+      c.value = boost::get<bool>(this->value);
+    break;
+    case ValueType::NUMBER :
+      c.value = boost::get<double>(this->value);
+    break;
+    case ValueType::STRING :
+      c.value = boost::get<str_utf8_wrapper>(this->value);
+    break;
+    case ValueType::RANGE :
+      c.value = boost::get<RangeType>(this->value);
+    break;
+    case ValueType::VECTOR :
+      for(const Value &v : boost::get<VectorType>(this->value)) {
+        vec.emplace_back(v.clone(false));
+      }
+      c.value = std::move(vec);
+    break;
+    default:
+      assert(false && "unknown Variant value");
+  }
+  //if (log) std::cout << "Value::clone() " << c << '\n';
+  return c;
 }
 
 Value::ValueType Value::type() const
@@ -515,8 +553,23 @@ const Value::VectorType &Value::toVector() const
   static VectorType empty;
   
   const VectorType *v = boost::get<VectorType>(&this->value);
-  if (v) return *v;
+  if (v) {
+    //std::cout << "Value::toVector() : " << *this << '\n';
+    return *v;
+  }
   else return empty;
+}
+
+Value::VectorType Value::moveVector() 
+{
+  static VectorType empty;
+
+  VectorType *v = boost::get<VectorType>(&this->value);
+  if (v) {
+    //std::cout << "Value::moveVector() : " << *this << '\n';
+    return std::move(*v);
+  }
+  else return {};
 }
 
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
@@ -578,13 +631,6 @@ RangeType Value::toRange() const
   else return RangeType(0,0,0);
 }
 
-Value &Value::operator=(const Value &v)
-{
-  if (this != &v) {
-    this->value = v.value;
-  }
-  return *this;
-}
 
 class equals_visitor : public boost::static_visitor<bool>
 {
@@ -666,7 +712,7 @@ class plus_visitor : public boost::static_visitor<Value>
 {
 public:
 	template <typename T, typename U> Value operator()(const T &, const U &) const {
-		return Value::undefined;
+		return {};
 	}
 
 	Value operator()(const double &op1, const double &op2) const {
@@ -676,22 +722,22 @@ public:
 	Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
 		Value::VectorType sum;
 		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
-			sum.push_back(Value(op1[i] + op2[i]));
+			sum.emplace_back(op1[i] + op2[i]);
 		}
-		return {sum};
+		return sum;
 	}
 };
 
 Value Value::operator+(const Value &v) const
 {
-	return boost::apply_visitor(plus_visitor(), this->value, v.value);
+	return std::move(boost::apply_visitor(plus_visitor(), this->value, v.value));
 }
 
 class minus_visitor : public boost::static_visitor<Value>
 {
 public:
 	template <typename T, typename U> Value operator()(const T &, const U &) const {
-		return Value::undefined;
+		return {};
 	}
 
 	Value operator()(const double &op1, const double &op2) const {
@@ -701,15 +747,15 @@ public:
 	Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
 		Value::VectorType sum;
 		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
-			sum.push_back(Value(op1[i] - op2[i]));
+			sum.emplace_back(op1[i] - op2[i]);
 		}
-		return {sum};
+		return sum;
 	}
 };
 
 Value Value::operator-(const Value &v) const
 {
-	return boost::apply_visitor(minus_visitor(), this->value, v.value);
+	return {boost::apply_visitor(minus_visitor(), this->value, v.value)};
 }
 
 Value Value::multvecnum(const Value &vecval, const Value &numval)
@@ -717,9 +763,9 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 // Vector * Number
 	VectorType dstv;
 	for(const auto &val : vecval.toVector()) {
-		dstv.push_back(Value(val * numval));
+		dstv.emplace_back(val * numval);
 	}
-	return {dstv};
+	return dstv;
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
@@ -740,7 +786,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 		}
 		dstv.push_back(Value(r_e));
 	}
-	return {dstv};
+	return dstv;
 }
 
 Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
@@ -754,13 +800,13 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 			if (matrixvec[j].type() != ValueType::VECTOR ||
 					matrixvec[j].toVector()[i].type() != ValueType::NUMBER || 
 					vectorvec[j].type() != ValueType::NUMBER) {
-				return Value::undefined;
+				return {};
 			}
 			r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
 		}
 		dstv.push_back(Value(r_e));
 	}
-	return {dstv};
+	return dstv;
 }
 
 Value Value::operator*(const Value &v) const
@@ -777,7 +823,7 @@ Value Value::operator*(const Value &v) const
 	else if (this->type() == ValueType::VECTOR && v.type() == ValueType::VECTOR) {
 		const auto &vec1 = this->toVector();
 		const auto &vec2 = v.toVector();
-		if (vec1.size() == 0 || vec2.size() == 0) return Value::undefined;
+		if (vec1.size() == 0 || vec2.size() == 0) return {};
 		
 		if (vec1[0].type() == ValueType::NUMBER && vec2[0].type() == ValueType::NUMBER &&
 				vec1.size() == vec2.size()) { 
@@ -785,7 +831,7 @@ Value Value::operator*(const Value &v) const
 			auto r = 0.0;
 			for (size_t i=0;i<vec1.size();i++) {
 				if (vec1[i].type() != ValueType::NUMBER || vec2[i].type() != ValueType::NUMBER) {
-					return Value::undefined;
+					return {};
 				}
 				r += (vec1[i].toDouble() * vec2[i].toDouble());
 			}
@@ -802,13 +848,13 @@ Value Value::operator*(const Value &v) const
 			VectorType dstv;
 			for (const auto &srcrow : vec1) {
 				const auto &srcrowvec = srcrow.toVector();
-				if (srcrowvec.size() != vec2.size()) return Value::undefined;
-				dstv.push_back(Value(multvecmat(srcrowvec, vec2)));
+				if (srcrowvec.size() != vec2.size()) return {};
+				dstv.emplace_back(multvecmat(srcrowvec, vec2));
 			}
-			return {dstv};
+			return dstv;
 		}
 	}
-	return Value::undefined;
+	return {};
 }
 
 Value Value::operator/(const Value &v) const
@@ -820,19 +866,19 @@ Value Value::operator/(const Value &v) const
     const auto &vec = this->toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
-      dstv.push_back(Value(vecval / v));
+      dstv.emplace_back(vecval / v);
     }
-    return {dstv};
+    return dstv;
   }
   else if (this->type() == ValueType::NUMBER && v.type() == ValueType::VECTOR) {
     const auto &vec = v.toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
-      dstv.push_back(Value(*this / vecval));
+      dstv.emplace_back(*this / vecval);
     }
-    return {dstv};
+    return dstv;
   }
-  return Value::undefined;
+  return {};
 }
 
 Value Value::operator%(const Value &v) const
@@ -840,7 +886,7 @@ Value Value::operator%(const Value &v) const
   if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
     return {fmod(boost::get<double>(this->value), boost::get<double>(v.value))};
   }
-  return Value::undefined;
+  return {};
 }
 
 Value Value::operator-() const
@@ -852,24 +898,12 @@ Value Value::operator-() const
     const auto &vec = this->toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
-      dstv.push_back(Value(-vecval));
+      dstv.emplace_back(-vecval);
     }
-    return {dstv};
+    return dstv;
   }
-  return Value::undefined;
+  return {};
 }
-
-/*!
-  Append a value to this vector.
-  This must be of valtype ValueType::VECTOR.
-*/
-/*
-  void Value::append(Value *val)
-  {
-  assert(this->type() == ValueType::VECTOR);
-  this->vec.push_back(val);
-  }
-*/
 
 /*
  * bracket operation [] detecting multi-byte unicode.
@@ -880,7 +914,6 @@ class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
   Value operator()(const str_utf8_wrapper &str, const double &idx) const {
-    Value v;
 
     const auto i = convert_to_uint32(idx);
     if (i < str.size()) {
@@ -891,16 +924,17 @@ public:
 				if (ptr) {
 					g_utf8_strncpy(utf8_of_cp, ptr, 1);
 				}
-				v = std::string(utf8_of_cp);
+				return {std::string(utf8_of_cp)};
 			}
     }
-    return v;
+    return {};
   }
 
   Value operator()(const Value::VectorType &vec, const double &idx) const {
+    //assert(false && "use non const Value::operator[] to avoid copy");
     const auto i = convert_to_uint32(idx);
-    if (i < vec.size()) return vec[i];
-    return Value::undefined;
+    if (i < vec.size()) return vec[i].clone();
+    return {};
   }
 
   Value operator()(const RangeType &range, const double &idx) const {
@@ -910,12 +944,12 @@ public:
     case 1: return {range.step_val};
     case 2: return {range.end_val};
     }
-    return Value::undefined;
+    return {};
   }
 
   template <typename T, typename U> Value operator()(const T &, const U &) const {
     //    std::cout << "generic bracket_visitor\n";
-    return Value::undefined;
+    return {};
   }
 };
 
@@ -923,6 +957,48 @@ Value Value::operator[](const Value &v) const
 {
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }
+
+/*
+Value &Value::at(const double &idx) {
+    const auto i = convert_to_uint32(idx);
+    VectorType *v = boost::get<VectorType>(&this->value);
+    if (v) {
+      if (i < v->size()) return v->operator[](i);
+      else {
+        assert(false && "out of bounds");
+        return *this;
+      }
+    } else {
+      assert(false && "not a vector");
+      return *this;
+    }
+}
+*/
+
+/*
+// vec should be a local temporary vector whose values will be moved
+Value Value::VectorType flatten(Value::VectorType &vec) {
+  int n = 0;
+  for (unsigned int i = 0; i < vec.size(); i++) {
+    if (vec[i].type() == Value::ValueType::VECTOR) {
+    n += vec[i].toVector().size();
+    } else {
+    n++;
+    }
+  }
+  Value::VectorType ret; ret.reserve(n);
+  for (unsigned int i = 0; i < vec.size(); i++) {
+    if (vec[i].type() == Value::ValueType::VECTOR) {
+      Value::VectorType moved_vec = vec[i].moveVector();
+      std::copy(moved_vec.begin(),moved_vec.end(),std::back_inserter(ret));
+    } else {
+      ret.emplace_back(std::move(vec[i]));
+    }
+  }
+  return ret;
+}
+*/
+
 
 void RangeType::normalize()
 {

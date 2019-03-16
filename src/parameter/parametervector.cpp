@@ -24,17 +24,17 @@ void ParameterVector::onChanged(double)
 			object->value = Value(doubleSpinBox1->value());
 		} else {
 			Value::VectorType vt;
-			vt.push_back(this->doubleSpinBox1->value());
+			vt.emplace_back(this->doubleSpinBox1->value());
 			if (!this->doubleSpinBox2->isReadOnly()) {
-				vt.push_back(this->doubleSpinBox2->value());
+				vt.emplace_back(this->doubleSpinBox2->value());
 			}
 			if (!this->doubleSpinBox3->isReadOnly()) {
-				vt.push_back(this->doubleSpinBox3->value());
+				vt.emplace_back(this->doubleSpinBox3->value());
 			}
 			if (!this->doubleSpinBox4->isReadOnly()) {
-				vt.push_back(this->doubleSpinBox4->value());
+				vt.emplace_back(this->doubleSpinBox4->value());
 			}
-			object->value = Value(vt);
+			object->value = std::move(vt);
 		}
 		emit changed();
 	}
@@ -47,7 +47,7 @@ void ParameterVector::setValue()
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 
-	Value::VectorType vec = object->value.toVector();
+	const Value::VectorType &vec = object->value.toVector();
 
 	double minV = object->values.toRange().begin_value();
 	double step = object->values.toRange().step_value();
