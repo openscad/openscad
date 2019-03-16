@@ -42,26 +42,30 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::OFF:
 		export_off(root_geom, output);
 		break;
+	#ifdef ENABLE_CGALNEF
 	case FileFormat::AMF:
 		export_amf(root_geom, output);
 		break;
 	case FileFormat::_3MF:
 		export_3mf(root_geom, output);
 		break;
+	#endif
 	case FileFormat::DXF:
 		export_dxf(root_geom, output);
 		break;
 	case FileFormat::SVG:
 		export_svg(root_geom, output);
 		break;
+	#ifdef ENABLE_CGALNEF
 	case FileFormat::NEFDBG:
 		export_nefdbg(root_geom, output);
 		break;
 	case FileFormat::NEF3:
 		export_nef3(root_geom, output);
 		break;
+	#endif
 	default:
-		assert(false && "Unknown file format");
+		PRINT("ERROR: Unsupported file format");
 	}
 }
 

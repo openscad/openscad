@@ -29,10 +29,11 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#endif
 
 namespace {
 
@@ -92,6 +93,7 @@ void append_stl(const PolySet &ps, std::ostream &output)
 	}
 }
 
+#ifdef ENABLE_CGALNEF
 /*!
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
@@ -110,15 +112,18 @@ void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		PRINT("EXPORT-ERROR: Nef->PolySet failed");
 	}
 }
+#endif
 
 void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+		append_stl(*ps, output);
+	} 
+#ifdef ENABLE_CGALNEF
+	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
 		append_stl(*N, output);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
-		append_stl(*ps, output);
-	}
+#endif
 	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
@@ -139,4 +144,4 @@ void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-#endif // ENABLE_CGAL
+

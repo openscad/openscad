@@ -113,11 +113,13 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	return new CGAL_Nef_polyhedron(N);
 }
 
+#ifdef ENABLE_CGAL2D
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
 {
 	shared_ptr<PolySet> ps(polygon.tessellate());
 	return createNefPolyhedronFromPolySet(*ps);
 }
+#endif
 
 namespace CGALUtils {
 
@@ -250,10 +252,12 @@ namespace CGALUtils {
 		if (ps) {
 			return createNefPolyhedronFromPolySet(*ps);
 		}
+		#ifdef ENABLE_CGAL2D
 		else {
 			auto poly2d = dynamic_cast<const Polygon2d*>(&geom);
 			if (poly2d) return createNefPolyhedronFromPolygon2d(*poly2d);
 		}
+		#endif
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return nullptr;
 	}

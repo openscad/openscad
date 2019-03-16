@@ -8,6 +8,8 @@
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/assertions_behaviour.h>
+#include <CGAL/exceptions.h>
 #pragma pop_macro("NDEBUG")
 #include <iostream>
 
@@ -115,7 +117,7 @@ PolySet *Polygon2d::tessellate() const
 
   }
 	catch (const CGAL::Precondition_exception &e) {
-		PRINTB("CGAL error in Polygon2d::tesselate(): %s", e.what());
+		PRINTB("CGAL error in Polygon2d::tessellate(): %s", e.what());
 		CGAL::set_error_behaviour(old_behaviour);
 		return nullptr;
 	}

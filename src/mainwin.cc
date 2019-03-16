@@ -125,17 +125,15 @@
 #include <boost/version.hpp>
 #include <sys/stat.h>
 
-#ifdef ENABLE_CGAL
-
-#include "CGALCache.h"
-#include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
 #include "cgalworker.h"
-#include "cgalutils.h"
-
-#endif // ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
+	#include "CGALCache.h"
+	#include "CGAL_Nef_polyhedron.h"
+	#include "cgal.h"
+	#include "cgalutils.h"
+#endif
+#include "GeometryEvaluator.h"
 
 #include "FontCache.h"
 #include "PrintInitDialog.h"
@@ -237,18 +235,14 @@ MainWindow::MainWindow(const QString &filename)
 
 	scadApp->windowManager.add(this);
 
-#ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
 	connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)),
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
-#endif
 
 	root_module = nullptr;
 	parsed_module = nullptr;
 	absolute_root_node = nullptr;
-#ifdef ENABLE_CGAL
 	this->cgalRenderer = nullptr;
-#endif
 #ifdef ENABLE_OPENCSG
 	this->opencsgRenderer = nullptr;
 #endif
@@ -379,20 +373,25 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
 	connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
 	connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
-#ifdef ENABLE_CGAL
 	connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
-#else
-	this->designActionRender->setVisible(false);
-#endif
 	connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
+#ifdef ENABLE_CGALNEF
 	connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
+#else
+	this->designCheckValidity->setVisible(false);
+#endif
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+#ifdef ENABLE_CGALNEF
 	connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
-	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
+#else
+	this->fileActionExport3MF->setVisible(false);
+	this->fileActionExportAMF->setVisible(false);
+#endif
+	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
@@ -418,13 +417,8 @@ MainWindow::MainWindow(const QString &filename)
 	}
 #endif
 
-#ifdef ENABLE_CGAL
 	connect(this->viewActionSurfaces, SIGNAL(triggered()), this, SLOT(viewModeSurface()));
 	connect(this->viewActionWireframe, SIGNAL(triggered()), this, SLOT(viewModeWireframe()));
-#else
-	this->viewActionSurfaces->setVisible(false);
-	this->viewActionWireframe->setVisible(false);
-#endif
 	connect(this->viewActionThrownTogether, SIGNAL(triggered()), this, SLOT(viewModeThrownTogether()));
 	connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
@@ -765,7 +759,7 @@ void MainWindow::loadDesignSettings()
 	}
 	auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
 	GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
 	CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
 #endif
@@ -813,10 +807,8 @@ MainWindow::~MainWindow()
 	// so no need to delete it.
 	delete parsed_module;
 	delete root_node;
-#ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
-#endif
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 #endif
@@ -1296,14 +1288,9 @@ void MainWindow::compileCSG()
 		// Main CSG evaluation
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-
-#ifdef ENABLE_CGAL
-			GeometryEvaluator geomevaluator(this->tree);
-#else
-			// FIXME: Will we support this?
-#endif
+		geom_eval_t geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
-			CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+		CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
 
 		progress_report_prep(this->root_node, report_func, this);
@@ -1313,7 +1300,7 @@ void MainWindow::compileCSG()
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
 			GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 			CGALCache::instance()->print();
 #endif
 			this->processEvents();
@@ -2220,8 +2207,6 @@ void MainWindow::sendToPrintService()
 #endif
 }
 
-#ifdef ENABLE_CGAL
-
 void MainWindow::actionRender()
 {
 	if (GuiLocker::isLocked()) return;
@@ -2265,15 +2250,19 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	if (root_geom) {
 		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
+		#ifdef ENABLE_CGALNEF
 		CGALCache::instance()->print();
-#endif
-
+		#endif
 		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 
 		if (root_geom && !root_geom->isEmpty()) {
-			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
+			if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
+				PRINT("   Top level object is a 2D object:");
+				PRINTB("   Contours:     %6d", poly->outlines().size());
+			} 
+			#ifdef ENABLE_CGALNEF
+			else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 				if (N->getDimension() == 3) {
 					bool simple = N->p3->is_simple();
 					PRINT("   Top level object is a 3D object:");
@@ -2289,14 +2278,13 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 					}
 				}
 			}
+			#endif
 			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
 				assert(ps->getDimension() == 3);
 				PRINT("   Top level object is a 3D object:");
 				PRINTB("   Facets:     %6d", ps->numPolygons());
-			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
-				PRINT("   Top level object is a 2D object:");
-				PRINTB("   Contours:     %6d", poly->outlines().size());
-			} else {
+			}
+			else {
 				assert(false && "Unknown geometry type");
 			}
 		}
@@ -2323,8 +2311,6 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	this->contentschanged = false;
 	compileEnded();
 }
-
-#endif /* ENABLE_CGAL */
 
 /**
  * Switch version label and progress widget. When switching to the progress
@@ -2425,9 +2411,9 @@ void MainWindow::actionDisplayCSGProducts()
 
 void MainWindow::actionCheckValidity()
 {
+#ifdef ENABLE_CGALNEF
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-#ifdef ENABLE_CGAL
 	setCurrentOutput();
 
 	if (!this->root_geom) {
@@ -2452,7 +2438,7 @@ void MainWindow::actionCheckValidity()
 	}
 	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
 	clearCurrentOutput();
-#endif /* ENABLE_CGAL */
+#endif // ENABLE_CGALNEF
 }
 
 //Returns if we can export (true) or not(false) (bool)
@@ -2487,26 +2473,21 @@ bool MainWindow::canExport(unsigned int dim)
 		clearCurrentOutput();
 		return false;
 	}
-
+	#ifdef ENABLE_CGALNEF
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 		PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
-	
+	#endif
 	return true;
 }
 
-#ifdef ENABLE_CGAL
 void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
-#else
-	void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
-#endif
 {
     //Setting filename skips the file selection dialog and uses the path provided instead.
     
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-#ifdef ENABLE_CGAL
 	setCurrentOutput();
 	
 	//Return if something is wrong and we can't export.
@@ -2525,7 +2506,6 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 		exportFilename.toUtf8());
 	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
-#endif /* ENABLE_CGAL */
 }
 
 void MainWindow::actionExportSTL()
@@ -2617,7 +2597,7 @@ void MainWindow::actionCopyViewport()
 void MainWindow::actionFlushCaches()
 {
 	GeometryCache::instance()->clear();
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	CGALCache::instance()->clear();
 #endif
 	dxf_dim_cache.clear();
@@ -2628,10 +2608,8 @@ void MainWindow::actionFlushCaches()
 void MainWindow::viewModeActionsUncheck()
 {
 	viewActionPreview->setChecked(false);
-#ifdef ENABLE_CGAL
 	viewActionSurfaces->setChecked(false);
 	viewActionWireframe->setChecked(false);
-#endif
 	viewActionThrownTogether->setChecked(false);
 }
 
@@ -2656,8 +2634,6 @@ void MainWindow::viewModePreview()
 
 #endif /* ENABLE_OPENCSG */
 
-#ifdef ENABLE_CGAL
-
 void MainWindow::viewModeSurface()
 {
 	viewModeActionsUncheck();
@@ -2677,8 +2653,6 @@ void MainWindow::viewModeWireframe()
 	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
-
-#endif /* ENABLE_CGAL */
 
 void MainWindow::viewModeThrownTogether()
 {

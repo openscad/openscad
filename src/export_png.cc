@@ -6,11 +6,12 @@
 #include "polyset.h"
 #include "rendersettings.h"
 
-#ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
+#ifdef ENABLE_CGALNEF
+	#include "cgal.h"
+	#include "cgalutils.h"
+	#include "CGAL_Nef_polyhedron.h"
+#endif
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
@@ -97,5 +98,3 @@ bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, s
 	glview->save(output);
 	return true;
 }
-
-#endif // ENABLE_CGAL

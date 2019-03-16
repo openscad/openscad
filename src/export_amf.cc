@@ -29,7 +29,7 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
@@ -185,4 +185,4 @@ void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	setlocale(LC_NUMERIC, ""); // Set default locale
 }
 
-#endif // ENABLE_CGAL
+#endif // ENABLE_CGALNEF

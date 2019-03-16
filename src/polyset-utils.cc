@@ -5,7 +5,7 @@
 #include "GeometryUtils.h"
 #include "Reindexer.h"
 #include "grid.h"
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "cgalutils.h"
 #endif
 
@@ -102,7 +102,7 @@ namespace PolysetUtils {
 	}
 
 	bool is_approximately_convex(const PolySet &ps) {
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 		return CGALUtils::is_approximately_convex(ps);
 #else
 		return false;

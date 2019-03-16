@@ -3,7 +3,7 @@
 #ifndef CGAL_FORWARD
 #include "cgal.h"
 #else
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 
 #include <memory>
 
@@ -37,6 +37,6 @@ namespace CGAL {
 }
 typedef CGAL::Polyhedron_3<CGAL_Kernel3, CGAL::Polyhedron_items_3, CGAL::HalfedgeDS_default<CGAL_Kernel3, CGAL::HalfedgeDS_items_2, CGAL_ALLOCATOR(int)>, CGAL_ALLOCATOR(int)> CGAL_Polyhedron;
 
-#endif /* ENABLE_CGAL */
+#endif /* ENABLE_CGALNEF */
 
 #endif

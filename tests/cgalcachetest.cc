@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 
 	Tree tree(root_node);
 
-	GeometryEvaluator geomevaluator(tree);
+	geom_eval_t geomevaluator(tree);
 
 	print_messages_push();
 

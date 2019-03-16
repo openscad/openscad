@@ -30,7 +30,7 @@
 #include "printutils.h"
 
 #ifdef ENABLE_LIB3MF
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include <Model/COM/NMR_DLLInterfaces.h>
 #undef BOOL
 using namespace NMR;
@@ -223,7 +223,7 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	append_3mf(geom, output);
 }
 
-#endif // ENABLE_CGAL
+#endif // ENABLE_CGALNEF
 
 #else // ENABLE_LIB3MF
 

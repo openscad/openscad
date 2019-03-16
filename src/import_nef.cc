@@ -2,7 +2,7 @@
 #include "printutils.h"
 #include "AST.h"
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #pragma push_macro("NDEBUG")

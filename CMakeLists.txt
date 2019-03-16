@@ -22,17 +22,51 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
+option(ENABLE_CGALNEF "Enable CGAL Nef Polyhedron, default ON " ON)
+option(ENABLE_CGAL2D "Enable CGAL 2D, default ON " ON)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" )
+
+
+if(EXPERIMENTAL)
+  add_definitions(-DENABLE_EXPERIMENTAL)
+endif()
+
+if (SNAPSHOT)
+  add_definitions(-DOPENSCAD_SNAPSHOT)
+  set(RESOURCE_FILES icons/icon-nightly.icns)
+else()
+  set(RESOURCE_FILES icons/OpenSCAD.icns)
+endif()
 
 if (NULLGL)
   set(HEADLESS ON)
 endif()
-if(EXPERIMENTAL)
-  add_definitions(-DENABLE_EXPERIMENTAL)
+
+if(HEADLESS)
+  add_definitions(-DOPENSCAD_NOGUI)
 endif()
+
+if(ENABLE_CGALNEF OR ENABLE_CGAL2D)
+  set(ENABLE_CGAL TRUE)
+else()
+  unset(ENABLE_CGAL)
+endif()
+if(ENABLE_CGALNEF)
+  add_definitions(-DENABLE_CGALNEF)
+endif()
+if(ENABLE_CGAL2D)
+  add_definitions(-DENABLE_CGAL2D)
+endif()
+
+if(ENABLE_SPNAV)
+  add_definitions(-DENABLE_SPNAV)
+  list(APPEND Sources src/input/SpaceNavInputDriver.cc)
+endif()
+
 if(IDPREFIX)
   add_definitions(-DIDPREFIX)
 endif()
+
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/objects")
 set(AUTOGEN_BUILD_DIR "${CMAKE_SOURCE_DIR}/objects")
@@ -69,7 +103,7 @@ macro(find_graphics)
     find_package(OpenGL REQUIRED QUIET)
     list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
 
-    if(MSVC) 
+    if(MSVC)
       find_package(GLEW CONFIG REQUIRED QUIET)
       message("using target GLEW::GLEW")
       list(APPEND COMMON_LIBRARIES GLEW::GLEW)
@@ -107,11 +141,13 @@ if (MSVC)
   find_package(Eigen3 CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
-  find_package(CGAL CONFIG REQUIRED)
-  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-  add_definitions(-DENABLE_CGAL)
-  list(APPEND COMMON_LIBRARIES CGAL::CGAL)
-  
+  if(ENABLE_CGAL)
+    find_package(CGAL CONFIG REQUIRED)
+    message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+    add_definitions(-DENABLE_CGAL)
+    list(APPEND COMMON_LIBRARIES CGAL::CGAL)
+  endif()
+
   set(Boost_USE_STATIC_LIBS TRUE)
   #set(BOOST_STATIC TRUE)
   #set(BOOST_THREAD_USE_LIB TRUE)
@@ -138,7 +174,7 @@ if (MSVC)
 
   find_package(unofficial-fontconfig CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
-  
+
   find_package(unofficial-glib CONFIG REQUIRED)
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
@@ -163,13 +199,15 @@ else()
   message(STATUS "Eigen3: ${EIGEN3_VERSION_STRING}")
   include_directories(${EIGEN3_INCLUDE_DIRS})
 
-  find_package(CGAL REQUIRED QUIET)
-  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-  include_directories(${CGAL_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
-  list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
-  list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
-  add_definitions(-DENABLE_CGAL)
+  if (ENABLE_CGAL)
+    find_package(CGAL REQUIRED QUIET)
+    message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+    include_directories(${CGAL_INCLUDE_DIRS})
+    list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
+    list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
+    list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
+    add_definitions(-DENABLE_CGAL)
+  endif()
 
   # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
   #   because it looks for Boost itself, so it has to be called
@@ -201,7 +239,7 @@ else()
   list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
 
   list(APPEND COMMON_LIBRARIES double-conversion)
- 
+
   find_graphics()
 endif()
 
@@ -286,7 +324,7 @@ if(NOT HEADLESS)
   else()
     message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
   endif()
-  
+
   find_package(Qt5Gamepad QUIET)
   if (Qt5Gamepad_FOUND)
     message(STATUS "Gamepad input driver enabled")
@@ -380,61 +418,61 @@ set(CORE_SOURCES
   src/linalg.cc
   src/colormap.cc
   src/Camera.cc
-  src/handle_dep.cc 
-  src/value.cc 
-  src/calc.cc 
-  src/hash.cc 
+  src/handle_dep.cc
+  src/value.cc
+  src/calc.cc
+  src/hash.cc
   src/expr.cc
   src/degree_trig.cc
-  src/func.cc 
-  src/function.cc 
+  src/func.cc
+  src/function.cc
   src/stackcheck.h
-  src/localscope.cc 
-  src/module.cc 
-  src/FileModule.cc 
-  src/UserModule.cc 
-  src/GroupModule.cc 
-  src/AST.cc 
-  src/ModuleInstantiation.cc 
-  src/ModuleCache.cc 
+  src/localscope.cc
+  src/module.cc
+  src/FileModule.cc
+  src/UserModule.cc
+  src/GroupModule.cc
+  src/AST.cc
+  src/ModuleInstantiation.cc
+  src/ModuleCache.cc
   src/StatCache.cc
-  src/node.cc 
-  src/NodeVisitor.cc 
-  src/context.cc 
+  src/node.cc
+  src/NodeVisitor.cc
+  src/context.cc
   src/builtincontext.cc
-  src/modcontext.cc 
-  src/evalcontext.cc 
+  src/modcontext.cc
+  src/evalcontext.cc
   src/version.cc
   src/feature.cc
-  src/csgnode.cc 
-  src/CSGTreeNormalizer.cc 
-  src/Geometry.cc 
-  src/Polygon2d.cc 
-  src/csgops.cc 
-  src/transform.cc 
-  src/color.cc 
-  src/primitives.cc 
-  src/projection.cc 
-  src/cgaladv.cc 
-  src/surface.cc 
-  src/control.cc 
-  src/render.cc 
-  src/rendersettings.cc 
-  src/dxfdata.cc 
-  src/dxfdim.cc 
-  src/offset.cc 
-  src/linearextrude.cc 
-  src/rotateextrude.cc 
-  src/text.cc 
-  src/printutils.cc 
-  src/fileutils.cc 
-  src/progress.cc 
-  src/boost-utils.cc 
+  src/csgnode.cc
+  src/CSGTreeNormalizer.cc
+  src/Geometry.cc
+  src/Polygon2d.cc
+  src/csgops.cc
+  src/transform.cc
+  src/color.cc
+  src/primitives.cc
+  src/projection.cc
+  src/cgaladv.cc
+  src/surface.cc
+  src/control.cc
+  src/render.cc
+  src/rendersettings.cc
+  src/dxfdata.cc
+  src/dxfdim.cc
+  src/offset.cc
+  src/linearextrude.cc
+  src/rotateextrude.cc
+  src/text.cc
+  src/printutils.cc
+  src/fileutils.cc
+  src/progress.cc
+  src/boost-utils.cc
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
   src/ext/lodepng/lodepng.cpp
-  src/PlatformUtils.cc 
+  src/PlatformUtils.cc
   src/libsvg/circle.cc
   src/libsvg/ellipse.cc
   src/libsvg/group.cc
@@ -453,16 +491,8 @@ set(CORE_SOURCES
   src/libsvg/util.cc
   src/clipper-utils.cc
   src/Assignment.cc
-  src/annotation.cc 
-  src/ext/polyclipping/clipper.cpp
-  ${PLATFORM_SOURCES}
-  ${FLEX_openscad_lexer_OUTPUTS}
-  ${BISON_openscad_parser_OUTPUTS}
-  ${FLEX_comment_lexer_OUTPUTS}
-  ${BISON_comment_parser_OUTPUTS})
-
-set(NOCGAL_SOURCES
-  src/builtin.cc 
+  src/annotation.cc
+  src/builtin.cc
   src/import.cc
   src/import_3mf.cc
   src/import_stl.cc
@@ -480,29 +510,43 @@ set(NOCGAL_SOURCES
   src/polyset.cc
   src/polyset-gl.cc
   src/polyset-utils.cc
-  src/GeometryUtils.cc)
+  src/GeometryUtils.cc
+  src/BaseGeometryEvaluator.cc
+  src/CSGTreeEvaluator.cc
+  src/ext/polyclipping/clipper.cpp
+  ${PLATFORM_SOURCES}
+  ${FLEX_openscad_lexer_OUTPUTS}
+  ${BISON_openscad_parser_OUTPUTS}
+  ${FLEX_comment_lexer_OUTPUTS}
+  ${BISON_comment_parser_OUTPUTS})
 
-set(CGAL_SOURCES
-  ${NOCGAL_SOURCES}
-  src/CSGTreeEvaluator.cc 
-  src/CGAL_Nef_polyhedron.cc 
-  src/export_nef.cc
-  src/import_nef.cc
-  src/cgalutils.cc 
-  src/cgalutils-applyops.cc 
-  src/cgalutils-project.cc 
-  src/cgalutils-tess.cc 
-  src/cgalutils-polyhedron.cc 
-  src/CGALCache.cc
-  src/Polygon2d-CGAL.cc
-  src/svg.cc
-  src/GeometryEvaluator.cc)
+if(ENABLE_CGALNEF)
+  set(CGAL_SOURCES
+    ${CGAL_SOURCES}
+    src/CGAL_Nef_polyhedron.cc
+    src/export_nef.cc
+    src/import_nef.cc
+    src/cgalutils.cc
+    src/cgalutils-applyops.cc
+    src/cgalutils-project.cc
+    src/cgalutils-tess.cc
+    src/cgalutils-polyhedron.cc
+    src/CGALCache.cc
+    src/svg.cc
+    src/CGALNefEvaluator.cc)
+endif()
+
+if(ENABLE_CGAL2D)
+  set(CGAL_SOURCES
+    ${CGAL_SOURCES}
+    src/Polygon2d-CGAL.cc)
+endif()
 
 include_directories("src/ext/libtess2/Include")
 set(COMMON_SOURCES
-  src/nodedumper.cc 
-  src/GeometryCache.cc 
-  src/clipper-utils.cc 
+  src/nodedumper.cc
+  src/GeometryCache.cc
+  src/clipper-utils.cc
   src/Tree.cc
   src/comment.cpp
   src/parameter/parameterset.cpp
@@ -538,11 +582,11 @@ else()
     src/fbo.cc
     src/system-gl.cc
     src/export_png.cc
-    src/CGALRenderer.cc
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
     src/render.cc
-    src/OpenCSGRenderer.cc)
+    src/OpenCSGRenderer.cc
+    src/CGALRenderer.cc)
 endif()
 
 
@@ -622,22 +666,9 @@ file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
 set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
-if(HEADLESS)
-  add_definitions(-DOPENSCAD_NOGUI)
-else()
+
+if(NOT HEADLESS)
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
-endif()
-
-if (SNAPSHOT)
-  add_definitions(-DOPENSCAD_SNAPSHOT)
-  set(RESOURCE_FILES icons/icon-nightly.icns)
-else()
-  set(RESOURCE_FILES icons/OpenSCAD.icns)
-endif()
-
-if(ENABLE_SPNAV)
-  add_definitions(-DENABLE_SPNAV)
-  list(APPEND Sources src/input/SpaceNavInputDriver.cc)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})

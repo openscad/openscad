@@ -9,10 +9,9 @@
 #include "rendernode.h"
 #include "cgaladvnode.h"
 #include "printutils.h"
-#include "GeometryEvaluator.h"
 #include "polyset.h"
 #include "polyset-utils.h"
-
+#include "GeometryEvaluator.h"
 #include <string>
 #include <map>
 #include <list>
@@ -122,10 +121,10 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 						t = t1;
 					}
 					break;
-                case OpenSCADOperator::MINKOWSKI:
-                case OpenSCADOperator::HULL:
-                case OpenSCADOperator::RESIZE:
-                    break;
+				case OpenSCADOperator::MINKOWSKI:
+				case OpenSCADOperator::HULL:
+				case OpenSCADOperator::RESIZE:
+						break;
 				}
 			t1 = t;
 		}
@@ -163,9 +162,14 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	auto g = geom;
 	if (!g->isEmpty()) {
 		auto p2d = dynamic_pointer_cast<const Polygon2d>(geom);
+	#ifdef ENABLE_CGAL2D
 		if (p2d) {
 			g.reset(p2d->tessellate());
 		}
+	#else
+		std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+		PRINTB("ERROR: Can't tessellate Polygon2d for OpenCSG. Build OpenSCAD with ENABLE_CGAL2D, %s", loc);
+	#endif
 		// 3D Polysets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
 	}
 
@@ -233,17 +237,24 @@ Response CSGTreeEvaluator::visit(State &state, const ColorNode &node)
 Response CSGTreeEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPostfix()) {
-		shared_ptr<CSGNode> t1;
-		shared_ptr<const Geometry> geom;
-		if (this->geomevaluator) {
-			geom = this->geomevaluator->evaluateGeometry(node, false);
-			if (geom) {
-				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+		#ifdef ENABLE_CGALNEF
+			shared_ptr<CSGNode> t1;
+			shared_ptr<const Geometry> geom;
+			if (this->geomevaluator) {
+				geom = this->geomevaluator->evaluateGeometry(node, false);
+				if (geom) {
+					t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+				}
+				node.progress_report();
 			}
-			node.progress_report();
-		}
-		this->stored_term[node.index()] = t1;
-		addToParent(state, node);
+			this->stored_term[node.index()] = t1;
+			addToParent(state, node);
+		#else
+			std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
+			PRINTB("WARNING: render() not handled. Build OpenSCAD with ENABLE_CGALNEF, %s", loc);
+			applyToChildren(state, node, OpenSCADOperator::UNION);
+			addToParent(state, node);
+		#endif
 	}
 	return Response::ContinueTraversal;
 }

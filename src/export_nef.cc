@@ -28,7 +28,7 @@
 #include "printutils.h"
 #include "Geometry.h"
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
@@ -56,4 +56,4 @@ void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output)
 		PRINT("Not a CGALNefPoly. Add some CSG ops?");
 	}
 }
-#endif
+#endif /* ENABLE_CGALNEF */

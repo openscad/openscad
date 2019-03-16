@@ -35,7 +35,7 @@
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 #include "CGALCache.h"
 #endif
 #include "colormap.h"
@@ -150,7 +150,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 	this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB())*1024*1024;
 	this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong()/(1024*1024); // carry over old settings if they exist
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	this->defaultmap["advanced/cgalCacheSize"] = qulonglong(CGALCache::instance()->maxSizeMB())*1024*1024;
 	this->defaultmap["advanced/cgalCacheSizeMB"] = getValue("advanced/cgalCacheSize").toULongLong()/(1024*1024); // carry over old settings if they exist
 #endif
@@ -202,7 +202,7 @@ void Preferences::init() {
 	const int absolute_max = (sizeof(void*) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
 	QValidator *memvalidator = new QIntValidator(1,absolute_max,this);
 	QValidator *validator = new QIntValidator(this);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
 	this->polysetCacheSizeMBEdit->setValidator(memvalidator);
@@ -481,7 +481,7 @@ void Preferences::on_cgalCacheSizeMBEdit_textChanged(const QString &text)
 {
 	QSettingsCached settings;
 	settings.setValue("advanced/cgalCacheSizeMB", text);
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 	CGALCache::instance()->setMaxSizeMB(text.toULong());
 #endif
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_CGALNEF
 
 // NDEBUG must be disabled when including CGAL headers, otherwise CGAL assertions
 // will not be thrown, causing OpenSCAD's CGAL error checking to fail.
@@ -59,4 +59,4 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
-#endif /* ENABLE_CGAL */
+#endif /* ENABLE_CGALNEF */
