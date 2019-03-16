@@ -174,6 +174,10 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
    return nullptr;
 }
 
+void fileExportedMessage(const char *format, const QString &filename) {
+	PRINTB("%s export finished: %s", format % filename.toUtf8().constData());
+}
+
 } // namespace
 
 MainWindow::MainWindow(const QString &filename)
@@ -2519,9 +2523,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	exportFileByName(this->root_geom, format,
 		exportFilename.toLocal8Bit().constData(),
 		exportFilename.toUtf8());
-	PRINTB("%s export finished: %s",
-		type_name % exportFilename.toUtf8().constData());
-
+	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2581,7 +2583,7 @@ void MainWindow::actionExportCSG()
 	else {
 		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
 		fstream.close();
-		PRINT("CSG export finished.");
+		fileExportedMessage("CSG", csg_filename);
 		this->export_paths[suffix] = csg_filename;
 	}
 
