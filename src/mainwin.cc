@@ -2592,9 +2592,7 @@ void MainWindow::actionExportCSG()
 
 void MainWindow::actionExportImage()
 {
-	setCurrentOutput();
-
-  // Grab first to make sure dialog box isn't part of the grabbed image
+	// Grab first to make sure dialog box isn't part of the grabbed image
 	qglview->grabFrame();
 	const auto suffix = ".png";
 	auto img_filename = QFileDialog::getSaveFileName(this,
@@ -2602,9 +2600,10 @@ void MainWindow::actionExportImage()
 	if (!img_filename.isEmpty()) {
 		qglview->save(img_filename.toLocal8Bit().constData());
 		this->export_paths[suffix] = img_filename;
+		setCurrentOutput();
+		fileExportedMessage("PNG", img_filename);
+		clearCurrentOutput();
 	}
-
-	clearCurrentOutput();
 }
 
 void MainWindow::actionCopyViewport()
