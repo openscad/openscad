@@ -23,11 +23,10 @@ Value EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) con
 {
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
-	Value v;
 	if (arg->getExpr()) {
-		v = arg->getExpr()->evaluate(ctx ? ctx : (const_cast<EvalContext *>(this))->get_shared_ptr());
+		return arg->getExpr()->evaluate(ctx ? ctx : (const_cast<EvalContext *>(this))->get_shared_ptr());
 	}
-	return v;
+	return Value::undefined.clone();
 }
 
 /*!
@@ -85,15 +84,14 @@ shared_ptr<ModuleInstantiation> EvalContext::getChild(size_t i) const
 void EvalContext::assignTo(std::shared_ptr<Context> target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
-		Value v;
-		if (assignment->getExpr()) v = assignment->getExpr()->evaluate(target);
+		Value v = (assignment->getExpr()) ? assignment->getExpr()->evaluate(target) : Value::undefined.clone();
 		
-		if (assignment->getName().empty()){
+		if (assignment->getName().empty()) {
 			PRINTB("WARNING: Assignment without variable name %s, %s", v.toEchoString() % this->loc.toRelativeString(target->documentPath()));
 		} else if (target->has_local_variable(assignment->getName())) {
 			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment->getName() % v.toEchoString() % this->loc.toRelativeString(target->documentPath()));
 		} else {
-			target->set_variable(assignment->getName(), v);
+			target->set_variable(assignment->getName(), std::move(v));
 		}
 	}
 }
@@ -134,7 +132,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		if (m) {
 			s << boost::format("  module args:");
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg->getName() % *(variables[arg->getName()]);
+				s << boost::format("    %s = %s") % arg->getName() % variables[arg->getName()];
 			}
 		}
 	}

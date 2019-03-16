@@ -61,9 +61,8 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
 
-	auto convexity = Value::undefined;
-	auto path = Value::undefined;
-
+	auto convexity = Value::undefined.clone();
+	
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c->lookup_variable("convexity", true);
 	} else if (type == CgaladvType::RESIZE) {
@@ -90,7 +89,6 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	}
 
 	node->convexity = static_cast<int>(convexity.toDouble());
-	node->path = path;
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

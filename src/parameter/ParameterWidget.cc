@@ -468,7 +468,7 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 //reset all parameters to the default value of the design file
 void ParameterWidget::defaultParameter(){
 	for (const auto &entry : entries) {
-		entry.second->value=entry.second->defaultValue;
+		entry.second->value=entry.second->defaultValue.clone();
 	}
 }
 
@@ -493,7 +493,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 				ContextHandle<Context> ctx{Context::create<Context>()};
 				Value newValue = params->evaluate(ctx.ctx);
 				if (entry->second->dvt == newValue.type()) {
-					entry->second->value = newValue;
+					entry->second->value = std::move(newValue);
 				}
 			}
 		}

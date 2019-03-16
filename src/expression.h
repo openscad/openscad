@@ -93,7 +93,7 @@ private:
 class Literal : public Expression
 {
 public:
-	Literal(const Value &val, const Location &loc = Location::NONE);
+	Literal(Value val, const Location &loc = Location::NONE);
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override { return true;}

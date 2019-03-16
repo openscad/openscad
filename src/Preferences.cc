@@ -52,49 +52,50 @@ Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
 {
-    QSettingsCached settings;
-    Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
-	std::string trimmed_value(value);
-	boost::trim(trimmed_value);
+  QSettingsCached settings;
 
-	if (trimmed_value.empty()) {
-		return entry.defaultValue();
-	}
+	Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
+		std::string trimmed_value(value);
+		boost::trim(trimmed_value);
 
-	try {
-		switch (entry.defaultValue().type()) {
-		case Value::Type::STRING:
-			return Value(trimmed_value);
-		case Value::Type::NUMBER: 
-			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
-				return Value(boost::lexical_cast<double>(trimmed_value));
-			}
-			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::Type::BOOL:
-			boost::to_lower(trimmed_value);
-			if ("false" == trimmed_value) {
-				return Value(false);
-			} else if ("true" == trimmed_value) {
-				return Value(true);
-			}
-			return Value(boost::lexical_cast<bool>(trimmed_value));
-		default:
-			assert(false && "invalid value type for settings");
+		if (trimmed_value.empty()) {
 			return entry.defaultValue();
 		}
-	} catch (const boost::bad_lexical_cast& e) {
-		return entry.defaultValue();
-	}
-    }
 
-    void handle(Settings::SettingsEntry& entry) const override {
+		try {
+			switch (entry.defaultValue().type()) {
+			case Value::Type::STRING:
+				return Value(trimmed_value);
+			case Value::Type::NUMBER: 
+				if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
+					return Value(boost::lexical_cast<double>(trimmed_value));
+				}
+				return Value(boost::lexical_cast<int>(trimmed_value));
+			case Value::Type::BOOL:
+				boost::to_lower(trimmed_value);
+				if ("false" == trimmed_value) {
+					return Value(false);
+				} else if ("true" == trimmed_value) {
+					return Value(true);
+				}
+				return Value(boost::lexical_cast<bool>(trimmed_value));
+			default:
+				assert(false && "invalid value type for settings");
+				return entry.defaultValue();
+			}
+		} catch (const boost::bad_lexical_cast& e) {
+			return entry.defaultValue();
+		}
+	}
+
+	void handle(Settings::SettingsEntry& entry) const override {
 	Settings::Settings *s = Settings::Settings::inst();
 
 	std::string key = entry.category() + "/" + entry.name();
 	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	const Value v = getValue(entry, value);
+	Value v{getValue(entry, value)};
 	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, v);
+	s->set(entry, std::move(v));
     }
 };
 

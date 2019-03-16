@@ -62,9 +62,11 @@ namespace {
 		VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			if (vec[i].type() == Value::Type::VECTOR) {
-				std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
+				for(const auto &el : vec[i].toVector()) {
+					ret.emplace_back(el.clone());
+				}
 			} else {
-				ret.push_back(vec[i]);
+				ret.emplace_back(vec[i].clone());
 			}
 		}
 		return ret;
@@ -107,7 +109,7 @@ Value UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 	case (Op::Negate):
 		return -this->expr->evaluate(context);
 	default:
-		return Value::undefined;
+		return Value::undefined.clone();
 		// FIXME: error:
 	}
 }
@@ -154,7 +156,7 @@ Value BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 		return this->left->evaluate(context) || this->right->evaluate(context);
 		break;
 	case Op::Exponent:
-        return this->left->evaluate(context) ^  this->right->evaluate(context);
+		return Value(pow(this->left->evaluate(context).toDouble(), this->right->evaluate(context).toDouble()));
 		break;
 	case Op::Multiply:
 		return this->left->evaluate(context) * this->right->evaluate(context);
@@ -190,7 +192,7 @@ Value BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 		return this->left->evaluate(context) != this->right->evaluate(context);
 		break;
 	default:
-		return Value::undefined;
+		return Value::undefined.clone();
 		// FIXME: Error: unknown op
 	}
 }
@@ -278,7 +280,8 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 }
 
 Value ArrayLookup::evaluate(const std::shared_ptr<Context>& context) const {
-	return this->array->evaluate(context)[this->index->evaluate(context)];
+	const Value &array = this->array->evaluate(context);
+	return array[this->index->evaluate(context)].clone();
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
@@ -286,13 +289,13 @@ void ArrayLookup::print(std::ostream &stream, const std::string &) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(const Value &val, const Location &loc) : Expression(loc), value(val)
+Literal::Literal(Value val, const Location &loc) : Expression(loc), value(val.clone())
 {
 }
 
 Value Literal::evaluate(const std::shared_ptr<Context>&) const
 {
-	return this->value;
+	return this->value.clone();
 }
 
 void Literal::print(std::ostream &stream, const std::string &) const
@@ -361,7 +364,7 @@ Value Range::evaluate(const std::shared_ptr<Context>& context) const
 			}
 		}
 	}
-	return Value::undefined;
+	return Value::undefined.clone();
 }
 
 void Range::print(std::ostream &stream, const std::string &) const
@@ -407,15 +410,15 @@ Value Vector::evaluate(const std::shared_ptr<Context>& context) const
 	for(const auto &e : this->children) {
 		Value tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const VectorType result = tmpval.toVector();
-			for (size_t i = 0;i < result.size();i++) {
-				vec.push_back(result[i]);
+			const VectorType &result = tmpval.toVector();
+			for (const auto &el : result) {
+				vec.emplace_back(el.clone());
 			}
 		} else {
-			vec.push_back(tmpval);
+			vec.emplace_back(std::move(tmpval));
 		}
 	}
-	return Value(vec);
+	return Value(std::move(vec));
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -434,12 +437,12 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 Value Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->name,false,loc);
+	return std::move(context->lookup_variable(this->name,false,loc));
 }
 
 Value Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->name,true);
+	return std::move(context->lookup_variable(this->name,true));
 }
 
 void Lookup::print(std::ostream &stream, const std::string &) const
@@ -457,15 +460,15 @@ Value MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 	Value v = this->expr->evaluate(context);
 
 	if (v.type() == Value::Type::VECTOR) {
-		if (this->member == "x") return v[0];
-		if (this->member == "y") return v[1];
-		if (this->member == "z") return v[2];
+		if (this->member == "x") return v[0].clone();
+		if (this->member == "y") return v[1].clone();
+		if (this->member == "z") return v[2].clone();
 	} else if (v.type() == Value::Type::RANGE) {
-		if (this->member == "begin") return v[0];
-		if (this->member == "step") return v[1];
-		if (this->member == "end") return v[2];
+		if (this->member == "begin") return v[0].clone();
+		if (this->member == "step") return v[1].clone();
+		if (this->member == "end") return v[2].clone();
 	}
-	return Value::undefined;
+	return Value::undefined.clone();
 }
 
 void MemberLookup::print(std::ostream &stream, const std::string &) const
@@ -557,21 +560,23 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
 			if (this->resolvedArguments.find(arg->getName()) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : Value::undefined);			}
+				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : Value::undefined.clone());			}
 		}
 	}
 
 	std::vector<std::pair<std::string, Value>> variables;
 	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
 	// Set default values for unspecified parameters
-	variables.insert(variables.begin(), this->defaultArguments.begin(), this->defaultArguments.end());
+	for (const auto &arg : this->defaultArguments) {
+		variables.emplace_back(arg.first, arg.second.clone());
+	}
 	// Set the given parameters
 	for (const auto &ass : this->resolvedArguments) {
 		variables.emplace_back(ass.first, ass.second->evaluate(context));
 	}
 	// Apply to tailCallContext
 	for (const auto &var : variables) {
-		tailCallContext->set_variable(var.first, var.second);
+		tailCallContext->set_variable(var.first, var.second.clone());
 	}
 	// Apply config variables ($...)
 	tailCallContext->apply_config_variables(context);
@@ -588,19 +593,19 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
 		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-		if (v->type() == Value::Type::FUNCTION) {
+		if (v.type() == Value::Type::FUNCTION) {
 			if (name.size() > 0 && name.at(0) == '$') {
 				print_invalid_function_call("dynamically scoped variable", context, loc);
-				return Value::undefined;
+				return Value::undefined.clone();
 			} else {
-				auto func = v->toFunction();
+				auto func = v.toFunction();
 				return evaluate_function(name, func.getExpr(), func.getArgs(), func.getCtx(), evalCtx.ctx, this->loc);
 			}
 		} else if (isLookup) {
 			return context->evaluate_function(name, evalCtx.ctx);
 		} else {
-			print_invalid_function_call(v->typeName(), context, loc);
-			return Value::undefined;
+			print_invalid_function_call(v.typeName(), context, loc);
+			return Value::undefined.clone();
 		}
 	} catch (EvaluationException &e) {
 		if (e.traceDepth > 0) {
@@ -648,8 +653,7 @@ const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context
 Value Assert::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
-	Value result = nextexpr ? nextexpr->evaluate(context) : Value::undefined;
-	return result;
+	return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
 
 void Assert::print(std::ostream &stream, const std::string &) const
@@ -675,8 +679,7 @@ Value Echo::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
 
-	Value result = nextexpr ? nextexpr->evaluate(context) : Value::undefined;
-	return result;
+	return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
 
 void Echo::print(std::ostream &stream, const std::string &) const
@@ -726,11 +729,11 @@ Value LcIf::evaluate(const std::shared_ptr<Context>& context) const
         if (isListComprehension(expr)) {
             return expr->evaluate(context);
         } else {
-           vec.push_back(expr->evaluate(context));
+           vec.emplace_back(std::move(expr->evaluate(context)));
         }
     }
 
-    return Value(vec);
+    return Value(std::move(vec));
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
@@ -758,26 +761,26 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                vec.push_back(Value(*it));
+                vec.emplace_back(*it);
             }
         }
     } else if (v.type() == Value::Type::VECTOR) {
-        VectorType vector = v.toVector();
-        for (size_t i = 0; i < v.toVector().size(); i++) {
-            vec.push_back(vector[i]);
+        const VectorType &vector = v.toVector();
+        for (size_t i = 0; i < vector.size(); i++) {
+            vec.emplace_back(vector[i].clone());
         }
     } else if (v.type() == Value::Type::STRING) {
         utf8_split(v.toString(), [&](Value v) {
-            vec.push_back(v);
+            vec.emplace_back(std::move(v));
         });
     } else if (v.type() != Value::Type::UNDEFINED) {
-        vec.push_back(v);
+        vec.emplace_back(std::move(v));
     }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
+        return flatten(std::move(vec));
     } else {
-        return Value(vec);
+        return vec;
     }
 }
 
@@ -813,28 +816,28 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
                 c->set_variable(it_name, Value(*it));
-                vec.push_back(this->expr->evaluate(c.ctx));
+                vec.emplace_back(this->expr->evaluate(c.ctx));
             }
         }
     } else if (it_values.type() == Value::Type::VECTOR) {
         for (size_t i = 0; i < it_values.toVector().size(); i++) {
-            c->set_variable(it_name, it_values.toVector()[i]);
-            vec.push_back(this->expr->evaluate(c.ctx));
+            c->set_variable(it_name, it_values.toVector()[i].clone());
+            vec.emplace_back(this->expr->evaluate(c.ctx));
         }
     } else if (it_values.type() == Value::Type::STRING) {
         utf8_split(it_values.toString(), [&](Value v) {
-            c->set_variable(it_name, v);
-            vec.push_back(this->expr->evaluate(c.ctx));
+            c->set_variable(it_name, std::move(v));
+            vec.emplace_back(this->expr->evaluate(c.ctx));
         });
     } else if (it_values.type() != Value::Type::UNDEFINED) {
-        c->set_variable(it_name, it_values);
-        vec.push_back(this->expr->evaluate(c.ctx));
+        c->set_variable(it_name, std::move(it_values));
+        vec.emplace_back(this->expr->evaluate(c.ctx));
     }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
+        return flatten(std::move(vec));
     } else {
-        return Value(vec);
+        return vec;
     }
 }
 
@@ -857,7 +860,7 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 
 	unsigned int counter = 0;
     while (this->cond->evaluate(c.ctx)) {
-        vec.push_back(this->expr->evaluate(c.ctx));
+        vec.emplace_back(this->expr->evaluate(c.ctx));
 
         if (counter++ == 1000000) {
             std::string locs = loc.toRelativeString(context->documentPath());
@@ -871,9 +874,9 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
     }    
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
+        return flatten(std::move(vec));
     } else {
-        return Value(vec);
+        return vec;
     }
 }
 
@@ -938,7 +941,7 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 Value evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
 		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
 {
-	if (!expr) return Value::undefined;
+	if (!expr) return Value::undefined.clone();
 	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call
 	c_next->setVariables(evalctx, definition_arguments);
 
@@ -958,7 +961,7 @@ Value evaluate_function(const std::string& name, const std::shared_ptr<Expressio
 		shared_ptr<Expression> subExpr = expr;
 		while (true) {
 			if (!subExpr) {
-				return Value::undefined;
+				return Value::undefined.clone();
 			} else {
 				const auto& subExprRef = *subExpr;
 				if (typeid(subExprRef) == typeid(TernaryOp)) {
@@ -1004,5 +1007,5 @@ Value evaluate_function(const std::string& name, const std::shared_ptr<Expressio
 		}
 	}
 
-	return Value::undefined;
+	return Value::undefined.clone();
 }

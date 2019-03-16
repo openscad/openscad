@@ -232,7 +232,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 			else if (type == OpenSCADOperator::INTERSECTION) {
 				this->currentlist = &this->currentproduct->intersections;
 			}
-			this->currentlist->push_back(CSGChainObject(leaf, newflags));
+			this->currentlist->emplace_back(leaf, newflags);
 		} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 			assert(op->left() && op->right());
 			callstack.emplace(op->right(), op->getType(), newflags);

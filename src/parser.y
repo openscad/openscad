@@ -339,7 +339,7 @@ expr
               } else {
                 PRINTB("WARNING: Support for function literals is disabled %s",
                 LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
-                $$ = new Literal(Value::undefined, LOCD("literal", @$));
+                $$ = new Literal(Value::undefined.clone(), LOCD("literal", @$));
               }
               delete $3;
             }
@@ -494,7 +494,7 @@ primary
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(Value::undefined, LOCD("literal", @$));
+              $$ = new Literal(Value::undefined.clone(), LOCD("literal", @$));
             }
         | TOK_NUMBER
             {

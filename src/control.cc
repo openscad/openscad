@@ -87,19 +87,19 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			}
 		}
 		else if (it_values.type() == Value::Type::VECTOR) {
-			for (size_t i = 0; i < it_values.toVector().size(); i++) {
-				c->set_variable(it_name, it_values.toVector()[i]);
+			for (const auto &el : it_values.toVector()) {
+				c->set_variable(it_name, el.clone());
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			}
 		}
 		else if (it_values.type() == Value::Type::STRING) {
 			utf8_split(it_values.toString(), [&](Value v) {
-				c->set_variable(it_name, v);
+				c->set_variable(it_name, std::move(v));
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			});
 		}
 		else if (it_values.type() != Value::Type::UNDEFINED) {
-			c->set_variable(it_name, it_values);
+			c->set_variable(it_name, std::move(it_values));
 			for_eval(node, inst, l+1, c.ctx, evalctx);
 		}
 	} else if (l > 0) {
@@ -199,7 +199,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			// How to deal with negative objects in this case?
 			// (e.g. first child of difference is invalid)
 			PRINTB("WARNING: Child index (%d) out of bounds (%d children), %s",
-				n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			    n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 		return node;
 	}

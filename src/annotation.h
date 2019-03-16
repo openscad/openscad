@@ -4,7 +4,6 @@
 #include <vector>
 #include <unordered_map>
 #include "memory.h"
-#include "value.h"
 
 class Annotation
 {
@@ -14,7 +13,7 @@ public:
 	
 	virtual void print(std::ostream &stream, const std::string &indent) const;
 	const std::string &getName() const;
-	virtual Value evaluate(std::shared_ptr<class Context> ctx) const;
+	virtual class Value evaluate(std::shared_ptr<class Context> ctx) const;
 	
 private:
 	std::string name;

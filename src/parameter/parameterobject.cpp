@@ -9,8 +9,8 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
   this->set = false;
   this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
-  const Value values = param->evaluate(ctx);
-  setValue(defaultValue, values);
+  Value values = param->evaluate(ctx);
+  setValue(defaultValue.clone(), std::move(values));
   const Annotation *desc = assignment->annotation("Description");
 
   if (desc) {
@@ -34,18 +34,18 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
 void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
 {
   ContextHandle<Context> ctx{Context::create<Context>()};
-  const Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+  Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
   
   if (defaultValue.type() == dvt) {
-    assignment->setExpr(make_shared<Literal>(value));
+    assignment->setExpr(make_shared<Literal>(std::move(value)));
   }
 }
 
 void ParameterObject::setValue(const class Value defaultValue, const class Value values)
 {
-  this->values = values;
-  this->value = defaultValue;
-  this->defaultValue = defaultValue;
+  this->values = values.clone();
+  this->value = defaultValue.clone();
+  this->defaultValue = defaultValue.clone();
   this->vt = values.type();
   this->dvt = defaultValue.type();
  
@@ -76,7 +76,7 @@ bool ParameterObject::operator == (const ParameterObject &second)
 
 ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
 {
-  VectorType vec = defaultValue.toVector();
+  const VectorType &vec = defaultValue.toVector();
   if(vec.size()==0) return TEXT;
   for (unsigned int i = 0;i < vec.size();i++) {
     if (vec[i].type() != Value::Type::NUMBER) {

@@ -132,15 +132,15 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 				ok &= false;
 			}
 
-			bool v_supplied = (val_v != Value::undefined);
-			if(ok){
+			bool v_supplied = val_v.isDefined();
+			if (ok) {
 				if(v_supplied){
 					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a.toEchoString() % val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
-			}else{
-				if(v_supplied){
+			} else {
+				if (v_supplied) {
 					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a.toString() % val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
-				}else{
+				} else {
 					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}
@@ -157,13 +157,13 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			Vector3d v(0, 0, 1);
 			bool vConverted = val_v.getVec3(v[0], v[1], v[2], 0.0);
 			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-			if(val_v != Value::undefined && ! vConverted){
-				if(aConverted){
+			if (val_v != Value::undefined && ! vConverted) {
+				if (aConverted) {
 					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}else{
 					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a.toEchoString() % val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
-			}else if(!aConverted){
+			} else if (!aConverted) {
 				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}

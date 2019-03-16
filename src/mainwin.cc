@@ -1637,17 +1637,17 @@ void MainWindow::updateTemporalVariables()
 
 	auto camVpt = qglview->cam.getVpt();
 	VectorType vpt;
-	vpt.push_back(Value(camVpt.x()));
-	vpt.push_back(Value(camVpt.y()));
-	vpt.push_back(Value(camVpt.z()));
-	this->top_ctx->set_variable("$vpt", Value(vpt));
+	vpt.emplace_back(camVpt.x());
+	vpt.emplace_back(camVpt.y());
+	vpt.emplace_back(camVpt.z());
+	this->top_ctx->set_variable("$vpt", std::move(vpt));
 
 	auto camVpr = qglview->cam.getVpr();
 	VectorType vpr;
-	vpr.push_back(Value(camVpr.x()));
-	vpr.push_back(Value(camVpr.y()));
-	vpr.push_back(Value(camVpr.z()));
-	top_ctx->set_variable("$vpr", Value(vpr));
+	vpr.emplace_back(camVpr.x());
+	vpr.emplace_back(camVpr.y());
+	vpr.emplace_back(camVpr.z());
+	top_ctx->set_variable("$vpr", std::move(vpr));
 
 	top_ctx->set_variable("$vpd", Value(qglview->cam.zoomValue()));
 }

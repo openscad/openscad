@@ -10,7 +10,7 @@ namespace Settings {
 static std::list<SettingsEntry *> entries;
 
 SettingsEntry::SettingsEntry(const std::string category, const std::string name, const Value range, const Value def)
-	: _category(category), _name(name), _value(def), _range(range), _default(def)
+	: _category(category), _name(name), _value(def.clone()), _range(range.clone()), _default(def.clone())
 {
 	entries.push_back(this);
 }
@@ -29,14 +29,14 @@ const std::string & SettingsEntry::name() const
 	return _name;
 }
 
-const Value & SettingsEntry::defaultValue() const
+Value SettingsEntry::defaultValue() const
 {
-	return _default;
+	return _default.clone();
 }
 
-const Value & SettingsEntry::range() const
+Value SettingsEntry::range() const
 {
-	return _range;
+	return _range.clone();
 }
 
 bool SettingsEntry::is_default() const
@@ -46,48 +46,55 @@ bool SettingsEntry::is_default() const
 
 static Value value(std::string s1, std::string s2) {
 	VectorType v;
-	v += Value(s1), Value(s2);
+	v.emplace_back(s1);
+	v.emplace_back(s2);
 	return v;
 }
 
-static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
+static VectorType values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
 	VectorType v;
-	v += Value(value(s1, s1disp)), Value(value(s2, s2disp));
+	v.emplace_back(value(s1, s1disp));
+	v.emplace_back(value(s2, s2disp));
 	return v;
 }
 
-static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
+static VectorType values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
 	VectorType v;
-	v += Value(value(s1, s1disp)), Value(value(s2, s2disp)), Value(value(s3, s3disp));
+	v.emplace_back(value(s1, s1disp));
+	v.emplace_back(value(s2, s2disp));
+	v.emplace_back(value(s3, s3disp));
 	return v;
 }
 
-static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
+static VectorType values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
 	VectorType v;
-	v += Value(value(s1, s1disp)), Value(value(s2, s2disp)), Value(value(s3, s3disp)), Value(value(s4, s4disp));
+	v.emplace_back(value(s1, s1disp));
+	v.emplace_back(value(s2, s2disp));
+	v.emplace_back(value(s3, s3disp));
+	v.emplace_back(value(s4, s4disp));
 	return v;
 }
 
 static Value axisValues() {
 	VectorType v;
-	v += Value(value("None", _("None")));
+	v.emplace_back(value("None", _("None")));
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		auto userData = (boost::format("+%d") % (i+1)).str();
 		auto text = (boost::format(_("Axis %d")) % i).str();
-		v += Value(value(userData, text));
+		v.emplace_back(value(userData, text));
 
 		userData = (boost::format("-%d") % (i+1)).str();
 		text = (boost::format(_("Axis %d (inverted)")) % i).str();
-		v += Value(value(userData, text));
+		v.emplace_back(value(userData, text));
 	}
 	return v;
 }
 
 static Value buttonValues() {
 	VectorType v;
-	v += Value(value("None", _("None")));
-	v += Value(value("viewActionTogglePerspective", _("Toggle Perspective")));
+ 	v.emplace_back(value("None", _("None")));
+	v.emplace_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
 	return v;
 }
 
@@ -105,6 +112,7 @@ Settings *Settings::inst(bool erase)
 
 Settings::Settings()
 {
+	std::cout << "Settings constructor\n";
 }
 
 Settings::~Settings()
@@ -128,19 +136,19 @@ SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 	return nullptr;
 }
 
-const Value &Settings::defaultValue(const SettingsEntry& entry) const
+Value Settings::defaultValue(const SettingsEntry& entry) const
 {
-	return entry._default;
+	return entry._default.clone();
 }
 
-const Value &Settings::get(const SettingsEntry& entry) const
+Value Settings::get(const SettingsEntry& entry) const
 {
-	return entry._value;
+	return entry._value.clone();
 }
 
-void Settings::set(SettingsEntry& entry, const Value &val)
+void Settings::set(SettingsEntry& entry, Value val)
 {
-	entry._value = val;
+	entry._value = val.clone();
 }
 
 SettingsVisitor::SettingsVisitor()

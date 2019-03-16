@@ -176,7 +176,7 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	const Value &value = s->get(entry);
+	Value value = s->get(entry);
 	QString text = QString::fromStdString(value.toString());
 	int idx = comboBox->findData(text);
 	if (idx >= 0) {

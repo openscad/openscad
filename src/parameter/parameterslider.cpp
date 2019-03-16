@@ -42,14 +42,14 @@ void ParameterSlider::onEditingFinished()
 {
 	const double v = doubleSpinBox->value();
 	PRINTDB("updateValue(): %.2f", v);
-	object->value = ValuePtr(v);
+	object->value = Value(v);
 	emit changed();
 }
 
 void ParameterSlider::setValue()
 {
 	this->suppressUpdate = true;
-	const double v = object->value->toDouble();
+	const double v = object->value.toDouble();
 
 	if (object->values.toRange().step_value() > 0) {
 		setPrecision(object->values.toRange().step_value());
@@ -63,7 +63,7 @@ void ParameterSlider::setValue()
 	double max = 0;
 	int maxSlider = 0;
 	int curSlider = 0;
-	if (object->values->type() == Value::Type::RANGE) {
+	if (object->values.type() == Value::Type::RANGE) {
 		// [min:max] and [min:step:max] format
 		const double b = object->values.toRange().begin_value();
 		const double e = object->values.toRange().end_value();

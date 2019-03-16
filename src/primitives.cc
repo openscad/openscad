@@ -134,7 +134,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 	} else if (r_defined) {
 		return r;
 	} else {
-		return Value::undefined;
+		return Value::undefined.clone();
 	}
 }
 
@@ -201,15 +201,15 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::CUBE: {
 		auto size = c->lookup_variable("size");
 		auto center = c->lookup_variable("center");
-		if(size != Value::undefined){
+		if (size.isDefined()) {
 			bool converted=false;
 			converted |= size.getDouble(node->x);
 			converted |= size.getDouble(node->y);
 			converted |= size.getDouble(node->z);
 			converted |= size.getVec3(node->x, node->y, node->z);
-			if(!converted){
+			if (!converted) {
 				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
-			}else if(OpenSCAD::rangeCheck){
+			} else if(OpenSCAD::rangeCheck) {
 				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
@@ -294,14 +294,14 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::SQUARE: {
 		auto size = c->lookup_variable("size");
 		auto center = c->lookup_variable("center");
-		if(size != Value::undefined){
+		if (size.isDefined()) {
 			bool converted=false;
 			converted |= size.getDouble(node->x);
 			converted |= size.getDouble(node->y);
 			converted |= size.getVec2(node->x, node->y);
-			if(!converted){
+			if (!converted) {
 				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
-			}else if(OpenSCAD::rangeCheck){
+			} else if (OpenSCAD::rangeCheck) {
 				bool ok = true;
 				ok &= (node->x > 0) && (node->y > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y);

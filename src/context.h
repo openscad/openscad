@@ -64,8 +64,8 @@ public:
 
 	void setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
 
-	void set_variable(const std::string &name, const Value &value);
-	void set_constant(const std::string &name, const Value &value);
+	void set_variable(const std::string &name, Value value);
+	void set_constant(const std::string &name, Value value);
 
 	void apply_variables(const std::shared_ptr<Context> other);
 	void apply_config_variables(const std::shared_ptr<Context> other);
