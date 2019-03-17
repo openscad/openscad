@@ -137,7 +137,12 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 	img_data_t data;
 	std::vector<uint8_t> png;
 	
-	lodepng::load_file(png, filename);
+	int ret_val = lodepng::load_file(png, filename);
+	
+	if(ret_val == 78){
+		PRINTB("WARNING: The file '%s'. does not exits or is too large to load", filename);
+		return data;	
+	}
 	
 	if (!is_png(png)) {
 		png.clear();
