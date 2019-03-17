@@ -140,7 +140,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 	int ret_val = lodepng::load_file(png, filename);
 	
 	if(ret_val == 78){
-		PRINTB("WARNING: The file '%s'. does not exits or is too large to load", filename);
+		PRINTB("WARNING: The file '%s'. does not exists or is too large to load", filename);
 		return data;	
 	}
 	
