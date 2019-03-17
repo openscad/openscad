@@ -820,8 +820,8 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
             }
         }
     } else if (it_values.type() == Value::Type::VECTOR) {
-        for (size_t i = 0; i < it_values.toVector().size(); i++) {
-            c->set_variable(it_name, it_values.toVector()[i].clone());
+        for (const auto &el : it_values.toVector()) {
+            c->set_variable(it_name, el.clone());
             vec.emplace_back(this->expr->evaluate(c.ctx));
         }
     } else if (it_values.type() == Value::Type::STRING) {
