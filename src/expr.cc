@@ -612,16 +612,16 @@ Value LcEach::evaluate(const Context *context) const
             }
         }
     } else if (v.type() == Value::ValueType::VECTOR) {
-        const Value::VectorType &vector = v.toVector();
+        Value::VectorType vector = v.moveVector();
         for (size_t i = 0; i < vector.size(); i++) {
-            vec.emplace_back(vector[i].clone());
+            vec.emplace_back(std::move(vector[i]));
         }
     } else if (v.type() == Value::ValueType::STRING) {
         utf8_split(v.toString(), [&](Value v) {
-            vec.emplace_back(v.clone());
+            vec.emplace_back(std::move(v));
         });
     } else if (v.type() != Value::ValueType::UNDEFINED) {
-        vec.emplace_back(v.clone());
+        vec.emplace_back(std::move(v));
     }
 
     if (isListComprehension(this->expr)) {
@@ -666,12 +666,13 @@ Value LcFor::evaluate(const Context *context) const
                 vec.emplace_back(this->expr->evaluate(&c));
             }
         }
-    } /*else if (it_values.type() == Value::ValueType::VECTOR) {
-        for (size_t i = 0; i < it_values.toVector().size(); i++) {
-            c.set_variable(it_name, { std::move(it_values.toVector()[i]) } );
+    } else if (it_values.type() == Value::ValueType::VECTOR) {
+		Value::VectorType moved_vec = it_values.moveVector();
+        for (size_t i = 0; i < moved_vec.size(); i++) {
+            c.set_variable(it_name, std::move(moved_vec[i]) );
             vec.emplace_back(this->expr->evaluate(&c));
-        }
-    }*/ else if (it_values.type() == Value::ValueType::STRING) {
+		}
+    } else if (it_values.type() == Value::ValueType::STRING) {
         utf8_split(it_values.toString(), [&](Value v) {
             c.set_variable(it_name, std::move(v));
             vec.emplace_back(this->expr->evaluate(&c));

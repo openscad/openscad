@@ -111,8 +111,7 @@ void Context::set_constant(const std::string &name, Value value)
 void Context::take_variables(Context &other)
 {
 	for (auto it = other.variables.begin(); it != other.variables.end(); it++) {
-		set_variable(it->first, std::move(it->second) ); // FIXME replace after testing
-		//set_variable(it->first, it->second.clone());
+		set_variable(it->first, std::move(it->second) );
 	}
 }
 
