@@ -168,13 +168,6 @@ void Preferences::init() {
 	this->defaultmap["advanced/enableParameterCheck"] = true;
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
 
-	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)),
-		        this->timeThresholdOnRenderCompleteSoundLabel, SLOT(setEnabled(bool)));
-	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)), 
-		        this->secLabel, SLOT(setEnabled(bool)));
-	connect(this->enableSoundOnRenderCompleteCheckBox, SIGNAL(toggled(bool)), 
-		        this->timeThresholdOnRenderCompleteSoundEdit, SLOT(setEnabled(bool)));
-
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
@@ -647,6 +640,9 @@ void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
 	settings.setValue("advanced/enableSoundNotification", state);
+	this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(state);
+	this->secLabel->setEnabled(state);
+	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(state);
 }
 
 void Preferences::on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString &text)
