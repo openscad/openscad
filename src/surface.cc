@@ -146,7 +146,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 	}
 
 	if(ret_val == 78){
-		PRINTB("WARNING: The file '%s'. does not exists or is too large to load", filename);
+		PRINTB("WARNING: The file '%s' couldn't be opened.", filename);
 		return data;	
 	}
 	
