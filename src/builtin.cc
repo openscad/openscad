@@ -110,7 +110,8 @@ Builtins::Builtins()
 
 	Value::VectorPtr zero3v;
 	zero3v->emplace_back(0.0); zero3v->emplace_back(0.0); zero3v->emplace_back(0.0);
-	auto zero3 = Value(std::move(zero3v));
+	Value zero3{ std::move(zero3v) };
+
 	this->assignments.emplace_back(new Assignment("$vpt", make_shared<Literal>(zero3.clone())) );
 	this->assignments.emplace_back(new Assignment("$vpr", make_shared<Literal>(zero3.clone())) );
 	this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500)) );

@@ -127,7 +127,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	node->origin_x = node->origin_y = 0;
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=Value::undefined && !originOk){
+	if(origin.isDefined() && !originOk){
 		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 

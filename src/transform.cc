@@ -157,10 +157,10 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			Vector3d v(0, 0, 1);
 			bool vConverted = val_v.getVec3(v[0], v[1], v[2], 0.0);
 			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-			if (val_v != Value::undefined && ! vConverted) {
+			if (val_v.isDefined() && !vConverted) {
 				if (aConverted) {
 					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
-				}else{
+				} else {
 					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a.toEchoString() % val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			} else if (!aConverted) {

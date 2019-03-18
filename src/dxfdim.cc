@@ -58,7 +58,7 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		auto n = evalctx->getArgName(i);
+		const std::string &n = evalctx->getArgName(i);
 		Value v = evalctx->getArgValue(i);
 		if (n == "file") {
 			rawFilename = v.toString();
@@ -168,7 +168,7 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		auto n = evalctx->getArgName(i);
+		const std::string &n = evalctx->getArgName(i);
 		Value v = evalctx->getArgValue(i);
 		if (n == "file"){
 			rawFilename = v.toString();

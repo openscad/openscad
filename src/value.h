@@ -336,6 +336,7 @@ public:
   const FunctionType toFunction() const;
   std::string typeName() const;
   std::string toString() const;
+  const str_utf8_wrapper& toStrUtf8Wrapper();
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
   std::string toEchoString(const tostring_visitor *visitor) const;
@@ -358,6 +359,7 @@ public:
   bool operator>(const Value &v) const;
   Value operator-() const;
   Value operator[](const Value &v) const;
+  Value operator[](size_t idx) const;
   Value operator+(const Value &v) const;
   Value operator-(const Value &v) const;
   Value operator*(const Value &v) const;

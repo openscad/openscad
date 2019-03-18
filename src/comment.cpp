@@ -19,7 +19,7 @@ typedef std::vector <GroupInfo> GroupList;
 /*
   Finds line to break stop parsing parsing parameters
 
-*/ 
+*/
 
 static int getLineToStop( const std::string &fulltext){
 	int lineNo=1;
@@ -279,7 +279,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 		}
 		// making list to add annotations
 		AnnotationList *annotationList = new AnnotationList();
- 
+
 		// Extracting the parameter comment
 		std::string comment = getComment(fulltext, firstLine);
 		// getting the node for parameter annotation
@@ -295,7 +295,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 		std::string descr = getDescription(fulltext, firstLine - 1);
 		if (descr != "") {
 			//creating node for description
-			shared_ptr<Expression> expr(new Literal(Value(std::string(descr.c_str()))));
+			shared_ptr<Expression> expr(new Literal(Value(descr)));
 			annotationList->push_back(Annotation("Description", expr));
 		}
 

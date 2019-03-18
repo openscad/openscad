@@ -750,10 +750,10 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 		}
 	} else if (findThis.type() == Value::Type::STRING) {
 		if (searchTable.type() == Value::Type::STRING) {
-			returnvec = search(findThis.toString(), searchTable.toString(), num_returns_per_match, evalctx->loc);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match, evalctx->loc);
 		}
 		else {
-			returnvec = search(findThis.toString(), searchTable.toVectorPtr(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVectorPtr(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
 		}
 	} else if (findThis.type() == Value::Type::VECTOR) {
 		const Value::VectorPtr &findVec = findThis.toVectorPtr();
