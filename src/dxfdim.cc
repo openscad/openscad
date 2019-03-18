@@ -234,9 +234,9 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			VectorType ret;
-			ret.emplace_back(x);
-			ret.emplace_back(y);
+			Value::VectorPtr ret;
+			ret->emplace_back(x);
+			ret->emplace_back(y);
 			return dxf_cross_cache.emplace(key, std::move(ret)).first->second.clone();
 		}
 	}

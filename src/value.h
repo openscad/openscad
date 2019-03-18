@@ -275,7 +275,6 @@ std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
 class Value
 {
 public:
-	typedef std::vector<Value> VectorType;
 
   enum class Type {
     UNDEFINED,
@@ -287,6 +286,29 @@ public:
 	  FUNCTION
   };
   static const Value undefined;
+	using VectorType = std::vector<Value>;
+
+  class VectorPtr {
+  public:
+    VectorPtr() : ptr(new VectorType()) {}
+		VectorPtr(const VectorPtr &) = delete;            // never copy, move instead
+		VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
+		VectorPtr(VectorPtr&&) = default;
+		VectorPtr& operator=(VectorPtr&&) = default;
+    
+    // Copy explicitly only when necessary
+    VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c;  }
+
+    const VectorType &operator*() const { return *ptr.get(); }
+    VectorType *operator->() const { return ptr.get(); }
+    Value &operator[](size_t idx) const {	return (*ptr.get())[idx]; }
+    bool operator==(const VectorPtr &v) const { return *ptr == *v; }
+    bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
+    operator bool() const {	return !ptr->empty(); }
+   
+  private:
+    shared_ptr<VectorType> ptr;
+  };
 
   Value() : value(boost::blank()) { }
 	static Value undef() { return Value(); }
@@ -320,7 +342,7 @@ public:
   void toStream(std::ostringstream &stream) const;
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
-  const VectorType &toVector() const;
+  const VectorPtr &toVectorPtr() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z) const;
   bool getVec3(double &x, double &y, double &z, double defaultval) const;
@@ -348,7 +370,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, FunctionPtr> Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType, FunctionPtr> Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);

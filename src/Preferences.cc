@@ -93,9 +93,9 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	std::string key = entry.category() + "/" + entry.name();
 	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	Value v{getValue(entry, value)};
+	const Value v = getValue(entry, value);
 	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, std::move(v));
+	s->set(entry, v.clone());
     }
 };
 

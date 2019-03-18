@@ -107,11 +107,10 @@ Builtins::Builtins()
 	this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
 	this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
 	this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>(Value::undefined.clone())) ); //undef as should always be overwritten.
-	VectorType z3;
-	z3.emplace_back(0.0);
-	z3.emplace_back(0.0);
-	z3.emplace_back(0.0);
-	Value zero3(std::move(z3));
+
+	Value::VectorPtr zero3v;
+	zero3v->emplace_back(0.0); zero3v->emplace_back(0.0); zero3v->emplace_back(0.0);
+	auto zero3 = Value(std::move(zero3v));
 	this->assignments.emplace_back(new Assignment("$vpt", make_shared<Literal>(zero3.clone())) );
 	this->assignments.emplace_back(new Assignment("$vpr", make_shared<Literal>(zero3.clone())) );
 	this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500)) );

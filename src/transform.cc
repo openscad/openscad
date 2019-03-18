@@ -110,25 +110,25 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			double cx = 1, cy = 1, cz = 1;
 			double a = 0.0;
 			bool ok = true;
-			if (val_a.toVector().size() > 0) {
-				ok &= val_a.toVector()[0].getDouble(a);
+			if (val_a.toVectorPtr()->size() > 0) {
+				ok &= val_a.toVectorPtr()[0].getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
 				sx = sin_degrees(a);
 				cx = cos_degrees(a);
 			}
-			if (val_a.toVector().size() > 1) {
-				ok &= val_a.toVector()[1].getDouble(a);
+			if (val_a.toVectorPtr()->size() > 1) {
+				ok &= val_a.toVectorPtr()[1].getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
 				sy = sin_degrees(a);
 				cy = cos_degrees(a);
 			}
-			if (val_a.toVector().size() > 2) {
-				ok &= val_a.toVector()[2].getDouble(a);
+			if (val_a.toVectorPtr()->size() > 2) {
+				ok &= val_a.toVectorPtr()[2].getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
 				sz = sin_degrees(a);
 				cz = cos_degrees(a);
 			}
-			if (val_a.toVector().size() > 3) {
+			if (val_a.toVectorPtr()->size() > 3) {
 				ok &= false;
 			}
 
@@ -210,9 +210,9 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v.toVector().size() && v.toVector()[y].type() == 
-						Value::Type::VECTOR && x < v.toVector()[y].toVector().size())
-					v.toVector()[y].toVector()[x].getDouble(rawmatrix(y, x));
+				if (y < v.toVectorPtr()->size() && v.toVectorPtr()[y].type() == 
+						Value::Type::VECTOR && x < v.toVectorPtr()[y].toVectorPtr()->size())
+					v.toVectorPtr()[y].toVectorPtr()[x].getDouble(rawmatrix(y, x));
 			}
 			double w = rawmatrix(3,3);
 			if (w != 1.0) node->matrix = rawmatrix / w;

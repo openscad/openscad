@@ -524,7 +524,7 @@ primary
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(Value(VectorType()), LOCD("vector", @$));
+              $$ = new Literal(Value(Value::VectorPtr()), LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {

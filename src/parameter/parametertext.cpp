@@ -8,8 +8,8 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 	setValue();
 
 	double max=32767;
-	if(object->values.toVector().size() == 1){ // [max] format from makerbot customizer
-		max = std::stoi(object->values.toVector()[0].toString(),nullptr,0);
+	if(object->values.toVectorPtr()->size() == 1){ // [max] format from makerbot customizer
+		max = std::stoi(object->values.toVectorPtr()[0].toString(),nullptr,0);
 	}
 	this->lineEdit->setMaxLength(max);
 
