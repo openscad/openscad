@@ -45,56 +45,56 @@ bool SettingsEntry::is_default() const
 }
 
 static Value value(std::string s1, std::string s2) {
-	Value::VectorType v;
-	v.emplace_back(s1);
-	v.emplace_back(s2);
+	Value::VectorPtr v;
+	v->emplace_back(s1);
+	v->emplace_back(s2);
 	return v;
 }
 
-static Value::VectorType values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
-	Value::VectorType v;
-	v.emplace_back(value(s1, s1disp));
-	v.emplace_back(value(s2, s2disp));
+static Value::VectorPtr values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
+	Value::VectorPtr v;
+	v->push_back(value(s1, s1disp));
+	v->push_back(value(s2, s2disp));
 	return v;
 }
 
-static Value::VectorType values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
-	Value::VectorType v;
-	v.emplace_back(value(s1, s1disp));
-	v.emplace_back(value(s2, s2disp));
-	v.emplace_back(value(s3, s3disp));
+static Value::VectorPtr values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
+	Value::VectorPtr v;
+	v->push_back(value(s1, s1disp));
+	v->push_back(value(s2, s2disp));
+	v->push_back(value(s3, s3disp));
 	return v;
 }
 
-static Value::VectorType values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
-	Value::VectorType v;
-	v.emplace_back(value(s1, s1disp));
-	v.emplace_back(value(s2, s2disp));
-	v.emplace_back(value(s3, s3disp));
-	v.emplace_back(value(s4, s4disp));
+static Value::VectorPtr values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
+	Value::VectorPtr v;
+	v->push_back(value(s1, s1disp));
+	v->push_back(value(s2, s2disp));
+	v->push_back(value(s3, s3disp));
+	v->push_back(value(s4, s4disp));
 	return v;
 }
 
 static Value axisValues() {
-	Value::VectorType v;
-	v.emplace_back(value("None", _("None")));
+	Value::VectorPtr v;
+	v->push_back(value("None", _("None")));
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
 		auto userData = (boost::format("+%d") % (i+1)).str();
 		auto text = (boost::format(_("Axis %d")) % i).str();
-		v.emplace_back(value(userData, text));
+		v->push_back(value(userData, text));
 
 		userData = (boost::format("-%d") % (i+1)).str();
 		text = (boost::format(_("Axis %d (inverted)")) % i).str();
-		v.emplace_back(value(userData, text));
+		v->push_back(value(userData, text));
 	}
 	return v;
 }
 
 static Value buttonValues() {
-	Value::VectorType v;
- 	v.emplace_back(value("None", _("None")));
-	v.emplace_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
+	Value::VectorPtr v;
+ 	v->push_back(value("None", _("None")));
+	v->push_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
 	return v;
 }
 
@@ -112,7 +112,6 @@ Settings *Settings::inst(bool erase)
 
 Settings::Settings()
 {
-	std::cout << "Settings constructor\n";
 }
 
 Settings::~Settings()

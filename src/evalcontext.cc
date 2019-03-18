@@ -27,7 +27,7 @@ Value EvalContext::getArgValue(size_t i, const Context *ctx) const
 	if (arg.expr) {
 		return arg.expr->evaluate(ctx ? ctx : this);
 	}
-	return {};
+	return Value::undefined();
 }
 
 /*!

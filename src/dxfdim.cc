@@ -92,7 +92,7 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	}else{
 		PRINTB("WARNING: Can't open DXF file '%s'! %s",
 					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return {};
+		return Value::undefined();
 	}
 	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
 												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
@@ -146,13 +146,13 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 
 		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type! %s", 
 					 name % rawFilename  % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return {};
+		return Value::undefined();
 	}
 
 	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'! %s",
 				 name % rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
-	return {};
+	return Value::undefined();
 }
 
 Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
@@ -199,7 +199,7 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	}else{
 		PRINTB("WARNING: Can't open DXF file '%s'! %s",
 					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return {};
+		return Value::undefined();
 	}
 
 	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
@@ -234,16 +234,16 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			Value::VectorType ret;
-			ret.emplace_back(x);
-			ret.emplace_back(y);
-			return dxf_cross_cache.emplace(key, std::move(ret)).first->second.clone();
+			Value::VectorPtr ret;
+			ret->emplace_back(x);
+			ret->emplace_back(y);
+			return (dxf_cross_cache[key] = std::move(ret)).clone();
 		}
 	}
 
 	PRINTB("WARNING: Can't find cross in '%s', layer '%s'! %s", rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
-	return {};
+	return Value::undefined();
 }
 
 void initialize_builtin_dxf_dim()

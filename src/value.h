@@ -123,10 +123,42 @@ class Value
 {
 public:
 	typedef std::vector<Value> VectorType;
-  //class SharedVectorType : public shared_ptr<VectorType> {
-  //  Value& operator[](VectorType::size_type n) { return this->operator[](n); }
-  //  Value operator[](VectorType::size_type n) const { return this->operator[](n); }
-  //};
+
+  class VectorPtr {
+  public:
+    VectorPtr() : ptr(new VectorType()) {}
+    VectorPtr(const VectorPtr &) = delete; // never copy, move instead
+    VectorPtr &operator=(const VectorPtr &v) = delete; // never copy, move instead
+    
+    // move constructor & assignment
+    VectorPtr(VectorPtr&& x) : ptr(std::move(x.ptr)) { x.ptr.reset(); };
+    VectorPtr& operator=(VectorPtr&& x) { 
+      ptr = std::move(x.ptr);
+      x.ptr.reset();
+      return *this;
+    }
+    // Copy explicitly only when necessary
+    VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c;  }
+
+    //VectorPtr(Value::VectorType &&); // do we want to me able to move VectorType?
+    const Value::VectorType &operator*() const { return *ptr.get(); }
+    Value::VectorType *operator->() const { return ptr.get(); }
+    Value &operator[](size_t idx) const {	return (*ptr.get())[idx]; }
+    bool operator==(const VectorPtr &v) const { return *ptr == *v; }
+    bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
+    operator bool() const {	return !ptr->empty(); }
+    
+    friend bool operator==(const VectorPtr &vptr, nullptr_t) { vptr.ptr == nullptr; };
+    friend bool operator!=(const VectorPtr &vptr, nullptr_t) { vptr.ptr != nullptr; };
+    friend bool operator==(nullptr_t, const VectorPtr &vptr) { nullptr == vptr.ptr; };
+    friend bool operator!=(nullptr_t, const VectorPtr &vptr) { nullptr != vptr.ptr; };
+
+  private:
+    shared_ptr<Value::VectorType> ptr;
+  };
+
+
+public:
 
   enum class ValueType {
     UNDEFINED,
@@ -136,11 +168,10 @@ public:
     VECTOR,
     RANGE
   };
-  static const Value undefined;
+  static Value undefined() { return {}; }
 
   Value();
   Value(const Value &) = delete; // never copy, always move
-  //Value(Value&&) = default;
   Value(Value&& x) : value(std::move(x.value))
   {
     x.value = boost::blank();
@@ -152,11 +183,10 @@ public:
   Value(const std::string &v);
   Value(const char *v);
   Value(const char v);
-  //Value(const VectorType &v); // dont copy vectors
-  Value(VectorType &&v);
   Value(const RangeType &v);
+  Value(VectorPtr&& v) : value(std::move(v)) {};
 
-  Value clone(bool log=true) const; // Use sparingly to explicitly copy a Value
+  Value clone() const; // Use sparingly to explicitly copy a Value
 
   ValueType type() const;
   bool isDefined() const;
@@ -174,8 +204,7 @@ public:
   void toStream(std::ostringstream &stream) const;
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
-  const VectorType &toVector() const;
-  VectorType moveVector();
+  const VectorPtr &toVectorPtr() const;
 
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z) const;
@@ -209,18 +238,19 @@ public:
   Value operator/(const Value &v) const;
   Value operator%(const Value &v) const;
 
-/*
-  Value &at(const double &idx); // get non-const reference for Vector values
-  static Value flatten(Value::VectorType &vec);
-*/
-
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
     if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
     else stream << value.toString();
     return stream;
   }
+  friend class chr_visitor;
+	friend class tostring_visitor;
+	friend class tostream_visitor;
+	friend class bracket_visitor;
+  friend class plus_visitor;
+  friend class minus_visitor;
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType > Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);

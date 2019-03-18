@@ -92,9 +92,9 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	std::string key = entry.category() + "/" + entry.name();
 	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	Value v{getValue(entry, value)};
+	const Value v = getValue(entry, value);
 	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, std::move(v));
+	s->set(entry, v.clone());
     }
 };
 
@@ -104,8 +104,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 }
 
 void Preferences::init() {
-	Settings::Settings *s = Settings::Settings::inst(); // make sure Settings is instantiated before using
-
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 #if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
@@ -226,6 +224,7 @@ void Preferences::init() {
 	initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
 
 	SettingsReader settingsReader;
+	Settings::Settings *s = Settings::Settings::inst();
 	s->visit(settingsReader);
 
 	const QString slicer = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngine).toString());
@@ -933,10 +932,9 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
-	const auto &vec = entry.range().toVector();
-	for(int i = 0; i < vec.size(); ++i) {
-		QString val = QString::fromStdString(vec[i][0].toString());
-		QString qtext = QString::fromStdString(gettext(vec[i][1].toString().c_str()));
+	for(const auto &v : *entry.range().toVectorPtr()) {
+		QString val = QString::fromStdString(v[0].toString());
+		QString qtext = QString::fromStdString(gettext(v[1].toString().c_str()));
 		comboBox->addItem(qtext, val);
 	}
 }
@@ -952,13 +950,13 @@ void Preferences::updateComboBox(QComboBox *comboBox, const Settings::SettingsEn
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	Value value = s->get(entry);
+	const Value &value = s->get(entry);
 	QString text = QString::fromStdString(value.toString());
 	int idx = comboBox->findData(text);
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);
 	} else {
-		Value defaultValue = entry.defaultValue();
+		const Value &defaultValue = entry.defaultValue();
 		QString defaultText = QString::fromStdString(defaultValue.toString());
 		int defIdx = comboBox->findData(defaultText);
 		if (defIdx >= 0) {

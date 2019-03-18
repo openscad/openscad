@@ -87,8 +87,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			}
 		}
 		else if (it_values.type() == Value::ValueType::VECTOR) {
-			Value::VectorType moved_vec = it_values.moveVector();
-			for (size_t i = 0; i < moved_vec.size(); i++) {
+			const Value::VectorPtr &moved_vec = it_values.toVectorPtr();
+			for (size_t i = 0; i < moved_vec->size(); i++) {
 				c.set_variable(it_name, std::move(moved_vec[i]));
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
@@ -231,8 +231,8 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 			}
 			else if (value.type() == Value::ValueType::VECTOR) {
 				AbstractNode* node = new GroupNode(inst);
-				Value::VectorType vect = value.moveVector();
-				for(auto it = vect.begin(); it != vect.end(); it++) {
+				const Value::VectorPtr &vect = value.toVectorPtr();
+				for(auto it = vect->begin(); it != vect->end(); it++) {
 					AbstractNode* childnode = getChild(std::move(*it), modulectx);
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);

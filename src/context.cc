@@ -80,22 +80,26 @@ void Context::setVariables(const EvalContext *evalctx, const AssignmentList &arg
 	// Set any default values
 	for (const auto arg : args) {
 		// FIXME should we just not set value if arg.expr is false?
-		set_variable(arg.name, arg.expr ? std::move(arg.expr->evaluate(this->parent)) : Value::undefined.clone());
+		//set_variable(arg.name, arg.expr ? std::move(arg.expr->evaluate(this->parent)) : Value::undefined());
+		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent).clone() : Value::undefined());
 	}
 	
 	if (evalctx) {
 		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
 		for (const auto &ass : assignments) {
 			Value val = ass.second->evaluate(evalctx);
-			this->set_variable(ass.first, std::move(val));
+			//this->set_variable(ass.first, std::move(val));
+			this->set_variable(ass.first, val.clone());
 		}
 	}
 }
 
 void Context::set_variable(const std::string &name, Value value)
 {
-	if (is_config_variable(name)) this->config_variables[name] = std::move(value);
-	else this->variables[name] = std::move(value);
+	if (is_config_variable(name)) this->config_variables[name] = value.clone();
+	else this->variables[name] = value.clone();
+	//if (is_config_variable(name)) this->config_variables[name] = std::move(value);
+	//else this->variables[name] = std::move(value);
 }
 
 void Context::set_constant(const std::string &name, Value value)
@@ -104,14 +108,16 @@ void Context::set_constant(const std::string &name, Value value)
 		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
 	}
 	else {
-		this->constants[name] = std::move(value);
+		//this->constants[name] = std::move(value); // FIXME revert?
+		this->constants[name] = value.clone();
 	}
 }
 
 void Context::take_variables(Context &other)
 {
 	for (auto it = other.variables.begin(); it != other.variables.end(); it++) {
-		set_variable(it->first, std::move(it->second) );
+		// set_variable(it->first, std::move(it->second) ); // FIXME revert?
+		set_variable(it->first, it->second.clone() );
 	}
 }
 
@@ -119,7 +125,7 @@ Value Context::lookup_variable(const std::string &name, bool silent, const Locat
 {
 	if (!this->ctx_stack) {
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return {};
+		return Value::undefined();
 	}
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
@@ -131,7 +137,7 @@ Value Context::lookup_variable(const std::string &name, bool silent, const Locat
 		if (!silent) {
 			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
 		}
-		return {};
+		return Value::undefined();
 	}
 	if (!this->parent && this->constants.find(name) != this->constants.end()) {
 		return this->constants.find(name)->second.clone();
@@ -145,7 +151,7 @@ Value Context::lookup_variable(const std::string &name, bool silent, const Locat
 	if (!silent) {
 		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
 	}
-	return {};
+	return Value::undefined();
 }
 
 
@@ -193,7 +199,7 @@ Value Context::evaluate_function(const std::string &name, const EvalContext *eva
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath().c_str());
-	return {};
+	return Value::undefined();
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const

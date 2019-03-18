@@ -29,7 +29,7 @@ void OpenSCADApp::workaround_QTBUG_65592(QObject* o, QEvent* e)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
 	QMainWindow* mw;
-	if (o->isWidgetType() && e.type() == QEvent::MouseButtonPress && (mw = qobject_cast< QMainWindow* >(o))) {
+	if (o->isWidgetType() && e->type() == QEvent::MouseButtonPress && (mw = qobject_cast< QMainWindow* >(o))) {
 		for (auto& ch : mw->children()) {
 			if (auto dw = qobject_cast< QDockWidget* >(ch)) {
 				auto pname = "_wa-QTBUG-65592";

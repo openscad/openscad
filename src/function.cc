@@ -44,10 +44,10 @@ UserFunction::~UserFunction()
 
 Value UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
-	if (!expr) return {};
+	if (!expr) return Value::undefined();
 	Context c(ctx);
 	c.setVariables(evalctx, definition_arguments);
-	return { expr->evaluate(&c) };
+	return expr->evaluate(&c);
 }
 
 void UserFunction::print(std::ostream &stream, const std::string &indent) const
@@ -82,7 +82,7 @@ public:
 	~FunctionTailRecursion() { }
 
 	Value evaluate(const Context *ctx, const EvalContext *evalctx) const override {
-		if (!expr) return {};
+		if (!expr) return Value::undefined();
 		
 		Context c(ctx);
 		c.setVariables(evalctx, definition_arguments);

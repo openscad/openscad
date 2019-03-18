@@ -130,11 +130,11 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const Location &loc, co
 			std::string locStr = loc.toRelativeString(ctx.documentPath());
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
 		}
-		return {d.toDouble() / 2.0};
+		return d.toDouble() / 2.0;
 	} else if (r_defined) {
 		return r;
 	} else {
-		return {};
+		return Value::undefined();
 	}
 }
 
@@ -558,14 +558,14 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces.toVector().size(); i++)	{
+		for (size_t i=0; i<this->faces.toVectorPtr()->size(); i++)	{
 			p->append_poly();
-			const auto &vec = this->faces.toVector()[i].toVector();
-			for (size_t j=0; j<vec.size(); j++) {
+			const auto &vec = this->faces.toVectorPtr()[i].toVectorPtr();
+			for (size_t j=0; j<vec->size(); j++) {
 				size_t pt = (size_t)vec[j].toDouble();
-				if (pt < this->points.toVector().size()) {
+				if (pt < this->points.toVectorPtr()->size()) {
 					double px, py, pz;
-					if (!this->points.toVector()[pt].getVec3(px, py, pz, 0.0) ||
+					if (!this->points.toVectorPtr()[pt].getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
 						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
 						return p;
@@ -618,8 +618,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			Outline2d outline;
 			double x,y;
-			const auto &vec = this->points.toVector();
-			for (unsigned int i=0;i<vec.size();i++) {
+			const auto &vec = this->points.toVectorPtr();
+			for (unsigned int i=0;i<vec->size();i++) {
 				const auto &val = vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
@@ -629,13 +629,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 				outline.vertices.emplace_back(x, y);
 			}
 
-			if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
+			if (this->paths.toVectorPtr()->size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
-				for (const auto &polygon : this->paths.toVector()) {
+				for (const auto &polygon : *this->paths.toVectorPtr()) {
 					Outline2d curroutline;
-					for (const auto &index : polygon.toVector()) {
+					for (const auto &index : *polygon.toVectorPtr()) {
 						unsigned int idx = (unsigned int)index.toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);

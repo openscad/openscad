@@ -401,7 +401,7 @@ expr:
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(Value(Value::VectorType()), LOC(@$));
+              $$ = new Literal(Value(Value::VectorPtr()), LOC(@$));
             }
         | '[' vector_expr optional_commas ']'
             {

@@ -59,7 +59,8 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(evalctx, args);
 	inst->scope.apply(*evalctx);
 
-	auto convexity = Value{};
+	auto convexity = Value::undefined();
+	auto path = Value::undefined();
 	
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);
@@ -69,18 +70,18 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 		auto ns = c.lookup_variable("newsize");
 		node->newsize << 0,0,0;
 		if ( ns.type() == Value::ValueType::VECTOR ) {
-			const Value::VectorType &vs = ns.toVector();
-			if ( vs.size() >= 1 ) node->newsize[0] = vs[0].toDouble();
-			if ( vs.size() >= 2 ) node->newsize[1] = vs[1].toDouble();
-			if ( vs.size() >= 3 ) node->newsize[2] = vs[2].toDouble();
+			const Value::VectorPtr &vs = ns.toVectorPtr();
+			if ( vs->size() >= 1 ) node->newsize[0] = vs[0].toDouble();
+			if ( vs->size() >= 2 ) node->newsize[1] = vs[1].toDouble();
+			if ( vs->size() >= 3 ) node->newsize[2] = vs[2].toDouble();
 		}
 		auto autosize = c.lookup_variable("auto");
 		node->autosize << false, false, false;
 		if ( autosize.type() == Value::ValueType::VECTOR ) {
-			const Value::VectorType &va = autosize.toVector();
-			if ( va.size() >= 1 ) node->autosize[0] = va[0].toBool();
-			if ( va.size() >= 2 ) node->autosize[1] = va[1].toBool();
-			if ( va.size() >= 3 ) node->autosize[2] = va[2].toBool();
+			const Value::VectorPtr &va = autosize.toVectorPtr();
+			if ( va->size() >= 1 ) node->autosize[0] = va[0].toBool();
+			if ( va->size() >= 2 ) node->autosize[1] = va[1].toBool();
+			if ( va->size() >= 3 ) node->autosize[2] = va[2].toBool();
 		}
 		else if ( autosize.type() == Value::ValueType::BOOL ) {
 			node->autosize << autosize.toBool(),autosize.toBool(),autosize.toBool();
@@ -88,7 +89,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	}
 
 	node->convexity = static_cast<int>(convexity.toDouble());
-	node->path = Value::undefined.clone();
+	node->path = std::move(path);
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

@@ -36,7 +36,7 @@ void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
 	    settings.remove(key);
 	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
 	} else {
-	    Value value = s->get(entry);
+	    const Value &value = s->get(entry);
 	    settings.setValue(key, QString::fromStdString(value.toString()));
 	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
 	}
