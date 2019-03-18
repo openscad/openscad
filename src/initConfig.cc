@@ -23,7 +23,7 @@ void InitConfigurator::initComboBox(QComboBox *comboBox, const Settings::Setting
 
 void InitConfigurator::initSpinBoxRange(const BlockSignals<QSpinBox *> &spinBox,const Settings::SettingsEntry &entry)
 {
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
@@ -61,7 +61,7 @@ void InitConfigurator::initDoubleSpinBox(QDoubleSpinBox *spinBox,const Settings:
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->blockSignals(true);
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setSingleStep(range.step_value());

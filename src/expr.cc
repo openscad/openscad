@@ -129,9 +129,9 @@ const char *UnaryOp::opString() const
 	}
 }
 
-bool UnaryOp::isLiteral() const { 
+bool UnaryOp::isLiteral() const {
 
-    if(this->expr->isLiteral()) 
+    if(this->expr->isLiteral())
         return true;
     return false;
 }
@@ -265,8 +265,7 @@ const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Cont
 
 Value TernaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
-	const shared_ptr<const Expression>& nextexpr = evaluateStep(context);
-	return nextexpr->evaluate(context);
+	return evaluateStep(context)->evaluate(context);
 }
 
 void TernaryOp::print(std::ostream &stream, const std::string &) const
@@ -281,7 +280,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 
 Value ArrayLookup::evaluate(const std::shared_ptr<Context>& context) const {
 	const Value &array = this->array->evaluate(context);
-	return array[this->index->evaluate(context)].clone();
+	return array[this->index->evaluate(context)];
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
@@ -337,29 +336,25 @@ Value Range::evaluate(const std::shared_ptr<Context>& context) const
 		if (endValue.type() == Value::Type::NUMBER) {
 			double begin_val = beginValue.toDouble();
 			double end_val   = endValue.toDouble();
-			
+
 			if (!this->step) {
-				if(end_val < begin_val){
+				if (end_val < begin_val) {
 					std::swap(begin_val,end_val);
 					print_range_depr(loc, context);
 				}
-				
-				RangeType range(begin_val, end_val);
-				return Value(range);
+				return RangeType(begin_val, end_val);
 			} else {
 				Value stepValue = this->step->evaluate(context);
 				if (stepValue.type() == Value::Type::NUMBER) {
 					double step_val = stepValue.toDouble();
-					if(this->isLiteral()){
+					if (this->isLiteral()) {
 						if ((step_val>0) && (end_val < begin_val)) {
 							print_range_err("is greater", "is positive", loc, context);
 						}else if ((step_val<0) && (end_val > begin_val)) {
 							print_range_err("is smaller", "is negative", loc, context);
 						}
 					}
-
-					RangeType range(begin_val, step_val, end_val);
-					return Value(range);
+					return RangeType(begin_val, step_val, end_val);
 				}
 			}
 		}
@@ -376,14 +371,12 @@ void Range::print(std::ostream &stream, const std::string &) const
 }
 
 bool Range::isLiteral() const {
-    if(!this->step){ 
-        if( begin->isLiteral() && end->isLiteral())
-            return true;
-    }else{
-        if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
-            return true;
-    }
-    return false;
+  if (!this->step) {
+    if ( begin->isLiteral() && end->isLiteral()) return true;
+  } else {
+    if ( begin->isLiteral() && end->isLiteral() && step->isLiteral()) return true;
+  }
+  return false;
 }
 
 Vector::Vector(const Location &loc) : Expression(loc)
@@ -392,10 +385,10 @@ Vector::Vector(const Location &loc) : Expression(loc)
 
 bool Vector::isLiteral() const {
     for(const auto &e : this->children) {
-        if (!e->isLiteral()){
+        if (!e->isLiteral()) {
             return false;
         }
-    } 
+    }
     return true;
 }
 
@@ -418,7 +411,7 @@ Value Vector::evaluate(const std::shared_ptr<Context>& context) const
 			vec->push_back(std::move(tmpval));
 		}
 	}
-	return Value(std::move(vec));
+	return std::move(vec);
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -721,8 +714,8 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
-    const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
-	
+    const shared_ptr<Expression> &expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+
     Value::VectorPtr vec;
     if (expr) {
         if (isListComprehension(expr)) {
@@ -732,7 +725,7 @@ Value LcIf::evaluate(const std::shared_ptr<Context>& context) const
         }
     }
 
-    return Value(std::move(vec));
+    return std::move(vec);
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
@@ -754,7 +747,7 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
     Value v = this->expr->evaluate(context);
 
     if (v.type() == Value::Type::RANGE) {
-        RangeType range = v.toRange();
+        const RangeType &range = v.toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
@@ -778,7 +771,7 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
     if (isListComprehension(this->expr)) {
         return flatten(std::move(vec));
     } else {
-        return vec;
+        return std::move(vec);
     }
 }
 
@@ -807,7 +800,7 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
     ContextHandle<Context> c{Context::create<Context>(context)};
 
     if (it_values.type() == Value::Type::RANGE) {
-        RangeType range = it_values.toRange();
+        const RangeType &range = it_values.toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
@@ -835,7 +828,7 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
     if (isListComprehension(this->expr)) {
         return flatten(std::move(vec));
     } else {
-        return vec;
+        return std::move(vec);
     }
 }
 
@@ -869,12 +862,12 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
         ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
         evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
         c->apply_variables(tmp.ctx);
-    }    
+    }
 
     if (isListComprehension(this->expr)) {
         return flatten(std::move(vec));
     } else {
-        return vec;
+        return std::move(vec);
     }
 }
 
@@ -918,13 +911,13 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 			c->set_variable(arg->getName(), assignments[arg->getName()]->evaluate(evalctx));
 		}
 	}
-	
+
 	const Value condition = c->lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition.toBool()) {
 		const Expression *expr = assignments["condition"];
 		const Value message = c->lookup_variable("message", true);
-		
+
 		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
 		if (message.isDefined()) {
@@ -998,7 +991,7 @@ Value evaluate_function(const std::string& name, const std::shared_ptr<Expressio
 			}
 		}
 
-		if (counter++ == 1000000){
+		if (counter++ == 1000000) {
 			const std::string locs = loc.toRelativeString(ctx->documentPath());
 			PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
 			throw RecursionException::create("function", name,loc);

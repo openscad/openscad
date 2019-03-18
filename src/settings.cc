@@ -48,31 +48,31 @@ static Value value(std::string s1, std::string s2) {
 	Value::VectorPtr v;
 	v->emplace_back(s1);
 	v->emplace_back(s2);
-	return v;
+	return std::move(v);
 }
 
-static Value::VectorPtr values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
 	Value::VectorPtr v;
 	v->push_back(value(s1, s1disp));
 	v->push_back(value(s2, s2disp));
-	return v;
+	return std::move(v);
 }
 
-static Value::VectorPtr values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
 	Value::VectorPtr v;
 	v->push_back(value(s1, s1disp));
 	v->push_back(value(s2, s2disp));
 	v->push_back(value(s3, s3disp));
-	return v;
+	return std::move(v);
 }
 
-static Value::VectorPtr values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
 	Value::VectorPtr v;
 	v->push_back(value(s1, s1disp));
 	v->push_back(value(s2, s2disp));
 	v->push_back(value(s3, s3disp));
 	v->push_back(value(s4, s4disp));
-	return v;
+	return std::move(v);
 }
 
 static Value axisValues() {
@@ -88,14 +88,14 @@ static Value axisValues() {
 		text = (boost::format(_("Axis %d (inverted)")) % i).str();
 		v->emplace_back(value(userData, text));
 	}
-	return v;
+	return std::move(v);
 }
 
 static Value buttonValues() {
 	Value::VectorPtr v;
  	v->push_back(value("None", _("None")));
 	v->push_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
-	return v;
+	return std::move(v);
 }
 
 Settings *Settings::inst(bool erase)

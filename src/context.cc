@@ -87,7 +87,6 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 	// Set any default values
 	for (const auto arg : args) {
 		// FIXME should we just not set value if arg.expr is false?
-		//set_variable(arg.name, arg.expr ? std::move(arg.expr->evaluate(this->parent)) : Value::undefined());
 		set_variable(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(this->parent) : Value::undefined.clone());
 	}
 	
@@ -101,10 +100,8 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 
 void Context::set_variable(const std::string &name, Value value)
 {
-	if (is_config_variable(name)) this->config_variables[name] = value.clone();
-	else this->variables[name] = value.clone();
-	//if (is_config_variable(name)) this->config_variables[name] = std::move(value);
-	//else this->variables[name] = std::move(value);
+	if (is_config_variable(name)) this->config_variables[name] = std::move(value);
+	else this->variables[name] = std::move(value);
 }
 
 void Context::set_constant(const std::string &name, Value value)

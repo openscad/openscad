@@ -73,10 +73,10 @@ Value builtin_abs(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(std::fabs(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("abs", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("abs", ctx, evalctx);
 	}
 
@@ -90,10 +90,10 @@ Value builtin_sign(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 		if (v.type() == Value::Type::NUMBER) {
 			double x = v.toDouble();
 			return Value((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
-		}else{
+		} else {
 			print_argConvert_warning("sign", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("sign", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -149,7 +149,7 @@ Value builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 				vec->emplace_back(distributor(deterministic_rng));
 			}
 		}
-		return Value(std::move(vec));
+		return std::move(vec);
 	} else {
 		print_argCnt_warning("rands", ctx, evalctx);
 	}
@@ -184,7 +184,7 @@ Value builtin_min(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 			return Value(val);
 		}
 		
-	}else{
+	} else {
 		print_argCnt_warning("min", ctx, evalctx);
 		return Value::undefined.clone();
 	}
@@ -219,7 +219,7 @@ Value builtin_max(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 			}
 			return Value(val);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("max", ctx, evalctx);
 		return Value::undefined.clone();
 	}
@@ -234,10 +234,10 @@ Value builtin_sin(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(sin_degrees(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("sin", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("sin", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -250,10 +250,10 @@ Value builtin_cos(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(cos_degrees(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("cos", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("cos", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -265,10 +265,10 @@ Value builtin_asin(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(asin_degrees(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("asin", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("asin", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -280,10 +280,10 @@ Value builtin_acos(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(acos_degrees(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("acos", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("acos", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -295,10 +295,10 @@ Value builtin_tan(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(tan_degrees(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("tan", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("tan", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -310,10 +310,10 @@ Value builtin_atan(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(atan_degrees(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("atan", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("atan", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -325,10 +325,10 @@ Value builtin_atan2(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 		Value v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
 		if (v0.type() == Value::Type::NUMBER && v1.type() == Value::Type::NUMBER){
 			return Value(atan2_degrees(v0.toDouble(), v1.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("atan2", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("atan2", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -340,10 +340,10 @@ Value builtin_pow(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		Value v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
 		if (v0.type() == Value::Type::NUMBER && v1.type() == Value::Type::NUMBER){
 			return Value(pow(v0.toDouble(), v1.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("pow", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("pow", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -355,10 +355,10 @@ Value builtin_round(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(round(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("round", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("round", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -370,10 +370,10 @@ Value builtin_ceil(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(ceil(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("ceil", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("ceil", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -385,10 +385,10 @@ Value builtin_floor(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(floor(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("floor", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("floor", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -400,10 +400,10 @@ Value builtin_sqrt(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(sqrt(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("sqrt", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("sqrt", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -415,10 +415,10 @@ Value builtin_exp(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(exp(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("exp", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("exp", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -435,7 +435,7 @@ Value builtin_length(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 			return Value(int( g_utf8_strlen( text.c_str(), text.size() ) ));
 		}
 		print_argConvert_warning("len", ctx, evalctx);
-	}else{
+	} else {
 		print_argCnt_warning("len", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -455,7 +455,7 @@ Value builtin_log(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 			}
 			return Value(log(y) / log(x));
 		}
-	}else{
+	} else {
 		print_argCnt_warning("log", ctx, evalctx);
 		return Value::undefined.clone();
 	}
@@ -470,10 +470,10 @@ Value builtin_ln(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalC
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(log(v.toDouble()));
-		}else{
+		} else {
 			print_argConvert_warning("ln", ctx, evalctx);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("ln", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -546,7 +546,7 @@ Value builtin_concat(const std::shared_ptr<Context>, const std::shared_ptr<EvalC
 			result->emplace_back(std::move(val));
 		}
 	}
-	return result;
+	return std::move(result);
 }
 
 Value builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
@@ -790,7 +790,7 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 	} else {
 		return Value::undefined.clone();
 	}
-	return returnvec;
+	return std::move(returnvec);
 }
 
 #define QUOTE(x__) # x__
@@ -804,7 +804,7 @@ Value builtin_version(const std::shared_ptr<Context>, const std::shared_ptr<Eval
 #ifdef OPENSCAD_DAY
 	val->emplace_back(double(OPENSCAD_DAY));
 #endif
-	return val;
+	return std::move(val);
 }
 
 Value builtin_version_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
@@ -863,7 +863,7 @@ Value builtin_norm(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eva
 				}
 			return Value(sqrt(sum));
 		}
-	}else{
+	} else {
 		print_argCnt_warning("norm", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -919,7 +919,7 @@ Value builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 	result->emplace_back(x);
 	result->emplace_back(y);
 	result->emplace_back(z);
-	return result;
+	return std::move(result);
 }
 
 Value builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
@@ -933,7 +933,7 @@ Value builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr
 			v = evalctx->getArgValue(0);
 		}
 		return Value(v.isUndefined());
-	}else{
+	} else {
 		print_argCnt_warning("is_undef", ctx, evalctx);
 	}
 
@@ -946,10 +946,10 @@ Value builtin_is_list(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::VECTOR){
 			return Value(true);
-		}else{
+		} else {
 			return Value(false);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("is_list", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -961,10 +961,10 @@ Value builtin_is_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::NUMBER){
 			return Value(!std::isnan(v.toDouble()));
-		}else{
+		} else {
 			return Value(false);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("is_num", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -976,10 +976,10 @@ Value builtin_is_bool(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::BOOL){
 			return Value(true);
-		}else{
+		} else {
 			return Value(false);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("is_bool", ctx, evalctx);
 	}
 	return Value::undefined.clone();
@@ -991,10 +991,10 @@ Value builtin_is_string(const std::shared_ptr<Context> ctx, const std::shared_pt
 		Value v = evalctx->getArgValue(0);
 		if (v.type() == Value::Type::STRING){
 			return Value(true);
-		}else{
+		} else {
 			return Value(false);
 		}
-	}else{
+	} else {
 		print_argCnt_warning("is_string", ctx, evalctx);
 	}
 	return Value::undefined.clone();

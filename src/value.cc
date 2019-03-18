@@ -175,23 +175,23 @@ void utf8_split(const std::string& str, std::function<void(Value)> f)
 
 static uint32_t convert_to_uint32(const double d)
 {
-	auto ret = std::numeric_limits<uint32_t>::max();
+  auto ret = std::numeric_limits<uint32_t>::max();
 
-	if (std::isfinite(d)) {
-		try {
-			ret = boost::numeric_cast<uint32_t>(d);
-		} catch (boost::bad_numeric_cast &) {
-			// ignore, leaving the default max() value
-		}
-	}
+  if (std::isfinite(d)) {
+    try {
+      ret = boost::numeric_cast<uint32_t>(d);
+    } catch (boost::bad_numeric_cast &) {
+      // ignore, leaving the default max() value
+    }
+  }
 
-	return ret;
+  return ret;
 }
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
   fs::path fnpath{static_cast<std::string>(filename)}; // gcc-4.6
-	auto fpath = boostfs_uncomplete(fnpath, fs::current_path());
+  auto fpath = boostfs_uncomplete(fnpath, fs::current_path());
   stream << QuotedString(fpath.generic_string());
   return stream;
 }
@@ -220,37 +220,12 @@ Value Value::clone() const {
   case Type::BOOL:      return boost::get<bool>(this->value);
   case Type::NUMBER:    return boost::get<double>(this->value);
   case Type::STRING:    return boost::get<str_utf8_wrapper>(this->value).clone();
-  case Type::RANGE:     return boost::get<RangeType>(this->value);
+  case Type::RANGE:     return boost::get<RangeType>(this->value).clone();
   case Type::VECTOR:    return boost::get<VectorPtr>(this->value).clone();
   case Type::FUNCTION:  return Value(boost::get<FunctionPtr>(this->value).clone());
   default:              assert(false && "unknown Variant value");
   }
   return Value();
-}
-
-Value::Type Value::type() const
-{
-  return static_cast<Type>(this->value.which());
-}
-
-bool Value::isDefined() const
-{
-  return this->type() != Type::UNDEFINED;
-}
-
-bool Value::isDefinedAs(const Type type) const
-{
-  return this->type() == type;
-}
-
-bool Value::isUndefined() const
-{
-  return !isDefined();
-}
-
-const FunctionType Value::toFunction() const
-{
-	return *boost::get<FunctionPtr>(this->value);
 }
 
 std::string Value::typeName() const
@@ -273,7 +248,7 @@ bool Value::toBool() const
   case Type::BOOL:   return boost::get<bool>(this->value);
   case Type::NUMBER: return boost::get<double>(this->value)!= 0;
   case Type::STRING: return !boost::get<str_utf8_wrapper>(this->value).empty();
-  case Type::VECTOR: return boost::get<VectorPtr>(this->value);
+  case Type::VECTOR: return !boost::get<VectorPtr>(this->value)->empty();
   case Type::RANGE:  return true;
   default:           return false;
   }
@@ -309,7 +284,7 @@ bool Value::getFiniteDouble(double &v) const
   return valid;
 }
 
-const str_utf8_wrapper& Value::toStrUtf8Wrapper() {
+const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
   return boost::get<str_utf8_wrapper>(this->value);
 }
 
@@ -354,7 +329,7 @@ public:
   }
 
   std::string operator()(const RangeType &v) const {
-    return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
+    return (boost::format("[%1% : %2% : %3%]") % v.begin_value() % v.step_value() % v.end_value()).str();
   }
 
   std::string operator()(const FunctionPtr &v) const {
@@ -410,11 +385,11 @@ public:
 
   void operator()(const RangeType &v) const {
     stream << "[";
-    this->operator()(v.begin_val);
+    this->operator()(v.begin_value());
     stream << " : ";
-    this->operator()(v.step_val);
+    this->operator()(v.step_value());
     stream << " : ";
-    this->operator()(v.end_val);
+    this->operator()(v.end_value());
     stream << "]";
   }
 
@@ -503,11 +478,7 @@ public:
     }
 
     std::ostringstream stream;
-    RangeType range = v;
-    for (RangeType::iterator it = range.begin();it != range.end();it++) {
-      const Value value(*it);
-      stream << value.chrString();
-    }
+    for (double d : v) stream << Value(d).chrString();
     return stream.str();
   }
 };
@@ -541,8 +512,8 @@ bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 
   double rx, ry;
   bool valid = ignoreInfinite
-         ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
-         : v[0].getDouble(rx) && v[1].getDouble(ry);
+    ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
+    : v[0].getDouble(rx) && v[1].getDouble(ry);
 
   if (valid) {
     x = rx;
@@ -581,13 +552,19 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
-RangeType Value::toRange() const
+const RangeType& Value::toRange() const
 {
+  static const RangeType empty(0,0,0);
   const RangeType *val = boost::get<RangeType>(&this->value);
   if (val) {
     return *val;
   }
-  else return RangeType(0,0,0);
+  else return empty;
+}
+
+const FunctionType& Value::toFunction() const
+{
+  return *boost::get<FunctionPtr>(this->value);
 }
 
 class equals_visitor : public boost::static_visitor<bool>
@@ -682,7 +659,7 @@ public:
     for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
       sum->emplace_back(op1[i] + op2[i]);
     }
-    return sum;
+    return std::move(sum);
   }
 };
 
@@ -707,7 +684,7 @@ public:
     for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
       sum->emplace_back(op1[i] - op2[i]);
     }
-    return sum;
+    return std::move(sum);
   }
 };
 
@@ -723,7 +700,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
   for(const auto &val : *vecval.toVectorPtr()) {
     dstv->emplace_back(val * numval);
   }
-  return dstv;
+  return std::move(dstv);
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
@@ -744,7 +721,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
     }
     dstv->push_back(Value(r_e));
   }
-  return dstv;
+  return std::move(dstv);
 }
 
 Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
@@ -773,7 +750,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
     }
     dstv->push_back(Value(r_e));
   }
-  return dstv;
+  return std::move(dstv);
 }
 
 Value Value::operator*(const Value &v) const
@@ -815,10 +792,10 @@ Value Value::operator*(const Value &v) const
       VectorPtr dstv;
       for (const auto &srcrow : vec1) {
         const auto &srcrowvec = *srcrow.toVectorPtr();
-	if (srcrowvec.size() != vec2.size()) return Value::undefined.clone();
-	dstv->push_back(multvecmat(srcrowvec, vec2));
+        if (srcrowvec.size() != vec2.size()) return Value::undefined.clone();
+        dstv->push_back(multvecmat(srcrowvec, vec2));
       }
-      return dstv;
+      return std::move(dstv);
     }
   }
   return Value::undefined.clone();
@@ -835,7 +812,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(vecval / v);
     }
-    return dstv;
+    return std::move(dstv);
   }
   else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
     const auto &vec = *v.toVectorPtr();
@@ -843,7 +820,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(*this / vecval);
     }
-    return dstv;
+    return std::move(dstv);
   }
   return Value::undefined.clone();
 }
@@ -867,7 +844,7 @@ Value Value::operator-() const
     for (const auto &vecval : vec) {
       dstv->push_back(-vecval);
     }
-    return dstv;
+    return std::move(dstv);
   }
   return Value::undefined.clone();
 }
@@ -906,9 +883,9 @@ public:
   Value operator()(const RangeType &range, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     switch(i) {
-    case 0: return range.begin_val;
-    case 1: return range.step_val;
-    case 2: return range.end_val;
+    case 0: return range.begin_value();
+    case 1: return range.step_value();
+    case 2: return range.end_value();
     }
     return Value::undefined.clone();
   }
@@ -959,7 +936,7 @@ uint32_t RangeType::numValues() const
   return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type),
+RangeType::iterator::iterator(const RangeType &range, type_t type) : range(range), val(range.begin_val), type(type),
     num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
 {
   update_type();

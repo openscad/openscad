@@ -75,7 +75,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Value it_values = evalctx->getArgValue(l, ctx);
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
 		if (it_values.type() == Value::Type::RANGE) {
-			RangeType range = it_values.toRange();
+			const RangeType &range = it_values.toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
@@ -243,7 +243,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				return node;
 			}
 			else if (value.type() == Value::Type::RANGE) {
-				RangeType range = value.toRange();
+				const RangeType &range = value.toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= RangeType::MAX_RANGE_STEPS) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps % evalctx->loc.toRelativeString(ctx->documentPath()));
