@@ -105,8 +105,8 @@ class str_utf8_wrapper : public std::string
 {
 public:
 	str_utf8_wrapper() : std::string(), cached_len(-1) { }
-	str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
-	str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
+	explicit str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
+	explicit str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
 	~str_utf8_wrapper() {}
 	
 	glong get_utf8_strlen() const {
@@ -177,13 +177,13 @@ public:
     x.value = boost::blank();
     //std::cout << "Value::Value(Value&&) " << *this << '\n';
   }
-  Value(bool v);
-  Value(int v);
-  Value(double v);
+  explicit Value(bool v);
+  explicit Value(int v);
+  explicit Value(double v);
   Value(const std::string &v);
-  Value(const char *v);
-  Value(const char v);
-  Value(const RangeType &v);
+  explicit Value(const char *v);
+  explicit Value(const char v);
+  explicit Value(const RangeType &v);
   Value(VectorPtr&& v) : value(std::move(v)) {};
 
   Value clone() const; // Use sparingly to explicitly copy a Value
@@ -198,6 +198,7 @@ public:
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
   std::string toString() const;
+  const str_utf8_wrapper& toStrUtf8Wrapper();
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
   std::string toEchoString(const tostring_visitor *visitor) const;
@@ -232,6 +233,7 @@ public:
   Value operator-() const;
   //const Value &operator[](const Value &v) const;
   Value operator[](const Value &v) const;
+  Value operator[](size_t idx) const;
   Value operator+(const Value &v) const;
   Value operator-(const Value &v) const;
   Value operator*(const Value &v) const;

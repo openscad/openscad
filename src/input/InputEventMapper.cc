@@ -287,7 +287,7 @@ void InputEventMapper::onAxisAutoTrim()
         std::string is = std::to_string(i);
         axisTrimValue[i] = -axisRawValue[i];
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
-        s->set(*ent, axisTrimValue[i]);
+        s->set(*ent, Value(axisTrimValue[i]));
     }
 }
 
@@ -298,7 +298,7 @@ void InputEventMapper::onAxisTrimReset()
         std::string is = std::to_string(i);
         axisTrimValue[i] = 0.00;
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
-        s->set(*ent, axisTrimValue[i]);
+        s->set(*ent, Value(axisTrimValue[i]));
     }
 }
 

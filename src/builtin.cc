@@ -90,10 +90,10 @@ std::string Builtins::isDeprecated(const std::string &name) const
 
 Builtins::Builtins()
 {
-	this->assignments.emplace_back("$fn", make_shared<Literal>(0.0));
-	this->assignments.emplace_back("$fs", make_shared<Literal>(2.0));
-	this->assignments.emplace_back("$fa", make_shared<Literal>(12.0));
-	this->assignments.emplace_back("$t", make_shared<Literal>(0.0));
+	this->assignments.emplace_back("$fn", make_shared<Literal>(Value(0.0)));
+	this->assignments.emplace_back("$fs", make_shared<Literal>(Value(2.0)));
+	this->assignments.emplace_back("$fa", make_shared<Literal>(Value(12.0)));
+	this->assignments.emplace_back("$t", make_shared<Literal>(Value(0.0)));
 	this->assignments.emplace_back("$preview", make_shared<Literal>(Value::undefined())); //undef as should always be overwritten.
 
 	Value::VectorPtr zero3v;
@@ -101,5 +101,5 @@ Builtins::Builtins()
 	Value zero3{ zero3v };
 	this->assignments.emplace_back("$vpt", make_shared<Literal>(zero3.clone()));
 	this->assignments.emplace_back("$vpr", make_shared<Literal>(zero3.clone()));
-	this->assignments.emplace_back("$vpd", make_shared<Literal>(500));
+	this->assignments.emplace_back("$vpd", make_shared<Literal>(Value(500)));
 }

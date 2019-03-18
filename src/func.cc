@@ -764,10 +764,10 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 		}
 	} else if (findThis.type() == Value::ValueType::STRING) {
 		if (searchTable.type() == Value::ValueType::STRING) {
-			returnvec = search(findThis.toString(), searchTable.toString(), num_returns_per_match, evalctx->loc, ctx);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match, evalctx->loc, ctx);
 		}
 		else {
-			returnvec = search(findThis.toString(), searchTable.toVectorPtr(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVectorPtr(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
 		}
 	} else if (findThis.type() == Value::ValueType::VECTOR) {
 		const Value::VectorPtr &findVec = findThis.toVectorPtr();
@@ -947,7 +947,7 @@ Value builtin_is_undef(const Context *ctx, const EvalContext *evalctx)
 		}else{
 			v = evalctx->getArgValue(0);
 		}
-		return Value(v == Value::undefined);
+		return Value(v.isUndefined());
 	}else{
 		print_argCnt_warning("is_undef", ctx, evalctx);
 	}

@@ -132,7 +132,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 				ok &= false;
 			}
 			
-			bool v_supplied = (val_v != Value::undefined);
+			bool v_supplied = (val_v.isDefined());
 			if(ok){
 				if(v_supplied){
 					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a.toEchoString() % val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
@@ -157,7 +157,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 			Vector3d v(0, 0, 1);
 			bool vConverted = val_v.getVec3(v[0], v[1], v[2], 0.0);
 			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-			if(val_v != Value::undefined && ! vConverted){
+			if(val_v.isDefined() && ! vConverted){
 				if(aConverted){
 					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}else{

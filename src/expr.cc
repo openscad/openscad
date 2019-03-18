@@ -104,9 +104,9 @@ Value UnaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case (Op::Not):
-		return !this->expr->evaluate(context);
+		return Value(!this->expr->evaluate(context));
 	case (Op::Negate):
-		return -this->expr->evaluate(context);
+		return Value(-this->expr->evaluate(context));
 	default:
 		return Value::undefined();
 		// FIXME: error:
@@ -149,43 +149,43 @@ Value BinaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
-		return this->left->evaluate(context) && this->right->evaluate(context);
+		return Value(this->left->evaluate(context) && this->right->evaluate(context));
 		break;
 	case Op::LogicalOr:
-		return this->left->evaluate(context) || this->right->evaluate(context);
+		return Value(this->left->evaluate(context) || this->right->evaluate(context));
 		break;
 	case Op::Multiply:
-		return this->left->evaluate(context) * this->right->evaluate(context);
+		return Value(this->left->evaluate(context) * this->right->evaluate(context));
 		break;
 	case Op::Divide:
-		return this->left->evaluate(context) / this->right->evaluate(context);
+		return Value(this->left->evaluate(context) / this->right->evaluate(context));
 		break;
 	case Op::Modulo:
-		return this->left->evaluate(context) % this->right->evaluate(context);
+		return Value(this->left->evaluate(context) % this->right->evaluate(context));
 		break;
 	case Op::Plus:
-		return this->left->evaluate(context) + this->right->evaluate(context);
+		return Value(this->left->evaluate(context) + this->right->evaluate(context));
 		break;
 	case Op::Minus:
-		return this->left->evaluate(context) - this->right->evaluate(context);
+		return Value(this->left->evaluate(context) - this->right->evaluate(context));
 		break;
 	case Op::Less:
-		return this->left->evaluate(context) < this->right->evaluate(context);
+		return Value(this->left->evaluate(context) < this->right->evaluate(context));
 		break;
 	case Op::LessEqual:
-		return this->left->evaluate(context) <= this->right->evaluate(context);
+		return Value(this->left->evaluate(context) <= this->right->evaluate(context));
 		break;
 	case Op::Greater:
-		return this->left->evaluate(context) > this->right->evaluate(context);
+		return Value(this->left->evaluate(context) > this->right->evaluate(context));
 		break;
 	case Op::GreaterEqual:
-		return this->left->evaluate(context) >= this->right->evaluate(context);
+		return Value(this->left->evaluate(context) >= this->right->evaluate(context));
 		break;
 	case Op::Equal:
-		return this->left->evaluate(context) == this->right->evaluate(context);
+		return Value(this->left->evaluate(context) == this->right->evaluate(context));
 		break;
 	case Op::NotEqual:
-		return this->left->evaluate(context) != this->right->evaluate(context);
+		return Value(this->left->evaluate(context) != this->right->evaluate(context));
 		break;
 	default:
 		return Value::undefined();

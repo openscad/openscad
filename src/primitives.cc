@@ -130,7 +130,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const Location &loc, co
 			std::string locStr = loc.toRelativeString(ctx.documentPath());
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
 		}
-		return d.toDouble() / 2.0;
+		return Value(d.toDouble() / 2.0);
 	} else if (r_defined) {
 		return r;
 	} else {
@@ -200,7 +200,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case primitive_type_e::CUBE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
-		if(size != Value::undefined){
+		if(size.isDefined()){
 			bool converted=false;
 			converted |= size.getDouble(node->x);
 			converted |= size.getDouble(node->y);
@@ -293,7 +293,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case primitive_type_e::SQUARE: {
 		auto size = c.lookup_variable("size");
 		auto center = c.lookup_variable("center");
-		if(size != Value::undefined){
+		if(size.isDefined()){
 			bool converted=false;
 			converted |= size.getDouble(node->x);
 			converted |= size.getDouble(node->y);

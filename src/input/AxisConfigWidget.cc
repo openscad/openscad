@@ -436,7 +436,7 @@ void AxisConfigWidget::on_AxisTrimReset()
 
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
 		if(ent){
-			Settings::Settings::inst()->set(*ent, 0.00);
+			Settings::Settings::inst()->set(*ent, Value(0.00));
 		}
 
 		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));

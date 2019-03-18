@@ -735,8 +735,8 @@ void Preferences::on_comboBoxOctoPrintSlicingEngine_activated(int val)
 	const QString desc = text.isEmpty() ? QString{} : this->comboBoxOctoPrintSlicingEngine->itemText(val);
 	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngine, text.toStdString());
 	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngineDesc, desc.toStdString());
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, "");
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, "");
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, std::string(""));
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, std::string(""));
 	writeSettings();
 	this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(0);
 }

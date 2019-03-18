@@ -137,7 +137,7 @@ void utf8_split(const std::string& str, std::function<void(Value)> f)
     while (*ptr) {
         auto next = g_utf8_next_char(ptr);
         const size_t length = next - ptr;
-        f({ std::string{ptr, length} });
+        f(Value(std::string{ptr, length}));
         ptr = next;
     }
 }
@@ -337,12 +337,21 @@ bool Value::getFiniteDouble(double &v) const
   return valid;
 }
 
+const str_utf8_wrapper& Value::toStrUtf8Wrapper() {
+  return boost::get<str_utf8_wrapper>(this->value);
+}
+
 class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
   template <typename T> std::string operator()(const T &op1) const {
-    //    std::cout << "[generic tostring_visitor]\n";
+    assert(false && "unhandled tostring_visitor type");
     return boost::lexical_cast<std::string>(op1);	
+  }
+
+  std::string operator()(const str_utf8_wrapper &op1) const {
+    //    std::cout << "[generic tostring_visitor]\n";
+    return op1;
   }
 
   std::string operator()(const double &op1) const {
@@ -693,7 +702,7 @@ public:
 	}
 
 	Value operator()(const double &op1, const double &op2) const {
-		return op1 + op2;
+		return Value(op1 + op2);
 	}
 
 	Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
@@ -718,7 +727,7 @@ public:
 	}
 
 	Value operator()(const double &op1, const double &op2) const {
-		return op1 - op2;
+		return Value(op1 - op2);
 	}
 
 	Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
@@ -789,7 +798,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 Value Value::operator*(const Value &v) const
 {
 	if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
-		return this->toDouble() * v.toDouble();
+		return Value(this->toDouble() * v.toDouble());
 	}
 	else if (this->type() == ValueType::VECTOR && v.type() == ValueType::NUMBER) {
 		return multvecnum(*this, v);
@@ -837,7 +846,7 @@ Value Value::operator*(const Value &v) const
 Value Value::operator/(const Value &v) const
 {
   if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
-    return this->toDouble() / v.toDouble();
+    return Value(this->toDouble() / v.toDouble());
   }
   else if (this->type() == ValueType::VECTOR && v.type() == ValueType::NUMBER) {
     const auto &vec = *this->toVectorPtr();
@@ -861,7 +870,7 @@ Value Value::operator/(const Value &v) const
 Value Value::operator%(const Value &v) const
 {
   if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
-    return fmod(boost::get<double>(this->value), boost::get<double>(v.value));
+    return Value(fmod(boost::get<double>(this->value), boost::get<double>(v.value)));
   }
   return {};
 }
@@ -869,7 +878,7 @@ Value Value::operator%(const Value &v) const
 Value Value::operator-() const
 {
   if (this->type() == ValueType::NUMBER) {
-    return -this->toDouble();
+    return Value(-this->toDouble());
   }
   else if (this->type() == ValueType::VECTOR) {
     const auto &vec = *this->toVectorPtr();
@@ -901,7 +910,7 @@ public:
 				if (ptr) {
 					g_utf8_strncpy(utf8_of_cp, ptr, 1);
 				}
-				return std::string(utf8_of_cp);
+				return Value(std::string(utf8_of_cp));
 			}
     }
     return {};
@@ -916,9 +925,9 @@ public:
   Value operator()(const RangeType &range, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     switch(i) {
-    case 0: return range.begin_val;
-    case 1: return range.step_val;
-    case 2: return range.end_val;
+    case 0: return Value(range.begin_val);
+    case 1: return Value(range.step_val);
+    case 2: return Value(range.end_val);
     }
     return {};
   }
@@ -934,6 +943,11 @@ Value Value::operator[](const Value &v) const
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }
 
+Value Value::operator[](size_t idx) const
+{
+  Value v{(double)idx};
+  return boost::apply_visitor(bracket_visitor(), this->value, v.value);
+}
 
 void RangeType::normalize()
 {

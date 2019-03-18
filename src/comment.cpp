@@ -295,7 +295,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 		std::string descr = getDescription(fulltext, firstLine - 1);
 		if (descr != "") {
 			//creating node for description
-			shared_ptr<Expression> expr(new Literal(Value(std::string(descr.c_str()))));
+			shared_ptr<Expression> expr(new Literal(Value(std::string(descr))));
 			annotationList->push_back(Annotation("Description", expr));
 		}
 

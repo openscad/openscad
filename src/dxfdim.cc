@@ -58,9 +58,9 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		Value n = evalctx->getArgName(i);
+		const std::string &n = evalctx->getArgName(i);
 		Value v = evalctx->getArgValue(i);
-		if (evalctx->getArgName(i) == "file") {
+		if (n == "file") {
 			rawFilename = v.toString();
 			filename = lookup_file(rawFilename, 
 			evalctx->documentPath(), ctx->documentPath());
@@ -77,7 +77,7 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		} else if (n == "name") {
 			name = v.toString();
 		}else{
-			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n.toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 
@@ -168,7 +168,7 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		Value n = evalctx->getArgName(i);
+		std::string n = evalctx->getArgName(i);
 		Value v = evalctx->getArgValue(i);
 		if (n == "file"){
 			rawFilename = v.toString();
@@ -184,7 +184,7 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 		}else if (n == "scale"){
 			v.getDouble(scale);
 		}else{
-			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", Value(n).toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 

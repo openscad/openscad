@@ -98,14 +98,14 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->convexity = static_cast<int>(convexity.toDouble());
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=Value::undefined && !originOk){
+	if(origin.isDefined() && !originOk){
 		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 	node->scale_x = node->scale_y = 1;
 	bool scaleOK = scale.getFiniteDouble(node->scale_x);
 	scaleOK &= scale.getFiniteDouble(node->scale_y);
 	scaleOK |= scale.getVec2(node->scale_x, node->scale_y, true);
-	if((origin!=Value::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+	if((origin.isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
 		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 
