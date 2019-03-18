@@ -104,7 +104,7 @@ Value UnaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case (Op::Not):
-		return Value(!this->expr->evaluate(context));
+		return Value(!this->expr->evaluate(context).toBool());
 	case (Op::Negate):
 		return Value(-this->expr->evaluate(context));
 	default:
@@ -149,10 +149,10 @@ Value BinaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
-		return Value(this->left->evaluate(context) && this->right->evaluate(context));
+		return Value(this->left->evaluate(context).toBool() && this->right->evaluate(context).toBool());
 		break;
 	case Op::LogicalOr:
-		return Value(this->left->evaluate(context) || this->right->evaluate(context));
+		return Value(this->left->evaluate(context).toBool() || this->right->evaluate(context).toBool());
 		break;
 	case Op::Multiply:
 		return Value(this->left->evaluate(context) * this->right->evaluate(context));
@@ -253,7 +253,7 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 
 Value TernaryOp::evaluate(const Context *context) const
 {
-	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
+	return (this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr)->evaluate(context);
 }
 
 void TernaryOp::print(std::ostream &stream, const std::string &) const
@@ -307,13 +307,11 @@ Value Range::evaluate(const Context *context) const
 		Value endValue = this->end->evaluate(context);
 		if (endValue.type() == Value::ValueType::NUMBER) {
 			if (!this->step) {
-				RangeType range(beginValue.toDouble(), endValue.toDouble());
-				return Value(range);
+				return Value(RangeType(beginValue.toDouble(), endValue.toDouble()));
 			} else {
 				Value stepValue = this->step->evaluate(context);
 				if (stepValue.type() == Value::ValueType::NUMBER) {
-					RangeType range(beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble());
-					return Value(range);
+					return Value(RangeType(beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble()));
 				}
 			}
 		}
@@ -372,7 +370,7 @@ Value Vector::evaluate(const Context *context) const
 			vec->push_back(std::move(tmpval));
 		}
 	}
-	return vec;
+	return Value(std::move(vec));
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -569,7 +567,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const Context *context) const
 {
-    const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+    const shared_ptr<Expression> &expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
 	
     Value::VectorPtr vec;
     if (expr) {
@@ -580,7 +578,7 @@ Value LcIf::evaluate(const Context *context) const
         }
     }
 
-    return vec;
+    return Value(std::move(vec));
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
@@ -602,7 +600,7 @@ Value LcEach::evaluate(const Context *context) const
     Value v = this->expr->evaluate(context);
 
     if (v.type() == Value::ValueType::RANGE) {
-        RangeType range = v.toRange();
+        const RangeType &range = v.toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
@@ -625,9 +623,9 @@ Value LcEach::evaluate(const Context *context) const
     }
 
     if (isListComprehension(this->expr)) {
-        return flatten(vec);
+        return Value(flatten(vec));
     } else {
-        return vec;
+        return Value(std::move(vec));
     }
 }
 
@@ -656,7 +654,7 @@ Value LcFor::evaluate(const Context *context) const
     Context c(context);
 
     if (it_values.type() == Value::ValueType::RANGE) {
-        RangeType range = it_values.toRange();
+        const RangeType &range = it_values.toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
@@ -683,9 +681,9 @@ Value LcFor::evaluate(const Context *context) const
     }
 
     if (isListComprehension(this->expr)) {
-        return flatten(vec);
+        return Value(flatten(vec));
     } else {
-        return vec;
+        return Value(std::move(vec));
     }
 }
 
@@ -707,7 +705,7 @@ Value LcForC::evaluate(const Context *context) const
     evaluate_sequential_assignment(this->arguments, &c, this->loc);
 
 	unsigned int counter = 0;
-    while (this->cond->evaluate(&c)) {
+    while (this->cond->evaluate(&c).toBool()) {
         vec->emplace_back(this->expr->evaluate(&c));
 
         if (counter++ == 1000000) {
@@ -722,9 +720,9 @@ Value LcForC::evaluate(const Context *context) const
     }    
 
     if (isListComprehension(this->expr)) {
-        return flatten(vec);
+        return Value(flatten(vec));
     } else {
-        return vec;
+        return Value(std::move(vec));
     }
 }
 

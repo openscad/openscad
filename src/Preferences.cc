@@ -92,9 +92,9 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	std::string key = entry.category() + "/" + entry.name();
 	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	const Value v = getValue(entry, value);
+	Value v = getValue(entry, value);
 	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, v.clone());
+	s->set(entry, std::move(v));
     }
 };
 
@@ -671,13 +671,13 @@ void Preferences::on_comboBoxOctoPrintAction_activated(int val)
 
 void Preferences::on_lineEditOctoPrintURL_editingFinished()
 {
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintUrl, this->lineEditOctoPrintURL->text().toStdString());
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintUrl, Value(this->lineEditOctoPrintURL->text().toStdString()));
 	writeSettings();
 }
 
 void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
 {
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintApiKey, this->lineEditOctoPrintApiKey->text().toStdString());
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintApiKey, Value(this->lineEditOctoPrintApiKey->text().toStdString()));
 	writeSettings();
 }
 
@@ -733,10 +733,10 @@ void Preferences::on_comboBoxOctoPrintSlicingEngine_activated(int val)
 {
 	const QString text = this->comboBoxOctoPrintSlicingEngine->itemData(val).toString();
 	const QString desc = text.isEmpty() ? QString{} : this->comboBoxOctoPrintSlicingEngine->itemText(val);
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngine, text.toStdString());
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngineDesc, desc.toStdString());
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, std::string(""));
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, std::string(""));
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngine, Value(text.toStdString()));
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerEngineDesc, Value(desc.toStdString()));
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, Value(std::string("")));
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, Value(std::string("")));
 	writeSettings();
 	this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(0);
 }
@@ -769,8 +769,8 @@ void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
 {
 	const QString text = this->comboBoxOctoPrintSlicingProfile->itemData(val).toString();
 	const QString desc = text.isEmpty() ? QString{} : this->comboBoxOctoPrintSlicingProfile->itemText(val);
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, text.toStdString());
-	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, desc.toStdString());
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfile, Value(text.toStdString()));
+	Settings::Settings::inst()->set(Settings::Settings::octoPrintSlicerProfileDesc, Value(desc.toStdString()));
 	writeSettings();
 }
 
@@ -899,7 +899,7 @@ void Preferences::updateGUI()
 	this->enableParameterCheckBox->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	this->enableRangeCheckBox->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
 
-	this->enableHidapiTraceCheckBox->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
+	this->enableHidapiTraceCheckBox->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool());
 
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -941,7 +941,7 @@ void Preferences::initComboBox(QComboBox *comboBox, const Settings::SettingsEntr
 
 void Preferences::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }

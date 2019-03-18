@@ -513,7 +513,7 @@ void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::Set
 
 void AxisConfigWidget::initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry)
 {
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
@@ -522,7 +522,7 @@ void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setSingleStep(range.step_value());
 	spinBox->setMaximum(range.end_value());

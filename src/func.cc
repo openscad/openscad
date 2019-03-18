@@ -164,7 +164,7 @@ Value builtin_rands(const Context *ctx, const EvalContext *evalctx)
 				}
 			}
 		}
-		return vec;
+		return Value(std::move(vec));
 	}else{
 		print_argCnt_warning("rands", ctx, evalctx);
 	}
@@ -560,7 +560,7 @@ Value builtin_concat(const Context *, const EvalContext *evalctx)
 			result->emplace_back(std::move(val));
 		}
 	}
-	return result;
+	return Value(std::move(result));
 }
 
 Value builtin_lookup(const Context *ctx, const EvalContext *evalctx)
@@ -804,7 +804,7 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 	} else {
 		return Value::undefined();
 	}
-	return returnvec;
+	return Value(std::move(returnvec));
 }
 
 #define QUOTE(x__) # x__
@@ -813,13 +813,13 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 Value builtin_version(const Context *, const EvalContext *evalctx)
 {
 	(void)evalctx; // unusued parameter
-	Value::VectorPtr val;
-	val->emplace_back(double(OPENSCAD_YEAR));
-	val->emplace_back(double(OPENSCAD_MONTH));
+	Value::VectorPtr vec;
+	vec->emplace_back(double(OPENSCAD_YEAR));
+	vec->emplace_back(double(OPENSCAD_MONTH));
 #ifdef OPENSCAD_DAY
-	val->emplace_back(double(OPENSCAD_DAY));
+	vec->emplace_back(double(OPENSCAD_DAY));
 #endif
-	return val;
+	return Value(std::move(vec));
 }
 
 Value builtin_version_num(const Context *ctx, const EvalContext *evalctx)
@@ -934,7 +934,7 @@ Value builtin_cross(const Context *ctx, const EvalContext *evalctx)
 	result->emplace_back(x);
 	result->emplace_back(y);
 	result->emplace_back(z);
-	return result;
+	return Value(std::move(result));
 }
 
 Value builtin_is_undef(const Context *ctx, const EvalContext *evalctx)

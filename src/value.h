@@ -45,7 +45,7 @@ private:
 	
 public:
 	enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
-  
+	
 	class iterator {
 	public:
 		typedef iterator self_type;
@@ -54,7 +54,7 @@ public:
 		typedef double* pointer;
 		typedef std::forward_iterator_tag iterator_category;
 		typedef double difference_type;
-		iterator(RangeType &range, type_t type);
+		iterator(const RangeType &range, type_t type);
 		self_type operator++();
 		self_type operator++(int junk);
 		reference operator*();
@@ -62,20 +62,28 @@ public:
 		bool operator==(const self_type& other) const;
 		bool operator!=(const self_type& other) const;
 	private:
-		RangeType &range;
+		const RangeType &range;
 		double val;
 		type_t type;
-    
+		
 		void update_type();
 	};
-  
-	RangeType(double begin, double end)
-		: begin_val(begin), step_val(1.0), end_val(end)
-    {
-      normalize();
-    }
 	
-	RangeType(double begin, double step, double end)
+	RangeType(const RangeType &) = delete; // never copy, move instead
+	RangeType& operator=(const RangeType &) = delete; // never copy, move instead
+	RangeType(RangeType&&) = default; // default move constructor
+	RangeType& operator=(RangeType&&) = default; // default move assignment 
+	
+	// Copy explicitly only when necessary
+	RangeType clone() const { return RangeType(this->begin_val,this->step_val,this->end_val); }; 
+
+	explicit RangeType(double begin, double end)
+		: begin_val(begin), step_val(1.0), end_val(end)
+		{
+			normalize();
+		}
+	
+	explicit RangeType(double begin, double step, double end)
 		: begin_val(begin), step_val(step), end_val(end) {}
 	
 	bool operator==(const RangeType &other) const {
@@ -85,37 +93,59 @@ public:
 			 this->end_val == other.end_val);
 	}
 	
-	double begin_value() { return begin_val; }
-	double step_value() { return step_val; }
-	double end_value() { return end_val; }
+	double begin_value() const { return begin_val; }
+	double step_value() const { return step_val; }
+	double end_value() const { return end_val; }
 	
-	iterator begin() { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
-	iterator end() { return iterator(*this, type_t::RANGE_TYPE_END); }
+	iterator begin() const { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
+	iterator end() const{ return iterator(*this, type_t::RANGE_TYPE_END); }
 	
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
 	uint32_t numValues() const;
-  
+	
 	friend class chr_visitor;
 	friend class tostring_visitor;
 	friend class tostream_visitor;
 	friend class bracket_visitor;
 };
 
-class str_utf8_wrapper : public std::string
+class str_utf8_wrapper
 {
+	// private constructor for copying members
+	explicit str_utf8_wrapper(const std::string &str_in, glong len) : str(str_in), cached_len(len) { }
 public:
-	str_utf8_wrapper() : std::string(), cached_len(-1) { }
-	explicit str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
-	explicit str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
-	~str_utf8_wrapper() {}
-	
+	str_utf8_wrapper() : str(std::string()), cached_len(-1) { }
+	explicit str_utf8_wrapper( const std::string& s ) : str(s), cached_len(-1) { }
+	explicit str_utf8_wrapper( size_t n, char c ) : str(std::string(n, c)), cached_len(-1) { }
+
+	str_utf8_wrapper(const str_utf8_wrapper &) = delete; // never copy, move instead
+	str_utf8_wrapper& operator=(const str_utf8_wrapper &) = delete; // never copy, move instead
+	str_utf8_wrapper(str_utf8_wrapper&&) = default; // default move constructor
+	str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default; // default move assignment 
+
+	str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str, this->cached_len); }
+
+	bool operator==(const str_utf8_wrapper &rhs) const { return this->str == rhs.str; }
+	bool empty() const { return this->str.empty(); }
+	const char* c_str() const noexcept { return this->str.c_str(); }
+	size_t size() const noexcept { return this->str.size(); }
+
 	glong get_utf8_strlen() const {
 		if (cached_len < 0) {
-			cached_len = g_utf8_strlen(this->c_str(), this->size());
+			cached_len = g_utf8_strlen(this->str.c_str(), this->str.size());
 		}
 		return cached_len;
 	};
+
+	friend class tostring_visitor;
+	friend class tostream_visitor;
+	friend class less_visitor;
+	friend class greater_visitor;
+	friend class lessequal_visitor;
+	friend class greaterequal_visitor;
+
 private:
+	std::string str;
 	mutable glong cached_len;
 };
 
@@ -124,142 +154,123 @@ class Value
 public:
 	typedef std::vector<Value> VectorType;
 
-  class VectorPtr {
-  public:
-    VectorPtr() : ptr(new VectorType()) {}
-    VectorPtr(const VectorPtr &) = delete; // never copy, move instead
-    VectorPtr &operator=(const VectorPtr &v) = delete; // never copy, move instead
-    
-    // move constructor & assignment
-    VectorPtr(VectorPtr&& x) : ptr(std::move(x.ptr)) { x.ptr.reset(); };
-    VectorPtr& operator=(VectorPtr&& x) { 
-      ptr = std::move(x.ptr);
-      x.ptr.reset();
-      return *this;
-    }
-    // Copy explicitly only when necessary
-    VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c;  }
+	class VectorPtr {
+	public:
+		VectorPtr() : ptr(new VectorType()) {}
+		VectorPtr(const VectorPtr &) = delete; // never copy, move instead
+		VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
+		VectorPtr(VectorPtr&&) = default; // default move constructor
+		VectorPtr& operator=(VectorPtr&&) = default; // default move assignment 
 
-    //VectorPtr(Value::VectorType &&); // do we want to me able to move VectorType?
-    const Value::VectorType &operator*() const { return *ptr.get(); }
-    Value::VectorType *operator->() const { return ptr.get(); }
-    Value &operator[](size_t idx) const {	return (*ptr.get())[idx]; }
-    bool operator==(const VectorPtr &v) const { return *ptr == *v; }
-    bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
-    operator bool() const {	return !ptr->empty(); }
-    
-    friend bool operator==(const VectorPtr &vptr, nullptr_t) { vptr.ptr == nullptr; };
-    friend bool operator!=(const VectorPtr &vptr, nullptr_t) { vptr.ptr != nullptr; };
-    friend bool operator==(nullptr_t, const VectorPtr &vptr) { nullptr == vptr.ptr; };
-    friend bool operator!=(nullptr_t, const VectorPtr &vptr) { nullptr != vptr.ptr; };
+		// Copy explicitly only when necessary
+		VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c;  }
 
-  private:
-    shared_ptr<Value::VectorType> ptr;
-  };
+		//VectorPtr(Value::VectorType &&); // do we want to me able to move VectorType?
+		const Value::VectorType &operator*() const { return *ptr.get(); }
+		Value::VectorType *operator->() const { return ptr.get(); }
+		Value &operator[](size_t idx) const {	return (*ptr.get())[idx]; }
+		bool operator==(const VectorPtr &v) const { return *ptr == *v; }
+		bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
+		//operator bool() const {	return !ptr->empty(); }
+		bool empty() const { return ptr->empty(); }
+		
+		friend bool operator==(const VectorPtr &vptr, nullptr_t) { vptr.ptr == nullptr; };
+		friend bool operator!=(const VectorPtr &vptr, nullptr_t) { vptr.ptr != nullptr; };
+		friend bool operator==(nullptr_t, const VectorPtr &vptr) { nullptr == vptr.ptr; };
+		friend bool operator!=(nullptr_t, const VectorPtr &vptr) { nullptr != vptr.ptr; };
 
+	private:
+		shared_ptr<Value::VectorType> ptr;
+	};
 
-public:
+	enum class ValueType {
+		UNDEFINED,
+		BOOL,
+		NUMBER,
+		STRING,
+		VECTOR,
+		RANGE
+	};
+	static Value undefined() { return {}; }
 
-  enum class ValueType {
-    UNDEFINED,
-    BOOL,
-    NUMBER,
-    STRING,
-    VECTOR,
-    RANGE
-  };
-  static Value undefined() { return {}; }
+	Value();
+	Value(const Value &) = delete; // never copy, move instead
+	Value &operator=(const Value &v) = delete; // never copy, move instead
+	Value(Value&&) = default; // default move constructor
+	Value& operator=(Value&&) = default; // default move assignment
+	explicit Value(bool v);
+	explicit Value(int v);
+	explicit Value(double v);
+	explicit Value(const std::string &v);
+	explicit Value(const char *v);
+	explicit Value(const char v);
+	explicit Value(RangeType&& v) : value(std::move(v)) {};
+	explicit Value(VectorPtr&& v) : value(std::move(v)) {};
 
-  Value();
-  Value(const Value &) = delete; // never copy, always move
-  Value(Value&& x) : value(std::move(x.value))
-  {
-    x.value = boost::blank();
-    //std::cout << "Value::Value(Value&&) " << *this << '\n';
-  }
-  explicit Value(bool v);
-  explicit Value(int v);
-  explicit Value(double v);
-  Value(const std::string &v);
-  explicit Value(const char *v);
-  explicit Value(const char v);
-  explicit Value(const RangeType &v);
-  Value(VectorPtr&& v) : value(std::move(v)) {};
+	Value clone() const; // Use sparingly to explicitly copy a Value
 
-  Value clone() const; // Use sparingly to explicitly copy a Value
+	ValueType type() const;
+	bool isDefined() const;
+	bool isDefinedAs(const ValueType type) const;
+	bool isUndefined() const;
 
-  ValueType type() const;
-  bool isDefined() const;
-  bool isDefinedAs(const ValueType type) const;
-  bool isUndefined() const;
+	double toDouble() const;
+	bool getDouble(double &v) const;
+	bool getFiniteDouble(double &v) const;
+	bool toBool() const;
+	std::string toString() const;
+	std::string toString(const tostring_visitor *visitor) const;
+	std::string toEchoString() const;
+	std::string toEchoString(const tostring_visitor *visitor) const;
+	const str_utf8_wrapper& toStrUtf8Wrapper();
+	void toStream(std::ostringstream &stream) const;
+	void toStream(const tostream_visitor *visitor) const;
+	std::string chrString() const;
+	const VectorPtr &toVectorPtr() const;
 
-  double toDouble() const;
-  bool getDouble(double &v) const;
-  bool getFiniteDouble(double &v) const;
-  bool toBool() const;
-  std::string toString() const;
-  const str_utf8_wrapper& toStrUtf8Wrapper();
-  std::string toString(const tostring_visitor *visitor) const;
-  std::string toEchoString() const;
-  std::string toEchoString(const tostring_visitor *visitor) const;
-  void toStream(std::ostringstream &stream) const;
-  void toStream(const tostream_visitor *visitor) const;
-  std::string chrString() const;
-  const VectorPtr &toVectorPtr() const;
+	bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
+	bool getVec3(double &x, double &y, double &z) const;
+	bool getVec3(double &x, double &y, double &z, double defaultval) const;
+	const RangeType& toRange() const;
 
-  bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
-  bool getVec3(double &x, double &y, double &z) const;
-  bool getVec3(double &x, double &y, double &z, double defaultval) const;
-  RangeType toRange() const;
+	//operator bool() const { return this->toBool(); }
 
-	operator bool() const { return this->toBool(); }
+	bool operator==(const Value &v) const;
+	bool operator!=(const Value &v) const;
+	bool operator<(const Value &v) const;
+	bool operator<=(const Value &v) const;
+	bool operator>=(const Value &v) const;
+	bool operator>(const Value &v) const;
+	Value operator-() const;
+	//const Value &operator[](const Value &v) const;
+	Value operator[](const Value &v) const;
+	Value operator[](size_t idx) const;
+	Value operator+(const Value &v) const;
+	Value operator-(const Value &v) const;
+	Value operator*(const Value &v) const;
+	Value operator/(const Value &v) const;
+	Value operator%(const Value &v) const;
 
-  Value &operator=(const Value &v) = delete; // never copy
-  //Value& operator=(Value&&) = default;
-  Value& operator=(Value&& x)
-  {
-    value = std::move(x.value);
-    x.value = boost::blank();
-    //std::cout << "Value::&operator=(Value&&) " << *this << '\n';
-    return *this;
-  }
-
-  bool operator==(const Value &v) const;
-  bool operator!=(const Value &v) const;
-  bool operator<(const Value &v) const;
-  bool operator<=(const Value &v) const;
-  bool operator>=(const Value &v) const;
-  bool operator>(const Value &v) const;
-  Value operator-() const;
-  //const Value &operator[](const Value &v) const;
-  Value operator[](const Value &v) const;
-  Value operator[](size_t idx) const;
-  Value operator+(const Value &v) const;
-  Value operator-(const Value &v) const;
-  Value operator*(const Value &v) const;
-  Value operator/(const Value &v) const;
-  Value operator%(const Value &v) const;
-
-  friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
-    if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
-    else stream << value.toString();
-    return stream;
-  }
-  friend class chr_visitor;
+	friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
+		if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
+		else stream << value.toString();
+		return stream;
+	}
+	friend class chr_visitor;
 	friend class tostring_visitor;
 	friend class tostream_visitor;
 	friend class bracket_visitor;
-  friend class plus_visitor;
-  friend class minus_visitor;
+	friend class plus_visitor;
+	friend class minus_visitor;
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType > Variant;
+	typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType > Variant;
 
 private:
-  static Value multvecnum(const Value &vecval, const Value &numval);
-  static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
-  static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
+	static Value multvecnum(const Value &vecval, const Value &numval);
+	static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
+	static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
 
-  Variant value;
+	Variant value;
 };
 
 void utf8_split(const std::string& str, std::function<void(Value)> f);

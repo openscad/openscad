@@ -228,12 +228,6 @@ Value::Value(char v) : value(str_utf8_wrapper(1, v))
   //  std::cout << "creating string from char\n";
 }
 
-Value::Value(const RangeType &v) : value(v)
-{
-  //  std::cout << "creating range\n";
-}
-
-
 Value Value::clone() const {
   Value c;
   switch (this->type()) {
@@ -246,10 +240,10 @@ Value Value::clone() const {
       c.value = boost::get<double>(this->value);
     break;
     case ValueType::STRING :
-      c.value = boost::get<str_utf8_wrapper>(this->value);
+      c.value = boost::get<str_utf8_wrapper>(this->value).clone();
     break;
     case ValueType::RANGE :
-      c.value = boost::get<RangeType>(this->value);
+      c.value = boost::get<RangeType>(this->value).clone();
     break;
     case ValueType::VECTOR :
       // NOTE: this makes a copy of shared_ptr, 
@@ -296,7 +290,7 @@ bool Value::toBool() const
     return !boost::get<str_utf8_wrapper>(this->value).empty();
     break;
   case ValueType::VECTOR:
-    return boost::get<VectorPtr>(this->value);
+    return !boost::get<VectorPtr>(this->value).empty();
     break;
   case ValueType::RANGE:
     return true;
@@ -350,8 +344,7 @@ public:
   }
 
   std::string operator()(const str_utf8_wrapper &op1) const {
-    //    std::cout << "[generic tostring_visitor]\n";
-    return op1;
+    return op1.str;
   }
 
   std::string operator()(const double &op1) const {
@@ -432,7 +425,7 @@ public:
   }
 
   void operator()(const str_utf8_wrapper &v) const {
-    stream << '"' << v << '"';
+    stream << '"' << v.str << '"';
   }
 
   void operator()(const RangeType &v) const {
@@ -528,8 +521,7 @@ public:
 			}
 
 			std::ostringstream stream;
-			RangeType range = v;
-			for (RangeType::iterator it = range.begin();it != range.end();it++) {
+			for (RangeType::iterator it = v.begin();it != v.end();it++) {
 				const Value value(*it);
 				stream << value.chrString();
 			}
@@ -608,13 +600,14 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
-RangeType Value::toRange() const
+const RangeType& Value::toRange() const
 {
+  static const RangeType empty(0,0,0);
   const RangeType *val = boost::get<RangeType>(&this->value);
   if (val) {
     return *val;
   }
-  else return RangeType(0,0,0);
+  else return empty;
 }
 
 
@@ -665,7 +658,7 @@ bool Value::operator!=(const Value &v) const
 		}																																		\
 																																				\
 		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
-			return op1 op op2;																								\
+			return op1.str op op2.str;					  														\
 		}																																		\
 	}
 
@@ -710,7 +703,7 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sum->push_back(op1[i] + op2[i]);
 		}
-		return sum;
+		return Value(std::move(sum));
 	}
 };
 
@@ -735,7 +728,7 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sum->push_back(op1[i] - op2[i]);
 		}
-		return sum;
+		return Value(std::move(sum));
 	}
 };
 
@@ -751,7 +744,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 	for(const auto &val : *vecval.toVectorPtr()) {
 		dstv->push_back(val * numval);
 	}
-	return dstv;
+	return Value(std::move(dstv));
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
@@ -772,7 +765,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return dstv;
+	return Value(std::move(dstv));
 }
 
 Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
@@ -792,7 +785,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return dstv;
+	return Value(std::move(dstv));
 }
 
 Value Value::operator*(const Value &v) const
@@ -837,7 +830,7 @@ Value Value::operator*(const Value &v) const
 				if (srcrowvec.size() != vec2.size()) return {};
 				dstv->push_back(multvecmat(srcrowvec, vec2));
 			}
-			return dstv;
+			return Value(std::move(dstv));
 		}
 	}
 	return {};
@@ -854,7 +847,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(vecval / v);
     }
-    return dstv;
+    return Value(std::move(dstv));
   }
   else if (this->type() == ValueType::NUMBER && v.type() == ValueType::VECTOR) {
     const auto &vec = *v.toVectorPtr();
@@ -862,7 +855,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(*this / vecval);
     }
-    return dstv;
+    return Value(std::move(dstv));
   }
   return {};
 }
@@ -886,7 +879,7 @@ Value Value::operator-() const
     for (const auto &vecval : vec) {
       dstv->push_back(-vecval);
     }
-    return dstv;
+    return Value(std::move(dstv));
   }
   return {};
 }
@@ -991,7 +984,7 @@ uint32_t RangeType::numValues() const
   return numvals;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
+RangeType::iterator::iterator(const RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
 {
 	update_type();
 }
