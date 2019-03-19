@@ -128,9 +128,8 @@ int main(int argc, char **argv)
 	zero3.vec->append(Value(0.0));
 	zero3.vec->append(Value(0.0));
 	zero3.vec->append(Value(0.0));
-	root_ctx.set_variable("$vpt", zero3);
-	root_ctx.set_variable("$vpr", zero3);
-
+	root_ctx.set_variable("$vpt", zero3.clone());
+	root_ctx.set_variable("$vpr", zero3.clone());
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;

@@ -288,7 +288,7 @@ void ArrayLookup::print(std::ostream &stream, const std::string &) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(Value val, const Location &loc) : Expression(loc), value(val.clone())
+Literal::Literal(Value val, const Location &loc) : Expression(loc), value(std::move(val))
 {
 }
 

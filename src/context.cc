@@ -110,8 +110,7 @@ void Context::set_constant(const std::string &name, Value value)
 		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
 	}
 	else {
-		//this->constants[name] = std::move(value); // FIXME revert?
-		this->constants[name] = value.clone();
+		this->constants[name] = std::move(value);
 	}
 }
 
