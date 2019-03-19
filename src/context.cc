@@ -138,7 +138,7 @@ Value Context::lookup_variable(const std::string &name, bool silent, const Locat
 		return this->variables.find(name)->second.clone();
 	}
 	if (this->parent) {
-		return this->parent->lookup_variable(name, silent, loc).clone();
+		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
 		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));

@@ -164,7 +164,7 @@ Value builtin_rands(const Context *ctx, const EvalContext *evalctx)
 				}
 			}
 		}
-		return Value(std::move(vec));
+		return Value(vec);
 	}else{
 		print_argCnt_warning("rands", ctx, evalctx);
 	}
@@ -182,8 +182,7 @@ Value builtin_min(const Context *ctx, const EvalContext *evalctx)
 
 		if (n == 1 && v0.type() == Value::ValueType::VECTOR && !v0.toVectorPtr()->empty()) {
 			const Value::VectorPtr &vec = v0.toVectorPtr();
-			return std::min_element(vec->cbegin(), vec->cend(),
-				[](const Value& a, const Value& b)->bool { return a < b; } )->clone();
+			return std::min_element(vec->cbegin(), vec->cend())->clone();
 		}
 		if (v0.type() == Value::ValueType::NUMBER) {
 			double val = v0.toDouble();
@@ -217,8 +216,7 @@ Value builtin_max(const Context *ctx, const EvalContext *evalctx)
 
 		if (n == 1 && v0.type() == Value::ValueType::VECTOR && !v0.toVectorPtr()->empty()) {
 			const Value::VectorPtr &vec = v0.toVectorPtr();
-			return std::max_element(vec->begin(), vec->end(),
-				[](const Value& a, const Value& b)->bool { return a < b; } )->clone();
+			return std::max_element(vec->begin(), vec->end())->clone();
 		}
 		if (v0.type() == Value::ValueType::NUMBER) {
 			double val = v0.toDouble();
@@ -560,7 +558,7 @@ Value builtin_concat(const Context *, const EvalContext *evalctx)
 			result->emplace_back(val.clone());
 		}
 	}
-	return Value(std::move(result));
+	return Value(result);
 }
 
 Value builtin_lookup(const Context *ctx, const EvalContext *evalctx)
@@ -685,7 +683,7 @@ static Value::VectorPtr search(const str_utf8_wrapper &find, const str_utf8_wrap
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-			returnvec->emplace_back(std::move(resultvec));
+			returnvec->emplace_back(resultvec);
 		}
 	}
 	return returnvec;
@@ -728,7 +726,7 @@ static Value::VectorPtr search(const str_utf8_wrapper &find, const Value::Vector
 			PRINTB("  WARNING: search term not found: \"%s\", %s", utf8_of_cp % loc.toRelativeString(ctx->documentPath()));
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-			returnvec->emplace_back(std::move(resultvec));
+			returnvec->emplace_back(resultvec);
 		}
 	}
 	return returnvec;
@@ -795,16 +793,16 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 		    }
 		  }
 		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    returnvec->emplace_back(std::move(resultvec));
+		    returnvec->emplace_back(resultvec);
 		  }
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-				returnvec->emplace_back(std::move(resultvec));
+				returnvec->emplace_back(resultvec);
 			}
 		}
 	} else {
 		return Value();
 	}
-	return Value(std::move(returnvec));
+	return Value(returnvec);
 }
 
 #define QUOTE(x__) # x__
@@ -819,7 +817,7 @@ Value builtin_version(const Context *, const EvalContext *evalctx)
 #ifdef OPENSCAD_DAY
 	vec->emplace_back(double(OPENSCAD_DAY));
 #endif
-	return Value(std::move(vec));
+	return Value(vec);
 }
 
 Value builtin_version_num(const Context *ctx, const EvalContext *evalctx)
@@ -934,7 +932,7 @@ Value builtin_cross(const Context *ctx, const EvalContext *evalctx)
 	result->emplace_back(x);
 	result->emplace_back(y);
 	result->emplace_back(z);
-	return Value(std::move(result));
+	return Value(result);
 }
 
 Value builtin_is_undef(const Context *ctx, const EvalContext *evalctx)

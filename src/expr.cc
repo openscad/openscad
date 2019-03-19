@@ -46,30 +46,6 @@ namespace {
 	bool isListComprehension(const shared_ptr<Expression> &e) {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
- 
-	// vec should be a local temporary vector whose values will be moved
-	Value::VectorPtr flatten(Value::VectorPtr &vec) {
-		int n = 0;
-		for (unsigned int i = 0; i < vec->size(); i++) {
-			if ((*vec)[i].type() == Value::ValueType::VECTOR) {
-				n += (*vec)[i].toVectorPtr()->size();
-			} else {
-				n++;
-			}
-		}
-		Value::VectorPtr ret; ret->reserve(n);
-		for (unsigned int i = 0; i < vec->size(); i++) {
-			if (vec[i].type() == Value::ValueType::VECTOR) {
-				const Value::VectorPtr &vec_ptr = vec[i].toVectorPtr();
-				for(unsigned int j = 0; j < vec_ptr->size(); ++j) {
-					ret->emplace_back(std::move(vec_ptr[j]));
-				}
-			} else {
-				ret->emplace_back(std::move(vec[i]));
-			}
-		}
-		return ret;
-	}
 
 	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context, const Location &loc) {
 		EvalContext ctx(context, assignment_list, loc);
@@ -104,7 +80,7 @@ Value UnaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case (Op::Not):
-		return Value(!this->expr->evaluate(context).toBool());
+		return Value(!this->expr->evaluate(context));
 	case (Op::Negate):
 		return Value(-this->expr->evaluate(context));
 	default:
@@ -128,9 +104,9 @@ const char *UnaryOp::opString() const
 	}
 }
 
-bool UnaryOp::isLiteral() const { 
+bool UnaryOp::isLiteral() const {
 
-    if(this->expr->isLiteral()) 
+    if(this->expr->isLiteral())
         return true;
     return false;
 }
@@ -149,10 +125,10 @@ Value BinaryOp::evaluate(const Context *context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
-		return Value(this->left->evaluate(context).toBool() && this->right->evaluate(context).toBool());
+		return Value(this->left->evaluate(context) && this->right->evaluate(context));
 		break;
 	case Op::LogicalOr:
-		return Value(this->left->evaluate(context).toBool() || this->right->evaluate(context).toBool());
+		return Value(this->left->evaluate(context) || this->right->evaluate(context));
 		break;
 	case Op::Multiply:
 		return Value(this->left->evaluate(context) * this->right->evaluate(context));
@@ -253,7 +229,7 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 
 Value TernaryOp::evaluate(const Context *context) const
 {
-	return (this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr)->evaluate(context);
+	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
 }
 
 void TernaryOp::print(std::ostream &stream, const std::string &) const
@@ -265,9 +241,9 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 	: Expression(loc), array(array), index(index)
 {
 }
- 
+
 Value ArrayLookup::evaluate(const Context *context) const {
-	const Value &array = this->array->evaluate(context);
+	Value array = this->array->evaluate(context);
 	return array[this->index->evaluate(context)];
 }
 
@@ -307,11 +283,13 @@ Value Range::evaluate(const Context *context) const
 		Value endValue = this->end->evaluate(context);
 		if (endValue.type() == Value::ValueType::NUMBER) {
 			if (!this->step) {
-				return Value(RangeType(beginValue.toDouble(), endValue.toDouble()));
+				RangeType range(beginValue.toDouble(), endValue.toDouble());
+				return Value(range);
 			} else {
 				Value stepValue = this->step->evaluate(context);
 				if (stepValue.type() == Value::ValueType::NUMBER) {
-					return Value(RangeType(beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble()));
+					RangeType range(beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble());
+					return Value(range);
 				}
 			}
 		}
@@ -328,14 +306,14 @@ void Range::print(std::ostream &stream, const std::string &) const
 }
 
 bool Range::isLiteral() const {
-    if(!this->step){ 
-        if( begin->isLiteral() && end->isLiteral())
-            return true;
-    }else{
-        if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
-            return true;
-    }
-    return false;
+	if(!this->step){
+		if( begin->isLiteral() && end->isLiteral())
+			return true;
+	}else{
+		if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
+			return true;
+	}
+	return false;
 }
 
 Vector::Vector(const Location &loc) : Expression(loc)
@@ -343,12 +321,17 @@ Vector::Vector(const Location &loc) : Expression(loc)
 }
 
 bool Vector::isLiteral() const {
-    for(const auto &e : this->children) {
-        if (!e->isLiteral()){
-            return false;
-        }
-    } 
-    return true;
+	if (this->literal_flag.isDefined()) {
+		return literal_flag;
+	}
+	for(const auto &e : this->children) {
+		if (!e->isLiteral()){
+			this->literal_flag = Value(false);
+			return false;
+		}
+	}
+	this->literal_flag = Value(true);
+	return true;
 }
 
 void Vector::push_back(Expression *expr)
@@ -364,13 +347,13 @@ Value Vector::evaluate(const Context *context) const
 		if (isListComprehension(e)) {
 			const Value::VectorPtr &result = tmpval.toVectorPtr();
 			for (size_t i = 0;i < result->size();i++) {
-				vec->push_back(std::move(result[i]));
+				vec->emplace_back(result[i].clone());
 			}
 		} else {
-			vec->push_back(std::move(tmpval));
+			vec->emplace_back(std::move(tmpval));
 		}
 	}
-	return Value(std::move(vec));
+	return Value(vec);
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -412,13 +395,13 @@ Value MemberLookup::evaluate(const Context *context) const
 	const Value &v = this->expr->evaluate(context);
 
 	if (v.type() == Value::ValueType::VECTOR) {
-		if (this->member == "x") return v[0].clone();
-		if (this->member == "y") return v[1].clone();
-		if (this->member == "z") return v[2].clone();
+		if (this->member == "x") return v[0];
+		if (this->member == "y") return v[1];
+		if (this->member == "z") return v[2];
 	} else if (v.type() == Value::ValueType::RANGE) {
-		if (this->member == "begin") return v[0].clone();
-		if (this->member == "step") return v[1].clone();
-		if (this->member == "end") return v[2].clone();
+		if (this->member == "begin") return v[0];
+		if (this->member == "step") return v[1];
+		if (this->member == "end") return v[2];
 	}
 	return Value();
 }
@@ -428,7 +411,7 @@ void MemberLookup::print(std::ostream &stream, const std::string &) const
 	stream << *this->expr << "." << this->member;
 }
 
-FunctionCall::FunctionCall(const std::string &name, 
+FunctionCall::FunctionCall(const std::string &name,
 													 const AssignmentList &args, const Location &loc)
 	: Expression(loc), name(name), arguments(args)
 {
@@ -567,7 +550,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const Context *context) const
 {
-    const shared_ptr<Expression> &expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+    const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
     Value::VectorPtr vec;
     if (expr) {
@@ -578,7 +561,7 @@ Value LcIf::evaluate(const Context *context) const
         }
     }
 
-    return Value(std::move(vec));
+    return Value(vec);
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
@@ -612,10 +595,10 @@ Value LcEach::evaluate(const Context *context) const
     } else if (v.type() == Value::ValueType::VECTOR) {
         const Value::VectorPtr &vector = v.toVectorPtr();
         for (size_t i = 0; i < vector->size(); i++) {
-            vec->emplace_back(std::move(vector[i]));
+            vec->emplace_back(vector[i].clone());
         }
     } else if (v.type() == Value::ValueType::STRING) {
-        utf8_split(v.toString(), [&](Value v) {
+        utf8_split(v.toStrUtf8Wrapper(), [&](Value v) {
             vec->emplace_back(std::move(v));
         });
     } else if (v.type() != Value::ValueType::UNDEFINED) {
@@ -623,10 +606,9 @@ Value LcEach::evaluate(const Context *context) const
     }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
-    } else {
-        return Value(std::move(vec));
-    }
+		vec.flatten();
+	}
+	return Value(vec);
 }
 
 void LcEach::print(std::ostream &stream, const std::string &) const
@@ -671,20 +653,19 @@ Value LcFor::evaluate(const Context *context) const
             vec->emplace_back(this->expr->evaluate(&c));
 		}
     } else if (it_values.type() == Value::ValueType::STRING) {
-        utf8_split(it_values.toString(), [&](Value v) {
-            c.set_variable(it_name, v.clone());
+        utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
+            c.set_variable(it_name, std::move(v));
             vec->emplace_back(this->expr->evaluate(&c));
         });
     } else if (it_values.type() != Value::ValueType::UNDEFINED) {
-        c.set_variable(it_name, it_values.clone());
+        c.set_variable(it_name, std::move(it_values));
         vec->emplace_back(this->expr->evaluate(&c));
     }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
-    } else {
-        return Value(std::move(vec));
-    }
+        vec.flatten();
+	}
+	return Value(vec);
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const
@@ -705,7 +686,7 @@ Value LcForC::evaluate(const Context *context) const
     evaluate_sequential_assignment(this->arguments, &c, this->loc);
 
 	unsigned int counter = 0;
-    while (this->cond->evaluate(&c).toBool()) {
+    while (this->cond->evaluate(&c)) {
         vec->emplace_back(this->expr->evaluate(&c));
 
         if (counter++ == 1000000) {
@@ -717,13 +698,12 @@ Value LcForC::evaluate(const Context *context) const
         Context tmp(&c);
         evaluate_sequential_assignment(this->incr_arguments, &tmp, this->loc);
         c.take_variables(tmp);
-    }    
+    }
 
     if (isListComprehension(this->expr)) {
-        return Value(flatten(vec));
-    } else {
-        return Value(std::move(vec));
+        vec.flatten();
     }
+	return Value(vec);
 }
 
 void LcForC::print(std::ostream &stream, const std::string &) const
@@ -769,7 +749,7 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 	
 	const Value condition = c.lookup_variable("condition", false, evalctx->loc);
 
-	if (!condition.toBool()) {
+	if (!condition) {
 		const Expression *expr = assignments["condition"];
 		const Value message = c.lookup_variable("message", true);
 		

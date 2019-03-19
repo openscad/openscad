@@ -43,6 +43,8 @@ namespace fs=boost::filesystem;
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
+const Value Value::undefined;
+
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE 128
 #define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
@@ -130,7 +132,7 @@ inline char* DoubleConvert(const double &value, char *buffer,
   return buffer;
 }
 
-void utf8_split(const std::string& str, std::function<void(Value)> f)
+void utf8_split(const str_utf8_wrapper& str, std::function<void(Value)> f)
 {
     const char *ptr = str.c_str();
 
@@ -246,8 +248,6 @@ Value Value::clone() const {
       c.value = boost::get<RangeType>(this->value).clone();
     break;
     case ValueType::VECTOR :
-      // NOTE: this makes a copy of shared_ptr, 
-      // can't do this if we want to switch to unique_ptr
       c.value = boost::get<VectorPtr>(this->value).clone();
     break;
     default:
@@ -290,7 +290,7 @@ bool Value::toBool() const
     return !boost::get<str_utf8_wrapper>(this->value).empty();
     break;
   case ValueType::VECTOR:
-    return !boost::get<VectorPtr>(this->value).empty();
+    return !boost::get<VectorPtr>(this->value)->empty();
     break;
   case ValueType::RANGE:
     return true;
@@ -331,7 +331,7 @@ bool Value::getFiniteDouble(double &v) const
   return valid;
 }
 
-const str_utf8_wrapper& Value::toStrUtf8Wrapper() {
+const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
   return boost::get<str_utf8_wrapper>(this->value);
 }
 
@@ -534,21 +534,41 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
+void Value::VectorPtr::flatten() {
+  int n = 0;
+  for (unsigned int i = 0; i < (*this)->size(); i++) {
+    if ((*this)[i].type() == Value::ValueType::VECTOR) {
+      n += (*this)[i].toVectorPtr()->size();
+    } else {
+      n++;
+    }
+  }
+  Value::VectorPtr ret; ret->reserve(n);
+  for (unsigned int i = 0; i < (*this)->size(); i++) {
+    if ((*this)[i].type() == Value::ValueType::VECTOR) {
+      Value::VectorPtr &vec_ptr = (*this)[i].toVectorPtrRef();
+      for(unsigned int j = 0; j < vec_ptr->size(); ++j) {
+        ret->emplace_back(std::move(vec_ptr[j]));
+      }
+    } else {
+      ret->emplace_back(std::move((*this)[i]));
+    }
+  }
+  this->ptr = ret.ptr;
+}
 
 const Value::VectorPtr &Value::toVectorPtr() const
 {
-  static Value::VectorPtr empty{};
-  
+  static const Value::VectorPtr empty_vec;
   const Value::VectorPtr *v = boost::get<Value::VectorPtr>(&this->value);
-  if (v) {
-    //std::cout << "Value::toVectorPtr() : " << *this << '\n';
-    return *v;
-  }
-  else {
-    return empty;
-    //assert(false && "check for Value::ValueType::VECTOR before calling");
-  }
+  return v ? *v : empty_vec;
 }
+
+Value::VectorPtr &Value::toVectorPtrRef()
+{
+  return boost::get<VectorPtr>(this->value);
+}
+
 
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
@@ -703,7 +723,7 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sum->push_back(op1[i] + op2[i]);
 		}
-		return Value(std::move(sum));
+		return Value(sum);
 	}
 };
 
@@ -728,7 +748,7 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sum->push_back(op1[i] - op2[i]);
 		}
-		return Value(std::move(sum));
+		return Value(sum);
 	}
 };
 
@@ -744,7 +764,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 	for(const auto &val : *vecval.toVectorPtr()) {
 		dstv->push_back(val * numval);
 	}
-	return Value(std::move(dstv));
+	return Value(dstv);
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
@@ -765,7 +785,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return Value(std::move(dstv));
+	return Value(dstv);
 }
 
 Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
@@ -785,7 +805,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return Value(std::move(dstv));
+	return Value(dstv);
 }
 
 Value Value::operator*(const Value &v) const
@@ -830,7 +850,7 @@ Value Value::operator*(const Value &v) const
 				if (srcrowvec.size() != vec2.size()) return {};
 				dstv->push_back(multvecmat(srcrowvec, vec2));
 			}
-			return Value(std::move(dstv));
+			return Value(dstv);
 		}
 	}
 	return {};
@@ -847,7 +867,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(vecval / v);
     }
-    return Value(std::move(dstv));
+    return Value(dstv);
   }
   else if (this->type() == ValueType::NUMBER && v.type() == ValueType::VECTOR) {
     const auto &vec = *v.toVectorPtr();
@@ -855,7 +875,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(*this / vecval);
     }
-    return Value(std::move(dstv));
+    return Value(dstv);
   }
   return {};
 }
@@ -879,7 +899,7 @@ Value Value::operator-() const
     for (const auto &vecval : vec) {
       dstv->push_back(-vecval);
     }
-    return Value(std::move(dstv));
+    return Value(dstv);
   }
   return {};
 }

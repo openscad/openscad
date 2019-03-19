@@ -94,13 +94,13 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			}
 		}
 		else if (it_values.type() == Value::ValueType::STRING) {
-			utf8_split(it_values.toString(), [&](Value v) {
-				c.set_variable(it_name, v.clone());
+			utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
+				c.set_variable(it_name, std::move(v));
 				for_eval(node, inst, l+1, &c, evalctx);
 			});
 		}
 		else if (it_values.type() != Value::ValueType::UNDEFINED) {
-			c.set_variable(it_name, it_values.clone());
+			c.set_variable(it_name, std::move(it_values));
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
@@ -150,7 +150,7 @@ AbstractNode* ControlModule::getChild(const Value &value, const EvalContext* mod
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
 		return nullptr;
 	}
-		
+
 	int n = static_cast<int>(trunc(v));
 	if (n < 0) {
 		PRINTB("WARNING: Negative children index (%d) not allowed", n);
@@ -233,7 +233,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorPtr &vect = value.toVectorPtr();
 				for(auto it = vect->begin(); it != vect->end(); it++) {
-					AbstractNode* childnode = getChild(it->clone(), modulectx);
+					AbstractNode* childnode = getChild(std::move(*it), modulectx);
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
@@ -300,7 +300,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 		Context c(evalctx);
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
 			if (!evalctx->getArgName(i).empty())
-				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i).clone());
+				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
 		// Let any local variables override the parameters
 		inst->scope.apply(c);

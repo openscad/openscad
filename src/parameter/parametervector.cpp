@@ -34,7 +34,7 @@ void ParameterVector::onChanged(double)
 			if (!this->doubleSpinBox4->isReadOnly()) {
 				vt->emplace_back(this->doubleSpinBox4->value());
 			}
-			object->value = Value(std::move(vt));
+			object->value = Value(vt);
 		}
 		emit changed();
 	}

@@ -156,37 +156,6 @@ class Value
 {
 public:
 	typedef std::vector<Value> VectorType;
-
-	class VectorPtr {
-	public:
-		VectorPtr() : ptr(new VectorType()) {}
-		VectorPtr(const VectorPtr &) = delete; // never copy, move instead
-		VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
-		VectorPtr(VectorPtr&&) = default; // default move constructor
-		VectorPtr& operator=(VectorPtr&&) = default; // default move assignment 
-
-		// Copy explicitly only when necessary
-		VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c;  }
-
-		const Value::VectorType &operator*() const { return *ptr; }
-		Value::VectorType *operator->() const { return ptr.get(); }
-		Value &operator[](size_t idx) const {
-			static Value undef;
-			return idx < ptr->size() ? (*ptr)[idx] : undef; 
-		}
-		bool operator==(const VectorPtr &v) const { return *ptr == *v; }
-		bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
-		bool empty() const { return ptr->empty(); }
-		
-		friend bool operator==(const VectorPtr &vptr, nullptr_t) { vptr.ptr == nullptr; };
-		friend bool operator!=(const VectorPtr &vptr, nullptr_t) { vptr.ptr != nullptr; };
-		friend bool operator==(nullptr_t, const VectorPtr &vptr) { nullptr == vptr.ptr; };
-		friend bool operator!=(nullptr_t, const VectorPtr &vptr) { nullptr != vptr.ptr; };
-
-	private:
-		shared_ptr<Value::VectorType> ptr;
-	};
-
 	enum class ValueType {
 		UNDEFINED,
 		BOOL,
@@ -196,6 +165,33 @@ public:
 		RANGE
 	};
 	static const Value undefined;
+
+	class VectorPtr {
+	public:
+		VectorPtr() : ptr(new VectorType{}) {}
+		VectorPtr(const VectorPtr &) = delete; // never copy, move instead
+		VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
+		VectorPtr(VectorPtr&&) = default; // default move constructor
+		VectorPtr& operator=(VectorPtr&&) = default; // default move assignment 
+
+		// Copy explicitly only when necessary
+		VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c; }
+
+		const Value::VectorType &operator*() const { return *ptr; }
+		Value::VectorType *operator->() const { return ptr.get(); }
+		const Value &operator[](size_t idx) const { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
+		Value &operator[](size_t idx) {
+			static Value undef;
+			return idx < ptr->size() ? (*ptr)[idx] : undef; 
+		}
+		bool operator==(const VectorPtr &v) const { return *ptr == *v; }
+		bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
+		
+		void flatten();
+
+	private:
+		shared_ptr<Value::VectorType> ptr;
+	};
 
 	Value();
 	Value(const Value &) = delete; // never copy, move instead
@@ -208,7 +204,9 @@ public:
 	explicit Value(const std::string &v);
 	explicit Value(const char *v);
 	explicit Value(const char v);
+	explicit Value(RangeType& v) : value(std::move(v)) {};
 	explicit Value(RangeType&& v) : value(std::move(v)) {};
+	explicit Value(VectorPtr& v) : value(std::move(v)) {};
 	explicit Value(VectorPtr&& v) : value(std::move(v)) {};
 
 	Value clone() const; // Use sparingly to explicitly copy a Value
@@ -226,17 +224,20 @@ public:
 	std::string toString(const tostring_visitor *visitor) const;
 	std::string toEchoString() const;
 	std::string toEchoString(const tostring_visitor *visitor) const;
-	const str_utf8_wrapper& toStrUtf8Wrapper();
+	const str_utf8_wrapper& toStrUtf8Wrapper() const;
 	void toStream(std::ostringstream &stream) const;
 	void toStream(const tostream_visitor *visitor) const;
 	std::string chrString() const;
 	const VectorPtr &toVectorPtr() const;
-
+protected:
+	VectorPtr &toVectorPtrRef(); // unsafe non-const reference needed by VectorPtr::flatten
+public:
 	bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
 	bool getVec3(double &x, double &y, double &z) const;
 	bool getVec3(double &x, double &y, double &z, double defaultval) const;
 	const RangeType& toRange() const;
 
+	operator bool() const { return this->toBool(); }
 	bool operator==(const Value &v) const;
 	bool operator!=(const Value &v) const;
 	bool operator<(const Value &v) const;
@@ -274,4 +275,4 @@ private:
 	Variant value;
 };
 
-void utf8_split(const std::string& str, std::function<void(Value)> f);
+void utf8_split(const str_utf8_wrapper& str, std::function<void(Value)> f);
