@@ -59,8 +59,8 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(evalctx, args);
 	inst->scope.apply(*evalctx);
 
-	auto convexity = Value::undefined();
-	auto path = Value::undefined();
+	auto convexity = Value();
+	auto path = Value();
 	
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c.lookup_variable("convexity", true);

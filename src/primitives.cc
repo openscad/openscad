@@ -134,7 +134,7 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const Location &loc, co
 	} else if (r_defined) {
 		return r;
 	} else {
-		return Value::undefined();
+		return Value();
 	}
 }
 

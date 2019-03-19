@@ -44,7 +44,7 @@ UserFunction::~UserFunction()
 
 Value UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
-	if (!expr) return Value::undefined();
+	if (!expr) return Value();
 	Context c(ctx);
 	c.setVariables(evalctx, definition_arguments);
 	return expr->evaluate(&c);
@@ -82,7 +82,7 @@ public:
 	~FunctionTailRecursion() { }
 
 	Value evaluate(const Context *ctx, const EvalContext *evalctx) const override {
-		if (!expr) return Value::undefined();
+		if (!expr) return Value();
 		
 		Context c(ctx);
 		c.setVariables(evalctx, definition_arguments);

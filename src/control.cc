@@ -1,7 +1,7 @@
 /*
  *  OpenSCAD (www.openscad.org)
  *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
- *						  Marius Kintel <marius@kintel.net>
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ public: // methods
 
 	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
 	
-	static AbstractNode* getChild(Value value, const EvalContext* modulectx);
+	static AbstractNode* getChild(const Value &value, const EvalContext* modulectx);
 
 private: // data
 	Type type;
@@ -137,7 +137,7 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 }
 
 // static
-AbstractNode* ControlModule::getChild(Value value, const EvalContext* modulectx)
+AbstractNode* ControlModule::getChild(const Value &value, const EvalContext* modulectx)
 {
 	if (value.type()!=Value::ValueType::NUMBER) {
 		// Invalid parameter
@@ -300,7 +300,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 		Context c(evalctx);
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
 			if (!evalctx->getArgName(i).empty())
-				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
+				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i).clone());
 		}
 		// Let any local variables override the parameters
 		inst->scope.apply(c);

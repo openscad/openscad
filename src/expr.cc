@@ -108,7 +108,7 @@ Value UnaryOp::evaluate(const Context *context) const
 	case (Op::Negate):
 		return Value(-this->expr->evaluate(context));
 	default:
-		return Value::undefined();
+		return Value();
 		// FIXME: error:
 	}
 }
@@ -188,7 +188,7 @@ Value BinaryOp::evaluate(const Context *context) const
 		return Value(this->left->evaluate(context) != this->right->evaluate(context));
 		break;
 	default:
-		return Value::undefined();
+		return Value();
 		// FIXME: Error: unknown op
 	}
 }
@@ -276,7 +276,7 @@ void ArrayLookup::print(std::ostream &stream, const std::string &) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(Value val, const Location &loc) : Expression(loc), value(val.clone())
+Literal::Literal(Value val, const Location &loc) : Expression(loc), value(std::move(val))
 {
 }
 
@@ -316,7 +316,7 @@ Value Range::evaluate(const Context *context) const
 			}
 		}
 	}
-	return Value::undefined();
+	return Value();
 }
 
 void Range::print(std::ostream &stream, const std::string &) const
@@ -420,7 +420,7 @@ Value MemberLookup::evaluate(const Context *context) const
 		if (this->member == "step") return v[1].clone();
 		if (this->member == "end") return v[2].clone();
 	}
-	return Value::undefined();
+	return Value();
 }
 
 void MemberLookup::print(std::ostream &stream, const std::string &) const
@@ -508,7 +508,7 @@ Value Assert::evaluate(const Context *context) const
 	Context c(&assert_context);
 	evaluate_assert(c, &assert_context);
 
-	return expr ? expr->evaluate(&c) : Value::undefined();
+	return expr ? expr->evaluate(&c) : Value();
 }
 
 void Assert::print(std::ostream &stream, const std::string &) const
@@ -528,7 +528,7 @@ Value Echo::evaluate(const Context *context) const
 	EvalContext echo_context(context, this->arguments, this->loc);	
 	PRINTB("%s", STR("ECHO: " << echo_context));
 
-	Value result = expr ? expr->evaluate(context) : Value::undefined();
+	Value result = expr ? expr->evaluate(context) : Value();
 	return result;
 }
 

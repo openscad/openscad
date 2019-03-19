@@ -94,7 +94,7 @@ Builtins::Builtins()
 	this->assignments.emplace_back("$fs", make_shared<Literal>(Value(2.0)));
 	this->assignments.emplace_back("$fa", make_shared<Literal>(Value(12.0)));
 	this->assignments.emplace_back("$t", make_shared<Literal>(Value(0.0)));
-	this->assignments.emplace_back("$preview", make_shared<Literal>(Value::undefined())); //undef as should always be overwritten.
+	this->assignments.emplace_back("$preview", make_shared<Literal>(Value())); //undef as should always be overwritten.
 
 	Value::VectorPtr zero3v;
 	zero3v->emplace_back(0.0); zero3v->emplace_back(0.0); zero3v->emplace_back(0.0);

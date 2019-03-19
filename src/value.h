@@ -111,30 +111,34 @@ public:
 
 class str_utf8_wrapper
 {
+	// store the cached length in glong, paired with its string
+	typedef std::pair<std::string, glong> str_utf8_t;
+	typedef shared_ptr<str_utf8_t> str_ptr_t;
 	// private constructor for copying members
-	explicit str_utf8_wrapper(const std::string &str_in, glong len) : str(str_in), cached_len(len) { }
+	explicit str_utf8_wrapper(str_ptr_t str_in) : str_ptr(str_in) { }
 public:
-	str_utf8_wrapper() : str(std::string()), cached_len(-1) { }
-	explicit str_utf8_wrapper( const std::string& s ) : str(s), cached_len(-1) { }
-	explicit str_utf8_wrapper( size_t n, char c ) : str(std::string(n, c)), cached_len(-1) { }
+	str_utf8_wrapper() : str_ptr(new str_utf8_t{ std::string{""}, -1}) { }
+	explicit str_utf8_wrapper( const std::string& s ) : str_ptr(new str_utf8_t{std::string{s}, -1}) { }
+	explicit str_utf8_wrapper( size_t n, char c ) : str_ptr(new str_utf8_t{std::string(n, c),-1}) { }
 
 	str_utf8_wrapper(const str_utf8_wrapper &) = delete; // never copy, move instead
 	str_utf8_wrapper& operator=(const str_utf8_wrapper &) = delete; // never copy, move instead
 	str_utf8_wrapper(str_utf8_wrapper&&) = default; // default move constructor
 	str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default; // default move assignment 
 
-	str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str, this->cached_len); }
+	// makes a copy of shared_ptr
+	str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); }
 
-	bool operator==(const str_utf8_wrapper &rhs) const { return this->str == rhs.str; }
-	bool empty() const { return this->str.empty(); }
-	const char* c_str() const noexcept { return this->str.c_str(); }
-	size_t size() const noexcept { return this->str.size(); }
+	bool operator==(const str_utf8_wrapper &rhs) const { return this->str_ptr->first == rhs.str_ptr->first; }
+	bool empty() const { return this->str_ptr->first.empty(); }
+	const char* c_str() const noexcept { return this->str_ptr->first.c_str(); }
+	size_t size() const noexcept { return this->str_ptr->first.size(); }
 
 	glong get_utf8_strlen() const {
-		if (cached_len < 0) {
-			cached_len = g_utf8_strlen(this->str.c_str(), this->str.size());
+		if (str_ptr->second < 0) {
+			str_ptr->second = g_utf8_strlen(this->str_ptr->first.c_str(), this->str_ptr->first.size());
 		}
-		return cached_len;
+		return str_ptr->second;
 	};
 
 	friend class tostring_visitor;
@@ -145,8 +149,7 @@ public:
 	friend class greaterequal_visitor;
 
 private:
-	std::string str;
-	mutable glong cached_len;
+	str_ptr_t str_ptr;
 };
 
 class Value
@@ -192,7 +195,7 @@ public:
 		VECTOR,
 		RANGE
 	};
-	static Value undefined() { return {}; }
+	static const Value undefined;
 
 	Value();
 	Value(const Value &) = delete; // never copy, move instead

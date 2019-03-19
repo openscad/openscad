@@ -92,7 +92,7 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	}else{
 		PRINTB("WARNING: Can't open DXF file '%s'! %s",
 					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return Value::undefined();
+		return Value();
 	}
 	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
 												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
@@ -146,13 +146,13 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 
 		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type! %s", 
 					 name % rawFilename  % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return Value::undefined();
+		return Value();
 	}
 
 	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'! %s",
 				 name % rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
-	return Value::undefined();
+	return Value();
 }
 
 Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
@@ -199,7 +199,7 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	}else{
 		PRINTB("WARNING: Can't open DXF file '%s'! %s",
 					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return Value::undefined();
+		return Value();
 	}
 
 	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
@@ -245,7 +245,7 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 
 	PRINTB("WARNING: Can't find cross in '%s', layer '%s'! %s", rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
-	return Value::undefined();
+	return Value();
 }
 
 void initialize_builtin_dxf_dim()

@@ -344,7 +344,7 @@ public:
   }
 
   std::string operator()(const str_utf8_wrapper &op1) const {
-    return op1.str;
+    return op1.str_ptr->first;
   }
 
   std::string operator()(const double &op1) const {
@@ -425,7 +425,7 @@ public:
   }
 
   void operator()(const str_utf8_wrapper &v) const {
-    stream << '"' << v.str << '"';
+    stream << '"' << v.str_ptr->first << '"';
   }
 
   void operator()(const RangeType &v) const {
@@ -537,7 +537,7 @@ std::string Value::chrString() const
 
 const Value::VectorPtr &Value::toVectorPtr() const
 {
-  static Value::VectorPtr empty;
+  static Value::VectorPtr empty{};
   
   const Value::VectorPtr *v = boost::get<Value::VectorPtr>(&this->value);
   if (v) {
@@ -658,8 +658,8 @@ bool Value::operator!=(const Value &v) const
 		}																																		\
 																																				\
 		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
-			return op1.str op op2.str;					  														\
-		}																																		\
+			return op1.str_ptr->first op op2.str_ptr->first;									\
+		}            																												\
 	}
 
 DEFINE_VISITOR(less_visitor, <);
