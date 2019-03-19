@@ -508,7 +508,7 @@ Value Assert::evaluate(const Context *context) const
 	Context c(&assert_context);
 	evaluate_assert(c, &assert_context);
 
-	return expr ? std::move(expr->evaluate(&c)) : Value::undefined();
+	return expr ? expr->evaluate(&c) : Value::undefined();
 }
 
 void Assert::print(std::ostream &stream, const std::string &) const
@@ -528,7 +528,7 @@ Value Echo::evaluate(const Context *context) const
 	EvalContext echo_context(context, this->arguments, this->loc);	
 	PRINTB("%s", STR("ECHO: " << echo_context));
 
-	Value result = expr ? std::move(expr->evaluate(context)) : Value::undefined();
+	Value result = expr ? expr->evaluate(context) : Value::undefined();
 	return result;
 }
 
@@ -665,18 +665,18 @@ Value LcFor::evaluate(const Context *context) const
             }
         }
     } else if (it_values.type() == Value::ValueType::VECTOR) {
-		const Value::VectorPtr &moved_vec = it_values.toVectorPtr();
-        for (size_t i = 0; i < moved_vec->size(); i++) {
-            c.set_variable(it_name, std::move(moved_vec[i]) );
+		const Value::VectorPtr &vec2 = it_values.toVectorPtr();
+        for (size_t i = 0; i < vec2->size(); i++) {
+            c.set_variable(it_name, vec2[i].clone() );
             vec->emplace_back(this->expr->evaluate(&c));
 		}
     } else if (it_values.type() == Value::ValueType::STRING) {
         utf8_split(it_values.toString(), [&](Value v) {
-            c.set_variable(it_name, std::move(v));
+            c.set_variable(it_name, v.clone());
             vec->emplace_back(this->expr->evaluate(&c));
         });
     } else if (it_values.type() != Value::ValueType::UNDEFINED) {
-        c.set_variable(it_name, std::move(it_values));
+        c.set_variable(it_name, it_values.clone());
         vec->emplace_back(this->expr->evaluate(&c));
     }
 

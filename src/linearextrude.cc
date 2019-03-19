@@ -89,7 +89,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		auto val = evalctx->getArgValue(0);
-		if (val.type() == Value::ValueType::NUMBER) height = std::move(val);
+		if (val.type() == Value::ValueType::NUMBER) height = val.clone();
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();

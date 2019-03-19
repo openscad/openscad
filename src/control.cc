@@ -87,20 +87,20 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			}
 		}
 		else if (it_values.type() == Value::ValueType::VECTOR) {
-			const Value::VectorPtr &moved_vec = it_values.toVectorPtr();
-			for (size_t i = 0; i < moved_vec->size(); i++) {
-				c.set_variable(it_name, std::move(moved_vec[i]));
+			const Value::VectorPtr &vec = it_values.toVectorPtr();
+			for (size_t i = 0; i < vec->size(); i++) {
+				c.set_variable(it_name, vec[i].clone());
 				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
 		else if (it_values.type() == Value::ValueType::STRING) {
 			utf8_split(it_values.toString(), [&](Value v) {
-				c.set_variable(it_name, std::move(v));
+				c.set_variable(it_name, v.clone());
 				for_eval(node, inst, l+1, &c, evalctx);
 			});
 		}
 		else if (it_values.type() != Value::ValueType::UNDEFINED) {
-			c.set_variable(it_name, std::move(it_values));
+			c.set_variable(it_name, it_values.clone());
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
@@ -233,7 +233,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 				AbstractNode* node = new GroupNode(inst);
 				const Value::VectorPtr &vect = value.toVectorPtr();
 				for(auto it = vect->begin(); it != vect->end(); it++) {
-					AbstractNode* childnode = getChild(std::move(*it), modulectx);
+					AbstractNode* childnode = getChild(it->clone(), modulectx);
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}

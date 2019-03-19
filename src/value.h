@@ -165,13 +165,14 @@ public:
 		// Copy explicitly only when necessary
 		VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c;  }
 
-		//VectorPtr(Value::VectorType &&); // do we want to me able to move VectorType?
-		const Value::VectorType &operator*() const { return *ptr.get(); }
+		const Value::VectorType &operator*() const { return *ptr; }
 		Value::VectorType *operator->() const { return ptr.get(); }
-		Value &operator[](size_t idx) const {	return (*ptr.get())[idx]; }
+		Value &operator[](size_t idx) const {
+			static Value undef;
+			return idx < ptr->size() ? (*ptr)[idx] : undef; 
+		}
 		bool operator==(const VectorPtr &v) const { return *ptr == *v; }
 		bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
-		//operator bool() const {	return !ptr->empty(); }
 		bool empty() const { return ptr->empty(); }
 		
 		friend bool operator==(const VectorPtr &vptr, nullptr_t) { vptr.ptr == nullptr; };
@@ -233,8 +234,6 @@ public:
 	bool getVec3(double &x, double &y, double &z, double defaultval) const;
 	const RangeType& toRange() const;
 
-	//operator bool() const { return this->toBool(); }
-
 	bool operator==(const Value &v) const;
 	bool operator!=(const Value &v) const;
 	bool operator<(const Value &v) const;
@@ -242,7 +241,6 @@ public:
 	bool operator>=(const Value &v) const;
 	bool operator>(const Value &v) const;
 	Value operator-() const;
-	//const Value &operator[](const Value &v) const;
 	Value operator[](const Value &v) const;
 	Value operator[](size_t idx) const;
 	Value operator+(const Value &v) const;

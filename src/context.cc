@@ -80,16 +80,13 @@ void Context::setVariables(const EvalContext *evalctx, const AssignmentList &arg
 	// Set any default values
 	for (const auto arg : args) {
 		// FIXME should we just not set value if arg.expr is false?
-		//set_variable(arg.name, arg.expr ? std::move(arg.expr->evaluate(this->parent)) : Value::undefined());
-		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent).clone() : Value::undefined());
+		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : Value::undefined());
 	}
 	
 	if (evalctx) {
 		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
 		for (const auto &ass : assignments) {
-			Value val = ass.second->evaluate(evalctx);
-			//this->set_variable(ass.first, std::move(val));
-			this->set_variable(ass.first, val.clone());
+			this->set_variable(ass.first, ass.second->evaluate(evalctx));
 		}
 	}
 }

@@ -752,7 +752,7 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 		unsigned int matchCount = 0;
     const Value::VectorPtr &localTable = searchTable.toVectorPtr();
 		for (size_t j = 0; j < localTable->size(); j++) {
-			Value search_element = std::move(localTable[j]);
+			Value search_element = localTable[j].clone();
 
 			if ((index_col_num == 0 && findThis == search_element) ||
 					(index_col_num < search_element.toVectorPtr()->size() &&
@@ -775,11 +775,11 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 		  unsigned int matchCount = 0;
 			Value::VectorPtr resultvec;
 
-			Value find_value = std::move(findVec[i]);
+			Value find_value = findVec[i].clone();
  			const Value::VectorPtr &localTable = searchTable.toVectorPtr();	
 			for (size_t j = 0; j < localTable->size(); j++) {
 
-				Value search_element = std::move(localTable[j]);
+				Value search_element = localTable[j].clone();
 
 				if ((index_col_num == 0 && find_value == search_element) ||
 						(index_col_num < search_element.toVectorPtr()->size() &&
