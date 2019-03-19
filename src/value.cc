@@ -161,7 +161,7 @@ inline char* DoubleConvert(const double &value, char *buffer,
   return buffer;
 }
 
-void utf8_split(const std::string& str, std::function<void(Value)> f)
+void utf8_split(const str_utf8_wrapper& str, std::function<void(Value)> f)
 {
     const char *ptr = str.c_str();
 
@@ -223,7 +223,7 @@ Value Value::clone() const {
   case Type::RANGE:     return boost::get<RangeType>(this->value).clone();
   case Type::VECTOR:    return boost::get<VectorPtr>(this->value).clone();
   case Type::FUNCTION:  return Value(boost::get<FunctionPtr>(this->value).clone());
-  default:              assert(false && "unknown Variant value");
+  default:              assert(false && "unknown Value variant type");
   }
   return Value();
 }
@@ -245,12 +245,14 @@ std::string Value::typeName() const
 bool Value::toBool() const
 {
   switch (this->type()) {
-  case Type::BOOL:   return boost::get<bool>(this->value);
-  case Type::NUMBER: return boost::get<double>(this->value)!= 0;
-  case Type::STRING: return !boost::get<str_utf8_wrapper>(this->value).empty();
-  case Type::VECTOR: return !boost::get<VectorPtr>(this->value)->empty();
-  case Type::RANGE:  return true;
-  default:           return false;
+  case Type::UNDEFINED: return false;
+  case Type::BOOL:      return boost::get<bool>(this->value);
+  case Type::NUMBER:    return boost::get<double>(this->value)!= 0;
+  case Type::STRING:    return !boost::get<str_utf8_wrapper>(this->value).empty();
+  case Type::VECTOR:    return !boost::get<VectorPtr>(this->value)->empty();
+  case Type::RANGE:     return true;
+  case Type::FUNCTION:  return true;
+  default:              assert(false && "unknown Value variant type");
   }
 }
 
@@ -488,19 +490,42 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
+void Value::VectorPtr::flatten() {
+  int n = 0;
+  for (unsigned int i = 0; i < (*this)->size(); i++) {
+    if ((*this)[i].type() == Value::Type::VECTOR) {
+      n += (*this)[i].toVectorPtr()->size();
+    } else {
+      n++;
+    }
+  }
+  Value::VectorPtr ret; ret->reserve(n);
+  for (unsigned int i = 0; i < (*this)->size(); i++) {
+    if ((*this)[i].type() == Value::Type::VECTOR) {
+      Value::VectorPtr &vec_ptr = (*this)[i].toVectorPtrRef();
+      for(unsigned int j = 0; j < vec_ptr->size(); ++j) {
+        ret->emplace_back(std::move(vec_ptr[j]));
+      }
+    } else {
+      ret->emplace_back(std::move((*this)[i]));
+    }
+  }
+  this->ptr = ret.ptr;
+}
+
 const Value::VectorPtr &Value::toVectorPtr() const
 {
-  static Value::VectorPtr empty;
-
+  static const VectorPtr empty;
   const Value::VectorPtr *v = boost::get<Value::VectorPtr>(&this->value);
-  if (v) {
-    //std::cout << "Value::toVectorPtr() : " << *this << '\n';
-    return *v;
-  }
-  else {
-    return empty;
-  }
+  return v ? *v : empty;
 }
+
+// protected non-const reference return only used by VectorPtr::flatten
+Value::VectorPtr &Value::toVectorPtrRef()
+{
+  return boost::get<VectorPtr>(this->value);
+}
+
 
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {

@@ -22,13 +22,13 @@ const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
 class SettingsConverter {
 public:
-	QsciScintilla::WrapMode toWrapMode(Value val);
-	QsciScintilla::WrapVisualFlag toLineWrapVisualization(Value val);
-	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(Value val);
-	QsciScintilla::WhitespaceVisibility toShowWhitespaces(Value val);
+	QsciScintilla::WrapMode toWrapMode(const Value &val);
+	QsciScintilla::WrapVisualFlag toLineWrapVisualization(const Value &val);
+	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(const Value &val);
+	QsciScintilla::WhitespaceVisibility toShowWhitespaces(const Value &val);
 };
 
-QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
+QsciScintilla::WrapMode SettingsConverter::toWrapMode(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Char") {
@@ -40,7 +40,7 @@ QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
 	}
 }
 
-QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value val)
+QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Text") {
@@ -56,7 +56,7 @@ QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value v
 	}
 }
 
-QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Value val)
+QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Same") {
@@ -68,7 +68,7 @@ QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Valu
 	}
 }
 
-QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value val)
+QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Always") {

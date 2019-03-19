@@ -59,7 +59,7 @@ class SettingsReader : public Settings::SettingsVisitor
 		boost::trim(trimmed_value);
 
 		if (trimmed_value.empty()) {
-			return entry.defaultValue();
+			return entry.defaultValue().clone();
 		}
 
 		try {
@@ -81,10 +81,10 @@ class SettingsReader : public Settings::SettingsVisitor
 				return Value(boost::lexical_cast<bool>(trimmed_value));
 			default:
 				assert(false && "invalid value type for settings");
-				return entry.defaultValue();
+				return entry.defaultValue().clone();
 			}
 		} catch (const boost::bad_lexical_cast& e) {
-			return entry.defaultValue();
+			return entry.defaultValue().clone();
 		}
 	}
 

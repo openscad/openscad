@@ -93,7 +93,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			}
 		}
 		else if (it_values.type() == Value::Type::STRING) {
-			utf8_split(it_values.toString(), [&](Value v) {
+			utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
 				c->set_variable(it_name, std::move(v));
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			});

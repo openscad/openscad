@@ -85,7 +85,7 @@ void Context::pop()
 void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
 	// Set any default values
-	for (const auto arg : args) {
+	for (const auto &arg : args) {
 		// FIXME should we just not set value if arg.expr is false?
 		set_variable(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(this->parent) : Value::undefined.clone());
 	}
@@ -164,7 +164,7 @@ Value Context::lookup_variable(const std::string &name, bool silent, const Locat
 		return this->variables.find(name)->second.clone();
 	}
 	if (this->parent) {
-		return this->parent->lookup_variable(name, silent, loc).clone();
+		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
 		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));

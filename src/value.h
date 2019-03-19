@@ -303,12 +303,18 @@ public:
     // Copy explicitly only when necessary
     VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c; }
 
-    const VectorType &operator*() const { return *ptr.get(); }
+    const VectorType &operator*() const { return *ptr; }
     VectorType *operator->() const { return ptr.get(); }
-    Value &operator[](size_t idx) const { return (*ptr.get())[idx]; }
+    const Value &operator[](size_t idx) const { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
+    Value &operator[](size_t idx) {
+      static Value undef;
+      return idx < ptr->size() ? (*ptr)[idx] : undef;
+    }
     bool operator==(const VectorPtr &v) const { return *ptr == *v; }
     bool operator!=(const VectorPtr &v) const { return *ptr != *v; }
     operator bool() const { return !ptr->empty(); }
+
+    void flatten();
 
   private:
     shared_ptr<VectorType> ptr;
@@ -339,7 +345,9 @@ public:
   const VectorPtr &toVectorPtr() const;
   const RangeType& toRange() const;
   const FunctionType& toFunction() const;
-
+protected:
+  VectorPtr &toVectorPtrRef(); // unsafe non-const reference needed by VectorPtr::flatten
+public:
   bool getDouble(double &v) const;
   bool getFiniteDouble(double &v) const;
   std::string toString() const;
@@ -349,7 +357,6 @@ public:
   void toStream(std::ostringstream &stream) const;
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
-
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z) const;
   bool getVec3(double &x, double &y, double &z, double defaultval) const;
@@ -387,5 +394,5 @@ private:
   Variant value;
 };
 
-void utf8_split(const std::string& str, std::function<void(Value)> f);
+void utf8_split(const str_utf8_wrapper& str, std::function<void(Value)> f);
 using VectorType = Value::VectorType;

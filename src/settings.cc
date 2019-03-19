@@ -29,14 +29,14 @@ const std::string & SettingsEntry::name() const
 	return _name;
 }
 
-Value SettingsEntry::defaultValue() const
+const Value & SettingsEntry::defaultValue() const
 {
-	return _default.clone();
+	return _default;
 }
 
-Value SettingsEntry::range() const
+const Value & SettingsEntry::range() const
 {
-	return _range.clone();
+	return _range;
 }
 
 bool SettingsEntry::is_default() const
@@ -101,7 +101,7 @@ static Value buttonValues() {
 Settings *Settings::inst(bool erase)
 {
 	static Settings *instance = new Settings;
-	
+
 	if (erase) {
 		delete instance;
 		instance = nullptr;
@@ -136,19 +136,19 @@ SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 	return nullptr;
 }
 
-Value Settings::defaultValue(const SettingsEntry& entry) const
+const Value &Settings::defaultValue(const SettingsEntry& entry) const
 {
-	return entry._default.clone();
+	return entry._default;
 }
 
-Value Settings::get(const SettingsEntry& entry) const
+const Value &Settings::get(const SettingsEntry& entry) const
 {
-	return entry._value.clone();
+	return entry._value;
 }
 
 void Settings::set(SettingsEntry& entry, Value val)
 {
-	entry._value = val.clone();
+	entry._value = std::move(val);
 }
 
 SettingsVisitor::SettingsVisitor()

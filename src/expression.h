@@ -98,7 +98,7 @@ public:
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override { return true;}
 private:
-	Value value;
+	const Value value;
 };
 
 class Range : public Expression
@@ -125,6 +125,7 @@ public:
 	bool isLiteral() const override;
 private:
 	std::vector<shared_ptr<Expression>> children;
+	mutable Value literal_flag; // cache if already computed
 };
 
 class Lookup : public Expression

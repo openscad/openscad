@@ -50,28 +50,6 @@ namespace {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
 
-	Value::VectorPtr flatten(Value::VectorPtr vec) {
-		int n = 0;
-		for (const auto &el : *vec) {
-			if (el.type() == Value::Type::VECTOR) {
-				n += el.toVectorPtr()->size();
-			} else {
-				++n;
-			}
-		}
-		Value::VectorPtr ret; ret->reserve(n);
-		for (const auto &el : *vec) {
-			if (el.type() == Value::Type::VECTOR) {
-				for(const auto &inner_el : *el.toVectorPtr()) {
-					ret->emplace_back(inner_el.clone());
-				}
-			} else {
-				ret->emplace_back(el.clone());
-			}
-		}
-		return ret;
-	}
-
 	void evaluate_sequential_assignment(const AssignmentList &assignment_list, std::shared_ptr<Context> context, const Location &loc) {
 		ContextHandle<EvalContext> ctx{Context::create<EvalContext>(context, assignment_list, loc)};
 		ctx->assignTo(context);
@@ -384,12 +362,17 @@ Vector::Vector(const Location &loc) : Expression(loc)
 }
 
 bool Vector::isLiteral() const {
-    for(const auto &e : this->children) {
-        if (!e->isLiteral()) {
-            return false;
-        }
+  if (this->literal_flag.isDefined()) {
+    return literal_flag;
+  }
+  for(const auto &e : this->children) {
+    if (!e->isLiteral()){
+      this->literal_flag = Value(false);
+      return false;
     }
-    return true;
+  }
+  this->literal_flag = Value(true);
+  return true;
 }
 
 void Vector::emplace_back(Expression *expr)
@@ -714,7 +697,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
-    const shared_ptr<Expression> &expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+    const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 
     Value::VectorPtr vec;
     if (expr) {
@@ -761,7 +744,7 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
             vec->emplace_back(el.clone());
         }
     } else if (v.type() == Value::Type::STRING) {
-        utf8_split(v.toString(), [&](Value v) {
+        utf8_split(v.toStrUtf8Wrapper(), [&](Value v) {
             vec->emplace_back(std::move(v));
         });
     } else if (v.type() != Value::Type::UNDEFINED) {
@@ -769,10 +752,9 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
     }
 
     if (isListComprehension(this->expr)) {
-        return flatten(std::move(vec));
-    } else {
-        return std::move(vec);
+        vec.flatten();
     }
+    return std::move(vec);
 }
 
 void LcEach::print(std::ostream &stream, const std::string &) const
@@ -816,7 +798,7 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
             vec->emplace_back(this->expr->evaluate(c.ctx));
         }
     } else if (it_values.type() == Value::Type::STRING) {
-        utf8_split(it_values.toString(), [&](Value v) {
+        utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
             c->set_variable(it_name, std::move(v));
             vec->emplace_back(this->expr->evaluate(c.ctx));
         });
@@ -826,10 +808,9 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
     }
 
     if (isListComprehension(this->expr)) {
-        return flatten(std::move(vec));
-    } else {
-        return std::move(vec);
+        vec.flatten();
     }
+    return std::move(vec);
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const
@@ -865,10 +846,9 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
     }
 
     if (isListComprehension(this->expr)) {
-        return flatten(std::move(vec));
-    } else {
-        return std::move(vec);
+        vec.flatten();
     }
+    return std::move(vec);
 }
 
 void LcForC::print(std::ostream &stream, const std::string &) const
@@ -914,7 +894,7 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 
 	const Value condition = c->lookup_variable("condition", false, evalctx->loc);
 
-	if (!condition.toBool()) {
+	if (!condition) {
 		const Expression *expr = assignments["condition"];
 		const Value message = c->lookup_variable("message", true);
 

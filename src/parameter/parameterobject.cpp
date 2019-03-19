@@ -9,8 +9,7 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
   this->set = false;
   this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
-  Value values = param->evaluate(ctx);
-  setValue(defaultValue.clone(), std::move(values));
+  setValue(defaultValue.clone(), param->evaluate(ctx));
   const Annotation *desc = assignment->annotation("Description");
 
   if (desc) {
