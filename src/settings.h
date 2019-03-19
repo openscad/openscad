@@ -134,7 +134,7 @@ public:
 
     Value defaultValue(const SettingsEntry& entry) const;
     Value get(const SettingsEntry& entry) const;
-    void set(SettingsEntry& entry, Value val);
+    void set(SettingsEntry& entry, const Value &val);
 
 private:
     Settings();

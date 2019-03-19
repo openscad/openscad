@@ -532,7 +532,7 @@ void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings
 void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry)
 {
 	Settings::Settings *s = Settings::Settings::inst();
-	Value value = s->get(entry);
+	const Value &value = s->get(entry);
 	bool state = value.toBool();
 
 	checkBox->setChecked(state);
@@ -542,7 +542,7 @@ void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Setti
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	Value value = s->get(entry);
+	const Value &value = s->get(entry);
 	QString text = QString::fromStdString(value.toString());
 	int idx = comboBox->findData(text);
 	if (idx >= 0) {

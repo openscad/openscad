@@ -550,12 +550,11 @@ Value builtin_concat(const Context *, const EvalContext *evalctx)
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		Value val = evalctx->getArgValue(i);
 		if (val.type() == Value::ValueType::VECTOR) {
-			const auto &localVec = val.toVectorPtr();
-			for(size_t j = 0; j < localVec->size(); ++j) {
-				result->emplace_back(localVec[j].clone());
+			for(const auto &v : *val.toVectorPtr()) {
+				result->push_back(v.clone());
 			}
 		} else {
-			result->emplace_back(val.clone());
+			result->push_back(val.clone());
 		}
 	}
 	return Value(result);
@@ -748,9 +747,8 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 
 	if (findThis.type() == Value::ValueType::NUMBER) {
 		unsigned int matchCount = 0;
-    const Value::VectorPtr &localTable = searchTable.toVectorPtr();
-		for (size_t j = 0; j < localTable->size(); j++) {
-			Value search_element = localTable[j].clone();
+		for (size_t j = 0; j < searchTable.toVectorPtr()->size(); j++) {
+			Value search_element = searchTable.toVectorPtr()[j].clone();
 
 			if ((index_col_num == 0 && findThis == search_element) ||
 					(index_col_num < search_element.toVectorPtr()->size() &&
@@ -781,21 +779,21 @@ Value builtin_search(const Context *ctx, const EvalContext *evalctx)
 
 				if ((index_col_num == 0 && find_value == search_element) ||
 						(index_col_num < search_element.toVectorPtr()->size() &&
-						 find_value    == search_element.toVectorPtr()[index_col_num])) {
-		      matchCount++;
-		      if (num_returns_per_match == 1) {
+						 find_value   == search_element.toVectorPtr()[index_col_num])) {
+					matchCount++;
+					if (num_returns_per_match == 1) {
 						returnvec->emplace_back(double(j));
 						break;
-		      } else {
+					} else {
 						resultvec->emplace_back(double(j));
-		      }
-		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
-		    }
-		  }
-		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    returnvec->emplace_back(resultvec);
-		  }
-		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+					}
+					if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
+				}
+			}
+			if (num_returns_per_match == 1 && matchCount == 0) {
+				returnvec->emplace_back(resultvec);
+			}
+			if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 				returnvec->emplace_back(resultvec);
 			}
 		}

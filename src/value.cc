@@ -559,11 +559,12 @@ void Value::VectorPtr::flatten() {
 
 const Value::VectorPtr &Value::toVectorPtr() const
 {
-  static const Value::VectorPtr empty_vec;
+  static const VectorPtr empty;
   const Value::VectorPtr *v = boost::get<Value::VectorPtr>(&this->value);
-  return v ? *v : empty_vec;
+  return v ? *v : empty;
 }
 
+// protected non-const reference return only used by VectorPtr::flatten
 Value::VectorPtr &Value::toVectorPtrRef()
 {
   return boost::get<VectorPtr>(this->value);

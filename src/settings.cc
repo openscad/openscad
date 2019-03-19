@@ -145,7 +145,7 @@ Value Settings::get(const SettingsEntry& entry) const
 	return entry._value.clone();
 }
 
-void Settings::set(SettingsEntry& entry, Value val)
+void Settings::set(SettingsEntry& entry, const Value &val)
 {
 	entry._value = val.clone();
 }

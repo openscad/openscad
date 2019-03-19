@@ -179,7 +179,9 @@ public:
 
 		const Value::VectorType &operator*() const { return *ptr; }
 		Value::VectorType *operator->() const { return ptr.get(); }
+		// const accesses to VectorType require .clone to be move-able
 		const Value &operator[](size_t idx) const { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
+		// non-const return operator[] is only accessible from protected toVectorPtrRef
 		Value &operator[](size_t idx) {
 			static Value undef;
 			return idx < ptr->size() ? (*ptr)[idx] : undef; 
@@ -258,12 +260,6 @@ public:
 		else stream << value.toString();
 		return stream;
 	}
-	friend class chr_visitor;
-	friend class tostring_visitor;
-	friend class tostream_visitor;
-	friend class bracket_visitor;
-	friend class plus_visitor;
-	friend class minus_visitor;
 
 	typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType > Variant;
 

@@ -78,7 +78,7 @@ Context::~Context()
 void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
 	// Set any default values
-	for (const auto arg : args) {
+	for (const auto &arg : args) {
 		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : Value());
 	}
 	

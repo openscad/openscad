@@ -90,7 +90,7 @@ public:
 		EvalContext ec(&c, call->arguments, loc);
 		Context tmp(&c);
 		unsigned int counter = 0;
-		while (invert ^ this->op->cond->evaluate(&c).toBool()) {
+		while (invert ^ this->op->cond->evaluate(&c)) {
 			tmp.setVariables(&ec, definition_arguments);
 			c.take_variables(tmp);
 			
