@@ -666,7 +666,7 @@ public:
 	Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
 		Value::VectorPtr sumv;
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
-			sumv->emplace_back(op1[i] + op2[i]);
+			sumv->emplace_back(Value(op1[i] + op2[i]));
 		}
 		return Value(sumv);
 	}

@@ -208,10 +208,10 @@ public:
 	explicit Value(const std::string &v) : value(str_utf8_wrapper(v)) {}
 	explicit Value(const char *v) : value(str_utf8_wrapper(v)) {}
 	explicit Value(const char v) : value(str_utf8_wrapper(1, v)) {}
-	explicit Value(RangeType& v) : value(std::move(v)) {}
-	explicit Value(RangeType&& v) : value(std::move(v)) {}
-	explicit Value(VectorPtr& v) : value(std::move(v)) {}
-	explicit Value(VectorPtr&& v) : value(std::move(v)) {}
+	Value(RangeType& v) : value(std::move(v)) {}
+	Value(RangeType&& v) : value(std::move(v)) {}
+	Value(VectorPtr& v) : value(std::move(v)) {}
+	Value(VectorPtr&& v) : value(std::move(v)) {}
 
 	Value clone() const; // Use sparingly to explicitly copy a Value
 
