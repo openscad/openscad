@@ -275,14 +275,11 @@ bool Value::getDouble(double &v) const
 bool Value::getFiniteDouble(double &v) const
 {
   double result;
-  if (!getDouble(result)) {
-    return false;
-  }
-  bool valid = std::isfinite(result);
-  if (valid) {
+  if (getDouble(result) && std::isfinite(result)) {
     v = result;
+    return true;
   }
-  return valid;
+  return false;
 }
 
 Value::VectorPtr::VectorPtr(double x, double y, double z) : ptr(make_shared<Value::VectorType>()) {
@@ -943,23 +940,16 @@ uint32_t RangeType::numValues() const
     return 0;
   }
   if (step_val < 0) {
-    if (begin_val < end_val) {
-      return 0;
-    }
+    if (begin_val < end_val) return 0;
   } else {
-    if (begin_val > end_val) {
-      return 0;
-    }
+    if (begin_val > end_val) return 0;
   }
-
   if ((begin_val == end_val) || std::isinf(step_val)) {
     return 1;
   }
-
   if (std::isinf(begin_val) || std::isinf(end_val) || step_val == 0) {
     return std::numeric_limits<uint32_t>::max();
   }
-
   // Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
   const uint32_t max = std::numeric_limits<uint32_t>::max();
   uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
@@ -992,42 +982,20 @@ void RangeType::iterator::update_type()
   }
 }
 
-RangeType::iterator::reference RangeType::iterator::operator*()
-{
-  return val;
-}
-
-RangeType::iterator::pointer RangeType::iterator::operator->()
-{
-  return &(operator*());
-}
-
-RangeType::iterator::self_type RangeType::iterator::operator++()
+RangeType::iterator& RangeType::iterator::operator++()
 {
   val = range.begin_val + range.step_val * ++i_step;
   update_type();
   return *this;
 }
 
-RangeType::iterator::self_type RangeType::iterator::operator++(int)
-{
-  self_type tmp(*this);
-  operator++();
-  return tmp;
-}
-
-bool RangeType::iterator::operator==(const self_type &other) const
+bool RangeType::iterator::operator==(const RangeType::iterator &other) const
 {
   if (type == type_t::RANGE_TYPE_RUNNING) {
     return (type == other.type) && (val == other.val) && (range == other.range);
   } else {
     return (type == other.type) && (range == other.range);
   }
-}
-
-bool RangeType::iterator::operator!=(const self_type &other) const
-{
-  return !(*this == other);
 }
 
 std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {

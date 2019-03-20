@@ -133,7 +133,7 @@ class Lookup : public Expression
 public:
 	Lookup(const std::string &name, const Location &loc);
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
-	Value evaluateSilently(const std::shared_ptr<Context>& context) const;
+	const Value& evaluateSilently(const std::shared_ptr<Context>& context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	const std::string& get_name() const { return name; }
 private:

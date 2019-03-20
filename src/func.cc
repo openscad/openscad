@@ -431,8 +431,7 @@ Value builtin_length(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 		if (v.type() == Value::Type::VECTOR) return Value(int(v.toVectorPtr()->size()));
 		if (v.type() == Value::Type::STRING) {
 			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
-			std::string text = v.toString();
-			return Value(int( g_utf8_strlen( text.c_str(), text.size() ) ));
+			return Value(double( v.toStrUtf8Wrapper().get_utf8_strlen()));
 		}
 		print_argConvert_warning("len", ctx, evalctx);
 	} else {
@@ -512,20 +511,20 @@ Value builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 	}
 
 	Value arg = evalctx->getArgValue(0);
-	const std::string arg_str = arg.toString();
+	if (arg.type() != Value::Type::STRING) {
+		PRINTB("WARNING: ord() argument %s is not of type string, %s", arg.toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return Value::undefined.clone();
+	}
+
+	const str_utf8_wrapper &arg_str = arg.toStrUtf8Wrapper();
 	const char *ptr = arg_str.c_str();
 
-	if (arg.type() != Value::Type::STRING) {
-		PRINTB("WARNING: ord() argument %s is not of type string, %s", arg_str % evalctx->loc.toRelativeString(ctx->documentPath()));
-		return Value::undefined.clone();
-	}
-
 	if (!g_utf8_validate(ptr, -1, NULL)) {
-		PRINTB("WARNING: ord() argument '%s' is not valid utf8 string, %s", arg_str % evalctx->loc.toRelativeString(ctx->documentPath()));
+		PRINTB("WARNING: ord() argument '%s' is not valid utf8 string, %s", arg.toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return Value::undefined.clone();
 	}
 
-	if (g_utf8_strlen(ptr, -1) == 0) {
+	if (arg_str.get_utf8_strlen() == 0) {
 		return Value::undefined.clone();
 	}
 	const gunichar ch = g_utf8_get_char(ptr);
@@ -926,17 +925,14 @@ Value builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr
 {
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->getArgs()[0];
-		Value v;
 		if (auto lookup = dynamic_pointer_cast<Lookup>(arg->getExpr())) {
-			v = lookup->evaluateSilently(evalctx);
+			return lookup->evaluateSilently(evalctx).isUndefined();
 		} else {
-			v = evalctx->getArgValue(0);
+			return evalctx->getArgValue(0).isUndefined();
 		}
-		return Value(v.isUndefined());
 	} else {
 		print_argCnt_warning("is_undef", ctx, evalctx);
 	}
-
 	return Value::undefined.clone();
 }
 

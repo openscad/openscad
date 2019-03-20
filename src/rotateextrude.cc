@@ -63,12 +63,12 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	node->fs = c->lookup_variable("$fs").toDouble();
 	node->fa = c->lookup_variable("$fa").toDouble();
 
-	auto file = c->lookup_variable("file");
-	auto layer = c->lookup_variable("layer", true);
-	auto convexity = c->lookup_variable("convexity", true);
-	auto origin = c->lookup_variable("origin", true);
-	auto scale = c->lookup_variable("scale", true);
-	auto angle = c->lookup_variable("angle", true);
+	const auto &file = c->lookup_variable("file");
+	const auto &layer = c->lookup_variable("layer", true);
+	const auto &convexity = c->lookup_variable("convexity", true);
+	const auto &origin = c->lookup_variable("origin", true);
+	const auto &scale = c->lookup_variable("scale", true);
+	const auto &angle = c->lookup_variable("angle", true);
 
 	if (!file.isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");

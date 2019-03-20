@@ -413,10 +413,10 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 Value Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->name,false,loc);
+	return context->lookup_variable(this->name,false,loc).clone();
 }
 
-Value Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
+const Value& Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
 {
 	return context->lookup_variable(this->name,true);
 }
@@ -566,7 +566,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		throw RecursionException::create("function", name, this->loc);
 	}
 	try {
-		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
+		auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context).clone() : expr->evaluate(context);
 		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
 		if (v.type() == Value::Type::FUNCTION) {
@@ -574,7 +574,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 				print_invalid_function_call("dynamically scoped variable", context, loc);
 				return Value::undefined.clone();
 			} else {
-				auto func = v.toFunction();
+				const auto &func = v.toFunction();
 				return evaluate_function(name, func.getExpr(), func.getArgs(), func.getCtx(), evalCtx.ctx, this->loc);
 			}
 		} else if (isLookup) {
@@ -735,8 +735,8 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
-            for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                vec->emplace_back(*it);
+            for (double d : range) {
+                vec->emplace_back(d);
             }
         }
     } else if (v.type() == Value::Type::VECTOR) {
@@ -787,8 +787,8 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
-            for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                c->set_variable(it_name, Value(*it));
+            for (double d : range) {
+                c->set_variable(it_name, d);
                 vec->emplace_back(this->expr->evaluate(c.ctx));
             }
         }
@@ -892,11 +892,11 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 		}
 	}
 
-	const Value condition = c->lookup_variable("condition", false, evalctx->loc);
+	const Value &condition = c->lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition) {
 		const Expression *expr = assignments["condition"];
-		const Value message = c->lookup_variable("message", true);
+		const Value &message = c->lookup_variable("message", true);
 
 		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";

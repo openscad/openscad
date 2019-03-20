@@ -121,8 +121,8 @@ public:
  */
 Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const Location &loc, const std::string &diameter_var, const std::string &radius_var) const
 {
-	auto d = ctx->lookup_variable(diameter_var, true);
-	auto r = ctx->lookup_variable(radius_var, true);
+	const auto &d = ctx->lookup_variable(diameter_var, true);
+	const auto &r = ctx->lookup_variable(radius_var, true);
 	const auto r_defined = (r.type() == Value::Type::NUMBER);
 
 	if (d.type() == Value::Type::NUMBER) {
@@ -132,7 +132,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 		}
 		return d.toDouble() / 2.0;
 	} else if (r_defined) {
-		return r;
+		return r.clone();
 	} else {
 		return Value::undefined.clone();
 	}
@@ -199,8 +199,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 	switch (this->type)  {
 	case primitive_type_e::CUBE: {
-		auto size = c->lookup_variable("size");
-		auto center = c->lookup_variable("center");
+		const auto &size = c->lookup_variable("size");
+		const auto &center = c->lookup_variable("center");
 		if (size.isDefined()) {
 			bool converted=false;
 			converted |= size.getDouble(node->x);
@@ -235,7 +235,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::CYLINDER: {
-		const auto h = c->lookup_variable("h");
+		const auto &h = c->lookup_variable("h");
 		if (h.type() == Value::Type::NUMBER) {
 			node->h = h.toDouble();
 		}
@@ -273,18 +273,18 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			}
 		}
 
-		auto center = c->lookup_variable("center");
+		const auto &center = c->lookup_variable("center");
 		if (center.type() == Value::Type::BOOL) {
 			node->center = center.toBool();
 		}
 		break;
 	}
 	case primitive_type_e::POLYHEDRON: {
-		node->points = c->lookup_variable("points");
-		node->faces = c->lookup_variable("faces");
+		node->points = c->lookup_variable("points").clone();
+		node->faces = c->lookup_variable("faces").clone();
 		if (node->faces.type() == Value::Type::UNDEFINED) {
 			// backwards compatible
-			node->faces = c->lookup_variable("triangles", true);
+			node->faces = c->lookup_variable("triangles", true).clone();
 			if (node->faces.type() != Value::Type::UNDEFINED) {
 				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
@@ -292,8 +292,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::SQUARE: {
-		auto size = c->lookup_variable("size");
-		auto center = c->lookup_variable("center");
+		const auto &size = c->lookup_variable("size");
+		const auto &center = c->lookup_variable("center");
 		if (size.isDefined()) {
 			bool converted=false;
 			converted |= size.getDouble(node->x);
@@ -328,8 +328,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::POLYGON: {
-		node->points = c->lookup_variable("points");
-		node->paths = c->lookup_variable("paths");
+		node->points = c->lookup_variable("points").clone();
+		node->paths = c->lookup_variable("paths").clone();
 		break;
 	}
 	}

@@ -80,8 +80,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
 			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c->set_variable(it_name, Value(*it));
+				for (double d : range) {
+					c->set_variable(it_name, d);
 					for_eval(node, inst, l+1, c.ctx, evalctx);
 				}
 			}
@@ -252,8 +252,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				AbstractNode* node;
 				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 				else node = new GroupNode(inst, evalctx);
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					AbstractNode* childnode = getChild(Value(*it),modulectx); // with error cases
+				for (double d : range) {
+					AbstractNode* childnode = getChild(Value(d),modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}

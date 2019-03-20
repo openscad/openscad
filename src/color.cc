@@ -264,7 +264,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
 
-	auto v = c->lookup_variable("c");
+	const auto &v = c->lookup_variable("c");
 	if (v.type() == Value::Type::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v.toVectorPtr()->size() ? (float)v.toVectorPtr()[i].toDouble() : 1.0f;
@@ -288,7 +288,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 			}
 		}
 	}
-	auto alpha = c->lookup_variable("alpha");
+	const auto &alpha = c->lookup_variable("alpha");
 	if (alpha.type() == Value::Type::NUMBER) {
 		node->color[3] = alpha.toDouble();
 	}

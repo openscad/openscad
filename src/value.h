@@ -51,19 +51,16 @@ public:
 
   class iterator {
   public:
-    typedef iterator self_type;
-    typedef double value_type;
-    typedef double& reference;
-    typedef double* pointer;
-    typedef std::forward_iterator_tag iterator_category;
-    typedef double difference_type;
+    using iterator_category = std::forward_iterator_tag ;
+    using value_type        = double;
+    using difference_type   = void;
+    using reference         = value_type;
+    using pointer           = void;
     iterator(const RangeType &range, type_t type);
-    self_type operator++();
-    self_type operator++(int junk);
-    reference operator*();
-    pointer operator->();
-    bool operator==(const self_type& other) const;
-    bool operator!=(const self_type& other) const;
+    iterator& operator++();
+    reference operator*() { return val; }
+    bool operator==(const iterator& other) const;
+    bool operator!=(const iterator& other) const { return !operator==(other); }
   private:
     const RangeType &range;
     double val;
@@ -73,18 +70,18 @@ public:
     void update_type();
   };
 
-  RangeType(const RangeType &) = delete; // never copy, move instead
+  RangeType(const RangeType &) = delete;            // never copy, move instead
   RangeType& operator=(const RangeType &) = delete; // never copy, move instead
-  RangeType(RangeType&&) = default; // default move constructor
-  RangeType& operator=(RangeType&&) = default; // default move assignment
+  RangeType(RangeType&&) = default;
+  RangeType& operator=(RangeType&&) = default;
 
   // Copy explicitly only when necessary
   RangeType clone() const { return RangeType(this->begin_val,this->step_val,this->end_val); };
 
-  RangeType(double begin, double end)
+  explicit RangeType(double begin, double end)
     : begin_val(begin), step_val(1.0), end_val(end) {}
 
-  RangeType(double begin, double step, double end)
+  explicit RangeType(double begin, double step, double end)
     : begin_val(begin), step_val(step), end_val(end) {}
 
   bool operator==(const RangeType &other) const {
