@@ -668,13 +668,13 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sumv->emplace_back(Value(op1[i] + op2[i]));
 		}
-		return Value(sumv);
+		return Value(std::move(sumv));
 	}
 };
 
 Value Value::operator+(const Value &v) const
 {
-	return boost::apply_visitor(plus_visitor(), this->value, v.value);
+	return std::move(boost::apply_visitor(plus_visitor(), this->value, v.value));
 }
 
 class minus_visitor : public boost::static_visitor<Value>
@@ -693,7 +693,7 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sum->push_back(op1[i] - op2[i]);
 		}
-		return Value(sum);
+		return Value(std::move(sum));
 	}
 };
 
@@ -709,7 +709,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 	for(const auto &val : *vecval.toVectorPtr()) {
 		dstv->push_back(val * numval);
 	}
-	return Value(dstv);
+	return Value(std::move(dstv));
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
@@ -730,7 +730,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return Value(dstv);
+	return Value(std::move(dstv));
 }
 
 Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
@@ -750,7 +750,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return Value(dstv);
+	return Value(std::move(dstv));
 }
 
 Value Value::operator*(const Value &v) const
@@ -795,7 +795,7 @@ Value Value::operator*(const Value &v) const
 				if (srcrowvec.size() != vec2.size()) return {};
 				dstv->push_back(multvecmat(srcrowvec, vec2));
 			}
-			return Value(dstv);
+			return Value(std::move(dstv));
 		}
 	}
 	return {};
@@ -812,7 +812,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(vecval / v);
     }
-    return Value(dstv);
+    return Value(std::move(dstv));
   }
   else if (this->type() == ValueType::NUMBER && v.type() == ValueType::VECTOR) {
     const auto &vec = *v.toVectorPtr();
@@ -820,7 +820,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(*this / vecval);
     }
-    return Value(dstv);
+    return Value(std::move(dstv));
   }
   return {};
 }
@@ -844,7 +844,7 @@ Value Value::operator-() const
     for (const auto &vecval : vec) {
       dstv->push_back(-vecval);
     }
-    return Value(dstv);
+    return Value(std::move(dstv));
   }
   return {};
 }
