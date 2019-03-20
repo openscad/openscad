@@ -656,7 +656,7 @@ class plus_visitor : public boost::static_visitor<Value>
 {
 public:
 	template <typename T, typename U> Value operator()(const T &, const U &) const {
-		return {};
+		return Value();
 	}
 
 	Value operator()(const double &op1, const double &op2) const {
@@ -664,24 +664,24 @@ public:
 	}
 
 	Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
-		Value::VectorPtr sumv;
+		Value::VectorPtr vec_sum;
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
-			sumv->emplace_back(Value(op1[i] + op2[i]));
+			vec_sum->push_back(Value(op1[i] + op2[i]));
 		}
-		return Value(std::move(sumv));
+		return Value(vec_sum);
 	}
 };
 
 Value Value::operator+(const Value &v) const
 {
-	return std::move(boost::apply_visitor(plus_visitor(), this->value, v.value));
+	return boost::apply_visitor(plus_visitor(), this->value, v.value);
 }
 
 class minus_visitor : public boost::static_visitor<Value>
 {
 public:
 	template <typename T, typename U> Value operator()(const T &, const U &) const {
-		return {};
+		return Value();
 	}
 
 	Value operator()(const double &op1, const double &op2) const {
@@ -693,7 +693,7 @@ public:
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
 			sum->push_back(op1[i] - op2[i]);
 		}
-		return Value(std::move(sum));
+		return Value(sum);
 	}
 };
 
@@ -709,7 +709,7 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 	for(const auto &val : *vecval.toVectorPtr()) {
 		dstv->push_back(val * numval);
 	}
-	return Value(std::move(dstv));
+	return Value(dstv);
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
@@ -730,7 +730,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return Value(std::move(dstv));
+	return Value(dstv);
 }
 
 Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
@@ -750,7 +750,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 		}
 		dstv->push_back(Value(r_e));
 	}
-	return Value(std::move(dstv));
+	return Value(dstv);
 }
 
 Value Value::operator*(const Value &v) const
@@ -795,10 +795,10 @@ Value Value::operator*(const Value &v) const
 				if (srcrowvec.size() != vec2.size()) return {};
 				dstv->push_back(multvecmat(srcrowvec, vec2));
 			}
-			return Value(std::move(dstv));
+			return Value(dstv);
 		}
 	}
-	return {};
+	return Value();
 }
 
 Value Value::operator/(const Value &v) const
@@ -812,7 +812,7 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(vecval / v);
     }
-    return Value(std::move(dstv));
+    return Value(dstv);
   }
   else if (this->type() == ValueType::NUMBER && v.type() == ValueType::VECTOR) {
     const auto &vec = *v.toVectorPtr();
@@ -820,9 +820,9 @@ Value Value::operator/(const Value &v) const
     for (const auto &vecval : vec) {
       dstv->push_back(*this / vecval);
     }
-    return Value(std::move(dstv));
+    return Value(dstv);
   }
-  return {};
+  return Value();
 }
 
 Value Value::operator%(const Value &v) const
@@ -830,7 +830,7 @@ Value Value::operator%(const Value &v) const
   if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
     return Value(fmod(boost::get<double>(this->value), boost::get<double>(v.value)));
   }
-  return {};
+  return Value();
 }
 
 Value Value::operator-() const
@@ -844,7 +844,7 @@ Value Value::operator-() const
     for (const auto &vecval : vec) {
       dstv->push_back(-vecval);
     }
-    return Value(std::move(dstv));
+    return Value(dstv);
   }
   return {};
 }
