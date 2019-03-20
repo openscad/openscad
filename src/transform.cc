@@ -86,7 +86,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 	if (this->type == transform_type_e::SCALE) {
 		Vector3d scalevec(1, 1, 1);
-		auto v = c.lookup_variable("v");
+		const auto &v = c.lookup_variable("v");
 		if (!v.getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
 			double num;
 			if (v.getDouble(num)){
@@ -103,8 +103,8 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == transform_type_e::ROTATE) {
-		auto val_a = c.lookup_variable("a");
-		auto val_v = c.lookup_variable("v");
+		const auto &val_a = c.lookup_variable("a");
+		const auto &val_v = c.lookup_variable("v");
 		if (val_a.type() == Value::ValueType::VECTOR) {
 			double sx = 0, sy = 0, sz = 0;
 			double cx = 1, cy = 1, cz = 1;
@@ -169,7 +169,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		}
 	}
 	else if (this->type == transform_type_e::MIRROR) {
-		auto val_v = c.lookup_variable("v");
+		const auto &val_v = c.lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
 	
 		if (val_v.getVec3(x, y, z, 0.0)) {
@@ -191,7 +191,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		}
 	}
 	else if (this->type == transform_type_e::TRANSLATE)	{
-		auto v = c.lookup_variable("v");
+		const auto &v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
 		bool ok = v.getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
 		ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]) ;
@@ -202,7 +202,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
-		auto v = c.lookup_variable("m");
+		const auto &v = c.lookup_variable("m");
 		if (v.type() == Value::ValueType::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {

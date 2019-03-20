@@ -264,7 +264,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 	c.setVariables(evalctx, args);
 	inst->scope.apply(*evalctx);
 
-	auto v = c.lookup_variable("c");
+	const auto &v = c.lookup_variable("c");
 	if (v.type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v.toVectorPtr()->size() ? (float)v.toVectorPtr()[i].toDouble() : 1.0f;
@@ -288,7 +288,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			}
 		}
 	}
-	auto alpha = c.lookup_variable("alpha");
+	const auto &alpha = c.lookup_variable("alpha");
 	if (alpha.type() == Value::ValueType::NUMBER) {
 		node->color[3] = alpha.toDouble();
 	}

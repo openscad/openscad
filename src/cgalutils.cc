@@ -209,8 +209,8 @@ namespace CGALUtils {
 
 				if (facet_planes[other_facet].has_on_positive_side(p)) {
 					// Check angle
-					const auto& u = facet_planes[other_facet].orthogonal_vector();
-					const auto& v = facet_planes[i].orthogonal_vector();
+					const auto &u = facet_planes[other_facet].orthogonal_vector();
+					const auto &v = facet_planes[i].orthogonal_vector();
 
 					double cos_angle = u / sqrt(u*u) * v / sqrt(v*v);
 					if (cos_angle < angle_threshold) {

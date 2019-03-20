@@ -66,15 +66,15 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->fs = c.lookup_variable("$fs").toDouble();
 	node->fa = c.lookup_variable("$fa").toDouble();
 
-	auto file = c.lookup_variable("file");
-	auto layer = c.lookup_variable("layer", true);
-	auto height = c.lookup_variable("height", true);
-	auto convexity = c.lookup_variable("convexity", true);
-	auto origin = c.lookup_variable("origin", true);
-	auto scale = c.lookup_variable("scale", true);
-	auto center = c.lookup_variable("center", true);
-	auto twist = c.lookup_variable("twist", true);
-	auto slices = c.lookup_variable("slices", true);
+	const auto &file = c.lookup_variable("file");
+	const auto &layer = c.lookup_variable("layer", true);
+	const auto &height = c.lookup_variable("height", true);
+	const auto &convexity = c.lookup_variable("convexity", true);
+	const auto &origin = c.lookup_variable("origin", true);
+	const auto &scale = c.lookup_variable("scale", true);
+	const auto &center = c.lookup_variable("center", true);
+	const auto &twist = c.lookup_variable("twist", true);
+	const auto &slices = c.lookup_variable("slices", true);
 
 	if (!file.isUndefined() && file.type() == Value::ValueType::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
@@ -83,18 +83,19 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 		handle_dep(filename);
 	}
 
+	node->height = 100;
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
-	if (c.lookup_variable("height").isUndefined() &&
+	if (height.isUndefined() &&
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		auto val = evalctx->getArgValue(0);
-		if (val.type() == Value::ValueType::NUMBER) height = val.clone();
+		if (val.type() == Value::ValueType::NUMBER) val.getFiniteDouble(node->height);
+	} else {
+		height.getFiniteDouble(node->height);
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
-	node->height = 100;
-	height.getFiniteDouble(node->height);
 	node->convexity = static_cast<int>(convexity.toDouble());
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);

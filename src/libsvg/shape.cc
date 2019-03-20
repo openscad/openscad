@@ -105,7 +105,7 @@ shape::get_style(std::string name) const
 	std::vector<std::string> styles;
 	boost::split(styles, this->style, boost::is_any_of(";"));
 	
-	for (const auto& style : styles) {
+	for (const auto &style : styles) {
 		std::vector<std::string> values;
 		boost::split(values, style, boost::is_any_of(":"));
 		if (values.size() != 2) {
@@ -170,7 +170,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 
 	transformation *t = nullptr;
 	std::vector<transformation *> transformations;
-	for (const auto& v : tokens) {
+	for (const auto &v : tokens) {
 		if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
 			if (t != nullptr) {
 				transformations.push_back(t);
@@ -226,7 +226,7 @@ shape::apply_transform()
 	}
 
 	path_list_t result_list;
-	for (const auto& p : path_list) {
+	for (const auto &p : path_list) {
 		result_list.push_back(path_t());
 		for (const auto &v : p) {
 			Eigen::Vector3d result(v.x(), v.y(), 1);
@@ -244,7 +244,7 @@ void
 shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap) {
 	ClipperLib::Path line;
 	ClipperLib::Paths result;
-	for (const auto& v : path) {
+	for (const auto &v : path) {
 		line << ClipperLib::IntPoint(v.x() * 10000, v.y() * 10000);
 	}
 
@@ -252,7 +252,7 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 	co.AddPath(line, ClipperLib::jtMiter, stroke_linecap);
 	co.Execute(result, stroke_width * 5000.0);
 
-	for (const auto& p : result) {
+	for (const auto &p : result) {
 		path_list.push_back(path_t());
 		for (const auto &point : p) {
 			path_list.back().push_back(Eigen::Vector3d(point.X / 10000.0, point.Y / 10000.0, 0));

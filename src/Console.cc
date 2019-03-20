@@ -49,7 +49,7 @@ void Console::actionClearConsole_triggered()
 
 void Console::actionSaveAs_triggered()
 {
-	const auto& text = this->document()->toPlainText();
+	const auto &text = this->document()->toPlainText();
 	const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));
 	QFile file(fileName);
 	if (file.open(QIODevice::ReadWrite)) {

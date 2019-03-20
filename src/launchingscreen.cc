@@ -33,7 +33,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	this->versionNumberLabel->setText("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
 
 	QStringList recentFiles = UIUtils::recentFiles();
-	for (const auto& recentFile : recentFiles) {
+	for (const auto &recentFile : recentFiles) {
 		QFileInfo fileInfo(recentFile);
 		auto item = new QListWidgetItem(fileInfo.fileName());
 		item->setData(Qt::ToolTipRole, fileInfo.canonicalPath());

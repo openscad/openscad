@@ -305,7 +305,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                 // Somehow, the margin font got lost when we deleted the old lexer
                 qsci->setMarginsFont(font);
 
-		const auto& colors = pt.get_child("colors");
+		const auto &colors = pt.get_child("colors");
 		newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
 		newLexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
 		newLexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
@@ -319,7 +319,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
 		newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
 
-		const auto& caret = pt.get_child("caret");
+		const auto &caret = pt.get_child("caret");
 		qsci->setCaretWidth(readInt(caret, "width", 1));
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 		qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
@@ -376,7 +376,7 @@ void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_s
 	const auto color_schemes = path / "color-schemes" / "editor";
 
 	if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
-		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{color_schemes}, {})) {
+		for (const auto &dirEntry : boost::make_iterator_range(fs::directory_iterator{color_schemes}, {})) {
 			if (!fs::is_regular_file(dirEntry.status())) continue;
 
 			const auto &path = dirEntry.path();

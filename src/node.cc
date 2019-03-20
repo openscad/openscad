@@ -104,7 +104,7 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 	if (rootTags.size() == 0) return nullptr;
 	if (rootTags.size() > 1) {
-		for (const auto& rootTag : rootTags) {
+		for (const auto &rootTag : rootTags) {
 			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
 		}
 	}

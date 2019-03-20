@@ -121,15 +121,10 @@ int main(int argc, char **argv)
 	root_ctx.set_variable("$fn", Value(0.0));
 	root_ctx.set_variable("$fs", Value(1.0));
 	root_ctx.set_variable("$fa", Value(12.0));
-	root_ctx.set_variable("$t", Value(0.0));
+	root_ctx.set_variable("$t",  Value(0.0));
 
-	Value zero3;
-	zero3.type = Value::VECTOR;
-	zero3.vec->append(Value(0.0));
-	zero3.vec->append(Value(0.0));
-	zero3.vec->append(Value(0.0));
-	root_ctx.set_variable("$vpt", zero3.clone());
-	root_ctx.set_variable("$vpr", zero3.clone());
+	root_ctx.set_variable("$vpt", Value(Value::VectorPtr(0.0, 0.0, 0.0)));
+	root_ctx.set_variable("$vpr", Value(Value::VectorPtr(0.0, 0.0, 0.0)));
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;

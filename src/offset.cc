@@ -69,9 +69,9 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const auto r = c.lookup_variable("r", true);
-	const auto delta = c.lookup_variable("delta", true);
-	const auto chamfer = c.lookup_variable("chamfer", true);
+	const auto &r = c.lookup_variable("r", true);
+	const auto &delta = c.lookup_variable("delta", true);
+	const auto &chamfer = c.lookup_variable("chamfer", true);
 	
 	if (r.isDefinedAs(Value::ValueType::NUMBER)) {
 		r.getDouble(node->delta);

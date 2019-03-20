@@ -442,8 +442,7 @@ Value builtin_length(const Context *ctx, const EvalContext *evalctx)
 		if (v.type() == Value::ValueType::VECTOR) return Value(int(v.toVectorPtr()->size()));
 		if (v.type() == Value::ValueType::STRING) {
 			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
-			std::string text = v.toString();
-			return Value(int( g_utf8_strlen( text.c_str(), text.size() ) ));
+			return Value(double( v.toStrUtf8Wrapper().get_utf8_strlen()));
 		}
 		print_argConvert_warning("len", ctx, evalctx);
 	}else{
@@ -523,20 +522,20 @@ Value builtin_ord(const Context *ctx, const EvalContext *evalctx)
 	}
 
 	Value arg = evalctx->getArgValue(0);
-	const std::string arg_str = arg.toString();
+	const str_utf8_wrapper &arg_str = arg.toStrUtf8Wrapper();
 	const char *ptr = arg_str.c_str();
 
 	if (arg.type() != Value::ValueType::STRING) {
-		PRINTB("WARNING: ord() argument %s is not of type string, %s", arg_str % evalctx->loc.toRelativeString(ctx->documentPath()));
+		PRINTB("WARNING: ord() argument %s is not of type string, %s", arg_str.toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return Value();
 	}
 
 	if (!g_utf8_validate(ptr, -1, NULL)) {
-		PRINTB("WARNING: ord() argument '%s' is not valid utf8 string, %s", arg_str % evalctx->loc.toRelativeString(ctx->documentPath()));
+		PRINTB("WARNING: ord() argument '%s' is not valid utf8 string, %s", arg_str.toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return Value();
 	}
 
-	if (g_utf8_strlen(ptr, -1) == 0) {
+	if (arg_str.get_utf8_strlen() == 0) {
 		return Value();
 	}
 	const gunichar ch = g_utf8_get_char(ptr);
@@ -554,7 +553,7 @@ Value builtin_concat(const Context *, const EvalContext *evalctx)
 				result->push_back(v.clone());
 			}
 		} else {
-			result->push_back(val.clone());
+			result->push_back(std::move(val));
 		}
 	}
 	return Value(result);
@@ -939,9 +938,9 @@ Value builtin_is_undef(const Context *ctx, const EvalContext *evalctx)
 		const auto &arg =evalctx->getArgs()[0];
 		Value v;
 		if(auto lookup = dynamic_pointer_cast<Lookup> (arg.expr)){
-			v = lookup->evaluateSilently(evalctx);
+			return Value(lookup->evaluateSilently(evalctx).isUndefined());
 		}else{
-			v = evalctx->getArgValue(0);
+			return Value(evalctx->getArgValue(0).isUndefined());
 		}
 		return Value(v.isUndefined());
 	}else{

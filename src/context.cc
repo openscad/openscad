@@ -90,13 +90,15 @@ void Context::setVariables(const EvalContext *evalctx, const AssignmentList &arg
 	}
 }
 
-void Context::set_variable(const std::string &name, Value value)
+// sink for value takes &&
+void Context::set_variable(const std::string &name, Value&& value)
 {
 	if (is_config_variable(name)) this->config_variables[name] = std::move(value);
 	else this->variables[name] = std::move(value);
 }
 
-void Context::set_constant(const std::string &name, Value value)
+// sink for value takes &&
+void Context::set_constant(const std::string &name, Value&& value)
 {
 	if (this->constants.find(name) != this->constants.end()) {
 		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
@@ -108,34 +110,34 @@ void Context::set_constant(const std::string &name, Value value)
 
 void Context::take_variables(Context &other)
 {
-	for (auto it = other.variables.begin(); it != other.variables.end(); it++) {
-		set_variable(it->first, std::move(it->second) );
+	for (auto &var : other.variables) {
+		set_variable(var.first, std::move(var.second));
 	}
 }
 
-Value Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
+const Value& Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
 	if (!this->ctx_stack) {
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return Value();
+		return Value::undefined;
 	}
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
 			const auto &confvars = ctx_stack->at(i)->config_variables;
 			if (confvars.find(name) != confvars.end()) {
-				return confvars.find(name)->second.clone();
+				return confvars.find(name)->second;
 			}
 		}
 		if (!silent) {
 			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
 		}
-		return Value();
+		return Value::undefined;
 	}
 	if (!this->parent && this->constants.find(name) != this->constants.end()) {
-		return this->constants.find(name)->second.clone();
+		return this->constants.find(name)->second;
 	}
 	if (this->variables.find(name) != this->variables.end()) {
-		return this->variables.find(name)->second.clone();
+		return this->variables.find(name)->second;
 	}
 	if (this->parent) {
 		return this->parent->lookup_variable(name, silent, loc);
@@ -143,19 +145,19 @@ Value Context::lookup_variable(const std::string &name, bool silent, const Locat
 	if (!silent) {
 		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
 	}
-	return Value();
+	return Value::undefined;
 }
 
 
 double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
 {
-	Value v = this->lookup_variable(variable, true, loc);
+	const Value& v = this->lookup_variable(variable, true, loc);
 	return (v.type() == Value::ValueType::NUMBER) ? v.toDouble() : def;
 }
 
 std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
 {
-	Value v = this->lookup_variable(variable, true, loc);
+	const Value& v = this->lookup_variable(variable, true, loc);
 	return (v.type() == Value::ValueType::STRING) ? v.toString() : def;
 }
 

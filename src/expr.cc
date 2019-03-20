@@ -356,6 +356,7 @@ Value Vector::evaluate(const Context *context) const
 	return Value(vec);
 }
 
+
 void Vector::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[";
@@ -372,10 +373,10 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 Value Lookup::evaluate(const Context *context) const
 {
-	return context->lookup_variable(this->name,false,loc);
+	return context->lookup_variable(this->name,false,loc).clone();
 }
 
-Value Lookup::evaluateSilently(const Context *context) const
+const Value& Lookup::evaluateSilently(const Context *context) const
 {
 	return context->lookup_variable(this->name,true);
 }
@@ -747,11 +748,11 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 		}
 	}
 	
-	const Value condition = c.lookup_variable("condition", false, evalctx->loc);
+	const Value &condition = c.lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition) {
 		const Expression *expr = assignments["condition"];
-		const Value message = c.lookup_variable("message", true);
+		const Value &message = c.lookup_variable("message", true);
 		
 		const auto locs = evalctx->loc.toRelativeString(context.documentPath());
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";

@@ -51,7 +51,7 @@ polyline::set_attrs(attr_map_t& attrs)
 	double x = 0.0;
 	path_t path;
 	bool first = true;
-	for (const auto& v : tokens) {
+	for (const auto &v : tokens) {
 		double p = parse_double(v);
 		
 		if (first) {

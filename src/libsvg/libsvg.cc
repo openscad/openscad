@@ -190,7 +190,7 @@ void dump(int idx, shape *s) {
 		std::cout << "  ";
 	}
 	std::cout << "=> " << s->dump() << std::endl;
-	for (const auto& c : s->get_children()) {
+	for (const auto &c : s->get_children()) {
 		dump(idx + 1, c);
 	} 
 }

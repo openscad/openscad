@@ -1860,21 +1860,21 @@ void MainWindow::updateTemporalVariables()
 void MainWindow::updateCamera(const FileContext &ctx)
 {
 	double x, y, z;
-	const auto vpr = ctx.lookup_variable("$vpr");
+	const auto &vpr = ctx.lookup_variable("$vpr");
 	if (vpr.getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpr(x, y, z);
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr.toEchoString());
 	}
 
-	const auto vpt = ctx.lookup_variable("$vpt");
+	const auto &vpt = ctx.lookup_variable("$vpt");
 	if (vpt.getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpt(x, y, z);
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt.toEchoString());
 	}
 
-	const auto vpd = ctx.lookup_variable("$vpd");
+	const auto &vpd = ctx.lookup_variable("$vpd");
 	if (vpd.type() == Value::ValueType::NUMBER){
 		qglview->cam.setVpd(vpd.toDouble());
 	}else{

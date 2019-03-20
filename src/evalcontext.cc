@@ -85,7 +85,7 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 void EvalContext::assignTo(Context &target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
-		Value v = (assignment.expr) ? assignment.expr->evaluate(&target) : Value{};
+		Value v = (assignment.expr) ? assignment.expr->evaluate(&target) : Value();
 		if(assignment.name.empty()){
 			PRINTB("WARNING: Assignment without variable name %s, %s", v.toEchoString() % this->loc.toRelativeString(target.documentPath()));
 		}else if (target.has_local_variable(assignment.name)) {

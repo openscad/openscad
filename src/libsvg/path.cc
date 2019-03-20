@@ -185,7 +185,7 @@ static std::vector<std::string> split_dots(const std::string& str)
 
 	std::string text;
 	bool dot_seen = false;
-	for (const auto& token : tokens) {
+	for (const auto &token : tokens) {
 		text += token;
 		if (token == ".") {
 			dot_seen = true;
@@ -211,7 +211,7 @@ path::set_attrs(attr_map_t& attrs)
 	tokenizer tokens(this->data, sep);
 
 	std::vector<std::string> path_tokens;
-	for (const auto& token : tokens) {
+	for (const auto &token : tokens) {
 		const std::vector<std::string> parts = split_dots(token);
 		path_tokens.insert(path_tokens.end(), parts.begin(), parts.end());
 	}
@@ -238,7 +238,7 @@ path::set_attrs(attr_map_t& attrs)
 	bool path_closed = false;
 	std::string exp;
 	path_list.push_back(path_t());
-	for (const auto& v : path_tokens) {
+	for (const auto &v : path_tokens) {
 
 		double p = 0;
 		if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
@@ -533,9 +533,9 @@ path::dump() const
 	s << get_name()
 		<< ": x = " << this->x
 		<< ", y = " << this->y;
-	for (const auto& p : path_list) {
+	for (const auto &p : path_list) {
 		s << "[";
-		for (const auto& v : p) {
+		for (const auto &v : p) {
 			s << " (" << v.x() << ", " << v.y() << ")";
 		}
 		s << "]";

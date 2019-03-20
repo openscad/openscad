@@ -93,7 +93,7 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 		Eigen::Vector2d align{0.0, 0.0};
 		Eigen::Vector2d viewbox{0.0, 0.0};
 
-		for (const auto& shape_ptr : *shapes) {
+		for (const auto &shape_ptr : *shapes) {
 			const auto page = dynamic_cast<libsvg::svgpage *>(shape_ptr.get());
 			if (page) {
 				const auto w = page->get_width();
@@ -130,9 +130,9 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 				}
 			}
 
-			const auto& s = *shape_ptr;
-			for (const auto& p : s.get_path_list()) {
-				for (const auto& v : p) {
+			const auto &s = *shape_ptr;
+			for (const auto &p : s.get_path_list()) {
+				for (const auto &v : p) {
 					bbox.extend(Eigen::Vector2d{scale.x() * v.x(), scale.y() * v.y()});
 				}
 			}
@@ -141,12 +141,12 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 		double cy = center ? bbox.center().y() : height_mm - align.y();
 
 		std::vector<const Polygon2d*> polygons;
-		for (const auto& shape_ptr : *shapes) {
+		for (const auto &shape_ptr : *shapes) {
 			Polygon2d *poly = new Polygon2d();
-			const auto& s = *shape_ptr;
-			for (const auto& p : s.get_path_list()) {
+			const auto &s = *shape_ptr;
+			for (const auto &p : s.get_path_list()) {
 				Outline2d outline;
-				for (const auto& v : p) {
+				for (const auto &v : p) {
 					double x = scale.x() * (-viewbox.x() + v.x()) - cx;
 					double y = scale.y() * (-viewbox.y() - v.y()) + cy;
 					outline.vertices.push_back(Vector2d(x, y));
