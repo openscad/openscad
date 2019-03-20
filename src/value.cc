@@ -195,41 +195,6 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
   return stream;
 }
 
-Value::Value() : value(boost::blank())
-{
-  //  std::cout << "creating undef\n";
-}
-
-Value::Value(bool v) : value(v)
-{
-  //  std::cout << "creating bool\n";
-}
-
-Value::Value(int v) : value(double(v))
-{
-  //  std::cout << "creating int\n";
-}
-
-Value::Value(double v) : value(v)
-{
-  //  std::cout << "creating double " << v << "\n";
-}
-
-Value::Value(const std::string &v) : value(str_utf8_wrapper(v))
-{
-  //  std::cout << "creating string\n";
-}
-
-Value::Value(const char *v) : value(str_utf8_wrapper(v))
-{
-  //  std::cout << "creating string from char *\n";
-}
-
-Value::Value(char v) : value(str_utf8_wrapper(1, v))
-{
-  //  std::cout << "creating string from char\n";
-}
-
 Value Value::clone() const {
   Value c;
   switch (this->type()) {
@@ -256,27 +221,6 @@ Value Value::clone() const {
   return c;
 }
 
-
-Value::ValueType Value::type() const
-{
-  return static_cast<ValueType>(this->value.which());
-}
-
-bool Value::isDefined() const
-{
-  return this->type() != ValueType::UNDEFINED;
-}
-
-bool Value::isDefinedAs(const ValueType type) const
-{
-  return this->type() == type;
-}
-
-bool Value::isUndefined() const
-{
-  return !isDefined();
-}
-
 bool Value::toBool() const
 {
   switch (this->type()) {
@@ -301,11 +245,10 @@ bool Value::toBool() const
   }
 }
 
-double Value::toDouble() const
+double Value::toDouble() const 
 {
-  double d = 0;
-  getDouble(d);
-  return d;
+  const double *d = boost::get<double>(&this->value);
+  return d ? *d : 0.0;
 }
 
 bool Value::getDouble(double &v) const
@@ -331,8 +274,16 @@ bool Value::getFiniteDouble(double &v) const
   return valid;
 }
 
+Value::VectorPtr::VectorPtr(double x, double y, double z) : ptr(make_shared<Value::VectorType>()) { 
+  (*this)->emplace_back(x);
+  (*this)->emplace_back(y);
+  (*this)->emplace_back(z);
+} 
+
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
-  return boost::get<str_utf8_wrapper>(this->value);
+  static const str_utf8_wrapper empty{};
+  const str_utf8_wrapper *s = boost::get<str_utf8_wrapper>(&this->value);
+  return s ? *s : empty;
 }
 
 class tostring_visitor : public boost::static_visitor<std::string>
@@ -344,7 +295,7 @@ public:
   }
 
   std::string operator()(const str_utf8_wrapper &op1) const {
-    return op1.str_ptr->first;
+    return op1.toString();
   }
 
   std::string operator()(const double &op1) const {
@@ -425,7 +376,7 @@ public:
   }
 
   void operator()(const str_utf8_wrapper &v) const {
-    stream << '"' << v.str_ptr->first << '"';
+    stream << '"' << v.toString() << '"';
   }
 
   void operator()(const RangeType &v) const {
@@ -564,13 +515,6 @@ const Value::VectorPtr &Value::toVectorPtr() const
   return v ? *v : empty;
 }
 
-// protected non-const reference return only used by VectorPtr::flatten
-Value::VectorPtr &Value::toVectorPtrRef()
-{
-  return boost::get<VectorPtr>(this->value);
-}
-
-
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
   if (this->type() != ValueType::VECTOR) return false;
@@ -679,8 +623,8 @@ bool Value::operator!=(const Value &v) const
 		}																																		\
 																																				\
 		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
-			return op1.str_ptr->first op op2.str_ptr->first;									\
-		}            																												\
+			return op1 op op2;																								\
+		}																																		\
 	}
 
 DEFINE_VISITOR(less_visitor, <);

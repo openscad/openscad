@@ -111,15 +111,16 @@ public:
 
 class str_utf8_wrapper
 {
+private:
 	// store the cached length in glong, paired with its string
 	typedef std::pair<std::string, glong> str_utf8_t;
 	typedef shared_ptr<str_utf8_t> str_ptr_t;
 	// private constructor for copying members
 	explicit str_utf8_wrapper(str_ptr_t str_in) : str_ptr(str_in) { }
 public:
-	str_utf8_wrapper() : str_ptr(new str_utf8_t{ std::string{""}, -1}) { }
-	explicit str_utf8_wrapper( const std::string& s ) : str_ptr(new str_utf8_t{std::string{s}, -1}) { }
-	explicit str_utf8_wrapper( size_t n, char c ) : str_ptr(new str_utf8_t{std::string(n, c),-1}) { }
+	str_utf8_wrapper() : str_ptr(make_shared<str_utf8_t>(str_utf8_t{"", -1})) { }
+	explicit str_utf8_wrapper( const std::string& s ) : str_ptr(make_shared<str_utf8_t>(s, -1)) { }
+	explicit str_utf8_wrapper( size_t n, char c ) : str_ptr(make_shared<str_utf8_t>(std::string(n, c) ,-1)) { }
 
 	str_utf8_wrapper(const str_utf8_wrapper &) = delete; // never copy, move instead
 	str_utf8_wrapper& operator=(const str_utf8_wrapper &) = delete; // never copy, move instead
@@ -127,11 +128,16 @@ public:
 	str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default; // default move assignment 
 
 	// makes a copy of shared_ptr
-	str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); }
+	str_utf8_wrapper clone() const noexcept { return str_utf8_wrapper(this->str_ptr); }
 
-	bool operator==(const str_utf8_wrapper &rhs) const { return this->str_ptr->first == rhs.str_ptr->first; }
-	bool empty() const { return this->str_ptr->first.empty(); }
+	bool operator==(const str_utf8_wrapper &rhs) const noexcept { return this->str_ptr->first == rhs.str_ptr->first; }
+	bool operator< (const str_utf8_wrapper &rhs) const noexcept { return this->str_ptr->first <  rhs.str_ptr->first; }
+	bool operator> (const str_utf8_wrapper &rhs) const noexcept { return this->str_ptr->first >  rhs.str_ptr->first; }
+	bool operator<=(const str_utf8_wrapper &rhs) const noexcept { return this->str_ptr->first <= rhs.str_ptr->first; }
+	bool operator>=(const str_utf8_wrapper &rhs) const noexcept { return this->str_ptr->first >= rhs.str_ptr->first; }
+	bool empty() const noexcept { return this->str_ptr->first.empty(); }
 	const char* c_str() const noexcept { return this->str_ptr->first.c_str(); }
+	const std::string& toString() const noexcept { return this->str_ptr->first; } 
 	size_t size() const noexcept { return this->str_ptr->first.size(); }
 
 	glong get_utf8_strlen() const {
@@ -141,12 +147,6 @@ public:
 		return str_ptr->second;
 	};
 
-	friend class tostring_visitor;
-	friend class tostream_visitor;
-	friend class less_visitor;
-	friend class greater_visitor;
-	friend class lessequal_visitor;
-	friend class greaterequal_visitor;
 
 private:
 	str_ptr_t str_ptr;
@@ -168,21 +168,23 @@ public:
 
 	class VectorPtr {
 	public:
-		VectorPtr() : ptr(new VectorType{}) {}
+		VectorPtr() : ptr(make_shared<VectorType>()) {}
+		VectorPtr(double x, double y, double z);
 		VectorPtr(const VectorPtr &) = delete; // never copy, move instead
 		VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
 		VectorPtr(VectorPtr&&) = default; // default move constructor
 		VectorPtr& operator=(VectorPtr&&) = default; // default move assignment 
 
 		// Copy explicitly only when necessary
+		// We can't use unique_ptr because of this :(
 		VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c; }
 
-		const Value::VectorType &operator*() const { return *ptr; }
-		Value::VectorType *operator->() const { return ptr.get(); }
+		const Value::VectorType &operator*() const noexcept { return *ptr; }
+		Value::VectorType *operator->() const noexcept { return ptr.get(); }
 		// const accesses to VectorType require .clone to be move-able
-		const Value &operator[](size_t idx) const { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
+		const Value &operator[](size_t idx) const noexcept { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
 		// non-const return operator[] is only accessible from protected toVectorPtrRef
-		Value &operator[](size_t idx) {
+		Value &operator[](size_t idx) noexcept {
 			static Value undef;
 			return idx < ptr->size() ? (*ptr)[idx] : undef; 
 		}
@@ -195,28 +197,28 @@ public:
 		shared_ptr<Value::VectorType> ptr;
 	};
 
-	Value();
+	Value() : value(boost::blank()) {}
 	Value(const Value &) = delete; // never copy, move instead
 	Value &operator=(const Value &v) = delete; // never copy, move instead
 	Value(Value&&) = default; // default move constructor
 	Value& operator=(Value&&) = default; // default move assignment
-	explicit Value(bool v);
-	explicit Value(int v);
-	explicit Value(double v);
-	explicit Value(const std::string &v);
-	explicit Value(const char *v);
-	explicit Value(const char v);
-	explicit Value(RangeType& v) : value(std::move(v)) {};
-	explicit Value(RangeType&& v) : value(std::move(v)) {};
-	explicit Value(VectorPtr& v) : value(std::move(v)) {};
-	explicit Value(VectorPtr&& v) : value(std::move(v)) {};
+	explicit Value(bool v) : value(v) {}
+	explicit Value(int v) : value(double(v)) {}
+	explicit Value(double v) : value(v) {}
+	explicit Value(const std::string &v) : value(str_utf8_wrapper(v)) {}
+	explicit Value(const char *v) : value(str_utf8_wrapper(v)) {}
+	explicit Value(const char v) : value(str_utf8_wrapper(1, v)) {}
+	explicit Value(RangeType& v) : value(std::move(v)) {}
+	explicit Value(RangeType&& v) : value(std::move(v)) {}
+	explicit Value(VectorPtr& v) : value(std::move(v)) {}
+	explicit Value(VectorPtr&& v) : value(std::move(v)) {}
 
 	Value clone() const; // Use sparingly to explicitly copy a Value
 
-	ValueType type() const;
-	bool isDefined() const;
-	bool isDefinedAs(const ValueType type) const;
-	bool isUndefined() const;
+	ValueType type() const { return static_cast<ValueType>(this->value.which()); }
+	bool isDefinedAs(const ValueType type) const { return this->type() == type; }
+	bool isDefined()   const { return this->type() != ValueType::UNDEFINED; }
+	bool isUndefined() const { return this->type() == ValueType::UNDEFINED; }
 
 	double toDouble() const;
 	bool getDouble(double &v) const;
@@ -232,7 +234,8 @@ public:
 	std::string chrString() const;
 	const VectorPtr &toVectorPtr() const;
 protected:
-	VectorPtr &toVectorPtrRef(); // unsafe non-const reference needed by VectorPtr::flatten
+	// unsafe non-const reference needed by VectorPtr::flatten
+	VectorPtr &toVectorPtrRef() { return boost::get<VectorPtr>(this->value); };
 public:
 	bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
 	bool getVec3(double &x, double &y, double &z) const;
