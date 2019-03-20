@@ -258,9 +258,8 @@ bool Value::toBool() const
 
 double Value::toDouble() const
 {
-  double d = 0;
-  getDouble(d);
-  return d;
+  const double *d = boost::get<double>(&this->value);
+  return d ? *d : 0.0;
 }
 
 bool Value::getDouble(double &v) const
@@ -284,6 +283,12 @@ bool Value::getFiniteDouble(double &v) const
     v = result;
   }
   return valid;
+}
+
+Value::VectorPtr::VectorPtr(double x, double y, double z) : ptr(make_shared<Value::VectorType>()) {
+  (*this)->emplace_back(x);
+  (*this)->emplace_back(y);
+  (*this)->emplace_back(z);
 }
 
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {

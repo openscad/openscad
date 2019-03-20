@@ -294,7 +294,8 @@ public:
 
   class VectorPtr {
   public:
-    VectorPtr() : ptr(new VectorType()) {}
+    VectorPtr() : ptr(make_shared<VectorType>()) {}
+    VectorPtr(double x, double y, double z);
     VectorPtr(const VectorPtr &) = delete;            // never copy, move instead
     VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
     VectorPtr(VectorPtr&&) = default;
@@ -321,7 +322,6 @@ public:
   };
 
   Value() : value(boost::blank()) { }
-  static Value undef() { return Value(); }
   Value(const Value &) = delete; // never copy, move instead
   Value &operator=(const Value &v) = delete; // never copy, move instead
   Value(Value&&) = default;
