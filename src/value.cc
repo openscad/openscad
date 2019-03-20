@@ -664,11 +664,11 @@ public:
 	}
 
 	Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
-		Value::VectorPtr sum;
+		Value::VectorPtr sumv;
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
-			sum->push_back(op1[i] + op2[i]);
+			sumv->emplace_back(op1[i] + op2[i]);
 		}
-		return Value(sum);
+		return Value(sumv);
 	}
 };
 
