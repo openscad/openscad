@@ -56,7 +56,7 @@ const Value Value::undefined;
 #define DC_MAX_LEADING_ZEROES 5
 #define DC_MAX_TRAILING_ZEROES 0
 
-/* WARNING: using values > 8 will significantly slow double to string 
+/* WARNING: using values > 8 will significantly slow double to string
  * conversion, defeating the purpose of using double-conversion library */
 #define DC_PRECISION_REQUESTED 6
 
@@ -72,7 +72,7 @@ inline void trimTrailingZeroes(char *buffer, const int pos) {
         char ch;
         while ((ch = *(++ptr))) {
           if (ch == DC_EXP) {
-            // found exponent character after all zeroes, 
+            // found exponent character after all zeroes,
             // move chunk from exponent to end of string to replace decimal
             memmove((zero-1 == decimal) ? decimal : zero, ptr, &buffer[pos]-ptr+1);
             return;
@@ -117,7 +117,7 @@ inline bool HandleSpecialValues(const double &value, double_conversion::StringBu
   return false;
 }
 
-inline char* DoubleConvert(const double &value, char *buffer, 
+inline char* DoubleConvert(const double &value, char *buffer,
     double_conversion::StringBuilder &builder, const double_conversion::DoubleToStringConverter &dc) {
   builder.Reset();
   if (double_conversion::Double(value).IsSpecial()) {
@@ -198,7 +198,7 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 Value Value::clone() const {
   Value c;
   switch (this->type()) {
-    case ValueType::UNDEFINED : 
+    case ValueType::UNDEFINED :
     break;
     case ValueType::BOOL :
       c.value = boost::get<bool>(this->value);
@@ -245,7 +245,7 @@ bool Value::toBool() const
   }
 }
 
-double Value::toDouble() const 
+double Value::toDouble() const
 {
   const double *d = boost::get<double>(&this->value);
   return d ? *d : 0.0;
@@ -274,11 +274,11 @@ bool Value::getFiniteDouble(double &v) const
   return valid;
 }
 
-Value::VectorPtr::VectorPtr(double x, double y, double z) : ptr(make_shared<Value::VectorType>()) { 
+Value::VectorPtr::VectorPtr(double x, double y, double z) : ptr(make_shared<Value::VectorType>()) {
   (*this)->emplace_back(x);
   (*this)->emplace_back(y);
   (*this)->emplace_back(z);
-} 
+}
 
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
   static const str_utf8_wrapper empty{};
@@ -289,6 +289,7 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
 class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
+	typedef std::string result_type;
   template <typename T> std::string operator()(const T &op1) const {
     assert(false && "unhandled tostring_visitor type");
     return boost::lexical_cast<std::string>(op1);	
@@ -301,7 +302,7 @@ public:
   std::string operator()(const double &op1) const {
     char buffer[DC_BUFFER_SIZE];
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
       DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
     return DoubleConvert(op1, buffer, builder, dc);
   }
@@ -338,15 +339,15 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-  
+
 
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
 
-  tostream_visitor(std::ostringstream& stream) 
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE), 
-      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES) 
+  tostream_visitor(std::ostringstream& stream)
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
     {};
 
   template <typename T> void operator()(const T &op1) const {
@@ -436,6 +437,7 @@ std::string Value::toEchoString(const tostring_visitor *visitor) const
 class chr_visitor : public boost::static_visitor<std::string>
 {
 public:
+	typedef std::string result_type;
 	template <typename S> std::string operator()(const S &) const
 		{
 			return "";
@@ -520,7 +522,7 @@ bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
   if (this->type() != ValueType::VECTOR) return false;
 
   const VectorPtr &v = this->toVectorPtr();
-  
+
   if (v->size() != 2) return false;
 
   double rx, ry;
@@ -579,6 +581,7 @@ const RangeType& Value::toRange() const
 class equals_visitor : public boost::static_visitor<bool>
 {
 public:
+	typedef bool result_type;
   template <typename T, typename U> bool operator()(const T &, const U &) const {
     return false;
   }
@@ -602,6 +605,7 @@ bool Value::operator!=(const Value &v) const
 	class name : public boost::static_visitor<bool>												\
 	{																																			\
 	public:																																\
+		typedef bool result_type;																						\
 		template <typename T, typename U> bool operator()(const T &, const U &) const {	\
 			return false;																											\
 		}																																		\
@@ -655,7 +659,9 @@ bool Value::operator<=(const Value &v) const
 class plus_visitor : public boost::static_visitor<Value>
 {
 public:
-	template <typename T, typename U> Value operator()(const T &, const U &) const {
+	typedef Value result_type;
+	template <typename T, typename U>
+  Value operator()(const T &, const U &) const {
 		return Value();
 	}
 
@@ -666,7 +672,7 @@ public:
 	Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
 		Value::VectorPtr vec_sum;
 		for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
-			vec_sum->push_back(Value(op1[i] + op2[i]));
+			vec_sum->emplace_back(op1[i] + op2[i]);
 		}
 		return Value(vec_sum);
 	}
@@ -680,6 +686,7 @@ Value Value::operator+(const Value &v) const
 class minus_visitor : public boost::static_visitor<Value>
 {
 public:
+	typedef Value result_type;
 	template <typename T, typename U> Value operator()(const T &, const U &) const {
 		return Value();
 	}
@@ -717,7 +724,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
 // Matrix * Vector
 	VectorPtr dstv;
 	for (size_t i=0;i<matrixvec.size();i++) {
-		if (matrixvec[i].type() != ValueType::VECTOR || 
+		if (matrixvec[i].type() != ValueType::VECTOR ||
 				matrixvec[i].toVectorPtr()->size() != vectorvec.size()) {
 			return Value();
 		}
@@ -742,7 +749,7 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 		double r_e = 0.0;
 		for (size_t j=0;j<vectorvec.size();j++) {
 			if (matrixvec[j].type() != ValueType::VECTOR ||
-					matrixvec[j].toVectorPtr()[i].type() != ValueType::NUMBER || 
+					matrixvec[j].toVectorPtr()[i].type() != ValueType::NUMBER ||
 					vectorvec[j].type() != ValueType::NUMBER) {
 				return {};
 			}
@@ -770,7 +777,7 @@ Value Value::operator*(const Value &v) const
 		if (vec1.size() == 0 || vec2.size() == 0) return {};
 		
 		if (vec1[0].type() == ValueType::NUMBER && vec2[0].type() == ValueType::NUMBER &&
-				vec1.size() == vec2.size()) { 
+				vec1.size() == vec2.size()) {
 			// Vector dot product.
 			auto r = 0.0;
 			for (size_t i=0;i<vec1.size();i++) {
@@ -857,6 +864,7 @@ Value Value::operator-() const
 class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
+	typedef Value result_type;
   Value operator()(const str_utf8_wrapper &str, const double &idx) const {
 
     const auto i = convert_to_uint32(idx);
@@ -928,8 +936,8 @@ uint32_t RangeType::numValues() const
   if ((begin_val == end_val) || std::isinf(step_val)) {
     return 1;
   }
-  
-  if (step_val == 0) { 
+
+  if (step_val == 0) {
     return std::numeric_limits<uint32_t>::max();
   }
 
@@ -945,7 +953,7 @@ uint32_t RangeType::numValues() const
     }
     numvals = (end_val - begin_val) / step_val + 1;
   }
-  
+
   return numvals;
 }
 

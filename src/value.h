@@ -71,21 +71,11 @@ public:
 	
 	RangeType(const RangeType &) = delete; // never copy, move instead
 	RangeType& operator=(const RangeType &) = delete; // never copy, move instead
-	RangeType(RangeType&& rt) noexcept : 
-		begin_val(std::move(rt.begin_val)), 
-		step_val(std::move(rt.step_val)), 
-		end_val(std::move(rt.end_val)) {}
-	RangeType& operator=(RangeType&& rt) noexcept {
-		this->begin_val = std::move(rt.begin_val); 
-		this->step_val = std::move(rt.step_val); 
-		this->end_val = std::move(rt.end_val);
-		return *this; 
-	}
-	//RangeType(RangeType&&) = default; // default move constructor
-	//RangeType& operator=(RangeType&&) = default; // default move assignment 
+	RangeType(RangeType&&) = default; // default move constructor
+	RangeType& operator=(RangeType&&) = default; // default move assignment
 	
 	// Copy explicitly only when necessary
-	RangeType clone() const { return RangeType(this->begin_val,this->step_val,this->end_val); }; 
+	RangeType clone() const { return RangeType(this->begin_val,this->step_val,this->end_val); };
 
 	explicit RangeType(double begin, double end)
 		: begin_val(begin), step_val(1.0), end_val(end)
@@ -134,10 +124,8 @@ public:
 
 	str_utf8_wrapper(const str_utf8_wrapper &) = delete; // never copy, move instead
 	str_utf8_wrapper& operator=(const str_utf8_wrapper &) = delete; // never copy, move instead
-	str_utf8_wrapper(str_utf8_wrapper&& sp) noexcept : str_ptr(std::move(sp.str_ptr)) {}
-	str_utf8_wrapper& operator=(str_utf8_wrapper&& sp) noexcept { this->str_ptr = std::move(sp.str_ptr); return *this; }
-	//str_utf8_wrapper(str_utf8_wrapper&&) = default; // default move constructor
-	//str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default; // default move assignment 
+	str_utf8_wrapper(str_utf8_wrapper&&) = default; // default move constructor
+	str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default; // default move assignment
 
 	// makes a copy of shared_ptr
 	str_utf8_wrapper clone() const noexcept { return str_utf8_wrapper(this->str_ptr); }
@@ -149,7 +137,7 @@ public:
 	bool operator>=(const str_utf8_wrapper &rhs) const noexcept { return this->str_ptr->first >= rhs.str_ptr->first; }
 	bool empty() const noexcept { return this->str_ptr->first.empty(); }
 	const char* c_str() const noexcept { return this->str_ptr->first.c_str(); }
-	const std::string& toString() const noexcept { return this->str_ptr->first; } 
+	const std::string& toString() const noexcept { return this->str_ptr->first; }
 	size_t size() const noexcept { return this->str_ptr->first.size(); }
 
 	glong get_utf8_strlen() const {
@@ -184,10 +172,8 @@ public:
 		VectorPtr(double x, double y, double z);
 		VectorPtr(const VectorPtr &) = delete; // never copy, move instead
 		VectorPtr& operator=(const VectorPtr &) = delete; // never copy, move instead
-		VectorPtr(VectorPtr&& p) noexcept : ptr(std::move(p.ptr)) {}
-		VectorPtr& operator=(VectorPtr&& p) noexcept { this->ptr = std::move(p.ptr); return *this; }
-		//VectorPtr(VectorPtr&&) = default; // default move constructor
-		//VectorPtr& operator=(VectorPtr&&) = default; // default move assignment 
+		VectorPtr(VectorPtr&&) = default; // default move constructor
+		VectorPtr& operator=(VectorPtr&&) = default; // default move assignment
 
 		// Copy explicitly only when necessary
 		// We can't use unique_ptr because of this :(
@@ -200,7 +186,7 @@ public:
 		// non-const return operator[] is only accessible from protected toVectorPtrRef
 		Value &operator[](size_t idx) noexcept {
 			static Value undef;
-			return idx < ptr->size() ? (*ptr)[idx] : undef; 
+			return idx < ptr->size() ? (*ptr)[idx] : undef;
 		}
 		bool operator==(const VectorPtr &v) const { return *ptr == *v; }
 		bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
@@ -214,10 +200,8 @@ public:
 	Value() : value(boost::blank()) {}
 	Value(const Value &) = delete; // never copy, move instead
 	Value &operator=(const Value &v) = delete; // never copy, move instead
-	Value(Value&& v) noexcept : value(std::move(v.value)) {}
-	Value& operator=(Value&& v) noexcept { this->value = std::move(v.value); return *this; }
-	//Value(Value&&) = default; // default move constructor
-	//Value& operator=(Value&&) = default; // default move assignment
+	Value(Value&&) = default; // default move constructor
+	Value& operator=(Value&&) = default; // default move assignment
 	explicit Value(bool v) : value(v) {}
 	explicit Value(int v) : value(double(v)) {}
 	explicit Value(double v) : value(v) {}
