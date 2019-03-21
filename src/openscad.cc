@@ -901,6 +901,7 @@ int main(int argc, char **argv)
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+		("export", po::value<string>(), "Force output format instead of using file extension, supported file format list: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		;
 
 	po::options_description hidden("Hidden options");
