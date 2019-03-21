@@ -25,7 +25,6 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root
 	this->nodecount = 0;
 	shared_ptr<CSGNode> temp = root;
 	temp = normalizePass(temp);
-	PRINTB("Node count from normalizer: %d", this->nodecount);
 	this->rootnode.reset();
 	return temp;
 }
