@@ -145,9 +145,9 @@ Value Settings::get(const SettingsEntry& entry) const
 	return entry._value.clone();
 }
 
-void Settings::set(SettingsEntry& entry, const Value &val)
+void Settings::set(SettingsEntry& entry, Value val)
 {
-	entry._value = val.clone();
+	entry._value = std::move(val);
 }
 
 SettingsVisitor::SettingsVisitor()
