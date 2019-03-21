@@ -25,6 +25,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode> &root
 	this->nodecount = 0;
 	shared_ptr<CSGNode> temp = root;
 	temp = normalizePass(temp);
+	PRINTB("Node count from normalizer: %d", this->nodecount);
 	this->rootnode.reset();
 	return temp;
 }
@@ -71,122 +72,72 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
 	// http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 
 	// Iterative tree traversal used to workaround stack limits for very large inputs.
-	// See Pull Request #2343
+	// This uses dreaded goto calls but is easily verifiable to be
+	// functionally equivalent to the original recursive function, 
+	// compared to the previous attempt.
+	// See Issue #2883 for problem with previous iterative implementation
+	// See Pull Request #2343 for the initial reasons for making this not recursive.
 
-	// Keep a stack of visited parent nodes for iterative traversal
-	std::stack<shared_ptr<CSGOperation>> parentstack;
-	shared_ptr<CSGNode> currentnode = node;
-	// keep a copy of child node (before changes) to check if the processed node was the left or right child
-	shared_ptr<CSGNode> unalterednode; 
-
-	bool done = false;
-	do {
-		
-		// handle current node, iterate into left branch
-		while(currentnode && !dynamic_pointer_cast<CSGLeaf>(currentnode)) {
-			unalterednode = currentnode;
-			
-			while (currentnode && match_and_replace(currentnode)) { }
-
-			this->nodecount++;
-			if (this->nodecount > this->limit) {
-				PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
-				this->aborted = true;
-				currentnode = shared_ptr<CSGNode>();
-				break; // return currentnode
-			}
-
-			if (!currentnode || dynamic_pointer_cast<CSGLeaf>(currentnode)) {
-				break; // return currentnode
-			}
-
-			// update parent to point to new currentnode if changed
-			if (currentnode != unalterednode && !parentstack.empty()) {
-				shared_ptr<CSGOperation> parent = parentstack.top();
-				if (unalterednode == parent->left()) {
-					parent->left() = currentnode;
-				} else if (unalterednode == parent->right()) {
-					parent->right() = currentnode;
-				} else {
-					assert(false && "Processed a node that is not left or right child of parent? (1)");
-				}
-			}
-			
-			if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(currentnode)) {
-				// handle left child next iteration
-				parentstack.emplace(op);
-				unalterednode = op->left();
-				currentnode = unalterednode;
-				continue; // iterate with new currentnode
-			}
-			
-		}
-		
-		bool continuePopping;
-		// after handling individual node, overwrite as the child of its parent 
-		do {
-			continuePopping = false;
-
-			// check if currentnode is the child of a parent
-			if (parentstack.empty()) { 
-				// just normalized the root node
-				done = true;
-			} else {
-				
-				// currentnode has a parent
-				shared_ptr<CSGOperation> parent = parentstack.top();
-				// check if node is left or right child of its parent
-				if (unalterednode == parent->left()) {
-					
-					// left child was just normalized
-					parent->left() = currentnode;
-					
-					if (this->aborted) {
-						// abort, do not normalize right child, pop stack
-						unalterednode = parent;
-						currentnode = unalterednode;
-						parentstack.pop();
-						continuePopping = true;
-					} else {
-						if (!isUnion(parent) && (hasRightNonLeaf(parent) || hasLeftUnion(parent))) {
-							// iterate over parent node again, don't process right child yet
-							unalterednode = parent;
-							currentnode = unalterednode;
-							parentstack.pop();
-						} else {
-							// handle right child next iteration
-							unalterednode = parent->right();
-							currentnode = unalterednode;
-							// don't pop parent from stack yet
-						}
-					}
-					
-				} else if (unalterednode == parent->right()) {
-					// right child was just normalized
-					parent->right() = currentnode;
-					
-					// make a copy of unaltered parent, then collapse null terms, and pop
-					unalterednode = parent;
-					currentnode = unalterednode;
-					
-					// FIXME: Do we need to take into account any transformation of item here?
-					currentnode = collapse_null_terms(currentnode);
-					
-					if (this->aborted && currentnode) {
-						currentnode = cleanup_term(currentnode);
-					}
-					
-					parentstack.pop();
-					continuePopping = true;
-				} else {
-					assert(false && "Processed a node that is not left or right child of parent? (2)");
-				}
-			}
-		} while (continuePopping);
-		
-	} while(!done);
+	// stores current node and bool indicating if it was a left or right call;
+	typedef std::pair<shared_ptr<CSGOperation>, bool> stackframe_t;
+	std::stack<stackframe_t> callstack;
 	
-	return currentnode;
+entrypoint:
+	if (dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
+	do {
+		while (node && match_and_replace(node)) {	}
+		this->nodecount++;
+		if (nodecount > this->limit) {
+			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+			this->aborted = true;
+			return shared_ptr<CSGNode>();
+		}
+		if (!node || dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
+		goto normalize_left_if_op;
+cont_left: ;
+	} while (!this->aborted && !isUnion(node) && (hasRightNonLeaf(node) || hasLeftUnion(node)));
+
+	if (!this->aborted) {
+		goto normalize_right;
+cont_right: ;
+	}
+
+	// FIXME: Do we need to take into account any transformation of item here?
+	node = collapse_null_terms(node);
+
+	if (this->aborted) {
+		if (node) node = cleanup_term(node);
+	}
+
+return_node:
+	if (callstack.empty()) {
+		return node;
+	} else {
+		stackframe_t frame = callstack.top();
+		callstack.pop();
+		if (frame.second) { // came from a left call
+			frame.first->left() = node;
+			node = frame.first;
+			goto cont_left;
+		} else {            // came from a right call
+			frame.first->right() = node;
+			node = frame.first;
+			goto cont_right;
+		}
+	}
+normalize_left_if_op:
+	if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node)) {
+		callstack.emplace(op, true);
+		node = op->left();
+		goto entrypoint;
+	}
+	goto cont_left;
+normalize_right:
+	shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
+	assert(op);
+	callstack.emplace(op, false);
+	node = op->right();
+	goto entrypoint;
 }
 
 shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const shared_ptr<CSGNode> &node)
@@ -194,10 +145,12 @@ shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const shared_ptr<CSGN
 	shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
 	if (op) {
 		if (!op->right()) {
+			this->nodecount--;
 			if (op->getType() == OpenSCADOperator::UNION || op->getType() == OpenSCADOperator::DIFFERENCE) return op->left();
 			else return op->right();
 		}
 		if (!op->left()) {
+			this->nodecount--;
 			if (op->getType() == OpenSCADOperator::UNION) return op->right();
 			else return op->left();
 		}
