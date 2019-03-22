@@ -6,8 +6,9 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
-#include <QVBoxLayout>
+
 #include "editor.h"
+#include "scadapi.h"
 #include "scadlexer.h"
 #include "parsersettings.h"
 
@@ -59,6 +60,7 @@ public:
 
 private:
         void getRange(int *lineFrom, int *lineTo);
+        void setLexer(ScadLexer *lexer);
         void setColormap(const EditorColorScheme *colorScheme);
         int readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue);
         std::string readString(const boost::property_tree::ptree &pt, const std::string name, const std::string defaultValue);
@@ -107,4 +109,5 @@ private:
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;
+	ScadApi *api;
 };

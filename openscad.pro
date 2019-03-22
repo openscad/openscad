@@ -296,6 +296,7 @@ HEADERS += src/version_check.h \
            src/GroupModule.h \
            src/FileModule.h \
            src/StatCache.h \
+           src/scadapi.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
