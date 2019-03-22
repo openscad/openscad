@@ -107,14 +107,19 @@ DEFINES += STACKSIZE=$$STACKSIZE
 win* {
   RC_FILE = openscad_win32.rc
   QMAKE_CXXFLAGS += -DNOGDI
+  QMAKE_CFLAGS += -gdwarf-2 -gstrict-dwarf -Og -fno-omit-frame-pointer
+  QMAKE_CXXFLAGS += -gdwarf-2 -gstrict-dwarf -Og -fno-omit-frame-pointer
+  QMAKE_CFLAGS_RELEASE -= -O2
+  QMAKE_CXXFLAGS_RELEASE -= -O2
   QMAKE_LFLAGS += -Wl,--stack,$$STACKSIZE
+  QMAKE_LFLAGS_RELEASE -= -Wl,-s
 }
 
 mingw* {
   # needed to prevent compilation error on MSYS2:
   # as.exe: objects/cgalutils.o: too many sections (76541)
   # using -Wa,-mbig-obj did not help
-  debug: QMAKE_CXXFLAGS += -O1
+  #debug: QMAKE_CXXFLAGS += -O1
 }
 
 CONFIG += qt object_parallel_to_source
