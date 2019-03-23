@@ -282,7 +282,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	ExportFileFormat curFormat;
 	const char *extsn = nullptr;
 	const char *new_output_file = nullptr;
-	fs:: path path_output_file = output_file;
+	
 	if(export_format) {
 		PRINT("Using extension of --export-format option");
 		extsn = export_format;
@@ -298,16 +298,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			}
 		}
 	}
-	if(extsn) {		
-		path_output_file.replace_extension(extsn);
-		new_output_file = path_output_file.generic_string().c_str();
-	}
-	else {
+
+	if(!extsn) {
 		PRINTB("Unknown suffix for output file %s\n", output_file);
 		return 1;
 	}
 	
 	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
+	fs::path path_output_file(output_file);
+	new_output_file = path_output_file.replace_extension(extsn).generic_string().c_str();
 
 	set_render_color_scheme(arg_colorscheme, true);
 
