@@ -72,6 +72,8 @@ private:
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
         void noColor();
+	void replaceSelectedText(QString&);
+        void addTemplate(const QString key, const QString text, const int cursor_offset);
 
 signals:
 	void previewRequest(void);
@@ -100,7 +102,8 @@ public slots:
 
 private slots:
 	void onTextChanged();
-        void applySettings();
+	void onUserListSelected(const int id, const QString &text);
+	void applySettings();
 
 private:
 	QVBoxLayout *scintillaLayout;
@@ -110,4 +113,6 @@ private:
 	ScadLexer *lexer;
 	QFont currentFont;
 	ScadApi *api;
+	QStringList userList;
+	QMap<QString, ScadTemplate> templateMap;
 };
