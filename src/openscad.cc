@@ -305,8 +305,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 	
 	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
-	fs::path path_output_file(output_file);
-	new_output_file = path_output_file.replace_extension(extsn).generic_string().c_str();
+	std::string filename_str = fs::path(output_file).replace_extension(extsn).generic_string();
+	new_output_file = filename_str.c_str();
 
 	set_render_color_scheme(arg_colorscheme, true);
 
