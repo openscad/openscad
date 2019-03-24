@@ -280,7 +280,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 	ExportFileFormatOptions exportFileFormatOptions;
 	ExportFileFormat curFormat;
-	const char *extsn = nullptr;
+	std::string extsn;
+	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
 	
 	if(export_format) {
@@ -288,25 +289,31 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		extsn = export_format;
 	}
 	else { 
-		auto suffix = fs::path(output_file).extension().generic_string();
+		auto suffix = fs::path(output_file_str).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
 		for(auto ff: exportFileFormatOptions.exportFileFormats) {
 			if(ff.first == suffix) {
-				extsn = suffix.c_str();
+				extsn = suffix;
 				break;
 			}
 		}
 	}
 
-	if(!extsn) {
-		PRINTB("Unknown suffix for output file %s\n", output_file);
+	if(extsn.empty()) {
+		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
 		return 1;
 	}
 	
 	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
-	fs::path path_output_file = fs::path(output_file).replace_extension(extsn);
-	new_output_file = path_output_file.generic_string().c_str();
+	std::string filename_str = fs::path(output_file_str).replace_extension(extsn).generic_string();
+	std::string tempp = filename_str;
+	new_output_file = filename_str.c_str();
+
+	PRINTB("output_file: %s", output_file);
+	PRINTB("extension: %s", extsn.c_str());
+	PRINTB("output_file_str: %s", output_file_str.c_str());
+	PRINTB("new_output_file: %s", tempp.c_str());
 
 	set_render_color_scheme(arg_colorscheme, true);
 
