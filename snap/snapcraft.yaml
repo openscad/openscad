@@ -49,6 +49,7 @@ parts:
     - qtbase5-dev
     - qtmultimedia5-dev
     - libqt5opengl5-dev
+    - qtwayland5
     - qt5-qmake
     - libcgal-dev
     - libeigen3-dev
