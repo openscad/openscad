@@ -49,7 +49,6 @@ parts:
     - qtbase5-dev
     - qtmultimedia5-dev
     - libqt5opengl5-dev
-    - qtwayland5
     - qt5-qmake
     - libcgal-dev
     - libeigen3-dev
@@ -77,3 +76,5 @@ parts:
     - libfreetype6-dev
     - libfontconfig1-dev
     - libqt5scintilla2-dev
+    stage-packages:
+    - qtwayland5
