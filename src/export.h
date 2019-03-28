@@ -18,17 +18,6 @@ enum class FileFormat {
 	DXF,
 	SVG,
 	NEFDBG,
-	NEF3
-};
-
-enum class ExportFileFormat {
-	STL,
-	OFF,
-	AMF,
-	_3MF,
-	DXF,
-	SVG,
-	NEFDBG,
 	NEF3,
 	CSG,
 	AST,
@@ -55,20 +44,20 @@ enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 
 struct ExportFileFormatOptions {
-	const std::map<const std::string, ExportFileFormat> exportFileFormats{
-		{"stl", ExportFileFormat::STL},
-		{"off", ExportFileFormat::OFF},
-		{"amf", ExportFileFormat::AMF},
-		{"3mf", ExportFileFormat::_3MF},
-		{"dxf", ExportFileFormat::DXF},
-		{"svg", ExportFileFormat::SVG},
-		{"nefdbg", ExportFileFormat::NEFDBG},
-		{"nef3", ExportFileFormat::NEF3},
-		{"csg", ExportFileFormat::CSG},
-		{"ast", ExportFileFormat::AST},
-		{"term", ExportFileFormat::TERM},
-		{"echo", ExportFileFormat::ECHO},
-		{"png", ExportFileFormat::PNG},
+	const std::map<const std::string, FileFormat> exportFileFormats{
+		{"stl", FileFormat::STL},
+		{"off", FileFormat::OFF},
+		{"amf", FileFormat::AMF},
+		{"3mf", FileFormat::_3MF},
+		{"dxf", FileFormat::DXF},
+		{"svg", FileFormat::SVG},
+		{"nefdbg", FileFormat::NEFDBG},
+		{"nef3", FileFormat::NEF3},
+		{"csg", FileFormat::CSG},
+		{"ast", FileFormat::AST},
+		{"term", FileFormat::TERM},
+		{"echo", FileFormat::ECHO},
+		{"png", FileFormat::PNG},
 	};
 };
 

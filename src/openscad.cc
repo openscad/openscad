@@ -279,7 +279,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 #endif
 
 	ExportFileFormatOptions exportFileFormatOptions;
-	ExportFileFormat curFormat;
+	FileFormat curFormat;
 	std::string extsn;
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
@@ -292,11 +292,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		auto suffix = fs::path(output_file_str).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
-		for(auto ff: exportFileFormatOptions.exportFileFormats) {
-			if(ff.first == suffix) {
-				extsn = suffix;
-				break;
-			}
+		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
+			extsn = suffix;
 		}
 	}
 
@@ -307,25 +304,19 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	
 	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
 	std::string filename_str = fs::path(output_file_str).replace_extension(extsn).generic_string();
-	std::string tempp = filename_str;
 	new_output_file = filename_str.c_str();
-
-	PRINTB("output_file: %s", output_file);
-	PRINTB("extension: %s", extsn.c_str());
-	PRINTB("output_file_str: %s", output_file_str.c_str());
-	PRINTB("new_output_file: %s", tempp.c_str());
 
 	set_render_color_scheme(arg_colorscheme, true);
 
 	// Top context - this context only holds builtins
 	BuiltinContext top_ctx;
-	const bool preview = curFormat == ExportFileFormat::PNG ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+	const bool preview = curFormat == FileFormat::PNG ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
-	if (curFormat == ExportFileFormat::ECHO) {
+	if (curFormat == FileFormat::ECHO) {
 		echostream.reset(new Echostream(new_output_file));
 	}
 
@@ -388,7 +379,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		}
 	}
 
-	if (curFormat == ExportFileFormat::CSG) {
+	if (curFormat == FileFormat::CSG) {
 		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
@@ -400,7 +391,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fstream.close();
 		}
 	}
-	else if (curFormat == ExportFileFormat::AST) {
+	else if (curFormat == FileFormat::AST) {
 		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
@@ -412,7 +403,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fstream.close();
 		}
 	}
-	else if (curFormat == ExportFileFormat::TERM) {
+	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
@@ -432,7 +423,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((curFormat == ExportFileFormat::ECHO || curFormat == ExportFileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+		if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
@@ -450,42 +441,25 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 		fs::current_path(original_path);
 
-		if (curFormat == ExportFileFormat::STL) {
-			if (!checkAndExport(root_geom, 3, FileFormat::STL, new_output_file)) {
+		if(curFormat == FileFormat::STL ||
+			curFormat == FileFormat::OFF ||
+			curFormat == FileFormat::AMF ||
+			curFormat == FileFormat::_3MF ||
+			curFormat == FileFormat::NEFDBG ||
+			curFormat == FileFormat::NEF3 )
+		{
+			if(!checkAndExport(root_geom, 3, curFormat, new_output_file)) {
 				return 1;
 			}
 		}
 
-		if (curFormat == ExportFileFormat::OFF) {
-			if (!checkAndExport(root_geom, 3, FileFormat::OFF, new_output_file)) {
+		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG) {
+			if (!checkAndExport(root_geom, 2, curFormat, new_output_file)) {
 				return 1;
 			}
 		}
 
-		if (curFormat == ExportFileFormat::AMF) {
-			if (!checkAndExport(root_geom, 3, FileFormat::AMF, new_output_file)) {
-				return 1;
-			}
-		}
-
-		if (curFormat == ExportFileFormat::_3MF) {
-			if (!checkAndExport(root_geom, 3, FileFormat::_3MF, new_output_file))
-				return 1;
-		}
-
-		if (curFormat == ExportFileFormat::DXF) {
-			if (!checkAndExport(root_geom, 2, FileFormat::DXF, new_output_file)) {
-				return 1;
-			}
-		}
-
-		if (curFormat == ExportFileFormat::SVG) {
-			if (!checkAndExport(root_geom, 2, FileFormat::SVG, new_output_file)) {
-				return 1;
-			}
-		}
-
-		if (curFormat == ExportFileFormat::PNG) {
+		if (curFormat == FileFormat::PNG) {
 			auto success = true;
 			std::ofstream fstream(new_output_file,std::ios::out|std::ios::binary);
 			if (!fstream.is_open()) {
@@ -503,17 +477,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			return success ? 0 : 1;
 		}
 
-		if (curFormat == ExportFileFormat::NEFDBG) {
-			if (!checkAndExport(root_geom, 3, FileFormat::NEFDBG, new_output_file)) {
-				return 1;
-			}
-		}
-
-		if (curFormat == ExportFileFormat::NEF3) {
-			if (!checkAndExport(root_geom, 3, FileFormat::NEF3, new_output_file)) {
-				return 1;
-			}
-		}
 #else
 		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
@@ -864,7 +827,7 @@ int main(int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, 3mf, svg, png, echo, ast, term, nef3, nefdbg\n")
-		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overwrites the file extension in -o option\n")
+		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overrides the file extension in -o option\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
@@ -1049,16 +1012,12 @@ int main(int argc, char **argv)
 
 	ExportFileFormatOptions exportFileFormatOptions;
     if(vm.count("export-format")) {
-        const char *tmp_format = vm["export-format"].as<string>().c_str();
-        for(auto ff: exportFileFormatOptions.exportFileFormats) {
-            if(ff.first == tmp_format) {
-                export_format = tmp_format;
-                break;
-            }
+        auto tmp_format = vm["export-format"].as<string>();
+        if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
+        	export_format = tmp_format.c_str();
         }
-	    if(!export_format) {
-	    	const char *tmp_format = vm["export-format"].as<string>().c_str();
-	        PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format);
+		else {
+	        PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
 	    }
     }
 
