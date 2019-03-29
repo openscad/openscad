@@ -174,6 +174,10 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
    return nullptr;
 }
 
+void fileExportedMessage(const char *format, const QString &filename) {
+	PRINTB("%s export finished: %s", format % filename.toUtf8().constData());
+}
+
 } // namespace
 
 MainWindow::MainWindow(const QString &filename)
@@ -2053,7 +2057,7 @@ void MainWindow::csgRender()
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
 			QImage img = this->qglview->grabFrameBuffer();
-			QString filename = QString("frame%1.png").arg(this->anim_step, 5, QChar('0'));
+			QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
 			img.save(filename, "PNG");
 		}
 	}
@@ -2519,9 +2523,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	exportFileByName(this->root_geom, format,
 		exportFilename.toLocal8Bit().constData(),
 		exportFilename.toUtf8());
-	PRINTB("%s export finished: %s",
-		type_name % exportFilename.toUtf8().constData());
-
+	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2581,7 +2583,7 @@ void MainWindow::actionExportCSG()
 	else {
 		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
 		fstream.close();
-		PRINT("CSG export finished.");
+		fileExportedMessage("CSG", csg_filename);
 		this->export_paths[suffix] = csg_filename;
 	}
 
@@ -2590,9 +2592,7 @@ void MainWindow::actionExportCSG()
 
 void MainWindow::actionExportImage()
 {
-	setCurrentOutput();
-
-  // Grab first to make sure dialog box isn't part of the grabbed image
+	// Grab first to make sure dialog box isn't part of the grabbed image
 	qglview->grabFrame();
 	const auto suffix = ".png";
 	auto img_filename = QFileDialog::getSaveFileName(this,
@@ -2600,9 +2600,10 @@ void MainWindow::actionExportImage()
 	if (!img_filename.isEmpty()) {
 		qglview->save(img_filename.toLocal8Bit().constData());
 		this->export_paths[suffix] = img_filename;
+		setCurrentOutput();
+		fileExportedMessage("PNG", img_filename);
+		clearCurrentOutput();
 	}
-
-	clearCurrentOutput();
 }
 
 void MainWindow::actionCopyViewport()
