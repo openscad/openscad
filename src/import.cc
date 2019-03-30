@@ -202,7 +202,7 @@ const Geometry *ImportNode::createGeometry() const
 #endif
 	default:
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
-		g = new PolySet(0);
+		g = new PolySet(3);
 	}
 
 	if (g) g->setConvexity(this->convexity);
