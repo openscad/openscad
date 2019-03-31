@@ -2,17 +2,6 @@ language: cpp
 
 matrix:
   include:
-    - if: NOT branch = coverity_scan
-      os: linux
-      compiler: gcc
-      dist: trusty
-      env:
-        - DIST="trusty"
-        - PARALLEL_CTEST=-j1
-      sudo: required
-      cache:
-        - apt
-        - ccache
     - os: linux
       compiler: gcc
       dist: xenial
