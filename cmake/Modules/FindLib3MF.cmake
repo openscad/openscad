@@ -11,6 +11,15 @@
 
 message(STATUS "Searching for lib3mf.")
 
+# Don't specify REQUIRED here in case pkg-config fails.
+# We still fall back to the rest of detection code here.
+# Travis CI Ubuntu Trusty environment has some issue with pkg-config
+# not finding the version.
+pkg_check_modules(LIB3MF lib3MF>=1.8.1)
+if (LIB3MF_VERSION)
+  message("lib3MF ${LIB3MF_VERSION} found: ${LIB3MF_INCLUDE_DIRS}")
+endif()
+
 if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   if (EXISTS "$ENV{OPENSCAD_LIBRARIES}/include/lib3mf/Model/COM/NMR_DLLInterfaces.h")
     message(STATUS "found lib3mf (NMR_DLLInterfaces.h) in OPENSCAD_LIBRARIES.")
@@ -39,6 +48,7 @@ endif()
 if (NOT ${LIB3MF_LIBDIR} STREQUAL "")
   set(LIB3MF_LIBRARIES "-L${LIB3MF_LIBDIR}" "-l3MF -lzip -lz")
   set(LIB3MF_CFLAGS "-D__GCC -DENABLE_LIB3MF")
+  set(LIB3MF_FOUND TRUE)
   message(STATUS "Found lib3mf in ${LIB3MF_LIBDIR}.")
 else()
   message(STATUS "Could not find lib3mf.")
