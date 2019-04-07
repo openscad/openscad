@@ -946,7 +946,9 @@ file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated
 file(GLOB ISSUES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
-file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad)
+file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad
+  ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/box-w-holes-2d.scad
+  ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/simple-center-2d.scad)
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
@@ -1397,7 +1399,7 @@ add_custom_target(issue2342 ALL
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${GEN_SCRIPT_DIR}/gen_svg_viewbox_tests.py "${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox" "${CMAKE_SOURCE_DIR}/../testdata/scad/svg"
+  COMMAND ${PYTHON_EXECUTABLE} ${GEN_SCRIPT_DIR}/gen_svg_viewbox_tests.py "${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox" "${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -1420,10 +1422,10 @@ list(APPEND SVG_VIEWBOX_TESTS
     viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax)
 
 foreach(TEST ${SVG_VIEWBOX_TESTS})
-    add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox/${TEST}.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/viewbox-test.scad)
+    add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox/${TEST}.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/viewbox-test.scad)
 endforeach()
-add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/box-w-holes.scad)
-add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/simple-center.scad)
+add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/box-w-holes.scad)
+add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/simple-center.scad)
 
 #
 # Trivial Export/Import files
