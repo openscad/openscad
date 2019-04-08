@@ -96,15 +96,22 @@ AbstractNode *find_root_tag(AbstractNode *n)
 	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
 		for (auto v : n->children) {
 			if (v->modinst->tag_root) {
-				if(std::find(rootTags.begin(), rootTags.end(), v) == rootTags.end()) rootTags.push_back(v);
+				bool is_present = false;
+				for(const auto& rootTag : rootTags){
+					if(v->modinst->location().firstLine() == rootTag->modinst->location().firstLine()){
+						is_present = true; // check if the specific line is already existing in rootTag
+					}
+				}
+				if(!is_present) rootTags.push_back(v);
 			}
+			find_root_tags(v);
 		}
 	};
 
 	find_root_tags(n);
 
 	if (rootTags.size() == 0) return nullptr;
-	if (rootTags.size() > 1) {
+	if (rootTags.size() > 0) {
 		for (const auto& rootTag : rootTags) {
 			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
 		}
