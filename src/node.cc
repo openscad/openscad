@@ -95,8 +95,9 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
 		for (auto v : n->children) {
-			if (v->modinst->tag_root) rootTags.push_back(v);
-			find_root_tags(v);
+			if (v->modinst->tag_root) {
+				if(std::find(rootTags.begin(), rootTags.end(), v) == rootTags.end()) rootTags.push_back(v);
+			}
 		}
 	};
 
