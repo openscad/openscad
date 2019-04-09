@@ -92,6 +92,7 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 AbstractNode *find_root_tag(AbstractNode *n)
 {
 	std::vector<AbstractNode*> rootTags;
+	std::vector<int> lineNum;
 
 	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
 		for (auto v : n->children) {
@@ -102,7 +103,8 @@ AbstractNode *find_root_tag(AbstractNode *n)
 						is_present = true; // check if the specific line is already existing in rootTag
 					}
 				}
-				if(!is_present) rootTags.push_back(v);
+				if(!is_present) lineNum.push_back(v->modinst->location().firstLine());
+				rootTags.push_back(v);
 			}
 			find_root_tags(v);
 		}
@@ -111,9 +113,9 @@ AbstractNode *find_root_tag(AbstractNode *n)
 	find_root_tags(n);
 
 	if (rootTags.size() == 0) return nullptr;
-	if (rootTags.size() > 0) {
-		for (const auto& rootTag : rootTags) {
-			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
+	if (rootTags.size() > 1) {
+		for (size_t i = 0; i < lineNum.size(); i++) {
+			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", lineNum.at(i));
 		}
 	}
 	return rootTags.front();
