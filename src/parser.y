@@ -483,7 +483,7 @@ expr:
             {
               $$ = new ArrayLookup($1, $3, LOC(@$));
             }
-        | TOK_ID '(' argument_list_call ')'
+        | TOK_ID '(' argument_list_call optional_commas')'
             {
               $$ = new FunctionCall($1, *$3, LOC(@$));
               free($1);
