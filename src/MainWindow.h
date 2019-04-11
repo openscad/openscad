@@ -224,6 +224,8 @@ public:
 	void onActionEvent(InputEventAction *event) override;
 	void onZoomEvent(InputEventZoom *event) override;
 
+	void changedTopLevelConsole(bool);
+
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
 
