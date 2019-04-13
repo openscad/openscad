@@ -1,5 +1,5 @@
 linear_extrude(1, center = true)
-import("../../svg/simple.svg", center = true);
+import("../../../svg/simple.svg", center = true);
 
 color("red") cylinder(r = 2, h = 0.4, center = true, $fn = 32);
 color("green") difference() {

@@ -3,7 +3,7 @@
 //
 
 linear_extrude(height = 2, center = true)
-    import("../../svg/box-w-holes.svg", center=true, dpi=72);
+    import("../../../svg/box-w-holes.svg", center=true, dpi=72);
 
 color("black") difference() {
     cube([56, 56, .1], center = true);
