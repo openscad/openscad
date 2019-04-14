@@ -1059,7 +1059,7 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/echo-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/trailing-comma-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/trailing-comma-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/ifelse-ast-dump.scad
             )
