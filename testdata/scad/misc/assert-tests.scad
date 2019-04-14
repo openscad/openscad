@@ -8,8 +8,8 @@ assert("t1",);
 assert(a*b,);
 
 assert(a*b);
-
-assert(condition = a*b);
+//trailing comma test
+assert(condition = a*b,);
 
 assert(true) cube(8, center = true);
 
