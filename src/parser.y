@@ -489,19 +489,19 @@ expr:
               free($1);
               delete $3;
             }
-        | TOK_LET '(' argument_list_call ')' expr %prec LET
+        | TOK_LET '(' argument_list_call optional_commas')' expr %prec LET
             {
-              $$ = FunctionCall::create("let", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("let", *$3, $6, LOC(@$));
               delete $3;
             }
-        | TOK_ASSERT '(' argument_list_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+        | TOK_ASSERT '(' argument_list_call optional_commas')' expr_or_empty %prec LOW_PRIO_LEFT
             {
-              $$ = FunctionCall::create("assert", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("assert", *$3, $6, LOC(@$));
               delete $3;
             }
-        | TOK_ECHO '(' argument_list_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+        | TOK_ECHO '(' argument_list_call optional_commas')' expr_or_empty %prec LOW_PRIO_LEFT
             {
-              $$ = FunctionCall::create("echo", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("echo", *$3, $6, LOC(@$));
               delete $3;
             }
         ;
@@ -520,9 +520,9 @@ expr_or_empty:
  list_comprehension_elements:
           /* The last set element may not be a "let" (as that would instead
              be parsed as an expression) */
-          TOK_LET '(' argument_list_call ')' list_comprehension_elements_p
+          TOK_LET '(' argument_list_call optional_commas')' list_comprehension_elements_p
             {
-              $$ = new LcLet(*$3, $5, LOC(@$));
+              $$ = new LcLet(*$3, $6, LOC(@$));
               delete $3;
             }
         | TOK_EACH list_comprehension_elements_or_expr
