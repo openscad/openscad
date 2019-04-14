@@ -2,6 +2,7 @@ group();
 group();
 group();
 group();
+group();
 group() {
 	cube(size = [8, 8, 8], center = true);
 }
@@ -16,3 +17,4 @@ group() {
 	}
 }
 group();
+
