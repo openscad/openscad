@@ -975,7 +975,6 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/trailing-comma-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
@@ -1071,7 +1070,6 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/trailing-comma-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad

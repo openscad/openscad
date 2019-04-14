@@ -2,8 +2,10 @@ a = 3;
 b = 6;
 
 assert(true);
+//trialing comma test
+assert("t1",);
 
-assert("t1");
+assert(a*b,);
 
 assert(a*b);
 
@@ -17,7 +19,8 @@ assert(condition = 2)
 sphere(5);
 
 d = c + 9;
-assert(condition = d + 5 > 15, message = str("value: ", d + 5))
+//trialing comma test
+assert(condition = d + 5 > 15, message = str("value: ", d + 5),)
 translate([15, 0, 0])
 cylinder(8, 5, center = true);
 
