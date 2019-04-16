@@ -124,7 +124,7 @@ void LaunchingScreen::checkOpen(const QVariant &data)
 
 void LaunchingScreen::openUserFile()
 {
-	QFileInfo fileInfo = UIUtils::openFile(this);
+	QFileInfo fileInfo = UIUtils::openFile(this, QString());
 	if (fileInfo.exists()) {
 		this->files.append(fileInfo.canonicalFilePath());
 		accept();

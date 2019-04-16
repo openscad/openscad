@@ -1415,7 +1415,15 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	auto fileInfo = UIUtils::openFile(this);
+	QString currentFilePath;
+	if(this->fileName.isEmpty()){
+		currentFilePath = QString(PlatformUtils::userDocumentsPath().c_str());
+	}
+	else{
+		auto info = QFileInfo(this->fileName);
+		currentFilePath = info.absolutePath();
+	}
+	auto fileInfo = UIUtils::openFile(this, currentFilePath);
 	if (!fileInfo.exists()) {
 		return;
 	}
