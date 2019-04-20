@@ -922,7 +922,7 @@ void MainWindow::setFileName(const QString &filename)
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
 	editorTopLevelChanged(editorDock->isFloating());
-	consoleTopLevelChanged(consoleDock->isFloating());
+	changedTopLevelConsole(consoleDock->isFloating());
  	parameterTopLevelChanged(parameterDock->isFloating());
 }
 
@@ -2859,7 +2859,7 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
 {
-	consoleTopLevelChanged(consoleDock->isFloating());
+	changedTopLevelConsole(consoleDock->isFloating());
 }
 
 void MainWindow::on_parameterDock_visibilityChanged(bool)
@@ -2872,9 +2872,21 @@ void MainWindow::editorTopLevelChanged(bool topLevel)
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
 }
 
+void MainWindow::changedTopLevelConsole(bool topLevel)
+{
+	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
+}
+
 void MainWindow::consoleTopLevelChanged(bool topLevel)
 {
 	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
+
+    Qt::WindowFlags flags = (consoleDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+	if(topLevel)
+	{
+		consoleDock->setWindowFlags(flags);
+		consoleDock->show();
+	}
 }
 
 void MainWindow::parameterTopLevelChanged(bool topLevel)
