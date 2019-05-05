@@ -1010,7 +1010,7 @@ void MainWindow::updateTVal()
 		this->anim_step = 0;
 		this->anim_tval = 0.0;
 	}
-	QString txt = QString::number(this->anim_tval, 'g', 5);
+	const QString txt = QString::number(this->anim_tval, 'f', 5);
 	this->e_tval->setText(txt);
 }
 
@@ -1643,27 +1643,27 @@ void MainWindow::actionReload()
 
 void MainWindow::copyViewportTranslation()
 {
-	auto vpt = qglview->cam.getVpt();
-	QString txt = QString("[ %1, %2, %3 ]")
-		.arg(vpt.x(), 0, 'g', 2)
-		.arg(vpt.y(), 0, 'g', 2)
-		.arg(vpt.z(), 0, 'g', 2);
+	const auto vpt = qglview->cam.getVpt();
+	const QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpt.x(), 0, 'f', 2)
+		.arg(vpt.y(), 0, 'f', 2)
+		.arg(vpt.z(), 0, 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportRotation()
 {
-	auto vpr = qglview->cam.getVpr();
-	QString txt = QString("[ %1, %2, %3 ]")
-		.arg(vpr.x(), 0, 'g', 2)
-		.arg(vpr.y(), 0, 'g', 2)
-		.arg(vpr.z(), 0, 'g', 2);
+	const auto vpr = qglview->cam.getVpr();
+	const QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpr.x(), 0, 'f', 2)
+		.arg(vpr.y(), 0, 'f', 2)
+		.arg(vpr.z(), 0, 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportDistance()
 {
-	QString txt = QString::number(qglview->cam.zoomValue(), 'g', 2);
+	const QString txt = QString::number(qglview->cam.zoomValue(), 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
