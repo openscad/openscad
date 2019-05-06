@@ -650,13 +650,20 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 	return Response::ContinueTraversal;
 }
 
-// Check whether every vertex of every polygon lies on the positive side of the plane given by AX+BY+CZ+D=0
-bool polygons_are_positive_side_of_plane(const PolySet *polys, Vector3d abc, double d) {
-	for (const auto &p : polys->polygons)
-		for (const auto &v : p)
-			if (abc.dot(v) + d <= 0)
-				return false;
-	return true;
+/* Returns whether travel from p0 => p1 is a negative, zero, or positive distance
+ * in the direction of the extusion, with respect to p0's plane.
+ */
+inline int check_extrusion_progression(const Vector3d &p0, const Vector3d &p1, const Vector3d &plane_abc, double plane_d, double equality_tolerance) {
+	// point is clearly above the plane?
+	double plane_dist= plane_abc.dot(p1) + plane_d;
+	if (plane_dist > equality_tolerance)
+		return 1;
+	// point lies on the plane, and is same as previous point?
+	else if (plane_dist > -equality_tolerance && (p1 - p0).squaredNorm() < equality_tolerance)
+		return 0;
+	// point crossed the plane, or lies on the plane and isn't the same point.
+	else
+		return -1;
 }
 
 /*!
@@ -696,6 +703,7 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	tmp0.transform(slice0->getTransform3d());
 	
 	PolySet *cur = &tmp1, *prev = &tmp0;
+	int progression= 0;
 	for (i = 1; i < slices.size(); i++, prev = cur, cur = (cur == &tmp1? &tmp2 : &tmp1)) {
 		const Transform3d &cur_mat = slices[i]->getTransform3d();
 		const Transform3d &prev_mat = slices[i-1]->getTransform3d();
@@ -710,8 +718,8 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 		cur->transform(cur_mat);
 		
 		// If final slice looks mostly identical to first slice, then connect it to the first slice
+		const double CLOSE_ENOUGH = 0.00000000000000001;
 		if (i == slices.size()-1) {
-			const double CLOSE_ENOUGH = 0.00000000000000001;
 			bool closed_loop = true;
 			for (p = 0; closed_loop && p < cur->polygons.size(); p++) {
 				for (v = 0; closed_loop && v < cur->polygons[p].size(); v++) {
@@ -737,38 +745,53 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 		
 		// Prepare plane equations to further sanity check the 3D transform that was done
 		Vector3d cur_origin(cur_mat * Vector3d(0,0,0));
-		Vector3d cur_abc(cur_mat * Vector3d(0,0,-1) - cur_origin);
+		Vector3d cur_abc(cur_mat * Vector3d(0,0,1) - cur_origin);
 		double cur_d = - (cur_abc.dot(cur_origin));
 		Vector3d prev_origin(prev_mat * Vector3d(0,0,0));
 		Vector3d prev_abc(prev_mat * Vector3d(0,0,1) - prev_origin);
 		double prev_d = - (prev_abc.dot(prev_origin));
-		// Every vertex of cur should fall on the positive side of the previous slice's plane
-		if (!polygons_are_positive_side_of_plane(cur, prev_abc, prev_d)
-			|| !polygons_are_positive_side_of_plane(prev, cur_abc, cur_d)
-		) {
-			PRINTB("ERROR: Each extrusion_shape slice must fall completely in the positive-Z space"
-				" of the previous slice (collision at slice %d), %s", i % loc);
-			delete result;
-			return nullptr;
-		}
-		
-		// It would take a lot more effort to really make sure the user gave sensible
-		// translations... whatever, just hope for the best.
 
 		// For each pair of adjacent vertices on each of the current and previous
-		// polygons, build a quad between them using two triangles.
-		for (p = 0; p < cur->polygons.size(); p++) {
-			for (size_t v0 = cur->polygons[p].size()-1, v1 = 0; v1 < cur->polygons[p].size(); v0 = v1, ++v1) {
-				result->append_poly();
-				result->append_vertex(cur->polygons[p][v0]);
-				result->append_vertex(prev->polygons[p][v0]);
-				result->append_vertex(prev->polygons[p][v1]);
-				result->append_poly();
-				result->append_vertex(prev->polygons[p][v1]);
-				result->append_vertex(cur->polygons[p][v1]);
-				result->append_vertex(cur->polygons[p][v0]);
+		// polygons, build a quad between them using two triangles.  However, check if the
+		// slices share a vertex like will happen if extruding around an axis, and in those
+		// cases either make one triangle or exclude the polygon entirely.
+		for (p = 0; p < cur->polygons.size() && progression >= 0; p++) {
+			size_t v0 = cur->polygons[p].size()-1;
+			// previous vertex must be -Z of current plane
+			progression= -check_extrusion_progression(cur->polygons[p][v0], prev->polygons[p][v0], cur_abc, cur_d, CLOSE_ENOUGH);
+			if (progression < 0) break;
+			// next vertex must be +Z of previous plane
+			progression = check_extrusion_progression(prev->polygons[p][v0], cur->polygons[p][v0], prev_abc, prev_d, CLOSE_ENOUGH);
+			int v0_progression= progression;
+			for (size_t v1 = 0; v1 < cur->polygons[p].size() && progression >= 0; v0 = v1, ++v1) {
+				// previous vertex must be -Z of current plane
+				progression= -check_extrusion_progression(cur->polygons[p][v1], prev->polygons[p][v1], cur_abc, cur_d, CLOSE_ENOUGH);
+				if (progression < 0) break;
+				// next vertex must be +Z of previous plane
+				progression = check_extrusion_progression(prev->polygons[p][v1], cur->polygons[p][v1], prev_abc, prev_d, CLOSE_ENOUGH);
+				
+				if (v0_progression > 0) {
+					result->append_poly();
+					result->append_vertex(cur->polygons[p][v0]);
+					result->append_vertex(prev->polygons[p][v0]);
+					result->append_vertex(prev->polygons[p][v1]);
+				}
+				if (progression > 0) {
+					result->append_poly();
+					result->append_vertex(prev->polygons[p][v1]);
+					result->append_vertex(cur->polygons[p][v1]);
+					result->append_vertex(cur->polygons[p][v0]);
+				}
+				v0_progression = progression;
 			}
 		}
+		if (progression < 0) break;
+	}
+	if (progression < 0) {
+		PRINTB("ERROR: An extrusion slice must not intersect the plane of its neighbors"
+               " (collision at slice %d), %s", i % loc);
+		delete result;
+		return nullptr;
 	}
 	return shared_ptr<const Geometry>(result);
 }
