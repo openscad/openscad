@@ -682,9 +682,9 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	// Verify that every slice has the same number of contours with the same number of vetices
 	auto slice0 = slices[0];
 	for (auto slice : slices) {
-		bool match = slice->outlines().size() == slice0->outlines().size();
-		for (p = 0; match && p < slice->outlines().size(); p++)
-			match = slice->outlines()[p].vertices.size() == slice0->outlines()[p].vertices.size();
+		bool match = slice->untransformedOutlines().size() == slice0->untransformedOutlines().size();
+		for (p = 0; match && p < slice->untransformedOutlines().size(); p++)
+			match = slice->untransformedOutlines()[p].vertices.size() == slice0->untransformedOutlines()[p].vertices.size();
 		if (!match) {
 			PRINTB("ERROR: Each extrusion slice must have exactly the same number of polygons of the same vertex count, %s", loc);
 			return nullptr;
