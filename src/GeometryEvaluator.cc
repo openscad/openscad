@@ -670,9 +670,11 @@ inline int check_extrusion_progression(const Vector3d &p0, const Vector3d &p1, c
 	input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
 	output: 3D PolySet
  */
-shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const std::vector<const class Polygon2d *> &slices, const std::string &loc)
+shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::vector<const class Polygon2d *> slices, const std::string &loc)
 {
 	size_t i, p, v;
+	const double CLOSE_ENOUGH = 0.00000000000000001; // tolerance for identical coordinates
+
 	// Verify there is something to work with
 	if (slices.size() < 2) {
 		PRINTB("ERROR: %s requires at least two slices, %s", node.name() % loc);
@@ -698,6 +700,7 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	}
 
 	// Start extruding slices.  Come back to "end caps" at the end.
+	int reversed= 0;
 	PolySet tmp0(3), tmp1(3), tmp2(3), *result = new PolySet(3, unknown);
 	result->setConvexity(node.convexity);
 	// Unroll first iteration so we have a "prev" to work with, and so we can use it again at the end
@@ -713,8 +716,15 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	for (i = 1; i < slices.size(); i++, prev = cur, cur = (cur == &tmp1? &tmp2 : &tmp1)) {
 		const Transform3d &cur_mat = slices[i]->getTransform3d();
 		const Transform3d &prev_mat = slices[i-1]->getTransform3d();
-		// Build new polygon set in 3D from 2D outlines.  This is just temporary data and
-		// doesn't get added to the solid.
+		// Plane equations for these matrices
+		Vector3d cur_origin(cur_mat * Vector3d(0,0,0));
+		Vector3d cur_abc(cur_mat * Vector3d(0,0,1) - cur_origin);
+		double cur_d = - (cur_abc.dot(cur_origin));
+		Vector3d prev_origin(prev_mat * Vector3d(0,0,0));
+		Vector3d prev_abc(prev_mat * Vector3d(0,0,1) - prev_origin);
+		double prev_d = - (prev_abc.dot(prev_origin));
+
+		// Build new polygon set in 3D from 2D outlines
 		cur->polygons.clear();
 		for (const auto &outline : slices[i]->untransformedOutlines()) {
 			cur->append_poly();
@@ -723,8 +733,40 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 		}
 		cur->transform(cur_mat);
 		
+		// Decide whether to reverse the list of slices.  Each slice should be located within
+		// +Z of previous, but it's easy to get that backward, and annoying to the user to have
+		// to fix it.
+		if (i == 1 && !reversed) {
+			// Take a guess based on the first point that isn't on this plane
+			// (a point from slice 0 can appear on the plane of slice 1 if they share an axis)
+			int direction = 0;
+			for (p = 0; !direction && p < cur->polygons.size(); p++)
+				for (v = 0; !direction && v < cur->polygons[p].size(); v++)
+					direction = check_extrusion_progression(
+						prev->polygons[p][v],
+						cur->polygons[p][v],
+						prev_abc, prev_d, CLOSE_ENOUGH
+					);
+			// If negative direction, reverse the list and restart the loop
+			if (direction < 0) {
+				PRINTB("NOTE: extrude() slices were given in reverse order, %s", loc);
+				std::reverse(slices.begin(), slices.end());
+				i = 0;
+				reversed = 1;
+				// Need to re-calculate the starting points for slice 0
+				cur = &tmp0;
+				cur->polygons.clear();
+				for (const auto &outline : slices[0]->untransformedOutlines()) {
+					cur->append_poly();
+					for (const auto &vtx : outline.vertices)
+						cur->append_vertex(vtx[0], vtx[1], 0);
+				}
+				cur->transform(slices[0]->getTransform3d());
+				continue;
+			}
+		}
+
 		// If final slice looks mostly identical to first slice, then connect it to the first slice
-		const double CLOSE_ENOUGH = 0.00000000000000001;
 		if (i == slices.size()-1) {
 			bool closed_loop = true;
 			for (p = 0; closed_loop && p < cur->polygons.size(); p++) {
@@ -749,14 +791,6 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 			}
 		}
 		
-		// Prepare plane equations to further sanity check the 3D transform that was done
-		Vector3d cur_origin(cur_mat * Vector3d(0,0,0));
-		Vector3d cur_abc(cur_mat * Vector3d(0,0,1) - cur_origin);
-		double cur_d = - (cur_abc.dot(cur_origin));
-		Vector3d prev_origin(prev_mat * Vector3d(0,0,0));
-		Vector3d prev_abc(prev_mat * Vector3d(0,0,1) - prev_origin);
-		double prev_d = - (prev_abc.dot(prev_origin));
-
 		// For each pair of adjacent vertices on each of the current and previous
 		// polygons, build a quad between them using two triangles.  However, check if the
 		// slices share a vertex like will happen if extruding around an axis, and in those
@@ -795,7 +829,7 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	}
 	if (progression < 0) {
 		PRINTB("ERROR: An extrusion slice must not intersect the plane of its neighbors"
-               " (collision at slice %d), %s", i % loc);
+               " (collision at slice %d), %s", (reversed? slices.size()-1-i : i) % loc);
 		delete result;
 		return nullptr;
 	}
