@@ -680,13 +680,19 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	}
 	
 	// Verify that every slice has the same number of contours with the same number of vetices
-	auto slice0 = slices[0];
-	for (auto slice : slices) {
-		bool match = slice->untransformedOutlines().size() == slice0->untransformedOutlines().size();
-		for (p = 0; match && p < slice->untransformedOutlines().size(); p++)
-			match = slice->untransformedOutlines()[p].vertices.size() == slice0->untransformedOutlines()[p].vertices.size();
+	for (i= 1; i < slices.size(); i++) {
+		bool match = slices[i]->untransformedOutlines().size() == slices[0]->untransformedOutlines().size();
+		for (p = 0; match && p < slices[i]->untransformedOutlines().size(); p++)
+			match = slices[i]->untransformedOutlines()[p].vertices.size() == slices[0]->untransformedOutlines()[p].vertices.size();
 		if (!match) {
-			PRINTB("ERROR: Each extrusion slice must have exactly the same number of polygons of the same vertex count, %s", loc);
+			PRINTB("ERROR: Each extrusion slice must have exactly the same number of polygons of the same vertex count, %s\n"
+				"(note that polygon sanitization may remove duplicate vertices or co-linear points)", loc);
+			// Collect details to help debug
+			std::stringstream desc_0, desc_i;
+			for (const auto &o : slices[0]->untransformedOutlines()) desc_0 << " " << o.vertices.size() << "vtx";
+			for (const auto &o : slices[i]->untransformedOutlines()) desc_i << " " << o.vertices.size() << "vtx";
+			PRINTB(" slice   0 - %2d outlines: %s", slices[0]->untransformedOutlines().size() % desc_0.str().c_str());
+			PRINTB(" slice %3d - %2d outlines: %s", i % slices[i]->untransformedOutlines().size() % desc_i.str().c_str());
 			return nullptr;
 		}
 	}
@@ -695,12 +701,12 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 	PolySet tmp0(3), tmp1(3), tmp2(3), *result = new PolySet(3, unknown);
 	result->setConvexity(node.convexity);
 	// Unroll first iteration so we have a "prev" to work with, and so we can use it again at the end
-	for (const auto &outline : slice0->untransformedOutlines()) {
+	for (const auto &outline : slices[0]->untransformedOutlines()) {
 		tmp0.append_poly();
 		for (const auto &vtx : outline.vertices)
 			tmp0.append_vertex(vtx[0], vtx[1], 0);
 	}
-	tmp0.transform(slice0->getTransform3d());
+	tmp0.transform(slices[0]->getTransform3d());
 	
 	PolySet *cur = &tmp1, *prev = &tmp0;
 	int progression= 0;
@@ -732,7 +738,7 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, const
 				cur = &tmp0;
 			else { // else need to append end-cap polygons
 				// Always progress in +Z direction, so start needs reversed, and end does not.
-				PolySet *start = slice0->tessellate(true);
+				PolySet *start = slices[0]->tessellate(true);
 				for(auto &p : start->polygons) std::reverse(p.begin(), p.end());
 				result->append(*start);
 				delete start;
