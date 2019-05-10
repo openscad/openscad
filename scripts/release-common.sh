@@ -134,10 +134,10 @@ do
 done
 
 if test -z "$VERSIONDATE"; then
-    VERSIONDATE=`date "+%Y.%m.%d"`
+    VERSIONDATE=2019.05.10
 fi
 if test -z "$VERSION"; then
-    VERSION=$VERSIONDATE
+    VERSION=2019.05
 fi
 
 export VERSIONDATE
