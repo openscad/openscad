@@ -45,8 +45,6 @@ debug {
   }
 }
   
-VERSION = 2019.05
-VERSIONDATE = 2019.05.10
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
