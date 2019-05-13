@@ -389,7 +389,7 @@ msgstr "Enregistrer &sous..."
 
 #: objects/ui_MainWindow.h:909
 msgid "Ctrl+Shift+S"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Maj+S"
 
 #: objects/ui_MainWindow.h:911
 msgid "&Reload"
@@ -421,12 +421,11 @@ msgstr "&Répéter"
 
 #: objects/ui_MainWindow.h:925
 msgid "Ctrl+Shift+Z"
-msgstr "Ctrl+Shift+Z"
+msgstr "Ctrl+Maj+Z"
 
 #: objects/ui_MainWindow.h:928
-#, fuzzy
 msgid "Ctrl+Y"
-msgstr "Ctrl+N"
+msgstr "Ctrl+Y"
 
 #: objects/ui_MainWindow.h:930
 msgid "Cu&t"
@@ -474,7 +473,7 @@ msgstr "Déco&mmenter"
 
 #: objects/ui_MainWindow.h:952
 msgid "Ctrl+Shift+D"
-msgstr "Ctrl+Shift+D"
+msgstr "Ctrl+Maj+D"
 
 #: objects/ui_MainWindow.h:954
 #, fuzzy
@@ -482,9 +481,8 @@ msgid "Copy viewport ima&ge"
 msgstr "Coller dans le presse-papier"
 
 #: objects/ui_MainWindow.h:956
-#, fuzzy
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Maj+C"
 
 #: objects/ui_MainWindow.h:958
 #, fuzzy
@@ -779,7 +777,7 @@ msgstr "Rechercher &Précédent"
 
 #: objects/ui_MainWindow.h:1083
 msgid "Ctrl+Shift+G"
-msgstr "Ctrl+Shift+G"
+msgstr "Ctrl+Maj+G"
 
 #: objects/ui_MainWindow.h:1085
 msgid "Use Se&lection for Find"
@@ -859,9 +857,8 @@ msgid "View All"
 msgstr "&Voir Tout"
 
 #: objects/ui_MainWindow.h:1111
-#, fuzzy
 msgid "Ctrl+Shift+V"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Maj+S"
 
 #: objects/ui_MainWindow.h:1113
 msgid "Conv&ert Tabs to Spaces"
@@ -877,7 +874,7 @@ msgstr "Dési&ndenter"
 
 #: objects/ui_MainWindow.h:1117
 msgid "Ctrl+Shift+I"
-msgstr "Ctrl+Shift+I"
+msgstr "Ctrl+Maj+I"
 
 #: objects/ui_MainWindow.h:1119
 msgid "&Cheat Sheet"
