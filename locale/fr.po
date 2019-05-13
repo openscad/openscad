@@ -526,7 +526,7 @@ msgstr "F4"
 
 #: objects/ui_MainWindow.h:977
 msgid "&Preview"
-msgstr "&Aperçu"
+msgstr "Calculer l’&aperçu"
 
 #: objects/ui_MainWindow.h:979
 msgid "F5"
@@ -534,7 +534,7 @@ msgstr "F5"
 
 #: objects/ui_MainWindow.h:981
 msgid "R&ender"
-msgstr "R&endu"
+msgstr "Calculer le r&endu"
 
 #: objects/ui_MainWindow.h:983
 msgid "F6"
@@ -550,7 +550,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:989
 msgid "&Check Validity"
-msgstr "&Vérifier la Validité"
+msgstr "&Vérifier la validité"
 
 #: objects/ui_MainWindow.h:990
 msgid "Display A&ST..."
@@ -594,7 +594,7 @@ msgstr "F10"
 
 #: objects/ui_MainWindow.h:1006
 msgid "Wireframe"
-msgstr "Wireframe"
+msgstr "Fil de fer"
 
 #: objects/ui_MainWindow.h:1008
 msgid "F11"
@@ -790,7 +790,7 @@ msgstr "Page d'accueil &OpenSCAD"
 
 #: objects/ui_MainWindow.h:1091
 msgid "&Automatic Reload and Preview"
-msgstr "Recharger et Aperçu &Automatique"
+msgstr "Rechargement et Aperçu &Automatique"
 
 #: objects/ui_MainWindow.h:1092
 msgid "Export as &Image..."
@@ -854,7 +854,7 @@ msgstr "Ctrl+Maj+S"
 
 #: objects/ui_MainWindow.h:1113
 msgid "Conv&ert Tabs to Spaces"
-msgstr "Conv&ertir les tabulations par des espaces"
+msgstr "Conv&ertir les tabulations en espaces"
 
 #: objects/ui_MainWindow.h:1114
 msgid "Hide toolbars"
@@ -1242,7 +1242,7 @@ msgstr "Afficher les numéros de ligne"
 
 #: objects/ui_Preferences.h:1489 objects/ui_Preferences.h:1514
 msgid "Line wrap"
-msgstr "Retour à la ligne"
+msgstr "Retour à la ligne automatique"
 
 #: objects/ui_Preferences.h:1490 objects/ui_Preferences.h:1503
 #: objects/ui_Preferences.h:1509 src/settings.cc:73 src/settings.cc:89
