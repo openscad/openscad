@@ -65,9 +65,8 @@ msgid "Trim"
 msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:837
-#, fuzzy
 msgid "Reset Trim"
-msgstr "Réinitialiser la vue"
+msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:838 objects/ui_AxisConfigWidget.h:841
 #: objects/ui_AxisConfigWidget.h:842 objects/ui_AxisConfigWidget.h:843
@@ -118,14 +117,12 @@ msgid "Axis 4"
 msgstr "Axe 4"
 
 #: objects/ui_AxisConfigWidget.h:864
-#, fuzzy
 msgid "Rotation"
-msgstr "&Documentation"
+msgstr "Rotation"
 
 #: objects/ui_AxisConfigWidget.h:865
-#, fuzzy
 msgid "Zoom"
-msgstr "Zoom Avant"
+msgstr "Zoom"
 
 #: objects/ui_AxisConfigWidget.h:866
 msgid "X"
@@ -148,14 +145,12 @@ msgid "Translation"
 msgstr "Translation"
 
 #: objects/ui_AxisConfigWidget.h:871
-#, fuzzy
 msgid "ViewPort rel.<br/>Translation"
-msgstr "C&oller la translation de la fenêtre de rendu"
+msgstr "Translation<br/>relative à la vue"
 
 #: objects/ui_AxisConfigWidget.h:872
-#, fuzzy
 msgid "ViewPort rel.<br />Rotation"
-msgstr "C&oller la translation de la fenêtre de rendu"
+msgstr "Rotation<br/>relative à la vue"
 
 #: objects/ui_AxisConfigWidget.h:873
 msgid "Axis Setup:"
@@ -166,9 +161,8 @@ msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
 msgstr "<b>Choix du pilote :</b> <i>(nécessite un redémarrage d’OpenSCAD)</i>"
 
 #: objects/ui_AxisConfigWidget.h:875
-#, fuzzy
 msgid "SpaceNav"
-msgstr "Espaces"
+msgstr "SpaceNav"
 
 #: objects/ui_AxisConfigWidget.h:876
 msgid "HIDAPI"
@@ -283,7 +277,7 @@ msgstr "&OK"
 
 #: objects/ui_FontListDialog.h:105
 msgid "Copy to Clipboard"
-msgstr "Coller dans le presse-papier"
+msgstr "Copier dans le presse-papier"
 
 #: objects/ui_FontListDialog.h:106
 msgid "Filter:"
@@ -476,9 +470,8 @@ msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Maj+D"
 
 #: objects/ui_MainWindow.h:954
-#, fuzzy
 msgid "Copy viewport ima&ge"
-msgstr "Coller dans le presse-papier"
+msgstr "Copier l'ima&ge d'aperçu"
 
 #: objects/ui_MainWindow.h:956
 msgid "Ctrl+Shift+C"
@@ -641,7 +634,7 @@ msgstr "Ctrl+3"
 
 #: objects/ui_MainWindow.h:1026
 msgid "Show Scale Markers"
-msgstr "Afficher les Marqueurs d'Échelle"
+msgstr "Afficher les graduations"
 
 #: objects/ui_MainWindow.h:1027
 msgid "Animate"
@@ -832,9 +825,8 @@ msgid "Export as &AMF..."
 msgstr "Exporter comme &AMF..."
 
 #: objects/ui_MainWindow.h:1100
-#, fuzzy
 msgid "Export as &3MF..."
-msgstr "Exporter comme &AMF..."
+msgstr "Exporter comme &3MF..."
 
 #: objects/ui_MainWindow.h:1101
 msgid "Zoom In"
@@ -1086,7 +1078,6 @@ msgid "3D View"
 msgstr "&Vue 3D"
 
 #: objects/ui_Preferences.h:1439
-#, fuzzy
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Avancé"
@@ -1261,11 +1252,11 @@ msgstr "Aucun"
 
 #: objects/ui_Preferences.h:1491 src/settings.cc:167
 msgid "Wrap at character boundaries"
-msgstr "Enveloppez aux limites des caractères"
+msgstr "Coupure au caractère"
 
 #: objects/ui_Preferences.h:1492 src/settings.cc:167
 msgid "Wrap at word boundaries"
-msgstr "Enveloppez aux limites des mots"
+msgstr "Coupure au mot"
 
 #: objects/ui_Preferences.h:1494
 msgid "Line wrap indentation"
@@ -1347,9 +1338,8 @@ msgid "Load"
 msgstr ""
 
 #: objects/ui_Preferences.h:1526
-#, fuzzy
 msgid "Check"
-msgstr "Vérifier Maintenant"
+msgstr ""
 
 #: objects/ui_Preferences.h:1527
 msgid "Slicing Profile"
@@ -1364,14 +1354,12 @@ msgid "File Format"
 msgstr ""
 
 #: objects/ui_Preferences.h:1530
-#, fuzzy
 msgid "Action"
-msgstr "Application"
+msgstr "Action"
 
 #: objects/ui_Preferences.h:1531
-#, fuzzy
 msgid "Show"
-msgstr "Afficher les Axes"
+msgstr ""
 
 #: objects/ui_Preferences.h:1532
 msgid "Note: The API key is stored unencrypted in the application settings."
