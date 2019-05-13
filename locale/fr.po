@@ -905,7 +905,7 @@ msgstr "Étapes:"
 
 #: objects/ui_MainWindow.h:1127
 msgid "Dump Pictures"
-msgstr "Vider les photos"
+msgstr "Export des images"
 
 #: objects/ui_MainWindow.h:1128
 msgid "&File"
