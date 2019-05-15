@@ -250,7 +250,7 @@ msgstr "Bouton 15"
 
 #: objects/ui_Console.h:42
 msgid "Clear"
-msgstr ""
+msgstr "Effacer"
 
 #: objects/ui_Console.h:44
 #, fuzzy
@@ -264,7 +264,7 @@ msgstr "Enregistrer &sous..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
-msgstr ""
+msgstr "Enregistrer le contenu de la console dans un fichier"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -546,7 +546,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:987
 msgid "F8"
-msgstr ""
+msgstr "F8"
 
 #: objects/ui_MainWindow.h:989
 msgid "&Check Validity"
@@ -1019,27 +1019,27 @@ msgstr "Description"
 
 #: objects/ui_ParameterWidget.h:161
 msgid "save preset"
-msgstr ""
+msgstr "Enregistrer le jeu de paramètres"
 
 #: objects/ui_ParameterWidget.h:163
 msgid "delete current preset"
-msgstr ""
+msgstr "Supprimer le jeu de paramètres courant"
 
 #: objects/ui_ParameterWidget.h:165
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: objects/ui_ParameterWidget.h:167
 msgid "preset selection"
-msgstr ""
+msgstr "Sélection d'un jeu de paramètres"
 
 #: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
 msgid "add new preset"
-msgstr ""
+msgstr "Ajouter un nouveau jeu de paramètres"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "+"
-msgstr ""
+msgstr "+"
 
 #: objects/ui_ParameterWidget.h:174
 #, fuzzy
@@ -1053,7 +1053,7 @@ msgstr "Afficher les Axes"
 
 #: objects/ui_ParameterWidget.h:176
 msgid "Inline Details"
-msgstr ""
+msgstr "Détails sur une ligne"
 
 #: objects/ui_ParameterWidget.h:177
 #, fuzzy
@@ -1062,11 +1062,13 @@ msgstr "Cacher les boîtes à outils"
 
 #: objects/ui_ParameterWidget.h:178
 msgid "Description Only"
-msgstr ""
+msgstr "Description seulement"
 
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
 msgstr ""
+"Réinitialiser les paramètre aux valeurs par défaut du jeu de paramètres "
+"courant"
 
 #: objects/ui_ParameterWidget.h:183
 #, fuzzy
@@ -1105,7 +1107,7 @@ msgstr "Afficher les Axes"
 
 #: objects/ui_Preferences.h:1448
 msgid "Input driver configuration and Axis mapping"
-msgstr ""
+msgstr "Configuration des pilotes et de l'association des axes"
 
 #: objects/ui_Preferences.h:1450
 msgid "Buttons"
@@ -1113,11 +1115,11 @@ msgstr "Boutons"
 
 #: objects/ui_Preferences.h:1451 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
-msgstr ""
+msgstr "Impression 3D"
 
 #: objects/ui_Preferences.h:1453
 msgid "3D Printing Services"
-msgstr ""
+msgstr "Services d'impression 3D"
 
 #: objects/ui_Preferences.h:1455
 msgid "Color scheme:"
@@ -1129,7 +1131,7 @@ msgstr "Afficher les Avertissements et les Erreurs dans la fenêtre de rendu"
 
 #: objects/ui_Preferences.h:1457
 msgid "mouse centric zoom"
-msgstr ""
+msgstr "Zoom centré sur le pointeur"
 
 #: objects/ui_Preferences.h:1458
 msgid "Editor Type"
@@ -1391,7 +1393,7 @@ msgstr "Forcer Goldfeather"
 
 #: objects/ui_Preferences.h:1539
 msgid "CGAL"
-msgstr ""
+msgstr "CGAL"
 
 #: objects/ui_Preferences.h:1540
 msgid "CGAL Cache size"
@@ -1438,7 +1440,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1551
 msgid "Play sound notification on render complete"
-msgstr ""
+msgstr "Jouer un son de notification lorsque le rendu est terminé"
 
 #: objects/ui_Preferences.h:1552
 msgid "OpenSCAD Language Features"
@@ -1483,7 +1485,7 @@ msgstr ""
 
 #: src/Console.cc:53
 msgid "Save console content"
-msgstr ""
+msgstr "Enregistrer le contenu de la console"
 
 #: src/export.cc:77
 #, c-format
@@ -1617,11 +1619,11 @@ msgstr ""
 
 #: src/OpenSCADApp.cc:61
 msgid "Unknown error"
-msgstr ""
+msgstr "Erreur inconnue"
 
 #: src/OpenSCADApp.cc:64
 msgid "Critical Error"
-msgstr ""
+msgstr "Erreur critique"
 
 #: src/OpenSCADApp.cc:64
 msgid ""
@@ -1768,19 +1770,19 @@ msgstr "Voulez-vous enregistrer vos changements?"
 
 #: src/parameter/ParameterWidget.cc:281
 msgid "Do you want to delete the current preset '%1'?"
-msgstr ""
+msgstr "Voulez-vous supprimer le jeu de paramètres courant \"%1\" ?"
 
 #: src/parameter/ParameterWidget.cc:516
 msgid "Create new set of parameter"
-msgstr ""
+msgstr "Créer un nouveau jeu de paramètres"
 
 #: src/parameter/ParameterWidget.cc:516
 msgid "Enter name of the parameter set"
-msgstr ""
+msgstr "Entrer le nom du jeu de paramètres"
 
 #: src/parameter/ParameterWidget.cc:527
 msgid "Set Name %1 already exists"
-msgstr ""
+msgstr "Le jeu de paramètres \"%1\" existe déjà"
 
 #: src/parameter/ParameterWidget.cc:528
 #, fuzzy
@@ -1791,7 +1793,7 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:572
 msgid "Saving presets"
-msgstr ""
+msgstr "Sauvegarde des jeux de paramètres"
 
 #: src/parameter/ParameterWidget.cc:573
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
@@ -1830,7 +1832,7 @@ msgstr ""
 
 #: src/input/ButtonConfigWidget.cc:186
 msgid "(not supported)"
-msgstr ""
+msgstr "(non supporté)"
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1867,6 +1869,13 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
+"OpenSCAD est un logiciel pour créer des modèles 3D (CAD). Contrairement à la "
+"plupart des logiciels libres de modélisation 3D (comme Blender) il ne se "
+"focalise pas sur l'aspect artistique de la modélisation mais plutôt sur les "
+"aspects de conception (CAD). Par conséquent, il peut être l'outil que vous "
+"recherchez lorsque vous voulez créer des modèles 3D pour des pièces de "
+"machines, mais il n'est certainement pas adapté si vous êtes intéressé par "
+"la création de films d'animation 3D."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:21
@@ -1878,6 +1887,12 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
+"OpenSCAD n'est pas un modeleur interactif. Au contraire, il s'agit d'une "
+"sorte de compilateur 3D, qui lit un script qui décrit l'objet à modéliser et "
+"construit un modèle 3D à partir de ce script. Cela vous donne (en tant que "
+"concepteur) un contrôle total du processus de modélisation et vous permet de "
+"changer facilement n'importe quelle étape de la modélisation ou de produire "
+"des conceptions qui sont défini selon des paramètres éditables."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:22
