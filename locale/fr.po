@@ -253,12 +253,10 @@ msgid "Clear"
 msgstr "Effacer"
 
 #: objects/ui_Console.h:44
-#, fuzzy
 msgid "Clear console"
-msgstr "Console"
+msgstr "Effacer la console"
 
 #: objects/ui_Console.h:46
-#, fuzzy
 msgid "Save As"
 msgstr "Enregistrer &sous..."
 
@@ -558,11 +556,11 @@ msgstr "Afficher A&ST..."
 
 #: objects/ui_MainWindow.h:991
 msgid "Display CSG &Tree..."
-msgstr "Afficher CSG &Arbre"
+msgstr "Afficher l’&arbre CSG..."
 
 #: objects/ui_MainWindow.h:992
 msgid "Display CSG Pr&oducts..."
-msgstr "Afficher CSG Pr&oduits"
+msgstr "Afficher les &produits CSG..."
 
 #: objects/ui_MainWindow.h:993
 msgid "Export as &STL..."
@@ -710,7 +708,7 @@ msgstr "&Orthogonale"
 
 #: objects/ui_MainWindow.h:1059
 msgid "H&ide console"
-msgstr "&Cache la console"
+msgstr "&Cacher la console"
 
 #: objects/ui_MainWindow.h:1060
 msgid "&About"
@@ -806,7 +804,7 @@ msgstr "Informations &Bibliothèques"
 
 #: objects/ui_MainWindow.h:1095
 msgid "Show &Library Folder..."
-msgstr "Afficher le dossier des &bibliothèques"
+msgstr "Afficher le dossier des &bibliothèques..."
 
 #: objects/ui_MainWindow.h:1096
 msgid "Reset View"
@@ -941,9 +939,8 @@ msgid "Search string"
 msgstr "Rechercher une chaîne de caractères"
 
 #: objects/ui_MainWindow.h:1140
-#, fuzzy
 msgid "Prev."
-msgstr "Aperçu"
+msgstr "Précédent"
 
 #: objects/ui_MainWindow.h:1141
 msgid "Next"
@@ -1042,23 +1039,20 @@ msgid "+"
 msgstr "+"
 
 #: objects/ui_ParameterWidget.h:174
-#, fuzzy
 msgid "Automatic Preview"
-msgstr "Recharger et Aperçu &Automatique"
+msgstr "Aperçu automatique"
 
 #: objects/ui_ParameterWidget.h:175
-#, fuzzy
 msgid "Show Details"
-msgstr "Afficher les Axes"
+msgstr "Afficher les détails"
 
 #: objects/ui_ParameterWidget.h:176
 msgid "Inline Details"
 msgstr "Détails sur une ligne"
 
 #: objects/ui_ParameterWidget.h:177
-#, fuzzy
 msgid "Hide Details"
-msgstr "Cacher les boîtes à outils"
+msgstr "Cacher les détails"
 
 #: objects/ui_ParameterWidget.h:178
 msgid "Description Only"
@@ -1071,9 +1065,8 @@ msgstr ""
 "courant"
 
 #: objects/ui_ParameterWidget.h:183
-#, fuzzy
 msgid "Reset"
-msgstr "Réinitialiser la vue"
+msgstr "Réinitialiser"
 
 #: objects/ui_Preferences.h:1438
 msgid "3D View"
@@ -1101,9 +1094,8 @@ msgid "Enable/Disable experimental features"
 msgstr "Activer/Désactiver les fonctionnalités expérimentales"
 
 #: objects/ui_Preferences.h:1446
-#, fuzzy
 msgid "Axes"
-msgstr "Afficher les Axes"
+msgstr "Axes"
 
 #: objects/ui_Preferences.h:1448
 msgid "Input driver configuration and Axis mapping"
@@ -1321,7 +1313,7 @@ msgstr "Vérifier Maintenant"
 
 #: objects/ui_Preferences.h:1518
 msgid "Last checked: "
-msgstr "Dernière vérification:"
+msgstr "Dernière vérification: "
 
 #: objects/ui_Preferences.h:1520 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
@@ -1381,7 +1373,7 @@ msgstr "Activer pour OpenGL 1.x"
 
 #: objects/ui_Preferences.h:1536
 msgid "Turn off rendering at "
-msgstr "Désactiver le rendu à"
+msgstr "Désactiver le rendu à "
 
 #: objects/ui_Preferences.h:1537
 msgid "elements"
@@ -1503,7 +1495,7 @@ msgstr "Untitled.scad"
 
 #: src/mainwin.cc:1169
 msgid "Compile error."
-msgstr "Erreur de Compilation."
+msgstr "Erreur de compilation."
 
 #: src/mainwin.cc:1172
 msgid "Error while compiling '%1'."
@@ -1512,8 +1504,8 @@ msgstr "Erreur lors de la compilation de '%1'."
 #: src/mainwin.cc:1176
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "La compilation a généré %1 avertissement"
-msgstr[1] "La compilation a généré %1 avertissements"
+msgstr[0] "La compilation a généré %1 avertissement."
+msgstr[1] "La compilation a généré %1 avertissements."
 
 #: src/mainwin.cc:1186
 msgid " For details see <a href=\"#console\">console window</a>."
@@ -1602,7 +1594,7 @@ msgstr "Panneau de personnalisation"
 
 #: src/mainwin.cc:3042
 msgid "The document has been modified."
-msgstr "Ce document a été modifié"
+msgstr "Ce document a été modifié."
 
 #: src/mainwin.cc:3043
 msgid "Do you want to save your changes?"
@@ -1685,7 +1677,6 @@ msgstr ""
 "Voici les informations de votre moteur de rendu:\n"
 
 #: src/QGLView.cc:159
-#, fuzzy
 msgid ""
 "GLEW version %1\n"
 "%2 (%3)\n"
@@ -1706,9 +1697,8 @@ msgid "Axis %d (inverted)"
 msgstr "Axe %d (inversé)"
 
 #: src/settings.cc:90
-#, fuzzy
 msgid "Toggle Perspective"
-msgstr "&Perspective"
+msgstr "Changer la perspective"
 
 #: src/settings.cc:172
 msgid "After indentation"
@@ -1764,9 +1754,8 @@ msgid ""
 msgstr ""
 
 #: src/parameter/ParameterWidget.cc:279
-#, fuzzy
 msgid "Do you want to delete the current preset?"
-msgstr "Voulez-vous enregistrer vos changements?"
+msgstr "Voulez-vous supprimer le jeu de paramètres courant ?"
 
 #: src/parameter/ParameterWidget.cc:281
 msgid "Do you want to delete the current preset '%1'?"
@@ -1785,10 +1774,9 @@ msgid "Set Name %1 already exists"
 msgstr "Le jeu de paramètres \"%1\" existe déjà"
 
 #: src/parameter/ParameterWidget.cc:528
-#, fuzzy
 msgid "The set name  %1 already exists. Do you want overwrite it?"
 msgstr ""
-"%1 existe déjà.\n"
+"Le jeu de paramètres \"%1\" existe déjà.\n"
 "Voulez-vous le remplacer?"
 
 #: src/parameter/ParameterWidget.cc:572
