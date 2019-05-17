@@ -97,6 +97,7 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
+#include <QTabWidget>
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -226,7 +227,17 @@ MainWindow::MainWindow(const QString &filename)
 	}
 #endif
 
-	editorDockContents->layout()->addWidget(editor);
+	filetab = new QTabWidget();
+	filetab->setTabsClosable(true);
+	filetab->setMovable(true);
+	editorDockContents->layout()->addWidget(filetab);
+
+	connect(filetab, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
+    connect(filetab, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
+
+
+	filetab->addTab(editor, "tab");
+	filetab->setCurrentWidget(editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -316,6 +327,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
+	connect(this->fileActionNewTab, SIGNAL(triggered()), this, SLOT(actionNewTab()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -1415,6 +1427,62 @@ void MainWindow::actionNew()
 		editor->setPlainText("");
 		clearExportPaths();
 	}
+}
+
+void MainWindow::actionNewTab()
+{
+	// todo: new tab must be created
+	editor = new ScintillaEditor(editorDockContents);
+	Preferences::create(editor->colorSchemes());
+
+
+	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
+	connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+	connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+
+	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Preferences::inst()->fireEditorConfigChanged(); // doubtful about its usuage
+	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
+	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
+
+	// Edit menu
+	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
+    connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState()));
+	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
+	connect(this->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
+	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
+	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
+	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
+
+	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
+	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
+	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
+	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
+	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
+	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
+
+	connect(editor, SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
+	connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentsChanged()));
+	connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
+
+	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
+					editor, SLOT(initFont(const QString&,uint)));
+
+	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
+					editor, SLOT(setHighlightScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
+					this, SLOT(setColorScheme(const QString&)));
+
+	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Preferences::inst()->apply(); // it seems to set the colour scheme and design of editor... but how??
+	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	
+	
+	filetab->addTab(editor, "tab");
+	filetab ->setCurrentWidget(editor);
 }
 
 void MainWindow::actionOpen()
@@ -2653,6 +2721,21 @@ void MainWindow::viewModePreview()
 	} else {
 		viewModeThrownTogether();
 	}
+}
+
+void MainWindow::currentTabChanged(int i)
+{
+	editor = (EditorInterface *)filetab->widget(i);
+}
+
+void MainWindow::closeTab(int i)
+{
+	QWidget *temp = filetab->widget(i);
+	filetab->removeTab(i);
+
+	// todo: popup dialog for saving contents
+
+	delete temp;
 }
 
 #endif /* ENABLE_OPENCSG */

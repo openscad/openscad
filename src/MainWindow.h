@@ -18,6 +18,7 @@
 #include <QElapsedTimer>
 #include <QTime>
 #include <QIODevice>
+#include <QTabWidget>
 #include "input/InputDriver.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -132,6 +133,7 @@ private:
 
 private slots:
 	void actionNew();
+	void actionNewTab();
 	void actionOpen();
 	void actionOpenRecent();
 	void actionOpenExample();
@@ -207,6 +209,9 @@ private slots:
 	void actionExportImage();
 	void actionCopyViewport();
 	void actionFlushCaches();
+
+	void currentTabChanged(int);
+	void closeTab(int);
 
 public:
 	void viewModeActionsUncheck();
@@ -311,6 +316,7 @@ private:
 	void clearExportPaths(); // clear exports paths when main file is changed by open, new, etc.
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 	int last_parser_error_pos; // last highlighted error position
+	QTabWidget *filetab;
 
 signals:
 	void highlightError(int);

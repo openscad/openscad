@@ -304,6 +304,7 @@
      <addaction name="fileActionExportImage"/>
     </widget>
     <addaction name="fileActionNew"/>
+    <addaction name="fileActionNewTab"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
@@ -647,6 +648,18 @@
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
+  </action>
+  <action name="fileActionNewTab">
+  <!--  <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
+   </property> -->
+   <property name="text">
+    <string>New Tab</string>
+   </property>
+   <!-- <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property> -->
   </action>
   <action name="fileActionOpen">
    <property name="icon">
