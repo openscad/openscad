@@ -1432,9 +1432,16 @@ void MainWindow::actionNew()
 void MainWindow::actionNewTab()
 {
 	// todo: new tab must be created
-	editor = new ScintillaEditor(editorDockContents);
-	Preferences::create(editor->colorSchemes());
+#ifdef USE_SCINTILLA_EDITOR
+	if (useScintilla) {
+		 editor = new ScintillaEditor(editorDockContents);
+	}
+	else
+#endif
+		editor = new LegacyEditor(editorDockContents);
 
+
+	Preferences::create(editor->colorSchemes());
 
 	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 	connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
