@@ -234,6 +234,9 @@ public:
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
 
+private slots:
+	void editorDispatcherComment();
+
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();

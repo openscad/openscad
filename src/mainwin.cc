@@ -368,7 +368,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
-	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
+	connect(this->editActionComment, SIGNAL(triggered()), this, SLOT(editorDispatcherComment()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
@@ -1465,7 +1465,7 @@ void MainWindow::actionNewTab()
 
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
-	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
+	connect(this->editActionComment, SIGNAL(triggered()), this, SLOT(editorDispatcherComment()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
@@ -3296,4 +3296,10 @@ QString MainWindow::exportPath(const char *suffix) {
 			path = info.absolutePath() + QString(_("/")) + info.completeBaseName() + suffix;
 		}
 	return path;
+}
+
+void MainWindow::editorDispatcherComment()
+{
+	PRINT("editor commented");
+	editor->commentSelection();
 }
