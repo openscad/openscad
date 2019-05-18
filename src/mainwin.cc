@@ -1465,7 +1465,6 @@ void MainWindow::actionNewTab()
 
 	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
-	connect(this->editActionComment, SIGNAL(triggered()), this, SLOT(editorDispatcherComment()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
