@@ -66,9 +66,11 @@ inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
   if (decimal) {
     char *ptr = decimal;
+    char *exp = strchr(ptr+1, DC_EXP);
     while (*(++ptr) != '\0') {
       char *zero = strchr(ptr, '0');
       if (zero) {
+        if (exp && exp < zero) return; // zero is part of exponent, do not trim
         ptr = zero;
         char ch;
         while ((ch = *(++ptr))) {
