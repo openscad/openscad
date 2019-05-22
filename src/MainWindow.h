@@ -19,6 +19,7 @@
 #include <QTime>
 #include <QIODevice>
 #include <QTabWidget>
+#include <QObject>
 #include "input/InputDriver.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -234,9 +235,6 @@ public:
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
 
-private slots:
-	void editorDispatcherComment();
-
 public slots:
 	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
@@ -345,4 +343,27 @@ public:
 
 private:
  	static unsigned int gui_locked;
+};
+
+
+
+
+class SignalDispatcher : public QObject
+{
+	Q_OBJECT
+
+public:
+	~SignalDispatcher();
+	void updateActiveEditor(EditorInterface *);
+
+	static SignalDispatcher *inst();
+	static void create();
+
+private:
+	SignalDispatcher(){};
+	EditorInterface *activeEditor;
+	static SignalDispatcher *instance;
+	
+private slots:
+	void indentSelection();
 };

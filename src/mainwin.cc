@@ -213,6 +213,9 @@ MainWindow::MainWindow(const QString &filename)
 #endif
 		editor = new LegacyEditor(editorDockContents);
 
+	SignalDispatcher::create();
+	SignalDispatcher::inst()->updateActiveEditor(editor);
+
 	Preferences::create(editor->colorSchemes());
         connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
         connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -366,9 +369,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
 	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
-	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
+	connect(this->editActionIndent, SIGNAL(triggered()), SignalDispatcher::inst(), SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
-	connect(this->editActionComment, SIGNAL(triggered()), this, SLOT(editorDispatcherComment()));
+	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
@@ -1448,7 +1451,7 @@ void MainWindow::actionNewTab()
 	connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
 
 	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	// Preferences::inst()->fireEditorConfigChanged(); // doubtful about its usuage
+	Preferences::inst()->fireEditorConfigChanged(); // it seems to highlight current line and set indentation space
 	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
@@ -1463,8 +1466,9 @@ void MainWindow::actionNewTab()
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
 
-	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
+	//connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
+	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
@@ -2732,6 +2736,7 @@ void MainWindow::viewModePreview()
 void MainWindow::currentTabChanged(int i)
 {
 	editor = (EditorInterface *)filetab->widget(i);
+	SignalDispatcher::inst()->updateActiveEditor(editor);
 }
 
 void MainWindow::closeTab(int i)
@@ -3297,8 +3302,36 @@ QString MainWindow::exportPath(const char *suffix) {
 	return path;
 }
 
-void MainWindow::editorDispatcherComment()
+
+
+
+
+SignalDispatcher *SignalDispatcher::instance = nullptr;
+
+SignalDispatcher::~SignalDispatcher()
 {
-	PRINT("editor commented");
-	editor->commentSelection();
+	SignalDispatcher::instance = nullptr;
+}
+
+void SignalDispatcher::create()
+{
+	instance = new SignalDispatcher();
+}
+
+void SignalDispatcher::updateActiveEditor(EditorInterface *editor)
+{
+	activeEditor = editor;
+}
+
+void SignalDispatcher::indentSelection()
+{
+	assert(SignalDispatcher::instance != nullptr);
+	assert(activeEditor != nullptr);
+	activeEditor->indentSelection();
+}
+
+SignalDispatcher *SignalDispatcher::inst() {
+    assert(SignalDispatcher::instance != nullptr);
+    
+    return SignalDispatcher::instance;
 }
