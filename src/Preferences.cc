@@ -992,9 +992,13 @@ void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::Settings
 
 void Preferences::apply() const
 {
-	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit requestRedraw();
 	emit openCSGSettingsChanged();
+}
+
+void Preferences::apply_tab() const
+{
+	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
 }
 

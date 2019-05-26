@@ -25,6 +25,7 @@ public:
 	QVariant getValue(const QString &key) const;
 	void init();
 	void apply() const;
+	void apply_tab() const;
 	void updateGUI();
 	void fireEditorConfigChanged() const;
 

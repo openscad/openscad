@@ -68,6 +68,7 @@
 #ifdef OPENSCAD_UPDATER
 #include "AutoUpdater.h"
 #endif
+#include "tabmanager.h"
 
 #include <QMenu>
 #include <QTime>
@@ -204,29 +205,14 @@ MainWindow::MainWindow(const QString &filename)
 	editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
 	useScintilla = (editortype != Preferences::EDITOR_TYPE_SIMPLE);
 
-#ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla) {
-		 editor = new ScintillaEditor(editorDockContents);
-	}
-	else
-#endif
-		editor = new LegacyEditor(editorDockContents);
+	tabManager = new TabManager(this);
 
-	Preferences::create(editor->colorSchemes());
-        connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
-        connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
-        connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
-        connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
+    connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
+    connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
+    connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
+    connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
-#ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla) {
-		connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
-		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
-		Preferences::inst()->fireEditorConfigChanged();
-	}
-#endif
-
-	editorDockContents->layout()->addWidget(editor);
+	editorDockContents->layout()->addWidget(tabManager->getTabObj());
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -277,9 +263,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
 
-	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
-	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
-
 	this->qglview->statusLabel = new QLabel(this);
 	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
@@ -316,6 +299,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
+	connect(this->fileActionNewTab, SIGNAL(triggered()), tabManager, SLOT(createTab()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -345,25 +329,11 @@ MainWindow::MainWindow(const QString &filename)
 
 	show_examples();
 
-	// Edit menu
-	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
-    connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState()));
-	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
-	connect(this->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
-	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
-	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
-	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
 	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
-	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
-	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
-	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
-	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
 	connect(this->editActionCopyVPR, SIGNAL(triggered()), this, SLOT(copyViewportRotation()));
 	connect(this->editActionCopyVPD, SIGNAL(triggered()), this, SLOT(copyViewportDistance()));
-	connect(this->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
-	connect(this->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
     // Edit->Find
     connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
@@ -474,9 +444,6 @@ MainWindow::MainWindow(const QString &filename)
 	}
 	updateRecentFileActions();
 
-	connect(editor, SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
-	connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentsChanged()));
-	connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
@@ -484,15 +451,12 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
-					editor, SLOT(initFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
-	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
-					editor, SLOT(setHighlightScheme(const QString&)));
 	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
 					this, SLOT(setColorScheme(const QString&)));
-	Preferences::inst()->apply();
+
+	Preferences::inst()->apply(); // not sure if to be commented, checked must not be commented(done some changes in apply())
 
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
 	this->setColorScheme(cs);
@@ -590,7 +554,7 @@ MainWindow::MainWindow(const QString &filename)
 		 * ignored by the layouting as the editor is set to expand to
 		 * fill the available space.
 		 */
-		editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+		tabManager->editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
 	} else {
 #ifdef Q_OS_WIN
 		// Try moving the main window into the display range, this
@@ -660,7 +624,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 
 void MainWindow::updateActionUndoState()
 {
-    editActionUndo->setEnabled(editor->canUndo());
+    editActionUndo->setEnabled(tabManager->editor->canUndo());
 }
 
 /**
@@ -870,14 +834,14 @@ bool MainWindow::network_progress_func(const double permille)
 void MainWindow::openFile(const QString &new_filename)
 {
 	if (MainWindow::mdiMode) {
-		if (!editor->toPlainText().isEmpty()) {
+		if (!tabManager->editor->toPlainText().isEmpty()) {
 			new MainWindow(new_filename);
 			return;
 		}
 	}
 
 	setCurrentOutput();
-	editor->setPlainText("");
+	tabManager->editor->setPlainText("");
 	this->last_compiled_doc = "";
 
 	const QFileInfo fileInfo(new_filename);
@@ -889,7 +853,7 @@ void MainWindow::openFile(const QString &new_filename)
 		updateRecentFiles();
 	} else {
 		setFileName("");
-		editor->setPlainText(cmd.arg(new_filename));
+		tabManager->editor->setPlainText(cmd.arg(new_filename));
 	}
 
 	fileChangedOnDisk(); // force cached autoReloadId to update
@@ -1028,8 +992,8 @@ void MainWindow::refreshDocument()
 			reader.setCodec("UTF-8");
 			auto text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
-			if (editor->toPlainText() != text) {
-				editor->setPlainText(text);
+			if (tabManager->editor->toPlainText() != text) {
+				tabManager->editor->setPlainText(text);
 				setContentsChanged();
 			}
 		}
@@ -1069,7 +1033,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			// If the file hasn't changed, we might still need to compile it
 			// if we haven't yet compiled the current text.
 			else {
-				auto current_doc = editor->toPlainText();
+				auto current_doc = tabManager->editor->toPlainText();
 				if (current_doc.size() && last_compiled_doc.size() == 0) {
 					shouldcompiletoplevel = true;
 				}
@@ -1090,7 +1054,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
 		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
-			if (editor->isContentModified()) saveBackup();
+			if (tabManager->editor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
 		}
@@ -1412,7 +1376,7 @@ void MainWindow::actionNew()
 			return;
 
 		setFileName("");
-		editor->setPlainText("");
+		tabManager->editor->setPlainText("");
 		clearExportPaths();
 	}
 }
@@ -1506,7 +1470,7 @@ void MainWindow::writeBackup(QFile *file)
 	file->resize(0);
 	QTextStream writer(file);
 	writer.setCodec("UTF-8");
-	writer << this->editor->toPlainText();
+	writer << tabManager->editor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
 	
 	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
@@ -1578,13 +1542,13 @@ void MainWindow::actionSave()
 	else {
 		QTextStream writer(&file);
 		writer.setCodec("UTF-8");
-		writer << this->editor->toPlainText();
+		writer << tabManager->editor->toPlainText();
 		writer.flush();
 		bool saveOk = writer.status() == QTextStream::Ok;
 		QT_FILE_SAVE_COMMIT;
 		if (saveOk) {
 			PRINTB(_("Saved design '%s'."), this->fileName.toLocal8Bit().constData());
-			this->editor->setContentModified(false);
+			tabManager->editor->setContentModified(false);
 		} else {
 			saveError(file, _("Error saving design"));
 		}
@@ -1688,13 +1652,13 @@ QList<double> MainWindow::getRotation() const
 void MainWindow::hideFind()
 {
 	find_panel->hide();
-	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text(), false));
+	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
 
 void MainWindow::showFind()
 {
-	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text()));
+	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text()));
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
@@ -1702,8 +1666,8 @@ void MainWindow::showFind()
 	replaceAllButton->hide();
 	//replaceLabel->setVisible(false); 
 	find_panel->show();
-	if (!editor->selectedText().isEmpty()) {
-		findInputField->setText(editor->selectedText());
+	if (!tabManager->editor->selectedText().isEmpty()) {
+		findInputField->setText(tabManager->editor->selectedText());
 	}
 	findInputField->setFocus();
 	findInputField->selectAll();
@@ -1711,14 +1675,14 @@ void MainWindow::showFind()
 
 void MainWindow::findString(QString textToFind)
 {
-	this->findInputField->setFindCount(editor->updateFindIndicators(textToFind));
+	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(textToFind));
 	this->processEvents();
-	editor->find(textToFind);
+	tabManager->editor->find(textToFind);
 }
 
 void MainWindow::showFindAndReplace()
 {
-	this->findInputField->setFindCount(editor->updateFindIndicators(this->findInputField->text()));	
+	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text()));	
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(1); 
 	replaceInputField->show();
@@ -1726,8 +1690,8 @@ void MainWindow::showFindAndReplace()
 	replaceAllButton->show();
 	//replaceLabel->setVisible(true); 
 	find_panel->show();
-	if (!editor->selectedText().isEmpty()) {
-		findInputField->setText(editor->selectedText());
+	if (!tabManager->editor->selectedText().isEmpty()) {
+		findInputField->setText(tabManager->editor->selectedText());
 	}
 	findInputField->setFocus();
 	findInputField->selectAll();
@@ -1741,18 +1705,18 @@ void MainWindow::selectFindType(int type)
 
 void MainWindow::replace()
 {
-	this->editor->replaceSelectedText(this->replaceInputField->text());
-	this->editor->find(this->findInputField->text());
+	tabManager->editor->replaceSelectedText(this->replaceInputField->text());
+	tabManager->editor->find(this->findInputField->text());
 }
 
 void MainWindow::replaceAll()
 {
-	this->editor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
+	tabManager->editor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
 }
 
 void MainWindow::convertTabsToSpaces()
 {
-	const auto text = this->editor->toPlainText();
+	const auto text = tabManager->editor->toPlainText();
 	
 	QString converted;
   
@@ -1771,22 +1735,22 @@ void MainWindow::convertTabsToSpaces()
 		}
 		cnt--;
 	}
-	this->editor->setText(converted);
+	tabManager->editor->setText(converted);
 }
 
 void MainWindow::findNext()
 {
-	editor->find(this->findInputField->text(), true);
+	tabManager->editor->find(this->findInputField->text(), true);
 }
 
 void MainWindow::findPrev()
 {
-	editor->find(this->findInputField->text(), true, true);
+	tabManager->editor->find(this->findInputField->text(), true, true);
 }
 
 void MainWindow::useSelectionForFind()
 {
-	findInputField->setText(editor->selectedText());
+	findInputField->setText(tabManager->editor->selectedText());
 }
 
 void MainWindow::updateFindBuffer(QString s)
@@ -1913,7 +1877,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
-	this->last_compiled_doc = editor->toPlainText();
+	this->last_compiled_doc = tabManager->editor->toPlainText();
 
 	auto fulltext =
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
@@ -1958,7 +1922,7 @@ void MainWindow::autoReloadSet(bool on)
 
 bool MainWindow::checkEditorModified()
 {
-	if (editor->isContentModified()) {
+	if (tabManager->editor->isContentModified()) {
 		auto ret = QMessageBox::warning(this, _("Application"),
 				_("The document has been modified.\n"
 				"Do you really want to reload the file?"),
@@ -2738,12 +2702,12 @@ void MainWindow::viewModeAnimate()
 
 bool MainWindow::isEmpty()
 {
-	return this->editor->toPlainText().isEmpty();
+	return tabManager->editor->toPlainText().isEmpty();
 }
 
 void MainWindow::animateUpdateDocChanged()
 {
-	auto current_doc = editor->toPlainText(); 
+	auto current_doc = tabManager->editor->toPlainText(); 
 	if (current_doc != last_compiled_doc) {
 		animateUpdate();
 	}
@@ -2982,7 +2946,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 		}
 		openFile(filename);
 	} else {
-		editor->insert(cmd.arg(filename));
+		tabManager->editor->insert(cmd.arg(filename));
 	}
 }
 
@@ -3033,7 +2997,7 @@ void MainWindow::helpFontInfo()
  */
 bool MainWindow::maybeSave()
 {
-	if (editor->isContentModified()) {
+	if (tabManager->editor->isContentModified()) {
 		QMessageBox box(this);
 		box.setText(_("The document has been modified."));
 		box.setInformativeText(_("Do you want to save your changes?"));
@@ -3051,7 +3015,7 @@ bool MainWindow::maybeSave()
 		if (ret == QMessageBox::Save) {
 			actionSave();
 			// Returns false on failed save
-			return !editor->isContentModified();
+			return !tabManager->editor->isContentModified();
 		}
 		else if (ret == QMessageBox::Cancel) {
 			return false;
@@ -3102,7 +3066,7 @@ void MainWindow::setFont(const QString &family, uint size)
 	else font.setFixedPitch(true);
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
-	editor->setFont(font);
+	tabManager->editor->setFont(font);
 }
 
 void MainWindow::quit()

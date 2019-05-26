@@ -19,6 +19,7 @@
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
+#include "tabmanager.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -125,7 +126,8 @@ private:
 	void updateStatusBar(class ProgressWidget *progressWidget);
 	void exceptionCleanup();
 
-	EditorInterface *editor;
+	// EditorInterface *editor;
+	TabManager *tabManager;
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
