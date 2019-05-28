@@ -44,11 +44,11 @@
 #include "modcontext.h"
 #include "progress.h"
 #include "dxfdim.h"
-#include "legacyeditor.h"
+// #include "legacyeditor.h"
 #include "settings.h"
-#ifdef USE_SCINTILLA_EDITOR
-#include "scintillaeditor.h"
-#endif
+// #ifdef USE_SCINTILLA_EDITOR
+// #include "scintillaeditor.h"
+// #endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
@@ -201,10 +201,6 @@ MainWindow::MainWindow(const QString &filename)
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
 
-	QSettingsCached settings;
-	editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
-	useScintilla = (editortype != Preferences::EDITOR_TYPE_SIMPLE);
-
 	tabManager = new TabManager(this);
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -212,7 +208,10 @@ MainWindow::MainWindow(const QString &filename)
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
-	editorDockContents->layout()->addWidget(tabManager->getTabObj());
+    if(tabManager->useMultitab)
+		editorDockContents->layout()->addWidget(tabManager->getTabObj());
+	else
+		editorDockContents->layout()->addWidget(tabManager->editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -267,6 +266,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
 
+	QSettingsCached settings;
 	auto s = Settings::Settings::inst();
 	this->qglview->setMouseCentricZoom(s->get(Settings::Settings::mouseCentricZoom).toBool());
 

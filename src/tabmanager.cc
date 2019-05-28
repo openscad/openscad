@@ -1,9 +1,12 @@
 #include <QTabWidget>
 #include "editor.h"
 #include "tabmanager.h"
-#ifdef USE_SCINTILLA_EDITOR
+#include "legacyeditor.h"
+// #ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
-#endif
+// #endif
+#include <QSettings> //Include QSettings for direct operations on settings arrays
+#include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
 
@@ -11,28 +14,40 @@
 TabManager::TabManager(MainWindow *o)
 {
     par = o;
-    tabobj = new QTabWidget();
-    tabobj->setTabsClosable(true);
-    tabobj->setMovable(true);
-    connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(curChanged(int)));
-    connect(tabobj, SIGNAL(tabCloseRequested(int)), this, SLOT(closeRequested(int)));
+
+    QSettingsCached settings;
+    editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
+    useMultitab = (editortype == Preferences::EDITOR_TYPE_MULTITAB);
+    par->fileActionNewTab->setEnabled(useMultitab);
+
+    if(useMultitab)
+    {
+        tabobj = new QTabWidget();
+        tabobj->setTabsClosable(true);
+        tabobj->setMovable(true);
+        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(curChanged(int)));
+        connect(tabobj, SIGNAL(tabCloseRequested(int)), this, SLOT(closeRequested(int)));
+    }
 
     createTab();
 }
 
 QTabWidget *TabManager::getTabObj()
 {
+    assert(tabobj != nullptr);
     return tabobj;
 }
 
 void TabManager::curChanged(int x)
 {
+    assert(tabobj != nullptr);
     // std::cout << "current tab changed" << std::endl;
     editor = (EditorInterface *)tabobj->widget(x);
 }
 
 void TabManager::closeRequested(int x)
 {
+    assert(tabobj != nullptr);
     QWidget *temp = tabobj->widget(x);
     tabobj->removeTab(x);
 
@@ -45,7 +60,18 @@ void TabManager::createTab()
 {
     assert(par != nullptr);
 
-    editor = new ScintillaEditor(tabobj);
+    if(editortype == Preferences::EDITOR_TYPE_SIMPLE)
+    {
+        editor = new LegacyEditor(par->editorDockContents);
+    }
+    else if(editortype == Preferences::EDITOR_TYPE_QSCINTILLA)
+    {
+        editor = new ScintillaEditor(par->editorDockContents);
+    }
+    else 
+    {
+        editor = new ScintillaEditor(tabobj);
+    }
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
@@ -87,9 +113,11 @@ void TabManager::createTab()
     Preferences::inst()->apply_tab();
 
 
-
-    tabobj->addTab(editor, "tab");
-    tabobj->setCurrentWidget(editor);
+    if(useMultitab)
+    {
+        tabobj->addTab(editor, "tab");
+        tabobj->setCurrentWidget(editor);
+    }
 }
 
 void TabManager::curContent()

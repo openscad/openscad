@@ -13,6 +13,8 @@ class TabManager: public QObject
 public:
     TabManager(MainWindow *);
     QTabWidget *getTabObj();
+    QString editortype;
+    bool useMultitab;
 
 
     EditorInterface *editor;

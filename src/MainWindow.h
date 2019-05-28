@@ -69,8 +69,8 @@ public:
 	QWidget *consoleDockTitleWidget;
 	QWidget *parameterDockTitleWidget;
 
-	QString editortype;	
-	bool useScintilla;
+	// QString editortype;	
+	// bool useScintilla;
 
 	int compileErrors;
 	int compileWarnings;

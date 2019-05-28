@@ -184,6 +184,11 @@
                     <string>QScintilla Editor</string>
                    </property>
                   </item>
+                  <item>
+                   <property name="text">
+                    <string>Multi-Tab Editor</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                 <item>

@@ -16,6 +16,7 @@ public:
 
 	static constexpr const char* EDITOR_TYPE_SIMPLE = "Simple Editor";
 	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
+	static constexpr const char* EDITOR_TYPE_MULTITAB = "Multi-Tab Editor";
 
 	~Preferences();
 	
