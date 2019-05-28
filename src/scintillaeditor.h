@@ -100,6 +100,9 @@ private slots:
 	void onTextChanged();
         void applySettings();
 
+public:
+	void public_applySettings();
+
 private:
 	QVBoxLayout *scintillaLayout;
     static const int errorIndicatorNumber = 8; // first 8 are used by lexers 

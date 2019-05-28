@@ -5,7 +5,6 @@
 // #ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
 // #endif
-#include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
@@ -30,6 +29,21 @@ TabManager::TabManager(MainWindow *o)
     }
 
     createTab();
+
+    connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
+    connect(par, SIGNAL(unhighlightLastError()), this, SLOT(unhighlightLastError()));
+
+    connect(par->editActionUndo, SIGNAL(triggered()), this, SLOT(undo()));
+    connect(par->editActionRedo, SIGNAL(triggered()), this, SLOT(redo()));
+    connect(par->editActionRedo_2, SIGNAL(triggered()), this, SLOT(redo()));
+    connect(par->editActionCut, SIGNAL(triggered()), this, SLOT(cut()));
+    connect(par->editActionCopy, SIGNAL(triggered()), this, SLOT(copy()));
+    connect(par->editActionPaste, SIGNAL(triggered()), this, SLOT(paste()));
+
+    connect(par->editActionIndent, SIGNAL(triggered()), this, SLOT(indentSelection()));
+    connect(par->editActionUnindent, SIGNAL(triggered()), this, SLOT(unindentSelection()));
+    connect(par->editActionComment, SIGNAL(triggered()), this, SLOT(commentSelection()));
+    connect(par->editActionUncomment, SIGNAL(triggered()), this, SLOT(uncommentSelection()));
 }
 
 QTabWidget *TabManager::getTabObj()
@@ -61,47 +75,26 @@ void TabManager::createTab()
     assert(par != nullptr);
 
     if(editortype == Preferences::EDITOR_TYPE_SIMPLE)
-    {
         editor = new LegacyEditor(par->editorDockContents);
-    }
     else if(editortype == Preferences::EDITOR_TYPE_QSCINTILLA)
-    {
         editor = new ScintillaEditor(par->editorDockContents);
-    }
     else 
-    {
         editor = new ScintillaEditor(tabobj);
+
+    Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
+
+    if(editortype != Preferences::EDITOR_TYPE_SIMPLE)
+    {
+        connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
+        connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+        ((ScintillaEditor *)editor)->public_applySettings();
     }
 
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-    connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
-    connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
-    Preferences::inst()->fireEditorConfigChanged();
-
-    connect(par, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
-    connect(par, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
-
-    // Edit menu
-    connect(par->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
-    connect(editor, SIGNAL(contentsChanged()), par, SLOT(updateActionUndoState()));
-    connect(par->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
-    connect(par->editActionRedo_2, SIGNAL(triggered()), editor, SLOT(redo()));
-    connect(par->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
-    connect(par->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
-    connect(par->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
-
-    connect(par->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
-    connect(par->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
-    connect(par->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
-    connect(par->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
     connect(par->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
     connect(par->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 
-    connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged()));
+    connect(editor, SIGNAL(contentsChanged()), par, SLOT(updateActionUndoState())); 
+    connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(setContentsChanged()));
     connect(editor, SIGNAL(modificationChanged(bool)), par, SLOT(setWindowModified(bool)));
 
@@ -109,9 +102,8 @@ void TabManager::createTab()
                     editor, SLOT(initFont(const QString&,uint)));
     connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
                     editor, SLOT(setHighlightScheme(const QString&)));
-
-    Preferences::inst()->apply_tab();
-
+    editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
+    editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
     if(useMultitab)
     {
@@ -125,4 +117,59 @@ void TabManager::curContent()
     std::cout << editor->toPlainText().toStdString() << std::endl << std::endl;
 
     // todo: set window title
+}
+
+void TabManager::highlightError(int i)
+{
+    editor->highlightError(i);
+}
+
+void TabManager::unhighlightLastError()
+{
+    editor->unhighlightLastError();
+}
+
+void TabManager::undo()
+{
+    editor->undo();
+}
+
+void TabManager::redo()
+{
+    editor->redo();
+}
+
+void TabManager::cut()
+{
+    editor->cut();
+}
+
+void TabManager::copy()
+{
+    editor->copy();
+}
+
+void TabManager::paste()
+{
+    editor->paste();
+}
+
+void TabManager::indentSelection()
+{
+    editor->indentSelection();
+}
+
+void TabManager::unindentSelection()
+{
+    editor->unindentSelection();
+}
+
+void TabManager::commentSelection()
+{
+    editor->commentSelection();
+}
+
+void TabManager::uncommentSelection()
+{
+    editor->uncommentSelection();
 }

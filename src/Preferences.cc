@@ -1000,16 +1000,12 @@ void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::Settings
 	writeSettings();
 }
 
-void Preferences::apply() const
+void Preferences::apply_win() const
 {
 	emit requestRedraw();
 	emit openCSGSettingsChanged();
-}
-
-void Preferences::apply_tab() const
-{
-	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
-	emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
+	// emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
+	// emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
 }
 
 void Preferences::create(QStringList colorSchemes)

@@ -191,6 +191,11 @@ void ScintillaEditor::applySettings()
     else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
 }
 
+void ScintillaEditor::public_applySettings()
+{
+	applySettings();
+}
+
 void ScintillaEditor::setPlainText(const QString &text)
 {
 	qsci->setText(text);

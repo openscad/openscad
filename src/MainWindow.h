@@ -69,9 +69,6 @@ public:
 	QWidget *consoleDockTitleWidget;
 	QWidget *parameterDockTitleWidget;
 
-	// QString editortype;	
-	// bool useScintilla;
-
 	int compileErrors;
 	int compileWarnings;
 
@@ -126,7 +123,6 @@ private:
 	void updateStatusBar(class ProgressWidget *progressWidget);
 	void exceptionCleanup();
 
-	// EditorInterface *editor;
 	TabManager *tabManager;
 
   class LibraryInfoDialog* library_info_dialog;

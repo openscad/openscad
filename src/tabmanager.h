@@ -27,6 +27,19 @@ private slots:
     void curChanged(int);
     void closeRequested(int);
 
+private slots:
+    void highlightError(int);
+    void unhighlightLastError();
+    void undo();
+    void redo();
+    void cut();
+    void copy();
+    void paste();
+    void indentSelection();
+    void unindentSelection();
+    void commentSelection();
+    void uncommentSelection();
+
 public slots:
     void createTab();
     void curContent();
