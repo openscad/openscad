@@ -393,11 +393,7 @@ void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 void Preferences::on_editorType_currentIndexChanged(int idx)
 {
 	QSettingsCached settings;
-	switch(idx) {
-		case 0: settings.setValue(Preferences::PREF_EDITOR_TYPE, Preferences::EDITOR_TYPE_SIMPLE); break;
-		case 1: settings.setValue(Preferences::PREF_EDITOR_TYPE, Preferences::EDITOR_TYPE_QSCINTILLA); break;
-		default: settings.setValue(Preferences::PREF_EDITOR_TYPE, Preferences::EDITOR_TYPE_MULTITAB); break;
-	}
+	settings.setValue(Preferences::PREF_EDITOR_TYPE, idx == 0 ? Preferences::EDITOR_TYPE_QSCINTILLA : Preferences::EDITOR_TYPE_MULTITAB);
 }
 
 void Preferences::on_syntaxHighlight_activated(const QString &s)
@@ -885,13 +881,7 @@ void Preferences::updateGUI()
 	}
 
 	QString editortypevar = getValue(Preferences::PREF_EDITOR_TYPE).toString();
-	int edidx;
-	if(editortypevar == Preferences::EDITOR_TYPE_SIMPLE)  
-		edidx = 0;
-	else if(editortypevar == Preferences::EDITOR_TYPE_QSCINTILLA)  
-		edidx = 1;
-	else  
-		edidx = 2;
+	int edidx = editortypevar == Preferences::EDITOR_TYPE_QSCINTILLA ? 0 : 1;
 	this->editorType->setCurrentIndex(edidx);
 
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());

@@ -1,7 +1,7 @@
 #include <QTabWidget>
 #include "editor.h"
 #include "tabmanager.h"
-#include "legacyeditor.h"
+// #include "legacyeditor.h"
 // #ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
 // #endif
@@ -74,21 +74,16 @@ void TabManager::createTab()
 {
     assert(par != nullptr);
 
-    if(editortype == Preferences::EDITOR_TYPE_SIMPLE)
-        editor = new LegacyEditor(par->editorDockContents);
-    else if(editortype == Preferences::EDITOR_TYPE_QSCINTILLA)
-        editor = new ScintillaEditor(par->editorDockContents);
-    else 
+    if(useMultitab)
         editor = new ScintillaEditor(tabobj);
+    else 
+        editor = new ScintillaEditor(par->editorDockContents);
 
     Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
 
-    if(editortype != Preferences::EDITOR_TYPE_SIMPLE)
-    {
-        connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
-        connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
-        ((ScintillaEditor *)editor)->public_applySettings();
-    }
+    connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
+    connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+    ((ScintillaEditor *)editor)->public_applySettings();
 
     connect(par->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
     connect(par->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));

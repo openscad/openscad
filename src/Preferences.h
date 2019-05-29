@@ -14,7 +14,6 @@ class Preferences : public QMainWindow, public Ui::Preferences
 public:
 	static constexpr const char* PREF_EDITOR_TYPE = "editor/editortype";
 
-	static constexpr const char* EDITOR_TYPE_SIMPLE = "Simple Editor";
 	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
 	static constexpr const char* EDITOR_TYPE_MULTITAB = "Multi-Tab Editor";
 

@@ -176,11 +176,6 @@
                  <widget class="QComboBox" name="editorType">
                   <item>
                    <property name="text">
-                    <string>Simple Editor</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
                     <string>QScintilla Editor</string>
                    </property>
                   </item>
