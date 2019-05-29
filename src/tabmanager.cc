@@ -8,6 +8,8 @@
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
+#include <Qsci/qscicommand.h>
+#include <Qsci/qscicommandset.h>
 
 
 TabManager::TabManager(MainWindow *o)
@@ -78,6 +80,13 @@ void TabManager::createTab()
         editor = new ScintillaEditor(tabobj);
     else 
         editor = new ScintillaEditor(par->editorDockContents);
+
+    // clearing default mapping of keyboard shortcut for font size
+    QsciCommandSet *qcmdset = ((ScintillaEditor *)editor)->qsci->standardCommands();
+    QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
+    qcmd->setKey(0);
+    qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
+    qcmd->setKey(0);
 
     Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
 
