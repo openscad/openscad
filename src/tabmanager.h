@@ -40,6 +40,8 @@ private slots:
     void commentSelection();
     void uncommentSelection();
 
+    void updateActionUndoState();
+
 public slots:
     void createTab();
     void curContent();

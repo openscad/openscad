@@ -93,7 +93,6 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
-	void updateActionUndoState();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);

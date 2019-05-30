@@ -622,11 +622,6 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 	}
 }
 
-void MainWindow::updateActionUndoState()
-{
-    editActionUndo->setEnabled(tabManager->editor->canUndo());
-}
-
 /**
  * Update window settings that get overwritten by the restoreState()
  * Qt call. So the values are loaded before the call and restored here

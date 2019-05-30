@@ -57,8 +57,10 @@ QTabWidget *TabManager::getTabObj()
 void TabManager::curChanged(int x)
 {
     assert(tabobj != nullptr);
-    // std::cout << "current tab changed" << std::endl;
     editor = (EditorInterface *)tabobj->widget(x);
+
+    par->editActionUndo->setEnabled(editor->canUndo());
+    par->setWindowModified(editor->isContentModified()); //can also emit signal instead
 }
 
 void TabManager::closeRequested(int x)
@@ -97,7 +99,7 @@ void TabManager::createTab()
     connect(par->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
     connect(par->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 
-    connect(editor, SIGNAL(contentsChanged()), par, SLOT(updateActionUndoState())); 
+    connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(setContentsChanged()));
     connect(editor, SIGNAL(modificationChanged(bool)), par, SLOT(setWindowModified(bool)));
@@ -176,4 +178,9 @@ void TabManager::commentSelection()
 void TabManager::uncommentSelection()
 {
     editor->uncommentSelection();
+}
+
+void TabManager::updateActionUndoState()
+{
+    par->editActionUndo->setEnabled(editor->canUndo());
 }
