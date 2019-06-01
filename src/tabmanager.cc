@@ -32,6 +32,11 @@ TabManager::TabManager(MainWindow *o)
 
     createTab();
 
+    if(useMultitab)
+    {
+        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(stopAnimation(int)));
+    }
+
     connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
     connect(par, SIGNAL(unhighlightLastError()), this, SLOT(unhighlightLastError()));
 
@@ -203,4 +208,11 @@ void TabManager::setContentsChanged()
         par->customizerEditor = nullptr;
         par->parameterWidget->setEnabled(false);
     }
+}
+
+void TabManager::stopAnimation(int i)
+{
+    par->viewActionAnimate->setChecked(false);
+    par->viewModeAnimate();
+    par->e_tval->setText("");
 }

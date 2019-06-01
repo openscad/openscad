@@ -41,6 +41,8 @@ private slots:
     void uncommentSelection();
     void updateActionUndoState();
 
+    void stopAnimation(int);
+
 public slots:
     void createTab();
     void curContent();
