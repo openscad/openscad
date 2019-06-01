@@ -44,11 +44,7 @@
 #include "modcontext.h"
 #include "progress.h"
 #include "dxfdim.h"
-// #include "legacyeditor.h"
 #include "settings.h"
-// #ifdef USE_SCINTILLA_EDITOR
-// #include "scintillaeditor.h"
-// #endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"

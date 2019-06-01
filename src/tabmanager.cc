@@ -1,10 +1,7 @@
 #include <QTabWidget>
 #include "editor.h"
 #include "tabmanager.h"
-// #include "legacyeditor.h"
-// #ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
-// #endif
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
