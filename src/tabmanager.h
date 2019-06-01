@@ -39,10 +39,10 @@ private slots:
     void unindentSelection();
     void commentSelection();
     void uncommentSelection();
-
     void updateActionUndoState();
 
 public slots:
     void createTab();
     void curContent();
+    void setContentsChanged(); // since last render
 };

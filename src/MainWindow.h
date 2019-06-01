@@ -19,6 +19,7 @@
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
+#include "editor.h"
 #include "tabmanager.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -278,7 +279,6 @@ public slots:
 	void checkAutoReload();
 	void waitAfterReload();
 	void autoReloadSet(bool);
-	void setContentsChanged();
 
 private:
 	bool network_progress_func(const double permille);
@@ -301,7 +301,7 @@ private:
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
-	bool contentschanged; // Set if the source code has changes since the last render (F6)
+	EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
 	time_t includes_mtime;   // latest include mod time
 	time_t deps_mtime;	  // latest dependency mod time
 	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last

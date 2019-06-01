@@ -59,6 +59,7 @@ void TabManager::curChanged(int x)
     assert(tabobj != nullptr);
     editor = (EditorInterface *)tabobj->widget(x);
 
+    par->parameterWidget->setEnabled(editor->parameterWidgetState);
     par->editActionUndo->setEnabled(editor->canUndo());
     par->setWindowModified(editor->isContentModified()); //can also emit signal instead
 }
@@ -101,7 +102,7 @@ void TabManager::createTab()
 
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged())); 
-    connect(editor, SIGNAL(contentsChanged()), par, SLOT(setContentsChanged()));
+    connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentsChanged()));
     connect(editor, SIGNAL(modificationChanged(bool)), par, SLOT(setWindowModified(bool)));
 
     connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
@@ -183,4 +184,11 @@ void TabManager::uncommentSelection()
 void TabManager::updateActionUndoState()
 {
     par->editActionUndo->setEnabled(editor->canUndo());
+}
+
+void TabManager::setContentsChanged()
+{
+    editor->contentsChangedState = true;
+    editor->parameterWidgetState = false;
+    par->parameterWidget->setEnabled(editor->parameterWidgetState);
 }

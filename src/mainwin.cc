@@ -183,7 +183,7 @@ void fileExportedMessage(const char *format, const QString &filename) {
 
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr),
-      progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
+      progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
 
@@ -989,7 +989,7 @@ void MainWindow::refreshDocument()
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
 			if (tabManager->editor->toPlainText() != text) {
 				tabManager->editor->setPlainText(text);
-				setContentsChanged();
+				tabManager->setContentsChanged();
 			}
 		}
 	}
@@ -1869,7 +1869,8 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 {
-	this->parameterWidget->setEnabled(false);
+	tabManager->editor->parameterWidgetState = false;
+	this->parameterWidget->setEnabled(tabManager->editor->parameterWidgetState);
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = tabManager->editor->toPlainText();
@@ -1888,7 +1889,8 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		CommentParser::collectParameters(fulltext,this->root_module);
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 		this->parameterWidget->applyParameters(this->root_module);
-		this->parameterWidget->setEnabled(true);
+		tabManager->editor->parameterWidgetState = true;
+		this->parameterWidget->setEnabled(tabManager->editor->parameterWidgetState);
 	}
 }
 
@@ -2281,7 +2283,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		QSound::play(":sounds/complete.wav");
 	}
 
-	this->contentschanged = false;
+	renderedEditor = tabManager->editor;
+	tabManager->editor->contentsChangedState = false;
 	compileEnded();
 }
 
@@ -2427,10 +2430,21 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	// editor has changed since last render
-	if (this->contentschanged) {
+	if (tabManager->editor->contentsChangedState) {
 		auto ret = QMessageBox::warning(this, "Application",
-				"The document has been modified since the last render (F6).\n"
+				"The current tab has been modified since its last render (F6).\n"
 				"Do you really want to export the previous content?",
+				QMessageBox::Yes | QMessageBox::No);
+		if (ret != QMessageBox::Yes) {
+			return false;
+		}
+	}
+
+	// other tab contents most recently rendered
+	if(renderedEditor != tabManager->editor) {
+		auto ret = QMessageBox::warning(this, "Application",
+				"The rendered data is of different tab.\n"
+				"Do you really want to export the another tab's content?",
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
 			return false;
@@ -3134,12 +3148,6 @@ void MainWindow::openCSGSettingsChanged()
 	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
 	OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
-}
-
-void MainWindow::setContentsChanged()
-{
-	this->contentschanged = true;
-	this->parameterWidget->setEnabled(false);
 }
 
 void MainWindow::processEvents()
