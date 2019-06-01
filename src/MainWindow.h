@@ -42,6 +42,7 @@ public:
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
+	EditorInterface *customizerEditor;
 
 	BuiltinContext top_ctx;
 	FileModule *root_module;      // Result of parsing

@@ -59,7 +59,16 @@ void TabManager::curChanged(int x)
     assert(tabobj != nullptr);
     editor = (EditorInterface *)tabobj->widget(x);
 
-    par->parameterWidget->setEnabled(editor->parameterWidgetState);
+    if(editor == par->customizerEditor)
+    {
+        par->parameterWidget->setEnabled(true);
+    }
+    else
+    {
+        par->parameterWidget->setEnabled(false);
+    }
+
+    // par->parameterWidget->setEnabled(editor->parameterWidgetState);
     par->editActionUndo->setEnabled(editor->canUndo());
     par->setWindowModified(editor->isContentModified()); //can also emit signal instead
 }
@@ -189,6 +198,9 @@ void TabManager::updateActionUndoState()
 void TabManager::setContentsChanged()
 {
     editor->contentsChangedState = true;
-    editor->parameterWidgetState = false;
-    par->parameterWidget->setEnabled(editor->parameterWidgetState);
+    if(editor == par->customizerEditor)
+    {
+        par->customizerEditor = nullptr;
+        par->parameterWidget->setEnabled(false);
+    }
 }

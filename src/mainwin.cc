@@ -1869,8 +1869,8 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 {
-	tabManager->editor->parameterWidgetState = false;
-	this->parameterWidget->setEnabled(tabManager->editor->parameterWidgetState);
+	customizerEditor = nullptr;
+	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = tabManager->editor->toPlainText();
@@ -1889,8 +1889,8 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		CommentParser::collectParameters(fulltext,this->root_module);
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 		this->parameterWidget->applyParameters(this->root_module);
-		tabManager->editor->parameterWidgetState = true;
-		this->parameterWidget->setEnabled(tabManager->editor->parameterWidgetState);
+		customizerEditor = tabManager->editor;
+		this->parameterWidget->setEnabled(true);
 	}
 }
 

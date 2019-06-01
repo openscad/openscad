@@ -115,7 +115,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci = new QsciScintilla(this);
 
 	contentsChangedState = false;
-	parameterWidgetState = false;
 
 	// Force EOL mode to Unix, since QTextStream will manage local EOL modes.
 	qsci->setEolMode(QsciScintilla::EolUnix);
