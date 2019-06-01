@@ -1,10 +1,10 @@
 HEADERS += src/scintillaeditor.h src/scadlexer.h
 SOURCES += src/scintillaeditor.cpp src/scadlexer.cpp
 
-DEFINES += USE_SCINTILLA_EDITOR
-
 QSCILOADED =
 OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
+
+message("loading scintilla.prf")
 
 !isEmpty(OPENSCAD_LIBDIR) {
   exists($$OPENSCAD_LIBDIR) {
@@ -13,6 +13,7 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
       INCLUDEPATH = $$OPENSCAD_LIBDIR/include/qt5 $$INCLUDEPATH
       LIBS = -L$$OPENSCAD_LIBDIR/lib/x86_64-linux-gnu $$LIBS
       QSCILOADED=yes
+      message("qscintilla2.prf found in $$OPENSCAD_LIBDIR")
     }
   }
 }
@@ -44,6 +45,7 @@ isEmpty(QSCILOADED) {
   load(qscintilla2) {
     QSCILOADED=yes
     # All good, found installed *.prf file.
+    message("found qscintilla2")
   }
 }
 

@@ -69,7 +69,6 @@ public:
 	QWidget *parameterDockTitleWidget;
 
 	QString editortype;	
-	bool useScintilla;
 
 	int compileErrors;
 	int compileWarnings;

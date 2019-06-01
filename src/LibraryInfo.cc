@@ -1,10 +1,8 @@
 #include "LibraryInfo.h"
 #include <glib.h>
 #include <vector>
-#ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
 #include "input/InputDriverManager.h"
-#endif
 
 #include "version_check.h"
 #include "PlatformUtils.h"
@@ -119,10 +117,8 @@ std::string LibraryInfo::info()
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 	  << "\nQt version: " << qtVersion
-#ifdef USE_SCINTILLA_EDITOR
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
           << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
-#endif
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nlodepng version: " << LODEPNG_VERSION_STRING
 	  << "\nlibzip version: " << LIBZIP_VERSION

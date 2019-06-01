@@ -46,9 +46,7 @@
 #include "dxfdim.h"
 #include "legacyeditor.h"
 #include "settings.h"
-#ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
-#endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
@@ -202,15 +200,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	QSettingsCached settings;
 	editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
-	useScintilla = (editortype != Preferences::EDITOR_TYPE_SIMPLE);
 
-#ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla) {
-		 editor = new ScintillaEditor(editorDockContents);
-	}
-	else
-#endif
-		editor = new LegacyEditor(editorDockContents);
+	editor = new ScintillaEditor(editorDockContents);
 
 	Preferences::create(editor->colorSchemes());
         connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -218,13 +209,9 @@ MainWindow::MainWindow(const QString &filename)
         connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
         connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
-#ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla) {
-		connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
-		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
-		Preferences::inst()->fireEditorConfigChanged();
-	}
-#endif
+	connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
+	connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+	Preferences::inst()->fireEditorConfigChanged();
 
 	editorDockContents->layout()->addWidget(editor);
 
