@@ -119,6 +119,7 @@ mingw* {
 
 CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
+CONFIG += scintilla
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -193,11 +194,6 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
-
-#Uncomment the following line to enable the QScintilla editor
-!nogui {
-  CONFIG += scintilla
-}
 
 # Make experimental features available
 experimental {
