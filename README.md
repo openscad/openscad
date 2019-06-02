@@ -118,7 +118,7 @@ Follow the instructions for the platform you're compiling on below.
 * [glib2 (2.x)](https://developer.gnome.org/glib/)
 * [fontconfig (2.10 -> )](https://fontconfig.org/)
 * [freetype2 (2.4 -> )](https://freetype.org/)
-* [harfbuzz (0.9.19 -> )](http://harfbuzz.org/)
+* [harfbuzz (0.9.19 -> )](https://www.freedesktop.org/wiki/Software/HarfBuzz/)
 * [libzip (0.10.1 -> )](https://libzip.org/)
 * [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)

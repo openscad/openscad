@@ -826,8 +826,8 @@ int main(int argc, char **argv)
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, 3mf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overrides the file extension in -o option\n")
+		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")

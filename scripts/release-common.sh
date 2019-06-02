@@ -199,7 +199,7 @@ echo "NUMCPU: " $NUMCPU
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug $OPENSCADDIR/openscad.pro
         cd $OPENSCADDIR
     ;;
     *)

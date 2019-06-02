@@ -1,4 +1,4 @@
-.TH OPENSCAD 1 "2015.03"
+.TH OPENSCAD 1 "2019.04"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
@@ -19,7 +19,7 @@ the OpenSCAD user manual at https://en.wikibooks.org/wiki/OpenSCAD_User_Manual.
 
 .TP
 \fB-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, AMF, DXF, SVG, or PNG
+Export the given file to \fIoutputfile\fP in STL, OFF, AMF, 3MF, DXF, SVG, or PNG
 format, depending on file extension of \fIoutputfile\fP. If this
 option is given, the GUI will not be started.
 
@@ -32,6 +32,9 @@ output file will be written, but the file will still be evaluated and all
 \fBecho\fP commands will be written to the standard error output. (The
 rendering process will still take place if the \fB\-\-render\fP option is
 given.)
+.TP
+\fB\-q
+Quiet mode (don't print anything except errors)
 .TP
 \fB\-d\fP \fIfile.deps\fP
 If the \fB-d\fP option is given, all files accessed while exporting are written
@@ -53,6 +56,9 @@ If exporting an image, render the model fully. (Default is preview)
 .TP
 .B \-\-preview[=throwntogether]
 If exporting an image, use an OpenCSG preview (optionally in throwntogether mode for quicker rendering).
+.TP
+.B \-\-view[=axes|crosshairs|edges|scales|wireframe]
+View options
 .TP
 .B \-\-csglimit=limit
 If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.
@@ -87,8 +93,14 @@ If exporting an image, use the specified color scheme for the rendering.
 \fIscheme\fP can be any of \fBCornfield\fP, \fBSunset\fP, \fBMetallic\fP,
 \fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP or \fBDeepOcean\fP.
 .TP
-.B \-v, \-\-version
-Show version of program.
+.B \-v, \-\-hardwarnings
+Stop on the first warning
+.TP
+.B \-\-check-parameters=[true|false]
+Configure the parameter check for user modules and functions
+.TP
+.B \-\-check-parameter-ranges=[true|false]
+Configure the parameter range check for builtin modules
 .TP
 .B \-\-info
 Show which versions of libraries were used to compile the program, and which

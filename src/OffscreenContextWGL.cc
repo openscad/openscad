@@ -114,8 +114,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
     return false;
   }
 
-  wchar_t *lpClassName = L"OpenSCAD";
-  wchar_t *lpWindowName = L"OpenSCAD";
+  LPCTSTR lpClassName = L"OpenSCAD";
+  LPCTSTR lpWindowName = L"OpenSCAD";
   DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
   int x = 0;
   int y = 0;
