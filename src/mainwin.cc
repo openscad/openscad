@@ -922,7 +922,7 @@ void MainWindow::setFileName(const QString &filename)
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
 	editorTopLevelChanged(editorDock->isFloating());
-	consoleTopLevelChanged(consoleDock->isFloating());
+	changedTopLevelConsole(consoleDock->isFloating());
  	parameterTopLevelChanged(parameterDock->isFloating());
 }
 
@@ -1010,7 +1010,7 @@ void MainWindow::updateTVal()
 		this->anim_step = 0;
 		this->anim_tval = 0.0;
 	}
-	QString txt = QString::number(this->anim_tval, 'g', 5);
+	const QString txt = QString::number(this->anim_tval, 'f', 5);
 	this->e_tval->setText(txt);
 }
 
@@ -1643,27 +1643,27 @@ void MainWindow::actionReload()
 
 void MainWindow::copyViewportTranslation()
 {
-	auto vpt = qglview->cam.getVpt();
-	QString txt = QString("[ %1, %2, %3 ]")
-		.arg(vpt.x(), 0, 'g', 2)
-		.arg(vpt.y(), 0, 'g', 2)
-		.arg(vpt.z(), 0, 'g', 2);
+	const auto vpt = qglview->cam.getVpt();
+	const QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpt.x(), 0, 'f', 2)
+		.arg(vpt.y(), 0, 'f', 2)
+		.arg(vpt.z(), 0, 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportRotation()
 {
-	auto vpr = qglview->cam.getVpr();
-	QString txt = QString("[ %1, %2, %3 ]")
-		.arg(vpr.x(), 0, 'g', 2)
-		.arg(vpr.y(), 0, 'g', 2)
-		.arg(vpr.z(), 0, 'g', 2);
+	const auto vpr = qglview->cam.getVpr();
+	const QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpr.x(), 0, 'f', 2)
+		.arg(vpr.y(), 0, 'f', 2)
+		.arg(vpr.z(), 0, 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportDistance()
 {
-	QString txt = QString::number(qglview->cam.zoomValue(), 'g', 2);
+	const QString txt = QString::number(qglview->cam.zoomValue(), 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
@@ -2057,7 +2057,7 @@ void MainWindow::csgRender()
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
 			QImage img = this->qglview->grabFrameBuffer();
-			QString filename = QString("frame%1.png").arg(this->anim_step, 5, QChar('0'));
+			QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
 			img.save(filename, "PNG");
 		}
 	}
@@ -2263,13 +2263,14 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
 
+	unsigned int s = this->renderingTime.elapsed() / 1000;
+
 	if (root_geom) {
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
 
-		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 
 		if (root_geom && !root_geom->isEmpty()) {
@@ -2315,7 +2316,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
-	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool())
+	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
+		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
 	{
 		QSound::play(":sounds/complete.wav");
 	}
@@ -2857,7 +2859,7 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
 {
-	consoleTopLevelChanged(consoleDock->isFloating());
+	changedTopLevelConsole(consoleDock->isFloating());
 }
 
 void MainWindow::on_parameterDock_visibilityChanged(bool)
@@ -2870,9 +2872,21 @@ void MainWindow::editorTopLevelChanged(bool topLevel)
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
 }
 
+void MainWindow::changedTopLevelConsole(bool topLevel)
+{
+	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
+}
+
 void MainWindow::consoleTopLevelChanged(bool topLevel)
 {
 	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
+
+    Qt::WindowFlags flags = (consoleDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+	if(topLevel)
+	{
+		consoleDock->setWindowFlags(flags);
+		consoleDock->show();
+	}
 }
 
 void MainWindow::parameterTopLevelChanged(bool topLevel)

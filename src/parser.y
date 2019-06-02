@@ -128,6 +128,7 @@ bool fileEnded=false;
 
 %left '!' '+' '-'
 %left '*' '/' '%'
+%left UNARY
 %left '[' ']'
 %left '.'
 
@@ -459,11 +460,11 @@ expr:
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOC(@$));
             }
-        | '+' expr
+        | '+' expr %prec UNARY
             {
                 $$ = $2;
             }
-        | '-' expr
+        | '-' expr %prec UNARY
             {
               $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOC(@$));
             }

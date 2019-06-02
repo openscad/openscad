@@ -136,8 +136,19 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 {
 	img_data_t data;
 	std::vector<uint8_t> png;
-	
-	lodepng::load_file(png, filename);
+	int ret_val = 0;	
+	try{
+		 ret_val = lodepng::load_file(png, filename);
+	}catch(std::bad_alloc &ba){
+		
+		PRINTB("WARNING: bad_alloc caught for '%s'.", ba.what());
+		return data;	
+	}
+
+	if(ret_val == 78){
+		PRINTB("WARNING: The file '%s' couldn't be opened.", filename);
+		return data;	
+	}
 	
 	if (!is_png(png)) {
 		png.clear();

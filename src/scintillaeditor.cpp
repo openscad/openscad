@@ -652,7 +652,12 @@ bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
 
 	if (e->type()==QEvent::KeyPress || e->type()==QEvent::KeyRelease) {
 		auto *ke = static_cast<QKeyEvent*>(e);
-		if ((ke->modifiers() & ~Qt::KeypadModifier) == Qt::AltModifier) {
+#ifdef Q_OS_MAC
+                int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt :: KeypadModifier;
+#else
+                int navigateOnNumberModifiers = Qt::AltModifier;
+#endif
+		if (ke->modifiers()  == navigateOnNumberModifiers) {
 			switch (ke->key())
 			{
 				case Qt::Key_Left:

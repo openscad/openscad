@@ -64,6 +64,7 @@ parts:
     - libboost-regex-dev
     - libboost-system-dev
     - libboost-filesystem-dev
+    - libdouble-conversion-dev
     - chrpath
     - gettext
     - pkg-config
@@ -75,3 +76,5 @@ parts:
     - libfreetype6-dev
     - libfontconfig1-dev
     - libqt5scintilla2-dev
+    stage-packages:
+    - qtwayland5

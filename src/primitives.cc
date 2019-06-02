@@ -424,7 +424,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			struct ring_s {
-				point2d *points;
+				std::vector<point2d> points;
 				double z;
 			};
 
@@ -433,7 +433,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
-			auto ring = new ring_s[rings];
+			auto ring = std::vector<ring_s>(rings);
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
 			for (int i = 0; i < rings; i++) {
@@ -441,8 +441,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				double phi = (180.0 * (i + 0.5)) / rings;
 				double r = r1 * sin_degrees(phi);
 				ring[i].z = r1 * cos_degrees(phi);
-				ring[i].points = new point2d[fragments];
-				generate_circle(ring[i].points, r, fragments);
+				ring[i].points.resize(fragments);
+				generate_circle(ring[i].points.data(), r, fragments);
 			}
 
 			p->append_poly();
@@ -482,11 +482,6 @@ const Geometry *PrimitiveNode::createGeometry() const
 												 ring[rings-1].points[i].y, 
 												 ring[rings-1].z);
 			}
-
-			for (int i = 0; i < rings; i++) {
-				delete[] ring[i].points;
-			}
-			delete[] ring;
 		}
 	}
 		break;
@@ -507,11 +502,11 @@ const Geometry *PrimitiveNode::createGeometry() const
 				z2 = this->h;
 			}
 
-			auto circle1 = new point2d[fragments];
-			auto circle2 = new point2d[fragments];
+			auto circle1 = std::vector<point2d>(fragments);
+			auto circle2 = std::vector<point2d>(fragments);
 
-			generate_circle(circle1, r1, fragments);
-			generate_circle(circle2, r2, fragments);
+			generate_circle(circle1.data(), r1, fragments);
+			generate_circle(circle2.data(), r2, fragments);
 		
 			for (int i=0; i<fragments; i++) {
 				int j = (i+1) % fragments;
@@ -548,9 +543,6 @@ const Geometry *PrimitiveNode::createGeometry() const
 				for (int i=0; i<fragments; i++)
 					p->append_vertex(circle2[i].x, circle2[i].y, z2);
 			}
-
-			delete[] circle1;
-			delete[] circle2;
 		}
 	}
 		break;
