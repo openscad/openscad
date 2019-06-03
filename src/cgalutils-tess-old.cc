@@ -37,7 +37,7 @@ polygons because they all require input polygons to pass the
 triangles.
 
 There is also the question of which underlying number type to use. Some 
-of the CGAL functions simply dont guarantee good results with a type 
+of the CGAL functions simply don't guarantee good results with a type 
 like double. Although much the math here is somewhat simple, like 
 line-line intersection, and involves only simple algebra, the 
 approximations required when using floating-point types can cause the 
@@ -134,7 +134,7 @@ polygon mirror-image and vice versa.
 
 Now, there is a second curious fact that helps us here. In 3d, we are 
 using the plane equation of ax+by+cz+d=0, where a,b,c determine its 
-direction. If you notice, there are actually mutiple sets of numbers 
+direction. If you notice, there are actually multiple sets of numbers 
 a:b:c that will describe the exact same plane. For example the 'ground' 
 plane, called the XYplane, where z is everywhere 0, has the equation 
 0x+0y+1z+0=0, simplifying to a solution for x,y,z of z=0 and x,y = any 

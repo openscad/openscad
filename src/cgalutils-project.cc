@@ -200,7 +200,7 @@ namespace CGALUtils {
 				try {
 					PRINTD("Trying alternative intersection using very large thin box: ");
 					std::vector<CGAL_Point_3> pts;
-					// dont use z of 0. there are bugs in CGAL.
+					// don't use z of 0. there are bugs in CGAL.
 					double inf = 1e8;
 					double eps = 0.001;
 					CGAL_Point_3 minpt(-inf, -inf, -eps);

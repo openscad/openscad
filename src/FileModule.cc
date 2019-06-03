@@ -183,8 +183,8 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 }
 
 //please preferably use getFilename
-//if you compare filenames (which is the origin of this methode),
-//please call getFilename first and use this methode only as a fallback
+//if you compare filenames (which is the origin of this method),
+//please call getFilename first and use this method only as a fallback
 const std::string FileModule::getFullpath() const {
 	if(fs::path(this->filename).is_absolute()){
 		return this->filename;
