@@ -1,7 +1,7 @@
 # Windows console issues workaround stub.
 #
 # This attempts to solve the problem of piping OpenSCAD under windows
-# command line (GUI mode programs in Windows dont allow this). We use
+# command line (GUI mode programs in Windows don't allow this). We use
 # the 'devenv' solution, which means building two binaries:
 # openscad.exe, and openscad.com, the latter being a wrapper for the
 # former. See src/winconsole.c for more details.

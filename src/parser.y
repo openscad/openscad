@@ -221,15 +221,15 @@ assignment:
                         const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
                         const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
                         if(fileEnded){
-                            //assigments via commandline
+                            //assignments via commandline
                         }else if(prevFile==mainFile && currFile == mainFile){
-                            //both assigments in the mainFile
+                            //both assignments in the mainFile
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
                         }else if(uncPathCurr == uncPathPrev){
-                            //assigment overwritten within the same file
+                            //assignment overwritten within the same file
                             //the line number being equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
                                 PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
@@ -239,7 +239,7 @@ assignment:
                                         LOC(@$).firstLine());
                             }
                         }else if(prevFile==mainFile && currFile != mainFile){
-                            //assigment from the mainFile overwritten by an include
+                            //assignment from the mainFile overwritten by an include
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%

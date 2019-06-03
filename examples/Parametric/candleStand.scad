@@ -16,7 +16,7 @@ count=7; //[3:14]
 centerCandle=true;
 
 /* [ Candle Holder ]*/
-//Lenght of candle holder
+//Length of candle holder
 candleSize=7;
 
 //Width of candle holder

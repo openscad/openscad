@@ -139,7 +139,7 @@ netbsd* {
 !isEmpty(OPENSCAD_LIBDIR) {
   unix:!macx {
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-    # need /lib64 beause GLEW installs itself there on 64 bit machines
+    # need /lib64 because GLEW installs itself there on 64 bit machines
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
   }
 }
