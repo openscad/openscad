@@ -24,7 +24,7 @@ Polygon2d *import_dxf(const std::string &filename)
     // Last extract data like coord from the entity
     auto poly = new Polygon2d();
 	Grid2d<std::vector<int>> grid(GRID_COARSE);
-    std::vector<double> xCoord = {-20, -20, 20, -20};
+    std::vector<double> xCoord = {-20, -20, 20, 20};
 	std::vector<double> yCorrd = {-20, 20, 20, -20};
     int vertexNum = 4;
     Outline2d outline;
