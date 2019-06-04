@@ -159,12 +159,14 @@ private slots:
 	void showConsole();
 	void hideParameters();
 
-private slots:
-	void selectFindType(int);
+public slots:
 	void hideFind();
 	void showFind();
-	void findString(QString);
 	void showFindAndReplace();
+
+private slots:
+	void selectFindType(int);
+	void findString(QString);
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();

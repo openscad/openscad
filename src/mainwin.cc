@@ -1643,6 +1643,7 @@ QList<double> MainWindow::getRotation() const
 void MainWindow::hideFind()
 {
 	find_panel->hide();
+	tabManager->editor->findState = TabManager::FIND_HIDDEN;
 	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
@@ -1657,6 +1658,7 @@ void MainWindow::showFind()
 	replaceAllButton->hide();
 	//replaceLabel->setVisible(false); 
 	find_panel->show();
+	tabManager->editor->findState = TabManager::FIND_VISIBLE;
 	if (!tabManager->editor->selectedText().isEmpty()) {
 		findInputField->setText(tabManager->editor->selectedText());
 	}
@@ -1681,6 +1683,7 @@ void MainWindow::showFindAndReplace()
 	replaceAllButton->show();
 	//replaceLabel->setVisible(true); 
 	find_panel->show();
+	tabManager->editor->findState = TabManager::FIND_REPLACE_VISIBLE;
 	if (!tabManager->editor->selectedText().isEmpty()) {
 		findInputField->setText(tabManager->editor->selectedText());
 	}

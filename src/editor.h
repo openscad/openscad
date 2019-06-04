@@ -57,4 +57,5 @@ private:
 
 public:
 	bool contentsChangedState; // Set if the source code has changes since the last render (F6)
+	int findState;
 };

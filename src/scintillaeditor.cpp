@@ -115,6 +115,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci = new QsciScintilla(this);
 
 	contentsChangedState = false;
+	findState = 0; //FIND_HIDDEN
 
 	// Force EOL mode to Unix, since QTextStream will manage local EOL modes.
 	qsci->setEolMode(QsciScintilla::EolUnix);

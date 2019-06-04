@@ -31,7 +31,8 @@ TabManager::TabManager(MainWindow *o)
 
     if(useMultitab)
     {
-        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(stopAnimation(int)));
+        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(stopAnimation()));
+        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(updateFindState()));
     }
 
     connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
@@ -207,9 +208,19 @@ void TabManager::setContentsChanged()
     }
 }
 
-void TabManager::stopAnimation(int i)
+void TabManager::stopAnimation()
 {
     par->viewActionAnimate->setChecked(false);
     par->viewModeAnimate();
     par->e_tval->setText("");
+}
+
+void TabManager::updateFindState()
+{
+    if(editor->findState == TabManager::FIND_REPLACE_VISIBLE)
+        par->showFindAndReplace();
+    else if(editor->findState == TabManager::FIND_VISIBLE)
+        par->showFind();
+    else
+        par->hideFind();
 }

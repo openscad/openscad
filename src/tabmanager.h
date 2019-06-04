@@ -15,9 +15,12 @@ public:
     QTabWidget *getTabObj();
     QString editortype;
     bool useMultitab;
-
-
     EditorInterface *editor;
+
+public:
+    static constexpr const int FIND_HIDDEN = 0;
+    static constexpr const int FIND_VISIBLE = 1;
+    static constexpr const int FIND_REPLACE_VISIBLE = 2;
 
 private:
     MainWindow *par;
@@ -41,7 +44,8 @@ private slots:
     void uncommentSelection();
     void updateActionUndoState();
 
-    void stopAnimation(int);
+    void stopAnimation();
+    void updateFindState();
 
 public slots:
     void createTab();
