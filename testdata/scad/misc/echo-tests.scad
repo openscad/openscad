@@ -23,7 +23,7 @@ for(e1=[1:6]) {
   x = e1*pow(10,e1);
   for(e=[-10:10]) {
     echo((x+1)*pow(10,e-e1));
-    echo((x+5)*pow(10,e-e1)); // for e1==6, the least significant digit gets rounded
+    echo((x+6)*pow(10,e-e1)); // for e1==6, the least significant digit gets rounded
   }
 }
 
