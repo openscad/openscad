@@ -775,6 +775,7 @@ set(NOCGAL_SOURCES
   ../src/import_amf.cc
   ../src/import_off.cc
   ../src/import_svg.cc
+  ../src/import_dxf.cc 
   ../src/import_3mf.cc
   ../src/export.cc
   ../src/export_stl.cc

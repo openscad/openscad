@@ -169,8 +169,7 @@ const Geometry *ImportNode::createGeometry() const
  		break;
 	}
 	case ImportType::DXF: {
-		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
-		g = dd.toPolygon2d();
+		g = import_dxf(this->filename);
 		break;
 	}
 #ifdef ENABLE_CGAL
