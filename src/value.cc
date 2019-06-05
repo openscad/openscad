@@ -123,10 +123,11 @@ inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpo
 
 inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
-  char *exppos = strchr(buffer, DC_EXP);
   
-  if (decimal) 
+  if (decimal){ 
+      char *exppos = strchr(buffer, DC_EXP);
       trimTrailingZeroesHelper(buffer, pos, &buffer[pos], exppos, decimal, nullptr);
+  }
 }
 
 inline bool HandleSpecialValues(const double &value, double_conversion::StringBuilder &builder) {
