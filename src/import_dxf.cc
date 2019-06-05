@@ -8,7 +8,7 @@ Polygon2d *import_dxf(const std::string &filename)
 {
     // We now assume that brlcad can pass dxf data through this
     // My thought is we may create a class for each entity to store the data?
-    
+
     // We should have somthing simiar to this.
     // brlcad::entities_list *entities = brlcad::read_dxf_file(filename.c_str());
     // Assume we have receive a data of square.
@@ -32,6 +32,7 @@ Polygon2d *import_dxf(const std::string &filename)
         grid.align(xCoord.at(i), yCorrd.at(i));
         //what does the grid.align do? Just align the vertex on the grid?
         outline.vertices.push_back(Vector2d(xCoord.at(i),yCorrd.at(i)));
+        outline.positive = true;
     }
     poly->addOutline(outline);
     return poly;
