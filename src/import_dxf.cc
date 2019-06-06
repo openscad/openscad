@@ -30,12 +30,12 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     std::vector<double> xverts = {-20, -20, 20, 20};
 	std::vector<double> yverts = {-20, 20, 20, -20};
     Outline2d outline;
-    // int vertexNum = 4;
-    // for(int i = 0; i < vertexNum; i++){
+    // size_t vertexNum = 4;
+    // for(size_t i = 0; i < vertexNum; i++){
     //     grid.align(xverts.at(i), yverts.at(i));
     //     //what does the grid.align do? Just align the vertex on the grid?
     //     outline.vertices.push_back(Vector2d(xverts.at(i),yverts.at(i)));
-    //     outline.positive = true;
+    //     outline.positive = true; \\ Do we need this?
     // }
 
     //Now assuming we got the data of a circle
@@ -55,7 +55,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         outline.vertices.push_back(Vector2d(cos_degrees(a2)*radius + center[0], 
                                             sin_degrees(a2)*radius + center[1]));
     }
-    
+
     poly->addOutline(outline);
     return poly;
 }
