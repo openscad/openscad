@@ -5,7 +5,7 @@
 #include "Polygon2d.h"
 #include "degree_trig.h"
 
-Polygon2d *import_dxf(const std::string &filename)
+Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double fa)
 {
     // We now assume that brlcad can pass dxf data through this
     // My thought is we may create a class for each entity to store the data?
@@ -58,4 +58,9 @@ Polygon2d *import_dxf(const std::string &filename)
     
     poly->addOutline(outline);
     return poly;
+}
+
+Outline2d DrawGeometry()
+{
+
 }

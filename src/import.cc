@@ -169,7 +169,7 @@ const Geometry *ImportNode::createGeometry() const
  		break;
 	}
 	case ImportType::DXF: {
-		g = import_dxf(this->filename);
+		g = import_dxf(this->filename, this->fn, this->fs, this->fa);
 		break;
 	}
 #ifdef ENABLE_CGAL
