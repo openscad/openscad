@@ -13,27 +13,17 @@ TabManager::TabManager(MainWindow *o)
 {
     par = o;
 
-    QSettingsCached settings;
-    editortype = settings.value(Preferences::PREF_EDITOR_TYPE).toString();
-    useMultitab = (editortype == Preferences::EDITOR_TYPE_MULTITAB);
-    par->fileActionNewTab->setEnabled(useMultitab);
-
-    if(useMultitab)
-    {
-        tabobj = new QTabWidget();
-        tabobj->setTabsClosable(true);
-        tabobj->setMovable(true);
-        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(curChanged(int)));
-        connect(tabobj, SIGNAL(tabCloseRequested(int)), this, SLOT(closeRequested(int)));
-    }
+    tabobj = new QTabWidget();
+    tabobj->setTabsClosable(true);
+    tabobj->setMovable(true);
+    tabobj->setTabBarAutoHide(true);
+    connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(curChanged(int)));
+    connect(tabobj, SIGNAL(tabCloseRequested(int)), this, SLOT(closeRequested(int)));
 
     createTab();
 
-    if(useMultitab)
-    {
-        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(stopAnimation()));
-        connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(updateFindState()));
-    }
+    connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(stopAnimation()));
+    connect(tabobj, SIGNAL(currentChanged(int)), this, SLOT(updateFindState()));
 
     connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
     connect(par, SIGNAL(unhighlightLastError()), this, SLOT(unhighlightLastError()));
@@ -91,10 +81,7 @@ void TabManager::createTab()
 {
     assert(par != nullptr);
 
-    if(useMultitab)
-        editor = new ScintillaEditor(tabobj);
-    else 
-        editor = new ScintillaEditor(par->editorDockContents);
+    editor = new ScintillaEditor(tabobj);
 
     // clearing default mapping of keyboard shortcut for font size
     QsciCommandSet *qcmdset = ((ScintillaEditor *)editor)->qsci->standardCommands();
@@ -124,11 +111,8 @@ void TabManager::createTab()
     editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
-    if(useMultitab)
-    {
-        tabobj->addTab(editor, "tab");
-        tabobj->setCurrentWidget(editor);
-    }
+    tabobj->addTab(editor, "tab");
+    tabobj->setCurrentWidget(editor);
 }
 
 void TabManager::curContent()

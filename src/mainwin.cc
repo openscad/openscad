@@ -198,16 +198,12 @@ MainWindow::MainWindow(const QString &filename)
 	updateStatusBar(nullptr);
 
 	tabManager = new TabManager(this);
+	editorDockContents->layout()->addWidget(tabManager->getTabObj());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
-
-    if(tabManager->useMultitab)
-		editorDockContents->layout()->addWidget(tabManager->getTabObj());
-	else
-		editorDockContents->layout()->addWidget(tabManager->editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);

@@ -12,11 +12,6 @@ class Preferences : public QMainWindow, public Ui::Preferences
 	Q_OBJECT;
 
 public:
-	static constexpr const char* PREF_EDITOR_TYPE = "editor/editortype";
-
-	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
-	static constexpr const char* EDITOR_TYPE_MULTITAB = "Multi-Tab Editor";
-
 	~Preferences();
 	
 	static void create(QStringList colorSchemes);
@@ -52,7 +47,6 @@ public slots:
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
-	void on_editorType_currentIndexChanged(int);
 	void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
 	void on_enableHardwarningsCheckBox_toggled(bool);
 	void on_enableParameterCheckBox_toggled(bool);
@@ -108,7 +102,6 @@ signals:
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
-	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
 	void updateMouseCentricZoom(bool state) const;

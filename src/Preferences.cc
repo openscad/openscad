@@ -125,7 +125,6 @@ void Preferences::init() {
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
-	this->defaultmap[Preferences::PREF_EDITOR_TYPE] = Preferences::EDITOR_TYPE_QSCINTILLA;
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -388,12 +387,6 @@ void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 	QSettingsCached settings;
 	settings.setValue("editor/fontsize", intsize);
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
-}
-
-void Preferences::on_editorType_currentIndexChanged(int idx)
-{
-	QSettingsCached settings;
-	settings.setValue(Preferences::PREF_EDITOR_TYPE, idx == 0 ? Preferences::EDITOR_TYPE_QSCINTILLA : Preferences::EDITOR_TYPE_MULTITAB);
 }
 
 void Preferences::on_syntaxHighlight_activated(const QString &s)
@@ -879,10 +872,6 @@ void Preferences::updateGUI()
 		this->syntaxHighlight->setCurrentIndex(offidx);
 	    }
 	}
-
-	QString editortypevar = getValue(Preferences::PREF_EDITOR_TYPE).toString();
-	int edidx = editortypevar == Preferences::EDITOR_TYPE_QSCINTILLA ? 0 : 1;
-	this->editorType->setCurrentIndex(edidx);
 
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
