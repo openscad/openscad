@@ -2945,10 +2945,10 @@ void MainWindow::handleFileDrop(const QString &filename)
 	const auto suffix = fileInfo.suffix().toLower();
 	const auto cmd = knownFileExtensions[suffix];
 	if (cmd.isEmpty()) {
-		if (!MainWindow::mdiMode && !maybeSave()) {
-			return;
-		}
-		openFile(filename);
+		// if (!MainWindow::mdiMode && !maybeSave()) {
+		// 	return;
+		// }
+		tabManager->createTab(filename);
 	} else {
 		activeEditor->insert(cmd.arg(filename));
 	}
