@@ -133,6 +133,7 @@ private:
 
 public slots:
 	void updateRecentFiles();
+	void updateRecentFileActions();
 
 private slots:
 	void actionNew();
@@ -140,7 +141,6 @@ private slots:
 	void actionOpenRecent();
 	void actionOpenExample();
 	void clearRecentFiles();
-	void updateRecentFileActions();
 	void actionSave();
 	void actionSaveAs();
 	void actionReload();

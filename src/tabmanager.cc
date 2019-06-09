@@ -127,7 +127,12 @@ void TabManager::createTab(const QString &filename)
     editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
-    openFileTab(filename);
+    if (!filename.isEmpty()) {
+        openFileTab(filename);
+    } else {
+        setTab("");
+    }
+    par->updateRecentFileActions();
 }
 
 void TabManager::curContent()
