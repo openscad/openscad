@@ -210,7 +210,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
 
-		// Open Recent
+	// Open Recent
 	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
 		this->actionRecentFile[i] = new QAction(this);
 		this->actionRecentFile[i]->setVisible(false);
@@ -316,14 +316,7 @@ MainWindow::MainWindow(const QString &filename)
 	shortcuts.push_back(QKeySequence(Qt::Key_F3));
 	this->fileActionReload->setShortcuts(shortcuts);
 #endif
-	// Open Recent
-	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
-		this->actionRecentFile[i] = new QAction(this);
-		this->actionRecentFile[i]->setVisible(false);
-		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
-		connect(this->actionRecentFile[i], SIGNAL(triggered()),
-						this, SLOT(actionOpenRecent()));
-	}
+
 	this->menuOpenRecent->addSeparator();
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
@@ -1388,12 +1381,12 @@ void MainWindow::actionOpen()
 
 void MainWindow::actionOpenRecent()
 {
-	if (!MainWindow::mdiMode && !maybeSave()) {
-		return;
-	}
+	// if (!MainWindow::mdiMode && !maybeSave()) {
+	// 	return;
+	// }
 
 	auto action = qobject_cast<QAction *>(sender());
-	openFile(action->data().toString());
+	tabManager->createTab(action->data().toString());
 }
 
 void MainWindow::clearRecentFiles()
@@ -1444,14 +1437,14 @@ void MainWindow::show_examples()
 
 void MainWindow::actionOpenExample()
 {
-	if (!MainWindow::mdiMode && !maybeSave()) {
-		return;
-	}
+	// if (!MainWindow::mdiMode && !maybeSave()) {
+	// 	return;
+	// }
 
 	const auto action = qobject_cast<QAction *>(sender());
 	if (action) {
 		const auto &path = action->data().toString();
-		openFile(path);
+		tabManager->createTab(path);
 	}
 }
 
