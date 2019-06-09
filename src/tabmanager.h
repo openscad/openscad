@@ -11,9 +11,14 @@ class TabManager: public QObject
     Q_OBJECT
 
 public:
-    TabManager(MainWindow *);
+    TabManager(MainWindow *o, const QString &filename);
     QTabWidget *getTabObj();
     EditorInterface *editor;
+
+    void createTab(const QString &filename);
+    void openFileTab(const QString &filename);
+    void setTab(const QString &filename);
+    void refreshDocument();
 
 public:
     static constexpr const int FIND_HIDDEN = 0;
@@ -46,7 +51,8 @@ private slots:
     void updateFindState();
 
 public slots:
-    void createTab();
+    void actionNewTab();
     void curContent();
     void setContentsChanged(); // since last render
+    void setTabModified(bool);
 };

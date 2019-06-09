@@ -197,7 +197,29 @@ MainWindow::MainWindow(const QString &filename)
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
 
-	tabManager = new TabManager(this);
+	const QString importStatement = "import(\"%1\");\n";
+	const QString surfaceStatement = "surface(\"%1\");\n";
+	knownFileExtensions["stl"] = importStatement;
+	knownFileExtensions["3mf"] = importStatement;
+	knownFileExtensions["off"] = importStatement;
+	knownFileExtensions["dxf"] = importStatement;
+	knownFileExtensions["svg"] = importStatement;
+	knownFileExtensions["amf"] = importStatement;
+	knownFileExtensions["dat"] = surfaceStatement;
+	knownFileExtensions["png"] = surfaceStatement;
+	knownFileExtensions["scad"] = "";
+	knownFileExtensions["csg"] = "";
+
+		// Open Recent
+	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
+		this->actionRecentFile[i] = new QAction(this);
+		this->actionRecentFile[i]->setVisible(false);
+		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
+		connect(this->actionRecentFile[i], SIGNAL(triggered()),
+						this, SLOT(actionOpenRecent()));
+	}
+
+	tabManager = new TabManager(this, filename);
 	editorDockContents->layout()->addWidget(tabManager->getTabObj());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -239,19 +261,6 @@ MainWindow::MainWindow(const QString &filename)
 	this->anim_dumping = false;
 	this->anim_dump_start_step = 0;
 
-	const QString importStatement = "import(\"%1\");\n";
-	const QString surfaceStatement = "surface(\"%1\");\n";
-	knownFileExtensions["stl"] = importStatement;
-	knownFileExtensions["3mf"] = importStatement;
-	knownFileExtensions["off"] = importStatement;
-	knownFileExtensions["dxf"] = importStatement;
-	knownFileExtensions["svg"] = importStatement;
-	knownFileExtensions["amf"] = importStatement;
-	knownFileExtensions["dat"] = surfaceStatement;
-	knownFileExtensions["png"] = surfaceStatement;
-	knownFileExtensions["scad"] = "";
-	knownFileExtensions["csg"] = "";
-
 	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
 
 	this->qglview->statusLabel = new QLabel(this);
@@ -291,7 +300,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
-	connect(this->fileActionNewTab, SIGNAL(triggered()), tabManager, SLOT(createTab()));
+	connect(this->fileActionNewTab, SIGNAL(triggered()), tabManager, SLOT(actionNewTab()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -429,13 +438,6 @@ MainWindow::MainWindow(const QString &filename)
 	PRINT(helptitle);
 	PRINT(copyrighttext);
 
-	if (!filename.isEmpty()) {
-		openFile(filename);
-	} else {
-		setFileName("");
-	}
-	updateRecentFileActions();
-
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
@@ -546,7 +548,7 @@ MainWindow::MainWindow(const QString &filename)
 		 * ignored by the layouting as the editor is set to expand to
 		 * fill the available space.
 		 */
-		tabManager->editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+		activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
 	} else {
 #ifdef Q_OS_WIN
 		// Try moving the main window into the display range, this
@@ -821,14 +823,14 @@ bool MainWindow::network_progress_func(const double permille)
 void MainWindow::openFile(const QString &new_filename)
 {
 	if (MainWindow::mdiMode) {
-		if (!tabManager->editor->toPlainText().isEmpty()) {
+		if (!activeEditor->toPlainText().isEmpty()) {
 			new MainWindow(new_filename);
 			return;
 		}
 	}
 
 	setCurrentOutput();
-	tabManager->editor->setPlainText("");
+	activeEditor->setPlainText("");
 	this->last_compiled_doc = "";
 
 	const QFileInfo fileInfo(new_filename);
@@ -840,7 +842,7 @@ void MainWindow::openFile(const QString &new_filename)
 		updateRecentFiles();
 	} else {
 		setFileName("");
-		tabManager->editor->setPlainText(cmd.arg(new_filename));
+		activeEditor->setPlainText(cmd.arg(new_filename));
 	}
 
 	fileChangedOnDisk(); // force cached autoReloadId to update
@@ -860,15 +862,15 @@ void MainWindow::openFile(const QString &new_filename)
 void MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
-		this->fileName.clear();
+		activeEditor->filepath.clear();
 		setWindowFilePath(_("Untitled.scad"));
 
 		this->top_ctx.setDocumentPath(currentdir);
 	} else {
 		QFileInfo fileinfo(filename);
-		this->fileName = fileinfo.absoluteFilePath();
-		setWindowFilePath(this->fileName);
-		this->parameterWidget->readFile(this->fileName);
+		activeEditor->filepath = fileinfo.absoluteFilePath();
+		setWindowFilePath(activeEditor->filepath);
+		this->parameterWidget->readFile(activeEditor->filepath);
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
@@ -881,7 +883,7 @@ void MainWindow::updateRecentFiles()
 {
 	// Check that the canonical file path exists - only update recent files
 	// if it does. Should prevent empty list items on initial open etc.
-	QFileInfo fileinfo(this->fileName);
+	QFileInfo fileinfo(activeEditor->filepath);
 	auto infoFileName = fileinfo.absoluteFilePath();
 	QSettingsCached settings; // already set up properly via main.cpp
 	auto files = settings.value("recentFileList").toStringList();
@@ -968,19 +970,19 @@ void MainWindow::updateTVal()
 void MainWindow::refreshDocument()
 {
 	setCurrentOutput();
-	if (!this->fileName.isEmpty()) {
-		QFile file(this->fileName);
+	if (!activeEditor->filepath.isEmpty()) {
+		QFile file(activeEditor->filepath);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 			PRINTB("Failed to open file %s: %s",
-						 this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+						 activeEditor->filepath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
 		}
 		else {
 			QTextStream reader(&file);
 			reader.setCodec("UTF-8");
 			auto text = reader.readAll();
-			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
-			if (tabManager->editor->toPlainText() != text) {
-				tabManager->editor->setPlainText(text);
+			PRINTB("Loaded design '%s'.", activeEditor->filepath.toLocal8Bit().constData());
+			if (activeEditor->toPlainText() != text) {
+				activeEditor->setPlainText(text);
 				tabManager->setContentsChanged();
 			}
 		}
@@ -1020,7 +1022,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			// If the file hasn't changed, we might still need to compile it
 			// if we haven't yet compiled the current text.
 			else {
-				auto current_doc = tabManager->editor->toPlainText();
+				auto current_doc = activeEditor->toPlainText();
 				if (current_doc.size() && last_compiled_doc.size() == 0) {
 					shouldcompiletoplevel = true;
 				}
@@ -1041,7 +1043,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
 		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
-			if (tabManager->editor->isContentModified()) saveBackup();
+			if (activeEditor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
 		}
@@ -1116,10 +1118,10 @@ void MainWindow::updateCompileResult()
 
 	QString msg;
 	if (compileErrors > 0) {
-		if (fileName.isEmpty()) {
+		if (activeEditor->filepath.isEmpty()) {
 			msg = QString(_("Compile error."));
 		} else {
-			QFileInfo fileInfo(fileName);
+			QFileInfo fileInfo(activeEditor->filepath);
 			msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
 		}
 		toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
@@ -1192,7 +1194,7 @@ void MainWindow::instantiateRoot()
 	this->root_node = nullptr;
 	this->tree.setRoot(nullptr);
 
-	boost::filesystem::path doc(fileName.toStdString());
+	boost::filesystem::path doc(activeEditor->filepath.toStdString());
 	this->tree.setDocumentPath(doc.remove_filename().string());
 
 	if (this->root_module) {
@@ -1356,16 +1358,17 @@ void MainWindow::compileCSG()
 
 void MainWindow::actionNew()
 {
-	if (MainWindow::mdiMode) {
-		new MainWindow(QString());
-	} else {
-		if (!maybeSave())
-			return;
+	new MainWindow(QString());
+	// if (MainWindow::mdiMode) {
+	// 	new MainWindow(QString());
+	// } else {
+	// 	if (!maybeSave())
+	// 		return;
 
-		setFileName("");
-		tabManager->editor->setPlainText("");
-		clearExportPaths();
-	}
+	// 	setFileName("");
+	// 	activeEditor->setPlainText("");
+	// 	clearExportPaths();
+	// }
 }
 
 void MainWindow::actionOpen()
@@ -1457,7 +1460,7 @@ void MainWindow::writeBackup(QFile *file)
 	file->resize(0);
 	QTextStream writer(file);
 	writer.setCodec("UTF-8");
-	writer << tabManager->editor->toPlainText();
+	writer << activeEditor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
 	
 	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
@@ -1475,8 +1478,8 @@ void MainWindow::saveBackup()
 	if (!backupPath.endsWith("/")) backupPath.append("/");
 
 	QString basename = "unsaved";
-	if (!this->fileName.isEmpty()) {
-		auto fileInfo = QFileInfo(this->fileName);
+	if (!activeEditor->filepath.isEmpty()) {
+		auto fileInfo = QFileInfo(activeEditor->filepath);
 		basename = fileInfo.baseName();
 	}
 
@@ -1494,12 +1497,12 @@ void MainWindow::saveBackup()
 void MainWindow::saveError(const QIODevice &file, const std::string &msg)
 {
 	const std::string messageFormat = msg + " %s (%s)";
-	const char *fileName = this->fileName.toLocal8Bit().constData();
+	const char *fileName = activeEditor->filepath.toLocal8Bit().constData();
 	PRINTB(messageFormat.c_str(), fileName % file.errorString().toLocal8Bit().constData());
 
 	const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
 	const QString dialogFormat(dialogFormatStr.c_str());
-	QMessageBox::warning(this, windowTitle(), dialogFormat.arg(this->fileName).arg(file.errorString()));
+	QMessageBox::warning(this, windowTitle(), dialogFormat.arg(activeEditor->filepath).arg(file.errorString()));
 }
 
 /*!
@@ -1509,7 +1512,7 @@ void MainWindow::saveError(const QIODevice &file, const std::string &msg)
  */
 void MainWindow::actionSave()
 {
-	if (this->fileName.isEmpty()) {
+	if (activeEditor->filepath.isEmpty()) {
 		actionSaveAs();
 		return;
 	}
@@ -1522,20 +1525,20 @@ void MainWindow::actionSave()
 	// full properly and happily commits a 0 byte file.
 	// Checking the QTextStream status flag after flush() seems to catch
 	// this condition.
-	QT_FILE_SAVE_CLASS file(this->fileName);
+	QT_FILE_SAVE_CLASS file(activeEditor->filepath);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 		saveError(file, _("Failed to open file for writing"));
 	}
 	else {
 		QTextStream writer(&file);
 		writer.setCodec("UTF-8");
-		writer << tabManager->editor->toPlainText();
+		writer << activeEditor->toPlainText();
 		writer.flush();
 		bool saveOk = writer.status() == QTextStream::Ok;
 		QT_FILE_SAVE_COMMIT;
 		if (saveOk) {
-			PRINTB(_("Saved design '%s'."), this->fileName.toLocal8Bit().constData());
-			tabManager->editor->setContentModified(false);
+			PRINTB(_("Saved design '%s'."), activeEditor->filepath.toLocal8Bit().constData());
+			activeEditor->setContentModified(false);
 		} else {
 			saveError(file, _("Error saving design"));
 		}
@@ -1546,7 +1549,7 @@ void MainWindow::actionSave()
 void MainWindow::actionSaveAs()
 {
 	auto new_filename = QFileDialog::getSaveFileName(this, _("Save File"),
-			this->fileName.isEmpty()?_("Untitled.scad"):this->fileName,
+			activeEditor->filepath.isEmpty()?_("Untitled.scad"):activeEditor->filepath,
 			_("OpenSCAD Designs (*.scad)"));
 	if (!new_filename.isEmpty()) {
 		if (QFileInfo(new_filename).suffix().isEmpty()) {
@@ -1639,14 +1642,14 @@ QList<double> MainWindow::getRotation() const
 void MainWindow::hideFind()
 {
 	find_panel->hide();
-	tabManager->editor->findState = TabManager::FIND_HIDDEN;
-	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text(), false));
+	activeEditor->findState = TabManager::FIND_HIDDEN;
+	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
 
 void MainWindow::showFind()
 {
-	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text()));
+	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(0);
 	replaceInputField->hide();
@@ -1654,9 +1657,9 @@ void MainWindow::showFind()
 	replaceAllButton->hide();
 	//replaceLabel->setVisible(false); 
 	find_panel->show();
-	tabManager->editor->findState = TabManager::FIND_VISIBLE;
-	if (!tabManager->editor->selectedText().isEmpty()) {
-		findInputField->setText(tabManager->editor->selectedText());
+	activeEditor->findState = TabManager::FIND_VISIBLE;
+	if (!activeEditor->selectedText().isEmpty()) {
+		findInputField->setText(activeEditor->selectedText());
 	}
 	findInputField->setFocus();
 	findInputField->selectAll();
@@ -1664,14 +1667,14 @@ void MainWindow::showFind()
 
 void MainWindow::findString(QString textToFind)
 {
-	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(textToFind));
+	this->findInputField->setFindCount(activeEditor->updateFindIndicators(textToFind));
 	this->processEvents();
-	tabManager->editor->find(textToFind);
+	activeEditor->find(textToFind);
 }
 
 void MainWindow::showFindAndReplace()
 {
-	this->findInputField->setFindCount(tabManager->editor->updateFindIndicators(this->findInputField->text()));	
+	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));	
 	this->processEvents();
 	findTypeComboBox->setCurrentIndex(1); 
 	replaceInputField->show();
@@ -1679,9 +1682,9 @@ void MainWindow::showFindAndReplace()
 	replaceAllButton->show();
 	//replaceLabel->setVisible(true); 
 	find_panel->show();
-	tabManager->editor->findState = TabManager::FIND_REPLACE_VISIBLE;
-	if (!tabManager->editor->selectedText().isEmpty()) {
-		findInputField->setText(tabManager->editor->selectedText());
+	activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
+	if (!activeEditor->selectedText().isEmpty()) {
+		findInputField->setText(activeEditor->selectedText());
 	}
 	findInputField->setFocus();
 	findInputField->selectAll();
@@ -1695,18 +1698,18 @@ void MainWindow::selectFindType(int type)
 
 void MainWindow::replace()
 {
-	tabManager->editor->replaceSelectedText(this->replaceInputField->text());
-	tabManager->editor->find(this->findInputField->text());
+	activeEditor->replaceSelectedText(this->replaceInputField->text());
+	activeEditor->find(this->findInputField->text());
 }
 
 void MainWindow::replaceAll()
 {
-	tabManager->editor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
+	activeEditor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
 }
 
 void MainWindow::convertTabsToSpaces()
 {
-	const auto text = tabManager->editor->toPlainText();
+	const auto text = activeEditor->toPlainText();
 	
 	QString converted;
   
@@ -1725,22 +1728,22 @@ void MainWindow::convertTabsToSpaces()
 		}
 		cnt--;
 	}
-	tabManager->editor->setText(converted);
+	activeEditor->setText(converted);
 }
 
 void MainWindow::findNext()
 {
-	tabManager->editor->find(this->findInputField->text(), true);
+	activeEditor->find(this->findInputField->text(), true);
 }
 
 void MainWindow::findPrev()
 {
-	tabManager->editor->find(this->findInputField->text(), true, true);
+	activeEditor->find(this->findInputField->text(), true, true);
 }
 
 void MainWindow::useSelectionForFind()
 {
-	findInputField->setText(tabManager->editor->selectedText());
+	findInputField->setText(activeEditor->selectedText());
 }
 
 void MainWindow::updateFindBuffer(QString s)
@@ -1842,10 +1845,10 @@ void MainWindow::updateCamera(const FileContext &ctx)
 */
 bool MainWindow::fileChangedOnDisk()
 {
-	if (!this->fileName.isEmpty()) {
+	if (!activeEditor->filepath.isEmpty()) {
 		struct stat st;
 		memset(&st, 0, sizeof(struct stat));
-		bool valid = (stat(this->fileName.toLocal8Bit(), &st) == 0);
+		bool valid = (stat(activeEditor->filepath.toLocal8Bit(), &st) == 0);
 		// If file isn't there, just return and use current editor text
 		if (!valid) return false;
 
@@ -1868,14 +1871,14 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
-	this->last_compiled_doc = tabManager->editor->toPlainText();
+	this->last_compiled_doc = activeEditor->toPlainText();
 
 	auto fulltext =
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
 		"\n\x03\n" + commandline_commands;
 	
-	auto fnameba = this->fileName.toLocal8Bit();
-	const char* fname = this->fileName.isEmpty() ? "" : fnameba;
+	auto fnameba = activeEditor->filepath.toLocal8Bit();
+	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
@@ -1884,7 +1887,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		CommentParser::collectParameters(fulltext,this->root_module);
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 		this->parameterWidget->applyParameters(this->root_module);
-		customizerEditor = tabManager->editor;
+		customizerEditor = activeEditor;
 		this->parameterWidget->setEnabled(true);
 	}
 }
@@ -1896,7 +1899,7 @@ void MainWindow::changeParameterWidget()
 
 void MainWindow::checkAutoReload()
 {
-	if (!this->fileName.isEmpty()) {
+	if (!activeEditor->filepath.isEmpty()) {
 		actionReloadRenderPreview();
 	}
 }
@@ -1914,7 +1917,7 @@ void MainWindow::autoReloadSet(bool on)
 
 bool MainWindow::checkEditorModified()
 {
-	if (tabManager->editor->isContentModified()) {
+	if (activeEditor->isContentModified()) {
 		auto ret = QMessageBox::warning(this, _("Application"),
 				_("The document has been modified.\n"
 				"Do you really want to reload the file?"),
@@ -2091,10 +2094,10 @@ void MainWindow::sendToOctoPrint()
 	exportFile.close();
 
 	QString userFileName;
-	if (this->fileName.isEmpty()) {
+	if (activeEditor->filepath.isEmpty()) {
 		userFileName = exportFileName;
 	} else {
-		QFileInfo fileInfo{this->fileName};
+		QFileInfo fileInfo{activeEditor->filepath};
 		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
 	}
 
@@ -2141,8 +2144,8 @@ void MainWindow::sendToPrintService()
 
 	//Create a name that the order process will use to refer to the file. Base it off of the project name
 	QString userFacingName = "unsaved.stl";
-	if (!this->fileName.isEmpty()) {
-		const QString baseName = QFileInfo(this->fileName).baseName();
+	if (!activeEditor->filepath.isEmpty()) {
+		const QString baseName = QFileInfo(activeEditor->filepath).baseName();
 		userFacingName = QString{"%1_%2.stl"}.arg(baseName).arg(printCounter++);
 	}
 
@@ -2278,8 +2281,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		QSound::play(":sounds/complete.wav");
 	}
 
-	renderedEditor = tabManager->editor;
-	tabManager->editor->contentsChangedState = false;
+	renderedEditor = activeEditor;
+	activeEditor->contentsChangedState = false;
 	compileEnded();
 }
 
@@ -2425,7 +2428,7 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	// editor has changed since last render
-	if (tabManager->editor->contentsChangedState) {
+	if (activeEditor->contentsChangedState) {
 		auto ret = QMessageBox::warning(this, "Application",
 				"The current tab has been modified since its last render (F6).\n"
 				"Do you really want to export the previous content?",
@@ -2436,7 +2439,7 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	// other tab contents most recently rendered
-	if(renderedEditor != tabManager->editor) {
+	if(renderedEditor != activeEditor) {
 		auto ret = QMessageBox::warning(this, "Application",
 				"The rendered data is of different tab.\n"
 				"Do you really want to export the another tab's content?",
@@ -2706,12 +2709,12 @@ void MainWindow::viewModeAnimate()
 
 bool MainWindow::isEmpty()
 {
-	return tabManager->editor->toPlainText().isEmpty();
+	return activeEditor->toPlainText().isEmpty();
 }
 
 void MainWindow::animateUpdateDocChanged()
 {
-	auto current_doc = tabManager->editor->toPlainText(); 
+	auto current_doc = activeEditor->toPlainText(); 
 	if (current_doc != last_compiled_doc) {
 		animateUpdate();
 	}
@@ -2866,8 +2869,11 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 {
 	QString title(prefix);
 	if (topLevel) {
-		const QFileInfo fileInfo(windowFilePath());
-		title += " (" + fileInfo.fileName() + ")";
+		const QFileInfo fileInfo(activeEditor->filepath);
+		QString fname = _("Untitled.scad");
+		if(!fileInfo.fileName().isEmpty())
+			fname = fileInfo.fileName();
+		title += " (" + fname + ")";
 	}
 	dockWidget->setWindowTitle(title);
 }
@@ -2950,7 +2956,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 		}
 		openFile(filename);
 	} else {
-		tabManager->editor->insert(cmd.arg(filename));
+		activeEditor->insert(cmd.arg(filename));
 	}
 }
 
@@ -3001,7 +3007,7 @@ void MainWindow::helpFontInfo()
  */
 bool MainWindow::maybeSave()
 {
-	if (tabManager->editor->isContentModified()) {
+	if (activeEditor->isContentModified()) {
 		QMessageBox box(this);
 		box.setText(_("The document has been modified."));
 		box.setInformativeText(_("Do you want to save your changes?"));
@@ -3019,7 +3025,7 @@ bool MainWindow::maybeSave()
 		if (ret == QMessageBox::Save) {
 			actionSave();
 			// Returns false on failed save
-			return !tabManager->editor->isContentModified();
+			return !activeEditor->isContentModified();
 		}
 		else if (ret == QMessageBox::Cancel) {
 			return false;
@@ -3070,7 +3076,7 @@ void MainWindow::setFont(const QString &family, uint size)
 	else font.setFixedPitch(true);
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
-	tabManager->editor->setFont(font);
+	activeEditor->setFont(font);
 }
 
 void MainWindow::quit()
@@ -3161,10 +3167,10 @@ QString MainWindow::exportPath(const char *suffix) {
 	if(path_it != export_paths.end())
 		path = path_it->second;
 	else
-		if(this->fileName.isEmpty())
+		if(activeEditor->filepath.isEmpty())
 			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString(_("/Untitled")) + suffix;
 		else {
-			auto info = QFileInfo(this->fileName);
+			auto info = QFileInfo(activeEditor->filepath);
 			path = info.absolutePath() + QString(_("/")) + info.completeBaseName() + suffix;
 		}
 	return path;

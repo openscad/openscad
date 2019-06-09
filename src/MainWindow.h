@@ -27,8 +27,6 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 	Q_OBJECT
 
 public:
-	QString fileName;
-
 	class Preferences *prefs;
 
 	QTimer *animate_timer;
@@ -51,6 +49,7 @@ public:
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;
+	EditorInterface *activeEditor;
 
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
@@ -96,6 +95,10 @@ private slots:
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
 
+public:
+	static void consoleOutput(const std::string &msg, void *userdata);
+	static void noOutput(const std::string &, void*) {};  // /dev/null
+
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void handleFileDrop(const QString &filename);
@@ -111,8 +114,7 @@ private:
 	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
-	static void consoleOutput(const std::string &msg, void *userdata);
-	static void noOutput(const std::string &, void*) {};  // /dev/null
+
 	void loadViewSettings();
 	void loadDesignSettings();
 	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
@@ -129,12 +131,14 @@ private:
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
 
+public slots:
+	void updateRecentFiles();
+
 private slots:
 	void actionNew();
 	void actionOpen();
 	void actionOpenRecent();
 	void actionOpenExample();
-	void updateRecentFiles();
 	void clearRecentFiles();
 	void updateRecentFileActions();
 	void actionSave();

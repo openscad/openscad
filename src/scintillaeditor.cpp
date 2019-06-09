@@ -116,6 +116,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
 	contentsChangedState = false;
 	findState = 0; //FIND_HIDDEN
+	filepath = "";
 
 	// Force EOL mode to Unix, since QTextStream will manage local EOL modes.
 	qsci->setEolMode(QsciScintilla::EolUnix);
