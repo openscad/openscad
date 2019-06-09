@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
+#include <QMessageBox>
 #include "editor.h"
 #include "tabmanager.h"
 #include "scintillaeditor.h"
@@ -78,7 +79,11 @@ void TabManager::curChanged(int x)
 void TabManager::closeRequested(int x)
 {
     assert(tabobj != nullptr);
+    if(!maybeSave(x))
+        return;
+
     QWidget *temp = tabobj->widget(x);
+    editorList.remove((EditorInterface *)temp);
     tabobj->removeTab(x);
 
     // todo: popup dialog for saving of contents
@@ -107,6 +112,7 @@ void TabManager::createTab(const QString &filename)
 
     editor = new ScintillaEditor(tabobj);
     par->activeEditor = editor;
+    editorList.insert(editor);
 
     // clearing default mapping of keyboard shortcut for font size
     QsciCommandSet *qcmdset = ((ScintillaEditor *)editor)->qsci->standardCommands();
@@ -329,4 +335,65 @@ void TabManager::refreshDocument()
         }
     }
     par->setCurrentOutput();
+}
+
+bool TabManager::maybeSave(int x)
+{
+    EditorInterface *edt = (EditorInterface *)tabobj->widget(x);
+    if (edt->isContentModified()) {
+        QMessageBox box(par);
+        box.setText(_("The document has been modified."));
+        box.setInformativeText(_("Do you want to save your changes?"));
+        box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        box.setDefaultButton(QMessageBox::Save);
+        box.setIcon(QMessageBox::Warning);
+        box.setWindowModality(Qt::ApplicationModal);
+#ifdef Q_OS_MAC
+        // Cmd-D is the standard shortcut for this button on Mac
+        box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+        box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+#endif
+        auto ret = (QMessageBox::StandardButton) box.exec();
+
+        if (ret == QMessageBox::Save) {
+            par->actionSave();
+            // Returns false on failed save
+            return !edt->isContentModified();
+        }
+        else if (ret == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool TabManager::shouldClose()
+{
+    foreach(EditorInterface *edt, editorList)
+    {
+        if(!edt->isContentModified())
+            continue;
+
+        QMessageBox box(par);
+        box.setText(_("Some of the tabs are modified."));
+        box.setInformativeText(_("All unsaved changes will be lost."));
+        box.setStandardButtons(QMessageBox::Discard | QMessageBox::Cancel);
+        box.setDefaultButton(QMessageBox::Save);
+        box.setIcon(QMessageBox::Warning);
+        box.setWindowModality(Qt::ApplicationModal);
+#ifdef Q_OS_MAC
+        // Cmd-D is the standard shortcut for this button on Mac
+        box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+        box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+#endif
+        auto ret = (QMessageBox::StandardButton) box.exec();
+
+        if (ret == QMessageBox::Cancel) {
+            return false;
+        }
+        else if(ret == QMessageBox::Discard) {
+            return true;
+        }
+    }
+    return true;
 }

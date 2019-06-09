@@ -110,7 +110,7 @@ private:
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
-	bool maybeSave();
+	//bool maybeSave();
 	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
@@ -134,6 +134,7 @@ private:
 public slots:
 	void updateRecentFiles();
 	void updateRecentFileActions();
+	void actionSave();
 
 private slots:
 	void actionNew();
@@ -141,7 +142,6 @@ private slots:
 	void actionOpenRecent();
 	void actionOpenExample();
 	void clearRecentFiles();
-	void actionSave();
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();

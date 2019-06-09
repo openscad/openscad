@@ -2999,38 +2999,38 @@ void MainWindow::helpFontInfo()
 /*!
 	FIXME: In MDI mode, should this be called on both reload functions?
  */
-bool MainWindow::maybeSave()
-{
-	if (activeEditor->isContentModified()) {
-		QMessageBox box(this);
-		box.setText(_("The document has been modified."));
-		box.setInformativeText(_("Do you want to save your changes?"));
-		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-		box.setDefaultButton(QMessageBox::Save);
-		box.setIcon(QMessageBox::Warning);
-		box.setWindowModality(Qt::ApplicationModal);
-#ifdef Q_OS_MAC
-		// Cmd-D is the standard shortcut for this button on Mac
-		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
-		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
-#endif
-		auto ret = (QMessageBox::StandardButton) box.exec();
+// bool MainWindow::maybeSave()
+// {
+// 	if (activeEditor->isContentModified()) {
+// 		QMessageBox box(this);
+// 		box.setText(_("The document has been modified."));
+// 		box.setInformativeText(_("Do you want to save your changes?"));
+// 		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+// 		box.setDefaultButton(QMessageBox::Save);
+// 		box.setIcon(QMessageBox::Warning);
+// 		box.setWindowModality(Qt::ApplicationModal);
+// #ifdef Q_OS_MAC
+// 		// Cmd-D is the standard shortcut for this button on Mac
+// 		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+// 		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+// #endif
+// 		auto ret = (QMessageBox::StandardButton) box.exec();
 
-		if (ret == QMessageBox::Save) {
-			actionSave();
-			// Returns false on failed save
-			return !activeEditor->isContentModified();
-		}
-		else if (ret == QMessageBox::Cancel) {
-			return false;
-		}
-	}
-	return true;
-}
+// 		if (ret == QMessageBox::Save) {
+// 			actionSave();
+// 			// Returns false on failed save
+// 			return !activeEditor->isContentModified();
+// 		}
+// 		else if (ret == QMessageBox::Cancel) {
+// 			return false;
+// 		}
+// 	}
+// 	return true;
+// }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	if (maybeSave()) {
+	if (tabManager->shouldClose()) {
 		QSettingsCached settings;
 		settings.setValue("window/size", size());
 		settings.setValue("window/position", pos());

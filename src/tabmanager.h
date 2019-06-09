@@ -2,6 +2,7 @@
 
 #include <QTabWidget>
 #include <QObject>
+#include <QSet>
 #include "editor.h"
 
 class MainWindow; // for circular dependency
@@ -19,6 +20,7 @@ public:
     void openFileTab(const QString &filename);
     void setTab(const QString &filename);
     void refreshDocument();
+    bool shouldClose();
 
 public:
     static constexpr const int FIND_HIDDEN = 0;
@@ -28,6 +30,9 @@ public:
 private:
     MainWindow *par;
     QTabWidget *tabobj;
+    QSet<EditorInterface *> editorList;
+
+    bool maybeSave(int);
 
 private slots:
     void curChanged(int);
