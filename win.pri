@@ -17,7 +17,7 @@ win32*msvc* {
   QMAKE_CXXFLAGS += -wd4100
   # lexer uses strdup() & other POSIX stuff
   QMAKE_CXXFLAGS += -D_CRT_NONSTDC_NO_DEPRECATE
-  # Treat WChar_t as a builtin type, allows Qt to call boost funcions
+  # Treat WChar_t as a builtin type, allows Qt to call boost functions
   QMAKE_CXXFLAGS += /Zc:wchar_t
   # increases the number of sections in .obj file
   QMAKE_CXXFLAGS += /bigobj

@@ -27,8 +27,8 @@
 # Try to find Harfbuzz include and library directories.
 #
 # After successful discovery, this will set for inclusion where needed:
-# HARFBUZZ_INCLUDE_DIRS - containg the HarfBuzz headers
-# HARFBUZZ_LIBRARIES - containg the HarfBuzz library
+# HARFBUZZ_INCLUDE_DIRS - containing the HarfBuzz headers
+# HARFBUZZ_LIBRARIES - containing the HarfBuzz library
 
 find_package(PkgConfig REQUIRED QUIET)
 

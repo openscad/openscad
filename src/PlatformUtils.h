@@ -74,7 +74,7 @@ namespace PlatformUtils {
 		 * to not leak too detail data about the system but still enough
 		 * to give some indication for troubleshooting on server side.
 		 *
-		 * @return the short system infor
+		 * @return the short system info
 		 */
 		const std::string user_agent();
 

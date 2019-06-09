@@ -70,7 +70,7 @@ namespace PolysetUtils {
 	 polygons used for tessellation, typically triangles) back up into 3d
 	 space.
 	 
-	 (in reality as of writing, we dont need to do a back-projection from 2d->3d
+	 (in reality as of writing, we don't need to do a back-projection from 2d->3d
 	 because the algorithm we are using doesn't create any new points, and we can
 	 just use a 'map' to associate 3d points with 2d points).
 	 
@@ -103,7 +103,7 @@ namespace PolysetUtils {
 /* Find a 'good' 2d projection for a given 3d polygon. the XY, YZ, or XZ 
 	 plane. This is needed because near-planar polygons in 3d can have 'bad' 
 	 projections into 2d. For example if the square 0,0,0 0,1,0 0,1,1 0,0,1 
-	 is projected onto the XY plane you will not get a polygon, you wil get 
+	 is projected onto the XY plane you will not get a polygon, you will get 
 	 a skinny line thing. It's better to project that square onto the yz 
 	 plane.*/
 	projection_t find_good_projection( PolySet::Polygon pgon ) {

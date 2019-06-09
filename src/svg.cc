@@ -321,7 +321,7 @@ public:
 			}
 			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(i), c2(c1);
 			CGAL_For_all( c1, c2 ) {
-				// don't know why we use source()->source(), except thats what CGAL does internally
+				// don't know why we use source()->source(), except that's what CGAL does internally
 				auto source = c1->source()->source()->point();
 				auto target = c1->source()->target()->point();
 				auto tp1 = project_svg_3to2 ( source, bbox );
