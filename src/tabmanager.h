@@ -52,6 +52,7 @@ private slots:
 
 public slots:
     void actionNewTab();
+    void actionOpenTab();
     void curContent();
     void setContentsChanged(); // since last render
     void setTabModified(bool);

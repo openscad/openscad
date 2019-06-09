@@ -91,6 +91,16 @@ void TabManager::actionNewTab()
     createTab("");
 }
 
+void TabManager::actionOpenTab()
+{
+    auto fileInfo = UIUtils::openFile(par);
+    if (!fileInfo.exists()) {
+        return;
+    }
+
+    createTab(fileInfo.filePath());
+}
+
 void TabManager::createTab(const QString &filename)
 {
     assert(par != nullptr);

@@ -306,6 +306,7 @@
     <addaction name="fileActionNew"/>
     <addaction name="fileActionNewTab"/>
     <addaction name="fileActionOpen"/>
+    <addaction name="fileActionOpenTab"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
     <addaction name="fileActionReload"/>
@@ -672,6 +673,18 @@
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
+  </action>
+  <action name="fileActionOpenTab">
+<!--    <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
+   </property> -->
+   <property name="text">
+    <string>Open Tab</string>
+   </property>
+<!--    <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property> -->
   </action>
   <action name="fileActionSave">
    <property name="icon">

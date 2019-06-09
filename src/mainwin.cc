@@ -302,6 +302,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
 	connect(this->fileActionNewTab, SIGNAL(triggered()), tabManager, SLOT(actionNewTab()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
+	connect(this->fileActionOpenTab, SIGNAL(triggered()), tabManager, SLOT(actionOpenTab()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
@@ -1378,11 +1379,11 @@ void MainWindow::actionOpen()
 		return;
 	}
 
-	if (!MainWindow::mdiMode && !maybeSave()) {
-		return;
-	}
+	// if (!MainWindow::mdiMode && !maybeSave()) {
+	// 	return;
+	// }
 
-	openFile(fileInfo.filePath());
+	new MainWindow(fileInfo.filePath());
 }
 
 void MainWindow::actionOpenRecent()
