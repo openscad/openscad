@@ -40,7 +40,11 @@ public:
     Return the new element array.
   */
   const T *getArray() {
-    this->vec.resize(this->map.size());
+    auto map_size = this->map.size();
+    this->vec.resize(map_size);
+    if (map_size == 0)
+      return NULL;
+
     typename std::unordered_map<T, int>::const_iterator iter = this->map.begin();
     while (iter != this->map.end()) {
       this->vec[iter->second] = iter->first;
