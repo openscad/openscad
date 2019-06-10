@@ -7,10 +7,8 @@
 // To be on the safe side, this has to be done when including any CGAL header file.
 // FIXME: It might be possible to rewrite the error checking to get rid of this
 // requirement. kintel 20111206.
-#ifdef NDEBUG
-#define PREV_NDEBUG NDEBUG
+#pragma push_macro("NDEBUG")
 #undef NDEBUG
-#endif
 
 #include "CGAL_Handle_for_atomic_shared_ptr.h"	  // This file must be included prior to CGAL/Handle_for.h
 #include "ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
@@ -32,6 +30,7 @@
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
+#pragma pop_macro("NDEBUG")
 
 typedef CGAL::Gmpq NT2;
 typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
@@ -61,10 +60,5 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
-
-
-#ifdef PREV_NDEBUG
-#define NDEBUG PREV_NDEBUG
-#endif
 
 #endif /* ENABLE_CGAL */

@@ -456,7 +456,7 @@ static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
 
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
-	if (StackCheck::inst()->check()) {
+	if (StackCheck::inst().check()) {
 		print_err(this->name.c_str(),loc,context);
 		throw RecursionException::create("function", this->name,this->loc);
 	}
@@ -764,18 +764,19 @@ void evaluate_assert(const Context &context, const class EvalContext *evalctx)
 		}
 	}
 	
-	const ValuePtr condition = c.lookup_variable("condition");
+	const ValuePtr condition = c.lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition->toBool()) {
 		const Expression *expr = assignments["condition"];
 		const ValuePtr message = c.lookup_variable("message", true);
 		
-		std::string locs = evalctx->loc.toRelativeString(context.documentPath());
+		const auto locs = evalctx->loc.toRelativeString(context.documentPath());
+		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
 		if (message->isDefined()) {
-			PRINTB("ERROR: Assertion '%s': %s failed %s", *expr % message->toEchoString() % locs);
-		}else{
-			PRINTB("ERROR: Assertion '%s' failed %s", *expr % locs);
+			PRINTB("ERROR: Assertion%s failed: %s %s", exprText % message->toEchoString() % locs);
+		} else {
+			PRINTB("ERROR: Assertion%s failed %s", exprText % locs);
 		}
-		throw AssertionFailedException("Assertion Failed",evalctx->loc);
+		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
 }

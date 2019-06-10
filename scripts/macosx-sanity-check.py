@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# This is be used to verify that all the dependant libraries of a  Mac OS X executable 
+# This is used to verify that all the dependant libraries of a Mac OS X executable
 # are present and that they are backwards compatible with at least 10.9.
 # Run with an executable as parameter
 # Will return 0 if the executable an all libraries are OK
@@ -91,6 +91,9 @@ def validate_lib(lib):
     if p.returncode != 0: return False
     # Check deployment target
     m = re.search("LC_VERSION_MIN_MACOSX.*\n(.*)\n\s+version (.*)", output, re.MULTILINE)
+    if not m:
+        print("Error: LC_VERSION_MIN_MACOSX not found in " + lib)
+        return False
     deploymenttarget = m.group(2)
     if StrictVersion(deploymenttarget) > StrictVersion('10.9'):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
@@ -142,7 +145,7 @@ if __name__ == '__main__':
     lc_rpath = m.group(2)
     if DEBUG: print('Runpath search path: ' + lc_rpath)
 
-    # processed is a dict {libname : [parents]} - each parent is dependant on libname
+    # processed is a dict {libname : [parents]} - each parent is dependent on libname
     processed = {}
     pending = [executable]
     processed[executable] = []

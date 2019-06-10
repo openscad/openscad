@@ -5,7 +5,10 @@
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#pragma pop_macro("NDEBUG")
 
 CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &loc)
 {
@@ -18,7 +21,6 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 		return N;
 	}
 	
-	bool succes{true};
 	std::string msg="";
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try{

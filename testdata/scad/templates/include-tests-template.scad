@@ -1,4 +1,4 @@
-//Test that the entire path is pushed onto the stack upto the last '/' 
+//Test that the entire path is pushed onto the stack up to the last '/' 
 include <sub1/sub2/sub3/sub4/include-test2.scad>
 
 //Subdir

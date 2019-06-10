@@ -95,7 +95,7 @@ void Camera::setVpt(double x, double y, double z)
 
 static double wrap(double angle)
 {
-	return fmodf(360 + angle, 360); // force angle to be 0-360
+	return fmod(360.0 + angle, 360.0); // force angle to be 0-360
 }
 
 Eigen::Vector3d Camera::getVpr() const

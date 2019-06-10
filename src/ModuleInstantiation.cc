@@ -32,9 +32,9 @@ std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) co
 	}
 }
 
-void ModuleInstantiation::print(std::ostream &stream, const std::string &indent) const
+void ModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
-	stream << indent;
+	if (!inlined) stream << indent;
 	stream << modname + "(";
 	for (size_t i=0; i < this->arguments.size(); i++) {
 		const Assignment &arg = this->arguments[i];
@@ -44,28 +44,27 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent)
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";
-	} else if (scope.numElements() == 1) {	
+	} else if (scope.numElements() == 1) {
 		stream << ") ";
-		scope.print(stream, "");
+		scope.print(stream, indent, true);
 	} else {
 		stream << ") {\n";
-		scope.print(stream, indent + "\t");
+		scope.print(stream, indent + "\t", false);
 		stream << indent << "}\n";
 	}
 }
 
-void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent) const
+void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
-	ModuleInstantiation::print(stream, indent);
-	stream << indent;
+	ModuleInstantiation::print(stream, indent, inlined);
 	if (else_scope.numElements() > 0) {
 		stream << indent << "else ";
 		if (else_scope.numElements() == 1) {
-			else_scope.print(stream, "");
+			else_scope.print(stream, indent, true);
 		}
 		else {
 			stream << "{\n";
-			else_scope.print(stream, indent + "\t");
+			else_scope.print(stream, indent + "\t", false);
 			stream << indent << "}\n";
 		}
 	}

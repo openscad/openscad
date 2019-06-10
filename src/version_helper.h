@@ -6,9 +6,9 @@ namespace OpenSCAD {
 
 struct library_version_number
 {
-	const long major;
-	const long minor;
-	const long micro;
+	const unsigned int major;
+	const unsigned int minor;
+	const unsigned int micro;
 };
 
 const auto get_version_string = [](const library_version_number& header_version, const library_version_number& runtime_version)

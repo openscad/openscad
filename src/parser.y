@@ -30,7 +30,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#define strdup _strdup
+#else
 #include <unistd.h>
 #endif
 
@@ -126,6 +128,7 @@ bool fileEnded=false;
 
 %left '!' '+' '-'
 %left '*' '/' '%'
+%left UNARY
 %left '[' ']'
 %left '.'
 
@@ -218,15 +221,15 @@ assignment:
                         const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
                         const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
                         if(fileEnded){
-                            //assigments via commandline
+                            //assignments via commandline
                         }else if(prevFile==mainFile && currFile == mainFile){
-                            //both assigments in the mainFile
+                            //both assignments in the mainFile
                             PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
                                     assignment.name%
                                     assignment.location().firstLine()%
                                     LOC(@$).firstLine());
                         }else if(uncPathCurr == uncPathPrev){
-                            //assigment overwritten within the same file
+                            //assignment overwritten within the same file
                             //the line number being equal happens, when a file is included multiple times
                             if(assignment.location().firstLine() != LOC(@$).firstLine()){
                                 PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
@@ -236,7 +239,7 @@ assignment:
                                         LOC(@$).firstLine());
                             }
                         }else if(prevFile==mainFile && currFile != mainFile){
-                            //assigment from the mainFile overwritten by an include
+                            //assignment from the mainFile overwritten by an include
                             PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
                                     assignment.name%
                                     assignment.location().firstLine()%
@@ -457,11 +460,11 @@ expr:
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOC(@$));
             }
-        | '+' expr
+        | '+' expr %prec UNARY
             {
                 $$ = $2;
             }
-        | '-' expr
+        | '-' expr %prec UNARY
             {
               $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOC(@$));
             }
@@ -672,17 +675,17 @@ void yyerror (char const *s)
 
 bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
-  fs::path parser_sourcefile = fs::absolute(fs::path(filename));
-  main_file_folder = parser_sourcefile.parent_path().generic_string();
+  fs::path parser_sourcefile = fs::path(fs::absolute(fs::path(filename)).generic_string());
+  main_file_folder = parser_sourcefile.parent_path().string();
   lexer_set_parser_sourcefile(parser_sourcefile);
-  mainFilePath = mainFile;
+  mainFilePath = fs::absolute(fs::path(mainFile));
 
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text.c_str();
   fileEnded=false;
 
-  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().generic_string());
+  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

@@ -333,7 +333,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 	}
 
-	node->convexity = c.lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)c.lookup_variable("convexity", true)->toDouble();
 	if (node->convexity < 1) node->convexity = 1;
 
 	return node;
@@ -365,7 +365,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3,true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
-			!std::isinf(this->x) > 0 && !std::isinf(this->y) > 0 && !std::isinf(this->z) > 0) {
+			!std::isinf(this->x) && !std::isinf(this->y) && !std::isinf(this->z)) {
 			double x1, x2, y1, y2, z1, z2;
 			if (this->center) {
 				x1 = -this->x/2;
@@ -424,7 +424,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 		g = p;
 		if (this->r1 > 0 && !std::isinf(this->r1)) {
 			struct ring_s {
-				point2d *points;
+				std::vector<point2d> points;
 				double z;
 			};
 
@@ -433,7 +433,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
-			auto ring = new ring_s[rings];
+			auto ring = std::vector<ring_s>(rings);
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
 			for (int i = 0; i < rings; i++) {
@@ -441,8 +441,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 				double phi = (180.0 * (i + 0.5)) / rings;
 				double r = r1 * sin_degrees(phi);
 				ring[i].z = r1 * cos_degrees(phi);
-				ring[i].points = new point2d[fragments];
-				generate_circle(ring[i].points, r, fragments);
+				ring[i].points.resize(fragments);
+				generate_circle(ring[i].points.data(), r, fragments);
 			}
 
 			p->append_poly();
@@ -482,11 +482,6 @@ const Geometry *PrimitiveNode::createGeometry() const
 												 ring[rings-1].points[i].y, 
 												 ring[rings-1].z);
 			}
-
-			for (int i = 0; i < rings; i++) {
-				delete[] ring[i].points;
-			}
-			delete[] ring;
 		}
 	}
 		break;
@@ -507,11 +502,11 @@ const Geometry *PrimitiveNode::createGeometry() const
 				z2 = this->h;
 			}
 
-			auto circle1 = new point2d[fragments];
-			auto circle2 = new point2d[fragments];
+			auto circle1 = std::vector<point2d>(fragments);
+			auto circle2 = std::vector<point2d>(fragments);
 
-			generate_circle(circle1, r1, fragments);
-			generate_circle(circle2, r2, fragments);
+			generate_circle(circle1.data(), r1, fragments);
+			generate_circle(circle2.data(), r2, fragments);
 		
 			for (int i=0; i<fragments; i++) {
 				int j = (i+1) % fragments;
@@ -548,9 +543,6 @@ const Geometry *PrimitiveNode::createGeometry() const
 				for (int i=0; i<fragments; i++)
 					p->append_vertex(circle2[i].x, circle2[i].y, z2);
 			}
-
-			delete[] circle1;
-			delete[] circle2;
 		}
 	}
 		break;
@@ -562,7 +554,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			p->append_poly();
 			const auto &vec = this->faces->toVector()[i]->toVector();
 			for (size_t j=0; j<vec.size(); j++) {
-				size_t pt = vec[j]->toDouble();
+				size_t pt = (size_t)vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
@@ -636,7 +628,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				for (const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
 					for (const auto &index : polygon->toVector()) {
-						unsigned int idx = index->toDouble();
+						unsigned int idx = (unsigned int)index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						}

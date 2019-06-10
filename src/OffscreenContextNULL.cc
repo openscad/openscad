@@ -47,6 +47,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
 {
   OffscreenContext *ctx = new OffscreenContext;
   offscreen_context_init( *ctx, w, h );
+	return ctx;
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)

@@ -44,7 +44,7 @@ void LocalScope::addAssignment(const Assignment &ass)
 	this->assignments.push_back(ass);
 }
 
-void LocalScope::print(std::ostream &stream, const std::string &indent) const
+void LocalScope::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
 	for (const auto &f : this->astFunctions) {
 		f.second->print(stream, indent);
@@ -56,7 +56,7 @@ void LocalScope::print(std::ostream &stream, const std::string &indent) const
 		ass.print(stream, indent);
 	}
 	for (const auto &inst : this->children) {
-		inst->print(stream, indent);
+		inst->print(stream, indent, inlined);
 	}
 }
 

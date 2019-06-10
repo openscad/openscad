@@ -27,6 +27,8 @@
 
 #ifndef CGAL_CONVEX_HULL_3_H
 #define CGAL_CONVEX_HULL_3_H
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/basic.h>
 #include <CGAL/algorithm.h> 
 #include <CGAL/convex_hull_2.h>
@@ -40,6 +42,7 @@
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Cartesian_converter.h>
 #include <CGAL/Simple_cartesian.h>
+#pragma pop_macro("NDEBUG")
 #include <iostream>
 #include <algorithm>
 #include <utility>
@@ -51,12 +54,15 @@
 #include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/mpl/has_xxx.hpp>
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/internal/Exact_type_selector.h>
 
 
 #ifndef CGAL_CH_NO_POSTCONDITIONS
 #include <CGAL/convexity_check_3.h>
 #endif // CGAL_CH_NO_POSTCONDITIONS
+#pragma pop_macro("NDEBUG")
 
 
 namespace CGAL {

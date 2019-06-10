@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 namespace fs=boost::filesystem;
 
-#define STACK_BUFFER_SIZE (64 * 1024)
+#define STACK_BUFFER_SIZE (128 * 1024)
 #define STACK_LIMIT_DEFAULT (STACKSIZE - STACK_BUFFER_SIZE)
 
 namespace PlatformUtils {
@@ -74,7 +74,7 @@ namespace PlatformUtils {
 		 * to not leak too detail data about the system but still enough
 		 * to give some indication for troubleshooting on server side.
 		 *
-		 * @return the short system infor
+		 * @return the short system info
 		 */
 		const std::string user_agent();
 

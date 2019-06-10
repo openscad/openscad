@@ -42,7 +42,7 @@ PACKAGES=(
     "fontconfig 2.13.1"
     "hidapi 0.8.0-rc1"
     "libuuid 1.6.2"
-    "lib3mf ca53e4d3d73b835ab9c0c00274a736eecf4f732f"
+    "lib3mf 1.8.1"
     "glib2 2.56.3"
     "boost 1.65.1"
     "cgal 4.13"
@@ -723,11 +723,11 @@ build_lib3mf()
   cd $BASEDIR/src
   rm -rf lib3mf-$version
   if [ ! -f $version.tar.gz ]; then
-    curl -LO https://github.com/3MFConsortium/lib3mf/archive/$version.tar.gz
+    curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
   fi
-  tar xzf $version.tar.gz
+  tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
-  cmake -DLIB3MF_TESTS=false -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }

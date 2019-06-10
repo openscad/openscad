@@ -142,7 +142,7 @@ netbsd* {
 !isEmpty(OPENSCAD_LIBDIR) {
   unix:!macx {
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-    # need /lib64 beause GLEW installs itself there on 64 bit machines
+    # need /lib64 because GLEW installs itself there on 64 bit machines
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
   }
 }
@@ -431,7 +431,6 @@ SOURCES += \
            src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
-           src/stackcheck.cc \
            src/degree_trig.cc \
            src/func.cc \
            src/localscope.cc \

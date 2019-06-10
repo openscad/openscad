@@ -157,7 +157,7 @@ case $OS in
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
         elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
-            # we cant find systems nsis so look for the MXE's version.
+            # we can't find systems nsis so look for the MXE's version.
             # MXE has its own makensis, but its only available under
             # 32-bit MXE. note that the cross-version in theory works
             # the same as the linux version so we can use them, in
@@ -199,7 +199,7 @@ echo "NUMCPU: " $NUMCPU
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug $OPENSCADDIR/openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
@@ -232,7 +232,7 @@ case $OS in
         touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
     ;;
     UNIX_CROSS_WIN)
-        # kludge to enable paralell make
+        # kludge to enable parallel make
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
@@ -252,14 +252,14 @@ case $OS in
             make $TARGET -j$NUMCPU
         fi
         if [ ! -e $TARGET/openscad.exe ]; then
-            echo "cant find $TARGET/openscad.exe. build failed. stopping."
+            echo "can't find $TARGET/openscad.exe. build failed. stopping."
             exit
         fi
         # make console pipe-able openscad.com - see winconsole.pro for info
         qmake ../winconsole/winconsole.pro
         make
         if [ ! -e $TARGET/openscad.com ]; then
-            echo "cant find $TARGET/openscad.com. build failed. stopping."
+            echo "can't find $TARGET/openscad.com. build failed. stopping."
             exit
         fi
         cd $OPENSCADDIR

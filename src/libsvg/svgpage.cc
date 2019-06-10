@@ -46,6 +46,8 @@ svgpage::set_attrs(attr_map_t& attrs)
 	this->y = 0;
 	this->width = parse_length(attrs["width"]);
 	this->height = parse_length(attrs["height"]);
+	this->viewbox = parse_viewbox(attrs["viewBox"]);
+	this->alignment = parse_alignment(attrs["preserveAspectRatio"]);
 }
 
 const std::string
@@ -55,8 +57,16 @@ svgpage::dump() const
 	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
-		<< ": width = " << this->width.number
-		<< ": height = " << this->height.number;
+		<< ": width = " << this->width
+		<< ": height = " << this->height
+		<< ": viewbox = " << this->viewbox.x
+				<< "," << this->viewbox.y
+				<< "," << this->viewbox.width
+				<< "," << this->viewbox.height
+				<< (this->viewbox.is_valid ? " (valid)" : " (invalid)")
+		<< ": alignment = " << this->alignment.x
+				<< "," << this->alignment.y
+				<< (this->alignment.meet ? " meet" : " slice");
 	return s.str();
 }
 

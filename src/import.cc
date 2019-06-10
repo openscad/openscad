@@ -120,7 +120,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		}
 	}
 	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
-	node->convexity = c.lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)c.lookup_variable("convexity", true)->toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 
@@ -202,7 +202,7 @@ const Geometry *ImportNode::createGeometry() const
 #endif
 	default:
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
-		g = new PolySet(0);
+		g = new PolySet(3);
 	}
 
 	if (g) g->setConvexity(this->convexity);

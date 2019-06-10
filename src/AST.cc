@@ -2,7 +2,7 @@
 #include <sstream>
 #include "boost-utils.h"
 
-const Location Location::NONE(0, 0, 0, 0, nullptr);
+const Location Location::NONE(0, 0, 0, 0, std::make_shared<fs::path>(fs::path{}));
 
 bool operator==(Location const& lhs, Location const& rhs){
 	return

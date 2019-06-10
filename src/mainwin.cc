@@ -174,10 +174,15 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
    return nullptr;
 }
 
+void fileExportedMessage(const char *format, const QString &filename) {
+	PRINTB("%s export finished: %s", format % filename.toUtf8().constData());
+}
+
 } // namespace
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr), progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0)
+	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr),
+      progresswidget(nullptr), contentschanged(false), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
 
@@ -889,14 +894,16 @@ void MainWindow::openFile(const QString &new_filename)
 
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
-	clearCurrentOutput();
 	clearExportPaths();
 
+	hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
 	try {
-		compileTopLevelDocument(true);
+		parseTopLevelDocument(true);
 	} catch (const HardWarningException&) {
 		exceptionCleanup();
 	}
+	this->last_compiled_doc = ""; // undo the damage so F4 works
+	clearCurrentOutput();
 }
 
 void MainWindow::setFileName(const QString &filename)
@@ -915,7 +922,7 @@ void MainWindow::setFileName(const QString &filename)
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
 	editorTopLevelChanged(editorDock->isFloating());
-	consoleTopLevelChanged(consoleDock->isFloating());
+	changedTopLevelConsole(consoleDock->isFloating());
  	parameterTopLevelChanged(parameterDock->isFloating());
 }
 
@@ -1003,8 +1010,7 @@ void MainWindow::updateTVal()
 		this->anim_step = 0;
 		this->anim_tval = 0.0;
 	}
-	QString txt;
-	txt.sprintf("%.5f", this->anim_tval);
+	const QString txt = QString::number(this->anim_tval, 'f', 5);
 	this->e_tval->setText(txt);
 }
 
@@ -1064,7 +1070,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			// if we haven't yet compiled the current text.
 			else {
 				auto current_doc = editor->toPlainText();
-				if (current_doc != last_compiled_doc && last_compiled_doc.size() == 0) {
+				if (current_doc.size() && last_compiled_doc.size() == 0) {
 					shouldcompiletoplevel = true;
 				}
 			}
@@ -1073,18 +1079,28 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			shouldcompiletoplevel = true;
 		}
 
-		if (!shouldcompiletoplevel && this->parsed_module) {
+		if (this->parsed_module) {
 			auto mtime = this->parsed_module->includesChanged();
 			if (mtime > this->includes_mtime) {
 				this->includes_mtime = mtime;
 				shouldcompiletoplevel = true;
 			}
 		}
-
+		// Parsing and dependency handling must run to completion even with stop on errors to prevent auto
+		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
+		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
 			if (editor->isContentModified()) saveBackup();
-			compileTopLevelDocument(rebuildParameterWidget);
+			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
+		}
+
+		if (didcompile && parser_error_pos != last_parser_error_pos) {
+			if(last_parser_error_pos >= 0)
+				emit unhighlightLastError();
+			if (parser_error_pos >= 0)
+				emit highlightError( parser_error_pos );
+			last_parser_error_pos = parser_error_pos;
 		}
 
 		if (this->root_module) {
@@ -1096,23 +1112,16 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			}
 		}
 
+		// Had any errors in the parse that would have caused exceptions via PRINT.
+		if(would_have_thrown())
+			throw HardWarningException("");
 		// If we're auto-reloading, listen for a cascade of changes by starting a timer
 		// if something changed _and_ there are any external dependencies
 		if (reload && didcompile && this->root_module) {
-			if (this->root_module->hasIncludes() ||
-					this->root_module->usesLibraries()) {
+			if (this->root_module->hasIncludes() ||	this->root_module->usesLibraries()) {
 				this->waitAfterReloadTimer->start();
 				this->procevents = false;
 				return;
-			}
-		}
-
-		if (!reload && didcompile) {
-			if (!animate_panel->isVisible()) {
-				emit unhighlightLastError();
-				if (!this->root_module) {
-					emit highlightError( parser_error_pos );
-				}
 			}
 		}
 
@@ -1124,15 +1133,17 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 
 void MainWindow::waitAfterReload()
 {
+	no_exceptions_for_warnings();
 	auto mtime = this->root_module->handleDependencies();
-	if (mtime > this->deps_mtime) {
+	auto stop = would_have_thrown();
+	if (mtime > this->deps_mtime)
 		this->deps_mtime = mtime;
-		this->waitAfterReloadTimer->start();
-		return;
-	}
-	else {
-		compile(true, true); // In case file itself or top-level includes changed during dependency updates
-	}
+	else
+		if(!stop) {
+			compile(true, true); // In case file itself or top-level includes changed during dependency updates
+			return;
+		}
+	this->waitAfterReloadTimer->start();
 }
 
 void MainWindow::on_toolButtonCompileResultClose_clicked()
@@ -1632,24 +1643,27 @@ void MainWindow::actionReload()
 
 void MainWindow::copyViewportTranslation()
 {
-	QString txt;
-	auto vpt = qglview->cam.getVpt();
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpt.x(), vpt.y(), vpt.z());
+	const auto vpt = qglview->cam.getVpt();
+	const QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpt.x(), 0, 'f', 2)
+		.arg(vpt.y(), 0, 'f', 2)
+		.arg(vpt.z(), 0, 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportRotation()
 {
-	QString txt;
-	auto vpr = qglview->cam.getVpr();
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", vpr.x(), vpr.y(), vpr.z());
+	const auto vpr = qglview->cam.getVpr();
+	const QString txt = QString("[ %1, %2, %3 ]")
+		.arg(vpr.x(), 0, 'f', 2)
+		.arg(vpr.y(), 0, 'f', 2)
+		.arg(vpr.z(), 0, 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportDistance()
 {
-	QString txt;
-	txt.sprintf("%.2f", qglview->cam.zoomValue());
+	const QString txt = QString::number(qglview->cam.zoomValue(), 'f', 2);
 	QApplication::clipboard()->setText(txt);
 }
 
@@ -1894,7 +1908,7 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::compileTopLevelDocument(bool rebuildParameterWidget)
+void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 {
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
@@ -2043,8 +2057,7 @@ void MainWindow::csgRender()
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
 			QImage img = this->qglview->grabFrameBuffer();
-			QString filename;
-			filename.sprintf("frame%05d.png", this->anim_step);
+			QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
 			img.save(filename, "PNG");
 		}
 	}
@@ -2250,13 +2263,14 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
 
+	unsigned int s = this->renderingTime.elapsed() / 1000;
+
 	if (root_geom) {
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
 
-		int s = this->renderingTime.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 
 		if (root_geom && !root_geom->isEmpty()) {
@@ -2302,7 +2316,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
-	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool())
+	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
+		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
 	{
 		QSound::play(":sounds/complete.wav");
 	}
@@ -2348,6 +2363,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 
 void MainWindow::exceptionCleanup(){
 	PRINT("Execution aborted");
+	PRINT(" ");
 	GuiLocker::unlock();
 	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
@@ -2509,9 +2525,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	exportFileByName(this->root_geom, format,
 		exportFilename.toLocal8Bit().constData(),
 		exportFilename.toUtf8());
-	PRINTB("%s export finished: %s",
-		type_name % exportFilename.toUtf8().constData());
-
+	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2571,7 +2585,7 @@ void MainWindow::actionExportCSG()
 	else {
 		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
 		fstream.close();
-		PRINT("CSG export finished.");
+		fileExportedMessage("CSG", csg_filename);
 		this->export_paths[suffix] = csg_filename;
 	}
 
@@ -2580,9 +2594,7 @@ void MainWindow::actionExportCSG()
 
 void MainWindow::actionExportImage()
 {
-	setCurrentOutput();
-
-  // Grab first to make sure dialog box isn't part of the grabbed image
+	// Grab first to make sure dialog box isn't part of the grabbed image
 	qglview->grabFrame();
 	const auto suffix = ".png";
 	auto img_filename = QFileDialog::getSaveFileName(this,
@@ -2590,9 +2602,10 @@ void MainWindow::actionExportImage()
 	if (!img_filename.isEmpty()) {
 		qglview->save(img_filename.toLocal8Bit().constData());
 		this->export_paths[suffix] = img_filename;
+		setCurrentOutput();
+		fileExportedMessage("PNG", img_filename);
+		clearCurrentOutput();
 	}
-
-	clearCurrentOutput();
 }
 
 void MainWindow::actionCopyViewport()
@@ -2846,7 +2859,7 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
 {
-	consoleTopLevelChanged(consoleDock->isFloating());
+	changedTopLevelConsole(consoleDock->isFloating());
 }
 
 void MainWindow::on_parameterDock_visibilityChanged(bool)
@@ -2859,9 +2872,21 @@ void MainWindow::editorTopLevelChanged(bool topLevel)
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
 }
 
+void MainWindow::changedTopLevelConsole(bool topLevel)
+{
+	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
+}
+
 void MainWindow::consoleTopLevelChanged(bool topLevel)
 {
 	setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
+
+    Qt::WindowFlags flags = (consoleDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+	if(topLevel)
+	{
+		consoleDock->setWindowFlags(flags);
+		consoleDock->show();
+	}
 }
 
 void MainWindow::parameterTopLevelChanged(bool topLevel)
@@ -3132,6 +3157,11 @@ void MainWindow::consoleOutput(const QString &msg)
 void MainWindow::setCurrentOutput()
 {
 	set_output_handler(&MainWindow::consoleOutput, this);
+}
+
+void MainWindow::hideCurrentOutput()
+{
+	set_output_handler(&MainWindow::noOutput, this);
 }
 
 void MainWindow::clearCurrentOutput()

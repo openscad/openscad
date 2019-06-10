@@ -7,7 +7,10 @@
 #include "grid.h"
 
 #include "cgal.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#pragma pop_macro("NDEBUG")
 
 #include <boost/range/adaptor/reversed.hpp>
 
@@ -267,7 +270,6 @@ namespace CGALUtils {
 	{
 		bool err = false;
 		typedef typename Polyhedron::Vertex                                 Vertex;
-		typedef typename Polyhedron::Vertex_const_iterator                  VCI;
 		typedef typename Polyhedron::Facet_const_iterator                   FCI;
 		typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 		

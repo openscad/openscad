@@ -288,7 +288,7 @@ PolySet * AmfImporter::read(const std::string filename)
 	return p;
 }
 
-#if ENABLE_LIBZIP
+#ifdef ENABLE_LIBZIP
 
 #include <zip.h>
 

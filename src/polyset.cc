@@ -215,7 +215,7 @@ void PolySet::quantizeVertices()
 		indices.resize(p.size());
 		// Quantize all vertices. Build index list
 		for (unsigned int i=0;i<p.size();i++) indices[i] = grid.align(p[i]);
-		// Remove consequtive duplicate vertices
+		// Remove consecutive duplicate vertices
 		Polygon::iterator currp = p.begin();
 		for (unsigned int i=0;i<indices.size();i++) {
 			if (indices[i] != indices[(i+1)%indices.size()]) {

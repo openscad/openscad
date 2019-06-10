@@ -2,9 +2,8 @@
 
 #include <string>
 #include <unordered_map>
+#include <assert.h>
 #include "node.h"
-#include "memory.h"
-#include "assert.h"
 #include "printutils.h"
 
 /*!
@@ -42,7 +41,7 @@ public:
         auto indexpair = this->cache.at(nodeidx); 
         assert(indexpair.second == -1L && "end index inserted twice");
         this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
-#if DEBUG
+#ifdef DEBUG
         PRINTDB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex );
 #endif
     }
