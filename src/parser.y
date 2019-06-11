@@ -147,8 +147,8 @@ bool fileEnded=false;
 %type <ifelse> ifelse_statement
 %type <inst> single_module_instantiation
 
-%type <args> arguments_call
-%type <args> arguments_decl
+%type <args> argument_list_call
+%type <args> argument_list_decl
 
 %type <arg> argument_call
 %type <arg> argument_decl
@@ -176,10 +176,10 @@ statement:
               if ($1) scope_stack.top()->addChild($1);
             }
         | assignment
-        | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
+        | TOK_MODULE TOK_ID '(' argument_list_decl optional_commas ')'
             {
               UserModule *newmodule = new UserModule($2, LOC(@$));
-              newmodule->definition_arguments = *$4;
+              newmodule->definition_arguments = *$4; /* argument_list here */ 
               scope_stack.top()->addModule($2, newmodule);
               scope_stack.push(&newmodule->scope);
               free($2);
@@ -189,7 +189,7 @@ statement:
             {
                 scope_stack.pop();
             }
-        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
+        | TOK_FUNCTION TOK_ID '(' argument_list_decl optional_commas ')' '=' expr
             {
               UserFunction *func = UserFunction::create($2, *$4, shared_ptr<Expression>($8), LOC(@$));
               scope_stack.top()->addFunction(func);
@@ -352,7 +352,7 @@ module_id:
         ;
 
 single_module_instantiation:
-          module_id '(' arguments_call ')'
+          module_id '(' argument_list_call optional_commas')'
             {
                 $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOC(@$));
                 free($1);
@@ -484,25 +484,25 @@ expr:
             {
               $$ = new ArrayLookup($1, $3, LOC(@$));
             }
-        | TOK_ID '(' arguments_call ')'
+        | TOK_ID '(' argument_list_call optional_commas')'
             {
               $$ = new FunctionCall($1, *$3, LOC(@$));
               free($1);
               delete $3;
             }
-        | TOK_LET '(' arguments_call ')' expr %prec LET
+        | TOK_LET '(' argument_list_call optional_commas')' expr %prec LET
             {
-              $$ = FunctionCall::create("let", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("let", *$3, $6, LOC(@$));
               delete $3;
             }
-        | TOK_ASSERT '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+        | TOK_ASSERT '(' argument_list_call optional_commas')' expr_or_empty %prec LOW_PRIO_LEFT
             {
-              $$ = FunctionCall::create("assert", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("assert", *$3, $6, LOC(@$));
               delete $3;
             }
-        | TOK_ECHO '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+        | TOK_ECHO '(' argument_list_call optional_commas')' expr_or_empty %prec LOW_PRIO_LEFT
             {
-              $$ = FunctionCall::create("echo", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("echo", *$3, $6, LOC(@$));
               delete $3;
             }
         ;
@@ -521,16 +521,16 @@ expr_or_empty:
  list_comprehension_elements:
           /* The last set element may not be a "let" (as that would instead
              be parsed as an expression) */
-          TOK_LET '(' arguments_call ')' list_comprehension_elements_p
+          TOK_LET '(' argument_list_call optional_commas')' list_comprehension_elements_p
             {
-              $$ = new LcLet(*$3, $5, LOC(@$));
+              $$ = new LcLet(*$3, $6, LOC(@$));
               delete $3;
             }
         | TOK_EACH list_comprehension_elements_or_expr
             {
               $$ = new LcEach($2, LOC(@$));
             }
-        | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' argument_list_call ')' list_comprehension_elements_or_expr
             {
                 $$ = $5;
 
@@ -543,7 +543,7 @@ expr_or_empty:
                 }
                 delete $3;
             }
-        | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' argument_list_call ';' expr ';' argument_list_call ')' list_comprehension_elements_or_expr
             {
               $$ = new LcForC(*$3, *$7, $5, $9, LOC(@$));
                 delete $3;
@@ -596,7 +596,7 @@ vector_expr:
             }
         ;
 
-arguments_decl:
+argument_list_decl:
           /* empty */
             {
                 $$ = new AssignmentList();
@@ -607,7 +607,7 @@ arguments_decl:
                 $$->push_back(*$1);
                 delete $1;
             }
-        | arguments_decl ',' optional_commas argument_decl
+        | argument_list_decl ',' optional_commas argument_decl
             {
                 $$ = $1;
                 $$->push_back(*$4);
@@ -628,7 +628,7 @@ argument_decl:
             }
         ;
 
-arguments_call:
+argument_list_call:
           /* empty */
             {
                 $$ = new AssignmentList();
@@ -639,7 +639,7 @@ arguments_call:
                 $$->push_back(*$1);
                 delete $1;
             }
-        | arguments_call ',' optional_commas argument_call
+        | argument_list_call ',' optional_commas argument_call
             {
                 $$ = $1;
                 $$->push_back(*$4);
