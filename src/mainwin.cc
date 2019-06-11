@@ -2948,7 +2948,15 @@ void MainWindow::handleFileDrop(const QString &filename)
 		// if (!MainWindow::mdiMode && !maybeSave()) {
 		// 	return;
 		// }
-		tabManager->createTab(filename);
+		if(activeEditor->filepath.isEmpty() && !activeEditor->isContentModified())
+	    {
+	        activeEditor->filepath = fileInfo.filePath();
+	        tabManager->refreshDocument();
+	    }
+	    else
+	    {
+	        tabManager->createTab(fileInfo.filePath());
+	    }
 	} else {
 		activeEditor->insert(cmd.arg(filename));
 	}
