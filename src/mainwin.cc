@@ -476,8 +476,8 @@ MainWindow::MainWindow(const QString &filename)
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
 
-	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
-	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
+	initActionIcon(fileActionNewTab, ":/images/blackNew.png", ":/images/Document-New-128.png");
+	initActionIcon(fileActionOpenTab, ":/images/Open-32.png", ":/images/Open-128.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");

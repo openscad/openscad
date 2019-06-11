@@ -303,13 +303,14 @@
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
-    <addaction name="fileActionNew"/>
     <addaction name="fileActionNewTab"/>
-    <addaction name="fileActionOpen"/>
     <addaction name="fileActionOpenTab"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
     <addaction name="fileActionReload"/>
+    <addaction name="separator"/>
+    <addaction name="fileActionNew"/>
+    <addaction name="fileActionOpen"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -455,8 +456,8 @@
      </property>
      <item>
       <widget class="QToolBar" name="editortoolbar">
-       <addaction name="fileActionNew"/>
-       <addaction name="fileActionOpen"/>
+       <addaction name="fileActionNewTab"/>
+       <addaction name="fileActionOpenTab"/>
        <addaction name="fileActionSave"/>
        <addaction name="separator"/>
        <addaction name="editActionUndo"/>
@@ -638,49 +639,49 @@
     </layout>
    </widget>
   </widget>
-  <action name="fileActionNew">
+  <action name="fileActionNewTab">
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;New</string>
+    <string>&amp;New File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="fileActionNewTab">
-  <!--  <property name="icon">
+  <action name="fileActionNew">
+<!--    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
    </property> -->
    <property name="text">
-    <string>New Tab</string>
+    <string>New Window</string>
    </property>
-   <!-- <property name="shortcut">
+<!--    <property name="shortcut">
     <string>Ctrl+N</string>
    </property> -->
   </action>
-  <action name="fileActionOpen">
+  <action name="fileActionOpenTab">
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open...</string>
+    <string>&amp;Open File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="fileActionOpenTab">
+  <action name="fileActionOpen">
 <!--    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
    </property> -->
    <property name="text">
-    <string>Open Tab</string>
+    <string>Open in New Window</string>
    </property>
 <!--    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -1220,7 +1221,7 @@
   </action>
   <action name="fileActionClose">
    <property name="text">
-    <string>&amp;Close</string>
+    <string>&amp;Close Window</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
