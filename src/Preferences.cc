@@ -155,7 +155,6 @@ void Preferences::init() {
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
-	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
@@ -428,14 +427,6 @@ void Preferences::on_checkNowButton_clicked()
 	} else {
 		unimplemented_msg();
 	}
-}
-
-void
-Preferences::on_mdiCheckBox_toggled(bool state)
-{
-	QSettingsCached settings;
-	settings.setValue("advanced/mdi", state);
-	emit updateMdiMode(state);
 }
 
 void
@@ -889,7 +880,6 @@ void Preferences::updateGUI()
 	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
 	this->autoReloadRaiseCheckBox->setChecked(getValue("advanced/autoReloadRaise").toBool());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
-	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
@@ -983,8 +973,6 @@ void Preferences::apply_win() const
 {
 	emit requestRedraw();
 	emit openCSGSettingsChanged();
-	// emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
-	// emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
 }
 
 void Preferences::create(QStringList colorSchemes)

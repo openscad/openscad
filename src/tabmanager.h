@@ -17,8 +17,8 @@ public:
     EditorInterface *editor;
 
     void createTab(const QString &filename);
-    void openFileTab(const QString &filename);
-    void setTab(const QString &filename);
+    void openTabFile(const QString &filename);
+    void setTabName(const QString &filename);
     void refreshDocument();
     bool shouldClose();
 

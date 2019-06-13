@@ -67,9 +67,7 @@ void TabManager::tabSwitched(int x)
         par->parameterWidget->setEnabled(false);
     }
 
-    // par->parameterWidget->setEnabled(editor->parameterWidgetState);
     par->editActionUndo->setEnabled(editor->canUndo());
-    // par->setWindowModified(editor->isContentModified()); //can also emit signal instead
     par->editorTopLevelChanged(par->editorDock->isFloating());
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
@@ -85,8 +83,6 @@ void TabManager::closeTabRequested(int x)
     QWidget *temp = tabWidget->widget(x);
     editorList.remove((EditorInterface *)temp);
     tabWidget->removeTab(x);
-
-    // todo: popup dialog for saving of contents
 
     delete temp;
 }
@@ -120,7 +116,6 @@ void TabManager::createTab(const QString &filename)
 
     editor = new ScintillaEditor(tabWidget);
     par->activeEditor = editor;
-    editorList.insert(editor);
 
     // clearing default mapping of keyboard shortcut for font size
     QsciCommandSet *qcmdset = ((ScintillaEditor *)editor)->qsci->standardCommands();
@@ -141,7 +136,6 @@ void TabManager::createTab(const QString &filename)
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged())); 
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentRenderState()));
-    // connect(editor, SIGNAL(modificationChanged(bool)), par, SLOT(setWindowModified(bool)));
     connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setTabModified(bool)));
 
     connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
@@ -151,10 +145,16 @@ void TabManager::createTab(const QString &filename)
     editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
+    tabWidget->addTab(editor, _("Untitled.scad"));
+    if(!editorList.isEmpty()) {
+        tabWidget->setCurrentWidget(editor); // to prevent emitting of currentChanged signal twice for first tab
+    }
+
+    editorList.insert(editor);
     if (!filename.isEmpty()) {
-        openFileTab(filename);
+        openTabFile(filename);
     } else {
-        setTab("");
+        setTabName("");
     }
     par->updateRecentFileActions();
 }
@@ -266,23 +266,24 @@ void TabManager::setTabModified(bool mod)
     par->setWindowTitle(fname);
 }
 
-void TabManager::openFileTab(const QString &filename)
+void TabManager::openTabFile(const QString &filename)
 {
     par->setCurrentOutput();
+    editor->setPlainText("");
+
     QFileInfo fileinfo(filename);
     const auto suffix = fileinfo.suffix().toLower();
     const auto knownFileType = par->knownFileExtensions.contains(suffix);
     const auto cmd = par->knownFileExtensions[suffix];
     if (knownFileType && cmd.isEmpty()) {
-        setTab(filename);
+        setTabName(filename);
         par->updateRecentFiles();
     } else {
-        setTab(nullptr);
+        setTabName(nullptr);
         editor->setPlainText(cmd.arg(filename));
     }
-    //fileChangedOnDisk(); // force cached autoReloadId to update
-    this->refreshDocument();
-   // clearExportPaths();
+    par->fileChangedOnDisk(); // force cached autoReloadId to update
+    refreshDocument();
 
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
     // try {
@@ -294,21 +295,19 @@ void TabManager::openFileTab(const QString &filename)
     par->clearCurrentOutput();
 }
 
-void TabManager::setTab(const QString &filename)
+void TabManager::setTabName(const QString &filename)
 {
     if (filename.isEmpty()) {
-        tabWidget->addTab(editor, _("Untitled.scad"));
-        tabWidget->setCurrentWidget(editor);
+        editor->filepath.clear();
+        tabWidget->setTabText(tabWidget->currentIndex(), _("Untitled.scad"));
         tabWidget->setTabToolTip(tabWidget->currentIndex(), _("Untitled.scad"));
     } else {
         QFileInfo fileinfo(filename);
         editor->filepath = fileinfo.absoluteFilePath();
-        tabWidget->addTab(editor, fileinfo.fileName());
-        tabWidget->setCurrentWidget(editor);
+        tabWidget->setTabText(tabWidget->currentIndex(), fileinfo.fileName());
         tabWidget->setTabToolTip(tabWidget->currentIndex(), fileinfo.filePath());
         par->parameterWidget->readFile(editor->filepath);  ////////////////////////////////
         QDir::setCurrent(fileinfo.dir().absolutePath());
-        // this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
     }
     par->editorTopLevelChanged(par->editorDock->isFloating());
     par->changedTopLevelConsole(par->consoleDock->isFloating());
@@ -331,7 +330,7 @@ void TabManager::refreshDocument()
             PRINTB("Loaded design '%s'.", editor->filepath.toLocal8Bit().constData());
             if (editor->toPlainText() != text) {
                 editor->setPlainText(text);
-                setContentRenderState(); // since last render; should not be here
+                setContentRenderState(); // since last render
             }
         }
     }

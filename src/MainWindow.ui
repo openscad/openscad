@@ -652,16 +652,9 @@
    </property>
   </action>
   <action name="fileActionNewWindow">
-<!--    <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
-   </property> -->
    <property name="text">
     <string>New Window</string>
    </property>
-<!--    <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property> -->
   </action>
   <action name="fileActionOpen">
    <property name="icon">
@@ -676,16 +669,9 @@
    </property>
   </action>
   <action name="fileActionOpenWindow">
-<!--    <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
-   </property> -->
    <property name="text">
     <string>Open in New Window</string>
    </property>
-<!--    <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property> -->
   </action>
   <action name="fileActionSave">
    <property name="icon">

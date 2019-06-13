@@ -1607,13 +1607,6 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
-                <widget class="QCheckBox" name="mdiCheckBox">
-                 <property name="text">
-                  <string>Allow opening multiple documents</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QCheckBox" name="reorderCheckBox">
                  <property name="text">
                   <string>Enable docking of Editor and Console in different places</string>

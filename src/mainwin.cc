@@ -149,7 +149,6 @@ static char copyrighttext[] =
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
 	"(at your option) any later version.\n";
-bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
@@ -177,7 +176,7 @@ void fileExportedMessage(const char *format, const QString &filename) {
 
 } // namespace
 
-MainWindow::MainWindow(const QString &filename)
+MainWindow::MainWindow(const QStringList &filenames)
 	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr),
       progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
@@ -219,7 +218,7 @@ MainWindow::MainWindow(const QString &filename)
 						this, SLOT(actionOpenRecent()));
 	}
 
-	tabManager = new TabManager(this, filename);
+	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
 	editorDockContents->layout()->addWidget(tabManager->getTabWidget());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -436,7 +435,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
-	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
@@ -583,6 +581,9 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 
 	this->console->setMaximumBlockCount(5000);
+
+	for(int i = 1; i < filenames.size(); i++)
+		tabManager->createTab(filenames[i]);
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -699,7 +700,6 @@ void MainWindow::loadViewSettings(){
 		viewPerspective();
 	}
 
-	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 	updateReorderMode(settings.value("advanced/reorderWindows").toBool());
 }
@@ -716,11 +716,6 @@ void MainWindow::loadDesignSettings()
 	auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
 	CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
 #endif
-}
-
-void MainWindow::updateMdiMode(bool mdi)
-{
-	MainWindow::mdiMode = mdi;
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -806,71 +801,6 @@ bool MainWindow::network_progress_func(const double permille)
 {
 	QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
 	return (progresswidget && progresswidget->wasCanceled());
-}
-
-/*!
- 	Open the given file. In MDI mode a new window is created if the current
- 	one is not empty. Otherwise the current window content is overwritten.
- 	Any check whether to replace the content have to be made before.
- */
-
-void MainWindow::openFile(const QString &new_filename)
-{
-	if (MainWindow::mdiMode) {
-		if (!activeEditor->toPlainText().isEmpty()) {
-			new MainWindow(new_filename);
-			return;
-		}
-	}
-
-	setCurrentOutput();
-	activeEditor->setPlainText("");
-	this->last_compiled_doc = "";
-
-	const QFileInfo fileInfo(new_filename);
-	const auto suffix = fileInfo.suffix().toLower();
-	const auto knownFileType = knownFileExtensions.contains(suffix);
-	const auto cmd = knownFileExtensions[suffix];
-	if (knownFileType && cmd.isEmpty()) {
-		setFileName(new_filename);
-		updateRecentFiles();
-	} else {
-		setFileName("");
-		activeEditor->setPlainText(cmd.arg(new_filename));
-	}
-
-	fileChangedOnDisk(); // force cached autoReloadId to update
-	refreshDocument();
-	clearExportPaths();
-
-	hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
-	try {
-		parseTopLevelDocument(true);
-	} catch (const HardWarningException&) {
-		exceptionCleanup();
-	}
-	this->last_compiled_doc = ""; // undo the damage so F4 works
-	clearCurrentOutput();
-}
-
-void MainWindow::setFileName(const QString &filename)
-{
-	if (filename.isEmpty()) {
-		activeEditor->filepath.clear();
-		setWindowFilePath(_("Untitled.scad"));
-
-		this->top_ctx.setDocumentPath(currentdir);
-	} else {
-		QFileInfo fileinfo(filename);
-		activeEditor->filepath = fileinfo.absoluteFilePath();
-		setWindowFilePath(activeEditor->filepath);
-		this->parameterWidget->readFile(activeEditor->filepath);
-		QDir::setCurrent(fileinfo.dir().absolutePath());
-		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
-	}
-	editorTopLevelChanged(editorDock->isFloating());
-	changedTopLevelConsole(consoleDock->isFloating());
- 	parameterTopLevelChanged(parameterDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
@@ -961,29 +891,6 @@ void MainWindow::updateTVal()
 	this->e_tval->setText(txt);
 }
 
-void MainWindow::refreshDocument()
-{
-	setCurrentOutput();
-	if (!activeEditor->filepath.isEmpty()) {
-		QFile file(activeEditor->filepath);
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-			PRINTB("Failed to open file %s: %s",
-						 activeEditor->filepath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
-		}
-		else {
-			QTextStream reader(&file);
-			reader.setCodec("UTF-8");
-			auto text = reader.readAll();
-			PRINTB("Loaded design '%s'.", activeEditor->filepath.toLocal8Bit().constData());
-			if (activeEditor->toPlainText() != text) {
-				activeEditor->setPlainText(text);
-				tabManager->setContentRenderState();
-			}
-		}
-	}
-	setCurrentOutput();
-}
-
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
@@ -1007,7 +914,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			// Refresh files if it has changed on disk
 			if (fileChangedOnDisk() && checkEditorModified()) {
 				shouldcompiletoplevel = true;
-				refreshDocument();
+				tabManager->refreshDocument();
 				if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
 					// reloading the 'same' document brings the 'old' one to front.
 					this->raise();
@@ -1352,17 +1259,7 @@ void MainWindow::compileCSG()
 
 void MainWindow::actionNewWindow()
 {
-	new MainWindow(QString());
-	// if (MainWindow::mdiMode) {
-	// 	new MainWindow(QString());
-	// } else {
-	// 	if (!maybeSave())
-	// 		return;
-
-	// 	setFileName("");
-	// 	activeEditor->setPlainText("");
-	// 	clearExportPaths();
-	// }
+	new MainWindow(QStringList());
 }
 
 void MainWindow::actionOpenWindow()
@@ -1371,20 +1268,11 @@ void MainWindow::actionOpenWindow()
 	if (!fileInfo.exists()) {
 		return;
 	}
-
-	// if (!MainWindow::mdiMode && !maybeSave()) {
-	// 	return;
-	// }
-
-	new MainWindow(fileInfo.filePath());
+	new MainWindow(QStringList(fileInfo.filePath()));
 }
 
 void MainWindow::actionOpenRecent()
 {
-	// if (!MainWindow::mdiMode && !maybeSave()) {
-	// 	return;
-	// }
-
 	auto action = qobject_cast<QAction *>(sender());
 	tabManager->createTab(action->data().toString());
 }
@@ -1437,10 +1325,6 @@ void MainWindow::show_examples()
 
 void MainWindow::actionOpenExample()
 {
-	// if (!MainWindow::mdiMode && !maybeSave()) {
-	// 	return;
-	// }
-
 	const auto action = qobject_cast<QAction *>(sender());
 	if (action) {
 		const auto &path = action->data().toString();
@@ -1561,8 +1445,7 @@ void MainWindow::actionSaveAs()
 			}
 		}
 		this->parameterWidget->writeFileIfNotEmpty(new_filename);
-		setFileName(new_filename);
-		clearExportPaths();
+		tabManager->setTabName(new_filename);
 		actionSave();
 	}
 }
@@ -1585,7 +1468,7 @@ void MainWindow::actionReload()
 {
 	if (checkEditorModified()) {
 		fileChangedOnDisk(); // force cached autoReloadId to update
-		refreshDocument();
+		tabManager->refreshDocument();
 	}
 }
 
@@ -1848,8 +1731,8 @@ bool MainWindow::fileChangedOnDisk()
 
 		auto newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
-		if (newid != this->autoReloadId) {
-			this->autoReloadId = newid;
+		if (newid != activeEditor->autoReloadId) {
+			activeEditor->autoReloadId = newid;
 			return true;
 		}
 	}
@@ -2945,9 +2828,6 @@ void MainWindow::handleFileDrop(const QString &filename)
 	const auto suffix = fileInfo.suffix().toLower();
 	const auto cmd = knownFileExtensions[suffix];
 	if (cmd.isEmpty()) {
-		// if (!MainWindow::mdiMode && !maybeSave()) {
-		// 	return;
-		// }
 		if(activeEditor->filepath.isEmpty() && !activeEditor->isContentModified())
 	    {
 	        activeEditor->filepath = fileInfo.filePath();
@@ -3003,38 +2883,6 @@ void MainWindow::helpFontInfo()
 	this->font_list_dialog->update_font_list();
 	this->font_list_dialog->show();
 }
-
-/*!
-	FIXME: In MDI mode, should this be called on both reload functions?
- */
-// bool MainWindow::maybeSave()
-// {
-// 	if (activeEditor->isContentModified()) {
-// 		QMessageBox box(this);
-// 		box.setText(_("The document has been modified."));
-// 		box.setInformativeText(_("Do you want to save your changes?"));
-// 		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-// 		box.setDefaultButton(QMessageBox::Save);
-// 		box.setIcon(QMessageBox::Warning);
-// 		box.setWindowModality(Qt::ApplicationModal);
-// #ifdef Q_OS_MAC
-// 		// Cmd-D is the standard shortcut for this button on Mac
-// 		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
-// 		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
-// #endif
-// 		auto ret = (QMessageBox::StandardButton) box.exec();
-
-// 		if (ret == QMessageBox::Save) {
-// 			actionSave();
-// 			// Returns false on failed save
-// 			return !activeEditor->isContentModified();
-// 		}
-// 		else if (ret == QMessageBox::Cancel) {
-// 			return false;
-// 		}
-// 	}
-// 	return true;
-// }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -3156,11 +3004,6 @@ void MainWindow::openCSGSettingsChanged()
 void MainWindow::processEvents()
 {
 	if (this->procevents) QApplication::processEvents();
-}
-
-void MainWindow::clearExportPaths()
-{
-	export_paths.clear();
 }
 
 QString MainWindow::exportPath(const char *suffix) {

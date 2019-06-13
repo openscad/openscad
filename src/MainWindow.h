@@ -37,7 +37,6 @@ public:
 	int anim_dump_start_step;
 
 	QTimer *autoReloadTimer;
-	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
 	EditorInterface *customizerEditor;
@@ -50,6 +49,7 @@ public:
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;
 	EditorInterface *activeEditor;
+	TabManager *tabManager;
 
 #ifdef ENABLE_CGAL
 	shared_ptr<const class Geometry> root_geom;
@@ -73,7 +73,7 @@ public:
 	int compileErrors;
 	int compileWarnings;
 
-	MainWindow(const QString &filename);
+	MainWindow(const QStringList &filenames);
 	~MainWindow();
 
 protected:
@@ -85,10 +85,8 @@ private slots:
 	void updatedAnimSteps();
 	void updatedAnimDump(bool checked);
 	void updateTVal();
-	void updateMdiMode(bool mdi);
 	void updateUndockMode(bool undockMode);
 	void updateReorderMode(bool reorderMode);
-	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
 	void showProgress();
@@ -99,18 +97,17 @@ public:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	static void noOutput(const std::string &, void*) {};  // /dev/null
 
+	bool fileChangedOnDisk();
+
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void handleFileDrop(const QString &filename);
-	void refreshDocument();
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
-	bool fileChangedOnDisk();
 	void parseTopLevelDocument(bool rebuildParameterWidget);
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
-	//bool maybeSave();
 	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
@@ -125,8 +122,6 @@ private:
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
 	void exceptionCleanup();
-
-	TabManager *tabManager;
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
@@ -235,7 +230,6 @@ public:
 	QList<double> getRotation() const;
 
 public slots:
-	void openFile(const QString &filename);
 	void actionReloadRenderPreview();
 	void on_editorDock_visibilityChanged(bool);
 	void on_consoleDock_visibilityChanged(bool);
@@ -290,7 +284,6 @@ public slots:
 private:
 	bool network_progress_func(const double permille);
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
 	static const int tabStopWidth;
@@ -312,7 +305,6 @@ private:
 	time_t includes_mtime;   // latest include mod time
 	time_t deps_mtime;	  // latest dependency mod time
 	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
-	void clearExportPaths(); // clear exports paths when main file is changed by open, new, etc.
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 	int last_parser_error_pos; // last highlighted error position
 
