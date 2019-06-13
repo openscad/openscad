@@ -114,7 +114,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	scintillaLayout = new QVBoxLayout(this);
 	qsci = new QsciScintilla(this);
 
-	contentsChangedState = false;
+	contentsRendered = false;
 	findState = 0; //FIND_HIDDEN
 	filepath = "";
 

@@ -13,7 +13,7 @@ class TabManager: public QObject
 
 public:
     TabManager(MainWindow *o, const QString &filename);
-    QTabWidget *getTabObj();
+    QTabWidget *getTabWidget();
     EditorInterface *editor;
 
     void createTab(const QString &filename);
@@ -29,14 +29,14 @@ public:
 
 private:
     MainWindow *par;
-    QTabWidget *tabobj;
+    QTabWidget *tabWidget;
     QSet<EditorInterface *> editorList;
 
     bool maybeSave(int);
 
 private slots:
-    void curChanged(int);
-    void closeRequested(int);
+    void tabSwitched(int);
+    void closeTabRequested(int);
 
 private slots:
     void highlightError(int);
@@ -56,9 +56,8 @@ private slots:
     void updateFindState();
 
 public slots:
-    void actionNewTab();
-    void actionOpenTab();
-    void curContent();
-    void setContentsChanged(); // since last render
+    void actionNew();
+    void actionOpen();
+    void setContentRenderState(); // since last render
     void setTabModified(bool);
 };

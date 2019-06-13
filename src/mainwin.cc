@@ -220,7 +220,7 @@ MainWindow::MainWindow(const QString &filename)
 	}
 
 	tabManager = new TabManager(this, filename);
-	editorDockContents->layout()->addWidget(tabManager->getTabObj());
+	editorDockContents->layout()->addWidget(tabManager->getTabWidget());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -299,10 +299,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
 
 	// File menu
-	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
-	connect(this->fileActionNewTab, SIGNAL(triggered()), tabManager, SLOT(actionNewTab()));
-	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
-	connect(this->fileActionOpenTab, SIGNAL(triggered()), tabManager, SLOT(actionOpenTab()));
+	connect(this->fileActionNewWindow, SIGNAL(triggered()), this, SLOT(actionNewWindow()));
+	connect(this->fileActionNew, SIGNAL(triggered()), tabManager, SLOT(actionNew()));
+	connect(this->fileActionOpenWindow, SIGNAL(triggered()), this, SLOT(actionOpenWindow()));
+	connect(this->fileActionOpen, SIGNAL(triggered()), tabManager, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
@@ -476,8 +476,8 @@ MainWindow::MainWindow(const QString &filename)
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
 
-	initActionIcon(fileActionNewTab, ":/images/blackNew.png", ":/images/Document-New-128.png");
-	initActionIcon(fileActionOpenTab, ":/images/Open-32.png", ":/images/Open-128.png");
+	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
+	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
 	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
 	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
 	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
@@ -977,7 +977,7 @@ void MainWindow::refreshDocument()
 			PRINTB("Loaded design '%s'.", activeEditor->filepath.toLocal8Bit().constData());
 			if (activeEditor->toPlainText() != text) {
 				activeEditor->setPlainText(text);
-				tabManager->setContentsChanged();
+				tabManager->setContentRenderState();
 			}
 		}
 	}
@@ -1350,7 +1350,7 @@ void MainWindow::compileCSG()
 	}
 }
 
-void MainWindow::actionNew()
+void MainWindow::actionNewWindow()
 {
 	new MainWindow(QString());
 	// if (MainWindow::mdiMode) {
@@ -1365,7 +1365,7 @@ void MainWindow::actionNew()
 	// }
 }
 
-void MainWindow::actionOpen()
+void MainWindow::actionOpenWindow()
 {
 	auto fileInfo = UIUtils::openFile(this);
 	if (!fileInfo.exists()) {
@@ -2276,7 +2276,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	}
 
 	renderedEditor = activeEditor;
-	activeEditor->contentsChangedState = false;
+	activeEditor->contentsRendered = true;
 	compileEnded();
 }
 
@@ -2422,7 +2422,7 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	// editor has changed since last render
-	if (activeEditor->contentsChangedState) {
+	if (!activeEditor->contentsRendered) {
 		auto ret = QMessageBox::warning(this, "Application",
 				"The current tab has been modified since its last render (F6).\n"
 				"Do you really want to export the previous content?",

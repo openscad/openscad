@@ -137,8 +137,8 @@ public slots:
 	void actionSave();
 
 private slots:
-	void actionNew();
-	void actionOpen();
+	void actionNewWindow();
+	void actionOpenWindow();
 	void actionOpenRecent();
 	void actionOpenExample();
 	void clearRecentFiles();
