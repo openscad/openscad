@@ -156,7 +156,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	initMargin();
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
-	connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
+	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
 	qsci->installEventFilter(this);
 }
 
@@ -193,6 +193,11 @@ void ScintillaEditor::applySettings()
 
     if (!value) qsci->setMarginWidth(1,20);
     else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+}
+
+void ScintillaEditor::fireModificationChanged(bool b)
+{
+	emit modificationChanged(b, this);
 }
 
 void ScintillaEditor::public_applySettings()

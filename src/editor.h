@@ -28,7 +28,7 @@ public:
 
 signals:
   void contentsChanged();
-  void modificationChanged(bool);												
+  void modificationChanged(bool, EditorInterface *);												
 
 public slots:
 	virtual void zoomIn() = 0;

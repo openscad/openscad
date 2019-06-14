@@ -15,12 +15,15 @@ public:
     TabManager(MainWindow *o, const QString &filename);
     QTabWidget *getTabWidget();
     EditorInterface *editor;
+    QSet<EditorInterface *> editorList;
 
     void createTab(const QString &filename);
     void openTabFile(const QString &filename);
-    void setTabName(const QString &filename);
+    void setTabName(const QString &filename, EditorInterface *edt = nullptr);
     void refreshDocument();
     bool shouldClose();
+    void save(EditorInterface *edt);
+    void saveAs(EditorInterface *edt);
 
 public:
     static constexpr const int FIND_HIDDEN = 0;
@@ -30,9 +33,9 @@ public:
 private:
     MainWindow *par;
     QTabWidget *tabWidget;
-    QSet<EditorInterface *> editorList;
 
     bool maybeSave(int);
+    void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);
 
 private slots:
     void tabSwitched(int);
@@ -59,5 +62,6 @@ public slots:
     void actionNew();
     void actionOpen();
     void setContentRenderState(); // since last render
-    void setTabModified(bool);
+    void setTabModified(bool, EditorInterface *);
+    void saveAll();
 };

@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QFileDialog>
 #include "editor.h"
 #include "tabmanager.h"
 #include "scintillaeditor.h"
@@ -12,6 +13,16 @@
 #include "MainWindow.h"
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
+// Set dummy for Qt versions that do not have QSaveFile
+#define QT_FILE_SAVE_CLASS QFile
+#define QT_FILE_SAVE_COMMIT true
+#else
+#include <QSaveFile>
+#define QT_FILE_SAVE_CLASS QSaveFile
+#define QT_FILE_SAVE_COMMIT if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
+#endif
 
 
 TabManager::TabManager(MainWindow *o, const QString &filename)
@@ -136,7 +147,7 @@ void TabManager::createTab(const QString &filename)
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged())); 
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentRenderState()));
-    connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setTabModified(bool)));
+    connect(editor, SIGNAL(modificationChanged(bool, EditorInterface *)), this, SLOT(setTabModified(bool, EditorInterface *)));
 
     connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
                     editor, SLOT(initFont(const QString&,uint)));
@@ -246,13 +257,13 @@ void TabManager::updateFindState()
         par->hideFind();
 }
 
-void TabManager::setTabModified(bool mod)
+void TabManager::setTabModified(bool mod, EditorInterface *edt)
 {
     QString fname = _("Untitled.scad");
     QString fpath = fname;
-    if(!editor->filepath.isEmpty())
+    if(!edt->filepath.isEmpty())
     {
-        QFileInfo fileinfo(editor->filepath);
+        QFileInfo fileinfo(edt->filepath);
         fname = fileinfo.fileName();
         fpath = fileinfo.filePath();
     }
@@ -261,9 +272,11 @@ void TabManager::setTabModified(bool mod)
         fname += "*";
     }
 
-    tabWidget->setTabText(tabWidget->currentIndex(), fname);
-    tabWidget->setTabToolTip(tabWidget->currentIndex(), fpath);
-    par->setWindowTitle(fname);
+    tabWidget->setTabText(tabWidget->indexOf(edt), fname);
+    tabWidget->setTabToolTip(tabWidget->indexOf(edt), fpath);
+    if(edt == editor) {
+        par->setWindowTitle(fname);
+    }
 }
 
 void TabManager::openTabFile(const QString &filename)
@@ -277,7 +290,7 @@ void TabManager::openTabFile(const QString &filename)
     const auto cmd = par->knownFileExtensions[suffix];
     if (knownFileType && cmd.isEmpty()) {
         setTabName(filename);
-        par->updateRecentFiles();
+        par->updateRecentFiles(editor);
     } else {
         setTabName(nullptr);
         editor->setPlainText(cmd.arg(filename));
@@ -295,18 +308,22 @@ void TabManager::openTabFile(const QString &filename)
     par->clearCurrentOutput();
 }
 
-void TabManager::setTabName(const QString &filename)
+void TabManager::setTabName(const QString &filename, EditorInterface *edt)
 {
+    if(edt == nullptr) {
+        edt = editor;
+    }
+
     if (filename.isEmpty()) {
-        editor->filepath.clear();
-        tabWidget->setTabText(tabWidget->currentIndex(), _("Untitled.scad"));
-        tabWidget->setTabToolTip(tabWidget->currentIndex(), _("Untitled.scad"));
+        edt->filepath.clear();
+        tabWidget->setTabText(tabWidget->indexOf(edt), _("Untitled.scad"));
+        tabWidget->setTabToolTip(tabWidget->indexOf(edt), _("Untitled.scad"));
     } else {
         QFileInfo fileinfo(filename);
-        editor->filepath = fileinfo.absoluteFilePath();
-        tabWidget->setTabText(tabWidget->currentIndex(), fileinfo.fileName());
-        tabWidget->setTabToolTip(tabWidget->currentIndex(), fileinfo.filePath());
-        par->parameterWidget->readFile(editor->filepath);  ////////////////////////////////
+        edt->filepath = fileinfo.absoluteFilePath();
+        tabWidget->setTabText(tabWidget->indexOf(edt), fileinfo.fileName());
+        tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
+        par->parameterWidget->readFile(edt->filepath);  ////////////////////////////////
         QDir::setCurrent(fileinfo.dir().absolutePath());
     }
     par->editorTopLevelChanged(par->editorDock->isFloating());
@@ -356,7 +373,7 @@ bool TabManager::maybeSave(int x)
         auto ret = (QMessageBox::StandardButton) box.exec();
 
         if (ret == QMessageBox::Save) {
-            par->actionSave();
+            save(edt);
             // Returns false on failed save
             return !edt->isContentModified();
         }
@@ -377,8 +394,8 @@ bool TabManager::shouldClose()
         QMessageBox box(par);
         box.setText(_("Some of the tabs are modified."));
         box.setInformativeText(_("All unsaved changes will be lost."));
-        box.setStandardButtons(QMessageBox::Discard | QMessageBox::Cancel);
-        box.setDefaultButton(QMessageBox::Save);
+        box.setStandardButtons(QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
+        box.setDefaultButton(QMessageBox::SaveAll);
         box.setIcon(QMessageBox::Warning);
         box.setWindowModality(Qt::ApplicationModal);
 #ifdef Q_OS_MAC
@@ -394,6 +411,100 @@ bool TabManager::shouldClose()
         else if(ret == QMessageBox::Discard) {
             return true;
         }
+        else if(ret == QMessageBox::SaveAll) {
+            saveAll();
+            return false;
+        }
     }
     return true;
+}
+
+void TabManager::saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt)
+{
+    const std::string messageFormat = msg + " %s (%s)";
+    const char *fileName = edt->filepath.toLocal8Bit().constData();
+    PRINTB(messageFormat.c_str(), fileName % file.errorString().toLocal8Bit().constData());
+
+    const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
+    const QString dialogFormat(dialogFormatStr.c_str());
+    QMessageBox::warning(par, par->windowTitle(), dialogFormat.arg(edt->filepath).arg(file.errorString()));
+}
+
+/*!
+    Save current document.
+    Should _always_ write to disk, since this is called by SaveAs - i.e. don't try to be
+    smart and check for document modification here.
+ */
+void TabManager::save(EditorInterface *edt)
+{
+    assert(edt != nullptr);
+
+    if (edt->filepath.isEmpty()) {
+        saveAs(edt);
+        return;
+    }
+
+    par->setCurrentOutput();
+
+    // If available (>= Qt 5.1), use QSaveFile to ensure the file is not
+    // destroyed if the device is full. Unfortunately this is not working
+    // as advertised (at least in Qt 5.3) as it does not detect the device
+    // full properly and happily commits a 0 byte file.
+    // Checking the QTextStream status flag after flush() seems to catch
+    // this condition.
+    QT_FILE_SAVE_CLASS file(edt->filepath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        saveError(file, _("Failed to open file for writing"), edt);
+    }
+    else {
+        QTextStream writer(&file);
+        writer.setCodec("UTF-8");
+        writer << edt->toPlainText();
+        writer.flush();
+        bool saveOk = writer.status() == QTextStream::Ok;
+        QT_FILE_SAVE_COMMIT;
+        if (saveOk) {
+            PRINTB(_("Saved design '%s'."), edt->filepath.toLocal8Bit().constData());
+            edt->setContentModified(false);
+        } else {
+            saveError(file, _("Error saving design"), edt);
+        }
+    }
+    par->updateRecentFiles(edt);
+}
+
+void TabManager::saveAs(EditorInterface *edt)
+{
+    auto new_filename = QFileDialog::getSaveFileName(par, _("Save File"),
+            edt->filepath.isEmpty()?_("Untitled.scad"):edt->filepath,
+            _("OpenSCAD Designs (*.scad)"));
+    if (!new_filename.isEmpty()) {
+        if (QFileInfo(new_filename).suffix().isEmpty()) {
+            new_filename.append(".scad");
+
+            // Manual overwrite check since Qt doesn't do it, when using the
+            // defaultSuffix property
+            QFileInfo info(new_filename);
+            if (info.exists()) {
+                if (QMessageBox::warning(par, par->windowTitle(),
+                                                                 QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName()),
+                                                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+                    return;
+                }
+            }
+        }
+        par->parameterWidget->writeFileIfNotEmpty(new_filename);
+        setTabName(new_filename, edt);
+        save(edt);
+    }
+}
+
+void TabManager::saveAll()
+{
+    foreach(EditorInterface *edt, editorList) 
+    {
+        if(edt->isContentModified()) {
+            save(edt);
+        }
+    }
 }

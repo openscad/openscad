@@ -99,6 +99,7 @@ public slots:
 private slots:
 	void onTextChanged();
         void applySettings();
+    void fireModificationChanged(bool);
 
 public:
 	void public_applySettings();

@@ -106,16 +106,6 @@
 #include "PrintService.h"
 #endif
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
-// Set dummy for Qt versions that do not have QSaveFile
-#define QT_FILE_SAVE_CLASS QFile
-#define QT_FILE_SAVE_COMMIT true
-#else
-#include <QSaveFile>
-#define QT_FILE_SAVE_CLASS QSaveFile
-#define QT_FILE_SAVE_COMMIT if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
-#endif
-
 #include <fstream>
 
 #include <algorithm>
@@ -304,6 +294,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionOpen, SIGNAL(triggered()), tabManager, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
+	connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
@@ -803,11 +794,11 @@ bool MainWindow::network_progress_func(const double permille)
 	return (progresswidget && progresswidget->wasCanceled());
 }
 
-void MainWindow::updateRecentFiles()
+void MainWindow::updateRecentFiles(EditorInterface *edt)
 {
 	// Check that the canonical file path exists - only update recent files
 	// if it does. Should prevent empty list items on initial open etc.
-	QFileInfo fileinfo(activeEditor->filepath);
+	QFileInfo fileinfo(edt->filepath);
 	auto infoFileName = fileinfo.absoluteFilePath();
 	QSettingsCached settings; // already set up properly via main.cpp
 	auto files = settings.value("recentFileList").toStringList();
@@ -1372,82 +1363,14 @@ void MainWindow::saveBackup()
 	return writeBackup(this->tempFile);
 }
 
-void MainWindow::saveError(const QIODevice &file, const std::string &msg)
-{
-	const std::string messageFormat = msg + " %s (%s)";
-	const char *fileName = activeEditor->filepath.toLocal8Bit().constData();
-	PRINTB(messageFormat.c_str(), fileName % file.errorString().toLocal8Bit().constData());
-
-	const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
-	const QString dialogFormat(dialogFormatStr.c_str());
-	QMessageBox::warning(this, windowTitle(), dialogFormat.arg(activeEditor->filepath).arg(file.errorString()));
-}
-
-/*!
-	Save current document.
-	Should _always_ write to disk, since this is called by SaveAs - i.e. don't try to be
-	smart and check for document modification here.
- */
 void MainWindow::actionSave()
 {
-	if (activeEditor->filepath.isEmpty()) {
-		actionSaveAs();
-		return;
-	}
-
-	setCurrentOutput();
-
-	// If available (>= Qt 5.1), use QSaveFile to ensure the file is not
-	// destroyed if the device is full. Unfortunately this is not working
-	// as advertised (at least in Qt 5.3) as it does not detect the device
-	// full properly and happily commits a 0 byte file.
-	// Checking the QTextStream status flag after flush() seems to catch
-	// this condition.
-	QT_FILE_SAVE_CLASS file(activeEditor->filepath);
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-		saveError(file, _("Failed to open file for writing"));
-	}
-	else {
-		QTextStream writer(&file);
-		writer.setCodec("UTF-8");
-		writer << activeEditor->toPlainText();
-		writer.flush();
-		bool saveOk = writer.status() == QTextStream::Ok;
-		QT_FILE_SAVE_COMMIT;
-		if (saveOk) {
-			PRINTB(_("Saved design '%s'."), activeEditor->filepath.toLocal8Bit().constData());
-			activeEditor->setContentModified(false);
-		} else {
-			saveError(file, _("Error saving design"));
-		}
-	}
-	updateRecentFiles();
+	tabManager->save(activeEditor);
 }
 
 void MainWindow::actionSaveAs()
 {
-	auto new_filename = QFileDialog::getSaveFileName(this, _("Save File"),
-			activeEditor->filepath.isEmpty()?_("Untitled.scad"):activeEditor->filepath,
-			_("OpenSCAD Designs (*.scad)"));
-	if (!new_filename.isEmpty()) {
-		if (QFileInfo(new_filename).suffix().isEmpty()) {
-			new_filename.append(".scad");
-
-			// Manual overwrite check since Qt doesn't do it, when using the
-			// defaultSuffix property
-			QFileInfo info(new_filename);
-			if (info.exists()) {
-				if (QMessageBox::warning(this, windowTitle(),
-																 QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName()),
-																 QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
-					return;
-				}
-			}
-		}
-		this->parameterWidget->writeFileIfNotEmpty(new_filename);
-		tabManager->setTabName(new_filename);
-		actionSave();
-	}
+	tabManager->saveAs(activeEditor);
 }
 
 void MainWindow::actionShowLibraryFolder()

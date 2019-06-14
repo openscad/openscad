@@ -108,7 +108,6 @@ private:
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
-	void saveError(const QIODevice &file, const std::string &msg);
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 
@@ -127,9 +126,8 @@ private:
   class FontListDialog *font_list_dialog;
 
 public slots:
-	void updateRecentFiles();
+	void updateRecentFiles(EditorInterface *edt);
 	void updateRecentFileActions();
-	void actionSave();
 
 private slots:
 	void actionNewWindow();
@@ -137,6 +135,7 @@ private slots:
 	void actionOpenRecent();
 	void actionOpenExample();
 	void clearRecentFiles();
+	void actionSave();
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
