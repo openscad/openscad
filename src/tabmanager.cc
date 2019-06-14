@@ -299,12 +299,12 @@ void TabManager::openTabFile(const QString &filename)
     refreshDocument();
 
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
-    // try {
-    //     parseTopLevelDocument(true);
-    // } catch (const HardWarningException&) {
-    //     exceptionCleanup();
-    // }
-    // this->last_compiled_doc = ""; // undo the damage so F4 works
+    try {
+        par->parseTopLevelDocument(true);
+    } catch (const HardWarningException&) {
+        par->exceptionCleanup();
+    }
+    par->last_compiled_doc = ""; // undo the damage so F4 works
     par->clearCurrentOutput();
 }
 
@@ -323,7 +323,7 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
         edt->filepath = fileinfo.absoluteFilePath();
         tabWidget->setTabText(tabWidget->indexOf(edt), fileinfo.fileName());
         tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
-        par->parameterWidget->readFile(edt->filepath);  ////////////////////////////////
+        par->parameterWidget->readFile(edt->filepath);
         QDir::setCurrent(fileinfo.dir().absolutePath());
     }
     par->editorTopLevelChanged(par->editorDock->isFloating());

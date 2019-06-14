@@ -98,13 +98,14 @@ public:
 	static void noOutput(const std::string &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
+	void parseTopLevelDocument(bool rebuildParameterWidget);
+	void exceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void handleFileDrop(const QString &filename);
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
-	void parseTopLevelDocument(bool rebuildParameterWidget);
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
@@ -120,7 +121,6 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
-	void exceptionCleanup();
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
