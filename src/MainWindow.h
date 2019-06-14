@@ -130,6 +130,7 @@ public slots:
 	void updateRecentFileActions();
 
 private slots:
+	void actionOpen();
 	void actionNewWindow();
 	void actionOpenWindow();
 	void actionOpenRecent();

@@ -291,7 +291,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionNewWindow, SIGNAL(triggered()), this, SLOT(actionNewWindow()));
 	connect(this->fileActionNew, SIGNAL(triggered()), tabManager, SLOT(actionNew()));
 	connect(this->fileActionOpenWindow, SIGNAL(triggered()), this, SLOT(actionOpenWindow()));
-	connect(this->fileActionOpen, SIGNAL(triggered()), tabManager, SLOT(actionOpen()));
+	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
@@ -1248,6 +1248,15 @@ void MainWindow::compileCSG()
 	}
 }
 
+void MainWindow::actionOpen()
+{
+	auto fileInfo = UIUtils::openFile(this);
+	if (!fileInfo.exists()) {
+		return;
+	}
+	tabManager->open(fileInfo.filePath());
+}
+
 void MainWindow::actionNewWindow()
 {
 	new MainWindow(QStringList());
@@ -1265,7 +1274,7 @@ void MainWindow::actionOpenWindow()
 void MainWindow::actionOpenRecent()
 {
 	auto action = qobject_cast<QAction *>(sender());
-	tabManager->createTab(action->data().toString());
+	tabManager->open(action->data().toString());
 }
 
 void MainWindow::clearRecentFiles()
@@ -1319,7 +1328,7 @@ void MainWindow::actionOpenExample()
 	const auto action = qobject_cast<QAction *>(sender());
 	if (action) {
 		const auto &path = action->data().toString();
-		tabManager->createTab(path);
+		tabManager->open(path);
 	}
 }
 

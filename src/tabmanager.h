@@ -24,6 +24,7 @@ public:
     bool shouldClose();
     void save(EditorInterface *edt);
     void saveAs(EditorInterface *edt);
+    void open(const QString &filename);
 
 public:
     static constexpr const int FIND_HIDDEN = 0;
@@ -60,7 +61,6 @@ private slots:
 
 public slots:
     void actionNew();
-    void actionOpen();
     void setContentRenderState(); // since last render
     void setTabModified(bool, EditorInterface *);
     void saveAll();

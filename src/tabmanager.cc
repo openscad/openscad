@@ -103,21 +103,17 @@ void TabManager::actionNew()
     createTab("");
 }
 
-void TabManager::actionOpen()
+void TabManager::open(const QString &filename)
 {
-    auto fileInfo = UIUtils::openFile(par);
-    if (!fileInfo.exists()) {
-        return;
-    }
-
+    assert(!filename.isEmpty());
     if(editor->filepath.isEmpty() && !editor->isContentModified())
     {
-        editor->filepath = fileInfo.filePath();
+        editor->filepath = filename;
         refreshDocument();
     }
     else
     {
-        createTab(fileInfo.filePath());
+        createTab(filename);
     }
 }
 
