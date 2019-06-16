@@ -282,6 +282,7 @@ HEADERS += src/version_check.h \
            src/GLView.h \
            src/MainWindow.h \
            src/tabmanager.h \
+           src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -520,6 +521,7 @@ SOURCES += \
            src/openscad.cc \
            src/mainwin.cc \
            src/tabmanager.cc \
+           src/tabwidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
