@@ -188,7 +188,7 @@ public:
 
 	Returns true on error, false on success.
 */
-bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
+bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 																							 const std::vector<IndexedFace> &faces, 
 																							 std::vector<IndexedTriangle> &triangles,
 																							 const Vector3f *normal)
