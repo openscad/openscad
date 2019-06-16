@@ -209,15 +209,17 @@ MainWindow::MainWindow(const QStringList &filenames)
 	}
 
 	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
-	editorDockContents->layout()->addWidget(tabManager->getTabWidget());
+	tabDockContents->layout()->addWidget(tabManager->getTabHeader());
+	tabDock->setTitleBarWidget(new QWidget(tabDock)); // to remove title bar from dockWidget
+	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
-	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+	setCorner(Qt::TopLeftCorner, Qt::TopDockWidgetArea);
+	setCorner(Qt::TopRightCorner, Qt::TopDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
@@ -1685,7 +1687,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	auto fulltext =
 		std::string(this->last_compiled_doc.toUtf8().constData()) +
 		"\n\x03\n" + commandline_commands;
-	
+
 	auto fnameba = activeEditor->filepath.toLocal8Bit();
 	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 	delete this->parsed_module;
@@ -2830,6 +2832,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		this->editorDock->disableSettingsUpdate();
 		this->consoleDock->disableSettingsUpdate();
 		this->parameterDock->disableSettingsUpdate();
+		this->tabDock->disableSettingsUpdate();
 
 		event->accept();
 	} else {

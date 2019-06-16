@@ -434,6 +434,39 @@
     </size>
    </property>
   </widget>
+  <widget class="Dock" name="tabDock">
+   <property name="minimumSize">
+    <size>
+     <width>10</width>
+     <height>10</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::NoDockWidgetFeatures</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="tabDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_1">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+    </layout>
+   </widget>
+  </widget>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
     <number>1</number>

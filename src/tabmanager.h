@@ -1,9 +1,9 @@
 #pragma once
 
-#include <QTabWidget>
 #include <QObject>
 #include <QSet>
 #include "editor.h"
+#include "tabwidget.h"
 
 class MainWindow; // for circular dependency
 
@@ -13,7 +13,8 @@ class TabManager: public QObject
 
 public:
     TabManager(MainWindow *o, const QString &filename);
-    QTabWidget *getTabWidget();
+    QWidget *getTabHeader();
+    QWidget *getTabContent();
     EditorInterface *editor;
     QSet<EditorInterface *> editorList;
 
@@ -33,7 +34,7 @@ public:
 
 private:
     MainWindow *par;
-    QTabWidget *tabWidget;
+    TabWidget *tabWidget;
 
     bool maybeSave(int);
     void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);

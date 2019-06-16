@@ -1,4 +1,3 @@
-#include <QTabWidget>
 #include <QFileInfo>
 #include <QFile>
 #include <QDir>
@@ -7,6 +6,7 @@
 #include <QFileDialog>
 #include "editor.h"
 #include "tabmanager.h"
+#include "tabwidget.h"
 #include "scintillaeditor.h"
 #include "QSettingsCached.h"
 #include "Preferences.h"
@@ -29,17 +29,18 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
 {
     par = o;
 
-    tabWidget = new QTabWidget();
+    tabWidget = new TabWidget();
+    tabWidget->setExpanding(false);
     tabWidget->setTabsClosable(true);
     tabWidget->setMovable(true);
-    tabWidget->setTabBarAutoHide(true);
-    connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSwitched(int)));
+    tabWidget->setAutoHide(true);
+    connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
 
     createTab(filename);
 
-    connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(stopAnimation()));
-    connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFindState()));
+    connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(stopAnimation()));
+    connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(updateFindState()));
 
     connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
     connect(par, SIGNAL(unhighlightLastError()), this, SLOT(unhighlightLastError()));
@@ -57,10 +58,16 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     connect(par->editActionUncomment, SIGNAL(triggered()), this, SLOT(uncommentSelection()));
 }
 
-QTabWidget *TabManager::getTabWidget()
+QWidget *TabManager::getTabHeader()
 {
     assert(tabWidget != nullptr);
     return tabWidget;
+}
+
+QWidget *TabManager::getTabContent()
+{
+    assert(tabWidget != nullptr);
+    return tabWidget->getContentWidget();
 }
 
 void TabManager::tabSwitched(int x)
@@ -152,9 +159,9 @@ void TabManager::createTab(const QString &filename)
     editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
-    tabWidget->addTab(editor, _("Untitled.scad"));
+    int idx = tabWidget->addTab(editor, _("Untitled.scad"));
     if(!editorList.isEmpty()) {
-        tabWidget->setCurrentWidget(editor); // to prevent emitting of currentChanged signal twice for first tab
+        tabWidget->setCurrentWidget(idx); // to prevent emitting of currentTabChanged signal twice for first tab
     }
 
     editorList.insert(editor);
