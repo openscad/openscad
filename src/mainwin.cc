@@ -209,8 +209,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	}
 
 	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
-	tabDockContents->layout()->addWidget(tabManager->getTabHeader());
-	tabDock->setTitleBarWidget(new QWidget(tabDock)); // to remove title bar from dockWidget
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -218,8 +216,8 @@ MainWindow::MainWindow(const QStringList &filenames)
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
     connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
 
-	setCorner(Qt::TopLeftCorner, Qt::TopDockWidgetArea);
-	setCorner(Qt::TopRightCorner, Qt::TopDockWidgetArea);
+	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
@@ -2832,7 +2830,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		this->editorDock->disableSettingsUpdate();
 		this->consoleDock->disableSettingsUpdate();
 		this->parameterDock->disableSettingsUpdate();
-		this->tabDock->disableSettingsUpdate();
 
 		event->accept();
 	} else {

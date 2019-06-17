@@ -33,9 +33,10 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     tabWidget->setExpanding(false);
     tabWidget->setTabsClosable(true);
     tabWidget->setMovable(true);
-    tabWidget->setAutoHide(true);
+    toolBarWidget = par->tabToolBar->addWidget(tabWidget);
     connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
+    connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SLOT(setTabVisibility(int)));
 
     createTab(filename);
 
@@ -56,12 +57,6 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     connect(par->editActionUnindent, SIGNAL(triggered()), this, SLOT(unindentSelection()));
     connect(par->editActionComment, SIGNAL(triggered()), this, SLOT(commentSelection()));
     connect(par->editActionUncomment, SIGNAL(triggered()), this, SLOT(uncommentSelection()));
-}
-
-QWidget *TabManager::getTabHeader()
-{
-    assert(tabWidget != nullptr);
-    return tabWidget;
 }
 
 QWidget *TabManager::getTabContent()
@@ -101,6 +96,7 @@ void TabManager::closeTabRequested(int x)
     QWidget *temp = tabWidget->widget(x);
     editorList.remove((EditorInterface *)temp);
     tabWidget->removeTab(x);
+    tabWidget->fireTabCountChanged();
 
     delete temp;
 }
@@ -171,6 +167,16 @@ void TabManager::createTab(const QString &filename)
         setTabName("");
     }
     par->updateRecentFileActions();
+}
+
+void TabManager::setTabVisibility(int count)
+{
+    if(count < 2) {
+        toolBarWidget->setVisible(false);
+    }
+    else {
+        toolBarWidget->setVisible(true);
+    }
 }
 
 void TabManager::highlightError(int i)
