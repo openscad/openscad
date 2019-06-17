@@ -209,6 +209,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	}
 
 	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
+	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
     connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);

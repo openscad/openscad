@@ -13,6 +13,7 @@ class TabManager: public QObject
 
 public:
     TabManager(MainWindow *o, const QString &filename);
+    QWidget *getTabHeader();
     QWidget *getTabContent();
     EditorInterface *editor;
     QSet<EditorInterface *> editorList;
@@ -42,7 +43,6 @@ private:
 private slots:
     void tabSwitched(int);
     void closeTabRequested(int);
-    void setTabVisibility(int);
 
 private slots:
     void highlightError(int);

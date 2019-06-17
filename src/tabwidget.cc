@@ -27,13 +27,7 @@ int TabWidget::addTab(QWidget *w, const QString &label)
 	int idx = tabContent.size();
 	tabContent.insert(idx, w);
 	int i = this->insertTab(idx, label);
-	fireTabCountChanged();
 	return i;
-}
-
-void TabWidget::fireTabCountChanged()
-{
-	emit tabCountChanged(this->count());
 }
 
 void TabWidget::handleCurrentChanged(int i)

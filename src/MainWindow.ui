@@ -439,6 +439,31 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <widget class="QWidget" name="tabToolBarContents">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_1">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+   </layout>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="maximumSize">
