@@ -2633,9 +2633,10 @@ void MainWindow::viewAll()
 	this->qglview->updateGL();
 }
 
-void MainWindow::on_editorDock_visibilityChanged(bool)
+void MainWindow::on_editorDock_visibilityChanged(bool b)
 {
 	editorTopLevelChanged(editorDock->isFloating());
+	tabToolBar->setVisible(b);
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
@@ -2651,6 +2652,17 @@ void MainWindow::on_parameterDock_visibilityChanged(bool)
 void MainWindow::editorTopLevelChanged(bool topLevel)
 {
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
+	if(topLevel)
+	{
+		this->removeToolBar(tabToolBar);
+		((QVBoxLayout *)editorDockContents->layout())->insertWidget(0, tabToolBar);
+	}
+	else
+	{
+		editorDockContents->layout()->removeWidget(tabToolBar);
+		this->addToolBar(tabToolBar);
+	}
+	tabToolBar->show();
 }
 
 void MainWindow::changedTopLevelConsole(bool topLevel)
