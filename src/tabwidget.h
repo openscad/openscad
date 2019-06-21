@@ -18,6 +18,7 @@ public:
     QWidget *widget(int index);
     void removeTab(int index);
     void setCurrentWidget(int index);
+    void fireTabCountChanged();
 
 private:
 	QList<QWidget *> tabContent;
@@ -25,6 +26,7 @@ private:
 
 signals:
 	void currentTabChanged(int);
+    void tabCountChanged(int);
 
 private slots:
 	void handleCurrentChanged(int);

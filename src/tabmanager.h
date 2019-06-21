@@ -26,16 +26,19 @@ public:
     void save(EditorInterface *edt);
     void saveAs(EditorInterface *edt);
     void open(const QString &filename);
+    int count();
 
 public:
     static constexpr const int FIND_HIDDEN = 0;
     static constexpr const int FIND_VISIBLE = 1;
     static constexpr const int FIND_REPLACE_VISIBLE = 2;
 
+signals:
+    void tabCountChanged(int);
+
 private:
     MainWindow *par;
     TabWidget *tabWidget;
-    QAction *toolBarWidget;
 
     bool maybeSave(int);
     void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);

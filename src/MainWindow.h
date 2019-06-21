@@ -80,6 +80,7 @@ protected:
 	void closeEvent(QCloseEvent *event) override;
 
 private slots:
+	void setTabToolBarVisible(int);
 	void updatedAnimTval();
 	void updatedAnimFps();
 	void updatedAnimSteps();
@@ -225,6 +226,7 @@ public:
 	void onZoomEvent(InputEventZoom *event) override;
 
 	void changedTopLevelConsole(bool);
+	void changedTopLevelEditor(bool);
 
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
@@ -307,6 +309,7 @@ private:
 	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 	int last_parser_error_pos; // last highlighted error position
+	int tabCount;
 
 signals:
 	void highlightError(int);

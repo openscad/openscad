@@ -199,6 +199,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
 
+	root_module = nullptr;
+	parsed_module = nullptr;
+	absolute_root_node = nullptr;
+
 	// Open Recent
 	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
 		this->actionRecentFile[i] = new QAction(this);
@@ -209,6 +213,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	}
 
 	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
+	connect(tabManager, SIGNAL(tabCountChanged(int)), this, SLOT(setTabToolBarVisible(int)));
+	this->setTabToolBarVisible(tabManager->count());
 	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
@@ -232,9 +238,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
 
-	root_module = nullptr;
-	parsed_module = nullptr;
-	absolute_root_node = nullptr;
 #ifdef ENABLE_CGAL
 	this->cgalRenderer = nullptr;
 #endif
@@ -814,6 +817,12 @@ void MainWindow::updateRecentFiles(EditorInterface *edt)
 			mainWin->updateRecentFileActions();
 		}
 	}
+}
+
+void MainWindow::setTabToolBarVisible(int count)
+{
+	tabCount = count;
+	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
 }
 
 void MainWindow::updatedAnimTval()
@@ -2633,10 +2642,10 @@ void MainWindow::viewAll()
 	this->qglview->updateGL();
 }
 
-void MainWindow::on_editorDock_visibilityChanged(bool b)
+void MainWindow::on_editorDock_visibilityChanged(bool)
 {
-	editorTopLevelChanged(editorDock->isFloating());
-	tabToolBar->setVisible(b);
+	changedTopLevelEditor(editorDock->isFloating());
+	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
@@ -2647,6 +2656,11 @@ void MainWindow::on_consoleDock_visibilityChanged(bool)
 void MainWindow::on_parameterDock_visibilityChanged(bool)
 {
     parameterTopLevelChanged(parameterDock->isFloating());
+}
+
+void MainWindow::changedTopLevelEditor(bool topLevel)
+{
+	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
 }
 
 void MainWindow::editorTopLevelChanged(bool topLevel)
@@ -2662,7 +2676,7 @@ void MainWindow::editorTopLevelChanged(bool topLevel)
 		editorDockContents->layout()->removeWidget(tabToolBar);
 		this->addToolBar(tabToolBar);
 	}
-	tabToolBar->show();
+	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
 }
 
 void MainWindow::changedTopLevelConsole(bool topLevel)

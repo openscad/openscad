@@ -36,6 +36,7 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     tabWidget->setMovable(true);
     connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
+    connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SIGNAL(tabCountChanged(int)));
 
     createTab(filename);
 
@@ -86,7 +87,7 @@ void TabManager::tabSwitched(int x)
     }
 
     par->editActionUndo->setEnabled(editor->canUndo());
-    par->editorTopLevelChanged(par->editorDock->isFloating());
+    par->changedTopLevelEditor(par->editorDock->isFloating());
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
     par->setWindowTitle(tabWidget->tabText(x));
@@ -101,6 +102,7 @@ void TabManager::closeTabRequested(int x)
     QWidget *temp = tabWidget->widget(x);
     editorList.remove((EditorInterface *)temp);
     tabWidget->removeTab(x);
+    tabWidget->fireTabCountChanged();
 
     delete temp;
 }
@@ -171,6 +173,11 @@ void TabManager::createTab(const QString &filename)
         setTabName("");
     }
     par->updateRecentFileActions();
+}
+
+int TabManager::count()
+{
+    return tabWidget->count();
 }
 
 void TabManager::highlightError(int i)
