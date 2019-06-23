@@ -111,6 +111,8 @@ const boost::property_tree::ptree & EditorColorScheme::propertyTree() const
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
+	api = nullptr;
+	lexer = nullptr;
 	scintillaLayout = new QVBoxLayout(this);
 	qsci = new QsciScintilla(this);
 
@@ -146,14 +148,39 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
+	qsci->setCaretLineVisible(true);
 
-	this->lexer = new ScadLexer(this);
-	qsci->setLexer(this->lexer);
+	setLexer(new ScadLexer(this));
 	initMargin();
+
+	qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+	qsci->setAutoCompletionThreshold(1);
+	qsci->setAutoCompletionFillupsEnabled(true);
+	qsci->setCallTipsVisible(10);
+	qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+
+	qsci->setTabIndents(true);
+	qsci->setTabWidth(8);
+	qsci->setIndentationWidth(4);
+	qsci->setIndentationsUseTabs(false);
+
+	addTemplate("module", "module () {\n    \n}", 7);
+	addTemplate("difference", "difference() {\n    union() {\n        \n    }\n}", 37);
+	addTemplate("translate", "translate([])", 11);
+	addTemplate("rotate", "rotate([])", 8);
+	addTemplate("for", "for (i = [  :  ]) {\n    \n}", 11);
+	addTemplate("function", "function f(x) = x;", 17);
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
+	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+}
+
+void ScintillaEditor::addTemplate(const QString key, const QString text, const int cursor_offset)
+{
+	templateMap.insert(key, ScadTemplate(text, cursor_offset));
+	userList.append(key);
 }
 
 /**
@@ -272,6 +299,15 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
 	}
 }
 
+void ScintillaEditor::setLexer(ScadLexer *newLexer)
+{
+	delete this->api;
+	this->qsci->setLexer(newLexer);
+	this->api = new ScadApi(this->qsci, newLexer);
+	delete this->lexer;
+	this->lexer = newLexer;
+}
+
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
 	const auto & pt = colorScheme->propertyTree();
@@ -293,9 +329,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 			newLexer->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
 		}
 
-		qsci->setLexer(newLexer);
-		delete this->lexer;
-		this->lexer = newLexer;
+		setLexer(newLexer);
 
 		// All other properties must be set after attaching to QSCintilla so
 		// the editor gets the change events and updates itself to match
@@ -786,4 +820,29 @@ bool ScintillaEditor::modifyNumber(int key)
 	qsci->setCursorPosition(line, begin+newnr.length()-tail);
 	emit previewRequest();
 	return true;
+}
+
+void ScintillaEditor::onUserListSelected(const int id, const QString &text)
+{
+	if (!templateMap.contains(text)) {
+		return;
+	}
+
+	ScadTemplate &t = templateMap[text];
+	qsci->insert(t.get_text());
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int pos = qsci->positionFromLineIndex(line, index);
+
+	pos += t.get_cursor_offset();
+	int indent_line = line;
+	int indent_width = qsci->indentation(line);
+	qsci->lineIndexFromPosition(pos, &line, &index);
+	qsci->setCursorPosition(line, index);
+
+	int lines = t.get_text().count("\n");
+	for (int a = 0;a < lines;a++) {
+		qsci->insertAt(QString(" ").repeated(indent_width), indent_line + a + 1, 0);
+	}
 }

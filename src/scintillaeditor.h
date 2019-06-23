@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include "editor.h"
 #include "scadlexer.h"
+#include "scadapi.h"
 #include "parsersettings.h"
 
 #include "memory.h"
@@ -71,6 +72,10 @@ private:
         bool modifyNumber(int key);
         void noColor();
 
+        void setLexer(ScadLexer *lexer);
+        void replaceSelectedText(QString&);
+        void addTemplate(const QString key, const QString text, const int cursor_offset);
+
 signals:
 	void previewRequest(void);
 	
@@ -98,7 +103,8 @@ public slots:
 
 private slots:
 	void onTextChanged();
-        void applySettings();
+	void onUserListSelected(const int id, const QString &text);
+    void applySettings();
 
 private:
 	QVBoxLayout *scintillaLayout;
@@ -107,4 +113,7 @@ private:
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;
+	ScadApi *api;
+	QStringList userList;
+	QMap<QString, ScadTemplate> templateMap;
 };
