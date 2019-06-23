@@ -188,7 +188,7 @@ public:
 
 	Returns true on error, false on success.
 */
-bool GeometryUtils::tessellatePolygonWithHoles(const Vector3f *vertices,
+bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 																							 const std::vector<IndexedFace> &faces, 
 																							 std::vector<IndexedTriangle> &triangles,
 																							 const Vector3f *normal)
@@ -430,7 +430,7 @@ bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangle
 	}
 	if (currface.front() == currface.back()) currface.pop_back();
 	if (currface.size() >= 3) { // Cull empty triangles
-		const auto verts = uniqueVertices.getArray();
+		const auto& verts = uniqueVertices.getArray();
 		std::vector<IndexedTriangle> indexedtriangles;
 		err = tessellatePolygonWithHoles(verts, indexedfaces, indexedtriangles, normal);
 		for (const auto &t : indexedtriangles) {
