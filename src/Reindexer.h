@@ -4,8 +4,6 @@
 #include <functional>
 #include <vector>
 #include <algorithm>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/algorithm/copy.hpp>
 #include "hash.h"
 
 /*!
@@ -42,13 +40,11 @@ public:
     Return the new element array.
   */
   const std::vector<T>& getArray() {
-	this->vec.resize(this->map.size());
-	typename std::unordered_map<T, int>::const_iterator iter = this->map.begin();
-    while (iter != this->map.end()) {
-      this->vec[iter->second] = iter->first;
-      iter++;
-	}
-	return this->vec;
+    this->vec.resize(this->map.size());
+    for (const auto& entry : map) {
+      this->vec[entry.second] = entry.first;
+    }
+    return this->vec;
   }
 
   /*!
