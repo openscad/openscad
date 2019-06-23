@@ -194,10 +194,7 @@ CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
 
-#Uncomment the following line to enable the QScintilla editor
-!nogui {
-  CONFIG += scintilla
-}
+CONFIG += scintilla
 
 # Make experimental features available
 experimental {
