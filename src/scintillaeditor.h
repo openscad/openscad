@@ -100,6 +100,7 @@ public slots:
 	void copy() override;
 	void paste() override;
 	void initFont(const QString&, uint) override;
+	void displayTemplates() override;
 
 private slots:
 	void onTextChanged();

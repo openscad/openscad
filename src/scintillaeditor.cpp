@@ -139,6 +139,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	c = qsci->standardCommands()->find(QsciCommand::Redo);
 	c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
 	c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
+	// Ctrl-Ins displays templates
+	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
+	c->setAlternateKey(0);
 
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
@@ -181,6 +184,11 @@ void ScintillaEditor::addTemplate(const QString key, const QString text, const i
 {
 	templateMap.insert(key, ScadTemplate(text, cursor_offset));
 	userList.append(key);
+}
+
+void ScintillaEditor::displayTemplates()
+{
+	qsci->showUserList(1, userList);
 }
 
 /**

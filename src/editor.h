@@ -51,6 +51,7 @@ public slots:
 	virtual void copy() = 0;
 	virtual void paste() = 0;
 	virtual void initFont(const QString&, uint) = 0;
+	virtual void displayTemplates() = 0;
 
 private:
 	QSize initialSizeHint;

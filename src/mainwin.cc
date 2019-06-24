@@ -97,6 +97,7 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
+#include <QShortcut>
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -631,6 +632,10 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 
 	this->console->setMaximumBlockCount(5000);
+
+	QShortcut *viewTemplates = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Insert), this);
+	viewTemplates->setAutoRepeat(false);
+	connect(viewTemplates, SIGNAL(activated()), editor, SLOT(displayTemplates()));
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
