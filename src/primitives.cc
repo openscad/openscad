@@ -698,11 +698,50 @@ std::string PrimitiveNode::toString() const
 
 void register_builtin_primitives()
 {
-	Builtins::init("cube", new PrimitiveModule(primitive_type_e::CUBE));
-	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE));
-	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER));
-	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON));
-	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE));
-	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE));
-	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON));
+	QStringList cube;
+	cube
+		<< "cube(size)"
+		<< "cube([width, depth, height])"
+		<< "cube(size = [width, depth, height], center = true)";
+	Builtins::init("cube", new PrimitiveModule(primitive_type_e::CUBE), cube);
+
+	QStringList sphere;
+	sphere
+		<< "sphere(radius)"
+		<< "sphere(r = radius)"
+		<< "sphere(d = diameter)";
+	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE), sphere);
+
+	QStringList cylinder;
+	cylinder
+		<< "cylinder(h, r1, r2)"
+		<< "cylinder(h = height, r = radius, center = true)"
+		<< "cylinder(h = height, r1 = bottom, r2 = top, center = true)"
+		<< "cylinder(h = height, d = diameter, center = true)"
+		<< "cylinder(h = height, d1 = bottom, d2 = top, center = true)";
+	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER), cylinder);
+
+	QStringList polyhedron;
+	polyhedron
+		<< "polyhedron(points, triangles, convexity)";
+	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON), polyhedron);
+
+	QStringList square;
+	square
+		<< "square(size, center = true)"
+		<< "square([width,height], center = true)";
+	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE), square);
+
+	QStringList circle;
+	circle
+		<< "circle(radius)"
+		<< "circle(r = radius)"
+		<< "circle(d = diameter)";
+	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE), circle);
+
+	QStringList polygon;
+	polygon
+		<< "polygon([points])"
+		<< "polygon([points], [paths])";
+	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON), polygon);
 }

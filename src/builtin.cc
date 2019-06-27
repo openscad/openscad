@@ -3,6 +3,8 @@
 #include "module.h"
 #include "expression.h"
 
+QMap<QString, QStringList> Builtins::keywordList;
+
 Builtins *Builtins::instance(bool erase)
 {
 	static Builtins *builtins = new Builtins;
@@ -27,6 +29,24 @@ void Builtins::init(const std::string &name, class AbstractFunction *function)
 	if (function->is_experimental()) return;
 #endif
 	Builtins::instance()->functions.emplace(name, function);
+}
+
+void Builtins::init(const std::string &name, class AbstractModule *module, QStringList &calltipList)
+{
+#ifndef ENABLE_EXPERIMENTAL
+	if (module->is_experimental()) return;
+#endif
+	Builtins::instance()->modules.emplace(name, module);
+	keywordList[QString(name.c_str())] = calltipList;
+}
+
+void Builtins::init(const std::string &name, class AbstractFunction *function, QStringList &calltipList)
+{
+#ifndef ENABLE_EXPERIMENTAL
+	if (function->is_experimental()) return;
+#endif
+	Builtins::instance()->functions.emplace(name, function);
+	Builtins::keywordList[QString(name.c_str())] = calltipList;
 }
 
 extern void register_builtin_functions();
