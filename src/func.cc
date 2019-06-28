@@ -1020,41 +1020,157 @@ ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
 
 void register_builtin_functions()
 {
-	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
-	Builtins::init("sign", new BuiltinFunction(&builtin_sign));
-	Builtins::init("rands", new BuiltinFunction(&builtin_rands));
-	Builtins::init("min", new BuiltinFunction(&builtin_min));
-	Builtins::init("max", new BuiltinFunction(&builtin_max));
-	Builtins::init("sin", new BuiltinFunction(&builtin_sin));
-	Builtins::init("cos", new BuiltinFunction(&builtin_cos));
-	Builtins::init("asin", new BuiltinFunction(&builtin_asin));
-	Builtins::init("acos", new BuiltinFunction(&builtin_acos));
-	Builtins::init("tan", new BuiltinFunction(&builtin_tan));
-	Builtins::init("atan", new BuiltinFunction(&builtin_atan));
-	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2));
-	Builtins::init("round", new BuiltinFunction(&builtin_round));
-	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil));
-	Builtins::init("floor", new BuiltinFunction(&builtin_floor));
-	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
-	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
-	Builtins::init("exp", new BuiltinFunction(&builtin_exp));
-	Builtins::init("len", new BuiltinFunction(&builtin_length));
-	Builtins::init("log", new BuiltinFunction(&builtin_log));
-	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
-	Builtins::init("str", new BuiltinFunction(&builtin_str));
-	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
-	Builtins::init("ord", new BuiltinFunction(&builtin_ord));
-	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
-	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
-	Builtins::init("search", new BuiltinFunction(&builtin_search));
-	Builtins::init("version", new BuiltinFunction(&builtin_version));
-	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
-	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
-	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
-	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
-	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
-	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list));
-	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num));
-	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool));
-	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string));
+	std::list<std::string> abs;
+	abs.push_back("abs(number) -> number");
+	Builtins::init("abs", new BuiltinFunction(&builtin_abs), abs);
+
+	std::list<std::string> sign;
+	sign.push_back("sign(number) -> -1, 0 or 1");
+	Builtins::init("sign", new BuiltinFunction(&builtin_sign), sign);
+
+	std::list<std::string> rands;
+	rands.push_back("rands(min, max, num_results) -> array");
+	rands.push_back("rands(min, max, num_results, seed) -> array");
+	Builtins::init("rands", new BuiltinFunction(&builtin_rands), rands);
+
+	std::list<std::string> min;
+	min.push_back("min(number, number, ...) -> number");
+	min.push_back("min(array) -> number");
+	Builtins::init("min", new BuiltinFunction(&builtin_min), min);
+
+	std::list<std::string> max;
+	max.push_back("max(number, number, ...) -> number");
+	max.push_back("max(array) -> number");
+	Builtins::init("max", new BuiltinFunction(&builtin_max), max);
+
+	std::list<std::string> sin;
+	sin.push_back("sin(degrees) -> number");
+	Builtins::init("sin", new BuiltinFunction(&builtin_sin), sin);
+
+	std::list<std::string> cos;
+	cos.push_back("cos(degrees) -> number");
+	Builtins::init("cos", new BuiltinFunction(&builtin_cos), cos);
+
+	std::list<std::string> asin;
+	asin.push_back("asin(number) -> degrees");
+	Builtins::init("asin", new BuiltinFunction(&builtin_asin), asin);
+
+	std::list<std::string> acos;
+	acos.push_back("acos(number) -> degrees");
+	Builtins::init("acos", new BuiltinFunction(&builtin_acos), acos);
+
+	std::list<std::string> tan;
+	tan.push_back("tan(number) -> degrees");
+	Builtins::init("tan", new BuiltinFunction(&builtin_tan), tan);
+
+	std::list<std::string> atan;
+	atan.push_back("atan(number) -> degrees");
+	Builtins::init("atan", new BuiltinFunction(&builtin_atan), atan);
+
+	std::list<std::string> atan2;
+	atan2.push_back("atan2(number) -> degrees");
+	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2), atan2);
+
+	std::list<std::string> round;
+	round.push_back("round(number) -> number");
+	Builtins::init("round", new BuiltinFunction(&builtin_round), round);
+
+	std::list<std::string> ceil;
+	ceil.push_back("ceil(number) -> number");
+	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil), ceil);
+
+	std::list<std::string> floor;
+	floor.push_back("floor(number) -> number");
+	Builtins::init("floor", new BuiltinFunction(&builtin_floor), floor);
+
+	std::list<std::string> pow;
+	pow.push_back("pow(base, exponent) -> number");
+	Builtins::init("pow", new BuiltinFunction(&builtin_pow), pow);
+
+	std::list<std::string> sqrt;
+	sqrt.push_back("sqrt(number) -> number");
+	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt), sqrt);
+
+	std::list<std::string> exp;
+	exp.push_back("exp(number) -> number");
+	Builtins::init("exp", new BuiltinFunction(&builtin_exp), exp);
+
+	std::list<std::string> len;
+	len.push_back("len(string) -> number");
+	len.push_back("len(array) -> number");
+	Builtins::init("len", new BuiltinFunction(&builtin_length), len);
+
+	std::list<std::string> log;
+	log.push_back("log(number) -> number");
+	Builtins::init("log", new BuiltinFunction(&builtin_log), log);
+
+	std::list<std::string> ln;
+	ln.push_back("ln(number) -> number");
+	Builtins::init("ln", new BuiltinFunction(&builtin_ln), ln);
+
+	std::list<std::string> str;
+	str.push_back("str(number|string, ...) -> string");
+	Builtins::init("str", new BuiltinFunction(&builtin_str), str);
+
+	std::list<std::string> chr;
+	chr.push_back("chr(number) -> string");
+	chr.push_back("chr(vector) -> string");
+	chr.push_back("chr(range) -> string");
+	Builtins::init("chr", new BuiltinFunction(&builtin_chr), chr);
+
+	std::list<std::string> ord;
+	ord.push_back("ord(string) -> number");
+	Builtins::init("ord", new BuiltinFunction(&builtin_ord), ord);
+
+	std::list<std::string> concat;
+	concat.push_back("concat(number|string|vector, ...) -> vector");
+	Builtins::init("concat", new BuiltinFunction(&builtin_concat), concat);
+
+	std::list<std::string> lookup;
+	lookup.push_back("lookup(key, <key,value> vector) -> value");
+	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup), lookup);
+
+	std::list<std::string> search;
+	search.push_back("search(string , string|vector [, num_returns_per_match [, index_col_num ] ] ) -> vector");
+	Builtins::init("search", new BuiltinFunction(&builtin_search), search);
+
+	std::list<std::string> version;
+	version.push_back("version() -> vector");
+	Builtins::init("version", new BuiltinFunction(&builtin_version), version);
+
+	std::list<std::string> version_num;
+	version_num.push_back("version_num() -> number");
+	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num), version_num);
+
+	std::list<std::string> norm;
+	norm.push_back("norm(vector) -> number");
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm), norm);
+
+	std::list<std::string> cross;
+	cross.push_back("cross(vector, vector) -> vector");
+	Builtins::init("cross", new BuiltinFunction(&builtin_cross), cross);
+
+	std::list<std::string> parent_module;
+	parent_module.push_back("parent_module(number) -> string");
+	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module), parent_module);
+
+	std::list<std::string> is_undef;
+	is_undef.push_back("is_undef(arg) -> boolean");
+	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef), is_undef);
+
+	std::list<std::string> is_list;
+	is_list.push_back("is_list(arg) -> boolean");
+	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list), is_list);
+
+	std::list<std::string> is_num;
+	is_num.push_back("is_num(arg) -> boolean");
+	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num), is_num);
+
+	std::list<std::string> is_bool;
+	is_bool.push_back("is_bool(arg) -> boolean");
+	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool), is_bool);
+
+	std::list<std::string> is_string;
+	is_string.push_back("is_string(arg) -> boolean");
+	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string), is_string);
 }
