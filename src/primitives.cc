@@ -698,50 +698,43 @@ std::string PrimitiveNode::toString() const
 
 void register_builtin_primitives()
 {
-	QStringList cube;
-	cube
-		<< "cube(size)"
-		<< "cube([width, depth, height])"
-		<< "cube(size = [width, depth, height], center = true)";
+	std::list<std::string> cube;
+	cube.push_back("cube(size)");
+	cube.push_back("cube([width, depth, height])");
+	cube.push_back("cube(size = [width, depth, height], center = true)");
 	Builtins::init("cube", new PrimitiveModule(primitive_type_e::CUBE), cube);
 
-	QStringList sphere;
-	sphere
-		<< "sphere(radius)"
-		<< "sphere(r = radius)"
-		<< "sphere(d = diameter)";
+	std::list<std::string> sphere;
+	sphere.push_back("sphere(radius)");
+	sphere.push_back("sphere(r = radius)");
+	sphere.push_back("sphere(d = diameter)");
 	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE), sphere);
 
-	QStringList cylinder;
-	cylinder
-		<< "cylinder(h, r1, r2)"
-		<< "cylinder(h = height, r = radius, center = true)"
-		<< "cylinder(h = height, r1 = bottom, r2 = top, center = true)"
-		<< "cylinder(h = height, d = diameter, center = true)"
-		<< "cylinder(h = height, d1 = bottom, d2 = top, center = true)";
+	std::list<std::string> cylinder;
+	cylinder.push_back("cylinder(h, r1, r2)");
+	cylinder.push_back("cylinder(h = height, r = radius, center = true)");
+	cylinder.push_back("cylinder(h = height, r1 = bottom, r2 = top, center = true)");
+	cylinder.push_back("cylinder(h = height, d = diameter, center = true)");
+	cylinder.push_back("cylinder(h = height, d1 = bottom, d2 = top, center = true)");
 	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER), cylinder);
 
-	QStringList polyhedron;
-	polyhedron
-		<< "polyhedron(points, triangles, convexity)";
+	std::list<std::string> polyhedron;
+	polyhedron.push_back("polyhedron(points, triangles, convexity)");
 	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON), polyhedron);
 
-	QStringList square;
-	square
-		<< "square(size, center = true)"
-		<< "square([width,height], center = true)";
+	std::list<std::string> square;
+	square.push_back("square(size, center = true)");
+	square.push_back("square([width,height], center = true)");
 	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE), square);
 
-	QStringList circle;
-	circle
-		<< "circle(radius)"
-		<< "circle(r = radius)"
-		<< "circle(d = diameter)";
+	std::list<std::string> circle;
+	circle.push_back("circle(radius)");
+	circle.push_back("circle(r = radius)");
+	circle.push_back("circle(d = diameter)");
 	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE), circle);
 
-	QStringList polygon;
-	polygon
-		<< "polygon([points])"
-		<< "polygon([points], [paths])";
+	std::list<std::string> polygon;
+	polygon.push_back("polygon([points])");
+	polygon.push_back("polygon([points], [paths])");
 	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON), polygon);
 }

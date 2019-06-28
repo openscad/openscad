@@ -5,8 +5,6 @@
 #include "module.h"
 #include "localscope.h"
 #include "Assignment.h"
-#include <QStringList>
-#include <QMap>
 
 class Builtins
 {
@@ -17,8 +15,8 @@ public:
 	static Builtins *instance(bool erase = false);
 	static void init(const std::string &name, class AbstractModule *module);
 	static void init(const std::string &name, class AbstractFunction *function);
-	static void init(const std::string &name, class AbstractModule *module, QStringList &calltipList);
-	static void init(const std::string &name, class AbstractFunction *function, QStringList &calltipList);
+	static void init(const std::string &name, class AbstractModule *module, std::list<std::string> &calltipList);
+	static void init(const std::string &name, class AbstractFunction *function, std::list<std::string> &calltipList);
 	void initialize();
 	std::string isDeprecated(const std::string &name) const;
 
@@ -26,7 +24,7 @@ public:
 	const FunctionContainer &getFunctions() const { return this->functions; }
 	const ModuleContainer &getModules() const { return modules; }
 
-	static QMap<QString, QStringList> keywordList;
+	static std::unordered_map<std::string, std::list<std::string>> keywordList;
 	
 private:
 	Builtins();

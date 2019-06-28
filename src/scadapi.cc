@@ -3,12 +3,14 @@
 
 ScadApi::ScadApi(QsciScintilla *qsci, QsciLexer *lexer) : QsciAbstractAPIs(lexer), qsci(qsci)
 {
-	QMap<QString, QStringList>::const_iterator iter = Builtins::keywordList.constBegin();
-    auto end = Builtins::keywordList.constEnd();
-    while (iter != end) {
-        funcs.append(ApiFunc(iter.key(), iter.value()));
-        ++iter;
-    }
+	for (auto iter = Builtins::keywordList.cbegin(); iter != Builtins::keywordList.cend(); ++iter)
+	{
+		QStringList calltipList;
+		for(auto it = iter->second.cbegin(); it != iter->second.cend(); ++it)
+			calltipList.append(QString::fromStdString(*it));
+
+		funcs.append(ApiFunc(QString::fromStdString(iter->first), calltipList));
+	}
 
 // 	/*
 // 	 * 2d primitives
