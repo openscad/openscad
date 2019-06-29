@@ -132,5 +132,8 @@ std::string RotateExtrudeNode::toString() const
 void register_builtin_dxf_rotate_extrude()
 {
 	Builtins::init("dxf_rotate_extrude", new RotateExtrudeModule());
-	Builtins::init("rotate_extrude", new RotateExtrudeModule());
+
+	std::list<std::string> rotate_extrude;
+	rotate_extrude.push_back("rotate_extrude(angle = degrees, convexity = number)");
+	Builtins::init("rotate_extrude", new RotateExtrudeModule(), rotate_extrude);
 }

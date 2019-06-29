@@ -76,8 +76,16 @@ std::string CsgOpNode::name() const
 
 void register_builtin_csgops()
 {
-	Builtins::init("union", new CsgModule(OpenSCADOperator::UNION));
-	Builtins::init("difference", new CsgModule(OpenSCADOperator::DIFFERENCE));
-	Builtins::init("intersection", new CsgModule(OpenSCADOperator::INTERSECTION));
+	std::list<std::string> union_;
+	union_.push_back("union()");
+	Builtins::init("union", new CsgModule(OpenSCADOperator::UNION), union_);
+
+	std::list<std::string> difference;
+	difference.push_back("difference()");
+	Builtins::init("difference", new CsgModule(OpenSCADOperator::DIFFERENCE), difference);
+
+	std::list<std::string> intersection;
+	intersection.push_back("intersection()");
+	Builtins::init("intersection", new CsgModule(OpenSCADOperator::INTERSECTION), intersection);
 }
 

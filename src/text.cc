@@ -108,5 +108,7 @@ std::string TextNode::toString() const
 
 void register_builtin_text()
 {
-	Builtins::init("text", new TextModule());
+	std::list<std::string> text;
+	text.push_back("text(string, size = 10, font = string, halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\", $fn = number)");
+	Builtins::init("text", new TextModule(), text);
 }
