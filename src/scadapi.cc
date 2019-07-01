@@ -1,5 +1,6 @@
 #include "scadapi.h"
 #include "builtin.h"
+#include "keyword.h"
 
 ScadApi::ScadApi(QsciScintilla *qsci, QsciLexer *lexer) : QsciAbstractAPIs(lexer), qsci(qsci)
 {
@@ -11,6 +12,13 @@ ScadApi::ScadApi(QsciScintilla *qsci, QsciLexer *lexer) : QsciAbstractAPIs(lexer
 
 		funcs.append(ApiFunc(QString::fromStdString(iter->first), calltipList));
 	}
+
+	QMap<QString, QStringList>::const_iterator iter = Keyword::keywordList.constBegin();
+    auto end = Keyword::keywordList.constEnd();
+    while (iter != end) {
+        funcs.append(ApiFunc(iter.key(), iter.value()));
+        ++iter;
+    }
 
 }
 

@@ -5,6 +5,7 @@
 #include "module.h"
 #include "localscope.h"
 #include "Assignment.h"
+#include "keyword.h"
 
 class Builtins
 {
@@ -17,6 +18,8 @@ public:
 	static void init(const std::string &name, class AbstractFunction *function);
 	static void init(const std::string &name, class AbstractModule *module, std::list<std::string> &calltipList);
 	static void init(const std::string &name, class AbstractFunction *function, std::list<std::string> &calltipList);
+	static void init(const Keyword *keyword, class AbstractModule *module);
+	static void init(const Keyword *keyword, class AbstractFunction *function);
 	void initialize();
 	std::string isDeprecated(const std::string &name) const;
 

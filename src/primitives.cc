@@ -698,43 +698,50 @@ std::string PrimitiveNode::toString() const
 
 void register_builtin_primitives()
 {
-	std::list<std::string> cube;
-	cube.push_back("cube(size)");
-	cube.push_back("cube([width, depth, height])");
-	cube.push_back("cube(size = [width, depth, height], center = true)");
-	Builtins::init("cube", new PrimitiveModule(primitive_type_e::CUBE), cube);
+	std::list<std::string> cubeCalltip;
+	cubeCalltip.push_back("cube(size)");
+	cubeCalltip.push_back("cube([width, depth, height])");
+	cubeCalltip.push_back("cube(size = [width, depth, height], center = true)");
+	Keyword *cube = new Keyword("cube", cubeCalltip);
+	Builtins::init(cube, new PrimitiveModule(primitive_type_e::CUBE));
 
-	std::list<std::string> sphere;
-	sphere.push_back("sphere(radius)");
-	sphere.push_back("sphere(r = radius)");
-	sphere.push_back("sphere(d = diameter)");
-	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE), sphere);
+	std::list<std::string> sphereCalltip;
+	sphereCalltip.push_back("sphere(radius)");
+	sphereCalltip.push_back("sphere(r = radius)");
+	sphereCalltip.push_back("sphere(d = diameter)");
+	Keyword *sphere = new Keyword("sphere", sphereCalltip);
+	Builtins::init(sphere, new PrimitiveModule(primitive_type_e::SPHERE));
 
-	std::list<std::string> cylinder;
-	cylinder.push_back("cylinder(h, r1, r2)");
-	cylinder.push_back("cylinder(h = height, r = radius, center = true)");
-	cylinder.push_back("cylinder(h = height, r1 = bottom, r2 = top, center = true)");
-	cylinder.push_back("cylinder(h = height, d = diameter, center = true)");
-	cylinder.push_back("cylinder(h = height, d1 = bottom, d2 = top, center = true)");
-	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER), cylinder);
+	std::list<std::string> cylinderCalltip;
+	cylinderCalltip.push_back("cylinder(h, r1, r2)");
+	cylinderCalltip.push_back("cylinder(h = height, r = radius, center = true)");
+	cylinderCalltip.push_back("cylinder(h = height, r1 = bottom, r2 = top, center = true)");
+	cylinderCalltip.push_back("cylinder(h = height, d = diameter, center = true)");
+	cylinderCalltip.push_back("cylinder(h = height, d1 = bottom, d2 = top, center = true)");
+	Keyword *cylinder = new Keyword("cylinder", cylinderCalltip);
+	Builtins::init(cylinder, new PrimitiveModule(primitive_type_e::CYLINDER));
 
-	std::list<std::string> polyhedron;
-	polyhedron.push_back("polyhedron(points, triangles, convexity)");
-	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON), polyhedron);
+	std::list<std::string> polyhedronCalltip;
+	polyhedronCalltip.push_back("polyhedron(points, triangles, convexity)");
+	Keyword *polyhedron = new Keyword("polyhedron", polyhedronCalltip);
+	Builtins::init(polyhedron, new PrimitiveModule(primitive_type_e::POLYHEDRON));
 
-	std::list<std::string> square;
-	square.push_back("square(size, center = true)");
-	square.push_back("square([width,height], center = true)");
-	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE), square);
+	std::list<std::string> squareCalltip;
+	squareCalltip.push_back("square(size, center = true)");
+	squareCalltip.push_back("square([width,height], center = true)");
+	Keyword *square = new Keyword("square", squareCalltip);
+	Builtins::init(square, new PrimitiveModule(primitive_type_e::SQUARE));
 
-	std::list<std::string> circle;
-	circle.push_back("circle(radius)");
-	circle.push_back("circle(r = radius)");
-	circle.push_back("circle(d = diameter)");
-	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE), circle);
+	std::list<std::string> circleCalltip;
+	circleCalltip.push_back("circle(radius)");
+	circleCalltip.push_back("circle(r = radius)");
+	circleCalltip.push_back("circle(d = diameter)");
+	Keyword *circle = new Keyword("circle", circleCalltip);
+	Builtins::init(circle, new PrimitiveModule(primitive_type_e::CIRCLE));
 
-	std::list<std::string> polygon;
-	polygon.push_back("polygon([points])");
-	polygon.push_back("polygon([points], [paths])");
-	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON), polygon);
+	std::list<std::string> polygonCalltip;
+	polygonCalltip.push_back("polygon([points])");
+	polygonCalltip.push_back("polygon([points], [paths])");
+	Keyword *polygon = new Keyword("polygon", polygonCalltip);
+	Builtins::init(polygon, new PrimitiveModule(primitive_type_e::POLYGON));
 }

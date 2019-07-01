@@ -49,6 +49,22 @@ void Builtins::init(const std::string &name, class AbstractFunction *function, s
 	Builtins::keywordList[name] = calltipList;
 }
 
+void Builtins::init(const Keyword *keyword, class AbstractModule *module)
+{
+#ifndef ENABLE_EXPERIMENTAL
+	if (module->is_experimental()) return;
+#endif
+	Builtins::instance()->modules.emplace(keyword->word, module);
+}
+
+void Builtins::init(const Keyword *keyword, class AbstractFunction *function)
+{
+#ifndef ENABLE_EXPERIMENTAL
+	if (function->is_experimental()) return;
+#endif
+	Builtins::instance()->functions.emplace(keyword->word, function);
+}
+
 extern void register_builtin_functions();
 extern void register_builtin_group();
 extern void register_builtin_csgops();
