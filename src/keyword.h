@@ -1,23 +1,28 @@
 #pragma once
 
-#include <QString>
-#include <QStringList>
-#include <QMap>
+#include <string>
+#include <vector>
+
+enum class inbuilt_keyword {
+	CUBE,
+	SPHERE,
+	CYLINDER,
+	POLYHEDRON,
+	SQUARE,
+	CIRCLE,
+	POLYGON
+};
 
 class Keyword 
 {
 public:
-	Keyword(const std::string &keyword, const std::list<std::string> calltips);
+	Keyword(inbuilt_keyword keyword);
 	~Keyword();
 
 	std::string word;
-	QStringList calltip;
-
-	void setCalltip(const std::list<std::string> calltips);
-	const QString getWord() const;
-
-	static QMap<QString, QStringList> keywordList;
+	std::vector<std::string> calltip;
 
 private:
-	QString setStyle(QString s);
+	const std::string getWord(inbuilt_keyword keyword);
+	const std::vector<std::string> getCalltip(inbuilt_keyword keyword);
 };

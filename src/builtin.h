@@ -27,7 +27,8 @@ public:
 	const FunctionContainer &getFunctions() const { return this->functions; }
 	const ModuleContainer &getModules() const { return modules; }
 
-	static std::unordered_map<std::string, std::list<std::string>> keywordList;
+	static std::unordered_map<std::string, std::list<std::string>> temporaryNow;
+	static std::vector<const Keyword *> keywordList;
 	
 private:
 	Builtins();

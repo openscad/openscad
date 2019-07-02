@@ -3,7 +3,8 @@
 #include "module.h"
 #include "expression.h"
 
-std::unordered_map<std::string, std::list<std::string>> Builtins::keywordList;
+std::unordered_map<std::string, std::list<std::string>> Builtins::temporaryNow;
+std::vector<const Keyword *> Builtins::keywordList;
 
 Builtins *Builtins::instance(bool erase)
 {
@@ -37,7 +38,7 @@ void Builtins::init(const std::string &name, class AbstractModule *module, std::
 	if (module->is_experimental()) return;
 #endif
 	Builtins::instance()->modules.emplace(name, module);
-	keywordList[name] = calltipList;
+	temporaryNow[name] = calltipList;
 }
 
 void Builtins::init(const std::string &name, class AbstractFunction *function, std::list<std::string> &calltipList)
@@ -46,7 +47,7 @@ void Builtins::init(const std::string &name, class AbstractFunction *function, s
 	if (function->is_experimental()) return;
 #endif
 	Builtins::instance()->functions.emplace(name, function);
-	Builtins::keywordList[name] = calltipList;
+	Builtins::temporaryNow[name] = calltipList;
 }
 
 void Builtins::init(const Keyword *keyword, class AbstractModule *module)
@@ -55,6 +56,7 @@ void Builtins::init(const Keyword *keyword, class AbstractModule *module)
 	if (module->is_experimental()) return;
 #endif
 	Builtins::instance()->modules.emplace(keyword->word, module);
+	Builtins::keywordList.push_back(keyword);
 }
 
 void Builtins::init(const Keyword *keyword, class AbstractFunction *function)
@@ -63,6 +65,7 @@ void Builtins::init(const Keyword *keyword, class AbstractFunction *function)
 	if (function->is_experimental()) return;
 #endif
 	Builtins::instance()->functions.emplace(keyword->word, function);
+	Builtins::keywordList.push_back(keyword);
 }
 
 extern void register_builtin_functions();
