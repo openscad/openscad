@@ -40,21 +40,17 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-QFileInfo UIUtils::openFile(QWidget *parent)
+QFileInfo UIUtils::openFile(QWidget *parent, QString lastOpenFilePath)
 {
     QSettingsCached settings;
-    QString last_dirname = settings.value("lastOpenDirName").toString();
     QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
-	    last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+	    lastOpenFilePath, "OpenSCAD Designs (*.scad *.csg)");
 
     if (new_filename.isEmpty()) {
 	return QFileInfo();
     }
 
     QFileInfo fileInfo(new_filename);
-    QDir last_dir = fileInfo.dir();
-    last_dirname = last_dir.path();
-    settings.setValue("lastOpenDirName", last_dirname);
     return fileInfo;
 }
 
