@@ -769,7 +769,8 @@ set(CORE_SOURCES
   ${BISON_OpenSCADparser_OUTPUTS})
 
 set(NOCGAL_SOURCES
-  ../src/builtin.cc 
+  ../src/builtin.cc
+  ../src/dxf-g.cc 
   ../src/import.cc
   ../src/import_stl.cc
   ../src/import_amf.cc

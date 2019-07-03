@@ -322,6 +322,7 @@ set(CORE_SOURCES
 
 set(NOCGAL_SOURCES
   src/builtin.cc 
+  src/dxf-g.cc
   src/import.cc
   src/import_3mf.cc
   src/import_stl.cc

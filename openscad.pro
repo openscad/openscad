@@ -293,6 +293,7 @@ HEADERS += src/version_check.h \
            src/CSGTreeNormalizer.h \
            src/CSGTreeEvaluator.h \
            src/dxfdata.h \
+           src/dxf.h \
            src/dxfdim.h \
            src/export.h \
            src/stackcheck.h \
@@ -439,6 +440,7 @@ SOURCES += \
            src/render.cc \
            src/text.cc \
            src/dxfdata.cc \
+           src/dxf-g.cc \
            src/dxfdim.cc \
            src/offset.cc \
            src/linearextrude.cc \
