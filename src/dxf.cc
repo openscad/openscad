@@ -2331,7 +2331,7 @@ process_circle_entities_code(int code)
 		MAT4X3PNT(tmp_pt, curr_state->xform, circle_pts[i]);
 		for(int i = 0; i < 3; i++){
 			if(curr_state)
-			fprintf(out_data, "real time current_state_data xform at (%d) is (%f)\n", i, curr_state->xform[i]);
+			fprintf(out_test, "real time current_state_data xform at (%d) is (%f)\n", i, curr_state->xform[i]);
 		}		
 		VMOVE(circle_pts[i], tmp_pt);
 	    }
@@ -3815,10 +3815,73 @@ readcodes()
     return code;
 }
 
-std::vector<circle_struct> return_circle_entities_vector(){
+std::vector<circle_struct> return_circle_vector(){
 	return circle_vector; 
 }
 
+std::vector<polyline_vertex_struct> return_polyline_vertex_vector(){
+	return polyline_vertex_vector;
+}
+
+std::vector<polyline_struct> return_polyline_vector(){
+	return polyline_vector;
+}
+
+std::vector<lwpolyline_struct> return_lwpolyline_vector(){
+	return lwpolyline_vector;
+}
+
+std::vector<face3d_struct> return_face3d_vector(){
+	return face3d_vector;
+}
+
+std::vector<line_struct> return_line_vector(){
+	return line_vector;
+}
+
+std::vector<insert_struct> return_insert_vector(){
+	return insert_vector;
+}
+
+std::vector<point_struct> return_point_vector(){
+	return point_vector;
+}
+
+std::vector<arc_struct> return_arc_vector(){
+	return arc_vector;
+}
+
+std::vector<text_struct> return_text_vector(){
+	return text_vector;
+}
+
+std::vector<solid_struct> return_solid_vector(){
+	return solid_vector;
+}
+
+std::vector<mtext_struct> return_mtext_vector(){
+	return mtext_vector;
+}
+
+std::vector<text_attrib_struct> return_text_attrib_vector(){
+	return text_attrib_vector;
+}
+
+std::vector<ellipse_struct> return_ellipse_vector(){
+	return ellipse_vector;
+}
+
+std::vector<leader_struct> return_leader_vector(){
+	return leader_vector;
+}
+
+std::vector<spline_struct> return_spline_vector(){
+	return spline_vector;
+}
+
+std::vector<dimension_struct> return_dimension_vector(){
+	return dimension_vector;
+}
 
 // int
 // main(int argc, char *argv[])
@@ -3880,7 +3943,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 
     // dxf_file = argv[bu_optind++];
     // output_file = argv[bu_optind];
-	dxf_file = (char*)"circle.dxf";
+	dxf_file = (char*)"./testdata/dxf/arc.dxf";
     if ((dxf=fopen(dxf_file, "rb")) == NULL) {
 	perror(dxf_file);
 	//bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);

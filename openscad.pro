@@ -440,7 +440,7 @@ SOURCES += \
            src/render.cc \
            src/text.cc \
            src/dxfdata.cc \
-           src/dxf-g.cc \
+           src/dxf.cc \
            src/dxfdim.cc \
            src/offset.cc \
            src/linearextrude.cc \

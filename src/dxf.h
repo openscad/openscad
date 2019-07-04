@@ -458,7 +458,23 @@ struct dimension_struct{
 
 void read_dxf_file(std::string in_filename, std::string out_filename);
 
-std::vector<circle_struct> return_circle_entities_vector();
+std::vector<polyline_vertex_struct> return_polyline_vertex_vector();
+std::vector<polyline_struct> return_polyline_vector();
+std::vector<lwpolyline_struct> return_lwpolyline_vector();
+std::vector<circle_struct> return_circle_vector();
+std::vector<face3d_struct> return_face3d_vector();
+std::vector<line_struct> return_line_vector();
+std::vector<insert_struct> return_insert_vector();
+std::vector<point_struct> return_point_vector();
+std::vector<arc_struct> return_arc_vector();
+std::vector<text_struct> return_text_vector();
+std::vector<solid_struct> return_solid_vector();
+std::vector<mtext_struct> return_mtext_vector();
+std::vector<text_attrib_struct> return_text_attrib_vector();
+std::vector<ellipse_struct> return_ellipse_vector();
+std::vector<leader_struct> return_leader_vector();
+std::vector<spline_struct> return_spline_vector();
+std::vector<dimension_struct> return_dimension_vector();
 
 #endif /* CONV_DXF_DXF_H */
 
