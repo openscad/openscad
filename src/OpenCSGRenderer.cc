@@ -148,7 +148,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = ColorMode::CUTOUT;
 			}
-			
+
+                        if(background_mode) //Solves issue #2978 where the Background Modifier lost the x-ray function of objects in a difference clause.
+                          glDisable(GL_DEPTH_TEST);
+
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
@@ -158,6 +161,9 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 			glDisable(GL_CULL_FACE);
 			glPopMatrix();
+
+                        if(background_mode)
+                          glEnable(GL_DEPTH_TEST);
 		}
 
 		if (shaderinfo) glUseProgram(0);
