@@ -1926,12 +1926,21 @@ process_lwpolyline_entities_code(int code)
 	    }
 	    break;
 	case 20:
+	{
 	    y = atof(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_test, "LWPolyLine vertex #%d (y) = %g\n", vert_no, y);
-	    }
+	    }		
+		lwpolyline_struct ls; 
+		ls.x = x;
+		ls.y = y;
+		ls.polyline_flag = polyline_flag;
+		ls.color = curr_color;
+		ls.layer_name = std::string(curr_layer_name);
+		lwpolyline_vector.emplace_back(ls);
 	    add_polyline_vertex(x, y, 0.0);
 	    break;
+	}
 	case 62:	/* color number */
 	    curr_color = atoi(line);
 	    break;
@@ -1944,15 +1953,7 @@ process_lwpolyline_entities_code(int code)
 	    if (verbose) {
 		fprintf(out_test, "Found end of LWPOLYLINE\n");
 	    }
-
-		lwpolyline_struct ls; 
-		ls.x = x;
-		ls.y = y;
-		ls.polyline_flag = polyline_flag;
-		ls.color = curr_color;
-		ls.layer_name = std::string(curr_layer_name);
-		lwpolyline_vector.emplace_back(ls);
-
+		
 	    layers[curr_layer]->lwpolyline_count++;
 
 	    // if (!layers[curr_layer]->m) {
@@ -3943,7 +3944,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 
     // dxf_file = argv[bu_optind++];
     // output_file = argv[bu_optind];
-	dxf_file = (char*)"./testdata/dxf/arc.dxf";
+	dxf_file = (char*)"/home/xuwei-linux/openscad/testdata/dxf/lwpolyline.dxf";
     if ((dxf=fopen(dxf_file, "rb")) == NULL) {
 	perror(dxf_file);
 	//bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);

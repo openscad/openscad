@@ -44,6 +44,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     fn = 0; 
     fs = 2; 
     fa = 12;
+
     circle_vector = return_circle_vector();
     if(!circle_vector.empty()){
         for(auto it : circle_vector){
@@ -86,10 +87,55 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
             poly->addOutline(outline);
         }
     }
-    else{
-        fprintf(stdout, "arc vector is empty");
-    }       
+    
+    ellipse_vector = return_ellipse_vector();
+    if(!ellipse_vector.empty()){
 
+    }
+
+    spline_vector = return_spline_vector();
+    if(!spline_vector.empty()){
+
+    }
+
+    lwpolyline_vector = return_lwpolyline_vector();
+    if(!lwpolyline_vector.empty()){
+        for(auto it = lwpolyline_vector.begin(); it != lwpolyline_vector.end(); it++){
+            Outline2d outline;
+            if(it != lwpolyline_vector.begin() && it != (--lwpolyline_vector.end())){
+            fprintf(stdout, "x %f, y %f \n", it->x, it->y);
+            outline.vertices.push_back(Vector2d(it->x,it->y));           //}
+            // if (it->polyline_flag & 0x01){
+            //     outline.vertices.push_back(Vector2d(lwpolyline_vector.back().x, lwpolyline_vector.back().y));
+            //     outline.vertices.push_back(Vector2d(lwpolyline_vector.front().x, lwpolyline_vector.front().y));
+            }
+            poly->addOutline(outline);
+        }
+    }
+
+    // Outline2d outline1;
+    // outline1.vertices.push_back(Vector2d(.00, 0.0));
+    // outline1.vertices.push_back(Vector2d(0.0, 50.0));
+    // outline1.vertices.push_back(Vector2d(50.0, 50.0));
+    // poly->addOutline(outline1);
+    line_vector = return_line_vector();
+    if(!line_vector.empty()){
+        for(auto it : line_vector){
+            Outline2d outline;
+            outline.vertices.push_back(Vector2d(it.line_pt[0][0], it.line_pt[0][1]));
+            outline.vertices.push_back(Vector2d(it.line_pt[1][0], it.line_pt[1][1]));
+            poly->addOutline(outline);
+        }
+    }
+
+    point_vector = return_point_vector();
+    if(!point_vector.empty()){
+        for(auto it : point_vector){
+            Outline2d outline;
+            outline.vertices.push_back(Vector2d(it.pt[0], it.pt[1]));
+            poly->addOutline(outline);
+        }
+    }
 
 
 	// Grid2d<std::vector<int>> grid(GRID_COARSE);
