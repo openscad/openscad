@@ -393,6 +393,10 @@ Add_vert( double x, double y, double z, struct vert_root *vert_root, double loca
 static int overstrikemode = 0;
 static int underscoremode = 0;
 
+static std::vector<double> pt_x;
+static std::vector<double> pt_y;
+static std::vector<double> pt_z;
+
 static std::vector<header_struct> header_vector;
 static std::vector<table_struct> table_vector;
 static std::vector<polyline_vertex_struct> polyline_vertex_vector;
@@ -1921,6 +1925,7 @@ process_lwpolyline_entities_code(int code)
 	    break;
 	case 10:
 	    x = atof(line) * units_conv[units] * scale_factor;
+		pt_x.push_back(x);
 	    if (verbose) {
 		fprintf(out_test, "LWPolyLine vertex #%d (x) = %g\n", vert_no, x);
 	    }
@@ -1928,16 +1933,10 @@ process_lwpolyline_entities_code(int code)
 	case 20:
 	{
 	    y = atof(line) * units_conv[units] * scale_factor;
+		pt_y.push_back(y);
 	    if (verbose) {
 		fprintf(out_test, "LWPolyLine vertex #%d (y) = %g\n", vert_no, y);
 	    }		
-		lwpolyline_struct ls; 
-		ls.x = x;
-		ls.y = y;
-		ls.polyline_flag = polyline_flag;
-		ls.color = curr_color;
-		ls.layer_name = std::string(curr_layer_name);
-		lwpolyline_vector.emplace_back(ls);
 	    add_polyline_vertex(x, y, 0.0);
 	    break;
 	}
@@ -1950,6 +1949,16 @@ process_lwpolyline_entities_code(int code)
 	case 0:
 	    /* end of this line */
 	    get_layer();
+
+		lwpolyline_struct ls; 
+		for(int i = 0; i < pt_x.size(); i++){
+			ls.lw_pt_vec.push_back(lwpolyline_struct::lw_pt(pt_x.at(i), pt_y.at(i)));
+		}
+		ls.polyline_flag = polyline_flag;
+		ls.color = curr_color;
+		ls.layer_name = std::string(curr_layer_name);
+		lwpolyline_vector.emplace_back(ls);
+
 	    if (verbose) {
 		fprintf(out_test, "Found end of LWPOLYLINE\n");
 	    }
@@ -2154,8 +2163,8 @@ process_ellipse_entities_code(int code)
 		
 		ellipse_struct es; 
 		VMOVE(es.center, center);
-		es.startAngle = startAngle;
-		es.endAngle = endAngle;
+		es.start_angle = startAngle;
+		es.end_angle = endAngle;
 		es.layer_name = std::string(curr_layer_name);
 		VMOVE(es.majorAxis, majorAxis);
 		es.ratio = ratio;
@@ -2198,7 +2207,6 @@ process_ellipse_entities_code(int code)
 		fprintf(out_test, "\tangles = %g %g\n", startAngle, endAngle);
 		fprintf(out_test, "\tfull circle = %d\n", fullCircle);
 	    }
-		// clean till here
 	    /* make nmg wire edges */
 	    angle = startAngle;
 	    delta = M_PI / 15.0; 
@@ -3944,7 +3952,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 
     // dxf_file = argv[bu_optind++];
     // output_file = argv[bu_optind];
-	dxf_file = (char*)"/home/xuwei-linux/openscad/testdata/dxf/lwpolyline.dxf";
+	dxf_file = (char*)"/home/xuwei-linux/openscad/testdata/dxf/ellipse-rot.dxf";
     if ((dxf=fopen(dxf_file, "rb")) == NULL) {
 	perror(dxf_file);
 	//bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);
@@ -4053,7 +4061,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 
     while ((code=readcodes()) > -900) {
 	process_code[curr_state->state](code);
-	fprintf(stdout, "current state(%d)\n", curr_state->state);
+	//fprintf(stdout, "current state(%d)\n", curr_state->state);
     }
 
     //BU_LIST_INIT(&head_all);

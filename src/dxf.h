@@ -383,7 +383,14 @@ struct solid_struct{
 };
 
 struct lwpolyline_struct{
-	double x, y;
+    struct lw_pt{
+        double x;
+        double y;
+        lw_pt(double x, double y): x(x), y(y){
+
+        };
+    };
+    std::vector<lw_pt> lw_pt_vec;
 	int color;
 	int polyline_flag;
 	std::string layer_name;
@@ -422,7 +429,7 @@ struct ellipse_struct{
 	double center[3];
 	double majorAxis[3];
 	double ratio;
-	double startAngle, endAngle;
+	double start_angle, end_angle;
 	int color;
 	std::string layer_name;
 };
