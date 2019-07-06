@@ -3,8 +3,7 @@
 #include "module.h"
 #include "expression.h"
 
-std::unordered_map<std::string, std::list<std::string>> Builtins::temporaryNow;
-std::vector<const Keyword *> Builtins::keywordList;
+std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
 
 Builtins *Builtins::instance(bool erase)
 {
@@ -32,40 +31,40 @@ void Builtins::init(const std::string &name, class AbstractFunction *function)
 	Builtins::instance()->functions.emplace(name, function);
 }
 
-void Builtins::init(const std::string &name, class AbstractModule *module, std::list<std::string> &calltipList)
+void Builtins::init(const std::string &name, class AbstractModule *module, const std::list<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (module->is_experimental()) return;
 #endif
 	Builtins::instance()->modules.emplace(name, module);
-	temporaryNow[name] = calltipList;
+	// keywordList[name] = calltipList;
 }
 
-void Builtins::init(const std::string &name, class AbstractFunction *function, std::list<std::string> &calltipList)
+void Builtins::init(const std::string &name, class AbstractFunction *function, const std::list<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (function->is_experimental()) return;
 #endif
 	Builtins::instance()->functions.emplace(name, function);
-	Builtins::temporaryNow[name] = calltipList;
+	// Builtins::keywordList[name] = calltipList;
 }
 
-void Builtins::init(const Keyword *keyword, class AbstractModule *module)
+void Builtins::init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (module->is_experimental()) return;
 #endif
-	Builtins::instance()->modules.emplace(keyword->word, module);
-	Builtins::keywordList.push_back(keyword);
+	Builtins::instance()->modules.emplace(name, module);
+	Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const Keyword *keyword, class AbstractFunction *function)
+void Builtins::init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (function->is_experimental()) return;
 #endif
-	Builtins::instance()->functions.emplace(keyword->word, function);
-	Builtins::keywordList.push_back(keyword);
+	Builtins::instance()->functions.emplace(name, function);
+	Builtins::keywordList.insert({name, calltipList});
 }
 
 extern void register_builtin_functions();

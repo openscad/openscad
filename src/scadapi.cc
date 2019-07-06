@@ -1,25 +1,15 @@
 #include "scadapi.h"
 #include "builtin.h"
-#include "keyword.h"
 
 ScadApi::ScadApi(QsciScintilla *qsci, QsciLexer *lexer) : QsciAbstractAPIs(lexer), qsci(qsci)
 {
-	for (auto iter = Builtins::temporaryNow.cbegin(); iter != Builtins::temporaryNow.cend(); ++iter)
+	for (auto iter = Builtins::keywordList.cbegin(); iter != Builtins::keywordList.cend(); ++iter)
 	{
 		QStringList calltipList;
 		for(auto it = iter->second.cbegin(); it != iter->second.cend(); ++it)
 			calltipList.append(QString::fromStdString(*it));
 
 		funcs.append(ApiFunc(QString::fromStdString(iter->first), calltipList));
-	}
-
-	for(auto keyword: Builtins::keywordList)
-	{
-		QStringList calltipList;
-		for(auto calltip: keyword->calltip)
-			calltipList.append(QString::fromStdString(calltip));
-
-		funcs.append(ApiFunc(QString::fromStdString(keyword->word), calltipList));
 	}
 }
 

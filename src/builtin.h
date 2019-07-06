@@ -5,7 +5,6 @@
 #include "module.h"
 #include "localscope.h"
 #include "Assignment.h"
-#include "keyword.h"
 
 class Builtins
 {
@@ -16,10 +15,10 @@ public:
 	static Builtins *instance(bool erase = false);
 	static void init(const std::string &name, class AbstractModule *module);
 	static void init(const std::string &name, class AbstractFunction *function);
-	static void init(const std::string &name, class AbstractModule *module, std::list<std::string> &calltipList);
-	static void init(const std::string &name, class AbstractFunction *function, std::list<std::string> &calltipList);
-	static void init(const Keyword *keyword, class AbstractModule *module);
-	static void init(const Keyword *keyword, class AbstractFunction *function);
+	static void init(const std::string &name, class AbstractModule *module, const std::list<std::string> &calltipList);
+	static void init(const std::string &name, class AbstractFunction *function, const std::list<std::string> &calltipList);
+	static void init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList);
+	static void init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList);
 	void initialize();
 	std::string isDeprecated(const std::string &name) const;
 
@@ -27,8 +26,7 @@ public:
 	const FunctionContainer &getFunctions() const { return this->functions; }
 	const ModuleContainer &getModules() const { return modules; }
 
-	static std::unordered_map<std::string, std::list<std::string>> temporaryNow;
-	static std::vector<const Keyword *> keywordList;
+	static std::unordered_map<std::string, const std::vector<std::string>> keywordList;
 	
 private:
 	Builtins();
