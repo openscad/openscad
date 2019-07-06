@@ -325,7 +325,8 @@ std::string SurfaceNode::toString() const
 
 void register_builtin_surface()
 {
-	std::list<std::string> surface;
-	surface.push_back("surface(string, boolean, boolean, integer)");
-	Builtins::init("surface", new SurfaceModule(), surface);
+	Builtins::init("surface", new SurfaceModule(),
+				{
+					"surface(string, boolean, boolean, integer)",
+				});
 }

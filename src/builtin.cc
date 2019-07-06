@@ -23,32 +23,6 @@ void Builtins::init(const std::string &name, class AbstractModule *module)
 	Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string &name, class AbstractFunction *function)
-{
-#ifndef ENABLE_EXPERIMENTAL
-	if (function->is_experimental()) return;
-#endif
-	Builtins::instance()->functions.emplace(name, function);
-}
-
-void Builtins::init(const std::string &name, class AbstractModule *module, const std::list<std::string> &calltipList)
-{
-#ifndef ENABLE_EXPERIMENTAL
-	if (module->is_experimental()) return;
-#endif
-	Builtins::instance()->modules.emplace(name, module);
-	// keywordList[name] = calltipList;
-}
-
-void Builtins::init(const std::string &name, class AbstractFunction *function, const std::list<std::string> &calltipList)
-{
-#ifndef ENABLE_EXPERIMENTAL
-	if (function->is_experimental()) return;
-#endif
-	Builtins::instance()->functions.emplace(name, function);
-	// Builtins::keywordList[name] = calltipList;
-}
-
 void Builtins::init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL

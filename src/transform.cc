@@ -254,23 +254,28 @@ std::string TransformNode::name() const
 
 void register_builtin_transform()
 {
-	std::list<std::string> scale;
-	scale.push_back("scale([x, y, z])");
-	Builtins::init("scale", new TransformModule(transform_type_e::SCALE), scale);
+	Builtins::init("scale", new TransformModule(transform_type_e::SCALE),
+				{
+					"scale([x, y, z])",
+				});
 
-	std::list<std::string> rotate;
-	rotate.push_back("rotate([x, y, z])");
-	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE), rotate);
+	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE),
+				{
+					"rotate([x, y, z])",
+				});
 
-	std::list<std::string> mirror;
-	mirror.push_back("mirror([x, y, z])");
-	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR), mirror);
+	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR),
+				{
+					"mirror([x, y, z])",
+				});
 
-	std::list<std::string> translate;
-	translate.push_back("translate([x, y, z])");	
-	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE), translate);
+	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE),
+				{
+					"translate([x, y, z])",
+				});
 
-	std::list<std::string> multmatrix;
-	multmatrix.push_back("multmatrix(m)");
-	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX), multmatrix);
+	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX),
+				{
+					"multmatrix(m)",
+				});
 }

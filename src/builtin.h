@@ -14,9 +14,6 @@ public:
 
 	static Builtins *instance(bool erase = false);
 	static void init(const std::string &name, class AbstractModule *module);
-	static void init(const std::string &name, class AbstractFunction *function);
-	static void init(const std::string &name, class AbstractModule *module, const std::list<std::string> &calltipList);
-	static void init(const std::string &name, class AbstractFunction *function, const std::list<std::string> &calltipList);
 	static void init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList);
 	static void init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList);
 	void initialize();

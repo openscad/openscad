@@ -339,49 +339,58 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 
 void register_builtin_control()
 {
-	std::list<std::string> child;
-	child.push_back("child()");
-	child.push_back("child(number)");
-	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD), child);
+	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD),
+				{
+					"child()",
+					"child(number)",
+				});
 
-	std::list<std::string> children;
-	children.push_back("childern()");
-	children.push_back("childern(number)");
-	children.push_back("childern([start : step : end])");
-	children.push_back("childern([start : end])");
-	children.push_back("childern([vector])");
-	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN), children);
+	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN),
+				{
+					"children()",
+					"children(number)",
+					"children([start : step : end])",
+					"children([start : end])",
+					"children([vector])",
+				});
 
-	std::list<std::string> echo;
-	echo.push_back("echo(arg, ...)");
-	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO), echo);
+	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO),
+				{
+					"echo(arg, ...)",
+				});
 
-	std::list<std::string> assert;
-	assert.push_back("assert(boolean)");
-	assert.push_back("assert(boolean, string)");
-	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT), assert);
+	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT),
+				{
+					"assert(boolean)",
+					"assert(boolean, string)",
+				});
 
-	std::list<std::string> assign;
-	assign.push_back("assign(var = value, ...)");
-	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN), assign);
+	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN),
+				{
+					"assign(var = value, ...)",
+				});
 
-	std::list<std::string> for_;
-	for_.push_back("for(variable = [start : increment : end])");
-	for_.push_back("for(variable = [start : end])");
-	for_.push_back("for(variable = [vector])");
-	Builtins::init("for", new ControlModule(ControlModule::Type::FOR), for_);
+	Builtins::init("for", new ControlModule(ControlModule::Type::FOR),
+				{
+					"for(variable = [start : increment : end])",
+					"for(variable = [start : end])",
+					"for(variable = [vector])",
+				});
 
-	std::list<std::string> let;
-	let.push_back("let(var = value, ...) expression");
-	Builtins::init("let", new ControlModule(ControlModule::Type::LET), let);
+	Builtins::init("let", new ControlModule(ControlModule::Type::LET),
+				{
+					"let(var = value, ...) expression",
+				});
 
-	std::list<std::string> intersection_for;
-	intersection_for.push_back("intersection_for(variable = [start : increment : end])");
-	intersection_for.push_back("intersection_for(variable = [start : end])");
-	intersection_for.push_back("intersection_for(variable = [vector])");
-	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR), intersection_for);
+	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR),
+				{
+					"intersection_for(variable = [start : increment : end])",
+					"intersection_for(variable = [start : end])",
+					"intersection_for(variable = [vector])",
+				});
 
-	std::list<std::string> if_;
-	if_.push_back("if(boolean)");
-	Builtins::init("if", new ControlModule(ControlModule::Type::IF), if_);
+	Builtins::init("if", new ControlModule(ControlModule::Type::IF),
+				{
+					"if(boolean)",
+				});
 }

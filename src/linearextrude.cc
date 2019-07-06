@@ -177,7 +177,8 @@ void register_builtin_dxf_linear_extrude()
 {
 	Builtins::init("dxf_linear_extrude", new LinearExtrudeModule());
 
-	std::list<std::string> linear_extrude;
-	linear_extrude.push_back("linear_extrude(height = number, center = true, convexity = number, twish = degrees, slices = number, scale = number, $fn = number)");
-	Builtins::init("linear_extrude", new LinearExtrudeModule(), linear_extrude);
+	Builtins::init("linear_extrude", new LinearExtrudeModule(),
+				{
+					"linear_extrude(height = number, center = true, convexity = number, twish = degrees, slices = number, scale = number, $fn = number)",
+				});
 }

@@ -110,9 +110,10 @@ std::string OffsetNode::toString() const
 
 void register_builtin_offset()
 {
-	std::list<std::string> offset;
-	offset.push_back("offset(r = number)");
-	offset.push_back("offset(delta = number)");
-	offset.push_back("offset(r = number, chamfer = boolean)");
-	Builtins::init("offset", new OffsetModule(), offset);
+	Builtins::init("offset", new OffsetModule(),
+				{
+					"offset(r = number)",
+					"offset(delta = number)",
+					"offset(r = number, chamfer = boolean)",
+				});
 }

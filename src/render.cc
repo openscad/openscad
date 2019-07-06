@@ -70,7 +70,8 @@ std::string RenderNode::toString() const
 
 void register_builtin_render()
 {
-	std::list<std::string> render;
-	render.push_back("render(convexity = 1)");
-	Builtins::init("render", new RenderModule(), render);
+	Builtins::init("render", new RenderModule(),
+				{
+					"render(convexity = 1)",
+				});
 }

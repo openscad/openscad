@@ -699,49 +699,49 @@ std::string PrimitiveNode::toString() const
 void register_builtin_primitives()
 {
 	Builtins::init("cube" , new PrimitiveModule(primitive_type_e::CUBE),
-				std::vector<std::string>({
+				{
 					"cube(size)",
 					"cube([width, depth, height])",
 					"cube(size = [width, depth, height], center = true)",
-				}));
+				});
 
 	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE),
-				std::vector<std::string>({
+				{
 					"sphere(radius)",
 					"sphere(r = radius)",
 					"sphere(d = diameter)",
-				}));
+				});
 
 	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER),
-				std::vector<std::string>({
+				{
 					"cylinder(h, r1, r2)",
 					"cylinder(h = height, r = radius, center = true)",
 					"cylinder(h = height, r1 = bottom, r2 = top, center = true)",
 					"cylinder(h = height, d = diameter, center = true)",
 					"cylinder(h = height, d1 = bottom, d2 = top, center = true)",
-				}));
+				});
 
 	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON),
-				std::vector<std::string>({
+				{
 					"polyhedron(points, triangles, convexity)",
-				}));
+				});
 
 	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE),
-				std::vector<std::string>({
+				{
 					"square(size, center = true)",
 					"square([width,height], center = true)",
-				}));
+				});
 
 	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE),
-				std::vector<std::string>({
+				{
 					"circle(radius)",
 					"circle(r = radius)",
 					"circle(d = diameter)",
-				}));
+				});
 
 	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON),
-				std::vector<std::string>({
+				{
 					"polygon([points])",
 					"polygon([points], [paths])",
-				}));
+				});
 }
