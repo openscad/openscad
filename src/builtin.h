@@ -29,6 +29,8 @@ private:
 	Builtins();
 	~Builtins() = default;
 
+	static void initKeywordList();
+
 	AssignmentList assignments;
 	FunctionContainer functions;
 	ModuleContainer modules;

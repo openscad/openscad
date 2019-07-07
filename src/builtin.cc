@@ -65,6 +65,8 @@ extern void initialize_builtin_dxf_dim();
 */
 void Builtins::initialize()
 {
+	Builtins::initKeywordList();
+
 	register_builtin_functions();
 	initialize_builtin_dxf_dim();
 
@@ -112,4 +114,17 @@ Builtins::Builtins()
 	this->assignments.emplace_back("$vpt", make_shared<Literal>(zero3));
 	this->assignments.emplace_back("$vpr", make_shared<Literal>(zero3));
 	this->assignments.emplace_back("$vpd", make_shared<Literal>(500));
+}
+
+void Builtins::initKeywordList()
+{
+	Builtins::keywordList.insert({"else", {}});
+	Builtins::keywordList.insert({"each", {}});
+	Builtins::keywordList.insert({"module", {}});
+	Builtins::keywordList.insert({"function", {}});
+	Builtins::keywordList.insert({"true", {}});
+	Builtins::keywordList.insert({"false", {}});
+	Builtins::keywordList.insert({"undef", {}});
+	Builtins::keywordList.insert({"use", {}});
+	Builtins::keywordList.insert({"include", {}});
 }
