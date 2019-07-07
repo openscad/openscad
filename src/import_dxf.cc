@@ -10,6 +10,20 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
+#define ADD_LINE(_x1, _y1, _x2, _y2) do {										\
+		double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \                                              \
+		grid.align(_p1x, _p1y);                                 \
+		grid.align(_p2x, _p2y);                                 \
+		grid.data(_p1x, _p1y).push_back(lines.size());          \
+		grid.data(_p2x, _p2y).push_back(lines.size());          \
+		if (in_entities_section)                                \
+			lines.emplace_back(                                   \
+			  addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
+		if (in_blocks_section && !current_block.empty())        \
+			blockdata[current_block].emplace_back(	              \
+				addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));      	\
+} while (0)
+
 Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double fa)
 {
 	std::ifstream stream(filename.c_str());
@@ -17,8 +31,8 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
         return poly;
-	}  
-    
+	}
+
     read_dxf_file(filename, filename);
 
     std::vector<header_struct> header_vector;

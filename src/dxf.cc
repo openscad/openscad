@@ -2337,11 +2337,7 @@ process_circle_entities_code(int code)
 		VADD2(circle_pts[i], circle_pts[i], center);
 
 		/* apply transformation */
-		MAT4X3PNT(tmp_pt, curr_state->xform, circle_pts[i]);
-		for(int i = 0; i < 3; i++){
-			if(curr_state)
-			fprintf(out_test, "real time current_state_data xform at (%d) is (%f)\n", i, curr_state->xform[i]);
-		}		
+		MAT4X3PNT(tmp_pt, curr_state->xform, circle_pts[i]);	
 		VMOVE(circle_pts[i], tmp_pt);
 	    }
 
@@ -3952,7 +3948,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 
     // dxf_file = argv[bu_optind++];
     // output_file = argv[bu_optind];
-	dxf_file = (char*)"/home/xuwei-linux/openscad/testdata/dxf/ellipse-rot.dxf";
+	dxf_file = strdup(in_filename.c_str());
     if ((dxf=fopen(dxf_file, "rb")) == NULL) {
 	perror(dxf_file);
 	//bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);
