@@ -339,6 +339,8 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 
 void register_builtin_control()
 {
+	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
+
 	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD),
 				{
 					"child()",
@@ -363,11 +365,6 @@ void register_builtin_control()
 				{
 					"assert(boolean)",
 					"assert(boolean, string)",
-				});
-
-	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN),
-				{
-					"assign(var = value, ...)",
 				});
 
 	Builtins::init("for", new ControlModule(ControlModule::Type::FOR),
