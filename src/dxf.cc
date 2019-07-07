@@ -3938,7 +3938,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
     // }
 	ignore_colors = 1;
 	tol_sq = 0.01;
-	verbose = 1;
+	verbose = 0;
 
     // if (argc - bu_optind < 2) {
 	// //bu_exit(1, "%s", usage);
@@ -3951,8 +3951,8 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 	dxf_file = strdup(in_filename.c_str());
     if ((dxf=fopen(dxf_file, "rb")) == NULL) {
 	perror(dxf_file);
-	//bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);
-	fprintf(stdout, "Cannot open DXF file (%s)\n", dxf_file);
+	// bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);
+	// fprintf(stdout, "Cannot open DXF file (%s)\n", dxf_file);
 	exit(1);
     }
 
@@ -3964,7 +3964,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
     // }
 	output_file = (char*)"output";
 	if((out_test=fopen(output_file, "w")) == NULL){
-		fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+		//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
 		exit(1);
 	}
     ptr1 = strrchr(dxf_file, '/');
@@ -4197,21 +4197,22 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 	// }
 
 	// (void)mk_comb(out_fp, bu_vls_addr(&top_name), &head_all, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0);
-    // }	
-	static char* out_data_file;
-	out_data_file = (char*)"output_data";
-	if((out_data=fopen(out_data_file, "w")) == NULL){
-		fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
-		exit(1);
-	}
-    for (i = 0; i < segs_per_circle; i++) {
-		fprintf(out_data, "Circle points (%d) : (%f, %f, %f) \n", i, circle_pts[i][X], circle_pts[i][Y], circle_pts[i][Z]);
-    }
-	if(polyline_vert_indices){
-		for( i = 0; i < polyline_vert_indices_count; i++){
-			fprintf(out_data, "polyline_vert_indices points (%d) : (%d, %d, %d) \n", i, polyline_vert_indices[X], polyline_vert_indices[Y], polyline_vert_indices[Z]);
-		}
-	}
+    // }
+
+	// static char* out_data_file;
+	// out_data_file = (char*)"output_data";
+	// if((out_data=fopen(out_data_file, "w")) == NULL){
+	// 	//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+	// 	exit(1);
+	// }
+    // for (i = 0; i < segs_per_circle; i++) {
+	// 	fprintf(out_data, "Circle points (%d) : (%f, %f, %f) \n", i, circle_pts[i][X], circle_pts[i][Y], circle_pts[i][Z]);
+    // }
+	// if(polyline_vert_indices){
+	// 	for( i = 0; i < polyline_vert_indices_count; i++){
+	// 		fprintf(out_data, "polyline_vert_indices points (%d) : (%d, %d, %d) \n", i, polyline_vert_indices[X], polyline_vert_indices[Y], polyline_vert_indices[Z]);
+	// 	}
+	// }
 	
 	//fprintf(stdout, "layer: %d" ,layers[curr_layer]->vert_tree->the_tree->vnode.coord);
     // return 0;
