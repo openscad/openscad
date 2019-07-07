@@ -66,14 +66,8 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 
 			shared_ptr<CSGNode> t;
 			// Handle background
-			if (t1->isBackground() && 
-					// For difference, we inherit the flag from the positive object
-					(t2->isBackground() || op == OpenSCADOperator::DIFFERENCE)) {
-				t = CSGOperation::createCSGNode(op, t1, t2);
-				t->setBackground(true);
-			}
 			// Background objects are simply moved to backgroundNodes
-			else if (t2->isBackground()) {
+			if (t2->isBackground()) {
 				t = t1;
 				this->backgroundNodes.push_back(t2);
 			}
