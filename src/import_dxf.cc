@@ -5,36 +5,291 @@
 #include "Polygon2d.h"
 #include "degree_trig.h"
 #include "dxf.h"
+#include "linalg.h"
 
+#include <vector>
+#include <algorithm>
+#include <sstream>
+#include <map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
-#define ADD_LINE(_x1, _y1, _x2, _y2) do {										\
-		double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \                                              \
-		grid.align(_p1x, _p1y);                                 \
-		grid.align(_p2x, _p2y);                                 \
-		grid.data(_p1x, _p1y).push_back(lines.size());          \
-		grid.data(_p2x, _p2y).push_back(lines.size());          \
-		if (in_entities_section)                                \
-			lines.emplace_back(                                   \
-			  addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
-		if (in_blocks_section && !current_block.empty())        \
-			blockdata[current_block].emplace_back(	              \
-				addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));      	\
-} while (0)
+struct Line {
+    int idx[2]; // indices into DData::points
+    bool disabled;
+    Line(int i1 = -1, int i2 = -1) : idx{i1, i2}, disabled(false) { }
+};
+
+class DData
+{
+public:
+	struct Path {
+		std::vector<int> indices; // indices into DData::points
+		bool is_closed, is_inner;
+		Path() : is_closed(false), is_inner(false) { }
+	};
+	struct Dim {
+		unsigned int type;
+		double coords[7][2];
+		double angle;
+		double length;
+		std::string name;
+		Dim() {
+			for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 2; j++)
+				coords[i][j] = 0;
+			type = 0;
+			angle = 0;
+			length = 0;
+		}
+	};
+
+    DData(){
+        Dim();
+        Path();
+    };
+
+	std::vector<Vector2d> points;
+	std::vector<Path> paths;
+	std::vector<Dim> dims;
+    std::vector<Line> lines;
+
+	int addPoint(double x, double y);
+    void addLine(Grid2d<std::vector<int>> grid, double x1, double y1, double x2, double y2);
+
+	void fixup_path_direction();
+    void process_path(Grid2d<std::vector<int>> grid);
+	std::string dump() const;
+	class Polygon2d *toPolygon2d() const;
+    
+};
+
+void DData::process_path(Grid2d<std::vector<int>> grid){
+	// Extract paths from parsed data
+
+	typedef std::map<int, int> LineMap;
+	LineMap enabled_lines;
+	for (size_t i = 0; i < lines.size(); i++) {
+		enabled_lines[i] = i;
+	}
+
+	// extract all open paths
+	while (enabled_lines.size() > 0) {
+		int current_line, current_point;
+
+		for (const auto &l : enabled_lines) {
+			int idx = l.second;
+			for (int j = 0; j < 2; j++) {
+				auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
+				for (size_t ki = 0; ki < lv.size(); ki++) {
+					int k = lv.at(ki);
+					if (k == idx || lines[k].disabled) continue;
+					goto next_open_path_j;
+				}
+				current_line = idx;
+				current_point = j;
+				goto create_open_path;
+			next_open_path_j:;
+			}
+		}
+
+		break;
+
+	create_open_path:
+		this->paths.push_back(Path());
+		Path *this_path = &this->paths.back();
+
+		this_path->indices.push_back(lines[current_line].idx[current_point]);
+		while (1) {
+			this_path->indices.push_back(lines[current_line].idx[!current_point]);
+			const auto &ref_point = this->points[lines[current_line].idx[!current_point]];
+			lines[current_line].disabled = true;
+			enabled_lines.erase(current_line);
+			auto lv = grid.data(ref_point[0], ref_point[1]);
+			for (size_t ki = 0; ki < lv.size(); ki++) {
+				int k = lv.at(ki);
+				if (lines[k].disabled) continue;
+				if (grid.eq(ref_point[0], ref_point[1], this->points[lines[k].idx[0]][0], this->points[lines[k].idx[0]][1])) {
+					current_line = k;
+					current_point = 0;
+					goto found_next_line_in_open_path;
+				}
+				if (grid.eq(ref_point[0], ref_point[1], this->points[lines[k].idx[1]][0], this->points[lines[k].idx[1]][1])) {
+					current_line = k;
+					current_point = 1;
+					goto found_next_line_in_open_path;
+				}
+			}
+			break;
+		found_next_line_in_open_path:;
+		}
+	}
+
+    // extract all closed paths
+	while (enabled_lines.size() > 0) {
+		int current_line = enabled_lines.begin()->second;
+		int current_point = 0;
+
+		this->paths.push_back(Path());
+		auto& this_path = this->paths.back();
+		this_path.is_closed = true;
+		
+		this_path.indices.push_back(lines[current_line].idx[current_point]);
+		while (1) {
+			this_path.indices.push_back(lines[current_line].idx[!current_point]);
+			const auto &ref_point = this->points[lines[current_line].idx[!current_point]];
+			lines[current_line].disabled = true;
+			enabled_lines.erase(current_line);
+			auto lv = grid.data(ref_point[0], ref_point[1]);
+			for (size_t ki = 0; ki < lv.size(); ki++) {
+				int k = lv.at(ki);
+				if (lines[k].disabled) continue;
+				if (grid.eq(ref_point[0], ref_point[1], this->points[lines[k].idx[0]][0], this->points[lines[k].idx[0]][1])) {
+					current_line = k;
+					current_point = 0;
+					goto found_next_line_in_closed_path;
+				}
+					if (grid.eq(ref_point[0], ref_point[1], this->points[lines[k].idx[1]][0], this->points[lines[k].idx[1]][1])) {
+					current_line = k;
+					current_point = 1;
+					goto found_next_line_in_closed_path;
+				}
+			}
+			break;
+		found_next_line_in_closed_path:;
+		}
+	}
+
+	fixup_path_direction();
+
+#if 0
+	printf("----- DXF Data -----\n");
+	for (int i = 0; i < this->paths.size(); i++) {
+		printf("Path %d (%s):\n", i, this->paths[i].is_closed ? "closed" : "open");
+		for (int j = 0; j < this->paths[i].points.size(); j++)
+			printf("  %f %f\n", (*this->paths[i].points[j])[0], (*this->paths[i].points[j])[1]);
+	}
+	printf("--------------------\n");
+	fflush(stdout);
+#endif
+}
+void DData::fixup_path_direction()
+{
+	for (size_t i = 0; i < this->paths.size(); i++) {
+		if (!this->paths[i].is_closed) break;
+		this->paths[i].is_inner = true;
+		double min_x = this->points[this->paths[i].indices[0]][0];
+		size_t min_x_point = 0;
+		for (size_t j = 1; j < this->paths[i].indices.size(); j++) {
+			if (this->points[this->paths[i].indices[j]][0] < min_x) {
+				min_x = this->points[this->paths[i].indices[j]][0];
+				min_x_point = j;
+			}
+		}
+		// rotate points if the path is in non-standard rotation
+		size_t b = min_x_point;
+		size_t a = b == 0 ? this->paths[i].indices.size() - 2 : b - 1;
+		size_t c = b == this->paths[i].indices.size() - 1 ? 1 : b + 1;
+		double ax = this->points[this->paths[i].indices[a]][0] - this->points[this->paths[i].indices[b]][0];
+		double ay = this->points[this->paths[i].indices[a]][1] - this->points[this->paths[i].indices[b]][1];
+		double cx = this->points[this->paths[i].indices[c]][0] - this->points[this->paths[i].indices[b]][0];
+		double cy = this->points[this->paths[i].indices[c]][1] - this->points[this->paths[i].indices[b]][1];
+#if 0
+		printf("Rotate check:\n");
+		printf("  a/b/c indices = %d %d %d\n", a, b, c);
+		printf("  b->a vector = %f %f (%f)\n", ax, ay, atan2(ax, ay));
+		printf("  b->c vector = %f %f (%f)\n", cx, cy, atan2(cx, cy));
+#endif
+		// FIXME: atan2() usually takes y,x. This variant probably makes the path clockwise..
+		if (atan2(ax, ay) < atan2(cx, cy)) {
+			std::reverse(this->paths[i].indices.begin(), this->paths[i].indices.end());
+		}
+	}
+}
+
+/*!
+	Adds a vertex and returns the index into DData::points
+ */
+int DData::addPoint(double x, double y)
+{
+	this->points.emplace_back(x, y);
+	return this->points.size() - 1;
+}
+
+std::string DData::dump() const
+{
+	std::ostringstream out;
+	out << "DData"
+	  << "\n num points: " << points.size()
+	  << "\n num paths: " << paths.size()
+	  << "\n num dims: " << dims.size()
+	  << "\n points: ";
+	for (size_t k = 0; k < points.size(); k++ ) {
+		out << "\n  x y: " << points[k].transpose();
+	}
+	out << "\n paths: ";
+	for (size_t i = 0; i < paths.size(); i++) {
+		out << "\n  path:" << i
+		  << "\n  is_closed: " << paths[i].is_closed
+		  << "\n  is_inner: " << paths[i].is_inner ;
+		DData::Path path = paths[i];
+		for (size_t j = 0; j < path.indices.size(); j++) {
+			out << "\n  index[" << j << "]==" << path.indices[j];
+		}
+	}
+	out << "\nDData end";
+	return out.str();
+}
+
+/*
+    May return an empty polygon, but will not return nullptr
+ */
+Polygon2d *DData::toPolygon2d() const
+{
+	auto poly = new Polygon2d();
+	for (size_t i = 0; i < this->paths.size(); i++) {
+		const auto &path = this->paths[i];
+		Outline2d outline;
+		size_t endidx = path.indices.size();
+		// We don't support open paths; closing them to be compatible with existing behavior
+		if (!path.is_closed) endidx++;
+		for (size_t j = 1; j < endidx; j++) {
+			outline.vertices.push_back(this->points[path.indices[path.indices.size()-j]]);
+            fprintf(stdout, "the vertex coord is (%f) \n", this->points[path.indices[path.indices.size()-j]]);
+		}
+		poly->addOutline(outline);
+	}
+	return poly;
+}
+
+void DData::addLine(Grid2d<std::vector<int>> grid, double x1, double y1, double x2, double y2){
+    grid.align(x1, y1);                                 
+    grid.align(x2, y2);                                 
+    grid.data(x1, y1).push_back(lines.size());         
+    grid.data(x2, y2).push_back(lines.size());                                        
+    lines.emplace_back(addPoint(x1, y1), addPoint(x2, y2));
+    fprintf(stdout, "the emplace back point is (%f, %f), (%f, %f) \n", x1, y1, x2, y2);        
+    // if (in_blocks_section && !current_block.empty())        
+    //     blockdata[current_block].emplace_back(addPoint(x1, y1), addPoint(x2, y2));      	
+}
 
 Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double fa)
 {
+      
+    DData dxf;        
+    
+        
 	std::ifstream stream(filename.c_str());
-    auto poly = new Polygon2d();
 	if (!stream.good()) {
-		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
+		PRINTB("WARNING: Can't open DXF file '%s'.", filename);  
+        auto poly = new Polygon2d();
         return poly;
 	}
 
     read_dxf_file(filename, filename);
 
+    Grid2d<std::vector<int>> grid(GRID_COARSE);
     std::vector<header_struct> header_vector;
     std::vector<table_struct> table_vector;
     std::vector<polyline_vertex_struct> polyline_vertex_vector;
@@ -54,32 +309,27 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     std::vector<leader_struct> leader_vector;
     std::vector<spline_struct> spline_vector;
     std::vector<dimension_struct> dimension_vector;
-    
-    fn = 0; 
-    fs = 2; 
+
+    fn = 0;
+    fs = 1;
     fa = 12;
 
     circle_vector = return_circle_vector();
     if(!circle_vector.empty()){
-        Outline2d outline;
         for(auto it : circle_vector){
             int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
             Vector2d center(it.center[0], it.center[1]);
             for (int i = 0; i < n; i++) {
                 double a1 = (360.0 * i) / n;
                 double a2 = (360.0 *(i + 1)) / n;
-                outline.vertices.push_back(Vector2d(cos_degrees(a1)*it.radius + it.center[0], 
-                                                    sin_degrees(a1)*it.radius + it.center[1]));
-                outline.vertices.push_back(Vector2d(cos_degrees(a2)*it.radius + it.center[0], 
-                                                    sin_degrees(a2)*it.radius + it.center[1]));
+                dxf.addLine(grid, cos_degrees(a1)*it.radius + it.center[0], sin_degrees(a1)*it.radius + it.center[1],
+                                  cos_degrees(a2)*it.radius + it.center[0], sin_degrees(a2)*it.radius + it.center[1]);
             }
         }
-        poly->addOutline(outline);
     }
 
     arc_vector = return_arc_vector();
-    if(!arc_vector.empty()){
-        Outline2d outline;
+    if(!arc_vector.empty()){ 
         for(auto it : arc_vector){
             Vector2d center(it.center[0], it.center[1]);
             int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
@@ -91,22 +341,16 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
             for (int i = 0; i < n; i++) {
                 double a1 = it.start_angle + arc_angle * i / n;
                 double a2 = it.start_angle + arc_angle * (i + 1) / n;
-                outline.vertices.push_back(Vector2d(cos_degrees(a1)*it.radius + center[0], 
-                                                    sin_degrees(a1)*it.radius + center[1]));
-                outline.vertices.push_back(Vector2d(cos_degrees(a2)*it.radius + center[0], 
-                                                    sin_degrees(a2)*it.radius + center[1]));
+                dxf.addLine(grid, cos_degrees(a1)*it.radius + center[0], sin_degrees(a1)*it.radius + center[1],
+                                  cos_degrees(a2)*it.radius + center[0], sin_degrees(a2)*it.radius + center[1]);
             }
         }
-        poly->addOutline(outline);
     }
     
     ellipse_vector = return_ellipse_vector();
     if(!ellipse_vector.empty()){
-        fprintf(stdout, "size of ellipse vector %d \n", ellipse_vector.size());
-        Outline2d outline;
         for(auto it : ellipse_vector){
             // Commented code is meant as documentation of vector math
-            fprintf(stdout, "you now run it one more time!\n");
             while (it.start_angle > it.end_angle) it.end_angle += 2 * M_PI;
     //				Vector2d center(xverts[0], yverts[0]);
             Vector2d center(it.center[0], it.center[1]);
@@ -146,15 +390,13 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
                 p2_rot[1] += center[1];
                 if (i > 0) {
     // 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
-                    outline.vertices.push_back(Vector2d(p1[0], p1[1]));
-                    outline.vertices.push_back(Vector2d(p2[0], p2[1]));
+                    dxf.addLine(grid, p1[0], p1[1],p2[0], p2[1]);
                 }
     //					p1 = p2;
                 p1[0] = p2_rot[0];
                 p1[1] = p2_rot[1];            
             }
         }   
-        poly->addOutline(outline);
     }
 
     spline_vector = return_spline_vector();
@@ -164,52 +406,36 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
 
     lwpolyline_vector = return_lwpolyline_vector();
     if(!lwpolyline_vector.empty()){
-        Outline2d outline;
         for(auto it : lwpolyline_vector){
-            for(auto it_pt : it.lw_pt_vec){
-                outline.vertices.push_back(Vector2d(it_pt.x, it_pt.y));
+            for(auto it_pt = it.lw_pt_vec.begin(); it_pt != it.lw_pt_vec.end(); it_pt++){
+                if(std::next(it_pt) != it.lw_pt_vec.end())
+                dxf.addLine(grid, it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
             }
             // if polyline_flag == 1, the last vertex connect to the first vertex
             if (it.polyline_flag & 0x01){
-                outline.vertices.push_back(Vector2d(it.lw_pt_vec.back().x, it.lw_pt_vec.back().y));
-                outline.vertices.push_back(Vector2d(it.lw_pt_vec.front().x, it.lw_pt_vec.front().y));
+                dxf.addLine(grid, it.lw_pt_vec.back().x, it.lw_pt_vec.back().y,
+                it.lw_pt_vec.front().x, it.lw_pt_vec.front().y);
             }
         }            
-        poly->addOutline(outline);
     }
 
     line_vector = return_line_vector();
     if(!line_vector.empty()){
-        Outline2d outline;
         for(auto it : line_vector){
-            outline.vertices.push_back(Vector2d(it.line_pt[0][0], it.line_pt[0][1]));
-            outline.vertices.push_back(Vector2d(it.line_pt[1][0], it.line_pt[1][1]));
+            dxf.addLine(grid, it.line_pt[0][0], it.line_pt[0][1],
+                              it.line_pt[1][0], it.line_pt[1][1]);
         }
-        poly->addOutline(outline);
     }
 
     point_vector = return_point_vector();
     if(!point_vector.empty()){
-        Outline2d outline;
-        for(auto it : point_vector){
-            outline.vertices.push_back(Vector2d(it.pt[0], it.pt[1]));
-        }
-        poly->addOutline(outline);
+        PRINTD("Point Entity has been ignored");
     }
 
+    dxf.process_path(grid);
+    dxf.fixup_path_direction();
 
-	// Grid2d<std::vector<int>> grid(GRID_COARSE);
-    // std::vector<double> xverts = {-20, -20, 20, 20};
-	// std::vector<double> yverts = {-20, 20, 20, -20};
-    // size_t vertexNum = 4;
-    // for(size_t i = 0; i < vertexNum; i++){
-    //     grid.align(xverts.at(i), yverts.at(i));
-    //     //what does the grid.align do? Just align the vertex on the grid?
-    //     outline.vertices.push_back(Vector2d(xverts.at(i),yverts.at(i)));
-    //     outline.positive = true; \\ Do we need this?
-    // }
-
-    return poly;
+    return dxf.toPolygon2d();
 };
 
 
