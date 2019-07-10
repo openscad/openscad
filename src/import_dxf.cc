@@ -50,10 +50,7 @@ public:
 		}
 	};
 
-    DData(){
-        Dim();
-        Path();
-    };
+    DData();
 
 	std::vector<Vector2d> points;
 	std::vector<Path> paths;
@@ -64,13 +61,17 @@ public:
     void addLine(Grid2d<std::vector<int>> &grid, double x1, double y1, double x2, double y2);
 
 	void fixup_path_direction();
-    void process_path(Grid2d<std::vector<int>> &grid);
+    void process_path(Grid2d<std::vector<int>> grid);
 	std::string dump() const;
 	class Polygon2d *toPolygon2d() const;
     
 };
 
-void DData::process_path(Grid2d<std::vector<int>> &grid){
+DData::DData(){
+
+}
+
+void DData::process_path(Grid2d<std::vector<int>> grid){
 	// Extract paths from parsed data
 
 	typedef std::map<int, int> LineMap;
@@ -284,10 +285,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
 
     DData dxf;
 	Grid2d<std::vector<int>> grid(GRID_COARSE);
-	if(dxf.lines.empty() && !grid.has(0.0, 0.0)){
-	}        
-    
-
+     
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);  

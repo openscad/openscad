@@ -223,7 +223,7 @@
 #define BN_CK_VERT_TREE(_p) BU_CKMAG(_p, VERT_TREE_MAGIC, "vert_tree")
 
 static FILE *out_test;
-static FILE* out_data;
+static FILE *out_data;
 
 struct vert_root {
      uint32_t magic;
@@ -3963,10 +3963,10 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 	// exit(1);
     // }
 	output_file = (char*)"output";
-	if((out_test=fopen(output_file, "w")) == NULL){
-		//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
-		exit(1);
-	}
+	// if((out_test=fopen(output_file, "w")) == NULL){
+	// 	//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+	// 	exit(1);
+	// }
     ptr1 = strrchr(dxf_file, '/');
     if (ptr1 == NULL)
 	ptr1 = dxf_file;
@@ -4072,6 +4072,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 	if (layers[i]->color_number < 0)
 	    layers[i]->color_number = 7;
 
+	if(verbose)
 	if (layers[i]->curr_tri || layers[i]->solids.size() || layers[i]->m) {//BU_PTBL_LEN(&layers[i]->solids) 
 	    fprintf(out_test, "LAYER: %s, color = %d (%d %d %d)\n", layers[i]->name, layers[i]->color_number, V3ARGS(&rgb[layers[i]->color_number*3]));
 	}
@@ -4108,65 +4109,67 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 	// 	free(skt);// "free sketch");
 	//     }
 	
+	if(verbose){
+		if (layers[i]->line_count) {
+			fprintf(out_test, "\t%zu lines\n", layers[i]->line_count);
+		}
 
-	if (layers[i]->line_count) {
-	    fprintf(out_test, "\t%zu lines\n", layers[i]->line_count);
+		if (layers[i]->solid_count) {
+			fprintf(out_test, "\t%zu solids\n", layers[i]->solid_count);
+		}
+
+		if (layers[i]->polyline_count) {
+			fprintf(out_test, "\t%zu polylines\n", layers[i]->polyline_count);
+		}
+
+		if (layers[i]->lwpolyline_count) {
+			fprintf(out_test, "\t%zu lwpolylines\n", layers[i]->lwpolyline_count);
+		}
+
+		if (layers[i]->ellipse_count) {
+			fprintf(out_test, "\t%zu ellipses\n", layers[i]->ellipse_count);
+		}
+
+		if (layers[i]->circle_count) {
+			fprintf(out_test, "\t%zu circles\n", layers[i]->circle_count);
+		}
+
+		if (layers[i]->arc_count) {
+			fprintf(out_test, "\t%zu arcs\n", layers[i]->arc_count);
+		}
+
+		if (layers[i]->text_count) {
+			fprintf(out_test, "\t%zu texts\n", layers[i]->text_count);
+		}
+
+		if (layers[i]->mtext_count) {
+			fprintf(out_test, "\t%zu mtexts\n", layers[i]->mtext_count);
+		}
+
+		if (layers[i]->attrib_count) {
+			fprintf(out_test, "\t%zu attribs\n", layers[i]->attrib_count);
+		}
+
+		if (layers[i]->dimension_count) {
+			fprintf(out_test, "\t%zu dimensions\n", layers[i]->dimension_count);
+		}
+
+		if (layers[i]->leader_count) {
+			fprintf(out_test, "\t%zu leaders\n", layers[i]->leader_count);
+		}
+
+		if (layers[i]->face3d_count) {
+			fprintf(out_test, "\t%zu 3d faces\n", layers[i]->face3d_count);
+		}
+
+		if (layers[i]->point_count) {
+			fprintf(out_test, "\t%zu points\n", layers[i]->point_count);
+		}
+		if (layers[i]->spline_count) {
+			fprintf(out_test, "\t%zu splines\n", layers[i]->spline_count);
+		}
 	}
 
-	if (layers[i]->solid_count) {
-	    fprintf(out_test, "\t%zu solids\n", layers[i]->solid_count);
-	}
-
-	if (layers[i]->polyline_count) {
-	    fprintf(out_test, "\t%zu polylines\n", layers[i]->polyline_count);
-	}
-
-	if (layers[i]->lwpolyline_count) {
-	    fprintf(out_test, "\t%zu lwpolylines\n", layers[i]->lwpolyline_count);
-	}
-
-	if (layers[i]->ellipse_count) {
-	    fprintf(out_test, "\t%zu ellipses\n", layers[i]->ellipse_count);
-	}
-
-	if (layers[i]->circle_count) {
-	    fprintf(out_test, "\t%zu circles\n", layers[i]->circle_count);
-	}
-
-	if (layers[i]->arc_count) {
-	    fprintf(out_test, "\t%zu arcs\n", layers[i]->arc_count);
-	}
-
-	if (layers[i]->text_count) {
-	    fprintf(out_test, "\t%zu texts\n", layers[i]->text_count);
-	}
-
-	if (layers[i]->mtext_count) {
-	    fprintf(out_test, "\t%zu mtexts\n", layers[i]->mtext_count);
-	}
-
-	if (layers[i]->attrib_count) {
-	    fprintf(out_test, "\t%zu attribs\n", layers[i]->attrib_count);
-	}
-
-	if (layers[i]->dimension_count) {
-	    fprintf(out_test, "\t%zu dimensions\n", layers[i]->dimension_count);
-	}
-
-	if (layers[i]->leader_count) {
-	    fprintf(out_test, "\t%zu leaders\n", layers[i]->leader_count);
-	}
-
-	if (layers[i]->face3d_count) {
-	    fprintf(out_test, "\t%zu 3d faces\n", layers[i]->face3d_count);
-	}
-
-	if (layers[i]->point_count) {
-	    fprintf(out_test, "\t%zu points\n", layers[i]->point_count);
-	}
-	if (layers[i]->spline_count) {
-	    fprintf(out_test, "\t%zu splines\n", layers[i]->spline_count);
-	}
 	}
 
 	// if (!head.empty()) {//BU_LIST_NON_EMPTY(&head)
