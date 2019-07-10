@@ -3938,7 +3938,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
     // }
 	ignore_colors = 1;
 	tol_sq = 0.01;
-	verbose = 1;
+	verbose = 0;
 
     // if (argc - bu_optind < 2) {
 	// //bu_exit(1, "%s", usage);
