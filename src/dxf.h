@@ -463,25 +463,50 @@ struct dimension_struct{
 	std::string layer_name;
 };
 
-void read_dxf_file(std::string in_filename, std::string out_filename);
+struct dxf_data{
+    
+	std::vector<header_struct> header_vector;
+	std::vector<table_struct> table_vector;
+	std::vector<polyline_vertex_struct> polyline_vertex_vector;
+	std::vector<polyline_struct> polyline_vector;
+	std::vector<lwpolyline_struct> lwpolyline_vector;
+	std::vector<circle_struct> circle_vector;
+	std::vector<face3d_struct> face3d_vector;
+	std::vector<line_struct> line_vector;
+	std::vector<insert_struct> insert_vector;
+	std::vector<point_struct> point_vector;
+	std::vector<arc_struct> arc_vector;
+	std::vector<text_struct> text_vector;
+	std::vector<solid_struct> solid_vector;
+	std::vector<mtext_struct> mtext_vector;
+	std::vector<text_attrib_struct> text_attrib_vector;
+	std::vector<ellipse_struct> ellipse_vector;
+	std::vector<leader_struct> leader_vector;
+	std::vector<spline_struct> spline_vector;
+	std::vector<dimension_struct> dimension_vector;
 
-std::vector<polyline_vertex_struct> return_polyline_vertex_vector();
-std::vector<polyline_struct> return_polyline_vector();
-std::vector<lwpolyline_struct> return_lwpolyline_vector();
-std::vector<circle_struct> return_circle_vector();
-std::vector<face3d_struct> return_face3d_vector();
-std::vector<line_struct> return_line_vector();
-std::vector<insert_struct> return_insert_vector();
-std::vector<point_struct> return_point_vector();
-std::vector<arc_struct> return_arc_vector();
-std::vector<text_struct> return_text_vector();
-std::vector<solid_struct> return_solid_vector();
-std::vector<mtext_struct> return_mtext_vector();
-std::vector<text_attrib_struct> return_text_attrib_vector();
-std::vector<ellipse_struct> return_ellipse_vector();
-std::vector<leader_struct> return_leader_vector();
-std::vector<spline_struct> return_spline_vector();
-std::vector<dimension_struct> return_dimension_vector();
+    void clear_vector();
+
+	std::vector<polyline_vertex_struct> return_polyline_vertex_vector();
+	std::vector<polyline_struct> return_polyline_vector();
+	std::vector<lwpolyline_struct> return_lwpolyline_vector();
+	std::vector<circle_struct> return_circle_vector();
+	std::vector<face3d_struct> return_face3d_vector();
+	std::vector<line_struct> return_line_vector();
+	std::vector<insert_struct> return_insert_vector();
+	std::vector<point_struct> return_point_vector();
+	std::vector<arc_struct> return_arc_vector();
+	std::vector<text_struct> return_text_vector();
+	std::vector<solid_struct> return_solid_vector();
+	std::vector<mtext_struct> return_mtext_vector();
+	std::vector<text_attrib_struct> return_text_attrib_vector();
+	std::vector<ellipse_struct> return_ellipse_vector();
+	std::vector<leader_struct> return_leader_vector();
+	std::vector<spline_struct> return_spline_vector();
+	std::vector<dimension_struct> return_dimension_vector();
+};
+
+dxf_data read_dxf_file(std::string in_filename, std::string out_filename);
 
 #endif /* CONV_DXF_DXF_H */
 

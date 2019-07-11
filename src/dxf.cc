@@ -225,6 +225,32 @@
 static FILE *out_test;
 static FILE *out_data;
 
+/* replicated version of strlcpy from FreeBSD */
+size_t
+strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize)
+{
+	const char *osrc = src;
+	size_t nleft = dsize;
+
+	/* Copy as many bytes as will fit. */
+	if (nleft != 0) {
+		while (--nleft != 0) {
+			if ((*dst++ = *src++) == '\0')
+				break;
+		}
+	}
+
+	/* Not enough room in dst, add NUL and traverse rest of src. */
+	if (nleft == 0) {
+		if (dsize != 0)
+			*dst = '\0';		/* NUL-terminate dst */
+		while (*src++)
+			;
+	}
+
+	return(src - osrc - 1);	/* count does not include NUL */
+}
+
 struct vert_root {
      uint32_t magic;
      int tree_type;              /**< @brief vertices or vertices with normals */
@@ -397,25 +423,8 @@ static std::vector<double> pt_x;
 static std::vector<double> pt_y;
 static std::vector<double> pt_z;
 
-static std::vector<header_struct> header_vector;
-static std::vector<table_struct> table_vector;
-static std::vector<polyline_vertex_struct> polyline_vertex_vector;
-static std::vector<polyline_struct> polyline_vector;
-static std::vector<lwpolyline_struct> lwpolyline_vector;
-static std::vector<circle_struct> circle_vector;
-static std::vector<face3d_struct> face3d_vector;
-static std::vector<line_struct> line_vector;
-static std::vector<insert_struct> insert_vector;
-static std::vector<point_struct> point_vector;
-static std::vector<arc_struct> arc_vector;
-static std::vector<text_struct> text_vector;
-static std::vector<solid_struct> solid_vector;
-static std::vector<mtext_struct> mtext_vector;
-static std::vector<text_attrib_struct> text_attrib_vector;
-static std::vector<ellipse_struct> ellipse_vector;
-static std::vector<leader_struct> leader_vector;
-static std::vector<spline_struct> spline_vector;
-static std::vector<dimension_struct> dimension_vector;
+static dxf_data dd;
+
 
 struct state_data {
     //std::list<uint32_t> l;
@@ -463,14 +472,19 @@ struct layer {
 
 
 struct block {
-    char *block_name;
+    std::string block_name;
     off_t offset;
     char handle[17];
     double base[3];
 	
-
-	block(): block_name(NULL), offset(off_t()), handle{}, base{} {}
-	block(off_t file_offset): block_name(NULL), handle{}, base{} {
+	block(const block& blk){
+		strlcpy(handle, blk.handle, sizeof(handle));
+		block_name = blk.block_name;
+		VMOVE(base, blk.base);
+		offset = blk.offset;
+	}
+	block(): block_name(std::string()), offset(off_t()), handle{}, base{} {}
+	block(off_t file_offset): block_name(std::string()), handle{}, base{} {
 		offset = file_offset;
 	}
 
@@ -717,15 +731,23 @@ bn_mat_mul(register double o[16], register const double a[16], register const do
 
 /* Added functions for list operation */
 bool block_list_is_head(block bl, std::list<block> list){
-	if(bl.block_name != list.begin()->block_name)
-		return false;
-	else if(bl.base != list.begin()->base)
-		return false;
-	else if(bl.handle != list.begin()->handle)
-		return false;
-	else if(bl.offset != list.begin()->offset)
-		return false;
+	if(!list.empty()){
+		if(bl.block_name != list.begin()->block_name)
+			return false;
+		else if(!strcmp(bl.handle, list.begin()->handle))
+			return false;
+		else if(bl.offset != list.begin()->offset)
+			return false;
+		else{
+			for(int i = 0; i < 3; i++){
+				if(bl.base[i] != list.begin()->base[i])
+					return false;
+			}
+			return true;
+		}
+	}
 	return true;
+
 }
 
 /* function for undefined NEAR_EQUAL */
@@ -740,32 +762,6 @@ bool NEAR_EQUAL(double a, double b, double local_tol_sql){
 std::string Char2String(const char* line){
 	std::string str(line);
 	return str;
-}
-
-/* replicated version of strlcpy from FreeBSD */
-size_t
-strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize)
-{
-	const char *osrc = src;
-	size_t nleft = dsize;
-
-	/* Copy as many bytes as will fit. */
-	if (nleft != 0) {
-		while (--nleft != 0) {
-			if ((*dst++ = *src++) == '\0')
-				break;
-		}
-	}
-
-	/* Not enough room in dst, add NUL and traverse rest of src. */
-	if (nleft == 0) {
-		if (dsize != 0)
-			*dst = '\0';		/* NUL-terminate dst */
-		while (*src++)
-			;
-	}
-
-	return(src - osrc - 1);	/* count does not include NUL */
 }
 
 static char *
@@ -1098,7 +1094,7 @@ process_tables_layer_code(int code)
 		table_struct ts; 
 		ts.color = curr_color;
 		ts.layer_name = std::string(curr_layer_name);
-		table_vector.emplace_back(ts);
+		dd.table_vector.emplace_back(ts);
 
 	    if (curr_layer_name) {
 		free(curr_layer_name);
@@ -1146,15 +1142,15 @@ process_blocks_code(int code)
 		//curr_block = (block_list* ) malloc(sizeof(*curr_block));
 		block tmp(ftell(dxf));
 		curr_block = &tmp;
-		block_list.push_front(*curr_block);
+		block_list.push_front(block(*curr_block));
 		//block_list.push_front(block(ftell(dxf)));
 		// BU_LIST_INSERT(&(block_head), &(curr_block->l)); //Insert "new" item in front of "old" item.  block_head is the head of the list.
 		break;
 	    }
 	    break;
 	case 2:		/* block name */
-	    if (curr_block && curr_block->block_name == NULL) {
-		curr_block->block_name = strdup(line);
+	    if (curr_block && curr_block->block_name.empty()) {
+			curr_block->block_name = std::string(strdup(line));
 		if (verbose) {
 		    fprintf(out_test, "BLOCK %s begins at %jd\n",
 			   curr_block->block_name,
@@ -1233,7 +1229,7 @@ process_point_entities_code(int code)
 		point_struct pt_struct; 
 		VMOVE(pt_struct.pt, pt);
 		pt_struct.layer_name = std::string(curr_layer_name);
-		point_vector.emplace_back(pt_struct);
+		dd.point_vector.emplace_back(pt_struct);
 
 	    layers[curr_layer]->point_count++;
 	    MAT4X3PNT(tmp_pt, curr_state->xform, pt);
@@ -1293,7 +1289,7 @@ process_entities_polyline_vertex_code(int code)
 		pvs.face[3] = face[3];
 		pvs.color = curr_color;
 		pvs.layer_name = std::string(curr_layer_name);
-		polyline_vertex_vector.emplace_back(pvs);
+		dd.polyline_vertex_vector.emplace_back(pvs);
 
 	    if (vertex_flag == POLY_VERTEX_FACE) {
 		add_triangle(polyline_vert_indices[face[0]-1],
@@ -1371,7 +1367,7 @@ process_entities_polyline_code(int code)
 		ps.invisible = invisible;
 		ps.color = curr_color;
 		ps.layer_name = std::string(curr_layer_name);
-		polyline_vector.emplace_back(ps);
+		dd.polyline_vector.emplace_back(ps);
 
 	    if (!strncmp(line, "SEQEND", 6)) {
 		/* build any polyline meshes here */
@@ -1711,7 +1707,7 @@ process_insert_entities_code(int code)
 	    break;
 	case 2:		/* block name */ //BU_LIST_FOR(blk, block_list, &block_head
 	    for (auto it : block_list) {
-			if (!strcmp(it.block_name, line)) {
+			if (!strcmp(it.block_name.c_str(), line)) {
 				break;
 			}
 	    }
@@ -1769,7 +1765,7 @@ process_insert_entities_code(int code)
 	ins_struct.extrude_dir[3] = ins.extrude_dir[3];
 	ins_struct.color = curr_color;
 	ins_struct.layer_name = std::string(curr_layer_name);
-	insert_vector.emplace_back(ins_struct);
+	dd.insert_vector.emplace_back(ins_struct);
 
 	if (new_state->curr_block) {
 		double xlate[16], scale[16], rot[16], tmp1[16], tmp2[16];
@@ -1859,7 +1855,7 @@ process_solid_entities_code(int code)
 		ss.color = curr_color;
 		ss.layer_name = std::string(curr_layer_name);
 
-		solid_vector.emplace_back(ss);
+		dd.solid_vector.emplace_back(ss);
 	    layers[curr_layer]->solid_count++;
 
 	    // if (!layers[curr_layer]->m) {
@@ -1954,10 +1950,12 @@ process_lwpolyline_entities_code(int code)
 		for(int i = 0; i < pt_x.size(); i++){
 			ls.lw_pt_vec.push_back(lwpolyline_struct::lw_pt(pt_x.at(i), pt_y.at(i)));
 		}
+		pt_x.clear();
+		pt_y.clear();
 		ls.polyline_flag = polyline_flag;
 		ls.color = curr_color;
 		ls.layer_name = std::string(curr_layer_name);
-		lwpolyline_vector.emplace_back(ls);
+		dd.lwpolyline_vector.emplace_back(ls);
 
 	    if (verbose) {
 		fprintf(out_test, "Found end of LWPOLYLINE\n");
@@ -2070,7 +2068,7 @@ process_line_entities_code(int code)
 		VMOVE(ls.line_pt[1], line_pt[1]);
 		ls.layer_name = std::string(curr_layer_name);
 		ls.color = curr_color;
-		line_vector.emplace_back(ls);
+		dd.line_vector.emplace_back(ls);
 
 	    layers[curr_layer]->line_count++;
 
@@ -2169,7 +2167,7 @@ process_ellipse_entities_code(int code)
 		VMOVE(es.majorAxis, majorAxis);
 		es.ratio = ratio;
 		es.color = curr_color;
-		ellipse_vector.emplace_back(es);
+		dd.ellipse_vector.emplace_back(es);
 
 	    // if (!layers[curr_layer]->m) {
 		// create_nmg();
@@ -2316,7 +2314,7 @@ process_circle_entities_code(int code)
 		cs.radius = radius;
 		cs.layer_name = std::string(curr_layer_name);
 		cs.color = curr_color;
-		circle_vector.emplace_back(cs);
+		dd.circle_vector.emplace_back(cs);
 
 	    // if (!layers[curr_layer]->m) {
 		// create_nmg();
@@ -2797,7 +2795,7 @@ process_leader_entities_code(int code)
 		ls.arrrowHeadFlag = arrowHeadFlag;
 		ls.color = curr_color;
 		ls.layer_name = std::string(curr_layer_name);
-		leader_vector.emplace_back(ls);
+		dd.leader_vector.emplace_back(ls);
 
 	    layers[curr_layer]->leader_count++;
 
@@ -2939,7 +2937,7 @@ process_mtext_entities_code(int code)
 		VMOVE(ms.insertionPoint, insertionPoint);
 		ms.layer_name = std::string(curr_layer_name);
 		ms.color = curr_color;
-		mtext_vector.emplace_back(ms);
+		dd.mtext_vector.emplace_back(ms);
 
 	    layers[curr_layer]->mtext_count++;
 
@@ -3066,7 +3064,7 @@ process_text_attrib_entities_code(int code)
 		tas.textScale = textScale;
 		tas.theText = std::string(theText);
 		tas.vertAlignment = vertAlignment;
-		text_attrib_vector.emplace_back(tas);
+		dd.text_attrib_vector.emplace_back(tas);
 
 		// if (!layers[curr_layer]->m) {
 		//     create_nmg();
@@ -3127,7 +3125,7 @@ process_dimension_entities_code(int code)
 		dimension_struct ds;
 		ds.block_name = std::string(block_name);
 		ds.layer_name = std::string(curr_layer_name);
-		dimension_vector.emplace_back(ds);
+		dd.dimension_vector.emplace_back(ds);
 
 		new_state = (state_data *)malloc(sizeof(*new_state)); // bu_alloc
 		*new_state = *curr_state;
@@ -3136,7 +3134,7 @@ process_dimension_entities_code(int code)
 		}
 		for (auto blk : block_list) {//BU_LIST_FOR(blk, block_list, &block_head)
 		    if (block_name) {
-				if (!strcmp(blk.block_name, block_name)) {
+				if (!strcmp(blk.block_name.c_str(), block_name)) {
 					break;
 				}
 		    }
@@ -3245,7 +3243,7 @@ process_arc_entities_code(int code)
 		as.end_angle = end_angle;
 		as.color = curr_color;
 		as.layer_name = std::string(curr_layer_name);
-		arc_vector.emplace_back(as);
+		dd.arc_vector.emplace_back(as);
 
 	    layers[curr_layer]->arc_count++;
 
@@ -3488,7 +3486,7 @@ process_spline_entities_code(int code)
 			VSET(sPts.spoints, fitPts[i*3+0], fitPts[i*3+1], fitPts[i*3+2]);
 			ss.ctlPts.emplace_back(sPts);
 		}
-		spline_vector.emplace_back(ss);
+		dd.spline_vector.emplace_back(ss);
 
 	    layers[curr_layer]->spline_count++;
 
@@ -3618,7 +3616,7 @@ process_3dface_entities_code(int code)
 		}
 		f3d.color = curr_color;
 		f3d.layer_name = std::string(curr_layer_name);
-		face3d_vector.emplace_back(f3d);
+		dd.face3d_vector.emplace_back(f3d);
 		
 	    layers[curr_layer]->face3d_count++;
 	    for (vert_no = 0; vert_no < 4; vert_no++) {
@@ -3820,77 +3818,99 @@ readcodes()
     return code;
 }
 
-std::vector<circle_struct> return_circle_vector(){
+std::vector<circle_struct> dxf_data::return_circle_vector(){
 	return circle_vector; 
 }
 
-std::vector<polyline_vertex_struct> return_polyline_vertex_vector(){
+std::vector<polyline_vertex_struct> dxf_data::return_polyline_vertex_vector(){
 	return polyline_vertex_vector;
 }
 
-std::vector<polyline_struct> return_polyline_vector(){
+std::vector<polyline_struct> dxf_data::return_polyline_vector(){
 	return polyline_vector;
 }
 
-std::vector<lwpolyline_struct> return_lwpolyline_vector(){
+std::vector<lwpolyline_struct> dxf_data::return_lwpolyline_vector(){
 	return lwpolyline_vector;
 }
 
-std::vector<face3d_struct> return_face3d_vector(){
+std::vector<face3d_struct> dxf_data::return_face3d_vector(){
 	return face3d_vector;
 }
 
-std::vector<line_struct> return_line_vector(){
+std::vector<line_struct> dxf_data::return_line_vector(){
 	return line_vector;
 }
 
-std::vector<insert_struct> return_insert_vector(){
+std::vector<insert_struct> dxf_data::return_insert_vector(){
 	return insert_vector;
 }
 
-std::vector<point_struct> return_point_vector(){
+std::vector<point_struct> dxf_data::return_point_vector(){
 	return point_vector;
 }
 
-std::vector<arc_struct> return_arc_vector(){
+std::vector<arc_struct> dxf_data::return_arc_vector(){
 	return arc_vector;
 }
 
-std::vector<text_struct> return_text_vector(){
+std::vector<text_struct> dxf_data::return_text_vector(){
 	return text_vector;
 }
 
-std::vector<solid_struct> return_solid_vector(){
+std::vector<solid_struct> dxf_data::return_solid_vector(){
 	return solid_vector;
 }
 
-std::vector<mtext_struct> return_mtext_vector(){
+std::vector<mtext_struct> dxf_data::return_mtext_vector(){
 	return mtext_vector;
 }
 
-std::vector<text_attrib_struct> return_text_attrib_vector(){
+std::vector<text_attrib_struct> dxf_data::return_text_attrib_vector(){
 	return text_attrib_vector;
 }
 
-std::vector<ellipse_struct> return_ellipse_vector(){
+std::vector<ellipse_struct> dxf_data::return_ellipse_vector(){
 	return ellipse_vector;
 }
 
-std::vector<leader_struct> return_leader_vector(){
+std::vector<leader_struct> dxf_data::return_leader_vector(){
 	return leader_vector;
 }
 
-std::vector<spline_struct> return_spline_vector(){
+std::vector<spline_struct> dxf_data::return_spline_vector(){
 	return spline_vector;
 }
 
-std::vector<dimension_struct> return_dimension_vector(){
+std::vector<dimension_struct> dxf_data::return_dimension_vector(){
 	return dimension_vector;
+}
+
+void dxf_data::clear_vector(){
+	header_vector.clear();
+	table_vector.clear();
+	polyline_vertex_vector.clear();
+	polyline_vector.clear();
+	lwpolyline_vector.clear();
+	circle_vector.clear();
+	face3d_vector.clear();
+	line_vector.clear();
+	insert_vector.clear();
+ 	point_vector.clear();
+	arc_vector.clear();
+	text_vector.clear();
+	solid_vector.clear();
+	mtext_vector.clear();
+	text_attrib_vector.clear();
+	ellipse_vector.clear();
+	leader_vector.clear();
+	spline_vector.clear();
+	dimension_vector.clear();
 }
 
 // int
 // main(int argc, char *argv[])
-void read_dxf_file(std::string in_filename, std::string out_filename)
+dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 {
     std::list<uint32_t> head_all;
     size_t name_len;
@@ -3898,6 +3918,8 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
     int code;
     int c;
     int i;
+
+	dd.clear_vector();
 
     tol_sq = tol * tol;
 
@@ -4057,7 +4079,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 
     while ((code=readcodes()) > -900) {
 	process_code[curr_state->state](code);
-	//fprintf(stdout, "current state(%d)\n", curr_state->state);
+	fprintf(stdout, "current state(%d)\n", curr_state->state);
     }
 
     //BU_LIST_INIT(&head_all);
@@ -4219,6 +4241,7 @@ void read_dxf_file(std::string in_filename, std::string out_filename)
 	
 	//fprintf(stdout, "layer: %d" ,layers[curr_layer]->vert_tree->the_tree->vnode.coord);
     // return 0;
+	return dd;
 }
 
 /*

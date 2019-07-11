@@ -293,7 +293,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         return poly;
 	}
 
-    read_dxf_file(filename, filename);
+    dxf_data dd = read_dxf_file(filename, filename);
 
     std::vector<header_struct> header_vector;
     std::vector<table_struct> table_vector;
@@ -315,11 +315,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     std::vector<spline_struct> spline_vector;
     std::vector<dimension_struct> dimension_vector;
 
-    fn = 0;
-    fs = 1;
-    fa = 12;
-
-    circle_vector = return_circle_vector();
+    circle_vector =  dd.return_circle_vector();
     if(!circle_vector.empty()){
         for(auto it : circle_vector){
             int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
@@ -333,7 +329,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         }
     }
 
-    arc_vector = return_arc_vector();
+    arc_vector = dd.return_arc_vector();
     if(!arc_vector.empty()){ 
         for(auto it : arc_vector){
             Vector2d center(it.center[0], it.center[1]);
@@ -352,7 +348,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         }
     }
     
-    ellipse_vector = return_ellipse_vector();
+    ellipse_vector = dd.return_ellipse_vector();
     if(!ellipse_vector.empty()){
         for(auto it : ellipse_vector){
             // Commented code is meant as documentation of vector math
@@ -395,7 +391,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
                 p2_rot[1] += center[1];
                 if (i > 0) {
     // 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
-                    dxf.addLine(grid, p1[0], p1[1],p2[0], p2[1]);
+                    dxf.addLine(grid, p1[0], p1[1],p2_rot[0], p2_rot[1]);
                 }
     //					p1 = p2;
                 p1[0] = p2_rot[0];
@@ -404,12 +400,12 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         }   
     }
 
-    spline_vector = return_spline_vector();
+    spline_vector = dd.return_spline_vector();
     if(!spline_vector.empty()){
 
     }
 
-    lwpolyline_vector = return_lwpolyline_vector();
+    lwpolyline_vector = dd.return_lwpolyline_vector();
     if(!lwpolyline_vector.empty()){
         for(auto it : lwpolyline_vector){
             for(auto it_pt = it.lw_pt_vec.begin(); it_pt != it.lw_pt_vec.end(); it_pt++){
@@ -426,7 +422,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         }            
     }
 
-    line_vector = return_line_vector();
+    line_vector = dd.return_line_vector();
     if(!line_vector.empty()){
         for(auto it : line_vector){
             dxf.addLine(grid, it.line_pt[0][0], it.line_pt[0][1],
@@ -434,7 +430,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         }
     }
 
-    point_vector = return_point_vector();
+    point_vector = dd.return_point_vector();
     if(!point_vector.empty()){
         PRINTD("Point Entity has been ignored");
     }
