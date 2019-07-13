@@ -90,7 +90,7 @@ void TabManager::tabSwitched(int x)
     par->changedTopLevelEditor(par->editorDock->isFloating());
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
-    par->setWindowTitle(tabWidget->tabText(x));
+    par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
 }
 
 void TabManager::closeTabRequested(int x)
@@ -281,11 +281,11 @@ void TabManager::setTabModified(bool mod, EditorInterface *edt)
         fname += "*";
     }
 
-    tabWidget->setTabText(tabWidget->indexOf(edt), fname);
-    tabWidget->setTabToolTip(tabWidget->indexOf(edt), fpath);
     if(edt == editor) {
         par->setWindowTitle(fname);
     }
+    tabWidget->setTabText(tabWidget->indexOf(edt), fname.replace("&", "&&"));
+    tabWidget->setTabToolTip(tabWidget->indexOf(edt), fpath);
 }
 
 void TabManager::openTabFile(const QString &filename)
@@ -333,7 +333,7 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
         QFileInfo fileinfo(filename);
         edt->filepath = fileinfo.absoluteFilePath();
         fname = fileinfo.fileName();
-        tabWidget->setTabText(tabWidget->indexOf(edt), fname);
+        tabWidget->setTabText(tabWidget->indexOf(edt), QString(fname).replace("&", "&&"));
         tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
         par->parameterWidget->readFile(edt->filepath);
         QDir::setCurrent(fileinfo.dir().absolutePath());
