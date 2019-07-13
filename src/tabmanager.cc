@@ -117,8 +117,7 @@ void TabManager::open(const QString &filename)
     assert(!filename.isEmpty());
     if(editor->filepath.isEmpty() && !editor->isContentModified())
     {
-        editor->filepath = filename;
-        refreshDocument();
+        openTabFile(filename);
     }
     else
     {
@@ -324,14 +323,17 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
         edt = editor;
     }
 
+    QString fname;
     if (filename.isEmpty()) {
         edt->filepath.clear();
-        tabWidget->setTabText(tabWidget->indexOf(edt), _("Untitled.scad"));
-        tabWidget->setTabToolTip(tabWidget->indexOf(edt), _("Untitled.scad"));
+        fname = _("Untitled.scad");
+        tabWidget->setTabText(tabWidget->indexOf(edt), fname);
+        tabWidget->setTabToolTip(tabWidget->indexOf(edt), fname);
     } else {
         QFileInfo fileinfo(filename);
         edt->filepath = fileinfo.absoluteFilePath();
-        tabWidget->setTabText(tabWidget->indexOf(edt), fileinfo.fileName());
+        fname = fileinfo.fileName();
+        tabWidget->setTabText(tabWidget->indexOf(edt), fname);
         tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
         par->parameterWidget->readFile(edt->filepath);
         QDir::setCurrent(fileinfo.dir().absolutePath());
@@ -339,6 +341,7 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
     par->editorTopLevelChanged(par->editorDock->isFloating());
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
+    par->setWindowTitle(fname);
 }
 
 void TabManager::refreshDocument()
