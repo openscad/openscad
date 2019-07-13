@@ -2899,7 +2899,7 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	QString title(prefix);
 	if (topLevel) {
 		const QFileInfo fileInfo(windowFilePath());
-		title += " (" + fileInfo.fileName() + ")";
+		title += " (" + fileInfo.fileName().replace("&", "&&") + ")";
 	}
 	dockWidget->setWindowTitle(title);
 }
