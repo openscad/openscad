@@ -250,7 +250,7 @@ qscintilla2_sysver()
   debug using qtincdir: $qtincdir
   debug using qscipath: $qscipath
   if [ ! -e $qscipath ]; then
-    debug qscipath doesnt exist. giving up on version.
+    debug "qscipath doesn't exist. giving up on version."
     return
   fi
 

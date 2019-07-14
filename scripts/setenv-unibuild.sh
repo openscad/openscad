@@ -58,7 +58,7 @@ setenv_netbsd()
 {
  setenv_common
  echo --- netbsd build situation is complex. it comes with gcc4.5
- echo --- which is incompatable with updated CGAL. 
+ echo --- which is incompatible with updated CGAL. 
  echo --- you may need to hack with newer gcc to make it work
  QMAKESPEC=netbsd-g++
  QTDIR=/usr/pkg/qt4

@@ -187,10 +187,10 @@ bool Context::has_local_variable(const std::string &name) const
  * noinline prevents compiler optimization, as we here specifically
  * optimize for stack usage during normal operating, not runtime during
  * error handling.
- * 
+ *
  * @param what what is ignored
  * @param name name of the ignored object
- * @param loc location of the function/modul call
+ * @param loc location of the function/module call
  * @param docPath document path of the root file, used to calculate the relative path
  */
 static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){

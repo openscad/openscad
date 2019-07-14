@@ -51,7 +51,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 
 	//QProgressBar generates the shown string from the format string.
 	//By setting a format string without a place holder,
-	//we can set arbitrary text, like a custom formated double.
+	//we can set arbitrary text, like a custom formatted double.
 	//(Note: QProgressBar internally works on int, so has no formating for double values)
 	//(Note: The text of a QProgressBar can not be set directly)
 	QString s =  QString::number(val, 'f', 2 );

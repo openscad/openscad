@@ -118,7 +118,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 {
 	// Find the last custom module invocation, which will contain
-	// an eval context with the children of the module invokation
+	// an eval context with the children of the module invocation
 	const Context *tmpc = evalctx;
 	while (tmpc->getParent()) {
 		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->getParent());
@@ -186,7 +186,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 		}
 
 		// Find the last custom module invocation, which will contain
-		// an eval context with the children of the module invokation
+		// an eval context with the children of the module invocation
 		const EvalContext *modulectx = getLastModuleCtx(evalctx);
 		if (modulectx==nullptr) {
 			return nullptr;

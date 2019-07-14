@@ -95,7 +95,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 bool create_wgl_dummy_context(OffscreenContext &ctx)
 {
   // this function alters ctx->window and ctx->openGLContext 
-  //  and ctx->dev_context if successfull
+  //  and ctx->dev_context if successful
 
   // create window
 
@@ -202,7 +202,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   // Before an FBO can be setup, a WGL context must be created. 
   // This call alters ctx->window and ctx->openGLContext 
-  //  and ctx->dev_context if successfull
+  //  and ctx->dev_context if successful
   if (!create_wgl_dummy_context( *ctx )) {
     return nullptr;
   }

@@ -671,7 +671,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 				{polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}};
 
 			// convert the char into lines appropriate for the axis being used
-			// psuedo 7 segment vertices are:
+			// pseudo 7 segment vertices are:
 			// A--B
 			// |  |
 			// C--D

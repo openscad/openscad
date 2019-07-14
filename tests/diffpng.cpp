@@ -615,7 +615,7 @@ public:
 
 	// Here we set up the number of Laplacian Pyramid Levels used
 	// by Yee's algorithm. A MATCH is very reliable with a low level
-	// of max levels, and somehwat fsat. However, a DIFFERENCE with
+	// of max levels, and somewhat fsat. However, a DIFFERENCE with
 	// a low level of levels can be unreliable. So in that case, we can
 	// 'retest' with more levels, starting with the initial, and
 	// ending with the 'final'. Each new level is slower.
@@ -1119,7 +1119,7 @@ Thus, the strategy is as follows.
 Start with a low number of Pyramid Levels.... and if the images match, ,
 then quit the algorithm.
 
-Now, only if the images dont match do we increase the number of
+Now, only if the images don't match do we increase the number of
 pyramid levels.
 
 On a typical regression test system, this can create a good speedup. Why?
@@ -1129,17 +1129,17 @@ Thus, most of the comparisons will be of images that will probably match.
 That means, this comparison will run relatively fast on all those matches.
 
 Now say you create an experimental new feature for your program, and
-want to see if it breaks anything. Well, the algorithm will stil run fast
+want to see if it breaks anything. Well, the algorithm will still run fast
 on the test-output that matches what is expected. . . . it will only slow
 down to do higher-levels of Pyramid processing for those few output images that
-dont match what is expected.
+don't match what is expected.
 
 Lets say your modification of your program causes 5 out of 400 tests to fail.
 That means only those 5 will run really slowly.
 
 Let's say that 'fast' means 2 seconds, and 'slow' means 20 seconds. We have
 thus taken some code that would have run in 400*20 seconds, 8000 (>2 hours)
-and made it run in only 395*2+5*20 seconds. Thats about 15 minutes, roughly
+and made it run in only 395*2+5*20 seconds. That's about 15 minutes, roughly
 ten times faster.
 */
 

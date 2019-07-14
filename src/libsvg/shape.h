@@ -55,10 +55,12 @@ protected:
     std::string transform;
     std::string stroke_width;
     std::string stroke_linecap;
+    std::string stroke_linejoin;
     std::string style;
-    
+
     double get_stroke_width() const;
     ClipperLib::EndType get_stroke_linecap() const;
+    ClipperLib::JoinType get_stroke_linejoin() const;
     const std::string get_style(std::string name) const;
     void draw_ellipse(path_t& path, double x, double y, double rx, double ry);
     void offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap);
