@@ -63,7 +63,6 @@ void ParameterVector::setValue()
 
 	for(unsigned int i = 0; i < vec.size(); i++) {
 		boxes[i]->setDecimals(decimalPrecision);
-		boxes[i]->setValue(vec.at(i)->toDouble());
 		if(minV==0 && maxV ==0){
 			boxes[i]->setRange(vec.at(i)->toDouble()-1000,vec.at(i)->toDouble()+1000);
 		}else{
@@ -71,6 +70,7 @@ void ParameterVector::setValue()
 			boxes[i]->setMaximum(maxV);
 			boxes[i]->setSingleStep(step);
 		}
+		boxes[i]->setValue(vec.at(i)->toDouble());
 	}
 	for(unsigned int i = vec.size(); i < 4; i++) {
 		boxes[i]->hide();
