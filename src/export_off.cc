@@ -83,7 +83,7 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	append_geometry(geom, mesh);
 
 	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const Vector3d *v = mesh.vertices.getArray();
+	const auto& v = mesh.vertices.getArray();
 	size_t numverts = mesh.vertices.size();
 	for (size_t i=0;i<numverts;i++) {
 		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";

@@ -61,44 +61,72 @@ const ValuePtr ValuePtr::undefined;
  * conversion, defeating the purpose of using double-conversion library */
 #define DC_PRECISION_REQUESTED 6
 
+//private definitions used by trimTrailingZeroesHelper
+#define TRIM_TRAILINGZEROES_DONE 0
+#define TRIM_TRAILINGZEROES_CONTINUE 1
+
+
+//process parameter buffer from the end to start to find out where the zeroes are located (if any).
+//parameter pos shall be the pos in buffer where '\0' is located.
+//parameter currentpos shall be set to end of buffer (where '\0' is located).
+//set parameters exppos and decimalpos when needed.
+//leave parameter zeropos as is.
+inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpos=nullptr, char *exppos=nullptr, char *decimalpos=nullptr, char *zeropos=nullptr) {
+    
+    int cont = TRIM_TRAILINGZEROES_CONTINUE;
+  
+    //we have exhaused all positions from end to start
+    if(currentpos <= buffer)
+        return TRIM_TRAILINGZEROES_DONE;
+    
+    //we do no need to process the terminator of string
+    if(*currentpos == '\0'){
+        currentpos--;
+        cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
+    }
+    
+    
+    //we have an exponent and jumps to the position before the exponent - no need to process the characters belonging to the exponent
+    if(cont && exppos && currentpos >= exppos)
+    {
+        currentpos = exppos;
+        currentpos--;
+        cont = trimTrailingZeroesHelper(buffer, pos, currentpos , exppos, decimalpos, zeropos);
+    }
+    
+    //we are still on the right side of the decimal and still counting zeroes (keep track of) from the back to start
+    if(cont && currentpos && decimalpos < currentpos && *currentpos == '0'){
+        zeropos= currentpos;
+        currentpos--;
+        cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
+    }
+    
+    //we have found the first occurrance of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
+    if(cont && zeropos && exppos){
+        int count = &buffer[pos] - exppos + 1;
+        memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
+        return TRIM_TRAILINGZEROES_DONE;
+    }
+    
+    //we have found a zero and need to take care of (truncate the string to the position of either the zero or the decimal)
+    if(cont && zeropos){
+       zeropos - 1 == decimalpos ? *decimalpos = '\0' : *zeropos = '\0';
+       return TRIM_TRAILINGZEROES_DONE;
+    }
+    
+    //we have just another character (other than a zero) and are done
+    if(cont && !zeropos)
+       return TRIM_TRAILINGZEROES_DONE;
+
+    return TRIM_TRAILINGZEROES_DONE;
+}
 
 inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
-  if (decimal) {
-    char *ptr = decimal;
-    while (*(++ptr) != '\0') {
-      char *zero = strchr(ptr, '0');
-      if (zero) {
-        ptr = zero;
-        char ch;
-        while ((ch = *(++ptr))) {
-          if (ch == DC_EXP) {
-            // found exponent character after all zeroes, 
-            // move chunk from exponent to end of string to replace decimal
-            memmove((zero-1 == decimal) ? decimal : zero, ptr, &buffer[pos]-ptr+1);
-            return;
-          } else if (ch != '0') {
-            // found non-zero digit, start over looking for zeroes
-            break;
-          }
-        }
-        if (ch == '\0') {
-          // reached end of string with all zeroes
-          if (zero-1 == decimal) {
-            // first zero was immediately after decimal
-            *decimal = '\0'; // replace decimal with terminator
-            return;
-          } else {
-            // replace zero with terminator
-            *zero = '\0';
-            return;
-          }
-        }
-      } else {
-        // no zeroes after decimal
-        return;
-      }
-    }
+  
+  if (decimal){ 
+      char *exppos = strchr(buffer, DC_EXP);
+      trimTrailingZeroesHelper(buffer, pos, &buffer[pos], exppos, decimal, nullptr);
   }
 }
 

@@ -1455,7 +1455,7 @@ void MainWindow::updateRecentFileActions()
 	auto files = UIUtils::recentFiles();
 	
 	for (int i = 0; i < files.size(); ++i) {
-		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
+		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName().replace("&", "&&"));
 		this->actionRecentFile[i]->setData(files[i]);
 		this->actionRecentFile[i]->setVisible(true);
 	}
@@ -1473,7 +1473,7 @@ void MainWindow::show_examples()
 		auto menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
 		
 		for (const auto &ex : examples) {
-			auto openAct = new QAction(ex.fileName(), this);
+			auto openAct = new QAction(ex.fileName().replace("&", "&&"), this);
 			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
 			menu->addAction(openAct);
 			openAct->setData(ex.canonicalFilePath());
@@ -2899,7 +2899,7 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	QString title(prefix);
 	if (topLevel) {
 		const QFileInfo fileInfo(windowFilePath());
-		title += " (" + fileInfo.fileName() + ")";
+		title += " (" + fileInfo.fileName().replace("&", "&&") + ")";
 	}
 	dockWidget->setWindowTitle(title);
 }
