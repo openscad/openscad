@@ -425,18 +425,18 @@ static std::vector<double> pt_z;
 
 static dxf_data dd;
 
-
 struct state_data {
     //std::list<uint32_t> l;
-    struct block *curr_block;
+    //struct block *curr_block;
+	int curr_block_indx;
+	off_t back_file_offset;
     off_t file_offset;
     int state;
     int sub_state;
     double xform[16];
 };
 
-
-static std::list<state_data> state_stack;
+static std::vector<state_data> state_stack;
 static struct state_data *curr_state;
 static int curr_color=7;
 static int ignore_colors = 0;
@@ -483,18 +483,51 @@ struct block {
 		VMOVE(base, blk.base);
 		offset = blk.offset;
 	}
-	block(): block_name(std::string()), offset(off_t()), handle{}, base{} {}
-	block(off_t file_offset): block_name(std::string()), handle{}, base{} {
+	block(): block_name(std::string()), offset(off_t()){
+		for(int i = 0; i < 3; i ++){
+			base[i] = -1;
+		}
+		for(int i = 0; i < 17; i++){
+			handle[i] = 0;
+		}
+	}
+	block(off_t file_offset): block_name(std::string()){
 		offset = file_offset;
+		for(int i = 0; i < 3; i ++){
+			base[i] = -1;
+		}
+		for(int i = 0; i < 17; i++){
+			handle[i] = 0;
+		}
 	}
 
-	~block(){}
+	bool empty(){
+		if(this->block_name.empty()){
+			if(this->offset == off_t()){
+				for(int i = 0; i < 3; i ++){
+					if(base[i] != -1){
+						return false;
+					}
+				}
+				for(int i = 0; i < 17; i++){
+					if(handle[i] != 0){
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
 };
 
-std::list<block> block_list;
-block *curr_block;
+static std::vector<block> block_list;
+static block *curr_block;
+static int indx;
 
-static struct layer **layers=NULL;
+//static struct layer **layers=NULL;
+static std::vector<layer> layers;
 static int max_layers;
 static int next_layer;
 static int curr_layer;
@@ -730,17 +763,17 @@ bn_mat_mul(register double o[16], register const double a[16], register const do
 }
 
 /* Added functions for list operation */
-bool block_list_is_head(block bl, std::list<block> list){
+bool block_list_is_head(block bl, std::vector<block> list){
 	if(!list.empty()){
-		if(bl.block_name != list.begin()->block_name)
+		if(bl.block_name != list.front().block_name)
 			return false;
-		else if(!strcmp(bl.handle, list.begin()->handle))
+		else if(!strcmp(bl.handle, list.front().handle))
 			return false;
-		else if(bl.offset != list.begin()->offset)
+		else if(bl.offset != list.front().offset)
 			return false;
 		else{
 			for(int i = 0; i < 3; i++){
-				if(bl.base[i] != list.begin()->base[i])
+				if(bl.base[i] != list.front().base[i])
 					return false;
 			}
 			return true;
@@ -798,12 +831,12 @@ get_layer()
     curr_layer = -1;
     for (i = 1; i < next_layer; i++) {
 		if (!color_by_layer && !ignore_colors && curr_color != 256) {
-			if (layers[i]->color_number == curr_color && layers[i]->name == curr_layer_name) {
+			if (layers[i].color_number == curr_color && layers[i].name == curr_layer_name) {
 				curr_layer = i;
 				break;
 			}
 		} else {
-			if (layers[i]->name == curr_layer_name) {
+			if (layers[i].name == curr_layer_name) {
 				curr_layer = i;
 				break;
 			}
@@ -817,39 +850,41 @@ get_layer()
 		fprintf(out_test, "Creating new block of layers\n");
 	    }
 	    max_layers += 5;
-	    layers = (struct layer **)realloc(layers, max_layers*sizeof(struct layer *));
+	    //layers = (struct layer **)realloc(layers, max_layers*sizeof(struct layer *));
 	    for (i = 0; i < 5; i++) {
-			layers[max_layers-i-1] = (layer *)malloc(sizeof(*layers[max_layers-i-1])); //bu_alloc
+			layers.push_back(layer());
+			//layers[max_layers-i-1] = (layer *)malloc(sizeof(*layers[max_layers-i-1])); //bu_alloc
 	    }
 	}
 	curr_layer = next_layer++;
 	if (verbose) {
 	    fprintf(out_test, "New layer: %s, color number: %d", line, curr_color);
 	}
-	layers[curr_layer]->name = strdup(curr_layer_name);
-	layers[curr_layer]->name = curr_layer_name;
+	layers[curr_layer].name = strdup(curr_layer_name);
+	layers[curr_layer].name = curr_layer_name;
 	if (curr_state->state == ENTITIES_SECTION &&
 	    (curr_state->sub_state == POLYLINE_ENTITY_STATE ||
 	     curr_state->sub_state == POLYLINE_VERTEX_ENTITY_STATE)) {
-	    layers[curr_layer]->vert_tree = layers[old_layer]->vert_tree;
+	    layers[curr_layer].vert_tree = layers[old_layer].vert_tree;
 	} else {
-	    layers[curr_layer]->vert_tree = create_vert_tree(); //bn_vert_tree_create();
+	    layers[curr_layer].vert_tree = create_vert_tree(); //bn_vert_tree_create();
 
 	}
-	layers[curr_layer]->color_number = curr_color;
-	//bu_ptbl_init(&layers[curr_layer]->solids, 8, "layers[curr_layer]->solids");
+	layers[curr_layer].color_number = curr_color;
+	//bu_ptbl_init(&layers[curr_layer].solids, 8, "layers[curr_layer].solids");
 	if (verbose) {
-	    fprintf(out_test, "\tNew layer name: %s\n", layers[curr_layer]->name);
+	    fprintf(out_test, "\tNew layer name: %s\n", layers[curr_layer].name);
 	}
     }
 
     if (verbose && curr_layer != old_layer) {
 	fprintf(out_test, "changed to layer #%d, (m = %p, s=%p)\n",
 	       curr_layer,
-	       (void *)layers[curr_layer]->m,
-	       (void *)layers[curr_layer]->s);
+	       (void *)layers[curr_layer].m,
+	       (void *)layers[curr_layer].s);
     }
 }
+
 
 
 // static void
@@ -860,8 +895,8 @@ get_layer()
 
 //     m = nmg_mm();
 //     r = nmg_mrsv(m);
-//     layers[curr_layer]->s = BU_LIST_FIRST(shell, &r->s_hd);
-//     layers[curr_layer]->m = m;
+//     layers[curr_layer].s = BU_LIST_FIRST(shell, &r->s_hd);
+//     layers[curr_layer].m = m;
 // }
 // Do we need this?
 
@@ -871,7 +906,7 @@ void
 add_triangle(int v1, int v2, int v3, int layer)
 {
     if (verbose) {
-	fprintf(out_test, "Adding triangle %d %d %d, to layer %s\n", v1, v2, v3, layers[layer]->name);
+	fprintf(out_test, "Adding triangle %d %d %d, to layer %s\n", v1, v2, v3, layers[layer].name);
     }
     if (v1 == v2 || v2 == v3 || v3 == v1) {
 	if (verbose) {
@@ -879,19 +914,19 @@ add_triangle(int v1, int v2, int v3, int layer)
 	}
 	return;
     }
-    if (layers[layer]->curr_tri >= layers[layer]->max_tri) {
+    if (layers[layer].curr_tri >= layers[layer].max_tri) {
 	/* allocate more memory for triangles */
-	layers[layer]->max_tri += TRI_BLOCK;
-	layers[layer]->part_tris = (int *)realloc(layers[layer]->part_tris, sizeof(int) * layers[layer]->max_tri * 3);
+	layers[layer].max_tri += TRI_BLOCK;
+	layers[layer].part_tris = (int *)realloc(layers[layer].part_tris, sizeof(int) * layers[layer].max_tri * 3);
     }
 
     /* fill in triangle info */
-    layers[layer]->part_tris[layers[layer]->curr_tri*3 + 0] = v1;
-    layers[layer]->part_tris[layers[layer]->curr_tri*3 + 1] = v2;
-    layers[layer]->part_tris[layers[layer]->curr_tri*3 + 2] = v3;
+    layers[layer].part_tris[layers[layer].curr_tri*3 + 0] = v1;
+    layers[layer].part_tris[layers[layer].curr_tri*3 + 1] = v2;
+    layers[layer].part_tris[layers[layer].curr_tri*3 + 2] = v3;
 
     /* increment count */
-    layers[layer]->curr_tri++;
+    layers[layer].curr_tri++;
 }
 
 
@@ -1133,44 +1168,49 @@ process_blocks_code(int code)
 	    } else if (!strncmp(line, "ENDSEC", 6)) {
 		curr_state->state = UNKNOWN_SECTION;
 		break;
-	    } else if ( !strcmp(line, "ENDBLK")) {
-		curr_block = NULL;
+	    } else if (!strcmp(line, "ENDBLK")) {
+		indx = -1;
+		delete curr_block;
+		curr_block = nullptr;
 		break;
 	    } else if (!strncmp(line, "BLOCK", 5)) {
 		/* start of a new block */
 
 		//curr_block = (block_list* ) malloc(sizeof(*curr_block));
+		//curr_block = new block(ftell(dxf));
 		block tmp(ftell(dxf));
-		curr_block = &tmp;
-		block_list.push_front(block(*curr_block));
+		block_list.emplace_back(tmp);
+		indx = block_list.size()-1;
 		//block_list.push_front(block(ftell(dxf)));
-		// BU_LIST_INSERT(&(block_head), &(curr_block->l)); //Insert "new" item in front of "old" item.  block_head is the head of the list.
+		// BU_LIST_INSERT(&(block_head), &(curr_block.l)); //Insert "new" item in front of "old" item.  block_head is the head of the list.
 		break;
 	    }
 	    break;
 	case 2:		/* block name */
-	    if (curr_block && curr_block->block_name.empty()) {
-			curr_block->block_name = std::string(strdup(line));
-		if (verbose) {
-		    fprintf(out_test, "BLOCK %s begins at %jd\n",
-			   curr_block->block_name,
-			   (intmax_t)curr_block->offset);
+	    if (indx != -1) {
+			if(block_list.at(indx).block_name.empty())
+				block_list.at(indx).block_name = std::string(strdup(line));
+			if (verbose) {
+				fprintf(out_test, "BLOCK %s begins at %jd\n",
+				block_list.at(indx).block_name.c_str(),
+				(intmax_t)block_list.at(indx).offset);
 		}
 	    }
 	    break;
 	case 5:		/* block handle */
-	    if (curr_block && strcmp("" ,curr_block->handle)) {
-		len = strlen(line);
-		V_MIN(len, 16);
-		strlcpy(curr_block->handle, line, len);
-	    }
+	    if (indx != -1) 
+			if(!strcmp("" ,block_list.at(indx).handle)) {
+				len = strlen(line);
+				V_MIN(len, 16);
+				strlcpy(block_list.at(indx).handle, line, len);
+			}
 	    break;
 	case 10:
 	case 20:
 	case 30:
-	    if (curr_block) {
+	    if (indx != -1) {
 		coord = code / 10 - 1;
-		curr_block->base[coord] = atof(line) * units_conv[units] * scale_factor;
+		block_list.at(indx).base[coord] = atof(line) * units_conv[units] * scale_factor;
 	    }
 	    break;
     }
@@ -1231,11 +1271,11 @@ process_point_entities_code(int code)
 		pt_struct.layer_name = std::string(curr_layer_name);
 		dd.point_vector.emplace_back(pt_struct);
 
-	    layers[curr_layer]->point_count++;
+	     layers[curr_layer].point_count++;
 	    MAT4X3PNT(tmp_pt, curr_state->xform, pt);
-	    sprintf(tmp_name, "point.%lu", (long unsigned int)layers[curr_layer]->point_count);
+	    sprintf(tmp_name, "point.%lu", (long unsigned int)layers[curr_layer].point_count);
 	    //(void)mk_sph(out_fp, tmp_name, tmp_pt, 0.1);
-	    //(void)bu_ptbl_ins(&(layers[curr_layer]->solids), (long *)strdup(tmp_name));
+	    //(void)bu_ptbl_ins(&(layers[curr_layer].solids), (long *)strdup(tmp_name));
 	    curr_state->sub_state = UNKNOWN_ENTITY_STATE;
 	    process_entities_code[curr_state->sub_state](code);
 	    break;
@@ -1311,8 +1351,8 @@ process_entities_polyline_vertex_code(int code)
 		}
 		VSET(tmp_pt1, x, y, z);
 		MAT4X3PNT(tmp_pt2, curr_state->xform, tmp_pt1);
-		//polyline_vert_indices[polyline_vert_indices_count++] = bn_vert_tree_add(layers[curr_layer]->vert_tree, tmp_pt2[X], tmp_pt2[Y], tmp_pt2[Z], tol_sq);
-		polyline_vert_indices[polyline_vert_indices_count++] = Add_vert(tmp_pt2[X], tmp_pt2[Y], tmp_pt2[Z],layers[curr_layer]->vert_tree, tol_sq);
+		//polyline_vert_indices[polyline_vert_indices_count++] = bn_vert_tree_add(layers[curr_layer].vert_tree, tmp_pt2[X], tmp_pt2[Y], tmp_pt2[Z], tol_sq);
+		polyline_vert_indices[polyline_vert_indices_count++] = Add_vert(tmp_pt2[X], tmp_pt2[Y], tmp_pt2[Z],layers[curr_layer].vert_tree, tol_sq);
 		if (verbose) {
 		    fprintf(out_test, "Added 3D mesh vertex (%f %f %f) index = %d, number = %d\n",
 			   x, y, z, polyline_vert_indices[polyline_vert_indices_count-1],
@@ -1433,12 +1473,12 @@ process_entities_polyline_code(int code)
 		    if (polyline_vertex_count > 1) {
 			int i;
 
-			// if (!layers[curr_layer]->m) {
+			// if (!layers[curr_layer].m) {
 			//     create_nmg();
 			// }
 
 			// for (i = 0; i < polyline_vertex_count-1; i++) {
-			//     eu = nmg_me(v1, v2, layers[curr_layer]->s);
+			//     eu = nmg_me(v1, v2, layers[curr_layer].s);
 			//     if (i == 0) {
 			// 	v1 = eu->vu_p->v_p;
 			// 	nmg_vertex_gv(v1, polyline_verts);
@@ -1457,7 +1497,7 @@ process_entities_polyline_code(int code)
 
 			// if (polyline_flag & POLY_CLOSED) {
 			//     v2 = v0;
-			//     (void)nmg_me(v1, v2, layers[curr_layer]->s);
+			//     (void)nmg_me(v1, v2, layers[curr_layer].s);
 			//      if (verbose) {
 			// 	 fprintf(out_test, "Wire edge (closing polyline): (%g %g %g) <-> (%g %g %g)\n",
 			// 	        V3ARGS(v1->vg_p->coord),
@@ -1469,7 +1509,7 @@ process_entities_polyline_code(int code)
 		    polyline_vertex_count = 0;
 		}
 
-		layers[curr_layer]->polyline_count++;
+		layers[curr_layer].polyline_count++;
 		curr_state->state = ENTITIES_SECTION;
 		curr_state->sub_state = UNKNOWN_ENTITY_STATE;
 		if (verbose) {
@@ -1519,8 +1559,6 @@ process_entities_polyline_code(int code)
 static int
 process_entities_unknown_code(int code)
 {
-    struct state_data *tmp_state;
-
     invisible = 0;
 
     switch (code) {
@@ -1643,21 +1681,20 @@ process_entities_unknown_code(int code)
 		    fprintf(out_test, "sub_state changed to %d\n", curr_state->sub_state);
 		}
 		break;
-	    } else if (!strncmp(line, "ENDBLK", 6)) {
+	    } else if (!strcmp(line, "ENDBLK")) {
+			//fprintf(stdout, "the line is: %s\n", line);
 		/* found end of an inserted block, pop the state stack */
-		tmp_state = curr_state;
 		//BU_LIST_POP(state_data, &state_stack, curr_state);
 		state_stack.pop_back();
 		if (!curr_state) {
 		    fprintf(out_test, "ERROR: end of block encountered while not inserting!!!\n");
-		    curr_state = tmp_state;
 		    break;
 		}
-		free(tmp_state);
-		fseek(dxf, curr_state->file_offset, SEEK_SET);
+		//fprintf(stdout, "size of the line vector %d \n", line_vector.size());
+		fseek(dxf, curr_state->back_file_offset, SEEK_SET);
 		curr_state->sub_state = UNKNOWN_ENTITY_STATE;
 		if (verbose) {
-		    fprintf(out_test, "Popped state at end of inserted block (seeked to %jd)\n", (intmax_t)curr_state->file_offset);
+		    fprintf(out_test, "Popped state at end of inserted block (seeked to %jd)\n", (intmax_t)curr_state->back_file_offset);
 		}
 		break;
 	    } else {
@@ -1666,10 +1703,8 @@ process_entities_unknown_code(int code)
 		break;
 	    }
     }
-
     return 0;
 }
-
 
 static void
 insert_init(struct insert_data *ins)
@@ -1686,18 +1721,17 @@ process_insert_entities_code(int code)
 {
     static struct insert_data ins;
     static struct state_data *new_state=NULL;
-    struct block *blk;
+	struct block *blk;
     int coord;
 
     if (!new_state) {
-	insert_init(&ins);
-	new_state = (state_data *)malloc(sizeof(*new_state));
-	*new_state = *curr_state;
-	if (verbose) {
-	    fprintf(out_test, "Created a new state for INSERT\n");
-	}
+		insert_init(&ins);
+		new_state = new state_data();
+		*new_state = *curr_state;
+		if (verbose) {
+			fprintf(out_test, "Created a new state for INSERT\n");
+		}
     }
-
     switch (code) {
 	case 8:		/* layer name */
 	    if (curr_layer_name) {
@@ -1705,21 +1739,26 @@ process_insert_entities_code(int code)
 	    }
 	    curr_layer_name = make_brlcad_name(line);
 	    break;
-	case 2:		/* block name */ //BU_LIST_FOR(blk, block_list, &block_head
-	    for (auto it : block_list) {
-			if (!strcmp(it.block_name.c_str(), line)) {
+	case 2:
+	    for (int i = 0; i < block_list.size(); i++) {
+			if (!strcmp(block_list.at(i).block_name.c_str(), line)) {
+				blk = &block_list.at(i);
+				new_state->curr_block_indx = i;
 				break;
+			}
+			else{
+				blk = nullptr;
 			}
 	    }
 		//BU_LIST_IS_HEAD(blk, &block_head)
-	    if (block_list_is_head(*blk, block_list)){
-		fprintf(out_test, "ERROR: INSERT references non-existent block (%s)\n", line);
-		fprintf(out_test, "\tignoring missing block\n");
-		blk = NULL;
+	    if (!blk){
+			fprintf(out_test, "ERROR: INSERT references non-existent block (%s)\n", line);
+			fprintf(out_test, "\tignoring missing block\n");
+			blk = NULL;
 	    }
-	    new_state->curr_block = blk;
+	    //new_state->curr_block = blk;
 	    if (verbose && blk) {
-		fprintf(out_test, "Inserting block %s\n", blk->block_name);
+		fprintf(out_test, "Inserting block %s\n", blk->block_name.c_str());
 	    }
 	    break;
 	case 10:
@@ -1756,7 +1795,6 @@ process_insert_entities_code(int code)
 	    ins.extrude_dir[coord] = atof(line);
 	    break;
 	case 0:		/* end of this insert */
-	
 	insert_struct ins_struct;
 	VMOVE(ins_struct.scale, ins.scale);
 	VMOVE(ins_struct.insert_pt, ins.insert_pt);
@@ -1767,35 +1805,37 @@ process_insert_entities_code(int code)
 	ins_struct.layer_name = std::string(curr_layer_name);
 	dd.insert_vector.emplace_back(ins_struct);
 
-	if (new_state->curr_block) {
-		double xlate[16], scale[16], rot[16], tmp1[16], tmp2[16];
-		MAT_IDN(xlate);
-		MAT_IDN(scale);
-		MAT_SCALE_VEC(scale, ins.scale);
-		MAT_DELTAS_VEC(xlate, ins.insert_pt);
-		bn_mat_angles(rot, 0.0, 0.0, ins.rotation);
-		bn_mat_mul(tmp1, rot, scale);
-		bn_mat_mul(tmp2, xlate, tmp1);
-		bn_mat_mul(new_state->xform, tmp2, curr_state->xform);
-		state_stack.emplace_back(*curr_state);
-		//BU_LIST_PUSH(&state_stack, &(curr_state->l));
-		curr_state = new_state;
-		new_state = NULL;
-		fseek(dxf, curr_state->curr_block->offset, SEEK_SET);
-		curr_state->state = ENTITIES_SECTION;
-		curr_state->sub_state = UNKNOWN_ENTITY_STATE;
-		if (verbose) {
-		    fprintf(out_test, "Changing state for INSERT\n");
-		    fprintf(out_test, "seeked to %jd\n", (intmax_t)curr_state->curr_block->offset);
-		    //bn_mat_print("state xform", curr_state->xform);
+		if (!block_list.at(new_state->curr_block_indx).empty()) {
+			double xlate[16], scale[16], rot[16], tmp1[16], tmp2[16];
+			MAT_IDN(xlate);
+			MAT_IDN(scale);
+			MAT_SCALE_VEC(scale, ins.scale);
+			MAT_DELTAS_VEC(xlate, ins.insert_pt);
+			bn_mat_angles(rot, 0.0, 0.0, ins.rotation);
+			bn_mat_mul(tmp1, rot, scale);
+			bn_mat_mul(tmp2, xlate, tmp1);
+			bn_mat_mul(new_state->xform, tmp2, curr_state->xform);
+			state_stack.emplace_back(*curr_state);
+			//BU_LIST_PUSH(&state_stack, &(curr_state->l));
+			
+			curr_state = new_state;
+			curr_state->back_file_offset = curr_state->file_offset;
+			fseek(dxf, block_list.at(curr_state->curr_block_indx).offset, SEEK_SET);
+			curr_state->state = ENTITIES_SECTION;
+			curr_state->sub_state = UNKNOWN_ENTITY_STATE;
+			new_state = NULL;
+			if (verbose) {
+				fprintf(stdout, "Changing state for INSERT\n");
+				fprintf(stdout, "seeked to %jd\n", (intmax_t)block_list.at(curr_state->curr_block_indx).offset);
+				fprintf(stdout, "curr block indx %d \n", curr_state->curr_block_indx);
+				//bn_mat_print("state xform", curr_state->xform);
+			}
 		}
-	    }
-	    break;
+		break;
     }
 
     return 0;
 }
-
 
 static int
 process_solid_entities_code(int code)
@@ -1856,9 +1896,9 @@ process_solid_entities_code(int code)
 		ss.layer_name = std::string(curr_layer_name);
 
 		dd.solid_vector.emplace_back(ss);
-	    layers[curr_layer]->solid_count++;
+	    layers[curr_layer].solid_count++;
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 
@@ -1871,7 +1911,7 @@ process_solid_entities_code(int code)
 		// if (vert_no > 0) {
 		//     struct edgeuse *eu;
 		//     /* create a wire edge in the NMG */
-		//     eu = nmg_me(v1, NULL, layers[curr_layer]->s);
+		//     eu = nmg_me(v1, NULL, layers[curr_layer].s);
 		//     if (v1 == NULL) {
 		// 	nmg_vertex_gv(eu->vu_p->v_p, solid_pt[vert_no - 1]);
 		// 	v0 = eu->vu_p->v_p;
@@ -1887,7 +1927,7 @@ process_solid_entities_code(int code)
 	    }
 
 	    /* close the outline */
-	    //nmg_me(v1, v0, layers[curr_layer]->s);
+	    //nmg_me(v1, v0, layers[curr_layer].s);
 
 	    last_vert_no = -1;
 	    curr_state->sub_state = UNKNOWN_ENTITY_STATE;
@@ -1961,9 +2001,9 @@ process_lwpolyline_entities_code(int code)
 		fprintf(out_test, "Found end of LWPOLYLINE\n");
 	    }
 		
-	    layers[curr_layer]->lwpolyline_count++;
+	    layers[curr_layer].lwpolyline_count++;
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 
@@ -1971,7 +2011,7 @@ process_lwpolyline_entities_code(int code)
 		struct vertex *v0=NULL, *v1=NULL, *v2=NULL;
 		int i;
 
-		// if (!layers[curr_layer]->m) {
+		// if (!layers[curr_layer].m) {
 		//     create_nmg();
 		// }
 
@@ -1983,7 +2023,7 @@ process_lwpolyline_entities_code(int code)
 		// for (i = 0; i < polyline_vertex_count-1; i++) {
 		//     struct edgeuse *eu;
 
-		//     eu = nmg_me(v1, v2, layers[curr_layer]->s);
+		//     eu = nmg_me(v1, v2, layers[curr_layer].s);
 		//     if (i == 0) {
 		// 	v1 = eu->vu_p->v_p;
 		// 	nmg_vertex_gv(v1, polyline_verts);
@@ -2002,7 +2042,7 @@ process_lwpolyline_entities_code(int code)
 
 		// if (polyline_flag & POLY_CLOSED) {
 		//     v2 = v0;
-		//     (void)nmg_me(v1, v2, layers[curr_layer]->s);
+		//     (void)nmg_me(v1, v2, layers[curr_layer].s);
 		//     if (verbose) {
 		// 	fprintf(out_test, "Wire edge (closing lwpolyline): (%g %g %g) <-> (%g %g %g)\n",
 		// 	       V3ARGS(v1->vg_p->coord),
@@ -2070,9 +2110,9 @@ process_line_entities_code(int code)
 		ls.color = curr_color;
 		dd.line_vector.emplace_back(ls);
 
-	    layers[curr_layer]->line_count++;
+	    layers[curr_layer].line_count++;
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 
@@ -2082,7 +2122,7 @@ process_line_entities_code(int code)
 	    VMOVE(line_pt[1], tmp_pt);
 
 	    /* create a wire edge in the NMG */
-	    // eu = nmg_me(NULL, NULL, layers[curr_layer]->s);
+	    // eu = nmg_me(NULL, NULL, layers[curr_layer].s);
 	    // nmg_vertex_gv(eu->vu_p->v_p, line_pt[0]);
 	    // nmg_vertex_gv(eu->eumate_p->vu_p->v_p, line_pt[1]);
 	    // if (verbose) {
@@ -2169,11 +2209,11 @@ process_ellipse_entities_code(int code)
 		es.color = curr_color;
 		dd.ellipse_vector.emplace_back(es);
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 
-	    layers[curr_layer]->ellipse_count++;
+	    layers[curr_layer].ellipse_count++;
 
 	    MAT4X3PNT(tmp_pt, curr_state->xform, center);
 	    VMOVE(center, tmp_pt);
@@ -2232,7 +2272,7 @@ process_ellipse_entities_code(int code)
 		if (fullCircle && angle == startAngle) {//EQUAL(angle, endAngle)
 		    v2 = v0;
 		}
-		// eu = nmg_me(v1, v2, layers[curr_layer]->s);
+		// eu = nmg_me(v1, v2, layers[curr_layer].s);
 		// v1 = eu->vu_p->v_p;
 		// if (v0 == NULL) {
 		//     v0 = v1;
@@ -2316,11 +2356,11 @@ process_circle_entities_code(int code)
 		cs.color = curr_color;
 		dd.circle_vector.emplace_back(cs);
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 
-	    layers[curr_layer]->circle_count++;
+	    layers[curr_layer].circle_count++;
 
 	    /* calculate circle at origin first */
 	    VSET(circle_pts[0], radius, 0.0, 0.0);
@@ -2344,7 +2384,7 @@ process_circle_entities_code(int code)
 		// if (i+1 == segs_per_circle) {
 		//     v2 = v0;
 		// }
-		// eu = nmg_me(v1, v2, layers[curr_layer]->s);
+		// eu = nmg_me(v1, v2, layers[curr_layer].s);
 		// if (i == 0) {
 		//     v1 = eu->vu_p->v_p;
 		//     v0 = v1;
@@ -2531,13 +2571,13 @@ drawString(char *theText, double *firstAlignmentPoint, double *secondAlignmentPo
 	// bn_vlist_2string(&vhead, &free_hd, copyOfText,
 	// 		 firstAlignmentPoint[X], firstAlignmentPoint[Y],
 	// 		 scale, textRotation); 
-	// nmg_vlist_to_eu(&vhead, layers[curr_layer]->s);
+	// nmg_vlist_to_eu(&vhead, layers[curr_layer].s);
 	// BN_FREE_VLIST(&free_hd, &vhead);
     // } else if (horizAlignment == LEFT && vertAlignment == BASELINE) {
 	// bn_vlist_2string(&vhead, &free_hd, copyOfText,
 	// 		 firstAlignmentPoint[X], firstAlignmentPoint[Y],
 	// 		 textHeight, textRotation);
-	// nmg_vlist_to_eu(&vhead, layers[curr_layer]->s);
+	// nmg_vlist_to_eu(&vhead, layers[curr_layer].s);
 	// BN_FREE_VLIST(&free_hd, &vhead);
     // } else if ((horizAlignment == CENTER || horizAlignment == HMIDDLE) && vertAlignment == BASELINE) {
 	// double len = stringLength * textHeight;
@@ -2546,7 +2586,7 @@ drawString(char *theText, double *firstAlignmentPoint, double *secondAlignmentPo
 	// bn_vlist_2string(&vhead, &free_hd, copyOfText,
 	// 		 firstAlignmentPoint[X], firstAlignmentPoint[Y],
 	// 		 textHeight, textRotation);
-	// nmg_vlist_to_eu(&vhead, layers[curr_layer]->s);
+	// nmg_vlist_to_eu(&vhead, layers[curr_layer].s);
 	// BN_FREE_VLIST(&free_hd, &vhead);
     // } else if ((horizAlignment == CENTER || horizAlignment == HMIDDLE) && vertAlignment == VMIDDLE) {
 	// double len = stringLength * textHeight;
@@ -2557,7 +2597,7 @@ drawString(char *theText, double *firstAlignmentPoint, double *secondAlignmentPo
 	// bn_vlist_2string(&vhead, &free_hd, copyOfText,
 	// 		 firstAlignmentPoint[X], firstAlignmentPoint[Y],
 	// 		 textHeight, textRotation);
-	// nmg_vlist_to_eu(&vhead, layers[curr_layer]->s);
+	// nmg_vlist_to_eu(&vhead, layers[curr_layer].s);
 	// BN_FREE_VLIST(&free_hd, &vhead);
     // } else if (horizAlignment == RIGHT && vertAlignment == BASELINE) {
 	// double len = stringLength * textHeight;
@@ -2566,7 +2606,7 @@ drawString(char *theText, double *firstAlignmentPoint, double *secondAlignmentPo
 	// bn_vlist_2string(&vhead, &free_hd, copyOfText,
 	// 		 firstAlignmentPoint[X], firstAlignmentPoint[Y],
 	// 		 textHeight, textRotation);
-	// nmg_vlist_to_eu(&vhead, layers[curr_layer]->s);
+	// nmg_vlist_to_eu(&vhead, layers[curr_layer].s);
 	// BN_FREE_VLIST(&free_hd, &vhead);
     } else {
 	fprintf(out_test, "cannot handle this alignment: horiz = %d, vert = %d\n", horizAlignment, vertAlignment);
@@ -2670,7 +2710,7 @@ drawMtext(char *text, int attachPoint, int drawingDirection, double textHeight, 
 	    // bn_vlist_2string(&vhead, &free_hd, c,
 		// 	     startx, starty,
 		// 	     scale, rotationAngle);
-	    // nmg_vlist_to_eu(&vhead, layers[curr_layer]->s);
+	    // nmg_vlist_to_eu(&vhead, layers[curr_layer].s);
 	    // BN_FREE_VLIST(&free_hd, &vhead);
 	    c = ++cp;
 	    startx -= lineSpace * ydir[X];
@@ -2797,15 +2837,15 @@ process_leader_entities_code(int code)
 		ls.layer_name = std::string(curr_layer_name);
 		dd.leader_vector.emplace_back(ls);
 
-	    layers[curr_layer]->leader_count++;
+	    layers[curr_layer].leader_count++;
 
 	    // if (polyline_vertex_count > 1) {
-		// if (!layers[curr_layer]->m) {
+		// if (!layers[curr_layer].m) {
 		//     create_nmg();
 		// }
 
 		// for (i = 0; i < polyline_vertex_count-1; i++) {
-		//     eu = nmg_me(v1, v2, layers[curr_layer]->s);
+		//     eu = nmg_me(v1, v2, layers[curr_layer].s);
 		//     if (i == 0) {
 		// 	v1 = eu->vu_p->v_p;
 		// 	nmg_vertex_gv(v1, polyline_verts);
@@ -2921,7 +2961,7 @@ process_mtext_entities_code(int code)
 	    /* draw the text */
 	    get_layer();
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 		mtext_struct ms;
@@ -2939,7 +2979,7 @@ process_mtext_entities_code(int code)
 		ms.color = curr_color;
 		dd.mtext_vector.emplace_back(ms);
 
-	    layers[curr_layer]->mtext_count++;
+	    layers[curr_layer].mtext_count++;
 
 	    /* apply transformation */
 	    MAT4X3PNT(tmp_pt, curr_state->xform, insertionPoint);
@@ -3066,7 +3106,7 @@ process_text_attrib_entities_code(int code)
 		tas.vertAlignment = vertAlignment;
 		dd.text_attrib_vector.emplace_back(tas);
 
-		// if (!layers[curr_layer]->m) {
+		// if (!layers[curr_layer].m) {
 		//     create_nmg();
 		// }
 
@@ -3078,7 +3118,7 @@ process_text_attrib_entities_code(int code)
 
 		drawString(theText, firstAlignmentPoint, secondAlignmentPoint,
 			   textHeight, textScale, textRotation, horizAlignment, vertAlignment, textFlag);
-		layers[curr_layer]->text_count++;
+		layers[curr_layer].text_count++;
 	    }
 	    horizAlignment = 0;
 	    vertAlignment = 0;
@@ -3127,45 +3167,47 @@ process_dimension_entities_code(int code)
 		ds.layer_name = std::string(curr_layer_name);
 		dd.dimension_vector.emplace_back(ds);
 
-		new_state = (state_data *)malloc(sizeof(*new_state)); // bu_alloc
+		new_state = new state_data(); // bu_alloc
 		*new_state = *curr_state;
 		if (verbose) {
 		    fprintf(out_test, "Created a new state for DIMENSION\n");
 		}
-		for (auto blk : block_list) {//BU_LIST_FOR(blk, block_list, &block_head)
-		    if (block_name) {
-				if (!strcmp(blk.block_name.c_str(), block_name)) {
-					break;
-				}
-		    }
-		}
-		if (block_list_is_head(*blk, block_list)) {
+		//BU_LIST_FOR(blk, block_list, &block_head)
+		for (int i = 0; i < block_list.size(); i++) {
+			if (strcmp(block_list.at(i).block_name.c_str(), line)) {
+				blk = &block_list.at(i);
+				new_state->curr_block_indx = i;
+				break;
+			}
+	    }
+		if (!blk) {
 		    fprintf(out_test, "ERROR: DIMENSION references non-existent block (%s)\n", block_name);
 		    fprintf(out_test, "\tignoring missing block\n");
 		    blk = NULL;
 		}
-		new_state->curr_block = blk;
+		//new_state->curr_block = &(*blk);
 		if (verbose && blk) {
-		    fprintf(out_test, "Inserting block %s\n", blk->block_name);
+		    fprintf(out_test, "Inserting block %s\n", blk->block_name.c_str());
 		}
 
 		if (block_name) {
-		    free(block_name);// "block_name");
+		    delete block_name;// "block_name");
 		}
 
-		if (new_state->curr_block) {
+		if (!block_list.at(new_state->curr_block_indx).empty()) {
 		    //BU_LIST_PUSH(&state_stack, &(curr_state->l)); place the item at the tail of the list
 			state_stack.emplace_back(*curr_state);
 		    curr_state = new_state;
-		    new_state = NULL;
-		    fseek(dxf, curr_state->curr_block->offset, SEEK_SET);
+		    delete new_state;
+			new_state = NULL;
+		    fseek(dxf,  block_list.at(curr_state->curr_block_indx).offset, SEEK_SET);
 		    curr_state->state = ENTITIES_SECTION;
 		    curr_state->sub_state = UNKNOWN_ENTITY_STATE;
 		    if (verbose) {
 			fprintf(out_test, "Changing state for INSERT\n");
-			fprintf(out_test, "seeked to %jd\n", (intmax_t)curr_state->curr_block->offset);
+			fprintf(out_test, "seeked to %jd\n", (intmax_t) block_list.at(curr_state->curr_block_indx).offset);
 		    }
-		    layers[curr_layer]->dimension_count++;
+		    layers[curr_layer].dimension_count++;
 		}
 	    } else {
 		curr_state->sub_state = UNKNOWN_ENTITY_STATE;
@@ -3245,9 +3287,9 @@ process_arc_entities_code(int code)
 		as.layer_name = std::string(curr_layer_name);
 		dd.arc_vector.emplace_back(as);
 
-	    layers[curr_layer]->arc_count++;
+	    layers[curr_layer].arc_count++;
 
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 
@@ -3304,7 +3346,7 @@ process_arc_entities_code(int code)
 		// if (i == num_segs) {
 		//     v2 = v0;
 		// }
-		// eu = nmg_me(v1, v2, layers[curr_layer]->s);
+		// eu = nmg_me(v1, v2, layers[curr_layer].s);
 		// if (i == 1) {
 		//     v1 = eu->vu_p->v_p;
 		//     v0 = v1;
@@ -3488,7 +3530,7 @@ process_spline_entities_code(int code)
 		}
 		dd.spline_vector.emplace_back(ss);
 
-	    layers[curr_layer]->spline_count++;
+	    layers[curr_layer].spline_count++;
 
 	    if (flag & SPLINE_RATIONAL) {
 		ncoords = 4;
@@ -3510,7 +3552,7 @@ process_spline_entities_code(int code)
 		//     crv->ctl_points[i*ncoords + 3] = weights[i];
 		// }
 	    // }
-	    // if (!layers[curr_layer]->m) {
+	    // if (!layers[curr_layer].m) {
 		// create_nmg();
 	    // }
 	    // startParam = knots[0];
@@ -3519,7 +3561,7 @@ process_spline_entities_code(int code)
 	    // nmg_nurb_c_eval(crv, startParam, pt);
 	    // for (i = 0; i < splineSegs; i++) {
 		// double param = startParam + paramDelta * (i+1);
-		// eu = nmg_me(v1, v2, layers[curr_layer]->s);
+		// eu = nmg_me(v1, v2, layers[curr_layer].s);
 		// v1 = eu->vu_p->v_p;
 		// if (i == 0) {
 		//     nmg_vertex_gv(v1, pt);
@@ -3618,16 +3660,16 @@ process_3dface_entities_code(int code)
 		f3d.layer_name = std::string(curr_layer_name);
 		dd.face3d_vector.emplace_back(f3d);
 		
-	    layers[curr_layer]->face3d_count++;
+	    layers[curr_layer].face3d_count++;
 	    for (vert_no = 0; vert_no < 4; vert_no++) {
 		double tmp_pt1[3];
 		MAT4X3PNT(tmp_pt1, curr_state->xform, pts[vert_no]);
 		VMOVE(pts[vert_no], tmp_pt1);
-		// face[vert_no] = bn_vert_tree_add(layers[curr_layer]->vert_tree,
+		// face[vert_no] = bn_vert_tree_add(layers[curr_layer].vert_tree,
 		// 				 V3ARGS(pts[vert_no]),
 		// 				 tol_sq);
 		face[vert_no] = Add_vert(V3ARGS(pts[vert_no]),
-						 layers[curr_layer]->vert_tree,
+						 layers[curr_layer].vert_tree,
 						 tol_sq);		
 	    }
 	    add_triangle(face[0], face[1], face[2], curr_layer);
@@ -4054,7 +4096,8 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 
     /* create initial state */
     //BU_ALLOC(curr_state, struct state_data);
-	curr_state = (struct state_data *) malloc(sizeof(*curr_state));
+	//curr_state = (struct state_data *) malloc(sizeof(*curr_state));
+	curr_state = new state_data();
     curr_state->file_offset = 0;
     curr_state->state = UNKNOWN_SECTION;
     curr_state->sub_state = UNKNOWN_ENTITY_STATE;
@@ -4064,24 +4107,25 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
     max_layers = 5;
     next_layer = 1;
     curr_layer = 0;
-    layers = (struct layer **)calloc(5, sizeof(struct layer));	
+    //layers = (struct layer **)calloc(5, sizeof(struct layer));
+
     for (i = 0; i < max_layers; i++) {
-		layers[i] = (layer*)malloc(sizeof(layer[i]));
+		//layers[i] = (layer*)malloc(sizeof(layer[i]));
+		layers.push_back(layer());
     }
 
-    layers[0]->name = strdup("noname");
-    layers[0]->color_number = 7;	/* default white */
-    layers[0]->vert_tree = create_vert_tree();
-    //bu_ptbl_init(&layers[0]->solids, 8, "layers[curr_layer]->solids");
+    layers[0].name = strdup("noname");
+    layers[0].color_number = 7;	/* default white */
+    layers[0].vert_tree = create_vert_tree();
+    //bu_ptbl_init(&layer[0].solids, 8, "layers[curr_layer].solids");
 
-    curr_color = layers[0]->color_number;
-    curr_layer_name = strdup(layers[0]->name); 
+    curr_color = layers[0].color_number;
+    curr_layer_name = strdup(layers[0].name); 
 
     while ((code=readcodes()) > -900) {
 	process_code[curr_state->state](code);
-	fprintf(stdout, "current state(%d)\n", curr_state->state);
+	//fprintf(stdout, "current state(%d), code %d \n", curr_state->state, code);
     }
-
     //BU_LIST_INIT(&head_all);
 
     for (i = 0; i < next_layer; i++) {
@@ -4091,19 +4135,19 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 
 	//BU_LIST_INIT(&head);
 
-	if (layers[i]->color_number < 0)
-	    layers[i]->color_number = 7;
+	if (layers[i].color_number < 0)
+	    layers[i].color_number = 7;
 
 	if(verbose)
-	if (layers[i]->curr_tri || layers[i]->solids.size() || layers[i]->m) {//BU_PTBL_LEN(&layers[i]->solids) 
-	    fprintf(out_test, "LAYER: %s, color = %d (%d %d %d)\n", layers[i]->name, layers[i]->color_number, V3ARGS(&rgb[layers[i]->color_number*3]));
+	if (layers[i].curr_tri || layers[i].solids.size() || layers[i].m) {//BU_PTBL_LEN(&layers[i].solids) 
+	    fprintf(out_test, "LAYER: %s, color = %d (%d %d %d)\n", layers[i].name, layers[i].color_number, V3ARGS(&rgb[layers[i].color_number*3]));
 	}
 
-	// if (layers[i]->curr_tri && layers[i]->vert_tree->curr_vert > 2) {
+	// if (layers[i].curr_tri && layers[i].vert_tree->curr_vert > 2) {
 	//     sprintf(tmp_name, "bot.s%d", i);
 	//     if (mk_bot(out_fp, tmp_name, RT_BOT_SURFACE, RT_BOT_UNORIENTED, 0,
-	// 	       layers[i]->vert_tree, layers[i]->curr_tri, layers[i]->vert_tree->the_array,
-	// 	       layers[i]->part_tris, (double *)NULL, (struct bu_bitv *)NULL)) {
+	// 	       layers[i].vert_tree, layers[i].curr_tri, layers[i].vert_tree->the_array,
+	// 	       layers[i].part_tris, (double *)NULL, (struct bu_bitv *)NULL)) {
 	// 	fprintf(out_test, "Failed to make Bot\n");
 	//     } else {
 	// 	(void)mk_addmember(tmp_name, &head, NULL, WMOP_UNION);
@@ -4111,17 +4155,17 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 	// }
 
 	/* obtain dynamic storage for a new wmember structure, we may ignore for std::list */
-	// for (j = 0; j < BU_PTBL_LEN(&layers[i]->solids); j++) {
-	//     (void)mk_addmember((char *)BU_PTBL_GET(&layers[i]->solids, j), &head, NULL, WMOP_UNION);
-	//     free((char *)BU_PTBL_GET(&layers[i]->solids, j)); 
+	// for (j = 0; j < BU_PTBL_LEN(&layers[i].solids); j++) {
+	//     (void)mk_addmember((char *)BU_PTBL_GET(&layers[i].solids, j), &head, NULL, WMOP_UNION);
+	//     free((char *)BU_PTBL_GET(&layers[i].solids, j)); 
 	// }
 
-	// if (layers[i]->m) {
+	// if (layers[i].m) {
 	//     char name[32];
 	//     struct rt_sketch_internal *skt;
 
 	//     sprintf(name, "sketch.%d", i);
-	//     skt = nmg_wire_edges_to_sketch(layers[i]->m);
+	//     skt = nmg_wire_edges_to_sketch(layers[i].m);
 	//     if (skt != NULL) {
 	// 	mk_sketch(out_fp, name, skt);
 	// 	(void) mk_addmember(name, &head, NULL, WMOP_UNION);
@@ -4132,63 +4176,63 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 	//     }
 	
 	if(verbose){
-		if (layers[i]->line_count) {
-			fprintf(out_test, "\t%zu lines\n", layers[i]->line_count);
+		if (layers[i].line_count) {
+			fprintf(out_test, "\t%zu lines\n", layers[i].line_count);
 		}
 
-		if (layers[i]->solid_count) {
-			fprintf(out_test, "\t%zu solids\n", layers[i]->solid_count);
+		if (layers[i].solid_count) {
+			fprintf(out_test, "\t%zu solids\n", layers[i].solid_count);
 		}
 
-		if (layers[i]->polyline_count) {
-			fprintf(out_test, "\t%zu polylines\n", layers[i]->polyline_count);
+		if (layers[i].polyline_count) {
+			fprintf(out_test, "\t%zu polylines\n", layers[i].polyline_count);
 		}
 
-		if (layers[i]->lwpolyline_count) {
-			fprintf(out_test, "\t%zu lwpolylines\n", layers[i]->lwpolyline_count);
+		if (layers[i].lwpolyline_count) {
+			fprintf(out_test, "\t%zu lwpolylines\n", layers[i].lwpolyline_count);
 		}
 
-		if (layers[i]->ellipse_count) {
-			fprintf(out_test, "\t%zu ellipses\n", layers[i]->ellipse_count);
+		if (layers[i].ellipse_count) {
+			fprintf(out_test, "\t%zu ellipses\n", layers[i].ellipse_count);
 		}
 
-		if (layers[i]->circle_count) {
-			fprintf(out_test, "\t%zu circles\n", layers[i]->circle_count);
+		if (layers[i].circle_count) {
+			fprintf(out_test, "\t%zu circles\n", layers[i].circle_count);
 		}
 
-		if (layers[i]->arc_count) {
-			fprintf(out_test, "\t%zu arcs\n", layers[i]->arc_count);
+		if (layers[i].arc_count) {
+			fprintf(out_test, "\t%zu arcs\n", layers[i].arc_count);
 		}
 
-		if (layers[i]->text_count) {
-			fprintf(out_test, "\t%zu texts\n", layers[i]->text_count);
+		if (layers[i].text_count) {
+			fprintf(out_test, "\t%zu texts\n", layers[i].text_count);
 		}
 
-		if (layers[i]->mtext_count) {
-			fprintf(out_test, "\t%zu mtexts\n", layers[i]->mtext_count);
+		if (layers[i].mtext_count) {
+			fprintf(out_test, "\t%zu mtexts\n", layers[i].mtext_count);
 		}
 
-		if (layers[i]->attrib_count) {
-			fprintf(out_test, "\t%zu attribs\n", layers[i]->attrib_count);
+		if (layers[i].attrib_count) {
+			fprintf(out_test, "\t%zu attribs\n", layers[i].attrib_count);
 		}
 
-		if (layers[i]->dimension_count) {
-			fprintf(out_test, "\t%zu dimensions\n", layers[i]->dimension_count);
+		if (layers[i].dimension_count) {
+			fprintf(out_test, "\t%zu dimensions\n", layers[i].dimension_count);
 		}
 
-		if (layers[i]->leader_count) {
-			fprintf(out_test, "\t%zu leaders\n", layers[i]->leader_count);
+		if (layers[i].leader_count) {
+			fprintf(out_test, "\t%zu leaders\n", layers[i].leader_count);
 		}
 
-		if (layers[i]->face3d_count) {
-			fprintf(out_test, "\t%zu 3d faces\n", layers[i]->face3d_count);
+		if (layers[i].face3d_count) {
+			fprintf(out_test, "\t%zu 3d faces\n", layers[i].face3d_count);
 		}
 
-		if (layers[i]->point_count) {
-			fprintf(out_test, "\t%zu points\n", layers[i]->point_count);
+		if (layers[i].point_count) {
+			fprintf(out_test, "\t%zu points\n", layers[i].point_count);
 		}
-		if (layers[i]->spline_count) {
-			fprintf(out_test, "\t%zu splines\n", layers[i]->spline_count);
+		if (layers[i].spline_count) {
+			fprintf(out_test, "\t%zu splines\n", layers[i].spline_count);
 		}
 	}
 
@@ -4198,11 +4242,11 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 	//     unsigned char *tmp_rgb;
 	//     char *comb_name = BU_VLS_INIT_ZERO;
 
-	//     tmp_rgb = &rgb[layers[i]->color_number*3];
-	//     bu_vls_printf(&comb_name, "%s.c.%d", layers[i]->name, i);
+	//     tmp_rgb = &rgb[layers[i].color_number*3];
+	//     bu_vls_printf(&comb_name, "%s.c.%d", layers[i].name, i);
 	//     if (mk_comb(out_fp, bu_vls_addr(&comb_name), &head, 1, NULL, NULL,
 	// 		tmp_rgb, 1, 0, 1, 100, 0, 0, 0)) {
-	// 	fprintf(out_test, "Failed to make region %s\n", layers[i]->name);
+	// 	fprintf(out_test, "Failed to make region %s\n", layers[i].name);
 	//     } else {
 	// 	(void)mk_addmember(bu_vls_addr(&comb_name), &head_all, NULL, WMOP_UNION);
 	//     }
@@ -4239,7 +4283,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 	// 	}
 	// }
 	
-	//fprintf(stdout, "layer: %d" ,layers[curr_layer]->vert_tree->the_tree->vnode.coord);
+	//fprintf(stdout, "layer: %d" ,layers[curr_layer].vert_tree->the_tree->vnode.coord);
     // return 0;
 	return dd;
 }

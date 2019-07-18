@@ -58,7 +58,7 @@ public:
     std::vector<Line> lines;
 
 	int addPoint(double x, double y);
-    void addLine(Grid2d<std::vector<int>> &grid, double x1, double y1, double x2, double y2);
+    void addLine(Grid2d<std::vector<int>> &grid, std::unordered_map<std::string, std::vector<Line>> &blockdata, std::string block_name, double x1, double y1, double x2, double y2);
 
 	void fixup_path_direction();
     void process_path(Grid2d<std::vector<int>> grid);
@@ -270,14 +270,16 @@ Polygon2d *DData::toPolygon2d() const
 	return poly;
 }
 
-void DData::addLine(Grid2d<std::vector<int>> &grid, double x1, double y1, double x2, double y2){
+void DData::addLine(Grid2d<std::vector<int>> &grid, std::unordered_map<std::string, std::vector<Line>> &blockdata, std::string block_name, double x1, double y1, double x2, double y2){
     grid.align(x1, y1);                                 
     grid.align(x2, y2);                                 
     grid.data(x1, y1).push_back(lines.size());         
     grid.data(x2, y2).push_back(lines.size());                                        
-    lines.emplace_back(addPoint(x1, y1), addPoint(x2, y2));     
-    // if (in_blocks_section && !current_block.empty())    d    
-    //     blockdata[current_block].emplace_back(addPoint(x1, y1), addPoint(x2, y2));      	
+	if(!block_name.empty())      
+    	blockdata[block_name].emplace_back(addPoint(x1, y1), addPoint(x2, y2));
+	else{
+		lines.emplace_back(addPoint(x1, y1), addPoint(x2, y2)); 
+	}
 }
 
 Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double fa)
@@ -285,6 +287,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
 
     DData dxf;
 	Grid2d<std::vector<int>> grid(GRID_COARSE);
+	std::unordered_map<std::string, std::vector<Line>> blockdata; // Lines in blocks
      
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
@@ -323,8 +326,9 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
             for (int i = 0; i < n; i++) {
                 double a1 = (360.0 * i) / n;
                 double a2 = (360.0 *(i + 1)) / n;
-                dxf.addLine(grid, cos_degrees(a1)*it.radius + it.center[0], sin_degrees(a1)*it.radius + it.center[1],
-                                  cos_degrees(a2)*it.radius + it.center[0], sin_degrees(a2)*it.radius + it.center[1]);
+                dxf.addLine(grid, blockdata, std::string(),
+							cos_degrees(a1)*it.radius + it.center[0], sin_degrees(a1)*it.radius + it.center[1],
+                            cos_degrees(a2)*it.radius + it.center[0], sin_degrees(a2)*it.radius + it.center[1]);
             }
         }
     }
@@ -342,8 +346,9 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
             for (int i = 0; i < n; i++) {
                 double a1 = it.start_angle + arc_angle * i / n;
                 double a2 = it.start_angle + arc_angle * (i + 1) / n;
-                dxf.addLine(grid, cos_degrees(a1)*it.radius + center[0], sin_degrees(a1)*it.radius + center[1],
-                                  cos_degrees(a2)*it.radius + center[0], sin_degrees(a2)*it.radius + center[1]);
+                dxf.addLine(grid, blockdata, std::string(), 
+							cos_degrees(a1)*it.radius + center[0], sin_degrees(a1)*it.radius + center[1],
+							cos_degrees(a2)*it.radius + center[0], sin_degrees(a2)*it.radius + center[1]);
             }
         }
     }
@@ -391,7 +396,8 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
                 p2_rot[1] += center[1];
                 if (i > 0) {
     // 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
-                    dxf.addLine(grid, p1[0], p1[1],p2_rot[0], p2_rot[1]);
+                    dxf.addLine(grid, blockdata, std::string(),
+								p1[0], p1[1],p2_rot[0], p2_rot[1]);
                 }
     //					p1 = p2;
                 p1[0] = p2_rot[0];
@@ -410,14 +416,16 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         for(auto it : lwpolyline_vector){
             for(auto it_pt = it.lw_pt_vec.begin(); it_pt != it.lw_pt_vec.end(); it_pt++){
                 if(std::next(it_pt) != it.lw_pt_vec.end()){
-					dxf.addLine(grid, it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
+					dxf.addLine(grid, blockdata, std::string(),
+								it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
 				}
                
             }
             // if polyline_flag == 1, the last vertex connect to the first vertex
             if (it.polyline_flag & 0x01){
-                dxf.addLine(grid, it.lw_pt_vec.back().x, it.lw_pt_vec.back().y,
-                it.lw_pt_vec.front().x, it.lw_pt_vec.front().y);
+                dxf.addLine(grid, blockdata, std::string(),
+							it.lw_pt_vec.back().x, it.lw_pt_vec.back().y,
+							it.lw_pt_vec.front().x, it.lw_pt_vec.front().y);
             }
         }            
     }
@@ -425,10 +433,31 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     line_vector = dd.return_line_vector();
     if(!line_vector.empty()){
         for(auto it : line_vector){
-            dxf.addLine(grid, it.line_pt[0][0], it.line_pt[0][1],
-                              it.line_pt[1][0], it.line_pt[1][1]);
+            dxf.addLine(grid, blockdata, std::string(),
+						it.line_pt[0][0], it.line_pt[0][1],
+						it.line_pt[1][0], it.line_pt[1][1]);
         }
     }
+
+	// insert_vector = dd.return_insert_vector();
+	// if(!insert_vector.empty()){
+	// 	for(auto it : insert_vector){
+	// 		int n = blockdata[it.block_name].size();
+	// 		for(int i = 0; i < n; i++){
+	// 			double a = it.rotation;
+	// 			double lx1 = dxf.points[blockdata[it.block_name][i].idx[0]][0] * it.scale[0];
+	// 			double ly1 = dxf.points[blockdata[it.block_name][i].idx[0]][1] * it.scale[1];
+	// 			double lx2 = dxf.points[blockdata[it.block_name][i].idx[1]][0] * it.scale[0];
+	// 			double ly2 = dxf.points[blockdata[it.block_name][i].idx[1]][1] * it.scale[1];
+	// 			double px1 = (cos_degrees(a)*lx1 - sin_degrees(a)*ly1) + it.insert_pt[0];
+	// 			double py1 = (sin_degrees(a)*lx1 + cos_degrees(a)*ly1) + it.insert_pt[1];
+	// 			double px2 = (cos_degrees(a)*lx2 - sin_degrees(a)*ly2) + it.insert_pt[0];
+	// 			double py2 = (sin_degrees(a)*lx2 + cos_degrees(a)*ly2) + it.insert_pt[1];
+	// 			dxf.addLine(grid, blockdata, it.block_name, px1, py1, px2, py2);				
+	// 		}
+			
+	// 	}
+	// }
 
     point_vector = dd.return_point_vector();
     if(!point_vector.empty()){

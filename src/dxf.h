@@ -326,6 +326,7 @@ struct line_struct{
 };
 
 struct insert_data {
+    std::string block_name;
     double scale[3];
     double rotation;
     double insert_pt[3];
@@ -334,6 +335,7 @@ struct insert_data {
 
 
 struct insert_struct{
+    std::string block_name;
 	double scale[3];
     double rotation;
     double insert_pt[3];
