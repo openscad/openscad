@@ -74,7 +74,7 @@ private:
 
         void setLexer(ScadLexer *lexer);
         void replaceSelectedText(QString&);
-        void addTemplate(const QString key, const QString text, const int cursor_offset);
+        void addTemplate(const fs::path path);
 
 signals:
 	void previewRequest(void);

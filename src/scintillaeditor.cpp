@@ -9,6 +9,8 @@
 #include "settings.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 namespace fs=boost::filesystem;
 
 class SettingsConverter {
@@ -167,12 +169,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setIndentationWidth(4);
 	qsci->setIndentationsUseTabs(false);
 
-	addTemplate("module", "module () {\n    \n}", 7);
-	addTemplate("difference", "difference() {\n    union() {\n        \n    }\n}", 37);
-	addTemplate("translate", "translate([])", 11);
-	addTemplate("rotate", "rotate([])", 8);
-	addTemplate("for", "for (i = [  :  ]) {\n    \n}", 11);
-	addTemplate("function", "function f(x) = x;", 17);
+	addTemplate(PlatformUtils::resourceBasePath());
+	addTemplate(PlatformUtils::userConfigPath());
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
@@ -180,10 +178,30 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->installEventFilter(this);
 }
 
-void ScintillaEditor::addTemplate(const QString key, const QString text, const int cursor_offset)
+void ScintillaEditor::addTemplate(const fs::path path)
 {
-	templateMap.insert(key, ScadTemplate(text, cursor_offset));
-	userList.append(key);
+	const auto template_path = path / "templates";
+
+	if (fs::exists(template_path) && fs::is_directory(template_path)) {
+		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{template_path}, {})) {
+			if (!fs::is_regular_file(dirEntry.status())) continue;
+
+			const auto &path = dirEntry.path();
+			if (!(path.extension() == ".json")) continue;
+
+			boost::property_tree::ptree pt;
+			try {
+				boost::property_tree::read_json(path.generic_string().c_str(), pt);
+				const QString key = QString::fromStdString(pt.get<std::string>("key"));
+				const int cursor_offset = pt.get<int>("offset");
+				const QString content = QString::fromStdString(pt.get<std::string>("content"));
+				templateMap.insert(key, ScadTemplate(content, cursor_offset));
+				userList.append(key);
+			} catch (const std::exception & e) {
+				PRINTB("Error reading template file '%s': %s", path.generic_string().c_str() % e.what());
+			}
+		}
+	}
 }
 
 void ScintillaEditor::displayTemplates()
