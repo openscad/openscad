@@ -309,7 +309,7 @@ private:
 	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 	int last_parser_error_pos; // last highlighted error position
-	int tabCount;
+	int tabCount = 0;
 
 signals:
 	void highlightError(int);
