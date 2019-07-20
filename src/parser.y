@@ -192,7 +192,7 @@ statement:
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
             {
-              UserFunction *func = UserFunction::create($2, *$4, shared_ptr<Expression>($8), LOC(@$));
+              UserFunction *func = new UserFunction($2, *$4, shared_ptr<Expression>($8), LOC(@$));
               scope_stack.top()->addFunction(func);
               free($2);
               delete $4;

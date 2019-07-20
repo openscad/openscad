@@ -64,69 +64,6 @@ void UserFunction::print(std::ostream &stream, const std::string &indent) const
 	stream << ") = " << *expr << ";\n";
 }
 
-class FunctionTailRecursion : public UserFunction
-{
-private:
-	bool invert;
-	shared_ptr<TernaryOp> op;
-	shared_ptr<FunctionCall> call;
-	shared_ptr<Expression> endexpr;
-
-public:
-	FunctionTailRecursion(const char *name, AssignmentList &definition_arguments,
-												shared_ptr<TernaryOp> expr, shared_ptr<FunctionCall> call,
-												shared_ptr<Expression> endexpr, bool invert,
-												const Location &loc)
-		: UserFunction(name, definition_arguments, expr, loc),
-			invert(invert), op(expr), call(call), endexpr(endexpr) {
-	}
-
-	~FunctionTailRecursion() { }
-
-	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override {
-		if (!expr) return ValuePtr::undefined;
-		
-		Context c(ctx);
-		c.setVariables(evalctx, definition_arguments);
-		
-		EvalContext ec(&c, call->arguments, loc);
-		Context tmp(&c);
-		unsigned int counter = 0;
-		while (invert ^ this->op->cond->evaluate(&c)) {
-			tmp.setVariables(&ec, definition_arguments);
-			c.apply_variables(tmp);
-			
-			if (counter++ == 1000000){
-				std::string locs = loc.toRelativeString(ctx->documentPath());
-				PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
-				throw RecursionException::create("function", this->name,loc);
-			}
-		}
-		
-		ValuePtr result = endexpr->evaluate(&c);
-		
-		return result;
-	}
-};
-
-UserFunction *UserFunction::create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc)
-{
-	if (shared_ptr<TernaryOp> ternary = dynamic_pointer_cast<TernaryOp>(expr)) {
-		shared_ptr<FunctionCall> ifcall = dynamic_pointer_cast<FunctionCall>(ternary->ifexpr);
-		shared_ptr<FunctionCall> elsecall = dynamic_pointer_cast<FunctionCall>(ternary->elseexpr);
-		if (ifcall && !elsecall) {
-			if (name == ifcall->name) {
-				return new FunctionTailRecursion(name, definition_arguments, ternary, ifcall, ternary->elseexpr, false, loc);
-			}
-		} else if (elsecall && !ifcall) {
-			if (name == elsecall->name) {
-				return new FunctionTailRecursion(name, definition_arguments, ternary, elsecall, ternary->ifexpr, true, loc);
-			}
-		}
-	}
-	return new UserFunction(name, definition_arguments, expr, loc);
-}
-
 BuiltinFunction::~BuiltinFunction()
 {
 }
