@@ -45,20 +45,44 @@ UserFunction::~UserFunction()
 ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
 	if (!expr) return ValuePtr::undefined;
-	Context c(ctx);
-	c.setVariables(evalctx, definition_arguments);
+	Context c_next(ctx); // Context for next tail call
+	c_next.setVariables(evalctx, definition_arguments);
 
 	// Outer loop: to allow tail calls
 	unsigned int counter = 0;
 	ValuePtr result;
 	while (true) {
+		// Prepare local context for current call
+		Context c_local(&c_next);
+
 		// Inner loop: to follow a single execution path
 		// Before a 'break', must either assign result, or set tailCall to true.
 		shared_ptr<Expression> subExpr = expr;
 		bool tailCall = false;
 		while (true) {
-			if (true) {
-				result = subExpr->evaluate(&c);
+			if (!subExpr) {
+				result = ValuePtr::undefined;
+				break;
+			}
+			else if (shared_ptr<TernaryOp> ternary = dynamic_pointer_cast<TernaryOp>(subExpr)) {
+				subExpr = ternary->evaluateStep(&c_local);
+			}
+			else if (shared_ptr<FunctionCall> call = dynamic_pointer_cast<FunctionCall>(subExpr)) {
+				if (name == call->name) {
+					// Set new parameters for tail call
+					EvalContext ec(&c_local, call->arguments, call->location());
+					Context tmp(&c_local);
+					tmp.setVariables(&ec, definition_arguments);
+					c_next.apply_variables(tmp);
+					tailCall = true;
+				}
+				else {
+					result = subExpr->evaluate(&c_local);
+				}
+				break;
+			}
+			else {
+				result = subExpr->evaluate(&c_local);
 				break;
 			}
 		}
