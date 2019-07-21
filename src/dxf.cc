@@ -4034,7 +4034,6 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 	
 	//fprintf(stdout, "layer: %d" ,layers[curr_layer].vert_tree->the_tree->vnode.coord);
     // return 0;
-	delete curr_state;
 	return dd;
 }
 
