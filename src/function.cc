@@ -47,7 +47,31 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 	if (!expr) return ValuePtr::undefined;
 	Context c(ctx);
 	c.setVariables(evalctx, definition_arguments);
-	ValuePtr result = expr->evaluate(&c);
+
+	// Outer loop: to allow tail calls
+	unsigned int counter = 0;
+	ValuePtr result;
+	while (true) {
+		// Inner loop: to follow a single execution path
+		// Before a 'break', must either assign result, or set tailCall to true.
+		shared_ptr<Expression> subExpr = expr;
+		bool tailCall = false;
+		while (true) {
+			if (true) {
+				result = subExpr->evaluate(&c);
+				break;
+			}
+		}
+		if (!tailCall) {
+			break;
+		}
+
+		if (counter++ == 1000000){
+			std::string locs = loc.toRelativeString(ctx->documentPath());
+			PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
+			throw RecursionException::create("function", this->name,loc);
+		}
+	}
 
 	return result;
 }
