@@ -333,17 +333,6 @@ struct insert_data {
 	double extrude_dir[4];
 };
 
-
-struct insert_struct{
-    std::string block_name;
-	double scale[3];
-    double rotation;
-    double insert_pt[3];
-	double extrude_dir[4];
-	int color;
-	std::string layer_name;
-};
-
 struct point_struct{
 	double pt[3];
 	std::string layer_name;
@@ -475,7 +464,6 @@ struct dxf_data{
 	std::vector<circle_struct> circle_vector;
 	std::vector<face3d_struct> face3d_vector;
 	std::vector<line_struct> line_vector;
-	std::vector<insert_struct> insert_vector;
 	std::vector<point_struct> point_vector;
 	std::vector<arc_struct> arc_vector;
 	std::vector<text_struct> text_vector;
@@ -495,7 +483,6 @@ struct dxf_data{
 	std::vector<circle_struct> return_circle_vector();
 	std::vector<face3d_struct> return_face3d_vector();
 	std::vector<line_struct> return_line_vector();
-	std::vector<insert_struct> return_insert_vector();
 	std::vector<point_struct> return_point_vector();
 	std::vector<arc_struct> return_arc_vector();
 	std::vector<text_struct> return_text_vector();

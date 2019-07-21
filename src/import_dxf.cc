@@ -306,7 +306,6 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     std::vector<circle_struct> circle_vector;
     std::vector<face3d_struct> face3d_vector;
     std::vector<line_struct> line_vector;
-    std::vector<insert_struct> insert_vector;
     std::vector<point_struct> point_vector;
     std::vector<arc_struct> arc_vector;
     std::vector<text_struct> text_vector;
@@ -438,26 +437,6 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
 						it.line_pt[1][0], it.line_pt[1][1]);
         }
     }
-
-	// insert_vector = dd.return_insert_vector();
-	// if(!insert_vector.empty()){
-	// 	for(auto it : insert_vector){
-	// 		int n = blockdata[it.block_name].size();
-	// 		for(int i = 0; i < n; i++){
-	// 			double a = it.rotation;
-	// 			double lx1 = dxf.points[blockdata[it.block_name][i].idx[0]][0] * it.scale[0];
-	// 			double ly1 = dxf.points[blockdata[it.block_name][i].idx[0]][1] * it.scale[1];
-	// 			double lx2 = dxf.points[blockdata[it.block_name][i].idx[1]][0] * it.scale[0];
-	// 			double ly2 = dxf.points[blockdata[it.block_name][i].idx[1]][1] * it.scale[1];
-	// 			double px1 = (cos_degrees(a)*lx1 - sin_degrees(a)*ly1) + it.insert_pt[0];
-	// 			double py1 = (sin_degrees(a)*lx1 + cos_degrees(a)*ly1) + it.insert_pt[1];
-	// 			double px2 = (cos_degrees(a)*lx2 - sin_degrees(a)*ly2) + it.insert_pt[0];
-	// 			double py2 = (sin_degrees(a)*lx2 + cos_degrees(a)*ly2) + it.insert_pt[1];
-	// 			dxf.addLine(grid, blockdata, it.block_name, px1, py1, px2, py2);				
-	// 		}
-			
-	// 	}
-	// }
 
     point_vector = dd.return_point_vector();
     if(!point_vector.empty()){
