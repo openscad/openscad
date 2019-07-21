@@ -67,6 +67,15 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 			else if (shared_ptr<TernaryOp> ternary = dynamic_pointer_cast<TernaryOp>(subExpr)) {
 				subExpr = ternary->evaluateStep(&c_local);
 			}
+			else if (shared_ptr<Assert> assertion = dynamic_pointer_cast<Assert>(subExpr)) {
+				subExpr = assertion->evaluateStep(&c_local);
+			}
+			else if (shared_ptr<Echo> echo = dynamic_pointer_cast<Echo>(subExpr)) {
+				subExpr = echo->evaluateStep(&c_local);
+			}
+			else if (shared_ptr<Let> let = dynamic_pointer_cast<Let>(subExpr)) {
+				subExpr = let->evaluateStep(&c_local);
+			}
 			else if (shared_ptr<FunctionCall> call = dynamic_pointer_cast<FunctionCall>(subExpr)) {
 				if (name == call->name) {
 					// Update c_next with new parameters for tail call
