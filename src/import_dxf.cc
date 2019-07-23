@@ -299,7 +299,6 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     dxf_data dd = read_dxf_file(filename, filename);
 
     std::vector<header_struct> header_vector;
-    std::vector<table_struct> table_vector;
     std::vector<polyline_vertex_struct> polyline_vertex_vector;
     std::vector<polyline_struct> polyline_vector;
     std::vector<lwpolyline_struct> lwpolyline_vector;
@@ -315,7 +314,6 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     std::vector<ellipse_struct> ellipse_vector;
     std::vector<leader_struct> leader_vector;
     std::vector<spline_struct> spline_vector;
-    std::vector<dimension_struct> dimension_vector;
 
     circle_vector =  dd.return_circle_vector();
     if(!circle_vector.empty()){

@@ -291,11 +291,6 @@ struct header_struct{
 	int splineSegs;
 };
 
-struct table_struct{
-	std::string layer_name;
-	int color;
-};
-
 struct polyline_vertex_struct{
 	int face[4];
 	int vertex_flage;
@@ -449,15 +444,9 @@ struct spline_struct{
 	std::string layer_name;
 };
 
-struct dimension_struct{
-	std::string block_name;
-	std::string layer_name;
-};
-
 struct dxf_data{
     
 	std::vector<header_struct> header_vector;
-	std::vector<table_struct> table_vector;
 	std::vector<polyline_vertex_struct> polyline_vertex_vector;
 	std::vector<polyline_struct> polyline_vector;
 	std::vector<lwpolyline_struct> lwpolyline_vector;
@@ -473,7 +462,6 @@ struct dxf_data{
 	std::vector<ellipse_struct> ellipse_vector;
 	std::vector<leader_struct> leader_vector;
 	std::vector<spline_struct> spline_vector;
-	std::vector<dimension_struct> dimension_vector;
 
     void clear_vector();
 
@@ -492,7 +480,6 @@ struct dxf_data{
 	std::vector<ellipse_struct> return_ellipse_vector();
 	std::vector<leader_struct> return_leader_vector();
 	std::vector<spline_struct> return_spline_vector();
-	std::vector<dimension_struct> return_dimension_vector();
 };
 
 dxf_data read_dxf_file(std::string in_filename, std::string out_filename);
