@@ -26,7 +26,6 @@
 
 #include "dxfdata.h"
 #include "grid.h"
-#include "printutils.h"
 #include "calc.h"
 
 #include <fstream>
