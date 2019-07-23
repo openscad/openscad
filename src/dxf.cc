@@ -3105,7 +3105,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 		exit(1);
     }
 
-	output_file = out_filename.c_str();
+	output_file = (char*)"output";
 	if((out_fp=fopen(output_file, "w")) == NULL){
 		//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
 		exit(1);
