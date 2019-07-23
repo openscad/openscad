@@ -78,7 +78,7 @@ namespace PolysetUtils {
 		}
 
 		// Tessellate indexed mesh
-		const auto *verts = allVertices.getArray();
+		const auto& verts = allVertices.getArray();
 		std::vector<IndexedTriangle> allTriangles;
 		for (const auto &faces : polygons) {
 			std::vector<IndexedTriangle> triangles;

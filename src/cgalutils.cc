@@ -316,7 +316,7 @@ namespace CGALUtils {
 			PRINTB("Error: Non-manifold mesh encountered: %d unconnected edges", unconnected);
 		}
 		// 3. Triangulate each face
-		const auto verts = allVertices.getArray();
+		const auto& verts = allVertices.getArray();
 		std::vector<IndexedTriangle> allTriangles;
 		for (const auto &faces : polygons) {
 #if 0 // For debugging

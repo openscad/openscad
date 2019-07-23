@@ -29,7 +29,7 @@ namespace GeometryUtils {
 	bool tessellatePolygon(const Polygon &polygon,
 												 Polygons &triangles,
 												 const Vector3f *normal = nullptr);
-	bool tessellatePolygonWithHoles(const Vector3f *vertices,
+	bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 																	const std::vector<IndexedFace> &faces, 
 																	std::vector<IndexedTriangle> &triangles,
 																	const Vector3f *normal = nullptr);

@@ -819,7 +819,7 @@ list(APPEND SVG_VIEWBOX_TESTS
     viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax)
 
 foreach(TEST ${SVG_VIEWBOX_TESTS})
-    add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"${CMAKE_SOURCE_DIR}/../testdata/svg/viewbox/${TEST}.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/viewbox-test.scad)
+    add_cmdline_test(svgviewbox-${TEST} EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 "-Dfile=\"../../../svg/viewbox/${TEST}.svg\";" -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/viewbox-test.scad)
 endforeach()
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/box-w-holes.scad)
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/simple-center.scad)
