@@ -1,5 +1,4 @@
 {
     "key" : "module",
-    "offset" : 7,
-    "content" : "module () {\n    \n}"
+    "content" : "module ^~^() {\n\t\n}"
 }

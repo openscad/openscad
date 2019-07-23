@@ -312,3 +312,7 @@ QStringList LegacyEditor::colorSchemes()
 void LegacyEditor::displayTemplates()
 {
 }
+
+void LegacyEditor::addTemplate()
+{
+}

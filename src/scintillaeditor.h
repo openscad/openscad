@@ -57,6 +57,7 @@ public:
 	void replaceAll(const QString &findText, const QString &replaceText) override;
 	QStringList colorSchemes() override;
     bool canUndo() override;
+    void addTemplate();
 
 private:
         void getRange(int *lineFrom, int *lineTo);
@@ -117,4 +118,5 @@ private:
 	ScadApi *api;
 	QStringList userList;
 	QMap<QString, ScadTemplate> templateMap;
+	static QString cursorPlaceHolder;
 };

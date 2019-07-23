@@ -224,6 +224,7 @@ MainWindow::MainWindow(const QString &filename)
 		connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
 		Preferences::inst()->fireEditorConfigChanged();
+		editor->addTemplate();
 	}
 #endif
 

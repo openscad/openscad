@@ -1,5 +1,4 @@
 {
     "key" : "for",
-    "offset" : 11,
-    "content" : "for (i = [  :  ]) {\n    \n}"
+    "content" : "for (i = [  ^~^:  ]) {\n\t\n}"
 }

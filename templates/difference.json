@@ -1,5 +1,4 @@
 {
     "key" : "difference",
-    "offset" : 37,
-    "content" : "difference() {\n    union() {\n        \n    }\n}"
+    "content" : "difference() {\n\tunion() {\n\t\t^~^\n\t}\n}"
 }

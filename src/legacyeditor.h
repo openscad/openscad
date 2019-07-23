@@ -42,6 +42,7 @@ public slots:
 	void paste() override;
 	void initFont(const QString&, uint) override;
 	void displayTemplates() override;
+	void addTemplate() override;
 private:
 	class QTextEdit *textedit;
 	class Highlighter *highlighter;

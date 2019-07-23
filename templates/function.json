@@ -1,5 +1,4 @@
 {
     "key" : "function",
-    "offset" : 17,
-    "content" : "function f(x) = x;"
+    "content" : "function f(x) = x^~^;"
 }
