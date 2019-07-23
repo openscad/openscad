@@ -7,6 +7,18 @@
 #include "ui_Preferences.h"
 #include "settings.h"
 
+template <class WidgetPtr>
+class BlockSignals
+{
+public:
+	BlockSignals(WidgetPtr w) : w(w) { w->blockSignals(true); }
+	~BlockSignals() { w->blockSignals(false); }
+	WidgetPtr operator->() { return w; }
+
+private:
+	WidgetPtr w;
+};
+
 class Preferences : public QMainWindow, public Ui::Preferences
 {
 	Q_OBJECT;
@@ -124,14 +136,18 @@ private:
 	void hidePasswords();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
+	/** Initialize checkbox from the settings value */
+	void initCheckBox(BlockSignals<QCheckBox *> checkBox, const Settings::SettingsEntry& entry);
 	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	void initComboBox(BlockSignals<QComboBox *> comboBox, const Settings::SettingsEntry& entry);
 	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	void initSpinBoxRange(BlockSignals<QSpinBox *> spinBox, const Settings::SettingsEntry& entry);
+	/** Initialize spinbox double value from the settings value */
+	void initSpinBoxDouble(BlockSignals<QSpinBox *>spinBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
-	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	void updateComboBox(BlockSignals<QComboBox *> comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;
