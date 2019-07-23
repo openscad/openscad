@@ -190,12 +190,6 @@ void ScintillaEditor::addTemplate()
 void ScintillaEditor::addTemplate(const fs::path path)
 {
 	const auto template_path = path / "templates";
-	QString tabReplace = "";
-	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Spaces")
-	{
-		auto spCount = Settings::Settings::inst()->get(Settings::Settings::indentationWidth).toDouble();
-		tabReplace = QString(spCount, ' ');
-	}
 
 	if (fs::exists(template_path) && fs::is_directory(template_path)) {
 		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{template_path}, {})) {
@@ -208,30 +202,8 @@ void ScintillaEditor::addTemplate(const fs::path path)
 			try {
 				boost::property_tree::read_json(path.generic_string().c_str(), pt);
 				const QString key = QString::fromStdString(pt.get<std::string>("key"));
-				QString content = QString::fromStdString(pt.get<std::string>("content"));
-				int cursor_offset = pt.get<int>("offset", -1);
-
-
-				if(cursor_offset < 0)
-				{
-					if(tabReplace.size() != 0)
-						content.replace("\t", tabReplace);
-
-					cursor_offset = content.indexOf(ScintillaEditor::cursorPlaceHolder);
-					content.remove(cursorPlaceHolder);
-
-					if(cursor_offset == -1)
-						cursor_offset = content.size();
-				}
-				else
-				{
-					if(tabReplace.size() != 0)
-					{
-						int tbCount = content.left(cursor_offset).count("\t");
-						cursor_offset += tbCount * (tabReplace.size() - 1);
-						content.replace("\t", tabReplace);
-					}
-				}
+				const QString content = QString::fromStdString(pt.get<std::string>("content"));
+				const int cursor_offset = pt.get<int>("offset", -1);
 
 				templateMap.insert(key, ScadTemplate(content, cursor_offset));
 			} catch (const std::exception & e) {
@@ -891,14 +863,45 @@ void ScintillaEditor::onUserListSelected(const int, const QString &text)
 		return;
 	}
 
+	QString tabReplace = "";
+	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Spaces")
+	{
+		auto spCount = Settings::Settings::inst()->get(Settings::Settings::indentationWidth).toDouble();
+		tabReplace = QString(spCount, ' ');
+	}
+
 	ScadTemplate &t = templateMap[text];
-	qsci->insert(t.get_text());
+	QString content = t.get_text();
+	int cursor_offset = t.get_cursor_offset();
+
+	if(cursor_offset < 0)
+	{
+		if(tabReplace.size() != 0)
+			content.replace("\t", tabReplace);
+
+		cursor_offset = content.indexOf(ScintillaEditor::cursorPlaceHolder);
+		content.remove(cursorPlaceHolder);
+
+		if(cursor_offset == -1)
+			cursor_offset = content.size();
+	}
+	else
+	{
+		if(tabReplace.size() != 0)
+		{
+			int tbCount = content.left(cursor_offset).count("\t");
+			cursor_offset += tbCount * (tabReplace.size() - 1);
+			content.replace("\t", tabReplace);
+		}
+	}
+
+	qsci->insert(content);
 
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
 	int pos = qsci->positionFromLineIndex(line, index);
 
-	pos += t.get_cursor_offset();
+	pos += cursor_offset;
 	int indent_line = line;
 	int indent_width = index;
 	qsci->lineIndexFromPosition(pos, &line, &index);
