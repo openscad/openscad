@@ -18,7 +18,12 @@ enum class FileFormat {
 	DXF,
 	SVG,
 	NEFDBG,
-	NEF3
+	NEF3,
+	CSG,
+	AST,
+	TERM,
+	ECHO,
+	PNG
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
@@ -37,6 +42,24 @@ void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
+
+struct ExportFileFormatOptions {
+	const std::map<const std::string, FileFormat> exportFileFormats{
+		{"stl", FileFormat::STL},
+		{"off", FileFormat::OFF},
+		{"amf", FileFormat::AMF},
+		{"3mf", FileFormat::_3MF},
+		{"dxf", FileFormat::DXF},
+		{"svg", FileFormat::SVG},
+		{"nefdbg", FileFormat::NEFDBG},
+		{"nef3", FileFormat::NEF3},
+		{"csg", FileFormat::CSG},
+		{"ast", FileFormat::AST},
+		{"term", FileFormat::TERM},
+		{"echo", FileFormat::ECHO},
+		{"png", FileFormat::PNG},
+	};
+};
 
 struct ViewOption {
 	const std::string name;

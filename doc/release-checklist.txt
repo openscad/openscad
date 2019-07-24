@@ -53,7 +53,7 @@ o Update web page
   - news.html
   - inc/src_release_links.js
 o Update external resources:
-  - http://en.wikipedia.org/wiki/OpenSCAD
+  - https://en.wikipedia.org/wiki/OpenSCAD
 o Write to mailing list
 o Tweet as OpenSCAD
 o Notify package managers

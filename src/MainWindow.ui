@@ -236,7 +236,6 @@
         <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
-         <addaction name="designAction3DPrint"/>
          <addaction name="separator"/>
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
@@ -273,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>19</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -465,9 +464,9 @@
        <addaction name="separator"/>
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
-       <addaction name="designAction3DPrint"/>
        <addaction name="separator"/>
        <addaction name="fileActionExportSTL"/>
+       <addaction name="designAction3DPrint"/>
       </widget>
      </item>
      <item>
@@ -501,7 +500,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QComboBox" name="findTypeComboBox"> 
+         <widget class="QComboBox" name="findTypeComboBox">
           <item>
            <property name="text">
             <string>Find</string>
@@ -516,7 +515,7 @@
         </item>
         <item row="0" column="1">
          <widget class="QWordSearchField" name="findInputField">
-          <property name="placeholderText">
+          <property name="placeholderText" stdset="0">
            <string>Search string</string>
           </property>
          </widget>
@@ -524,42 +523,42 @@
         <item row="0" column="2">
          <widget class="QPushButton" name="findPrevButton">
           <property name="text">
-           <string>Prev.</string> 
+           <string>Prev.</string>
           </property>
          </widget>
         </item>
         <item row="0" column="3">
          <widget class="QPushButton" name="findNextButton">
           <property name="text">
-           <string>Next</string> 
+           <string>Next</string>
           </property>
          </widget>
         </item>
         <item row="0" column="4">
          <widget class="QPushButton" name="cancelButton">
           <property name="text">
-           <string>Done</string> 
+           <string>Done</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="replaceInputField">
           <property name="placeholderText">
-           <string>Replacement string</string> 
+           <string>Replacement string</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="2" colspan="2"> 
+        <item row="1" column="2" colspan="2">
          <widget class="QPushButton" name="replaceButton">
           <property name="text">
-           <string>Replace</string> 
+           <string>Replace</string>
           </property>
          </widget>
         </item>
         <item row="1" column="4">
          <widget class="QPushButton" name="replaceAllButton">
           <property name="text">
-           <string>All</string> 
+           <string>All</string>
           </property>
          </widget>
         </item>
@@ -589,7 +588,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QPlainTextEdit" name="console">
+      <widget class="Console" name="console">
        <property name="minimumSize">
         <size>
          <width>10</width>
@@ -893,7 +892,7 @@
     <string>&amp;3D Print</string>
    </property>
    <property name="shortcut">
-    <string>F7</string>
+    <string>F8</string>
    </property>
   </action>
   <action name="designCheckValidity">
@@ -923,6 +922,9 @@
    </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="fileActionExportOFF">
@@ -1435,6 +1437,11 @@
    <extends>QFrame</extends>
    <header>QWordSearchField.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Console</class>
+   <extends>QPlainTextEdit</extends>
+   <header>Console.h</header>
   </customwidget>
  </customwidgets>
  <resources>

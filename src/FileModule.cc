@@ -99,9 +99,12 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
 */
-time_t FileModule::handleDependencies()
+time_t FileModule::handleDependencies(bool is_root)
 {
-	if (this->is_handling_dependencies) return 0;
+	if(is_root)
+		ModuleCache::clear_markers();
+	else
+		if (this->is_handling_dependencies) return 0;
 	this->is_handling_dependencies = true;
 
 	std::vector<std::pair<std::string,std::string>> updates;
@@ -112,16 +115,15 @@ time_t FileModule::handleDependencies()
 	time_t latest = 0;
 	for (auto filename : this->usedlibs) {
 
-		auto wasmissing = false;
 		auto found = true;
 
 		// Get an absolute filename for the module
 		if (!fs::path(filename).is_absolute()) {
-			wasmissing = true;
 			auto fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
-				updates.emplace_back(filename, fullpath.generic_string());
-				filename = fullpath.generic_string();
+				auto newfilename = fullpath.generic_string();
+				updates.emplace_back(filename, newfilename);
+				filename = newfilename;
 			}
 			else {
 				found = false;
@@ -129,7 +131,6 @@ time_t FileModule::handleDependencies()
 		}
 
 		if (found) {
-			auto wascached = ModuleCache::instance()->isCached(filename);
 			auto oldmodule = ModuleCache::instance()->lookup(filename);
 			FileModule *newmodule;
 			auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
@@ -143,20 +144,14 @@ time_t FileModule::handleDependencies()
 			else {
 				PRINTDB("  %s: %p", filename % oldmodule);
 			}
-			// Only print warning if we're not part of an automatic reload
-			if (!newmodule && !wascached && !wasmissing) {
-				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
-			}
 		}
 	}
 
 	// Relative filenames which were located are reinserted as absolute filenames
-	typedef std::pair<std::string,std::string> stringpair;
 	for (const auto &files : updates) {
 		this->usedlibs.erase(files.first);
 		this->usedlibs.insert(files.second);
 	}
-	this->is_handling_dependencies = false;
 	return latest;
 }
 
@@ -180,29 +175,16 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 		// FIXME: Set document path to the path of the module
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	}
-	catch (RecursionException &e) {
-		const auto docPath = boost::filesystem::path(ctx->documentPath());
-		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
-
-		PRINTB("%s in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
-	}
-	catch (AssertionFailedException &e) {
-		const auto docPath = boost::filesystem::path(ctx->documentPath());
-		const auto uncPath = boostfs_uncomplete(e.loc.filePath(), docPath);
-
-		PRINTB("%s failed in file %s, line %d", e.what() % uncPath.generic_string() % e.loc.firstLine());
-	}
-	catch (EvaluationException &e) {
-		PRINT(e.what());
+	} catch (EvaluationException &e) {
+		//PRINT(e.what()); //please output the message before throwing the exception
 	}
 
 	return node;
 }
 
 //please preferably use getFilename
-//if you compare filenames (which is the origin of this methode),
-//please call getFilename first and use this methode only as a fallback
+//if you compare filenames (which is the origin of this method),
+//please call getFilename first and use this method only as a fallback
 const std::string FileModule::getFullpath() const {
 	if(fs::path(this->filename).is_absolute()){
 		return this->filename;

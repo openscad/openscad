@@ -166,20 +166,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 		if (p2d) {
 			g.reset(p2d->tessellate());
 		}
-		else {
-			// We cannot render concave polygons, so tessellate any 3D PolySets
-			auto ps = dynamic_pointer_cast<const PolySet>(geom);
-			// Since is_convex() doesn't handle non-planar faces, we need to tessellate
-			// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-			bool convex{ps->convexValue()};
-			if (ps && !convex) {
-				assert(ps->getDimension() == 3);
-				auto ps_tri = new PolySet(3, ps->convexValue());
-				ps_tri->setConvexity(ps->getConvexity());
-				PolysetUtils::tessellate_faces(*ps, *ps_tri);
-				g.reset(ps_tri);
-			}
-		}
+		// 3D Polysets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
 	}
 
 	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index())));
@@ -218,7 +205,7 @@ Response CSGTreeEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix()) {
 		if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
-			PRINT("CSG-WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+			PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			return Response::PruneTraversal;
 		}
 		state.setMatrix(state.matrix() * node.matrix);

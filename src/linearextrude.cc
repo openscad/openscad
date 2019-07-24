@@ -96,11 +96,18 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->height = 100;
 	height->getFiniteDouble(node->height);
 	node->convexity = static_cast<int>(convexity->toDouble());
-	origin->getVec2(node->origin_x, node->origin_y, true);
+	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
+	if(origin!=ValuePtr::undefined && !originOk){
+		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	}
 	node->scale_x = node->scale_y = 1;
-	scale->getFiniteDouble(node->scale_x);
-	scale->getFiniteDouble(node->scale_y);
-	scale->getVec2(node->scale_x, node->scale_y, true);
+	bool scaleOK = scale->getFiniteDouble(node->scale_x);
+	scaleOK &= scale->getFiniteDouble(node->scale_y);
+	scaleOK |= scale->getVec2(node->scale_x, node->scale_y, true);
+	if((origin!=ValuePtr::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
+		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	}
 
 	if (center->type() == Value::ValueType::BOOL)
 		node->center = center->toBool();

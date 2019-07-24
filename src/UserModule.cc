@@ -32,14 +32,21 @@
 #include "stackcheck.h"
 #include "modcontext.h"
 #include "expression.h"
-
+#include "printutils.h"
+#include "compiler_specific.h"
 #include <sstream>
 
-std::deque<std::string> UserModule::module_stack;
+std::vector<std::string> UserModule::module_stack;
+
+static void NOINLINE print_err(std::string name, const Location &loc,const Context *ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
+}
 
 AbstractNode *UserModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
-	if (StackCheck::inst()->check()) {
+	if (StackCheck::inst().check()) {
+		print_err(inst->name(),loc,ctx);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
 	}

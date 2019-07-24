@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 #
-# This is be used to verify that all the dependant libraries of a  Mac OS X executable 
-# are present and that they are backwards compatible with at least 10.5.
+# This is used to verify that all the dependant libraries of a Mac OS X executable
+# are present and that they are backwards compatible with at least 10.9.
 # Run with an executable as parameter
 # Will return 0 if the executable an all libraries are OK
 # Returns != 0 and prints some textural description on error
@@ -17,6 +17,7 @@ import sys
 import os
 import subprocess
 import re
+from distutils.version import StrictVersion
 
 DEBUG = False
 
@@ -46,7 +47,7 @@ def lookup_library(file):
             found = os.path.join("/Library/Frameworks", file)
             if DEBUG: print("Framework found: " + str(found))
         else:
-            for path in os.getenv("DYLD_LIBRARY_PATH").split(':'):
+            for path in os.getenv("DYLD_LIBRARY_PATH", "").split(':'):
                 abs = os.path.join(path, file)
                 if os.path.exists(abs): found = abs
                 if DEBUG: print("Library found: " + str(found))
@@ -90,8 +91,11 @@ def validate_lib(lib):
     if p.returncode != 0: return False
     # Check deployment target
     m = re.search("LC_VERSION_MIN_MACOSX.*\n(.*)\n\s+version (.*)", output, re.MULTILINE)
-    deploymenttarget = float(m.group(2))
-    if deploymenttarget > 10.8:
+    if not m:
+        print("Error: LC_VERSION_MIN_MACOSX not found in " + lib)
+        return False
+    deploymenttarget = m.group(2)
+    if StrictVersion(deploymenttarget) > StrictVersion('10.9'):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 # We don't support Snow Leopard anymore
@@ -141,7 +145,7 @@ if __name__ == '__main__':
     lc_rpath = m.group(2)
     if DEBUG: print('Runpath search path: ' + lc_rpath)
 
-    # processed is a dict {libname : [parents]} - each parent is dependant on libname
+    # processed is a dict {libname : [parents]} - each parent is dependent on libname
     processed = {}
     pending = [executable]
     processed[executable] = []

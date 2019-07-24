@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 namespace fs=boost::filesystem;
 
-#define STACK_BUFFER_SIZE (64 * 1024)
+#define STACK_BUFFER_SIZE (128 * 1024)
 #define STACK_LIMIT_DEFAULT (STACKSIZE - STACK_BUFFER_SIZE)
 
 namespace PlatformUtils {
@@ -66,7 +66,17 @@ namespace PlatformUtils {
          * Extended sysinfo will return more info, like CPUs and RAM
          * @return system information.
          */
-        std::string sysinfo(bool extended = true);
+        const std::string sysinfo(bool extended = true);
+
+		/**
+		 * Return short text describing the operating system usable as
+		 * UserAgent string for networking purposes. This is intended
+		 * to not leak too detail data about the system but still enough
+		 * to give some indication for troubleshooting on server side.
+		 *
+		 * @return the short system info
+		 */
+		const std::string user_agent();
 
         /**
          * Platform abstraction to set environment variables. Windows/MinGW

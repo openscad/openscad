@@ -1,5 +1,3 @@
-#include "math.h"
-
 #include "modcontext.h"
 #include "UserModule.h"
 #include "ModuleInstantiation.h"

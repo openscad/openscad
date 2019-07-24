@@ -1,7 +1,11 @@
+#include "compiler_specific.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "expression.h"
+#include "exceptions.h"
+#include "printutils.h"
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -28,9 +32,9 @@ std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) co
 	}
 }
 
-void ModuleInstantiation::print(std::ostream &stream, const std::string &indent) const
+void ModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
-	stream << indent;
+	if (!inlined) stream << indent;
 	stream << modname + "(";
 	for (size_t i=0; i < this->arguments.size(); i++) {
 		const Assignment &arg = this->arguments[i];
@@ -40,31 +44,41 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent)
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";
-	} else if (scope.numElements() == 1) {	
+	} else if (scope.numElements() == 1) {
 		stream << ") ";
-		scope.print(stream, "");
+		scope.print(stream, indent, true);
 	} else {
 		stream << ") {\n";
-		scope.print(stream, indent + "\t");
+		scope.print(stream, indent + "\t", false);
 		stream << indent << "}\n";
 	}
 }
 
-void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent) const
+void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
-	ModuleInstantiation::print(stream, indent);
-	stream << indent;
+	ModuleInstantiation::print(stream, indent, inlined);
 	if (else_scope.numElements() > 0) {
 		stream << indent << "else ";
 		if (else_scope.numElements() == 1) {
-			else_scope.print(stream, "");
+			else_scope.print(stream, indent, true);
 		}
 		else {
 			stream << "{\n";
-			else_scope.print(stream, indent + "\t");
+			else_scope.print(stream, indent + "\t", false);
 			stream << indent << "}\n";
 		}
 	}
+}
+
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive modules are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const Context *ctx){
+	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
@@ -75,9 +89,16 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	PRINT("New eval ctx:");
 	c.dump(nullptr, this);
 #endif
-
-	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
-	return node;
+	try{
+		AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
+		return node;
+	}catch(EvaluationException &e){
+		if(e.traceDepth>0){
+			print_trace(this, ctx);
+			e.traceDepth--;
+		}
+		throw;
+	}
 }
 
 std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const

@@ -138,15 +138,20 @@ void DBusInputDriver::buttonPress(uint idx) const
 
 const QList<double> DBusInputDriver::getRotation() const
 {
-	return InputDriverManager::instance()->getRotation();;
+	return InputDriverManager::instance()->getRotation();
 }
 
 const QList<double> DBusInputDriver::getTranslation() const
 {
-	return InputDriverManager::instance()->getTranslation();;
+	return InputDriverManager::instance()->getTranslation();
 }
 
 const std::string & DBusInputDriver::get_name() const
 {
-    return name;
+    return this->name;
+}
+
+std::string DBusInputDriver::get_info() const
+{
+	return STR(get_name() << " " << (isOpen() ? "open" : "not open"));
 }

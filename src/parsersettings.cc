@@ -71,9 +71,9 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	Returns the absolute path to a valid file, or an empty path if no
 	valid files could be found.
 */
-fs::path find_valid_path(const fs::path &sourcepath, 
-												 const fs::path &localpath,
-												 const std::vector<std::string> *openfilenames)
+fs::path _find_valid_path(const fs::path &sourcepath,
+                          const fs::path &localpath,
+                          const std::vector<std::string> *openfilenames)
 {
 	if (localpath.is_absolute()) {
 		if (check_valid(localpath, openfilenames)) return boosty::canonical(localpath);
@@ -88,6 +88,13 @@ fs::path find_valid_path(const fs::path &sourcepath,
 	return fs::path();
 }
 
+fs::path find_valid_path(const fs::path &sourcepath,
+                         const fs::path &localpath,
+                         const std::vector<std::string> *openfilenames)
+{
+    return fs::path(_find_valid_path(sourcepath, localpath, openfilenames).generic_string());
+}
+
 void parser_init()
 {
 	// Add paths from OPENSCADPATH before adding built-in paths
@@ -97,7 +104,7 @@ void parser_init()
 		std::string sep = PlatformUtils::pathSeparatorChar();
 		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
 		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
-			add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).string());
+			add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).generic_string());
 		}
 	}
 

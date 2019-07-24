@@ -5,7 +5,7 @@ The OpenSCAD coding style is encoded in `.uncrustify.cfg`.
 Coding style highlights:
 
 * Use 2 spaces for indentation
-* Use C++11 functionality where applicable. Please read Scott Meyer's Effective Modern C++ for a good primer on modern C++ style and features: http://shop.oreilly.com/product/0636920033707.do
+* Use C++11 functionality where applicable. Please read Scott Meyer's Effective Modern C++ for a good primer on modern C++ style and features: https://shop.oreilly.com/product/0636920033707.do
 
 ## Beautifying code
 

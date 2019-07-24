@@ -42,22 +42,19 @@ ButtonConfigWidget::~ButtonConfigWidget()
 }
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
-	QString Style = ButtonConfigWidget::EmptyString;
-	if(pressed){
-		Style=ButtonConfigWidget::ActiveStyleString;
-	}
+	QString style = pressed ? ButtonConfigWidget::ActiveStyleString : ButtonConfigWidget::EmptyString;
 	std::string number = std::to_string(nr);
 
-	auto label = this->findChild<QLabel *>(QString::fromStdString("labelInputButton"+number));
+	auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(nr));
 	if(label==nullptr) return;
-	label->setStyleSheet(Style);
+	label->setStyleSheet(style);
 }
 
 void ButtonConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
 		std::string s = std::to_string(i);
-		auto box = this->findChild<QComboBox *>(QString::fromStdString("comboBoxButton"+s));
-		auto ent = Settings::Settings::inst()->getSettingEntryByName("button" +s );
+		auto box = this->findChild<QComboBox *>(QString("comboBoxButton%1").arg(i));
+		auto ent = Settings::Settings::inst()->getSettingEntryByName("button" +s);
 		if(box && ent){
 			initComboBox(box,*ent);
 		}
@@ -68,6 +65,8 @@ void ButtonConfigWidget::init() {
 	for (auto comboBox : comboBoxes) {
 		comboBox->installEventFilter(wheelIgnorer);
 	}
+
+	initialized = true;
 }
 
 void ButtonConfigWidget::on_comboBoxButton0_activated(int val)
@@ -217,10 +216,21 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 
 	for (const auto &action : InputDriverManager::instance()->getActions()) {
 		const auto icon = action.icon;
-                const auto effectiveIcon = icon.isNull() ? emptyIcon : icon;
+		const auto effectiveIcon = icon.isNull() ? emptyIcon : icon;
 		const auto desc = QString(action.description).remove(QChar('&'));
 		comboBox->addItem(effectiveIcon, desc, action.name);
 	}
 
 	updateComboBox(comboBox, entry);
+}
+
+void ButtonConfigWidget::updateStates(){
+	if(!initialized) return;
+
+	int cnt = InputDriverManager::instance()->getButtonCount();
+	for (int i=0;i<InputEventMapper::getMaxButtons();i++) {
+		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
+		QString style =(cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
+		label->setStyleSheet(style);
+	}
 }

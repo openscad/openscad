@@ -9,6 +9,13 @@ std::string ParameterSet::parameterSetsKey("parameterSets");
 std::string ParameterSet::fileFormatVersionKey("fileFormatVersion");
 std::string ParameterSet::fileFormatVersionValue("1");
 
+bool ParameterSet::isEmpty() const
+{
+	const boost::optional<const pt::ptree &> sets{root.get_child_optional(ParameterSet::parameterSetsKey)};
+	const bool hasEntries = sets.is_initialized() && !sets.get().empty();
+	return !hasEntries;
+}
+
 boost::optional<pt::ptree &> ParameterSet::parameterSets()
 {
 	return root.get_child_optional(ParameterSet::parameterSetsKey);
@@ -66,7 +73,7 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 }
 
 /*!
-	Returns true if the file was succesfully read
+	Returns true if the file was successfully read
 */
 bool ParameterSet::readParameterSet(const std::string &filename)
 {

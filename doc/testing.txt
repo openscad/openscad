@@ -32,12 +32,10 @@ Windows(TM):
 Cross-build from within linux:
 
 64-bit:
-    $ source ./scripts/setenv-mingw-xbuild.sh 64
     $ ./scripts/release-common.sh mingw64 tests
     $ # result is .zip file under ./mingw64/
 
 32-bit: 
-    $ source ./scripts/setenv-mingw-xbuild.sh 32
     $ ./scripts/release-common.sh mingw32 tests
     $ # result is .zip file under ./mingw32/
 
@@ -198,12 +196,12 @@ these were the necessary commands to run.
 The OpenSCAD User Manual Wiki has a section on buildling. Please check 
 there for possible updates and workarounds:
 
-http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
 Please report build errors (after double checking the instructions) in 
 the github issue tracker
 
-http://github.com/openscad/openscad/issues
+https://github.com/openscad/openscad/issues
 
 10. Migration away from dedicated regression tests:
 

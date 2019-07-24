@@ -242,7 +242,7 @@ namespace ClipperUtils {
 			fill_minkowski_insides(lhs, rhs, minkowski_terms);
 			fill_minkowski_insides(rhs, lhs, minkowski_terms);
 
-			// This union operation must be performed at each interation since the minkowski_terms
+			// This union operation must be performed at each iteration since the minkowski_terms
 			// now contain lots of small quads
 			c.Clear();
 			c.AddPaths(minkowski_terms, ClipperLib::ptSubject, true);

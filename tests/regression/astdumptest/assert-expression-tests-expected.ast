@@ -1,10 +1,13 @@
+//Parameter("")
 a = 3;
+//Parameter("")
 b = 6;
 t0 = assert(true);
 t1 = assert("t1");
 t2 = assert((a * b));
 t3 = assert(condition = (a * b));
 t4 = (assert(true) a * b);
+//Parameter("")
 c = 2;
 t5 = ((assert(condition = 2) a * b) * c);
 d = (c + 9);

@@ -11,10 +11,13 @@
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#pragma pop_macro("NDEBUG")
 
 using namespace CGALUtils;
-namespace fs=boost::fileystem;
+namespace fs=boost::filesystem;
 
 #define STL_FACET_NUMBYTES 4*3*4+2
 // as there is no 'float32_t' standard, we assume the systems 'float'

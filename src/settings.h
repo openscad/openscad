@@ -36,6 +36,7 @@ class Settings
 {
 public:
     static SettingsEntry showWarningsIn3dView;
+    static SettingsEntry mouseCentricZoom;
     static SettingsEntry indentationWidth;
     static SettingsEntry tabWidth;
     static SettingsEntry lineWrap;
@@ -52,8 +53,18 @@ public:
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
-    
+
+	static SettingsEntry octoPrintUrl;
+	static SettingsEntry octoPrintApiKey;
+	static SettingsEntry octoPrintFileFormat;
+	static SettingsEntry octoPrintAction;
+	static SettingsEntry octoPrintSlicerEngine;
+	static SettingsEntry octoPrintSlicerEngineDesc;
+	static SettingsEntry octoPrintSlicerProfile;
+	static SettingsEntry octoPrintSlicerProfileDesc;
+
     static SettingsEntry inputEnableDriverHIDAPI;
+    static SettingsEntry inputEnableDriverHIDAPILog;
     static SettingsEntry inputEnableDriverSPNAV;
     static SettingsEntry inputEnableDriverJOYSTICK;
     static SettingsEntry inputEnableDriverQGAMEPAD;
@@ -121,8 +132,8 @@ public:
     void visit(class SettingsVisitor& visitor);
     SettingsEntry* getSettingEntryByName(const std::string &name);
 
-    const Value &defaultValue(const SettingsEntry& entry);
-    const Value &get(const SettingsEntry& entry);
+    const Value &defaultValue(const SettingsEntry& entry) const;
+    const Value &get(const SettingsEntry& entry) const;
     void set(SettingsEntry& entry, const Value &val);
 
 private:

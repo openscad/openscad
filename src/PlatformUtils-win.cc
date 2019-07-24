@@ -16,6 +16,8 @@
 #define __IVisualProperties_INTERFACE_DEFINED__
 #include <shlobj.h>
 
+#include "version.h"
+
 std::string PlatformUtils::pathSeparatorChar()
 {
 	return ";";
@@ -62,7 +64,7 @@ static const std::string getFolderPath(int nFolder)
 	HWND hwndOwner = 0;
 	HANDLE hToken = nullptr;
 	DWORD dwFlags = SHGFP_TYPE_CURRENT;
-	LPTSTR pszPath = &path[0];
+	LPWSTR pszPath = &path[0];
 
 	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
@@ -131,7 +133,20 @@ static BOOL IsWow64()
     return bIsWow64;
 }
 
-std::string PlatformUtils::sysinfo(bool extended)
+const std::string PlatformUtils::user_agent()
+{
+	std::string result;
+
+	result += "OpenSCAD/";
+	result += openscad_detailedversionnumber;
+	result += " (";
+	result += sysinfo(false);
+	result += ")";
+
+	return result;
+}
+
+const std::string PlatformUtils::sysinfo(bool extended)
 {
 	std::string result;
 

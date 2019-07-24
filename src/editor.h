@@ -13,7 +13,7 @@ class EditorInterface : public QWidget
 public:
 	EditorInterface(QWidget *parent) : QWidget(parent) {}
 	~EditorInterface() {}
-	virtual QSize sizeHint() const { QSize size; return size;}
+	virtual QSize sizeHint() const override { QSize size; return size;}
 	virtual void setInitialSizeHint(const QSize&) { }
 	void wheelEvent(QWheelEvent*) override;
 	virtual QString toPlainText() = 0;

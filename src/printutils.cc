@@ -16,13 +16,34 @@ std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
 bool OpenSCAD::parameterCheck = true;
+bool OpenSCAD::rangeCheck = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
+
+namespace {
+	bool no_throw;
+	bool deferred;
+}
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 {
 	outputhandler = newhandler;
 	outputhandler_data = userdata;
+}
+
+
+void no_exceptions_for_warnings()
+{
+	no_throw = true;
+	deferred = false;
+}
+
+bool would_have_thrown()
+{
+    const auto would_throw = deferred;
+    no_throw = false;
+    deferred = false;
+    return would_throw;
 }
 
 void print_messages_push()
@@ -66,16 +87,21 @@ void PRINT_NOCACHE(const std::string &msg)
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
 		else lastmessages.push_back(msg);
 	}
-
-	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
-		if (!outputhandler) {
-			fprintf(stderr, "%s\n", msg.c_str());
-		} else {
-			outputhandler(msg, outputhandler_data);
+	if(!deferred)
+		if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
+			if (!outputhandler) {
+				fprintf(stderr, "%s\n", msg.c_str());
+			} else {
+				outputhandler(msg, outputhandler_data);
+			}
 		}
-	}
-	if(OpenSCAD::hardwarnings && !std::current_exception() && boost::starts_with(msg, "WARNING")){
-		throw HardWarningException(msg);
+	if(!std::current_exception()) {
+		if((OpenSCAD::hardwarnings && boost::starts_with(msg, "WARNING")) || (no_throw && boost::starts_with(msg, "ERROR"))){
+			if(no_throw)
+				deferred = true;
+			else
+				throw HardWarningException(msg);
+		}
 	}
 }
 

@@ -27,11 +27,14 @@
 #include "calc.h"
 #include "dxfdata.h"
 #include "degree_trig.h"
-
+#include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
+#pragma pop_macro("NDEBUG")
 
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 	tree(tree)
@@ -71,6 +74,21 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 					}
 				}
 			}
+
+			// We cannot render concave polygons, so tessellate any 3D PolySets
+			auto ps = dynamic_pointer_cast<const PolySet>(this->root);
+			if (ps && !ps->isEmpty()) {
+				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
+				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
+				bool convex{ps->convexValue()};
+				if (!convex) {
+					assert(ps->getDimension() == 3);
+					auto ps_tri = new PolySet(3, ps->convexValue());
+					ps_tri->setConvexity(ps->getConvexity());
+					PolysetUtils::tessellate_faces(*ps, *ps_tri);
+					this->root.reset(ps_tri);
+				}
+			}
 		}
 		smartCacheInsert(node, this->root);
 		return this->root;
@@ -86,7 +104,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("CSG-WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
+				PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
 				break;
 			}
 		}
@@ -224,7 +242,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 			}
 			else {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("CSG-WARNING: Ignoring 3D child object for 2D operation, %s", loc);
+				PRINTB("WARNING: Ignoring 3D child object for 2D operation, %s", loc);
 			}
 		}
 	}
@@ -248,7 +266,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
-				PRINT("CSG-WARNING: GeometryEvaluator: Node didn't fit into cache");
+				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 		}
 	}
@@ -293,7 +311,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("CSG-WARNING: Ignoring 2D child object for 3D operation, %s", loc);
+				PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
 			}
 			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
 				children.push_back(item);
@@ -568,7 +586,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("CSG-WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
+				PRINTB("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
 			}
 			else {
 				// First union all children
@@ -830,7 +848,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	
 	double min_x = 0;
 	double max_x = 0;
-	int fragments = 0;
+	unsigned int fragments = 0;
 	for(const auto &o : poly.outlines()) {
 		for(const auto &v : o.vertices) {
 			min_x = fmin(min_x, v[0]);
@@ -842,7 +860,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return nullptr;
 			}
 		}
-		fragments = fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
+		fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 	}
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
@@ -878,7 +896,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[1].resize(o.vertices.size());
 
 		fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
-		for (int j = 0; j < fragments; j++) {
+		for (unsigned int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
 			    a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support

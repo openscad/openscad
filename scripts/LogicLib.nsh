@@ -124,7 +124,7 @@
     !ifndef _${Type}
       !error "Cannot use _Pop${Type} without a preceding _Push${Type}"
     !endif
-    !ifdef ${_${Type}}Prev${Type}                         ; If a previous statment was active then restore it
+    !ifdef ${_${Type}}Prev${Type}                         ; If a previous statement was active then restore it
       !define _Cur${Type} ${_${Type}}
       !undef _${Type}
       !define _${Type} ${${_Cur${Type}}Prev${Type}}

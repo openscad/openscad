@@ -10,7 +10,10 @@
 #include "export.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#pragma pop_macro("NDEBUG")
 
 using namespace CGALUtils;
 namespace fs = boost::filesystem;
@@ -175,7 +178,11 @@ std::vector<Color4f> colors = boost::assign::list_of
   (Color4f(154, 205, 50));
 
 #include <boost/unordered_set.hpp>
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/convex_hull_3.h>
+#pragma pop_macro("NDEBUG")
+
 template<typename Polyhedron>
 bool is_weakly_convex(Polyhedron const& p) {
   for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {

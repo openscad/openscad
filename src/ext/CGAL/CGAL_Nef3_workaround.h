@@ -57,6 +57,8 @@ distributed, this file may become obsolete and can be deleted from OpenSCAD
 
 #pragma once
 
+#pragma push_macro("NDEBUG")// added for OpenSCAD
+#undef NDEBUG               // added for OpenSCAD
 #include <CGAL/Polyhedron_incremental_builder_3.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/assertions.h>
@@ -69,6 +71,7 @@ distributed, this file may become obsolete and can be deleted from OpenSCAD
 #include <CGAL/Constrained_triangulation_face_base_2.h>
 
 #include <CGAL/exceptions.h> // added for OpenSCAD
+#pragma pop_macro("NDEBUG")  // added for OpenSCAD
 #include "printutils.h"      // added for OpenSCAD
 
 namespace nefworkaround {    // added for OpenSCAD

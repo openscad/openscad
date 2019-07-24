@@ -15,6 +15,7 @@
 #include "export.h"
 #include <vector>
 #include <QMutex>
+#include <QElapsedTimer>
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
@@ -38,7 +39,6 @@ public:
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
-
 	QTime renderingTime;
 
 	BuiltinContext top_ctx;
@@ -104,7 +104,7 @@ private:
 	void updateCamera(const class FileContext &ctx);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
-	void compileTopLevelDocument(bool rebuildParameterWidget);
+	void parseTopLevelDocument(bool rebuildParameterWidget);
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();
@@ -113,6 +113,7 @@ private:
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const std::string &msg, void *userdata);
+	static void noOutput(const std::string &, void*) {};  // /dev/null
 	void loadViewSettings();
 	void loadDesignSettings();
 	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
@@ -174,7 +175,7 @@ private slots:
 	// Mac OSX FindBuffer support
 	void findBufferChanged();
 	void updateFindBuffer(QString);
-	bool event(QEvent* event);
+	bool event(QEvent* event) override;
 protected:
 	bool eventFilter(QObject* obj, QEvent *event) override;
 
@@ -183,7 +184,8 @@ private slots:
 	void csgRender();
 	void csgReloadRender();
 	void action3DPrint();
-	void uploadStlAndGetPartUrl(const QString & exportFilename, const QString &userFacingName, QUrl &partUrl);
+	void sendToOctoPrint();
+	void sendToPrintService();
 #ifdef ENABLE_CGAL
 	void actionRender();
 	void actionRenderDone(shared_ptr<const class Geometry>);
@@ -210,6 +212,7 @@ public:
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
+	void hideCurrentOutput();
   bool isEmpty();
 
 	void onAxisChanged(InputEventAxisChanged *event) override;
@@ -220,6 +223,8 @@ public:
 	void onRotate2Event(InputEventRotate2 *event) override;
 	void onActionEvent(InputEventAction *event) override;
 	void onZoomEvent(InputEventZoom *event) override;
+
+	void changedTopLevelConsole(bool);
 
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
@@ -279,11 +284,13 @@ public slots:
 	void setContentsChanged();
 
 private:
+	bool network_progress_func(const double permille);
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
 	static bool reorderMode;
 	static const int tabStopWidth;
+	static QElapsedTimer *progressThrottle;
 
 	shared_ptr<class CSGNode> csgRoot;		   // Result of the CSGTreeEvaluator
 	shared_ptr<CSGNode> normalizedRoot;		  // Normalized CSG tree
@@ -303,6 +310,7 @@ private:
 	std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
 	void clearExportPaths(); // clear exports paths when main file is changed by open, new, etc.
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
+	int last_parser_error_pos; // last highlighted error position
 
 signals:
 	void highlightError(int);

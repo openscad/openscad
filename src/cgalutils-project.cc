@@ -12,6 +12,8 @@
 #include "node.h"
 
 #include "cgal.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -25,6 +27,7 @@
 #else
 #include "ext/CGAL/convex_hull_3_bugfix.h"
 #endif
+#pragma pop_macro("NDEBUG")
 
 #include "svg.h"
 #include "GeometryUtils.h"
@@ -197,7 +200,7 @@ namespace CGALUtils {
 				try {
 					PRINTD("Trying alternative intersection using very large thin box: ");
 					std::vector<CGAL_Point_3> pts;
-					// dont use z of 0. there are bugs in CGAL.
+					// don't use z of 0. there are bugs in CGAL.
 					double inf = 1e8;
 					double eps = 0.001;
 					CGAL_Point_3 minpt(-inf, -inf, -eps);

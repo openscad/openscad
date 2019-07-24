@@ -9,11 +9,11 @@
     <category>Graphics</category>
     <category>3DGraphics</category>
   </categories>
-  <url type="homepage">http://www.openscad.org/</url>
+  <url type="homepage">https://www.openscad.org/</url>
   <url type="bugtracker">https://github.com/openscad/openscad/issues</url>
   <url type="faq">https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/FAQ</url>
   <url type="help">https://en.wikibooks.org/wiki/OpenSCAD_User_Manual</url>
-  <url type="donation">http://www.openscad.org/community.html</url>
+  <url type="donation">https://www.openscad.org/community.html</url>
   <launchable type="desktop-id">openscad.desktop</launchable>
   <project_license>GPL-3.0+</project_license>
   <description>
@@ -39,5 +39,6 @@
     <release date="2015-11-15" version="2015.03-2"/>
     <release date="2015-04-21" version="2015.03-1"/>
     <release date="2015-03-10" version="2015.03"/>
+    <release date="2019-05-16" version="2019.05"/>
   </releases>
 </component>

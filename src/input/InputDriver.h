@@ -36,6 +36,7 @@ public:
     virtual ~InputDriver();
 
     virtual const std::string & get_name() const = 0;
+    virtual std::string get_info() const = 0;
 
     virtual bool open() = 0;
     virtual void close() = 0;
@@ -51,4 +52,7 @@ public:
      * application start. No attempt to re-open is made.
      */
     virtual bool openOnce() const;
+
+    virtual int getButtonCount() const {return 0;}
+    virtual int getAxisCount() const {return 0;}
 };

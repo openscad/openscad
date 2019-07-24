@@ -24,10 +24,11 @@ public:
 	void registerUse(const std::string path);
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	std::time_t includesChanged() const;
-	std::time_t handleDependencies();
+	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+	void clearHandlingDependencies() { this->is_handling_dependencies = false; }
 	void setFilename(const std::string &filename) { this->filename = filename; }
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;

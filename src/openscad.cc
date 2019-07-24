@@ -92,26 +92,6 @@ std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
-#define QUOTE(x__) # x__
-#define QUOTED(x__) QUOTE(x__)
-
-std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
-std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
-
-std::string openscad_displayversionnumber =
-#ifdef OPENSCAD_COMMIT
-  QUOTED(OPENSCAD_VERSION)
-  " (git " QUOTED(OPENSCAD_COMMIT) ")";
-#else
-  QUOTED(OPENSCAD_SHORTVERSION);
-#endif
-
-std::string openscad_detailedversionnumber =
-#ifdef OPENSCAD_COMMIT
-  openscad_displayversionnumber;
-#else
-  openscad_versionnumber;
-#endif
 
 class Echostream : public std::ofstream
 {
@@ -289,7 +269,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera)
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const char *export_format)
 {
 	Tree tree;
 	boost::filesystem::path doc(filename);
@@ -297,54 +277,47 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
+
+	ExportFileFormatOptions exportFileFormatOptions;
+	FileFormat curFormat;
+	std::string extsn;
+	std::string output_file_str = output_file;
+	const char *new_output_file = nullptr;
 	
-	const char *stl_output_file = nullptr;
-	const char *off_output_file = nullptr;
-	const char *amf_output_file = nullptr;
-	const char *_3mf_output_file = nullptr;
-	const char *dxf_output_file = nullptr;
-	const char *svg_output_file = nullptr;
-	const char *csg_output_file = nullptr;
-	const char *png_output_file = nullptr;
-	const char *ast_output_file = nullptr;
-	const char *term_output_file = nullptr;
-	const char *echo_output_file = nullptr;
-	const char *nefdbg_output_file = nullptr;
-	const char *nef3_output_file = nullptr;
+	if(export_format) {
+		PRINT("Using extension of --export-format option");
+		extsn = export_format;
+	}
+	else { 
+		auto suffix = fs::path(output_file_str).extension().generic_string();
+		suffix = suffix.substr(1);
+		boost::algorithm::to_lower(suffix);
+		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
+			extsn = suffix;
+		}
+	}
 
-	auto suffix = fs::path(output_file).extension().generic_string();
-	boost::algorithm::to_lower(suffix);
-
-	if (suffix == ".stl") stl_output_file = output_file;
-	else if (suffix == ".off") off_output_file = output_file;
-	else if (suffix == ".amf") amf_output_file = output_file;
-	else if (Feature::Experimental3mfExport.is_enabled() && suffix == ".3mf") _3mf_output_file = output_file;
-	else if (suffix == ".dxf") dxf_output_file = output_file;
-	else if (suffix == ".svg") svg_output_file = output_file;
-	else if (suffix == ".csg") csg_output_file = output_file;
-	else if (suffix == ".png") png_output_file = output_file;
-	else if (suffix == ".ast") ast_output_file = output_file;
-	else if (suffix == ".term") term_output_file = output_file;
-	else if (suffix == ".echo") echo_output_file = output_file;
-	else if (suffix == ".nefdbg") nefdbg_output_file = output_file;
-	else if (suffix == ".nef3") nef3_output_file = output_file;
-	else {
-		PRINTB("Unknown suffix for output file %s\n", output_file);
+	if(extsn.empty()) {
+		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
 		return 1;
 	}
+	
+	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
+	std::string filename_str = fs::path(output_file_str).replace_extension(extsn).generic_string();
+	new_output_file = filename_str.c_str();
 
 	set_render_color_scheme(arg_colorscheme, true);
 
 	// Top context - this context only holds builtins
 	BuiltinContext top_ctx;
-	const bool preview = png_output_file ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+	const bool preview = curFormat == FileFormat::PNG ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx.set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
-	if (echo_output_file) {
-		echostream.reset(new Echostream(echo_output_file));
+	if (curFormat == FileFormat::ECHO) {
+		echostream.reset(new Echostream(new_output_file));
 	}
 
 	FileModule *root_module;
@@ -371,14 +344,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		return 1;
 	}
 
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		// add parameter to AST
-		CommentParser::collectParameters(text.c_str(), root_module);
-		if (!parameterFile.empty() && !setName.empty()) {
-			ParameterSet param;
-			param.readParameterSet(parameterFile);
-			param.applyParameterSet(root_module, setName);
-		}
+	// add parameter to AST
+	CommentParser::collectParameters(text.c_str(), root_module);
+	if (!parameterFile.empty() && !setName.empty()) {
+		ParameterSet param;
+		param.readParameterSet(parameterFile);
+		param.applyParameterSet(root_module, setName);
 	}
     
 	root_module->handleDependencies();
@@ -408,11 +379,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		}
 	}
 
-	if (csg_output_file) {
+	if (curFormat == FileFormat::CSG) {
 		fs::current_path(original_path);
-		std::ofstream fstream(csg_output_file);
+		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", csg_output_file);
+			PRINTB("Can't open file \"%s\" for export", new_output_file);
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
@@ -420,11 +391,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fstream.close();
 		}
 	}
-	else if (ast_output_file) {
+	else if (curFormat == FileFormat::AST) {
 		fs::current_path(original_path);
-		std::ofstream fstream(ast_output_file);
+		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", ast_output_file);
+			PRINTB("Can't open file \"%s\" for export", new_output_file);
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
@@ -432,14 +403,14 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fstream.close();
 		}
 	}
-	else if (term_output_file) {
+	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
 		fs::current_path(original_path);
-		std::ofstream fstream(term_output_file);
+		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", term_output_file);
+			PRINTB("Can't open file \"%s\" for export", new_output_file);
 		}
 		else {
 			if (!root_raw_term)
@@ -452,7 +423,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((echo_output_file || png_output_file) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+		if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
@@ -470,46 +441,29 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 		fs::current_path(original_path);
 
-		if (stl_output_file) {
-			if (!checkAndExport(root_geom, 3, FileFormat::STL, stl_output_file)) {
+		if(curFormat == FileFormat::STL ||
+			curFormat == FileFormat::OFF ||
+			curFormat == FileFormat::AMF ||
+			curFormat == FileFormat::_3MF ||
+			curFormat == FileFormat::NEFDBG ||
+			curFormat == FileFormat::NEF3 )
+		{
+			if(!checkAndExport(root_geom, 3, curFormat, new_output_file)) {
 				return 1;
 			}
 		}
 
-		if (off_output_file) {
-			if (!checkAndExport(root_geom, 3, FileFormat::OFF, off_output_file)) {
+		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG) {
+			if (!checkAndExport(root_geom, 2, curFormat, new_output_file)) {
 				return 1;
 			}
 		}
 
-		if (amf_output_file) {
-			if (!checkAndExport(root_geom, 3, FileFormat::AMF, amf_output_file)) {
-				return 1;
-			}
-		}
-
-		if (_3mf_output_file) {
-			if (!checkAndExport(root_geom, 3, FileFormat::_3MF, _3mf_output_file))
-				return 1;
-		}
-
-		if (dxf_output_file) {
-			if (!checkAndExport(root_geom, 2, FileFormat::DXF, dxf_output_file)) {
-				return 1;
-			}
-		}
-
-		if (svg_output_file) {
-			if (!checkAndExport(root_geom, 2, FileFormat::SVG, svg_output_file)) {
-				return 1;
-			}
-		}
-
-		if (png_output_file) {
+		if (curFormat == FileFormat::PNG) {
 			auto success = true;
-			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
+			std::ofstream fstream(new_output_file,std::ios::out|std::ios::binary);
 			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", png_output_file);
+				PRINTB("Can't open file \"%s\" for export", new_output_file);
 				success = false;
 			}
 			else {
@@ -523,17 +477,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			return success ? 0 : 1;
 		}
 
-		if (nefdbg_output_file) {
-			if (!checkAndExport(root_geom, 3, FileFormat::NEFDBG, nefdbg_output_file)) {
-				return 1;
-			}
-		}
-
-		if (nef3_output_file) {
-			if (!checkAndExport(root_geom, 3, FileFormat::NEF3, nef3_output_file)) {
-				return 1;
-			}
-		}
 #else
 		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
@@ -647,13 +590,6 @@ void registerDefaultIcon(QString) { }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
-#ifdef Q_OS_MACX
-	if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8) {
-		// fix Mac OS X 10.9 (mavericks) font issue
-		// https://bugreports.qt-project.org/browse/QTBUG-32789
-		QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
-	}
-#endif
 	OpenSCADApp app(argc, argv);
 	// remove ugly frames in the QStatusBar when using additional widgets
 	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
@@ -757,44 +693,45 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
-	if (Feature::ExperimentalInputDriver.is_enabled()) {
-		auto *s = Settings::Settings::inst();
+	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-		if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
-			auto hidApi = new HidApiInputDriver();
-			InputDriverManager::instance()->registerDriver(hidApi);
-		}
+	if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+		auto hidApi = new HidApiInputDriver();
+		InputDriverManager::instance()->registerDriver(hidApi);
+	}
 #endif
 #ifdef ENABLE_SPNAV
-		if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
-			auto spaceNavDriver = new SpaceNavInputDriver();
-			bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
-			spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
-			InputDriverManager::instance()->registerDriver(spaceNavDriver);
-        }
+	if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+		auto spaceNavDriver = new SpaceNavInputDriver();
+		bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+		spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
+		InputDriverManager::instance()->registerDriver(spaceNavDriver);
+	}
 #endif
 #ifdef ENABLE_JOYSTICK
-		if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
-			std::string nr = s->get(Settings::Settings::joystickNr).toString();
-			auto joyDriver = new JoystickInputDriver();
-			joyDriver->setJoystickNr(nr);
-			InputDriverManager::instance()->registerDriver(joyDriver);
-		}
+	if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
+		std::string nr = s->get(Settings::Settings::joystickNr).toString();
+		auto joyDriver = new JoystickInputDriver();
+		joyDriver->setJoystickNr(nr);
+		InputDriverManager::instance()->registerDriver(joyDriver);
+	}
 #endif
 #ifdef ENABLE_QGAMEPAD
-		if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
-			auto qGamepadDriver = new QGamepadInputDriver();
-			InputDriverManager::instance()->registerDriver(qGamepadDriver);
-		}
+	if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+		auto qGamepadDriver = new QGamepadInputDriver();
+		InputDriverManager::instance()->registerDriver(qGamepadDriver);
+	}
 #endif
 #ifdef ENABLE_DBUS
-	if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+	if (Feature::ExperimentalInputDriverDBus.is_enabled()) {
+		if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
 			auto dBusDriver =new DBusInputDriver();
 			InputDriverManager::instance()->registerDriver(dBusDriver);
 		}
-#endif
-		InputDriverManager::instance()->init();
 	}
+#endif
+
+	InputDriverManager::instance()->init();
 	int rc = app.exec();
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;
@@ -855,7 +792,7 @@ bool flagConvert(std::string str){
 int main(int argc, char **argv)
 {
 	int rc = 0;
-	StackCheck::inst()->init();
+	StackCheck::inst();
 
 #ifdef OPENSCAD_QTGUI
 	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
@@ -884,20 +821,23 @@ int main(int argc, char **argv)
 
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
+	const char *export_format = nullptr;
 	
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
+		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overrides the file extension in -o option\n")
+		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
-#ifdef ENABLE_EXPERIMENTAL
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
+#ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), ("enable experimental features: " +
-																						 join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ", [](const Feature *feature) {
-																								 return feature->get_name();
-																							 }) +
-																						 "\n").c_str())
+		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
+		                                               [](const Feature *feature) {
+		                                                   return feature->get_name();
+		                                               }) +
+		                                          "\n").c_str())
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
@@ -913,16 +853,17 @@ int main(int argc, char **argv)
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
-																					join(ColorMap::inst()->colorSchemeNames(), " | ", [](const std::string& colorScheme) {
-																							return (ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
-																						}) +
-																					"\n").c_str())
-
+		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",
+		                                           [](const std::string& colorScheme) {
+		                                               return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
+		                                           }) +
+		                                      "\n").c_str())
 		("d,d", po::value<string>(), "deps_file -generate a dependency file for make")
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("hardwarnings", "Stop on the first warning")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
+		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
@@ -965,6 +906,7 @@ int main(int argc, char **argv)
 	
 	std::map<std::string, bool*> flags;
 	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
+	flags.insert(std::make_pair("check-parameter-ranges",&OpenSCAD::rangeCheck));
 	for(auto flag : flags) {
 		std::string name = flag.first;
 		if(vm.count(name)){
@@ -1037,36 +979,26 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
-#ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
 		for(const auto &feature : vm["enable"].as<vector<string>>()) {
 			Feature::enable_feature(feature);
 		}
 	}
-#endif
 
 	string parameterFile;
-	string parameterSet;
-	
-	if (Feature::ExperimentalCustomizer.is_enabled()) {
-		if (vm.count("p")) {
-			if (!parameterFile.empty()) help(argv[0], desc, true);
-			
-			parameterFile = vm["p"].as<string>().c_str();
-		}
-		
-		if (vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], desc, true);
-			
-			parameterSet = vm["P"].as<string>().c_str();
-		}
-	}
-	else {
-		if (vm.count("p") || vm.count("P")) {
-			if (!parameterSet.empty()) help(argv[0], desc, true);
-			PRINT("Customizer feature not activated\n");
+	if (vm.count("p")) {
+		if (!parameterFile.empty()) {
 			help(argv[0], desc, true);
 		}
+		parameterFile = vm["p"].as<string>().c_str();
+	}
+
+	string parameterSet;
+	if (vm.count("P")) {
+		if (!parameterSet.empty()) {
+			help(argv[0], desc, true);
+		}
+		parameterSet = vm["P"].as<string>().c_str();
 	}
 	
 	vector<string> inputFiles;
@@ -1077,6 +1009,17 @@ int main(int argc, char **argv)
 	if (vm.count("colorscheme")) {
 		arg_colorscheme = vm["colorscheme"].as<string>();
 	}
+
+	ExportFileFormatOptions exportFileFormatOptions;
+    if(vm.count("export-format")) {
+        auto tmp_format = vm["export-format"].as<string>();
+        if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
+        	export_format = tmp_format.c_str();
+        }
+		else {
+	        PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
+	    }
+    }
 
 	currentdir = fs::current_path().generic_string();
 
@@ -1097,13 +1040,16 @@ int main(int argc, char **argv)
 				rc = info();
 			}
 			else {
-				rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera);
+				rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
 			}
 		} catch (const HardWarningException &) {
 			rc = 1;
 		}
 	}
 	else if (QtUseGUI()) {
+		if(vm.count("export-format")) {
+			PRINT("Ignoring --export-format option");
+		}
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {

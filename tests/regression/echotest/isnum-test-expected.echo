@@ -1,0 +1,21 @@
+ECHO: "a number is a number:"
+ECHO: true
+ECHO: true
+ECHO: true
+ECHO: "inf is a number:"
+ECHO: true
+ECHO: true
+ECHO: "nan is not a number:"
+ECHO: false
+ECHO: false
+ECHO: "resulting in false:"
+ECHO: false
+ECHO: false
+ECHO: false
+ECHO: false
+ECHO: false
+ECHO: "resulting in warnings:"
+WARNING: is_num() number of parameters does not match, in file isnum-test.scad, line 22
+ECHO: undef
+WARNING: is_num() number of parameters does not match, in file isnum-test.scad, line 23
+ECHO: undef

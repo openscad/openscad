@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>689</width>
-    <height>480</height>
+    <width>636</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>6</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -97,6 +97,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxMouseCentricZoom">
+          <property name="text">
+           <string>mouse centric zoom</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
@@ -126,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>655</width>
-             <height>693</height>
+             <width>512</width>
+             <height>793</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -244,7 +254,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Nimbus Sans L</family>
+                    <family>Lucida Grande</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1253,6 +1263,266 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page3DPrint">
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QGroupBox" name="groupBoxOctoPrint">
+          <property name="title">
+           <string>OctoPrint</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="lineEditOctoPrintURL">
+             <property name="placeholderText">
+              <string notr="true">http://octopi.local/api</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelOctoPrintURL">
+             <property name="text">
+              <string>URL</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelOctoPrintApiKey">
+             <property name="text">
+              <string>API Key</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="2">
+            <layout class="QHBoxLayout" name="horizontalLayoutOctoPrintSlicingEngine">
+             <item>
+              <widget class="QComboBox" name="comboBoxOctoPrintSlicingEngine">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacerOctoPrintSlicingEngine">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonOctoPrintSlicingEngine">
+               <property name="text">
+                <string>Load</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="8" column="2">
+            <layout class="QHBoxLayout" name="horizontalLayoutOctoPrintSlicingProfile">
+             <item>
+              <widget class="QComboBox" name="comboBoxOctoPrintSlicingProfile">
+               <property name="minimumSize">
+                <size>
+                 <width>160</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacerOctoPrintSlicingProfile">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonOctoPrintSlicingProfile">
+               <property name="text">
+                <string>Load</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="2">
+            <layout class="QHBoxLayout" name="horizontalLayoutOctoPrintCheckConnection">
+             <item>
+              <spacer name="horizontalSpacerOctoPrintCheckConnection">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="labelOctoPrintCheckConnection">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonOctoPrintCheckConnection">
+               <property name="text">
+                <string>Check</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="labelOctoPrintSlicingProfile">
+             <property name="text">
+              <string>Slicing Profile</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="labelOctoPrintSlicingEngine">
+             <property name="text">
+              <string>Slicing Engine</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelOctoPrintFileFormat">
+             <property name="text">
+              <string>File Format</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <layout class="QHBoxLayout" name="horizontalLayoutOctoPrintFileFormat">
+             <item>
+              <widget class="QComboBox" name="comboBoxOctoPrintFileFormat"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacerOctoPrintFileFormat">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="labelOctoPrintAction">
+             <property name="text">
+              <string>Action</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <layout class="QHBoxLayout" name="horizontalLayoutOctoPrintSliceAction">
+             <item>
+              <widget class="QComboBox" name="comboBoxOctoPrintAction"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacerOctoPrintSliceAction">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="2">
+            <layout class="QHBoxLayout" name="horizontalLayoutApiKey">
+             <item>
+              <widget class="QLineEdit" name="lineEditOctoPrintApiKey">
+               <property name="echoMode">
+                <enum>QLineEdit::PasswordEchoOnEdit</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonOctoPrintApiKey">
+               <property name="text">
+                <string>Show</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="labelOctoPrintApiKeyNote">
+             <property name="text">
+              <string>Note: The API key is stored unencrypted in the application settings.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer3DPrint">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="pageAdvanced">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="leftMargin">
@@ -1283,8 +1553,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>485</width>
-             <height>393</height>
+             <width>602</width>
+             <height>891</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1358,7 +1628,7 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_14">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSize">
+                <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSizeMB">
                  <item>
                   <widget class="QLabel" name="label_4">
                    <property name="text">
@@ -1367,19 +1637,19 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="cgalCacheSizeEdit"/>
+                  <widget class="QLineEdit" name="cgalCacheSizeMBEdit"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_2">
                    <property name="text">
-                    <string>bytes</string>
+                    <string>MB</string>
                    </property>
                   </widget>
                  </item>
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSize">
+                <layout class="QHBoxLayout" name="horizontalLayout_polysetCacheSizeMB">
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
@@ -1391,12 +1661,12 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="polysetCacheSizeEdit"/>
+                  <widget class="QLineEdit" name="polysetCacheSizeMBEdit"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_6">
                    <property name="text">
-                    <string>bytes</string>
+                    <string>MB</string>
                    </property>
                   </widget>
                  </item>
@@ -1469,6 +1739,39 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_timeThresholdOnRenderCompleteSound">
+                 <property name="leftMargin">
+                  <number>40</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>30</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="timeThresholdOnRenderCompleteSoundLabel">
+                   <property name="text">
+                    <string>Play sound when render completion time is at least</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="timeThresholdOnRenderCompleteSoundEdit"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="secLabel">
+                   <property name="text">
+                    <string>sec</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1498,6 +1801,16 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="enableRangeCheckBox">
+                 <property name="text">
+                  <string>Check the parameter range for builtin modules</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1513,6 +1826,22 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_Debug">
+              <property name="title">
+               <string>Debugging</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_16">
+               <item>
+                <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
+                 <property name="text">
+                  <string>Enable tracing of HIDAPI events (requires restart of OpenSCAD)</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -1544,8 +1873,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>669</width>
-             <height>392</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -1577,8 +1906,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>669</width>
-             <height>392</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -1619,6 +1948,7 @@
    <addaction name="prefsActionEditor"/>
    <addaction name="prefsActionUpdate"/>
    <addaction name="prefsActionFeatures"/>
+   <addaction name="prefsAction3DPrint"/>
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
@@ -1695,7 +2025,7 @@
      <normaloff>:/icons/prefsInputAxis.png</normaloff>:/icons/prefsInputAxis.png</iconset>
    </property>
    <property name="text">
-    <string>Axis</string>
+    <string>Axes</string>
    </property>
    <property name="toolTip">
     <string>Input driver configuration and Axis mapping</string>
@@ -1711,6 +2041,21 @@
    </property>
    <property name="text">
     <string>Buttons</string>
+   </property>
+  </action>
+  <action name="prefsAction3DPrint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/icons/prefs3DPrint.png</normaloff>:/icons/prefs3DPrint.png</iconset>
+   </property>
+   <property name="text">
+    <string>3D Print</string>
+   </property>
+   <property name="toolTip">
+    <string>3D Printing Services</string>
    </property>
   </action>
  </widget>

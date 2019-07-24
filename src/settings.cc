@@ -128,12 +128,12 @@ SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
 	return nullptr;
 }
 
-const Value &Settings::defaultValue(const SettingsEntry& entry)
+const Value &Settings::defaultValue(const SettingsEntry& entry) const
 {
 	return entry._default;
 }
 
-const Value &Settings::get(const SettingsEntry& entry)
+const Value &Settings::get(const SettingsEntry& entry) const
 {
 	return entry._value;
 }
@@ -161,6 +161,7 @@ SettingsVisitor::~SettingsVisitor()
  * can be translated.
  */
 SettingsEntry Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", Value(true), Value(true));
+SettingsEntry Settings::mouseCentricZoom("3dview", "mouseCentricZoom", Value(true), Value(true));
 SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(RangeType(1, 16)), Value(4));
 SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(RangeType(1, 16)), Value(4));
 SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));
@@ -178,7 +179,17 @@ SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", V
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
 
+SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
+SettingsEntry Settings::octoPrintApiKey("printing", "octoPrintApiKey", Value(""), Value(""));
+SettingsEntry Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", values("STL", "STL", "OFF", "OFF", "AMF", "AMF", "3MF", "3MF"), Value("STL"));
+SettingsEntry Settings::octoPrintAction("printing", "octoPrintAction", values("upload", _("Upload only"), "slice", _("Upload & Slice"), "select", _("Upload, Slice & Select for printing"), "print", _("Upload, Slice & Start printing")), Value("upload"));
+SettingsEntry Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", Value(""), Value(""));
+SettingsEntry Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", Value(""), Value(""));
+SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", Value(""), Value(""));
+SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
+
 SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
+SettingsEntry Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", Value(true), Value(false));

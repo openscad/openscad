@@ -42,7 +42,7 @@ namespace fs = boost::filesystem;
 
 const std::string get_fontconfig_version()
 {
-	const int version = FcGetVersion();
+	const unsigned int version = FcGetVersion();
 
 	const OpenSCAD::library_version_number header_version{FC_MAJOR, FC_MINOR, FC_REVISION};
 	const OpenSCAD::library_version_number runtime_version{version / 10000, (version / 100) % 100, version % 100};

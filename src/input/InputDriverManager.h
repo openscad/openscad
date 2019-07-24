@@ -67,6 +67,7 @@ public:
 
     void init();
     std::string listDrivers() const;
+    std::string listDriverInfos() const;
     void registerDriver(InputDriver *driver);
     void unregisterDriver(InputDriver *driver);
     void closeDrivers();
@@ -77,6 +78,9 @@ public:
 	const std::list<ActionStruct> & getActions() const;
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
+	
+	int getButtonCount();
+	int getAxisCount();
 
 public slots:
     void onInputMappingUpdated();

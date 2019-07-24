@@ -26,7 +26,7 @@
 #pragma once
 
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <Eigen/Core>
 #include "Polygon2d.h"
 
