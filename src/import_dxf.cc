@@ -52,13 +52,15 @@ public:
 
     DData();
 
+	double scale, xorigin, yorigin;
+
 	std::vector<Vector2d> points;
 	std::vector<Path> paths;
 	std::vector<Dim> dims;
     std::vector<Line> lines;
 
 	int addPoint(double x, double y);
-    void addLine(Grid2d<std::vector<int>> &grid, std::unordered_map<std::string, std::vector<Line>> &blockdata, std::string block_name, double x1, double y1, double x2, double y2);
+    void addLine(Grid2d<std::vector<int>> &grid, double x1, double y1, double x2, double y2);
 
 	void fixup_path_direction();
     void process_path(Grid2d<std::vector<int>> grid);
@@ -270,25 +272,32 @@ Polygon2d *DData::toPolygon2d() const
 	return poly;
 }
 
-void DData::addLine(Grid2d<std::vector<int>> &grid, std::unordered_map<std::string, std::vector<Line>> &blockdata, std::string block_name, double x1, double y1, double x2, double y2){
+void DData::addLine(Grid2d<std::vector<int>> &grid,
+					double x1, double y1, double x2, double y2){
+	if(this->xorigin != 0.0 || this->yorigin != 0.0){
+		x1 = x1 - xorigin*scale;
+		y1 = y1 - yorigin*scale;
+		x2 = x2 - xorigin*scale;
+		y2 = y2 - yorigin*scale;
+	}
     grid.align(x1, y1);                                 
     grid.align(x2, y2);                                 
     grid.data(x1, y1).push_back(lines.size());         
     grid.data(x2, y2).push_back(lines.size());                                        
-	if(!block_name.empty())      
-    	blockdata[block_name].emplace_back(addPoint(x1, y1), addPoint(x2, y2));
-	else{
-		lines.emplace_back(addPoint(x1, y1), addPoint(x2, y2)); 
-	}
+	lines.emplace_back(addPoint(x1, y1), addPoint(x2, y2)); 
 }
 
-Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double fa)
+Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filename, const std::string &layername,
+						double xorigin, double yorigin, double scale)
 {
 
     DData dxf;
 	Grid2d<std::vector<int>> grid(GRID_COARSE);
 	std::unordered_map<std::string, std::vector<Line>> blockdata; // Lines in blocks
-     
+	dxf.yorigin = yorigin;
+	dxf.xorigin = xorigin;
+	dxf.scale = scale;    
+
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);  
@@ -296,7 +305,7 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
         return poly;
 	}
 
-    dxf_data dd = read_dxf_file(filename, filename);
+    dxf_data dd = read_dxf_file(filename, "", scale);
 
     std::vector<header_struct> header_vector;
     std::vector<polyline_vertex_struct> polyline_vertex_vector;
@@ -318,88 +327,95 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     circle_vector =  dd.return_circle_vector();
     if(!circle_vector.empty()){
         for(auto it : circle_vector){
-            int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
-            Vector2d center(it.center[0], it.center[1]);
-            for (int i = 0; i < n; i++) {
-                double a1 = (360.0 * i) / n;
-                double a2 = (360.0 *(i + 1)) / n;
-                dxf.addLine(grid, blockdata, std::string(),
-							cos_degrees(a1)*it.radius + it.center[0], sin_degrees(a1)*it.radius + it.center[1],
-                            cos_degrees(a2)*it.radius + it.center[0], sin_degrees(a2)*it.radius + it.center[1]);
-            }
+			if(layername.empty() || it.layer_name == layername){
+				int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
+				Vector2d center(it.center[0], it.center[1]);
+				for (int i = 0; i < n; i++) {
+					double a1 = (360.0 * i) / n;
+					double a2 = (360.0 *(i + 1)) / n;
+					dxf.addLine(grid,
+								cos_degrees(a1)*it.radius + it.center[0], sin_degrees(a1)*it.radius + it.center[1],
+								cos_degrees(a2)*it.radius + it.center[0], sin_degrees(a2)*it.radius + it.center[1]);
+				}				
+			}
+
         }
     }
 
     arc_vector = dd.return_arc_vector();
     if(!arc_vector.empty()){ 
         for(auto it : arc_vector){
-            Vector2d center(it.center[0], it.center[1]);
-            int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
-            while (it.start_angle > it.end_angle) {
-                it.end_angle += 360.0;
-            }
-            double arc_angle = it.end_angle - it.start_angle;
-            n = static_cast<int>(ceil(n * arc_angle / 360));
-            for (int i = 0; i < n; i++) {
-                double a1 = it.start_angle + arc_angle * i / n;
-                double a2 = it.start_angle + arc_angle * (i + 1) / n;
-                dxf.addLine(grid, blockdata, std::string(), 
-							cos_degrees(a1)*it.radius + center[0], sin_degrees(a1)*it.radius + center[1],
-							cos_degrees(a2)*it.radius + center[0], sin_degrees(a2)*it.radius + center[1]);
-            }
+			if(layername.empty() || it.layer_name == layername){
+				Vector2d center(it.center[0], it.center[1]);
+				int n = Calc::get_fragments_from_r(it.radius, fn, fs, fa);
+				while (it.start_angle > it.end_angle) {
+					it.end_angle += 360.0;
+				}
+				double arc_angle = it.end_angle - it.start_angle;
+				n = static_cast<int>(ceil(n * arc_angle / 360));
+				for (int i = 0; i < n; i++) {
+					double a1 = it.start_angle + arc_angle * i / n;
+					double a2 = it.start_angle + arc_angle * (i + 1) / n;
+					dxf.addLine(grid, 
+								cos_degrees(a1)*it.radius + center[0], sin_degrees(a1)*it.radius + center[1],
+								cos_degrees(a2)*it.radius + center[0], sin_degrees(a2)*it.radius + center[1]);
+				}
+			}
         }
     }
     
     ellipse_vector = dd.return_ellipse_vector();
     if(!ellipse_vector.empty()){
         for(auto it : ellipse_vector){
-            // Commented code is meant as documentation of vector math
-            while (it.start_angle > it.end_angle) it.end_angle += 2 * M_PI;
-    //				Vector2d center(xverts[0], yverts[0]);
-            Vector2d center(it.center[0], it.center[1]);
-    //				Vector2d ce(xverts[1], yverts[1]);
-            Vector2d ce(it.majorAxis[0], it.majorAxis[1]);
-    //				double r_major = ce.length();
-            double r_major = sqrt(ce[0]*ce[0] + ce[1]*ce[1]);
-    //				double rot_angle = ce.angle();
-            double rot_angle;
-            {
-    //					double dot = ce.dot(Vector2d(1.0, 0.0));
-                double dot = ce[0];
-                double cosval = dot / r_major;
-                if (cosval > 1.0) cosval = 1.0;
-                if (cosval < -1.0) cosval = -1.0;
-                rot_angle = acos(cosval);
-                if (ce[1] < 0.0) rot_angle = 2 * M_PI - rot_angle;
-            }
+			if(layername.empty() || it.layer_name == layername){
+				// Commented code is meant as documentation of vector math
+				while (it.start_angle > it.end_angle) it.end_angle += 2 * M_PI;
+		//				Vector2d center(xverts[0], yverts[0]);
+				Vector2d center(it.center[0], it.center[1]);
+		//				Vector2d ce(xverts[1], yverts[1]);
+				Vector2d ce(it.majorAxis[0], it.majorAxis[1]);
+		//				double r_major = ce.length();
+				double r_major = sqrt(ce[0]*ce[0] + ce[1]*ce[1]);
+		//				double rot_angle = ce.angle();
+				double rot_angle;
+				{
+		//					double dot = ce.dot(Vector2d(1.0, 0.0));
+					double dot = ce[0];
+					double cosval = dot / r_major;
+					if (cosval > 1.0) cosval = 1.0;
+					if (cosval < -1.0) cosval = -1.0;
+					rot_angle = acos(cosval);
+					if (ce[1] < 0.0) rot_angle = 2 * M_PI - rot_angle;
+				}
 
-            // the ratio stored in 'radius; due to the parser code not checking entity type
-            // edited : using brlcad code radius is now replaced by ratio
-            double r_minor = r_major * it.ratio;
-            double sweep_angle = it.end_angle-it.start_angle;
-            int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
-            n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
-    //				Vector2d p1;
-            Vector2d p1{0.0, 0.0};
-            for (int i=0;i<=n;i++) {
-                double a = (it.start_angle + sweep_angle*i/n);
-    //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
-                Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
-    //					p2.rotate(rot_angle);
-                Vector2d p2_rot(cos(rot_angle)*p2[0] - sin(rot_angle)*p2[1],
-                                sin(rot_angle)*p2[0] + cos(rot_angle)*p2[1]);
-    //					p2 += center;
-                p2_rot[0] += center[0];
-                p2_rot[1] += center[1];
-                if (i > 0) {
-    // 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
-                    dxf.addLine(grid, blockdata, std::string(),
-								p1[0], p1[1],p2_rot[0], p2_rot[1]);
-                }
-    //					p1 = p2;
-                p1[0] = p2_rot[0];
-                p1[1] = p2_rot[1];            
-            }
+				// the ratio stored in 'radius; due to the parser code not checking entity type
+				// edited : using brlcad code radius is now replaced by ratio
+				double r_minor = r_major * it.ratio;
+				double sweep_angle = it.end_angle-it.start_angle;
+				int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
+				n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
+		//				Vector2d p1;
+				Vector2d p1{0.0, 0.0};
+				for (int i=0;i<=n;i++) {
+					double a = (it.start_angle + sweep_angle*i/n);
+		//					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
+					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
+		//					p2.rotate(rot_angle);
+					Vector2d p2_rot(cos(rot_angle)*p2[0] - sin(rot_angle)*p2[1],
+									sin(rot_angle)*p2[0] + cos(rot_angle)*p2[1]);
+		//					p2 += center;
+					p2_rot[0] += center[0];
+					p2_rot[1] += center[1];
+					if (i > 0) {
+		// 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
+						dxf.addLine(grid,
+									p1[0], p1[1],p2_rot[0], p2_rot[1]);
+					}
+		//					p1 = p2;
+					p1[0] = p2_rot[0];
+					p1[1] = p2_rot[1];            
+				}
+			}
         }   
     }
 
@@ -411,28 +427,32 @@ Polygon2d *import_dxf(const std::string &filename, double fn, double fs, double 
     lwpolyline_vector = dd.return_lwpolyline_vector();
     if(!lwpolyline_vector.empty()){
         for(auto it : lwpolyline_vector){
-            for(auto it_pt = it.lw_pt_vec.begin(); it_pt != it.lw_pt_vec.end(); it_pt++){
-                if(std::next(it_pt) != it.lw_pt_vec.end()){
-					dxf.addLine(grid, blockdata, std::string(),
-								it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
+			if(layername.empty() || it.layer_name == layername){
+				for(auto it_pt = it.lw_pt_vec.begin(); it_pt != it.lw_pt_vec.end(); it_pt++){
+					if(std::next(it_pt) != it.lw_pt_vec.end()){
+						dxf.addLine(grid, 
+									it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
+					}
+				
 				}
-               
-            }
-            // if polyline_flag == 1, the last vertex connect to the first vertex
-            if (it.polyline_flag & 0x01){
-                dxf.addLine(grid, blockdata, std::string(),
-							it.lw_pt_vec.back().x, it.lw_pt_vec.back().y,
-							it.lw_pt_vec.front().x, it.lw_pt_vec.front().y);
-            }
+				// if polyline_flag == 1, the last vertex connect to the first vertex
+				if (it.polyline_flag & 0x01){
+					dxf.addLine(grid,
+								it.lw_pt_vec.back().x, it.lw_pt_vec.back().y,
+								it.lw_pt_vec.front().x, it.lw_pt_vec.front().y);
+				}
+			}
         }            
     }
 
     line_vector = dd.return_line_vector();
     if(!line_vector.empty()){
         for(auto it : line_vector){
-            dxf.addLine(grid, blockdata, std::string(),
-						it.line_pt[0][0], it.line_pt[0][1],
-						it.line_pt[1][0], it.line_pt[1][1]);
+			if(layername.empty() || it.layer_name == layername){
+				dxf.addLine(grid,
+							it.line_pt[0][0], it.line_pt[0][1],
+							it.line_pt[1][0], it.line_pt[1][1]);
+			}
         }
     }
 

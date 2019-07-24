@@ -3080,7 +3080,7 @@ void dxf_data::clear_vector(){
 	spline_vector.clear();
 }
 
-dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
+dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double scale)
 {
     int code;
 	const char* output_file;
@@ -3091,7 +3091,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
     tol_sq = tol * tol;
 	
     /* get command line arguments */
-    scale_factor = 1.0;
+    scale_factor = scale;
 	
 	/* 's' scale factor, c' ignore color, 't' tolerance, 'v' verbose */
 	ignore_colors = 1;
@@ -3105,11 +3105,13 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 		exit(1);
     }
 
-	// output_file = (char*)"output";
-	// if((out_fp=fopen(output_file, "w")) == NULL){
-	// 	//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
-	// 	exit(1);
-	// }
+	if(!out_filename.empty()){
+		output_file = out_filename.c_str();
+		if((out_fp=fopen(output_file, "w")) == NULL){
+			//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+			exit(1);
+		}
+	}
 
 	std::list<block> block_list;
 	std::list<state_data> state_stack;
