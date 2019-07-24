@@ -247,9 +247,15 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 {
 }
 
+const shared_ptr<Expression> &TernaryOp::evaluateStep(const Context *context) const
+{
+	return this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+}
+
 ValuePtr TernaryOp::evaluate(const Context *context) const
 {
-	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
+	const shared_ptr<Expression> &nextexpr = evaluateStep(context);
+	return nextexpr->evaluate(context);
 }
 
 void TernaryOp::print(std::ostream &stream, const std::string &) const
@@ -498,14 +504,20 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
-ValuePtr Assert::evaluate(const Context *context) const
+const shared_ptr<Expression> &Assert::evaluateStep(const Context *context) const
 {
 	EvalContext assert_context(context, this->arguments, this->loc);
 
 	Context c(&assert_context);
 	evaluate_assert(c, &assert_context);
+	return expr;
+}
 
-	ValuePtr result = expr ? expr->evaluate(&c) : ValuePtr::undefined;
+ValuePtr Assert::evaluate(const Context *context) const
+{
+	const shared_ptr<Expression> &nextexpr = evaluateStep(context);
+
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
@@ -521,12 +533,18 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 }
 
+const shared_ptr<Expression> &Echo::evaluateStep(const Context *context) const
+{
+	EvalContext echo_context(context, this->arguments, this->loc);
+	PRINTB("%s", STR("ECHO: " << echo_context));
+	return expr;
+}
+
 ValuePtr Echo::evaluate(const Context *context) const
 {
-	EvalContext echo_context(context, this->arguments, this->loc);	
-	PRINTB("%s", STR("ECHO: " << echo_context));
+	const shared_ptr<Expression> &nextexpr = evaluateStep(context);
 
-	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
@@ -541,12 +559,18 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
+const shared_ptr<Expression> &Let::evaluateStep(Context *context) const
+{
+	evaluate_sequential_assignment(this->arguments, context, this->loc);
+	return this->expr;
+}
+
 ValuePtr Let::evaluate(const Context *context) const
 {
 	Context c(context);
-	evaluate_sequential_assignment(this->arguments, &c, this->loc);
+	const shared_ptr<Expression> &nextexpr = evaluateStep(&c);
 
-	return this->expr->evaluate(&c);
+	return nextexpr->evaluate(&c);
 }
 
 void Let::print(std::ostream &stream, const std::string &) const
