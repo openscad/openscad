@@ -657,25 +657,6 @@ std::string Char2String(const char* line){
 	return str;
 }
 
-static char *
-make_brlcad_name(const char *nameline)
-{
-    char *name;
-    char *c;
-
-    name = strdup(nameline);
-
-    c = name;
-    while (*c != '\0') {
-		if (*c == '/' || *c == '[' || *c == ']' || *c == '*' || isspace((int)*c)) {
-			*c = '_';
-		}
-		c++;
-    }
-
-    return name;
-}
-
 
 static void
 get_layer()
@@ -952,7 +933,7 @@ process_tables_layer_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    if (verbose) {
 		fprintf(out_fp, "In LAYER in TABLES, layer name = %s\n", curr_layer_name);
 	    }
@@ -1085,7 +1066,7 @@ process_point_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -1138,7 +1119,7 @@ process_entities_polyline_vertex_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 70:	/* vertex flag */
 	    vertex_flag = atoi(line);
@@ -1377,7 +1358,7 @@ process_entities_polyline_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
     }
 
@@ -1566,7 +1547,7 @@ process_insert_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 2:
 	    for (unsigned int i = 0; i < block_list.size(); i++) {
@@ -1666,7 +1647,7 @@ process_solid_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    if (verbose) {
 		fprintf(out_fp, "LINE is in layer: %s\n", curr_layer_name);
 	    }
@@ -1739,7 +1720,7 @@ process_lwpolyline_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    if (verbose) {
 		fprintf(out_fp, "LINE is in layer: %s\n", curr_layer_name);
 	    }
@@ -1823,7 +1804,7 @@ process_line_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    if (verbose) {
 		fprintf(out_fp, "LINE is in layer: %s\n", curr_layer_name);
 	    }
@@ -1890,7 +1871,7 @@ process_ellipse_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -1970,7 +1951,7 @@ process_circle_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -2155,7 +2136,7 @@ process_leader_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    if (verbose) {
 		fprintf(out_fp, "LINE is in layer: %s\n", curr_layer_name);
 	    }
@@ -2302,7 +2283,7 @@ process_mtext_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -2422,7 +2403,7 @@ process_text_attrib_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -2517,7 +2498,7 @@ process_dimension_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 2:	/* block name */
 	    block_name = strdup(line);
@@ -2591,7 +2572,7 @@ process_arc_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -2682,7 +2663,7 @@ process_spline_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 210:
 	case 220:
@@ -2838,7 +2819,7 @@ process_3dface_entities_code(int code)
 	    if (curr_layer_name) {
 		free(curr_layer_name);
 	    }
-	    curr_layer_name = make_brlcad_name(line);
+	    curr_layer_name = strdup(line);
 	    break;
 	case 10:
 	case 20:
@@ -3080,7 +3061,7 @@ void dxf_data::clear_vector(){
 	spline_vector.clear();
 }
 
-dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
+dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double scale)
 {
     int code;
 	const char* output_file;
@@ -3091,7 +3072,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
     tol_sq = tol * tol;
 	
     /* get command line arguments */
-    scale_factor = 1.0;
+    scale_factor = scale;
 	
 	/* 's' scale factor, c' ignore color, 't' tolerance, 'v' verbose */
 	ignore_colors = 1;
@@ -3105,10 +3086,12 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename)
 		exit(1);
     }
 
-	output_file = (char*)"output";
-	if((out_fp=fopen(output_file, "w")) == NULL){
-		//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
-		exit(1);
+	if(!out_filename.empty()){
+		output_file = out_filename.c_str();
+		if((out_fp=fopen(output_file, "w")) == NULL){
+			//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+			exit(1);
+		}
 	}
 
 	std::list<block> block_list;

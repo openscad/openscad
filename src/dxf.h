@@ -482,7 +482,7 @@ struct dxf_data{
 	std::vector<spline_struct> return_spline_vector();
 };
 
-dxf_data read_dxf_file(std::string in_filename, std::string out_filename);
+dxf_data read_dxf_file(std::string in_filename,std::string out_filename,  double scale);
 
 #endif /* CONV_DXF_DXF_H */
 
