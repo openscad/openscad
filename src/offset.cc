@@ -114,6 +114,6 @@ void register_builtin_offset()
 				{
 					"offset(r = number)",
 					"offset(delta = number)",
-					"offset(r = number, chamfer = boolean)",
+					"offset(r = number, chamfer = false)",
 				});
 }

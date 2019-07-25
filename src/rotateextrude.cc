@@ -135,6 +135,6 @@ void register_builtin_dxf_rotate_extrude()
 
 	Builtins::init("rotate_extrude", new RotateExtrudeModule(),
 				{
-					"rotate_extrude(angle = degrees, convexity = number)",
+					"rotate_extrude(angle = 360, convexity = 2)",
 				});
 }

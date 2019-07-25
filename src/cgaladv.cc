@@ -155,8 +155,8 @@ void register_builtin_cgaladv()
 
 	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE),
 				{
-					"resize(newsize = [x, y, z])",
-					"resize(newsize = [x, y, z], auto = boolean)",
-					"resize(newsize = [x, y, z], auto = [boolean, boolean, boolean])",
+					"resize([x, y, z])",
+					"resize([x, y, z], boolean)",
+					"resize([x, y, z], [boolean, boolean, boolean])",
 				});
 }

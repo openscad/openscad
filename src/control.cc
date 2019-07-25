@@ -369,21 +369,21 @@ void register_builtin_control()
 
 	Builtins::init("for", new ControlModule(ControlModule::Type::FOR),
 				{
-					"for(variable = [start : increment : end])",
-					"for(variable = [start : end])",
-					"for(variable = [vector])",
+					"for([start : increment : end])",
+					"for([start : end])",
+					"for([vector])",
 				});
 
 	Builtins::init("let", new ControlModule(ControlModule::Type::LET),
 				{
-					"let(var = value, ...) expression",
+					"let(arg, ...) expression",
 				});
 
 	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR),
 				{
-					"intersection_for(variable = [start : increment : end])",
-					"intersection_for(variable = [start : end])",
-					"intersection_for(variable = [vector])",
+					"intersection_for([start : increment : end])",
+					"intersection_for([start : end])",
+					"intersection_for([vector])",
 				});
 
 	Builtins::init("if", new ControlModule(ControlModule::Type::IF),

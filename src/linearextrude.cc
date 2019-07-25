@@ -179,6 +179,6 @@ void register_builtin_dxf_linear_extrude()
 
 	Builtins::init("linear_extrude", new LinearExtrudeModule(),
 				{
-					"linear_extrude(height = number, center = true, convexity = number, twish = degrees, slices = number, scale = number, $fn = number)",
+					"linear_extrude(number, center = true, convexity = 10, degrees, slices = 20, scale = 1.0 [, $fn])",
 				});
 }

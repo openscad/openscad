@@ -327,6 +327,6 @@ void register_builtin_surface()
 {
 	Builtins::init("surface", new SurfaceModule(),
 				{
-					"surface(string, boolean, boolean, integer)",
+					"surface(string, center = false, invert = false, number)",
 				});
 }

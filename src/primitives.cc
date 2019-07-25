@@ -702,7 +702,7 @@ void register_builtin_primitives()
 				{
 					"cube(size)",
 					"cube([width, depth, height])",
-					"cube(size = [width, depth, height], center = true)",
+					"cube([width, depth, height], center = true)",
 				});
 
 	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE),
