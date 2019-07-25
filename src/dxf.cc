@@ -150,6 +150,20 @@ strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize)
 	return(src - osrc - 1);	/* count does not include NUL */
 }
 
+/* string to double for error checking */
+
+double cstrtod(char* line){
+	char* pEnd;
+	double a;
+	a = strtod(line, &pEnd);
+	if(	line == pEnd || *pEnd != '\0'){
+		return 0.0;
+	}
+	else{
+		return a;
+	}
+}
+
 struct vert_root {
      uint32_t magic;
      int tree_type;              /**< @brief vertices or vertices with normals */
@@ -1024,7 +1038,7 @@ process_blocks_code(int code)
 	case 30:
 	    if (indx != -1) {
 		coord = code / 10 - 1;
-		block_list.at(indx).base[coord] = atof(line) * units_conv[units] * scale_factor;
+		block_list.at(indx).base[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    }
 	    break;
     }
@@ -1072,7 +1086,7 @@ process_point_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    pt[coord] = atof(line) * units_conv[units] * scale_factor;
+	    pt[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1184,13 +1198,13 @@ process_entities_polyline_vertex_code(int code)
 	    printf("%s\n", line);
 	    break;
 	case 10:
-	    x = atof(line) * units_conv[units] * scale_factor;
+	    x = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 20:
-	    y = atof(line) * units_conv[units] * scale_factor;
+	    y = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 30:
-	    z = atof(line) * units_conv[units] * scale_factor;
+	    z = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1573,16 +1587,16 @@ process_insert_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1;
-	    ins.insert_pt[coord] = atof(line);
+	    ins.insert_pt[coord] = cstrtod(line);
 	    break;
 	case 41:
 	case 42:
 	case 43:
 	    coord = (code % 40) - 1;
-	    ins.scale[coord] = atof(line);
+	    ins.scale[coord] = cstrtod(line);
 	    break;
 	case 50:
-	    ins.rotation = atof(line);
+	    ins.rotation = cstrtod(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1600,7 +1614,7 @@ process_insert_entities_code(int code)
 	case 220:
 	case 230:
 	    coord = ((code / 10) % 20) - 1;
-	    ins.extrude_dir[coord] = atof(line);
+	    ins.extrude_dir[coord] = cstrtod(line);
 	    break;
 	case 0:		/* end of this insert */
 
@@ -1668,7 +1682,7 @@ process_solid_entities_code(int code)
 	    V_MAX(last_vert_no, vert_no);
 
 	    coord = code / 10 - 1;
-	    solid_pt[vert_no][coord] = atof(line) * units_conv[units] * scale_factor;
+	    solid_pt[vert_no][coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "SOLID vertex #%d coord #%d = %g\n", vert_no, coord, solid_pt[vert_no][coord]);
 	    }
@@ -1729,7 +1743,7 @@ process_lwpolyline_entities_code(int code)
 	    /* oops */
 	    break;
 	case 10:
-	    x = atof(line) * units_conv[units] * scale_factor;
+	    x = cstrtod(line) * units_conv[units] * scale_factor;
 		pt_x.push_back(x);
 	    if (verbose) {
 		fprintf(out_fp, "LWPolyLine vertex #%d (x) = %g\n", vert_no, x);
@@ -1737,7 +1751,7 @@ process_lwpolyline_entities_code(int code)
 	    break;
 	case 20:
 	{
-	    y = atof(line) * units_conv[units] * scale_factor;
+	    y = cstrtod(line) * units_conv[units] * scale_factor;
 		pt_y.push_back(y);
 	    if (verbose) {
 		fprintf(out_fp, "LWPolyLine vertex #%d (y) = %g\n", vert_no, y);
@@ -1798,6 +1812,7 @@ process_line_entities_code(int code)
     int coord;
     static double line_pt[2][3];
     double tmp_pt[3];
+	char* pEnd;
 
     switch (code) {
 	case 8:
@@ -1817,7 +1832,10 @@ process_line_entities_code(int code)
 	case 31:
 	    vert_no = code % 10;
 	    coord = code / 10 - 1;
-	    line_pt[vert_no][coord] = atof(line) * units_conv[units] * scale_factor;
+	    line_pt[vert_no][coord] = strtod(line, &pEnd) * units_conv[units] * scale_factor;
+		if(*pEnd != '\0'){
+			line_pt[vert_no][coord] = 0.0;
+		}
 	    if (verbose) {
 		fprintf(out_fp, "LINE vertex #%d coord #%d = %g\n", vert_no, coord, line_pt[vert_no][coord]);
 	    }
@@ -1838,7 +1856,6 @@ process_line_entities_code(int code)
 	    VMOVE(line_pt[0], tmp_pt);
 	    MAT4X3PNT(tmp_pt, curr_state->xform, line_pt[1]);
 	    VMOVE(line_pt[1], tmp_pt);
-
 		line_struct ls; 
 		VMOVE(ls.line_pt[0], line_pt[0]);
 		VMOVE(ls.line_pt[1], line_pt[1]);
@@ -1877,22 +1894,22 @@ process_ellipse_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    center[coord] = atof(line) * units_conv[units] * scale_factor;
+	    center[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 11:
 	case 21:
 	case 31:
 	    coord = code / 10 - 1;
-	    majorAxis[coord] = atof(line) * units_conv[units] * scale_factor;
+	    majorAxis[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 40:
-	    ratio = atof(line);
+	    ratio = cstrtod(line);
 	    break;
 	case 41:
-	    startAngle = atof(line);
+	    startAngle = cstrtod(line);
 	    break;
 	case 42:
-	    endAngle = atof(line);
+	    endAngle = cstrtod(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1957,13 +1974,13 @@ process_circle_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    center[coord] = atof(line) * units_conv[units] * scale_factor;
+	    center[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "CIRCLE center coord #%d = %g\n", coord, center[coord]);
 	    }
 	    break;
 	case 40:
-	    radius = atof(line) * units_conv[units] * scale_factor;
+	    radius = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -2205,13 +2222,13 @@ process_leader_entities_code(int code)
 	    /* offset, unimplemented */
 	    break;
 	case 10:
-	    pt[X] = atof(line);
+	    pt[X] = cstrtod(line);
 	    break;
 	case 20:
-	    pt[Y] = atof(line);
+	    pt[Y] = cstrtod(line);
 	    break;
 	case 30:
-	    pt[Z] = atof(line);
+	    pt[Z] = cstrtod(line);
 	    if (verbose) {
 		fprintf(out_fp, "LEADER vertex #%d = (%g %g %g)\n", vertNo, V3ARGS(pt));
 	    }
@@ -2289,31 +2306,31 @@ process_mtext_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1;
-	    insertionPoint[coord] = atof(line) * units_conv[units] * scale_factor;
+	    insertionPoint[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 11:
 	case 21:
 	case 31:
 	    coord = (code / 10) - 1;
-	    xAxisDirection[coord] = atof(line);
+	    xAxisDirection[coord] = cstrtod(line);
 	    if (code == 31) {
 		rotationAngle = atan2(xAxisDirection[Y], xAxisDirection[X]) * RAD2DEG;
 	    }
 	    break;
 	case 40:
-	    textHeight = atof(line);
+	    textHeight = cstrtod(line);
 	    break;
 	case 41:
-	    rectWidth = atof(line);
+	    rectWidth = cstrtod(line);
 	    break;
 	case 42:
-	    charWidth = atof(line);
+	    charWidth = cstrtod(line);
 	    break;
 	case 43:
-	    entityHeight = atof(line);
+	    entityHeight = cstrtod(line);
 	    break;
 	case 50:
-	    rotationAngle = atof(line);
+	    rotationAngle = cstrtod(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -2409,22 +2426,22 @@ process_text_attrib_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1;
-	    firstAlignmentPoint[coord] = atof(line) * units_conv[units] * scale_factor;
+	    firstAlignmentPoint[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 11:
 	case 21:
 	case 31:
 	    coord = (code / 10) - 1;
-	    secondAlignmentPoint[coord] = atof(line) * units_conv[units] * scale_factor;
+	    secondAlignmentPoint[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    break;
 	case 40:
-	    textHeight = atof(line);
+	    textHeight = cstrtod(line);
 	    break;
 	case 41:
-	    textScale = atof(line);
+	    textScale = cstrtod(line);
 	    break;
 	case 50:
-	    textRotation = atof(line);
+	    textRotation = cstrtod(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -2578,25 +2595,25 @@ process_arc_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    center[coord] = atof(line) * units_conv[units] * scale_factor;
+	    center[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "ARC center coord #%d = %g\n", coord, center[coord]);
 	    }
 	    break;
 	case 40:
-	    radius = atof(line) * units_conv[units] * scale_factor;
+	    radius = cstrtod(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "ARC radius = %g\n", radius);
 	    }
 	    break;
 	case 50:
-	    start_angle = atof(line);
+	    start_angle = cstrtod(line);
 	    if (verbose) {
 		fprintf(out_fp, "ARC start angle = %g\n", start_angle);
 	    }
 	    break;
 	case 51:
-	    end_angle = atof(line);
+	    end_angle = cstrtod(line);
 	    if (verbose) {
 		fprintf(out_fp, "ARC end angle = %g\n", end_angle);
 	    }
@@ -2720,16 +2737,16 @@ process_spline_entities_code(int code)
 	    /* end tangent, unimplemented */
 	    break;
 	case 40:
-	    knots[knotCount++] = atof(line);
+	    knots[knotCount++] = cstrtod(line);
 	    break;
 	case 41:
-	    weights[weightCount++] = atof(line);
+	    weights[weightCount++] = cstrtod(line);
 	    break;
 	case 10:
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1 + ctlPtCount*3;
-	    ctlPts[coord] = atof(line) * units_conv[units] * scale_factor;
+	    ctlPts[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    subCounter++;
 	    if (subCounter > 2) {
 		ctlPtCount++;
@@ -2740,7 +2757,7 @@ process_spline_entities_code(int code)
 	case 21:
 	case 31:
 	    coord = (code / 10) - 1 + fitPtCount*3;
-	    fitPts[coord] = atof(line) * units_conv[units] * scale_factor;
+	    fitPts[coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    subCounter2++;
 	    if (subCounter2 > 2) {
 		fitPtCount++;
@@ -2835,7 +2852,7 @@ process_3dface_entities_code(int code)
 	case 33:
 	    vert_no = code % 10;
 	    coord = code / 10 - 1;
-	    pts[vert_no][coord] = atof(line) * units_conv[units] * scale_factor;
+	    pts[vert_no][coord] = cstrtod(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "3dface vertex #%d coord #%d = %g\n", vert_no, coord, pts[vert_no][coord]);
 	    }
