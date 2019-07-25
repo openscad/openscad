@@ -276,6 +276,6 @@ void register_builtin_transform()
 
 	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX),
 				{
-					"multmatrix(vector)",
+					"multmatrix(matrix_4_by_4)",
 				});
 }
