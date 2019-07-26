@@ -223,6 +223,8 @@ MainWindow::MainWindow(const QString &filename)
 	if (useScintilla) {
 		connect(editor, SIGNAL(previewRequest()), this, SLOT(actionRenderPreview()));
 		connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+		connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
+		connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
 		Preferences::inst()->fireEditorConfigChanged();
 		editor->addTemplate();
 	}

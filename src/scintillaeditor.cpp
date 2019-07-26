@@ -7,6 +7,7 @@
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
+#include "QSettingsCached.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -160,17 +161,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	setLexer(new ScadLexer(this));
 	initMargin();
 
-	qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
-	qsci->setAutoCompletionThreshold(1);
-	qsci->setAutoCompletionFillupsEnabled(true);
-	qsci->setCallTipsVisible(10);
-	qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
-
-	qsci->setTabIndents(true);
-	qsci->setTabWidth(8);
-	qsci->setIndentationWidth(4);
-	qsci->setIndentationsUseTabs(false);
-
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
@@ -251,6 +241,26 @@ void ScintillaEditor::applySettings()
 
     if (!value) qsci->setMarginWidth(1,20);
     else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+
+    QSettingsCached settings;
+
+	if(settings.value("editor/enableAutocomplete").toBool())
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setCallTipsVisible(10);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	}
+	else
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		qsci->setAutoCompletionFillupsEnabled(false);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+	}
+
+	int val = settings.value("editor/characterThreshold").toInt();
+	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
@@ -915,4 +925,26 @@ void ScintillaEditor::onUserListSelected(const int, const QString &text)
 	for (int a = 0;a < lines;a++) {
 		qsci->insertAt(indent_char.repeated(indent_width), indent_line + a + 1, 0);
 	}
+}
+
+void ScintillaEditor::onAutocompleteChanged(bool state)
+{
+	if(state)
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setCallTipsVisible(10);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	}
+	else
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		qsci->setAutoCompletionFillupsEnabled(false);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+	}
+}
+
+void ScintillaEditor::onCharacterThresholdChanged(int val)
+{
+	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }

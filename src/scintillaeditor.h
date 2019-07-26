@@ -107,6 +107,8 @@ private slots:
 	void onTextChanged();
 	void onUserListSelected(const int id, const QString &text);
     void applySettings();
+    void onAutocompleteChanged(bool state);
+    void onCharacterThresholdChanged(int val);
 
 private:
 	QVBoxLayout *scintillaLayout;

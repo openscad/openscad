@@ -742,6 +742,36 @@
              </widget>
             </item>
             <item row="4" column="0">
+             <widget class="QGroupBox" name="groupBoxAutocomplete">
+              <property name="title">
+               <string>Autocomplete</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout1">
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableAutocomplete">
+                 <property name="text">
+                  <string>Enable Autocompletion</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_30">
+                  <item>
+                    <widget class="QLabel" name="labelCharacterThreshold">
+                     <property name="text">
+                      <string>Character Threshold</string>
+                     </property>
+                    </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditCharacterThreshold" />
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="5" column="0">
              <spacer name="verticalSpacer_2">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
