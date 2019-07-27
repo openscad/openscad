@@ -115,6 +115,16 @@ void TabManager::actionNew()
 void TabManager::open(const QString &filename)
 {
     assert(!filename.isEmpty());
+
+    for(auto edt: editorList)
+    {
+        if(filename == edt->filepath)
+        {
+            tabWidget->setCurrentWidget(tabWidget->indexOf(edt));
+            return;
+        }
+    }
+
     if(editor->filepath.isEmpty() && !editor->isContentModified())
     {
         openTabFile(filename);
