@@ -2787,15 +2787,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 	const auto suffix = fileInfo.suffix().toLower();
 	const auto cmd = knownFileExtensions[suffix];
 	if (cmd.isEmpty()) {
-		if(activeEditor->filepath.isEmpty() && !activeEditor->isContentModified())
-	    {
-	        activeEditor->filepath = fileInfo.filePath();
-	        tabManager->refreshDocument();
-	    }
-	    else
-	    {
-	        tabManager->createTab(fileInfo.filePath());
-	    }
+		tabManager->open(filename);
 	} else {
 		activeEditor->insert(cmd.arg(filename));
 	}
