@@ -1814,7 +1814,6 @@ process_line_entities_code(int code)
     int coord;
     static double line_pt[2][3];
     double tmp_pt[3];
-	char* pEnd;
 
     switch (code) {
 	case 8:
@@ -1834,10 +1833,7 @@ process_line_entities_code(int code)
 	case 31:
 	    vert_no = code % 10;
 	    coord = code / 10 - 1;
-	    line_pt[vert_no][coord] = strtod(line, &pEnd) * units_conv[units] * scale_factor;
-		if(*pEnd != '\0'){
-			line_pt[vert_no][coord] = 0.0;
-		}
+	    line_pt[vert_no][coord] = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "LINE vertex #%d coord #%d = %g\n", vert_no, coord, line_pt[vert_no][coord]);
 	    }
