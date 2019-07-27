@@ -87,3 +87,21 @@ if [[ $? != 0 ]]; then
 fi
 
 travis_finish ctest
+
+travis_start ctest-locale "Running some locale tests using ctest (linux only)"
+
+if [[ x"$TRAVIS_OS_NAME" == xlinux ]]; then
+	for l in de_DE.utf8 fr_FR.utf8 ja_JP.utf8 ru_RU.utf8
+	do
+		export LANG="$l"
+		echo -e "\nRunning with locale $l: $(locale | tr \\n ' ')"
+		ctest -R 'dxfpngtest_text-font-composition|dxfpngtest_circle-small|dxfpngtest_circle-advanced'
+		if [[ $? != 0 ]]; then
+		  echo "Test failure with locale $l"
+		  exit 1
+		fi
+	done
+	export LANG=C
+fi
+
+travis_finish ctest-locale
