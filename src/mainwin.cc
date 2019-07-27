@@ -1260,11 +1260,14 @@ void MainWindow::compileCSG()
 
 void MainWindow::actionOpen()
 {
-	auto fileInfo = UIUtils::openFile(this);
-	if (!fileInfo.exists()) {
-		return;
+	auto fileInfoList = UIUtils::openFiles(this);
+	for(int i = 0; i < fileInfoList.size(); i++)
+	{
+		if (!fileInfoList[i].exists()) {
+			return;
+		}
+		tabManager->open(fileInfoList[i].filePath());
 	}
-	tabManager->open(fileInfo.filePath());
 }
 
 void MainWindow::actionNewWindow()
@@ -1274,11 +1277,14 @@ void MainWindow::actionNewWindow()
 
 void MainWindow::actionOpenWindow()
 {
-	auto fileInfo = UIUtils::openFile(this);
-	if (!fileInfo.exists()) {
-		return;
+	auto fileInfoList = UIUtils::openFiles(this);
+	for(int i = 0; i < fileInfoList.size(); i++)
+	{
+		if (!fileInfoList[i].exists()) {
+			return;
+		}
+		new MainWindow(QStringList(fileInfoList[i].filePath()));
 	}
-	new MainWindow(QStringList(fileInfo.filePath()));
 }
 
 void MainWindow::actionOpenRecent()
