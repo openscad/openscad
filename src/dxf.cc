@@ -40,6 +40,9 @@
 #include <cmath>
 #include <vector>
 #include <set>
+#include <locale>
+#include <string>
+#include <sstream>
 
 #include "./dxf.h"
 
@@ -152,16 +155,15 @@ strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize)
 
 /* string to double for error checking */
 
-double cstrtod(char* line){
-	char* pEnd;
-	double a;
-	a = strtod(line, &pEnd);
-	if(	line == pEnd || *pEnd != '\0'){
-		return 0.0;
-	}
-	else{
-		return a;
-	}
+double to_double(char* line){
+	std::string str(line);
+	static auto c_locale = std::locale("C");
+
+    std::istringstream is(str);
+    is.imbue(c_locale);
+    double d;
+    is >> d;
+    return is.eof() ? d : 0.0;
 }
 
 struct vert_root {
@@ -1038,7 +1040,7 @@ process_blocks_code(int code)
 	case 30:
 	    if (indx != -1) {
 		coord = code / 10 - 1;
-		block_list.at(indx).base[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+		block_list.at(indx).base[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    }
 	    break;
     }
@@ -1086,7 +1088,7 @@ process_point_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    pt[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    pt[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1198,13 +1200,13 @@ process_entities_polyline_vertex_code(int code)
 	    printf("%s\n", line);
 	    break;
 	case 10:
-	    x = cstrtod(line) * units_conv[units] * scale_factor;
+	    x = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 20:
-	    y = cstrtod(line) * units_conv[units] * scale_factor;
+	    y = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 30:
-	    z = cstrtod(line) * units_conv[units] * scale_factor;
+	    z = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1587,16 +1589,16 @@ process_insert_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1;
-	    ins.insert_pt[coord] = cstrtod(line);
+	    ins.insert_pt[coord] = to_double(line);
 	    break;
 	case 41:
 	case 42:
 	case 43:
 	    coord = (code % 40) - 1;
-	    ins.scale[coord] = cstrtod(line);
+	    ins.scale[coord] = to_double(line);
 	    break;
 	case 50:
-	    ins.rotation = cstrtod(line);
+	    ins.rotation = to_double(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1614,7 +1616,7 @@ process_insert_entities_code(int code)
 	case 220:
 	case 230:
 	    coord = ((code / 10) % 20) - 1;
-	    ins.extrude_dir[coord] = cstrtod(line);
+	    ins.extrude_dir[coord] = to_double(line);
 	    break;
 	case 0:		/* end of this insert */
 
@@ -1682,7 +1684,7 @@ process_solid_entities_code(int code)
 	    V_MAX(last_vert_no, vert_no);
 
 	    coord = code / 10 - 1;
-	    solid_pt[vert_no][coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    solid_pt[vert_no][coord] = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "SOLID vertex #%d coord #%d = %g\n", vert_no, coord, solid_pt[vert_no][coord]);
 	    }
@@ -1743,7 +1745,7 @@ process_lwpolyline_entities_code(int code)
 	    /* oops */
 	    break;
 	case 10:
-	    x = cstrtod(line) * units_conv[units] * scale_factor;
+	    x = to_double(line) * units_conv[units] * scale_factor;
 		pt_x.push_back(x);
 	    if (verbose) {
 		fprintf(out_fp, "LWPolyLine vertex #%d (x) = %g\n", vert_no, x);
@@ -1751,7 +1753,7 @@ process_lwpolyline_entities_code(int code)
 	    break;
 	case 20:
 	{
-	    y = cstrtod(line) * units_conv[units] * scale_factor;
+	    y = to_double(line) * units_conv[units] * scale_factor;
 		pt_y.push_back(y);
 	    if (verbose) {
 		fprintf(out_fp, "LWPolyLine vertex #%d (y) = %g\n", vert_no, y);
@@ -1812,7 +1814,6 @@ process_line_entities_code(int code)
     int coord;
     static double line_pt[2][3];
     double tmp_pt[3];
-	char* pEnd;
 
     switch (code) {
 	case 8:
@@ -1832,10 +1833,7 @@ process_line_entities_code(int code)
 	case 31:
 	    vert_no = code % 10;
 	    coord = code / 10 - 1;
-	    line_pt[vert_no][coord] = strtod(line, &pEnd) * units_conv[units] * scale_factor;
-		if(*pEnd != '\0'){
-			line_pt[vert_no][coord] = 0.0;
-		}
+	    line_pt[vert_no][coord] = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "LINE vertex #%d coord #%d = %g\n", vert_no, coord, line_pt[vert_no][coord]);
 	    }
@@ -1894,22 +1892,22 @@ process_ellipse_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    center[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    center[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 11:
 	case 21:
 	case 31:
 	    coord = code / 10 - 1;
-	    majorAxis[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    majorAxis[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 40:
-	    ratio = cstrtod(line);
+	    ratio = to_double(line);
 	    break;
 	case 41:
-	    startAngle = cstrtod(line);
+	    startAngle = to_double(line);
 	    break;
 	case 42:
-	    endAngle = cstrtod(line);
+	    endAngle = to_double(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -1974,13 +1972,13 @@ process_circle_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    center[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    center[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "CIRCLE center coord #%d = %g\n", coord, center[coord]);
 	    }
 	    break;
 	case 40:
-	    radius = cstrtod(line) * units_conv[units] * scale_factor;
+	    radius = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -2222,13 +2220,13 @@ process_leader_entities_code(int code)
 	    /* offset, unimplemented */
 	    break;
 	case 10:
-	    pt[X] = cstrtod(line);
+	    pt[X] = to_double(line);
 	    break;
 	case 20:
-	    pt[Y] = cstrtod(line);
+	    pt[Y] = to_double(line);
 	    break;
 	case 30:
-	    pt[Z] = cstrtod(line);
+	    pt[Z] = to_double(line);
 	    if (verbose) {
 		fprintf(out_fp, "LEADER vertex #%d = (%g %g %g)\n", vertNo, V3ARGS(pt));
 	    }
@@ -2306,31 +2304,31 @@ process_mtext_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1;
-	    insertionPoint[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    insertionPoint[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 11:
 	case 21:
 	case 31:
 	    coord = (code / 10) - 1;
-	    xAxisDirection[coord] = cstrtod(line);
+	    xAxisDirection[coord] = to_double(line);
 	    if (code == 31) {
 		rotationAngle = atan2(xAxisDirection[Y], xAxisDirection[X]) * RAD2DEG;
 	    }
 	    break;
 	case 40:
-	    textHeight = cstrtod(line);
+	    textHeight = to_double(line);
 	    break;
 	case 41:
-	    rectWidth = cstrtod(line);
+	    rectWidth = to_double(line);
 	    break;
 	case 42:
-	    charWidth = cstrtod(line);
+	    charWidth = to_double(line);
 	    break;
 	case 43:
-	    entityHeight = cstrtod(line);
+	    entityHeight = to_double(line);
 	    break;
 	case 50:
-	    rotationAngle = cstrtod(line);
+	    rotationAngle = to_double(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -2426,22 +2424,22 @@ process_text_attrib_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1;
-	    firstAlignmentPoint[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    firstAlignmentPoint[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 11:
 	case 21:
 	case 31:
 	    coord = (code / 10) - 1;
-	    secondAlignmentPoint[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    secondAlignmentPoint[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    break;
 	case 40:
-	    textHeight = cstrtod(line);
+	    textHeight = to_double(line);
 	    break;
 	case 41:
-	    textScale = cstrtod(line);
+	    textScale = to_double(line);
 	    break;
 	case 50:
-	    textRotation = cstrtod(line);
+	    textRotation = to_double(line);
 	    break;
 	case 62:	/* color number */
 	    curr_color = atoi(line);
@@ -2595,25 +2593,25 @@ process_arc_entities_code(int code)
 	case 20:
 	case 30:
 	    coord = code / 10 - 1;
-	    center[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    center[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "ARC center coord #%d = %g\n", coord, center[coord]);
 	    }
 	    break;
 	case 40:
-	    radius = cstrtod(line) * units_conv[units] * scale_factor;
+	    radius = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "ARC radius = %g\n", radius);
 	    }
 	    break;
 	case 50:
-	    start_angle = cstrtod(line);
+	    start_angle = to_double(line);
 	    if (verbose) {
 		fprintf(out_fp, "ARC start angle = %g\n", start_angle);
 	    }
 	    break;
 	case 51:
-	    end_angle = cstrtod(line);
+	    end_angle = to_double(line);
 	    if (verbose) {
 		fprintf(out_fp, "ARC end angle = %g\n", end_angle);
 	    }
@@ -2737,16 +2735,16 @@ process_spline_entities_code(int code)
 	    /* end tangent, unimplemented */
 	    break;
 	case 40:
-	    knots[knotCount++] = cstrtod(line);
+	    knots[knotCount++] = to_double(line);
 	    break;
 	case 41:
-	    weights[weightCount++] = cstrtod(line);
+	    weights[weightCount++] = to_double(line);
 	    break;
 	case 10:
 	case 20:
 	case 30:
 	    coord = (code / 10) - 1 + ctlPtCount*3;
-	    ctlPts[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    ctlPts[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    subCounter++;
 	    if (subCounter > 2) {
 		ctlPtCount++;
@@ -2757,7 +2755,7 @@ process_spline_entities_code(int code)
 	case 21:
 	case 31:
 	    coord = (code / 10) - 1 + fitPtCount*3;
-	    fitPts[coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    fitPts[coord] = to_double(line) * units_conv[units] * scale_factor;
 	    subCounter2++;
 	    if (subCounter2 > 2) {
 		fitPtCount++;
@@ -2852,7 +2850,7 @@ process_3dface_entities_code(int code)
 	case 33:
 	    vert_no = code % 10;
 	    coord = code / 10 - 1;
-	    pts[vert_no][coord] = cstrtod(line) * units_conv[units] * scale_factor;
+	    pts[vert_no][coord] = to_double(line) * units_conv[units] * scale_factor;
 	    if (verbose) {
 		fprintf(out_fp, "3dface vertex #%d coord #%d = %g\n", vert_no, coord, pts[vert_no][coord]);
 	    }
