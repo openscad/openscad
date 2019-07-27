@@ -58,6 +58,32 @@ QFileInfo UIUtils::openFile(QWidget *parent)
     return fileInfo;
 }
 
+QFileInfoList UIUtils::openFiles(QWidget *parent)
+{
+    QSettingsCached settings;
+    QString last_dirname = settings.value("lastOpenDirName").toString();
+    QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
+	    last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+
+    QFileInfoList fileInfoList;
+    for(QString filename: new_filenames)
+    {
+		if(filename.isEmpty()) {
+			continue;
+		}
+		fileInfoList.append(QFileInfo(filename));
+    }
+
+    if(!fileInfoList.isEmpty())
+    {
+	    QDir last_dir = fileInfoList[fileInfoList.size() - 1].dir(); // last_dir is set to directory of last choosen valid file
+	    last_dirname = last_dir.path();
+	    settings.setValue("lastOpenDirName", last_dirname);
+	}
+
+    return fileInfoList;
+}
+
 QStringList UIUtils::recentFiles()
 {
     QSettingsCached settings; // set up project and program properly in main.cpp

@@ -125,7 +125,6 @@ void Preferences::init() {
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
-	this->defaultmap[Preferences::PREF_EDITOR_TYPE] = Preferences::EDITOR_TYPE_QSCINTILLA;
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -156,7 +155,6 @@ void Preferences::init() {
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
-	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
 	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
@@ -390,12 +388,6 @@ void Preferences::on_fontSize_currentIndexChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_editorType_currentIndexChanged(int idx)
-{
-	QSettingsCached settings;
-	settings.setValue(Preferences::PREF_EDITOR_TYPE, idx == 0 ? Preferences::EDITOR_TYPE_SIMPLE : Preferences::EDITOR_TYPE_QSCINTILLA);
-}
-
 void Preferences::on_syntaxHighlight_activated(const QString &s)
 {
 	QSettingsCached settings;
@@ -435,14 +427,6 @@ void Preferences::on_checkNowButton_clicked()
 	} else {
 		unimplemented_msg();
 	}
-}
-
-void
-Preferences::on_mdiCheckBox_toggled(bool state)
-{
-	QSettingsCached settings;
-	settings.setValue("advanced/mdi", state);
-	emit updateMdiMode(state);
 }
 
 void
@@ -880,10 +864,6 @@ void Preferences::updateGUI()
 	    }
 	}
 
-	QString editortypevar = getValue(Preferences::PREF_EDITOR_TYPE).toString();
-	int edidx = editortypevar == Preferences::EDITOR_TYPE_SIMPLE ? 0 : 1;
-	this->editorType->setCurrentIndex(edidx);
-
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
@@ -900,7 +880,6 @@ void Preferences::updateGUI()
 	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
 	this->autoReloadRaiseCheckBox->setChecked(getValue("advanced/autoReloadRaise").toBool());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
-	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
@@ -990,12 +969,10 @@ void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::Settings
 	writeSettings();
 }
 
-void Preferences::apply() const
+void Preferences::apply_win() const
 {
-	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit requestRedraw();
 	emit openCSGSettingsChanged();
-	emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
 }
 
 void Preferences::create(QStringList colorSchemes)

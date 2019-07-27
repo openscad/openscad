@@ -119,6 +119,7 @@ mingw* {
 
 CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
+CONFIG += scintilla
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -193,11 +194,6 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
-
-#Uncomment the following line to enable the QScintilla editor
-!nogui {
-  CONFIG += scintilla
-}
 
 # Make experimental features available
 experimental {
@@ -285,6 +281,8 @@ HEADERS += src/version_check.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/tabmanager.h \
+           src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -522,6 +520,8 @@ SOURCES += \
            src/version.cc \
            src/openscad.cc \
            src/mainwin.cc \
+           src/tabmanager.cc \
+           src/tabwidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \

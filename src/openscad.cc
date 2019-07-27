@@ -514,6 +514,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "input/QGamepadInputDriver.h"
 #endif
 #include <QString>
+#include <QStringList>
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
@@ -682,14 +683,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		}
 	}
 
-	auto isMdi = settings.value("advanced/mdi", true).toBool();
-	if (isMdi) {
-		for(const auto &infile : inputFiles) {
-		   new MainWindow(assemblePath(original_path, infile));
-	    }
-	} else {
-	   new MainWindow(assemblePath(original_path, inputFiles[0]));
+	QStringList inputFilesList;
+	for(const auto &infile: inputFiles) {
+		inputFilesList.append(assemblePath(original_path, infile));
 	}
+	new MainWindow(inputFilesList);
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 

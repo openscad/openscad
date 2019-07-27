@@ -28,7 +28,7 @@ public:
 
 signals:
   void contentsChanged();
-  void modificationChanged(bool);												
+  void modificationChanged(bool, EditorInterface *);												
 
 public slots:
 	virtual void zoomIn() = 0;
@@ -54,4 +54,10 @@ public slots:
 
 private:
 	QSize initialSizeHint;
+
+public:
+	bool contentsRendered; // Set if the source code has changes since the last render (F6)
+	int findState;
+	QString filepath;
+	std::string autoReloadId;
 };

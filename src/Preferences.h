@@ -12,11 +12,6 @@ class Preferences : public QMainWindow, public Ui::Preferences
 	Q_OBJECT;
 
 public:
-	static constexpr const char* PREF_EDITOR_TYPE = "editor/editortype";
-
-	static constexpr const char* EDITOR_TYPE_SIMPLE = "Simple Editor";
-	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
-
 	~Preferences();
 	
 	static void create(QStringList colorSchemes);
@@ -24,7 +19,7 @@ public:
 	
 	QVariant getValue(const QString &key) const;
 	void init();
-	void apply() const;
+	void apply_win() const;
 	void updateGUI();
 	void fireEditorConfigChanged() const;
 
@@ -47,12 +42,10 @@ public slots:
 	void on_autoReloadRaiseCheckBox_toggled(bool);
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
-	void on_mdiCheckBox_toggled(bool);
 	void on_reorderCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
-	void on_editorType_currentIndexChanged(int);
 	void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
 	void on_enableHardwarningsCheckBox_toggled(bool);
 	void on_enableParameterCheckBox_toggled(bool);
@@ -101,14 +94,12 @@ public slots:
 
 signals:
 	void requestRedraw() const;
-	void updateMdiMode(bool mdi) const;
 	void updateUndockMode(bool undockMode) const;
 	void updateReorderMode(bool undockMode) const;
 	void fontChanged(const QString &family, uint size) const;
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
-	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
 	void updateMouseCentricZoom(bool state) const;
