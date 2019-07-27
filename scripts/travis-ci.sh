@@ -91,6 +91,9 @@ travis_finish ctest
 travis_start ctest-locale "Running some locale tests using ctest (linux only)"
 
 if [[ x"$TRAVIS_OS_NAME" == xlinux ]]; then
+(
+	# Run in subshell and unset all locale variables first
+	for n in $(locale | sed -e 's/=.*//'); do unset $n ; done
 	for l in de_DE.utf8 fr_FR.utf8 ja_JP.utf8 ru_RU.utf8
 	do
 		export LANG="$l"
@@ -101,7 +104,7 @@ if [[ x"$TRAVIS_OS_NAME" == xlinux ]]; then
 		  exit 1
 		fi
 	done
-	export LANG=C
+)
 fi
 
 travis_finish ctest-locale
