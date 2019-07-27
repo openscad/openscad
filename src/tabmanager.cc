@@ -1,6 +1,7 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QDir>
+#include <QSaveFile>
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -14,23 +15,14 @@
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 1, 0))
-// Set dummy for Qt versions that do not have QSaveFile
-#define QT_FILE_SAVE_CLASS QFile
-#define QT_FILE_SAVE_COMMIT true
-#else
-#include <QSaveFile>
-#define QT_FILE_SAVE_CLASS QSaveFile
-#define QT_FILE_SAVE_COMMIT if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
-#endif
-
-
 TabManager::TabManager(MainWindow *o, const QString &filename)
 {
     par = o;
 
     tabWidget = new TabWidget();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
     tabWidget->setAutoHide(true);
+#endif
     tabWidget->setExpanding(false);
     tabWidget->setTabsClosable(true);
     tabWidget->setMovable(true);
@@ -475,7 +467,7 @@ void TabManager::save(EditorInterface *edt)
     // full properly and happily commits a 0 byte file.
     // Checking the QTextStream status flag after flush() seems to catch
     // this condition.
-    QT_FILE_SAVE_CLASS file(edt->filepath);
+    QSaveFile file(edt->filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
         saveError(file, _("Failed to open file for writing"), edt);
     }
@@ -485,7 +477,7 @@ void TabManager::save(EditorInterface *edt)
         writer << edt->toPlainText();
         writer.flush();
         bool saveOk = writer.status() == QTextStream::Ok;
-        QT_FILE_SAVE_COMMIT;
+	if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
         if (saveOk) {
             PRINTB(_("Saved design '%s'."), edt->filepath.toLocal8Bit().constData());
             edt->setContentModified(false);
