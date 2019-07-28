@@ -69,11 +69,8 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 			}
 			else if (shared_ptr<FunctionCall> call = dynamic_pointer_cast<FunctionCall>(subExpr)) {
 				if (name == call->name) {
-					// Set new parameters for tail call
-					EvalContext ec(&c_local, call->arguments, call->location());
-					Context tmp(&c_local);
-					tmp.setVariables(&ec, definition_arguments);
-					c_next.apply_variables(tmp);
+					// Update c_next with new parameters for tail call
+					call->prepareTailCallContext(&c_local, &c_next, definition_arguments);
 					tailCall = true;
 				}
 				else {
