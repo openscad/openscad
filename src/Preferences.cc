@@ -134,7 +134,7 @@ void Preferences::init() {
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	const QFontDatabase db;
-	auto fontSize{BlockSignals<QComboBox *>(this->fontSize)};
+	BlockSignals<QComboBox *> fontSize{this->fontSize};
 	for(auto size : db.standardSizes()) {
 		fontSize->addItem(QString::number(size));
 		if (static_cast<uint>(size) == savedsize) {
@@ -916,13 +916,13 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile);
 }
 
-void Preferences::initCheckBox(BlockSignals<QCheckBox *> checkBox, const Settings::SettingsEntry& entry)
+void Preferences::initCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntry& entry)
 {
 	const Settings::Settings *s = Settings::Settings::inst();
 	checkBox->setChecked(s->get(entry).toBool());
 }
 
-void Preferences::initComboBox(BlockSignals<QComboBox *> comboBox, const Settings::SettingsEntry& entry)
+void Preferences::initComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry)
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
@@ -933,20 +933,20 @@ void Preferences::initComboBox(BlockSignals<QComboBox *> comboBox, const Setting
 	}
 }
 
-void Preferences::initSpinBoxRange(BlockSignals<QSpinBox *> spinBox, const Settings::SettingsEntry& entry)
+void Preferences::initSpinBoxRange(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry)
 {
 	RangeType range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
 
-void Preferences::initSpinBoxDouble(BlockSignals<QSpinBox *>spinBox, const Settings::SettingsEntry& entry)
+void Preferences::initSpinBoxDouble(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry)
 {
 	const Settings::Settings *s = Settings::Settings::inst();
 	spinBox->setValue(s->get(entry).toDouble());
 }
 
-void Preferences::updateComboBox(BlockSignals<QComboBox *> comboBox, const Settings::SettingsEntry& entry)
+void Preferences::updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry)
 {
 	Settings::Settings *s = Settings::Settings::inst();
 

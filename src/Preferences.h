@@ -13,8 +13,10 @@ class BlockSignals
 public:
 	BlockSignals(WidgetPtr w) : w(w) { w->blockSignals(true); }
 	~BlockSignals() { w->blockSignals(false); }
-	WidgetPtr operator->() { return w; }
+	WidgetPtr operator->() const { return w; }
 
+	BlockSignals(const BlockSignals&) = delete;
+	BlockSignals& operator=(BlockSignals const&) = delete;
 private:
 	WidgetPtr w;
 };
@@ -128,15 +130,15 @@ private:
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	/** Initialize checkbox from the settings value */
-	void initCheckBox(BlockSignals<QCheckBox *> checkBox, const Settings::SettingsEntry& entry);
+	void initCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntry& entry);
 	/** Initialize combobox list values from the settings range values */
-	void initComboBox(BlockSignals<QComboBox *> comboBox, const Settings::SettingsEntry& entry);
+	void initComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry);
 	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBoxRange(BlockSignals<QSpinBox *> spinBox, const Settings::SettingsEntry& entry);
+	void initSpinBoxRange(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry);
 	/** Initialize spinbox double value from the settings value */
-	void initSpinBoxDouble(BlockSignals<QSpinBox *>spinBox, const Settings::SettingsEntry& entry);
+	void initSpinBoxDouble(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
-	void updateComboBox(BlockSignals<QComboBox *> comboBox, const Settings::SettingsEntry& entry);
+	void updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry);
 
