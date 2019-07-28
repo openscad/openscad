@@ -59,6 +59,7 @@ Context::Context(const Context *parent)
 	}
 	else {
 		this->ctx_stack = new Stack;
+		this->document_path = std::make_shared<std::string>();
 	}
 
 	this->ctx_stack->push_back(this);
@@ -217,7 +218,7 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(this->document_path) / filename).string();
+		return fs::absolute(fs::path(*this->document_path) / filename).string();
 	}
 	else {
 		return filename;
@@ -234,7 +235,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	else {
 		s << boost::format("Context: %p (%p)\n") % this % this->parent;
 	}
-	s << boost::format("  document path: %s\n") % this->document_path;
+	s << boost::format("  document path: %s\n") % *this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
