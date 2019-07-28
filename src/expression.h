@@ -154,12 +154,15 @@ class FunctionCall : public Expression
 {
 public:
 	FunctionCall(const std::string &funcname, const AssignmentList &arglist, const Location &loc);
+	void prepareTailCallContext(const Context *context, Context *tailCallContext, const AssignmentList &definition_arguments);
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
 public:
 	std::string name;
 	AssignmentList arguments;
+	AssignmentMap resolvedArguments;
+	std::vector<std::pair<std::string, ValuePtr>> defaultArguments; // Only the ones not mentioned in 'resolvedArguments'
 };
 
 class Assert : public Expression

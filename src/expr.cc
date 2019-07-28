@@ -460,6 +460,38 @@ static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
 	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
 }
 
+/**
+ * Evaluates call parameters using context, and assigns the resulting values to tailCallContext.
+ * As the name suggests, it's meant for basic tail recursion, where the function calls itself.
+*/
+void FunctionCall::prepareTailCallContext(const Context *context, Context *tailCallContext, const AssignmentList &definition_arguments)
+{
+	if (this->resolvedArguments.empty()) {
+		// Figure out parameter names
+		EvalContext ec(context, this->arguments, this->loc);
+		this->resolvedArguments = ec.resolveArguments(definition_arguments, {}, false);
+		// Assign default values for unspecified parameters
+		for (const auto &arg : definition_arguments) {
+			if (this->resolvedArguments.find(arg.name) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg.name, arg.expr ? arg.expr->evaluate(context) : ValuePtr::undefined);
+			}
+		}
+	}
+
+	std::vector<std::pair<std::string, ValuePtr>> variables;
+	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
+	// Set default values for unspecified parameters
+	variables.insert(variables.begin(), this->defaultArguments.begin(), this->defaultArguments.end());
+	// Set the given parameters
+	for (const auto &ass : this->resolvedArguments) {
+		variables.emplace_back(ass.first, ass.second->evaluate(context));
+	}
+	// Apply to tailCallContext
+	for (const auto &var : variables) {
+		tailCallContext->set_variable(var.first, var.second);
+	}
+}
+
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst().check()) {
