@@ -29,6 +29,8 @@
 #include "expression.h"
 #include "printutils.h"
 
+#include <typeinfo>
+
 AbstractFunction::~AbstractFunction()
 {
 }
@@ -64,19 +66,24 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 				result = ValuePtr::undefined;
 				break;
 			}
-			else if (shared_ptr<TernaryOp> ternary = dynamic_pointer_cast<TernaryOp>(subExpr)) {
+			else if (typeid(*subExpr) == typeid(TernaryOp)) {
+				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
 				subExpr = ternary->evaluateStep(&c_local);
 			}
-			else if (shared_ptr<Assert> assertion = dynamic_pointer_cast<Assert>(subExpr)) {
+			else if (typeid(*subExpr) == typeid(Assert)) {
+				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
 				subExpr = assertion->evaluateStep(&c_local);
 			}
-			else if (shared_ptr<Echo> echo = dynamic_pointer_cast<Echo>(subExpr)) {
+			else if (typeid(*subExpr) == typeid(Echo)) {
+				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
 				subExpr = echo->evaluateStep(&c_local);
 			}
-			else if (shared_ptr<Let> let = dynamic_pointer_cast<Let>(subExpr)) {
+			else if (typeid(*subExpr) == typeid(Let)) {
+				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
 				subExpr = let->evaluateStep(&c_local);
 			}
-			else if (shared_ptr<FunctionCall> call = dynamic_pointer_cast<FunctionCall>(subExpr)) {
+			else if (typeid(*subExpr) == typeid(FunctionCall)) {
+				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
 				if (name == call->name) {
 					// Update c_next with new parameters for tail call
 					call->prepareTailCallContext(&c_local, &c_next, definition_arguments);
