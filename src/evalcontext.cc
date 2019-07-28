@@ -118,7 +118,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
 	else
 		s << boost::format("Context: %p (%p)") % this % this->parent;
-	s << boost::format("  document path: %s") % this->document_path;
+	s << boost::format("  document path: %s") % *this->document_path;
 
 	s << boost::format("  eval args:");
 	for (size_t i=0;i<this->eval_arguments.size();i++) {
