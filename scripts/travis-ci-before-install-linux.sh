@@ -30,6 +30,6 @@ fi
 wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add -
 echo yes | sudo add-apt-repository "deb $LIB3MF_REPO ./"
 sudo apt-get update -qq
-sudo apt-get purge -qq fglrx
+sudo apt-get purge -qq fglrx || true
 sudo apt-get install -qq $PACKAGES1 $PACKAGES2 $PACKAGES3 $PACKAGES4 $PACKAGES5
 
