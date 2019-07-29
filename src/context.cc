@@ -123,6 +123,24 @@ void Context::apply_variables(const Context &other)
 	}
 }
 
+/*!
+  Apply config variables of 'other' to this context, from the full context stack of 'other', bottom-up.
+*/
+void Context::apply_config_variables(const Context &other)
+{
+	if (&other == this) {
+		// Anything in 'other' and its ancestors is already part of this context, no need to descend any further.
+		return;
+	}
+	if (other.parent) {
+		// Assign parent's variables first, since they might be overridden by a child
+		apply_config_variables(*other.parent);
+	}
+	for (const auto &var : other.config_variables) {
+		set_variable(var.first, var.second);
+	}
+}
+
 ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
 	if (!this->ctx_stack) {

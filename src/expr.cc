@@ -490,6 +490,8 @@ void FunctionCall::prepareTailCallContext(const Context *context, Context *tailC
 	for (const auto &var : variables) {
 		tailCallContext->set_variable(var.first, var.second);
 	}
+	// Apply config variables ($...)
+	tailCallContext->apply_config_variables(context);
 }
 
 ValuePtr FunctionCall::evaluate(const Context *context) const
