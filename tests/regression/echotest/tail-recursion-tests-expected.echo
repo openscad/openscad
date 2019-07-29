@@ -4,3 +4,8 @@ ECHO: "with tail-recursion eliminiation: ", 2.001e+6
 ECHO: [1980, 1980]
 ECHO: 50000, "ACEGIKMOQSUWYACEGIKMOQSUWYACEGIKMOQSUWYA"
 ECHO: 50000, "abcdefghijklmnopqrstuvwxyzabcdefghijklmn"
+ECHO: n = 4, x = 46, y = 79
+ECHO: n = 3, x = 45, y = 78
+ECHO: n = 2, x = 44, y = 77
+ECHO: n = 1, x = 43, y = 76
+ECHO: ftail_mixed = 42
