@@ -30,6 +30,7 @@
 #include "printutils.h"
 
 #include <typeinfo>
+#include <forward_list>
 
 AbstractFunction::~AbstractFunction()
 {
@@ -54,8 +55,12 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 	unsigned int counter = 0;
 	ValuePtr result;
 	while (true) {
-		// Prepare local context for current call
-		Context c_local(&c_next);
+		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
+		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
+		// Cannot use std::vector, as it invalidates raw pointers.
+		std::forward_list<Context> c_local_stack;
+		c_local_stack.emplace_front(&c_next);
+		Context *c_local = &c_local_stack.front();
 
 		// Inner loop: to follow a single execution path
 		// Before a 'break', must either assign result, or set tailCall to true.
@@ -68,34 +73,37 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 			}
 			else if (typeid(*subExpr) == typeid(TernaryOp)) {
 				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
-				subExpr = ternary->evaluateStep(&c_local);
+				subExpr = ternary->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(Assert)) {
 				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
-				subExpr = assertion->evaluateStep(&c_local);
+				subExpr = assertion->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(Echo)) {
 				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
-				subExpr = echo->evaluateStep(&c_local);
+				subExpr = echo->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(Let)) {
 				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
-				subExpr = let->evaluateStep(&c_local);
+				// Start a new, nested context
+				c_local_stack.emplace_front(c_local);
+				c_local = &c_local_stack.front();
+				subExpr = let->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(FunctionCall)) {
 				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
 				if (name == call->name) {
 					// Update c_next with new parameters for tail call
-					call->prepareTailCallContext(&c_local, &c_next, definition_arguments);
+					call->prepareTailCallContext(c_local, &c_next, definition_arguments);
 					tailCall = true;
 				}
 				else {
-					result = subExpr->evaluate(&c_local);
+					result = subExpr->evaluate(c_local);
 				}
 				break;
 			}
 			else {
-				result = subExpr->evaluate(&c_local);
+				result = subExpr->evaluate(c_local);
 				break;
 			}
 		}
