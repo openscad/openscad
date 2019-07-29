@@ -31,6 +31,7 @@ matrix:
       before_install:
         - test -d /usr/local/opt/opencsg/lib || { rmdir /usr/local/opt/opencsg; brew install opencsg; }
         - test -d /usr/local/opt/libzip/lib || { rmdir /usr/local/opt/libzip; brew install libzip; }
+        - ./scripts/macosx-build-homebrew.sh
       before_cache:
         - brew cleanup
       cache:
