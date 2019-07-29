@@ -18,7 +18,7 @@ elif [[ "$DIST" == "xenial" ]]; then
 
 elif [[ "$DIST" == "bionic" ]]; then
 
-    LIB3MF_REPO=https://download.opensuse.org/repositories/home:/t-paul/xUbuntu_18.04/
+    LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_18.04/"
 
 else
 
