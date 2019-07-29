@@ -28,6 +28,8 @@ matrix:
       env:
         - DIST="osx"
         - PARALLEL_CTEST=-j4
+      before_cache:
+        - brew cleanup
       cache:
         - ccache
         - directories:
