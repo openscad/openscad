@@ -51,6 +51,12 @@ for formula in pkg-config eigen boost cgal glew glib opencsg freetype libzip lib
   time brew install $formula
 done
 
+# Link for formulas that are cached on Travis.
+for formula in libzip opencsg; do
+  log "Linking formula $formula"
+  time brew link $formula
+done
+
 for formula in gettext qt5 qscintilla2; do
   log "Linking formula $formula"
   time brew link --force $formula
