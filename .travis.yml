@@ -31,8 +31,8 @@ matrix:
       os: osx
       compiler: clang
       env:
-        - DIST="osx"
         - PARALLEL_CTEST=-j4
+        - HOMEBREW_NO_AUTO_UPDATE=1
       before_install:
         - test -d /usr/local/opt/opencsg/lib || { rmdir /usr/local/opt/opencsg; brew install opencsg; }
         - test -d /usr/local/opt/libzip/lib || { rmdir /usr/local/opt/libzip; brew install libzip; }

@@ -25,11 +25,11 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
-log "Listing homebrew configuration"
-time brew config
-
 log "Updating homebrew"
 time brew update
+
+log "Listing homebrew configuration"
+time brew config
 
 # Install special packages not yet in upstream homebrew repo.
 # Check if there's already an active openscad tap and skip
