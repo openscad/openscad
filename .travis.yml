@@ -21,7 +21,7 @@ matrix:
       compiler: gcc
       dist: bionic
       env:
-        - PARALLEL_CTEST=-j2
+        - PARALLEL_CTEST=-j4
       before_install:
         - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
       cache:
