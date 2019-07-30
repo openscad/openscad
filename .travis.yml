@@ -2,26 +2,26 @@ language: cpp
 
 matrix:
   include:
-#    - os: linux
-#      compiler: gcc
-#      dist: xenial
-#      env:
-#        - DIST="xenial"
-#        - PARALLEL_CTEST=-j1
-#      sudo: required
-#      cache:
-#        - apt
-#        - ccache
-#    - os: linux
-#      compiler: gcc
-#      dist: bionic
-#      env:
-#        - DIST="bionic"
-#        - PARALLEL_CTEST=-j1
-#      sudo: required
-#      cache:
-#        - apt
-#        - ccache
+    - os: linux
+      compiler: gcc
+      dist: xenial
+      env:
+        - DIST="xenial"
+        - PARALLEL_CTEST=-j1
+      sudo: required
+      cache:
+        - apt
+        - ccache
+    - os: linux
+      compiler: gcc
+      dist: bionic
+      env:
+        - DIST="bionic"
+        - PARALLEL_CTEST=-j1
+      sudo: required
+      cache:
+        - apt
+        - ccache
     - if: NOT branch = coverity_scan
       os: osx
       compiler: clang
