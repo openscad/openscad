@@ -1032,20 +1032,20 @@ void register_builtin_functions()
 
 	Builtins::init("rands", new BuiltinFunction(&builtin_rands),
 				{
-					"rands(min, max, num_results) -> array",
-					"rands(min, max, num_results, seed) -> array",
+					"rands(min, max, num_results) -> vector",
+					"rands(min, max, num_results, seed) -> vector",
 				});
 
 	Builtins::init("min", new BuiltinFunction(&builtin_min),
 				{
 					"min(number, number, ...) -> number",
-					"min(array) -> number",
+					"min(vector) -> number",
 				});
 
 	Builtins::init("max", new BuiltinFunction(&builtin_max),
 				{
 					"max(number, number, ...) -> number",
-					"max(array) -> number",
+					"max(vector) -> number",
 				});
 
 	Builtins::init("sin", new BuiltinFunction(&builtin_sin),
@@ -1116,7 +1116,7 @@ void register_builtin_functions()
 	Builtins::init("len", new BuiltinFunction(&builtin_length),
 				{
 					"len(string) -> number",
-					"len(array) -> number",
+					"len(vector) -> number",
 				});
 
 	Builtins::init("log", new BuiltinFunction(&builtin_log),
@@ -1131,7 +1131,7 @@ void register_builtin_functions()
 
 	Builtins::init("str", new BuiltinFunction(&builtin_str),
 				{
-					"str(number|string, ...) -> string",
+					"str(number or string, ...) -> string",
 				});
 
 	Builtins::init("chr", new BuiltinFunction(&builtin_chr),
@@ -1148,7 +1148,7 @@ void register_builtin_functions()
 
 	Builtins::init("concat", new BuiltinFunction(&builtin_concat),
 				{
-					"concat(number|string|vector, ...) -> vector",
+					"concat(number or string or vector, ...) -> vector",
 				});
 
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
@@ -1158,7 +1158,7 @@ void register_builtin_functions()
 
 	Builtins::init("search", new BuiltinFunction(&builtin_search),
 				{
-					"search(string , string|vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
+					"search(string , string or vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
 				});
 
 	Builtins::init("version", new BuiltinFunction(&builtin_version),

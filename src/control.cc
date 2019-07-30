@@ -340,12 +340,7 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 void register_builtin_control()
 {
 	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
-
-	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD),
-				{
-					"child()",
-					"child(number)",
-				});
+	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
 
 	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN),
 				{
