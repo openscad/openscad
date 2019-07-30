@@ -54,7 +54,6 @@ notifications:
       - "chat.freenode.net#openscad"
     on_success: change
     use_notice: false
-    skip_join: true
 
 branches:
   only:
