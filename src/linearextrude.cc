@@ -95,7 +95,12 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->layername = layer->isUndefined() ? "" : layer->toString();
 	node->height = 100;
 	height->getFiniteDouble(node->height);
-	node->convexity = static_cast<int>(convexity->toDouble());
+	double tmp_convexity;
+	if (convexity->getFiniteDouble(tmp_convexity)) {
+	  node->convexity = static_cast<int>(tmp_convexity);
+	} else {
+	  node->convexity = 0;
+	}
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
