@@ -27,6 +27,8 @@ else
 
 fi
 
+echo "Selected distribution: $DIST"
+
 wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add -
 echo yes | sudo add-apt-repository "deb $LIB3MF_REPO ./"
 sudo apt-get update -qq
