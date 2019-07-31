@@ -140,7 +140,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	else {
 		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
 	}
-	s << boost::format("  document path: %s") % this->document_path;
+	s << boost::format("  document path: %s") % *this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
@@ -225,7 +225,7 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 
 void FileContext::initializeModule(const class FileModule &module)
 {
-	if (!module.modulePath().empty()) this->document_path = module.modulePath();
+	if (!module.modulePath().empty()) this->document_path = std::make_shared<std::string>(module.modulePath());
 	// FIXME: Don't access module members directly
 	this->usedlibs_p = &module.usedlibs;
 	this->functions_p = &module.scope.functions;
