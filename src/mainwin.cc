@@ -1968,7 +1968,6 @@ bool MainWindow::checkEditorModified()
 				"Do you really want to reload the file?"),
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
-			designActionAutoReload->setChecked(false);
 			return false;
 		}
 	}
