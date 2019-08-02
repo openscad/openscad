@@ -308,3 +308,11 @@ QStringList LegacyEditor::colorSchemes()
 	
 	return colorSchemes;
 }
+
+void LegacyEditor::displayTemplates()
+{
+}
+
+void LegacyEditor::addTemplate()
+{
+}

@@ -25,6 +25,7 @@ public:
 	virtual void replaceAll(const QString &findText, const QString &replaceText) = 0;
 	virtual QStringList colorSchemes() = 0;
 	virtual bool canUndo() = 0;
+	virtual void addTemplate() = 0;
 
 signals:
   void contentsChanged();
@@ -51,6 +52,7 @@ public slots:
 	virtual void copy() = 0;
 	virtual void paste() = 0;
 	virtual void initFont(const QString&, uint) = 0;
+	virtual void displayTemplates() = 0;
 
 private:
 	QSize initialSizeHint;

@@ -311,5 +311,11 @@ std::string ColorNode::name() const
 
 void register_builtin_color()
 {
-	Builtins::init("color", new ColorModule());
+	Builtins::init("color", new ColorModule(),
+				{
+					"color(c = [r, g, b, a])",
+					"color(c = [r, g, b], alpha = 1.0)",
+					"color(\"#hexvalue\")",
+					"color(\"colorname\", 1.0)",
+				});
 }

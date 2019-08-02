@@ -2,9 +2,13 @@
 #include <QFile>
 #include <QDir>
 #include <QSaveFile>
+#include <QShortcut>
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <Qsci/qscicommand.h>
+#include <Qsci/qscicommandset.h>
+
 #include "editor.h"
 #include "tabmanager.h"
 #include "tabwidget.h"
@@ -12,8 +16,6 @@
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
-#include <Qsci/qscicommand.h>
-#include <Qsci/qscicommandset.h>
 
 TabManager::TabManager(MainWindow *o, const QString &filename)
 {
@@ -145,7 +147,14 @@ void TabManager::createTab(const QString &filename)
 
     connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
     connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
+	connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
+	connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
     ((ScintillaEditor *)editor)->public_applySettings();
+	editor->addTemplate();
+
+	QShortcut *viewTemplates = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Insert), editor);
+	viewTemplates->setAutoRepeat(false);
+	connect(viewTemplates, SIGNAL(activated()), editor, SLOT(displayTemplates()));
 
     connect(par->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
     connect(par->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));

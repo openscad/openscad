@@ -339,13 +339,50 @@ AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstant
 
 void register_builtin_control()
 {
-	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
-	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN));
-	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO));
-	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT));
 	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
-	Builtins::init("for", new ControlModule(ControlModule::Type::FOR));
-	Builtins::init("let", new ControlModule(ControlModule::Type::LET));
-	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR));
-	Builtins::init("if", new ControlModule(ControlModule::Type::IF));
+	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
+
+	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN),
+				{
+					"children()",
+					"children(number)",
+					"children([start : step : end])",
+					"children([start : end])",
+					"children([vector])",
+				});
+
+	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO),
+				{
+					"echo(arg, ...)",
+				});
+
+	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT),
+				{
+					"assert(boolean)",
+					"assert(boolean, string)",
+				});
+
+	Builtins::init("for", new ControlModule(ControlModule::Type::FOR),
+				{
+					"for([start : increment : end])",
+					"for([start : end])",
+					"for([vector])",
+				});
+
+	Builtins::init("let", new ControlModule(ControlModule::Type::LET),
+				{
+					"let(arg, ...) expression",
+				});
+
+	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR),
+				{
+					"intersection_for([start : increment : end])",
+					"intersection_for([start : end])",
+					"intersection_for([vector])",
+				});
+
+	Builtins::init("if", new ControlModule(ControlModule::Type::IF),
+				{
+					"if(boolean)",
+				});
 }

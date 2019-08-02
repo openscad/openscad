@@ -167,6 +167,9 @@ void Preferences::init() {
 	this->defaultmap["advanced/enableParameterCheck"] = true;
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
 
+	this->defaultmap["editor/enableAutocomplete"] = true;
+	this->defaultmap["editor/characterThreshold"] = 1;
+
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
@@ -202,12 +205,14 @@ void Preferences::init() {
 	const int absolute_max = (sizeof(void*) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
 	QValidator *memvalidator = new QIntValidator(1,absolute_max,this);
 	QValidator *validator = new QIntValidator(this);
+	QValidator *validator1 = new QRegExpValidator(QRegExp("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
 #ifdef ENABLE_CGAL
 	this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
 	this->polysetCacheSizeMBEdit->setValidator(memvalidator);
 	this->opencsgLimitEdit->setValidator(validator);
 	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(validator);
+	this->lineEditCharacterThreshold->setValidator(validator1);
 
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
@@ -636,6 +641,22 @@ void Preferences::on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QS
 	settings.setValue("advanced/timeThresholdOnRenderCompleteSound", text);
 }
 
+void Preferences::on_checkBoxEnableAutocomplete_toggled(bool state)
+{
+	QSettingsCached settings;
+	settings.setValue("editor/enableAutocomplete", state);
+	this->labelCharacterThreshold->setEnabled(state);
+	this->lineEditCharacterThreshold->setEnabled(state);
+	emit autocompleteChanged(state);
+}
+
+void Preferences::on_lineEditCharacterThreshold_textChanged(const QString &text)
+{
+	QSettingsCached settings;
+	settings.setValue("editor/characterThreshold", text);
+	emit characterThresholdChanged(text.toInt());
+}
+
 void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -883,11 +904,15 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
+	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
+	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
 
 	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
+	this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
+	this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);

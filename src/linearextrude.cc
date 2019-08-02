@@ -181,5 +181,9 @@ std::string LinearExtrudeNode::toString() const
 void register_builtin_dxf_linear_extrude()
 {
 	Builtins::init("dxf_linear_extrude", new LinearExtrudeModule());
-	Builtins::init("linear_extrude", new LinearExtrudeModule());
+
+	Builtins::init("linear_extrude", new LinearExtrudeModule(),
+				{
+					"linear_extrude(number, center = true, convexity = 10, degrees, slices = 20, scale = 1.0 [, $fn])",
+				});
 }

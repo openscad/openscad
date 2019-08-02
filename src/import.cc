@@ -241,5 +241,9 @@ void register_builtin_import()
 	Builtins::init("import_stl", new ImportModule(ImportType::STL));
 	Builtins::init("import_off", new ImportModule(ImportType::OFF));
 	Builtins::init("import_dxf", new ImportModule(ImportType::DXF));
-	Builtins::init("import", new ImportModule());
+
+	Builtins::init("import", new ImportModule(),
+				{
+					"import(string, [number, [number]])",
+				});
 }

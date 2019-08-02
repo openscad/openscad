@@ -143,7 +143,20 @@ std::string CgaladvNode::toString() const
 
 void register_builtin_cgaladv()
 {
-	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI));
-	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL));
-	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE));
+	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI),
+				{
+					"minkowski()",
+				});
+
+	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL),
+				{
+					"hull()",
+				});
+
+	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE),
+				{
+					"resize([x, y, z])",
+					"resize([x, y, z], boolean)",
+					"resize([x, y, z], [boolean, boolean, boolean])",
+				});
 }

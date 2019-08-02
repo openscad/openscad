@@ -44,5 +44,8 @@ AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantia
 
 void register_builtin_group()
 {
-	Builtins::init("group", new GroupModule());
+	Builtins::init("group", new GroupModule(),
+				{
+					"group",
+				});
 }

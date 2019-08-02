@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include "editor.h"
 #include "scadlexer.h"
+#include "scadapi.h"
 #include "parsersettings.h"
 
 #include "memory.h"
@@ -56,6 +57,7 @@ public:
 	void replaceAll(const QString &findText, const QString &replaceText) override;
 	QStringList colorSchemes() override;
     bool canUndo() override;
+    void addTemplate();
 
 private:
         void getRange(int *lineFrom, int *lineTo);
@@ -70,6 +72,10 @@ private:
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
         void noColor();
+
+        void setLexer(ScadLexer *lexer);
+        void replaceSelectedText(QString&);
+        void addTemplate(const fs::path path);
 
 signals:
 	void previewRequest(void);
@@ -95,11 +101,15 @@ public slots:
 	void copy() override;
 	void paste() override;
 	void initFont(const QString&, uint) override;
+	void displayTemplates() override;
 
 private slots:
 	void onTextChanged();
+	void onUserListSelected(const int id, const QString &text);
         void applySettings();
-    void fireModificationChanged(bool);
+	void onAutocompleteChanged(bool state);
+	void onCharacterThresholdChanged(int val);
+	void fireModificationChanged(bool);
 
 public:
 	void public_applySettings();
@@ -111,4 +121,8 @@ private:
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;
+	ScadApi *api;
+	QStringList userList;
+	QMap<QString, ScadTemplate> templateMap;
+	static QString cursorPlaceHolder;
 };

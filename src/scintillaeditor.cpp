@@ -7,9 +7,14 @@
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
+#include "QSettingsCached.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 namespace fs=boost::filesystem;
+
+QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
 class SettingsConverter {
 public:
@@ -111,6 +116,8 @@ const boost::property_tree::ptree & EditorColorScheme::propertyTree() const
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
+	api = nullptr;
+	lexer = nullptr;
 	scintillaLayout = new QVBoxLayout(this);
 	qsci = new QsciScintilla(this);
 
@@ -141,6 +148,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	c = qsci->standardCommands()->find(QsciCommand::Redo);
 	c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
 	c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
+	// Ctrl-Ins displays templates
+	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
+	c->setAlternateKey(0);
 
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
@@ -150,14 +160,56 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
+	qsci->setCaretLineVisible(true);
 
-	this->lexer = new ScadLexer(this);
-	qsci->setLexer(this->lexer);
+	setLexer(new ScadLexer(this));
 	initMargin();
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
+	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+}
+
+void ScintillaEditor::addTemplate()
+{
+	addTemplate(PlatformUtils::resourceBasePath());
+	addTemplate(PlatformUtils::userConfigPath());
+	for(auto key: templateMap.keys())
+	{
+		userList.append(key);
+	}
+}
+
+void ScintillaEditor::addTemplate(const fs::path path)
+{
+	const auto template_path = path / "templates";
+
+	if (fs::exists(template_path) && fs::is_directory(template_path)) {
+		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{template_path}, {})) {
+			if (!fs::is_regular_file(dirEntry.status())) continue;
+
+			const auto &path = dirEntry.path();
+			if (!(path.extension() == ".json")) continue;
+
+			boost::property_tree::ptree pt;
+			try {
+				boost::property_tree::read_json(path.generic_string().c_str(), pt);
+				const QString key = QString::fromStdString(pt.get<std::string>("key"));
+				const QString content = QString::fromStdString(pt.get<std::string>("content"));
+				const int cursor_offset = pt.get<int>("offset", -1);
+
+				templateMap.insert(key, ScadTemplate(content, cursor_offset));
+			} catch (const std::exception & e) {
+				PRINTB("Error reading template file '%s': %s", path.generic_string().c_str() % e.what());
+			}
+		}
+	}
+}
+
+void ScintillaEditor::displayTemplates()
+{
+	qsci->showUserList(1, userList);
 }
 
 /**
@@ -193,6 +245,26 @@ void ScintillaEditor::applySettings()
 
     if (!value) qsci->setMarginWidth(1,20);
     else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+
+    QSettingsCached settings;
+
+	if(settings.value("editor/enableAutocomplete").toBool())
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setCallTipsVisible(10);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	}
+	else
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		qsci->setAutoCompletionFillupsEnabled(false);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+	}
+
+	int val = settings.value("editor/characterThreshold").toInt();
+	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+
 }
 
 void ScintillaEditor::fireModificationChanged(bool b)
@@ -286,6 +358,15 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
 	}
 }
 
+void ScintillaEditor::setLexer(ScadLexer *newLexer)
+{
+	delete this->api;
+	this->qsci->setLexer(newLexer);
+	this->api = new ScadApi(this->qsci, newLexer);
+	delete this->lexer;
+	this->lexer = newLexer;
+}
+
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
 	const auto & pt = colorScheme->propertyTree();
@@ -307,9 +388,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 			newLexer->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
 		}
 
-		qsci->setLexer(newLexer);
-		delete this->lexer;
-		this->lexer = newLexer;
+		setLexer(newLexer);
 
 		// All other properties must be set after attaching to QSCintilla so
 		// the editor gets the change events and updates itself to match
@@ -800,4 +879,86 @@ bool ScintillaEditor::modifyNumber(int key)
 	qsci->setCursorPosition(line, begin+newnr.length()-tail);
 	emit previewRequest();
 	return true;
+}
+
+void ScintillaEditor::onUserListSelected(const int, const QString &text)
+{
+	if (!templateMap.contains(text)) {
+		return;
+	}
+
+	QString tabReplace = "";
+	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Spaces")
+	{
+		auto spCount = Settings::Settings::inst()->get(Settings::Settings::indentationWidth).toDouble();
+		tabReplace = QString(spCount, ' ');
+	}
+
+	ScadTemplate &t = templateMap[text];
+	QString content = t.get_text();
+	int cursor_offset = t.get_cursor_offset();
+
+	if(cursor_offset < 0)
+	{
+		if(tabReplace.size() != 0)
+			content.replace("\t", tabReplace);
+
+		cursor_offset = content.indexOf(ScintillaEditor::cursorPlaceHolder);
+		content.remove(cursorPlaceHolder);
+
+		if(cursor_offset == -1)
+			cursor_offset = content.size();
+	}
+	else
+	{
+		if(tabReplace.size() != 0)
+		{
+			int tbCount = content.left(cursor_offset).count("\t");
+			cursor_offset += tbCount * (tabReplace.size() - 1);
+			content.replace("\t", tabReplace);
+		}
+	}
+
+	qsci->insert(content);
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int pos = qsci->positionFromLineIndex(line, index);
+
+	pos += cursor_offset;
+	int indent_line = line;
+	int indent_width = index;
+	qsci->lineIndexFromPosition(pos, &line, &index);
+	qsci->setCursorPosition(line, index);
+
+	int lines = t.get_text().count("\n");
+	QString indent_char = " ";
+	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Tabs")
+		indent_char = "\t";
+
+	for (int a = 0;a < lines;a++) {
+		qsci->insertAt(indent_char.repeated(indent_width), indent_line + a + 1, 0);
+	}
+}
+
+void ScintillaEditor::onAutocompleteChanged(bool state)
+{
+	if(state)
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setCallTipsVisible(10);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	}
+	else
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		qsci->setAutoCompletionFillupsEnabled(false);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+	}
+}
+
+void ScintillaEditor::onCharacterThresholdChanged(int val)
+{
+	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }

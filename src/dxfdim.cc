@@ -248,6 +248,13 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 
 void initialize_builtin_dxf_dim()
 {
-	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim));
-	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross));
+	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim),
+				{
+					"dxf_dim()",
+				});
+
+	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross),
+				{
+					"dxf_cross()",
+				});
 }

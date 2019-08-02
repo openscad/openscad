@@ -1020,41 +1020,194 @@ ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
 
 void register_builtin_functions()
 {
-	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
-	Builtins::init("sign", new BuiltinFunction(&builtin_sign));
-	Builtins::init("rands", new BuiltinFunction(&builtin_rands));
-	Builtins::init("min", new BuiltinFunction(&builtin_min));
-	Builtins::init("max", new BuiltinFunction(&builtin_max));
-	Builtins::init("sin", new BuiltinFunction(&builtin_sin));
-	Builtins::init("cos", new BuiltinFunction(&builtin_cos));
-	Builtins::init("asin", new BuiltinFunction(&builtin_asin));
-	Builtins::init("acos", new BuiltinFunction(&builtin_acos));
-	Builtins::init("tan", new BuiltinFunction(&builtin_tan));
-	Builtins::init("atan", new BuiltinFunction(&builtin_atan));
-	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2));
-	Builtins::init("round", new BuiltinFunction(&builtin_round));
-	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil));
-	Builtins::init("floor", new BuiltinFunction(&builtin_floor));
-	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
-	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
-	Builtins::init("exp", new BuiltinFunction(&builtin_exp));
-	Builtins::init("len", new BuiltinFunction(&builtin_length));
-	Builtins::init("log", new BuiltinFunction(&builtin_log));
-	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
-	Builtins::init("str", new BuiltinFunction(&builtin_str));
-	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
-	Builtins::init("ord", new BuiltinFunction(&builtin_ord));
-	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
-	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
-	Builtins::init("search", new BuiltinFunction(&builtin_search));
-	Builtins::init("version", new BuiltinFunction(&builtin_version));
-	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
-	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
-	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
-	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
-	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
-	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list));
-	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num));
-	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool));
-	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string));
+	Builtins::init("abs", new BuiltinFunction(&builtin_abs),
+				{
+					"abs(number) -> number",
+				});
+
+	Builtins::init("sign", new BuiltinFunction(&builtin_sign),
+				{
+					"sign(number) -> -1, 0 or 1",
+				});
+
+	Builtins::init("rands", new BuiltinFunction(&builtin_rands),
+				{
+					"rands(min, max, num_results) -> vector",
+					"rands(min, max, num_results, seed) -> vector",
+				});
+
+	Builtins::init("min", new BuiltinFunction(&builtin_min),
+				{
+					"min(number, number, ...) -> number",
+					"min(vector) -> number",
+				});
+
+	Builtins::init("max", new BuiltinFunction(&builtin_max),
+				{
+					"max(number, number, ...) -> number",
+					"max(vector) -> number",
+				});
+
+	Builtins::init("sin", new BuiltinFunction(&builtin_sin),
+				{
+					"sin(degrees) -> number",
+				});
+
+	Builtins::init("cos", new BuiltinFunction(&builtin_cos),
+				{
+					"cos(degrees) -> number",
+				});
+
+	Builtins::init("asin", new BuiltinFunction(&builtin_asin),
+				{
+					"asin(number) -> degrees",
+				});
+
+	Builtins::init("acos", new BuiltinFunction(&builtin_acos),
+				{
+					"acos(number) -> degrees",
+				});
+
+	Builtins::init("tan", new BuiltinFunction(&builtin_tan),
+				{
+					"tan(number) -> degrees",
+				});
+
+	Builtins::init("atan", new BuiltinFunction(&builtin_atan),
+				{
+					"atan(number) -> degrees",
+				});
+
+	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2),
+				{
+					"atan2(number) -> degrees",
+				});
+
+	Builtins::init("round", new BuiltinFunction(&builtin_round),
+				{
+					"round(number) -> number",
+				});
+
+	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil),
+				{
+					"ceil(number) -> number",
+				});
+
+	Builtins::init("floor", new BuiltinFunction(&builtin_floor),
+				{
+					"floor(number) -> number",
+				});
+
+	Builtins::init("pow", new BuiltinFunction(&builtin_pow),
+				{
+					"pow(base, exponent) -> number",
+				});
+
+	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt),
+				{
+					"sqrt(number) -> number",
+				});
+
+	Builtins::init("exp", new BuiltinFunction(&builtin_exp),
+				{
+					"exp(number) -> number",
+				});
+
+	Builtins::init("len", new BuiltinFunction(&builtin_length),
+				{
+					"len(string) -> number",
+					"len(vector) -> number",
+				});
+
+	Builtins::init("log", new BuiltinFunction(&builtin_log),
+				{
+					"log(number) -> number",
+				});
+
+	Builtins::init("ln", new BuiltinFunction(&builtin_ln),
+				{
+					"ln(number) -> number",
+				});
+
+	Builtins::init("str", new BuiltinFunction(&builtin_str),
+				{
+					"str(number or string, ...) -> string",
+				});
+
+	Builtins::init("chr", new BuiltinFunction(&builtin_chr),
+				{
+					"chr(number) -> string",
+					"chr(vector) -> string",
+					"chr(range) -> string",
+				});
+
+	Builtins::init("ord", new BuiltinFunction(&builtin_ord),
+				{
+					"ord(string) -> number",
+				});
+
+	Builtins::init("concat", new BuiltinFunction(&builtin_concat),
+				{
+					"concat(number or string or vector, ...) -> vector",
+				});
+
+	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
+				{
+					"lookup(key, <key,value> vector) -> value",
+				});
+
+	Builtins::init("search", new BuiltinFunction(&builtin_search),
+				{
+					"search(string , string or vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
+				});
+
+	Builtins::init("version", new BuiltinFunction(&builtin_version),
+				{
+					"version() -> vector",
+				});
+
+	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num),
+				{
+					"version_num() -> number",
+				});
+
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm),
+				{
+					"norm(vector) -> number",
+				});
+
+	Builtins::init("cross", new BuiltinFunction(&builtin_cross),
+				{
+					"cross(vector, vector) -> vector",
+				});
+
+	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
+				{
+					"parent_module(number) -> string",
+				});
+
+	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
+				{
+					"is_undef(arg) -> boolean",
+				});
+
+	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list),
+				{
+					"is_list(arg) -> boolean",
+				});
+
+	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num),
+				{
+					"is_num(arg) -> boolean",
+				});
+
+	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool),
+				{
+					"is_bool(arg) -> boolean",
+				});
+
+	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string),
+				{
+					"is_string(arg) -> boolean",
+				});
 }

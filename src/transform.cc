@@ -254,9 +254,28 @@ std::string TransformNode::name() const
 
 void register_builtin_transform()
 {
-	Builtins::init("scale", new TransformModule(transform_type_e::SCALE));
-	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE));
-	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR));
-	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE));
-	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX));
+	Builtins::init("scale", new TransformModule(transform_type_e::SCALE),
+				{
+					"scale([x, y, z])",
+				});
+
+	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE),
+				{
+					"rotate([x, y, z])",
+				});
+
+	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR),
+				{
+					"mirror([x, y, z])",
+				});
+
+	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE),
+				{
+					"translate([x, y, z])",
+				});
+
+	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX),
+				{
+					"multmatrix(matrix_4_by_4)",
+				});
 }
