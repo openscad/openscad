@@ -9,12 +9,11 @@ jobs:
           name: Build OpenSCAD MacOS
           no_output_timeout: 18000
           command: |
+              pwd
               system_profiler SPSoftwareDataType
-              cd /tmp
-              curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 || true
-              sudo tar xj -C / -f macports.tar.bz2 || true
+              ( cd /tmp && curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 ) || true
+              sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
               if [ -f /opt/local/bin/port ]; then
-                  pwd
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
               else
