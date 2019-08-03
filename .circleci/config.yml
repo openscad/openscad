@@ -10,10 +10,14 @@ jobs:
           no_output_timeout: 18000
           command: |
               system_profiler SPSoftwareDataType
-              mkdir /tmp/out
               CI_BASEDIR=$(pwd)
+              CI_LIBRARYDIR="$CI_BASEDIR/../libraries"
+              mkdir /tmp/out
+              mkdir -p "$CI_LIBRARYDIR"
               ( cd /tmp && curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 ) || true
+              ( cd /tmp && curl -s -O https://files.openscad.org/circleci/libraries.tar.bz2 ) || true
               sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
+              tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
               if [ -f /opt/local/bin/port ]; then
                   export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   source setenv_mac.sh
@@ -23,6 +27,10 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh mpfr
                   ./scripts/macosx-build-dependencies.sh glew
                   ./scripts/macosx-build-dependencies.sh gettext
+                  ./scripts/macosx-build-dependencies.sh libffi
+                  ./scripts/macosx-build-dependencies.sh freetype
+                  ./scripts/macosx-build-dependencies.sh ragel
+                  ./scripts/macosx-build-dependencies.sh harfbuzz
                   tar cjf /tmp/out/libraries.tar.bz2 "$CI_BASEDIR/../libraries"
               else
                   curl -s -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
@@ -50,6 +58,7 @@ workflows:
       - openscad-macos:
           filters:
               branches:
-                  ignore:
-                      - coverity_scan
-                      - /^(?i:continuous)$/
+                  only:
+                      - master
+                      - circleci-macos
+
