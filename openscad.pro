@@ -724,6 +724,10 @@ colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
+templates.path = "$$PREFIX/share/$${FULLNAME}/templates/"
+templates.files = templates/*
+INSTALLS += templates
+
 applications.path = $$PREFIX/share/applications
 applications.extra = mkdir -p \"\$(INSTALL_ROOT)$${applications.path}\" && cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
 INSTALLS += applications
