@@ -23,7 +23,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh mpfr
                   ./scripts/macosx-build-dependencies.sh glew
                   ./scripts/macosx-build-dependencies.sh gettext
-                  tar cjv /tmp/out/libraries.tar.bz2 "$CI_BASEDIR/../libraries"
+                  tar cjf /tmp/out/libraries.tar.bz2 "$CI_BASEDIR/../libraries"
               else
                   curl -s -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
                   tar xjf MacPorts-2.5.4.tar.bz2
