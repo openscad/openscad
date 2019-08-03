@@ -9,7 +9,9 @@ jobs:
           name: Build OpenSCAD MacOS
           no_output_timeout: 18000
           command: |
-		ls -la scripts
+              ls -la scripts
+              source setenv_mac.sh
+              ./scripts/macosx-build-dependencies.sh double_conversion
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
