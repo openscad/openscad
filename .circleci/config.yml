@@ -9,7 +9,8 @@ jobs:
           name: Build OpenSCAD MacOS
           no_output_timeout: 18000
           command: |
-              pwd
+              mkdir /tmp/out
+              CI_BASEDIR=$(pwd)
               system_profiler SPSoftwareDataType
               ( cd /tmp && curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 ) || true
               sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
@@ -17,6 +18,12 @@ jobs:
                   export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
+                  ./scripts/macosx-build-dependencies.sh eigen
+                  ./scripts/macosx-build-dependencies.sh gmp
+                  ./scripts/macosx-build-dependencies.sh mpfr
+                  ./scripts/macosx-build-dependencies.sh glew
+                  ./scripts/macosx-build-dependencies.sh gettext
+                  tar cjv /tmp/out/libraries.tar.bz2 "$CI_BASEDIR/../libraries
               else
                   curl -s -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
                   tar xjf MacPorts-2.5.4.tar.bz2
@@ -30,8 +37,7 @@ jobs:
                   sudo port install cmake
                   sudo port install curl
                   sudo port install pkgconfig
-                  mkdir /tmp/out
-                  tar cjvf /tmp/out/macports.tar.bz2 /opt/local
+                  tar cjf /tmp/out/macports.tar.bz2 /opt/local
               fi
       - store_artifacts:
           path: /tmp/out
