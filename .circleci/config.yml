@@ -19,20 +19,18 @@ jobs:
               sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
               tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
               if [ -f /opt/local/bin/port ]; then
-                  find "$CI_LIBRARYDIR"
                   export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
                   ./scripts/macosx-build-dependencies.sh eigen
                   ./scripts/macosx-build-dependencies.sh gmp
                   ./scripts/macosx-build-dependencies.sh mpfr
-                  #./scripts/macosx-build-dependencies.sh glew
+                  ./scripts/macosx-build-dependencies.sh glew
                   #./scripts/macosx-build-dependencies.sh gettext
                   #./scripts/macosx-build-dependencies.sh libffi
                   #./scripts/macosx-build-dependencies.sh freetype
                   #./scripts/macosx-build-dependencies.sh ragel
                   #./scripts/macosx-build-dependencies.sh harfbuzz
-                  rm -rf "$CI_LIBRARYDIR"/Users
                   tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/libraries.tar.bz2 .
               else
                   curl -s -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
