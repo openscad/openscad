@@ -2,16 +2,25 @@ version: 2
 jobs:
   openscad-macos:
     macos:
-      xcode: "10.0.0"
+      xcode: "10.1.0"
     steps:
       - checkout
       - run:
           name: Build OpenSCAD MacOS
           no_output_timeout: 18000
           command: |
-              ls -la scripts
-              source setenv_mac.sh
-              ./scripts/macosx-build-dependencies.sh double_conversion
+              system_profiler SPSoftwareDataType
+              wget https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
+              tar -xzvf MacPorts-2.5.4.tar.gz
+              cd MacPorts-2.5.4
+              ./configure
+              make
+              sudo make install
+              echo export\ PATH=/opt/local/bin:/opt/local/sbin:\$PATH >> ~/.profile
+              source ~/.profile
+              sudo port -v selfupdate
+              #source setenv_mac.sh
+              #./scripts/macosx-build-dependencies.sh double_conversion
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
