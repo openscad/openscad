@@ -19,6 +19,7 @@ jobs:
               sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
               tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
               if [ -f /opt/local/bin/port ]; then
+                  find "$CI_LIBRARYDIR"
                   export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
