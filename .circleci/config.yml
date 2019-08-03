@@ -34,7 +34,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   #./scripts/macosx-build-dependencies.sh fontconfig
-                  ./scripts/macosx-build-dependencies.sh hidapi
+                  #./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/libraries.tar.bz2 .
               else
