@@ -46,7 +46,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh qt5
                   ./scripts/macosx-build-dependencies.sh opencsg
                   ./scripts/macosx-build-dependencies.sh qscintilla
-                  #./scripts/macosx-build-dependencies.sh -d sparkle
+                  ./scripts/macosx-build-dependencies.sh -d sparkle
                   tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/libraries.tar.bz2 .
                   ./scripts/release-common.sh -snapshot
                   cp OpenSCAD-*.dmg /tmp/out/
