@@ -457,7 +457,7 @@ static double units_conv[]={
 /* replicated code from mat.h to avoid dependency */
 void
 bn_mat_angles(
-    register double *mat,
+    double *mat,
     double alpha_in,
     double beta_in,
     double ggamma_in)
@@ -520,7 +520,7 @@ bn_mat_angles(
 }
 
 void
-bn_mat_mul(register double o[16], register const double a[16], register const double b[16])
+bn_mat_mul(double o[16], const double a[16], const double b[16])
 {
     o[ 0] = a[ 0] * b[ 0] + a[ 1] * b[ 4] + a[ 2] * b[ 8] + a[ 3] * b[12];
     o[ 1] = a[ 0] * b[ 1] + a[ 1] * b[ 5] + a[ 2] * b[ 9] + a[ 3] * b[13];
@@ -2776,6 +2776,7 @@ process_spline_entities_code(int code)
 		ss.numCtlPts = numCtlPts;
 		ss.numFitPts = numFitPts;
 		ss.color = curr_color;
+		ss.splineSegs = splineSegs;
 		ss.layer_name = std::string(curr_layer_name);
 		for(int i = 0; i < numKnots; i++){
 			ss.knots.emplace_back(knots[i]);

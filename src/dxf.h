@@ -437,6 +437,7 @@ struct spline_struct{
 	int numKnots;
 	int numCtlPts;
 	int numFitPts;
+    int splineSegs;
 	std::vector<double> knots;
 	std::vector<spline_pts> ctlPts;
 	std::vector<spline_pts> fitPts;

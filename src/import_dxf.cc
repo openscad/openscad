@@ -20,6 +20,10 @@
 #include <unordered_map>
 #include <iostream>
 
+#define RT_NURB_MAKE_PT_TYPE(n, t, h)	((n<<5) | (t<<1) | h)
+#define RT_NURB_EXTRACT_COORDS(pt)	(pt>>5)
+#define RT_NURB_EXTRACT_PT_TYPE(pt)		((pt>>1) & 0x0f)
+
 struct Line {
     int idx[2]; // indices into DData::points
     bool disabled;
@@ -66,13 +70,103 @@ public:
     void process_path(Grid2d<std::vector<int>> grid);
 	std::string dump() const;
 	class Polygon2d *toPolygon2d() const;
-    
 };
 
 DData::DData(){
 
 }
 
+double* nurb_eval(double *pnts, int order, double param, 
+				  std::vector<double> knot_vec, int k_index, int coords){
+    int tmp;
+
+	if (order <= 1)
+		return (pnts + ((k_index) * coords));
+
+    tmp = k_index;
+
+    while ( tmp > (k_index - order + 1)) {
+	double k1, k2;
+
+	k1 =  knot_vec.at(tmp + order - 1);
+
+	k2 =  knot_vec.at(tmp);
+
+	if (k1 != k2) {
+	    for (int i= 0; i < coords; i++) {
+		*((pnts + ((tmp) * coords)) + i) =
+		    ((k1 - param) *
+		     *((pnts + ((tmp - 1) * coords)) + i)
+		     + (param - k2) * *((pnts + ((tmp) *
+						coords)) + i)) / (k1 - k2);
+	    }
+	}
+		tmp--;
+    }
+    return nurb_eval(pnts, order - 1, param, knot_vec,
+			    k_index, coords);
+}
+
+double nurb_knot_index(std::vector<double> knots, double k_value, int order){
+	int k_index;
+	double knt;
+	if (k_value < (knt = knots.at(knots.size() - order - 1))) {
+		if (fabs(k_value - knt) < 0.0001) {
+			k_value = knt;
+		} else
+			return -1;
+	}
+
+	if (k_value > (knt =  knots.at(knots.size() - order + 1))) {
+		if (fabs(k_value - knt) < 0.0001) {
+			k_value = knt;
+		} else
+			return -1;
+	}
+
+	if (k_value  == knots.at(knots.size() - order + 1) )
+		k_index = knots.size() - order - 1;
+	else if (k_value == knots.at(order - 1))
+		k_index = order - 1;
+	else {
+		k_index = 0;
+	for (int i = 0; i < knots.size() - 1; i++)
+		if (knots.at(i) < k_value && k_value <= knots.at(i+1))
+			k_index = i;
+		}
+
+	return k_index;
+}
+void nurb_c_eval(spline_struct ss, double param, double* final_value, int pt_type, int ncoords){
+	int coords, k_index;
+	double *ev_pt;
+	int order = ss.degree + 1;
+	int k_size = ss.numCtlPts + ss.degree + 1;
+	coords = pt_type>>5;
+
+	k_index = nurb_knot_index(ss.knots, param, order);
+
+	if(k_index < 0){
+		/* param value out of range */
+	}
+
+	double pnts[coords*ss.numCtlPts];
+	coords = pt_type>>5;
+	for (int i = 0; i < ss.numCtlPts; i++){
+		pnts[i*ncoords +0] = ss.ctlPts.at(i).spoints[0];
+		pnts[i*ncoords +1] = ss.ctlPts.at(i).spoints[1];
+		pnts[i*ncoords +2] = ss.ctlPts.at(i).spoints[2];
+
+		if(ss.flag == 4){
+			pnts[i*ncoords +3] = ss.ctlPts.at(i).weights;
+		}
+	}
+
+	ev_pt = nurb_eval(pnts, order, param, ss.knots, k_index, coords);
+	for(int i = 0 ; i < coords; i++){
+		final_value[i] = ev_pt[i];
+	}
+}
 void DData::process_path(Grid2d<std::vector<int>> grid){
 	// Extract paths from parsed data
 
@@ -421,8 +515,48 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 
     spline_vector = dd.return_spline_vector();
     if(!spline_vector.empty()){
-
+		for(auto it : spline_vector){
+			if(layername.empty() || it.layer_name == layername){
+				int coords, k_index, ncoords, pt_type, order, k_size;
+				double startParam, stopParam, paramDelta, knt;
+				double pt[3];
+				std::vector<double> final_value;
+				order = it.degree + 1;
+				k_size = it.numCtlPts + it.degree + 1;
+				if(it.flag == 4){
+					ncoords = 4;
+					pt_type = RT_NURB_MAKE_PT_TYPE(ncoords, 2, 1);
+				}
+				else{
+					ncoords = 3;
+					pt_type = RT_NURB_MAKE_PT_TYPE(ncoords, 2, 0);
+				}
+				
+				startParam = it.knots.front();
+				stopParam = it.knots.back();
+				paramDelta = (stopParam - startParam) / it.splineSegs;
+				std::cout << "the point type is " << pt_type << std::endl;
+				nurb_c_eval(it, startParam, pt,  pt_type, ncoords);
+				std::cout << " the spline segsments are " << it.splineSegs << std::endl;
+				double tmp_pt[3];
+				for (int i = 0; i < it.splineSegs; i++) {
+					double param = startParam + paramDelta * (i+1);
+					if(i == 0){
+						tmp_pt[0] = pt[0];
+						tmp_pt[1] = pt[1];
+						tmp_pt[2] = pt[2];
+					}
+					nurb_c_eval(it, param, pt, pt_type, ncoords);
+					std::cout << "the points are " << tmp_pt[0] << tmp_pt[1] << pt[0] << pt[1] << std::endl;
+					dxf.addLine(grid, tmp_pt[0], tmp_pt[1], pt[0], pt[1]);
+					tmp_pt[0] = pt[0];
+					tmp_pt[1] = pt[1];
+					tmp_pt[2] = pt[2];
+				}
+			}
+		}
     }
+
 
     lwpolyline_vector = dd.return_lwpolyline_vector();
     if(!lwpolyline_vector.empty()){
@@ -464,5 +598,3 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
     dxf.process_path(grid);
     return dxf.toPolygon2d();
 };
-
-
