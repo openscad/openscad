@@ -36,7 +36,7 @@ jobs:
                   #./scripts/macosx-build-dependencies.sh fontconfig
                   #./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
-                  #./scripts/macosx-build-dependencies.sh lib3mf
+                  ./scripts/macosx-build-dependencies.sh lib3mf
                   ./scripts/macosx-build-dependencies.sh glib2
                   ./scripts/macosx-build-dependencies.sh boost
                   ./scripts/macosx-build-dependencies.sh cgal
