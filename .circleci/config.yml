@@ -10,8 +10,8 @@ jobs:
           no_output_timeout: 18000
           command: |
               system_profiler SPSoftwareDataType
-              curl -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
-              tar -xzvf MacPorts-2.5.4.tar.gz
+              curl -s -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
+              tar -xzvf MacPorts-2.5.4.tar.bz2
               cd MacPorts-2.5.4
               ./configure
               make
