@@ -19,11 +19,12 @@ jobs:
               echo export\ PATH=/opt/local/bin:/opt/local/sbin:\$PATH >> ~/.profile
               source ~/.profile
               sudo port -v selfupdate
+              export COLUMNS=80
               sudo port install cmake
               sudo port install curl
+              sudo port install pkg-config
               mkdir /tmp/out
               tar cjvf /tmp/out/macports.tar.bz2 /opt/local
-
               #source setenv_mac.sh
               #./scripts/macosx-build-dependencies.sh double_conversion
       - store_artifacts:
