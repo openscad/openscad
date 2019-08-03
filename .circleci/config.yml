@@ -14,6 +14,7 @@ jobs:
               ( cd /tmp && curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 ) || true
               sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
               if [ -f /opt/local/bin/port ]; then
+                  export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
               else
@@ -23,7 +24,6 @@ jobs:
                   ./configure
                   make
                   sudo make install
-                  echo export\ PATH=/opt/local/bin:/opt/local/sbin:\$PATH >> ~/.profile
                   source ~/.profile
                   sudo port -v selfupdate
                   export COLUMNS=80
