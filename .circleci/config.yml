@@ -23,7 +23,7 @@ jobs:
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
                   ./scripts/macosx-build-dependencies.sh eigen
-                  #./scripts/macosx-build-dependencies.sh gmp
+                  ./scripts/macosx-build-dependencies.sh gmp
                   #./scripts/macosx-build-dependencies.sh mpfr
                   #./scripts/macosx-build-dependencies.sh glew
                   #./scripts/macosx-build-dependencies.sh gettext
