@@ -39,7 +39,7 @@ jobs:
                   #./scripts/macosx-build-dependencies.sh lib3mf
                   ./scripts/macosx-build-dependencies.sh glib2
                   ./scripts/macosx-build-dependencies.sh boost
-                  #./scripts/macosx-build-dependencies.sh cgal
+                  ./scripts/macosx-build-dependencies.sh cgal
                   #./scripts/macosx-build-dependencies.sh qt5
                   #./scripts/macosx-build-dependencies.sh opencsg
                   #./scripts/macosx-build-dependencies.sh qscintilla
