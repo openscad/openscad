@@ -11,7 +11,7 @@ jobs:
           command: |
               system_profiler SPSoftwareDataType
               CI_BASEDIR=/Users/distiller/project
-              CI_LIBRARYDIR=/Users/distiller/libraries
+              CI_LIBRARYDIR=/Users/distiller/libraries/install
               mkdir /tmp/out
               mkdir -p "$CI_LIBRARYDIR"
               ( cd /tmp && curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 ) || true
