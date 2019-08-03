@@ -19,7 +19,10 @@ jobs:
               sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
               tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
               if [ -f /opt/local/bin/port ]; then
+                  echo "$PATH"
                   export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+                  echo "$DYLD_LIBRARY_PATH"
+                  export DYLD_LIBRARY_PATH="$CI_LIBRARYDIR/lib:$DYLD_LIBRARY_PATH"
                   source setenv_mac.sh
                   ./scripts/macosx-build-dependencies.sh double_conversion
                   ./scripts/macosx-build-dependencies.sh eigen
@@ -33,7 +36,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh harfbuzz
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
-                  #./scripts/macosx-build-dependencies.sh fontconfig
+                  ./scripts/macosx-build-dependencies.sh fontconfig
                   #./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
