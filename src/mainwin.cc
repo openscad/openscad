@@ -753,8 +753,8 @@ void MainWindow::loadViewSettings(){
 	}
 
 	updateMdiMode(settings.value("advanced/mdi").toBool());
-	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
-	updateReorderMode(settings.value("advanced/reorderWindows").toBool());
+	updateUndockMode(Preferences::inst()->getValue("advanced/undockableWindows").toBool());
+	updateReorderMode(Preferences::inst()->getValue("advanced/reorderWindows").toBool());
 }
 
 void MainWindow::loadDesignSettings()
