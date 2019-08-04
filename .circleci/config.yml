@@ -98,6 +98,99 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
+  openscad-macos:
+    macos:
+      xcode: "10.1.0"
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD MacOS
+          no_output_timeout: 18000
+          command: |
+              system_profiler SPSoftwareDataType
+              MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
+              MACPORTS_CACHE_SHA512=0ac07cdd3c71ff319b486d9ffd513d97ca11d8a0b1c11e2a90592550133f1cfe1dabeed64c342a615098d57e6327cad7e01743db6b67276a16707cc577428073
+              LIBRARIES_CACHE_SHA512=be764dc57e5c2b71f08a940fe969822d2f10d22f952204d51239ae4f4f649540f7cce1a227c3fca4df74e1bf08894c0bc2c1899faea36085e2090a99417b20e1
+              CI_BASEDIR=/Users/distiller/project
+              CI_LIBRARYDIR=/Users/distiller/libraries/install
+              MACPORTS=MacPorts-2.5.4
+              MACPORTS_CACHE=macports.tar.bz2
+              LIBRARIES_CACHE=libraries.tar.bz2
+              mkdir /tmp/out
+              mkdir -p "$CI_LIBRARYDIR"
+              ( echo "Loading macports cache..." ; cd /tmp && curl -s -O https://files.openscad.org/circleci/"$MACPORTS_CACHE" ) || true
+              ( echo "Loading libraries cache..." ; cd /tmp && curl -s -O https://files.openscad.org/circleci/"$LIBRARIES_CACHE" ) || true
+              sudo mkdir -p /opt/local
+              sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
+              if [ -f /opt/local/bin/port ]; then
+                  if [ "$(shasum -a 512 /tmp/$MACPORTS_CACHE | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
+                      echo "Failed to match sha512 for $MACPORTS_CACHE"
+                      exit 1
+                  fi
+                  tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
+                  if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
+                      echo "Failed to match sha512 for $LIBRARIES_CACHE"
+                      exit 1
+                  fi
+                  echo "$PATH"
+                  export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+                  echo "$DYLD_LIBRARY_PATH"
+                  export DYLD_LIBRARY_PATH="$CI_LIBRARYDIR/lib:$DYLD_LIBRARY_PATH"
+                  source setenv_mac.sh
+                  ./scripts/macosx-build-dependencies.sh double_conversion
+                  ./scripts/macosx-build-dependencies.sh eigen
+                  ./scripts/macosx-build-dependencies.sh gmp
+                  ./scripts/macosx-build-dependencies.sh mpfr
+                  ./scripts/macosx-build-dependencies.sh glew
+                  ./scripts/macosx-build-dependencies.sh gettext
+                  ./scripts/macosx-build-dependencies.sh libffi
+                  ./scripts/macosx-build-dependencies.sh freetype
+                  ./scripts/macosx-build-dependencies.sh ragel
+                  ./scripts/macosx-build-dependencies.sh harfbuzz
+                  ./scripts/macosx-build-dependencies.sh libzip
+                  ./scripts/macosx-build-dependencies.sh libxml2
+                  ./scripts/macosx-build-dependencies.sh fontconfig || true
+                  #./scripts/macosx-build-dependencies.sh hidapi
+                  ./scripts/macosx-build-dependencies.sh libuuid
+                  ./scripts/macosx-build-dependencies.sh lib3mf
+                  ./scripts/macosx-build-dependencies.sh glib2
+                  ./scripts/macosx-build-dependencies.sh boost
+                  ./scripts/macosx-build-dependencies.sh cgal
+                  ./scripts/macosx-build-dependencies.sh qt5
+                  ./scripts/macosx-build-dependencies.sh opencsg
+                  ./scripts/macosx-build-dependencies.sh qscintilla
+                  ./scripts/macosx-build-dependencies.sh -d sparkle
+                  tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/"$LIBRARIES_CACHE" .
+                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
+                  ./scripts/release-common.sh -snapshot
+                  OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
+                  shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
+                  shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
+                  cp -v "$OPENSCAD_NAME"* /tmp/out/
+              else
+                  MACPORTSFILE="$MACPORTS".tar.bz2
+                  curl -s -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
+                  if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
+                      echo "Failed to match sha512 for $MACPORTSFILE"
+                      exit 1
+                  fi
+                  tar xjf "$MACPORTSFILE"
+                  cd "$MACPORTS"
+                  ./configure
+                  make
+                  sudo make install
+                  source ~/.profile
+                  sudo port -v selfupdate
+                  export COLUMNS=80
+                  sudo port install cmake
+                  sudo port install curl
+                  sudo port install pkgconfig
+                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE"
+                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: build
 
 workflows:
   version: 2
@@ -124,3 +217,18 @@ workflows:
                   ignore:
                       - coverity_scan
                       - /^(?i:continuous)$/
+      - openscad-macos:
+          filters:
+              branches:
+                  only:
+                      - circleci-macos
+  scheduled:
+    triggers:
+      - schedule:
+          cron: "30 6 * * 2"
+          filters:
+              branches:
+                  only:
+                      - master
+    jobs:
+      - openscad-macos
