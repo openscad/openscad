@@ -1,5 +1,103 @@
 version: 2
 jobs:
+  openscad-mxe-32bit:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/mxe-i686-deps:latest
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD Windows Application (32bit)
+          no_output_timeout: 18000
+          command: |
+              export NUMCPU=2
+              export MXEDIR=/mxe
+              export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
+              export LIB3MF_LIBPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
+              ./scripts/release-common.sh -snapshot -mingw32 -v "$OPENSCAD_VERSION"
+              mkdir -p /tmp/out
+              for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
+              if [ -n "${CODE_SIGNING_KEY}" ]; then
+                  cd /tmp/out
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  rm -rf ~/.gnupg
+              else
+                  echo "Skipping code signing."
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: 32-bit
+  openscad-mxe-64bit:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/mxe-x86_64-deps:latest
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD Windows Application (64bit)
+          no_output_timeout: 18000
+          command: |
+              export NUMCPU=2
+              export MXEDIR=/mxe
+              export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
+              export LIB3MF_LIBPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
+              ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
+              mkdir -p /tmp/out
+              for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
+              if [ -n "${CODE_SIGNING_KEY}" ]; then
+                  cd /tmp/out
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  rm -rf ~/.gnupg
+              else
+                  echo "Skipping code signing."
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: 64-bit
+  openscad-appimage-64bit:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/appimage-x86_64-base:latest
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD AppImage (64bit)
+          no_output_timeout: 18000
+          command: |
+              set +e
+              . /opt/qt5*/bin/qt5*-env.sh
+              set -e
+              export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
+              export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              qmake -v
+              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+              make -j2
+              make install INSTALL_ROOT=AppDir
+              export PATH=/appimage/usr/bin:"$PATH"
+              linuxdeploy --plugin qt --output appimage --appdir AppDir
+              mkdir -p /tmp/out
+              for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+              if [ -n "${CODE_SIGNING_KEY}" ]; then
+                  cd /tmp/out
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --detach-sign --armor"
+                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  rm -rf ~/.gnupg
+              else
+                  echo "Skipping code signing."
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: 64-bit
   openscad-macos:
     macos:
       xcode: "10.1.0"
@@ -10,15 +108,29 @@ jobs:
           no_output_timeout: 18000
           command: |
               system_profiler SPSoftwareDataType
+              MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
+              MACPORTS_CACHE_SHA512=0ac07cdd3c71ff319b486d9ffd513d97ca11d8a0b1c11e2a90592550133f1cfe1dabeed64c342a615098d57e6327cad7e01743db6b67276a16707cc577428073
+              LIBRARIES_CACHE_SHA512=be764dc57e5c2b71f08a940fe969822d2f10d22f952204d51239ae4f4f649540f7cce1a227c3fca4df74e1bf08894c0bc2c1899faea36085e2090a99417b20e1
               CI_BASEDIR=/Users/distiller/project
               CI_LIBRARYDIR=/Users/distiller/libraries/install
+              MACPORTS=MacPorts-2.5.4
+              MACPORTS_CACHE=macports.tar.bz2
+              LIBRARIES_CACHE=libraries.tar.bz2
               mkdir /tmp/out
               mkdir -p "$CI_LIBRARYDIR"
-              ( cd /tmp && curl -s -O https://files.openscad.org/circleci/macports.tar.bz2 ) || true
-              ( cd /tmp && curl -s -O https://files.openscad.org/circleci/libraries.tar.bz2 ) || true
-              sudo tar xj -C / -f /tmp/macports.tar.bz2 || true
-              tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
+              ( echo "Loading macports cache..." ; cd /tmp && curl -s -O https://files.openscad.org/circleci/"$MACPORTS_CACHE" ) || true
+              ( echo "Loading libraries cache..." ; cd /tmp && curl -s -O https://files.openscad.org/circleci/"$LIBRARIES_CACHE" ) || true
+              sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
               if [ -f /opt/local/bin/port ]; then
+                  if [ $(shasum -a 512 /tmp/"$MACPORTS_CACHE") != "$MACPORTS_CACHE_SHA512" ]; then
+                      echo "Failed to match sha512 for $MACPORTS_CACHE"
+                      exit 1
+                  fi
+                  tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
+                  if [ $(shasum -a 512 /tmp/"$LIBRARIES_CACHE") != "$LIBRARIES_CACHE_SHA512" ]; then
+                      echo "Failed to match sha512 for $LIBRARIES_CACHE"
+                      exit 1
+                  fi
                   echo "$PATH"
                   export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   echo "$DYLD_LIBRARY_PATH"
@@ -47,13 +159,22 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh opencsg
                   ./scripts/macosx-build-dependencies.sh qscintilla
                   ./scripts/macosx-build-dependencies.sh -d sparkle
-                  tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/libraries.tar.bz2 .
+                  tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/"$LIBRARIES_CACHE" .
+                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
                   ./scripts/release-common.sh -snapshot
-                  cp OpenSCAD-*.dmg /tmp/out/
+                  OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
+                  shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
+                  shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
+                  cp -v "$OPENSCAD_NAME"* /tmp/out/
               else
-                  curl -s -O https://distfiles.macports.org/MacPorts/MacPorts-2.5.4.tar.bz2
-                  tar xjf MacPorts-2.5.4.tar.bz2
-                  cd MacPorts-2.5.4
+                  MACPORTSFILE="$MACPORTS".tar.bz2
+                  curl -s -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
+                  if [ $(shasum -a 512 "$MACPORTSFILE") != "$MACPORTS_SHA512" ]; then
+                      echo "Failed to match sha512 for $MACPORTSFILE"
+                      exit 1
+                  fi
+                  tar xjf "$MACPORTSFILE"
+                  cd "$MACPORTS"
                   ./configure
                   make
                   sudo make install
@@ -63,7 +184,8 @@ jobs:
                   sudo port install cmake
                   sudo port install curl
                   sudo port install pkgconfig
-                  tar cjf /tmp/out/macports.tar.bz2 /opt/local
+                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE"
+                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
               fi
       - store_artifacts:
           path: /tmp/out
@@ -73,10 +195,39 @@ workflows:
   version: 2
   build:
     jobs:
+      - openscad-mxe-32bit:
+          context: secret-context
+          filters:
+              branches:
+                  ignore:
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-mxe-64bit:
+          context: secret-context
+          filters:
+              branches:
+                  ignore:
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-appimage-64bit:
+          context: secret-context
+          filters:
+              branches:
+                  ignore:
+                      - coverity_scan
+                      - /^(?i:continuous)$/
       - openscad-macos:
           filters:
               branches:
                   only:
-                      - master
                       - circleci-macos
-
+  scheduled:
+    triggers:
+      - schedule:
+          cron: "30 6 * * 2"
+          filters:
+              branches:
+                  only:
+                      - master
+    jobs:
+      - openscad-macos
