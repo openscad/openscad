@@ -7,7 +7,8 @@ matrix:
       compiler: gcc
       dist: xenial
       env:
-        - PARALLEL_CTEST=-j1
+        - DIST="Ubuntu 16.04 (Xenial)"
+        - PARALLEL_CTEST=-j4
       before_install:
         # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
         - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
@@ -21,7 +22,8 @@ matrix:
       compiler: gcc
       dist: bionic
       env:
-        - PARALLEL_CTEST=-j1
+        - DIST="Ubuntu 18.04 (Bionic)"
+        - PARALLEL_CTEST=-j4
       before_install:
         - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
       cache:
