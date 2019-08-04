@@ -246,9 +246,7 @@ void ScintillaEditor::applySettings()
     if (!value) qsci->setMarginWidth(1,20);
     else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
 
-    QSettingsCached settings;
-
-	if(settings.value("editor/enableAutocomplete").toBool())
+	if(Preferences::inst()->getValue("editor/enableAutocomplete").toBool())
 	{
 		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
 		qsci->setAutoCompletionFillupsEnabled(true);
@@ -262,7 +260,7 @@ void ScintillaEditor::applySettings()
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
 	}
 
-	int val = settings.value("editor/characterThreshold").toInt();
+	int val = Preferences::inst()->getValue("editor/characterThreshold").toInt();
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 
 }
