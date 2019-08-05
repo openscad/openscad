@@ -2967,13 +2967,21 @@ QString MainWindow::exportPath(const char *suffix) {
 	QString path;
 	auto path_it = this->export_paths.find(suffix);
 	if(path_it != export_paths.end())
-		path = path_it->second;
-	else
+	{
+		path = QFileInfo(path_it->second).absolutePath() + QString("/");
 		if(activeEditor->filepath.isEmpty())
-			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString(_("/Untitled")) + suffix;
+			path += QString(_("Untitled")) + suffix;
+		else
+			path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
+	}
+	else
+	{
+		if(activeEditor->filepath.isEmpty())
+			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") + QString(_("Untitled")) + suffix;
 		else {
 			auto info = QFileInfo(activeEditor->filepath);
-			path = info.absolutePath() + QString(_("/")) + info.completeBaseName() + suffix;
+			path = info.absolutePath() + QString("/") + info.completeBaseName() + suffix;
 		}
+	}
 	return path;
 }
