@@ -1,1 +1,1 @@
-import("../../dxf/spline.dxf");
+import("../../dxf/spline_degree2.dxf");
