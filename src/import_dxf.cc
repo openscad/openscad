@@ -113,7 +113,6 @@ void DData::curve_to(double fn, const Vector2d &c1, const Vector2d &c2, const Ve
 							 to * pow(a, 3));
 		if( idx != 1){
 			this->addLine(prev.x(), prev.y(), temp.x(), temp.y());
-			std::cout << "the points added are (" << prev.x() << ", " <<  prev.y() << "), (" <<  temp.x() << ", " << temp.y() << ")" << std::endl;
 		}
 		else{
 			this->addLine(pen.x(), pen.y(), temp.x(), temp.y());
@@ -560,23 +559,19 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 					if(it.flag == 1){
 						dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
 									it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
-					}
-					// std::cout << " the control point is " << it.ctlPts.at(i-1).spoints[0] << " " 
-					// << it.ctlPts.at(i-1).spoints[1] << " " << it.ctlPts.at(i).spoints[0] << " "
-					// << it.ctlPts.at(i).spoints[1] << std::endl;							
+					}						
 				}
 			}
 			else if(it.degree == 2){
 				// Quadratic Bezier curve
 				dxf.pen = Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]);
 				double step;
-				if(it.numCtlPts % 2 == 0){
-					step = 1;
-				}
-				else{
+				if(it.numCtlPts % 3 == 0){
 					step = 2;
 				}
-				std::cout << "step is " << step << std::endl;
+				else{
+					step = 1;
+				}
 				for(int i = 2; i < it.numCtlPts; (i += step)){
 					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
 										Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
@@ -591,14 +586,16 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 				// Cubic Bezier curve
 				dxf.pen = Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]);
 				double step;
-				for(int i = 3; i < it.numCtlPts; i++){
+				if(it.numCtlPts % 4 == 0){
+					step = 3;
+				}
+				else{
+					step = 1;
+				}
+				for(int i = 3; i < it.numCtlPts; (i += step)){
 					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(i-2).spoints[0], it.ctlPts.at(i-2).spoints[1]),
 									Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
 									Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
-					std::cout << "the control point is (" << it.ctlPts.at(i-2).spoints[0] << ", " 
-					<< it.ctlPts.at(i-2).spoints[1] << "), (" << it.ctlPts.at(i-1).spoints[0] << ", "
-					<< it.ctlPts.at(i-1).spoints[1] << "), (" << it.ctlPts.at(i).spoints[0] << ", " 
-					<< it.ctlPts.at(i).spoints[0] << ")" << std::endl;	
 				}
 				if(it.flag == 1){
 					dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
