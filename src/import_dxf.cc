@@ -84,7 +84,6 @@ DData::DData(): scale(0), xorigin(0), yorigin(0), grid(GRID_COARSE), pen(Vector2
 void DData::curve_to(double fn, const Vector2d &c1, const Vector2d &to)
 {
 	Vector2d prev(0,0);
-	std::cout << "this is degree 2" << std::endl;
 	for (unsigned long idx = 1;idx <= fn;idx++) {
 		const double a = idx * (1.0 / (double)fn);
 		Vector2d temp = (pen * pow(1-a, 2) + 
@@ -93,7 +92,9 @@ void DData::curve_to(double fn, const Vector2d &c1, const Vector2d &to)
 
 		if( idx != 1){
 			this->addLine(prev.x(), prev.y(), temp.x(), temp.y());
-			std::cout << "the points added are " << prev.x() << " " <<  prev.y() << " " <<  temp.x() << " " << temp.y() << std::endl;
+		}
+		else{
+			this->addLine(pen.x(), pen.y(), temp.x(), temp.y());
 		}
 		prev = temp;
 	}
@@ -112,6 +113,10 @@ void DData::curve_to(double fn, const Vector2d &c1, const Vector2d &c2, const Ve
 							 to * pow(a, 3));
 		if( idx != 1){
 			this->addLine(prev.x(), prev.y(), temp.x(), temp.y());
+			std::cout << "the points added are (" << prev.x() << ", " <<  prev.y() << "), (" <<  temp.x() << ", " << temp.y() << ")" << std::endl;
+		}
+		else{
+			this->addLine(pen.x(), pen.y(), temp.x(), temp.y());
 		}
 		prev = temp;
 	}
@@ -430,8 +435,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 	std::unordered_map<std::string, std::vector<Line>> blockdata; // Lines in blocks
 	dxf.yorigin = yorigin;
 	dxf.xorigin = xorigin;
-	dxf.scale = scale;
-	fn = 32;    
+	dxf.scale = scale;   
 	
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
@@ -548,7 +552,6 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
     spline_vector = dd.return_spline_vector();
 	for(auto it : spline_vector){
 		if(layername.empty() || it.layer_name == layername){
-			Vector2d prev;
 			if(it.degree == 1){
 				// polyline
 				for(int i = 1; i < it.numCtlPts ; i++){
@@ -558,32 +561,45 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 						dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
 									it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
 					}
-					std::cout << " the control point is " << it.ctlPts.at(i-1).spoints[0] << " " 
-					<< it.ctlPts.at(i-1).spoints[1] << " " << it.ctlPts.at(i).spoints[0] << " "
-					<< it.ctlPts.at(i).spoints[1] << std::endl;							
+					// std::cout << " the control point is " << it.ctlPts.at(i-1).spoints[0] << " " 
+					// << it.ctlPts.at(i-1).spoints[1] << " " << it.ctlPts.at(i).spoints[0] << " "
+					// << it.ctlPts.at(i).spoints[1] << std::endl;							
 				}
 			}
 			else if(it.degree == 2){
-				// Quadric Bezier curve
-				std::cout << "the size of ctlpts is " << it.numCtlPts << std::endl;
-				for(int i = 1; i < it.numCtlPts; i++){
-					dxf.curve_to(fn, Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
-										Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
-					if(it.flag == 1){
-						dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
-									it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
-					}
-					std::cout << " the control point is " << it.ctlPts.at(i-1).spoints[0] << " " 
-					<< it.ctlPts.at(i-1).spoints[1] << " " << it.ctlPts.at(i).spoints[0] << " "
-					<< it.ctlPts.at(i).spoints[1] << std::endl;						
+				// Quadratic Bezier curve
+				dxf.pen = Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]);
+				double step;
+				if(it.numCtlPts % 2 == 0){
+					step = 1;
 				}
-
+				else{
+					step = 2;
+				}
+				std::cout << "step is " << step << std::endl;
+				for(int i = 2; i < it.numCtlPts; (i += step)){
+					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
+										Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
+				
+				}
+				if(it.flag == 1){
+					dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
+								it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
+				}
 			}
 			else if(it.degree == 3){
 				// Cubic Bezier curve
-				dxf.curve_to(fn, Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]),
-								 Vector2d(it.ctlPts.at(1).spoints[0], it.ctlPts.at(1).spoints[1]),
-								 Vector2d(it.ctlPts.at(2).spoints[0], it.ctlPts.at(2).spoints[1]));
+				dxf.pen = Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]);
+				double step;
+				for(int i = 3; i < it.numCtlPts; i++){
+					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(i-2).spoints[0], it.ctlPts.at(i-2).spoints[1]),
+									Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
+									Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
+					std::cout << "the control point is (" << it.ctlPts.at(i-2).spoints[0] << ", " 
+					<< it.ctlPts.at(i-2).spoints[1] << "), (" << it.ctlPts.at(i-1).spoints[0] << ", "
+					<< it.ctlPts.at(i-1).spoints[1] << "), (" << it.ctlPts.at(i).spoints[0] << ", " 
+					<< it.ctlPts.at(i).spoints[0] << ")" << std::endl;	
+				}
 				if(it.flag == 1){
 					dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
 								it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
