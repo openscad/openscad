@@ -269,7 +269,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const char *export_format)
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const std::string &export_format)
 {
 	Tree tree;
 	boost::filesystem::path doc(filename);
@@ -284,7 +284,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
 	
-	if(export_format) {
+	if(!export_format.empty()) {
 		PRINT("Using extension of --export-format option");
 		extsn = export_format;
 	}
@@ -821,7 +821,7 @@ int main(int argc, char **argv)
 
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
-	const char *export_format = nullptr;
+	std::string export_format;
 	
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
@@ -1014,7 +1014,7 @@ int main(int argc, char **argv)
     if(vm.count("export-format")) {
         auto tmp_format = vm["export-format"].as<string>();
         if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
-        	export_format = tmp_format.c_str();
+			export_format = tmp_format;
         }
 		else {
 	        PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
