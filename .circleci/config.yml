@@ -111,7 +111,7 @@ jobs:
               export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
               MACPORTS_CACHE_SHA512=0ac07cdd3c71ff319b486d9ffd513d97ca11d8a0b1c11e2a90592550133f1cfe1dabeed64c342a615098d57e6327cad7e01743db6b67276a16707cc577428073
-              LIBRARIES_CACHE_SHA512=be764dc57e5c2b71f08a940fe969822d2f10d22f952204d51239ae4f4f649540f7cce1a227c3fca4df74e1bf08894c0bc2c1899faea36085e2090a99417b20e1
+              LIBRARIES_CACHE_SHA512=b8a19656d932ad587a75016c755f3003de3c6ea6f89506f769cbe9090ca3200598fbf6e8145fc8e461270cd46b5286330417c3cf3047917cf7568dfb09341eac
               CI_BASEDIR=/Users/distiller/project
               CI_LIBRARYDIR=/Users/distiller/libraries/install
               MACPORTS=MacPorts-2.5.4
@@ -151,8 +151,6 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
-                  sudo port -v selfupdate
-                  sudo port install autoconf automake libtool
                   ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
@@ -184,9 +182,7 @@ jobs:
                   sudo make install
                   source ~/.profile
                   sudo port -v selfupdate
-                  sudo port install cmake
-                  sudo port install curl
-                  sudo port install pkgconfig
+                  sudo port install cmake curl pkgconfig autoconf automake libtool
                   tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE"
                   shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
               fi
