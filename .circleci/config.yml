@@ -108,6 +108,8 @@ jobs:
           no_output_timeout: 18000
           command: |
               system_profiler SPSoftwareDataType
+              export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+              echo "PATH = $PATH"
               export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
               MACPORTS_CACHE_SHA512=0ac07cdd3c71ff319b486d9ffd513d97ca11d8a0b1c11e2a90592550133f1cfe1dabeed64c342a615098d57e6327cad7e01743db6b67276a16707cc577428073
@@ -133,8 +135,6 @@ jobs:
                       echo "Failed to match sha512 for $LIBRARIES_CACHE"
                       exit 1
                   fi
-                  echo "$PATH"
-                  export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   echo "$DYLD_LIBRARY_PATH"
                   export DYLD_LIBRARY_PATH="$CI_LIBRARYDIR/lib:$DYLD_LIBRARY_PATH"
                   source setenv_mac.sh
@@ -169,6 +169,7 @@ jobs:
                   shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
                   cp -v "$OPENSCAD_NAME"* /tmp/out/
               else
+                  echo "MacPorts not found, installing $MACPORTS"
                   MACPORTSFILE="$MACPORTS".tar.bz2
                   curl -s -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
                   if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
@@ -180,11 +181,10 @@ jobs:
                   ./configure
                   make
                   sudo make install
-                  source ~/.profile
                   sudo port -v selfupdate
                   sudo port install cmake curl pkgconfig autoconf automake libtool
                   tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE"
-                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
+                  shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
               fi
       - store_artifacts:
           path: /tmp/out
