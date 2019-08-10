@@ -152,7 +152,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
                   sudo port -v selfupdate
-                  sudo port install libtool
+                  sudo port install autoconf automake libtool
                   ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
