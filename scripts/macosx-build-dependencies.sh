@@ -40,7 +40,7 @@ PACKAGES=(
     "libzip 1.5.1"
     "libxml2 2.9.9"
     "fontconfig 2.13.1"
-    "hidapi 0.8.0-rc1"
+    "hidapi 0.9.0"
     "libuuid 1.6.2"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
@@ -678,7 +678,7 @@ build_hidapi()
   cd "$BASEDIR"/src
   rm -rf "hidapi-hidapi-$version"
   if [ ! -f "hidapi-$version.zip" ]; then
-    curl --insecure -LO "https://github.com/signal11/hidapi/archive/hidapi-${version}.zip"
+    curl --insecure -LO "https://github.com/libusb/hidapi/archive/hidapi-${version}.zip"
   fi
   unzip "hidapi-$version.zip"
   cd "hidapi-hidapi-$version"
