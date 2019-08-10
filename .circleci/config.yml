@@ -108,6 +108,7 @@ jobs:
           no_output_timeout: 18000
           command: |
               system_profiler SPSoftwareDataType
+              export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
               MACPORTS_CACHE_SHA512=0ac07cdd3c71ff319b486d9ffd513d97ca11d8a0b1c11e2a90592550133f1cfe1dabeed64c342a615098d57e6327cad7e01743db6b67276a16707cc577428073
               LIBRARIES_CACHE_SHA512=be764dc57e5c2b71f08a940fe969822d2f10d22f952204d51239ae4f4f649540f7cce1a227c3fca4df74e1bf08894c0bc2c1899faea36085e2090a99417b20e1
@@ -150,6 +151,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
+                  sudo port -v selfupdate
                   sudo port install libtool
                   ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
@@ -182,7 +184,6 @@ jobs:
                   sudo make install
                   source ~/.profile
                   sudo port -v selfupdate
-                  export COLUMNS=80
                   sudo port install cmake
                   sudo port install curl
                   sudo port install pkgconfig
