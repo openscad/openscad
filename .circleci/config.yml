@@ -150,6 +150,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
+                  sudo port install libtool
                   ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
