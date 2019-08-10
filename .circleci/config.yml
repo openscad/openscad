@@ -183,7 +183,7 @@ jobs:
                   sudo make install
                   sudo port -v selfupdate
                   sudo port install cmake curl pkgconfig autoconf automake libtool
-                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE"
+                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
                   shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
               fi
       - store_artifacts:
