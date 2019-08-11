@@ -744,6 +744,11 @@ if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
   set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
   set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
 endif()
+if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips")
+  message(STATUS "Workaround MIPS bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=868745")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
+endif()
 
 # Set up custom commands to run before & after Ctest run.
 # 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
