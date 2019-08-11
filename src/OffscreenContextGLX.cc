@@ -256,25 +256,11 @@ bool create_glx_dummy_context(OffscreenContext &ctx)
 	int major;
 	int minor;
 	auto result = false;
-	int tries = 0;
-	auto dpyenv = getenv("DISPLAY");
-	auto retryenv = getenv("OPENSCAD_X_CONN_RETRY");
-	int connect_retry_count = retryenv ? atoi(retryenv) : 0;
 
-	for (;;) {
-		ctx.xdisplay = XOpenDisplay(nullptr);
-		tries++;
-		if (ctx.xdisplay != nullptr) {
-			break;
-		}
-		if (tries <= connect_retry_count) {
-			std::cerr << "Warning: XOpenDisplay(DISPLAY=\""
-				  << (dpyenv?dpyenv:"")
-				  << "\") failed, retrying...\n";
-			sleep(1);
-			continue;
-		}
+	ctx.xdisplay = XOpenDisplay(nullptr);
+	if (ctx.xdisplay == nullptr) {
 		std::cerr << "Unable to open a connection to the X server.\n";
+		auto dpyenv = getenv("DISPLAY");
 		std::cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << "\n";
 		return false;
 	}
