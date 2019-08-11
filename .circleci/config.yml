@@ -107,10 +107,13 @@ jobs:
           name: Build OpenSCAD MacOS
           no_output_timeout: 18000
           command: |
-              system_profiler SPSoftwareDataType
+              system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
+              export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+              echo "PATH = $PATH"
+              export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
-              MACPORTS_CACHE_SHA512=0ac07cdd3c71ff319b486d9ffd513d97ca11d8a0b1c11e2a90592550133f1cfe1dabeed64c342a615098d57e6327cad7e01743db6b67276a16707cc577428073
-              LIBRARIES_CACHE_SHA512=be764dc57e5c2b71f08a940fe969822d2f10d22f952204d51239ae4f4f649540f7cce1a227c3fca4df74e1bf08894c0bc2c1899faea36085e2090a99417b20e1
+              MACPORTS_CACHE_SHA512=b5ef44a33e764112251f21ab31d8f39e0b39eee0b31ebc9760731454a9f13e128ccaefb5bb7cbd0df3d679600cd0e4ea742833c58858c685c31223d282fb63da
+              LIBRARIES_CACHE_SHA512=b8a19656d932ad587a75016c755f3003de3c6ea6f89506f769cbe9090ca3200598fbf6e8145fc8e461270cd46b5286330417c3cf3047917cf7568dfb09341eac
               CI_BASEDIR=/Users/distiller/project
               CI_LIBRARYDIR=/Users/distiller/libraries/install
               MACPORTS=MacPorts-2.5.4
@@ -132,8 +135,6 @@ jobs:
                       echo "Failed to match sha512 for $LIBRARIES_CACHE"
                       exit 1
                   fi
-                  echo "$PATH"
-                  export PATH=/opt/local/bin:/opt/local/sbin:$PATH
                   echo "$DYLD_LIBRARY_PATH"
                   export DYLD_LIBRARY_PATH="$CI_LIBRARYDIR/lib:$DYLD_LIBRARY_PATH"
                   source setenv_mac.sh
@@ -150,7 +151,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
-                  #./scripts/macosx-build-dependencies.sh hidapi
+                  ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
                   ./scripts/macosx-build-dependencies.sh glib2
@@ -162,12 +163,14 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh -d sparkle
                   tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/"$LIBRARIES_CACHE" .
                   shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
-                  ./scripts/release-common.sh -snapshot
+                  export NUMCPU=4
+                  time ./scripts/release-common.sh -snapshot
                   OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
                   shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
                   shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
                   cp -v "$OPENSCAD_NAME"* /tmp/out/
               else
+                  echo "MacPorts not found, installing $MACPORTS"
                   MACPORTSFILE="$MACPORTS".tar.bz2
                   curl -s -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
                   if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
@@ -179,14 +182,10 @@ jobs:
                   ./configure
                   make
                   sudo make install
-                  source ~/.profile
                   sudo port -v selfupdate
-                  export COLUMNS=80
-                  sudo port install cmake
-                  sudo port install curl
-                  sudo port install pkgconfig
-                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE"
-                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
+                  sudo port install cmake curl pkgconfig autoconf automake libtool
+                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
+                  shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
               fi
       - store_artifacts:
           path: /tmp/out
