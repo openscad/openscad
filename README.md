@@ -143,8 +143,10 @@ To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
 Prerequisites:
 
 * Xcode
+* curl
 * cmake
-* pkg-config
+* pkgconfig
+* autoconf automake libtool (for HIDAPI / InputDevice support)
 
 Install Dependencies:
 
