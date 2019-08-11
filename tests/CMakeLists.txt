@@ -16,11 +16,6 @@ project(tests)
 
 set(CMAKE_MODULE_PATH {$CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/Modules/")
 
-# Xvfb has a bug where many quick connections in parallel occasionally causes
-# a connection to fail. We work around that by setting this environment variable
-# that makes openscad retry a failed X connection.
-set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCAD_X_CONN_RETRY=3")
-
 # MCAD
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
