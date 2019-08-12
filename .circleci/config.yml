@@ -73,7 +73,7 @@ jobs:
           no_output_timeout: 18000
           command: |
               set +e
-              . /opt/qt511/bin/qt511-env.sh
+              . /opt/qt5*/bin/qt5*-env.sh
               set -e
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"

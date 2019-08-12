@@ -14,4 +14,5 @@ protected slots:
 
 private:
 	bool volatile suppressUpdate; 
+	constexpr static int NR_OF_SPINBOXES = 4;
 };
