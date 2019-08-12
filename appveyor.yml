@@ -30,4 +30,4 @@ artifacts:
 # Alternatively if RDP is already enabled earlier, just adding "pause" will block the worker till timeout (60 minutes).
 on_finish:
   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - pause
+  # - pause
