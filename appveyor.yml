@@ -5,10 +5,12 @@ branches:
 image:
   - Visual Studio 2017
 
+environment:
+  - VCPKG_DEFAULT_TRIPLET: x64-windows
+
 init:
   # Uncomment to enable RDP login at init time, this will not block job execution.
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - setx VCPKG_DEFAULT_TRIPLET x64-windows
   - vcpkg install boost-assign boost-thread boost-program-options boost-filesystem boost-system boost-regex
   # cgal double-conversion eigen3 fontconfig freetype glew glib harfbuzz libxml2 libzip mpfr opencsg qscintilla qt5-base qt5-multimedia qt5-gamepad
 
