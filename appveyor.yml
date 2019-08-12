@@ -7,14 +7,13 @@ image:
 
 environment:
   VCPKG_DEFAULT_TRIPLET: x64-windows
-  APPVEYOR_SAVE_CACHE_ON_ERROR: true
 
 init:
   # Uncomment to enable RDP login at init time, this will not block job execution.
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 cache:
-  - c:\tools\vcpkg\installed
+#  - c:\tools\vcpkg\installed
 
 install:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T install started'
