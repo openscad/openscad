@@ -19,7 +19,7 @@ install:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T install started'
   - vcpkg install fontconfig freetype harfbuzz libxml2 glib libzip
   - vcpkg install boost-assign boost-thread boost-program-options boost-filesystem boost-system boost-regex
-  # cgal double-conversion eigen3 glew mpfr opencsg qscintilla qt5-base qt5-multimedia qt5-gamepad
+  - vcpkg install cgal double-conversion eigen3 glew mpfr opencsg qscintilla qt5-base qt5-multimedia qt5-gamepad
 
 build_script:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T build started'
