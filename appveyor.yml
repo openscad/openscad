@@ -13,7 +13,7 @@ init:
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 cache:
-#  - c:\tools\vcpkg\installed
+  - c:\tools\vcpkg\installed
 
 install:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T install started'
