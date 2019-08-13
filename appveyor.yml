@@ -13,9 +13,7 @@ environment:
 
 init:
   - cd %VCPKG_DIR%
-  - git pull
   - echo.set(VCPKG_BUILD_TYPE %CONFIGURATION%)>> %VCPKG_DIR%\triplets\x64-windows.cmake
-  - .\bootstrap-vcpkg.bat
   - vcpkg version
   - cd %APPVEYOR_BUILD_FOLDER%
   # Uncomment to enable RDP login at init time, this will not block job execution.
