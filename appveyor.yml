@@ -16,7 +16,7 @@ environment:
 init:
   - vcpkg version
   - vcpkg upgrade
-  - echo.set(VCPKG_BUILD_TYPE %VCPKG_BUILD_TYPE%)>> %VCPKG_DIR%\triplets\%VCPKG_DEFAULT_TRIPLET%.cmake
+  # - echo.set(VCPKG_BUILD_TYPE %VCPKG_BUILD_TYPE%)>> %VCPKG_DIR%\triplets\%VCPKG_DEFAULT_TRIPLET%.cmake
   # Uncomment to enable RDP login at init time, this will not block job execution.
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
@@ -28,7 +28,7 @@ install:
   - vcpkg install fontconfig freetype harfbuzz libxml2 glib libzip
   - vcpkg install boost-assign boost-thread boost-program-options boost-filesystem boost-system boost-regex
   - vcpkg install cgal double-conversion eigen3 glew mpfr opencsg
-  - vcpkg install qt5-base
+  # - vcpkg install qt5-base
   - vcpkg install qscintilla qt5-multimedia qt5-gamepad
 
 build_script:
