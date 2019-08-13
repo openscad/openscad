@@ -14,6 +14,7 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+bool OpenSCAD::printconsole = false;
 bool OpenSCAD::hardwarnings = false;
 bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
@@ -89,9 +90,11 @@ void PRINT_NOCACHE(const std::string &msg)
 	}
 	if(!deferred)
 		if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
-			if (!outputhandler) {
+			if (OpenSCAD::printconsole || !outputhandler) {
 				fprintf(stderr, "%s\n", msg.c_str());
-			} else {
+			}
+			
+			if (outputhandler) {
 				outputhandler(msg, outputhandler_data);
 			}
 		}

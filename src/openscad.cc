@@ -860,6 +860,7 @@ int main(int argc, char **argv)
 		("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
 		("quiet,q", "quiet mode (don't print anything *except* errors)")
 		("hardwarnings", "Stop on the first warning")
+		("print-console", "Print gui console output to console stderr")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
 		("debug", po::value<string>(), "special debug info")
@@ -896,6 +897,9 @@ int main(int argc, char **argv)
 	}
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
+	}
+	if (vm.count("print-console")) {
+		OpenSCAD::printconsole = true;
 	}
 
 	if (vm.count("hardwarnings")) {
