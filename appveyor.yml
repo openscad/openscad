@@ -9,7 +9,7 @@ configuration:
   - Release
 
 environment:
-  VCPKG_DEFAULT_TRIPLET: x64-windows-rel
+  VCPKG_DEFAULT_TRIPLET: x64-windows
 
 init:
   # Uncomment to enable RDP login at init time, this will not block job execution.
