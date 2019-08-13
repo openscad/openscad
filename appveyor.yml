@@ -10,7 +10,7 @@ configuration:
 
 environment:
   VCPKG_DIR: C:\Tools\vcpkg
-  VCPKG_BUILD_TYPE: debug
+  VCPKG_BUILD_TYPE: release
   VCPKG_DEFAULT_TRIPLET: x64-windows
 
 init:
