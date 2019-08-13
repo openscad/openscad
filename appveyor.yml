@@ -9,13 +9,14 @@ configuration:
   - Release
 
 environment:
+  VCPKG_DIR: C:\Tools\vcpkg
+  VCPKG_BUILD_TYPE: release
   VCPKG_DEFAULT_TRIPLET: x64-windows
 
 init:
-  - cd %VCPKG_DIR%
-  - echo.set(VCPKG_BUILD_TYPE %CONFIGURATION%)>> %VCPKG_DIR%\triplets\x64-windows.cmake
   - vcpkg version
-  - cd %APPVEYOR_BUILD_FOLDER%
+  - echo.set(VCPKG_BUILD_TYPE %VCPKG_BUILD_TYPE%)>> %VCPKG_DIR%\triplets\%VCPKG_DEFAULT_TRIPLET%.cmake
+  - dir %VCPKG_DIR%\triplets
   # Uncomment to enable RDP login at init time, this will not block job execution.
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
