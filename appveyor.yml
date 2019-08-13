@@ -16,7 +16,7 @@ environment:
 init:
   - vcpkg version
   - vcpkg upgrade
-   - echo.set(VCPKG_BUILD_TYPE %VCPKG_BUILD_TYPE%)>> %VCPKG_DIR%\triplets\%VCPKG_DEFAULT_TRIPLET%.cmake
+  - echo.set(VCPKG_BUILD_TYPE %VCPKG_BUILD_TYPE%)>> %VCPKG_DIR%\triplets\%VCPKG_DEFAULT_TRIPLET%.cmake
   # Uncomment to enable RDP login at init time, this will not block job execution.
   # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
