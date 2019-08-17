@@ -23,6 +23,11 @@
 #define RT_NURB_MAKE_PT_TYPE(n, t, h)	((n<<5) | (t<<1) | h)
 #define RT_NURB_EXTRACT_COORDS(pt)	(pt>>5)
 #define RT_NURB_EXTRACT_PT_TYPE(pt)		((pt>>1) & 0x0f)
+#define POLYLINE_3D_POLYLINE 8
+#define POLYLINE_3D_POLYMESH 16
+#define POLYLINE_POLYFACE_MESH 64
+#define POLYLINE_CURVE_FIT_VERTICES_ADDED 2
+#define POLYLINE_SPLINE_FIT_VERTICES_ADDED 4
 
 struct Line {
     int idx[2]; // indices into DData::points
@@ -604,6 +609,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			}
 			else{
 				// degree > 3 does not support
+				PRINTD("Spline entity only supports degree 1 to degree 3!");
 			}
 		}
 	}
@@ -618,26 +624,59 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			
 			}
 			// if polyline_flag == 1, the last vertex connect to the first vertex
+			// closed lwpolyline flag
 			if (it.polyline_flag & 0x01){
 				dxf.addLine(it.lw_pt_vec.back().x, it.lw_pt_vec.back().y,
 							it.lw_pt_vec.front().x, it.lw_pt_vec.front().y);
 			}
 		}
-	}            
+	}
+
+	polyline_vector = dd.return_polyline_vector();
+	for(auto it : polyline_vector){
+		if(layername.empty() || it.layer_name == layername){
+			// All 3D feature of polyline are not supported
+			if(it.polyline_flag == POLYLINE_POLYFACE_MESH ||
+			   it.polyline_flag == POLYLINE_3D_POLYLINE ||
+			   it.polyline_flag == POLYLINE_3D_POLYMESH){
+				PRINTD("3D polyline is ignored, Polyline Entity only supports 2D polyline!");
+			}
+			else{
+				if(it.polyline_flag == POLYLINE_CURVE_FIT_VERTICES_ADDED){
+					PRINTD("Polyline curve fit is ignored!");
+				}
+				if(it.polyline_flag == POLYLINE_SPLINE_FIT_VERTICES_ADDED){
+					
+				}
+				else{
+					for(auto it_pt = it.vertex_vec.begin(); it_pt != it.vertex_vec.end(); it_pt++){
+						if(std::next(it_pt) != it.vertex_vec.end()){
+							dxf.addLine(it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
+						}
+					}				
+					//polyline is closed
+					if(it.polyline_flag & 0x01){
+						dxf.addLine(it.vertex_vec.front().x, it.vertex_vec.front().y,
+									it.vertex_vec.back().x, it.vertex_vec.back().y);
+					}
+				}
+
+			}
+		}
+	}
+          
 
     line_vector = dd.return_line_vector();
-    if(!line_vector.empty()){
-        for(auto it : line_vector){
-			if(layername.empty() || it.layer_name == layername){
-				dxf.addLine(it.line_pt[0][0], it.line_pt[0][1],
-							it.line_pt[1][0], it.line_pt[1][1]);
-			}
-        }
-    }
+	for(auto it : line_vector){
+		if(layername.empty() || it.layer_name == layername){
+			dxf.addLine(it.line_pt[0][0], it.line_pt[0][1],
+						it.line_pt[1][0], it.line_pt[1][1]);
+		}
+	}
 
     point_vector = dd.return_point_vector();
     if(!point_vector.empty()){
-        PRINTD("Point Entity has been ignored");
+        PRINTD("Point Entity is ignored!");
     }
 
     dxf.process_path();
