@@ -83,7 +83,7 @@ public:
 	void curve_to(double fn, const Vector2d &c1, const Vector2d &c2, const Vector2d &to);
 };
 
-DData::DData(): scale(0), xorigin(0), yorigin(0), grid(GRID_COARSE), pen(Vector2d(0,0)) {
+DData::DData(): scale(0), xorigin(0), yorigin(0), pen(Vector2d(0,0)), grid(GRID_COARSE) {
 
 }
 
@@ -129,97 +129,6 @@ void DData::curve_to(double fn, const Vector2d &c1, const Vector2d &c2, const Ve
 	pen = to;
 }
 
-double* nurb_eval(double *pnts, int order, double param, 
-				  std::vector<double> knot_vec, int k_index, int coords){
-    int tmp;
-
-	if (order <= 1)
-		return (pnts + ((k_index) * coords));
-
-    tmp = k_index;
-
-    while ( tmp > (k_index - order + 1)) {
-	double k1, k2;
-
-	k1 =  knot_vec.at(tmp + order - 1);
-
-	k2 =  knot_vec.at(tmp);
-
-	if (k1 != k2) {
-	    for (int i= 0; i < coords; i++) {
-		*((pnts + ((tmp) * coords)) + i) =
-		    ((k1 - param) *
-		     *((pnts + ((tmp - 1) * coords)) + i)
-		     + (param - k2) * *((pnts + ((tmp) *
-						coords)) + i)) / (k1 - k2);
-	    }
-	}
-		tmp--;
-    }
-    return nurb_eval(pnts, order - 1, param, knot_vec,
-			    k_index, coords);
-}
-
-double nurb_knot_index(std::vector<double> knots, double k_value, int order){
-	int k_index;
-	double knt;
-	if (k_value < (knt = knots.at(knots.size() - order - 1))) {
-		if (fabs(k_value - knt) < 0.0001) {
-			k_value = knt;
-		} else
-			return -1;
-	}
-
-	if (k_value > (knt =  knots.at(knots.size() - order + 1))) {
-		if (fabs(k_value - knt) < 0.0001) {
-			k_value = knt;
-		} else
-			return -1;
-	}
-
-	if (k_value  == knots.at(knots.size() - order + 1) )
-		k_index = knots.size() - order - 1;
-	else if (k_value == knots.at(order - 1))
-		k_index = order - 1;
-	else {
-		k_index = 0;
-	for (int i = 0; i < knots.size() - 1; i++)
-		if (knots.at(i) < k_value && k_value <= knots.at(i+1))
-			k_index = i;
-		}
-
-	return k_index;
-}
-void nurb_c_eval(spline_struct ss, double param, double* final_value, int pt_type, int ncoords){
-	int coords, k_index;
-	double *ev_pt;
-	int order = ss.degree + 1;
-	int k_size = ss.numCtlPts + ss.degree + 1;
-	coords = pt_type>>5;
-
-	k_index = nurb_knot_index(ss.knots, param, order);
-
-	if(k_index < 0){
-		/* param value out of range */
-	}
-
-	double pnts[coords*ss.numCtlPts];
-	coords = pt_type>>5;
-	for (int i = 0; i < ss.numCtlPts; i++){
-		pnts[i*ncoords +0] = ss.ctlPts.at(i).spoints[0];
-		pnts[i*ncoords +1] = ss.ctlPts.at(i).spoints[1];
-		pnts[i*ncoords +2] = ss.ctlPts.at(i).spoints[2];
-
-		if(ss.flag == 4){
-			pnts[i*ncoords +3] = ss.ctlPts.at(i).weights;
-		}
-	}
-
-	ev_pt = nurb_eval(pnts, order, param, ss.knots, k_index, coords);
-	for(int i = 0 ; i < coords; i++){
-		final_value[i] = ev_pt[i];
-	}
-}
 void DData::process_path(){
 	// Extract paths from parsed data
 
@@ -560,7 +469,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 		if(layername.empty() || it.layer_name == layername){
 			if(it.degree == 1){
 				// polyline
-				for(int i = 1; i < it.numCtlPts ; i++){
+				for(unsigned int i = 1; i < it.numCtlPts ; i++){
 					dxf.addLine(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1], 
 								it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]);
 					if(it.flag == 1){
@@ -577,7 +486,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 				if(remain != 0){
 					PRINTD("Degree 2 spline with number of control points can not be divisible by 3 may cause incorrect geometry!");
 				}
-				for(int i = 2; i < it.numCtlPts; (i += step)){
+				for(unsigned int i = 2; i < it.numCtlPts; (i += step)){
 					if(i >= it.numCtlPts-remain){
 						step = 1;
 					}
@@ -598,7 +507,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 				if(remain != 0){
 					PRINTD("Degree 3 spline with number of control points can not be divisible by 4 may cause incorrect geometry!");
 				}
-				for(int i = 3; i < it.numCtlPts; (i += step)){
+				for(unsigned int i = 3; i < it.numCtlPts; (i += step)){
 					if(i >= it.numCtlPts-remain){
 						step = 1;
 					}
@@ -671,7 +580,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 					if(remain != 0){
 						PRINTD("Spline-fit polyline with number of control points vertex can not be divisible by 4 may cause incorrect geometry!");
 					}
-					for(int i = 3; i < it.vertex_vec.size(); i += step){
+					for(unsigned int i = 3; i < it.vertex_vec.size(); i += step){
 						if(i >= it.vertex_vec.size()-remain){
 							step = 1;
 						}
@@ -695,7 +604,6 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			}
 		}
 	}
-          
 
     line_vector = dd.return_line_vector();
 	for(auto it : line_vector){
