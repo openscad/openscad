@@ -305,6 +305,7 @@ struct polyline_struct{
 	int mesh_n_count;
 	int color;
 	int invisible;
+    int splineSegs;
     std::vector<polyline_vertex_struct> vertex_vec;
 	std::string layer_name;
 };

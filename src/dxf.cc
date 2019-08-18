@@ -1157,6 +1157,7 @@ process_entities_polyline_vertex_code(int code)
 		VMOVE(pvs.face, face);
 		pvs.face[3] = face[3];
 		pvs.color = curr_color;
+		pvs.vertex_flage = vertex_flag;
 		pvs.layer_name = std::string(curr_layer_name);
 		if(dd.polyline_vector.empty()){
 			dd.polyline_vector.emplace_back(polyline_struct());
@@ -1242,6 +1243,7 @@ process_entities_polyline_code(int code)
 		ps.invisible = invisible;
 		ps.color = curr_color;
 		ps.layer_name = std::string(curr_layer_name);
+		ps.splineSegs = splineSegs;
 		if(dd.polyline_vertex_vector.empty()){
 			dd.polyline_vector.emplace_back(ps);
 		}

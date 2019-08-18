@@ -28,6 +28,8 @@
 #define POLYLINE_POLYFACE_MESH 64
 #define POLYLINE_CURVE_FIT_VERTICES_ADDED 2
 #define POLYLINE_SPLINE_FIT_VERTICES_ADDED 4
+#define VTX_SPLINE_VERTEX_CREATED 8
+#define VTX_SPLINE_FRAME_CONTROL_POINT 16
 
 struct Line {
     int idx[2]; // indices into DData::points
@@ -570,41 +572,44 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			else if(it.degree == 2){
 				// Quadratic Bezier curve
 				dxf.pen = Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]);
-				double step;
-				if(it.numCtlPts % 3 == 0){
-					step = 2;
-				}
-				else{
-					step = 1;
+				int step = 2;
+				int remain = it.numCtlPts % 3;
+				if(remain != 0){
+					PRINTD("Degree 2 spline with number of control points can not be divisible by 3 may cause incorrect geometry!");
 				}
 				for(int i = 2; i < it.numCtlPts; (i += step)){
+					if(i >= it.numCtlPts-remain){
+						step = 1;
+					}
 					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
 										Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
-				
 				}
 				if(it.flag == 1){
-					dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
-								it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
+					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]),
+								Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]));
 				}
 			}
 			else if(it.degree == 3){
 				// Cubic Bezier curve
 				dxf.pen = Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]);
-				double step;
-				if(it.numCtlPts % 4 == 0){
-					step = 3;
-				}
-				else{
-					step = 1;
+
+				int step = 3;
+				int remain = it.numCtlPts % 4;
+				if(remain != 0){
+					PRINTD("Degree 3 spline with number of control points can not be divisible by 4 may cause incorrect geometry!");
 				}
 				for(int i = 3; i < it.numCtlPts; (i += step)){
+					if(i >= it.numCtlPts-remain){
+						step = 1;
+					}
 					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(i-2).spoints[0], it.ctlPts.at(i-2).spoints[1]),
-									Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
-									Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
+								Vector2d(it.ctlPts.at(i-1).spoints[0], it.ctlPts.at(i-1).spoints[1]),
+								Vector2d(it.ctlPts.at(i).spoints[0], it.ctlPts.at(i).spoints[1]));
 				}
 				if(it.flag == 1){
-					dxf.addLine(it.ctlPts.front().spoints[0], it.ctlPts.front().spoints[1],
-								it.ctlPts.back().spoints[0], it.ctlPts.back().spoints[1]);
+					dxf.curve_to(it.splineSegs, Vector2d(it.ctlPts.at(it.numCtlPts-2).spoints[0], it.ctlPts.at(it.numCtlPts-2).spoints[1]),
+								Vector2d(it.ctlPts.at(it.numCtlPts-1).spoints[0], it.ctlPts.at(it.numCtlPts-1).spoints[1]),
+								Vector2d(it.ctlPts.at(0).spoints[0], it.ctlPts.at(0).spoints[1]));
 				}
 			}
 			else{
@@ -639,28 +644,54 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			if(it.polyline_flag == POLYLINE_POLYFACE_MESH ||
 			   it.polyline_flag == POLYLINE_3D_POLYLINE ||
 			   it.polyline_flag == POLYLINE_3D_POLYMESH){
-				PRINTD("3D polyline is ignored, Polyline Entity only supports 2D polyline!");
+				PRINTD("All 3D polyline features are ignored, only 2D polyline is imported!");
 			}
-			else{
-				if(it.polyline_flag == POLYLINE_CURVE_FIT_VERTICES_ADDED){
-					PRINTD("Polyline curve fit is ignored!");
-				}
-				if(it.polyline_flag == POLYLINE_SPLINE_FIT_VERTICES_ADDED){
-					
-				}
-				else{
-					for(auto it_pt = it.vertex_vec.begin(); it_pt != it.vertex_vec.end(); it_pt++){
-						if(std::next(it_pt) != it.vertex_vec.end()){
-							dxf.addLine(it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
-						}
-					}				
-					//polyline is closed
-					if(it.polyline_flag & 0x01){
-						dxf.addLine(it.vertex_vec.front().x, it.vertex_vec.front().y,
-									it.vertex_vec.back().x, it.vertex_vec.back().y);
+			if(it.polyline_flag == POLYLINE_CURVE_FIT_VERTICES_ADDED){
+				PRINTD("Polyline with curve fit is ignored!");
+			}
+			if(it.polyline_flag == POLYLINE_SPLINE_FIT_VERTICES_ADDED){
+				
+				bool spline_vertex_found = false;
+				// polyline created by spline vertex
+				polyline_vertex_struct tmp_vert = it.vertex_vec.front();
+				for(auto it_pt : it.vertex_vec){
+					if(it_pt.vertex_flage == VTX_SPLINE_VERTEX_CREATED){
+						dxf.addLine(tmp_vert.x, tmp_vert.y, it_pt.x, it_pt.y);
+						tmp_vert = it_pt;
+						spline_vertex_found = true;
 					}
 				}
 
+				// if spline vertex not found, polyline created by control points
+				// Cubic Bezier curve is used for polyline spline-fit
+				if(!spline_vertex_found){
+					dxf.pen = Vector2d(it.vertex_vec.at(0).x, it.vertex_vec.at(0).y);
+					int step = 3;
+					int remain = it.vertex_vec.size() % 4;
+					if(remain != 0){
+						PRINTD("Spline-fit polyline with number of control points vertex can not be divisible by 4 may cause incorrect geometry!");
+					}
+					for(int i = 3; i < it.vertex_vec.size(); i += step){
+						if(i >= it.vertex_vec.size()-remain){
+							step = 1;
+						}
+						dxf.curve_to(it.splineSegs, Vector2d(it.vertex_vec.at(i-2).x, it.vertex_vec.at(i-2).y),
+										Vector2d(it.vertex_vec.at(i-1).x, it.vertex_vec.at(i-1).y),
+										Vector2d(it.vertex_vec.at(i).x, it.vertex_vec.at(i).y));
+					}
+				}				
+			}
+			else{
+				for(auto it_pt = it.vertex_vec.begin(); it_pt != it.vertex_vec.end(); it_pt++){
+					if(std::next(it_pt) != it.vertex_vec.end()){
+						dxf.addLine(it_pt->x, it_pt->y, std::next(it_pt)->x, std::next(it_pt)->y);
+					}
+				}				
+				//polyline is closed
+				if(it.polyline_flag & 0x01){
+					dxf.addLine(it.vertex_vec.front().x, it.vertex_vec.front().y,
+								it.vertex_vec.back().x, it.vertex_vec.back().y);
+				}
 			}
 		}
 	}
