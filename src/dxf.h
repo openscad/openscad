@@ -305,6 +305,8 @@ struct polyline_struct{
 	int mesh_n_count;
 	int color;
 	int invisible;
+    int splineSegs;
+    std::vector<polyline_vertex_struct> vertex_vec;
 	std::string layer_name;
 };
 
@@ -437,6 +439,7 @@ struct spline_struct{
 	int numKnots;
 	int numCtlPts;
 	int numFitPts;
+    int splineSegs;
 	std::vector<double> knots;
 	std::vector<spline_pts> ctlPts;
 	std::vector<spline_pts> fitPts;

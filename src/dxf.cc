@@ -86,7 +86,7 @@
         } }
 #else
 #define MAT4X3PNT(o,m,i) \
-        { register double _f; \
+        { double _f; \
         _f = 1.0/((m)[12]*(i)[X] + (m)[13]*(i)[Y] + (m)[14]*(i)[Z] + (m)[15]);\
         (o)[X]=((m)[0]*(i)[X] + (m)[1]*(i)[Y] + (m)[ 2]*(i)[Z] + (m)[3]) * _f;\
         (o)[Y]=((m)[4]*(i)[X] + (m)[5]*(i)[Y] + (m)[ 6]*(i)[Z] + (m)[7]) * _f;\
@@ -457,7 +457,7 @@ static double units_conv[]={
 /* replicated code from mat.h to avoid dependency */
 void
 bn_mat_angles(
-    register double *mat,
+    double *mat,
     double alpha_in,
     double beta_in,
     double ggamma_in)
@@ -520,7 +520,7 @@ bn_mat_angles(
 }
 
 void
-bn_mat_mul(register double o[16], register const double a[16], register const double b[16])
+bn_mat_mul(double o[16], const double a[16], const double b[16])
 {
     o[ 0] = a[ 0] * b[ 0] + a[ 1] * b[ 4] + a[ 2] * b[ 8] + a[ 3] * b[12];
     o[ 1] = a[ 0] * b[ 1] + a[ 1] * b[ 5] + a[ 2] * b[ 9] + a[ 3] * b[13];
@@ -1150,7 +1150,6 @@ process_entities_polyline_vertex_code(int code)
 	case 0:
 	{
 		get_layer();
-
 		polyline_vertex_struct pvs;
 		pvs.x = x;
 		pvs.y = y;
@@ -1158,7 +1157,12 @@ process_entities_polyline_vertex_code(int code)
 		VMOVE(pvs.face, face);
 		pvs.face[3] = face[3];
 		pvs.color = curr_color;
+		pvs.vertex_flage = vertex_flag;
 		pvs.layer_name = std::string(curr_layer_name);
+		if(dd.polyline_vector.empty()){
+			dd.polyline_vector.emplace_back(polyline_struct());
+		}
+		dd.polyline_vector.at(dd.polyline_vector.size()-1).vertex_vec.emplace_back(pvs);
 		dd.polyline_vertex_vector.emplace_back(pvs);
 
 	    if (vertex_flag == POLY_VERTEX_FACE) {
@@ -1229,6 +1233,9 @@ process_entities_polyline_code(int code)
 	{
 	    get_layer();
 
+
+
+	    if (!strncmp(line, "SEQEND", 6)) {
 		polyline_struct ps;
 		ps.mesh_m_count = mesh_m_count;
 		ps.mesh_n_count = mesh_n_count;
@@ -1236,9 +1243,17 @@ process_entities_polyline_code(int code)
 		ps.invisible = invisible;
 		ps.color = curr_color;
 		ps.layer_name = std::string(curr_layer_name);
-		dd.polyline_vector.emplace_back(ps);
-
-	    if (!strncmp(line, "SEQEND", 6)) {
+		ps.splineSegs = splineSegs;
+		if(dd.polyline_vertex_vector.empty()){
+			dd.polyline_vector.emplace_back(ps);
+		}
+		else{
+			std::vector<polyline_vertex_struct> temp_vec = dd.polyline_vector.at(dd.polyline_vector.size()-1).vertex_vec;
+			dd.polyline_vector.at(dd.polyline_vector.size()-1) = ps;
+			dd.polyline_vector.at(dd.polyline_vector.size()-1).vertex_vec = temp_vec;
+		}
+		
+		
 		/* build any polyline meshes here */
 		if (polyline_flag & POLY_3D_MESH) {
 		    if (polyline_vert_indices_count == 0) {
@@ -2776,6 +2791,7 @@ process_spline_entities_code(int code)
 		ss.numCtlPts = numCtlPts;
 		ss.numFitPts = numFitPts;
 		ss.color = curr_color;
+		ss.splineSegs = splineSegs;
 		ss.layer_name = std::string(curr_layer_name);
 		for(int i = 0; i < numKnots; i++){
 			ss.knots.emplace_back(knots[i]);
