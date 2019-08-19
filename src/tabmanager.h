@@ -64,7 +64,7 @@ private slots:
     void stopAnimation();
     void updateFindState();
 
-    void onHyperlinkIndicatorReleased(int pos);
+    void onHyperlinkIndicatorClicked(int pos);
 
 public slots:
     void actionNew();
