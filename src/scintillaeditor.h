@@ -80,7 +80,7 @@ private:
 
 signals:
 	void previewRequest(void);
-	void hyperlinkIndicatorReleased(int val);
+	void hyperlinkIndicatorClicked(int val);
 	
 public slots:
 	void zoomIn() override;
@@ -112,7 +112,7 @@ private slots:
 	void onAutocompleteChanged(bool state);
 	void onCharacterThresholdChanged(int val);
 	void fireModificationChanged(bool);
-	void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
+	void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
 
 public:
 	void public_applySettings();

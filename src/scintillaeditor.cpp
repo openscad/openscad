@@ -171,7 +171,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->installEventFilter(this);
 
 	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
-	connect(qsci, SIGNAL(indicatorReleased(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorReleased(int, int, Qt::KeyboardModifiers)));
+	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
 }
 
 void ScintillaEditor::addTemplate()
@@ -600,6 +600,7 @@ int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibili
 
     auto txt = qsci->text();
 
+    qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, findIndicatorNumber);
     qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
 
     auto pos = txt.indexOf(findText);
@@ -967,7 +968,7 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 void ScintillaEditor::setIndicator(std::vector<IndicatorData> indicatorinfo)
 {
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
-	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
 	this->indicatorData = indicatorinfo;
 
 	for(int i=0; i<indicatorData.size(); i++)
@@ -978,19 +979,19 @@ void ScintillaEditor::setIndicator(std::vector<IndicatorData> indicatorinfo)
 	}
 }
 
-void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state)
+void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-	//todo: check for ctrl+click
+	if(!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+		return;
 
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
 	int pos = qsci->positionFromLineIndex(line, col);
 	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
 
-	// checking if hyperlinkIndicator is clicked
-	// need to put more strict check
-	if(val < hyperlinkIndicatorOffset)
-		return;
-
-	emit hyperlinkIndicatorReleased(val - hyperlinkIndicatorOffset);
+	// checking if indicator clicked is hyperlinkIndicator
+	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())
+	{
+		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+	}
 }
