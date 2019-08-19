@@ -316,3 +316,7 @@ void LegacyEditor::displayTemplates()
 void LegacyEditor::addTemplate()
 {
 }
+
+void LegacyEditor::setIndicator(std::vector<IndicatorData>)
+{
+}
