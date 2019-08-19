@@ -280,29 +280,29 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 	ExportFileFormatOptions exportFileFormatOptions;
 	FileFormat curFormat;
-	std::string extsn;
+	std::string formatName;
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
 	
 	if(!export_format.empty()) {
 		PRINTB("Using format '%s' of --export-format option", export_format.c_str());
-		extsn = export_format;
+		formatName = export_format;
 	}
 	else { 
 		auto suffix = fs::path(output_file_str).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
-			extsn = suffix;
+			formatName = suffix;
 		}
 	}
 
-	if(extsn.empty()) {
+	if(formatName.empty()) {
 		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
 		return 1;
 	}
 
-	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
+	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
 	std::string filename_str = fs::path(output_file_str).generic_string();
 	new_output_file = filename_str.c_str();
 
