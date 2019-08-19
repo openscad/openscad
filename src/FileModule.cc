@@ -54,18 +54,27 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path)
+void FileModule::registerUse(const std::string path, const Location &loc)
 {
+	// assuming that loc gives correct data and we got line number and column range of use'd file
+	// currently hardcoding values
+	int linenr = 0;
+	int firstcolnr = 4;
+	int lastcolnr = 9;
+	int nrofchar = lastcolnr - firstcolnr;
+
 	auto ext = fs::path(path).extension().generic_string();
 	
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
+			indicatorData.push_back(IndicatorData(linenr, firstcolnr, nrofchar, path));
 		} else {
 			PRINTB("ERROR: Can't read font with path '%s'", path);
 		}
 	} else {
 		usedlibs.insert(path);
+		indicatorData.push_back(IndicatorData(linenr, firstcolnr, nrofchar, path));
 	}
 }
 

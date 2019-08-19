@@ -58,6 +58,7 @@ public:
 	QStringList colorSchemes() override;
     bool canUndo() override;
     void addTemplate();
+	void setIndicator(std::vector<IndicatorData> indicatorData) override;
 
 private:
         void getRange(int *lineFrom, int *lineTo);
@@ -79,6 +80,7 @@ private:
 
 signals:
 	void previewRequest(void);
+	void hyperlinkIndicatorReleased(int val);
 	
 public slots:
 	void zoomIn() override;
@@ -110,6 +112,7 @@ private slots:
 	void onAutocompleteChanged(bool state);
 	void onCharacterThresholdChanged(int val);
 	void fireModificationChanged(bool);
+	void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 
 public:
 	void public_applySettings();
@@ -118,6 +121,8 @@ private:
 	QVBoxLayout *scintillaLayout;
     static const int errorIndicatorNumber = 8; // first 8 are used by lexers 
     static const int findIndicatorNumber = 9; 
+	static const int hyperlinkIndicatorNumber = 10;
+	static const int hyperlinkIndicatorOffset = 100;
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;

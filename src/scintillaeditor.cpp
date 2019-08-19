@@ -169,6 +169,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+
+	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
+	connect(qsci, SIGNAL(indicatorReleased(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorReleased(int, int, Qt::KeyboardModifiers)));
 }
 
 void ScintillaEditor::addTemplate()
@@ -959,4 +962,35 @@ void ScintillaEditor::onAutocompleteChanged(bool state)
 void ScintillaEditor::onCharacterThresholdChanged(int val)
 {
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+}
+
+void ScintillaEditor::setIndicator(std::vector<IndicatorData> indicatorinfo)
+{
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+	this->indicatorData = indicatorinfo;
+
+	for(int i=0; i<indicatorData.size(); i++)
+	{
+		int pos = qsci->positionFromLineIndex(indicatorData[i].linenr, indicatorData[i].colnr);
+		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, i + hyperlinkIndicatorOffset);
+		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, indicatorData[i].nrofchar);
+	}
+}
+
+void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state)
+{
+	//todo: check for ctrl+click
+
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+
+	int pos = qsci->positionFromLineIndex(line, col);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+
+	// checking if hyperlinkIndicator is clicked
+	// need to put more strict check
+	if(val < hyperlinkIndicatorOffset)
+		return;
+
+	emit hyperlinkIndicatorReleased(val - hyperlinkIndicatorOffset);
 }

@@ -162,7 +162,7 @@ input:    /* empty */
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2));
+              rootmodule->registerUse(std::string($2), LOC(@$));
               free($2);
             }
         | input statement
