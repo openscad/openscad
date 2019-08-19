@@ -285,7 +285,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	const char *new_output_file = nullptr;
 	
 	if(!export_format.empty()) {
-		PRINT("Using extension of --export-format option");
+		PRINTB("Using format '%s' of --export-format option", export_format.c_str());
 		extsn = export_format;
 	}
 	else { 
@@ -301,7 +301,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
 		return 1;
 	}
-	
+
 	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
 	std::string filename_str = fs::path(output_file_str).generic_string();
 	new_output_file = filename_str.c_str();
@@ -826,7 +826,7 @@ int main(int argc, char **argv)
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overrides the file extension in -o option\n")
+		("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions\n")
 		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
