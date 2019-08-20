@@ -285,7 +285,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	const char *new_output_file = nullptr;
 
 	if(!export_format.empty()) {
-		PRINTB("Using format '%s' of --export-format option", export_format.c_str());
 		formatName = export_format;
 	}
 	else {
