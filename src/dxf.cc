@@ -1529,7 +1529,9 @@ process_entities_unknown_code(int code)
 			state_stack.pop_back();
 		}
 		if (!curr_state) {
+			//ERROR
 		    fprintf(out_fp, "ERROR: end of block encountered while not inserting!!!\n");
+			dd.error_message.emplace_back("ERROR: end of block encountered while not inserting!!!");
 		    break;
 		}
 		fseek(dxf, curr_state->file_offset, SEEK_SET);
@@ -1592,7 +1594,10 @@ process_insert_entities_code(int code)
 			}
 	    }
 	    if (!blk){
+			//ERROR:
 			fprintf(out_fp, "ERROR: INSERT references non-existent block (%s)\n", line);
+			std::string temp_str = std::string("ERROR: INSERT references non-existent block ") + std::string(line);
+			dd.error_message.emplace_back(temp_str);
 			fprintf(out_fp, "\tignoring missing block\n");
 			blk = NULL;
 	    }
@@ -2552,7 +2557,10 @@ process_dimension_entities_code(int code)
 			}
 	    }
 		if (!blk) {
+			//ERROR
 		    fprintf(out_fp, "ERROR: DIMENSION references non-existent block (%s)\n", block_name);
+			std::string temp_str = std::string("ERROR: DIMENSION references non-existent block ") + std::string(block_name);
+			dd.error_message.emplace_back(temp_str);
 		    fprintf(out_fp, "\tignoring missing block\n");
 		    blk = NULL;
 		}
@@ -3073,6 +3081,10 @@ std::vector<spline_struct> dxf_data::return_spline_vector(){
 	return spline_vector;
 }
 
+std::vector<std::string> dxf_data::return_error_message(){
+	return error_message;
+}
+
 void dxf_data::clear_vector(){
 	header_vector.clear();
 	polyline_vertex_vector.clear();
@@ -3172,6 +3184,9 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
     next_layer = 1;
     curr_layer = 0;
 
+	//test for error message
+	dd.error_message.emplace_back("This line is for testing error handling feature");
+	
     for (int i = 0; i < max_layers; i++) {
 		layers.push_back(layer());
     }

@@ -465,6 +465,7 @@ struct dxf_data{
 	std::vector<ellipse_struct> ellipse_vector;
 	std::vector<leader_struct> leader_vector;
 	std::vector<spline_struct> spline_vector;
+    std::vector<std::string> error_message;
 
     void clear_vector();
 
@@ -483,6 +484,9 @@ struct dxf_data{
 	std::vector<ellipse_struct> return_ellipse_vector();
 	std::vector<leader_struct> return_leader_vector();
 	std::vector<spline_struct> return_spline_vector();
+
+    std::vector<std::string> return_error_message();
+
 };
 
 dxf_data read_dxf_file(std::string in_filename,std::string out_filename,  double scale);

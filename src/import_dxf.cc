@@ -377,7 +377,13 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
     std::vector<ellipse_struct> ellipse_vector;
     std::vector<leader_struct> leader_vector;
     std::vector<spline_struct> spline_vector;
+	std::vector<std::string> error_message;
 
+	error_message = dd.return_error_message();
+	for(auto it : error_message){
+		PRINTD(it);
+	}
+	
     circle_vector =  dd.return_circle_vector();
 	for(auto it : circle_vector){
 		if(layername.empty() || it.layer_name == layername){
