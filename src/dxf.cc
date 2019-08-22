@@ -1274,6 +1274,7 @@ process_entities_polyline_code(int code)
 			if (mesh_m_count < 2) {
 			    if (mesh_n_count > 4) {
 				fprintf(out_fp, "Cannot handle polyline meshes with m<2 and n>4\n");
+				dd.error_message.push_back("WARNING: Cannot handle polyline meshes with m<2 and n>4");
 				polyline_vert_indices_count = 0;
 				polyline_vert_indices_count = 0;
 				break;
@@ -1366,6 +1367,8 @@ process_entities_polyline_code(int code)
 	    } else {
 		if (verbose) {
 		    fprintf(out_fp, "Unrecognized text string while in polyline entity: %s\n", line);
+			std::string temp_str = std::string("WARNING: Unrecognized text string while in polyline entity  ") + std::string(line);
+			dd.error_message.push_back(temp_str);
 		}
 		break;
 	    }
@@ -1543,6 +1546,8 @@ process_entities_unknown_code(int code)
 	    } else {
 		fprintf(out_fp, "Unrecognized entity type encountered (ignoring): %s\n",
 		       line);
+		std::string temp_str = std::string("WARNING: Unrecognized entity type encountered (ignoring) ") + std::string(line);
+		dd.error_message.push_back(temp_str);
 		break;
 	    }
     }
@@ -1627,6 +1632,7 @@ process_insert_entities_code(int code)
 	case 71:
 	    if (atoi(line) != 1) {
 			fprintf(out_fp, "Cannot yet handle insertion of a pattern\n\tignoring\n");
+			dd.error_message.push_back("WARNING: Cannot yet handle insertion of a pattern");
 	    }
 	    break;
 	case 44:
@@ -2522,7 +2528,7 @@ process_dimension_entities_code(int code)
 {
     static char *block_name=NULL;
     static struct state_data *new_state=NULL;
-    struct block *blk;
+    struct block *blk = NULL;
 
     switch (code) {
 	case 10:
@@ -3132,7 +3138,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
 	if(!out_filename.empty()){
 		output_file = out_filename.c_str();
 		if((out_fp=fopen(output_file, "w")) == NULL){
-			//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+			fprintf(out_fp, "Cannot open or create output file(%s) \n", output_file);
 			exit(1);
 		}
 	}
@@ -3184,9 +3190,6 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
     next_layer = 1;
     curr_layer = 0;
 
-	//test for error message
-	dd.error_message.emplace_back("This line is for testing error handling feature");
-	
     for (int i = 0; i < max_layers; i++) {
 		layers.push_back(layer());
     }
@@ -3201,6 +3204,10 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
     while ((code=readcodes()) > -900) {
 	process_code[curr_state->state](code);
     }
+
+	if(code == ERROR_FLAG){
+		dd.error_message.push_back("ERROR: The file may be empty, corrupted");
+	}
 
     for (int i = 0; i < next_layer; i++) {
 
