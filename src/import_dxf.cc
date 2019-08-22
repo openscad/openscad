@@ -377,6 +377,13 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
     std::vector<ellipse_struct> ellipse_vector;
     std::vector<leader_struct> leader_vector;
     std::vector<spline_struct> spline_vector;
+	std::vector<std::string> error_message;
+
+	error_message = dd.return_error_message();
+	for(auto it : error_message){
+		PRINT(it);
+	}
+
 
     circle_vector =  dd.return_circle_vector();
 	for(auto it : circle_vector){
@@ -464,6 +471,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 	}   
 
 	// for spline knots, weights, fit points are ignored 
+	// Only Bezier Curve is supported in OpeSCAD
     spline_vector = dd.return_spline_vector();
 	for(auto it : spline_vector){
 		if(layername.empty() || it.layer_name == layername){
@@ -484,7 +492,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 				int step = 2;
 				int remain = it.numCtlPts % 3;
 				if(remain != 0){
-					PRINTD("Degree 2 spline with number of control points can not be divisible by 3 may cause incorrect geometry!");
+					PRINTD("WARNING: Degree 2 spline with number of control points can not be divisible by 3 may cause incorrect geometry!");
 				}
 				for(unsigned int i = 2; i < it.numCtlPts; (i += step)){
 					if(i >= it.numCtlPts-remain){
@@ -505,7 +513,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 				int step = 3;
 				int remain = it.numCtlPts % 4;
 				if(remain != 0){
-					PRINTD("Degree 3 spline with number of control points can not be divisible by 4 may cause incorrect geometry!");
+					PRINT("WARNING: Degree 3 spline with number of control points can not be divisible by 4 may cause incorrect geometry!");
 				}
 				for(unsigned int i = 3; i < it.numCtlPts; (i += step)){
 					if(i >= it.numCtlPts-remain){
@@ -523,7 +531,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			}
 			else{
 				// degree > 3 does not support
-				PRINTD("Spline entity only supports degree 1 to degree 3!");
+				PRINT("WARNING: OpenSCAD only supports degree 1 to degree 3!");
 			}
 		}
 	}
@@ -553,10 +561,10 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 			if(it.polyline_flag == POLYLINE_POLYFACE_MESH ||
 			   it.polyline_flag == POLYLINE_3D_POLYLINE ||
 			   it.polyline_flag == POLYLINE_3D_POLYMESH){
-				PRINTD("All 3D polyline features are ignored, only 2D polyline is imported!");
+				PRINT("WARNING: All 3D polyline features are ignored, only 2D polyline is imported!");
 			}
 			if(it.polyline_flag == POLYLINE_CURVE_FIT_VERTICES_ADDED){
-				PRINTD("Polyline with curve fit is ignored!");
+				PRINT("WARNING: Polyline with curve fit is ignored!");
 			}
 			if(it.polyline_flag == POLYLINE_SPLINE_FIT_VERTICES_ADDED){
 				
@@ -578,7 +586,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 					int step = 3;
 					int remain = it.vertex_vec.size() % 4;
 					if(remain != 0){
-						PRINTD("Spline-fit polyline with number of control points vertex can not be divisible by 4 may cause incorrect geometry!");
+						PRINT("WARNING: Spline-fit polyline with number of control points vertex can not be divisible by 4 may cause incorrect geometry!");
 					}
 					for(unsigned int i = 3; i < it.vertex_vec.size(); i += step){
 						if(i >= it.vertex_vec.size()-remain){
@@ -615,7 +623,7 @@ Polygon2d *import_dxf( double fn, double fs, double fa, const std::string &filen
 
     point_vector = dd.return_point_vector();
     if(!point_vector.empty()){
-        PRINTD("Point Entity is ignored!");
+        PRINT("WARNING: Point Entity is ignored!");
     }
 
     dxf.process_path();

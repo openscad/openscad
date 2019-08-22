@@ -1274,6 +1274,7 @@ process_entities_polyline_code(int code)
 			if (mesh_m_count < 2) {
 			    if (mesh_n_count > 4) {
 				fprintf(out_fp, "Cannot handle polyline meshes with m<2 and n>4\n");
+				dd.error_message.push_back("WARNING: Cannot handle polyline meshes with m<2 and n>4");
 				polyline_vert_indices_count = 0;
 				polyline_vert_indices_count = 0;
 				break;
@@ -1366,6 +1367,8 @@ process_entities_polyline_code(int code)
 	    } else {
 		if (verbose) {
 		    fprintf(out_fp, "Unrecognized text string while in polyline entity: %s\n", line);
+			std::string temp_str = std::string("WARNING: Unrecognized text string while in polyline entity  ") + std::string(line);
+			dd.error_message.push_back(temp_str);
 		}
 		break;
 	    }
@@ -1529,7 +1532,9 @@ process_entities_unknown_code(int code)
 			state_stack.pop_back();
 		}
 		if (!curr_state) {
+			//ERROR
 		    fprintf(out_fp, "ERROR: end of block encountered while not inserting!!!\n");
+			dd.error_message.emplace_back("ERROR: end of block encountered while not inserting!!!");
 		    break;
 		}
 		fseek(dxf, curr_state->file_offset, SEEK_SET);
@@ -1541,6 +1546,8 @@ process_entities_unknown_code(int code)
 	    } else {
 		fprintf(out_fp, "Unrecognized entity type encountered (ignoring): %s\n",
 		       line);
+		std::string temp_str = std::string("WARNING: Unrecognized entity type encountered (ignoring) ") + std::string(line);
+		dd.error_message.push_back(temp_str);
 		break;
 	    }
     }
@@ -1592,7 +1599,10 @@ process_insert_entities_code(int code)
 			}
 	    }
 	    if (!blk){
+			//ERROR:
 			fprintf(out_fp, "ERROR: INSERT references non-existent block (%s)\n", line);
+			std::string temp_str = std::string("ERROR: INSERT references non-existent block ") + std::string(line);
+			dd.error_message.emplace_back(temp_str);
 			fprintf(out_fp, "\tignoring missing block\n");
 			blk = NULL;
 	    }
@@ -1622,6 +1632,7 @@ process_insert_entities_code(int code)
 	case 71:
 	    if (atoi(line) != 1) {
 			fprintf(out_fp, "Cannot yet handle insertion of a pattern\n\tignoring\n");
+			dd.error_message.push_back("WARNING: Cannot yet handle insertion of a pattern");
 	    }
 	    break;
 	case 44:
@@ -2517,7 +2528,7 @@ process_dimension_entities_code(int code)
 {
     static char *block_name=NULL;
     static struct state_data *new_state=NULL;
-    struct block *blk;
+    struct block *blk = NULL;
 
     switch (code) {
 	case 10:
@@ -2552,7 +2563,10 @@ process_dimension_entities_code(int code)
 			}
 	    }
 		if (!blk) {
+			//ERROR
 		    fprintf(out_fp, "ERROR: DIMENSION references non-existent block (%s)\n", block_name);
+			std::string temp_str = std::string("ERROR: DIMENSION references non-existent block ") + std::string(block_name);
+			dd.error_message.emplace_back(temp_str);
 		    fprintf(out_fp, "\tignoring missing block\n");
 		    blk = NULL;
 		}
@@ -3073,6 +3087,10 @@ std::vector<spline_struct> dxf_data::return_spline_vector(){
 	return spline_vector;
 }
 
+std::vector<std::string> dxf_data::return_error_message(){
+	return error_message;
+}
+
 void dxf_data::clear_vector(){
 	header_vector.clear();
 	polyline_vertex_vector.clear();
@@ -3120,7 +3138,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
 	if(!out_filename.empty()){
 		output_file = out_filename.c_str();
 		if((out_fp=fopen(output_file, "w")) == NULL){
-			//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+			fprintf(out_fp, "Cannot open or create output file(%s) \n", output_file);
 			exit(1);
 		}
 	}
@@ -3186,6 +3204,10 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
     while ((code=readcodes()) > -900) {
 	process_code[curr_state->state](code);
     }
+
+	if(code == ERROR_FLAG){
+		dd.error_message.push_back("ERROR: The file may be empty, corrupted");
+	}
 
     for (int i = 0; i < next_layer; i++) {
 
