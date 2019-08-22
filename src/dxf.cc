@@ -3132,7 +3132,7 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
 	if(!out_filename.empty()){
 		output_file = out_filename.c_str();
 		if((out_fp=fopen(output_file, "w")) == NULL){
-			//fprintf(stdout, "Cannot open or create output file(%s) \n", output_file);
+			fprintf(out_fp, "Cannot open or create output file(%s) \n", output_file);
 			exit(1);
 		}
 	}
@@ -3184,9 +3184,6 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
     next_layer = 1;
     curr_layer = 0;
 
-	//test for error message
-	dd.error_message.emplace_back("This line is for testing error handling feature");
-	
     for (int i = 0; i < max_layers; i++) {
 		layers.push_back(layer());
     }
@@ -3201,6 +3198,10 @@ dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double
     while ((code=readcodes()) > -900) {
 	process_code[curr_state->state](code);
     }
+
+	if(code == ERROR_FLAG){
+		dd.error_message.push_back("ERROR: The file may be empty, corrupted");
+	}
 
     for (int i = 0; i < next_layer; i++) {
 
