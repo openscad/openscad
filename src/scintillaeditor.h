@@ -58,7 +58,7 @@ public:
 	QStringList colorSchemes() override;
     bool canUndo() override;
     void addTemplate();
-	void setIndicator(std::vector<IndicatorData> indicatorData) override;
+	void setIndicator(const std::vector<IndicatorData>& indicatorData) override;
 
 private:
         void getRange(int *lineFrom, int *lineTo);

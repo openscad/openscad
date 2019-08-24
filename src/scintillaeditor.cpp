@@ -972,23 +972,24 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
-void ScintillaEditor::setIndicator(std::vector<IndicatorData> indicatorinfo)
+void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
 {
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
-	this->indicatorData = indicatorinfo;
+	this->indicatorData = indicatorData;
 
-	for(int i=0; i<indicatorData.size(); i++)
-	{
-		int pos = qsci->positionFromLineIndex(indicatorData[i].linenr, indicatorData[i].colnr);
-		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, i + hyperlinkIndicatorOffset);
-		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, indicatorData[i].nrofchar);
+	int idx = 0;
+	for (const auto& data : indicatorData) {
+		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
+		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+		idx++;
 	}
 }
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-	if(!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+	if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
 		return;
 
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
@@ -997,8 +998,8 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
 
 	// checking if indicator clicked is hyperlinkIndicator
-	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())
-	{
+	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
 		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
 	}
 }
+

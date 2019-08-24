@@ -23,7 +23,7 @@ public:
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
 	void registerUse(const std::string path, const Location &loc);
-	void registerInclude(const std::string &localpath, const std::string &fullpath);
+	void registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc);
 	std::time_t includesChanged() const;
 	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }

@@ -27,7 +27,7 @@ public:
 	virtual QStringList colorSchemes() = 0;
 	virtual bool canUndo() = 0;
 	virtual void addTemplate() = 0;
-	virtual void setIndicator(std::vector<IndicatorData> indicatorData) = 0;
+	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
 
 signals:
   void contentsChanged();

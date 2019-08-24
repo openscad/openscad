@@ -43,7 +43,7 @@ public slots:
 	void initFont(const QString&, uint) override;
 	void displayTemplates() override;
 	void addTemplate() override;
-	void setIndicator(std::vector<IndicatorData>) override;
+	void setIndicator(const std::vector<IndicatorData>&) override;
 private:
 	class QTextEdit *textedit;
 	class Highlighter *highlighter;

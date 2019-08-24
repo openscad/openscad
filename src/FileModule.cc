@@ -56,31 +56,40 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 
 void FileModule::registerUse(const std::string path, const Location &loc)
 {
-	// assuming that loc gives correct data and we got line number and column range of use'd file
-	// currently hardcoding values
-	int linenr = 0;
-	int firstcolnr = 4;
-	int lastcolnr = 9;
-	int nrofchar = lastcolnr - firstcolnr;
+	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			loc.fileName() %
+			path);
 
 	auto ext = fs::path(path).extension().generic_string();
-	
+
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
-			indicatorData.push_back(IndicatorData(linenr, firstcolnr, nrofchar, path));
 		} else {
 			PRINTB("ERROR: Can't read font with path '%s'", path);
 		}
 	} else {
 		usedlibs.insert(path);
-		indicatorData.push_back(IndicatorData(linenr, firstcolnr, nrofchar, path));
+		if (!loc.isNone()) {
+			indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), path);
+		}
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
+void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
 {
+	PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			localpath %
+			fullpath);
+
 	this->includes[localpath] = {fullpath};
+	if (!loc.isNone()) {
+		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
+	}
 }
 
 time_t FileModule::includesChanged() const
