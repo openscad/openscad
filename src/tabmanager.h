@@ -70,4 +70,6 @@ public slots:
     void setTabModified(bool, EditorInterface *);
     void saveAll();
     void closeCurrentTab();
+    void nextTab();
+    void prevTab();
 };

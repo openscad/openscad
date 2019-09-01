@@ -340,6 +340,9 @@
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="separator"/>
+    <addaction name="editActionNextTab"/>
+    <addaction name="editActionPrevTab"/>
+    <addaction name="separator"/>
     <addaction name="editActionCopyViewport"/>
     <addaction name="editActionCopyVPT"/>
     <addaction name="editActionCopyVPR"/>
@@ -857,6 +860,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+D</string>
+   </property>
+  </action>
+  <action name="editActionNextTab">
+   <property name="text">
+    <string>Show Next Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Tab</string>
+   </property>
+  </action>
+  <action name="editActionPrevTab">
+   <property name="text">
+    <string>Show Previous Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Tab</string>
    </property>
   </action>
   <action name="editActionCopyViewport">

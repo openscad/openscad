@@ -319,6 +319,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	show_examples();
 
+	connect(this->editActionNextTab, SIGNAL(triggered()), tabManager, SLOT(nextTab()));
+	connect(this->editActionPrevTab, SIGNAL(triggered()), tabManager, SLOT(prevTab()));
+
 	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));

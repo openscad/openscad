@@ -112,6 +112,31 @@ void TabManager::closeCurrentTab()
         par->close();
 }
 
+void TabManager::nextTab()
+{
+    assert(tabWidget != nullptr);
+
+    if (tabWidget->count()<=1)
+        return;
+
+    int idx = (tabWidget->currentIndex()+1) % tabWidget->count();
+    tabWidget->setCurrentIndex(idx);
+}
+
+void TabManager::prevTab()
+{
+    assert(tabWidget != nullptr);
+
+    if (tabWidget->count()<=1)
+        return;
+
+    int idx = tabWidget->currentIndex()-1;
+    if (idx<0)
+        idx = tabWidget->count()-1;
+
+    tabWidget->setCurrentIndex(idx);
+}
+
 void TabManager::actionNew()
 {
     createTab("");
