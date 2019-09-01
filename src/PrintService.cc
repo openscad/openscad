@@ -35,7 +35,7 @@ PrintService::PrintService()
 	try {
 		init();
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+		PRINTB("ERROR: %s", e.getErrorMessage());
 	}
 	if (enabled) {
 		PRINTB("External print service available: %s (upload limit = %d MB)", displayName.toStdString() % fileSizeLimitMB);
