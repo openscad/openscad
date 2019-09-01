@@ -300,6 +300,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
+	connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__

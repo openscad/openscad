@@ -1252,7 +1252,7 @@
   </action>
   <action name="fileActionClose">
    <property name="text">
-    <string>&amp;Close Window</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -1506,21 +1506,5 @@
   <include location="../openscad.qrc"/>
  </resources>
  <connections>
-  <connection>
-   <sender>fileActionClose</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>323</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>

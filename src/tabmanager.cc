@@ -101,6 +101,17 @@ void TabManager::closeTabRequested(int x)
     delete temp;
 }
 
+void TabManager::closeCurrentTab()
+{
+    assert(tabWidget != nullptr);
+
+    /* Close tab or close the current window if only one tab is open. */
+    if (tabWidget->count()>1)
+        this->closeTabRequested(tabWidget->currentIndex());
+    else
+        par->close();
+}
+
 void TabManager::actionNew()
 {
     createTab("");
