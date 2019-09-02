@@ -304,7 +304,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__
 	auto shortcuts = this->fileActionSave->shortcuts();
-	shortcuts.push_back(QKeySequence(Qt::Key_F2));
 	this->fileActionSave->setShortcuts(shortcuts);
 	shortcuts = this->fileActionReload->shortcuts();
 	shortcuts.push_back(QKeySequence(Qt::Key_F3));
