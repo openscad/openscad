@@ -60,6 +60,9 @@ private slots:
     void commentSelection();
     void uncommentSelection();
     void updateActionUndoState();
+    void toggleBookmark();
+    void nextBookmark();
+    void prevBookmark();
 
     void stopAnimation();
     void updateFindState();
