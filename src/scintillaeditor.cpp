@@ -996,3 +996,7 @@ void ScintillaEditor::prevBookmark()
 	if (line != -1)
 		qsci->setCursorPosition(line, index);
 }
+
+void ScintillaEditor::jumpToNextError()
+{
+}

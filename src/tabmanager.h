@@ -63,6 +63,7 @@ private slots:
     void toggleBookmark();
     void nextBookmark();
     void prevBookmark();
+    void jumpToNextError();
 
     void stopAnimation();
     void updateFindState();

@@ -105,6 +105,7 @@ public slots:
 	void toggleBookmark() override;
 	void nextBookmark() override;
 	void prevBookmark() override;
+	void jumpToNextError() override;
 
 private slots:
 	void onTextChanged();

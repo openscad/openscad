@@ -357,6 +357,8 @@
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
     <addaction name="separator"/>
+    <addaction name="editActionJumpToNextError"/>
+    <addaction name="separator"/>
     <addaction name="editActionZoomTextIn"/>
     <addaction name="editActionZoomTextOut"/>
     <addaction name="editActionPreferences"/>
@@ -1326,6 +1328,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="editActionJumpToNextError">
+   <property name="text">
+    <string>Jump to next error</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+ALT+E</string>
    </property>
   </action>
   <action name="designActionFlushCaches">

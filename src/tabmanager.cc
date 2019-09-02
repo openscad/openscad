@@ -55,6 +55,7 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     connect(par->editActionToggleBookmark, SIGNAL(triggered()), this, SLOT(toggleBookmark()));
     connect(par->editActionNextBookmark, SIGNAL(triggered()), this, SLOT(nextBookmark()));
     connect(par->editActionPrevBookmark, SIGNAL(triggered()), this, SLOT(prevBookmark()));
+    connect(par->editActionJumpToNextError, SIGNAL(triggered()), this, SLOT(jumpToNextError()));
 }
 
 QWidget *TabManager::getTabHeader()
@@ -298,6 +299,11 @@ void TabManager::nextBookmark()
 void TabManager::prevBookmark()
 {
     editor->prevBookmark();
+}
+
+void TabManager::jumpToNextError()
+{
+    editor->jumpToNextError();
 }
 
 void TabManager::updateActionUndoState()
