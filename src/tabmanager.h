@@ -69,4 +69,7 @@ public slots:
     void setContentRenderState(); // since last render
     void setTabModified(bool, EditorInterface *);
     void saveAll();
+    void closeCurrentTab();
+    void nextTab();
+    void prevTab();
 };

@@ -340,6 +340,9 @@
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="separator"/>
+    <addaction name="editActionNextTab"/>
+    <addaction name="editActionPrevTab"/>
+    <addaction name="separator"/>
     <addaction name="editActionCopyViewport"/>
     <addaction name="editActionCopyVPT"/>
     <addaction name="editActionCopyVPR"/>
@@ -859,6 +862,22 @@
     <string>Ctrl+Shift+D</string>
    </property>
   </action>
+  <action name="editActionNextTab">
+   <property name="text">
+    <string>Show Next Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Tab</string>
+   </property>
+  </action>
+  <action name="editActionPrevTab">
+   <property name="text">
+    <string>Show Previous Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Tab</string>
+   </property>
+  </action>
   <action name="editActionCopyViewport">
    <property name="text">
     <string>Copy viewport ima&amp;ge</string>
@@ -1252,7 +1271,7 @@
   </action>
   <action name="fileActionClose">
    <property name="text">
-    <string>&amp;Close Window</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -1506,21 +1525,5 @@
   <include location="../openscad.qrc"/>
  </resources>
  <connections>
-  <connection>
-   <sender>fileActionClose</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>323</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>
