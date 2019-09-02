@@ -158,6 +158,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber); 
 	qsci->markerDefine(QsciScintilla::Circle, errMarkerNumber);
+	qsci->markerDefine(QsciScintilla::Bookmark, bmMarkerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 	qsci->setCaretLineVisible(true);
@@ -963,12 +964,35 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 
 void ScintillaEditor::toggleBookmark()
 {
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+
+	unsigned int state = qsci->markersAtLine(line);
+
+	if ((state & (1<<bmMarkerNumber))==0)
+		qsci->markerAdd(line, bmMarkerNumber);
+	else
+		qsci->markerDelete(line, bmMarkerNumber);
 }
 
 void ScintillaEditor::nextBookmark()
 {
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = qsci->markerFindNext(line+1, 1<<bmMarkerNumber);
+	if (line == -1) // wrap around, search from the first line
+		line = qsci->markerFindNext(0, 1<<bmMarkerNumber);
+	if (line != -1)
+		qsci->setCursorPosition(line, index);
 }
 
 void ScintillaEditor::prevBookmark()
 {
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = qsci->markerFindPrevious(line-1, 1<<bmMarkerNumber);
+	if (line == -1) // wrap around, search backwards from last line
+		line = qsci->markerFindPrevious(qsci->lines()-1, 1<<bmMarkerNumber);
+	if (line != -1)
+		qsci->setCursorPosition(line, index);
 }
