@@ -118,7 +118,7 @@ private:
 	QVBoxLayout *scintillaLayout;
     static const int errorIndicatorNumber = 8; // first 8 are used by lexers 
     static const int findIndicatorNumber = 9; 
-	static const int markerNumber = 2;
+	static const int errMarkerNumber = 2;
 	ScadLexer *lexer;
 	QFont currentFont;
 	ScadApi *api;
