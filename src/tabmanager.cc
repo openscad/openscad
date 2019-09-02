@@ -251,14 +251,17 @@ void TabManager::uncommentSelection()
 
 void TabManager::toggleBookmark()
 {
+    editor->toggleBookmark();
 }
 
 void TabManager::nextBookmark()
 {
+    editor->nextBookmark();
 }
 
 void TabManager::prevBookmark()
 {
+    editor->prevBookmark();
 }
 
 void TabManager::updateActionUndoState()

@@ -316,3 +316,15 @@ void LegacyEditor::displayTemplates()
 void LegacyEditor::addTemplate()
 {
 }
+
+void LegacyEditor::toggleBookmark()
+{
+}
+
+void LegacyEditor::nextBookmark()
+{
+}
+
+void LegacyEditor::prevBookmark()
+{
+}

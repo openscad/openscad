@@ -960,3 +960,15 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 {
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
+
+void ScintillaEditor::toggleBookmark()
+{
+}
+
+void ScintillaEditor::nextBookmark()
+{
+}
+
+void ScintillaEditor::prevBookmark()
+{
+}
