@@ -999,4 +999,11 @@ void ScintillaEditor::prevBookmark()
 
 void ScintillaEditor::jumpToNextError()
 {
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = qsci->markerFindNext(line+1, 1<<errMarkerNumber);
+	if (line == -1) // wrap around, search from the first line
+		line = qsci->markerFindNext(0, 1<<errMarkerNumber);
+	if (line != -1)
+		qsci->setCursorPosition(line, index);
 }
