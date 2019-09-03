@@ -718,7 +718,7 @@ void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
 		std::tie(api_version, server_version) = octoPrint.getVersion();
 		this->labelOctoPrintCheckConnection->setText(QString{_("Success: Server Version = %2, API Version = %1")}.arg(api_version).arg(server_version));
 	} catch (const NetworkException& e) {
-		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
+		QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()), QMessageBox::Ok);
 		this->labelOctoPrintCheckConnection->setText("");
 	}
 }
@@ -742,7 +742,7 @@ void Preferences::on_pushButtonOctoPrintSlicingEngine_clicked()
 			this->comboBoxOctoPrintSlicingEngine->setCurrentIndex(idx);
 		}
 	} catch (const NetworkException& e) {
-		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
+		QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()), QMessageBox::Ok);
 	}
 }
 
@@ -778,7 +778,7 @@ void Preferences::on_pushButtonOctoPrintSlicingProfile_clicked()
 			this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(idx);
 		}
 	} catch (const NetworkException& e) {
-		QMessageBox::critical(this, _("Error"), e.getErrorMessage(), QMessageBox::Ok);
+		QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()), QMessageBox::Ok);
 	}
 }
 
