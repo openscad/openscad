@@ -76,6 +76,7 @@ private:
         void setLexer(ScadLexer *lexer);
         void replaceSelectedText(QString&);
         void addTemplate(const fs::path path);
+        void updateSymbolMarginVisibility();
 
 signals:
 	void previewRequest(void);
@@ -119,6 +120,8 @@ public:
 
 private:
 	QVBoxLayout *scintillaLayout;
+	static const int symbolMargin = 1;
+	static const int numberMargin = 0;
     static const int errorIndicatorNumber = 8; // first 8 are used by lexers 
     static const int findIndicatorNumber = 9; 
 	static const int errMarkerNumber = 2;
