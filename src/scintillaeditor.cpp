@@ -157,7 +157,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber); 
-	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
+	qsci->markerDefine(QsciScintilla::Circle, errMarkerNumber);
+	qsci->markerDefine(QsciScintilla::Bookmark, bmMarkerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 	qsci->setCaretLineVisible(true);
@@ -305,7 +306,7 @@ void ScintillaEditor::highlightError(int error_pos)
 	int line, index;
 	qsci->lineIndexFromPosition(error_pos, &line, &index);
 	qsci->fillIndicatorRange(line, index, line, index + 1, errorIndicatorNumber);
-	qsci->markerAdd(line, markerNumber);
+	qsci->markerAdd(line, errMarkerNumber);
 }
 
 void ScintillaEditor::unhighlightLastError()
@@ -314,7 +315,7 @@ void ScintillaEditor::unhighlightLastError()
 	int line, index;
 	qsci->lineIndexFromPosition(totalLength, &line, &index);
 	qsci->clearIndicatorRange(0, 0, line, index, errorIndicatorNumber);
-	qsci->markerDeleteAll(markerNumber);
+	qsci->markerDeleteAll(errMarkerNumber);
 }
 
 QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
@@ -415,7 +416,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 		qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
 
-		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), errMarkerNumber);
         qsci->setIndicatorForegroundColor(readColor(colors, "error-indicator", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
         qsci->setIndicatorOutlineColor(readColor(colors, "error-indicator-outline", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
         qsci->setIndicatorForegroundColor(readColor(colors, "find-indicator", QColor(255, 255, 0, 100)), findIndicatorNumber);//yellow
@@ -443,7 +444,7 @@ void ScintillaEditor::noColor()
 	this->lexer->setColor(Qt::black);
 	qsci->setCaretWidth(2);
 	qsci->setCaretForegroundColor(Qt::black);
-	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), errMarkerNumber);
     qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), errorIndicatorNumber);//red
     qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), errorIndicatorNumber); // only alpha part is used
     qsci->setIndicatorForegroundColor(QColor(255, 255, 0, 128), findIndicatorNumber);//yellow
@@ -959,4 +960,39 @@ void ScintillaEditor::onAutocompleteChanged(bool state)
 void ScintillaEditor::onCharacterThresholdChanged(int val)
 {
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+}
+
+void ScintillaEditor::toggleBookmark()
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+
+	unsigned int state = qsci->markersAtLine(line);
+
+	if ((state & (1<<bmMarkerNumber))==0)
+		qsci->markerAdd(line, bmMarkerNumber);
+	else
+		qsci->markerDelete(line, bmMarkerNumber);
+}
+
+void ScintillaEditor::nextBookmark()
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = qsci->markerFindNext(line+1, 1<<bmMarkerNumber);
+	if (line == -1) // wrap around, search from the first line
+		line = qsci->markerFindNext(0, 1<<bmMarkerNumber);
+	if (line != -1)
+		qsci->setCursorPosition(line, index);
+}
+
+void ScintillaEditor::prevBookmark()
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = qsci->markerFindPrevious(line-1, 1<<bmMarkerNumber);
+	if (line == -1) // wrap around, search backwards from last line
+		line = qsci->markerFindPrevious(qsci->lines()-1, 1<<bmMarkerNumber);
+	if (line != -1)
+		qsci->setCursorPosition(line, index);
 }

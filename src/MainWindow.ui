@@ -339,6 +339,9 @@
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
+    <addaction name="editActionToggleBookmark"/>
+    <addaction name="editActionNextBookmark"/>
+    <addaction name="editActionPrevBookmark"/>
     <addaction name="separator"/>
     <addaction name="editActionNextTab"/>
     <addaction name="editActionPrevTab"/>
@@ -1451,6 +1454,30 @@
   <action name="editActionConvertTabsToSpaces">
    <property name="text">
     <string>Conv&amp;ert Tabs to Spaces</string>
+   </property>
+  </action>
+  <action name="editActionToggleBookmark">
+   <property name="text">
+    <string>Toggle Bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>CTRL+F2</string>
+   </property>
+  </action>
+  <action name="editActionNextBookmark">
+   <property name="text">
+    <string>Jump to next bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="editActionPrevBookmark">
+   <property name="text">
+    <string>Jump to previous bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>SHIFT+F2</string>
    </property>
   </action>
   <action name="viewActionHideToolBars">

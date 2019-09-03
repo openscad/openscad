@@ -51,6 +51,10 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     connect(par->editActionUnindent, SIGNAL(triggered()), this, SLOT(unindentSelection()));
     connect(par->editActionComment, SIGNAL(triggered()), this, SLOT(commentSelection()));
     connect(par->editActionUncomment, SIGNAL(triggered()), this, SLOT(uncommentSelection()));
+
+    connect(par->editActionToggleBookmark, SIGNAL(triggered()), this, SLOT(toggleBookmark()));
+    connect(par->editActionNextBookmark, SIGNAL(triggered()), this, SLOT(nextBookmark()));
+    connect(par->editActionPrevBookmark, SIGNAL(triggered()), this, SLOT(prevBookmark()));
 }
 
 QWidget *TabManager::getTabHeader()
@@ -279,6 +283,21 @@ void TabManager::commentSelection()
 void TabManager::uncommentSelection()
 {
     editor->uncommentSelection();
+}
+
+void TabManager::toggleBookmark()
+{
+    editor->toggleBookmark();
+}
+
+void TabManager::nextBookmark()
+{
+    editor->nextBookmark();
+}
+
+void TabManager::prevBookmark()
+{
+    editor->prevBookmark();
 }
 
 void TabManager::updateActionUndoState()

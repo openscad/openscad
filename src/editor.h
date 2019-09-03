@@ -53,6 +53,9 @@ public slots:
 	virtual void paste() = 0;
 	virtual void initFont(const QString&, uint) = 0;
 	virtual void displayTemplates() = 0;
+	virtual void toggleBookmark() = 0;
+	virtual void nextBookmark() = 0;
+	virtual void prevBookmark() = 0;
 
 private:
 	QSize initialSizeHint;
