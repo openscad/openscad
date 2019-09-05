@@ -998,24 +998,33 @@ void ScintillaEditor::toggleBookmark()
 	updateSymbolMarginVisibility();
 }
 
-void ScintillaEditor::nextBookmark()
+void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::function<int(int)> findMarkerFunc)
 {
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
-	line = qsci->markerFindNext(line+1, 1<<bmMarkerNumber);
-	if (line == -1) // wrap around, search from the first line
-		line = qsci->markerFindNext(0, 1<<bmMarkerNumber);
-	if (line != -1)
-		qsci->setCursorPosition(line, index);
+	line = findMarkerFunc(line + findStartOffset);
+	if (line == -1) {
+		line = findMarkerFunc(wrapStart); // wrap around
+	}
+	if (line != -1) {
+		// make sure we don't wrap into new line
+		int len = qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+		int col = std::min(index, len);
+		qsci->setCursorPosition(line, col);
+	}
+}
+
+void ScintillaEditor::nextBookmark()
+{
+	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << bmMarkerNumber); });
 }
 
 void ScintillaEditor::prevBookmark()
 {
-	int line, index;
-	qsci->getCursorPosition(&line, &index);
-	line = qsci->markerFindPrevious(line-1, 1<<bmMarkerNumber);
-	if (line == -1) // wrap around, search backwards from last line
-		line = qsci->markerFindPrevious(qsci->lines()-1, 1<<bmMarkerNumber);
-	if (line != -1)
-		qsci->setCursorPosition(line, index);
+	findMarker(-1, qsci->lines() - 1, [this](int line){ return qsci->markerFindPrevious(line, 1 << bmMarkerNumber); });
+}
+
+void ScintillaEditor::jumpToNextError()
+{
+	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
 }
