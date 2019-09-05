@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
+#include <functional>
 #include "editor.h"
 #include "scadlexer.h"
 #include "scadapi.h"
@@ -77,6 +78,7 @@ private:
         void replaceSelectedText(QString&);
         void addTemplate(const fs::path path);
         void updateSymbolMarginVisibility();
+		void findMarker(int, int, std::function<int(int)>);
 
 signals:
 	void previewRequest(void);
