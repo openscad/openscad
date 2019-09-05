@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <QObject>
 #include <QSet>
 #include "editor.h"
@@ -42,6 +43,7 @@ private:
 
     bool maybeSave(int);
     void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);
+	void applyAction(QObject *object, std::function<void(int, EditorInterface *)> func);
 
 private slots:
     void tabSwitched(int);
@@ -63,6 +65,10 @@ private slots:
     void toggleBookmark();
     void nextBookmark();
     void prevBookmark();
+	void copyFileName();
+	void copyFilePath();
+	void closeTab();
+	void launchContextMenu(const QPoint&);
 
     void stopAnimation();
     void updateFindState();
