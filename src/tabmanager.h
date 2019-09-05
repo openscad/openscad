@@ -65,6 +65,7 @@ private slots:
     void toggleBookmark();
     void nextBookmark();
     void prevBookmark();
+    void jumpToNextError();
 	void copyFileName();
 	void copyFilePath();
 	void closeTab();

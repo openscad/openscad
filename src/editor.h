@@ -56,6 +56,7 @@ public slots:
 	virtual void toggleBookmark() = 0;
 	virtual void nextBookmark() = 0;
 	virtual void prevBookmark() = 0;
+	virtual void jumpToNextError() = 0;
 
 private:
 	QSize initialSizeHint;

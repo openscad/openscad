@@ -328,3 +328,7 @@ void LegacyEditor::nextBookmark()
 void LegacyEditor::prevBookmark()
 {
 }
+
+void LegacyEditor::jumpToNextError()
+{
+}

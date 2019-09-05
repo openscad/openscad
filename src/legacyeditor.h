@@ -46,6 +46,8 @@ public slots:
 	void toggleBookmark() override;
 	void nextBookmark() override;
 	void prevBookmark() override;
+	void jumpToNextError() override;
+
 private:
 	class QTextEdit *textedit;
 	class Highlighter *highlighter;
