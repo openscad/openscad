@@ -31,6 +31,15 @@ int TabWidget::addTab(QWidget *w, const QString &label)
 	return i;
 }
 
+void TabWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	QTabBar::mouseReleaseEvent(event);
+
+	if (event->button() == Qt::MiddleButton) {
+		emit middleMouseClicked(tabAt(event->pos()));
+	}
+}
+
 void TabWidget::fireTabCountChanged()
 {
 	emit tabCountChanged(this->count());

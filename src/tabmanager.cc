@@ -33,6 +33,7 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
 	connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
     connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SIGNAL(tabCountChanged(int)));
+	connect(tabWidget, SIGNAL(middleMouseClicked(int)), this, SLOT(middleMouseClicked(int)));
 	connect(tabWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(launchContextMenu(const QPoint&)));
 
     createTab(filename);
@@ -92,6 +93,15 @@ void TabManager::tabSwitched(int x)
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
     par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
+}
+
+void TabManager::middleMouseClicked(int x)
+{
+	if (x < 0) {
+		createTab("");
+	} else {
+		closeTabRequested(x);
+	}
 }
 
 void TabManager::closeTabRequested(int x)
