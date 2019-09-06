@@ -300,11 +300,11 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
+	connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__
 	auto shortcuts = this->fileActionSave->shortcuts();
-	shortcuts.push_back(QKeySequence(Qt::Key_F2));
 	this->fileActionSave->setShortcuts(shortcuts);
 	shortcuts = this->fileActionReload->shortcuts();
 	shortcuts.push_back(QKeySequence(Qt::Key_F3));
@@ -317,6 +317,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 					this, SLOT(clearRecentFiles()));
 
 	show_examples();
+
+	connect(this->editActionNextTab, SIGNAL(triggered()), tabManager, SLOT(nextTab()));
+	connect(this->editActionPrevTab, SIGNAL(triggered()), tabManager, SLOT(prevTab()));
 
 	connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
 	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
@@ -1943,7 +1946,7 @@ void MainWindow::sendToOctoPrint()
 		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
 		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+		PRINTB("ERROR: %s", e.getErrorMessage());
 	}
 
 	updateStatusBar(nullptr);
@@ -1998,7 +2001,7 @@ void MainWindow::sendToPrintService()
         const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool { return network_progress_func(v); });
 		QDesktopServices::openUrl(QUrl{partUrl});
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+		PRINTB("ERROR: %s", e.getErrorMessage());
     }
 
 	updateStatusBar(nullptr);

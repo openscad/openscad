@@ -47,6 +47,4 @@ public:
 
 	ValuePtr evaluate(const Context *ctx, const EvalContext *evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-        
-	static UserFunction *create(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 };

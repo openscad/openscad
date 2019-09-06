@@ -155,12 +155,23 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
 
-	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
-	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber); 
-	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 	qsci->setCaretLineVisible(true);
+
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber);
+	qsci->markerDefine(QsciScintilla::Circle, errMarkerNumber);
+	qsci->markerDefine(QsciScintilla::Bookmark, bmMarkerNumber);
+
+	qsci->setMarginType(numberMargin, QsciScintilla::NumberMargin);
+	qsci->setMarginLineNumbers(numberMargin, true);
+	qsci->setMarginMarkerMask(numberMargin, 0);
+
+	qsci->setMarginType(symbolMargin, QsciScintilla::SymbolMargin);
+	qsci->setMarginLineNumbers(symbolMargin, false);
+	qsci->setMarginWidth(symbolMargin, 0);
+	qsci->setMarginMarkerMask(symbolMargin, 1 << errMarkerNumber | 1 << bmMarkerNumber);
 
 	setLexer(new ScadLexer(this));
 	initMargin();
@@ -244,11 +255,7 @@ void ScintillaEditor::applySettings()
 
 	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
-    auto value = s->get(Settings::Settings::enableLineNumbers).toBool();
-    qsci->setMarginLineNumbers(1,value);
-
-    if (!value) qsci->setMarginWidth(1,20);
-    else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+	onTextChanged();
 
 	if(Preferences::inst()->getValue("editor/enableAutocomplete").toBool())
 	{
@@ -309,7 +316,8 @@ void ScintillaEditor::highlightError(int error_pos)
 	int line, index;
 	qsci->lineIndexFromPosition(error_pos, &line, &index);
 	qsci->fillIndicatorRange(line, index, line, index + 1, errorIndicatorNumber);
-	qsci->markerAdd(line, markerNumber);
+	qsci->markerAdd(line, errMarkerNumber);
+	updateSymbolMarginVisibility();
 }
 
 void ScintillaEditor::unhighlightLastError()
@@ -318,7 +326,8 @@ void ScintillaEditor::unhighlightLastError()
 	int line, index;
 	qsci->lineIndexFromPosition(totalLength, &line, &index);
 	qsci->clearIndicatorRange(0, 0, line, index, errorIndicatorNumber);
-	qsci->markerDeleteAll(markerNumber);
+	qsci->markerDeleteAll(errMarkerNumber);
+	updateSymbolMarginVisibility();
 }
 
 QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
@@ -419,7 +428,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 		qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
 
-		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), errMarkerNumber);
+		qsci->setMarkerBackgroundColor(readColor(colors, "bookmark-marker", QColor(150, 200, 255, 100)), bmMarkerNumber); // light blue
         qsci->setIndicatorForegroundColor(readColor(colors, "error-indicator", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
         qsci->setIndicatorOutlineColor(readColor(colors, "error-indicator-outline", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
         qsci->setIndicatorForegroundColor(readColor(colors, "find-indicator", QColor(255, 255, 0, 100)), findIndicatorNumber);//yellow
@@ -450,7 +460,8 @@ void ScintillaEditor::noColor()
 	this->lexer->setColor(Qt::black);
 	qsci->setCaretWidth(2);
 	qsci->setCaretForegroundColor(Qt::black);
-	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), errMarkerNumber);
+	qsci->setMarkerBackgroundColor(QColor(150, 200, 255, 100), bmMarkerNumber); // light blue
     qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), errorIndicatorNumber);//red
     qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), errorIndicatorNumber); // only alpha part is used
     qsci->setIndicatorForegroundColor(QColor(255, 255, 0, 128), findIndicatorNumber);//yellow
@@ -587,18 +598,20 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
 
 void ScintillaEditor::initMargin()
 {
-  qsci->setMarginLineNumbers(1, true);
   connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
 }
 
 void ScintillaEditor::onTextChanged()
 {
-  auto s = Settings::Settings::inst();
-  QFontMetrics fontmetrics(this->currentFont);
-  auto enableLineNumbers = s->get(Settings::Settings::enableLineNumbers).toBool();
+	auto s = Settings::Settings::inst();
+	auto enableLineNumbers = s->get(Settings::Settings::enableLineNumbers).toBool();
 
-  if (!enableLineNumbers) qsci->setMarginWidth(1, 20);
-  else qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
+	if (enableLineNumbers) {
+		qsci->setMarginWidth(numberMargin, QString(trunc(log10(qsci->lines()) + 2), '0'));
+	} else {
+		qsci->setMarginWidth(numberMargin, 6);
+	}
+	qsci->setMarginLineNumbers(numberMargin, enableLineNumbers);
 }
 
 int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
@@ -1003,3 +1016,57 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 	}
 }
 
+void ScintillaEditor::updateSymbolMarginVisibility()
+{
+	if (qsci->markerFindNext(0, 1 << bmMarkerNumber | 1 << errMarkerNumber) < 0) {
+		qsci->setMarginWidth(symbolMargin, 0);
+	} else {
+		qsci->setMarginWidth(symbolMargin, "00");
+	}
+}
+
+void ScintillaEditor::toggleBookmark()
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+
+	unsigned int state = qsci->markersAtLine(line);
+
+	if ((state & (1<<bmMarkerNumber))==0)
+		qsci->markerAdd(line, bmMarkerNumber);
+	else
+		qsci->markerDelete(line, bmMarkerNumber);
+
+	updateSymbolMarginVisibility();
+}
+
+void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::function<int(int)> findMarkerFunc)
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = findMarkerFunc(line + findStartOffset);
+	if (line == -1) {
+		line = findMarkerFunc(wrapStart); // wrap around
+	}
+	if (line != -1) {
+		// make sure we don't wrap into new line
+		int len = qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+		int col = std::min(index, len);
+		qsci->setCursorPosition(line, col);
+	}
+}
+
+void ScintillaEditor::nextBookmark()
+{
+	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << bmMarkerNumber); });
+}
+
+void ScintillaEditor::prevBookmark()
+{
+	findMarker(-1, qsci->lines() - 1, [this](int line){ return qsci->markerFindPrevious(line, 1 << bmMarkerNumber); });
+}
+
+void ScintillaEditor::jumpToNextError()
+{
+	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
+}

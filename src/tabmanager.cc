@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QClipboard>
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
@@ -28,9 +29,12 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     tabWidget->setExpanding(false);
     tabWidget->setTabsClosable(true);
     tabWidget->setMovable(true);
-    connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
+	tabWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
     connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SIGNAL(tabCountChanged(int)));
+	connect(tabWidget, SIGNAL(middleMouseClicked(int)), this, SLOT(middleMouseClicked(int)));
+	connect(tabWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(launchContextMenu(const QPoint&)));
 
     createTab(filename);
 
@@ -51,6 +55,11 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     connect(par->editActionUnindent, SIGNAL(triggered()), this, SLOT(unindentSelection()));
     connect(par->editActionComment, SIGNAL(triggered()), this, SLOT(commentSelection()));
     connect(par->editActionUncomment, SIGNAL(triggered()), this, SLOT(uncommentSelection()));
+
+    connect(par->editActionToggleBookmark, SIGNAL(triggered()), this, SLOT(toggleBookmark()));
+    connect(par->editActionNextBookmark, SIGNAL(triggered()), this, SLOT(nextBookmark()));
+    connect(par->editActionPrevBookmark, SIGNAL(triggered()), this, SLOT(prevBookmark()));
+    connect(par->editActionJumpToNextError, SIGNAL(triggered()), this, SLOT(jumpToNextError()));
 }
 
 QWidget *TabManager::getTabHeader()
@@ -85,6 +94,22 @@ void TabManager::tabSwitched(int x)
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
     par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
+
+	for (int idx = 0;idx < tabWidget->count();idx++) {
+		QWidget * button = tabWidget->tabButton(idx, QTabBar::RightSide);
+		if (button) {
+			button->setVisible(idx == x);
+		}
+	}
+}
+
+void TabManager::middleMouseClicked(int x)
+{
+	if (x < 0) {
+		createTab("");
+	} else {
+		closeTabRequested(x);
+	}
 }
 
 void TabManager::closeTabRequested(int x)
@@ -99,6 +124,29 @@ void TabManager::closeTabRequested(int x)
     tabWidget->fireTabCountChanged();
 
     delete temp;
+}
+
+void TabManager::closeCurrentTab()
+{
+    assert(tabWidget != nullptr);
+
+    /* Close tab or close the current window if only one tab is open. */
+    if (tabWidget->count()>1)
+        this->closeTabRequested(tabWidget->currentIndex());
+    else
+        par->close();
+}
+
+void TabManager::nextTab()
+{
+	assert(tabWidget != nullptr);
+	tabWidget->setCurrentIndex((tabWidget->currentIndex() + 1) % tabWidget->count());
+}
+
+void TabManager::prevTab()
+{
+	assert(tabWidget != nullptr);
+	tabWidget->setCurrentIndex((tabWidget->currentIndex() + tabWidget->count() - 1) % tabWidget->count());
 }
 
 void TabManager::actionNew()
@@ -247,9 +295,108 @@ void TabManager::uncommentSelection()
     editor->uncommentSelection();
 }
 
+void TabManager::toggleBookmark()
+{
+    editor->toggleBookmark();
+}
+
+void TabManager::nextBookmark()
+{
+    editor->nextBookmark();
+}
+
+void TabManager::prevBookmark()
+{
+    editor->prevBookmark();
+}
+
+void TabManager::jumpToNextError()
+{
+    editor->jumpToNextError();
+}
+
 void TabManager::updateActionUndoState()
 {
     par->editActionUndo->setEnabled(editor->canUndo());
+}
+
+void TabManager::applyAction(QObject *object, std::function<void(int, EditorInterface *)> func)
+{
+	QAction *action = dynamic_cast<QAction *>(object);
+	if (action == nullptr) {
+		return;
+	}
+	bool ok;
+	int idx = action->data().toInt(&ok);
+	if (!ok) {
+		return;
+	}
+
+	EditorInterface *edt = (EditorInterface *)tabWidget->widget(idx);
+	if (edt == nullptr) {
+		return;
+	}
+
+	func(idx, edt);
+}
+
+void TabManager::copyFileName()
+{
+	applyAction(QObject::sender(), [](int, EditorInterface *edt){
+		QClipboard *clipboard = QApplication::clipboard();
+		clipboard->setText(QFileInfo(edt->filepath).fileName());
+	});
+}
+
+void TabManager::copyFilePath()
+{
+	applyAction(QObject::sender(), [](int, EditorInterface *edt){
+		QClipboard *clipboard = QApplication::clipboard();
+		clipboard->setText(edt->filepath);
+	});
+}
+
+void TabManager::closeTab()
+{
+	applyAction(QObject::sender(), [this](int idx, EditorInterface *){
+		closeTabRequested(idx);
+	});
+}
+
+void TabManager::launchContextMenu(const QPoint& pos)
+{
+	int idx = tabWidget->tabAt(pos);
+	if (idx < 0) {
+		return;
+	}
+
+	EditorInterface *edt = (EditorInterface *)tabWidget->widget(idx);
+
+	QAction *copyFileNameAction = new QAction(tabWidget);
+	copyFileNameAction->setData(idx);
+	copyFileNameAction->setEnabled(!edt->filepath.isEmpty());
+	copyFileNameAction->setText(_("Copy file name"));
+	connect(copyFileNameAction, SIGNAL(triggered()), SLOT(copyFileName()));
+
+	QAction *copyFilePathAction = new QAction(tabWidget);
+	copyFilePathAction->setData(idx);
+	copyFilePathAction->setEnabled(!edt->filepath.isEmpty());
+	copyFilePathAction->setText(_("Copy full path"));
+	connect(copyFilePathAction, SIGNAL(triggered()), SLOT(copyFilePath()));
+
+	QAction *closeAction = new QAction(tabWidget);
+	closeAction->setData(idx);
+	closeAction->setText(_("Close Tab"));
+	connect(closeAction, SIGNAL(triggered()), SLOT(closeTab()));
+
+	QMenu menu;
+	menu.addAction(copyFileNameAction);
+	menu.addAction(copyFilePathAction);
+	menu.addAction(closeAction);
+
+	int x1, y1, x2, y2;
+	tabWidget->tabRect(idx).getCoords(&x1, &y1, &x2, &y2);
+	menu.exec(tabWidget->mapToGlobal(QPoint(x1, y2)));
 }
 
 void TabManager::setContentRenderState() //since last render

@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
+#include <functional>
 #include "editor.h"
 #include "scadlexer.h"
 #include "scadapi.h"
@@ -77,6 +78,8 @@ private:
         void setLexer(ScadLexer *lexer);
         void replaceSelectedText(QString&);
         void addTemplate(const fs::path path);
+        void updateSymbolMarginVisibility();
+		void findMarker(int, int, std::function<int(int)>);
 
 signals:
 	void previewRequest(void);
@@ -104,6 +107,10 @@ public slots:
 	void paste() override;
 	void initFont(const QString&, uint) override;
 	void displayTemplates() override;
+	void toggleBookmark() override;
+	void nextBookmark() override;
+	void prevBookmark() override;
+	void jumpToNextError() override;
 
 private slots:
 	void onTextChanged();
@@ -119,11 +126,15 @@ public:
 
 private:
 	QVBoxLayout *scintillaLayout;
+	static const int symbolMargin = 1;
+	static const int numberMargin = 0;
     static const int errorIndicatorNumber = 8; // first 8 are used by lexers 
     static const int findIndicatorNumber = 9; 
 	static const int hyperlinkIndicatorNumber = 10;
 	static const int hyperlinkIndicatorOffset = 100;
-	static const int markerNumber = 2;
+	static const int errMarkerNumber = 2;
+	static const int bmMarkerNumber = 3;
+
 	ScadLexer *lexer;
 	QFont currentFont;
 	ScadApi *api;

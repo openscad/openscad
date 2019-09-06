@@ -339,6 +339,12 @@
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
+    <addaction name="editActionToggleBookmark"/>
+    <addaction name="editActionNextBookmark"/>
+    <addaction name="editActionPrevBookmark"/>
+    <addaction name="separator"/>
+    <addaction name="editActionNextTab"/>
+    <addaction name="editActionPrevTab"/>
     <addaction name="separator"/>
     <addaction name="editActionCopyViewport"/>
     <addaction name="editActionCopyVPT"/>
@@ -350,6 +356,8 @@
     <addaction name="editActionFindNext"/>
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
+    <addaction name="separator"/>
+    <addaction name="editActionJumpToNextError"/>
     <addaction name="separator"/>
     <addaction name="editActionZoomTextIn"/>
     <addaction name="editActionZoomTextOut"/>
@@ -859,6 +867,22 @@
     <string>Ctrl+Shift+D</string>
    </property>
   </action>
+  <action name="editActionNextTab">
+   <property name="text">
+    <string>Show Next Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Tab</string>
+   </property>
+  </action>
+  <action name="editActionPrevTab">
+   <property name="text">
+    <string>Show Previous Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Tab</string>
+   </property>
+  </action>
   <action name="editActionCopyViewport">
    <property name="text">
     <string>Copy viewport ima&amp;ge</string>
@@ -1252,7 +1276,7 @@
   </action>
   <action name="fileActionClose">
    <property name="text">
-    <string>&amp;Close Window</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -1304,6 +1328,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="editActionJumpToNextError">
+   <property name="text">
+    <string>Jump to next error</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+ALT+E</string>
    </property>
   </action>
   <action name="designActionFlushCaches">
@@ -1434,6 +1466,30 @@
     <string>Conv&amp;ert Tabs to Spaces</string>
    </property>
   </action>
+  <action name="editActionToggleBookmark">
+   <property name="text">
+    <string>Toggle Bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>CTRL+F2</string>
+   </property>
+  </action>
+  <action name="editActionNextBookmark">
+   <property name="text">
+    <string>Jump to next bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="editActionPrevBookmark">
+   <property name="text">
+    <string>Jump to previous bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>SHIFT+F2</string>
+   </property>
+  </action>
   <action name="viewActionHideToolBars">
    <property name="checkable">
     <bool>true</bool>
@@ -1506,21 +1562,5 @@
   <include location="../openscad.qrc"/>
  </resources>
  <connections>
-  <connection>
-   <sender>fileActionClose</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>323</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>
