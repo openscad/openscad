@@ -33,6 +33,7 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
 	connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
     connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SIGNAL(tabCountChanged(int)));
+	connect(tabWidget, SIGNAL(middleMouseClicked(int)), this, SLOT(middleMouseClicked(int)));
 	connect(tabWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(launchContextMenu(const QPoint&)));
 
     createTab(filename);
@@ -93,6 +94,22 @@ void TabManager::tabSwitched(int x)
     par->changedTopLevelConsole(par->consoleDock->isFloating());
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
     par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
+
+	for (int idx = 0;idx < tabWidget->count();idx++) {
+		QWidget * button = tabWidget->tabButton(idx, QTabBar::RightSide);
+		if (button) {
+			button->setVisible(idx == x);
+		}
+	}
+}
+
+void TabManager::middleMouseClicked(int x)
+{
+	if (x < 0) {
+		createTab("");
+	} else {
+		closeTabRequested(x);
+	}
 }
 
 void TabManager::closeTabRequested(int x)
@@ -122,27 +139,14 @@ void TabManager::closeCurrentTab()
 
 void TabManager::nextTab()
 {
-    assert(tabWidget != nullptr);
-
-    if (tabWidget->count()<=1)
-        return;
-
-    int idx = (tabWidget->currentIndex()+1) % tabWidget->count();
-    tabWidget->setCurrentIndex(idx);
+	assert(tabWidget != nullptr);
+	tabWidget->setCurrentIndex((tabWidget->currentIndex() + 1) % tabWidget->count());
 }
 
 void TabManager::prevTab()
 {
-    assert(tabWidget != nullptr);
-
-    if (tabWidget->count()<=1)
-        return;
-
-    int idx = tabWidget->currentIndex()-1;
-    if (idx<0)
-        idx = tabWidget->count()-1;
-
-    tabWidget->setCurrentIndex(idx);
+	assert(tabWidget != nullptr);
+	tabWidget->setCurrentIndex((tabWidget->currentIndex() + tabWidget->count() - 1) % tabWidget->count());
 }
 
 void TabManager::actionNew()

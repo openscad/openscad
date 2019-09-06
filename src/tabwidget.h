@@ -19,6 +19,7 @@ public:
     void removeTab(int index);
     void setCurrentWidget(int index);
     void fireTabCountChanged();
+	void mouseReleaseEvent(QMouseEvent *event);
 
 private:
 	QList<QWidget *> tabContent;
@@ -27,6 +28,7 @@ private:
 signals:
 	void currentTabChanged(int);
     void tabCountChanged(int);
+	void middleMouseClicked(int);
 
 private slots:
 	void handleCurrentChanged(int);

@@ -1,5 +1,6 @@
 #include <QTabBar>
 #include <QStackedWidget>
+#include <QMouseEvent>
 #include <QList>
 
 #include "tabwidget.h"
@@ -29,6 +30,15 @@ int TabWidget::addTab(QWidget *w, const QString &label)
 	int i = this->insertTab(idx, label);
 	fireTabCountChanged();
 	return i;
+}
+
+void TabWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	QTabBar::mouseReleaseEvent(event);
+
+	if (event->button() == Qt::MiddleButton) {
+		emit middleMouseClicked(tabAt(event->pos()));
+	}
 }
 
 void TabWidget::fireTabCountChanged()
