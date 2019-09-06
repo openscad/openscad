@@ -219,6 +219,8 @@ void TabManager::createTab(const QString &filename)
     editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
+    connect(editor, SIGNAL(hyperlinkIndicatorClicked(int)), this, SLOT(onHyperlinkIndicatorClicked(int)));
+
     int idx = tabWidget->addTab(editor, _("Untitled.scad"));
     if(!editorList.isEmpty()) {
         tabWidget->setCurrentWidget(idx); // to prevent emitting of currentTabChanged signal twice for first tab
@@ -678,4 +680,10 @@ void TabManager::saveAll()
             save(edt);
         }
     }
+}
+
+void TabManager::onHyperlinkIndicatorClicked(int val)
+{
+    const QString filename = QString::fromStdString(editor->indicatorData[val].path);
+    this->open(filename);
 }

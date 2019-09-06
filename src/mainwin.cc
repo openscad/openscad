@@ -1717,6 +1717,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		this->parameterWidget->applyParameters(this->root_module);
 		customizerEditor = activeEditor;
 		this->parameterWidget->setEnabled(true);
+		this->activeEditor->setIndicator(this->root_module->indicatorData);
 	}
 }
 

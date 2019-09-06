@@ -180,6 +180,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+
+	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
+	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
+	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
 }
 
 void ScintillaEditor::addTemplate()
@@ -426,10 +430,13 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 
 		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), errMarkerNumber);
 		qsci->setMarkerBackgroundColor(readColor(colors, "bookmark-marker", QColor(150, 200, 255, 100)), bmMarkerNumber); // light blue
-		qsci->setIndicatorForegroundColor(readColor(colors, "error-indicator", QColor(255, 0, 0, 100)), errorIndicatorNumber); // red
-		qsci->setIndicatorOutlineColor(readColor(colors, "error-indicator-outline", QColor(255, 0, 0, 100)), errorIndicatorNumber); // red
-		qsci->setIndicatorForegroundColor(readColor(colors, "find-indicator", QColor(255, 255, 0, 100)), findIndicatorNumber); // yellow
-		qsci->setIndicatorOutlineColor(readColor(colors, "find-indicator-outline", QColor(255, 255, 0, 100)), findIndicatorNumber); // yellow
+        qsci->setIndicatorForegroundColor(readColor(colors, "error-indicator", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
+        qsci->setIndicatorOutlineColor(readColor(colors, "error-indicator-outline", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
+        qsci->setIndicatorForegroundColor(readColor(colors, "find-indicator", QColor(255, 255, 0, 100)), findIndicatorNumber);//yellow
+        qsci->setIndicatorOutlineColor(readColor(colors, "find-indicator-outline", QColor(255, 255, 0, 100)), findIndicatorNumber);//yellow
+        qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
@@ -454,11 +461,14 @@ void ScintillaEditor::noColor()
 	qsci->setCaretWidth(2);
 	qsci->setCaretForegroundColor(Qt::black);
 	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), errMarkerNumber);
-	qsci->setMarkerBackgroundColor(QColor(150, 200, 255, 100), errMarkerNumber); // light blue
-	qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), errorIndicatorNumber);// red
-	qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), errorIndicatorNumber); // only alpha part is used
-	qsci->setIndicatorForegroundColor(QColor(255, 255, 0, 128), findIndicatorNumber);//yellow
-	qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), findIndicatorNumber); // only alpha part is used
+	qsci->setMarkerBackgroundColor(QColor(150, 200, 255, 100), bmMarkerNumber); // light blue
+    qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), errorIndicatorNumber);//red
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), errorIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorForegroundColor(QColor(255, 255, 0, 128), findIndicatorNumber);//yellow
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), findIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), hyperlinkIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorHoverForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
 	qsci->setCaretLineBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
 	qsci->setSelectionForegroundColor(Qt::black);
@@ -610,6 +620,7 @@ int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibili
 
     auto txt = qsci->text();
 
+    qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, findIndicatorNumber);
     qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
 
     auto pos = txt.indexOf(findText);
@@ -972,6 +983,37 @@ void ScintillaEditor::onAutocompleteChanged(bool state)
 void ScintillaEditor::onCharacterThresholdChanged(int val)
 {
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+}
+
+void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
+{
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
+	this->indicatorData = indicatorData;
+
+	int idx = 0;
+	for (const auto& data : indicatorData) {
+		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
+		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+		idx++;
+	}
+}
+
+void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
+{
+	if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+		return;
+
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+
+	int pos = qsci->positionFromLineIndex(line, col);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+
+	// checking if indicator clicked is hyperlinkIndicator
+	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
+		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+	}
 }
 
 void ScintillaEditor::updateSymbolMarginVisibility()

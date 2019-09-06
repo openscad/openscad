@@ -43,6 +43,7 @@ public slots:
 	void initFont(const QString&, uint) override;
 	void displayTemplates() override;
 	void addTemplate() override;
+	void setIndicator(const std::vector<IndicatorData>&) override;
 	void toggleBookmark() override;
 	void nextBookmark() override;
 	void prevBookmark() override;

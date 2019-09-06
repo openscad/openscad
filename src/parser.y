@@ -53,7 +53,13 @@ namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
-  
+#ifdef DEBUG
+static Location debug_location(const std::string& info, const struct YYLTYPE& loc);
+#define LOCD(str, loc) debug_location(str, loc)
+#else
+#define LOCD(str, loc) LOC(loc)
+#endif
+
 int parser_error_pos = -1;
 
 int parserlex(void);
@@ -76,6 +82,14 @@ static std::string main_file_folder;
 
 bool fileEnded=false;
 %}
+
+%initial-action
+{
+  @$.first_line = 1;
+  @$.first_column = 1;
+  @$.last_column = 1;
+  @$.last_line = 1;
+};
 
 %union {
   char *text;
@@ -155,6 +169,7 @@ bool fileEnded=false;
 %type <text> module_id
 
 %debug
+%locations
 
 %%
 
@@ -162,7 +177,7 @@ input:    /* empty */
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2));
+              rootmodule->registerUse(std::string($2), LOC(@2));
               free($2);
             }
         | input statement
@@ -178,7 +193,7 @@ statement:
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              UserModule *newmodule = new UserModule($2, LOC(@$));
+              UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->definition_arguments = *$4;
               scope_stack.top()->addModule($2, newmodule);
               scope_stack.push(&newmodule->scope);
@@ -189,14 +204,13 @@ statement:
             {
                 scope_stack.pop();
             }
-        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
+        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
             {
-              UserFunction *func = new UserFunction($2, *$4, shared_ptr<Expression>($8), LOC(@$));
+              UserFunction *func = new UserFunction($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
               scope_stack.top()->addFunction(func);
               free($2);
               delete $4;
             }
-          ';'
         | TOK_EOT
             {
                 fileEnded=true;
@@ -248,13 +262,13 @@ assignment:
                                     uncPathCurr);
                         }
                         assignment.expr = shared_ptr<Expression>($3);
-                        assignment.setLocation(LOC(@$));
+                        assignment.setLocation(LOCD("assignment", @$));
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                  scope_stack.top()->addAssignment(Assignment($1, shared_ptr<Expression>($3), LOC(@$)));
+                  scope_stack.top()->addAssignment(Assignment($1, shared_ptr<Expression>($3), LOCD("assignment", @$)));
                 }
                 free($1);
             }
@@ -316,7 +330,7 @@ ifelse_statement:
 if_statement:
           TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOC(@$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -354,7 +368,7 @@ module_id:
 single_module_instantiation:
           module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOC(@$));
+                $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
             }
@@ -363,46 +377,46 @@ single_module_instantiation:
 expr:
           TOK_TRUE
             {
-              $$ = new Literal(ValuePtr(true), LOC(@$));
+              $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
             }
         | TOK_FALSE
             {
-              $$ = new Literal(ValuePtr(false), LOC(@$));
+              $$ = new Literal(ValuePtr(false), LOCD("literal", @$));
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(ValuePtr::undefined, LOC(@$));
+              $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
             }
         | TOK_ID
             {
-              $$ = new Lookup($1, LOC(@$));
+              $$ = new Lookup($1, LOCD("variable", @$));
                 free($1);
             }
         | expr '.' TOK_ID
             {
-              $$ = new MemberLookup($1, $3, LOC(@$));
+              $$ = new MemberLookup($1, $3, LOCD("member", @$));
               free($3);
             }
         | TOK_STRING
             {
-              $$ = new Literal(ValuePtr(std::string($1)), LOC(@$));
+              $$ = new Literal(ValuePtr(std::string($1)), LOCD("string", @$));
               free($1);
             }
         | TOK_NUMBER
             {
-              $$ = new Literal(ValuePtr($1), LOC(@$));
+              $$ = new Literal(ValuePtr($1), LOCD("literal", @$));
             }
         | '[' expr ':' expr ']'
             {
-              $$ = new Range($2, $4, LOC(@$));
+              $$ = new Range($2, $4, LOCD("range", @$));
             }
         | '[' expr ':' expr ':' expr ']'
             {
-              $$ = new Range($2, $4, $6, LOC(@$));
+              $$ = new Range($2, $4, $6, LOCD("range", @$));
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(ValuePtr(Value::VectorType()), LOC(@$));
+              $$ = new Literal(ValuePtr(Value::VectorType()), LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {
@@ -410,55 +424,55 @@ expr:
             }
         | expr '*' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
             }
         | expr '/' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOCD("divide", @$));
             }
         | expr '%' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
             }
         | expr '+' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOCD("addition", @$));
             }
         | expr '-' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOCD("subtraction", @$));
             }
         | expr '<' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOCD("less", @$));
             }
         | expr LE expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
             }
         | expr EQ expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
             }
         | expr NE expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
             }
         | expr GE expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOCD("greaterequal", @$));
             }
         | expr '>' expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
             }
         | expr AND expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
             }
         | expr OR expr
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
             }
         | '+' expr %prec UNARY
             {
@@ -466,11 +480,11 @@ expr:
             }
         | '-' expr %prec UNARY
             {
-              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOC(@$));
+              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
             }
         | '!' expr
             {
-              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOC(@$));
+              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
             }
         | '(' expr ')'
             {
@@ -478,31 +492,31 @@ expr:
             }
         | expr '?' expr ':' expr
             {
-              $$ = new TernaryOp($1, $3, $5, LOC(@$));
+              $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
             }
         | expr '[' expr ']'
             {
-              $$ = new ArrayLookup($1, $3, LOC(@$));
+              $$ = new ArrayLookup($1, $3, LOCD("index", @$));
             }
         | TOK_ID '(' arguments_call ')'
             {
-              $$ = new FunctionCall($1, *$3, LOC(@$));
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
               free($1);
               delete $3;
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-              $$ = FunctionCall::create("let", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
               delete $3;
             }
         | TOK_ASSERT '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
             {
-              $$ = FunctionCall::create("assert", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("assert", *$3, $5, LOCD("assert", @$));
               delete $3;
             }
         | TOK_ECHO '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
             {
-              $$ = FunctionCall::create("echo", *$3, $5, LOC(@$));
+              $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
               delete $3;
             }
         ;
@@ -523,12 +537,12 @@ expr_or_empty:
              be parsed as an expression) */
           TOK_LET '(' arguments_call ')' list_comprehension_elements_p
             {
-              $$ = new LcLet(*$3, $5, LOC(@$));
+              $$ = new LcLet(*$3, $5, LOCD("lclet", @$));
               delete $3;
             }
         | TOK_EACH list_comprehension_elements_or_expr
             {
-              $$ = new LcEach($2, LOC(@$));
+              $$ = new LcEach($2, LOCD("lceach", @$));
             }
         | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
             {
@@ -538,24 +552,24 @@ expr_or_empty:
                 for (int i = $3->size()-1; i >= 0; i--) {
                   AssignmentList arglist;
                   arglist.push_back((*$3)[i]);
-                  Expression *e = new LcFor(arglist, $$, LOC(@$));
+                  Expression *e = new LcFor(arglist, $$, LOCD("lcfor", @$));
                     $$ = e;
                 }
                 delete $3;
             }
         | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
             {
-              $$ = new LcForC(*$3, *$7, $5, $9, LOC(@$));
+              $$ = new LcForC(*$3, *$7, $5, $9, LOCD("lcforc", @$));
                 delete $3;
                 delete $7;
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-              $$ = new LcIf($3, $5, 0, LOC(@$));
+              $$ = new LcIf($3, $5, 0, LOCD("lcif", @$));
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
             {
-              $$ = new LcIf($3, $5, $7, LOC(@$));
+              $$ = new LcIf($3, $5, $7, LOCD("lcifelse", @$));
             }
         ;
 
@@ -581,12 +595,12 @@ optional_commas:
 vector_expr:
           expr
             {
-              $$ = new Vector(LOC(@$));
+              $$ = new Vector(LOCD("vector", @$));
               $$->push_back($1);
             }
         |  list_comprehension_elements
             {
-              $$ = new Vector(LOC(@$));
+              $$ = new Vector(LOCD("vector", @$));
               $$->push_back($1);
             }
         | vector_expr ',' optional_commas list_comprehension_elements_or_expr
@@ -618,12 +632,12 @@ arguments_decl:
 argument_decl:
           TOK_ID
             {
-                $$ = new Assignment($1, LOC(@$));
+                $$ = new Assignment($1, LOCD("assignment", @$));
                 free($1);
             }
         | TOK_ID '=' expr
             {
-              $$ = new Assignment($1, shared_ptr<Expression>($3), LOC(@$));
+              $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("assignment", @$));
                 free($1);
             }
         ;
@@ -650,11 +664,11 @@ arguments_call:
 argument_call:
           expr
             {
-                $$ = new Assignment("", shared_ptr<Expression>($1), LOC(@$));
+                $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, shared_ptr<Expression>($3), LOC(@$));
+                $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("argumentcall", @$));
                 free($1);
             }
         ;
@@ -672,6 +686,15 @@ void yyerror (char const *s)
   PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
          (*sourcefile()) % lexerget_lineno() % s);
 }
+
+#ifdef DEBUG
+static Location debug_location(const std::string& info, const YYLTYPE& loc)
+{
+	auto location = LOC(loc);
+	PRINTDB("%3d, %3d - %3d, %3d | %s", loc.first_line % loc.first_column % loc.last_line % loc.last_column % info);
+	return location;
+}
+#endif
 
 bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {

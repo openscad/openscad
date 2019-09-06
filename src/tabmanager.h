@@ -75,6 +75,8 @@ private slots:
     void stopAnimation();
     void updateFindState();
 
+    void onHyperlinkIndicatorClicked(int pos);
+
 public slots:
     void actionNew();
     void setContentRenderState(); // since last render

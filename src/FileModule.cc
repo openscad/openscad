@@ -54,10 +54,16 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path)
+void FileModule::registerUse(const std::string path, const Location &loc)
 {
+	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			loc.fileName() %
+			path);
+
 	auto ext = fs::path(path).extension().generic_string();
-	
+
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
@@ -66,12 +72,24 @@ void FileModule::registerUse(const std::string path)
 		}
 	} else {
 		usedlibs.insert(path);
+		if (!loc.isNone()) {
+			indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), path);
+		}
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
+void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
 {
+	PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			localpath %
+			fullpath);
+
 	this->includes[localpath] = {fullpath};
+	if (!loc.isNone()) {
+		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
+	}
 }
 
 time_t FileModule::includesChanged() const

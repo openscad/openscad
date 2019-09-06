@@ -8,6 +8,7 @@
 #include "module.h"
 #include "value.h"
 #include "localscope.h"
+#include "indicatordata.h"
 
 class FileModule : public AbstractModule, public ASTNode
 {
@@ -21,8 +22,8 @@ public:
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-	void registerUse(const std::string path);
-	void registerInclude(const std::string &localpath, const std::string &fullpath);
+	void registerUse(const std::string path, const Location &loc);
+	void registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc);
 	std::time_t includesChanged() const;
 	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }
@@ -35,6 +36,8 @@ public:
 	LocalScope scope;
 	typedef std::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
+
+	std::vector<IndicatorData> indicatorData;
 
 private:
 	struct IncludeFile {
