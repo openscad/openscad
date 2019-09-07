@@ -70,6 +70,8 @@ private:
         colorscheme_set_t enumerateColorSchemes();
 
         bool eventFilter(QObject* obj, QEvent *event) override;
+		bool handleKeyEventNavigateNumber(QKeyEvent *);
+		bool handleKeyEventBlockCopy(QKeyEvent *);
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
         void noColor();
