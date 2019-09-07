@@ -72,6 +72,7 @@ private:
         bool eventFilter(QObject* obj, QEvent *event) override;
 		bool handleKeyEventNavigateNumber(QKeyEvent *);
 		bool handleKeyEventBlockCopy(QKeyEvent *);
+		bool handleKeyEventBlockMove(QKeyEvent *);
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
         void noColor();

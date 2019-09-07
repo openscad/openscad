@@ -759,8 +759,65 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 		if (handleKeyEventBlockCopy(keyEvent)) {
 			return true;
 		}
+		if (handleKeyEventBlockMove(keyEvent)) {
+			return true;
+		}
 	}
 	return false;
+}
+
+bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
+{
+	unsigned int modifiers = Qt::ControlModifier | Qt::GroupSwitchModifier;
+
+	if (keyEvent->type() != QEvent::KeyRelease) {
+		return false;
+	}
+
+	if (keyEvent->modifiers() != modifiers) {
+		return false;
+	}
+
+	if (keyEvent->key() != Qt::Key_Up && keyEvent->key() != Qt::Key_Down) {
+		return false;
+	}
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int lineFrom, indexFrom, lineTo, indexTo;
+	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+	if (lineFrom < 0) {
+		lineTo = lineFrom = line;
+		indexFrom = indexTo = 0;
+	}
+	int selectionLineTo = lineTo;
+	if (lineTo > lineFrom && indexTo == 0) {
+		lineTo--;
+	}
+
+	bool up = keyEvent->key() == Qt::Key_Up;
+	int directionOffset = up ? -1 : 1;
+	int lineToMove = up ? lineFrom - 1 : lineTo + 1;
+	if (lineToMove < 0) {
+		return false;
+	}
+
+	qsci->beginUndoAction();
+	QString textToMove = qsci->text(lineToMove);
+	QString text;
+	for (int idx = lineFrom;idx <= lineTo;idx++) {
+		text.append(qsci->text(idx));
+	}
+	if (lineToMove >= qsci->lines() - 1) {
+		textToMove.append('\n');
+	}
+	text.insert(up ? text.length() : 0, textToMove);
+	qsci->setSelection(std::min(lineToMove, lineFrom), 0, std::max(lineToMove, lineTo) + 1, 0);
+	qsci->replaceSelectedText(text);
+	qsci->setCursorPosition(line + directionOffset, index);
+	qsci->setSelection(lineFrom + directionOffset, indexFrom, selectionLineTo + directionOffset, indexTo);
+	qsci->endUndoAction();
+	return true;
 }
 
 bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
