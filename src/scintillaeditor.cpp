@@ -753,6 +753,16 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 
 	if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
 		auto *keyEvent = static_cast<QKeyEvent*> (e);
+
+		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
+				(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
+				(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
+				(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
+				(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
+				(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
+				(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
+				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
+
 		if (handleKeyEventNavigateNumber(keyEvent)) {
 			return true;
 		}
