@@ -150,6 +150,15 @@ bool fileEnded=false;
 %left HIGH_PRIO_LEFT
 
 %type <expr> expr
+%type <expr> call
+%type <expr> logic_or
+%type <expr> logic_and
+%type <expr> equality
+%type <expr> comparison
+%type <expr> addition
+%type <expr> multiplication
+%type <expr> unary
+%type <expr> primary
 %type <vec> vector_expr
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
@@ -374,7 +383,132 @@ single_module_instantiation:
             }
         ;
 
-expr:
+expr:	logic_or
+        | expr '?' expr ':' expr
+            {
+              $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
+            }
+        | TOK_LET '(' arguments_call ')' expr %prec LET
+            {
+              $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
+              delete $3;
+            }
+        | TOK_ASSERT '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+            {
+              $$ = FunctionCall::create("assert", *$3, $5, LOCD("assert", @$));
+              delete $3;
+            }
+        | TOK_ECHO '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+            {
+              $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
+              delete $3;
+            }
+        ;
+
+logic_or: logic_and
+        | logic_or OR logic_and
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
+            }
+	;
+
+logic_and: equality
+        | logic_and AND equality
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
+            }
+	;
+
+equality: comparison
+        | equality EQ comparison
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
+            }
+        | equality NE comparison
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
+            }
+		;
+
+comparison: addition
+        | comparison '>' addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
+            }
+        | comparison GE addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOCD("greaterequal", @$));
+            }
+        | comparison '<' addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOCD("less", @$));
+            }
+        | comparison LE addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
+            }
+		;
+
+addition: multiplication
+        | addition '+' multiplication
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOCD("addition", @$));
+            }
+        | addition '-' multiplication
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOCD("subtraction", @$));
+            }
+		;
+
+
+multiplication:	unary
+        | multiplication '*' unary
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
+            }
+        | multiplication '/' unary
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOCD("divide", @$));
+            }
+        | multiplication '%' unary
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
+            }
+		;
+
+unary:	call
+        | '+' unary %prec UNARY
+            {
+                $$ = $2;
+            }
+        | '-' unary %prec UNARY
+            {
+              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
+            }
+        | '!' unary
+            {
+              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
+            }
+		;
+
+call:	primary
+        | TOK_ID '(' arguments_call ')'
+            {
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
+              delete $3;
+            }
+        | call '[' expr ']'
+            {
+              $$ = new ArrayLookup($1, $3, LOCD("index", @$));
+            }
+        | call '.' TOK_ID
+            {
+              $$ = new MemberLookup($1, $3, LOCD("member", @$));
+              free($3);
+            }
+		;
+
+primary:
           TOK_TRUE
             {
               $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
@@ -387,24 +521,23 @@ expr:
             {
               $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
             }
-        | TOK_ID
+        | TOK_NUMBER
             {
-              $$ = new Lookup($1, LOCD("variable", @$));
-                free($1);
-            }
-        | expr '.' TOK_ID
-            {
-              $$ = new MemberLookup($1, $3, LOCD("member", @$));
-              free($3);
+              $$ = new Literal(ValuePtr($1), LOCD("literal", @$));
             }
         | TOK_STRING
             {
               $$ = new Literal(ValuePtr(std::string($1)), LOCD("string", @$));
               free($1);
             }
-        | TOK_NUMBER
+        | TOK_ID
             {
-              $$ = new Literal(ValuePtr($1), LOCD("literal", @$));
+              $$ = new Lookup($1, LOCD("variable", @$));
+                free($1);
+            }
+        | '(' expr ')'
+            {
+              $$ = $2;
             }
         | '[' expr ':' expr ']'
             {
@@ -421,103 +554,6 @@ expr:
         | '[' vector_expr optional_commas ']'
             {
               $$ = $2;
-            }
-        | expr '*' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
-            }
-        | expr '/' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOCD("divide", @$));
-            }
-        | expr '%' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
-            }
-        | expr '+' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOCD("addition", @$));
-            }
-        | expr '-' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOCD("subtraction", @$));
-            }
-        | expr '<' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOCD("less", @$));
-            }
-        | expr LE expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
-            }
-        | expr EQ expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
-            }
-        | expr NE expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
-            }
-        | expr GE expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOCD("greaterequal", @$));
-            }
-        | expr '>' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
-            }
-        | expr AND expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
-            }
-        | expr OR expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
-            }
-        | '+' expr %prec UNARY
-            {
-                $$ = $2;
-            }
-        | '-' expr %prec UNARY
-            {
-              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
-            }
-        | '!' expr
-            {
-              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
-            }
-        | '(' expr ')'
-            {
-              $$ = $2;
-            }
-        | expr '?' expr ':' expr
-            {
-              $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
-            }
-        | expr '[' expr ']'
-            {
-              $$ = new ArrayLookup($1, $3, LOCD("index", @$));
-            }
-        | TOK_ID '(' arguments_call ')'
-            {
-              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
-              free($1);
-              delete $3;
-            }
-        | TOK_LET '(' arguments_call ')' expr %prec LET
-            {
-              $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
-              delete $3;
-            }
-        | TOK_ASSERT '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
-            {
-              $$ = FunctionCall::create("assert", *$3, $5, LOCD("assert", @$));
-              delete $3;
-            }
-        | TOK_ECHO '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
-            {
-              $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
-              delete $3;
             }
         ;
 
