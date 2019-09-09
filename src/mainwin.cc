@@ -1743,21 +1743,11 @@ void MainWindow::autoReloadSet(bool on)
 bool MainWindow::checkEditorModified()
 {
 	if (activeEditor->isContentModified()) {
-		QMessageBox msgBox(this);
-		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.setWindowTitle(_("Application"));
-		msgBox.setText(_("The document has been modified.\n"
-						"Do you really want to reload the file?"));
-		auto yesButton = msgBox.addButton("Yes", QMessageBox::YesRole);
-		msgBox.addButton("No", QMessageBox::NoRole);
-		auto neverButton = msgBox.addButton("Never", QMessageBox::NoRole);
-		msgBox.exec();
-
-		if(msgBox.clickedButton() == neverButton) {
-			designActionAutoReload->setChecked(false);
-			return false;
-		}
-		else if(msgBox.clickedButton() != yesButton) {
+		auto ret = QMessageBox::warning(this, _("Application"),
+				_("The document has been modified.\n"
+				"Do you really want to reload the file?"),
+				QMessageBox::Yes | QMessageBox::No);
+		if (ret != QMessageBox::Yes) {
 			return false;
 		}
 	}
