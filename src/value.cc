@@ -269,6 +269,11 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
+Value::Value(const std::shared_ptr<Expression> &v) : value(v)
+{
+  //  std::cout << "creating expression\n";
+}
+
 Value::ValueType Value::type() const
 {
   return static_cast<ValueType>(this->value.which());
@@ -287,6 +292,11 @@ bool Value::isDefinedAs(const ValueType type) const
 bool Value::isUndefined() const
 {
   return !isDefined();
+}
+
+std::shared_ptr<Expression> Value::toExpression() const
+{
+	return this->type() == ValueType::FUNCTION ? boost::get<std::shared_ptr<Expression>>(this->value) : nullptr;
 }
 
 bool Value::toBool() const
@@ -383,6 +393,9 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
+  std::string operator()(const std::shared_ptr<Expression> &v) const {
+	  return "[function]";
+  }
 };
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
@@ -1101,6 +1114,11 @@ ValuePtr::ValuePtr(const Value::VectorType &v)
 }
 
 ValuePtr::ValuePtr(const RangeType &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const std::shared_ptr<Expression> &v)
 {
 	this->reset(new Value(v));
 }

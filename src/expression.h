@@ -1,21 +1,10 @@
 #pragma once
 
-#include "AST.h"
-
 #include <string>
 #include <vector>
 #include "value.h"
 #include "memory.h"
 #include "Assignment.h"
-
-class Expression : public ASTNode
-{
-public:
-	Expression(const Location &loc) : ASTNode(loc) {}
-	~Expression() {}
-	virtual bool isLiteral() const;
-	virtual ValuePtr evaluate(const class Context *context) const = 0;
-};
 
 class UnaryOp : public Expression
 {

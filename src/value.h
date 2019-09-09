@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
@@ -10,13 +11,23 @@
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
 #include <glib.h>
-
 #endif
-#include <cstdint>
+
+#include "AST.h"
 #include "memory.h"
 
 class tostring_visitor;
 class tostream_visitor;
+class ValuePtr;
+
+class Expression : public ASTNode
+{
+public:
+	Expression(const Location &loc) : ASTNode(loc) {}
+	~Expression() {}
+	virtual bool isLiteral() const;
+	virtual ValuePtr evaluate(const class Context *context) const = 0;
+};
 
 class QuotedString : public std::string
 {
@@ -116,6 +127,7 @@ public:
   ValuePtr(const char v);
   ValuePtr(const class std::vector<ValuePtr> &v);
   ValuePtr(const class RangeType &v);
+  ValuePtr(const std::shared_ptr<Expression> &v);
 
 	operator bool() const;
 
@@ -170,7 +182,8 @@ public:
     NUMBER,
     STRING,
     VECTOR,
-    RANGE
+    RANGE,
+	FUNCTION
   };
   static const Value undefined;
 
@@ -183,6 +196,7 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
+  Value(const std::shared_ptr<Expression> &v);
   ~Value() {}
 
   ValueType type() const;
@@ -194,6 +208,7 @@ public:
   bool getDouble(double &v) const;
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
+  std::shared_ptr<Expression> toExpression() const;
   std::string toString() const;
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
@@ -230,7 +245,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, std::shared_ptr<Expression>> Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
