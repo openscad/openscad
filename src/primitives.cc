@@ -723,7 +723,7 @@ void register_builtin_primitives()
 
 	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON),
 				{
-					"polyhedron(points, triangles, convexity)",
+					"polyhedron(points, faces, convexity)",
 				});
 
 	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE),
