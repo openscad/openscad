@@ -181,9 +181,22 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
 
+    qsci->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qsci, SIGNAL(customContextMenuRequested(const QPoint &)), this, SIGNAL(showContextMenuEvent(const QPoint &)));
+
 	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
 	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
 	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
+}
+
+QPoint ScintillaEditor::mapToGlobal(const QPoint &pos)
+{
+	return qsci->mapToGlobal(pos);
+}
+
+QMenu * ScintillaEditor::createStandardContextMenu()
+{
+	return qsci->createStandardContextMenu();
 }
 
 void ScintillaEditor::addTemplate()

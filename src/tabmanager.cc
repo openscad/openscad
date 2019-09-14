@@ -34,7 +34,7 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
     connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SIGNAL(tabCountChanged(int)));
 	connect(tabWidget, SIGNAL(middleMouseClicked(int)), this, SLOT(middleMouseClicked(int)));
-	connect(tabWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(launchContextMenu(const QPoint&)));
+	connect(tabWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showTabHeaderContextMenu(const QPoint&)));
 
     createTab(filename);
 
@@ -194,6 +194,7 @@ void TabManager::createTab(const QString &filename)
     Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
 
     connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
+	connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
     connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
 	connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
 	connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
@@ -363,7 +364,38 @@ void TabManager::closeTab()
 	});
 }
 
-void TabManager::launchContextMenu(const QPoint& pos)
+void TabManager::showContextMenuEvent(const QPoint& pos)
+{
+	QMenu *menu = editor->createStandardContextMenu();
+
+	QAction *separator = new QAction(menu->parent());
+	separator->setSeparator(true);
+
+	QAction *findAction = new QAction(menu->parent());
+	findAction->setText(_("Find"));
+	connect(findAction, SIGNAL(triggered()), par, SLOT(showFind()));
+
+	bool enable = editor->findState != FIND_HIDDEN;
+	QAction *findNextAction = new QAction(menu->parent());
+	findNextAction->setText(_("Find Next"));
+	findNextAction->setEnabled(enable);
+	connect(findNextAction, SIGNAL(triggered()), par, SLOT(findNext()));
+
+	QAction *findPrevAction = new QAction(menu->parent());
+	findPrevAction->setText(_("Find Previous"));
+	findPrevAction->setEnabled(enable);
+	connect(findPrevAction, SIGNAL(triggered()), par, SLOT(findPrev()));
+
+	menu->addSeparator();
+	menu->addAction(findAction);
+	menu->addAction(findNextAction);
+	menu->addAction(findPrevAction);
+	menu->exec(editor->mapToGlobal(pos));
+
+	delete menu;
+}
+
+void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 {
 	int idx = tabWidget->tabAt(pos);
 	if (idx < 0) {
