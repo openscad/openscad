@@ -60,6 +60,8 @@ public:
     bool canUndo() override;
     void addTemplate();
 	void setIndicator(const std::vector<IndicatorData>& indicatorData) override;
+	QMenu * createStandardContextMenu() override;
+	QPoint mapToGlobal(const QPoint &) override;
 
 private:
         void getRange(int *lineFrom, int *lineTo);
@@ -118,7 +120,7 @@ public slots:
 private slots:
 	void onTextChanged();
 	void onUserListSelected(const int id, const QString &text);
-        void applySettings();
+	void applySettings();
 	void onAutocompleteChanged(bool state);
 	void onCharacterThresholdChanged(int val);
 	void fireModificationChanged(bool);

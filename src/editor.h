@@ -28,10 +28,13 @@ public:
 	virtual bool canUndo() = 0;
 	virtual void addTemplate() = 0;
 	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
+	virtual QMenu * createStandardContextMenu() = 0;
+	virtual QPoint mapToGlobal(const QPoint &) = 0;
 
 signals:
   void contentsChanged();
   void modificationChanged(bool, EditorInterface *);												
+  void showContextMenuEvent(const QPoint& pos);
 
 public slots:
 	virtual void zoomIn() = 0;
