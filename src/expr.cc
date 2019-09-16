@@ -431,10 +431,38 @@ void MemberLookup::print(std::ostream &stream, const std::string &) const
 	stream << *this->expr << "." << this->member;
 }
 
-FunctionCall::FunctionCall(const std::string &name, 
-													 const AssignmentList &args, const Location &loc)
-	: Expression(loc), name(name), arguments(args)
+FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc)
+	: Expression(loc), definition_arguments(definition_arguments), expr(expr)
 {
+}
+
+FunctionDefinition::FunctionDefinition(std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc)
+	: Expression(loc), definition_arguments(definition_arguments), expr(expr)
+{
+}
+
+ValuePtr FunctionDefinition::evaluate(const class Context *) const
+{
+	return ValuePtr{std::shared_ptr<Expression>(new FunctionDefinition(expr, definition_arguments, location()))};
+}
+
+ValuePtr FunctionDefinition::call(const class Context *context) const
+{
+	return expr->evaluate(context);
+}
+
+void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
+{
+	stream << indent << "function(";
+	bool first = true;
+	for (const auto& assignment : definition_arguments) {
+		stream << (first ? "" : ", ") << assignment.name;
+		if (assignment.expr) {
+			stream << " = " << *assignment.expr.get();
+		}
+		first = false;
+	}
+	stream << ") " << *this->expr;
 }
 
 /**
@@ -457,7 +485,23 @@ static void NOINLINE print_err(const char *name, const Location &loc,const Conte
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
-	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
+	PRINTB("TRACE: called by '%s', %s.", val->get_name() % val->location().toRelativeString(ctx->documentPath()));
+}
+
+FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
+	: Expression(loc), expr(expr), arguments(args)
+{
+	if (Lookup *lookup = dynamic_cast<Lookup *>(expr)) {
+		isLookup = true;
+		name = lookup->get_name();
+	} else {
+		isLookup = false;
+		std::ostringstream s;
+		s << "(";
+		expr->print(s, "");
+		s << ")";
+		name = s.str();
+	}
 }
 
 /**
@@ -496,16 +540,26 @@ void FunctionCall::prepareTailCallContext(const Context *context, Context *tailC
 
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
+	const std::string name = get_name();
 	if (StackCheck::inst().check()) {
-		print_err(this->name.c_str(),loc,context);
-		throw RecursionException::create("function", this->name,this->loc);
+		print_err(name.c_str(), loc, context);
+		throw RecursionException::create("function", name, this->loc);
 	}
-	try{
-		EvalContext c(context, this->arguments, this->loc);
-		ValuePtr result = context->evaluate_function(this->name, &c);
-		return result;
-	}catch(EvaluationException &e){
-		if(e.traceDepth>0){
+	try {
+		Context ctx(context);
+		EvalContext evalCtx(context, this->arguments, this->loc);
+
+		const ValuePtr v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
+		std::function<ValuePtr()> call = []{ return ValuePtr::undefined; };
+		if (FunctionDefinition * def = dynamic_cast<FunctionDefinition *> (v->toExpression().get())) {
+			ctx.setVariables(&evalCtx, def->definition_arguments);
+			call = [&]{ return def->call(&ctx); };
+		} else if (isLookup) {
+			call = [&]{ return context->evaluate_function(name, &evalCtx); };
+		}
+		return call();
+	} catch (EvaluationException &e) {
+		if (e.traceDepth > 0) {
 			print_trace(this, context);
 			e.traceDepth--;
 		}
@@ -515,7 +569,7 @@ ValuePtr FunctionCall::evaluate(const Context *context) const
 
 void FunctionCall::print(std::ostream &stream, const std::string &) const
 {
-	stream << this->name << "(" << this->arguments << ")";
+	stream << this->get_name() << "(" << this->arguments << ")";
 }
 
 Expression * FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
@@ -527,9 +581,10 @@ Expression * FunctionCall::create(const std::string &funcname, const AssignmentL
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
 	}
+	return nullptr;
 
 	// TODO: Generate error/warning if expr != 0?
-	return new FunctionCall(funcname, arglist, loc);
+//	return new FunctionCall(funcname, arglist, loc);
 }
 
 Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc)

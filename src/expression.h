@@ -124,6 +124,7 @@ public:
 	ValuePtr evaluate(const class Context *context) const override;
 	ValuePtr evaluateSilently(const class Context *context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
+	const std::string& get_name() const { return name; }
 private:
 	std::string name;
 };
@@ -142,16 +143,32 @@ private:
 class FunctionCall : public Expression
 {
 public:
-	FunctionCall(const std::string &funcname, const AssignmentList &arglist, const Location &loc);
+	FunctionCall(Expression *expr, const AssignmentList &arglist, const Location &loc);
 	void prepareTailCallContext(const Context *context, Context *tailCallContext, const AssignmentList &definition_arguments);
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
+	std::string get_name() const { return name; }
 	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
 public:
+	bool isLookup;
 	std::string name;
+	shared_ptr<Expression> expr;
 	AssignmentList arguments;
 	AssignmentMap resolvedArguments;
 	std::vector<std::pair<std::string, ValuePtr>> defaultArguments; // Only the ones not mentioned in 'resolvedArguments'
+};
+
+class FunctionDefinition : public Expression
+{
+public:
+	FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc);
+	FunctionDefinition(std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc);
+	ValuePtr evaluate(const class Context *context) const override;
+	ValuePtr call(const class Context *context) const;
+	void print(std::ostream &stream, const std::string &indent) const override;
+public:
+	AssignmentList definition_arguments;
+	shared_ptr<Expression> expr;
 };
 
 class Assert : public Expression

@@ -24,7 +24,7 @@
  *
  */
 
-%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%expect 3 /* Expect 3 shift/reduce conflict for ifelse_statement - "dangling else problem" */
 
 %{
 
@@ -232,7 +232,7 @@ inner_input:
         ;
 
 assignment:
-          TOK_ID '=' expr ';'
+        TOK_ID '=' expr ';'
             {
                 bool found = false;
                 for (auto &assignment : scope_stack.top()->assignments) {
@@ -384,6 +384,11 @@ single_module_instantiation:
         ;
 
 expr:	logic_or
+		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr
+			{
+			  $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+			  delete $3;
+			}
         | expr '?' expr ':' expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
@@ -410,14 +415,14 @@ logic_or: logic_and
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
             }
-	;
+		;
 
 logic_and: equality
         | logic_and AND equality
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
             }
-	;
+		;
 
 equality: comparison
         | equality EQ comparison
@@ -492,7 +497,7 @@ unary:	call
 		;
 
 call:	primary
-        | TOK_ID '(' arguments_call ')'
+        | call '(' arguments_call ')'
             {
               $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
               delete $3;
@@ -555,7 +560,7 @@ primary:
             {
               $$ = $2;
             }
-        ;
+		;
 
 expr_or_empty:
           %prec LOW_PRIO_LEFT
@@ -698,7 +703,7 @@ arguments_call:
         ;
 
 argument_call:
-          expr
+		expr
             {
                 $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));
             }

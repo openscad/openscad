@@ -92,7 +92,7 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 			}
 			else if (typeid(*subExpr) == typeid(FunctionCall)) {
 				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
-				if (name == call->name) {
+				if (call->isLookup && name == call->get_name()) {
 					// Update c_next with new parameters for tail call
 					call->prepareTailCallContext(c_local, &c_next, definition_arguments);
 					tailCall = true;
