@@ -1791,7 +1791,7 @@ msgstr "Sauvegarde des jeux de paramètres"
 
 #: src/parameter/ParameterWidget.cc:573
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr "%1 existe mais est illisible. Voulez-vous écraser %1?""
+msgstr "%1 existe mais est illisible. Voulez-vous écraser %1?"
 
 #: src/input/AxisConfigWidget.h:91
 msgid ""
@@ -1831,7 +1831,7 @@ msgstr ""
 #: src/input/AxisConfigWidget.h:97
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
 msgstr ""
-msgid "Le pilote QGAMEPAD est prévu pour le support des plateformes multiples Gamepad."
+"Le pilote QGAMEPAD est prévu pour le support des plateformes multiples Gamepad."
 
 #: src/input/ButtonConfigWidget.cc:186
 msgid "(not supported)"
