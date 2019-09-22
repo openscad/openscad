@@ -501,7 +501,7 @@ build_gettext()
   ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
   make -j$NUMCPU
   make install
-  install_name_tool -id $DEPLOYDIR/lib/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
+  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
 }
 
