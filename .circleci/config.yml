@@ -115,12 +115,12 @@ jobs:
               MACPORTS_CACHE_SHA512=b5ef44a33e764112251f21ab31d8f39e0b39eee0b31ebc9760731454a9f13e128ccaefb5bb7cbd0df3d679600cd0e4ea742833c58858c685c31223d282fb63da
               LIBRARIES_CACHE_SHA512=b8a19656d932ad587a75016c755f3003de3c6ea6f89506f769cbe9090ca3200598fbf6e8145fc8e461270cd46b5286330417c3cf3047917cf7568dfb09341eac
               CI_BASEDIR=/Users/distiller/project
-              CI_LIBRARYDIR=/Users/distiller/libraries/install
+              export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
               MACPORTS=MacPorts-2.5.4
               MACPORTS_CACHE=macports.tar.bz2
               LIBRARIES_CACHE=libraries.tar.bz2
               mkdir /tmp/out
-              mkdir -p "$CI_LIBRARYDIR"
+              mkdir -p "$OPENSCAD_LIBRARIES"
               ( echo "Loading macports cache..." ; cd /tmp && curl -s -O https://files.openscad.org/circleci/"$MACPORTS_CACHE" ) || true
               ( echo "Loading libraries cache..." ; cd /tmp && curl -s -O https://files.openscad.org/circleci/"$LIBRARIES_CACHE" ) || true
               sudo mkdir -p /opt/local
@@ -130,14 +130,18 @@ jobs:
                       echo "Failed to match sha512 for $MACPORTS_CACHE"
                       exit 1
                   fi
-                  tar xj -C "$CI_LIBRARYDIR" -f /tmp/libraries.tar.bz2 || true
+                  tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/libraries.tar.bz2 || true
                   if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
                       echo "Failed to match sha512 for $LIBRARIES_CACHE"
                       exit 1
                   fi
-                  echo "$DYLD_LIBRARY_PATH"
-                  export DYLD_LIBRARY_PATH="$CI_LIBRARYDIR/lib:$DYLD_LIBRARY_PATH"
-                  source setenv_mac.sh
+                  export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
+                  export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
+                  export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
+                  echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
+                  # Our own Qt
+                  export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
+                  unset QMAKESPEC
                   ./scripts/macosx-build-dependencies.sh double_conversion
                   ./scripts/macosx-build-dependencies.sh eigen
                   ./scripts/macosx-build-dependencies.sh gmp
@@ -161,7 +165,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh opencsg
                   ./scripts/macosx-build-dependencies.sh qscintilla
                   ./scripts/macosx-build-dependencies.sh -d sparkle
-                  tar cj -C "$CI_LIBRARYDIR" -f /tmp/out/"$LIBRARIES_CACHE" .
+                  tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
                   shasum -a 512 /tmp/out/"$LIBRARIES_CACHE"
                   export NUMCPU=4
                   time ./scripts/release-common.sh -snapshot
