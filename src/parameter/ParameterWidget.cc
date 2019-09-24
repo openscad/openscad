@@ -490,8 +490,8 @@ void ParameterWidget::applyParameterSet(std::string setName)
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 				
-				ModuleContext ctx;
-				ValuePtr newValue = params->evaluate(&ctx);
+				ContextHandle<Context> ctx{Context::create<Context>()};
+				ValuePtr newValue = params->evaluate(ctx.ctx);
 				if (entry->second->dvt == newValue->type()) {
 					entry->second->value = newValue;
 				}

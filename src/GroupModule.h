@@ -7,5 +7,5 @@ class GroupModule : public AbstractModule
 public:
 	GroupModule() { }
 	~GroupModule() { }
-	class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, class EvalContext *evalctx = nullptr) const override;
+	class AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx = {}) const override;
 };

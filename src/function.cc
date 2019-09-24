@@ -45,11 +45,11 @@ UserFunction::~UserFunction()
 {
 }
 
-ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
+ValuePtr UserFunction::evaluate(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx) const
 {
 	if (!expr) return ValuePtr::undefined;
-	Context c_next(ctx); // Context for next tail call
-	c_next.setVariables(evalctx, definition_arguments);
+	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call
+	c_next->setVariables(evalctx, definition_arguments);
 
 	// Outer loop: to allow tail calls
 	unsigned int counter = 0;
@@ -58,9 +58,9 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
 		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
 		// Cannot use std::vector, as it invalidates raw pointers.
-		std::forward_list<Context> c_local_stack;
-		c_local_stack.emplace_front(&c_next);
-		Context *c_local = &c_local_stack.front();
+		std::forward_list<ContextHandle<Context>> c_local_stack;
+		c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_next.ctx)));
+		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
 
 		// Inner loop: to follow a single execution path
 		// Before a 'break', must either assign result, or set tailCall to true.
@@ -86,15 +86,15 @@ ValuePtr UserFunction::evaluate(const Context *ctx, const EvalContext *evalctx) 
 			else if (typeid(*subExpr) == typeid(Let)) {
 				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
 				// Start a new, nested context
-				c_local_stack.emplace_front(c_local);
-				c_local = &c_local_stack.front();
+				c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
+				c_local = c_local_stack.front().ctx;
 				subExpr = let->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(FunctionCall)) {
 				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
 				if (call->isLookup && name == call->get_name()) {
 					// Update c_next with new parameters for tail call
-					call->prepareTailCallContext(c_local, &c_next, definition_arguments);
+					call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
 					tailCall = true;
 				}
 				else {
@@ -137,7 +137,7 @@ BuiltinFunction::~BuiltinFunction()
 {
 }
 
-ValuePtr BuiltinFunction::evaluate(const Context *ctx, const EvalContext *evalctx) const
+ValuePtr BuiltinFunction::evaluate(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx) const
 {
 	return eval_func(ctx, evalctx);
 }

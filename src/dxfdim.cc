@@ -44,7 +44,7 @@ std::unordered_map<std::string, ValuePtr> dxf_dim_cache;
 std::unordered_map<std::string, ValuePtr> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string rawFilename;
 	std::string filename;
@@ -155,7 +155,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string filename;
 	std::string rawFilename;

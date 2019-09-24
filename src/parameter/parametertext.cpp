@@ -23,10 +23,10 @@ void ParameterText::onChanged(QString)
 		if (object->dvt == Value::ValueType::STRING) {
 			object->value = ValuePtr(lineEdit->text().toStdString());
 		}else{
-			ModuleContext ctx;
+			ContextHandle<Context> ctx{Context::create<Context>()};
 			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
 			if (!params) return;
-			ValuePtr newValue = params->evaluate(&ctx);
+			ValuePtr newValue = params->evaluate(ctx.ctx);
 			if (object->dvt == newValue->type()) {
 				object->value = newValue;
 			}

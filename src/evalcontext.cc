@@ -8,8 +8,7 @@
 #include "localscope.h"
 #include "exceptions.h"
 
-EvalContext::EvalContext(const Context *parent, 
-												 const AssignmentList &args, const Location &loc, const class LocalScope *const scope)
+EvalContext::EvalContext(const std::shared_ptr<Context> parent, const AssignmentList &args, const Location &loc, const class LocalScope *const scope)
 	: Context(parent), loc(loc), eval_arguments(args), scope(scope)
 {
 }
@@ -20,13 +19,13 @@ const std::string &EvalContext::getArgName(size_t i) const
 	return this->eval_arguments[i].name;
 }
 
-ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
+ValuePtr EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
 	ValuePtr v;
 	if (arg.expr) {
-		v = arg.expr->evaluate(ctx ? ctx : this);
+		v = arg.expr->evaluate(ctx ? ctx : (const_cast<EvalContext *>(this))->get_shared_ptr());
 	}
 	return v;
 }
@@ -83,18 +82,18 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 	return this->scope ? this->scope->children[i] : nullptr; 
 }
 
-void EvalContext::assignTo(Context &target) const
+void EvalContext::assignTo(std::shared_ptr<Context> target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
 		ValuePtr v;
-		if (assignment.expr) v = assignment.expr->evaluate(&target);
+		if (assignment.expr) v = assignment.expr->evaluate(target);
 		
 		if(assignment.name.empty()){
-			PRINTB("WARNING: Assignment without variable name %s, %s", v->toEchoString() % this->loc.toRelativeString(target.documentPath()));
-		}else if (target.has_local_variable(assignment.name)) {
-			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment.name % v->toEchoString() % this->loc.toRelativeString(target.documentPath()));
+			PRINTB("WARNING: Assignment without variable name %s, %s", v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
+		}else if (target->has_local_variable(assignment.name)) {
+			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment.name % v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
 		} else {
-			target.set_variable(assignment.name, v);
+			target->set_variable(assignment.name, v);
 		}
 	}
 }

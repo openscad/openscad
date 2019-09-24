@@ -6,27 +6,31 @@
 #include "printutils.h"
 #include "evalcontext.h"
 
-BuiltinContext::BuiltinContext()
+BuiltinContext::BuiltinContext() : Context()
 {
-	for(const auto &ass : Builtins::instance()->getAssignments()) {
-		this->set_variable(ass.name, ass.expr->evaluate(this));
+}
+
+void BuiltinContext::init()
+{
+	for(const auto &assignment : Builtins::instance()->getAssignments()) {
+		this->set_variable(assignment.name, assignment.expr->evaluate(shared_from_this()));
 	}
-	
+
 	this->set_constant("PI", ValuePtr(M_PI));
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
 		AbstractFunction *f = search->second;
-		if (f->is_enabled()) return f->evaluate(this, evalctx);
+		if (f->is_enabled()) return f->evaluate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), evalctx);
 		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
 	}
 	return Context::evaluate_function(name, evalctx);
 }
 
-class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const
+class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, std::shared_ptr<EvalContext> evalctx) const
 {
 	const std::string &name = inst.name();
 	const auto &search = Builtins::instance()->getModules().find(name);
@@ -39,7 +43,7 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 		if (!replacement.empty()) {
 			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % evalctx->loc.toRelativeString(this->documentPath()));
 		}
-		return m->instantiate(this, &inst, evalctx);
+		return m->instantiate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), &inst, evalctx);
 	}
 	return Context::instantiate_module(inst, evalctx);
 }
