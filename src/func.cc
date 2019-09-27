@@ -1017,6 +1017,17 @@ ValuePtr builtin_is_string(const std::shared_ptr<Context> ctx, const std::shared
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_is_function(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		const ValuePtr v = evalctx->getArgValue(0);
+		return ValuePtr(v->type() == Value::ValueType::FUNCTION);
+	} else {
+		print_argCnt_warning("is_function", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1208,5 +1219,10 @@ void register_builtin_functions()
 	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string),
 				{
 					"is_string(arg) -> boolean",
+				});
+
+	Builtins::init("is_function", new BuiltinFunction(&builtin_is_function),
+				{
+					"is_function(arg) -> boolean",
 				});
 }
