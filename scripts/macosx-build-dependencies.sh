@@ -518,7 +518,7 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
