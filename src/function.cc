@@ -29,9 +29,6 @@
 #include "expression.h"
 #include "printutils.h"
 
-#include <typeinfo>
-#include <forward_list>
-
 AbstractFunction::~AbstractFunction()
 {
 }
@@ -47,78 +44,7 @@ UserFunction::~UserFunction()
 
 ValuePtr UserFunction::evaluate(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx) const
 {
-	if (!expr) return ValuePtr::undefined;
-	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call
-	c_next->setVariables(evalctx, definition_arguments);
-
-	// Outer loop: to allow tail calls
-	unsigned int counter = 0;
-	ValuePtr result;
-	while (true) {
-		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
-		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
-		// Cannot use std::vector, as it invalidates raw pointers.
-		std::forward_list<ContextHandle<Context>> c_local_stack;
-		c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_next.ctx)));
-		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
-
-		// Inner loop: to follow a single execution path
-		// Before a 'break', must either assign result, or set tailCall to true.
-		shared_ptr<Expression> subExpr = expr;
-		bool tailCall = false;
-		while (true) {
-			if (!subExpr) {
-				result = ValuePtr::undefined;
-				break;
-			}
-			else if (typeid(*subExpr) == typeid(TernaryOp)) {
-				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
-				subExpr = ternary->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Assert)) {
-				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
-				subExpr = assertion->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Echo)) {
-				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
-				subExpr = echo->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Let)) {
-				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
-				// Start a new, nested context
-				c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
-				c_local = c_local_stack.front().ctx;
-				subExpr = let->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(FunctionCall)) {
-				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
-				if (call->isLookup && name == call->get_name()) {
-					// Update c_next with new parameters for tail call
-					call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
-					tailCall = true;
-				}
-				else {
-					result = subExpr->evaluate(c_local);
-				}
-				break;
-			}
-			else {
-				result = subExpr->evaluate(c_local);
-				break;
-			}
-		}
-		if (!tailCall) {
-			break;
-		}
-
-		if (counter++ == 1000000){
-			std::string locs = loc.toRelativeString(ctx->documentPath());
-			PRINTB("ERROR: Recursion detected calling function '%s' %s", this->name % locs);
-			throw RecursionException::create("function", this->name,loc);
-		}
-	}
-
-	return result;
+	return evaluate_function(name, expr, definition_arguments, ctx, evalctx, loc);
 }
 
 void UserFunction::print(std::ostream &stream, const std::string &indent) const

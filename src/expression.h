@@ -164,7 +164,6 @@ public:
 	FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc);
 	FunctionDefinition(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc);
 	ValuePtr evaluate(const std::shared_ptr<Context> context) const override;
-	ValuePtr call(const std::shared_ptr<Context> context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
 public:
 	shared_ptr<Context> ctx;
@@ -273,3 +272,8 @@ private:
 };
 
 void evaluate_assert(const std::shared_ptr<Context> context, const std::shared_ptr<class EvalContext> evalctx);
+
+ValuePtr evaluate_function(const std::string name,
+		const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,
+		const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx,
+		const Location& loc);

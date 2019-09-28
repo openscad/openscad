@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
+#include <typeinfo>
+#include <forward_list>
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
@@ -446,11 +448,6 @@ ValuePtr FunctionDefinition::evaluate(const std::shared_ptr<Context> context) co
 	return ValuePtr{std::shared_ptr<Expression>(new FunctionDefinition(context, expr, definition_arguments, location()))};
 }
 
-ValuePtr FunctionDefinition::call(const std::shared_ptr<Context> context) const
-{
-	return expr->evaluate(context);
-}
-
 void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function(";
@@ -491,8 +488,9 @@ static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
 	: Expression(loc), expr(expr), arguments(args)
 {
-	if (Lookup *lookup = dynamic_cast<Lookup *>(expr)) {
+	if (typeid(*expr) == typeid(Lookup)) {
 		isLookup = true;
+		const Lookup *lookup = static_cast<Lookup *>(expr);
 		name = lookup->get_name();
 	} else {
 		isLookup = false;
@@ -547,7 +545,8 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context> context) const
 	}
 	try {
 		const ValuePtr v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
-		FunctionDefinition *def = dynamic_cast<FunctionDefinition *> (v->toExpression().get());
+		const shared_ptr<Expression> defExpr = v->toExpression();
+		const shared_ptr<FunctionDefinition> def = defExpr && typeid(*defExpr) == typeid(FunctionDefinition) ? static_pointer_cast<FunctionDefinition>(defExpr) : nullptr;
 
 		ContextHandle<Context> ctx{Context::create<Context>(def && def->ctx ? def->ctx : context)};
 		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
@@ -555,7 +554,7 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context> context) const
 		std::function<ValuePtr()> call = []{ return ValuePtr::undefined; };
 		if (def) {
 			ctx->setVariables(evalCtx.ctx, def->definition_arguments);
-			call = [&]{ return def->call(ctx.ctx); };
+			call = [&]{ return evaluate_function(name, def->expr, def->definition_arguments, ctx.ctx, evalCtx.ctx, this->loc); };
 		} else if (isLookup) {
 			call = [&]{ return context->evaluate_function(name, evalCtx.ctx); };
 		}
@@ -891,4 +890,81 @@ void evaluate_assert(const std::shared_ptr<Context> context, const std::shared_p
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
+}
+
+ValuePtr evaluate_function(const std::string name, const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,
+		const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx, const Location& loc)
+{
+	if (!expr) return ValuePtr::undefined;
+	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call
+	c_next->setVariables(evalctx, definition_arguments);
+
+	// Outer loop: to allow tail calls
+	unsigned int counter = 0;
+	ValuePtr result;
+	while (true) {
+		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
+		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
+		// Cannot use std::vector, as it invalidates raw pointers.
+		std::forward_list<ContextHandle<Context>> c_local_stack;
+		c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_next.ctx)));
+		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
+
+		// Inner loop: to follow a single execution path
+		// Before a 'break', must either assign result, or set tailCall to true.
+		shared_ptr<Expression> subExpr = expr;
+		bool tailCall = false;
+		while (true) {
+			if (!subExpr) {
+				result = ValuePtr::undefined;
+				break;
+			}
+			else if (typeid(*subExpr) == typeid(TernaryOp)) {
+				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
+				subExpr = ternary->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Assert)) {
+				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
+				subExpr = assertion->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Echo)) {
+				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
+				subExpr = echo->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Let)) {
+				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
+				// Start a new, nested context
+				c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
+				c_local = c_local_stack.front().ctx;
+				subExpr = let->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(FunctionCall)) {
+				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
+				if (name == call->get_name()) {
+					// Update c_next with new parameters for tail call
+					call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
+					tailCall = true;
+				}
+				else {
+					result = subExpr->evaluate(c_local);
+				}
+				break;
+			}
+			else {
+				result = subExpr->evaluate(c_local);
+				break;
+			}
+		}
+		if (!tailCall) {
+			break;
+		}
+
+		if (counter++ == 1000000){
+			const std::string locs = loc.toRelativeString(ctx->documentPath());
+			PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+			throw RecursionException::create("function", name,loc);
+		}
+	}
+
+	return result;
 }

@@ -95,9 +95,12 @@ public:
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 
-	// Making friends with UserFunction to allow it to call the Context
+	// Making friends with evaluate_function() to allow it to call the Context
 	// constructor for creating ContextHandle objects in-place in the local
 	// context list. This is needed as ContextHandle handles the Context
 	// stack via RAII so we need to use emplace_front() to create the objects.
-	friend class UserFunction;
+	friend ValuePtr evaluate_function(const std::string name,
+			const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,
+			const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx,
+			const Location& loc);
 };
