@@ -551,7 +551,10 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context> context) const
 		ContextHandle<Context> ctx{Context::create<Context>(def && def->ctx ? def->ctx : context)};
 		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-		std::function<ValuePtr()> call = []{ return ValuePtr::undefined; };
+		std::function<ValuePtr()> call = [&]{
+			PRINTB("WARNING: Can't call function on %s at line %d, %s", v->typeName() % loc.firstLine() % loc.toRelativeString(ctx.ctx->documentPath()));
+			return ValuePtr::undefined;
+		};
 		if (def) {
 			ctx->setVariables(evalCtx.ctx, def->definition_arguments);
 			call = [&]{ return evaluate_function(name, def->expr, def->definition_arguments, ctx.ctx, evalCtx.ctx, this->loc); };

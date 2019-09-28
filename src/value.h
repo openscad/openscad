@@ -210,6 +210,7 @@ public:
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
   std::shared_ptr<Expression> toExpression() const;
+  std::string typeName() const;
   std::string toString() const;
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;

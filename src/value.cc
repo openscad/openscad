@@ -299,6 +299,26 @@ std::shared_ptr<Expression> Value::toExpression() const
 	return this->type() == ValueType::FUNCTION ? boost::get<std::shared_ptr<Expression>>(this->value) : nullptr;
 }
 
+std::string Value::typeName() const
+{
+	switch (this->type()) {
+	case ValueType::UNDEFINED:
+		return "undefined";
+	case ValueType::BOOL:
+		return "bool";
+	case ValueType::NUMBER:
+		return "number";
+	case ValueType::STRING:
+		return "string";
+	case ValueType::VECTOR:
+		return "vector";
+	case ValueType::RANGE:
+		return "range";
+	case ValueType::FUNCTION:
+		return "function";
+	}
+}
+
 bool Value::toBool() const
 {
   switch (this->type()) {
