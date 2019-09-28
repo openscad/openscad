@@ -455,11 +455,9 @@ build_fontconfig()
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
-  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
   # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
   # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
   ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN ac_cv_func_mkostemp=no
-  unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
@@ -520,9 +518,7 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
   ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
-  unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
