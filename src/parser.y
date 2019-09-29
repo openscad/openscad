@@ -24,7 +24,7 @@
  *
  */
 
-%expect 3 /* Expect 3 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%expect 0
 
 %{
 
@@ -129,26 +129,8 @@ bool fileEnded=false;
 
 %token LE GE EQ NE AND OR
 
-%right LET
-%right LOW_PRIO_RIGHT
-%left LOW_PRIO_LEFT
-
-%right '?' ':'
-
-%left OR
-%left AND
-
-%left '<' LE GE '>'
-%left EQ NE
-
-%left '!' '+' '-'
-%left '*' '/' '%'
-%left UNARY
-%left '[' ']'
-%left '.'
-
-%right HIGH_PRIO_RIGHT
-%left HIGH_PRIO_LEFT
+%nonassoc NO_ELSE
+%nonassoc TOK_ELSE
 
 %type <expr> expr
 %type <expr> call
@@ -183,7 +165,8 @@ bool fileEnded=false;
 
 %%
 
-input:    /* empty */
+input
+        : /* empty */
         | input
           TOK_USE
             {
@@ -193,8 +176,8 @@ input:    /* empty */
         | input statement
         ;
 
-statement:
-          ';'
+statement
+        : ';'
         | '{' inner_input '}'
         | module_instantiation
             {
@@ -227,21 +210,21 @@ statement:
             }
         ;
 
-inner_input:
-          /* empty */
+inner_input
+        : /* empty */
         | statement inner_input
         ;
 
-assignment:
-		TOK_ID '=' expr ';'
+assignment
+        : TOK_ID '=' expr ';'
             {
 				handle_assignment($1, $3, LOCD("assignment", @$));
                 free($1);
             }
         ;
 
-module_instantiation:
-          '!' module_instantiation
+module_instantiation
+        : '!' module_instantiation
             {
                 $$ = $2;
                 if ($$) $$->tag_root = true;
@@ -277,8 +260,8 @@ module_instantiation:
             }
         ;
 
-ifelse_statement:
-          if_statement
+ifelse_statement
+        : if_statement %prec NO_ELSE
             {
                 $$ = $1;
             }
@@ -293,8 +276,8 @@ ifelse_statement:
             }
         ;
 
-if_statement:
-          TOK_IF '(' expr ')'
+if_statement
+        : TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
@@ -306,14 +289,14 @@ if_statement:
             }
         ;
 
-child_statements:
-          /* empty */
+child_statements
+        : /* empty */
         | child_statements child_statement
         | child_statements assignment
         ;
 
-child_statement:
-          ';'
+child_statement
+        : ';'
         | '{' child_statements '}'
         | module_instantiation
             {
@@ -322,8 +305,8 @@ child_statement:
         ;
 
 // "for", "let" and "each" are valid module identifiers
-module_id:
-          TOK_ID  { $$ = $1; }
+module_id
+        : TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }
@@ -331,8 +314,8 @@ module_id:
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
-single_module_instantiation:
-          module_id '(' arguments_call ')'
+single_module_instantiation
+        : module_id '(' arguments_call ')'
             {
                 $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOCD("modulecall", @$));
                 free($1);
@@ -340,48 +323,52 @@ single_module_instantiation:
             }
         ;
 
-expr:	logic_or
-		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr
+expr
+        : logic_or
+		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
 			{
 			  $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
 			  delete $3;
 			}
-        | expr '?' expr ':' expr
+        | logic_or '?' expr ':' expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
             }
-        | TOK_LET '(' arguments_call ')' expr %prec LET
+        | TOK_LET '(' arguments_call ')' expr
             {
               $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
               delete $3;
             }
-        | TOK_ASSERT '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+        | TOK_ASSERT '(' arguments_call ')' expr_or_empty
             {
               $$ = FunctionCall::create("assert", *$3, $5, LOCD("assert", @$));
               delete $3;
             }
-        | TOK_ECHO '(' arguments_call ')' expr_or_empty %prec LOW_PRIO_LEFT
+        | TOK_ECHO '(' arguments_call ')' expr_or_empty
             {
               $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
               delete $3;
             }
         ;
 
-logic_or: logic_and
+logic_or
+        : logic_and
         | logic_or OR logic_and
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
             }
 		;
 
-logic_and: equality
+logic_and
+        : equality
         | logic_and AND equality
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
             }
 		;
 
-equality: comparison
+equality
+        : comparison
         | equality EQ comparison
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
@@ -392,7 +379,8 @@ equality: comparison
             }
 		;
 
-comparison: addition
+comparison
+        : addition
         | comparison '>' addition
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
@@ -411,7 +399,8 @@ comparison: addition
             }
 		;
 
-addition: multiplication
+addition
+        : multiplication
         | addition '+' multiplication
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOCD("addition", @$));
@@ -422,8 +411,8 @@ addition: multiplication
             }
 		;
 
-
-multiplication:	unary
+multiplication
+        : unary
         | multiplication '*' unary
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
@@ -438,12 +427,13 @@ multiplication:	unary
             }
 		;
 
-unary:	call
-        | '+' unary %prec UNARY
+unary
+        : call
+        | '+' unary
             {
                 $$ = $2;
             }
-        | '-' unary %prec UNARY
+        | '-' unary
             {
               $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
             }
@@ -453,7 +443,8 @@ unary:	call
             }
 		;
 
-call:	primary
+call
+        : primary
         | call '(' arguments_call ')'
             {
               $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
@@ -470,8 +461,8 @@ call:	primary
             }
 		;
 
-primary:
-          TOK_TRUE
+primary
+        : TOK_TRUE
             {
               $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
             }
@@ -519,21 +510,21 @@ primary:
             }
 		;
 
-expr_or_empty:
-          %prec LOW_PRIO_LEFT
+expr_or_empty
+        : /* empty */
             {
               $$ = NULL;
             }
-        | expr %prec HIGH_PRIO_LEFT
+        | expr
             {
               $$ = $1;
             }
         ;
  
- list_comprehension_elements:
-          /* The last set element may not be a "let" (as that would instead
-             be parsed as an expression) */
-          TOK_LET '(' arguments_call ')' list_comprehension_elements_p
+/* The last set element may not be a "let" (as that would instead
+   be parsed as an expression) */
+list_comprehension_elements
+        : TOK_LET '(' arguments_call ')' list_comprehension_elements_p
             {
               $$ = new LcLet(*$3, $5, LOCD("lclet", @$));
               delete $3;
@@ -561,7 +552,7 @@ expr_or_empty:
                 delete $3;
                 delete $7;
             }
-        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
+        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr %prec NO_ELSE
             {
               $$ = new LcIf($3, $5, 0, LOCD("lcif", @$));
             }
@@ -572,26 +563,26 @@ expr_or_empty:
         ;
 
 // list_comprehension_elements with optional parenthesis
-list_comprehension_elements_p:
-          list_comprehension_elements
+list_comprehension_elements_p
+        : list_comprehension_elements
         | '(' list_comprehension_elements ')'
             {
                 $$ = $2;
             }
         ;
 
-list_comprehension_elements_or_expr:
-          list_comprehension_elements_p
+list_comprehension_elements_or_expr
+        : list_comprehension_elements_p
         | expr
         ;
 
-optional_commas:
-          ',' optional_commas
-        | /* empty */
+optional_commas
+        : /* empty */
+		| ',' optional_commas
         ;
 
-vector_expr:
-          expr
+vector_expr
+        : expr
             {
               $$ = new Vector(LOCD("vector", @$));
               $$->push_back($1);
@@ -608,8 +599,8 @@ vector_expr:
             }
         ;
 
-arguments_decl:
-          /* empty */
+arguments_decl
+        : /* empty */
             {
                 $$ = new AssignmentList();
             }
@@ -627,8 +618,8 @@ arguments_decl:
             }
         ;
 
-argument_decl:
-          TOK_ID
+argument_decl
+        : TOK_ID
             {
                 $$ = new Assignment($1, LOCD("assignment", @$));
                 free($1);
@@ -640,8 +631,8 @@ argument_decl:
             }
         ;
 
-arguments_call:
-          /* empty */
+arguments_call
+        : /* empty */
             {
                 $$ = new AssignmentList();
             }
@@ -659,8 +650,8 @@ arguments_call:
             }
         ;
 
-argument_call:
-		expr
+argument_call
+        : expr
             {
                 $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));
             }
