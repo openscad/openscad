@@ -14,6 +14,8 @@
 # - MacPorts: curl, cmake
 #
 
+set -e
+
 if [ "`echo $* | grep \\\-v `" ]; then
   set -x
 fi
@@ -48,7 +50,7 @@ PACKAGES=(
     "cgal 4.13"
     "qt5 5.9.7"
     "opencsg 1.4.2"
-    "qscintilla 2.10.8"
+    "qscintilla 2.11.2"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.21.3"
