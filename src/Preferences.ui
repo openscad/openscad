@@ -1791,6 +1791,25 @@
               </layout>
              </widget>
             </item>
+             <item>
+               <widget class="QGroupBox" name="groupBox_Export">
+                 <property name="title">
+                   <string>Exporting</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_107">
+                   <item>
+                     <widget class="QLabel" name="label107">
+                       <property name="text">
+                         <string>DXF unit of measure:</string>
+                       </property>
+                     </widget>
+                   </item>
+                   <item>
+                     <widget class="QComboBox" name="comboBoxDxfUom"/>
+                   </item>
+                 </layout>
+               </widget>
+             </item>
            </layout>
           </widget>
          </widget>

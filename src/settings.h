@@ -69,6 +69,7 @@ public:
     static SettingsEntry inputEnableDriverJOYSTICK;
     static SettingsEntry inputEnableDriverQGAMEPAD;
     static SettingsEntry inputEnableDriverDBUS;
+    static SettingsEntry dxfUom;
 
     static SettingsEntry inputTranslationX;
     static SettingsEntry inputTranslationY;
