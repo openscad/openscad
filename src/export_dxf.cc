@@ -37,7 +37,7 @@
 // 17 = Gigameters; 18 = Astronomical units; 19 = Light years; 20 = Parsecs
 int getUom()
 {
-	Settings::Settings *s = Settings::Settings::inst();
+	auto s = Settings::Settings::inst();
 	auto uom = s->get(Settings::Settings::dxfUom).toString();
 	if (uom == "Unitless")
 		return 0;
