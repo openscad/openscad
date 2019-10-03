@@ -1,4 +1,4 @@
-DEFINES += ENABLE_CGAL CGAL_HEADER_ONLY
+DEFINES += ENABLE_CGAL
 
 QMAKE_CXXFLAGS += -std=c++14
 
@@ -11,7 +11,14 @@ CGAL_DIR = $$(CGALDIR)
   message("CGAL location: $$CGAL_DIR")
 }
 
-LIBS += -lmpfr -lgmp
+exists($$CGAL_DIR/include/CGAL/compiler_config.h)|exists(/usr/include/CGAL/compiler_config.h) {
+  LIBS += -lCGAL -lmpfr -lgmp
+} else {
+  # CGAL header-only
+  DEFINES += CGAL_HEADER_ONLY
+  LIBS += -lmpfr -lgmp
+  message("Using CGAL header-only")
+}
 
 *g++* {
   QMAKE_CXXFLAGS += -frounding-math
