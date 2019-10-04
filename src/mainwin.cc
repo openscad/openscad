@@ -1211,7 +1211,9 @@ void MainWindow::compileCSG()
 			this->highlights_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 				auto nterm = normalizer.normalize(highlight_terms[i]);
-				this->highlights_products->import(nterm);
+				if (nterm) {
+					this->highlights_products->import(nterm);
+				}
 			}
 		}
 		else {
@@ -1226,7 +1228,9 @@ void MainWindow::compileCSG()
 			this->background_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
 				auto nterm = normalizer.normalize(background_terms[i]);
-				this->background_products->import(nterm);
+				if (nterm) {
+					this->background_products->import(nterm);
+				}
 			}
 		}
 		else {
