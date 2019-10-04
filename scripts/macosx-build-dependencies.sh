@@ -459,7 +459,7 @@ build_fontconfig()
   cd "fontconfig-$version"
   # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
   # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN ac_cv_func_mkostemp=no
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" ac_cv_func_mkostemp=no
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
@@ -498,7 +498,7 @@ build_gettext()
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
   patch -p1 < $OPENSCADDIR/patches/gettext.patch
-  ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib"
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
