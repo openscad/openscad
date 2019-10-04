@@ -68,7 +68,15 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 	return v;
 }
 
-static Value axisValues() {
+static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp,	std::string s3, std::string s3disp, std::string s4, std::string s4disp,	std::string s5, std::string s5disp)
+{
+	Value::VectorType v;
+	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp)),	ValuePtr(value(s4, s4disp)), ValuePtr(value(s5, s5disp));
+	return v;
+}
+
+static Value axisValues()
+{
 	Value::VectorType v;
 	v += ValuePtr(value("None", _("None")));
 
@@ -194,7 +202,9 @@ SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Val
 SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverDBUS("input", "enableDriverDBUS", Value(true), Value(false));
-
+SettingsEntry Settings::dxfUom("input", "dxfUom",
+	values("Unitless", "Unitless", "Inches", "Inches", "Feet", "Feet", "Millimeters", "Millimeters", "Centimeters", "Centimeters"),
+	Value("Inches"));
 SettingsEntry Settings::inputTranslationX("input", "translationX", axisValues(), Value("+1"));
 SettingsEntry Settings::inputTranslationY("input", "translationY", axisValues(), Value("-2"));
 SettingsEntry Settings::inputTranslationZ("input", "translationZ", axisValues(), Value("-3"));

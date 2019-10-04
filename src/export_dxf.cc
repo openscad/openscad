@@ -28,6 +28,42 @@
 #include "polyset.h"
 #include "polyset-utils.h"
 #include "dxfdata.h"
+#include "settings.h"
+
+// 0 = Unitless; 1 = Inches; 2 = Feet; 3 = Miles; 4 = Millimeters;
+// 5 = Centimeters; 6 = Meters; 7 = Kilometers; 8 = Microinches;
+// 9 = Mils; 10 = Yards; 11 = Angstroms; 12 = Nanometers;
+// 13 = Microns; 14 = Decimeters; 15 = Decameters; 16 = Hectometers;
+// 17 = Gigameters; 18 = Astronomical units; 19 = Light years; 20 = Parsecs
+int getUom()
+{
+	auto s = Settings::Settings::inst();
+	auto uom = s->get(Settings::Settings::dxfUom).toString();
+	if (uom == "Unitless")
+		return 0;
+	else if (uom == "Inches")
+		return 1;
+	else if (uom == "Feet")
+		return 2;
+	else if (uom == "Miles")
+		return 3;
+	else if (uom == "Millimeters")
+		return 4;
+	else if (uom == "Centimeters")
+		return 5;
+	else if (uom == "Meters")
+		return 6;
+	else if (uom == "Kilometers")
+		return 7;
+	else if (uom == "Microinches")
+		return 8;
+	else if (uom == "Mils")
+		return 9;
+	else if (uom == "Yards")
+		return 10;
+	else
+		return 0;
+}
 
 /*!
 	Saves the current Polygon2d as DXF to the given absolute filename.
@@ -36,21 +72,41 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+	// UOM and other AutoCAD DXF format information
+	// https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2018/ENU/AutoCAD-DXF/files/GUID-A85E8E67-27CD-4C59-BE61-4DC9FADBE74A-htm.html
 	output << "  0\n"
-				 <<	"SECTION\n"
-				 <<	"  2\n"
-				 <<	"BLOCKS\n"
-				 <<	"  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "HEADER\n"
+				 << "  9\n"
+				 // The AutoCAD drawing database version number: AutoCAD 2013
+				 << "$ACADVER\n"
+				 << " 1\n"
+				 << "AC1027\n"
+				 // Default drawing units for AutoCAD DesignCenter blocks:
+				 // 70	$INSUNITS
+				 << "  9\n"
+				 << "$INSUNITS\n"
+				 << " 70\n"
+				 << getUom() << "\n"
+				 << "  0\n"
+				 << "ENDSEC\n"
+
+				 << "  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "BLOCKS\n"
+				 << "  0\n"
 				 << "ENDSEC\n"
 				 << "  0\n"
 				 << "SECTION\n"
 				 << "  2\n"
 				 << "ENTITIES\n";
 
-	for(const auto &o : poly.outlines()) {
-		for (unsigned int i=0;i<o.vertices.size();i++) {
+	for (const auto &o : poly.outlines()) {
+		for (unsigned int i = 0; i < o.vertices.size(); i++) {
 			const Vector2d &p1 = o.vertices[i];
-			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
+			const Vector2d &p2 = o.vertices[(i + 1) % o.vertices.size()];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];
@@ -58,8 +114,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 			output << "  0\n"
 						 << "LINE\n";
 			// Some importers (e.g. Inkscape) needs a layer to be specified
-      // The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
-			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2] order.
+			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
+			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2]
+			// order.
 			output << "  8\n"
 						 << "0\n"
 						 << " 10\n"
@@ -87,9 +144,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENDSEC\n";
 
 	output << "  0\n"
-				 <<"EOF\n";
+				 << "EOF\n";
 
-	setlocale(LC_NUMERIC, "");      // Set default locale
+	setlocale(LC_NUMERIC, ""); // Set default locale
 }
 
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
@@ -99,7 +156,8 @@ void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		export_dxf(*poly, output);
-	} else {
+	}
+	else {
 		assert(false && "Export as DXF for this geometry type is not supported");
 	}
 }

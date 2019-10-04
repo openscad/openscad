@@ -221,6 +221,7 @@ void Preferences::init() {
 	initComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
 	initComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
 	initComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	initComboBox(this->comboBoxDxfUom, Settings::Settings::dxfUom);
 	initSpinBoxRange(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBoxRange(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
 	initSpinBoxRange(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
@@ -603,6 +604,11 @@ void Preferences::on_comboBoxIndentUsing_activated(int val)
 	applyComboBox(comboBoxIndentUsing, val, Settings::Settings::indentStyle);
 }
 
+void Preferences::on_comboBoxDxfUom_activated(int val)
+{
+	applyComboBox(comboBoxDxfUom, val, Settings::Settings::dxfUom);
+}
+
 void Preferences::on_comboBoxTabKeyFunction_activated(int val)
 {
 	applyComboBox(comboBoxTabKeyFunction, val, Settings::Settings::tabKeyFunction);
@@ -921,6 +927,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
 	updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	updateComboBox(this->comboBoxDxfUom, Settings::Settings::dxfUom);
 	initSpinBoxDouble(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBoxDouble(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 	initSpinBoxDouble(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
