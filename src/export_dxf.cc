@@ -80,14 +80,16 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "HEADER\n"
 				 << "  9\n"
 				 // The AutoCAD drawing database version number: AutoCAD 2013
-				 << "$ACADVER "
+				 << "$ACADVER\n"
 				 << " 1\n"
-				 << " AC1027\n"
+				 << "AC1027\n"
 				 // Default drawing units for AutoCAD DesignCenter blocks:
 				 // 70	$INSUNITS
-				 << "$INSUNITS"
+				 << "  9\n"
+				 << "$INSUNITS\n"
 				 << " 70\n"
-				 << " " << getUom() << "\n"
+				 << getUom() << "\n"
+				 << "  0\n"
 				 << "ENDSEC\n"
 
 				 << "  0\n"
