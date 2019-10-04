@@ -24,24 +24,30 @@
  *
  */
 
-#include "value.h"
-#include "printutils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
 #include <cmath>
 #include <assert.h>
 #include <sstream>
-#include <boost/numeric/conversion/cast.hpp>
+#include <boost/format.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
-#include <boost/format.hpp>
-#include "boost-utils.h"
-#include <boost/filesystem.hpp>
-
-namespace fs=boost::filesystem;
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+
+#include "value.h"
+#include "expression.h"
+#include "printutils.h"
+#include "boost-utils.h"
+#include "double-conversion/double-conversion.h"
+#include "double-conversion/utils.h"
+#include "double-conversion/ieee.h"
+
+namespace fs=boost::filesystem;
+using boost::adaptors::transformed;
+using boost::algorithm::join;
 
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
@@ -414,7 +420,18 @@ public:
   }
 
   std::string operator()(const std::shared_ptr<Expression> &v) const {
-	  return "[function]";
+	const std::shared_ptr<FunctionDefinition> def = dynamic_pointer_cast<FunctionDefinition>(v);
+	if (def) {
+	  auto tostring = [](Assignment a){ return a.name; };
+	  std::ostringstream stream;
+	  stream << "function("
+			 << join(def->definition_arguments | transformed(tostring), ", ")
+			 << ") "
+			 << *def->expr.get();
+	  return stream.str();
+	} else {
+	  return "[expression]";
+	}
   }
 };
 
