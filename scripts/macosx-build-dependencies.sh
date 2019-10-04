@@ -90,21 +90,18 @@ package_version()
     return 1
 }
 
-# Usage: build <package> <version>
-build()
+# Usage: check_version_file <package> <version>
+# Checks if $DEPLOYDIR/fileshare/macosx-build-dependencies/$package.version exists
+# and its contents equals $version
+# Returns success (0) if it does
+check_version_file()
 {
-    local package=$1
-    local version=$2
-
-    local should_install=$(( $OPTION_FORCE == 1 ))
-    if [[ $should_install == 0 ]]; then
-        is_installed $package $version
-        should_install=$?
-    fi
-    if [[ $should_install == 1 ]]; then
-        set -e
-        build_$package $version
-        set +e
+    versionfile="$DEPLOYDIR/share/macosx-build-dependencies/$1.version"
+    if [ -f $versionfile ]; then
+	[[ $(cat $versionfile) == $2 ]]
+	return $?
+    else
+	return 1
     fi
 }
 
@@ -113,19 +110,30 @@ build()
 is_installed()
 {
     if check_version_file $1 $2; then
-      echo "$1 $2 already installed - not building"
-      return 0
+	echo "$1 $2 already installed - not building"
+	return 0
+    else
+	return 1
     fi
-    return 1
 }
 
-# Usage: check_version_file <package> <version>
-# Checks if $DEPLOYDIR/fileshare/macosx-build-dependencies/$package.version exists
-# and its contents equals $version
-# Returns success (0) if it does
-check_version_file()
+# Usage: build <package> <version>
+build()
 {
-    [[ $(cat $DEPLOYDIR/share/macosx-build-dependencies/$1.version) == $2 ]]
+    local package=$1
+    local version=$2
+
+    local should_install=$(( $OPTION_FORCE == 1 ))
+    if [[ $should_install == 0 ]]; then
+        if ! is_installed $package $version; then
+            should_install=1
+	fi
+    fi
+    if [[ $should_install == 1 ]]; then
+        set -e
+        build_$package $version
+        set +e
+    fi
 }
 
 build_double_conversion()
