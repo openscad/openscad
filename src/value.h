@@ -20,15 +20,7 @@ class tostring_visitor;
 class tostream_visitor;
 class ValuePtr;
 class Context;
-
-class Expression : public ASTNode
-{
-public:
-	Expression(const Location &loc) : ASTNode(loc) {}
-	~Expression() {}
-	virtual bool isLiteral() const;
-	virtual ValuePtr evaluate(const std::shared_ptr<Context> context) const = 0;
-};
+class Expression;
 
 class QuotedString : public std::string
 {
