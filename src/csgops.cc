@@ -39,10 +39,10 @@ class CsgModule : public AbstractModule
 public:
 	OpenSCADOperator type;
 	CsgModule(OpenSCADOperator type) : type(type) { }
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *CsgModule::instantiate(const std::shared_ptr<Context>, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *CsgModule::instantiate(const std::shared_ptr<Context>&, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	inst->scope.apply(evalctx);
 	auto node = new CsgOpNode(inst, type);

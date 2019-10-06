@@ -51,10 +51,10 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new TransformNode(inst);
 

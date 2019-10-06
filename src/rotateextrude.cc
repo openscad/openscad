@@ -45,10 +45,10 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new RotateExtrudeNode(inst);
 

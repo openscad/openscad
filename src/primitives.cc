@@ -58,7 +58,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 private:
 	Value lookup_radius(const std::shared_ptr<Context> ctx, const Location &loc, const std::string &radius_var, const std::string &diameter_var) const;
 };
@@ -138,7 +138,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 	}
 }
 
-AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new PrimitiveNode(inst, this->type, ctx->documentPath());
 

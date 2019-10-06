@@ -98,7 +98,7 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expres
 {
 }
 
-ValuePtr UnaryOp::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
 	case (Op::Not):
@@ -143,7 +143,7 @@ BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const L
 {
 }
 
-ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
@@ -249,12 +249,12 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 {
 }
 
-const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Context> context) const
+const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	return this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 }
 
-ValuePtr TernaryOp::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr TernaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const shared_ptr<const Expression>& nextexpr = evaluateStep(context);
 	return nextexpr->evaluate(context);
@@ -270,7 +270,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 {
 }
 
-ValuePtr ArrayLookup::evaluate(const std::shared_ptr<Context> context) const {
+ValuePtr ArrayLookup::evaluate(const std::shared_ptr<Context>& context) const {
 	return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
@@ -283,7 +283,7 @@ Literal::Literal(const ValuePtr &val, const Location &loc) : Expression(loc), va
 {
 }
 
-ValuePtr Literal::evaluate(const std::shared_ptr<Context>) const
+ValuePtr Literal::evaluate(const std::shared_ptr<Context>&) const
 {
 	return this->value;
 }
@@ -303,7 +303,7 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 {
 }
 
-ValuePtr Range::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr beginValue = this->begin->evaluate(context);
 	if (beginValue->type() == Value::ValueType::NUMBER) {
@@ -361,7 +361,7 @@ void Vector::push_back(Expression *expr)
 	this->children.push_back(shared_ptr<Expression>(expr));
 }
 
-ValuePtr Vector::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 {
 	Value::VectorType vec;
 	for(const auto &e : this->children) {
@@ -392,12 +392,12 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 {
 }
 
-ValuePtr Lookup::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
 	return context->lookup_variable(this->name,false,loc);
 }
 
-ValuePtr Lookup::evaluateSilently(const std::shared_ptr<Context> context) const
+ValuePtr Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
 {
 	return context->lookup_variable(this->name,true);
 }
@@ -412,7 +412,7 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 {
 }
 
-ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr v = this->expr->evaluate(context);
 
@@ -438,12 +438,12 @@ FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &d
 {
 }
 
-FunctionDefinition::FunctionDefinition(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc)
+FunctionDefinition::FunctionDefinition(const std::shared_ptr<Context>& ctx, std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc)
 	: Expression(loc), ctx(ctx), definition_arguments(definition_arguments), expr(expr)
 {
 }
 
-ValuePtr FunctionDefinition::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
 	return ValuePtr{std::shared_ptr<Expression>(new FunctionDefinition(context, expr, definition_arguments, location()))};
 }
@@ -469,7 +469,7 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context> ctx){
+static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
 	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
 }
@@ -536,7 +536,7 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 	tailCallContext->apply_config_variables(context);
 }
 
-ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const std::string name = get_name();
 	if (StackCheck::inst().check()) {
@@ -597,7 +597,7 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
-const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context> context) const
+const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<EvalContext> assert_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
 	ContextHandle<Context> c{Context::create<Context>(assert_context.ctx)};
@@ -605,7 +605,7 @@ const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context
 	return expr;
 }
 
-ValuePtr Assert::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr Assert::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
 	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
@@ -624,14 +624,14 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 }
 
-const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context> context) const
+const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
 	PRINTB("%s", STR("ECHO: " << *echo_context.ctx));
 	return expr;
 }
 
-ValuePtr Echo::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr Echo::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
 
@@ -650,13 +650,13 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-const shared_ptr<Expression>& Let::evaluateStep(std::shared_ptr<Context> context) const
+const shared_ptr<Expression>& Let::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	evaluate_sequential_assignment(this->arguments, context, this->loc);
 	return this->expr;
 }
 
-ValuePtr Let::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr Let::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<Context> c{Context::create<Context>(context)};
 	const shared_ptr<Expression>& nextexpr = evaluateStep(c.ctx);
@@ -677,7 +677,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 {
 }
 
-ValuePtr LcIf::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
@@ -705,7 +705,7 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 {
 }
 
-ValuePtr LcEach::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
 {
 	Value::VectorType vec;
 
@@ -751,7 +751,7 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr LcFor::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
 {
 	Value::VectorType vec;
 
@@ -808,7 +808,7 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 {
 }
 
-ValuePtr LcForC::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
 	Value::VectorType vec;
 
@@ -851,7 +851,7 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr LcLet::evaluate(const std::shared_ptr<Context> context) const
+ValuePtr LcLet::evaluate(const std::shared_ptr<Context>& context) const
 {
     ContextHandle<Context> c{Context::create<Context>(context)};
     evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
@@ -863,7 +863,7 @@ void LcLet::print(std::ostream &stream, const std::string &) const
     stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-void evaluate_assert(const std::shared_ptr<Context> context, const std::shared_ptr<EvalContext> evalctx)
+void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
 {
 	AssignmentList args;
 	args += Assignment("condition"), Assignment("message");
@@ -896,7 +896,7 @@ void evaluate_assert(const std::shared_ptr<Context> context, const std::shared_p
 }
 
 ValuePtr evaluate_function(const std::string name, const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,
-		const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx, const Location& loc)
+		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
 {
 	if (!expr) return ValuePtr::undefined;
 	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call

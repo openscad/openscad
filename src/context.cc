@@ -222,14 +222,14 @@ static void NOINLINE print_ignore_warning(const char *what, const char *name, co
 	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
-ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx) const
+ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath().c_str());
 	return ValuePtr::undefined;
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
 	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath().c_str());

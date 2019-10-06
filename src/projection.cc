@@ -40,10 +40,10 @@ class ProjectionModule : public AbstractModule
 {
 public:
 	ProjectionModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new ProjectionNode(inst);
 

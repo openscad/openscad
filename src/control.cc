@@ -53,7 +53,7 @@ public: // methods
 
 	ControlModule(Type type, const Feature& feature) : AbstractModule(feature), type(type) { }
 
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 
 	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
 						 const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx);
@@ -166,7 +166,7 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const std::shared_p
 	return modulectx->getChild(n)->evaluate(modulectx);
 }
 
-AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	AbstractNode *node = nullptr;
 

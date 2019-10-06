@@ -43,7 +43,7 @@ static void NOINLINE print_err(std::string name, const Location &loc,const std::
 	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
 }
 
-AbstractNode *UserModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (StackCheck::inst().check()) {
 		print_err(inst->name(),loc,ctx);

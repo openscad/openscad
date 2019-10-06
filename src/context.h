@@ -55,8 +55,8 @@ public:
 	virtual void init() { }
 
 	const std::shared_ptr<Context> getParent() const { return this->parent; }
-	virtual ValuePtr evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx) const;
-	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext> evalctx) const;
+	virtual ValuePtr evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const;
+	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
 
@@ -101,6 +101,6 @@ public:
 	// stack via RAII so we need to use emplace_front() to create the objects.
 	friend ValuePtr evaluate_function(const std::string name,
 			const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,
-			const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx,
+			const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
 			const Location& loc);
 };

@@ -45,7 +45,7 @@ class ColorModule : public AbstractModule
 public:
 	ColorModule();
 	~ColorModule();
-	AbstractNode *instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 
 private:
 	static std::unordered_map<std::string, Color4f> webcolors;
@@ -254,7 +254,7 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	return rgba;
 }
 
-AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new ColorNode(inst);
 

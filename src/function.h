@@ -18,7 +18,7 @@ public:
 	virtual ~AbstractFunction();
 	virtual bool is_experimental() const { return feature != nullptr; }
 	virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
-	virtual ValuePtr evaluate(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx) const = 0;
+	virtual ValuePtr evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const = 0;
 };
 
 class BuiltinFunction : public AbstractFunction
@@ -31,7 +31,7 @@ public:
 	BuiltinFunction(eval_func_t f, const Feature& feature) : AbstractFunction(feature), eval_func(f) { }
 	~BuiltinFunction();
 
-	ValuePtr evaluate(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx) const override;
+	ValuePtr evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
 class UserFunction : public AbstractFunction, public ASTNode
@@ -45,6 +45,6 @@ public:
 	UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
 	~UserFunction();
 
-	ValuePtr evaluate(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx) const override;
+	ValuePtr evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 };

@@ -19,7 +19,7 @@ void BuiltinContext::init()
 	this->set_constant("PI", ValuePtr(M_PI));
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx) const
+ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
@@ -30,7 +30,7 @@ ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::s
 	return Context::evaluate_function(name, evalctx);
 }
 
-class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, std::shared_ptr<EvalContext> evalctx) const
+class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const std::string &name = inst.name();
 	const auto &search = Builtins::instance()->getModules().find(name);

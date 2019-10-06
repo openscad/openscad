@@ -114,7 +114,7 @@ const UserModule *ModuleContext::findLocalModule(const std::string &name) const
 	return nullptr;
 }
 
-ValuePtr ModuleContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx) const
+ValuePtr ModuleContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
 	std::shared_ptr<Context> self = (const_cast<ModuleContext *>(this))->get_shared_ptr();
@@ -123,7 +123,7 @@ ValuePtr ModuleContext::evaluate_function(const std::string &name, const std::sh
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundm = this->findLocalModule(inst.name());
 	std::shared_ptr<Context> self = (const_cast<ModuleContext *>(this))->get_shared_ptr();
@@ -167,7 +167,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-ValuePtr FileContext::sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx, FileModule *usedmod) const
+ValuePtr FileContext::sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx, FileModule *usedmod) const
 {
 	ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
 	ctx->initializeModule(*usedmod);
@@ -179,7 +179,7 @@ ValuePtr FileContext::sub_evaluate_function(const std::string &name, const std::
 	return usedmod->scope.functions[name]->evaluate(ctx.ctx, evalctx);
 }
 
-ValuePtr FileContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> evalctx) const
+ValuePtr FileContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
 	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
@@ -195,7 +195,7 @@ ValuePtr FileContext::evaluate_function(const std::string &name, const std::shar
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundm = this->findLocalModule(inst.name());
 	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();

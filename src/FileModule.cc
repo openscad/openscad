@@ -173,7 +173,7 @@ time_t FileModule::handleDependencies(bool is_root)
 	return latest;
 }
 
-AbstractNode *FileModule::instantiate(const std::shared_ptr<Context> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	assert(!evalctx);
 	
@@ -181,7 +181,7 @@ AbstractNode *FileModule::instantiate(const std::shared_ptr<Context> ctx, const 
 	return this->instantiateWithFileContext(context.ctx, inst, evalctx);
 }
 
-AbstractNode *FileModule::instantiateWithFileContext(std::shared_ptr<FileContext> ctx, const ModuleInstantiation *inst, std::shared_ptr<EvalContext> evalctx) const
+AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	assert(!evalctx);
 	
