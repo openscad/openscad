@@ -510,6 +510,7 @@ SOURCES += \
            src/import_svg.cc \
            src/import_amf.cc \
            src/import_3mf.cc \
+           src/import_json.cc \
            src/renderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
@@ -591,6 +592,10 @@ HEADERS += src/ext/libtess2/Include/tesselator.h \
            src/ext/libtess2/Source/priorityq.h \
            src/ext/libtess2/Source/sweep.h \
            src/ext/libtess2/Source/tess.h
+
+# nlohmann-json
+INCLUDEPATH += src/ext/json
+HEADERS += src/ext/json/json.hpp
 
 has_qt5 {
   HEADERS += src/Network.h src/NetworkSignal.h src/PrintService.h src/OctoPrint.h src/PrintInitDialog.h

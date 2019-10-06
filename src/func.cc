@@ -34,6 +34,7 @@
 #include "memory.h"
 #include "UserModule.h"
 #include "degree_trig.h"
+#include "import.h"
 
 #include <cmath>
 #include <sstream>
@@ -1028,6 +1029,17 @@ ValuePtr builtin_is_function(const std::shared_ptr<Context> ctx, const std::shar
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_import(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	AssignmentList args{ Assignment("file") };
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setDocumentPath(evalctx->documentPath());
+	c->setVariables(evalctx, args, {});
+
+	auto v = c->lookup_variable("file", true);
+	return import_json(v->toString(), evalctx->loc);
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1194,6 +1206,11 @@ void register_builtin_functions()
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
 				{
 					"parent_module(number) -> string",
+				});
+
+	Builtins::init("import", new BuiltinFunction(&builtin_import),
+				{
+					"import(file) -> object",
 				});
 
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
