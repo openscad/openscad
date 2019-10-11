@@ -72,20 +72,24 @@ int getUom()
 void export_dxf(const Polygon2d &poly, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+
 	// UOM and other AutoCAD DXF format information
 	// https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2018/ENU/AutoCAD-DXF/files/GUID-A85E8E67-27CD-4C59-BE61-4DC9FADBE74A-htm.html
+
+	//comment with the version that generated the file
 	output << 999 << std::endl
 		<< "OpenSCAD " << openscad_displayversionnumber << std::endl
 		<< 0 << std::endl
+
+		//Header section
 		<< "SECTION\n"
 		<< 2 << std::endl
 		<< "HEADER\n"
 		<< 9 << std::endl
-		// The AutoCAD drawing database version number: AutoCAD 2013
+		// The AutoCAD drawing database version number: AutoCAD 2007
 		<< "$ACADVER" << std::endl
 		<< 1 << std::endl
-		<< "AC1027" << std::endl
+		<< "AC1021" << std::endl
 		// Default drawing units for AutoCAD DesignCenter blocks:
 		// 70	$INSUNITS
 		<< 9 << std::endl
@@ -95,6 +99,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 		<< 0 << std::endl
 		<< "ENDSEC\n"
 
+		// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
 		//empty block section
 		<< "  0\n"
 		<< "SECTION\n"
@@ -106,7 +111,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 		//graphical objects
 		<< "SECTION\n"
-		<< "  2\n"
+		<< 2 << std::endl
 		<< "ENTITIES\n";
 
 	for (const auto &o : poly.outlines()) {
@@ -117,22 +122,22 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 			double y1 = p1[1];
 			double x2 = p2[0];
 			double y2 = p2[1];
-			output << "  0\n"
-						 << "LINE\n";
+			output << 0 << std::endl
+				<< "LINE\n";
 			// Some importers (e.g. Inkscape) needs a layer to be specified
 			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
 			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2]
 			// order.
-			output << "  8\n"
-						 << "0\n"
-						 << " 10\n"
-						 << x1 << "\n"
-						 << " 20\n"
-						 << y1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
-						 << " 21\n"
-						 << y2 << "\n";
+			output << 8 << std::endl
+				<< 0 << std::endl
+				<< 10 << std::endl
+				<< x1 << std::endl
+				<< 20 << std::endl
+				<< y1 << std::endl
+				<< 11 << std::endl
+				<< x2 << std::endl
+				<< 21 << std::endl
+				<< y2 << std::endl;
 		}
 	}
 
