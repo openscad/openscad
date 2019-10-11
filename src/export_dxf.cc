@@ -29,6 +29,7 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 #include "settings.h"
+#include "version.h"
 
 // 0 = Unitless; 1 = Inches; 2 = Feet; 3 = Miles; 4 = Millimeters;
 // 5 = Centimeters; 6 = Meters; 7 = Kilometers; 8 = Microinches;
@@ -74,34 +75,39 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
 	// UOM and other AutoCAD DXF format information
 	// https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2018/ENU/AutoCAD-DXF/files/GUID-A85E8E67-27CD-4C59-BE61-4DC9FADBE74A-htm.html
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "HEADER\n"
-				 << "  9\n"
-				 // The AutoCAD drawing database version number: AutoCAD 2013
-				 << "$ACADVER\n"
-				 << " 1\n"
-				 << "AC1027\n"
-				 // Default drawing units for AutoCAD DesignCenter blocks:
-				 // 70	$INSUNITS
-				 << "  9\n"
-				 << "$INSUNITS\n"
-				 << " 70\n"
-				 << getUom() << "\n"
-				 << "  0\n"
-				 << "ENDSEC\n"
+	output << 999 << std::endl
+		<< "OpenSCAD " << openscad_displayversionnumber << std::endl
+		<< 0 << std::endl
+		<< "SECTION\n"
+		<< 2 << std::endl
+		<< "HEADER\n"
+		<< 9 << std::endl
+		// The AutoCAD drawing database version number: AutoCAD 2013
+		<< "$ACADVER" << std::endl
+		<< 1 << std::endl
+		<< "AC1027" << std::endl
+		// Default drawing units for AutoCAD DesignCenter blocks:
+		// 70	$INSUNITS
+		<< 9 << std::endl
+		<< "$INSUNITS" << std::endl
+		<< 70 << std::endl
+		<< getUom() << std::endl
+		<< 0 << std::endl
+		<< "ENDSEC\n"
 
-				 << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "BLOCKS\n"
-				 << "  0\n"
-				 << "ENDSEC\n"
-				 << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "ENTITIES\n";
+		//empty block section
+		<< "  0\n"
+		<< "SECTION\n"
+		<< "  2\n"
+		<< "BLOCKS\n"
+		<< "  0\n"
+		<< "ENDSEC\n"
+		<< "  0\n"
+
+		//graphical objects
+		<< "SECTION\n"
+		<< "  2\n"
+		<< "ENTITIES\n";
 
 	for (const auto &o : poly.outlines()) {
 		for (unsigned int i = 0; i < o.vertices.size(); i++) {
