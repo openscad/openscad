@@ -66,96 +66,92 @@ int getUom()
 		return 0;
 }
 
+//Stream DXF records
+//http://help.autodesk.com/view/ACD/2016/ENU/?guid=GUID-D939EA11-0CEC-4636-91A8-756640A031D3
+class DxfWriter
+{
+private:
+	std::ostream &os;
+
+public:
+	DxfWriter(std::ostream &os) : os(os) {}
+	template<typename T>
+	void record(int groupCode, T value) {
+		os << groupCode << std::endl << value << std::endl;
+	}
+	void startSection(const std::string name) {
+		record(0, "SECTION");
+		record(2, name);
+	}
+	void endSection() { 
+		record(0, "ENDSEC"); 
+	}
+};
+
 /*!
 	Saves the current Polygon2d as DXF to the given absolute filename.
+	https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/AutoCAD-DXF/files/GUID-5D1DFE5C-94FC-43B7-B535-43001D1662C1-htm.html
  */
 void export_dxf(const Polygon2d &poly, std::ostream &output)
 {
+	DxfWriter w(output);
+
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
 	// UOM and other AutoCAD DXF format information
 	// https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2018/ENU/AutoCAD-DXF/files/GUID-A85E8E67-27CD-4C59-BE61-4DC9FADBE74A-htm.html
 
 	//comment with the version that generated the file
-	output << 999 << std::endl
-		<< "OpenSCAD " << openscad_displayversionnumber << std::endl
-		<< 0 << std::endl
+	w.record(999, "OpenSCAD " + openscad_displayversionnumber);
 
-		//Header section
-		<< "SECTION\n"
-		<< 2 << std::endl
-		<< "HEADER\n"
-		<< 9 << std::endl
-		// The AutoCAD drawing database version number: AutoCAD 2007
-		<< "$ACADVER" << std::endl
-		<< 1 << std::endl
-		<< "AC1021" << std::endl
-		// Default drawing units for AutoCAD DesignCenter blocks:
-		// 70	$INSUNITS
-		<< 9 << std::endl
-		<< "$INSUNITS" << std::endl
-		<< 70 << std::endl
-		<< getUom() << std::endl
-		<< 0 << std::endl
-		<< "ENDSEC\n"
+	//Header section
+	w.startSection("HEADER");
+	// The AutoCAD drawing database version number: AutoCAD 2007
+	w.record(9, "$ACADVER");
+	w.record(1, "AC1021");
+	// Default drawing units for AutoCAD DesignCenter blocks:
+	// 70	$INSUNITS
+	w.record(9, "$INSUNITS");
+	w.record(70, getUom());
+	w.endSection();
 
-		// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
-		//empty block section
-		<< "  0\n"
-		<< "SECTION\n"
-		<< "  2\n"
-		<< "BLOCKS\n"
-		<< "  0\n"
-		<< "ENDSEC\n"
-		<< "  0\n"
+	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+	//empty block section
+	w.startSection("BLOCKS");
+	w.endSection();
 
-		//graphical objects
-		<< "SECTION\n"
-		<< 2 << std::endl
-		<< "ENTITIES\n";
+	//graphical objects
+	w.startSection("ENTITIES");
 
 	for (const auto &o : poly.outlines()) {
 		for (unsigned int i = 0; i < o.vertices.size(); i++) {
+			//Line entity http://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i + 1) % o.vertices.size()];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];
 			double y2 = p2[1];
-			output << 0 << std::endl
-				<< "LINE\n";
+			w.record(0, "LINE");
 			// Some importers (e.g. Inkscape) needs a layer to be specified
 			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
 			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2]
 			// order.
-			output << 8 << std::endl
-				<< 0 << std::endl
-				<< 10 << std::endl
-				<< x1 << std::endl
-				<< 20 << std::endl
-				<< y1 << std::endl
-				<< 11 << std::endl
-				<< x2 << std::endl
-				<< 21 << std::endl
-				<< y2 << std::endl;
+			w.record(8, 0);
+			w.record(10, x1);
+			w.record(20, y1);
+			w.record(11, x2);
+			w.record(21, y2);
 		}
 	}
-
-	output << "  0\n"
-				 << "ENDSEC\n";
+	w.endSection();
 
 	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "OBJECTS\n"
-				 << "  0\n"
-				 << "DICTIONARY\n"
-				 << "  0\n"
-				 << "ENDSEC\n";
+	w.startSection("OBJECTS");
+	w.record(0, "DICTIONARY");
+	w.endSection();
 
-	output << "  0\n"
-				 << "EOF\n";
+	w.record(0, "EOF");
 
 	setlocale(LC_NUMERIC, ""); // Set default locale
 }
