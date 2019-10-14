@@ -156,8 +156,9 @@ public:
 	void prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments);
 	ValuePtr evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-	std::string get_name() const { return name; }
+	const std::string& get_name() const { return name; }
 	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
+	shared_ptr<class FunctionDefinition> getFunctionDefinition(const ValuePtr& v) const;
 public:
 	bool isLookup;
 	std::string name;

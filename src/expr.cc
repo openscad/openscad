@@ -481,8 +481,11 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context> ctx){
+static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
 	PRINTB("TRACE: called by '%s', %s.", val->get_name() % val->location().toRelativeString(ctx->documentPath()));
+}
+static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
+	PRINTB("WARNING: Can't call function on %s at line %d, %s", name % loc.firstLine() % loc.toRelativeString(ctx->documentPath()));
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
@@ -536,32 +539,41 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 	tailCallContext->apply_config_variables(context);
 }
 
+shared_ptr<FunctionDefinition> FunctionCall::getFunctionDefinition(const ValuePtr& v) const
+{
+	const shared_ptr<Expression> expr = v->toExpression();
+	if (!expr) {
+		return nullptr;
+	} else if (typeid(*expr) != typeid(FunctionDefinition)) {
+		return nullptr;
+	} else {
+		return static_pointer_cast<FunctionDefinition>(expr);
+	}
+}
+
 ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 {
-	const std::string name = get_name();
+	const auto& name = get_name();
 	if (StackCheck::inst().check()) {
 		print_err(name.c_str(), loc, context);
 		throw RecursionException::create("function", name, this->loc);
 	}
 	try {
 		const ValuePtr v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
-		const shared_ptr<Expression> defExpr = v->toExpression();
-		const shared_ptr<FunctionDefinition> def = defExpr && typeid(*defExpr) == typeid(FunctionDefinition) ? static_pointer_cast<FunctionDefinition>(defExpr) : nullptr;
+		const shared_ptr<FunctionDefinition> def = getFunctionDefinition(v);
 
-		ContextHandle<Context> ctx{Context::create<Context>(def && def->ctx ? def->ctx : context)};
-		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
-
-		std::function<ValuePtr()> call = [&]{
-			PRINTB("WARNING: Can't call function on %s at line %d, %s", v->typeName() % loc.firstLine() % loc.toRelativeString(ctx.ctx->documentPath()));
-			return ValuePtr::undefined;
-		};
 		if (def) {
+			ContextHandle<Context> ctx{Context::create<Context>(def->ctx ? def->ctx : context)};
+			ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 			ctx->setVariables(evalCtx.ctx, def->definition_arguments);
-			call = [&]{ return evaluate_function(name, def->expr, def->definition_arguments, ctx.ctx, evalCtx.ctx, this->loc); };
+			return evaluate_function(name, def->expr, def->definition_arguments, ctx.ctx, evalCtx.ctx, this->loc);
 		} else if (isLookup) {
-			call = [&]{ return context->evaluate_function(name, evalCtx.ctx); };
+			ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
+			return context->evaluate_function(name, evalCtx.ctx);
+		} else {
+			print_invalid_function_call(v->typeName(), context, loc);
+			return ValuePtr::undefined;
 		}
-		return call();
 	} catch (EvaluationException &e) {
 		if (e.traceDepth > 0) {
 			print_trace(this, context);
