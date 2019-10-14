@@ -48,6 +48,7 @@
 #include <sstream>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
+#include "feature.h"
 
 namespace fs = boost::filesystem;
 
@@ -327,7 +328,13 @@ expr
         : logic_or
 		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
 			{
-			  $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+			  if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
+			    $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+			  } else {
+				  PRINTB("WARNING: Support for function literals is disabled %s",
+						  LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
+				$$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+			  }
 			  delete $3;
 			}
         | logic_or '?' expr ':' expr

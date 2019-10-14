@@ -228,7 +228,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION "")
+        set(EXPERIMENTAL_OPTION "--enable=function-literals")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -615,7 +615,7 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
 
 # No tests related to experimental features currently
-#experimental_tests()
+experimental_tests(echotest_function-literal-tests)
 
 # Test config handling
 
