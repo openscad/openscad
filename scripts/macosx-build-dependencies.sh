@@ -29,7 +29,7 @@ OPTION_DEPLOY=false
 OPTION_FORCE=0
 
 PACKAGES=(
-    "double_conversion 3.1.1"
+    "double_conversion 3.1.5"
     "eigen 3.3.7"
     "gmp 6.1.2"
     "mpfr 4.0.2"
