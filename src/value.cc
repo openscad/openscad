@@ -431,8 +431,8 @@ public:
     std::stringstream s;
 
 	s << '{';
-	for (const auto& entry : v.data) {
-		s << ' ' << entry.first << " = " << *entry.second << ";";
+	for (const auto& key : v.get_keys()) {
+		s << ' ' << key << " = " << *v.get(key) << ";";
 	}
 	s << " }";
 	return s.str();
@@ -507,8 +507,8 @@ public:
 
   void operator()(const ObjectType &v) const {
 	stream << '{';
-	for (const auto &entry : v.data) {
-		stream << ' ' << entry.first << " = " << *entry.second << ";";
+	for (const auto &key : v.get_keys()) {
+		stream << ' ' << key << " = " << *v.get(key) << ";";
 	}
 	stream << " }";
   }
@@ -1127,6 +1127,28 @@ bool RangeType::iterator::operator!=(const self_type &other) const
 bool ObjectType::operator==(const ObjectType&) const
 {
 	return false;
+}
+
+bool ObjectType::has_key(const std::string& key) const
+{
+	return data.find(key) != data.end();
+}
+
+const ValuePtr& ObjectType::get(const std::string& key) const
+{
+	const_iterator it = data.find(key);
+	return it == data.end() ? ValuePtr::undefined : (*it).second;
+}
+
+void ObjectType::set(const std::string& key, const ValuePtr& value)
+{
+	iterator it = data.find(key);
+	if (it == data.end()) {
+		keys.push_back(key);
+		data.emplace(key, value);
+	} else {
+		it->second = value;
+	}
 }
 
 ValuePtr::ValuePtr()

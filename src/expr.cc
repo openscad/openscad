@@ -352,9 +352,14 @@ Object::Object(const AssignmentList &assignments, const Location &loc)
 
 ValuePtr Object::evaluate(const std::shared_ptr<Context>& context) const
 {
+	ContextHandle<Context> ctx{Context::create<Context>(context)};
+	for (const auto &assignment : this->assignments) {
+		ctx->set_variable(assignment.name, assignment.expr ? assignment.expr->evaluate(ctx.ctx) : ValuePtr::undefined);
+	}
+
 	ObjectType obj;
 	for (const auto& assignment : assignments) {
-	    obj.data[assignment.name] = assignment.expr->evaluate(context);
+		obj.set(assignment.name, assignment.expr->evaluate(ctx.ctx));
 	}
 	return ValuePtr(obj);
 }
@@ -456,8 +461,7 @@ ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 		if (this->member == "end") return v[2];
 	} else if (v->type() == Value::ValueType::OBJECT) {
 		const auto& obj = v->toObject();
-		ObjectType::const_iterator it = obj.data.find(this->member);
-		if (it != obj.data.end()) return (*it).second;
+		return obj.get(this->member);
 	}
 	return ValuePtr::undefined;
 }
@@ -954,15 +958,20 @@ ValuePtr customize_object(const ObjectType& obj, const AssignmentList &assignmen
 		const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx, const Location& loc)
 {
 	ObjectType result;
-	for (const auto& entry : obj.data) {
-		result.data[entry.first] = entry.second;
+	for (const auto& key : obj.get_keys()) {
+		result.set(key, obj.get(key));
 	}
+
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	evaluate_sequential_assignment(assignments, c.ctx, loc);
+
 	for (const auto& assignment : assignments) {
-		ObjectType::iterator it = result.data.find(assignment.name);
-		if (it != result.data.end()) {
-			it->second = assignment.expr->evaluate(evalctx);
+		if (result.has_key(assignment.name)) {
+			const auto v = assignment.expr->evaluate(c.ctx);
+			result.set(assignment.name, v);
 		}
 	}
+
 	return ValuePtr{result};
 }
 

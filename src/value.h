@@ -151,8 +151,20 @@ public:
 	using map_type = std::unordered_map<std::string, ValuePtr>;
 	using iterator = map_type::iterator;
 	using const_iterator = map_type::const_iterator;
+	using keys_type = std::vector<std::string>;
+	using kiterator = keys_type::iterator;
+	using const_kiterator = keys_type::const_iterator;
 
+private:
     map_type data;
+	keys_type keys;
+
+public:
+	bool has_key(const std::string& key) const;
+	const keys_type& get_keys() const { return keys; };
+	const ValuePtr& get(const std::string& key) const;
+	void set(const std::string& key, const ValuePtr& value);
+
     bool operator==(const ObjectType& other) const;
 };
 
