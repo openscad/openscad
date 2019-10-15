@@ -657,14 +657,6 @@ RangeType Value::toRange() const
   else return RangeType(0,0,0);
 }
 
-Value &Value::operator=(const Value &v)
-{
-  if (this != &v) {
-    this->value = v.value;
-  }
-  return *this;
-}
-
 class equals_visitor : public boost::static_visitor<bool>
 {
 public:

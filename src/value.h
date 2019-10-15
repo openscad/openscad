@@ -218,7 +218,6 @@ public:
 
 	operator bool() const { return this->toBool(); }
 
-  Value &operator=(const Value &v);
   bool operator==(const Value &v) const;
   bool operator!=(const Value &v) const;
   bool operator<(const Value &v) const;
