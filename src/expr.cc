@@ -43,6 +43,8 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
+ValuePtr customize_object(const ObjectType& obj, const AssignmentList &definition_arguments, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx, const Location& loc);
+
 // unnamed namespace
 namespace {
 	bool isListComprehension(const shared_ptr<Expression> &e) {
@@ -343,6 +345,34 @@ bool Range::isLiteral() const {
     return false;
 }
 
+Object::Object(const AssignmentList &assignments, const Location &loc)
+	: Expression(loc), assignments(assignments)
+{
+}
+
+ValuePtr Object::evaluate(const std::shared_ptr<Context>& context) const
+{
+	ObjectType obj;
+	for (const auto& assignment : assignments) {
+	    obj.data[assignment.name] = assignment.expr->evaluate(context);
+	}
+	return ValuePtr(obj);
+}
+
+void Object::print(std::ostream &s, const std::string &indent) const
+{
+	s << indent << '{';
+	for (const auto &assignment : assignments) {
+		s << ' ' << assignment.name << " = " << *assignment.expr << ";";
+	}
+	s << " }";
+}
+
+bool Object::isLiteral() const
+{
+	return false;
+}
+
 Vector::Vector(const Location &loc) : Expression(loc)
 {
 }
@@ -424,6 +454,10 @@ ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
+	} else if (v->type() == Value::ValueType::OBJECT) {
+		const auto& obj = v->toObject();
+		ObjectType::const_iterator it = obj.data.find(this->member);
+		if (it != obj.data.end()) return (*it).second;
 	}
 	return ValuePtr::undefined;
 }
@@ -562,6 +596,9 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		const ValuePtr v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
 		const shared_ptr<FunctionDefinition> def = getFunctionDefinition(v);
 
+		ContextHandle<Context> ctx{Context::create<Context>(def && def->ctx ? def->ctx : context)};
+		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(ctx.ctx, this->arguments, this->loc)};
+
 		if (def) {
 			if (name.size() > 0 && name.at(0) == '$') {
 				print_invalid_function_call("dynamically scoped variable", context, loc);
@@ -572,8 +609,9 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 				ctx->setVariables(evalCtx.ctx, def->definition_arguments);
 				return evaluate_function(name, def->expr, def->definition_arguments, ctx.ctx, evalCtx.ctx, this->loc);
 			}
+		} else if (v->type() == Value::ValueType::OBJECT) {
+			return customize_object(v->toObject(), this->arguments, ctx.ctx, evalCtx.ctx, this->loc);
 		} else if (isLookup) {
-			ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 			return context->evaluate_function(name, evalCtx.ctx);
 		} else {
 			print_invalid_function_call(v->typeName(), context, loc);
@@ -910,6 +948,22 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
+}
+
+ValuePtr customize_object(const ObjectType& obj, const AssignmentList &assignments,
+		const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx, const Location& loc)
+{
+	ObjectType result;
+	for (const auto& entry : obj.data) {
+		result.data[entry.first] = entry.second;
+	}
+	for (const auto& assignment : assignments) {
+		ObjectType::iterator it = result.data.find(assignment.name);
+		if (it != result.data.end()) {
+			it->second = assignment.expr->evaluate(evalctx);
+		}
+	}
+	return ValuePtr{result};
 }
 
 ValuePtr evaluate_function(const std::string name, const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,

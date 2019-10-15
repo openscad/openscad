@@ -156,9 +156,11 @@ bool fileEnded=false;
 
 %type <args> arguments_call
 %type <args> arguments_decl
+%type <args> assignments_decl
 
 %type <arg> argument_call
 %type <arg> argument_decl
+%type <arg> assignment_decl
 %type <text> module_id
 
 %debug
@@ -326,6 +328,11 @@ single_module_instantiation
 
 expr
         : logic_or
+		| '{' assignments_decl '}'
+			{
+			  $$ = new Object(*$2, LOCD("object", @$));
+			  delete $2;
+			}
 		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
 			{
 			  if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
@@ -663,6 +670,27 @@ argument_call
                 $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));
             }
         | TOK_ID '=' expr
+            {
+                $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("argumentcall", @$));
+                free($1);
+            }
+        ;
+
+assignments_decl
+        : /* empty */
+            {
+                $$ = new AssignmentList();
+            }
+        | assignments_decl assignment_decl
+            {
+                $$ = $1;
+                $$->push_back(*$2);
+                delete $2;
+            }
+        ;
+
+assignment_decl
+        : TOK_ID '=' expr ';'
             {
                 $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("argumentcall", @$));
                 free($1);

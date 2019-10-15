@@ -1,10 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <cstdint>
 #include <limits>
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <algorithm>
+#include <unordered_map>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
@@ -120,6 +121,7 @@ public:
   ValuePtr(const char v);
   ValuePtr(const class std::vector<ValuePtr> &v);
   ValuePtr(const class RangeType &v);
+  ValuePtr(const class ObjectType &v);
   ValuePtr(const std::shared_ptr<Expression> &v);
 
 	operator bool() const;
@@ -144,6 +146,15 @@ public:
 private:
 };
 
+class ObjectType {
+public:
+	using map_type = std::unordered_map<std::string, ValuePtr>;
+	using iterator = map_type::iterator;
+	using const_iterator = map_type::const_iterator;
+
+    map_type data;
+    bool operator==(const ObjectType& other) const;
+};
 
 class str_utf8_wrapper : public std::string
 {
@@ -176,6 +187,7 @@ public:
     STRING,
     VECTOR,
     RANGE,
+    OBJECT,
 	FUNCTION
   };
   static const Value undefined;
@@ -189,6 +201,7 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
+  Value(const ObjectType &v);
   Value(const std::shared_ptr<Expression> &v);
   ~Value() {}
 
@@ -211,6 +224,7 @@ public:
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   const VectorType &toVector() const;
+  const ObjectType &toObject() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z) const;
   bool getVec3(double &x, double &y, double &z, double defaultval) const;
@@ -238,7 +252,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, std::shared_ptr<Expression>> Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, ObjectType, std::shared_ptr<Expression>> Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);

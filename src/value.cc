@@ -275,6 +275,11 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
+Value::Value(const ObjectType &v) : value(v)
+{
+  //  std::cout << "creating object\n";
+}
+
 Value::Value(const std::shared_ptr<Expression> &v) : value(v)
 {
   //  std::cout << "creating expression\n";
@@ -320,9 +325,12 @@ std::string Value::typeName() const
 		return "vector";
 	case ValueType::RANGE:
 		return "range";
+	case ValueType::OBJECT:
+		return "object";
 	case ValueType::FUNCTION:
 		return "function";
 	}
+	return "<unknown>";
 }
 
 bool Value::toBool() const
@@ -419,16 +427,22 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
+  std::string operator()(const ObjectType &v) const {
+    std::stringstream s;
+
+	s << '{';
+	for (const auto& entry : v.data) {
+		s << ' ' << entry.first << " = " << *entry.second << ";";
+	}
+	s << " }";
+	return s.str();
+  }
+
   std::string operator()(const std::shared_ptr<Expression> &v) const {
 	const std::shared_ptr<FunctionDefinition> def = dynamic_pointer_cast<FunctionDefinition>(v);
 	if (def) {
 	  auto tostring = [](Assignment a){ return a.name; };
-	  std::ostringstream stream;
-	  stream << "function("
-			 << join(def->definition_arguments | transformed(tostring), ", ")
-			 << ") "
-			 << *def->expr.get();
-	  return stream.str();
+	  return STR("function(" << join(def->definition_arguments | transformed(tostring), ", ") << ") " << *def->expr.get());
 	} else {
 	  return "[expression]";
 	}
@@ -441,7 +455,6 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-  
 
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
@@ -492,8 +505,14 @@ public:
     stream << "]";
   }
 
+  void operator()(const ObjectType &v) const {
+	stream << '{';
+	for (const auto &entry : v.data) {
+		stream << ' ' << entry.first << " = " << *entry.second << ";";
+	}
+	stream << " }";
+  }
 };
-
 
 std::string Value::toString() const
 {
@@ -655,6 +674,14 @@ RangeType Value::toRange() const
     return *val;
   }
   else return RangeType(0,0,0);
+}
+
+const ObjectType &Value::toObject() const
+{
+  static ObjectType empty;
+
+  const ObjectType *v = boost::get<ObjectType>(&this->value);
+  return v ? *v : empty;
 }
 
 class equals_visitor : public boost::static_visitor<bool>
@@ -1097,6 +1124,11 @@ bool RangeType::iterator::operator!=(const self_type &other) const
 	return !(*this == other);
 }
 
+bool ObjectType::operator==(const ObjectType&) const
+{
+	return false;
+}
+
 ValuePtr::ValuePtr()
 {
 	this->reset(new Value());
@@ -1143,6 +1175,11 @@ ValuePtr::ValuePtr(const Value::VectorType &v)
 }
 
 ValuePtr::ValuePtr(const RangeType &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const ObjectType &v)
 {
 	this->reset(new Value(v));
 }

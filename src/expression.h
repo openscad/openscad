@@ -114,6 +114,17 @@ private:
 	shared_ptr<Expression> end;
 };
 
+class Object : public Expression
+{
+public:
+	Object(const AssignmentList &assignments, const Location &loc);
+	ValuePtr evaluate(const std::shared_ptr<Context>& context) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
+	bool isLiteral() const override;
+private:
+	AssignmentList assignments;
+};
+
 class Vector : public Expression
 {
 public:
