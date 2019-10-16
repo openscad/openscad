@@ -66,8 +66,24 @@ int getUom()
 		return 0;
 }
 
-//Stream DXF records
-//http://help.autodesk.com/view/ACD/2016/ENU/?guid=GUID-D939EA11-0CEC-4636-91A8-756640A031D3
+// Sets drawing units:
+// 0 = English 1 = Metric, -1 = undefined
+int getUomSystem()
+{
+	auto s = Settings::Settings::inst();
+	auto uom = s->get(Settings::Settings::dxfUom).toString();
+	if ((uom == "Inches") || (uom == "Feet") || (uom == "Miles") || (uom == "Microinches") ||
+			(uom == "Mils") || (uom == "Yards"))
+		return 0;
+	else if ((uom == "Millimeters") || (uom == "Centimeters") || (uom == "Meters") ||
+					 (uom == "Kilometers"))
+		return 1;
+	else
+		return -1;
+}
+
+// Stream DXF records
+// http://help.autodesk.com/view/ACD/2016/ENU/?guid=GUID-D939EA11-0CEC-4636-91A8-756640A031D3
 class DxfWriter
 {
 private:
@@ -75,17 +91,17 @@ private:
 
 public:
 	DxfWriter(std::ostream &os) : os(os) {}
-	template<typename T>
-	void record(int groupCode, T value) {
+	template <typename T>
+	void record(int groupCode, T value)
+	{
 		os << groupCode << std::endl << value << std::endl;
 	}
-	void startSection(const std::string name) {
+	void startSection(const std::string name)
+	{
 		record(0, "SECTION");
 		record(2, name);
 	}
-	void endSection() { 
-		record(0, "ENDSEC"); 
-	}
+	void endSection() { record(0, "ENDSEC"); }
 };
 
 /*!
@@ -101,14 +117,21 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 	// UOM and other AutoCAD DXF format information
 	// https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2018/ENU/AutoCAD-DXF/files/GUID-A85E8E67-27CD-4C59-BE61-4DC9FADBE74A-htm.html
 
-	//comment with the version that generated the file
+	// comment with the version that generated the file
 	w.record(999, "OpenSCAD " + openscad_displayversionnumber);
 
-	//Header section
+	// Header section
 	w.startSection("HEADER");
 	// The AutoCAD drawing database version number: AutoCAD 2007
 	w.record(9, "$ACADVER");
 	w.record(1, "AC1021");
+	// Drawing units
+	// 70	$MEASUREMENT 
+	auto measurementSystem = getUomSystem();
+	if (measurementSystem >= 0) {
+		w.record(9, "$MEASUREMENT");
+		w.record(70, measurementSystem);
+	}
 	// Default drawing units for AutoCAD DesignCenter blocks:
 	// 70	$INSUNITS
 	w.record(9, "$INSUNITS");
@@ -116,16 +139,17 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 	w.endSection();
 
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
-	//empty block section
+	// empty block section
 	w.startSection("BLOCKS");
 	w.endSection();
 
-	//graphical objects
+	// graphical objects
 	w.startSection("ENTITIES");
 
 	for (const auto &o : poly.outlines()) {
 		for (unsigned int i = 0; i < o.vertices.size(); i++) {
-			//Line entity http://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
+			// Line entity
+			// http://help.autodesk.com/view/OARX/2018/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i + 1) % o.vertices.size()];
 			double x1 = p1[0];
