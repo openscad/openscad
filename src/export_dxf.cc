@@ -106,6 +106,7 @@ public:
 
 /*!
 	Saves the current Polygon2d as DXF to the given absolute filename.
+	Here is basic information on how to write a DXF file.
 	https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/AutoCAD-DXF/files/GUID-5D1DFE5C-94FC-43B7-B535-43001D1662C1-htm.html
  */
 void export_dxf(const Polygon2d &poly, std::ostream &output)
@@ -114,7 +115,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
-	// UOM and other AutoCAD DXF format information
+	// UOM and other AutoCAD DXF format information in the header
 	// https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2018/ENU/AutoCAD-DXF/files/GUID-A85E8E67-27CD-4C59-BE61-4DC9FADBE74A-htm.html
 
 	// comment with the version that generated the file
