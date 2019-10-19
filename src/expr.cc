@@ -438,14 +438,9 @@ FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &d
 {
 }
 
-FunctionDefinition::FunctionDefinition(const std::shared_ptr<Context>& ctx, std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc)
-	: Expression(loc), ctx(ctx), definition_arguments(definition_arguments), expr(expr)
-{
-}
-
 ValuePtr FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return ValuePtr{std::shared_ptr<Expression>(new FunctionDefinition(context, expr, definition_arguments, location()))};
+	return ValuePtr{FunctionType{context, expr, definition_arguments}};
 }
 
 void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
@@ -539,18 +534,6 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 	tailCallContext->apply_config_variables(context);
 }
 
-shared_ptr<FunctionDefinition> FunctionCall::getFunctionDefinition(const ValuePtr& v) const
-{
-	const shared_ptr<Expression> expr = v->toExpression();
-	if (!expr) {
-		return nullptr;
-	} else if (typeid(*expr) != typeid(FunctionDefinition)) {
-		return nullptr;
-	} else {
-		return static_pointer_cast<FunctionDefinition>(expr);
-	}
-}
-
 ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const auto& name = get_name();
@@ -559,21 +542,18 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		throw RecursionException::create("function", name, this->loc);
 	}
 	try {
-		const ValuePtr v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
-		const shared_ptr<FunctionDefinition> def = getFunctionDefinition(v);
+		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
+		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-		if (def) {
+		if (v->type() == Value::ValueType::FUNCTION) {
 			if (name.size() > 0 && name.at(0) == '$') {
 				print_invalid_function_call("dynamically scoped variable", context, loc);
 				return ValuePtr::undefined;
 			} else {
-				ContextHandle<Context> ctx{Context::create<Context>(def->ctx ? def->ctx : context)};
-				ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
-				ctx->setVariables(evalCtx.ctx, def->definition_arguments);
-				return evaluate_function(name, def->expr, def->definition_arguments, ctx.ctx, evalCtx.ctx, this->loc);
+				auto func = v->toFunction();
+				return evaluate_function(name, func.getExpr(), func.getArgs(), func.getCtx(), evalCtx.ctx, this->loc);
 			}
 		} else if (isLookup) {
-			ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 			return context->evaluate_function(name, evalCtx.ctx);
 		} else {
 			print_invalid_function_call(v->typeName(), context, loc);

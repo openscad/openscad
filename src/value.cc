@@ -275,9 +275,9 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
-Value::Value(const std::shared_ptr<Expression> &v) : value(v)
+Value::Value(const FunctionType &v) : value(v)
 {
-  //  std::cout << "creating expression\n";
+  //  std::cout << "creating function\n";
 }
 
 Value::ValueType Value::type() const
@@ -300,9 +300,9 @@ bool Value::isUndefined() const
   return !isDefined();
 }
 
-std::shared_ptr<Expression> Value::toExpression() const
+const FunctionType Value::toFunction() const
 {
-	return this->type() == ValueType::FUNCTION ? boost::get<std::shared_ptr<Expression>>(this->value) : nullptr;
+	return boost::get<FunctionType>(this->value);
 }
 
 std::string Value::typeName() const
@@ -322,6 +322,8 @@ std::string Value::typeName() const
 		return "range";
 	case ValueType::FUNCTION:
 		return "function";
+	default:
+		return "<unknown>";
 	}
 }
 
@@ -384,13 +386,13 @@ class tostring_visitor : public boost::static_visitor<std::string>
 public:
   template <typename T> std::string operator()(const T &op1) const {
     //    std::cout << "[generic tostring_visitor]\n";
-    return boost::lexical_cast<std::string>(op1);	
+    return boost::lexical_cast<std::string>(op1);
   }
 
   std::string operator()(const double &op1) const {
     char buffer[DC_BUFFER_SIZE];
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
       DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
     return DoubleConvert(op1, buffer, builder, dc);
   }
@@ -419,19 +421,8 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
-  std::string operator()(const std::shared_ptr<Expression> &v) const {
-	const std::shared_ptr<FunctionDefinition> def = dynamic_pointer_cast<FunctionDefinition>(v);
-	if (def) {
-	  auto tostring = [](Assignment a){ return a.name; };
-	  std::ostringstream stream;
-	  stream << "function("
-			 << join(def->definition_arguments | transformed(tostring), ", ")
-			 << ") "
-			 << *def->expr.get();
-	  return stream.str();
-	} else {
-	  return "[expression]";
-	}
+  std::string operator()(const FunctionType &v) const {
+	return STR(v);
   }
 };
 
@@ -441,15 +432,14 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-  
 
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
 
-  tostream_visitor(std::ostringstream& stream) 
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE), 
-      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES) 
+  tostream_visitor(std::ostringstream& stream)
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
     {};
 
   template <typename T> void operator()(const T &op1) const {
@@ -492,8 +482,10 @@ public:
     stream << "]";
   }
 
+  void operator()(const FunctionType &v) const {
+	stream << v;
+  }
 };
-
 
 std::string Value::toString() const
 {
@@ -1105,6 +1097,20 @@ bool RangeType::iterator::operator!=(const self_type &other) const
 	return !(*this == other);
 }
 
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
+	stream << "function(";
+	bool first = true;
+	for (const auto& arg : f.args) {
+		stream << (first ? "" : ", ") << arg.name;
+		if (arg.expr) {
+			stream << " = " << *arg.expr;
+		}
+		first = false;
+	}
+	stream << ") " << *f.expr;
+	return stream;
+}
+
 ValuePtr::ValuePtr()
 {
 	this->reset(new Value());
@@ -1155,7 +1161,7 @@ ValuePtr::ValuePtr(const RangeType &v)
 	this->reset(new Value(v));
 }
 
-ValuePtr::ValuePtr(const std::shared_ptr<Expression> &v)
+ValuePtr::ValuePtr(const FunctionType &v)
 {
 	this->reset(new Value(v));
 }

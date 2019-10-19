@@ -172,7 +172,6 @@ class FunctionDefinition : public Expression
 {
 public:
 	FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc);
-	FunctionDefinition(const std::shared_ptr<Context>& ctx, std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments, const Location &loc);
 	ValuePtr evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 public:

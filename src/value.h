@@ -13,7 +13,7 @@
 #include <glib.h>
 #endif
 
-#include "AST.h"
+#include "Assignment.h"
 #include "memory.h"
 
 class tostring_visitor;
@@ -120,7 +120,7 @@ public:
   ValuePtr(const char v);
   ValuePtr(const class std::vector<ValuePtr> &v);
   ValuePtr(const class RangeType &v);
-  ValuePtr(const std::shared_ptr<Expression> &v);
+  ValuePtr(const class FunctionType &v);
 
 	operator bool() const;
 
@@ -144,6 +144,24 @@ public:
 private:
 };
 
+class FunctionType {
+public:
+	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, AssignmentList args)
+		: ctx(ctx), expr(expr), args(args) { }
+	bool operator==(const FunctionType&) const { return false; }
+	bool operator!=(const FunctionType& other) const { return !(*this == other); }
+
+	const std::shared_ptr<Context>& getCtx() { return ctx; }
+	const std::shared_ptr<Expression>& getExpr() { return expr; }
+	const AssignmentList& getArgs() { return args; }
+
+	friend std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
+
+private:
+	std::shared_ptr<Context> ctx;
+	std::shared_ptr<Expression> expr;
+	AssignmentList args;
+};
 
 class str_utf8_wrapper : public std::string
 {
@@ -162,7 +180,6 @@ public:
 private:
 	mutable glong cached_len;
 };
-
 
 class Value
 {
@@ -189,7 +206,7 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
-  Value(const std::shared_ptr<Expression> &v);
+  Value(const FunctionType &v);
   ~Value() {}
 
   ValueType type() const;
@@ -201,7 +218,7 @@ public:
   bool getDouble(double &v) const;
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
-  std::shared_ptr<Expression> toExpression() const;
+  const FunctionType toFunction() const;
   std::string typeName() const;
   std::string toString() const;
   std::string toString(const tostring_visitor *visitor) const;
@@ -239,7 +256,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, std::shared_ptr<Expression>> Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, FunctionType> Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
