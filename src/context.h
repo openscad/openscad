@@ -103,8 +103,8 @@ public:
 	// constructor for creating ContextHandle objects in-place in the local
 	// context list. This is needed as ContextHandle handles the Context
 	// stack via RAII so we need to use emplace_front() to create the objects.
-	friend ValuePtr evaluate_function(const std::string name,
-			const std::shared_ptr<Expression> expr, const AssignmentList &definition_arguments,
+	friend ValuePtr evaluate_function(const std::string& name,
+			const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
 			const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
 			const Location& loc);
 };
