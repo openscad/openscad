@@ -17,14 +17,18 @@
 template<typename T>
 struct ContextHandle
 {
-    ContextHandle(std::shared_ptr<T>&& sp) : ctx(std::forward<std::shared_ptr<T>>(sp)) {
+    ContextHandle(std::shared_ptr<T>&& sp) : ctx(std::move(sp)) {
         ctx->init();
 		ctx->push(ctx);
     }
-
     ~ContextHandle() {
         ctx->pop();
     }
+
+	ContextHandle(const ContextHandle&) = delete;
+	ContextHandle& operator=(const ContextHandle&) = delete;
+	ContextHandle(ContextHandle&&) = default;
+	ContextHandle& operator=(ContextHandle&&) = default;
 
 	const T* operator->() const { return ctx.get(); }
     T* operator->() { return ctx.get(); }
