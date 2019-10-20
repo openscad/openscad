@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <assert.h>
+#include <numeric>
 #include <sstream>
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
@@ -492,24 +493,21 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
-void Value::VectorPtr::flatten() {
-  int n = 0;
-  for (unsigned int i = 0; i < (*this)->size(); i++) {
-    if ((*this)[i].type() == Value::Type::VECTOR) {
-      n += (*this)[i].toVectorPtr()->size();
-    } else {
-      n++;
-    }
-  }
-  Value::VectorPtr ret; ret->reserve(n);
-  for (unsigned int i = 0; i < (*this)->size(); i++) {
-    if ((*this)[i].type() == Value::Type::VECTOR) {
-      Value::VectorPtr &vec_ptr = (*this)[i].toVectorPtrRef();
-      for(unsigned int j = 0; j < vec_ptr->size(); ++j) {
-        ret->emplace_back(std::move(vec_ptr[j]));
+void Value::VectorPtr::flatten()
+{
+  const auto size = std::accumulate(std::begin(**this), std::end(**this), 0, [](int i, const Value &v){
+    return i + (v.type() == Value::Type::VECTOR ? v.toVectorPtr()->size() : 1);
+  });
+
+  Value::VectorPtr ret;
+  ret->reserve(size);
+  for (auto& v : **this) {
+    if (v.type() == Value::Type::VECTOR) {
+      for (auto& vv : *v.toVectorPtrRef()) {
+        ret->emplace_back(std::move(vv));
       }
     } else {
-      ret->emplace_back(std::move((*this)[i]));
+      ret->emplace_back(std::move(v));
     }
   }
   this->ptr = ret.ptr;

@@ -314,6 +314,9 @@ public:
 
     void flatten();
 
+  protected:
+    Value::VectorType& operator*() noexcept { return *ptr; }
+
   private:
     shared_ptr<VectorType> ptr;
   };
