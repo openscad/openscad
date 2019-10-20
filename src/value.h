@@ -316,7 +316,7 @@ public:
 	}
 
 	typedef boost::variant<boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangePtr, FunctionPtr> Variant;
-	static_assert(sizeof(Variant) <= 24);
+	static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
 
 private:
 	static Value multvecnum(const Value &vecval, const Value &numval);
