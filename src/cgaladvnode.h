@@ -21,7 +21,6 @@ public:
 	std::string toString() const override;
 	std::string name() const override;
 
-	Value path;
 	unsigned int convexity;
 	Vector3d newsize;
 	Eigen::Matrix<bool,3,1> autosize;
