@@ -221,15 +221,15 @@ Value Value::clone() const {
   case Type::BOOL:      return boost::get<bool>(this->value);
   case Type::NUMBER:    return boost::get<double>(this->value);
   case Type::STRING:    return boost::get<str_utf8_wrapper>(this->value).clone();
-  case Type::RANGE:     return boost::get<RangeType>(this->value).clone();
+  case Type::RANGE:     return boost::get<RangePtr>(this->value).clone();
   case Type::VECTOR:    return boost::get<VectorPtr>(this->value).clone();
-  case Type::FUNCTION:  return Value(boost::get<FunctionPtr>(this->value).clone());
+  case Type::FUNCTION:  return boost::get<FunctionPtr>(this->value).clone();
   default:              assert(false && "unknown Value variant type");
   }
   return Value();
 }
 
-std::string Value::typeName() const
+const std::string Value::typeName() const
 {
   switch (this->type()) {
   case Type::UNDEFINED: return "undefined";
@@ -333,8 +333,8 @@ public:
     return stream.str();
   }
 
-  std::string operator()(const RangeType &v) const {
-    return (boost::format("[%1% : %2% : %3%]") % v.begin_value() % v.step_value() % v.end_value()).str();
+  std::string operator()(const RangePtr &v) const {
+    return STR(*v);
   }
 
   std::string operator()(const FunctionPtr &v) const {
@@ -388,14 +388,8 @@ public:
     stream << '"' << v.toString() << '"';
   }
 
-  void operator()(const RangeType &v) const {
-    stream << "[";
-    this->operator()(v.begin_value());
-    stream << " : ";
-    this->operator()(v.step_value());
-    stream << " : ";
-    this->operator()(v.end_value());
-    stream << "]";
+  void operator()(const RangePtr &v) const {
+    stream << *v;
   }
 
   void operator()(const FunctionPtr &v) const {
@@ -474,16 +468,16 @@ public:
     return stream.str();
   }
 
-  std::string operator()(const RangeType &v) const
+  std::string operator()(const RangePtr &v) const
   {
-    const uint32_t steps = v.numValues();
+    const uint32_t steps = v->numValues();
     if (steps >= RangeType::MAX_RANGE_STEPS) {
       PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
       return "";
     }
 
     std::ostringstream stream;
-    for (double d : v) stream << Value(d).chrString();
+    for (double d : *v) stream << Value(d).chrString();
     return stream.str();
   }
 };
@@ -579,12 +573,7 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 
 const RangeType& Value::toRange() const
 {
-  static const RangeType empty(0,0,0);
-  const RangeType *val = boost::get<RangeType>(&this->value);
-  if (val) {
-    return *val;
-  }
-  else return empty;
+  return *boost::get<RangePtr>(this->value);
 }
 
 const FunctionType& Value::toFunction() const
@@ -905,12 +894,12 @@ public:
     return Value::undefined.clone();
   }
 
-  Value operator()(const RangeType &range, const double &idx) const {
+  Value operator()(const RangePtr &range, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     switch(i) {
-    case 0: return range.begin_value();
-    case 1: return range.step_value();
-    case 2: return range.end_value();
+    case 0: return range->begin_value();
+    case 1: return range->step_value();
+    case 2: return range->end_value();
     }
     return Value::undefined.clone();
   }
@@ -996,7 +985,22 @@ bool RangeType::iterator::operator==(const RangeType::iterator &other) const
   }
 }
 
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
+std::ostream& operator<<(std::ostream& stream, const RangeType& r)
+{
+  char buffer[DC_BUFFER_SIZE];
+  double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
+  double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF,
+      DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
+      DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
+  stream << '['
+      << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
+      << DoubleConvert(r.step_value() , buffer, builder, dc) << " : "
+      << DoubleConvert(r.end_value()  , buffer, builder, dc) << ']';
+  return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
+{
   stream << "function(";
   bool first = true;
   for (const auto& arg : f.getArgs()) {

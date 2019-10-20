@@ -150,6 +150,8 @@ public:
   uint32_t numValues() const;
 };
 
+std::ostream& operator<<(std::ostream& stream, const RangeType& f);
+
 template <typename T>
 class ValuePtr {
 private:
@@ -249,8 +251,8 @@ private:
 
 class FunctionType {
 public:
-  FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, AssignmentList args)
-    : ctx(ctx), expr(expr), args(args) { }
+  FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> args)
+    : ctx(std::move(ctx)), expr(std::move(expr)), args(std::move(args)) { }
   bool operator==(const FunctionType& other) const { return this == &other; }
   bool operator!=(const FunctionType& other) const { return this != &other; }
   bool operator< (const FunctionType&) const { return false; }
@@ -260,12 +262,12 @@ public:
 
   const std::shared_ptr<Context>& getCtx() const { return ctx; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
-  const AssignmentList& getArgs() const { return args; }
+  const AssignmentList& getArgs() const { return *args; }
 
 private:
   std::shared_ptr<Context> ctx;
   std::shared_ptr<Expression> expr;
-  AssignmentList args;
+  std::shared_ptr<AssignmentList> args;
 };
 
 using FunctionPtr = ValuePtr<FunctionType>;
@@ -333,7 +335,7 @@ public:
   template<class T> Value(T&& val) : value(std::forward<T>(val)) { }
   Value clone() const; // Use sparingly to explicitly copy a Value
 
-  std::string typeName() const;
+  const std::string typeName() const;
   Type type() const { return static_cast<Type>(this->value.which()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }
@@ -384,7 +386,8 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType, FunctionPtr> Variant;
+  typedef boost::variant<boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangePtr, FunctionPtr> Variant;
+  static_assert(sizeof(Variant) <= 24);
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);

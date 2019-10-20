@@ -320,7 +320,7 @@ Value Range::evaluate(const std::shared_ptr<Context>& context) const
 					std::swap(begin_val,end_val);
 					print_range_depr(loc, context);
 				}
-				return RangeType(begin_val, end_val);
+				return RangePtr(RangeType(begin_val, end_val));
 			} else {
 				Value stepValue = this->step->evaluate(context);
 				if (stepValue.type() == Value::Type::NUMBER) {
@@ -332,7 +332,7 @@ Value Range::evaluate(const std::shared_ptr<Context>& context) const
 							print_range_err("is smaller", "is negative", loc, context);
 						}
 					}
-					return RangeType(begin_val, step_val, end_val);
+					return RangePtr(RangeType(begin_val, step_val, end_val));
 				}
 			}
 		}
@@ -459,7 +459,7 @@ FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &d
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return Value{FunctionType{context, expr, definition_arguments}};
+	return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{definition_arguments}}}};
 }
 
 void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
