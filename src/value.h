@@ -111,7 +111,22 @@ public:
 	friend class tostring_visitor;
 	friend class tostream_visitor;
 	friend class bracket_visitor;
+	friend std::ostream& operator<<(std::ostream& stream, const RangeType& f);
 };
+
+template <typename T>
+class ValuePtr {
+public:
+	ValuePtr(T&& value) : value(std::make_shared<T>(std::move(value))) { }
+	const T& operator*() const { return *value; }
+	const T* operator->() const { return value.get(); }
+	bool operator==(const ValuePtr& other) const { return *value == *other; }
+	bool operator!=(const ValuePtr& other) const { return !(*this == other); }
+private:
+	std::shared_ptr<T> value;
+};
+
+using RangePtr = ValuePtr<RangeType>;
 
 class str_utf8_wrapper
 {
@@ -158,8 +173,10 @@ private:
 
 class FunctionType {
 public:
-	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::unique_ptr<AssignmentList> args)
+	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> args)
 		: ctx(ctx), expr(expr), args(std::move(args)) { }
+	FunctionType(FunctionType&&) = default;
+    FunctionType& operator=(FunctionType&&) = default;
 	bool operator==(const FunctionType&) const { return false; }
 	bool operator!=(const FunctionType& other) const { return !(*this == other); }
 
@@ -167,14 +184,16 @@ public:
 	const std::shared_ptr<Expression>& getExpr() const { return expr; }
 	const AssignmentList& getArgs() const { return *args; }
 
-	FunctionType clone() const { return FunctionType{ctx, expr, std::unique_ptr<AssignmentList>{new AssignmentList{*args}}}; };
+	FunctionType clone() const { return FunctionType{ctx, expr, args}; };
 	friend std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
 
 private:
 	std::shared_ptr<Context> ctx;
 	std::shared_ptr<Expression> expr;
-	std::unique_ptr<AssignmentList> args;
+	std::shared_ptr<AssignmentList> args;
 };
+
+using FunctionPtr = ValuePtr<FunctionType>;
 
 class Value
 {
@@ -236,12 +255,12 @@ public:
 	explicit Value(const std::string &v) : value(str_utf8_wrapper(v)) {}
 	explicit Value(const char *v) : value(str_utf8_wrapper(v)) {}
 	explicit Value(const char v) : value(str_utf8_wrapper(1, v)) {}
-	Value(RangeType& v) : value(std::move(v)) {}
-	Value(RangeType&& v) : value(std::move(v)) {}
+	Value(RangePtr& v) : value(std::move(v)) {}
+	Value(RangePtr&& v) : value(std::move(v)) {}
 	Value(VectorPtr& v) : value(std::move(v)) {}
 	Value(VectorPtr&& v) : value(std::move(v)) {}
-	Value(FunctionType& v) : value(std::move(v)) {}
-	Value(FunctionType&& v) : value(std::move(v)) {}
+	Value(FunctionPtr& v) : value(std::move(v)) {}
+	Value(FunctionPtr&& v) : value(std::move(v)) {}
 
 	Value clone() const; // Use sparingly to explicitly copy a Value
 
@@ -296,7 +315,8 @@ public:
 		return stream;
 	}
 
-	typedef boost::variant<boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType, FunctionType> Variant;
+	typedef boost::variant<boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangePtr, FunctionPtr> Variant;
+	static_assert(sizeof(Variant) <= 24);
 
 private:
 	static Value multvecnum(const Value &vecval, const Value &numval);

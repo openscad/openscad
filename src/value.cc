@@ -246,23 +246,18 @@ Value Value::clone() const {
       c.value = boost::get<str_utf8_wrapper>(this->value).clone();
     break;
     case ValueType::RANGE :
-      c.value = boost::get<RangeType>(this->value).clone();
+      c.value = boost::get<RangePtr>(this->value);
     break;
     case ValueType::VECTOR :
       c.value = boost::get<VectorPtr>(this->value).clone();
     break;
     case ValueType::FUNCTION :
-      c.value = boost::get<FunctionType>(this->value).clone();
+      c.value = boost::get<FunctionPtr>(this->value);
     break;
     default:
       assert(false && "unknown Variant value");
   }
   return c;
-}
-
-const FunctionType& Value::toFunction() const
-{
-	return boost::get<FunctionType>(this->value);
 }
 
 const std::string Value::typeName() const
@@ -393,12 +388,12 @@ public:
     return stream.str();
   }
 
-  std::string operator()(const RangeType &v) const {
-    return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
+  std::string operator()(const RangePtr &v) const {
+	return STR(*v);
   }
 
-  std::string operator()(const FunctionType &v) const {
-	return STR(v);
+  std::string operator()(const FunctionPtr &v) const {
+	return STR(*v);
   }
 };
 
@@ -448,18 +443,12 @@ public:
     stream << '"' << v.toString() << '"';
   }
 
-  void operator()(const RangeType &v) const {
-    stream << "[";
-    this->operator()(v.begin_val);
-    stream << " : ";
-    this->operator()(v.step_val);
-    stream << " : ";
-    this->operator()(v.end_val);
-    stream << "]";
+  void operator()(const RangePtr &v) const {
+	stream << *v;
   }
 
-  void operator()(const FunctionType &v) const {
-	stream << v;
+  void operator()(const FunctionPtr &v) const {
+	stream << *v;
   }
 };
 
@@ -535,16 +524,16 @@ public:
 			return stream.str();
 		}
 
-	std::string operator()(const RangeType &v) const
+	std::string operator()(const RangePtr &v) const
 		{
-			const uint32_t steps = v.numValues();
+			const uint32_t steps = v->numValues();
 			if (steps >= 10000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 				return "";
 			}
 
 			std::ostringstream stream;
-			for (RangeType::iterator it = v.begin();it != v.end();it++) {
+			for (RangeType::iterator it = v->begin();it != v->end();it++) {
 				const Value value(*it);
 				stream << value.chrString();
 			}
@@ -636,12 +625,16 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 
 const RangeType& Value::toRange() const
 {
-  static const RangeType empty{0,0,0};
-  const RangeType *val = boost::get<RangeType>(&this->value);
-  if (val) {
-	return *val;
-  }
-  return empty;
+	static const RangeType empty{0, 0, 0};
+	if (type() == Value::ValueType::RANGE) {
+		return *boost::get<RangePtr>(this->value);
+	}
+	return empty;
+}
+
+const FunctionType& Value::toFunction() const
+{
+	return *boost::get<FunctionPtr>(this->value);
 }
 
 class equals_visitor : public boost::static_visitor<bool>
@@ -954,12 +947,12 @@ public:
     return {};
   }
 
-  Value operator()(const RangeType &range, const double &idx) const {
+  Value operator()(const RangePtr &range, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     switch(i) {
-    case 0: return Value(range.begin_val);
-    case 1: return Value(range.step_val);
-    case 2: return Value(range.end_val);
+    case 0: return Value(range->begin_val);
+    case 1: return Value(range->step_val);
+    case 2: return Value(range->end_val);
     }
     return {};
   }
@@ -1083,7 +1076,27 @@ bool RangeType::iterator::operator!=(const self_type &other) const
 	return !(*this == other);
 }
 
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
+std::ostream& operator<<(std::ostream& stream, const RangeType& r)
+{
+	char buffer[DC_BUFFER_SIZE];
+	double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
+	double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF,
+			DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
+			DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
+
+	stream << "["
+			<< DoubleConvert(r.begin_val, buffer, builder, dc)
+			<< " : "
+			<< DoubleConvert(r.step_val, buffer, builder, dc)
+			<< " : "
+			<< DoubleConvert(r.end_val, buffer, builder, dc)
+			<< "]";
+
+	return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
+{
 	stream << "function(";
 	bool first = true;
 	for (const auto& arg : f.getArgs()) {

@@ -291,13 +291,11 @@ Value Range::evaluate(const std::shared_ptr<Context>& context) const
 		Value endValue = this->end->evaluate(context);
 		if (endValue.type() == Value::ValueType::NUMBER) {
 			if (!this->step) {
-				RangeType range(beginValue.toDouble(), endValue.toDouble());
-				return Value(range);
+				return Value{RangePtr{RangeType{beginValue.toDouble(), endValue.toDouble()}}};
 			} else {
 				Value stepValue = this->step->evaluate(context);
 				if (stepValue.type() == Value::ValueType::NUMBER) {
-					RangeType range{beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble()};
-					return Value(range);
+					return Value{RangePtr{RangeType{beginValue.toDouble(), stepValue.toDouble(), endValue.toDouble()}}};
 				}
 			}
 		}
@@ -427,7 +425,7 @@ FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &d
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return Value{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{definition_arguments}}}};
+	return Value{FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{definition_arguments}}}}};
 }
 
 void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
