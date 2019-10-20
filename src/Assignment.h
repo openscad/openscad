@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "value.h"
 #include "AST.h"
 #include "memory.h"
 #include "annotation.h"

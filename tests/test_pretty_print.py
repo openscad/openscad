@@ -58,7 +58,7 @@ def tryread(filename):
         debug( "couldn't open file: [" + filename + "]" )
         debug( str(type(e))+str(e) )
         if filename==None:
-            # dont write a bunch of extra errors during test output. 
+            # don't write a bunch of extra errors during test output. 
             # the reporting of test failure is sufficient to indicate a problem
             pass
     return data
@@ -475,7 +475,7 @@ def main():
     builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
-        print('warning: couldnt find --builddir, trying to use current dir:', builddir)
+        print('warning: could not find --builddir, trying to use current dir:', builddir)
     debug('build dir set to ' +  builddir)
 
     upload = False

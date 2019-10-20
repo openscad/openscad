@@ -54,10 +54,16 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path)
+void FileModule::registerUse(const std::string path, const Location &loc)
 {
+	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			loc.fileName() %
+			path);
+
 	auto ext = fs::path(path).extension().generic_string();
-	
+
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
@@ -66,12 +72,24 @@ void FileModule::registerUse(const std::string path)
 		}
 	} else {
 		usedlibs.insert(path);
+		if (!loc.isNone()) {
+			indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), path);
+		}
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
+void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
 {
+	PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			localpath %
+			fullpath);
+
 	this->includes[localpath] = {fullpath};
+	if (!loc.isNone()) {
+		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
+	}
 }
 
 time_t FileModule::includesChanged() const
@@ -155,19 +173,17 @@ time_t FileModule::handleDependencies(bool is_root)
 	return latest;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst,
-																			EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	assert(evalctx == nullptr);
+	assert(!evalctx);
 	
-	FileContext context(ctx);
-	return this->instantiateWithFileContext(&context, inst, evalctx);
+	ContextHandle<FileContext> context{Context::create<FileContext>(ctx)};
+	return this->instantiateWithFileContext(context.ctx, inst, evalctx);
 }
 
-AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const ModuleInstantiation *inst,
-																										 EvalContext *evalctx) const
+AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	assert(evalctx == nullptr);
+	assert(!evalctx);
 	
 	auto node = new RootNode(inst);
 	try {
@@ -183,8 +199,8 @@ AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const Mod
 }
 
 //please preferably use getFilename
-//if you compare filenames (which is the origin of this methode),
-//please call getFilename first and use this methode only as a fallback
+//if you compare filenames (which is the origin of this method),
+//please call getFilename first and use this method only as a fallback
 const std::string FileModule::getFullpath() const {
 	if(fs::path(this->filename).is_absolute()){
 		return this->filename;

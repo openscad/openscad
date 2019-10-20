@@ -182,11 +182,11 @@ figure out enough to find and change the rpath string.  That was fun!
 
 This program assumes (unlike your original program) that there is only
 one DT_RPATH tag in the dynamic section as even with multiple '-Wl,-rpath,'
-commands in the link this seems to occur (they all get concatonated into
+commands in the link this seems to occur (they all get concatenated into
 a : separated path).
 
 Thanks for your help.  If you want to use this on non-x86 you have to change
-the occurances of LSB back to MSB:)
+the occurrences of LSB back to MSB:)
 
 Peeter
 --

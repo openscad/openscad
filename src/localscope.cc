@@ -60,7 +60,7 @@ void LocalScope::print(std::ostream &stream, const std::string &indent, const bo
 	}
 }
 
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const
+std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr<Context> evalctx) const
 {
 	std::vector<AbstractNode*> childnodes;
 	for(const auto &modinst : this->children) {
@@ -78,9 +78,9 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
 	NB! for loops are special as the local block may depend on variables evaluated by the
 	for loop parameters. The for loop code will handle this specially.
 */
-void LocalScope::apply(Context &ctx) const
+void LocalScope::apply(const std::shared_ptr<Context> ctx) const
 {
-	for(const auto &ass : this->assignments) {
-		ctx.set_variable(ass.name, ass.expr->evaluate(&ctx));
+	for(const auto &assignment : this->assignments) {
+		ctx->set_variable(assignment.name, assignment.expr->evaluate(ctx));
 	}
 }

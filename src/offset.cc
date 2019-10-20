@@ -46,33 +46,33 @@ class OffsetModule : public AbstractModule
 {
 public:
 	OffsetModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new OffsetNode(inst);
 
 	AssignmentList args{Assignment("r")};
 	AssignmentList optargs{Assignment("delta"),Assignment("chamfer")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+	inst->scope.apply(evalctx);
 
-	node->fn = c.lookup_variable("$fn").toDouble();
-	node->fs = c.lookup_variable("$fs").toDouble();
-	node->fa = c.lookup_variable("$fa").toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
 
 	// default with no argument at all is (r = 1, chamfer = false)
 	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const auto &r = c.lookup_variable("r", true);
-	const auto &delta = c.lookup_variable("delta", true);
-	const auto &chamfer = c.lookup_variable("chamfer", true);
-	
+	const auto &r = c->lookup_variable("r", true);
+	const auto &delta = c->lookup_variable("delta", true);
+	const auto &chamfer = c->lookup_variable("chamfer", true);
+
 	if (r.isDefinedAs(Value::ValueType::NUMBER)) {
 		r.getDouble(node->delta);
 	} else if (delta.isDefinedAs(Value::ValueType::NUMBER)) {
@@ -110,5 +110,10 @@ std::string OffsetNode::toString() const
 
 void register_builtin_offset()
 {
-	Builtins::init("offset", new OffsetModule());
+	Builtins::init("offset", new OffsetModule(),
+				{
+					"offset(r = number)",
+					"offset(delta = number)",
+					"offset(r = number, chamfer = false)",
+				});
 }

@@ -1,6 +1,6 @@
 // animation.scad - Demo of animation usage
 
-// The animation funtionality is based simply on a variable $t
+// The animation functionality is based simply on a variable $t
 // that is changed automatically by OpenSCAD while repeatedly
 // showing the model.
 // To activate animation, select "View->Animation" from the

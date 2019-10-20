@@ -7,11 +7,12 @@
 #include "builtin.h"
 #include "ModuleCache.h"
 #include <cmath>
+#include <memory>
 #ifdef DEBUG
 #include <boost/format.hpp>
 #endif
 
-ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
+ModuleContext::ModuleContext(const std::shared_ptr<Context> parent, const std::shared_ptr<EvalContext> evalctx)
 	: Context(parent), functions_p(nullptr), modules_p(nullptr), evalctx(evalctx)
 {
 }
@@ -71,12 +72,12 @@ void ModuleContext::initializeModule(const UserModule &module)
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
-	for (const auto &ass : module.scope.assignments) {
-		if (ass.expr->isLiteral() && this->variables.find(ass.name) != this->variables.end()) {
-			std::string loc = ass.location().toRelativeString(this->documentPath());
-			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % ass.name % loc);
+	for (const auto &assignment : module.scope.assignments) {
+		if (assignment.expr->isLiteral() && this->variables.find(assignment.name) != this->variables.end()) {
+			std::string loc = assignment.location().toRelativeString(this->documentPath());
+			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment.name % loc);
 		}
-		this->set_variable(ass.name, ass.expr->evaluate(this));
+		this->set_variable(assignment.name, assignment.expr->evaluate(get_shared_ptr()));
 	}
 
 // Experimental code. See issue #399
@@ -113,19 +114,20 @@ const UserModule *ModuleContext::findLocalModule(const std::string &name) const
 	return nullptr;
 }
 
-Value ModuleContext::evaluate_function(const std::string &name, 
-																												 const EvalContext *evalctx) const
+Value ModuleContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
-	if (foundf) return foundf->evaluate(this, evalctx);
+	std::shared_ptr<Context> self = (const_cast<ModuleContext *>(this))->get_shared_ptr();
+	if (foundf) return foundf->evaluate(self, evalctx);
 
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundm = this->findLocalModule(inst.name());
-	if (foundm) return foundm->instantiate(this, &inst, evalctx);
+	std::shared_ptr<Context> self = (const_cast<ModuleContext *>(this))->get_shared_ptr();
+	if (foundm) return foundm->instantiate(self, &inst, evalctx);
 
 	return Context::instantiate_module(inst, evalctx);
 }
@@ -140,7 +142,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	else {
 		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
 	}
-	s << boost::format("  document path: %s") % this->document_path;
+	s << boost::format("  document path: %s") % *this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
@@ -165,29 +167,23 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-FileContext::FileContext(const Context *parent) : ModuleContext(parent), usedlibs_p(nullptr)
+Value FileContext::sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx, FileModule *usedmod) const
 {
-}
-
-Value FileContext::sub_evaluate_function(const std::string &name, 
-																						const EvalContext *evalctx,
-																						FileModule *usedmod) const
-{
-	FileContext ctx(this->parent);
-	ctx.initializeModule(*usedmod);
+	ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
+	ctx->initializeModule(*usedmod);
 	// FIXME: Set document path
 #ifdef DEBUG
 	PRINTDB("New lib Context for %s func:", name);
-	PRINTDB("%s",ctx.dump(nullptr, nullptr));
+	PRINTDB("%s",ctx->dump(nullptr, nullptr));
 #endif
-	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
+	return usedmod->scope.functions[name]->evaluate(ctx.ctx, evalctx);
 }
 
-Value FileContext::evaluate_function(const std::string &name, 
-																											 const EvalContext *evalctx) const
+Value FileContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundf = findLocalFunction(name);
-	if (foundf) return foundf->evaluate(this, evalctx);
+	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
+	if (foundf) return foundf->evaluate(self, evalctx);
 
 	for (const auto &m : *this->usedlibs_p) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
@@ -199,24 +195,24 @@ Value FileContext::evaluate_function(const std::string &name,
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto foundm = this->findLocalModule(inst.name());
-	if (foundm) return foundm->instantiate(this, &inst, evalctx);
+	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
+	if (foundm) return foundm->instantiate(self, &inst, evalctx);
 
 	for (const auto &m : *this->usedlibs_p) {
 		auto usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-		if (usedmod &&
-				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
-			FileContext ctx(this->parent);
-			ctx.initializeModule(*usedmod);
+		if (usedmod && usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
+			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
+			ctx->initializeModule(*usedmod);
 			// FIXME: Set document path
 #ifdef DEBUG
 			PRINTD("New file Context:");
-			PRINTDB("%s",ctx.dump(nullptr, &inst));
+			PRINTDB("%s",ctx->dump(nullptr, &inst));
 #endif
-			return usedmod->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
+			return usedmod->scope.modules[inst.name()]->instantiate(ctx.ctx, &inst, evalctx);
 		}
 	}
 
@@ -225,12 +221,12 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, E
 
 void FileContext::initializeModule(const class FileModule &module)
 {
-	if (!module.modulePath().empty()) this->document_path = module.modulePath();
+	if (!module.modulePath().empty()) this->document_path = std::make_shared<std::string>(module.modulePath());
 	// FIXME: Don't access module members directly
 	this->usedlibs_p = &module.usedlibs;
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
-	for (const auto &ass : module.scope.assignments) {
-		this->set_variable(ass.name, ass.expr->evaluate(this));
+	for (const auto &assignment : module.scope.assignments) {
+		this->set_variable(assignment.name, assignment.expr->evaluate(get_shared_ptr()));
 	}
 }

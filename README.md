@@ -105,7 +105,7 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++11
-* [Qt (4.4 -> 5.x)](https://qt.io/)
+* [Qt (5.4 ->)](https://qt.io/)
 * [QScintilla2 (2.7 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (3.6 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
@@ -143,8 +143,10 @@ To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
 Prerequisites:
 
 * Xcode
+* curl
 * cmake
-* pkg-config
+* pkgconfig
+* autoconf automake libtool (for HIDAPI / InputDevice support)
 
 Install Dependencies:
 

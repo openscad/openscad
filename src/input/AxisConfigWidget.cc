@@ -51,7 +51,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const{
 
 	//QProgressBar generates the shown string from the format string.
 	//By setting a format string without a place holder,
-	//we can set arbitrary text, like a custom formated double.
+	//we can set arbitrary text, like a custom formatted double.
 	//(Note: QProgressBar internally works on int, so has no formating for double values)
 	//(Note: The text of a QProgressBar can not be set directly)
 	QString s =  QString::number(val, 'f', 2 );
@@ -523,10 +523,12 @@ void AxisConfigWidget::initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings
 	Settings::Settings *s = Settings::Settings::inst();
 
 	const RangeType &range = entry.range().toRange();
+	spinBox->blockSignals(true);
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setSingleStep(range.step_value());
 	spinBox->setMaximum(range.end_value());
 	spinBox->setValue((double)s->get(entry).toDouble());
+	spinBox->blockSignals(false);
 }
 
 void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry)
@@ -535,7 +537,9 @@ void AxisConfigWidget::initCheckBox(QCheckBox *checkBox, const Settings::Setting
 	const Value &value = s->get(entry);
 	bool state = value.toBool();
 
+	checkBox->blockSignals(true);
 	checkBox->setChecked(state);
+	checkBox->blockSignals(false);
 }
 
 void AxisConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)

@@ -30,12 +30,10 @@
 #include "builtin.h"
 #include "evalcontext.h"
 
-AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *GroupModule::instantiate(const std::shared_ptr<Context>&, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	(void)ctx; // avoid unusued parameter warning
-	
 	auto node = new GroupNode(inst);
-	inst->scope.apply(*evalctx);
+	inst->scope.apply(evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -44,5 +42,8 @@ AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantia
 
 void register_builtin_group()
 {
-	Builtins::init("group", new GroupModule());
+	Builtins::init("group", new GroupModule(),
+				{
+					"group",
+				});
 }

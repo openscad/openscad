@@ -24,24 +24,31 @@
  *
  */
 
-#include "value.h"
-#include "printutils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
 #include <cmath>
 #include <assert.h>
 #include <sstream>
-#include <boost/numeric/conversion/cast.hpp>
+#include <boost/format.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
-#include <boost/format.hpp>
-#include "boost-utils.h"
-#include <boost/filesystem.hpp>
-
-namespace fs=boost::filesystem;
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+#include <boost/graph/named_function_params.hpp>
+
+#include "value.h"
+#include "expression.h"
+#include "printutils.h"
+#include "boost-utils.h"
+#include "double-conversion/double-conversion.h"
+#include "double-conversion/utils.h"
+#include "double-conversion/ieee.h"
+
+namespace fs=boost::filesystem;
+using boost::adaptors::transformed;
+using boost::algorithm::join;
 
 const Value Value::undefined;
 
@@ -60,44 +67,71 @@ const Value Value::undefined;
  * conversion, defeating the purpose of using double-conversion library */
 #define DC_PRECISION_REQUESTED 6
 
+//private definitions used by trimTrailingZeroesHelper
+#define TRIM_TRAILINGZEROES_DONE 0
+#define TRIM_TRAILINGZEROES_CONTINUE 1
+
+
+//process parameter buffer from the end to start to find out where the zeroes are located (if any).
+//parameter pos shall be the pos in buffer where '\0' is located.
+//parameter currentpos shall be set to end of buffer (where '\0' is located).
+//set parameters exppos and decimalpos when needed.
+//leave parameter zeropos as is.
+inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpos=nullptr, char *exppos=nullptr, char *decimalpos=nullptr, char *zeropos=nullptr) {
+    
+    int cont = TRIM_TRAILINGZEROES_CONTINUE;
+  
+    //we have exhaused all positions from end to start
+    if(currentpos <= buffer)
+        return TRIM_TRAILINGZEROES_DONE;
+    
+    //we do no need to process the terminator of string
+    if(*currentpos == '\0'){
+        currentpos--;
+        cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
+    }
+    
+    
+    //we have an exponent and jumps to the position before the exponent - no need to process the characters belonging to the exponent
+    if(cont && exppos && currentpos >= exppos)
+    {
+        currentpos = exppos;
+        currentpos--;
+        cont = trimTrailingZeroesHelper(buffer, pos, currentpos , exppos, decimalpos, zeropos);
+    }
+    
+    //we are still on the right side of the decimal and still counting zeroes (keep track of) from the back to start
+    if(cont && currentpos && decimalpos < currentpos && *currentpos == '0'){
+        zeropos= currentpos;
+        currentpos--;
+        cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
+    }
+    
+    //we have found the first occurrance of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
+    if(cont && zeropos && exppos){
+        int count = &buffer[pos] - exppos + 1;
+        memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
+        return TRIM_TRAILINGZEROES_DONE;
+    }
+    
+    //we have found a zero and need to take care of (truncate the string to the position of either the zero or the decimal)
+    if(cont && zeropos){
+       zeropos - 1 == decimalpos ? *decimalpos = '\0' : *zeropos = '\0';
+       return TRIM_TRAILINGZEROES_DONE;
+    }
+    
+    //we have just another character (other than a zero) and are done
+    if(cont && !zeropos)
+       return TRIM_TRAILINGZEROES_DONE;
+
+    return TRIM_TRAILINGZEROES_DONE;
+}
 
 inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
-  if (decimal) {
-    char *ptr = decimal;
-    while (*(++ptr) != '\0') {
-      char *zero = strchr(ptr, '0');
-      if (zero) {
-        ptr = zero;
-        char ch;
-        while ((ch = *(++ptr))) {
-          if (ch == DC_EXP) {
-            // found exponent character after all zeroes,
-            // move chunk from exponent to end of string to replace decimal
-            memmove((zero-1 == decimal) ? decimal : zero, ptr, &buffer[pos]-ptr+1);
-            return;
-          } else if (ch != '0') {
-            // found non-zero digit, start over looking for zeroes
-            break;
-          }
-        }
-        if (ch == '\0') {
-          // reached end of string with all zeroes
-          if (zero-1 == decimal) {
-            // first zero was immediately after decimal
-            *decimal = '\0'; // replace decimal with terminator
-            return;
-          } else {
-            // replace zero with terminator
-            *zero = '\0';
-            return;
-          }
-        }
-      } else {
-        // no zeroes after decimal
-        return;
-      }
-    }
+  if (decimal){ 
+      char *exppos = strchr(buffer, DC_EXP);
+      trimTrailingZeroesHelper(buffer, pos, &buffer[pos], exppos, decimal, nullptr);
   }
 }
 
@@ -215,10 +249,40 @@ Value Value::clone() const {
     case ValueType::VECTOR :
       c.value = boost::get<VectorPtr>(this->value).clone();
     break;
+    case ValueType::FUNCTION :
+      c.value = boost::get<FunctionType>(this->value).clone();
+    break;
     default:
       assert(false && "unknown Variant value");
   }
   return c;
+}
+
+const FunctionType& Value::toFunction() const
+{
+	return boost::get<FunctionType>(this->value);
+}
+
+const std::string Value::typeName() const
+{
+	switch (this->type()) {
+	case ValueType::UNDEFINED:
+		return "undefined";
+	case ValueType::BOOL:
+		return "bool";
+	case ValueType::NUMBER:
+		return "number";
+	case ValueType::STRING:
+		return "string";
+	case ValueType::VECTOR:
+		return "vector";
+	case ValueType::RANGE:
+		return "range";
+	case ValueType::FUNCTION:
+		return "function";
+	default:
+		return "<unknown>";
+	}
 }
 
 bool Value::toBool() const
@@ -331,6 +395,9 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
+  std::string operator()(const FunctionType &v) const {
+	return STR(v);
+  }
 };
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
@@ -339,7 +406,6 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-
 
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
@@ -390,8 +456,10 @@ public:
     stream << "]";
   }
 
+  void operator()(const FunctionType &v) const {
+	stream << v;
+  }
 };
-
 
 std::string Value::toString() const
 {
@@ -569,14 +637,13 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 
 const RangeType& Value::toRange() const
 {
-  static const RangeType empty(0,0,0);
+  static const RangeType empty{0,0,0};
   const RangeType *val = boost::get<RangeType>(&this->value);
   if (val) {
-    return *val;
+	return *val;
   }
-  else return empty;
+  return empty;
 }
-
 
 class equals_visitor : public boost::static_visitor<bool>
 {
@@ -1015,4 +1082,18 @@ bool RangeType::iterator::operator==(const self_type &other) const
 bool RangeType::iterator::operator!=(const self_type &other) const
 {
 	return !(*this == other);
+}
+
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
+	stream << "function(";
+	bool first = true;
+	for (const auto& arg : f.getArgs()) {
+		stream << (first ? "" : ", ") << arg.name;
+		if (arg.expr) {
+			stream << " = " << *arg.expr;
+		}
+		first = false;
+	}
+	stream << ") " << *f.getExpr();
+	return stream;
 }

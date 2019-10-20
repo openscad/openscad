@@ -38,7 +38,7 @@ Annotation::~Annotation()
 {
 }
 
-Value Annotation::evaluate(class Context *ctx) const
+Value Annotation::evaluate(class std::shared_ptr<Context> ctx) const
 {
 	return this->expr->evaluate(ctx);
 }

@@ -269,7 +269,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const char *export_format)
+int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const std::string &export_format)
 {
 	Tree tree;
 	boost::filesystem::path doc(filename);
@@ -280,40 +280,39 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 	ExportFileFormatOptions exportFileFormatOptions;
 	FileFormat curFormat;
-	std::string extsn;
+	std::string formatName;
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
-	
-	if(export_format) {
-		PRINT("Using extension of --export-format option");
-		extsn = export_format;
+
+	if(!export_format.empty()) {
+		formatName = export_format;
 	}
-	else { 
+	else {
 		auto suffix = fs::path(output_file_str).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
-			extsn = suffix;
+			formatName = suffix;
 		}
 	}
 
-	if(extsn.empty()) {
+	if(formatName.empty()) {
 		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
 		return 1;
 	}
-	
-	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
-	std::string filename_str = fs::path(output_file_str).replace_extension(extsn).generic_string();
+
+	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
+	std::string filename_str = fs::path(output_file_str).generic_string();
 	new_output_file = filename_str.c_str();
 
 	set_render_color_scheme(arg_colorscheme, true);
 
 	// Top context - this context only holds builtins
-	BuiltinContext top_ctx;
+	ContextHandle<BuiltinContext> top_ctx{Context::create<BuiltinContext>()};
 	const bool preview = curFormat == FileFormat::PNG ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-	top_ctx.set_variable("$preview", Value(preview));
+	top_ctx->set_variable("$preview", Value(preview));
 #ifdef DEBUG
-	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
+	PRINTDB("BuiltinContext:\n%s", top_ctx->dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (curFormat == FileFormat::ECHO) {
@@ -357,10 +356,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	auto fpath = fs::absolute(fs::path(filename));
 	auto fparent = fpath.parent_path();
 	fs::current_path(fparent);
-	top_ctx.setDocumentPath(fparent.string());
+	top_ctx->setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
-	absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, nullptr);
+	absolute_root_node = root_module->instantiate(top_ctx.ctx, &root_inst, nullptr);
 
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node))) {
@@ -514,6 +513,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "input/QGamepadInputDriver.h"
 #endif
 #include <QString>
+#include <QStringList>
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
@@ -682,14 +682,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		}
 	}
 
-	auto isMdi = settings.value("advanced/mdi", true).toBool();
-	if (isMdi) {
-		for(const auto &infile : inputFiles) {
-		   new MainWindow(assemblePath(original_path, infile));
-	    }
-	} else {
-	   new MainWindow(assemblePath(original_path, inputFiles[0]));
+	QStringList inputFilesList;
+	for(const auto &infile: inputFiles) {
+		inputFilesList.append(assemblePath(original_path, infile));
 	}
+	new MainWindow(inputFilesList);
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
@@ -821,12 +818,12 @@ int main(int argc, char **argv)
 
 	const char *output_file = nullptr;
 	const char *deps_output_file = nullptr;
-	const char *export_format = nullptr;
-	
+	std::string export_format;
+
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overrides the file extension in -o option\n")
+		("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions\n")
 		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
@@ -1011,15 +1008,15 @@ int main(int argc, char **argv)
 	}
 
 	ExportFileFormatOptions exportFileFormatOptions;
-    if(vm.count("export-format")) {
-        auto tmp_format = vm["export-format"].as<string>();
-        if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
-        	export_format = tmp_format.c_str();
-        }
+	if(vm.count("export-format")) {
+		auto tmp_format = vm["export-format"].as<string>();
+		if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
+			export_format = tmp_format;
+		}
 		else {
-	        PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
-	    }
-    }
+			PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
+		}
+	}
 
 	currentdir = fs::current_path().generic_string();
 

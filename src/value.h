@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <iostream>
 
@@ -12,11 +13,14 @@
 #include <boost/lexical_cast.hpp>
 #include <glib.h>
 #endif
-#include <cstdint>
+
+#include "Assignment.h"
 #include "memory.h"
 
 class tostring_visitor;
 class tostream_visitor;
+class Context;
+class Expression;
 
 class QuotedString : public std::string
 {
@@ -73,7 +77,7 @@ public:
 	RangeType& operator=(const RangeType &) = delete; // never copy, move instead
 	RangeType(RangeType&&) = default; // default move constructor
 	RangeType& operator=(RangeType&&) = default; // default move assignment
-	
+
 	// Copy explicitly only when necessary
 	RangeType clone() const { return RangeType(this->begin_val,this->step_val,this->end_val); };
 
@@ -99,7 +103,7 @@ public:
 	
 	iterator begin() const { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
 	iterator end() const{ return iterator(*this, type_t::RANGE_TYPE_END); }
-	
+
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
 	uint32_t numValues() const;
 	
@@ -152,6 +156,26 @@ private:
 	str_ptr_t str_ptr;
 };
 
+class FunctionType {
+public:
+	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::unique_ptr<AssignmentList> args)
+		: ctx(ctx), expr(expr), args(std::move(args)) { }
+	bool operator==(const FunctionType&) const { return false; }
+	bool operator!=(const FunctionType& other) const { return !(*this == other); }
+
+	const std::shared_ptr<Context>& getCtx() const { return ctx; }
+	const std::shared_ptr<Expression>& getExpr() const { return expr; }
+	const AssignmentList& getArgs() const { return *args; }
+
+	FunctionType clone() const { return FunctionType{ctx, expr, std::unique_ptr<AssignmentList>{new AssignmentList{*args}}}; };
+	friend std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
+
+private:
+	std::shared_ptr<Context> ctx;
+	std::shared_ptr<Expression> expr;
+	std::unique_ptr<AssignmentList> args;
+};
+
 class Value
 {
 public:
@@ -162,7 +186,8 @@ public:
 		NUMBER,
 		STRING,
 		VECTOR,
-		RANGE
+		RANGE,
+		FUNCTION
 	};
 	static const Value undefined;
 
@@ -212,9 +237,12 @@ public:
 	Value(RangeType&& v) : value(std::move(v)) {}
 	Value(VectorPtr& v) : value(std::move(v)) {}
 	Value(VectorPtr&& v) : value(std::move(v)) {}
+	Value(FunctionType& v) : value(std::move(v)) {}
+	Value(FunctionType&& v) : value(std::move(v)) {}
 
 	Value clone() const; // Use sparingly to explicitly copy a Value
 
+	const std::string typeName() const;
 	ValueType type() const { return static_cast<ValueType>(this->value.which()); }
 	bool isDefinedAs(const ValueType type) const { return this->type() == type; }
 	bool isDefined()   const { return this->type() != ValueType::UNDEFINED; }
@@ -224,6 +252,7 @@ public:
 	bool getDouble(double &v) const;
 	bool getFiniteDouble(double &v) const;
 	bool toBool() const;
+    const FunctionType& toFunction() const;
 	std::string toString() const;
 	std::string toString(const tostring_visitor *visitor) const;
 	std::string toEchoString() const;
@@ -264,7 +293,7 @@ public:
 		return stream;
 	}
 
-	typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType > Variant;
+	typedef boost::variant<boost::blank, bool, double, str_utf8_wrapper, VectorPtr, RangeType, FunctionType> Variant;
 
 private:
 	static Value multvecnum(const Value &vecval, const Value &numval);

@@ -157,7 +157,7 @@ case $OS in
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
         elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
-            # we cant find systems nsis so look for the MXE's version.
+            # we can't find systems nsis so look for the MXE's version.
             # MXE has its own makensis, but its only available under
             # 32-bit MXE. note that the cross-version in theory works
             # the same as the linux version so we can use them, in
@@ -232,7 +232,7 @@ case $OS in
         touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
     ;;
     UNIX_CROSS_WIN)
-        # kludge to enable paralell make
+        # kludge to enable parallel make
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
         touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
@@ -252,14 +252,14 @@ case $OS in
             make $TARGET -j$NUMCPU
         fi
         if [ ! -e $TARGET/openscad.exe ]; then
-            echo "cant find $TARGET/openscad.exe. build failed. stopping."
+            echo "can't find $TARGET/openscad.exe. build failed. stopping."
             exit
         fi
         # make console pipe-able openscad.com - see winconsole.pro for info
         qmake ../winconsole/winconsole.pro
         make
         if [ ! -e $TARGET/openscad.com ]; then
-            echo "cant find $TARGET/openscad.com. build failed. stopping."
+            echo "can't find $TARGET/openscad.com. build failed. stopping."
             exit
         fi
         cd $OPENSCADDIR
@@ -290,6 +290,7 @@ case $OS in
         FONTDIR=OpenSCAD.app/Contents/Resources/fonts
         TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/locale
         COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
+        TEMPLATESDIR=OpenSCAD.app/Contents/Resources/templates
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
@@ -298,6 +299,7 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
+        TEMPLATESDIR=$DEPLOYDIR/openscad-$VERSION/templates/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
@@ -307,6 +309,7 @@ case $OS in
         FONTDIR=openscad-$VERSION/fonts/
         TRANSLATIONDIR=openscad-$VERSION/locale/
         COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
+        TEMPLATESDIR=openscad-$VERSION/templates/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -340,6 +343,11 @@ if [ -n $COLORSCHEMESDIR ]; then
   echo $COLORSCHEMESDIR
   mkdir -p $COLORSCHEMESDIR
   cp -a color-schemes/* $COLORSCHEMESDIR
+fi
+if [ -n $TEMPLATESDIR ]; then
+  echo $TEMPLATESDIR
+  mkdir -p $TEMPLATESDIR
+  cp -a templates/* $TEMPLATESDIR
 fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR

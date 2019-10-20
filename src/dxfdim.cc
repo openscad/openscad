@@ -44,7 +44,7 @@ std::unordered_map<std::string, Value> dxf_dim_cache;
 std::unordered_map<std::string, Value> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
+Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string rawFilename;
 	std::string filename;
@@ -155,7 +155,7 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	return Value();
 }
 
-Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
+Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string filename;
 	std::string rawFilename;
@@ -250,6 +250,13 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 
 void initialize_builtin_dxf_dim()
 {
-	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim));
-	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross));
+	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim),
+				{
+					"dxf_dim()",
+				});
+
+	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross),
+				{
+					"dxf_cross()",
+				});
 }

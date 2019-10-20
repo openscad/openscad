@@ -174,8 +174,8 @@ void ParameterWidget::readFile(QString scadFile)
 }
 
 //Write the json file if the parameter sets are not empty.
-//This prevents creating unneccesary json filess.
-//This methode also updates the UI state (change indicator, file name, ...)
+//This prevents creating unnecessary json filess.
+//This method also updates the UI state (change indicator, file name, ...)
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
 	setFile(scadFile);
@@ -490,8 +490,8 @@ void ParameterWidget::applyParameterSet(std::string setName)
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 				
-				ModuleContext ctx;
-				Value newValue = params->evaluate(&ctx);
+				ContextHandle<Context> ctx{Context::create<Context>()};
+				Value newValue = params->evaluate(ctx.ctx);
 				if (entry->second->dvt == newValue.type()) {
 					entry->second->value = std::move(newValue);
 				}

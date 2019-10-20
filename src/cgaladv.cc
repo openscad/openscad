@@ -40,10 +40,10 @@ class CgaladvModule : public AbstractModule
 public:
 	CgaladvType type;
 	CgaladvModule(CgaladvType type) : type(type) { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new CgaladvNode(inst, type);
 
@@ -55,19 +55,19 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	if (type == CgaladvType::RESIZE)
 		args += Assignment("newsize"), Assignment("auto");
 
-	Context c(ctx);
-	c.setVariables(evalctx, args);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
 
 	if (type == CgaladvType::MINKOWSKI) {
-		const auto &convexity = c.lookup_variable("convexity", true);
+		const auto &convexity = c->lookup_variable("convexity", true);
 		node->convexity = static_cast<int>(convexity.toDouble());
 	} else {
 		node->convexity = 0;
 	}
 
 	if (type == CgaladvType::RESIZE) {
-		const auto &ns = c.lookup_variable("newsize");
+		const auto &ns = c->lookup_variable("newsize");
 		node->newsize << 0,0,0;
 		if ( ns.type() == Value::ValueType::VECTOR ) {
 			const Value::VectorPtr &vs = ns.toVectorPtr();
@@ -75,9 +75,9 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 			if ( vs->size() >= 2 ) node->newsize[1] = vs[1].toDouble();
 			if ( vs->size() >= 3 ) node->newsize[2] = vs[2].toDouble();
 		}
-		const auto &autosize = c.lookup_variable("auto");
+		const auto &autosize = c->lookup_variable("auto");
 		node->autosize << false, false, false;
-		if ( autosize.type() == Value::ValueType::VECTOR ) {
+		if (autosize.type() == Value::ValueType::VECTOR) {
 			const Value::VectorPtr &va = autosize.toVectorPtr();
 			if ( va->size() >= 1 ) node->autosize[0] = va[0].toBool();
 			if ( va->size() >= 2 ) node->autosize[1] = va[1].toBool();
@@ -87,8 +87,6 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 			node->autosize << autosize.toBool(),autosize.toBool(),autosize.toBool();
 		}
 	}
-
-	node->path = Value();
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
@@ -142,7 +140,20 @@ std::string CgaladvNode::toString() const
 
 void register_builtin_cgaladv()
 {
-	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI));
-	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL));
-	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE));
+	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI),
+				{
+					"minkowski()",
+				});
+
+	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL),
+				{
+					"hull()",
+				});
+
+	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE),
+				{
+					"resize([x, y, z])",
+					"resize([x, y, z], boolean)",
+					"resize([x, y, z], [boolean, boolean, boolean])",
+				});
 }

@@ -3,12 +3,29 @@ language: cpp
 matrix:
   include:
     - os: linux
+      sudo: required
       compiler: gcc
       dist: xenial
       env:
-        - DIST="xenial"
-        - PARALLEL_CTEST=-j1
+        - DIST="Ubuntu 16.04 (Xenial)"
+        - PARALLEL_CTEST=-j4
+      before_install:
+        # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
+        - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
+        - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
+      cache:
+        - apt
+        - ccache
+    - if: NOT branch = coverity_scan
+      os: linux
       sudo: required
+      compiler: gcc
+      dist: bionic
+      env:
+        - DIST="Ubuntu 18.04 (Bionic)"
+        - PARALLEL_CTEST=-j4
+      before_install:
+        - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
       cache:
         - apt
         - ccache
@@ -16,12 +33,22 @@ matrix:
       os: osx
       compiler: clang
       env:
-        - DIST="osx"
         - PARALLEL_CTEST=-j4
+        - HOMEBREW_NO_AUTO_UPDATE=1
+      before_install:
+        - test -d /usr/local/opt/opencsg/lib || { rmdir /usr/local/opt/opencsg; brew install opencsg; }
+        - test -d /usr/local/opt/libzip/lib || { rmdir /usr/local/opt/libzip; brew install libzip; }
+        - ./scripts/macosx-build-homebrew.sh
+      before_cache:
+        - brew cleanup
       cache:
         - ccache
         - directories:
           - $HOME/Library/Caches/Homebrew
+          - /usr/local/Cellar/opencsg
+          - /usr/local/opt/opencsg
+          - /usr/local/Cellar/libzip
+          - /usr/local/opt/libzip
 
 notifications:
   irc:
@@ -29,14 +56,6 @@ notifications:
       - "chat.freenode.net#openscad"
     on_success: change
     use_notice: false
-    skip_join: true
-
-before_install:
- # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
- - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
- - if [[ "$DIST" == "trusty" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_14.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libxmu-dev bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev libdouble-conversion-dev; fi
- - if [[ "$DIST" == "xenial" ]]; then wget -qO - http://files.openscad.org/OBS-Repository-Key.pub | sudo apt-key add - ; echo 'yes' | sudo add-apt-repository 'deb http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_16.04/ ./' ; sudo apt-get update -qq ; sudo apt-get purge -qq fglrx ; sudo apt-get install -qq build-essential qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev libqt5scintilla2-dev libxmu-dev cmake bison flex git-core libboost-all-dev libxi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libcgal-qt5-dev libgmp3-dev libgmp-dev curl imagemagick libfontconfig-dev libopencsg-dev libharfbuzz-dev libzip-dev lib3mf-dev libdouble-conversion-dev; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/macosx-build-homebrew.sh ; fi
 
 branches:
   only:

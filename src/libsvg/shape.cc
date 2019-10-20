@@ -96,6 +96,7 @@ shape::set_attrs(attr_map_t& attrs)
 	this->transform = attrs["transform"];
 	this->stroke_width = attrs["stroke-width"];
 	this->stroke_linecap = attrs["stroke-linecap"];
+	this->stroke_linejoin = attrs["stroke-linejoin"];
 	this->style = attrs["style"];
 }
 
@@ -148,6 +149,25 @@ shape::get_stroke_linecap() const
 		return ClipperLib::etOpenSquare;
 	}
 	return ClipperLib::etOpenSquare;
+}
+
+ClipperLib::JoinType 
+shape::get_stroke_linejoin() const
+{
+	std::string join;
+	if (this->stroke_linejoin.empty()) {
+		join = get_style("stroke-linejoin");
+	} else {
+		join = this->stroke_linejoin;
+	}
+	if (join == "bevel") {
+		return ClipperLib::jtSquare;
+	} else if (join == "round") {
+		return ClipperLib::jtRound;
+	} else if (join == "square") {
+		return ClipperLib::jtMiter;
+	}
+	return ClipperLib::jtMiter;
 }
 
 void
@@ -249,7 +269,7 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 	}
 
 	ClipperLib::ClipperOffset co;
-	co.AddPath(line, ClipperLib::jtMiter, stroke_linecap);
+	co.AddPath(line, get_stroke_linejoin(), stroke_linecap);
 	co.Execute(result, stroke_width * 5000.0);
 
 	for (const auto &p : result) {

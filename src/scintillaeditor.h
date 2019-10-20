@@ -7,8 +7,10 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
+#include <functional>
 #include "editor.h"
 #include "scadlexer.h"
+#include "scadapi.h"
 #include "parsersettings.h"
 
 #include "memory.h"
@@ -56,6 +58,10 @@ public:
 	void replaceAll(const QString &findText, const QString &replaceText) override;
 	QStringList colorSchemes() override;
     bool canUndo() override;
+    void addTemplate();
+	void setIndicator(const std::vector<IndicatorData>& indicatorData) override;
+	QMenu * createStandardContextMenu() override;
+	QPoint mapToGlobal(const QPoint &) override;
 
 private:
         void getRange(int *lineFrom, int *lineTo);
@@ -67,12 +73,22 @@ private:
         colorscheme_set_t enumerateColorSchemes();
 
         bool eventFilter(QObject* obj, QEvent *event) override;
+		bool handleKeyEventNavigateNumber(QKeyEvent *);
+		bool handleKeyEventBlockCopy(QKeyEvent *);
+		bool handleKeyEventBlockMove(QKeyEvent *);
         void navigateOnNumber(int key);
         bool modifyNumber(int key);
         void noColor();
 
+        void setLexer(ScadLexer *lexer);
+        void replaceSelectedText(QString&);
+        void addTemplate(const fs::path path);
+        void updateSymbolMarginVisibility();
+		void findMarker(int, int, std::function<int(int)>);
+
 signals:
 	void previewRequest(void);
+	void hyperlinkIndicatorClicked(int val);
 	
 public slots:
 	void zoomIn() override;
@@ -95,16 +111,39 @@ public slots:
 	void copy() override;
 	void paste() override;
 	void initFont(const QString&, uint) override;
+	void displayTemplates() override;
+	void toggleBookmark() override;
+	void nextBookmark() override;
+	void prevBookmark() override;
+	void jumpToNextError() override;
 
 private slots:
 	void onTextChanged();
-        void applySettings();
+	void onUserListSelected(const int id, const QString &text);
+	void applySettings();
+	void onAutocompleteChanged(bool state);
+	void onCharacterThresholdChanged(int val);
+	void fireModificationChanged(bool);
+	void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
+
+public:
+	void public_applySettings();
 
 private:
 	QVBoxLayout *scintillaLayout;
+	static const int symbolMargin = 1;
+	static const int numberMargin = 0;
     static const int errorIndicatorNumber = 8; // first 8 are used by lexers 
     static const int findIndicatorNumber = 9; 
-	static const int markerNumber = 2;
+	static const int hyperlinkIndicatorNumber = 10;
+	static const int hyperlinkIndicatorOffset = 100;
+	static const int errMarkerNumber = 2;
+	static const int bmMarkerNumber = 3;
+
 	ScadLexer *lexer;
 	QFont currentFont;
+	ScadApi *api;
+	QStringList userList;
+	QMap<QString, ScadTemplate> templateMap;
+	static QString cursorPlaceHolder;
 };

@@ -119,6 +119,7 @@ mingw* {
 
 CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
+CONFIG += scintilla
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -139,7 +140,7 @@ netbsd* {
 !isEmpty(OPENSCAD_LIBDIR) {
   unix:!macx {
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-    # need /lib64 beause GLEW installs itself there on 64 bit machines
+    # need /lib64 because GLEW installs itself there on 64 bit machines
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
   }
 }
@@ -193,11 +194,6 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
-
-#Uncomment the following line to enable the QScintilla editor
-!nogui {
-  CONFIG += scintilla
-}
 
 # Make experimental features available
 experimental {
@@ -285,6 +281,8 @@ HEADERS += src/version_check.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/tabmanager.h \
+           src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -296,6 +294,7 @@ HEADERS += src/version_check.h \
            src/GroupModule.h \
            src/FileModule.h \
            src/StatCache.h \
+           src/scadapi.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -493,6 +492,7 @@ SOURCES += \
            src/GroupModule.cc \
            src/FileModule.cc \
            src/StatCache.cc \
+           src/scadapi.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -522,6 +522,8 @@ SOURCES += \
            src/version.cc \
            src/openscad.cc \
            src/mainwin.cc \
+           src/tabmanager.cc \
+           src/tabwidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
@@ -721,6 +723,10 @@ INSTALLS += fonts
 colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
+
+templates.path = "$$PREFIX/share/$${FULLNAME}/templates/"
+templates.files = templates/*
+INSTALLS += templates
 
 applications.path = $$PREFIX/share/applications
 applications.extra = mkdir -p \"\$(INSTALL_ROOT)$${applications.path}\" && cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"

@@ -73,7 +73,7 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 }
 
 /*!
-	Returns true if the file was succesfully read
+	Returns true if the file was successfully read
 */
 bool ParameterSet::readParameterSet(const std::string &filename)
 {
@@ -103,22 +103,22 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 {
 	if (fileModule == nullptr || this->root.empty()) return;
 	try {
-		ModuleContext ctx;
+		ContextHandle<Context> ctx{Context::create<Context>()};
 		boost::optional<pt::ptree &> set = getParameterSet(setName);
 		for (auto &assignment : fileModule->scope.assignments) {
 			for (auto &v : set.get()) {
 				if (v.first == assignment.name) {
-					const Value defaultValue = assignment.expr->evaluate(&ctx);
+					const Value defaultValue = assignment.expr->evaluate(ctx.ctx);
 					if (defaultValue.type() == Value::ValueType::STRING) {
-						assignment.expr = shared_ptr<Expression>(new Literal(Value(v.second.data())));
+						assignment.expr = shared_ptr<Expression>(new Literal(Value{v.second.data()}));
 					}
 					else if (defaultValue.type() == Value::ValueType::BOOL) {
 						assignment.expr = shared_ptr<Expression>(new Literal(Value(v.second.get_value<bool>())));
 					} else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 						if (!params) continue;
-						ModuleContext ctx;
-						if (defaultValue.type() == params->evaluate(&ctx).type()) {
+						ContextHandle<Context> ctx{Context::create<Context>()};
+						if (defaultValue.type() == params->evaluate(ctx.ctx).type()) {
 							assignment.expr = params;
 						}
 					}

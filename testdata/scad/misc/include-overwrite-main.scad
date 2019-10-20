@@ -1,10 +1,10 @@
 echo(str("Can a variable be used when it assigned later? ",later))
 
-echo(str("Is overwritting possible? ", overwritten));
+echo(str("Is overwriting possible? ", overwritten));
 
-echo(str("Does an include before the assigment take priority? ", before));
+echo(str("Does an include before the assignment take priority? ", before));
 
-echo(str("Does an include after the assigment take priority? ", after));
+echo(str("Does an include after the assignment take priority? ", after));
 
 use     <include-overwrite-use.scad>;
 include <include-overwrite-before.scad>;

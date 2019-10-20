@@ -59,11 +59,11 @@ void ParameterVector::setValue()
 		setPrecision(step);
 	}
 
-	QDoubleSpinBox* boxes[4] = {this->doubleSpinBox1,this->doubleSpinBox2,this->doubleSpinBox3,this->doubleSpinBox4};
+	QDoubleSpinBox* boxes[NR_OF_SPINBOXES] = {this->doubleSpinBox1,this->doubleSpinBox2,this->doubleSpinBox3,this->doubleSpinBox4};
 
-	for(unsigned int i = 0; i < vec->size(); i++) {
+	for(unsigned int i = 0; i < vec->size() && i < NR_OF_SPINBOXES; i++) {
+		boxes[i]->show();
 		boxes[i]->setDecimals(decimalPrecision);
-		boxes[i]->setValue(vec->at(i).toDouble());
 		if(minV==0 && maxV ==0){
 			boxes[i]->setRange(vec->at(i).toDouble()-1000,vec->at(i).toDouble()+1000);
 		}else{
@@ -71,8 +71,9 @@ void ParameterVector::setValue()
 			boxes[i]->setMaximum(maxV);
 			boxes[i]->setSingleStep(step);
 		}
+		boxes[i]->setValue(vec->at(i).toDouble());
 	}
-	for(unsigned int i = vec->size(); i < 4; i++) {
+	for(unsigned int i = vec->size(); i < NR_OF_SPINBOXES; i++) {
 		boxes[i]->hide();
 		boxes[i]->setReadOnly(true);
 	}

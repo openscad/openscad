@@ -39,20 +39,20 @@ class RenderModule : public AbstractModule
 {
 public:
 	RenderModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *RenderModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new RenderNode(inst);
 
 	AssignmentList args{Assignment("convexity")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
 
-	const auto &v = c.lookup_variable("convexity");
+	const auto &v = c->lookup_variable("convexity");
 	if (v.type() == Value::ValueType::NUMBER) {
 		node->convexity = static_cast<int>(v.toDouble());
 	}
@@ -70,5 +70,8 @@ std::string RenderNode::toString() const
 
 void register_builtin_render()
 {
-	Builtins::init("render", new RenderModule());
+	Builtins::init("render", new RenderModule(),
+				{
+					"render(convexity = 1)",
+				});
 }
