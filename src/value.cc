@@ -503,9 +503,9 @@ void Value::VectorPtr::flatten()
   ret->reserve(size);
   for (auto& v : **this) {
     if (v.type() == Value::Type::VECTOR) {
-      for (auto& vv : *v.toVectorPtrRef()) {
-        ret->emplace_back(std::move(vv));
-      }
+      ret->insert(std::end(*ret),
+        std::make_move_iterator(std::begin(*v.toVectorPtrRef())),
+        std::make_move_iterator(std::end(*v.toVectorPtrRef())));
     } else {
       ret->emplace_back(std::move(v));
     }
