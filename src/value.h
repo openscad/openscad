@@ -204,7 +204,7 @@ public:
 		// We can't use unique_ptr because of this :(
 		VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c; }
 
-		const Value::VectorType &operator*() const noexcept { return *ptr; }
+		const Value::VectorType& operator*() const noexcept { return *ptr; }
 		Value::VectorType *operator->() const noexcept { return ptr.get(); }
 		// const accesses to VectorType require .clone to be move-able
 		const Value &operator[](size_t idx) const noexcept { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
@@ -217,6 +217,9 @@ public:
 		bool operator!=(const VectorPtr &v) const {	return *ptr != *v; }
 		
 		void flatten();
+
+	protected:
+		Value::VectorType& operator*() noexcept { return *ptr; }
 
 	private:
 		shared_ptr<Value::VectorType> ptr;
