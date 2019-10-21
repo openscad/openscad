@@ -1,0 +1,39 @@
+ECHO: assoc_right_unary = 1
+ECHO: 4
+ECHO: 3
+ECHO: 2
+ECHO: assoc_left_addsub = 3
+ECHO: 4
+ECHO: 3
+ECHO: 2
+ECHO: assoc_left_subadd = 1
+ECHO: 4
+ECHO: 3
+ECHO: 2
+ECHO: assoc_left_muldiv = 1.5
+ECHO: 5
+ECHO: 4
+ECHO: 3
+ECHO: assoc_left_ltgt = false
+ECHO: false
+ECHO: true
+ECHO: true
+ECHO: assoc_left_eqne = true
+ECHO: true
+ECHO: true
+ECHO: false
+ECHO: assoc_left_and = false
+ECHO: true
+ECHO: assoc_left_or = true
+ECHO: prec_andor = true
+ECHO: prec_orand = true
+ECHO: prec_gtadd = true
+ECHO: prec_addgt = false
+ECHO: prec_addmul = 14
+ECHO: prec_muladd = 10
+ECHO: prec_submul = -10
+ECHO: prec_mulsub = 2
+ECHO: prec_addmod = 5
+ECHO: prec_modadd = 6
+ECHO: prec_unarysub = -0.5
+ECHO: prec_unaryadd = 0.5

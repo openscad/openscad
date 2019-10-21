@@ -460,6 +460,7 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/assert-expression-fail3-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/assert-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/echo-expression-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/expression-precedence-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
