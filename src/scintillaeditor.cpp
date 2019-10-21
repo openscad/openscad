@@ -631,23 +631,22 @@ int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibili
 {
 	int findwordcount{0};
 
-    auto txt = qsci->text();
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, findIndicatorNumber);
+	qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, qsci->length());
 
-    qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, findIndicatorNumber);
-    qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
-
-    auto pos = txt.indexOf(findText);
-    auto len = findText.length();
-    if (visibility && len>0) {
-        while (pos!=-1){
-            findwordcount++;
-            qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
-            qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, len);
-            pos = txt.indexOf(findText,pos+len);
-        };
-    }
-    //qsci->findFirst(findText, false, false, false, true, true, savelineFrom, saveindexFrom);
-    return findwordcount;
+	const auto txt = qsci->text().toUtf8();
+	const auto findTextUtf8 = findText.toUtf8();
+	auto pos = txt.indexOf(findTextUtf8);
+	auto len = findTextUtf8.length();
+	if (visibility && len > 0) {
+		while (pos != -1) {
+			findwordcount++;
+			qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
+			qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, len);
+			pos = txt.indexOf(findTextUtf8, pos + len);
+		};
+	}
+	return findwordcount;
 }
 
 bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackwards)
