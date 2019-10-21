@@ -616,6 +616,8 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
 
 # No tests related to experimental features currently
+experimental_tests(echotest_allexpressions)
+experimental_tests(astdumptest_allexpressions)
 experimental_tests(echotest_function-literal-tests)
 
 # Test config handling
