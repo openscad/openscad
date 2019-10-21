@@ -207,7 +207,6 @@ public:
   Value(const VectorType &v);
   Value(const RangeType &v);
   Value(const FunctionType &v);
-  ~Value() {}
 
   ValueType type() const;
   bool isDefined() const;
@@ -235,7 +234,6 @@ public:
 
 	operator bool() const { return this->toBool(); }
 
-  Value &operator=(const Value &v);
   bool operator==(const Value &v) const;
   bool operator!=(const Value &v) const;
   bool operator<(const Value &v) const;
