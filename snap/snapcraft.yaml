@@ -22,6 +22,8 @@ apps:
     command: desktop-launch openscad-nightly
     plugs: [desktop, x11, wayland, opengl, home, audio-playback, pulseaudio, network, removable-media]
     desktop: usr/share/applications/openscad-nightly.desktop
+    environment:
+      DISABLE_WAYLAND: 1
 
 parts:
   opencsg:
