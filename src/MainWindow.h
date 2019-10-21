@@ -41,7 +41,7 @@ public:
 	QTime renderingTime;
 	EditorInterface *customizerEditor;
 
-	BuiltinContext top_ctx;
+	ContextHandle<BuiltinContext> top_ctx;
 	FileModule *root_module;      // Result of parsing
 	FileModule *parsed_module;		// Last parse for include list
 	ModuleInstantiation root_inst;	// Top level instance
@@ -105,7 +105,7 @@ public:
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void handleFileDrop(const QString &filename);
-	void updateCamera(const class FileContext &ctx);
+	void updateCamera(const std::shared_ptr<class FileContext> ctx);
 	void updateTemporalVariables();
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);

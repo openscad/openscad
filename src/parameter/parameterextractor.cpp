@@ -29,17 +29,17 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
 {
   if (!module) return;
 
-  ModuleContext ctx;
+  ContextHandle<Context> ctx{Context::create<Context>()};
 
   ParameterPos.clear();
   for (auto &assignment : module->scope.assignments) {
     const Annotation *param = assignment.annotation("Parameter");
     if (!param) continue;
 
-    const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
+    const ValuePtr defaultValue = assignment.expr->evaluate(ctx.ctx);
     if (defaultValue->type() == Value::ValueType::UNDEFINED) continue;
 
-    ParameterObject *entryObject = new ParameterObject(&ctx, assignment, defaultValue);
+    ParameterObject *entryObject = new ParameterObject(ctx.ctx, assignment, defaultValue);
 
     //check whether object exist or not previously
     if (entries.find(assignment.name) == entries.end()) {

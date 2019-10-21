@@ -167,8 +167,8 @@ void fileExportedMessage(const char *format, const QString &filename) {
 } // namespace
 
 MainWindow::MainWindow(const QStringList &filenames)
-	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr), procevents(false), tempFile(nullptr),
-      progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
+	: top_ctx(Context::create<BuiltinContext>()), root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr),
+	  procevents(false), tempFile(nullptr), progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
 
@@ -1113,9 +1113,9 @@ void MainWindow::instantiateRoot()
 		auto mi = ModuleInstantiation( "group" );
 		this->root_inst = mi;
 
-		FileContext filectx(&top_ctx);
-		this->absolute_root_node = this->root_module->instantiateWithFileContext(&filectx, &this->root_inst, nullptr);
-		this->updateCamera(filectx);
+		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
+		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
+		this->updateCamera(filectx.ctx);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -1621,23 +1621,23 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx.set_variable("$t", ValuePtr(this->anim_tval));
+	this->top_ctx->set_variable("$t", ValuePtr(this->anim_tval));
 
 	auto camVpt = qglview->cam.getVpt();
 	Value::VectorType vpt;
 	vpt.push_back(ValuePtr(camVpt.x()));
 	vpt.push_back(ValuePtr(camVpt.y()));
 	vpt.push_back(ValuePtr(camVpt.z()));
-	this->top_ctx.set_variable("$vpt", ValuePtr(vpt));
+	this->top_ctx->set_variable("$vpt", ValuePtr(vpt));
 
 	auto camVpr = qglview->cam.getVpr();
 	Value::VectorType vpr;
 	vpr.push_back(ValuePtr(camVpr.x()));
 	vpr.push_back(ValuePtr(camVpr.y()));
 	vpr.push_back(ValuePtr(camVpr.z()));
-	top_ctx.set_variable("$vpr", ValuePtr(vpr));
+	top_ctx->set_variable("$vpr", ValuePtr(vpr));
 
-	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
+	top_ctx->set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
 }
 
 
@@ -1646,24 +1646,24 @@ void MainWindow::updateTemporalVariables()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void MainWindow::updateCamera(const FileContext &ctx)
+void MainWindow::updateCamera(const std::shared_ptr<FileContext> ctx)
 {
 	double x, y, z;
-	const auto vpr = ctx.lookup_variable("$vpr");
+	const auto vpr = ctx->lookup_variable("$vpr");
 	if (vpr->getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpr(x, y, z);
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
 	}
 
-	const auto vpt = ctx.lookup_variable("$vpt");
+	const auto vpt = ctx->lookup_variable("$vpt");
 	if (vpt->getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpt(x, y, z);
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
 	}
 
-	const auto vpd = ctx.lookup_variable("$vpd");
+	const auto vpd = ctx->lookup_variable("$vpd");
 	if (vpd->type() == Value::ValueType::NUMBER){
 		qglview->cam.setVpd(vpd->toDouble());
 	}else{
@@ -1773,7 +1773,7 @@ void MainWindow::actionReloadRenderPreview()
 	// this->processEvents();
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
-	this->top_ctx.set_variable("$preview", ValuePtr(true));
+	this->top_ctx->set_variable("$preview", ValuePtr(true));
 	compile(true);
 }
 
@@ -1810,7 +1810,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
-	this->top_ctx.set_variable("$preview", ValuePtr(true));
+	this->top_ctx->set_variable("$preview", ValuePtr(true));
 	compile(false,false,rebuildParameterWidget);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
@@ -2024,7 +2024,7 @@ void MainWindow::actionRender()
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
-	this->top_ctx.set_variable("$preview", ValuePtr(false));
+	this->top_ctx->set_variable("$preview", ValuePtr(false));
 	compile(false);
 }
 

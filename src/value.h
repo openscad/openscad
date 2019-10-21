@@ -1,22 +1,27 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <algorithm>
 #include <limits>
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <algorithm>
+#include <unordered_map>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
 #include <glib.h>
-
 #endif
-#include <cstdint>
+
+#include "AST.h"
 #include "memory.h"
 
 class tostring_visitor;
 class tostream_visitor;
+class ValuePtr;
+class Context;
+class Expression;
 
 class QuotedString : public std::string
 {
@@ -116,6 +121,8 @@ public:
   ValuePtr(const char v);
   ValuePtr(const class std::vector<ValuePtr> &v);
   ValuePtr(const class RangeType &v);
+  ValuePtr(const class ObjectType &v);
+  ValuePtr(const std::shared_ptr<Expression> &v);
 
 	operator bool() const;
 
@@ -139,6 +146,27 @@ public:
 private:
 };
 
+class ObjectType {
+public:
+	using map_type = std::unordered_map<std::string, ValuePtr>;
+	using iterator = map_type::iterator;
+	using const_iterator = map_type::const_iterator;
+	using keys_type = std::vector<std::string>;
+	using kiterator = keys_type::iterator;
+	using const_kiterator = keys_type::const_iterator;
+
+private:
+    map_type data;
+	keys_type keys;
+
+public:
+	bool has_key(const std::string& key) const;
+	const keys_type& get_keys() const { return keys; };
+	const ValuePtr& get(const std::string& key) const;
+	void set(const std::string& key, const ValuePtr& value);
+
+    bool operator==(const ObjectType& other) const;
+};
 
 class str_utf8_wrapper : public std::string
 {
@@ -170,7 +198,9 @@ public:
     NUMBER,
     STRING,
     VECTOR,
-    RANGE
+    RANGE,
+    OBJECT,
+	FUNCTION
   };
   static const Value undefined;
 
@@ -183,6 +213,8 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
+  Value(const ObjectType &v);
+  Value(const std::shared_ptr<Expression> &v);
   ~Value() {}
 
   ValueType type() const;
@@ -194,6 +226,8 @@ public:
   bool getDouble(double &v) const;
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
+  std::shared_ptr<Expression> toExpression() const;
+  std::string typeName() const;
   std::string toString() const;
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
@@ -202,6 +236,7 @@ public:
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   const VectorType &toVector() const;
+  const ObjectType &toObject() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
   bool getVec3(double &x, double &y, double &z) const;
   bool getVec3(double &x, double &y, double &z, double defaultval) const;
@@ -209,7 +244,6 @@ public:
 
 	operator bool() const { return this->toBool(); }
 
-  Value &operator=(const Value &v);
   bool operator==(const Value &v) const;
   bool operator!=(const Value &v) const;
   bool operator<(const Value &v) const;
@@ -230,7 +264,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, ObjectType, std::shared_ptr<Expression>> Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
