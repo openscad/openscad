@@ -1353,7 +1353,9 @@ void MainWindow::compileCSG()
 			this->highlights_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 				auto nterm = normalizer.normalize(highlight_terms[i]);
-				this->highlights_products->import(nterm);
+				if (nterm) {
+					this->highlights_products->import(nterm);
+				}
 			}
 		}
 		else {
@@ -1368,7 +1370,9 @@ void MainWindow::compileCSG()
 			this->background_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
 				auto nterm = normalizer.normalize(background_terms[i]);
-				this->background_products->import(nterm);
+				if (nterm) {
+					this->background_products->import(nterm);
+				}
 			}
 		}
 		else {
@@ -2158,7 +2162,7 @@ void MainWindow::sendToOctoPrint()
 		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
 		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+		PRINTB("ERROR: %s", e.getErrorMessage());
 	}
 
 	updateStatusBar(nullptr);
@@ -2213,7 +2217,7 @@ void MainWindow::sendToPrintService()
         const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool { return network_progress_func(v); });
 		QDesktopServices::openUrl(QUrl{partUrl});
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage().toStdString());
+		PRINTB("ERROR: %s", e.getErrorMessage());
     }
 
 	updateStatusBar(nullptr);

@@ -37,20 +37,20 @@
 class NetworkException: public std::exception
 {
 public:
-	NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage) { }
+	NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
 	virtual ~NetworkException() {}
 
 	const QNetworkReply::NetworkError& getError() const { return error; }
-	const QString& getErrorMessage() const { return errorMessage; }
+	const std::string& getErrorMessage() const { return errorMessage; }
 
 	const char* what() const throw() override
 	{
-		return errorMessage.toStdString().c_str();
+		return errorMessage.c_str();
 	}
 
 private:
 	QNetworkReply::NetworkError error;
-	QString errorMessage;
+	std::string errorMessage;
 };
 
 using network_progress_func_t = std::function<bool(double)>;
