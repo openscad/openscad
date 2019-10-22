@@ -666,6 +666,26 @@ inline int check_extrusion_progression(const Vector3d &p0, const Vector3d &p1, c
 		return -1;
 }
 
+static void expand_poly2d_to_ccw3d(const class Polygon2d *poly2d, PolySet *polyset) {
+	polyset->polygons.clear();
+	// unpack all the 2D coordinates into 3D vectors with Z=0
+	for (const auto &outline : poly2d->untransformedOutlines()) {
+		polyset->append_poly();
+		for (const auto &vtx : outline.vertices)
+			polyset->append_vertex(vtx[0], vtx[1], 0);
+		// Make sure winding order is CCW
+		if (polyset->polygons.back().size() > 2) {
+			Vector3d ab = polyset->polygons.back()[1] - polyset->polygons.back()[0];
+			Vector3d bc = polyset->polygons.back()[2] - polyset->polygons.back()[1];
+			if (ab.cross(bc).z() < 0) {
+				// Reverse the winding
+				std::reverse(polyset->polygons.back().begin(), polyset->polygons.back().end());
+			}
+		}
+	}
+	polyset->transform(poly2d->getTransform3d());
+}
+
 /*!
 	input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
 	output: 3D PolySet
@@ -704,18 +724,15 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::
 	PolySet tmp0(3), tmp1(3), tmp2(3), *result = new PolySet(3, unknown);
 	result->setConvexity(node.convexity);
 	// Unroll first iteration so we have a "prev" to work with, and so we can use it again at the end
-	for (const auto &outline : slices[0]->untransformedOutlines()) {
-		tmp0.append_poly();
-		for (const auto &vtx : outline.vertices)
-			tmp0.append_vertex(vtx[0], vtx[1], 0);
-	}
-	tmp0.transform(slices[0]->getTransform3d());
+	expand_poly2d_to_ccw3d(slices[0], &tmp0);
 	
 	PolySet *cur = &tmp1, *prev = &tmp0;
 	int progression= 0;
 	for (i = 1; i < slices.size(); i++, prev = cur, cur = (cur == &tmp1? &tmp2 : &tmp1)) {
 		const Transform3d &cur_mat = slices[i]->getTransform3d();
 		const Transform3d &prev_mat = slices[i-1]->getTransform3d();
+		// Build new polygon set in 3D from 2D outlines
+		expand_poly2d_to_ccw3d(slices[i], cur);
 		// Plane equations for these matrices
 		Vector3d cur_origin(cur_mat * Vector3d(0,0,0));
 		Vector3d cur_abc(cur_mat * Vector3d(0,0,1) - cur_origin);
@@ -724,18 +741,10 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::
 		Vector3d prev_abc(prev_mat * Vector3d(0,0,1) - prev_origin);
 		double prev_d = - (prev_abc.dot(prev_origin));
 
-		// Build new polygon set in 3D from 2D outlines
-		cur->polygons.clear();
-		for (const auto &outline : slices[i]->untransformedOutlines()) {
-			cur->append_poly();
-			for (const auto &vtx : outline.vertices)
-				cur->append_vertex(vtx[0], vtx[1], 0);
-		}
-		cur->transform(cur_mat);
 		
 		// Decide whether to reverse the list of slices.  Each slice should be located within
 		// +Z of previous, but it's easy to get that backward, and annoying to the user to have
-		// to fix it.
+		// to fix it.  This could also be a result of fixing the winding order of the polygons.
 		if (i == 1 && !reversed) {
 			// Take a guess based on the first point that isn't on this plane
 			// (a point from slice 0 can appear on the plane of slice 1 if they share an axis)
@@ -749,19 +758,12 @@ shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::
 					);
 			// If negative direction, reverse the list and restart the loop
 			if (direction < 0) {
-				PRINTB("NOTE: extrude() slices were given in reverse order, %s", loc);
 				std::reverse(slices.begin(), slices.end());
 				i = 0;
 				reversed = 1;
 				// Need to re-calculate the starting points for slice 0
 				cur = &tmp0;
-				cur->polygons.clear();
-				for (const auto &outline : slices[0]->untransformedOutlines()) {
-					cur->append_poly();
-					for (const auto &vtx : outline.vertices)
-						cur->append_vertex(vtx[0], vtx[1], 0);
-				}
-				cur->transform(slices[0]->getTransform3d());
+				expand_poly2d_to_ccw3d(slices[0], cur);
 				continue;
 			}
 		}
