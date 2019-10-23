@@ -120,6 +120,14 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	}
 }
 
+const std::string& quoted_string(const std::string& str)
+{
+	static std::string buf;
+	buf = str;
+	boost::replace_all(buf, "\n", "\\n");
+	return buf;
+}
+
 std::string two_digit_exp_format( std::string doublestr )
 {
 #ifdef _WIN32

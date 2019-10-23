@@ -14,8 +14,9 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
-    static const Feature ExperimentalThreadedTraversal;
-    static const Feature ExperimentalInputDriverDBus;
+	static const Feature ExperimentalThreadedTraversal;
+	static const Feature ExperimentalInputDriverDBus;
+	static const Feature ExperimentalFunctionLiterals;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

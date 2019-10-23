@@ -4,7 +4,7 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, const ValuePtr defaultValue)
+ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const Assignment &assignment, const ValuePtr defaultValue)
 {
   this->set = false;
   this->name = assignment.name;
@@ -33,8 +33,8 @@ ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, con
 
 void ParameterObject::applyParameter(Assignment &assignment)
 {
-  ModuleContext ctx;
-  const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
+  ContextHandle<Context> ctx{Context::create<Context>()};
+  const ValuePtr defaultValue = assignment.expr->evaluate(ctx.ctx);
   
   if (defaultValue->type() == dvt) {
     assignment.expr = shared_ptr<Expression>(new Literal(value));

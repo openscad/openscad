@@ -25,11 +25,11 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
-log "Listing homebrew configuration"
-time brew config
-
 log "Updating homebrew"
 time brew update
+
+log "Listing homebrew configuration"
+time brew config
 
 # Install special packages not yet in upstream homebrew repo.
 # Check if there's already an active openscad tap and skip
@@ -49,6 +49,12 @@ for formula in pkg-config eigen boost cgal glew glib opencsg freetype libzip lib
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
+done
+
+# Link for formulas that are cached on Travis.
+for formula in libzip opencsg; do
+  log "Linking formula $formula"
+  time brew link $formula
 done
 
 for formula in gettext qt5 qscintilla2; do

@@ -122,6 +122,7 @@ mingw* {
 
 CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
+CONFIG += scintilla
 
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
@@ -196,11 +197,6 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
-
-#Uncomment the following line to enable the QScintilla editor
-!nogui {
-  CONFIG += scintilla
-}
 
 # Make experimental features available
 experimental {
@@ -288,6 +284,8 @@ HEADERS += src/version_check.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
+           src/tabmanager.h \
+           src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
            src/Preferences.h \
@@ -299,6 +297,7 @@ HEADERS += src/version_check.h \
            src/GroupModule.h \
            src/FileModule.h \
            src/StatCache.h \
+           src/scadapi.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -499,6 +498,7 @@ SOURCES += \
            src/GroupModule.cc \
            src/FileModule.cc \
            src/StatCache.cc \
+           src/scadapi.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -528,6 +528,8 @@ SOURCES += \
            src/version.cc \
            src/openscad.cc \
            src/mainwin.cc \
+           src/tabmanager.cc \
+           src/tabwidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
@@ -728,6 +730,10 @@ colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
+templates.path = "$$PREFIX/share/$${FULLNAME}/templates/"
+templates.files = templates/*
+INSTALLS += templates
+
 applications.path = $$PREFIX/share/applications
 applications.extra = mkdir -p \"\$(INSTALL_ROOT)$${applications.path}\" && cat icons/openscad.desktop | sed -e \"'s/^Icon=openscad/Icon=$${FULLNAME}/; s/^Exec=openscad/Exec=$${FULLNAME}/'\" > \"\$(INSTALL_ROOT)$${applications.path}/$${FULLNAME}.desktop\"
 INSTALLS += applications
@@ -740,9 +746,11 @@ appdata.path = $$PREFIX/share/metainfo
 appdata.extra = mkdir -p \"\$(INSTALL_ROOT)$${appdata.path}\" && cat openscad.appdata.xml | sed -e \"'s/$${APPLICATIONID}/$${APPLICATIONID}$${SUFFIX}/; s/openscad.desktop/openscad$${SUFFIX}.desktop/; s/openscad.png/openscad$${SUFFIX}.png/'\" > \"\$(INSTALL_ROOT)$${appdata.path}/$${APPLICATIONID}$${SUFFIX}.appdata.xml\"
 INSTALLS += appdata
 
-icons.path = $$PREFIX/share/pixmaps
-icons.extra = test -f icons/$${FULLNAME}.png && cp -f icons/$${FULLNAME}.png \"\$(INSTALL_ROOT)$${icons.path}/\" || cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
-INSTALLS += icons
+icon48.path = $$PREFIX/share/icons/hicolor/48x48/apps
+icon48.extra = test -f icons/$${FULLNAME}-48.png && cp -f icons/$${FULLNAME}-48.png \"\$(INSTALL_ROOT)$${icon48.path}/$${FULLNAME}.png\" || cp -f icons/openscad-48.png \"\$(INSTALL_ROOT)$${icon48.path}/$${FULLNAME}.png\"
+icon256.path = $$PREFIX/share/icons/hicolor/256x256/apps
+icon256.extra = test -f icons/$${FULLNAME}-256.png && cp -f icons/$${FULLNAME}-256.png \"\$(INSTALL_ROOT)$${icon256.path}/$${FULLNAME}.png\" || cp -f icons/openscad-256.png \"\$(INSTALL_ROOT)$${icon256.path}/$${FULLNAME}.png\"
+INSTALLS += icon48 icon256
 
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"

@@ -73,13 +73,13 @@ void OpenSCADApp::requestOpenFile(const QString &filename)
 	for (auto win : this->windowManager.getWindows()) {
 		// if we have an empty open window, use that one
 		if (win->isEmpty()) {
-			win->openFile(filename);
+			win->tabManager->createTab(filename);
 			return;
 		}
 	}
 
 	// ..otherwise, create a new one
-	new MainWindow(filename);
+	new MainWindow(QStringList(filename));
 }
 
 void OpenSCADApp::showFontCacheDialog()

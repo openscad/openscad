@@ -228,7 +228,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION "")
+        set(EXPERIMENTAL_OPTION "--enable=function-literals")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -451,6 +451,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -459,6 +460,7 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/assert-expression-fail3-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/assert-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/echo-expression-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/expression-precedence-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
@@ -614,7 +616,9 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
 
 # No tests related to experimental features currently
-#experimental_tests()
+experimental_tests(echotest_allexpressions)
+experimental_tests(astdumptest_allexpressions)
+experimental_tests(echotest_function-literal-tests)
 
 # Test config handling
 
@@ -736,6 +740,11 @@ endforeach()
 # Workaround Gallium bugs
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
   message(STATUS "Workaround PPC bug https://bugs.freedesktop.org/show_bug.cgi?id=42540")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
+endif()
+if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips")
+  message(STATUS "Workaround MIPS bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=868745")
   set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
   set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
 endif()

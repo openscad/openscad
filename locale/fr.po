@@ -8,8 +8,9 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-17 10:19+0100\n"
-"PO-Revision-Date: 2019-05-13 15:42+0200\n"
-"Last-Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
+"PO-Revision-Date: 2019-09-17 \n"
+"Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
+"Last-Translator: Pierre ROUZEAU <github.com/PRouzeau>\n"
 "Language-Team: French\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -21,7 +22,7 @@ msgstr ""
 
 #: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
 msgid "About OpenSCAD"
-msgstr "À propos de OpenSCAD"
+msgstr "À propos d'OpenSCAD"
 
 #: objects/ui_AboutDialog.h:102 objects/ui_launchingscreen.h:306
 msgid ""
@@ -42,7 +43,7 @@ msgstr ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Le modeleur CAD 3D des programmeurs</p>\n"
+"2em;\">Le modeleur CAO 3D des programmeurs</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -62,11 +63,11 @@ msgstr "Préférences"
 #: objects/ui_AxisConfigWidget.h:850 objects/ui_AxisConfigWidget.h:852
 #: objects/ui_AxisConfigWidget.h:863
 msgid "Trim"
-msgstr ""
+msgstr "'Trim'(Rognage)"
 
 #: objects/ui_AxisConfigWidget.h:837
 msgid "Reset Trim"
-msgstr ""
+msgstr "Réinitialise le \"Trim\""
 
 #: objects/ui_AxisConfigWidget.h:838 objects/ui_AxisConfigWidget.h:841
 #: objects/ui_AxisConfigWidget.h:842 objects/ui_AxisConfigWidget.h:843
@@ -78,7 +79,7 @@ msgstr "Zone morte"
 
 #: objects/ui_AxisConfigWidget.h:839
 msgid "Auto Trim Axes"
-msgstr ""
+msgstr "Ajuste automatiquement les axes"
 
 #: objects/ui_AxisConfigWidget.h:853
 msgid "Axis 2"
@@ -154,7 +155,7 @@ msgstr "Rotation<br/>relative à la vue"
 
 #: objects/ui_AxisConfigWidget.h:873
 msgid "Axis Setup:"
-msgstr "Paramètres des axes :"
+msgstr "Paramètres des axes:"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
@@ -182,7 +183,7 @@ msgstr "DBus"
 
 #: objects/ui_AxisConfigWidget.h:880
 msgid "Axes Mapping:"
-msgstr "Association des axes :"
+msgstr "Association des axes:"
 
 #: objects/ui_ButtonConfigWidget.h:267
 msgid "Button 2"
@@ -293,8 +294,8 @@ msgid ""
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
 "Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>Cette liste affiche les polices présentement chargées "
-"avec OpenSCAD</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"<html><head/><body><p>Cette liste affiche les polices actuellement déclarées "
+"dans OpenSCAD</p><p>Exemple:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
 "indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
 "text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
@@ -313,7 +314,7 @@ msgstr "Nouveau"
 
 #: objects/ui_launchingscreen.h:297
 msgid "Open"
-msgstr "Ouvrir..."
+msgstr "Ouvrir"
 
 #: objects/ui_launchingscreen.h:298
 msgid "Help"
@@ -333,7 +334,7 @@ msgstr "Exemples"
 
 #: objects/ui_launchingscreen.h:304
 msgid "Open Example"
-msgstr "&Ouvrir un example"
+msgstr "&Ouvrir un exemple"
 
 #: objects/ui_launchingscreen.h:313
 msgid "Don't show again"
@@ -478,7 +479,7 @@ msgstr "Ctrl+Maj+C"
 #: objects/ui_MainWindow.h:958
 #, fuzzy
 msgid "Copy viewport transl&ation"
-msgstr "C&oller la translation de la fenêtre de rendu"
+msgstr "Copie la translation de la fenêtre de rendu"
 
 #: objects/ui_MainWindow.h:960
 msgid "Ctrl+T"
@@ -487,12 +488,12 @@ msgstr "Ctrl+T"
 #: objects/ui_MainWindow.h:962
 #, fuzzy
 msgid "Cop&y viewport rotation"
-msgstr "&Coller la rotation de la fenêtre de rendu"
+msgstr "Copie la rotation de la fenêtre de rendu"
 
 #: objects/ui_MainWindow.h:963
 #, fuzzy
 msgid "Copy vie&wport distance"
-msgstr "Coller dans le presse-papier"
+msgstr "Copie la distance de la fenêtre de rendu"
 
 #: objects/ui_MainWindow.h:964
 msgid "Increase Font &Size"
@@ -540,7 +541,7 @@ msgstr "F6"
 
 #: objects/ui_MainWindow.h:985
 msgid "&3D Print"
-msgstr ""
+msgstr "Impression &3D"
 
 #: objects/ui_MainWindow.h:987
 msgid "F8"
@@ -608,7 +609,7 @@ msgstr "F12"
 
 #: objects/ui_MainWindow.h:1014
 msgid "Show Edges"
-msgstr "Afficher les Arêtes"
+msgstr "Afficher les arêtes"
 
 #: objects/ui_MainWindow.h:1016
 msgid "Ctrl+1"
@@ -616,7 +617,7 @@ msgstr "Ctrl+1"
 
 #: objects/ui_MainWindow.h:1018
 msgid "Show Axes"
-msgstr "Afficher les Axes"
+msgstr "Afficher les axes"
 
 #: objects/ui_MainWindow.h:1020
 msgid "Ctrl+2"
@@ -624,7 +625,7 @@ msgstr "Ctrl+2"
 
 #: objects/ui_MainWindow.h:1022
 msgid "Show Crosshairs"
-msgstr "Afficher la Mire"
+msgstr "Afficher la mire"
 
 #: objects/ui_MainWindow.h:1024
 msgid "Ctrl+3"
@@ -640,7 +641,7 @@ msgstr "Animer"
 
 #: objects/ui_MainWindow.h:1028
 msgid "&Top"
-msgstr "&Haut"
+msgstr "&Vue de dessus"
 
 #: objects/ui_MainWindow.h:1030
 msgid "Ctrl+4"
@@ -648,7 +649,7 @@ msgstr "Ctrl+4"
 
 #: objects/ui_MainWindow.h:1032
 msgid "&Bottom"
-msgstr "&Dessous"
+msgstr "Vue de dessous"
 
 #: objects/ui_MainWindow.h:1034
 msgid "Ctrl+5"
@@ -656,7 +657,7 @@ msgstr "Ctrl+5"
 
 #: objects/ui_MainWindow.h:1036
 msgid "&Left"
-msgstr "&Gauche"
+msgstr "Vue de gauche"
 
 #: objects/ui_MainWindow.h:1038
 msgid "Ctrl+6"
@@ -664,7 +665,7 @@ msgstr "Ctrl+6"
 
 #: objects/ui_MainWindow.h:1040
 msgid "&Right"
-msgstr "&Droite"
+msgstr "Vue de droite"
 
 #: objects/ui_MainWindow.h:1042
 msgid "Ctrl+7"
@@ -672,7 +673,7 @@ msgstr "Ctrl+7"
 
 #: objects/ui_MainWindow.h:1044
 msgid "&Front"
-msgstr "&Face"
+msgstr "Vue de face"
 
 #: objects/ui_MainWindow.h:1046
 msgid "Ctrl+8"
@@ -680,7 +681,7 @@ msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:1048
 msgid "Bac&k"
-msgstr "&Arrière"
+msgstr "Vue de dos"
 
 #: objects/ui_MainWindow.h:1050
 msgid "Ctrl+9"
@@ -700,11 +701,11 @@ msgstr "Ce&ntre"
 
 #: objects/ui_MainWindow.h:1057
 msgid "&Perspective"
-msgstr "&Perspective"
+msgstr "&Perspective normale"
 
 #: objects/ui_MainWindow.h:1058
 msgid "&Orthogonal"
-msgstr "&Orthogonale"
+msgstr "&Perspective cavalière"
 
 #: objects/ui_MainWindow.h:1059
 msgid "H&ide console"
@@ -788,7 +789,7 @@ msgstr "Page d'accueil &OpenSCAD"
 
 #: objects/ui_MainWindow.h:1091
 msgid "&Automatic Reload and Preview"
-msgstr "Rechargement et Aperçu &Automatique"
+msgstr "Rechargement et aperçu &Automatique"
 
 #: objects/ui_MainWindow.h:1092
 msgid "Export as &Image..."
@@ -828,7 +829,7 @@ msgstr "Exporter comme &3MF..."
 
 #: objects/ui_MainWindow.h:1101
 msgid "Zoom In"
-msgstr "Zoom Avant"
+msgstr "Zoom avant"
 
 #: objects/ui_MainWindow.h:1103
 msgid "Ctrl+]"
@@ -836,7 +837,7 @@ msgstr "Ctrl+]"
 
 #: objects/ui_MainWindow.h:1105
 msgid "Zoom Out"
-msgstr "Zoom Arrière"
+msgstr "Zoom arrière"
 
 #: objects/ui_MainWindow.h:1107
 msgid "Ctrl+["
@@ -868,11 +869,11 @@ msgstr "Ctrl+Maj+I"
 
 #: objects/ui_MainWindow.h:1119
 msgid "&Cheat Sheet"
-msgstr "&Aide-Mémoire"
+msgstr "&Aide-mémoire"
 
 #: objects/ui_MainWindow.h:1120
 msgid "Hide Customizer"
-msgstr "Cacher le panneau de personnalisation"
+msgstr "Cacher panneau de personnalisation"
 
 #: objects/ui_MainWindow.h:1121
 msgid "Message"
@@ -892,7 +893,7 @@ msgstr "Étapes:"
 
 #: objects/ui_MainWindow.h:1127
 msgid "Dump Pictures"
-msgstr "Export des images"
+msgstr "Exporter images"
 
 #: objects/ui_MainWindow.h:1128
 msgid "&File"
@@ -952,7 +953,7 @@ msgstr "Terminer"
 
 #: objects/ui_MainWindow.h:1143
 msgid "Replacement string"
-msgstr "Remplacer une chaîne de caractères"
+msgstr "Chaîne de remplacement"
 
 #: objects/ui_MainWindow.h:1145
 msgid "All"
@@ -1016,11 +1017,11 @@ msgstr "Description"
 
 #: objects/ui_ParameterWidget.h:161
 msgid "save preset"
-msgstr "Enregistrer le jeu de paramètres"
+msgstr "Enregistrer jeu param."
 
 #: objects/ui_ParameterWidget.h:163
 msgid "delete current preset"
-msgstr "Supprimer le jeu de paramètres courant"
+msgstr "Supprimer jeu de paramètres courant"
 
 #: objects/ui_ParameterWidget.h:165
 msgid "-"
@@ -1048,7 +1049,7 @@ msgstr "Afficher les détails"
 
 #: objects/ui_ParameterWidget.h:176
 msgid "Inline Details"
-msgstr "Détails sur une ligne"
+msgstr "Détails sur la même ligne"
 
 #: objects/ui_ParameterWidget.h:177
 msgid "Hide Details"
@@ -1061,7 +1062,7 @@ msgstr "Description seulement"
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
 msgstr ""
-"Réinitialiser les paramètre aux valeurs par défaut du jeu de paramètres "
+"Réinitialiser paramètres aux valeurs initiales du jeu sélectionné "
 "courant"
 
 #: objects/ui_ParameterWidget.h:183
@@ -1147,7 +1148,7 @@ msgstr "Police"
 
 #: objects/ui_Preferences.h:1464
 msgid "Color syntax highlighting"
-msgstr "Colorer la coloration syntaxique"
+msgstr "Utiliser la coloration syntaxique"
 
 #: objects/ui_Preferences.h:1465
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
@@ -1317,35 +1318,35 @@ msgstr "Dernière vérification: "
 
 #: objects/ui_Preferences.h:1520 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
-msgstr ""
+msgstr "OctoPrint"
 
 #: objects/ui_Preferences.h:1521
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: objects/ui_Preferences.h:1522
 msgid "API Key"
-msgstr ""
+msgstr "Clé API"
 
 #: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1524
 msgid "Load"
-msgstr ""
+msgstr "Charge"
 
 #: objects/ui_Preferences.h:1526
 msgid "Check"
-msgstr ""
+msgstr "Vérifie"
 
 #: objects/ui_Preferences.h:1527
 msgid "Slicing Profile"
-msgstr ""
+msgstr "Profil de tranchage"
 
 #: objects/ui_Preferences.h:1528
 msgid "Slicing Engine"
-msgstr ""
+msgstr "Trancheur"
 
 #: objects/ui_Preferences.h:1529
 msgid "File Format"
-msgstr ""
+msgstr "Format de fichier"
 
 #: objects/ui_Preferences.h:1530
 msgid "Action"
@@ -1353,11 +1354,11 @@ msgstr "Action"
 
 #: objects/ui_Preferences.h:1531
 msgid "Show"
-msgstr ""
+msgstr "Montre"
 
 #: objects/ui_Preferences.h:1532
 msgid "Note: The API key is stored unencrypted in the application settings."
-msgstr ""
+msgstr "Note: La clé API n'est pas encryptée dans l'enregistrement des préférences"
 
 #: objects/ui_Preferences.h:1533
 msgid "OpenCSG"
@@ -1365,7 +1366,7 @@ msgstr "OpenCSG"
 
 #: objects/ui_Preferences.h:1534
 msgid "Show capability warning"
-msgstr "Afficher les avertissements de capacité"
+msgstr "Afficher les avertissements de fonctionnalité"
 
 #: objects/ui_Preferences.h:1535
 msgid "Enable for OpenGL 1.x"
@@ -1413,8 +1414,7 @@ msgstr "Activer l'ancrage de l'Éditeur et de la Console à différents endroits
 
 #: objects/ui_Preferences.h:1547
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr ""
-"Activer désancrage de l'Éditeur et de la Console dans des fenêtres séparés"
+msgstr "Activer désancrage de l'Éditeur et de la Console dans des fenêtres séparés"
 
 #: objects/ui_Preferences.h:1548
 msgid "Show Welcome Screen"
@@ -1428,7 +1428,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1550
 msgid "Bring window to front after automatic reload"
-msgstr ""
+msgstr "Afficher la fenêtre en premier plan après un rechargement automatique"
 
 #: objects/ui_Preferences.h:1551
 msgid "Play sound notification on render complete"
@@ -1436,19 +1436,20 @@ msgstr "Jouer un son de notification lorsque le rendu est terminé"
 
 #: objects/ui_Preferences.h:1552
 msgid "OpenSCAD Language Features"
-msgstr ""
+msgstr "Fonctionnalités du langage OpenSCAD"
 
 #: objects/ui_Preferences.h:1553
 msgid "Warn when there is a parameter mismatch in user module calls"
-msgstr ""
+msgstr "Alerter lorsqu'il y des paramètres incompatibles dans les appels de "
+"modules utilisateurs"
 
 #: objects/ui_Preferences.h:1554
 msgid "Stop on the first warning"
-msgstr ""
+msgstr "Arrêter après la première alerte"
 
 #: objects/ui_Preferences.h:1555
 msgid "check the parameter range for builtin modules"
-msgstr ""
+msgstr "Vérifier la plage de paramètre(s) pour les modules incorporés"
 
 #: objects/ui_PrintInitDialog.h:111
 msgid "Cancel"
@@ -1456,7 +1457,7 @@ msgstr "Annuler"
 
 #: objects/ui_PrintInitDialog.h:113
 msgid "%1"
-msgstr ""
+msgstr "%1"
 
 #: objects/ui_ProgressWidget.h:70
 msgid "%v / %m"
@@ -1464,7 +1465,7 @@ msgstr "%v / %m"
 
 #: src/Network.h:116
 msgid "Timeout error"
-msgstr ""
+msgstr "Dépassement du temps alloué"
 
 #: src/Camera.cc:125
 #, c-format
@@ -1482,12 +1483,12 @@ msgstr "Enregistrer le contenu de la console"
 #: src/export.cc:77
 #, c-format
 msgid "Can't open file \"%s\" for export"
-msgstr ""
+msgstr "Ne peut pas ouvrir le fichier \"%s\" pour exportation"
 
 #: src/export.cc:92
 #, c-format
 msgid "ERROR: \"%s\" write error. (Disk full?)"
-msgstr ""
+msgstr "ERREUR: \"%s\" erreur d'écriture. (Disque plein?)"
 
 #: src/mainwin.cc:915 src/mainwin.cc:1601
 msgid "Untitled.scad"
@@ -1509,20 +1510,20 @@ msgstr[1] "La compilation a généré %1 avertissements."
 
 #: src/mainwin.cc:1186
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr " Pour détails voir <a href=\"#console\">Fenêtre de la Console</a>."
+msgstr " Pour les détails voir <a href=\"#console\">fenêtre de la Console</a>."
 
 #: src/mainwin.cc:1579
 msgid "Failed to open file for writing"
-msgstr ""
+msgstr "Échec d'ouverture de fichier en écriture"
 
 #: src/mainwin.cc:1589
 #, c-format
 msgid "Saved design '%s'."
-msgstr ""
+msgstr "Conception '%s' enregistrée."
 
 #: src/mainwin.cc:1592
 msgid "Error saving design"
-msgstr ""
+msgstr "Erreur lors de l'enregistrement de la conception"
 
 #: src/mainwin.cc:1600
 msgid "Save File"
@@ -1530,7 +1531,7 @@ msgstr "Enregistrer le Fichier"
 
 #: src/mainwin.cc:1602
 msgid "OpenSCAD Designs (*.scad)"
-msgstr "OpenSCAD Designs (*.scad)"
+msgstr "Conceptions OpenSCAD (*.scad)"
 
 #: src/mainwin.cc:1612
 msgid ""
@@ -1554,15 +1555,15 @@ msgstr ""
 
 #: src/mainwin.cc:2217
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr ""
+msgstr "L'export de la conception dépasse la limite de téléversement de (%1 Mo)."
 
 #: src/mainwin.cc:2218
 msgid "Upload Error"
-msgstr ""
+msgstr "Erreur de téléversement"
 
 #: src/mainwin.cc:2530
 msgid "Export %1 File"
-msgstr "Exporter %1 Fichier"
+msgstr "Exporter le fichier %1"
 
 #: src/mainwin.cc:2531
 msgid "%1 Files (*%2)"
@@ -1622,6 +1623,8 @@ msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
+"Erreur critique. L'application peut être devenue instable:\n"
+"%1"
 
 #: src/OpenSCADApp.cc:88
 msgid ""
@@ -1638,7 +1641,7 @@ msgstr ""
 
 #: src/Preferences.cc:694
 msgid "Success: Server Version = %2, API Version = %1"
-msgstr ""
+msgstr "Succès: Version serveur = %2, Version API = %1"
 
 #: src/Preferences.cc:696 src/Preferences.cc:720 src/Preferences.cc:756
 msgid "Error"
@@ -1646,7 +1649,7 @@ msgstr "Erreur"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
-msgstr ""
+msgstr "Service d'impression non disponible"
 
 #: src/QGLView.cc:150
 msgid ""
@@ -1662,8 +1665,8 @@ msgid ""
 "disabled.\n"
 "\n"
 msgstr ""
-"Avertissement: Capacités OpenGL manquantes pour OpenCSG - OpenCSG a été "
-"désactivé.\n"
+"Avertissement: Fonctionnalités OpenGL manquantes pour OpenCSG - OpenCSG a "
+"été désactivé.\n"
 "\n"
 
 #: src/QGLView.cc:156
@@ -1672,7 +1675,7 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"Il est hautement recommandé d'utiliser OpenSCAD sur un système compatible "
+"Il est vivement recommandé d'utiliser OpenSCAD sur un système compatible "
 "OpenGL 2.0 ou ultérieur.\n"
 "Voici les informations de votre moteur de rendu:\n"
 
@@ -1698,7 +1701,7 @@ msgstr "Axe %d (inversé)"
 
 #: src/settings.cc:90
 msgid "Toggle Perspective"
-msgstr "Changer la perspective"
+msgstr "Basculer la perspective"
 
 #: src/settings.cc:172
 msgid "After indentation"
@@ -1706,52 +1709,55 @@ msgstr "Après indentation"
 
 #: src/settings.cc:185
 msgid "Upload only"
-msgstr ""
+msgstr "Téléversement seul"
 
 #: src/settings.cc:185
 msgid "Upload & Slice"
-msgstr ""
+msgstr "Téleverse et tranche"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Select for printing"
-msgstr ""
+msgstr "Téléverse, tranche et sélectionne pour l'impression"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Start printing"
-msgstr ""
+msgstr "Télméverse, tranche et démarre l'impression"
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:237
 msgid "changes on current preset not saved"
-msgstr ""
+msgstr "changements du jeu de paramètres courant non enregistrés"
 
 #: src/parameter/ParameterWidget.cc:81
 msgid ""
 "The changes on the current preset %1 are not saved yet. Do you really want "
 "to reset this preset and lose your changes?"
 msgstr ""
-
+"Les changements du jeu de paramètre %1 ne sont pas enregistrés. Voulez "
+"vous vraiment réinitialiser ce jeu de paramètres et perdre vos changements"
 #: src/parameter/ParameterWidget.cc:164
 msgid "remove current preset"
-msgstr ""
+msgstr "supprimer le jeu de paramètres courant"
 
 #: src/parameter/ParameterWidget.cc:166
 msgid "save current preset"
-msgstr ""
+msgstr "enregistrer le jeu de paramètres courant"
 
 #: src/parameter/ParameterWidget.cc:168 src/parameter/ParameterWidget.cc:169
 #: src/parameter/ParameterWidget.cc:170
 msgid "JSON file read only"
-msgstr ""
+msgstr "fichier JSON en lecture seule"
 
 #: src/parameter/ParameterWidget.cc:221
 msgid "design default values"
-msgstr ""
+msgstr "valeurs de conception par défaut"
 
 #: src/parameter/ParameterWidget.cc:239
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
 msgstr ""
+"Le jeu de paramètres courant %1 a été modifié, mais pas enregistré. "
+"Voulez-vous réellement modifier les paramètres et perdre vos changements?"
 
 #: src/parameter/ParameterWidget.cc:279
 msgid "Do you want to delete the current preset?"
@@ -1785,38 +1791,47 @@ msgstr "Sauvegarde des jeux de paramètres"
 
 #: src/parameter/ParameterWidget.cc:573
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr ""
+msgstr "%1 existe mais est illisible. Voulez-vous écraser %1?"
 
 #: src/input/AxisConfigWidget.h:91
 msgid ""
 "This driver was not enabled during build time and is thus not available."
 msgstr ""
+"Ce pilote n'était pas activé lors de la compilation et n'est pas disponible."
 
 #: src/input/AxisConfigWidget.h:93
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
 msgstr ""
+"Le pilote DBUS n'est pas pour des appareils mais pour un contrôle distant, "
+"Linux uniquement."
 
 #: src/input/AxisConfigWidget.h:94
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
 msgstr ""
+"Le pilote HIDAPI communique directement avec la souris 3D, Windows et macOS."
 
 #: src/input/AxisConfigWidget.h:95
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
+"Le pilote SpaceNav permet l'usage d'équipement de saisie 3D avec le démon spacenavd, "
+"Linux seulement."
 
 #: src/input/AxisConfigWidget.h:96
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
 msgstr ""
+"Le pilote de Joystick utilise le 'device' Linux (imposé comme /dev/input/"
+"js0), Linux seulement."
 
 #: src/input/AxisConfigWidget.h:97
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
 msgstr ""
+"Le pilote QGAMEPAD est prévu pour le support des plateformes multiples Gamepad."
 
 #: src/input/ButtonConfigWidget.cc:186
 msgid "(not supported)"
@@ -1845,7 +1860,7 @@ msgstr "Ancien"
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in:6
 msgid "The Programmers Solid 3D CAD Modeller"
-msgstr "Le modeleur CAD 3D des programmeurs"
+msgstr "Le modeleur CAO 3D des programmeurs"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:20
@@ -1875,12 +1890,12 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD n'est pas un modeleur interactif. Au contraire, il s'agit d'une "
-"sorte de compilateur 3D, qui lit un script qui décrit l'objet à modéliser et "
+"OpenSCAD n'est pas un modeleur interactif. Au contraire, il s'agit d'un genre "
+"de compilateur 3D, qui lit un script décrivant l'objet à modéliser et qui "
 "construit un modèle 3D à partir de ce script. Cela vous donne (en tant que "
 "concepteur) un contrôle total du processus de modélisation et vous permet de "
-"changer facilement n'importe quelle étape de la modélisation ou de produire "
-"des conceptions qui sont défini selon des paramètres éditables."
+"modifier facilement n'importe quelle étape de la modélisation ou de produire "
+"des conceptions qui sont définies selon des paramètres éditables."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:22
@@ -1892,6 +1907,13 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+"OpenSCAD permet deux techniques principales de modélisation: D'abord il y a la "
+"construction de solides géométriques \"constructive solid geometry\" (CSG) "
+"et ensuite l'extrusion des schémas 2D. "
+"Le format d'échange de ces schémas 2D est le format de fichier Autocad DXF. En "
+"complément aux schémas 2D pour l'extrusion il est aussi possible de lire les "
+"paramètres des fichiers DXF. En sus des fichiers DXF, OpenSCAD peut lire et "
+"créer des modèles 3D aux formats STL et OFF."
 
 #~ msgid "Untitled.csg"
 #~ msgstr "SansTitre.csg"
@@ -1934,13 +1956,13 @@ msgstr ""
 #~ "\n"
 
 #~ msgid "Paste font selector to Editor Window"
-#~ msgstr "Coller le sélecteur de polices dans l'éditeur de fenêtres"
+#~ msgstr "Coller le sélecteur de polices dans la fenêtre d'édition"
 
 #~ msgid "About OpenSCAD "
-#~ msgstr "À propos de OpenSCAD"
+#~ msgstr "À propos d'OpenSCAD "
 
 #~ msgid "Check for Update.."
-#~ msgstr "Vérifier les mises à jours"
+#~ msgstr "Vérifier les mises à jour.."
 
 #~ msgid "OpenGL Info"
 #~ msgstr "Information OpenGL"

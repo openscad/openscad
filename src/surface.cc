@@ -54,7 +54,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
 typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
@@ -80,32 +80,32 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new SurfaceNode(inst);
 
 	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
 	AssignmentList optargs{Assignment("center"),Assignment("invert")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
 
-	auto fileval = c.lookup_variable("file");
-	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c.documentPath());
+	auto fileval = c->lookup_variable("file");
+	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c->documentPath());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 
-	auto center = c.lookup_variable("center", true);
+	auto center = c->lookup_variable("center", true);
 	if (center->type() == Value::ValueType::BOOL) {
 		node->center = center->toBool();
 	}
 
-	auto convexity = c.lookup_variable("convexity", true);
+	auto convexity = c->lookup_variable("convexity", true);
 	if (convexity->type() == Value::ValueType::NUMBER) {
 		node->convexity = static_cast<int>(convexity->toDouble());
 	}
 
-	auto invert = c.lookup_variable("invert", true);
+	auto invert = c->lookup_variable("invert", true);
 	if (invert->type() == Value::ValueType::BOOL) {
 		node->invert = invert->toBool();
 	}
@@ -325,5 +325,8 @@ std::string SurfaceNode::toString() const
 
 void register_builtin_surface()
 {
-	Builtins::init("surface", new SurfaceModule());
+	Builtins::init("surface", new SurfaceModule(),
+				{
+					"surface(string, center = false, invert = false, number)",
+				});
 }

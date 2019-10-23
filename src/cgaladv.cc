@@ -40,10 +40,10 @@ class CgaladvModule : public AbstractModule
 public:
 	CgaladvType type;
 	CgaladvModule(CgaladvType type) : type(type) { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new CgaladvNode(inst, type);
 
@@ -55,19 +55,19 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	if (type == CgaladvType::RESIZE)
 		args += Assignment("newsize"), Assignment("auto");
 
-	Context c(ctx);
-	c.setVariables(evalctx, args);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
 
 	auto convexity = ValuePtr::undefined;
 	auto path = ValuePtr::undefined;
 	
 	if (type == CgaladvType::MINKOWSKI) {
-		convexity = c.lookup_variable("convexity", true);
+		convexity = c->lookup_variable("convexity", true);
 	}
 
 	if (type == CgaladvType::RESIZE) {
-		auto ns = c.lookup_variable("newsize");
+		auto ns = c->lookup_variable("newsize");
 		node->newsize << 0,0,0;
 		if ( ns->type() == Value::ValueType::VECTOR ) {
 			const Value::VectorType &vs = ns->toVector();
@@ -75,7 +75,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1]->toDouble();
 			if ( vs.size() >= 3 ) node->newsize[2] = vs[2]->toDouble();
 		}
-		auto autosize = c.lookup_variable("auto");
+		auto autosize = c->lookup_variable("auto");
 		node->autosize << false, false, false;
 		if ( autosize->type() == Value::ValueType::VECTOR ) {
 			const Value::VectorType &va = autosize->toVector();
@@ -143,7 +143,20 @@ std::string CgaladvNode::toString() const
 
 void register_builtin_cgaladv()
 {
-	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI));
-	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL));
-	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE));
+	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI),
+				{
+					"minkowski()",
+				});
+
+	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL),
+				{
+					"hull()",
+				});
+
+	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE),
+				{
+					"resize([x, y, z])",
+					"resize([x, y, z], boolean)",
+					"resize([x, y, z], [boolean, boolean, boolean])",
+				});
 }

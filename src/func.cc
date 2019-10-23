@@ -68,15 +68,15 @@ int process_id = getpid();
 boost::mt19937 deterministic_rng;
 boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
 
-static void print_argCnt_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
+static void print_argCnt_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){
 	PRINTB("WARNING: %s() number of parameters does not match, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
 }
 
-static void print_argConvert_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
+static void print_argConvert_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){
 	PRINTB("WARNING: %s() parameter could not be converted, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
 }
 
-ValuePtr builtin_abs(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_abs(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -92,7 +92,7 @@ ValuePtr builtin_abs(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sign(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_sign(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -108,7 +108,7 @@ ValuePtr builtin_sign(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_rands(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	size_t n = evalctx->numArgs();
 	if (n == 3 || n == 4) {
@@ -172,7 +172,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_min(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_min(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	// preserve special handling of the first argument
 	// as a template for vector processing
@@ -209,7 +209,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_max(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_max(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	// preserve special handling of the first argument
 	// as a template for vector processing
@@ -245,7 +245,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sin(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_sin(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -261,7 +261,7 @@ ValuePtr builtin_sin(const Context *ctx, const EvalContext *evalctx)
 }
 
 
-ValuePtr builtin_cos(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_cos(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -276,7 +276,7 @@ ValuePtr builtin_cos(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_asin(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_asin(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -291,7 +291,7 @@ ValuePtr builtin_asin(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_acos(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_acos(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -306,7 +306,7 @@ ValuePtr builtin_acos(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_tan(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_tan(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -321,7 +321,7 @@ ValuePtr builtin_tan(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_atan(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_atan(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -336,7 +336,7 @@ ValuePtr builtin_atan(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_atan2(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_atan2(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
@@ -351,7 +351,7 @@ ValuePtr builtin_atan2(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_pow(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_pow(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 2) {
 		ValuePtr v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
@@ -366,7 +366,7 @@ ValuePtr builtin_pow(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_round(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_round(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -381,7 +381,7 @@ ValuePtr builtin_round(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_ceil(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_ceil(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -396,7 +396,7 @@ ValuePtr builtin_ceil(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_floor(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_floor(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -411,7 +411,7 @@ ValuePtr builtin_floor(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_sqrt(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_sqrt(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -426,7 +426,7 @@ ValuePtr builtin_sqrt(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_exp(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_exp(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -441,7 +441,7 @@ ValuePtr builtin_exp(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_length(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_length(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -458,7 +458,7 @@ ValuePtr builtin_length(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_log(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_log(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	size_t n = evalctx->numArgs();
 	if (n == 1 || n == 2) {
@@ -481,7 +481,7 @@ quit:
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_ln(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_ln(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -496,7 +496,7 @@ ValuePtr builtin_ln(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_str(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_str(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::ostringstream stream;
 
@@ -506,7 +506,7 @@ ValuePtr builtin_str(const Context *, const EvalContext *evalctx)
 	return ValuePtr(stream.str());
 }
 
-ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_chr(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::ostringstream stream;
 	
@@ -517,7 +517,7 @@ ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 	return ValuePtr(stream.str());
 }
 
-ValuePtr builtin_ord(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	const size_t numArgs = evalctx->numArgs();
 
@@ -549,7 +549,7 @@ ValuePtr builtin_ord(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr((double)ch);
 }
 
-ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_concat(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
 {
 	Value::VectorType result;
 
@@ -566,7 +566,7 @@ ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_lookup(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
 	if (evalctx->numArgs() != 2){ // Needs two args
@@ -658,7 +658,7 @@ ValuePtr builtin_lookup(const Context *ctx, const EvalContext *evalctx)
 
 static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
 																unsigned int num_returns_per_match,
-																const Location &, const Context *)
+																const Location &)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
@@ -695,7 +695,7 @@ static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wra
 }
 
 static Value::VectorType search(const str_utf8_wrapper &find, const Value::VectorType &table,
-																unsigned int num_returns_per_match, unsigned int index_col_num, const Location &loc, const Context *ctx)
+																unsigned int num_returns_per_match, unsigned int index_col_num, const Location &loc, const std::shared_ptr<Context> ctx)
 {
 	Value::VectorType returnvec;
 	//Unicode glyph count for the length
@@ -737,7 +737,7 @@ static Value::VectorType search(const str_utf8_wrapper &find, const Value::Vecto
 	return returnvec;
 }
 
-ValuePtr builtin_search(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() < 2){
 		print_argCnt_warning("search", ctx, evalctx);
@@ -767,7 +767,7 @@ ValuePtr builtin_search(const Context *ctx, const EvalContext *evalctx)
 		}
 	} else if (findThis->type() == Value::ValueType::STRING) {
 		if (searchTable->type() == Value::ValueType::STRING) {
-			returnvec = search(findThis->toString(), searchTable->toString(), num_returns_per_match, evalctx->loc, ctx);
+			returnvec = search(findThis->toString(), searchTable->toString(), num_returns_per_match, evalctx->loc);
 		}
 		else {
 			returnvec = search(findThis->toString(), searchTable->toVector(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
@@ -813,9 +813,8 @@ ValuePtr builtin_search(const Context *ctx, const EvalContext *evalctx)
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-ValuePtr builtin_version(const Context *, const EvalContext *evalctx)
+ValuePtr builtin_version(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext>)
 {
-	(void)evalctx; // unusued parameter
 	Value::VectorType val;
 	val.push_back(double(OPENSCAD_YEAR));
 	val.push_back(double(OPENSCAD_MONTH));
@@ -825,7 +824,7 @@ ValuePtr builtin_version(const Context *, const EvalContext *evalctx)
 	return ValuePtr(val);
 }
 
-ValuePtr builtin_version_num(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_version_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	ValuePtr val = (evalctx->numArgs() == 0) ? builtin_version(ctx, evalctx) : evalctx->getArgValue(0);
 	double y, m, d;
@@ -835,7 +834,7 @@ ValuePtr builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr(y * 10000 + m * 100 + d);
 }
 
-ValuePtr builtin_parent_module(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_parent_module(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	int n;
 	double d;
@@ -862,7 +861,7 @@ ValuePtr builtin_parent_module(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr(UserModule::stack_element(s - 1 - n));
 }
 
-ValuePtr builtin_norm(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_norm(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		 ValuePtr val = evalctx->getArgValue(0);
@@ -887,7 +886,7 @@ ValuePtr builtin_norm(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_cross(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	auto loc = evalctx->loc;
 	if (evalctx->numArgs() != 2) {
@@ -940,7 +939,7 @@ ValuePtr builtin_cross(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr(result);
 }
 
-ValuePtr builtin_is_undef(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->getArgs()[0];
@@ -958,7 +957,7 @@ ValuePtr builtin_is_undef(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_is_list(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_is_list(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -973,7 +972,7 @@ ValuePtr builtin_is_list(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_is_num(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_is_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -988,7 +987,7 @@ ValuePtr builtin_is_num(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_is_bool(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_is_bool(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -1003,7 +1002,7 @@ ValuePtr builtin_is_bool(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_is_string(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		ValuePtr v = evalctx->getArgValue(0);
@@ -1018,43 +1017,212 @@ ValuePtr builtin_is_string(const Context *ctx, const EvalContext *evalctx)
 	return ValuePtr::undefined;
 }
 
+ValuePtr builtin_is_function(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		const ValuePtr v = evalctx->getArgValue(0);
+		return ValuePtr(v->type() == Value::ValueType::FUNCTION);
+	} else {
+		print_argCnt_warning("is_function", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
 void register_builtin_functions()
 {
-	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
-	Builtins::init("sign", new BuiltinFunction(&builtin_sign));
-	Builtins::init("rands", new BuiltinFunction(&builtin_rands));
-	Builtins::init("min", new BuiltinFunction(&builtin_min));
-	Builtins::init("max", new BuiltinFunction(&builtin_max));
-	Builtins::init("sin", new BuiltinFunction(&builtin_sin));
-	Builtins::init("cos", new BuiltinFunction(&builtin_cos));
-	Builtins::init("asin", new BuiltinFunction(&builtin_asin));
-	Builtins::init("acos", new BuiltinFunction(&builtin_acos));
-	Builtins::init("tan", new BuiltinFunction(&builtin_tan));
-	Builtins::init("atan", new BuiltinFunction(&builtin_atan));
-	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2));
-	Builtins::init("round", new BuiltinFunction(&builtin_round));
-	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil));
-	Builtins::init("floor", new BuiltinFunction(&builtin_floor));
-	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
-	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
-	Builtins::init("exp", new BuiltinFunction(&builtin_exp));
-	Builtins::init("len", new BuiltinFunction(&builtin_length));
-	Builtins::init("log", new BuiltinFunction(&builtin_log));
-	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
-	Builtins::init("str", new BuiltinFunction(&builtin_str));
-	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
-	Builtins::init("ord", new BuiltinFunction(&builtin_ord));
-	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
-	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
-	Builtins::init("search", new BuiltinFunction(&builtin_search));
-	Builtins::init("version", new BuiltinFunction(&builtin_version));
-	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
-	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
-	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
-	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
-	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef));
-	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list));
-	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num));
-	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool));
-	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string));
+	Builtins::init("abs", new BuiltinFunction(&builtin_abs),
+				{
+					"abs(number) -> number",
+				});
+
+	Builtins::init("sign", new BuiltinFunction(&builtin_sign),
+				{
+					"sign(number) -> -1, 0 or 1",
+				});
+
+	Builtins::init("rands", new BuiltinFunction(&builtin_rands),
+				{
+					"rands(min, max, num_results) -> vector",
+					"rands(min, max, num_results, seed) -> vector",
+				});
+
+	Builtins::init("min", new BuiltinFunction(&builtin_min),
+				{
+					"min(number, number, ...) -> number",
+					"min(vector) -> number",
+				});
+
+	Builtins::init("max", new BuiltinFunction(&builtin_max),
+				{
+					"max(number, number, ...) -> number",
+					"max(vector) -> number",
+				});
+
+	Builtins::init("sin", new BuiltinFunction(&builtin_sin),
+				{
+					"sin(degrees) -> number",
+				});
+
+	Builtins::init("cos", new BuiltinFunction(&builtin_cos),
+				{
+					"cos(degrees) -> number",
+				});
+
+	Builtins::init("asin", new BuiltinFunction(&builtin_asin),
+				{
+					"asin(number) -> degrees",
+				});
+
+	Builtins::init("acos", new BuiltinFunction(&builtin_acos),
+				{
+					"acos(number) -> degrees",
+				});
+
+	Builtins::init("tan", new BuiltinFunction(&builtin_tan),
+				{
+					"tan(number) -> degrees",
+				});
+
+	Builtins::init("atan", new BuiltinFunction(&builtin_atan),
+				{
+					"atan(number) -> degrees",
+				});
+
+	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2),
+				{
+					"atan2(number) -> degrees",
+				});
+
+	Builtins::init("round", new BuiltinFunction(&builtin_round),
+				{
+					"round(number) -> number",
+				});
+
+	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil),
+				{
+					"ceil(number) -> number",
+				});
+
+	Builtins::init("floor", new BuiltinFunction(&builtin_floor),
+				{
+					"floor(number) -> number",
+				});
+
+	Builtins::init("pow", new BuiltinFunction(&builtin_pow),
+				{
+					"pow(base, exponent) -> number",
+				});
+
+	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt),
+				{
+					"sqrt(number) -> number",
+				});
+
+	Builtins::init("exp", new BuiltinFunction(&builtin_exp),
+				{
+					"exp(number) -> number",
+				});
+
+	Builtins::init("len", new BuiltinFunction(&builtin_length),
+				{
+					"len(string) -> number",
+					"len(vector) -> number",
+				});
+
+	Builtins::init("log", new BuiltinFunction(&builtin_log),
+				{
+					"log(number) -> number",
+				});
+
+	Builtins::init("ln", new BuiltinFunction(&builtin_ln),
+				{
+					"ln(number) -> number",
+				});
+
+	Builtins::init("str", new BuiltinFunction(&builtin_str),
+				{
+					"str(number or string, ...) -> string",
+				});
+
+	Builtins::init("chr", new BuiltinFunction(&builtin_chr),
+				{
+					"chr(number) -> string",
+					"chr(vector) -> string",
+					"chr(range) -> string",
+				});
+
+	Builtins::init("ord", new BuiltinFunction(&builtin_ord),
+				{
+					"ord(string) -> number",
+				});
+
+	Builtins::init("concat", new BuiltinFunction(&builtin_concat),
+				{
+					"concat(number or string or vector, ...) -> vector",
+				});
+
+	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
+				{
+					"lookup(key, <key,value> vector) -> value",
+				});
+
+	Builtins::init("search", new BuiltinFunction(&builtin_search),
+				{
+					"search(string , string or vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
+				});
+
+	Builtins::init("version", new BuiltinFunction(&builtin_version),
+				{
+					"version() -> vector",
+				});
+
+	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num),
+				{
+					"version_num() -> number",
+				});
+
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm),
+				{
+					"norm(vector) -> number",
+				});
+
+	Builtins::init("cross", new BuiltinFunction(&builtin_cross),
+				{
+					"cross(vector, vector) -> vector",
+				});
+
+	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
+				{
+					"parent_module(number) -> string",
+				});
+
+	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
+				{
+					"is_undef(arg) -> boolean",
+				});
+
+	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list),
+				{
+					"is_list(arg) -> boolean",
+				});
+
+	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num),
+				{
+					"is_num(arg) -> boolean",
+				});
+
+	Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool),
+				{
+					"is_bool(arg) -> boolean",
+				});
+
+	Builtins::init("is_string", new BuiltinFunction(&builtin_is_string),
+				{
+					"is_string(arg) -> boolean",
+				});
+
+	Builtins::init("is_function", new BuiltinFunction(&builtin_is_function),
+				{
+					"is_function(arg) -> boolean",
+				});
 }

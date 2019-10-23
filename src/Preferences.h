@@ -7,16 +7,25 @@
 #include "ui_Preferences.h"
 #include "settings.h"
 
+template <class WidgetPtr>
+class BlockSignals
+{
+public:
+	BlockSignals(WidgetPtr w) : w(w) { w->blockSignals(true); }
+	~BlockSignals() { w->blockSignals(false); }
+	WidgetPtr operator->() const { return w; }
+
+	BlockSignals(const BlockSignals&) = delete;
+	BlockSignals& operator=(BlockSignals const&) = delete;
+private:
+	WidgetPtr w;
+};
+
 class Preferences : public QMainWindow, public Ui::Preferences
 {
 	Q_OBJECT;
 
 public:
-	static constexpr const char* PREF_EDITOR_TYPE = "editor/editortype";
-
-	static constexpr const char* EDITOR_TYPE_SIMPLE = "Simple Editor";
-	static constexpr const char* EDITOR_TYPE_QSCINTILLA = "QScintilla Editor";
-
 	~Preferences();
 	
 	static void create(QStringList colorSchemes);
@@ -24,7 +33,7 @@ public:
 	
 	QVariant getValue(const QString &key) const;
 	void init();
-	void apply() const;
+	void apply_win() const;
 	void updateGUI();
 	void fireEditorConfigChanged() const;
 
@@ -47,12 +56,10 @@ public slots:
 	void on_autoReloadRaiseCheckBox_toggled(bool);
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
-	void on_mdiCheckBox_toggled(bool);
 	void on_reorderCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
-	void on_editorType_currentIndexChanged(int);
 	void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
 	void on_enableHardwarningsCheckBox_toggled(bool);
 	void on_enableParameterCheckBox_toggled(bool);
@@ -61,6 +68,8 @@ public slots:
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
 	void on_checkBoxMouseCentricZoom_toggled(bool);
 	void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString &);
+	void on_checkBoxEnableAutocomplete_toggled(bool);
+	void on_lineEditCharacterThreshold_textChanged(const QString &);
   //
 	// editor settings
   //
@@ -101,17 +110,17 @@ public slots:
 
 signals:
 	void requestRedraw() const;
-	void updateMdiMode(bool mdi) const;
 	void updateUndockMode(bool undockMode) const;
 	void updateReorderMode(bool undockMode) const;
 	void fontChanged(const QString &family, uint size) const;
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;
-	void editorTypeChanged(const QString &type);
 	void editorConfigChanged() const;
 	void ExperimentalChanged() const ;
 	void updateMouseCentricZoom(bool state) const;
+	void autocompleteChanged(bool status) const;
+	void characterThresholdChanged(int val) const;
 
 private:
     Preferences(QWidget *parent = nullptr);
@@ -124,14 +133,18 @@ private:
 	void hidePasswords();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
+	/** Initialize checkbox from the settings value */
+	void initCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntry& entry);
 	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	void initComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry);
 	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
+	void initSpinBoxRange(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry);
+	/** Initialize spinbox double value from the settings value */
+	void initSpinBoxDouble(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry);
 	/** Update combobox from current settings */
-	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	void updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;

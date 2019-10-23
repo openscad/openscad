@@ -45,7 +45,7 @@ class ColorModule : public AbstractModule
 public:
 	ColorModule();
 	~ColorModule();
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 
 private:
 	static std::unordered_map<std::string, Color4f> webcolors;
@@ -254,17 +254,17 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	return rgba;
 }
 
-AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new ColorNode(inst);
 
 	AssignmentList args{Assignment("c"), Assignment("alpha")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
 
-	auto v = c.lookup_variable("c");
+	auto v = c->lookup_variable("c");
 	if (v->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v->toVector().size() ? (float)v->toVector()[i]->toDouble() : 1.0f;
@@ -288,7 +288,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 			}
 		}
 	}
-	auto alpha = c.lookup_variable("alpha");
+	auto alpha = c->lookup_variable("alpha");
 	if (alpha->type() == Value::ValueType::NUMBER) {
 		node->color[3] = alpha->toDouble();
 	}
@@ -311,5 +311,11 @@ std::string ColorNode::name() const
 
 void register_builtin_color()
 {
-	Builtins::init("color", new ColorModule());
+	Builtins::init("color", new ColorModule(),
+				{
+					"color(c = [r, g, b, a])",
+					"color(c = [r, g, b], alpha = 1.0)",
+					"color(\"#hexvalue\")",
+					"color(\"colorname\", 1.0)",
+				});
 }

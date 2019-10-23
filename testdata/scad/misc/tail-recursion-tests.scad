@@ -29,3 +29,24 @@ echo(len(s1), substring(s1, 0, 40));
 function f2b(x, y = 0, t = "") = x > 0 ? f2b(x - 1, y + 1, str(t, chr((y % 26) + 97))) : t;
 s2 = f2b(50000);
 echo(len(s2), substring(s2, 0, 40));
+
+// tail recursion with a complicated mix of let/assert/echo and nested ternary operators
+function ftail_mixed(n) =
+    let(x = 42 + n)
+    assert(x >= 42)
+    n == 0 ? (
+        x
+    ) : n < 10 ? (
+        n < 5 ? (
+            let(y = 33 + x)
+            echo(n=n, x=x, y=y)
+            ftail_mixed(n - 1)
+        ) : (
+            assert(n >= 0)
+            ftail_mixed(n - 1)
+        )
+    ) : (
+        let(y = let(z = n - 1) z)
+        ftail_mixed(y)
+    );
+echo(ftail_mixed=ftail_mixed(10000)); // 42

@@ -7,9 +7,14 @@
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
+#include "QSettingsCached.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 namespace fs=boost::filesystem;
+
+QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
 class SettingsConverter {
 public:
@@ -111,8 +116,14 @@ const boost::property_tree::ptree & EditorColorScheme::propertyTree() const
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
+	api = nullptr;
+	lexer = nullptr;
 	scintillaLayout = new QVBoxLayout(this);
 	qsci = new QsciScintilla(this);
+
+	contentsRendered = false;
+	findState = 0; //FIND_HIDDEN
+	filepath = "";
 
 	// Force EOL mode to Unix, since QTextStream will manage local EOL modes.
 	qsci->setEolMode(QsciScintilla::EolUnix);
@@ -137,23 +148,96 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	c = qsci->standardCommands()->find(QsciCommand::Redo);
 	c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
 	c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
+	// Ctrl-Ins displays templates
+	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
+	c->setAlternateKey(0);
 
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
 
-	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
-	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber); 
-	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
+	qsci->setCaretLineVisible(true);
 
-	this->lexer = new ScadLexer(this);
-	qsci->setLexer(this->lexer);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator , findIndicatorNumber);
+	qsci->markerDefine(QsciScintilla::Circle, errMarkerNumber);
+	qsci->markerDefine(QsciScintilla::Bookmark, bmMarkerNumber);
+
+	qsci->setMarginType(numberMargin, QsciScintilla::NumberMargin);
+	qsci->setMarginLineNumbers(numberMargin, true);
+	qsci->setMarginMarkerMask(numberMargin, 0);
+
+	qsci->setMarginType(symbolMargin, QsciScintilla::SymbolMargin);
+	qsci->setMarginLineNumbers(symbolMargin, false);
+	qsci->setMarginWidth(symbolMargin, 0);
+	qsci->setMarginMarkerMask(symbolMargin, 1 << errMarkerNumber | 1 << bmMarkerNumber);
+
+	setLexer(new ScadLexer(this));
 	initMargin();
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
-	connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
+	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
+	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+
+    qsci->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(qsci, SIGNAL(customContextMenuRequested(const QPoint &)), this, SIGNAL(showContextMenuEvent(const QPoint &)));
+
+	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
+	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
+	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
+}
+
+QPoint ScintillaEditor::mapToGlobal(const QPoint &pos)
+{
+	return qsci->mapToGlobal(pos);
+}
+
+QMenu * ScintillaEditor::createStandardContextMenu()
+{
+	return qsci->createStandardContextMenu();
+}
+
+void ScintillaEditor::addTemplate()
+{
+	addTemplate(PlatformUtils::resourceBasePath());
+	addTemplate(PlatformUtils::userConfigPath());
+	for(auto key: templateMap.keys())
+	{
+		userList.append(key);
+	}
+}
+
+void ScintillaEditor::addTemplate(const fs::path path)
+{
+	const auto template_path = path / "templates";
+
+	if (fs::exists(template_path) && fs::is_directory(template_path)) {
+		for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{template_path}, {})) {
+			if (!fs::is_regular_file(dirEntry.status())) continue;
+
+			const auto &path = dirEntry.path();
+			if (!(path.extension() == ".json")) continue;
+
+			boost::property_tree::ptree pt;
+			try {
+				boost::property_tree::read_json(path.generic_string().c_str(), pt);
+				const QString key = QString::fromStdString(pt.get<std::string>("key"));
+				const QString content = QString::fromStdString(pt.get<std::string>("content"));
+				const int cursor_offset = pt.get<int>("offset", -1);
+
+				templateMap.insert(key, ScadTemplate(content, cursor_offset));
+			} catch (const std::exception & e) {
+				PRINTB("Error reading template file '%s': %s", path.generic_string().c_str() % e.what());
+			}
+		}
+	}
+}
+
+void ScintillaEditor::displayTemplates()
+{
+	qsci->showUserList(1, userList);
 }
 
 /**
@@ -184,11 +268,35 @@ void ScintillaEditor::applySettings()
 
 	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
-    auto value = s->get(Settings::Settings::enableLineNumbers).toBool();
-    qsci->setMarginLineNumbers(1,value);
+	onTextChanged();
 
-    if (!value) qsci->setMarginWidth(1,20);
-    else qsci->setMarginWidth(1,QString(trunc(log10(qsci->lines())+4), '0'));
+	if(Preferences::inst()->getValue("editor/enableAutocomplete").toBool())
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setCallTipsVisible(10);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	}
+	else
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		qsci->setAutoCompletionFillupsEnabled(false);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+	}
+
+	int val = Preferences::inst()->getValue("editor/characterThreshold").toInt();
+	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+
+}
+
+void ScintillaEditor::fireModificationChanged(bool b)
+{
+	emit modificationChanged(b, this);
+}
+
+void ScintillaEditor::public_applySettings()
+{
+	applySettings();
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
@@ -221,7 +329,8 @@ void ScintillaEditor::highlightError(int error_pos)
 	int line, index;
 	qsci->lineIndexFromPosition(error_pos, &line, &index);
 	qsci->fillIndicatorRange(line, index, line, index + 1, errorIndicatorNumber);
-	qsci->markerAdd(line, markerNumber);
+	qsci->markerAdd(line, errMarkerNumber);
+	updateSymbolMarginVisibility();
 }
 
 void ScintillaEditor::unhighlightLastError()
@@ -230,7 +339,8 @@ void ScintillaEditor::unhighlightLastError()
 	int line, index;
 	qsci->lineIndexFromPosition(totalLength, &line, &index);
 	qsci->clearIndicatorRange(0, 0, line, index, errorIndicatorNumber);
-	qsci->markerDeleteAll(markerNumber);
+	qsci->markerDeleteAll(errMarkerNumber);
+	updateSymbolMarginVisibility();
 }
 
 QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
@@ -272,6 +382,15 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
 	}
 }
 
+void ScintillaEditor::setLexer(ScadLexer *newLexer)
+{
+	delete this->api;
+	this->qsci->setLexer(newLexer);
+	this->api = new ScadApi(this->qsci, newLexer);
+	delete this->lexer;
+	this->lexer = newLexer;
+}
+
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
 	const auto & pt = colorScheme->propertyTree();
@@ -293,9 +412,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 			newLexer->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
 		}
 
-		qsci->setLexer(newLexer);
-		delete this->lexer;
-		this->lexer = newLexer;
+		setLexer(newLexer);
 
 		// All other properties must be set after attaching to QSCintilla so
 		// the editor gets the change events and updates itself to match
@@ -324,11 +441,15 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
 		qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
 
-		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+		qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), errMarkerNumber);
+		qsci->setMarkerBackgroundColor(readColor(colors, "bookmark-marker", QColor(150, 200, 255, 100)), bmMarkerNumber); // light blue
         qsci->setIndicatorForegroundColor(readColor(colors, "error-indicator", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
         qsci->setIndicatorOutlineColor(readColor(colors, "error-indicator-outline", QColor(255, 0, 0, 100)), errorIndicatorNumber);//red
         qsci->setIndicatorForegroundColor(readColor(colors, "find-indicator", QColor(255, 255, 0, 100)), findIndicatorNumber);//yellow
         qsci->setIndicatorOutlineColor(readColor(colors, "find-indicator-outline", QColor(255, 255, 0, 100)), findIndicatorNumber);//yellow
+        qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
@@ -352,11 +473,15 @@ void ScintillaEditor::noColor()
 	this->lexer->setColor(Qt::black);
 	qsci->setCaretWidth(2);
 	qsci->setCaretForegroundColor(Qt::black);
-	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), errMarkerNumber);
+	qsci->setMarkerBackgroundColor(QColor(150, 200, 255, 100), bmMarkerNumber); // light blue
     qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), errorIndicatorNumber);//red
     qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), errorIndicatorNumber); // only alpha part is used
     qsci->setIndicatorForegroundColor(QColor(255, 255, 0, 128), findIndicatorNumber);//yellow
     qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), findIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), hyperlinkIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorHoverForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
 	qsci->setCaretLineBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
 	qsci->setSelectionForegroundColor(Qt::black);
@@ -486,40 +611,42 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
 
 void ScintillaEditor::initMargin()
 {
-  qsci->setMarginLineNumbers(1, true);
   connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
 }
 
 void ScintillaEditor::onTextChanged()
 {
-  auto s = Settings::Settings::inst();
-  QFontMetrics fontmetrics(this->currentFont);
-  auto enableLineNumbers = s->get(Settings::Settings::enableLineNumbers).toBool();
+	auto s = Settings::Settings::inst();
+	auto enableLineNumbers = s->get(Settings::Settings::enableLineNumbers).toBool();
 
-  if (!enableLineNumbers) qsci->setMarginWidth(1, 20);
-  else qsci->setMarginWidth(1, QString(trunc(log10(qsci->lines()) + 4), '0'));
+	if (enableLineNumbers) {
+		qsci->setMarginWidth(numberMargin, QString(trunc(log10(qsci->lines()) + 2), '0'));
+	} else {
+		qsci->setMarginWidth(numberMargin, 6);
+	}
+	qsci->setMarginLineNumbers(numberMargin, enableLineNumbers);
 }
 
 int ScintillaEditor::updateFindIndicators(const QString &findText, bool visibility)
 {
 	int findwordcount{0};
 
-    auto txt = qsci->text();
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, findIndicatorNumber);
+	qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, qsci->length());
 
-    qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, txt.length());
-
-    auto pos = txt.indexOf(findText);
-    auto len = findText.length();
-    if (visibility && len>0) {
-        while (pos!=-1){
-            findwordcount++;
-            qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
-            qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, len);
-            pos = txt.indexOf(findText,pos+len);
-        };
-    }
-    //qsci->findFirst(findText, false, false, false, true, true, savelineFrom, saveindexFrom);
-    return findwordcount;
+	const auto txt = qsci->text().toUtf8();
+	const auto findTextUtf8 = findText.toUtf8();
+	auto pos = txt.indexOf(findTextUtf8);
+	auto len = findTextUtf8.length();
+	if (visibility && len > 0) {
+		while (pos != -1) {
+			findwordcount++;
+			qsci->SendScintilla(qsci->SCI_SETINDICATORCURRENT, findIndicatorNumber);
+			qsci->SendScintilla(qsci->SCI_INDICATORFILLRANGE, pos, len);
+			pos = txt.indexOf(findTextUtf8, pos + len);
+		};
+	}
+	return findwordcount;
 }
 
 bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackwards)
@@ -643,59 +770,185 @@ QString ScintillaEditor::selectedText()
 	return qsci->selectedText();
 }
 
-bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
+bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	static bool wasChanged=false;
-	static bool previewAfterUndo=false;
-
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-	if (e->type()==QEvent::KeyPress || e->type()==QEvent::KeyRelease) {
-		auto *ke = static_cast<QKeyEvent*>(e);
-#ifdef Q_OS_MAC
-                int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt :: KeypadModifier;
-#else
-                int navigateOnNumberModifiers = Qt::AltModifier;
-#endif
-		if (ke->modifiers()  == navigateOnNumberModifiers) {
-			switch (ke->key())
-			{
-				case Qt::Key_Left:
-				case Qt::Key_Right:
-					if (e->type()==QEvent::KeyPress) {
-						navigateOnNumber(ke->key());
-					}
-					return true;
+	if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
+		auto *keyEvent = static_cast<QKeyEvent*> (e);
 
-				case Qt::Key_Up:
-				case Qt::Key_Down:
-					if (e->type()==QEvent::KeyPress) {
-						if (!wasChanged) qsci->beginUndoAction();
-						if (modifyNumber(ke->key())) {
-							wasChanged=true;
-							previewAfterUndo=true;
-						}
-						if (!wasChanged) qsci->endUndoAction();
-					}
-					return true;
-			}
+		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
+				(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
+				(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
+				(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
+				(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
+				(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
+				(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
+				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
+
+		if (handleKeyEventNavigateNumber(keyEvent)) {
+			return true;
 		}
-		if (previewAfterUndo && e->type()==QEvent::KeyPress) {
-			int k=ke->key() | ke->modifiers();
-			if (wasChanged) qsci->endUndoAction();
-			wasChanged=false;
-			auto *cmd=qsci->standardCommands()->boundTo(k);
-			if ( cmd && ( cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo ) )
-				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
-			else if ( cmd || !ke->text().isEmpty() ) {
-				// any insert or command (but not undo/redo) cancels the preview after undo
-				previewAfterUndo=false;
-			}
+		if (handleKeyEventBlockCopy(keyEvent)) {
+			return true;
+		}
+		if (handleKeyEventBlockMove(keyEvent)) {
+			return true;
 		}
 	}
 	return false;
 }
 
+bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
+{
+	unsigned int modifiers = Qt::ControlModifier | Qt::GroupSwitchModifier;
+
+	if (keyEvent->type() != QEvent::KeyRelease) {
+		return false;
+	}
+
+	if (keyEvent->modifiers() != modifiers) {
+		return false;
+	}
+
+	if (keyEvent->key() != Qt::Key_Up && keyEvent->key() != Qt::Key_Down) {
+		return false;
+	}
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int lineFrom, indexFrom, lineTo, indexTo;
+	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+	if (lineFrom < 0) {
+		lineTo = lineFrom = line;
+		indexFrom = indexTo = 0;
+	}
+	int selectionLineTo = lineTo;
+	if (lineTo > lineFrom && indexTo == 0) {
+		lineTo--;
+	}
+
+	bool up = keyEvent->key() == Qt::Key_Up;
+	int directionOffset = up ? -1 : 1;
+	int lineToMove = up ? lineFrom - 1 : lineTo + 1;
+	if (lineToMove < 0) {
+		return false;
+	}
+
+	qsci->beginUndoAction();
+	QString textToMove = qsci->text(lineToMove);
+	QString text;
+	for (int idx = lineFrom;idx <= lineTo;idx++) {
+		text.append(qsci->text(idx));
+	}
+	if (lineToMove >= qsci->lines() - 1) {
+		textToMove.append('\n');
+	}
+	text.insert(up ? text.length() : 0, textToMove);
+	qsci->setSelection(std::min(lineToMove, lineFrom), 0, std::max(lineToMove, lineTo) + 1, 0);
+	qsci->replaceSelectedText(text);
+	qsci->setCursorPosition(line + directionOffset, index);
+	qsci->setSelection(lineFrom + directionOffset, indexFrom, selectionLineTo + directionOffset, indexTo);
+	qsci->endUndoAction();
+	return true;
+}
+
+bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
+{
+	unsigned int modifiers = Qt::ControlModifier | Qt::ShiftModifier;
+
+	if (keyEvent->type() != QEvent::KeyRelease) {
+		return false;
+	}
+
+	if (keyEvent->modifiers() != modifiers) {
+		return false;
+	}
+
+	if (keyEvent->key() != Qt::Key_Up && keyEvent->key() != Qt::Key_Down) {
+		return false;
+	}
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int lineFrom, indexFrom, lineTo, indexTo;
+	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+	if (lineFrom < 0) {
+		lineTo = lineFrom = line;
+		indexFrom = indexTo = 0;
+	}
+
+	bool up = keyEvent->key() == Qt::Key_Up;
+	int selectionLineTo = 0;
+	if (lineTo > lineFrom && indexTo == 0) {
+		lineTo--;
+		selectionLineTo++;
+	}
+	int cursorLine = up ? line : lineTo + 1;
+	int selectionLineFrom = up ? lineFrom : lineTo + 1;
+	selectionLineTo += up ? lineTo : 2 * lineTo - lineFrom + 1;
+
+	qsci->beginUndoAction();
+	QString text;
+	for (int line = lineFrom;line <= lineTo;line++) {
+		text += qsci->text(line);
+	}
+	if (lineTo + 1 >= qsci->lines()) {
+		text.insert(0, '\n');
+	}
+	qsci->insertAt(text, lineTo + 1, 0);
+	qsci->setCursorPosition(cursorLine, index);
+	qsci->setSelection(selectionLineFrom, indexFrom, selectionLineTo, indexTo);
+	qsci->endUndoAction();
+	return true;
+}
+
+bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
+{
+	static bool wasChanged = false;
+	static bool previewAfterUndo = false;
+
+#ifdef Q_OS_MAC
+	unsigned int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier;
+#else
+	unsigned int navigateOnNumberModifiers = Qt::AltModifier;
+#endif
+	if (keyEvent->modifiers() == navigateOnNumberModifiers) {
+		switch (keyEvent->key()) {
+		case Qt::Key_Left:
+		case Qt::Key_Right:
+			if (keyEvent->type() == QEvent::KeyPress) {
+				navigateOnNumber(keyEvent->key());
+			}
+			return true;
+
+		case Qt::Key_Up:
+		case Qt::Key_Down:
+			if (keyEvent->type() == QEvent::KeyPress) {
+				if (!wasChanged) qsci->beginUndoAction();
+				if (modifyNumber(keyEvent->key())) {
+					wasChanged = true;
+					previewAfterUndo = true;
+				}
+				if (!wasChanged) qsci->endUndoAction();
+			}
+			return true;
+		}
+	}
+	if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
+		int k = keyEvent->key() | keyEvent->modifiers();
+		if (wasChanged) qsci->endUndoAction();
+		wasChanged = false;
+		auto *cmd = qsci->standardCommands()->boundTo(k);
+		if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
+			QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+		else if (cmd || !keyEvent->text().isEmpty()) {
+			// any insert or command (but not undo/redo) cancels the preview after undo
+			previewAfterUndo = false;
+		}
+	}
+	return false;
+}
 
 void ScintillaEditor::navigateOnNumber(int key)
 {
@@ -786,4 +1039,172 @@ bool ScintillaEditor::modifyNumber(int key)
 	qsci->setCursorPosition(line, begin+newnr.length()-tail);
 	emit previewRequest();
 	return true;
+}
+
+void ScintillaEditor::onUserListSelected(const int, const QString &text)
+{
+	if (!templateMap.contains(text)) {
+		return;
+	}
+
+	QString tabReplace = "";
+	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Spaces")
+	{
+		auto spCount = Settings::Settings::inst()->get(Settings::Settings::indentationWidth).toDouble();
+		tabReplace = QString(spCount, ' ');
+	}
+
+	ScadTemplate &t = templateMap[text];
+	QString content = t.get_text();
+	int cursor_offset = t.get_cursor_offset();
+
+	if(cursor_offset < 0)
+	{
+		if(tabReplace.size() != 0)
+			content.replace("\t", tabReplace);
+
+		cursor_offset = content.indexOf(ScintillaEditor::cursorPlaceHolder);
+		content.remove(cursorPlaceHolder);
+
+		if(cursor_offset == -1)
+			cursor_offset = content.size();
+	}
+	else
+	{
+		if(tabReplace.size() != 0)
+		{
+			int tbCount = content.left(cursor_offset).count("\t");
+			cursor_offset += tbCount * (tabReplace.size() - 1);
+			content.replace("\t", tabReplace);
+		}
+	}
+
+	qsci->insert(content);
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int pos = qsci->positionFromLineIndex(line, index);
+
+	pos += cursor_offset;
+	int indent_line = line;
+	int indent_width = index;
+	qsci->lineIndexFromPosition(pos, &line, &index);
+	qsci->setCursorPosition(line, index);
+
+	int lines = t.get_text().count("\n");
+	QString indent_char = " ";
+	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Tabs")
+		indent_char = "\t";
+
+	for (int a = 0;a < lines;a++) {
+		qsci->insertAt(indent_char.repeated(indent_width), indent_line + a + 1, 0);
+	}
+}
+
+void ScintillaEditor::onAutocompleteChanged(bool state)
+{
+	if(state)
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setCallTipsVisible(10);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	}
+	else
+	{
+		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		qsci->setAutoCompletionFillupsEnabled(false);
+		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+	}
+}
+
+void ScintillaEditor::onCharacterThresholdChanged(int val)
+{
+	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
+}
+
+void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
+{
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
+	this->indicatorData = indicatorData;
+
+	int idx = 0;
+	for (const auto& data : indicatorData) {
+		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
+		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+		idx++;
+	}
+}
+
+void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
+{
+	if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+		return;
+
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+
+	int pos = qsci->positionFromLineIndex(line, col);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+
+	// checking if indicator clicked is hyperlinkIndicator
+	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
+		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+	}
+}
+
+void ScintillaEditor::updateSymbolMarginVisibility()
+{
+	if (qsci->markerFindNext(0, 1 << bmMarkerNumber | 1 << errMarkerNumber) < 0) {
+		qsci->setMarginWidth(symbolMargin, 0);
+	} else {
+		qsci->setMarginWidth(symbolMargin, "00");
+	}
+}
+
+void ScintillaEditor::toggleBookmark()
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+
+	unsigned int state = qsci->markersAtLine(line);
+
+	if ((state & (1<<bmMarkerNumber))==0)
+		qsci->markerAdd(line, bmMarkerNumber);
+	else
+		qsci->markerDelete(line, bmMarkerNumber);
+
+	updateSymbolMarginVisibility();
+}
+
+void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::function<int(int)> findMarkerFunc)
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	line = findMarkerFunc(line + findStartOffset);
+	if (line == -1) {
+		line = findMarkerFunc(wrapStart); // wrap around
+	}
+	if (line != -1) {
+		// make sure we don't wrap into new line
+		int len = qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+		int col = std::min(index, len);
+		qsci->setCursorPosition(line, col);
+	}
+}
+
+void ScintillaEditor::nextBookmark()
+{
+	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << bmMarkerNumber); });
+}
+
+void ScintillaEditor::prevBookmark()
+{
+	findMarker(-1, qsci->lines() - 1, [this](int line){ return qsci->markerFindPrevious(line, 1 << bmMarkerNumber); });
+}
+
+void ScintillaEditor::jumpToNextError()
+{
+	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
 }
