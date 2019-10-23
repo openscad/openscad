@@ -674,14 +674,14 @@ static void expand_poly2d_to_ccw3d(const class Polygon2d *poly2d, PolySet *polys
 		for (const auto &vtx : outline.vertices)
 			polyset->append_vertex(vtx[0], vtx[1], 0);
 		// Make sure winding order is CCW
-		if (polyset->polygons.back().size() > 2) {
-			Vector3d ab = polyset->polygons.back()[1] - polyset->polygons.back()[0];
-			Vector3d bc = polyset->polygons.back()[2] - polyset->polygons.back()[1];
-			if (ab.cross(bc).z() < 0) {
-				// Reverse the winding
-				std::reverse(polyset->polygons.back().begin(), polyset->polygons.back().end());
-			}
-		}
+		//if (polyset->polygons.back().size() > 2) {
+		//	Vector3d ab = polyset->polygons.back()[1] - polyset->polygons.back()[0];
+		//	Vector3d bc = polyset->polygons.back()[2] - polyset->polygons.back()[1];
+		//	if (ab.cross(bc).z() < 0) {
+		//		// Reverse the winding
+		//		std::reverse(polyset->polygons.back().begin(), polyset->polygons.back().end());
+		//	}
+		//}
 	}
 	polyset->transform(poly2d->getTransform3d());
 }

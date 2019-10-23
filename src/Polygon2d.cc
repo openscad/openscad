@@ -102,7 +102,19 @@ void Polygon2d::transform3d(const Transform3d &mat)
 			mat(0,0), mat(0,1), mat(0,3),
 			mat(1,0), mat(1,1), mat(1,3),
 			mat(3,0), mat(3,1), mat(3,3);
+		if (t.matrix().determinant() == 0) {
+			PRINT("WARNING: Scaling a 2D object with 0 - removing object");
+			this->theoutlines.clear();
+			trans3dState= Transform3dState::NONE;
+			return;
+		}
 		transform(t);
+		// A 2D transformation may flip the winding order of a polygon.
+		// If that happens with a sanitized polygon, we need to reverse
+		// the winding order for it to be correct.
+		if (Feature::ExperimentalExtrude.is_enabled() && sanitized && t.matrix().determinant() < 0)
+			for (auto &o : this->theoutlines)
+				std::reverse(o.vertices.begin(), o.vertices.end());
 	}
 	else {
 		if (mat.matrix().determinant() == 0) {
@@ -200,7 +212,7 @@ void Polygon2d::applyTrans3dToOutlines(Polygon2d::Outlines2d &outlines) const {
 	// A 2D transformation may flip the winding order of a polygon.
 	// If that happens with a sanitized polygon, we need to reverse
 	// the winding order for it to be correct.
-	if (Feature::ExperimentalExtrude.is_enabled() && sanitized && t.matrix().determinant() <= 0)
+	if (Feature::ExperimentalExtrude.is_enabled() && sanitized && t.matrix().determinant() < 0)
 		for (auto &o : outlines)
 			std::reverse(o.vertices.begin(), o.vertices.end());
 }
