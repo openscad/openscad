@@ -13,7 +13,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	keywordSet[1] =
 		"abs sign rands min max sin cos asin acos tan atan atan2 "
 		"round ceil floor pow sqrt exp len log ln str chr ord concat "
-		"is_undef is_list is_num is_bool is_string " 
+		"is_undef is_list is_num is_bool is_string is_function "
 		"lookup search version version_num norm cross parent_module "
 		"dxf_dim dxf_cross";
 
