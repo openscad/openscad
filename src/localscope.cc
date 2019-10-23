@@ -7,6 +7,7 @@
 #include "function.h"
 #include "annotation.h"
 #include "UserModule.h"
+#include "node.h"
 
 LocalScope::LocalScope()
 {
@@ -65,7 +66,19 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
 	std::vector<AbstractNode*> childnodes;
 	for(const auto &modinst : this->children) {
 		AbstractNode *node = modinst->evaluate(evalctx);
-		if (node) childnodes.push_back(node);
+		if (node) {
+			// GroupNode can pass its children through to parent without an implied union.
+			// This might later be handled by GeometryEvaluator, but for now just completely
+			// remove the GroupNode from the tree.
+			GroupNode *gr= dynamic_cast<GroupNode*>(node);
+			if (gr && !gr->impliedUnion) {
+				childnodes.insert(childnodes.end(), node->children.begin(), node->children.end());
+				node->children.clear();
+				delete node;
+			}
+			else
+				childnodes.push_back(node);
+		}
 	}
 
 	return childnodes;

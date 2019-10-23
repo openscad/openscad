@@ -21,6 +21,7 @@ public:
 	Response visit(State &state, const AbstractNode &node) override;
 	Response visit(State &state, const AbstractIntersectionNode &node) override;
 	Response visit(State &state, const AbstractPolyNode &node) override;
+	Response visit(State &state, const ExtrudeNode &node) override;
 	Response visit(State &state, const LinearExtrudeNode &node) override;
 	Response visit(State &state, const RotateExtrudeNode &node) override;
 	Response visit(State &state, const GroupNode &node) override;
