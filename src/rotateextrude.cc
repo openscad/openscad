@@ -45,35 +45,35 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new RotateExtrudeNode(inst);
 
 	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale")};
 	AssignmentList optargs{Assignment("convexity"), Assignment("angle")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+	inst->scope.apply(evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn")->toDouble();
+	node->fs = c->lookup_variable("$fs")->toDouble();
+	node->fa = c->lookup_variable("$fa")->toDouble();
     
 
-	auto file = c.lookup_variable("file");
-	auto layer = c.lookup_variable("layer", true);
-	auto convexity = c.lookup_variable("convexity", true);
-	auto origin = c.lookup_variable("origin", true);
-	auto scale = c.lookup_variable("scale", true);
-	auto angle = c.lookup_variable("angle", true);
+	auto file = c->lookup_variable("file");
+	auto layer = c->lookup_variable("layer", true);
+	auto convexity = c->lookup_variable("convexity", true);
+	auto origin = c->lookup_variable("origin", true);
+	auto scale = c->lookup_variable("scale", true);
+	auto angle = c->lookup_variable("angle", true);
     
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}

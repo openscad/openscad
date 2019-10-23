@@ -16,9 +16,9 @@ public:
 	FileModule(const std::string &path, const std::string &filename);
 	~FileModule();
 
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-	AbstractNode *instantiateWithFileContext(class FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiateWithFileContext(const std::shared_ptr<class FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }

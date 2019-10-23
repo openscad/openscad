@@ -24,24 +24,30 @@
  *
  */
 
-#include "value.h"
-#include "printutils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
 #include <cmath>
 #include <assert.h>
 #include <sstream>
-#include <boost/numeric/conversion/cast.hpp>
+#include <boost/format.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
-#include <boost/format.hpp>
-#include "boost-utils.h"
-#include <boost/filesystem.hpp>
-
-namespace fs=boost::filesystem;
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+
+#include "value.h"
+#include "expression.h"
+#include "printutils.h"
+#include "boost-utils.h"
+#include "double-conversion/double-conversion.h"
+#include "double-conversion/utils.h"
+#include "double-conversion/ieee.h"
+
+namespace fs=boost::filesystem;
+using boost::adaptors::transformed;
+using boost::algorithm::join;
 
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
@@ -269,6 +275,11 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
+Value::Value(const FunctionType &v) : value(v)
+{
+  //  std::cout << "creating function\n";
+}
+
 Value::ValueType Value::type() const
 {
   return static_cast<ValueType>(this->value.which());
@@ -287,6 +298,33 @@ bool Value::isDefinedAs(const ValueType type) const
 bool Value::isUndefined() const
 {
   return !isDefined();
+}
+
+const FunctionType Value::toFunction() const
+{
+	return boost::get<FunctionType>(this->value);
+}
+
+std::string Value::typeName() const
+{
+	switch (this->type()) {
+	case ValueType::UNDEFINED:
+		return "undefined";
+	case ValueType::BOOL:
+		return "bool";
+	case ValueType::NUMBER:
+		return "number";
+	case ValueType::STRING:
+		return "string";
+	case ValueType::VECTOR:
+		return "vector";
+	case ValueType::RANGE:
+		return "range";
+	case ValueType::FUNCTION:
+		return "function";
+	default:
+		return "<unknown>";
+	}
 }
 
 bool Value::toBool() const
@@ -348,13 +386,13 @@ class tostring_visitor : public boost::static_visitor<std::string>
 public:
   template <typename T> std::string operator()(const T &op1) const {
     //    std::cout << "[generic tostring_visitor]\n";
-    return boost::lexical_cast<std::string>(op1);	
+    return boost::lexical_cast<std::string>(op1);
   }
 
   std::string operator()(const double &op1) const {
     char buffer[DC_BUFFER_SIZE];
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
       DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
     return DoubleConvert(op1, buffer, builder, dc);
   }
@@ -383,6 +421,9 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
+  std::string operator()(const FunctionType &v) const {
+	return STR(v);
+  }
 };
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
@@ -391,15 +432,14 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-  
 
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
 
-  tostream_visitor(std::ostringstream& stream) 
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE), 
-      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES) 
+  tostream_visitor(std::ostringstream& stream)
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
     {};
 
   template <typename T> void operator()(const T &op1) const {
@@ -442,8 +482,10 @@ public:
     stream << "]";
   }
 
+  void operator()(const FunctionType &v) const {
+	stream << v;
+  }
 };
-
 
 std::string Value::toString() const
 {
@@ -605,14 +647,6 @@ RangeType Value::toRange() const
     return *val;
   }
   else return RangeType(0,0,0);
-}
-
-Value &Value::operator=(const Value &v)
-{
-  if (this != &v) {
-    this->value = v.value;
-  }
-  return *this;
 }
 
 class equals_visitor : public boost::static_visitor<bool>
@@ -1055,6 +1089,20 @@ bool RangeType::iterator::operator!=(const self_type &other) const
 	return !(*this == other);
 }
 
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
+	stream << "function(";
+	bool first = true;
+	for (const auto& arg : f.args) {
+		stream << (first ? "" : ", ") << arg.name;
+		if (arg.expr) {
+			stream << " = " << *arg.expr;
+		}
+		first = false;
+	}
+	stream << ") " << *f.expr;
+	return stream;
+}
+
 ValuePtr::ValuePtr()
 {
 	this->reset(new Value());
@@ -1101,6 +1149,11 @@ ValuePtr::ValuePtr(const Value::VectorType &v)
 }
 
 ValuePtr::ValuePtr(const RangeType &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const FunctionType &v)
 {
 	this->reset(new Value(v));
 }
