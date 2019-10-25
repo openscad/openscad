@@ -420,30 +420,24 @@ addition
 		;
 
 multiplication
-        : exponent
-        | multiplication '*' exponent
+        : unary
+        | multiplication '*' unary
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
             }
-        | multiplication '/' exponent
+        | multiplication '/' unary
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOCD("divide", @$));
             }
-        | multiplication '%' exponent
+        | multiplication '%' unary
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
             }
 		;
-exponent
-       :unary
-       | exponent '^' unary
-           {
-              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
-           }
-       ;
+
 
 unary
-        : call
+        : exponent
         | '+' unary
             {
                 $$ = $2;
@@ -457,6 +451,18 @@ unary
               $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
             }
 		;
+
+exponent
+       : call
+       | call '^' exponent
+           {
+              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
+           }
+       | call '^' '-' exponent
+          {
+             $$ = new BinaryOp($1, BinaryOp::Op::Exponent, new UnaryOp(UnaryOp::Op::Negate, $4, LOCD("negate", @$)), LOCD("exponent", @$));
+          }
+       ;
 
 call
         : primary
@@ -535,7 +541,7 @@ expr_or_empty
               $$ = $1;
             }
         ;
- 
+
 /* The last set element may not be a "let" (as that would instead
    be parsed as an expression) */
 list_comprehension_elements
