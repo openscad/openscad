@@ -1,0 +1,15 @@
+echo(5^2);
+echo(-5^2);
+echo(-5^2.5);
+echo(5^-2);
+echo(5^2.5);
+echo(5.5^2.5);
+echo(5.5^2);
+i=5;
+echo(i^2);
+f=5.5;
+echo(f^2);
+e=2;
+echo(5^e);
+echo(i^e);
+echo(PI^2);
