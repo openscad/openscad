@@ -141,6 +141,7 @@ bool fileEnded=false;
 %type <expr> comparison
 %type <expr> addition
 %type <expr> multiplication
+%type <expr> exponent
 %type <expr> unary
 %type <expr> primary
 %type <vec> vector_expr
@@ -419,20 +420,27 @@ addition
 		;
 
 multiplication
-        : unary
-        | multiplication '*' unary
+        : exponent
+        | multiplication '*' exponent
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
             }
-        | multiplication '/' unary
+        | multiplication '/' exponent
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOCD("divide", @$));
             }
-        | multiplication '%' unary
+        | multiplication '%' exponent
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
             }
 		;
+exponent
+       :unary
+       | exponent '^' unary
+           {
+              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
+           }
+       ;
 
 unary
         : call

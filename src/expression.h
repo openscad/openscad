@@ -40,6 +40,7 @@ public:
 	enum class Op {
 		LogicalAnd,
 		LogicalOr,
+		Exponent,
 		Multiply,
 		Divide,
 		Modulo,
