@@ -154,7 +154,7 @@ ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 		return this->left->evaluate(context) || this->right->evaluate(context);
 		break;
 	case Op::Exponent:
-        return ValuePtr(pow(this->left->evaluate(context), this->right->evaluate(context)));
+        return ValuePtr(pow(this->left->evaluate(context)->toDouble(), this->right->evaluate(context)->toDouble()));
 		break;
 	case Op::Multiply:
 		return this->left->evaluate(context) * this->right->evaluate(context);
