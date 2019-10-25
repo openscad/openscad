@@ -153,13 +153,9 @@ ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 	case Op::LogicalOr:
 		return this->left->evaluate(context) || this->right->evaluate(context);
 		break;
-	case Op::Exponent: {
-		ValuePtr left = this->left->evaluate(context), right = this->right->evaluate(context);
-		if (left->type() == Value::ValueType::NUMBER && right->type() == Value::ValueType::NUMBER)
-			return ValuePtr(pow(left->toDouble(), right->toDouble()));
-		else
-			return ValuePtr::undefined;
-	}
+	case Op::Exponent:
+        return ValuePtr(pow(this->left->evaluate(context), this->right->evaluate(context)));
+		break;
 	case Op::Multiply:
 		return this->left->evaluate(context) * this->right->evaluate(context);
 		break;
