@@ -46,6 +46,7 @@
 #include "printutils.h"
 #include "memory.h"
 #include <sstream>
+#include <stack>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
 #include "feature.h"
