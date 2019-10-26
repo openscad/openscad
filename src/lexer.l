@@ -87,7 +87,7 @@ extern FileModule *rootmodule;
 extern YYLTYPE parserlloc;
 
 #define LOCATION(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
-#define LOCATION_INIT(loc) do { (loc).first_line = (loc).first_column = (loc).last_line = (loc).last_column = 1; } while (0)
+#define LOCATION_INIT(loc) do { (loc).first_line = (loc).first_column = (loc).last_line = (loc).last_column = yylineno = 1; } while (0)
 #define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = (loc).last_line; } while (0)
 #define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
 
@@ -204,6 +204,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 	if (!filename_stack.empty()) filename_stack.pop_back();
 	if (!loc_stack.empty()) {
 		parserlloc = loc_stack.back();
+		yylineno = parserlloc.first_line;
 		loc_stack.pop_back();
 	}
 	if (yyin && yyin != stdin) {
@@ -328,7 +329,7 @@ void includefile(const Location& loc)
   }
 
   loc_stack.push_back(parserlloc);
-  LOCATION_INIT(parserlloc);
+  LOCATION_INIT(parserlloc);  
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
   filename.clear();
