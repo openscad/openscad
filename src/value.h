@@ -9,6 +9,7 @@
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
+#include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <glib.h>
 #endif
@@ -40,9 +41,10 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
 class RangeType {
 private:
-	double begin_val;
+	bool exclusive;
+	boost::optional<double> begin_val;
 	double step_val;
-	double end_val;
+	boost::optional<double> end_val;
 	
 	/// inverse begin/end if begin is upper than end
 	void normalize();
@@ -73,25 +75,27 @@ public:
 		void update_type();
 	};
   
-	RangeType(double begin, double end)
-		: begin_val(begin), step_val(1.0), end_val(end)
+	RangeType(boost::optional<double> begin, boost::optional<double> end)
+		: exclusive(false), begin_val(begin), step_val(1.0), end_val(end)
     {
       normalize();
     }
 	
-	RangeType(double begin, double step, double end)
-		: begin_val(begin), step_val(step), end_val(end) {}
+	RangeType(boost::optional<double> begin, double step, boost::optional<double> end, bool exclusive = false)
+		: exclusive(exclusive), begin_val(begin), step_val(step), end_val(end) {}
 	
 	bool operator==(const RangeType &other) const {
 		return this == &other ||
 			(this->begin_val == other.begin_val &&
 			 this->step_val == other.step_val &&
-			 this->end_val == other.end_val);
+			 this->end_val == other.end_val &&
+			 this->exclusive == other.exclusive);
 	}
 	
-	double begin_value() { return begin_val; }
-	double step_value() { return step_val; }
-	double end_value() { return end_val; }
+	double begin_value() const { return *begin_val; }
+	double step_value() const { return step_val; }
+	double end_value() const { return *end_val; }
+	bool is_exclusive() const { return exclusive; }
 	
 	iterator begin() { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
 	iterator end() { return iterator(*this, type_t::RANGE_TYPE_END); }

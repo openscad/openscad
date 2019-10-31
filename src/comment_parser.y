@@ -63,11 +63,11 @@ expr:
     }
     | '[' num ':' num ']'
     {
-        $$ = new Range($2, $4, Location::NONE);
+        $$ = new Range($2, new Literal(1.0), $4, false, Location::NONE);
     }
     | '[' num ':' num ':' num ']'
     {
-        $$ = new Range($2, $4, $6, Location::NONE);
+        $$ = new Range($2, $4, $6, false, Location::NONE);
     }
     ;
 

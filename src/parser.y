@@ -143,6 +143,7 @@ bool fileEnded=false;
 %type <expr> addition
 %type <expr> multiplication
 %type <expr> unary
+%type <expr> range
 %type <expr> primary
 %type <vec> vector_expr
 %type <expr> list_comprehension_elements
@@ -453,14 +454,18 @@ unary
 
 call
         : primary
-        | call '(' arguments_call ')'
+		| call range
             {
-              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
-              delete $3;
+              $$ = new ArrayLookup($1, $2, LOCD("slice", @$));
             }
         | call '[' expr ']'
             {
               $$ = new ArrayLookup($1, $3, LOCD("index", @$));
+            }
+        | call '(' arguments_call ')'
+            {
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
+              delete $3;
             }
         | call '.' TOK_ID
             {
@@ -469,8 +474,33 @@ call
             }
 		;
 
+range	: '[' expr_or_empty ':' expr_or_empty ']'
+            {
+              $$ = new Range($2, new Literal(1.0), $4, false, LOCD("range", @$));
+            }
+        | '[' expr_or_empty ':' '<' expr ']'
+            {
+              $$ = new Range($2, new Literal(1.0), $5, true, LOCD("range", @$));
+            }
+        | '[' expr_or_empty ':' expr ':' expr_or_empty ']'
+            {
+              $$ = new Range($2, $4, $6, false, LOCD("range", @$));
+            }
+        | '[' expr_or_empty ':' expr ':' '<' expr ']'
+            {
+              $$ = new Range($2, $4, $7, true, LOCD("range", @$));
+            }
+		;
+
 primary
-        : TOK_TRUE
+        : range
+			{
+			  if (!static_cast<Range *>($1)->isValid()) {
+				yyerror("invalid range");
+			  }
+			  $$ = $1;
+			}
+        | TOK_TRUE
             {
               $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
             }
@@ -499,14 +529,6 @@ primary
         | '(' expr ')'
             {
               $$ = $2;
-            }
-        | '[' expr ':' expr ']'
-            {
-              $$ = new Range($2, $4, LOCD("range", @$));
-            }
-        | '[' expr ':' expr ':' expr ']'
-            {
-              $$ = new Range($2, $4, $6, LOCD("range", @$));
             }
         | '[' optional_commas ']'
             {
