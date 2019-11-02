@@ -38,11 +38,20 @@ parts:
     build-packages:
     - freeglut3-dev
 
+  cgal:
+    disable-parallel: true
+    source: https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.14.1/CGAL-4.14.1.tar.xz
+    plugin: cmake
+    build-packages:
+    - cmake
+    - libboost-dev
+    - libboost-thread-dev
+
   openscad-nightly:
     disable-parallel: true
     plugin: qmake
     qt-version: qt5
-    after: [desktop-qt5, opencsg]
+    after: [desktop-qt5, opencsg, cgal]
     project-files: [ "openscad.pro" ]
     options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
@@ -52,7 +61,6 @@ parts:
     - qtmultimedia5-dev
     - libqt5opengl5-dev
     - qt5-qmake
-    - libcgal-dev
     - libeigen3-dev
     - libglib2.0-dev
     - bison
@@ -66,6 +74,7 @@ parts:
     - libboost-regex-dev
     - libboost-system-dev
     - libboost-filesystem-dev
+    - libboost-program-options-dev
     - libdouble-conversion-dev
     - chrpath
     - gettext
