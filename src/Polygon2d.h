@@ -3,6 +3,7 @@
 #include <vector>
 #include "Geometry.h"
 #include "linalg.h"
+#include <numeric>
 
 /*!
 	A single contour.
@@ -24,7 +25,11 @@ public:
 	unsigned int getDimension() const override { return 2; }
 	bool isEmpty() const override;
 	Geometry *copy() const override { return new Polygon2d(*this); }
-
+	size_t numFacets() const override {
+		return std::accumulate(theoutlines.begin(), theoutlines.end(), 0,
+			[](size_t a, const Outline2d& b) { return a + b.vertices.size(); }
+		);
+	};
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
 	class PolySet *tessellate() const;
 

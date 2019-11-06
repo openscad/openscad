@@ -436,7 +436,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
-        CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+        CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(fake_children.begin(), fake_children.end());
         t.stop();
         if (N) PRINTDB("Minkowski: Union done: %f s",t.time());
         else PRINTDB("Minkowski: Union failed: %f s",t.time());
@@ -650,7 +650,7 @@ int main(int argc, char *argv[])
         std::cerr << "Error importing STL " << filename << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      std::cerr << "Imported " << ps->numFacets() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
