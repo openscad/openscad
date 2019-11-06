@@ -2296,7 +2296,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
 				assert(ps->getDimension() == 3);
 				PRINT("   Top level object is a 3D object:");
-				PRINTB("   Facets:     %6d", ps->numPolygons());
+				PRINTB("   Facets:     %6d", ps->numFacets());
 			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
 				PRINT("   Top level object is a 2D object:");
 				PRINTB("   Contours:     %6d", poly->outlines().size());

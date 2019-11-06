@@ -142,20 +142,33 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	if (op == OpenSCADOperator::MINKOWSKI) {
-		Geometry::Geometries actualchildren;
-		for(const auto &item : children) {
-			if (!item.second->isEmpty()) actualchildren.push_back(item);
+	switch(op) {
+		case OpenSCADOperator::MINKOWSKI:
+		{
+			Geometry::Geometries actualchildren;
+			for(const auto &item : children) {
+				if (!item.second->isEmpty()) actualchildren.push_back(item);
+			}
+			if (actualchildren.empty()) return ResultObject();
+			if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
+			return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+			break;
 		}
-		if (actualchildren.empty()) return ResultObject();
-		if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-		return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+		case OpenSCADOperator::UNION:
+		{
+			CGAL_Nef_polyhedron* N = CGALUtils::applyUnion(children.begin(), children.end());
+			return ResultObject(N);
+			break;
+		}
+		default: 
+		{
+			CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
+			// FIXME: Clarify when we can return nullptr and what that means
+			if (!N) N = new CGAL_Nef_polyhedron;
+			return ResultObject(N);
+			break;
+		}
 	}
-
-	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
-	// FIXME: Clarify when we can return nullptr and what that means
-	if (!N) N = new CGAL_Nef_polyhedron;
-	return ResultObject(N);
 }
 
 
