@@ -247,10 +247,10 @@ find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
 if(NOT MSVC)
-  find_package(Lib3MF REQUIRED QUIET)
-  add_definitions(${LIB3MF_CFLAGS})
-  include_directories(${LIB3MF_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+  #find_package(Lib3MF REQUIRED QUIET)
+  #add_definitions(${LIB3MF_CFLAGS})
+  #include_directories(${LIB3MF_INCLUDE_DIRS})
+  #list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 endif()
 
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
@@ -621,6 +621,9 @@ set(GUI_SOURCES
   src/parameter/parametertext.cpp
   src/parameter/parametervector.cpp
   src/parameter/parametervirtualwidget.cpp
+  src/scadapi.cc
+  src/tabmanager.cc
+  src/tabwidget.cc
   src/input/AxisConfigWidget.cc
   src/input/ButtonConfigWidget.cc
   src/input/InputDriver.cc
