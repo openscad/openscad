@@ -39,7 +39,7 @@ class CSGOperation : public CSGNode
 {
 public:
 	CSGOperation() {}
-	~CSGOperation() {}
+	~CSGOperation();
 	void initBoundingBox() override;
 	std::string dump() override;
 

@@ -63,6 +63,21 @@ primitives, each having a CSG type associated with it.
 	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
 */
 
+// very large lists of children can overflow stack due to recursive destruction of shared_ptr, 
+// so move shared_ptrs into a temporary vector
+CSGOperation::~CSGOperation()
+{
+	std::vector<shared_ptr<CSGNode>> purge;
+	if (left().use_count() == 1) purge.push_back(std::move(left()));
+	if (right().use_count() == 1) purge.push_back(std::move(right()));
+	for(size_t i = 0; i < purge.size(); ++i) {
+		auto op = dynamic_pointer_cast<CSGOperation>(purge[i]);
+		if (op && op.use_count() == 1) {
+			purge.push_back(std::move(op->left()));
+			purge.push_back(std::move(op->right()));
+		}
+	}
+}	
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
@@ -159,19 +174,62 @@ std::string CSGLeaf::dump()
 	return this->label;
 }
 
-std::string CSGOperation::dump()
+// Recursive traversal can cause stack overflow with very large loops of child nodes,
+// so tree is traverse iteratively, managing our own stack.
+std::string CSGOperation::dump() 
 {
-	switch (type) {
-	case OpenSCADOperator::UNION:
-		return STR("(" << left()->dump() << " + " << right()->dump() << ")");
-	case OpenSCADOperator::INTERSECTION:
-		return STR("(" << left()->dump() << " * " << right()->dump() << ")");
-	case OpenSCADOperator::DIFFERENCE:
-		return STR("(" << left()->dump() << " - " << right()->dump() << ")");
-	default:
-		assert(false);
-		return "";
-	}
+	// tuple(node pointer, postfix string, ispostfix bool)
+	std::stack<std::tuple<CSGOperation*, std::string, bool>> callstack;
+	callstack.emplace(this, "", false);
+  std::ostringstream out;
+	CSGOperation* node;
+	std::string postfixstr;
+	bool ispostfix;
+  do {
+		std::tie(node, postfixstr, ispostfix) = callstack.top();
+		if (!ispostfix) { // handle left child. only right child uses a prefix string
+			std::string lpostfix;
+			switch (node->type) {
+			case OpenSCADOperator::UNION:
+				lpostfix = " + ";
+				break;
+			case OpenSCADOperator::INTERSECTION:
+				lpostfix = " * ";
+				break;
+			case OpenSCADOperator::DIFFERENCE:
+				lpostfix = " - ";
+				break;
+			default:
+				assert(false);
+			}
+
+			out << '(';
+			
+			// mark current node as postfix before (maybe) pushing left child
+			ispostfix = std::get<2>(callstack.top()) = true;
+			
+			if(auto opl = dynamic_pointer_cast<CSGOperation>(node->left())) {
+				callstack.emplace(opl.get(), lpostfix, false);
+				continue;
+			} else {
+				out << node->left()->dump() << lpostfix;
+			}
+		}
+		
+		// postfix traversal of node, handle right child
+		if (ispostfix) { 
+			callstack.pop();
+			if(auto opr = dynamic_pointer_cast<CSGOperation>(node->right())) {
+				callstack.emplace(opr.get(), ")", false);
+				continue;
+			} else {
+				out << node->right()->dump() << ")";
+			}
+			out << postfixstr;
+		}
+
+	} while(!callstack.empty());
+	return out.str();
 }
 
 void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
