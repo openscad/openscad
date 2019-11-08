@@ -426,7 +426,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
-			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true, true /* allowMultithreading */);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
@@ -829,12 +829,11 @@ int main(int argc, char **argv)
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string>>(), ("enable experimental features: " +
-		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
-		                                               [](const Feature *feature) {
-		                                                   return feature->get_name();
-		                                               }) +
-		                                          "\n").c_str())
+		("enable", po::value<vector<string>>(), ("enable experimental features: " + join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ", [](const Feature *feature) {
+																								 return feature->get_name();
+																							 }) +
+																						 "\n").c_str())
+		("parallelism", po::value<string>(), "Maximum parallelism (# cores) to use for render operations. Only valid if the 'thread-traversal' feature is enabled.")
 #endif
 		("help,h", "print this help message and exit")
 		("version,v", "print the version")
@@ -981,6 +980,13 @@ int main(int argc, char **argv)
 			Feature::enable_feature(feature);
 		}
 	}
+
+#ifdef ENABLE_EXPERIMENTAL
+	if (vm.count("parallelism")) {
+		// TODO: validate input
+		ThreadedNodeVisitor::Parallelism = std::stoi(vm["parallelism"].as<string>());
+	}
+#endif
 
 	string parameterFile;
 	if (vm.count("p")) {

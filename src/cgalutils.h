@@ -4,6 +4,7 @@
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
+#include "node.h"
 
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
@@ -49,4 +50,7 @@ namespace CGALUtils {
 	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons, 
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);
+
+	void lockErrors(CGAL::Failure_behaviour behavior);
+	void unlockErrors();
 };

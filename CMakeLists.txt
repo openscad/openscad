@@ -423,6 +423,7 @@ set(CORE_SOURCES
   src/StatCache.cc
   src/node.cc 
   src/NodeVisitor.cc 
+  src/ThreadedNodeVisitor.cc
   src/context.cc 
   src/builtincontext.cc
   src/modcontext.cc 
@@ -667,6 +668,7 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+target_link_libraries(OpenSCAD pthread)
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES

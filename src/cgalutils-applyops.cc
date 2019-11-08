@@ -37,7 +37,42 @@
 #include <queue>
 #include <unordered_set>
 
+#include <atomic>
+
 namespace CGALUtils {
+
+	// manage changes to CGAL::set_error_behaviour:
+	//  a mutex to guard access
+	std::atomic_flag lockedErrorsLock = ATOMIC_FLAG_INIT;
+	//  the number of times lockErrors has been called (without corresponding unlockErrors)
+	size_t lockedErrorsCount = 0;
+	//  the original error state
+	CGAL::Failure_behaviour lockedErrors = CGAL::Failure_behaviour::ABORT;
+
+#define SPIN_LOCK(flag) do { } while(flag.test_and_set())
+
+	// increments lockedErrorsCount and calls CGAL::set_error_behavior if this is the first [unlocked] call
+	void lockErrors(CGAL::Failure_behaviour behavior)
+	{
+		SPIN_LOCK(lockedErrorsLock);
+		if (lockedErrorsCount == 0)
+			lockedErrors = CGAL::set_error_behaviour(behavior);
+		lockedErrorsCount++;
+		lockedErrorsLock.clear();
+	}
+
+	// decrements lockedErrorsCount and calls CGAL::set_error_behavior if this is the last [locked] call
+	void unlockErrors()
+	{
+		SPIN_LOCK(lockedErrorsLock);
+		if (lockedErrorsCount > 0)
+		{
+			lockedErrorsCount--;
+			if (lockedErrorsCount == 0)
+				CGAL::set_error_behaviour(lockedErrors);
+		}
+		lockedErrorsLock.clear();
+	}
 
 	template<typename Polyhedron>
 	bool is_weakly_convex(Polyhedron const& p) {
@@ -75,19 +110,60 @@ namespace CGALUtils {
 		return visited.size() == p.size_of_facets();
 	}
 
+	/*!
+		Applies UNION to all children and returns the result.
+	*/
+	CGAL_Nef_polyhedron *applyUnion(const Geometry::Geometries &children)
+	{
+		// Speeds up n-ary union operations significantly
+		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+		int nary_union_num_inserted = 0;
+
+		for (const auto &item : children) {
+			const shared_ptr<const Geometry> &chgeom = item.second;
+			shared_ptr<const CGAL_Nef_polyhedron> chNef =
+				dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+
+			// create nef from polyset
+			if (!chNef) {
+				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+				if (chps) chNef.reset(createNefPolyhedronFromGeometry(*chps));
+			}
+
+			if (chNef && !chNef->isEmpty()) {
+				// nary_union.add_polyhedron() can issue assertion errors:
+				// https://github.com/openscad/openscad/issues/802
+				nary_union.add_polyhedron(*chNef->p3);
+				nary_union_num_inserted++;
+			}
+
+			if (item.first) {
+				item.first->progress_report();
+			}
+		}
+
+		if (nary_union_num_inserted == 0) {
+			return nullptr;
+		}
+
+		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+	}
+
 /*!
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-		CGAL_Nef_polyhedron *N = nullptr;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-		try {
+		if (op == OpenSCADOperator::UNION) {
 			// Speeds up n-ary union operations significantly
-			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
-			int nary_union_num_inserted = 0;
-			
+			// TODO: lockErrors() ?
+			return applyUnion(children);
+		}
+
+		CGAL_Nef_polyhedron *N = nullptr;
+		lockErrors(CGAL::THROW_EXCEPTION); // TODO: outer scope
+		try {
 			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
@@ -96,31 +172,22 @@ namespace CGALUtils {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
-				
-				if (op == OpenSCADOperator::UNION) {
-					if (!chN->isEmpty()) {
-						// nary_union.add_polyhedron() can issue assertion errors:
-						// https://github.com/openscad/openscad/issues/802
-						nary_union.add_polyhedron(*chN->p3);
-						nary_union_num_inserted++;
-					}
-					continue;
-				}
+
 				// Initialize N with first expected geometric object
 				if (!N) {
 					N = new CGAL_Nef_polyhedron(*chN);
 					continue;
 				}
-				
+
 				// Intersecting something with nothing results in nothing
 				if (chN->isEmpty()) {
 					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
 					continue;
 				}
-				
+
 				// empty op <something> => empty
 				if (N->isEmpty()) continue;
-				
+
 				switch (op) {
 				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;
@@ -136,17 +203,14 @@ namespace CGALUtils {
 				}
 				item.first->progress_report();
 			}
-
-			if (op == OpenSCADOperator::UNION && nary_union_num_inserted > 0) {
-				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
-			}
 		}
-	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
-		CGAL::set_error_behaviour(old_behaviour);
+
+		unlockErrors();
 		return N;
 	}
 
@@ -163,11 +227,9 @@ namespace CGALUtils {
 		for(const auto &item : children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
-			if (N) {
-				if (!N->isEmpty()) {
-					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-						points.push_back(vector_convert<K::Point_3>(i->point()));
-					}
+			if (N && !N->isEmpty()) {
+				for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
+					points.push_back(vector_convert<K::Point_3>(i->point()));
 				}
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
@@ -185,22 +247,20 @@ namespace CGALUtils {
 
 		// Apply hull
 		bool success = false;
-		if (points.size() >= 4) {
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-			try {
-				CGAL::Polyhedron_3<K> r;
-				CGAL::convex_hull_3(points.begin(), points.end(), r);
-                            PRINTDB("After hull vertices: %d", r.size_of_vertices());
-                            PRINTDB("After hull facets: %d", r.size_of_facets());
-                            PRINTDB("After hull closed: %d", r.is_closed());
-                            PRINTDB("After hull valid: %d", r.is_valid());
-				success = !createPolySetFromPolyhedron(r, result);
-			}
-			catch (const CGAL::Failure_exception &e) {
-				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
-			}
-			CGAL::set_error_behaviour(old_behaviour);
+		lockErrors(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL::Polyhedron_3<K> r;
+			CGAL::convex_hull_3(points.begin(), points.end(), r);
+                        PRINTDB("After hull vertices: %d", r.size_of_vertices());
+                        PRINTDB("After hull facets: %d", r.size_of_facets());
+                        PRINTDB("After hull closed: %d", r.is_closed());
+                        PRINTDB("After hull valid: %d", r.is_valid());
+			success = !createPolySetFromPolyhedron(r, result);
 		}
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
+		}
+		unlockErrors();
 		return success;
 	}
 
@@ -210,7 +270,7 @@ namespace CGALUtils {
 	*/
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		lockErrors(CGAL::THROW_EXCEPTION);
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
@@ -401,7 +461,7 @@ namespace CGALUtils {
 			t_tot.stop();
 			PRINTDB("Minkowski: Total execution time %f s", t_tot.time());
 			t_tot.reset();
-			CGAL::set_error_behaviour(old_behaviour);
+			unlockErrors();
 			return operands[0];
 		}
 		catch (...) {
@@ -409,7 +469,7 @@ namespace CGALUtils {
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
 			CGAL_Nef_polyhedron *N = applyOperator(children, OpenSCADOperator::MINKOWSKI);
-			CGAL::set_error_behaviour(old_behaviour);
+			unlockErrors();
 			return N;
 		}
 	}
@@ -417,11 +477,3 @@ namespace CGALUtils {
 
 
 #endif // ENABLE_CGAL
-
-
-
-
-
-
-
-

@@ -3,11 +3,16 @@
 #include "cache.h"
 #include "memory.h"
 #include "Geometry.h"
+#include <atomic>
+#include <boost/smart_ptr/detail/spinlock.hpp>
 
 class GeometryCache
 {
 public:	
-	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit) {}
+	GeometryCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit) {
+		// TODO: why is this needed? Shouldn't it start out unlocked?
+		cacheLock.unlock();
+	}
 
 	static GeometryCache *instance() { if (!inst) inst = new GeometryCache; return inst; }
 
@@ -18,6 +23,9 @@ public:
 	void setMaxSizeMB(size_t limit);
 	void clear() { cache.clear(); }
 	void print();
+
+	// a mutex (spinlock) to guard access to the cache
+	boost::detail::spinlock cacheLock;
 
 private:
 	static GeometryCache *inst;

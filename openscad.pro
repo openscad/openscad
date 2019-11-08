@@ -23,6 +23,9 @@
 
 include(defaults.pri)
 
+# TODO(justbuchanan): remove before merging
+CONFIG+=experimental
+
 # Local settings are read from local.pri
 exists(local.pri): include(local.pri)
 
@@ -342,6 +345,8 @@ HEADERS += src/version_check.h \
            src/progress.h \
            src/editor.h \
            src/NodeVisitor.h \
+           src/ThreadedNodeVisitor.h \
+           src/CGAL_Handle_for_atomic_shared_ptr.h \
            src/state.h \
            src/nodecache.h \
            src/nodedumper.h \
@@ -469,6 +474,7 @@ SOURCES += \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
+           src/ThreadedNodeVisitor.cc \
            src/GeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \

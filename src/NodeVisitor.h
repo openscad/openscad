@@ -89,6 +89,6 @@ public:
 	}
 	// Add visit() methods for new visitable subtypes of AbstractNode here
 
-private:
+protected:
 	static State nullstate;
 };
