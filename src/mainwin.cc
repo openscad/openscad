@@ -2375,17 +2375,18 @@ void MainWindow::actionDisplayAST()
 {
 	setCurrentOutput();
 	auto e = new QTextEdit(this);
+	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(QString::fromUtf8(root_module->dump("").c_str()));
+		e->setPlainText(QString::fromStdString(root_module->dump("")));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
-	e->show();
 	e->resize(600, 400);
+	e->show();
 	clearCurrentOutput();
 }
 
@@ -2393,38 +2394,41 @@ void MainWindow::actionDisplayCSGTree()
 {
 	setCurrentOutput();
 	auto e = new QTextEdit(this);
+	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
-		e->setPlainText(QString::fromUtf8(this->tree.getString(*this->root_node, "  ").c_str()));
+		e->setPlainText(QString::fromStdString(this->tree.getString(*this->root_node, "  ")));
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
-	e->show();
 	e->resize(600, 400);
+	e->show();
 	clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGProducts()
 {
+	std::string NA("N/A");
 	setCurrentOutput();
 	auto e = new QTextEdit(this);
+	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
 									
-	.arg(this->csgRoot ? QString::fromUtf8(this->csgRoot->dump().c_str()) : "N/A",
-	this->normalizedRoot ? QString::fromUtf8(this->normalizedRoot->dump().c_str()) : "N/A",
-	this->root_products ? QString::fromUtf8(this->root_products->dump().c_str()) : "N/A",
-	this->highlights_products ? QString::fromUtf8(this->highlights_products->dump().c_str()) : "N/A",
-	this->background_products ? QString::fromUtf8(this->background_products->dump().c_str()) : "N/A"));
-	
-	e->show();
+	.arg(QString::fromStdString(this->csgRoot ? this->csgRoot->dump() : NA),
+		QString::fromStdString(this->normalizedRoot ? this->normalizedRoot->dump() : NA),
+		QString::fromStdString(this->root_products ? this->root_products->dump() : NA),
+		QString::fromStdString(this->highlights_products ? this->highlights_products->dump() : NA),
+		QString::fromStdString(this->background_products ? this->background_products->dump() : NA)));
+
 	e->resize(600, 400);
+	e->show();
 	clearCurrentOutput();
 }
 
@@ -2994,6 +2998,7 @@ void MainWindow::helpAbout()
 	qApp->setWindowIcon(QApplication::windowIcon());
 	auto dialog = new AboutDialog(this);
 	dialog->exec();
+	dialog->deleteLater();
 }
 
 void MainWindow::helpHomepage()
