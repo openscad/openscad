@@ -39,7 +39,7 @@ class CSGOperation : public CSGNode
 {
 public:
 	CSGOperation() {}
-	~CSGOperation();
+	~CSGOperation() {}
 	void initBoundingBox() override;
 	std::string dump() override;
 
@@ -49,16 +49,30 @@ public:
 	OpenSCADOperator getType() const { return this->type; }
 	
 	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
-	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, CSGNode *left, CSGNode *right) {
-		return createCSGNode(type, shared_ptr<CSGNode>(left), shared_ptr<CSGNode>(right));
-	}
 
 private:
 	CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
-	CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right);
-
 	OpenSCADOperator type;
 	std::vector<shared_ptr<CSGNode> > children;
+};
+
+// very large lists of children can overflow stack due to recursive destruction of shared_ptr, 
+// so move shared_ptrs into a temporary vector
+struct CSGOperationDeleter {
+	void operator()(CSGOperation* node) {
+		std::vector<shared_ptr<CSGNode>> purge;
+		purge.emplace_back(std::move(node->right()));
+		purge.emplace_back(std::move(node->left()));
+		delete node;
+		do {
+			auto op = dynamic_pointer_cast<CSGOperation>(purge.back());
+		  purge.pop_back();
+			if (op && op.use_count() == 1) {
+				purge.emplace_back(std::move(op->right()));
+				purge.emplace_back(std::move(op->left()));
+			}
+		} while(!purge.empty());
+	}
 };
 
 class CSGLeaf : public CSGNode

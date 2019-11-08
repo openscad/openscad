@@ -63,22 +63,6 @@ primitives, each having a CSG type associated with it.
 	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
 */
 
-// very large lists of children can overflow stack due to recursive destruction of shared_ptr, 
-// so move shared_ptrs into a temporary vector
-CSGOperation::~CSGOperation()
-{
-	std::vector<shared_ptr<CSGNode>> purge;
-	if (left().use_count() == 1) purge.push_back(std::move(left()));
-	if (right().use_count() == 1) purge.push_back(std::move(right()));
-	for(size_t i = 0; i < purge.size(); ++i) {
-		auto op = dynamic_pointer_cast<CSGOperation>(purge[i]);
-		if (op && op.use_count() == 1) {
-			purge.push_back(std::move(op->left()));
-			purge.push_back(std::move(op->right()));
-		}
-	}
-}	
-
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
 	// In case we're creating a CSG terms from a pruned tree, left/right can be nullptr
@@ -113,7 +97,7 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 		}
 	}
 
-	return shared_ptr<CSGNode>(new CSGOperation(type, left, right));
+	return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
 }
 
 CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
@@ -128,14 +112,6 @@ CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shar
 {
 	this->children.push_back(left);
 	this->children.push_back(right);
-	initBoundingBox();
-}
-
-CSGOperation::CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right)
-	: type(type)
-{
-	this->children.push_back(shared_ptr<CSGNode>(left));
-	this->children.push_back(shared_ptr<CSGNode>(right));
 	initBoundingBox();
 }
 
