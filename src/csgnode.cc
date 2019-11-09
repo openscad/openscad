@@ -145,20 +145,20 @@ void CSGOperation::initBoundingBox()
 	}
 }
 
-std::string CSGLeaf::dump()
+std::string CSGLeaf::dump() const
 {
 	return this->label;
 }
 
 // Recursive traversal can cause stack overflow with very large loops of child nodes,
 // so tree is traverse iteratively, managing our own stack.
-std::string CSGOperation::dump() 
+std::string CSGOperation::dump() const
 {
 	// tuple(node pointer, postfix string, ispostfix bool)
-	std::stack<std::tuple<CSGOperation*, std::string, bool>> callstack;
+	std::stack<std::tuple<const CSGOperation*, std::string, bool>> callstack;
 	callstack.emplace(this, "", false);
   std::ostringstream out;
-	CSGOperation* node;
+	const CSGOperation* node;
 	std::string postfixstr;
 	bool ispostfix;
   do {

@@ -17,7 +17,7 @@ public:
 
 	CSGNode(Flag flags = FLAG_NONE) : flags(flags) {}
 	virtual ~CSGNode() {}
-	virtual std::string dump() = 0;
+	virtual std::string dump() const = 0;
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
 	unsigned int getFlags() const { return this->flags; }
@@ -41,10 +41,12 @@ public:
 	CSGOperation() {}
 	~CSGOperation() {}
 	void initBoundingBox() override;
-	std::string dump() override;
+	std::string dump() const override;
 
 	shared_ptr<CSGNode> &left() { return this->children[0]; }
 	shared_ptr<CSGNode> &right() { return this->children[1]; }
+	const shared_ptr<CSGNode> &left() const { return this->children[0]; } 
+	const shared_ptr<CSGNode> &right() const { return this->children[1]; }
 
 	OpenSCADOperator getType() const { return this->type; }
 	
@@ -82,7 +84,7 @@ public:
 	CSGLeaf(const shared_ptr<const class Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label);
 	~CSGLeaf() {}
 	void initBoundingBox() override;
-	std::string dump() override;
+	std::string dump() const override;
 	std::string label;
 	shared_ptr<const Geometry> geom;
 	Transform3d matrix;
