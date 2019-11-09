@@ -29,7 +29,7 @@ public:
 	std::shared_ptr<EvalContext> evalctx;
 
 #ifdef DEBUG
-	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst) override;
 #endif
 
 protected:
