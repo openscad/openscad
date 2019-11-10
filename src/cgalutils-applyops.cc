@@ -6,6 +6,7 @@
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
+#include "progress.h"
 #include "Polygon2d.h"
 #include "polyset-utils.h"
 #include "grid.h"
@@ -29,6 +30,7 @@
 #endif
 #pragma pop_macro("NDEBUG")
 
+#include "memory.h"
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
@@ -83,11 +85,10 @@ namespace CGALUtils {
 	{
 		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+
+		assert(op != OpenSCADOperator::UNION && "use applyUnion() instead of applyOperator()");
+
 		try {
-			// Speeds up n-ary union operations significantly
-			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
-			int nary_union_num_inserted = 0;
-			
 			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
@@ -95,16 +96,6 @@ namespace CGALUtils {
 				if (!chN) {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-				}
-				
-				if (op == OpenSCADOperator::UNION) {
-					if (!chN->isEmpty()) {
-						// nary_union.add_polyhedron() can issue assertion errors:
-						// https://github.com/openscad/openscad/issues/802
-						nary_union.add_polyhedron(*chN->p3);
-						nary_union_num_inserted++;
-					}
-					continue;
 				}
 				// Initialize N with first expected geometric object
 				if (!N) {
@@ -134,20 +125,79 @@ namespace CGALUtils {
 				default:
 					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
 				}
-				item.first->progress_report();
-			}
-
-			if (op == OpenSCADOperator::UNION && nary_union_num_inserted > 0) {
-				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+				if (item.first) item.first->progress_report();
 			}
 		}
-	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return N;
+	}
+
+
+	CGAL_Nef_polyhedron *applyUnion(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+	{
+		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
+		struct QueueItemGreater {
+			// stable sort for priority_queue by facets, then progress mark
+			bool operator()(const QueueConstItem &lhs, const QueueConstItem& rhs) const
+			{
+				size_t l = lhs.first->p3->number_of_facets();
+				size_t r = rhs.first->p3->number_of_facets();
+				return (l > r) || (l == r && lhs.second > rhs.second);
+			}
+		};
+		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
+
+		try {
+			int min_progress_mark = std::numeric_limits<int>::max();
+			int max_progress_mark = std::numeric_limits<int>::min();
+			// sort children by fewest faces
+			for (auto it = chbegin; it != chend; ++it) {
+				const shared_ptr<const Geometry> &chgeom = it->second;
+				shared_ptr<const CGAL_Nef_polyhedron> curChild = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				if (!curChild) {
+					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					if (chps) curChild.reset(createNefPolyhedronFromGeometry(*chps));
+				}
+				if (curChild && !curChild->isEmpty()) {
+					int node_mark = -1;
+					if (it->first) {
+						node_mark = it->first->progress_mark;
+					}
+					q.emplace(curChild, node_mark);
+				}
+			}
+
+			progress_tick();
+			while (q.size() > 2) {
+				auto p1 = q.top();
+				q.pop();
+				auto p2 = q.top();
+				q.pop();
+				q.emplace(make_shared<const CGAL_Nef_polyhedron>(*p1.first + *p2.first), -1);
+				progress_tick();
+			}
+
+			if (q.size() == 2) {
+				auto ptr1 = std::const_pointer_cast<CGAL_Nef_polyhedron>(q.top().first); 
+				q.pop();
+				*ptr1 += *q.top().first;
+				progress_tick();
+				return new CGAL_Nef_polyhedron(ptr1->p3);
+			} else if (q.size() == 1) {
+				return new CGAL_Nef_polyhedron(q.top().first->p3);
+			} else {
+				return nullptr;
+			}
+		}
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+		}
+		return nullptr;
 	}
 
 
@@ -385,7 +435,7 @@ namespace CGALUtils {
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
+					CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(fake_children.begin(), fake_children.end());
 					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
