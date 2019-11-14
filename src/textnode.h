@@ -1,7 +1,6 @@
 #pragma once
 
 #include "node.h"
-#include "visitor.h"
 #include "value.h"
 
 #include "FreetypeRenderer.h"
@@ -11,14 +10,11 @@ class TextModule;
 class TextNode : public AbstractPolyNode
 {
 public:
+	VISITABLE();
 	TextNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
 	
-	virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	
-	virtual std::string toString() const;
-	virtual std::string name() const { return "text"; }
+	std::string toString() const override;
+	std::string name() const override { return "text"; }
 	
 	virtual std::vector<const class Geometry *> createGeometryList() const;
   

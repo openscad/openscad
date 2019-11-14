@@ -2,19 +2,16 @@
 //#include "cgal.h"
 //#include "tess.h"
 
-#ifdef NDEBUG
-#define PREV_NDEBUG NDEBUG
+#pragma push_macro("NDEBUG")
 #undef NDEBUG
-#endif
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
-#include <CGAL/Triangulation_face_base_with_info_2.h>
-#ifdef PREV_NDEBUG
-#define NDEBUG PREV_NDEBUG
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4,11,0)
+  #include <CGAL/Triangulation_2_projection_traits_3.h>
+#else
+  #include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
 #endif
-
-#include <boost/foreach.hpp>
-
+#include <CGAL/Triangulation_face_base_with_info_2.h>
+#pragma pop_macro("NDEBUG")
 
 struct FaceInfo {
   int nesting_level;
@@ -25,7 +22,7 @@ typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
 typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
 typedef CGAL::Triangulation_data_structure_2<
 	CGAL::Triangulation_vertex_base_2<Projection>,
-	CGAL::Constrained_triangulation_face_base_2<Projection, Fbb> > Tds;
+	CGAL::Constrained_triangulation_face_base_2<Projection, Fbb>> Tds;
 typedef CGAL::Constrained_Delaunay_triangulation_2<
 	Projection, Tds, CGAL::Exact_predicates_tag> CDT;
 
@@ -118,7 +115,7 @@ namespace CGALUtils {
 		// the Constrained Delaunay Triangulator.
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
-		BOOST_FOREACH(const PolygonK &poly, polygons) {
+		for(const auto &poly : polygons) {
 			for (size_t i=0;i<poly.size(); i++) {
 				cdt.insert_constraint(poly[i], poly[(i+1)%poly.size()]);
 			}

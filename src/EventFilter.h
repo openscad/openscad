@@ -2,17 +2,17 @@
 
 #include <QObject>
 #include <QFileOpenEvent>
-#include "MainWindow.h"
+#include "OpenSCADApp.h"
 #include "launchingscreen.h"
 
-class EventFilter : public QObject
+class SCADEventFilter : public QObject
 {
 	Q_OBJECT;
 	
 public:
-	EventFilter(QObject *parent) : QObject(parent) {}
+	SCADEventFilter(QObject *parent) : QObject(parent) {}
 protected:
-	bool eventFilter(QObject *obj, QEvent *event) {
+	bool eventFilter(QObject *obj, QEvent *event) override {
 		// Handle Apple event for opening files, only available on OS X
 		if (event->type() == QEvent::FileOpen) {
 			QFileOpenEvent *foe = static_cast<QFileOpenEvent *>(event);
@@ -24,7 +24,7 @@ protected:
 																	Q_ARG(QString, filename));
 			}
 			else {
-				MainWindow::requestOpenFile(filename);
+				scadApp->requestOpenFile(filename);
 			}
 			return true;
 		} else {

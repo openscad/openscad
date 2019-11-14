@@ -30,7 +30,9 @@
 #include "parsersettings.h"
 #include "node.h"
 #include "module.h"
-#include "modcontext.h"
+#include "ModuleInstantiation.h"
+#include "builtincontext.h"
+#include "FileModule.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -52,7 +54,6 @@ namespace fs = boost::filesystem;
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
-#include "boosty.h"
 #include "PlatformUtils.h"
 
 std::string commandline_commands;
@@ -65,7 +66,7 @@ po::variables_map parse_options(int argc, char *argv[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help,h", "help message")
-		("cgalcachesize", po::value<size_t>(), "Set CGAL cache size in bytes");
+		("cgalcachesize", po::value<size_t>(), "Set CGAL cache size in MB");
 	
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -88,8 +89,8 @@ po::variables_map parse_options(int argc, char *argv[])
 int main(int argc, char **argv)
 {
 	const char *filename, *outfilename = NULL;
-	size_t cgalcachesize = 1*1024*1024;
-	StackCheck::inst()->init();
+	size_t cgalcachesize = 1;
+	StackCheck::inst().init();
 
 	po::variables_map vm;
 	try {
@@ -112,19 +113,18 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	CGALCache::instance()->setMaxSize(cgalcachesize);
+	CGALCache::instance()->setMaxSizeMB(cgalcachesize);
 	
 	Builtins::instance()->initialize();
 
 	fs::path original_path = fs::current_path();
 
-	currentdir = boosty::stringy(fs::current_path());
+	currentdir = fs::current_path().generic_string();
 
-	PlatformUtils::registerApplicationPath(boosty::stringy(fs::path(argv[0]).branch_path()));
+	PlatformUtils::registerApplicationPath(fs::path(argv[0]).branch_path().generic_string());
 	parser_init();
 
-	ModuleContext top_ctx;
-	top_ctx.registerBuiltin();
+	BuiltinContext top_ctx;
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");

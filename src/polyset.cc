@@ -30,7 +30,6 @@
 #include "printutils.h"
 #include "grid.h"
 #include <Eigen/LU>
-#include <boost/foreach.hpp>
 
 /*! /class PolySet
 
@@ -60,7 +59,7 @@ PolySet::~PolySet()
 
 std::string PolySet::dump() const
 {
-	std::stringstream out;
+	std::ostringstream out;
 	out << "PolySet:"
 	  << "\n dimensions:" << this->dim
 	  << "\n convexity:" << this->convexity
@@ -128,8 +127,8 @@ BoundingBox PolySet::getBoundingBox() const
 {
 	if (this->dirty) {
 		this->bbox.setNull();
-		BOOST_FOREACH(const Polygon &poly, polygons) {
-			BOOST_FOREACH(const Vector3d &p, poly) {
+		for(const auto &poly : polygons) {
+			for(const auto &p : poly) {
 				this->bbox.extend(p);
 			}
 		}
@@ -141,7 +140,7 @@ BoundingBox PolySet::getBoundingBox() const
 size_t PolySet::memsize() const
 {
 	size_t mem = 0;
-	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
+	for(const auto &p : this->polygons) mem += p.size() * sizeof(Vector3d);
 	mem += this->polygon.memsize() - sizeof(this->polygon);
 	mem += sizeof(PolySet);
 	return mem;
@@ -160,8 +159,8 @@ void PolySet::transform(const Transform3d &mat)
 	// If mirroring transform, flip faces to avoid the object to end up being inside-out
 	bool mirrored = mat.matrix().determinant() < 0;
 
-	BOOST_FOREACH(Polygon &p, this->polygons){
-		BOOST_FOREACH(Vector3d &v, p) {
+	for(auto &p : this->polygons){
+		for(auto &v : p) {
 			v = mat * v;
 		}
 		if (mirrored) std::reverse(p.begin(), p.end());
@@ -175,7 +174,7 @@ bool PolySet::is_convex() const {
 	return PolysetUtils::is_approximately_convex(*this);
 }
 
-void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
+void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize)
 {
 	BoundingBox bbox = this->getBoundingBox();
 
@@ -210,16 +209,15 @@ void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
 void PolySet::quantizeVertices()
 {
 	Grid3d<int> grid(GRID_FINE);
-	int numverts = 0;
 	std::vector<int> indices; // Vertex indices in one polygon
 	for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
 		Polygon &p = *iter;
 		indices.resize(p.size());
 		// Quantize all vertices. Build index list
-		for (int i=0;i<p.size();i++) indices[i] = grid.align(p[i]);
-		// Remove consequtive duplicate vertices
+		for (unsigned int i=0;i<p.size();i++) indices[i] = grid.align(p[i]);
+		// Remove consecutive duplicate vertices
 		Polygon::iterator currp = p.begin();
-		for (int i=0;i<indices.size();i++) {
+		for (unsigned int i=0;i<indices.size();i++) {
 			if (indices[i] != indices[(i+1)%indices.size()]) {
 				(*currp++) = p[i];
 			}

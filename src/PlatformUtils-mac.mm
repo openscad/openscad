@@ -5,9 +5,16 @@
 
 #import <Foundation/Foundation.h>
 
+#include "version.h"
+
 std::string PlatformUtils::pathSeparatorChar()
 {
 	return ":";
+}
+
+std::string PlatformUtils::userDocumentsPath()
+{
+	return documentsPath();
 }
 
 std::string PlatformUtils::documentsPath()
@@ -39,26 +46,39 @@ unsigned long PlatformUtils::stackLimit()
   return STACK_LIMIT_DEFAULT;
 }
 
-std::string PlatformUtils::sysinfo(bool extended)
+const std::string PlatformUtils::user_agent()
+{
+	std::string result;
+
+	result += "OpenSCAD/";
+	result += openscad_detailedversionnumber;
+	result += " (";
+	result += sysinfo(false);
+	result += ")";
+
+	return result;
+}
+
+const std::string PlatformUtils::sysinfo(bool extended)
 {
   std::string result;
   
   result += "Mac OS X ";
   result += [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
-  
+
   int64_t physical_memory;
   int32_t numcpu;
   size_t length64 = sizeof(int64_t);
   size_t length32 = sizeof(int32_t);;
   
-  sysctlbyname("hw.memsize", &physical_memory, &length64, NULL, 0);
-  sysctlbyname("hw.physicalcpu", &numcpu, &length32, NULL, 0);
+  sysctlbyname("hw.memsize", &physical_memory, &length64, nullptr, 0);
+  sysctlbyname("hw.physicalcpu", &numcpu, &length32, nullptr, 0);
   
   size_t modellen = 0;
-  sysctlbyname("hw.model", NULL, &modellen, NULL, 0);
+  sysctlbyname("hw.model", nullptr, &modellen, nullptr, 0);
   if (modellen) {
     char *model = (char *)malloc(modellen*sizeof(char));
-    sysctlbyname("hw.model", model, &modellen, NULL, 0);
+    sysctlbyname("hw.model", model, &modellen, nullptr, 0);
     result += " ";
     result += model;
     free(model);

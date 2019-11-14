@@ -14,34 +14,36 @@
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {
-	PRINTDB("setupCamera() %i",cam.type);
-	if (cam.type == Camera::NONE) cam.viewall = true;
 	if (cam.viewall) cam.viewAll(bbox);
 }
 
-void export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output)
+bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
 	try {
-		glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
+		glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
-		return;
+		return false;
 	}
 	CGALRenderer cgalRenderer(root_geom);
 
 	BoundingBox bbox = cgalRenderer.getBoundingBox();
-	setupCamera(cam, bbox);
+	setupCamera(camera, bbox);
 
-	glview->setCamera(cam);
+	glview->setCamera(camera);
 	glview->setRenderer(&cgalRenderer);
 	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->setShowFaces(!options["wireframe"]);
+	glview->setShowCrosshairs(options["crosshairs"]);
+	glview->setShowAxes(options["axes"]);
+	glview->setShowScaleProportional(options["scales"]);
+	glview->setShowEdges(options["edges"]);
 	glview->paintGL();
 	glview->save(output);
+	return true;
 }
-
-enum Previewer { OPENCSG, THROWNTOGETHER } previewer;
 
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
@@ -49,57 +51,51 @@ enum Previewer { OPENCSG, THROWNTOGETHER } previewer;
 #endif
 #include "ThrownTogetherRenderer.h"
 
-void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Previewer previewer = OPENCSG)
+bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output)
 {
 	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
-    csgInfo.compile_chains(tree);
+	csgInfo.compile_products(tree);
 
+	OffscreenView *glview;
 	try {
-		csgInfo.glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
+		glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
-		return;
+		return false;
 	}
 
 #ifdef ENABLE_OPENCSG
-	OpenCSGRenderer openCSGRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
+	OpenCSGRenderer openCSGRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products, glview->shaderinfo);
 #endif
-	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
+	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 
+	if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
-	if (previewer == OPENCSG)
-		csgInfo.glview->setRenderer(&openCSGRenderer);
-	else
+		glview->setRenderer(&openCSGRenderer);
+#else
+		fprintf(stderr,"This openscad was built without OpenCSG support\n");
+		return false;
 #endif
-		csgInfo.glview->setRenderer(&thrownTogetherRenderer);
+	}
+	else {
+		glview->setRenderer(&thrownTogetherRenderer);
+	}
 #ifdef ENABLE_OPENCSG
-	BoundingBox bbox = csgInfo.glview->getRenderer()->getBoundingBox();
-	setupCamera(cam, bbox);
+	BoundingBox bbox = glview->getRenderer()->getBoundingBox();
+	setupCamera(camera, bbox);
 
-	csgInfo.glview->setCamera(cam);
+	glview->setCamera(camera);
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
-	csgInfo.glview->setColorScheme(RenderSettings::inst()->colorscheme);
-	csgInfo.glview->paintGL();
-	csgInfo.glview->save(output);
-}
-
-void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
-{
-	PRINTD("export_png_w_opencsg");
-#ifdef ENABLE_OPENCSG
-	export_png_preview_common(tree, cam, output, OPENCSG);
-#else
-	fprintf(stderr,"This openscad was built without OpenCSG support\n");
-#endif
-}
-
-void export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output)
-{
-	PRINTD("export_png_w_thrown");
-	export_png_preview_common(tree, cam, output, THROWNTOGETHER);
+	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->setShowAxes(options["axes"]);
+	glview->setShowScaleProportional(options["scales"]);
+	glview->setShowEdges(options["edges"]);
+	glview->paintGL();
+	glview->save(output);
+	return true;
 }
 
 #endif // ENABLE_CGAL

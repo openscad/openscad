@@ -1,0 +1,69 @@
+//Parameter("")
+x = 1;
+//Parameter(12)
+x1 = 1;
+//Parameter(12)
+x2 = 1;
+//Parameter(12)
+x3 = 1;
+//Parameter(12)
+x4 = 1;
+//Parameter([1 : 12])
+x5 = 1;
+//Parameter([1 : 2 : 12])
+x6 = 1;
+//Parameter("")
+x7 = 1;
+//Parameter("")
+x8 = 1;
+//Parameter("")
+x9 = 1;
+//Parameter("")
+x10 = 1;
+//Parameter("")
+x11 = 1;
+//Parameter([12])
+x12 = 1;
+//Parameter([[10, "Small"], [20, "Medium"], [30, "Large"]])
+x13 = 10;
+//Parameter([[10, "Small"], [20, "34 Medium"], [30, "Large 12"]])
+x13a = 10;
+//Parameter([[10, 100], [20, 101], [30, 102]])
+x14 = 10;
+//Parameter("parameter")
+x15 = 10;
+//Parameter([0, 1, 2, 3])
+x16 = 10;
+//Parameter("parameter")
+x17 = "text";
+//Parameter(["foo", "bar", "baz"])
+x18 = "text";
+//Parameter([[0, "text"], [1, "foo"], [2, "bar"], [3, "hello"]])
+x19 = "text";
+//Parameter([["foo", 10], ["bar", 10], ["baz", 30]])
+x20 = "text";
+//Parameter([["foo", "yes"], ["bar", "no"], ["baz", "mgiht"]])
+x21 = "text";
+//Parameter([23, 4])
+x22 = [12, 34];
+//Parameter([23, 4, 23, 4, 45])
+x23 = [12, 34];
+//Parameter([23, 4, 2, 3, 4, 6])
+x24 = [12, 34, 2, 3, 41, 23];
+//Parameter("")
+x25 = 12;
+//Parameter("")
+x26 = "text";
+//Parameter("end parameter")
+x27 = 12;
+//Parameter("")
+x28 = -12;
+//Parameter("")
+x29 = !1;
+//Parameter("")
+x30 = ["new", "secon"];
+//Parameter(["new", "second"])
+x31 = ["new", "second"];
+//Parameter(["new", "second"])
+x32 = ["new", "second"];
+

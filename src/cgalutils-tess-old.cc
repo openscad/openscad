@@ -2,7 +2,7 @@
 
 This is our custom tessellator of Nef Polyhedron faces. The problem with 
 Nef faces is that sometimes the 'default' tessellator of Nef Polyhedron 
-doesnt work. This is particularly true with situations where the polygon 
+doesn't work. This is particularly true with situations where the polygon
 face is not, actually, 'simple', according to CGAL itself. This can 
 occur on a bad quality STL import but also for other reasons. The 
 resulting Nef face will appear to the average human eye as an ordinary, 
@@ -37,7 +37,7 @@ polygons because they all require input polygons to pass the
 triangles.
 
 There is also the question of which underlying number type to use. Some 
-of the CGAL functions simply dont guarantee good results with a type 
+of the CGAL functions simply don't guarantee good results with a type 
 like double. Although much the math here is somewhat simple, like 
 line-line intersection, and involves only simple algebra, the 
 approximations required when using floating-point types can cause the 
@@ -51,8 +51,11 @@ much slower in many cases.
 */
 
 #include "cgalutils.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Delaunay_mesher_no_edge_refinement_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
+#pragma pop_macro("NDEBUG")
 
 typedef CGAL_Kernel3 Kernel;
 //typedef CGAL::Triangulation_vertex_base_2<Kernel> Vb;
@@ -131,7 +134,7 @@ polygon mirror-image and vice versa.
 
 Now, there is a second curious fact that helps us here. In 3d, we are 
 using the plane equation of ax+by+cz+d=0, where a,b,c determine its 
-direction. If you notice, there are actually mutiple sets of numbers 
+direction. If you notice, there are actually multiple sets of numbers 
 a:b:c that will describe the exact same plane. For example the 'ground' 
 plane, called the XYplane, where z is everywhere 0, has the equation 
 0x+0y+1z+0=0, simplifying to a solution for x,y,z of z=0 and x,y = any 
@@ -340,7 +343,7 @@ namespace CGALUtils {
 		PRINTDB("plane %s",plane );
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector< std::vector<CGAL_Point_2> > polygons2d;
+		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i=0;i<polygons.size();i++) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;
@@ -459,7 +462,7 @@ namespace CGALUtils {
 		PRINTDB("plane %s",plane );
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
-		std::vector< std::vector<CGAL_Point_2> > polygons2d;
+		std::vector< std::vector<CGAL_Point_2>> polygons2d;
 		for (size_t i=0;i<polygons.size();i++) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;

@@ -113,7 +113,6 @@ SOURCES += export_nef.cpp \
            ../src/polyset-gl.cc \
            ../src/GeometryUtils.cc \
            ../src/svg.cc \
-           ../src/grid.cc \
            ../src/node.cc \
            ../src/export.cc \
            ../src/polyset-utils.cc \

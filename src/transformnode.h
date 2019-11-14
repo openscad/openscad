@@ -1,18 +1,16 @@
 #pragma once
 
 #include "node.h"
-#include "visitor.h"
 #include "linalg.h"
 
 class TransformNode : public AbstractNode
 {
 public:
-	TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	virtual std::string toString() const;
-	virtual std::string name() const;
+	VISITABLE();
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	TransformNode(const ModuleInstantiation *mi);
+	std::string toString() const override;
+	std::string name() const override;
 
 	Transform3d matrix;
 };

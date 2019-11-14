@@ -1,7 +1,7 @@
 //Test blank
 use <>
 
-//Test that the entire path is pushed onto the stack upto the last '/' 
+//Test that the entire path is pushed onto the stack up to the last '/' 
 use <sub1/sub2/sub3/sub4/use-test2.scad>
 
 //Test that a non existent path/file doesn't screw things up
@@ -13,9 +13,6 @@ use <use-test5.scad>
 //Test without preceding space
 use<use-test5.scad>
 
-//Test with other strange character that is allowed
-use>>>>><use-test5.scad>
-
 //Test that filenames with spaces work
 use <use test6.scad>
 
@@ -26,16 +23,16 @@ use<test/>
 use </>
 
 //Test with absolute path
-include <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
+use <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
 
 // Test simple MCAD library
-include <MCAD/teardrop.scad>
+use <MCAD/teardrop.scad>
 
 // Test MCAD library which includes another file
-include <MCAD/math.scad>
+use <MCAD/math.scad>
 
 // Test MCAD library which uses another file
-include <MCAD/servos.scad>
+use <MCAD/servos.scad>
 
 module test1()
 {

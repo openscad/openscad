@@ -2,13 +2,14 @@
 #include "polyset.h"
 #include "printutils.h"
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Polygon_2.h>
+#pragma pop_macro("NDEBUG")
 #include <iostream>
-
-#include <boost/foreach.hpp>
 
 namespace Polygon2DCGAL {
 
@@ -42,13 +43,13 @@ mark_domains(CDT &ct,
   queue.push_back(start);
 
   while (!queue.empty()) {
-    CDT::Face_handle fh = queue.front();
+    auto fh = queue.front();
     queue.pop_front();
     if (fh->info().nesting_level == -1) {
       fh->info().nesting_level = index;
       for (int i = 0; i < 3; i++) {
         CDT::Edge e(fh,i);
-        CDT::Face_handle n = fh->neighbor(i);
+        auto n = fh->neighbor(i);
         if (n->info().nesting_level == -1) {
           if (ct.is_constrained(e)) border.push_back(e);
           else queue.push_back(n);
@@ -86,54 +87,51 @@ mark_domains(CDT &cdt)
 
 }
 
-#define OPENSCAD_CGAL_ERROR_BEGIN \
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION); \
-	try {
-
-#define OPENSCAD_CGAL_ERROR_END(errorstr, onerror) \
-  } \
-	catch (const CGAL::Precondition_exception &e) { \
-		PRINTB(errorstr ": %s", e.what()); \
-		CGAL::set_error_behaviour(old_behaviour); \
-		onerror; \
-	} \
-	CGAL::set_error_behaviour(old_behaviour);
-  
-
 /*!
 	Triangulates this polygon2d and returns a 2D PolySet.
 */
 PolySet *Polygon2d::tessellate() const
 {
 	PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-	PolySet *polyset = new PolySet(*this);
+	auto polyset = new PolySet(*this);
 
 	Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
-	OPENSCAD_CGAL_ERROR_BEGIN;
+
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+
 	// Adds all vertices, and add all contours as constraints.
-	BOOST_FOREACH(const Outline2d &outline, this->outlines()) {
+	for (const auto &outline : this->outlines()) {
 		// Start with last point
-		Polygon2DCGAL::CDT::Vertex_handle prev = cdt.insert(Polygon2DCGAL::Point(outline.vertices[outline.vertices.size()-1][0], outline.vertices[outline.vertices.size()-1][1]));
-		BOOST_FOREACH(const Vector2d &v, outline.vertices) {
-			Polygon2DCGAL::CDT::Vertex_handle curr = cdt.insert(Polygon2DCGAL::Point(v[0], v[1]));
+		auto prev = cdt.insert({outline.vertices[outline.vertices.size()-1][0], outline.vertices[outline.vertices.size()-1][1]});
+		for (const auto &v : outline.vertices) {
+			auto curr = cdt.insert({v[0], v[1]});
 			if (prev != curr) { // Ignore duplicate vertices
 				cdt.insert_constraint(prev, curr);
 				prev = curr;
 			}
 		}
 	}
-	OPENSCAD_CGAL_ERROR_END("CGAL error in Polygon2d::tesselate()", return NULL);
 
+  }
+	catch (const CGAL::Precondition_exception &e) {
+		PRINTB("CGAL error in Polygon2d::tesselate(): %s", e.what());
+		CGAL::set_error_behaviour(old_behaviour);
+		return nullptr;
+	}
+	CGAL::set_error_behaviour(old_behaviour);
+  
 	// To extract triangles which is part of our polygon, we need to filter away
 	// triangles inside holes.
 	mark_domains(cdt);
-	for (Polygon2DCGAL::CDT::Finite_faces_iterator fit=cdt.finite_faces_begin();
-			 fit!=cdt.finite_faces_end();++fit) {
+	for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
 		if (fit->info().in_domain()) {
 			polyset->append_poly();
-			for (int i=0;i<3;i++) polyset->append_vertex(fit->vertex(i)->point()[0],
-																									 fit->vertex(i)->point()[1],
-																									 0);
+			for (int i=0;i<3;i++) {
+				polyset->append_vertex(fit->vertex(i)->point()[0],
+															 fit->vertex(i)->point()[1],
+															 0);
+			}
 		}
 	}
 	return polyset;

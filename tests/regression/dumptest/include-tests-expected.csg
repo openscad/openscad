@@ -62,10 +62,12 @@ group() {
 							}
 							group();
 							multmatrix([[1, 0, 0, -6], [0, 1, 0, 0], [0, 0, 1, 19], [0, 0, 0, 1]]) {
-								multmatrix([[2.22045e-16, -2.22045e-16, 1, 0], [1, 0, -2.22045e-16, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
+								multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									group() {
-										linear_extrude(height = 12, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-											polygon(points = [[0, 0], [18, 0], [0, 4]], paths = [[0, 1, 2]], convexity = 1);
+										multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+											linear_extrude(height = 12, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+												polygon(points = [[0, 0], [18, 0], [0, 4]], paths = [[0, 1, 2]], convexity = 1);
+											}
 										}
 									}
 								}
@@ -81,3 +83,4 @@ group() {
 		}
 	}
 }
+

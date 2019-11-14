@@ -6,12 +6,16 @@
 #include <map>
 #include <vector>
 
+#include "exceptions.h"
+
 class Feature
 {
 public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
+	static const Feature ExperimentalInputDriverDBus;
+	static const Feature ExperimentalFunctionLiterals;
 	static const Feature ExperimentalLazyUnion;
 
 	const std::string& get_name() const;
@@ -38,4 +42,14 @@ private:
     
 	Feature(const std::string &name, const std::string &description);
 	virtual ~Feature();
+};
+
+class ExperimentalFeatureException : public EvaluationException
+{
+public:
+	static void check(const Feature &feature);
+	~ExperimentalFeatureException() throw();
+
+private:
+	ExperimentalFeatureException(const std::string &what_arg);
 };

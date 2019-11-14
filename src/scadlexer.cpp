@@ -6,13 +6,14 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 {
 	// -> Style: Keyword (lexer.l)
 	keywordSet[0] =
-		"if else let for module function true false undef "
-		"include use";
+		"if else let for each module function true false undef "
+		"include use assert";
 
 	// -> Style: KeywordSet2 (func.cc)
 	keywordSet[1] =
 		"abs sign rands min max sin cos asin acos tan atan atan2 "
-		"round ceil floor pow sqrt exp len log ln str chr concat "
+		"round ceil floor pow sqrt exp len log ln str chr ord concat "
+		"is_undef is_list is_num is_bool is_string is_function "
 		"lookup search version version_num norm cross parent_module "
 		"dxf_dim dxf_cross";
 
@@ -24,10 +25,13 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	// -> Style: GlobalClass
 	keywordSet[3] =
 		"cube sphere cylinder polyhedron square circle polygon text "
-		"minkowski hull resize child echo union difference "
+		"minkowski hull resize child children echo union difference "
 		"intersection linear_extrude rotate_extrude import group  "
 		"projection render surface scale rotate mirror translate "
-		"multmatrix color offset ";
+		"multmatrix color offset intersection_for ";
+
+    setFoldComments(true);
+    setFoldAtElse(true);
 }
 
 ScadLexer::~ScadLexer()
@@ -57,7 +61,7 @@ void ScadLexer::setKeywords(int set, const std::string& keywords)
 const char *ScadLexer::keywords(int set) const
 {
 	if ((set < 1) || (set > 4)) {
-		return 0;
+		return nullptr;
 	}
 	return keywordSet[set - 1].c_str();
 }

@@ -60,7 +60,7 @@ ECHO: "[b06] ", 1
 ECHO: "[b07] ----- [0:0:0]"
 ECHO: "[b08] ----- [1:0:1]"
 ECHO: "[b09] ----- [1:0:5]"
-WARNING: Bad range parameter in for statement: too many elements (4294967295).
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file range-tests.scad, line 18
 ECHO: "[b10] ----- [0:1:0]"
 ECHO: "[b10] ", 0
 ECHO: "[b11] ----- [3:-.5:-3]"

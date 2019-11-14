@@ -1,0 +1,22 @@
+---
+Language:     Cpp
+BasedOnStyle: LLVM
+
+TabWidth: 2
+UseTab: ForContinuationAndIndentation
+AlignEscapedNewlinesLeft: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: true
+BraceWrapping:
+   AfterClass:            true
+   AfterFunction:         true
+   BeforeElse:		  true
+BreakBeforeBraces: Custom
+ColumnLimit:     100
+ConstructorInitializerIndentWidth: 2
+NamespaceIndentation: None
+PenaltyReturnTypeOnItsOwnLine: 1000
+SortIncludes: false
+...

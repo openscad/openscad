@@ -1,1 +1,0 @@
-group1(difference2(sphere-cube))

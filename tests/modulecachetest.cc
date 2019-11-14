@@ -29,7 +29,9 @@
 #include "parsersettings.h"
 #include "node.h"
 #include "module.h"
-#include "modcontext.h"
+#include "ModuleInstantiation.h"
+#include "builtincontext.h"
+#include "FileModule.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -46,7 +48,6 @@
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#include "boosty.h"
 #include "PlatformUtils.h"
 
 std::string commandline_commands;
@@ -69,18 +70,17 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 
-	StackCheck::inst()->init();
+	StackCheck::inst();
 	Builtins::instance()->initialize();
 
 	fs::path original_path = fs::current_path();
 
-	currentdir = boosty::stringy( fs::current_path() );
+	currentdir = fs::current_path().generic_string();
 
-	PlatformUtils::registerApplicationPath(boosty::stringy(fs::path(argv[0]).branch_path()));
+	PlatformUtils::registerApplicationPath(fs::path(argv[0]).branch_path().generic_string());
 	parser_init();
 
-	ModuleContext top_ctx;
-	top_ctx.registerBuiltin();
+	BuiltinContext top_ctx;
 
 	ModuleInstantiation root_inst("group");
 	AbstractNode *root_node;

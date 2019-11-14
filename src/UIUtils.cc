@@ -25,24 +25,24 @@
  */
 
 #include <QDir>
-#include <QSettings>
 #include <QFileInfo>
 #include <QUrl>
 #include <QFileDialog>
 #include <QDesktopServices>
 
-#include "qtgettext.h"
+#include "version.h"
 #include "UIUtils.h"
+#include "qtgettext.h"
 #include "PlatformUtils.h"
-#include "openscad.h"
+#include "QSettingsCached.h"
+
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
-    QSettings settings;
+    QSettingsCached settings;
     QString last_dirname = settings.value("lastOpenDirName").toString();
     QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
 	    last_dirname, "OpenSCAD Designs (*.scad *.csg)");
@@ -58,9 +58,35 @@ QFileInfo UIUtils::openFile(QWidget *parent)
     return fileInfo;
 }
 
+QFileInfoList UIUtils::openFiles(QWidget *parent)
+{
+    QSettingsCached settings;
+    QString last_dirname = settings.value("lastOpenDirName").toString();
+    QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
+	    last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+
+    QFileInfoList fileInfoList;
+    for(QString filename: new_filenames)
+    {
+		if(filename.isEmpty()) {
+			continue;
+		}
+		fileInfoList.append(QFileInfo(filename));
+    }
+
+    if(!fileInfoList.isEmpty())
+    {
+	    QDir last_dir = fileInfoList[fileInfoList.size() - 1].dir(); // last_dir is set to directory of last choosen valid file
+	    last_dirname = last_dir.path();
+	    settings.setValue("lastOpenDirName", last_dirname);
+	}
+
+    return fileInfoList;
+}
+
 QStringList UIUtils::recentFiles()
 {
-    QSettings settings; // set up project and program properly in main.cpp
+    QSettingsCached settings; // set up project and program properly in main.cpp
     QStringList files = settings.value("recentFileList").toStringList();
 
     // Remove any duplicate or empty entries from the list
@@ -85,7 +111,7 @@ QStringList UIUtils::recentFiles()
 
 using namespace boost::property_tree;
 
-static ptree *examples_tree = NULL;
+static ptree *examples_tree = nullptr;
 static ptree *examplesTree()
 {
 	if (!examples_tree) {
@@ -96,7 +122,7 @@ static ptree *examplesTree()
 		} catch (const std::exception & e) {
 			PRINTB("Error reading examples.json: %s", e.what());
 			delete examples_tree;
-			examples_tree = NULL;
+			examples_tree = nullptr;
 		}
 	}
 	return examples_tree;
@@ -108,7 +134,7 @@ QStringList UIUtils::exampleCategories()
 	QStringList categories;
 	ptree *pt = examplesTree();
 	if (pt) {
-		BOOST_FOREACH(const ptree::value_type &v, *pt) {
+		for(const auto &v : *pt) {
 			// v.first is the name of the child.
 			// v.second is the child tree.
 			categories << QString::fromStdString(v.first);
@@ -124,7 +150,7 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 	ptree *pt = examplesTree();
 	if (pt) {
 		fs::path examplesPath = PlatformUtils::resourcePath("examples") / category.toStdString();
-		BOOST_FOREACH(const ptree::value_type &v, pt->get_child(category.toStdString())) {
+		for(const auto &v : pt->get_child(category.toStdString())) {
 			examples << QFileInfo(QString::fromStdString((examplesPath / v.second.data()).string()));
 		}
 	}
@@ -133,7 +159,7 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 
 void UIUtils::openHomepageURL()
 {
-    QDesktopServices::openUrl(QUrl("http://openscad.org/"));
+    QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
 }
 
 static void openVersionedURL(QString url)
@@ -143,10 +169,14 @@ static void openVersionedURL(QString url)
 
 void UIUtils::openUserManualURL()
 {
-    openVersionedURL("http://www.openscad.org/documentation.html?version=%1");
+    openVersionedURL("https://www.openscad.org/documentation.html?version=%1");
 }
 
 void UIUtils::openCheatSheetURL()
 {
-    openVersionedURL("http://www.openscad.org/cheatsheet/index.html?version=%1");
+#ifdef OPENSCAD_SNAPSHOT
+    openVersionedURL("https://www.openscad.org/cheatsheet/snapshot.html?version=%1");
+#else
+    openVersionedURL("https://www.openscad.org/cheatsheet/index.html?version=%1");
+#endif
 }

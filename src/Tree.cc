@@ -5,31 +5,32 @@
 #include <assert.h>
 #include <algorithm>
 #include <sstream>
-#include <boost/regex.hpp>
+#include <tuple>
 
 Tree::~Tree()
 {
-	this->nodecache.clear();
-	this->nodeidcache.clear();
+	this->nodecachemap.clear();
 }
 
 /*!
 	Returns the cached string representation of the subtree rooted by \a node.
 	If node is not cached, the cache will be rebuilt.
 */
-const std::string &Tree::getString(const AbstractNode &node) const
+const std::string Tree::getString(const AbstractNode &node, const std::string &indent) const
 {
 	assert(this->root_node);
-	if (!this->nodecache.contains(node)) {
-		this->nodecache.clear();
-		this->nodeidcache.clear();
-		NodeDumper dumper(this->nodecache, false);
-		Traverser trav(dumper, *this->root_node, Traverser::PRE_AND_POSTFIX);
-		trav.execute();
-		assert(this->nodecache.contains(*this->root_node) &&
+	bool idString = false;
+
+	// Retrieve a nodecache given a tuple of NodeDumper constructor options
+	NodeCache &nodecache = this->nodecachemap[std::make_tuple(indent,idString)];
+
+	if (!nodecache.contains(node)) {
+		NodeDumper dumper(nodecache, this->root_node, indent, idString);
+		dumper.traverse(*this->root_node);
+		assert(nodecache.contains(*this->root_node) &&
 					 "NodeDumper failed to create a cache");
 	}
-	return this->nodecache[node];
+	return nodecache[node];
 }
 
 /*!
@@ -40,25 +41,23 @@ const std::string &Tree::getString(const AbstractNode &node) const
 	is stripped for whitespace. Especially indentation whitespace is important to
 	strip to enable cache hits for equivalent nodes from different scopes.
 */
-const std::string &Tree::getIdString(const AbstractNode &node) const
+const std::string Tree::getIdString(const AbstractNode &node) const
 {
 	assert(this->root_node);
+	const std::string indent = "";
+	const bool idString = true;
 
-	if (!this->nodeidcache.contains(node)) {
-		const std::string &nodestr = getString(node);
-		const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
-		std::stringstream sstream;
-		boost::sregex_token_iterator i(nodestr.begin(), nodestr.end(), re, 0);
-		std::copy(i, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(sstream));
+	// Retrieve a nodecache given a tuple of NodeDumper constructor options
+	NodeCache &nodecache = this->nodecachemap[make_tuple(indent,idString)];
 
-		const std::string & result = this->nodeidcache.insert(node, sstream.str());
-		PRINTDB("Id Cache MISS: %s", result);
-		return result;
-	} else {
-		const std::string & result = this->nodeidcache[node];
-		PRINTDB("Id Cache HIT:  %s", result);
-		return result;
+	if (!nodecache.contains(node)) {
+		nodecache.clear();
+		NodeDumper dumper(nodecache, this->root_node, indent, idString);
+		dumper.traverse(*this->root_node);
+		assert(nodecache.contains(*this->root_node) &&
+					 "NodeDumper failed to create id cache");
 	}
+	return nodecache[node];
 }
 
 /*!
@@ -67,5 +66,14 @@ const std::string &Tree::getIdString(const AbstractNode &node) const
 void Tree::setRoot(const AbstractNode *root)
 {
 	this->root_node = root; 
-	this->nodecache.clear();
+	this->nodecachemap.clear();
+}
+
+void Tree::setDocumentPath(const std::string path){
+	this->document_path = path;
+}
+
+const std::string Tree::getDocumentPath() const
+{
+	return this->document_path;
 }

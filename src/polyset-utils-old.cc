@@ -4,10 +4,8 @@
 #include "printutils.h"
 #include "cgal.h"
 
-#ifdef NDEBUG
-#define PREV_NDEBUG NDEBUG
+#pragma push_macro("NDEBUG")
 #undef NDEBUG
-#endif
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Delaunay_mesher_2.h>
@@ -15,9 +13,7 @@
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Delaunay_mesh_criteria_2.h>
 #include <CGAL/Mesh_2/Face_badness.h>
-#ifdef PREV_NDEBUG
-#define NDEBUG PREV_NDEBUG
-#endif
+#pragma pop_macro("NDEBUG")
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef CGAL::Triangulation_vertex_base_2<K> Vb;
@@ -45,8 +41,6 @@ public:
 	Is_bad is_bad_object() const { return Is_bad(); }
 };
 
-#include <boost/foreach.hpp>
-
 namespace PolysetUtils {
 
 	// Project all polygons (also back-facing) into a Polygon2d instance.
@@ -55,9 +49,9 @@ namespace PolysetUtils {
 	Polygon2d *project(const PolySet &ps) {
 		Polygon2d *poly = new Polygon2d;
 
-		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+		for(const auto &p : ps.polygons) {
 			Outline2d outline;
-			BOOST_FOREACH(const Vector3d &v, p) {
+			for(const auto &v : p) {
 				outline.vertices.push_back(Vector2d(v[0], v[1]));
 			}
 			poly->addOutline(outline);
@@ -76,7 +70,7 @@ namespace PolysetUtils {
 	 polygons used for tessellation, typically triangles) back up into 3d
 	 space.
 	 
-	 (in reality as of writing, we dont need to do a back-projection from 2d->3d
+	 (in reality as of writing, we don't need to do a back-projection from 2d->3d
 	 because the algorithm we are using doesn't create any new points, and we can
 	 just use a 'map' to associate 3d points with 2d points).
 	 
@@ -109,7 +103,7 @@ namespace PolysetUtils {
 /* Find a 'good' 2d projection for a given 3d polygon. the XY, YZ, or XZ 
 	 plane. This is needed because near-planar polygons in 3d can have 'bad' 
 	 projections into 2d. For example if the square 0,0,0 0,1,0 0,1,1 0,0,1 
-	 is projected onto the XY plane you will not get a polygon, you wil get 
+	 is projected onto the XY plane you will not get a polygon, you will get 
 	 a skinny line thing. It's better to project that square onto the yz 
 	 plane.*/
 	projection_t find_good_projection( PolySet::Polygon pgon ) {

@@ -5,21 +5,45 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
+#include "exceptions.h"
+
 namespace fs = boost::filesystem;
-#include "boosty.h"
 
 std::list<std::string> print_messages_stack;
-OutputHandlerFunc *outputhandler = NULL;
-void *outputhandler_data = NULL;
+OutputHandlerFunc *outputhandler = nullptr;
+void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+bool OpenSCAD::hardwarnings = false;
+bool OpenSCAD::parameterCheck = true;
+bool OpenSCAD::rangeCheck = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
+
+namespace {
+	bool no_throw;
+	bool deferred;
+}
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 {
 	outputhandler = newhandler;
 	outputhandler_data = userdata;
+}
+
+
+void no_exceptions_for_warnings()
+{
+	no_throw = true;
+	deferred = false;
+}
+
+bool would_have_thrown()
+{
+    const auto would_throw = deferred;
+    no_throw = false;
+    deferred = false;
+    return would_throw;
 }
 
 void print_messages_push()
@@ -55,7 +79,7 @@ void PRINT_NOCACHE(const std::string &msg)
 {
 	if (msg.empty()) return;
 
-	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR")) {
+	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR") || boost::starts_with(msg, "TRACE")) {
 		size_t i;
 		for (i=0;i<lastmessages.size();i++) {
 			if (lastmessages[i] != msg) break;
@@ -63,12 +87,20 @@ void PRINT_NOCACHE(const std::string &msg)
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
 		else lastmessages.push_back(msg);
 	}
-
-	if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
-		if (!outputhandler) {
-			fprintf(stderr, "%s\n", msg.c_str());
-		} else {
-			outputhandler(msg, outputhandler_data);
+	if(!deferred)
+		if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
+			if (!outputhandler) {
+				fprintf(stderr, "%s\n", msg.c_str());
+			} else {
+				outputhandler(msg, outputhandler_data);
+			}
+		}
+	if(!std::current_exception()) {
+		if((OpenSCAD::hardwarnings && boost::starts_with(msg, "WARNING")) || (no_throw && boost::starts_with(msg, "ERROR"))){
+			if(no_throw)
+				deferred = true;
+			else
+				throw HardWarningException(msg);
 		}
 	}
 }
@@ -77,7 +109,7 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 {
 	// see printutils.h for usage instructions
 	if (OpenSCAD::debug=="") return;
-	std::string shortfname = boosty::stringy(fs::path(filename).stem());
+	std::string shortfname = fs::path(filename).stem().generic_string();
 	std::string lowshortfname(shortfname);
 	boost::algorithm::to_lower(lowshortfname);
 	std::string lowdebug(OpenSCAD::debug);
@@ -86,6 +118,14 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 			lowdebug.find(lowshortfname) != std::string::npos) {
 		PRINT_NOCACHE( shortfname+": "+ msg );
 	}
+}
+
+const std::string& quoted_string(const std::string& str)
+{
+	static std::string buf;
+	buf = str;
+	boost::replace_all(buf, "\n", "\\n");
+	return buf;
 }
 
 std::string two_digit_exp_format( std::string doublestr )
@@ -100,11 +140,9 @@ std::string two_digit_exp_format( std::string doublestr )
 	return doublestr;
 }
 
-std::string two_digit_exp_format( double x )
+std::string two_digit_exp_format(double x)
 {
-	std::stringstream s;
-	s << x;
-	return two_digit_exp_format( s.str() );
+	return two_digit_exp_format(std::to_string(x));
 }
 
 #include <set>
@@ -120,7 +158,8 @@ void printDeprecation(const std::string &str)
 	}
 }
 
-void resetPrintedDeprecations()
+void resetSuppressedMessages()
 {
 	printedDeprecations.clear();
+	lastmessages.clear();
 }

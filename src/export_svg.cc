@@ -28,12 +28,10 @@
 #include "polyset.h"
 #include "polyset-utils.h"
 
-#include <boost/foreach.hpp>
-
 static void append_svg(const Polygon2d &poly, std::ostream &output)
 {
 	output << "<path d=\"\n";
-	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+	for(const auto &o : poly.outlines()) {
 		if (o.vertices.empty()) {
 			continue;
 		}
@@ -56,11 +54,11 @@ static void append_svg(const Polygon2d &poly, std::ostream &output)
 static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+		for(const auto &item : geomlist->getChildren()) {
 			append_svg(item.second, output);
 		}
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (dynamic_cast<const PolySet *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
@@ -75,17 +73,18 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	
 	BoundingBox bbox = geom->getBoundingBox();
-	int minx = floor(bbox.min().x());
-	int miny = floor(-bbox.max().y());
-	int maxx = ceil(bbox.max().x());
-	int maxy = ceil(-bbox.min().y());
+	int minx = (int)floor(bbox.min().x());
+	int miny = (int)floor(-bbox.max().y());
+	int maxx = (int)ceil(bbox.max().x());
+	int maxy = (int)ceil(-bbox.min().y());
 	int width = maxx - minx;
 	int height = maxy - miny;
 
 	output
 		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
 		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-		<< "\" viewBox=\"" << minx << " " << miny << " " << width << " " << height
+		<< "<svg width=\"" << width << "mm\" height=\"" << height
+		<< "mm\" viewBox=\"" << minx << " " << miny << " " << width << " " << height
 		<< "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
 		<< "<title>OpenSCAD Model</title>\n";
 

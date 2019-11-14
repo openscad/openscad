@@ -5,7 +5,10 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#pragma pop_macro("NDEBUG")
 typedef CGAL::Epick K;
 typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
@@ -21,6 +24,7 @@ namespace /* anonymous */ {
 namespace CGALUtils {
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op);
+	CGAL_Nef_polyhedron *applyUnion(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
@@ -39,10 +43,10 @@ namespace CGALUtils {
 
 	bool tessellatePolygon(const PolygonK &polygon,
 												 Polygons &triangles,
-												 const K::Vector_3 *normal = NULL);
+												 const K::Vector_3 *normal = nullptr);
 	bool tessellatePolygonWithHoles(const PolyholeK &polygons,
 																	Polygons &triangles,
-																	const K::Vector_3 *normal = NULL);
+																	const K::Vector_3 *normal = nullptr);
 	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons, 
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);

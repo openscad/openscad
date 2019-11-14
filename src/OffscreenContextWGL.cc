@@ -27,8 +27,6 @@ For more info:
 #include <string>
 #include <sstream>
 
-using namespace std;
-
 struct OffscreenContext
 {
   HWND window;
@@ -43,15 +41,15 @@ struct OffscreenContext
 
 void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 {
-  ctx.window = (HWND)NULL;
-  ctx.dev_context = (HDC)NULL;
-  ctx.openGLContext = (HGLRC)NULL;
+  ctx.window = (HWND)nullptr;
+  ctx.dev_context = (HDC)nullptr;
+  ctx.openGLContext = (HGLRC)nullptr;
   ctx.width = width;
   ctx.height = height;
-  ctx.fbo = NULL;
+  ctx.fbo = nullptr;
 }
 
-string get_os_info()
+std::string get_os_info()
 {
   OSVERSIONINFO osvi;
 
@@ -61,13 +59,13 @@ string get_os_info()
 
   SYSTEM_INFO si;
   GetSystemInfo(&si);
-  map<WORD,const char*> archs;
+	std::map<WORD,const char*> archs;
   archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
   archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
   archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
   archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
 
-  stringstream out;
+	std::ostringstream out;
   out << "OS info: "
       << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
       << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
@@ -81,14 +79,12 @@ string get_os_info()
   return out.str();
 }
 
-string offscreen_context_getinfo(OffscreenContext *ctx)
+std::string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
   // should probably get some info from WGL context here?
-  stringstream out;
-  out << "GL context creator: WGL\n"
-      << "PNG generator: lodepng\n"
-      << get_os_info();
-  return out.str();
+  return STR("GL context creator: WGL\n" <<
+						 "PNG generator: lodepng\n" <<
+						 get_os_info());
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
@@ -99,12 +95,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 bool create_wgl_dummy_context(OffscreenContext &ctx)
 {
   // this function alters ctx->window and ctx->openGLContext 
-  //  and ctx->dev_context if successfull
+  //  and ctx->dev_context if successful
 
   // create window
 
-  HINSTANCE inst = GetModuleHandle(0);
-  WNDCLASS wc;
+  HINSTANCE inst = GetModuleHandleW(0);
+  WNDCLASSW wc;
   ZeroMemory( &wc, sizeof( wc ) );
   wc.style = CS_OWNDC;
   wc.lpfnWndProc = WndProc;
@@ -113,8 +109,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   ATOM class_atom = RegisterClassW( &wc );
 
   if ( class_atom == 0 ) {
-    cerr << "MS GDI - RegisterClass failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+		std::cerr << "MS GDI - RegisterClass failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -125,17 +121,17 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   int y = 0;
   int nWidth = ctx.width;
   int nHeight = ctx.height;
-  HWND hWndParent = NULL;
-  HMENU hMenu = NULL;
+  HWND hWndParent = nullptr;
+  HMENU hMenu = nullptr;
   HINSTANCE hInstance = inst;
-  LPVOID lpParam = NULL;
+  LPVOID lpParam = nullptr;
 
   HWND window = CreateWindowW( lpClassName, lpWindowName, dwStyle, x, y,
     nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam );
 
-  if ( window==NULL ) {
-    cerr << "MS GDI - CreateWindow failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+  if ( window==nullptr ) {
+    std::cerr << "MS GDI - CreateWindow failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -144,9 +140,9 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   PIXELFORMATDESCRIPTOR pixformat;
   int chosenformat;
   HDC dev_context = GetDC( window );
-  if ( dev_context == NULL ) {
-    cerr << "MS GDI - GetDC failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+  if ( dev_context == nullptr ) {
+    std::cerr << "MS GDI - GetDC failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -164,30 +160,30 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 
   chosenformat = ChoosePixelFormat( dev_context, &pixformat );
   if (chosenformat==0) {
-    cerr << "MS GDI - ChoosePixelFormat failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS GDI - ChoosePixelFormat failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
   bool spfok = SetPixelFormat( dev_context, chosenformat, &pixformat );
   if (!spfok) {
-    cerr << "MS GDI - SetPixelFormat failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS GDI - SetPixelFormat failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
   HGLRC gl_render_context = wglCreateContext( dev_context );
-  if ( gl_render_context == NULL ) {
-      cerr << "MS WGL - wglCreateContext failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+  if ( gl_render_context == nullptr ) {
+      std::cerr << "MS WGL - wglCreateContext failed\n";
+			std::cerr << "last-error code: " << GetLastError() << "\n";
       ReleaseDC( ctx.window, ctx.dev_context );
       return false;
   }
 
   bool mcok = wglMakeCurrent( dev_context, gl_render_context );
   if (!mcok) {
-    cerr << "MS WGL - wglMakeCurrent failed\n";
-    cerr << "last-error code: " << GetLastError() << "\n";
+    std::cerr << "MS WGL - wglMakeCurrent failed\n";
+    std::cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -206,9 +202,9 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   // Before an FBO can be setup, a WGL context must be created. 
   // This call alters ctx->window and ctx->openGLContext 
-  //  and ctx->dev_context if successfull
+  //  and ctx->dev_context if successful
   if (!create_wgl_dummy_context( *ctx )) {
-    return NULL;
+    return nullptr;
   }
 
   return create_offscreen_context_common( ctx );
@@ -220,7 +216,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
     fbo_unbind(ctx->fbo);
     fbo_delete(ctx->fbo);
 
-    wglMakeCurrent( NULL, NULL );
+    wglMakeCurrent( nullptr, nullptr );
     wglDeleteContext( ctx->openGLContext );
     ReleaseDC( ctx->window, ctx->dev_context );
 

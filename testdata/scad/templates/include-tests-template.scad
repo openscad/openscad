@@ -1,4 +1,4 @@
-//Test that the entire path is pushed onto the stack upto the last '/' 
+//Test that the entire path is pushed onto the stack up to the last '/' 
 include <sub1/sub2/sub3/sub4/include-test2.scad>
 
 //Subdir
@@ -12,9 +12,6 @@ include <include-test5.scad>
 
 //Test without preceding space
 include<include-test5.scad>
-
-//Test with other strange character that is allowed
-include>>>>><include-test5.scad>
 
 //Test that filenames with spaces work
 include <include test6.scad>

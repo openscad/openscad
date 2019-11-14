@@ -1,0 +1,17 @@
+minkowski(convexity = 0) {
+	group() {
+		difference() {
+			cube(size = [5, 5, 5], center = false);
+			cube(size = [3, 3, 3], center = false);
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 2], [0, 0, 0, 1]]) {
+				cube(size = [2, 2, 2], center = false);
+			}
+		}
+		difference() {
+			cube(size = [5, 5, 5], center = false);
+			cube(size = [3, 3, 3], center = false);
+		}
+	}
+	cube(size = [1, 1, 1], center = false);
+}
+

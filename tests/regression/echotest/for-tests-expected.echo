@@ -1,5 +1,9 @@
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
-WARNING: Bad range parameter in for statement: too many elements (4294967295).
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 35
+ECHO: "a"
+ECHO: "↑"
+ECHO: "b"
+ECHO: "😀"
 ECHO: nan
 ECHO: inf
 ECHO: -inf
@@ -7,7 +11,15 @@ ECHO: "INF", 0
 ECHO: "-INF", 0
 ECHO: "INF", 0
 ECHO: "-INF", 1
-WARNING: Bad range parameter in for statement: too many elements (4294967295).
-WARNING: Bad range parameter in for statement: too many elements (4294967295).
-WARNING: Bad range parameter in for statement: too many elements (4294967295).
-WARNING: Bad range parameter in for statement: too many elements (4294967295).
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 72
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 73
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 74
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 75
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 77
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 78
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 79
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 80
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 81
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 82
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 83
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 84

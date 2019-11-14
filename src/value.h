@@ -3,15 +3,24 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
+#include <glib.h>
 #endif
-#include <boost/cstdint.hpp>
+
+#include "Assignment.h"
 #include "memory.h"
+
+class tostring_visitor;
+class tostream_visitor;
+class ValuePtr;
+class Context;
+class Expression;
 
 class QuotedString : public std::string
 {
@@ -39,7 +48,7 @@ private:
 	void normalize();
 	
 public:
-	typedef enum { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END } type_t;
+	enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
   
 	class iterator {
 	public:
@@ -84,21 +93,22 @@ public:
 	double step_value() { return step_val; }
 	double end_value() { return end_val; }
 	
-	iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
-	iterator end() { return iterator(*this, RANGE_TYPE_END); }
+	iterator begin() { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
+	iterator end() { return iterator(*this, type_t::RANGE_TYPE_END); }
 	
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
-	boost::uint32_t numValues() const;
+	uint32_t numValues() const;
   
 	friend class chr_visitor;
 	friend class tostring_visitor;
+	friend class tostream_visitor;
 	friend class bracket_visitor;
 };
 
 class ValuePtr : public shared_ptr<const class Value>
 {
 public:
-  static ValuePtr undefined;
+  static const ValuePtr undefined;
 
 	ValuePtr();
 	explicit ValuePtr(const Value &v);
@@ -110,6 +120,7 @@ public:
   ValuePtr(const char v);
   ValuePtr(const class std::vector<ValuePtr> &v);
   ValuePtr(const class RangeType &v);
+  ValuePtr(const class FunctionType &v);
 
 	operator bool() const;
 
@@ -133,20 +144,58 @@ public:
 private:
 };
 
+class FunctionType {
+public:
+	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, AssignmentList args)
+		: ctx(ctx), expr(expr), args(args) { }
+	bool operator==(const FunctionType&) const { return false; }
+	bool operator!=(const FunctionType& other) const { return !(*this == other); }
+
+	const std::shared_ptr<Context>& getCtx() { return ctx; }
+	const std::shared_ptr<Expression>& getExpr() { return expr; }
+	const AssignmentList& getArgs() { return args; }
+
+	friend std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
+
+private:
+	std::shared_ptr<Context> ctx;
+	std::shared_ptr<Expression> expr;
+	AssignmentList args;
+};
+
+class str_utf8_wrapper : public std::string
+{
+public:
+	str_utf8_wrapper() : std::string(), cached_len(-1) { }
+	str_utf8_wrapper( const std::string& s ) : std::string( s ), cached_len(-1) { }
+	str_utf8_wrapper( size_t n, char c ) : std::string(n, c), cached_len(-1) { }
+	~str_utf8_wrapper() {}
+	
+	glong get_utf8_strlen() const {
+		if (cached_len < 0) {
+			cached_len = g_utf8_strlen(this->c_str(), this->size());
+		}
+		return cached_len;
+	};
+private:
+	mutable glong cached_len;
+};
+
 class Value
 {
 public:
 	typedef std::vector<ValuePtr> VectorType;
 
-  enum ValueType {
+  enum class ValueType {
     UNDEFINED,
     BOOL,
     NUMBER,
     STRING,
     VECTOR,
-    RANGE
+    RANGE,
+	FUNCTION
   };
-  static Value undefined;
+  static const Value undefined;
 
   Value();
   Value(bool v);
@@ -157,7 +206,7 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
-  ~Value() {}
+  Value(const FunctionType &v);
 
   ValueType type() const;
   bool isDefined() const;
@@ -168,16 +217,23 @@ public:
   bool getDouble(double &v) const;
   bool getFiniteDouble(double &v) const;
   bool toBool() const;
+  const FunctionType toFunction() const;
+  std::string typeName() const;
   std::string toString() const;
+  std::string toString(const tostring_visitor *visitor) const;
+  std::string toEchoString() const;
+  std::string toEchoString(const tostring_visitor *visitor) const;
+  void toStream(std::ostringstream &stream) const;
+  void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
-  bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
+  bool getVec3(double &x, double &y, double &z) const;
+  bool getVec3(double &x, double &y, double &z, double defaultval) const;
   RangeType toRange() const;
 
 	operator bool() const { return this->toBool(); }
 
-  Value &operator=(const Value &v);
   bool operator==(const Value &v) const;
   bool operator!=(const Value &v) const;
   bool operator<(const Value &v) const;
@@ -193,12 +249,12 @@ public:
   Value operator%(const Value &v) const;
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
-    if (value.type() == Value::STRING) stream << QuotedString(value.toString());
+    if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
     else stream << value.toString();
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, str_utf8_wrapper, VectorType, RangeType, FunctionType> Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
@@ -208,3 +264,4 @@ private:
   Variant value;
 };
 
+void utf8_split(const std::string& str, std::function<void(ValuePtr)> f);

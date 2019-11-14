@@ -1,2 +1,3 @@
-WARNING: Ignoring unknown variable 'i'.
+WARNING: myval was assigned on line 5 but was overwritten on line 7
+WARNING: Ignoring unknown variable 'i', in file value-reassignment-tests.scad, line 7.
 ECHO: undef, 2

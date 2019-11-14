@@ -19,10 +19,10 @@ isEmpty(VERSION) {
 
     QDATE = $$_DATE_
     QDATE_SPLIT = $$split(QDATE)
-    QDAY = $$member(QDATE_SPLIT,2)
+    QDAY = $$num_add($$member(QDATE_SPLIT,2))
     
     !isEmpty(TEST1) { 
-      contains( QDAY, $$DATE_Z ) { 
+      equals( QDAY, $$num_add($$DATE_Z) ) {
         # message("Assuming YYYY/MM/DD format")
         VERSION_YEAR = $$DATE_X 
         VERSION_MONTH = $$DATE_Y
@@ -30,7 +30,7 @@ isEmpty(VERSION) {
       } 
     } else {
       !isEmpty(TEST2) { 
-        contains( DATE_X, $$QDAY ) {
+        equals( QDAY, $$num_add($$DATE_X) ) {
           # message("Assuming DD/MM/YYYY format" $$DATE_X $$DATE_Y $$DATE_Z )
           VERSION_DAY = $$DATE_X
           VERSION_MONTH = $$DATE_Y

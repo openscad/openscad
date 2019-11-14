@@ -2,6 +2,22 @@ Taken from http://tango.freedesktop.org/Tango_Icon_Library, version 0.8.90 / pub
 
 - prefsFeatures.png (converted from preferences-system.svg)
 
+https://openclipart.org/detail/35425/tango-desktop-peripherals / Tango Icon Library / public domain:
+
+- prefsInput.png
+
+https://commons.wikimedia.org/wiki/File:Input-gaming.svg / Tango Icon Library / public domain:
+
+- prefsInputAxis.png (Button removed)
+
+https://commons.wikimedia.org/wiki/File:Input-keyboard.svg / Tango Icon Library / public domain:
+
+- prefsInputButtons.png
+
+https://openclipart.org/detail/171015/laser-printer / public domain:
+
+- prefs3DPrint.png
+
 https://openclipart.org/detail/2281/information-icons-set-by-kuba / public domain:
 
 - information-icons-error.png
@@ -12,3 +28,8 @@ https://openclipart.org/detail/2281/information-icons-set-by-kuba / public domai
 https://openclipart.org/detail/171382/cross-icon-by-zawertun-171382 / public domain:
 
 - close.png
+
+octoprint.png:
+* Copyright Gina Häußge
+* OctoPrint is a registered trademark owned by Gina Häußge.
+* https://octoprint.org/trademark-rules

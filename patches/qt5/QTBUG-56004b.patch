@@ -1,0 +1,11 @@
+--- a/configure	2016-10-29 19:29:27.000000000 -0600
++++ b/configure	2016-10-29 19:29:20.000000000 -0600
+@@ -548,7 +548,7 @@
+         exit 2
+     fi
+ 
+-    if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
++    if ! /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
+         echo >&2
+         echo "   Xcode not set up properly. You may need to confirm the license" >&2
+         echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2

@@ -3,10 +3,12 @@
 // The example uses a recursive module to generate a random tree as
 // described in http://natureofcode.com/book/chapter-8-fractals/
 
-levels = 10; // number of levels for the recursion
-
-len = 100; // length of the first segment
-thickness = 5; // thickness of the first segment
+// number of levels for the recursion
+levels = 10; // [1:1:14]
+// length of the first segment
+len = 100; // [10:10:200]
+// thickness of the first segment
+thickness = 5; //[1:1:20]
 
 // the identity matrix
 identity = [ [ 1, 0, 0, 0 ], [ 0, 1, 0, 0 ], [ 0, 0, 1, 0 ], [ 0, 0, 0, 1 ] ];

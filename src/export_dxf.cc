@@ -29,8 +29,6 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#include <boost/foreach.hpp>
-
 /*!
 	Saves the current Polygon2d as DXF to the given absolute filename.
  */
@@ -49,7 +47,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "  2\n"
 				 << "ENTITIES\n";
 
-	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+	for(const auto &o : poly.outlines()) {
 		for (unsigned int i=0;i<o.vertices.size();i++) {
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
@@ -97,11 +95,10 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+		for(const auto &item : geomlist->getChildren()) {
 			export_dxf(item.second, output);
 		}
-	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	} else if (dynamic_cast<const PolySet *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {

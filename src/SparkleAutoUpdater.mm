@@ -76,7 +76,7 @@ QString SparkleAutoUpdater::lastUpdateCheckDate()
 
 void SparkleAutoUpdater::updateFeed()
 {
-  NSString *urlstring = [NSString stringWithFormat:@"http://files.openscad.org/appcast%@.xml", enableSnapshots() ? @"-snapshots" : @""];
+  NSString *urlstring = [NSString stringWithFormat:@"https://files.openscad.org/appcast%@.xml", enableSnapshots() ? @"-snapshots" : @""];
   [d->updater setFeedURL:[NSURL URLWithString:urlstring]];
   NSString *userAgent = [NSString stringWithFormat:@"OpenSCAD %s %s", TOSTRING(OPENSCAD_VERSION), PlatformUtils::sysinfo(false).c_str()];
   [d->updater setUserAgentString: userAgent];

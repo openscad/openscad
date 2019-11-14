@@ -3,18 +3,23 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-#include <Eigen/StdVector>
-#include <boost/functional/hash.hpp>
-#include <boost/cstdint.hpp>
+#include <cstdint>
+#include <vector>
 
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 using Eigen::Vector2d;
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3d)
 using Eigen::Vector3d;
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3f)
 using Eigen::Vector3f;
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3i)
 using Eigen::Vector3i;
+
+#ifdef _MSC_VER
+  #include <Eigen/StdVector> // https://eigen.tuxfamily.org/dox/group__TopicStlContainers.html
+  #if !EIGEN_HAS_CXX11_CONTAINERS
+    #warning "Eigen has detected no support for CXX11 containers and has redefined std::vector"
+  #endif
+  typedef std::vector<Vector2d, Eigen::aligned_allocator<Vector2d> > VectorOfVector2d;
+#else
+  typedef std::vector<Vector2d> VectorOfVector2d;
+#endif
 
 typedef Eigen::AlignedBox<double, 3> BoundingBox;
 using Eigen::Matrix3f;
@@ -37,12 +42,15 @@ template<typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
 
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);
 
-class Color4f : public Eigen::Vector4f
+// Vector4f is fixed-size vectorizable
+// Use Eigen::DontAlign so we can store Color4f in STL containers
+// https://eigen.tuxfamily.org/dox/group__DenseMatrixManipulation__Alignement.html
+class Color4f : public Eigen::Matrix<float, 4, 1, Eigen::DontAlign>
 {
 public:
 	Color4f() { }
 	Color4f(int r, int g, int b, int a = 255) { setRgb(r,g,b,a); }
-	Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Vector4f(r, g, b, a) { }
+	Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
 
 	void setRgb(int r, int g, int b, int a = 255) {
 		*this << r/255.0f, g/255.0f, b/255.0f, a/255.0f;

@@ -3,10 +3,10 @@
 
 RenderSettings *RenderSettings::inst(bool erase)
 {
-	static RenderSettings *instance = new RenderSettings;
+	static auto instance = new RenderSettings;
 	if (erase) {
 		delete instance;
-		instance = NULL;
+		instance = nullptr;
 	}
 	return instance;
 }

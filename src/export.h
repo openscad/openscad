@@ -1,24 +1,36 @@
 #pragma once
 
 #include <iostream>
+
+#include <boost/range/algorithm.hpp>
+#include <boost/range/adaptor/map.hpp>
+
 #include "Tree.h"
 #include "Camera.h"
 #include "memory.h"
 
-enum FileFormat {
-	OPENSCAD_STL,
-	OPENSCAD_OFF,
-	OPENSCAD_AMF,
-	OPENSCAD_DXF,
-	OPENSCAD_SVG,
-	OPENSCAD_NEFDBG,
-	OPENSCAD_NEF3
+
+enum class FileFormat {
+	STL,
+	OFF,
+	AMF,
+	_3MF,
+	DXF,
+	SVG,
+	NEFDBG,
+	NEF3,
+	CSG,
+	AST,
+	TERM,
+	ECHO,
+	PNG
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
 											const char *name2open, const char *name2display);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -28,7 +40,59 @@ void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
-void export_png(const shared_ptr<const class Geometry> &root_geom, Camera &c, std::ostream &output);
-void export_png(const shared_ptr<const class CGAL_Nef_polyhedron> &root_N, Camera &c, std::ostream &output);
-void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);
-void export_png_with_throwntogether(Tree &tree, Camera &c, std::ostream &output);
+enum class Previewer { OPENCSG, THROWNTOGETHER };
+enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
+
+struct ExportFileFormatOptions {
+	const std::map<const std::string, FileFormat> exportFileFormats{
+		{"stl", FileFormat::STL},
+		{"off", FileFormat::OFF},
+		{"amf", FileFormat::AMF},
+		{"3mf", FileFormat::_3MF},
+		{"dxf", FileFormat::DXF},
+		{"svg", FileFormat::SVG},
+		{"nefdbg", FileFormat::NEFDBG},
+		{"nef3", FileFormat::NEF3},
+		{"csg", FileFormat::CSG},
+		{"ast", FileFormat::AST},
+		{"term", FileFormat::TERM},
+		{"echo", FileFormat::ECHO},
+		{"png", FileFormat::PNG},
+	};
+};
+
+struct ViewOption {
+	const std::string name;
+	bool& value;
+};
+
+struct ViewOptions {
+	Previewer previewer{Previewer::OPENCSG};
+	RenderType renderer{RenderType::OPENCSG};
+
+	std::map<std::string, bool> flags{
+		{"axes", false},
+		{"scales", false},
+		{"edges", false},
+		{"wireframe", false},
+		{"crosshairs", false},
+	};
+
+	const std::vector<std::string> names() {
+		std::vector<std::string> names;
+		boost::copy(flags | boost::adaptors::map_keys, std::back_inserter(names));
+		return names;
+	}
+
+	bool &operator[](const std::string &name) {
+		return flags.at(name);
+	}
+
+	bool operator[](const std::string &name) const {
+		return flags.at(name);
+	}
+	
+};
+
+bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
+bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output);

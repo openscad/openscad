@@ -29,8 +29,6 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#include <boost/foreach.hpp>
-
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
@@ -50,8 +48,8 @@ struct IndexedMesh {
 
 static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 {
-	BOOST_FOREACH(const Polygon &p, ps.polygons) {
-		BOOST_FOREACH(const Vector3d &v, p) {
+	for(const auto &p : ps.polygons) {
+		for(const auto &v : p) {
 			mesh.indices.push_back(mesh.vertices.lookup(v));
 		}
 		mesh.numfaces++;
@@ -62,7 +60,7 @@ static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+		for(const Geometry::GeometryItem &item : geomlist->getChildren()) {
 			append_geometry(item.second, mesh);
 		}
 	}
@@ -77,7 +75,7 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		append_geometry(*ps, mesh);
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
@@ -90,7 +88,7 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	append_geometry(geom, mesh);
 
 	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const Vector3d *v = mesh.vertices.getArray();
+	const auto& v = mesh.vertices.getArray();
 	size_t numverts = mesh.vertices.size();
 	for (size_t i=0;i<numverts;i++) {
 		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";

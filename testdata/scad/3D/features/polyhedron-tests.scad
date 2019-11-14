@@ -19,7 +19,7 @@ translate([0,2,0]) difference() {
   translate([3,0,2]) cube([8,3,3], center=true);
 }
 
-// dont crash (issue #703)
+// don't crash (issue #703)
 polyhedron(points = undef, triangles = [[1, 2, 3]]);
 polyhedron(points = [[0,0,0],[1,1,1]], triangles = undef);
 // More malformed polyhedrons

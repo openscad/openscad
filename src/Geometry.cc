@@ -17,7 +17,7 @@ GeometryList::~GeometryList()
 size_t GeometryList::memsize() const
 {
 	size_t sum = 0;
-	BOOST_FOREACH(const GeometryItem &item, this->children) {
+	for(const GeometryItem &item : this->children) {
 		sum += item.second->memsize();
 	}
 	return sum;
@@ -26,7 +26,7 @@ size_t GeometryList::memsize() const
 BoundingBox GeometryList::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const GeometryItem &item, this->children) {
+	for(const GeometryItem &item : this->children) {
 		bbox.extend(item.second->getBoundingBox());
 	}
 	return bbox;
@@ -35,7 +35,7 @@ BoundingBox GeometryList::getBoundingBox() const
 std::string GeometryList::dump() const
 {
 	std::stringstream out;
-	BOOST_FOREACH(const GeometryItem &item, this->children) {
+	for(const GeometryItem &item : this->children) {
 		out << item.second->dump();
 	}
 	return out.str();
@@ -44,7 +44,7 @@ std::string GeometryList::dump() const
 unsigned int GeometryList::getDimension() const
 {
 	unsigned int dim = 0;
-	BOOST_FOREACH(const GeometryItem &item, this->children) {
+	for(const GeometryItem &item : this->children) {
 		if (!dim) dim = item.second->getDimension();
 		else if (dim != item.second->getDimension()) {
 			PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
@@ -56,7 +56,7 @@ unsigned int GeometryList::getDimension() const
 
 bool GeometryList::isEmpty() const
 {
-	BOOST_FOREACH(const GeometryItem &item, this->children) {
+	for(const GeometryItem &item : this->children) {
 		if (!item.second->isEmpty()) return false;
 	}
 	return true;
@@ -64,8 +64,8 @@ bool GeometryList::isEmpty() const
 
 void flatten(const GeometryList *geomlist, GeometryList::Geometries &childlist)
 {
-	BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
-		if (const GeometryList *chlist = dynamic_cast<const GeometryList *>(item.second.get())) {
+	for(const auto &item : geomlist->getChildren()) {
+		if (auto chlist = dynamic_cast<const GeometryList *>(item.second.get())) {
 			flatten(chlist, childlist);
 		}
 		else {

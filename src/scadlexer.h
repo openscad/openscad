@@ -1,6 +1,6 @@
 #pragma once
 
-#include <qobject.h>
+#include <QObject>
 
 #include <Qsci/qsciglobal.h>
 #include <Qsci/qscilexercpp.h>
@@ -10,8 +10,8 @@ class ScadLexer : public QsciLexerCPP
 public:
 	ScadLexer(QObject *parent);
 	virtual ~ScadLexer();
-	const char *language() const;
-	const char *keywords(int set) const;	
+	const char *language() const override;
+	const char *keywords(int set) const override;	
 
         void setKeywords(int set, const std::string& keywords);
 private:

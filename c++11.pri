@@ -3,7 +3,7 @@ macx {
   # We attempt to auto-detect it by inspecting Boost
   dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
   for(dir, dirs) {
-    system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
+    system(otool -L $${dir}/libboost_thread*  | grep libc++ >& /dev/null ) {
       message("Using libc++11")
       CONFIG += libc++
     }
@@ -22,14 +22,24 @@ macx {
     QMAKE_CXXFLAGS += -stdlib=libc++
     QMAKE_LFLAGS += -stdlib=libc++
     QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
-    # libc++ on requires Mac OS X 10.7+
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
   }
 }
 
 c++11 {
   QMAKE_CXXFLAGS += -std=c++11
   message("Using C++11")
+
+  *clang*: {
+      # 3rd party libraries will probably violate this for a long time
+    CXX11_SUPPRESS_WARNINGS += -Wno-inconsistent-missing-override
+    # boost/algorithm/string.hpp does this
+    CXX11_SUPPRESS_WARNINGS += -Wno-unused-local-typedef
+    # CGAL
+    CXX11_SUPPRESS_WARNINGS += -Wno-deprecated-register
+
+    QMAKE_CXXFLAGS_WARN_ON += $$CXX11_SUPPRESS_WARNINGS
+    QMAKE_OBJECTIVE_CFLAGS_WARN_ON += $$CXX11_SUPPRESS_WARNINGS
+  }
 }
 else {
   *clang* {

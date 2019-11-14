@@ -9,15 +9,17 @@ class Dock : public QDockWidget
 	Q_OBJECT
 	
 public:
-        Dock(QWidget *parent = NULL);
-        virtual ~Dock();
+        Dock(QWidget *parent = nullptr);
+        ~Dock();
         void setConfigKey(const QString configKey);
         void setAction(QAction *action);
+	void disableSettingsUpdate();
 
 public slots:
-        void setVisible(bool visible);
+        void setVisible(bool visible) override;
 
 private:
         QString configKey;
         QAction *action;
+	bool updateSettings;
 };

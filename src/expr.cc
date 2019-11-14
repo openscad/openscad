@@ -23,76 +23,56 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "compiler_specific.h"
 #include "expression.h"
 #include "value.h"
 #include "evalcontext.h"
+#include <cstdint>
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
-#include "stl-utils.h"
+#include <typeinfo>
+#include <forward_list>
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
+#include "feature.h"
+#include "printutils.h"
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 // unnamed namespace
 namespace {
+	bool isListComprehension(const shared_ptr<Expression> &e) {
+		return dynamic_cast<const ListComprehension *>(e.get());
+	}
+
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			assert(vec[i]->type() == Value::VECTOR);
-			n += vec[i]->toVector().size();
+			if (vec[i]->type() == Value::ValueType::VECTOR) {
+				n += vec[i]->toVector().size();
+			} else {
+				n++;
+			}
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			if (vec[i]->type() == Value::ValueType::VECTOR) {
+				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			} else {
+				ret.push_back(vec[i]);
+			}
 		}
 		return ret;
 	}
 
-	void evaluate_sequential_assignment(const AssignmentList & assignment_list, Context *context) {
-		EvalContext let_context(context, assignment_list);
-
-		const bool allow_reassignment = false;
-
-		for (unsigned int i = 0; i < let_context.numArgs(); i++) {
-			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
-				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context)->toString());
-			} else {
-				// NOTE: iteratively evaluated list of arguments
-				context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
-			}
-		}
+	void evaluate_sequential_assignment(const AssignmentList &assignment_list, std::shared_ptr<Context> context, const Location &loc) {
+		ContextHandle<EvalContext> ctx{Context::create<EvalContext>(context, assignment_list, loc)};
+		ctx->assignTo(context);
 	}
-}
-
-Expression::Expression() : first(NULL), second(NULL), third(NULL)
-{
-}
-
-Expression::Expression(Expression *expr) : first(expr), second(NULL), third(NULL)
-{
-	children.push_back(expr);
-}
-
-Expression::Expression(Expression *left, Expression *right) : first(left), second(right), third(NULL)
-{
-	children.push_back(left);
-	children.push_back(right);
-}
-
-Expression::Expression(Expression *expr1, Expression *expr2, Expression *expr3)
-	: first(expr1), second(expr2), third(expr3)
-{
-	children.push_back(expr1);
-	children.push_back(expr2);
-	children.push_back(expr3);
-}
-
-Expression::~Expression()
-{
-	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
 }
 
 namespace /* anonymous*/ {
@@ -101,291 +81,241 @@ namespace /* anonymous*/ {
 		for (size_t i=0; i < l.size(); i++) {
 			const Assignment &arg = l[i];
 			if (i > 0) o << ", ";
-			if (!arg.first.empty()) o << arg.first  << " = ";
-			o << *arg.second;
+			if (!arg.name.empty()) o << arg.name  << " = ";
+			o << *arg.expr;
 		}
 		return o;
 	}
 
 }
 
-bool Expression::isListComprehension() const
+bool Expression::isLiteral() const
 {
-	return false;
+    return false;
 }
 
-ExpressionNot::ExpressionNot(Expression *expr) : Expression(expr)
-{
-}
-
-ValuePtr ExpressionNot::evaluate(const Context *context) const
-{
-	return !first->evaluate(context);
-}
-
-void ExpressionNot::print(std::ostream &stream) const
-{
-	stream << "!" << *first;
-}
-
-ExpressionLogicalAnd::ExpressionLogicalAnd(Expression *left, Expression *right) : Expression(left, right)
+UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expression(loc), op(op), expr(expr)
 {
 }
 
-ValuePtr ExpressionLogicalAnd::evaluate(const Context *context) const
+ValuePtr UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return this->first->evaluate(context) && this->second->evaluate(context);
+	switch (this->op) {
+	case (Op::Not):
+		return !this->expr->evaluate(context);
+	case (Op::Negate):
+		return -this->expr->evaluate(context);
+	default:
+		return ValuePtr::undefined;
+		// FIXME: error:
+	}
 }
 
-void ExpressionLogicalAnd::print(std::ostream &stream) const
+const char *UnaryOp::opString() const
 {
-	stream << "(" << *first << " && " << *second << ")";
+	switch (this->op) {
+	case Op::Not:
+		return "!";
+		break;
+	case Op::Negate:
+		return "-";
+		break;
+	default:
+		return "";
+		// FIXME: Error: unknown op
+	}
 }
 
-ExpressionLogicalOr::ExpressionLogicalOr(Expression *left, Expression *right) : Expression(left, right)
-{
+bool UnaryOp::isLiteral() const { 
+
+    if(this->expr->isLiteral()) 
+        return true;
+    return false;
 }
 
-ValuePtr ExpressionLogicalOr::evaluate(const Context *context) const
+void UnaryOp::print(std::ostream &stream, const std::string &) const
 {
-	return this->first->evaluate(context) || this->second->evaluate(context);
+	stream << opString() << *this->expr;
 }
 
-void ExpressionLogicalOr::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " || " << *second << ")";
-}
-
-ExpressionMultiply::ExpressionMultiply(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionMultiply::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) * this->second->evaluate(context);
-}
-
-void ExpressionMultiply::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " * " << *second << ")";
-}
-
-ExpressionDivision::ExpressionDivision(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionDivision::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) / this->second->evaluate(context);
-}
-
-void ExpressionDivision::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " / " << *second << ")";
-}
-
-ExpressionModulo::ExpressionModulo(Expression *left, Expression *right) : Expression(left, right)
+BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const Location &loc) :
+	Expression(loc), op(op), left(left), right(right)
 {
 }
 
-ValuePtr ExpressionModulo::evaluate(const Context *context) const
+ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return this->first->evaluate(context) % this->second->evaluate(context);
+	switch (this->op) {
+	case Op::LogicalAnd:
+		return this->left->evaluate(context) && this->right->evaluate(context);
+		break;
+	case Op::LogicalOr:
+		return this->left->evaluate(context) || this->right->evaluate(context);
+		break;
+	case Op::Multiply:
+		return this->left->evaluate(context) * this->right->evaluate(context);
+		break;
+	case Op::Divide:
+		return this->left->evaluate(context) / this->right->evaluate(context);
+		break;
+	case Op::Modulo:
+		return this->left->evaluate(context) % this->right->evaluate(context);
+		break;
+	case Op::Plus:
+		return this->left->evaluate(context) + this->right->evaluate(context);
+		break;
+	case Op::Minus:
+		return this->left->evaluate(context) - this->right->evaluate(context);
+		break;
+	case Op::Less:
+		return this->left->evaluate(context) < this->right->evaluate(context);
+		break;
+	case Op::LessEqual:
+		return this->left->evaluate(context) <= this->right->evaluate(context);
+		break;
+	case Op::Greater:
+		return this->left->evaluate(context) > this->right->evaluate(context);
+		break;
+	case Op::GreaterEqual:
+		return this->left->evaluate(context) >= this->right->evaluate(context);
+		break;
+	case Op::Equal:
+		return this->left->evaluate(context) == this->right->evaluate(context);
+		break;
+	case Op::NotEqual:
+		return this->left->evaluate(context) != this->right->evaluate(context);
+		break;
+	default:
+		return ValuePtr::undefined;
+		// FIXME: Error: unknown op
+	}
 }
 
-void ExpressionModulo::print(std::ostream &stream) const
+const char *BinaryOp::opString() const
 {
-	stream << "(" << *first << " % " << *second << ")";
+	switch (this->op) {
+	case Op::LogicalAnd:
+		return "&&";
+		break;
+	case Op::LogicalOr:
+		return "||";
+		break;
+	case Op::Multiply:
+		return "*";
+		break;
+	case Op::Divide:
+		return "/";
+		break;
+	case Op::Modulo:
+		return "%";
+		break;
+	case Op::Plus:
+		return "+";
+		break;
+	case Op::Minus:
+		return "-";
+		break;
+	case Op::Less:
+		return "<";
+		break;
+	case Op::LessEqual:
+		return "<=";
+		break;
+	case Op::Greater:
+		return ">";
+		break;
+	case Op::GreaterEqual:
+		return ">=";
+		break;
+	case Op::Equal:
+		return "==";
+		break;
+	case Op::NotEqual:
+		return "!=";
+		break;
+	default:
+		return "";
+		// FIXME: Error: unknown op
+	}
 }
 
-ExpressionPlus::ExpressionPlus(Expression *left, Expression *right) : Expression(left, right)
+void BinaryOp::print(std::ostream &stream, const std::string &) const
 {
+	stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
 
-ValuePtr ExpressionPlus::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) + this->second->evaluate(context);
-}
-
-void ExpressionPlus::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " + " << *second << ")";
-}
-
-ExpressionMinus::ExpressionMinus(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionMinus::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) - this->second->evaluate(context);
-}
-
-void ExpressionMinus::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " - " << *second << ")";
-}
-
-ExpressionLess::ExpressionLess(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionLess::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) < this->second->evaluate(context);
-}
-
-void ExpressionLess::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " < " << *second << ")";
-}
-
-ExpressionLessOrEqual::ExpressionLessOrEqual(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionLessOrEqual::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) <= this->second->evaluate(context);
-}
-
-void ExpressionLessOrEqual::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " <= " << *second << ")";
-}
-
-ExpressionEqual::ExpressionEqual(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionEqual::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) == this->second->evaluate(context);
-}
-
-void ExpressionEqual::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " == " << *second << ")";
-}
-
-ExpressionNotEqual::ExpressionNotEqual(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionNotEqual::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) != this->second->evaluate(context);
-}
-
-void ExpressionNotEqual::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " != " << *second << ")";
-}
-
-ExpressionGreaterOrEqual::ExpressionGreaterOrEqual(Expression *left, Expression *right) : Expression(left, right)
-{
-}
-
-ValuePtr ExpressionGreaterOrEqual::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context) >= this->second->evaluate(context);
-}
-
-void ExpressionGreaterOrEqual::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " >= " << *second << ")";
-}
-
-ExpressionGreater::ExpressionGreater(Expression *left, Expression *right) : Expression(left, right)
+TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc)
+	: Expression(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
 {
 }
 
-ValuePtr ExpressionGreater::evaluate(const Context *context) const
+const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	return this->first->evaluate(context) > this->second->evaluate(context);
+	return this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 }
 
-void ExpressionGreater::print(std::ostream &stream) const
+ValuePtr TernaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
-	stream << "(" << *first << " > " << *second << ")";
+	const shared_ptr<const Expression>& nextexpr = evaluateStep(context);
+	return nextexpr->evaluate(context);
 }
 
-ExpressionTernary::ExpressionTernary(Expression *expr1, Expression *expr2, Expression *expr3) : Expression(expr1, expr2, expr3)
+void TernaryOp::print(std::ostream &stream, const std::string &) const
 {
+	stream << "(" << *this->cond << " ? " << *this->ifexpr << " : " << *this->elseexpr << ")";
 }
 
-ValuePtr ExpressionTernary::evaluate(const Context *context) const
-{
-	return (this->first->evaluate(context) ? this->second : this->third)->evaluate(context);
-}
-
-void ExpressionTernary::print(std::ostream &stream) const
-{
-	stream << "(" << *first << " ? " << *second << " : " << *third << ")";
-}
-
-ExpressionArrayLookup::ExpressionArrayLookup(Expression *left, Expression *right) : Expression(left, right)
+ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &loc)
+	: Expression(loc), array(array), index(index)
 {
 }
 
-ValuePtr ExpressionArrayLookup::evaluate(const Context *context) const {
-	return this->first->evaluate(context)[this->second->evaluate(context)];
+ValuePtr ArrayLookup::evaluate(const std::shared_ptr<Context>& context) const {
+	return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
-void ExpressionArrayLookup::print(std::ostream &stream) const
+void ArrayLookup::print(std::ostream &stream, const std::string &) const
 {
-	stream << *first << "[" << *second << "]";
+	stream << *array << "[" << *index << "]";
 }
 
-ExpressionInvert::ExpressionInvert(Expression *expr) : Expression(expr)
-{
-}
-
-ValuePtr ExpressionInvert::evaluate(const Context *context) const
-{
-	return -this->first->evaluate(context);
-}
-
-void ExpressionInvert::print(std::ostream &stream) const
-{
-	stream << "-" << *first;
-}
-
-ExpressionConst::ExpressionConst(const ValuePtr &val) : const_value(val)
+Literal::Literal(const ValuePtr &val, const Location &loc) : Expression(loc), value(val)
 {
 }
 
-ValuePtr ExpressionConst::evaluate(const class Context *) const
+ValuePtr Literal::evaluate(const std::shared_ptr<Context>&) const
 {
-	return this->const_value;
+	return this->value;
 }
 
-void ExpressionConst::print(std::ostream &stream) const
+void Literal::print(std::ostream &stream, const std::string &) const
 {
-    stream << *this->const_value;
+    stream << *this->value;
 }
 
-ExpressionRange::ExpressionRange(Expression *expr1, Expression *expr2) : Expression(expr1, expr2)
-{
-}
-
-ExpressionRange::ExpressionRange(Expression *expr1, Expression *expr2, Expression *expr3) : Expression(expr1, expr2, expr3)
+Range::Range(Expression *begin, Expression *end, const Location &loc)
+	: Expression(loc), begin(begin), end(end)
 {
 }
 
-ValuePtr ExpressionRange::evaluate(const Context *context) const
+Range::Range(Expression *begin, Expression *step, Expression *end, const Location &loc)
+	: Expression(loc), begin(begin), step(step), end(end)
 {
-	ValuePtr v1 = this->first->evaluate(context);
-	if (v1->type() == Value::NUMBER) {
-		ValuePtr v2 = this->second->evaluate(context);
-		if (v2->type() == Value::NUMBER) {
-			if (this->children.size() == 2) {
-				RangeType range(v1->toDouble(), v2->toDouble());
+}
+
+ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
+{
+	ValuePtr beginValue = this->begin->evaluate(context);
+	if (beginValue->type() == Value::ValueType::NUMBER) {
+		ValuePtr endValue = this->end->evaluate(context);
+		if (endValue->type() == Value::ValueType::NUMBER) {
+			if (!this->step) {
+				RangeType range(beginValue->toDouble(), endValue->toDouble());
 				return ValuePtr(range);
 			} else {
-				ValuePtr v3 = this->third->evaluate(context);
-				if (v3->type() == Value::NUMBER) {
-					RangeType range(v1->toDouble(), v2->toDouble(), v3->toDouble());
+				ValuePtr stepValue = this->step->evaluate(context);
+				if (stepValue->type() == Value::ValueType::NUMBER) {
+					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
 					return ValuePtr(range);
 				}
 			}
@@ -394,28 +324,61 @@ ValuePtr ExpressionRange::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
-void ExpressionRange::print(std::ostream &stream) const
+void Range::print(std::ostream &stream, const std::string &) const
 {
-	stream << "[" << *first << " : " << *second;
-	if (this->children.size() > 2) stream << " : " << *third;
+	stream << "[" << *this->begin;
+	if (this->step) stream << " : " << *this->step;
+	stream << " : " << *this->end;
 	stream << "]";
 }
 
-ExpressionVector::ExpressionVector(Expression *expr) : Expression(expr)
+bool Range::isLiteral() const {
+    if(!this->step){ 
+        if( begin->isLiteral() && end->isLiteral())
+            return true;
+    }else{
+        if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
+            return true;
+    }
+    return false;
+}
+
+Vector::Vector(const Location &loc) : Expression(loc)
 {
 }
 
-ValuePtr ExpressionVector::evaluate(const Context *context) const
+bool Vector::isLiteral() const {
+    for(const auto &e : this->children) {
+        if (!e->isLiteral()){
+            return false;
+        }
+    } 
+    return true;
+}
+
+void Vector::push_back(Expression *expr)
+{
+	this->children.push_back(shared_ptr<Expression>(expr));
+}
+
+ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 {
 	Value::VectorType vec;
-	BOOST_FOREACH(const Expression *e, this->children) {
+	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
-		vec.push_back(tmpval);
+		if (isListComprehension(e)) {
+			const Value::VectorType result = tmpval->toVector();
+			for (size_t i = 0;i < result.size();i++) {
+				vec.push_back(result[i]);
+			}
+		} else {
+			vec.push_back(tmpval);
+		}
 	}
 	return ValuePtr(vec);
 }
 
-void ExpressionVector::print(std::ostream &stream) const
+void Vector::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[";
 	for (size_t i=0; i < this->children.size(); i++) {
@@ -425,34 +388,39 @@ void ExpressionVector::print(std::ostream &stream) const
 	stream << "]";
 }
 
-ExpressionLookup::ExpressionLookup(const std::string &var_name) : var_name(var_name)
+Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), name(name)
 {
 }
 
-ValuePtr ExpressionLookup::evaluate(const Context *context) const
+ValuePtr Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->var_name);
+	return context->lookup_variable(this->name,false,loc);
 }
 
-void ExpressionLookup::print(std::ostream &stream) const
+ValuePtr Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
 {
-	stream << this->var_name;
+	return context->lookup_variable(this->name,true);
 }
 
-ExpressionMember::ExpressionMember(Expression *expr, const std::string &member)
-	: Expression(expr), member(member)
+void Lookup::print(std::ostream &stream, const std::string &) const
+{
+	stream << this->name;
+}
+
+MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Location &loc)
+	: Expression(loc), expr(expr), member(member)
 {
 }
 
-ValuePtr ExpressionMember::evaluate(const Context *context) const
+ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	ValuePtr v = this->first->evaluate(context);
+	ValuePtr v = this->expr->evaluate(context);
 
-	if (v->type() == Value::VECTOR) {
+	if (v->type() == Value::ValueType::VECTOR) {
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v->type() == Value::RANGE) {
+	} else if (v->type() == Value::ValueType::RANGE) {
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
@@ -460,159 +428,543 @@ ValuePtr ExpressionMember::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
-void ExpressionMember::print(std::ostream &stream) const
+void MemberLookup::print(std::ostream &stream, const std::string &) const
 {
-	stream << *first << "." << this->member;
+	stream << *this->expr << "." << this->member;
 }
 
-ExpressionFunctionCall::ExpressionFunctionCall(const std::string &funcname, 
-																							 const AssignmentList &arglist)
-	: funcname(funcname), call_arguments(arglist)
+FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc)
+	: Expression(loc), ctx(nullptr), definition_arguments(definition_arguments), expr(expr)
 {
 }
 
-ValuePtr ExpressionFunctionCall::evaluate(const Context *context) const
+ValuePtr FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	if (StackCheck::inst()->check()) {
-		throw RecursionException::create("function", funcname);
+	return ValuePtr{FunctionType{context, expr, definition_arguments}};
+}
+
+void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
+{
+	stream << indent << "function(";
+	bool first = true;
+	for (const auto& assignment : definition_arguments) {
+		stream << (first ? "" : ", ") << assignment.name;
+		if (assignment.expr) {
+			stream << " = " << *assignment.expr.get();
+		}
+		first = false;
 	}
-    
-	EvalContext c(context, this->call_arguments);
-	ValuePtr result = context->evaluate_function(this->funcname, &c);
+	stream << ") " << *this->expr;
+}
 
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+}
+
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
+	PRINTB("TRACE: called by '%s', %s.", val->get_name() % val->location().toRelativeString(ctx->documentPath()));
+}
+static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
+	PRINTB("WARNING: Can't call function on %s %s", name % loc.toRelativeString(ctx->documentPath()));
+}
+
+FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
+	: Expression(loc), expr(expr), arguments(args)
+{
+	if (typeid(*expr) == typeid(Lookup)) {
+		isLookup = true;
+		const Lookup *lookup = static_cast<Lookup *>(expr);
+		name = lookup->get_name();
+	} else {
+		isLookup = false;
+		std::ostringstream s;
+		s << "(";
+		expr->print(s, "");
+		s << ")";
+		name = s.str();
+	}
+}
+
+/**
+ * Evaluates call parameters using context, and assigns the resulting values to tailCallContext.
+ * As the name suggests, it's meant for basic tail recursion, where the function calls itself.
+*/
+void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments)
+{
+	if (this->resolvedArguments.empty()) {
+		// Figure out parameter names
+		ContextHandle<EvalContext> ec{Context::create<EvalContext>(context, this->arguments, this->loc)};
+		this->resolvedArguments = ec->resolveArguments(definition_arguments, {}, false);
+		// Assign default values for unspecified parameters
+		for (const auto &arg : definition_arguments) {
+			if (this->resolvedArguments.find(arg.name) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg.name, arg.expr ? arg.expr->evaluate(context) : ValuePtr::undefined);
+			}
+		}
+	}
+
+	std::vector<std::pair<std::string, ValuePtr>> variables;
+	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
+	// Set default values for unspecified parameters
+	variables.insert(variables.begin(), this->defaultArguments.begin(), this->defaultArguments.end());
+	// Set the given parameters
+	for (const auto &ass : this->resolvedArguments) {
+		variables.emplace_back(ass.first, ass.second->evaluate(context));
+	}
+	// Apply to tailCallContext
+	for (const auto &var : variables) {
+		tailCallContext->set_variable(var.first, var.second);
+	}
+	// Apply config variables ($...)
+	tailCallContext->apply_config_variables(context);
+}
+
+ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const auto& name = get_name();
+	if (StackCheck::inst().check()) {
+		print_err(name.c_str(), loc, context);
+		throw RecursionException::create("function", name, this->loc);
+	}
+	try {
+		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
+		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
+
+		if (v->type() == Value::ValueType::FUNCTION) {
+			if (name.size() > 0 && name.at(0) == '$') {
+				print_invalid_function_call("dynamically scoped variable", context, loc);
+				return ValuePtr::undefined;
+			} else {
+				auto func = v->toFunction();
+				return evaluate_function(name, func.getExpr(), func.getArgs(), func.getCtx(), evalCtx.ctx, this->loc);
+			}
+		} else if (isLookup) {
+			return context->evaluate_function(name, evalCtx.ctx);
+		} else {
+			print_invalid_function_call(v->typeName(), context, loc);
+			return ValuePtr::undefined;
+		}
+	} catch (EvaluationException &e) {
+		if (e.traceDepth > 0) {
+			print_trace(this, context);
+			e.traceDepth--;
+		}
+		throw;
+	}
+}
+
+void FunctionCall::print(std::ostream &stream, const std::string &) const
+{
+	stream << this->get_name() << "(" << this->arguments << ")";
+}
+
+Expression * FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
+{
+	if (funcname == "assert") {
+		return new Assert(arglist, expr, loc);
+	} else if (funcname == "echo") {
+		return new Echo(arglist, expr, loc);
+	} else if (funcname == "let") {
+		return new Let(arglist, expr, loc);
+	}
+	return nullptr;
+
+	// TODO: Generate error/warning if expr != 0?
+//	return new FunctionCall(funcname, arglist, loc);
+}
+
+Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
+{
+
+}
+
+const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context>& context) const
+{
+	ContextHandle<EvalContext> assert_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	ContextHandle<Context> c{Context::create<Context>(assert_context.ctx)};
+	evaluate_assert(c.ctx, assert_context.ctx);
+	return expr;
+}
+
+ValuePtr Assert::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
-void ExpressionFunctionCall::print(std::ostream &stream) const
+void Assert::print(std::ostream &stream, const std::string &) const
 {
-	stream << this->funcname << "(" << this->call_arguments << ")";
+	stream << "assert(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
 }
 
-ExpressionLet::ExpressionLet(const AssignmentList &arglist, Expression *expr)
-	: Expression(expr), call_arguments(arglist)
+Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
 {
+
 }
 
-ValuePtr ExpressionLet::evaluate(const Context *context) const
+const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	Context c(context);
-	evaluate_sequential_assignment(this->call_arguments, &c);
-
-	return this->first->evaluate(&c);
+	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	PRINTB("%s", STR("ECHO: " << *echo_context.ctx));
+	return expr;
 }
 
-void ExpressionLet::print(std::ostream &stream) const
+ValuePtr Echo::evaluate(const std::shared_ptr<Context>& context) const
 {
-	stream << "let(" << this->call_arguments << ") " << *first;
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
+	return result;
 }
 
-ExpressionLcExpression::ExpressionLcExpression(Expression *expr) : Expression(expr)
+void Echo::print(std::ostream &stream, const std::string &) const
 {
+	stream << "echo(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
 }
 
-ValuePtr ExpressionLcExpression::evaluate(const Context *context) const
-{
-	return this->first->evaluate(context);
-}
-
-void ExpressionLcExpression::print(std::ostream &stream) const
-{
-	stream << "[" << *this->first << "]";
-}
-
-ExpressionLc::ExpressionLc(const std::string &name, 
-													 const AssignmentList &arglist, Expression *expr)
-	: Expression(expr), name(name), call_arguments(arglist)
+Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
 {
 }
 
-ExpressionLc::ExpressionLc(const std::string &name, 
-													 Expression *expr1, Expression *expr2)
-	: Expression(expr1, expr2), name(name)
+const shared_ptr<Expression>& Let::evaluateStep(const std::shared_ptr<Context>& context) const
+{
+	evaluate_sequential_assignment(this->arguments, context, this->loc);
+	return this->expr;
+}
+
+ValuePtr Let::evaluate(const std::shared_ptr<Context>& context) const
+{
+	ContextHandle<Context> c{Context::create<Context>(context)};
+	const shared_ptr<Expression>& nextexpr = evaluateStep(c.ctx);
+	return nextexpr->evaluate(c.ctx);
+}
+
+void Let::print(std::ostream &stream, const std::string &) const
+{
+	stream << "let(" << this->arguments << ") " << *expr;
+}
+
+ListComprehension::ListComprehension(const Location &loc) : Expression(loc)
 {
 }
 
-bool ExpressionLc::isListComprehension() const
+LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc)
+	: ListComprehension(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
 {
-	return true;
 }
 
-ValuePtr ExpressionLc::evaluate(const Context *context) const
+ValuePtr LcIf::evaluate(const std::shared_ptr<Context>& context) const
+{
+    const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+	
+    Value::VectorType vec;
+    if (expr) {
+        if (isListComprehension(expr)) {
+            return expr->evaluate(context);
+        } else {
+           vec.push_back(expr->evaluate(context));
+        }
+    }
+
+    return ValuePtr(vec);
+}
+
+void LcIf::print(std::ostream &stream, const std::string &) const
+{
+    stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
+    if (this->elseexpr) {
+        stream << " else (" << *this->elseexpr << ")";
+    }
+}
+
+LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), expr(expr)
+{
+}
+
+ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
 {
 	Value::VectorType vec;
 
-	if (this->name == "if") {
-		if (this->first->evaluate(context)) {
-			if (this->second->isListComprehension()) {
-				return this->second->evaluate(context);
-			} else {
-				vec.push_back(this->second->evaluate(context));
-			}
-		}
-		return ValuePtr(vec);
-	} else if (this->name == "for") {
-		EvalContext for_context(context, this->call_arguments);
+    ValuePtr v = this->expr->evaluate(context);
 
-		Context assign_context(context);
+    if (v->type() == Value::ValueType::RANGE) {
+        RangeType range = v->toRange();
+        uint32_t steps = range.numValues();
+        if (steps >= 1000000) {
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+        } else {
+            for (RangeType::iterator it = range.begin();it != range.end();it++) {
+                vec.push_back(ValuePtr(*it));
+            }
+        }
+    } else if (v->type() == Value::ValueType::VECTOR) {
+        Value::VectorType vector = v->toVector();
+        for (size_t i = 0; i < v->toVector().size(); i++) {
+            vec.push_back(vector[i]);
+        }
+    } else if (v->type() == Value::ValueType::STRING) {
+        utf8_split(v->toString(), [&](ValuePtr v) {
+            vec.push_back(v);
+        });
+    } else if (v->type() != Value::ValueType::UNDEFINED) {
+        vec.push_back(v);
+    }
 
-		// comprehension for statements are by the parser reduced to only contain one single element
-		const std::string &it_name = for_context.getArgName(0);
-		ValuePtr it_values = for_context.getArgValue(0, &assign_context);
+    if (isListComprehension(this->expr)) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
+}
 
-		Context c(context);
+void LcEach::print(std::ostream &stream, const std::string &) const
+{
+    stream << "each (" << *this->expr << ")";
+}
 
-		if (it_values->type() == Value::RANGE) {
-			RangeType range = it_values->toRange();
-			boost::uint32_t steps = range.numValues();
-			if (steps >= 1000000) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
-			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c.set_variable(it_name, ValuePtr(*it));
-					vec.push_back(this->first->evaluate(&c));
-				}
-			}
+LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
+	: ListComprehension(loc), arguments(args), expr(expr)
+{
+}
+
+ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
+{
+	Value::VectorType vec;
+
+    ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+
+    ContextHandle<Context> assign_context{Context::create<Context>(context)};
+
+    // comprehension for statements are by the parser reduced to only contain one single element
+    const std::string &it_name = for_context->getArgName(0);
+    ValuePtr it_values = for_context->getArgValue(0, assign_context.ctx);
+
+    ContextHandle<Context> c{Context::create<Context>(context)};
+
+    if (it_values->type() == Value::ValueType::RANGE) {
+        RangeType range = it_values->toRange();
+        uint32_t steps = range.numValues();
+        if (steps >= 1000000) {
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+        } else {
+            for (RangeType::iterator it = range.begin();it != range.end();it++) {
+                c->set_variable(it_name, ValuePtr(*it));
+                vec.push_back(this->expr->evaluate(c.ctx));
+            }
+        }
+    } else if (it_values->type() == Value::ValueType::VECTOR) {
+        for (size_t i = 0; i < it_values->toVector().size(); i++) {
+            c->set_variable(it_name, it_values->toVector()[i]);
+            vec.push_back(this->expr->evaluate(c.ctx));
+        }
+    } else if (it_values->type() == Value::ValueType::STRING) {
+        utf8_split(it_values->toString(), [&](ValuePtr v) {
+            c->set_variable(it_name, v);
+            vec.push_back(this->expr->evaluate(c.ctx));
+        });
+    } else if (it_values->type() != Value::ValueType::UNDEFINED) {
+        c->set_variable(it_name, it_values);
+        vec.push_back(this->expr->evaluate(c.ctx));
+    }
+
+    if (isListComprehension(this->expr)) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
+}
+
+void LcFor::print(std::ostream &stream, const std::string &) const
+{
+    stream << "for(" << this->arguments << ") (" << *this->expr << ")";
+}
+
+LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr, const Location &loc)
+	: ListComprehension(loc), arguments(args), incr_arguments(incrargs), cond(cond), expr(expr)
+{
+}
+
+ValuePtr LcForC::evaluate(const std::shared_ptr<Context>& context) const
+{
+	Value::VectorType vec;
+
+    ContextHandle<Context> c{Context::create<Context>(context)};
+    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
+
+	unsigned int counter = 0;
+    while (this->cond->evaluate(c.ctx)) {
+        vec.push_back(this->expr->evaluate(c.ctx));
+
+        if (counter++ == 1000000) {
+            std::string locs = loc.toRelativeString(context->documentPath());
+            PRINTB("ERROR: for loop counter exceeded limit, %s", locs);
+            throw LoopCntException::create("for", loc);
+        }
+
+        ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
+        evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
+        c->apply_variables(tmp.ctx);
+    }    
+
+    if (isListComprehension(this->expr)) {
+        return ValuePtr(flatten(vec));
+    } else {
+        return ValuePtr(vec);
+    }
+}
+
+void LcForC::print(std::ostream &stream, const std::string &) const
+{
+    stream
+        << "for(" << this->arguments
+        << ";" << *this->cond
+        << ";" << this->incr_arguments
+        << ") " << *this->expr;
+}
+
+LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
+	: ListComprehension(loc), arguments(args), expr(expr)
+{
+}
+
+ValuePtr LcLet::evaluate(const std::shared_ptr<Context>& context) const
+{
+    ContextHandle<Context> c{Context::create<Context>(context)};
+    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
+    return this->expr->evaluate(c.ctx);
+}
+
+void LcLet::print(std::ostream &stream, const std::string &) const
+{
+    stream << "let(" << this->arguments << ") (" << *this->expr << ")";
+}
+
+void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
+{
+	AssignmentList args;
+	args += Assignment("condition"), Assignment("message");
+
+	ContextHandle<Context> c{Context::create<Context>(context)};
+
+	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
+	for (const auto &arg : args) {
+		auto it = assignments.find(arg.name);
+		if (it != assignments.end()) {
+			c->set_variable(arg.name, assignments[arg.name]->evaluate(evalctx));
 		}
-		else if (it_values->type() == Value::VECTOR) {
-			for (size_t i = 0; i < it_values->toVector().size(); i++) {
-				c.set_variable(it_name, it_values->toVector()[i]);
-				vec.push_back(this->first->evaluate(&c));
-			}
-		}
-		else if (it_values->type() != Value::UNDEFINED) {
-			c.set_variable(it_name, it_values);
-			vec.push_back(this->first->evaluate(&c));
-		}
-		if (this->first->isListComprehension()) {
-			return ValuePtr(flatten(vec));
+	}
+	
+	const ValuePtr condition = c->lookup_variable("condition", false, evalctx->loc);
+
+	if (!condition->toBool()) {
+		const Expression *expr = assignments["condition"];
+		const ValuePtr message = c->lookup_variable("message", true);
+		
+		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
+		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
+		if (message->isDefined()) {
+			PRINTB("ERROR: Assertion%s failed: %s %s", exprText % message->toEchoString() % locs);
 		} else {
-			return ValuePtr(vec);
+			PRINTB("ERROR: Assertion%s failed %s", exprText % locs);
 		}
-	} else if (this->name == "let") {
-		Context c(context);
-		evaluate_sequential_assignment(this->call_arguments, &c);
-
-		return this->first->evaluate(&c);
-	} else {
-		abort();
+		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
 }
 
-void ExpressionLc::print(std::ostream &stream) const
+ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
+		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
 {
-	stream << this->name;
-	if (this->name == "if") {
-		stream << "(" << *this->first << ") " << *this->second;
-	}
-	else if (this->name == "for" || this->name == "let") {
-		stream << "(" << this->call_arguments << ") " << *this->first;
-	} else {
-		assert(false && "Illegal list comprehension element");
-	}
-}
+	if (!expr) return ValuePtr::undefined;
+	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call
+	c_next->setVariables(evalctx, definition_arguments);
 
-std::ostream &operator<<(std::ostream &stream, const Expression &expr)
-{
-	expr.print(stream);
-	return stream;
+	// Outer loop: to allow tail calls
+	unsigned int counter = 0;
+	ValuePtr result;
+	while (true) {
+		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
+		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
+		// Cannot use std::vector, as it invalidates raw pointers.
+		std::forward_list<ContextHandle<Context>> c_local_stack;
+		c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_next.ctx)));
+		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
+
+		// Inner loop: to follow a single execution path
+		// Before a 'break', must either assign result, or set tailCall to true.
+		shared_ptr<Expression> subExpr = expr;
+		bool tailCall = false;
+		while (true) {
+			if (!subExpr) {
+				result = ValuePtr::undefined;
+				break;
+			}
+			else if (typeid(*subExpr) == typeid(TernaryOp)) {
+				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
+				subExpr = ternary->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Assert)) {
+				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
+				subExpr = assertion->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Echo)) {
+				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
+				subExpr = echo->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Let)) {
+				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
+				// Start a new, nested context
+				c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
+				c_local = c_local_stack.front().ctx;
+				subExpr = let->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(FunctionCall)) {
+				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
+				if (name == call->get_name()) {
+					// Update c_next with new parameters for tail call
+					call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
+					tailCall = true;
+				}
+				else {
+					result = subExpr->evaluate(c_local);
+				}
+				break;
+			}
+			else {
+				result = subExpr->evaluate(c_local);
+				break;
+			}
+		}
+		if (!tailCall) {
+			break;
+		}
+
+		if (counter++ == 1000000){
+			const std::string locs = loc.toRelativeString(ctx->documentPath());
+			PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+			throw RecursionException::create("function", name,loc);
+		}
+	}
+
+	return result;
 }

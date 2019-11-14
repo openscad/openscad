@@ -1,0 +1,38 @@
+//Description("normal description")
+//Parameter("")
+x = 50;
+//Description("normal  starting width spaces description")
+//Parameter("")
+x2 = 45;
+//Description("normal starting tab spaces description")
+//Parameter("")
+x3 = 3;
+//Parameter("")
+x4 = 3;
+//Description("double description  ")
+//Parameter("")
+x5 = 3;
+//Parameter("")
+x6 = 12;
+//Parameter("")
+x7 = 12;
+//Parameter("")
+x8 = 12;
+//Description("description sandwiched between two assignments")
+//Parameter("")
+x9 = 23;
+//Parameter("")
+x19 = 23;
+//Parameter("")
+x10 = 23;
+//Parameter("")
+x11 = 23;
+//Parameter("")
+x12 = 23;
+//Description("double description  ")
+//Parameter("")
+x13 = 7;
+//Description("double description            normal comment starting with tab before  ")
+//Parameter("")
+x14 = 3;
+

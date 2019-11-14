@@ -10,7 +10,7 @@ class ProgressWidget : public QWidget, public Ui::ProgressWidget
 	Q_PROPERTY(bool wasCanceled READ wasCanceled);
 	
 public:
-	ProgressWidget(QWidget *parent = NULL);
+	ProgressWidget(QWidget *parent = nullptr);
 	bool wasCanceled() const;
 	int elapsedTime() const;
 

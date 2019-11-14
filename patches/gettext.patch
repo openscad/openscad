@@ -1,0 +1,23 @@
+diff -upr gettext-0.19.3.orig/gettext-runtime/intl/langprefs.c gettext-0.19.3/gettext-runtime/intl/langprefs.c
+--- gettext-0.19.3.orig/gettext-runtime/intl/langprefs.c	2013-03-07 09:44:37.000000000 +0100
++++ gettext-0.19.3/gettext-runtime/intl/langprefs.c	2016-11-06 12:40:20.000000000 +0100
+@@ -269,7 +269,8 @@ _nl_language_preferences_default (void)
+                        in the preferences list, arrange for gettext() to
+                        return the msgid, and ignore all further elements of
+                        the preferences list.  */
+-                    if (strcmp (buf, "en") == 0)
++                    if (strcmp (buf, "en") == 0
++                        || strncmp (buf, "en-", 3))
+                       break;
+                   }
+                 else
+@@ -297,7 +298,8 @@ _nl_language_preferences_default (void)
+                             strcpy (p, buf);
+                             p += strlen (buf);
+                             *p++ = ':';
+-                            if (strcmp (buf, "en") == 0)
++                            if (strcmp (buf, "en") == 0
++                                || strncmp (buf, "en-", 3))
+                               break;
+                           }
+                         else

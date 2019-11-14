@@ -2,13 +2,13 @@
 #include <QAction>
 #include <QMenuBar>
 
-AutoUpdater *AutoUpdater::updater_instance = NULL;
+AutoUpdater *AutoUpdater::updater_instance = nullptr;
 
 void AutoUpdater::init()
 {
 #ifdef OPENSCAD_UPDATER
 	if (!this->updateAction) {
-		QMenuBar *mb = new QMenuBar();
+		auto mb = new QMenuBar();
 		this->updateMenu = mb->addMenu("special");
 		this->updateAction = new QAction("Check for Update..", this);
 		// Add to application menu

@@ -29,8 +29,6 @@
 #include "polyset-utils.h"
 #include "dxfdata.h"
 
-#include <boost/foreach.hpp>
-
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
@@ -54,7 +52,7 @@ static int objectid;
 static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
+		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -88,15 +86,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 				double x3 = CGAL::to_double(v3.point().x());
 				double y3 = CGAL::to_double(v3.point().y());
 				double z3 = CGAL::to_double(v3.point().z());
-				std::stringstream stream;
-				stream << x1 << " " << y1 << " " << z1;
-				std::string vs1 = stream.str();
-				stream.str("");
-				stream << x2 << " " << y2 << " " << z2;
-				std::string vs2 = stream.str();
-				stream.str("");
-				stream << x3 << " " << y3 << " " << z3;
-				std::string vs3 = stream.str();
+				std::string vs1{STR(x1 << " " << y1 << " " << z1)};
+				std::string vs2{STR(x2 << " " << y2 << " " << z2)};
+				std::string vs3{STR(x3 << " " << y3 << " " << z3)};
 				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
 					vertices.push_back(vs1);
 				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
@@ -126,9 +118,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			strcpy(chrs, s.c_str());
 			std::string coords = strtok(chrs, " ");
 			output << "     <x>" << coords << "</x>\r\n";
-			coords = strtok(NULL, " ");
+			coords = strtok(nullptr, " ");
 			output << "     <y>" << coords << "</y>\r\n";
-			coords = strtok(NULL, " ");
+			coords = strtok(nullptr, " ");
 			output << "     <z>" << coords << "</z>\r\n";
 			output << "    </coordinates></vertex>\r\n";
 			delete[] chrs;
@@ -150,8 +142,8 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		output << "   </volume>\r\n";
 		output << "  </mesh>\r\n"
 					 << " </object>\r\n";
-	} catch (CGAL::Assertion_exception e) {
-		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+	} catch (CGAL::Assertion_exception& e) {
+		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -159,20 +151,20 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+		for(const auto &item : geomlist->getChildren()) {
 			append_amf(item.second, output);
 		}
 	}
-	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		append_amf(*N, output);
+	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+		if (!N->isEmpty()) append_amf(*N, output);
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
-		append_amf(*N, output);
+		if (!N->isEmpty()) append_amf(*N, output);
 		delete N;
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

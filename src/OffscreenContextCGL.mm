@@ -23,8 +23,6 @@ struct OffscreenContext
 
 std::string offscreen_context_getinfo(OffscreenContext *)
 {
-  std::stringstream out;
-
   struct utsname name;
   uname(&name);
 
@@ -38,6 +36,7 @@ std::string offscreen_context_getinfo(OffscreenContext *)
   if (sizeof(int*) == 4) arch = "32-bit";
   else if (sizeof(int*) == 8) arch = "64-bit";
 
+  std::ostringstream out;
   out << "GL context creator: Cocoa / CGL\n"
       << "PNG generator: Core Foundation\n"
       << "OS info: Mac OS X " << majorVersion << "." << minorVersion << "." << bugFixVersion << " (" << name.machine << " kernel)\n"
@@ -57,10 +56,11 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // Will not be used for actual rendering.
                                    
   NSOpenGLPixelFormatAttribute attributes[] = {
-    NSOpenGLPFAPixelBuffer,
     NSOpenGLPFANoRecovery,
     NSOpenGLPFADepthSize, 24,
     NSOpenGLPFAStencilSize, 8,
+// Enable this to force software rendering
+// NSOpenGLPFARendererID, kCGLRendererGenericID,
 // Took out the acceleration requirement to be able to run the tests
 // in a non-accelerated VM.
 // NSOpenGLPFAAccelerated,
@@ -72,7 +72,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   ctx->openGLContext = [[NSOpenGLContext alloc] initWithFormat:pixFormat shareContext:nil];
   if (!ctx->openGLContext) {
     std::cerr << "Unable to create NSOpenGLContext\n";
-    return NULL;
+    return nullptr;
   }
 
   [ctx->openGLContext makeCurrentContext];
@@ -81,13 +81,13 @@ OffscreenContext *create_offscreen_context(int w, int h)
   GLenum err = glewInit();
   if (GLEW_OK != err) {
     std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
-    return NULL;
+    return nullptr;
   }
   glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
-    return NULL;
+    return nullptr;
   }
 
   return ctx;

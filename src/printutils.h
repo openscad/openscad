@@ -4,10 +4,26 @@
 #include <list>
 #include <iostream>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <libintl.h>
+#undef snprintf
 #include <locale.h>
 inline char * _( const char * msgid ) { return gettext( msgid ); }
+inline const char * _( const char * msgid, const char *msgctxt) {
+	/* The separator between msgctxt and msgid in a .mo file.  */
+	const char* GETTEXT_CONTEXT_GLUE = "\004";
+
+	std::string str = msgctxt;
+	str += GETTEXT_CONTEXT_GLUE;
+	str += msgid;
+	auto translation = dcgettext(NULL,str.c_str(), LC_MESSAGES);
+	if(translation==str){
+		return gettext(msgid);
+	}else{
+		return translation;
+	}
+}
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
@@ -15,15 +31,20 @@ extern void *outputhandler_data;
 namespace OpenSCAD {
 	extern std::string debug;
 	extern bool quiet;
+	extern bool hardwarnings;
+	extern bool parameterCheck;
+	extern bool rangeCheck;
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
+void no_exceptions_for_warnings();
+bool would_have_thrown();
 
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
 void printDeprecation(const std::string &str);
-void resetPrintedDeprecations();
+void resetSuppressedMessages();
 
 #define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
 
@@ -57,6 +78,7 @@ void PRINTDEBUG(const std::string &filename,const std::string &msg);
 
 std::string two_digit_exp_format( std::string doublestr );
 std::string two_digit_exp_format( double x );
+const std::string& quoted_string(const std::string& str);
 
 // extremely simple logging, eventually replace with something like boost.log
 // usage: logstream out(5); openscad_loglevel=6; out << "hi";
@@ -78,3 +100,5 @@ public:
 		return *this;
 	}
 };
+
+#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()

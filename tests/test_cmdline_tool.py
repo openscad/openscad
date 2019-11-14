@@ -22,6 +22,8 @@
 # Author: Marius Kintel <marius@kintel.net>
 #
 
+from __future__ import print_function
+
 import sys
 import os
 import glob
@@ -39,9 +41,9 @@ _debug_tcct = False
 def debug(*args):
     global _debug_tcct
     if _debug_tcct:
-	print 'test_cmdline_tool:',
-	for a in args: print a,
-	print
+        print('test_cmdline_tool:', end=" ")
+        for a in args: print(a, end=" ")
+        print()
 
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
@@ -52,9 +54,9 @@ def init_expected_filename():
 
     expected_testname = options.testname
 
-    if hasattr(options, "expecteddir"):
+    try:
         expected_dirname = options.expecteddir
-    else:
+    except:
         expected_dirname = expected_testname
 
     expecteddir = os.path.join(options.regressiondir, expected_dirname)
@@ -73,10 +75,10 @@ def verify_test(testname, cmd):
     global expectedfilename, actualfilename
     if not options.generate:
         if not os.path.isfile(expectedfilename):
-            print >> sys.stderr, "Error: test '%s' is missing expected output in %s" % (testname, expectedfilename)
+            print("Error: test '%s' is missing expected output in %s" % (testname, expectedfilename), file=sys.stderr)
             # next 2 imgs parsed by test_pretty_print.py
-            print >> sys.stderr, ' actual image: ' + actualfilename + '\n'
-            print >> sys.stderr, ' expected image: ' + expectedfilename + '\n'
+            print(' actual image: ' + actualfilename + '\n', file=sys.stderr)
+            print(' expected image: ' + expectedfilename + '\n', file=sys.stderr)
             return False
     return True
 
@@ -84,13 +86,13 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile, stderr=subprocess.STDOUT)
-        out = proc.communicate()[0]
+        out = proc.communicate()[0].decode('utf-8')
         retval = proc.wait()
     except:
-        print >> sys.stderr, "Error running subprocess: ", sys.exc_info()[1]
-        print >> sys.stderr, " cmd:", cmd
-        print >> sys.stderr, " params:", params
-        print >> sys.stderr, " outfile:", outfile
+        print("Error running subprocess: ", sys.exc_info()[1], file=sys.stderr)
+        print(" cmd:", cmd, file=sys.stderr)
+        print(" params:", params, file=sys.stderr)
+        print(" outfile:", outfile, file=sys.stderr)
     if outfile == subprocess.PIPE: return (retval, out)
     else: return retval
 
@@ -104,6 +106,8 @@ def normalize_string(s):
     This also normalizes away import paths from 'file = ' arguments."""
 
     s = re.sub(', timestamp = [0-9]+', '', s)
+    
+    """ Don't replace floats after implementing double-conversion library
     def floatrep(match):
         value = float(match.groups()[0])
         if abs(value) < 10**-12:
@@ -111,8 +115,8 @@ def normalize_string(s):
         if abs(value) >= 10**6:
             return "%d"%value
         return "%.6g"%value
-    s = re.sub('(-?[0-9]+\\.[0-9]+(e[+-][0-9]+)?)', floatrep, s)
-
+    s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
+    """
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
@@ -132,16 +136,16 @@ def compare_text(expected, actual):
     return get_normalized_text(expected) == get_normalized_text(actual)
 
 def compare_default(resultfilename):
-    print >> sys.stderr, 'text comparison: '
-    print >> sys.stderr, ' expected textfile: ', expectedfilename
-    print >> sys.stderr, ' actual textfile: ', resultfilename
+    print('text comparison: ', file=sys.stderr)
+    print(' expected textfile: ', expectedfilename, file=sys.stderr)
+    print(' actual textfile: ', resultfilename, file=sys.stderr)
     expected_text = get_normalized_text(expectedfilename)
     actual_text = get_normalized_text(resultfilename)
     if not expected_text == actual_text:
-	if resultfilename: 
+        if resultfilename: 
             differences = difflib.unified_diff(
-                [line.strip() for line in expected_text.splitlines()],
-                [line.strip() for line in actual_text.splitlines()])
+                [line for line in expected_text.splitlines()],
+                [line for line in actual_text.splitlines()])
             line = None
             for line in differences: sys.stderr.write(line + '\n')
             if not line: return True
@@ -151,9 +155,9 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
 
-    # for systems with older imagemagick that doesnt support '-morphology'
+    # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
     if options.comparator == 'old':
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
@@ -173,29 +177,28 @@ def compare_png(resultfilename):
       args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
 
-    print >> sys.stderr, 'Image comparison cmdline: '
-    print >> sys.stderr, '["'+str(options.comparison_exec) + '"],' + str(args)
+    print('Image comparison cmdline: ' + options.comparison_exec + ' ' + ' '.join(args), file=sys.stderr)
 
     # these two lines are parsed by the test_pretty_print.py
-    print >> sys.stderr, ' actual image: ' + resultfilename + '\n'
-    print >> sys.stderr, ' expected image: ' + expectedfilename + '\n'
+    print(' actual image: ' + resultfilename + '\n', file=sys.stderr)
+    print(' expected image: ' + expectedfilename + '\n', file=sys.stderr)
 
     if not resultfilename:
-        print >> sys.stderr, "Error: Error during test image generation"
+        print("Error: Error during test image generation", file=sys.stderr)
         return False
 
     (retval, output) = execute_and_redirect(options.comparison_exec, args, subprocess.PIPE)
-    print "Image comparison return:", retval, "output:", output
+    print("Image comparison return:", retval, "output:", output)
     if retval == 0:
-	if compare_method=='pixel':
+        if compare_method=='pixel':
             pixelerr = int(float(output.strip()))
             if pixelerr < 32: return True
-            else: print >> sys.stderr, pixelerr, ' pixel errors'
-	elif compare_method=='NCC':
+            else: print(pixelerr, ' pixel errors', file=sys.stderr)
+        elif compare_method=='NCC':
             thresh = 0.95
             ncc_err = float(output.strip())
             if ncc_err > thresh or ncc_err==0.0: return True
-            else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
+            else: print(ncc_err, ' Images differ: NCC comparison < ', thresh, file=sys.stderr)
         elif compare_method=='diffpng':
             if 'MATCHES:' in output: return True
             if 'DIFFERS:' in output: return False
@@ -206,6 +209,19 @@ def compare_with_expected(resultfilename):
         if "compare_" + options.suffix in globals(): return globals()["compare_" + options.suffix](resultfilename)
         else: return compare_default(resultfilename)
     return True
+
+#
+#  Extract the content of a 3MF file (which is a ZIP file having one main XML file
+#  and some additional meta data files) and replace the original file with just
+#  the XML content for easier comparison by the test framework.
+#
+def post_process_3mf(filename):
+    print('post processing 3MF file (extracting XML data from ZIP): ', filename)
+    from zipfile import ZipFile
+    xml_content = ZipFile(filename).read("3D/3dmodel.model")
+    xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    with open(filename, 'wb') as xml_file:
+        xml_file.write(xml_content.encode('utf-8'))
 
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
@@ -230,27 +246,28 @@ def run_test(testname, cmd, args):
 
     try:
         cmdline = [cmd] + args + [outputname]
-        print 'run_test() cmdline:',cmdline
-        fontdir =  os.path.join(os.path.dirname(cmd), "testdata")
+        sys.stderr.flush()
+        print('run_test() cmdline:', ' '.join(cmdline))
+        fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "testdata/ttf"))
         fontenv = os.environ.copy()
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
-        print 'using font directory:', fontdir
+        print('using font directory:', fontdir)
         sys.stdout.flush()
         proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	comresult = proc.communicate()
-        stdouttext, errtext = comresult[0],comresult[1]
+        comresult = proc.communicate()
+        stdouttext, errtext = comresult[0].decode('utf-8'),comresult[1].decode('utf-8')
         if errtext != None and len(errtext) > 0:
-            print >> sys.stderr, "stderr output: " + errtext
+            print("stderr output: " + errtext, file=sys.stderr)
         if stdouttext != None and len(stdouttext) > 0:
-            print >> sys.stderr, "stdout output: " + stdouttext
+            print("stdout output: " + stdouttext, file=sys.stderr)
         outfile.close()
         if proc.returncode != 0:
-            print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
+            print("Error: %s failed with return code %d" % (cmdname, proc.returncode), file=sys.stderr)
             return None
 
         return outputname
-    except OSError, err:
-        print >> sys.stderr, "Error: %s \"%s\"" % (err.strerror, cmd)
+    except (OSError) as err:
+        print("Error: %s \"%s\"" % (err.strerror, cmd), file=sys.stderr)
         return None
 
 class Options:
@@ -262,14 +279,14 @@ class Options:
         return self.options[name]
 
 def usage():
-    print >> sys.stderr, "Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>"
-    print >> sys.stderr, "Options:"
-    print >> sys.stderr, "  -g, --generate           Generate expected output for the given tests"
-    print >> sys.stderr, "  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt"
-    print >> sys.stderr, "  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)"
-    print >> sys.stderr, "  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)"
-    print >> sys.stderr, "  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)"
-    print >> sys.stderr, "  -c, --convexec=<name>    Path to ImageMagick 'convert' executable"
+    print("Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>", file=sys.stderr)
+    print("Options:", file=sys.stderr)
+    print("  -g, --generate           Generate expected output for the given tests", file=sys.stderr)
+    print("  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt", file=sys.stderr)
+    print("  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)", file=sys.stderr)
+    print("  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)", file=sys.stderr)
+    print("  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
+    print("  -c, --convexec=<name>    Path to ImageMagick 'convert' executable", file=sys.stderr)
 
 if __name__ == '__main__':
     # Handle command-line arguments
@@ -277,7 +294,7 @@ if __name__ == '__main__':
         debug('args:'+str(sys.argv))
         opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
         debug('getopt args:'+str(sys.argv))
-    except getopt.GetoptError, err:
+    except (getopt.GetoptError) as err:
         usage()
         sys.exit(2)
 
@@ -314,15 +331,18 @@ if __name__ == '__main__':
     if len(args) == 2:
         basename = os.path.splitext(args[1])[0]
         path, options.filename = os.path.split(basename)
-        print >> sys.stderr, basename
-        print >> sys.stderr, path, options.filename
+        print(basename, file=sys.stderr)
+        print(path, options.filename, file=sys.stderr)
 
-    print >> sys.stderr, options.filename
-    if not hasattr(options, "filename"):
-        print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
+    try:
+        print(options.filename, file=sys.stderr)
+    except:
+        print("Filename cannot be deducted from arguments. Specify test filename using the -f option", file=sys.stderr)
         sys.exit(2)
 
-    if not hasattr(options, "testname"):
+    try:
+        dummy = options.testname
+    except:
         options.testname = os.path.split(args[0])[1]
 
     # Initialize and verify run-time environment
@@ -336,4 +356,5 @@ if __name__ == '__main__':
 
     resultfile = run_test(options.testname, options.cmd, args[1:])
     if not resultfile: exit(1)
+    if options.suffix == "3mf": post_process_3mf(resultfile)
     if not verification or not compare_with_expected(resultfile): exit(1)

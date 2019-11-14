@@ -27,13 +27,13 @@
 #include "offsetnode.h"
 
 #include "module.h"
+#include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
-#include "mathc99.h" 
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -46,46 +46,45 @@ class OffsetModule : public AbstractModule
 {
 public:
 	OffsetModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	OffsetNode *node = new OffsetNode(inst);
+	auto node = new OffsetNode(inst);
 
-	AssignmentList args;
-	args += Assignment("r");
+	AssignmentList args{Assignment("r")};
+	AssignmentList optargs{Assignment("delta"),Assignment("chamfer")};
 
-	Context c(ctx);
-	c.setVariables(args, evalctx);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+	inst->scope.apply(evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn")->toDouble();
+	node->fs = c->lookup_variable("$fs")->toDouble();
+	node->fa = c->lookup_variable("$fa")->toDouble();
 
 	// default with no argument at all is (r = 1, chamfer = false)
 	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const ValuePtr r = c.lookup_variable("r", true);
-	const ValuePtr delta = c.lookup_variable("delta", true);
-	const ValuePtr chamfer = c.lookup_variable("chamfer", true);
+	const auto r = c->lookup_variable("r", true);
+	const auto delta = c->lookup_variable("delta", true);
+	const auto chamfer = c->lookup_variable("chamfer", true);
 	
-	if (r->isDefinedAs(Value::NUMBER)) {
-	    r->getDouble(node->delta);
-	} else if (delta->isDefinedAs(Value::NUMBER)) {
-	    delta->getDouble(node->delta);
-
-	    node->join_type = ClipperLib::jtMiter;
-	    if (chamfer->isDefinedAs(Value::BOOL) && chamfer->toBool()) {
-		node->chamfer = true;
-		node->join_type = ClipperLib::jtSquare;
-	    }
+	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
+		r->getDouble(node->delta);
+	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
+		delta->getDouble(node->delta);
+		node->join_type = ClipperLib::jtMiter;
+		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+			node->chamfer = true;
+			node->join_type = ClipperLib::jtSquare;
+		}
 	}
 	
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
@@ -93,10 +92,10 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 
 std::string OffsetNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	bool isRadius = this->join_type == ClipperLib::jtRound;
-	const char *var = isRadius ? "(r = " : "(delta = ";
+	auto var = isRadius ? "(r = " : "(delta = ";
 
 	stream  << this->name() << var << std::dec << this->delta;
 	if (!isRadius) {
@@ -111,5 +110,10 @@ std::string OffsetNode::toString() const
 
 void register_builtin_offset()
 {
-	Builtins::init("offset", new OffsetModule());
+	Builtins::init("offset", new OffsetModule(),
+				{
+					"offset(r = number)",
+					"offset(delta = number)",
+					"offset(r = number, chamfer = false)",
+				});
 }
