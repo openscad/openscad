@@ -159,7 +159,16 @@ Response CSGTreeEvaluator::visit(State &state, const class ListNode &node)
 {
 	if (state.isPostfix()) {
 		for(const AbstractNode *chnode : this->visitedchildren[node.index()]) {
-			addToParent(state, *chnode);
+			shared_ptr<CSGNode> t(this->stored_term[chnode->index()]); 
+			if (t && node.modinst->isHighlight()) {
+				t->setHighlight(true);
+			}
+			if (t && node.modinst->isBackground()) {
+				this->backgroundNodes.push_back(t);
+				this->stored_term.erase(chnode->index());
+			} else {
+				addToParent(state, *chnode);
+			}
 		}
 	}
 	return Response::ContinueTraversal;
