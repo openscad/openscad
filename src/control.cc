@@ -47,7 +47,7 @@ public: // types
 		LET,
 		INT_FOR,
 		IF
-    };
+	};
 public: // methods
 	ControlModule(Type type) : type(type) { }
 
@@ -92,12 +92,12 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			}
 		}
-                else if (it_values->type() == Value::ValueType::STRING) {
-                        utf8_split(it_values->toString(), [&](ValuePtr v) {
-                            c->set_variable(it_name, v);
-                            for_eval(node, inst, l+1, c.ctx, evalctx);
-                        });
-                }
+		else if (it_values->type() == Value::ValueType::STRING) {
+			utf8_split(it_values->toString(), [&](ValuePtr v) {
+				c->set_variable(it_name, v);
+				for_eval(node, inst, l+1, c.ctx, evalctx);
+			});
+		}
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c->set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, c.ctx, evalctx);
@@ -192,14 +192,14 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
-        if (n < (int)modulectx->numChildren()) {
+		if (n < (int)modulectx->numChildren()) {
 			node = modulectx->getChild(n)->evaluate(modulectx);
 		}
 		else {
 			// How to deal with negative objects in this case?
-            // (e.g. first child of difference is invalid)
+			// (e.g. first child of difference is invalid)
 			PRINTB("WARNING: Child index (%d) out of bounds (%d children), %s", 
-				   n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
+				n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 		return node;
 	}
@@ -232,7 +232,9 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				return getChild(value, modulectx);
 			}
 			else if (value->type() == Value::ValueType::VECTOR) {
-				AbstractNode* node = new GroupNode(inst);
+				AbstractNode* node;
+				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+				else node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
 				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
@@ -245,10 +247,12 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= 10000) {
-					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps  % evalctx->loc.toRelativeString(ctx->documentPath()));
+					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps % evalctx->loc.toRelativeString(ctx->documentPath()));
 					return nullptr;
 				}
-				AbstractNode* node = new GroupNode(inst);
+				AbstractNode* node;
+				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+				else node = new GroupNode(inst);
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
