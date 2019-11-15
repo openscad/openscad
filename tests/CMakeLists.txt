@@ -228,7 +228,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION "--enable=function-literals")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=function-literals")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -838,10 +838,8 @@ endforeach()
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/box-w-holes.scad)
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/simple-center.scad)
 
-#
-# Add experimental tests
-#
-# TODO use experimental_test
+
+# TODO: use experimental_tests macro
 
 # lazy-union
 list(APPEND LAZYUNION_3D_FILES
@@ -864,12 +862,10 @@ add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union
 add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})
 add_cmdline_test(lazyunion-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_FILES})
 add_cmdline_test(lazyunion-monotonepng EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_3D_FILES})
-# NB! We're not using --render=cgal for these tests since we don't support converting GeometryLists to Nef polyhedrons
-add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --enable=lazy-union --render EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
-add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
-add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
-# FIXME: Wait for SVG import to be merged:
-# add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
+add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
+add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 
 # text
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX csg FILES ${EXPERIMENTAL_TEXT_FILES})
