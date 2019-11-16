@@ -563,8 +563,7 @@ SOURCES += \
 # CGAL
 HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
            src/ext/CGAL/OGL_helper.h \
-           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \
-           src/ext/CGAL/CGAL_Nef3_workaround.h
+           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h
 
 # LodePNG
 SOURCES += src/ext/lodepng/lodepng.cpp
