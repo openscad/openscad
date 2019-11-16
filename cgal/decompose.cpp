@@ -244,7 +244,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
   assert(N);
   CGAL_Polyhedron poly;
   if (N->is_simple()) {
-    nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*N, poly);
+    N->convert_to_polyhedron(poly);
   }
   if (is_weakly_convex(poly)) {
     PRINTD("Minkowski: Object is convex and Nef");
@@ -318,7 +318,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         else if (const CGAL_Nef_polyhedron *n = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i])) {
           CGAL_Polyhedron poly;
           if (n->p3->is_simple()) {
-            nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*n->p3, poly);
+            n->p3->convert_to_polyhedron(poly);
             // FIXME: Can we calculate weakly_convex on a PolyhedronK instead?
             if (is_weakly_convex(poly)) {
               PRINTDB("Minkowski: child %d is convex and Nef", i);
@@ -420,7 +420,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         }
       }
       
-      if (minkowski_ch_it != boost::next(children.begin())) delete operands[0];
+      if (minkowski_ch_it != std::next(children.begin())) delete operands[0];
       
       if (result_parts.size() == 1) {
         PolySet *ps = new PolySet(3,true);
