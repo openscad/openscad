@@ -59,45 +59,6 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 	return !this->p3 || this->p3->is_empty();
 }
 
-/*!
-	Creates a new PolySet and initializes it with the data from this polyhedron
-
-	Note: Can return nullptr if an error occurred
-*/
-// FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
-#if 0
-PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
-{
-	if (this->isEmpty()) return new PolySet(3);
-	PolySet *ps = nullptr;
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	ps = new PolySet(3);
-	ps->setConvexity(this->convexity);
-	bool err = true;
-	std::string errmsg("");
-	CGAL_Polyhedron P;
-	try {
-		// Cast away constness: 
-		// convert_to_Polyhedron() wasn't const in earlier versions of CGAL.
-		CGAL_Nef_polyhedron3 *nonconst_nef3 = const_cast<CGAL_Nef_polyhedron3*>(this->p3.get());
-		err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(nonconst_nef3), P );
-		//this->p3->convert_to_Polyhedron(P);
-	}
-	catch (const CGAL::Failure_exception &e) {
-		err = true;
-		errmsg = std::string(e.what());
-	}
-	if (!err) err = CGALUtils::createPolySetFromPolyhedron(P, *ps);
-	if (err) {
-		PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
-		if (errmsg!="") PRINTB("ERROR: %s",errmsg);
-		delete ps; ps = nullptr;
-	}
-	CGAL::set_error_behaviour(old_behaviour);
-	return ps;
-}
-#endif
-
 void CGAL_Nef_polyhedron::resize(const Vector3d &newsize, 
 																 const Eigen::Matrix<bool,3,1> &autosize)
 {
