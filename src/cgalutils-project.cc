@@ -21,12 +21,7 @@
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
 
-// Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
-#else
-#include "ext/CGAL/convex_hull_3_bugfix.h"
-#endif
 #pragma pop_macro("NDEBUG")
 
 #include "svg.h"
