@@ -642,7 +642,6 @@ opencsg {
 
 cgal {
 HEADERS += src/cgal.h \
-           src/cgalfwd.h \
            src/cgalutils.h \
            src/Reindexer.h \
            src/CGALCache.h \
