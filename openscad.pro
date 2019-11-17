@@ -561,8 +561,7 @@ SOURCES += \
            src/input/WheelIgnorer.cc
 
 # CGAL
-HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
-           src/ext/CGAL/OGL_helper.h \
+HEADERS += src/ext/CGAL/OGL_helper.h \
            src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h
 
 # LodePNG
