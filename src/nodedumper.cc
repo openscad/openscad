@@ -83,8 +83,9 @@ Response NodeDumper::visit(State &state, const GroupNode &node)
 			this->initCache();
 		}
 
-		if (node.modinst->isBackground()) this->dumpstream << "%";
-		if (node.modinst->isHighlight()) this->dumpstream << "#";
+		// ListNodes can pass down modifiers to children via state, so check both modinst and state
+		if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
 
 // If IDPREFIX is set, we will output "/*id*/" in front of each node
 // which is useful for debugging.
@@ -132,8 +133,9 @@ Response NodeDumper::visit(State &state, const AbstractNode &node)
 			this->initCache();
 		}
 
-		if (node.modinst->isBackground()) this->dumpstream << "%";
-		if (node.modinst->isHighlight()) this->dumpstream << "#";
+		// ListNodes can pass down modifiers to children via state, so check both modinst and state
+		if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
 
 // If IDPREFIX is set, we will output "/*id*/" in front of each node
 // which is useful for debugging.
@@ -213,7 +215,9 @@ Response NodeDumper::visit(State &state, const ListNode &node)
 		if (this->root == &node) {
 			this->initCache();
 		}
-
+		// pass modifiers down to children via state
+		if (node.modinst->isHighlight()) state.setHighlight(true);
+		if (node.modinst->isBackground()) state.setBackground(true);
 		this->cache.insertStart(node.index(), this->dumpstream.tellp());
 	} else if (state.isPostfix()) {
 		this->cache.insertEnd(node.index(), this->dumpstream.tellp());

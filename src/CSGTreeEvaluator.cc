@@ -54,7 +54,7 @@ void CSGTreeEvaluator::applyBackgroundAndHighlight(State & /*state*/, const Abst
 	}
 }
 
-void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &node, OpenSCADOperator op)
+void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
 {
 	shared_ptr<CSGNode> t1;
 	for(const auto &chnode : this->visitedchildren[node.index()]) {
@@ -131,8 +131,8 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 		}
 	}
 	if (t1) {
-		if (node.modinst->isBackground()) t1->setBackground(true);
-		if (node.modinst->isHighlight()) t1->setHighlight(true);
+		if (node.modinst->isBackground() || state.isBackground()) t1->setBackground(true);
+		if (node.modinst->isHighlight() || state.isHighlight()) t1->setHighlight(true);
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -157,18 +157,13 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractIntersectionNode &n
 
 Response CSGTreeEvaluator::visit(State &state, const class ListNode &node)
 {
+	if (state.isPrefix()) {
+		if (node.modinst->isHighlight()) state.setHighlight(true);
+		if (node.modinst->isBackground()) state.setBackground(true);
+	}
 	if (state.isPostfix()) {
 		for(const AbstractNode *chnode : this->visitedchildren[node.index()]) {
-			shared_ptr<CSGNode> t(this->stored_term[chnode->index()]); 
-			if (t && node.modinst->isHighlight()) {
-				t->setHighlight(true);
-			}
-			if (t && node.modinst->isBackground()) {
-				this->backgroundNodes.push_back(t);
-				this->stored_term.erase(chnode->index());
-			} else {
 				addToParent(state, *chnode);
-			}
 		}
 	}
 	return Response::ContinueTraversal;
@@ -189,8 +184,8 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	}
 
 	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index())));
-	if (modinst->isHighlight()) t->setHighlight(true);
-	else if (modinst->isBackground()) t->setBackground(true);
+	if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
+	if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
 	return t;
 }
 

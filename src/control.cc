@@ -272,14 +272,18 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::ECHO: {
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		PRINTB("%s", STR("ECHO: " << *evalctx));
+		ContextHandle<Context> c{Context::create<Context>(evalctx)};
+		inst->scope.apply(c.ctx);
+		node->children = inst->instantiateChildren(c.ctx);
 	}
 		break;
 
 	case Type::ASSERT: {
-		node = new GroupNode(inst);
-
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		evaluate_assert(c.ctx, evalctx);
 		inst->scope.apply(c.ctx);
@@ -288,7 +292,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::LET: {
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 
 		evalctx->assignTo(c.ctx);
@@ -327,7 +332,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::IF: {
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0)->toBool()) {
 			inst->scope.apply(evalctx);

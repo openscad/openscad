@@ -430,15 +430,14 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 Response GeometryEvaluator::visit(State &state, const ListNode &node)
 {
 	if (state.isPrefix() && node.modinst->isBackground()) {
+		if (node.modinst->isBackground()) state.isBackground();
 		return Response::PruneTraversal;
 	}
 	if (state.isPostfix()) {
-		if (!node.modinst->isBackground()) {
-			for(const auto &item : this->visitedchildren[node.index()]) {
-				const AbstractNode *chnode = item.first;
-				const shared_ptr<const Geometry> &chgeom = item.second;
-				addToParent(state, *chnode, chgeom);
-			}
+		for(const auto &item : this->visitedchildren[node.index()]) {
+			const AbstractNode *chnode = item.first;
+			const shared_ptr<const Geometry> &chgeom = item.second;
+			addToParent(state, *chnode, chgeom);
 		}
 		this->visitedchildren.erase(node.index());
 	}
