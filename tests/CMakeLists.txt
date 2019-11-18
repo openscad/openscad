@@ -858,7 +858,8 @@ list(APPEND LAZYUNION_3D_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-intersection-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-difference-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-minkowski-for.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-transform-for.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-transform-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/2d-3d.scad)
 
 list(APPEND LAZYUNION_2D_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-2dobjects.scad)
