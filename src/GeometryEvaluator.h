@@ -59,6 +59,7 @@ private:
 	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef);
 	bool isSmartCached(const AbstractNode &node);
+	bool isValidDim(const Geometry::GeometryItem &item, unsigned int &dim) const;
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
 	Geometry::Geometries collectChildren3D(const AbstractNode &node);
 	Polygon2d *applyMinkowski2D(const AbstractNode &node);
