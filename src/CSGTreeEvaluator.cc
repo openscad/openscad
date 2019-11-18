@@ -157,16 +157,22 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractIntersectionNode &n
 
 Response CSGTreeEvaluator::visit(State &state, const class ListNode &node)
 {
-	if (state.isPrefix()) {
-		if (node.modinst->isHighlight()) state.setHighlight(true);
-		if (node.modinst->isBackground()) state.setBackground(true);
-	}
-	if (state.isPostfix()) {
-		for(const AbstractNode *chnode : this->visitedchildren[node.index()]) {
-				addToParent(state, *chnode);
+	if (state.parent()) {
+		if (state.isPrefix()) {
+			if (node.modinst->isHighlight()) state.setHighlight(true);
+			if (node.modinst->isBackground()) state.setBackground(true);
 		}
+		if (state.isPostfix()) {
+			for(const AbstractNode *chnode : this->visitedchildren[node.index()]) {
+					addToParent(state, *chnode);
+			}
+		}
+		return Response::ContinueTraversal;
+	} else {
+		// Handle root modifier on ListNode just like a group
+		return visit(state, (const AbstractNode &)node);
 	}
-	return Response::ContinueTraversal;
+
 }
 
 shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(

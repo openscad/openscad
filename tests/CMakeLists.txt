@@ -854,6 +854,7 @@ list(APPEND LAZYUNION_3D_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-nested-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-children.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-hull-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-root-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-intersection-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-difference-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-minkowski-for.scad

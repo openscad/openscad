@@ -70,6 +70,7 @@ private:
 	ResultObject applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
+	Response lazyEvaluateRootNode(State &state, const AbstractNode& node);
 
 	std::map<int, Geometry::Geometries> visitedchildren;
 	const Tree &tree;

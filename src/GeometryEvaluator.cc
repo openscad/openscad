@@ -434,21 +434,26 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const ListNode &node)
 {
-	if (state.isPrefix() && node.modinst->isBackground()) {
-		if (node.modinst->isBackground()) state.isBackground();
-		return Response::PruneTraversal;
-	}
-	if (state.isPostfix()) {
-		unsigned int dim = 0;
-		for(const auto &item : this->visitedchildren[node.index()]) {
-			if (!isValidDim(item, dim)) break;
-			const AbstractNode *chnode = item.first;
-			const shared_ptr<const Geometry> &chgeom = item.second;
-			addToParent(state, *chnode, chgeom);
+	if (state.parent()) {
+		if (state.isPrefix() && node.modinst->isBackground()) {
+			if (node.modinst->isBackground()) state.isBackground();
+			return Response::PruneTraversal;
 		}
-		this->visitedchildren.erase(node.index());
+		if (state.isPostfix()) {
+				unsigned int dim = 0;
+				for(const auto &item : this->visitedchildren[node.index()]) {
+					if (!isValidDim(item, dim)) break;
+					const AbstractNode *chnode = item.first;
+					const shared_ptr<const Geometry> &chgeom = item.second;
+					addToParent(state, *chnode, chgeom);
+				}
+				this->visitedchildren.erase(node.index());
+		}
+		return Response::ContinueTraversal;
+	} else {
+		// Handle when a ListNode is given root modifier
+		return lazyEvaluateRootNode(state, node);
 	}
-	return Response::ContinueTraversal;
 }
 
 /*!
@@ -458,21 +463,16 @@ Response GeometryEvaluator::visit(State &state, const GroupNode &node)
 	return visit(state, (const AbstractNode &)node);
 }
 
-/*!
-	Root nodes are handled specially; they will flatten any child group
-	nodes to avoid doing an implicit top-level union.
-
-	NB! This is likely a temporary measure until a better implementation of 
-	group nodes is in place.
-*/
-Response GeometryEvaluator::visit(State &state, const RootNode &node)
-{
-	// If we didn't enable lazy unions, just union the top-level objects
-	if (!Feature::ExperimentalLazyUnion.is_enabled()) {
-	 	return visit(state, (const GroupNode &)node);
+Response GeometryEvaluator::lazyEvaluateRootNode(State &state, const AbstractNode& node) {
+	if (state.isPrefix()) {
+		if (node.modinst->isBackground()) {
+			state.isBackground();
+			return Response::PruneTraversal;
+		}
+ 		if (isSmartCached(node)) {
+			 return Response::PruneTraversal;
+		 }
 	}
-	
-	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 
@@ -497,6 +497,22 @@ Response GeometryEvaluator::visit(State &state, const RootNode &node)
 		this->root = geom;
 	}
 	return Response::ContinueTraversal;
+}
+
+/*!
+	Root nodes are handled specially; they will flatten any child group
+	nodes to avoid doing an implicit top-level union.
+
+	NB! This is likely a temporary measure until a better implementation of 
+	group nodes is in place.
+*/
+Response GeometryEvaluator::visit(State &state, const RootNode &node)
+{
+	// If we didn't enable lazy unions, just union the top-level objects
+	if (!Feature::ExperimentalLazyUnion.is_enabled()) {
+	 	return visit(state, (const GroupNode &)node);
+	}
+	return lazyEvaluateRootNode(state, node);
 }
 
 Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
