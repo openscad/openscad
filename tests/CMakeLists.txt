@@ -229,6 +229,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       else()
         # add global experimental options here
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=function-literals")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -259,6 +260,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (TESTCMD_ARGS)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
+
+      # Apply lazy-union to *all* tests for comprehensive testing of this experimental feature.
+      # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
+      # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
+      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
       # debug message
       #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
@@ -839,7 +845,7 @@ add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUF
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/simple-center.scad)
 
 
-# TODO: use experimental_tests macro
+# TODO: use experimental_tests macro?
 
 # lazy-union
 list(APPEND LAZYUNION_3D_FILES
