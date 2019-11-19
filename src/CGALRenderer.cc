@@ -140,8 +140,8 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		else {
 			// Draw 3D polygons
 			const Color4f c(-1,-1,-1,-1);	
-			setColor(ColorMode::MATERIAL, c.data(), NULL);
-			polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), NULL);
+			setColor(ColorMode::MATERIAL, c.data(), nullptr);
+			polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 		}
 	}
 
