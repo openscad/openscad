@@ -34,10 +34,10 @@ public:
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
 	virtual std::string name() const = 0;
-  /*! Should return a Geometry instance describing the node. Returns NULL if smth.
+  /*! Should return a Geometry instance describing the node. Returns nullptr if smth.
 		goes wrong. This is only called by PolySetEvaluator, to make sure polysets 
 		are inserted into the cache*/
-	virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return NULL; }
+	virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return nullptr; }
 
 	const std::vector<AbstractNode*> &getChildren() const { 
 		return this->children;
