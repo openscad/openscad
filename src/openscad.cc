@@ -429,16 +429,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
-				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
-				if (!N) {
+				if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom) &&
+						!dynamic_pointer_cast<const GeometryList>(root_geom)) {
 					// FIXME: We should probably recursively convert all leaf nodes in the list
 					// to Nef polyhedron
-					const GeometryList *list = dynamic_cast<const GeometryList*>(root_geom.get());
-					if (!list) {
-						N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
-						root_geom.reset(N);
-						PRINT("Converted to Nef polyhedron");
-					}
+					root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+					PRINT("Converted to Nef polyhedron");
 				}
 			}
 		}
