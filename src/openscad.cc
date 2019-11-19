@@ -427,7 +427,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-			// Force creation of CGAL objects (for testing)
 			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
 			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
