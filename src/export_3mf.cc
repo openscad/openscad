@@ -137,7 +137,7 @@ static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 			v.m_fPosition[0] = CGAL::to_double(vertex.x());
 			v.m_fPosition[1] = CGAL::to_double(vertex.y());
 			v.m_fPosition[2] = CGAL::to_double(vertex.z());
-			if (lib3mf_meshobject_addvertex(mesh, &v, NULL) != LIB3MF_OK) {
+			if (lib3mf_meshobject_addvertex(mesh, &v, nullptr) != LIB3MF_OK) {
 				export_3mf_error("EXPORT-ERROR: Can't add vertex to 3MF model.", model);
 				return false;
 			}
@@ -149,14 +149,14 @@ static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 			t.m_nIndices[0] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(0)));
 			t.m_nIndices[1] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(1)));
 			t.m_nIndices[2] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(2)));
-			if (lib3mf_meshobject_addtriangle(mesh, &t, NULL) != LIB3MF_OK) {
+			if (lib3mf_meshobject_addtriangle(mesh, &t, nullptr) != LIB3MF_OK) {
 				export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
 				return false;
 			}
 		}
 
 		PLib3MFModelBuildItem *builditem;
-		if (lib3mf_model_addbuilditem(model, mesh, NULL, &builditem) != LIB3MF_OK) {
+		if (lib3mf_model_addbuilditem(model, mesh, nullptr, &builditem) != LIB3MF_OK) {
 			export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
 			return false;
 		}
