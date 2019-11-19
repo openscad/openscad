@@ -22,12 +22,7 @@
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
 
-// Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
-#else
-#include "ext/CGAL/convex_hull_3_bugfix.h"
-#endif
 #pragma pop_macro("NDEBUG")
 
 #include "memory.h"
@@ -283,7 +278,7 @@ namespace CGALUtils {
 					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
-					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
+					else if (nef && nef->p3->is_simple()) nef->p3->convert_to_polyhedron(poly);
 					else throw 0;
 
 					if ((ps && ps->is_convex()) ||
@@ -418,7 +413,7 @@ namespace CGALUtils {
 					}
 				}
 
-				if (it != boost::next(children.begin()))
+				if (it != std::next(children.begin()))
 					delete operands[0];
 
 				if (result_parts.size() == 1) {

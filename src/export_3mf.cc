@@ -96,7 +96,7 @@ static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N.p3->convert_to_Polyhedron(P);
+		root_N.p3->convert_to_polyhedron(P);
 
 		typedef CGAL_Polyhedron::Vertex Vertex;
 		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
@@ -161,7 +161,7 @@ static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 			return false;
 		}
 	} catch (CGAL::Assertion_exception& e) {
-		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 	return true;
