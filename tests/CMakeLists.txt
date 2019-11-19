@@ -875,15 +875,6 @@ add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SO
 add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 
-# text
-add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX csg FILES ${EXPERIMENTAL_TEXT_FILES})
-add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
-add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
-add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
-add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
-
-
-
 #
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
