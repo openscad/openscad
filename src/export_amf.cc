@@ -150,21 +150,21 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 
 static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
 		for(const auto &item : geomlist->getChildren()) {
 			append_amf(item.second, output);
 		}
 	}
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		if (!N->isEmpty()) append_amf(*N, output);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
 		if (!N->isEmpty()) append_amf(*N, output);
 		delete N;
 	}
-	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

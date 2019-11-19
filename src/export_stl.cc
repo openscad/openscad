@@ -113,18 +113,18 @@ void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 
 void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
 		for(const Geometry::GeometryItem &item : geomlist->getChildren()) {
 			append_stl(item.second, output);
 		}
 	}
-	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		append_stl(*N, output);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		append_stl(*ps, output);
 	}
-	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

@@ -53,15 +53,15 @@ static void append_svg(const Polygon2d &poly, std::ostream &output)
 
 static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		for(const auto &item : geomlist->getChildren()) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const auto &item : geomlist->getChildren()) {
 			append_svg(item.second, output);
 		}
 	}
-	else if (dynamic_cast<const PolySet *>(geom.get())) {
+	else if (dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(false && "Unsupported file format");
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		append_svg(*poly, output);
 	} else {
 		assert(false && "Export as SVG for this geometry type is not supported");
