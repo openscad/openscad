@@ -49,12 +49,12 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 
 void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 {
-	if (auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
-		for(const auto &item : geomlist->getChildren()) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const auto &item : geomlist->getChildren()) {
 			this->addGeometry(item.second);
 		}
 	}
-	else if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
     // See testdata/scad/3D/features/polyhedron-concave-test.scad
@@ -63,10 +63,10 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 		PolysetUtils::tessellate_faces(*ps, *ps_tri);
 		this->polysets.push_back(shared_ptr<const PolySet>(ps_tri));
 	}
-	else if (auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
+	else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		this->polysets.push_back(shared_ptr<const PolySet>(poly->tessellate()));
 	}
-	else if (auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+	else if (const auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
 			this->nefPolyhedrons.push_back(new_N);
@@ -112,7 +112,7 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
 	PRINTD("draw()");
-	for(const auto &polyset : this->polysets) {
+	for (const auto &polyset : this->polysets) {
 		PRINTD("draw() polyset");
 		if (polyset->getDimension() == 2) {
 			// Draw 2D polygons
@@ -145,7 +145,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		}
 	}
 
-	for(const auto &p : this->getPolyhedrons()) {
+	for (const auto &p : this->getPolyhedrons()) {
 		if (showfaces) p->set_style(SNC_BOUNDARY);
 		else p->set_style(SNC_SKELETON);
 		p->draw(showfaces && showedges);
@@ -158,13 +158,13 @@ BoundingBox CGALRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 
-  	for(const auto &p : this->getPolyhedrons()) {
+  	for (const auto &p : this->getPolyhedrons()) {
 		CGAL::Bbox_3 cgalbbox = p->bbox();
 		bbox.extend(BoundingBox(
 			Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
 			Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax())));
 	}
-	for(const auto &ps : this->polysets) {
+	for (const auto &ps : this->polysets) {
 		bbox.extend(ps->getBoundingBox());
 	}
 	return bbox;
