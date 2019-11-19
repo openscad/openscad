@@ -169,21 +169,21 @@ static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 
 static bool append_3mf(const shared_ptr<const Geometry> &geom, PLib3MFModelMeshObject *&model)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		for(const Geometry::GeometryItem &item : geomlist->getChildren()) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const auto &item : geomlist->getChildren()) {
 			if (!append_3mf(item.second, model)) return false;
 		}
 	}
-	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		return append_3mf(*N, model);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
 		return append_3mf(*N, model);
 		delete N;
 	}
-	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
