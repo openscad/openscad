@@ -17,7 +17,7 @@ GeometryList::~GeometryList()
 size_t GeometryList::memsize() const
 {
 	size_t sum = 0;
-	for(const GeometryItem &item : this->children) {
+	for (const auto &item : this->children) {
 		sum += item.second->memsize();
 	}
 	return sum;
@@ -26,7 +26,7 @@ size_t GeometryList::memsize() const
 BoundingBox GeometryList::getBoundingBox() const
 {
 	BoundingBox bbox;
-	for(const GeometryItem &item : this->children) {
+	for (const auto &item : this->children) {
 		bbox.extend(item.second->getBoundingBox());
 	}
 	return bbox;
@@ -35,7 +35,7 @@ BoundingBox GeometryList::getBoundingBox() const
 std::string GeometryList::dump() const
 {
 	std::stringstream out;
-	for(const GeometryItem &item : this->children) {
+	for (const auto &item : this->children) {
 		out << item.second->dump();
 	}
 	return out.str();
@@ -44,29 +44,29 @@ std::string GeometryList::dump() const
 unsigned int GeometryList::getDimension() const
 {
 	unsigned int dim = 0;
-	for(const GeometryItem &item : this->children) {
+	for (const auto &item : this->children) {
 		if (!dim) dim = item.second->getDimension();
 		else if (dim != item.second->getDimension()) {
 			PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
 			break;
 		}
 	}
-    return dim;
+	return dim;
 }
 
 bool GeometryList::isEmpty() const
 {
-	for(const GeometryItem &item : this->children) {
+	for (const auto &item : this->children) {
 		if (!item.second->isEmpty()) return false;
 	}
 	return true;
 }
 
-void flatten(const GeometryList *geomlist, GeometryList::Geometries &childlist)
+void flatten(const GeometryList &geomlist, GeometryList::Geometries &childlist)
 {
-	for(const auto &item : geomlist->getChildren()) {
-		if (auto chlist = dynamic_cast<const GeometryList *>(item.second.get())) {
-			flatten(chlist, childlist);
+	for (const auto &item : geomlist.getChildren()) {
+		if (const auto chlist = dynamic_pointer_cast<const GeometryList>(item.second)) {
+			flatten(*chlist, childlist);
 		}
 		else {
 			childlist.push_back(item);
@@ -82,7 +82,6 @@ void flatten(const GeometryList *geomlist, GeometryList::Geometries &childlist)
 Geometry::Geometries GeometryList::flatten() const
 {
 	Geometries newchildren;
-	::flatten(this, newchildren);
+	::flatten(*this, newchildren);
 	return newchildren;
 }
-
