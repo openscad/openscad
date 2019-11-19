@@ -11,3 +11,5 @@ jobs:
     - uses: actions/checkout@v1
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v1
+    - name: Install dependencies
+      run: ./scripts/travis-ci-before-install-linux.sh bionic
