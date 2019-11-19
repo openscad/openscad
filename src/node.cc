@@ -32,7 +32,6 @@
 #include <functional>
 #include <iostream>
 #include <algorithm>
-#include <boost/foreach.hpp>
 
 size_t AbstractNode::idx_counter;
 
