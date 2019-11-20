@@ -241,13 +241,11 @@ namespace CGALUtils {
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
 	{
-		auto ps = dynamic_cast<const PolySet*>(&geom);
-		if (ps) {
+		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return createNefPolyhedronFromPolySet(*ps);
 		}
-		else {
-			auto poly2d = dynamic_cast<const Polygon2d*>(&geom);
-			if (poly2d) return createNefPolyhedronFromPolygon2d(*poly2d);
+		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
+			return createNefPolyhedronFromPolygon2d(*poly2d);
 		}
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return nullptr;

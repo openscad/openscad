@@ -9,6 +9,7 @@ class NodeVisitor :
 	public Visitor<class AbstractNode>,
 	public Visitor<class AbstractIntersectionNode>,
 	public Visitor<class AbstractPolyNode>,
+	public Visitor<class ListNode>,
 	public Visitor<class GroupNode>,
 	public Visitor<class RootNode>,
 	public Visitor<class LeafNode>,
@@ -39,6 +40,10 @@ public:
   Response visit(class State &state, const class AbstractPolyNode &node) override {
 		return visit(state, (const class AbstractNode &)node);
 	}
+  Response visit(class State &state, const class ListNode &node) override {
+		return visit(state, (const class AbstractNode &)node);
+	}
+
   Response visit(class State &state, const class GroupNode &node) override {
 		return visit(state, (const class AbstractNode &)node);
 	}

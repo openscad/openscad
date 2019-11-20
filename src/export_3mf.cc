@@ -63,11 +63,12 @@ static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 	return !(*stream);
 }
 
-static void export_3mf_error(const std::string msg, PLib3MFModel *model = NULL)
+static void export_3mf_error(const std::string msg, PLib3MFModel *&model)
 {
 	PRINT(msg);
 	if (model) {
 		lib3mf_release(model);
+		model = nullptr;
 	}
 }
 
@@ -75,42 +76,21 @@ static void export_3mf_error(const std::string msg, PLib3MFModel *model = NULL)
     Saves the current 3D CGAL Nef polyhedron as 3MF to the given file.
     The file must be open.
  */
-static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
+static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject *&model)
 {
 	if (!root_N.p3 || !root_N.p3->is_simple()) {
 		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
-		return;
-	}
-
-	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
-	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
-	if (result != LIB3MF_OK) {
-		PRINT("EXPORT-ERROR: Error reading 3MF library version");
-		return;
-	}
-
-	if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-		PRINTB("EXPORT-ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
-                        interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
-                        NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
-		return;
-	}
-
-	PLib3MFModel *model;
-	result = lib3mf_createmodel(&model);
-	if (result != LIB3MF_OK) {
-		export_3mf_error("EXPORT-ERROR: Can't create 3MF model.");
-		return;
+		return false;
 	}
 
 	PLib3MFModelMeshObject *mesh;
 	if (lib3mf_model_addmeshobject(model, &mesh) != LIB3MF_OK) {
 		export_3mf_error("EXPORT-ERROR: Can't add mesh to 3MF model.", model);
-		return;
+		return false;
 	}
 	if (lib3mf_object_setnameutf8(mesh, "OpenSCAD Model") != LIB3MF_OK) {
 		export_3mf_error("EXPORT-ERROR: Can't set name for 3MF model.", model);
-		return;
+		return false;
 	}
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -157,9 +137,9 @@ static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			v.m_fPosition[0] = CGAL::to_double(vertex.x());
 			v.m_fPosition[1] = CGAL::to_double(vertex.y());
 			v.m_fPosition[2] = CGAL::to_double(vertex.z());
-			if (lib3mf_meshobject_addvertex(mesh, &v, NULL) != LIB3MF_OK) {
+			if (lib3mf_meshobject_addvertex(mesh, &v, nullptr) != LIB3MF_OK) {
 				export_3mf_error("EXPORT-ERROR: Can't add vertex to 3MF model.", model);
-				return;
+				return false;
 			}
 		}
 
@@ -169,58 +149,91 @@ static void append_3mf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			t.m_nIndices[0] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(0)));
 			t.m_nIndices[1] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(1)));
 			t.m_nIndices[2] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(2)));
-			if (lib3mf_meshobject_addtriangle(mesh, &t, NULL) != LIB3MF_OK) {
+			if (lib3mf_meshobject_addtriangle(mesh, &t, nullptr) != LIB3MF_OK) {
 				export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
-				return;
+				return false;
 			}
 		}
 
 		PLib3MFModelBuildItem *builditem;
-		if (lib3mf_model_addbuilditem(model, mesh, NULL, &builditem) != LIB3MF_OK) {
+		if (lib3mf_model_addbuilditem(model, mesh, nullptr, &builditem) != LIB3MF_OK) {
 			export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
-			return;
-		}
-
-		PLib3MFModelWriter *writer;
-		if (lib3mf_model_querywriter(model, "3mf", &writer) != LIB3MF_OK) {
-			export_3mf_error("EXPORT-ERROR: Can't get writer for 3MF model.", model);
-			return;
-		}
-
-		result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback, (void *)lib3mf_seek_callback, &output);
-		output.flush();
-		lib3mf_release(writer);
-		lib3mf_release(model);
-		if (result != LIB3MF_OK) {
-			export_3mf_error("EXPORT-ERROR: Error writing 3MF model.");
+			return false;
 		}
 	} catch (CGAL::Assertion_exception& e) {
 		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
+	return true;
 }
 
-static void append_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
+static bool append_3mf(const shared_ptr<const Geometry> &geom, PLib3MFModelMeshObject *&model)
 {
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		append_3mf(*N, output);
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const auto &item : geomlist->getChildren()) {
+			if (!append_3mf(item.second, model)) return false;
+		}
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+		return append_3mf(*N, model);
+	}
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
-		append_3mf(*N, output);
+		return append_3mf(*N, model);
 		delete N;
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
 	}
+	return true;
 }
 
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	append_3mf(geom, output);
+	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
+	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
+	if (result != LIB3MF_OK) {
+		PRINT("EXPORT-ERROR: Error reading 3MF library version");
+		return;
+	}
+
+	if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
+		PRINTB("EXPORT-ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
+                        interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
+                        NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
+		return;
+	}
+
+	PLib3MFModel *model;
+	result = lib3mf_createmodel(&model);
+	if (result != LIB3MF_OK) {
+		PRINT("EXPORT-ERROR: Can't create 3MF model.");
+		return;
+	}
+
+	if (!append_3mf(geom, model)) {
+		if (model) lib3mf_release(model);
+		return;
+	}
+
+	PLib3MFModelWriter *writer;
+	if (lib3mf_model_querywriter(model, "3mf", &writer) != LIB3MF_OK) {
+		export_3mf_error("EXPORT-ERROR: Can't get writer for 3MF model.", model);
+		return;
+	}
+
+	result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback, (void *)lib3mf_seek_callback, &output);
+	output.flush();
+	lib3mf_release(writer);
+	lib3mf_release(model);
+	if (result != LIB3MF_OK) {
+		PRINT("EXPORT-ERROR: Error writing 3MF model.");
+	}
+
+
 }
 
 #endif // ENABLE_CGAL

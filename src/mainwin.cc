@@ -2088,6 +2088,9 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
 				PRINT("   Top level object is a 2D object:");
 				PRINTB("   Contours:     %6d", poly->outlines().size());
+			} else  if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(root_geom.get())) {
+				PRINT("   Top level object is a list of objects:");
+				PRINTB("   Objects:     %d", geomlist->getChildren().size());
 			} else {
 				assert(false && "Unknown geometry type");
 			}

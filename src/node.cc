@@ -54,6 +54,11 @@ std::string GroupNode::name() const
 	return "group";
 }
 
+std::string ListNode::name() const
+{
+	return "list";
+}
+
 std::string RootNode::name() const
 {
 	return "root";

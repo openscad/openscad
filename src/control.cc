@@ -47,7 +47,7 @@ public: // types
 		LET,
 		INT_FOR,
 		IF
-    };
+	};
 public: // methods
 	ControlModule(Type type) : type(type) { }
 
@@ -92,12 +92,12 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			}
 		}
-                else if (it_values->type() == Value::ValueType::STRING) {
-                        utf8_split(it_values->toString(), [&](ValuePtr v) {
-                            c->set_variable(it_name, v);
-                            for_eval(node, inst, l+1, c.ctx, evalctx);
-                        });
-                }
+		else if (it_values->type() == Value::ValueType::STRING) {
+			utf8_split(it_values->toString(), [&](ValuePtr v) {
+				c->set_variable(it_name, v);
+				for_eval(node, inst, l+1, c.ctx, evalctx);
+			});
+		}
 		else if (it_values->type() != Value::ValueType::UNDEFINED) {
 			c->set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, c.ctx, evalctx);
@@ -192,14 +192,14 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			return nullptr;
 		}
 		// This will trigger if trying to invoke child from the root of any file
-        if (n < (int)modulectx->numChildren()) {
+		if (n < (int)modulectx->numChildren()) {
 			node = modulectx->getChild(n)->evaluate(modulectx);
 		}
 		else {
 			// How to deal with negative objects in this case?
-            // (e.g. first child of difference is invalid)
+			// (e.g. first child of difference is invalid)
 			PRINTB("WARNING: Child index (%d) out of bounds (%d children), %s", 
-				   n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
+				n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 		return node;
 	}
@@ -214,7 +214,10 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		// assert(filectx->evalctx);
 		if (evalctx->numArgs()<=0) {
 			// no parameters => all children
-			AbstractNode* node = new GroupNode(inst);
+			AbstractNode* node;
+			if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+			else node = new GroupNode(inst);
+
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
 				if (childnode==nullptr) continue; // error
@@ -229,7 +232,9 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				return getChild(value, modulectx);
 			}
 			else if (value->type() == Value::ValueType::VECTOR) {
-				AbstractNode* node = new GroupNode(inst);
+				AbstractNode* node;
+				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+				else node = new GroupNode(inst);
 				const Value::VectorType& vect = value->toVector();
 				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
@@ -242,10 +247,12 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= 10000) {
-					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps  % evalctx->loc.toRelativeString(ctx->documentPath()));
+					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps % evalctx->loc.toRelativeString(ctx->documentPath()));
 					return nullptr;
 				}
-				AbstractNode* node = new GroupNode(inst);
+				AbstractNode* node;
+				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+				else node = new GroupNode(inst);
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
 					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
@@ -265,14 +272,18 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::ECHO: {
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		PRINTB("%s", STR("ECHO: " << *evalctx));
+		ContextHandle<Context> c{Context::create<Context>(evalctx)};
+		inst->scope.apply(c.ctx);
+		node->children = inst->instantiateChildren(c.ctx);
 	}
 		break;
 
 	case Type::ASSERT: {
-		node = new GroupNode(inst);
-
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		evaluate_assert(c.ctx, evalctx);
 		inst->scope.apply(c.ctx);
@@ -281,7 +292,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::LET: {
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 
 		evalctx->assignTo(c.ctx);
@@ -309,7 +321,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::FOR:
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		for_eval(*node, *inst, 0, evalctx, evalctx);
 		break;
 
@@ -319,7 +332,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		break;
 
 	case Type::IF: {
-		node = new GroupNode(inst);
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0)->toBool()) {
 			inst->scope.apply(evalctx);

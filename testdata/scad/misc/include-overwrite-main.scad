@@ -1,4 +1,4 @@
-echo(str("Can a variable be used when it assigned later? ",later))
+echo(str("Can a variable be used when it assigned later? ",later));
 
 echo(str("Is overwriting possible? ", overwritten));
 

@@ -15,7 +15,7 @@ static void export_stl(const Polygons &triangles, std::ostream &output)
 {
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
   output << "solid OpenSCAD_Model\n";
-  BOOST_FOREACH(const Polygon &p, triangles) {
+  for(const Polygon &p : triangles) {
     assert(p.size() == 3); // STL only allows triangles
     std::stringstream stream;
     stream << p[0][0] << " " << p[0][1] << " " << p[0][2];
@@ -37,7 +37,7 @@ static void export_stl(const Polygons &triangles, std::ostream &output)
       output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
       output << "    outer loop\n";
 		
-      BOOST_FOREACH(const Vector3d &v, p) {
+      for(const Vector3d &v : p) {
         output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
       }
       output << "    endloop\n";
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
       std::string arg(argv[2]);
       boost::split(strs, arg, boost::is_any_of(","));
       assert(strs.size() == 3);
-      BOOST_FOREACH(const std::string &s, strs) normalvec.push_back(boost::lexical_cast<double>(s));
+      for(const std::string &s : strs) normalvec.push_back(boost::lexical_cast<double>(s));
       normal = new K::Vector_3(normalvec[0], normalvec[1], normalvec[2]);
    }
   }

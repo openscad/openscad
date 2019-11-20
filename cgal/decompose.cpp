@@ -345,15 +345,15 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         std::vector<K::Point_3> minkowski_points;
         
         // For each permutation of convex operands..
-        BOOST_FOREACH(const PolyhedronK &p0, convexP[0]) {
-          BOOST_FOREACH(const PolyhedronK &p1, convexP[1]) {
+        for(const PolyhedronK &p0 : convexP[0]) {
+          for(const PolyhedronK &p1 : convexP[1]) {
             t.start();
             
             // Create minkowski pointcloud
             minkowski_points.clear();
             minkowski_points.reserve(p0.size_of_vertices() * p0.size_of_vertices());
-            BOOST_FOREACH(const K::Point_3 &p0p, std::make_pair(p0.points_begin(), p0.points_end())) {
-              BOOST_FOREACH(const K::Point_3 &p1p, std::make_pair(p1.points_begin(), p1.points_end())) {
+            for(const K::Point_3 &p0p : std::make_pair(p0.points_begin(), p0.points_end())) {
+              for(const K::Point_3 &p1p : std::make_pair(p1.points_begin(), p1.points_end())) {
                 minkowski_points.push_back(p0p+(p1p-CGAL::ORIGIN));
               }
             }
@@ -672,7 +672,7 @@ int main(int argc, char *argv[])
   std::cerr << "Decomposed into " << result.size() << " convex parts" << std::endl;
 
   int idx = 0;
-  BOOST_FOREACH(const PolyhedronK &P, result) {
+  for(const PolyhedronK &P : result) {
     PolySet *result_ps = new PolySet(3);
     if (CGALUtils::createPolySetFromPolyhedron(P, *result_ps)) {
       std::cerr << "Error converting to PolySet\n";

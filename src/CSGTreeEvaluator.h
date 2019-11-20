@@ -19,6 +19,7 @@ public:
 	Response visit(State &state, const class AbstractNode &node) override;
 	Response visit(State &state, const class AbstractIntersectionNode &node) override;
 	Response visit(State &state, const class AbstractPolyNode &node) override;
+ 	Response visit(State &state, const class ListNode &node) override;
 	Response visit(State &state, const class CsgOpNode &node) override;
 	Response visit(State &state, const class TransformNode &node) override;
 	Response visit(State &state, const class ColorNode &node) override;

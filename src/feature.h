@@ -16,6 +16,7 @@ public:
 
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalFunctionLiterals;
+	static const Feature ExperimentalLazyUnion;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

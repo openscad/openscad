@@ -421,20 +421,30 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		}
 	}
 	else {
+
 #ifdef ENABLE_CGAL
 		if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
-			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
-				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
-				if (!N) {
-					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
-					root_geom.reset(N);
+			if (root_geom) {
+				if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
+					if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
+						auto flatlist = geomlist->flatten();
+						for (auto &child : flatlist) {
+							if (child.second->getDimension() == 3 && !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(child.second)) {
+								child.second.reset(CGALUtils::createNefPolyhedronFromGeometry(*child.second));
+							}
+						}
+						root_geom.reset(new GeometryList(flatlist));
+					} else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
+						root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+					}
 					PRINT("Converted to Nef polyhedron");
 				}
+			} else {
+				root_geom.reset(new CGAL_Nef_polyhedron());
 			}
 		}
 
@@ -480,6 +490,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
 #endif
+
 	}
 	delete root_node;
 	return 0;
