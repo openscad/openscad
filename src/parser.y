@@ -128,8 +128,6 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token TOK_EXPONENT
-
 %token LE GE EQ NE AND OR
 
 %nonassoc NO_ELSE
@@ -456,11 +454,11 @@ unary
 
 exponent
        : call
-       | call TOK_EXPONENT exponent
+       | call '^' exponent
            {
               $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
            }
-       | call TOK_EXPONENT '-' exponent
+       | call '^' '-' exponent
           {
              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, new UnaryOp(UnaryOp::Op::Negate, $4, LOCD("negate", @$)), LOCD("exponent", @$));
           }
