@@ -454,14 +454,10 @@ unary
 
 exponent
        : call
-       | call '^' exponent
+       | call '^' unary
            {
               $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
            }
-       | call '^' '-' exponent
-          {
-             $$ = new BinaryOp($1, BinaryOp::Op::Exponent, new UnaryOp(UnaryOp::Op::Negate, $4, LOCD("negate", @$)), LOCD("exponent", @$));
-          }
        ;
 
 call
