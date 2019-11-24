@@ -1,0 +1,25 @@
+//Parameter("")
+i = 5;
+//Parameter("")
+f = 5.5;
+//Parameter("")
+e = 2;
+echo((5 ^ 2));
+echo(-(5 ^ 2));
+echo((-5 ^ 2));
+echo(-(5 ^ 2.5));
+echo((-5 ^ 2.5));
+echo((5 ^ -2));
+echo((16 ^ -(2 ^ -2)));
+echo((16 ^ (2 ^ -2)));
+echo((5 ^ 2.5));
+echo((5.5 ^ 2.5));
+echo((5.5 ^ 2));
+echo((i ^ 2));
+echo((f ^ 2));
+echo((5 ^ e));
+echo((i ^ e));
+echo((PI ^ 2));
+echo((4 ^ (3 ^ 2)));
+echo((4 ^ (3 ^ 2)));
+echo(((4 ^ 3) ^ 2));

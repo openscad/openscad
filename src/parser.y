@@ -142,6 +142,7 @@ bool fileEnded=false;
 %type <expr> comparison
 %type <expr> addition
 %type <expr> multiplication
+%type <expr> exponent
 %type <expr> unary
 %type <expr> primary
 %type <vec> vector_expr
@@ -435,8 +436,9 @@ multiplication
             }
 		;
 
+
 unary
-        : call
+        : exponent
         | '+' unary
             {
                 $$ = $2;
@@ -450,6 +452,14 @@ unary
               $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
             }
 		;
+
+exponent
+       : call
+       | call '^' unary
+           {
+              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
+           }
+       ;
 
 call
         : primary
@@ -528,7 +538,7 @@ expr_or_empty
               $$ = $1;
             }
         ;
- 
+
 /* The last set element may not be a "let" (as that would instead
    be parsed as an expression) */
 list_comprehension_elements
