@@ -65,8 +65,7 @@ int process_id = _getpid();
 int process_id = getpid();
 #endif
 
-boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
+boost::mt19937 deterministic_rng( std::time(nullptr) + process_id );
 
 static void print_argCnt_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){
 	PRINTB("WARNING: %s() number of parameters does not match, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
@@ -142,13 +141,11 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		}
 		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
 
-		bool deterministic = false;
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::ValueType::NUMBER) goto quit;
 			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
 			deterministic_rng.seed( seed );
-			deterministic = true;
 		}
 		Value::VectorType vec;
 		if (min==max) { // Boost doesn't allow min == max
@@ -157,11 +154,7 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		} else {
 			boost::uniform_real<> distributor( min, max );
 			for (size_t i=0; i < numresults; i++) {
-				if ( deterministic ) {
-					vec.push_back(ValuePtr(distributor(deterministic_rng)));
-				} else {
-					vec.push_back(ValuePtr(distributor(lessdeterministic_rng)));
-				}
+				vec.push_back(ValuePtr(distributor(deterministic_rng)));
 			}
 		}
 		return ValuePtr(vec);
