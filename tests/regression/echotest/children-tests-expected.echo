@@ -31,4 +31,5 @@ ECHO: "child3"
 ECHO: "child1"
 ECHO: "child3"
 ECHO: "child5"
+WARNING: begin is smaller than the end, but step is negativ in file children-tests.scad, line 56
 ECHO: "Children range: end"
