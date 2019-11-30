@@ -44,9 +44,6 @@ private:
 	double step_val;
 	double end_val;
 	
-	/// inverse begin/end if begin is upper than end
-	void normalize();
-	
 public:
 	enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
   
@@ -74,10 +71,7 @@ public:
 	};
   
 	RangeType(double begin, double end)
-		: begin_val(begin), step_val(1.0), end_val(end)
-    {
-      normalize();
-    }
+		: begin_val(begin), step_val(1.0), end_val(end) {}
 	
 	RangeType(double begin, double step, double end)
 		: begin_val(begin), step_val(step), end_val(end) {}
