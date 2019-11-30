@@ -308,7 +308,15 @@ ValuePtr Range::evaluate(const Context *context) const
 		ValuePtr endValue = this->end->evaluate(context);
 		if (endValue->type() == Value::ValueType::NUMBER) {
 			if (!this->step) {
-				RangeType range(beginValue->toDouble(), endValue->toDouble());
+				double begin_val = beginValue->toDouble();
+				double end_val   = endValue->toDouble();
+				
+				if(end_val < begin_val){
+					std::swap(begin_val,end_val);
+					PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated. %s", loc.toRelativeString(context->documentPath()));
+				}
+				
+				RangeType range(begin_val, end_val);
 				return ValuePtr(range);
 			} else {
 				ValuePtr stepValue = this->step->evaluate(context);
