@@ -322,7 +322,7 @@ ValuePtr Range::evaluate(const Context *context) const
 				ValuePtr stepValue = this->step->evaluate(context);
 				if (stepValue->type() == Value::ValueType::NUMBER) {
 					double step_val = stepValue->toDouble();
-					if(this->begin->isLiteral() && this->step->isLiteral() && this->end->isLiteral()){
+					if(this->isLiteral()){
 						if ((step_val>0) && (end_val < begin_val)) {
 							PRINTB("WARNING: begin is greater than the end, but step is positiv %s", loc.toRelativeString(context->documentPath()));
 						}
