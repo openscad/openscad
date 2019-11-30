@@ -307,10 +307,10 @@ ValuePtr Range::evaluate(const Context *context) const
 	if (beginValue->type() == Value::ValueType::NUMBER) {
 		ValuePtr endValue = this->end->evaluate(context);
 		if (endValue->type() == Value::ValueType::NUMBER) {
+			double begin_val = beginValue->toDouble();
+			double end_val   = endValue->toDouble();
+			
 			if (!this->step) {
-				double begin_val = beginValue->toDouble();
-				double end_val   = endValue->toDouble();
-				
 				if(end_val < begin_val){
 					std::swap(begin_val,end_val);
 					PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated. %s", loc.toRelativeString(context->documentPath()));
@@ -321,6 +321,16 @@ ValuePtr Range::evaluate(const Context *context) const
 			} else {
 				ValuePtr stepValue = this->step->evaluate(context);
 				if (stepValue->type() == Value::ValueType::NUMBER) {
+					double step_val = stepValue->toDouble();
+					if(this->begin->isLiteral() && this->step->isLiteral() && this->end->isLiteral()){
+						if ((step_val>0) && (end_val < begin_val)) {
+							PRINTB("WARNING: begin is greater than the end, but step is positiv %s", loc.toRelativeString(context->documentPath()));
+						}
+						if ((step_val<0) && (end_val > begin_val)) {
+							PRINTB("WARNING: begin is smaller than the end, but step is negativ %s", loc.toRelativeString(context->documentPath()));
+						}
+					}
+
 					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
 					return ValuePtr(range);
 				}
