@@ -310,6 +310,22 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 {
 }
 
+/**
+ * This is separated because both PRINT_DEPRECATION and PRINT use
+ * quite a lot of stack space and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
+}
+static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
+}
+
 ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr beginValue = this->begin->evaluate(context);
@@ -322,7 +338,7 @@ ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 			if (!this->step) {
 				if(end_val < begin_val){
 					std::swap(begin_val,end_val);
-					PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated. %s", loc.toRelativeString(context->documentPath()));
+					print_range_depr(loc, context);
 				}
 				
 				RangeType range(begin_val, end_val);
@@ -333,10 +349,9 @@ ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 					double step_val = stepValue->toDouble();
 					if(this->isLiteral()){
 						if ((step_val>0) && (end_val < begin_val)) {
-							PRINTB("WARNING: begin is greater than the end, but step is positiv %s", loc.toRelativeString(context->documentPath()));
-						}
-						if ((step_val<0) && (end_val > begin_val)) {
-							PRINTB("WARNING: begin is smaller than the end, but step is negativ %s", loc.toRelativeString(context->documentPath()));
+							print_range_err("is greater", "is positiv", loc, context);
+						}else if ((step_val<0) && (end_val > begin_val)) {
+							print_range_err("is smaller", "is negativ", loc, context);
 						}
 					}
 
