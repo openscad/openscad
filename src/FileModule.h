@@ -36,6 +36,7 @@ public:
 	void setFilename(const std::string &filename) { this->filename = filename; }
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;
+	void resolveAssignments();
 
 	LocalScope scope;
 	std::unordered_map<std::string, shared_ptr<ExternalNode>> externalDict;

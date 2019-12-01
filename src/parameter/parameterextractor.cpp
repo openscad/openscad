@@ -13,7 +13,7 @@ ParameterExtractor::~ParameterExtractor()
 void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& entries)
 {
   if (!fileModule) return;
-
+	// FIXME: Filter assignments before doing this
   for (auto &assignment : fileModule->scope.assignments) {
     auto entry = entries.find(assignment.name);
     if (entry != entries.end()) {
@@ -32,6 +32,7 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
   ContextHandle<Context> ctx{Context::create<Context>()};
 
   ParameterPos.clear();
+	// FIXME: Filter assignments before doing this
   for (auto &assignment : module->scope.assignments) {
     const Annotation *param = assignment.annotation("Parameter");
     if (!param) continue;

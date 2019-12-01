@@ -50,6 +50,7 @@ const Annotation * Assignment::annotation(const std::string &name) const
 
 void Assignment::print(std::ostream &stream, const std::string &indent) const
 {
+	if (this->isDisabled) return;
 	if (this->hasAnnotations()) {
 		const Annotation *group = this->annotation("Group");
 		if (group) group->print(stream, indent);

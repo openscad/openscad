@@ -106,7 +106,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// At this point, the for loop variables have been set and we can initialize
 		// the local scope (as they may depend on the for loop variables
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
-		for(const auto &assignment : inst.scope.assignments) {
+		// FIXME: Filter assignments before doing this
+		for (const auto &assignment : inst.scope.assignments) {
 			c->set_variable(assignment.name, assignment.expr->evaluate(c.ctx));
 		}
 		

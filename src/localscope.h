@@ -18,6 +18,7 @@ public:
 	void addAssignment(const class Assignment& assignment);
 	void apply(const std::shared_ptr<Context> ctx) const;
 	bool hasChildren() const {return !(children.empty());};
+	void resolveAssignments();
 
 	AssignmentList assignments;
 	std::vector<ModuleInstantiation*> children;
