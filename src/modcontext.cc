@@ -185,9 +185,9 @@ ValuePtr FileContext::evaluate_function(const std::string &name, const std::shar
 	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
 	if (foundf) return foundf->evaluate(self, evalctx);
 
-	for (const auto &m : *this->usedlibs_p) {
+	for (const auto &lib : this->usedlibs) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-		auto usedmod = ModuleCache::instance()->lookup(m);
+		auto usedmod = ModuleCache::instance()->lookup(lib->filename);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
 			return sub_evaluate_function(name, evalctx, usedmod);
 	}
@@ -201,8 +201,8 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, c
 	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
 	if (foundm) return foundm->instantiate(self, &inst, evalctx);
 
-	for (const auto &m : *this->usedlibs_p) {
-		auto usedmod = ModuleCache::instance()->lookup(m);
+	for (const auto &lib : this->usedlibs) {
+		auto usedmod = ModuleCache::instance()->lookup(lib->filename);
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		if (usedmod && usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
 			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
@@ -222,8 +222,11 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, c
 void FileContext::initializeModule(const class FileModule &module)
 {
 	if (!module.modulePath().empty()) this->document_path = std::make_shared<std::string>(module.modulePath());
+
+	// FIXME: Should we handle FileModule::includenodes here?
+	
 	// FIXME: Don't access module members directly
-	this->usedlibs_p = &module.usedlibs;
+	this->usedlibs = module.getUseNodes();
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {

@@ -123,6 +123,7 @@ bool fileEnded=false;
 %token <text> TOK_ID
 %token <text> TOK_STRING
 %token <text> TOK_USE
+%token <text> TOK_INCLUDE
 %token <number> TOK_NUMBER
 
 %token TOK_TRUE
@@ -173,7 +174,13 @@ input
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2), LOC(@2));
+              rootmodule->addExternalNode(make_shared<UseNode>($2, LOC(@2)));
+              free($2);
+            }
+        | input
+	  TOK_INCLUDE
+            {
+              rootmodule->addExternalNode(make_shared<IncludeNode>($2, LOC(@2)));
               free($2);
             }
         | input statement
