@@ -32,7 +32,9 @@
 #include "modcontext.h"
 #include "parsersettings.h"
 #include "StatCache.h"
+#include "openscad.h"
 #include "evalcontext.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
@@ -51,62 +53,93 @@ FileModule::~FileModule()
 
 void FileModule::print(std::ostream &stream, const std::string &indent) const
 {
+	for (const auto &node : this->externalList) {
+		node->print(stream, indent);
+	}
 	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path, const Location &loc)
+void FileModule::addExternalNode(const std::shared_ptr<ExternalNode> &node)
 {
-	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-			loc.firstLine() % loc.firstColumn() %
-			loc.lastLine() % loc.lastColumn() %
-			loc.fileName() %
-			path);
+	this->externalList.push_back(node);
+ 	const auto &loc = node->location();
+ 	if (!loc.isNone()) {
+ 		this->indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), node->filename);
+ 	}
+}
 
-	auto ext = fs::path(path).extension().generic_string();
-
-	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
-		if (fs::is_regular(path)) {
-			FontCache::instance()->register_font_file(path);
+void FileModule::resolveUseNodes()
+{
+	for (const auto &node : this->externalList) {
+		const auto usenode = dynamic_pointer_cast<const UseNode>(node);
+		if (!usenode) continue;
+		const auto &filename = usenode->filename;
+		const auto fullpath = find_valid_path(fs::path(this->path), fs::path(filename));
+    // handle_dep(fullpath.generic_string());
+		const auto extraw = fs::path(filename).extension().generic_string();
+		const auto ext = boost::algorithm::to_lower_copy(extraw);
+		
+		if ((ext == ".otf") || (ext == ".ttf")) {
+			if (fs::is_regular(filename)) {
+				FontCache::instance()->register_font_file(filename);
+			} else {
+				PRINTB("ERROR: Can't read font with path '%s'", filename);
+			}
 		} else {
-			PRINTB("ERROR: Can't read font with path '%s'", path);
-		}
-	} else {
-		usedlibs.insert(path);
-		if (!loc.isNone()) {
-			indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), path);
+			externalDict.emplace(filename, node);
 		}
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
+void FileModule::resolveIncludeNodes()
 {
-	PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-			loc.firstLine() % loc.firstColumn() %
-			loc.lastLine() % loc.lastColumn() %
-			localpath %
-			fullpath);
+	for (const auto &node : this->externalList) {
+		const auto includenode = dynamic_pointer_cast<const IncludeNode>(node);
+		if (!includenode) continue;
+		const fs::path localpath{includenode->filename};
+		const auto fullpath = find_valid_path(this->path, localpath);
+		if (fullpath.empty()) {
+			PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
+			continue;
+		};
 
-	this->includes[localpath] = {fullpath};
-	if (!loc.isNone()) {
-		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
+		const auto fullname = fullpath.generic_string();
+    // handle_dep(fullname);
+		// FIXME: Instead of the below, try to use ModuleCache to access both include nodes and use nodes
+		// o parse fullname into FileModule/IncludeModule
+		std::ifstream ifs{fullname};
+		if (!ifs.is_open()) {
+			PRINTB("Can't open include file '%s'!\n", fullname.c_str());
+			return;
+		}
+		std::string text{std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()};
+		FileModule *inc_mod{nullptr};
+		// FIXME: Does this->getFullpath() constitute the main file?
+		if (!parse(inc_mod, text, fullname, this->getFullpath(), false)) {
+			PRINTB("Can't parse include file '%s'!\n", fullname.c_str());
+			return;
+		}
+		// Add inc_mod to a member container
 	}
 }
 
 time_t FileModule::includesChanged() const
 {
 	time_t latest = 0;
-	for (const auto &item : this->includes) {
-		auto mtime = include_modified(item.second);
-		if (mtime > latest) latest = mtime;
+	for (const auto &item : this->externalList) {
+		if (auto includeNode = dynamic_cast<IncludeNode*>(item.get())) {
+			auto mtime = includeModified(*includeNode);
+			if (mtime > latest) latest = mtime;
+		}
 	}
 	return latest;
 }
 
-time_t FileModule::include_modified(const IncludeFile &inc) const
+time_t FileModule::includeModified(const IncludeNode &node) const
 {
 	struct stat st;
 
-	if (StatCache::stat(inc.filename.c_str(), st) == 0) {
+	if (StatCache::stat(node.filename, st) == 0) {
 		return st.st_mtime;
 	}
 	
@@ -117,6 +150,7 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
 */
+// FIXME: Do we need a mode for include-only?
 time_t FileModule::handleDependencies(bool is_root)
 {
 	if(is_root)
@@ -127,13 +161,13 @@ time_t FileModule::handleDependencies(bool is_root)
 
 	std::vector<std::pair<std::string,std::string>> updates;
 
-	// If a lib in usedlibs was previously missing, we need to relocate it
+	// If a lib in externalDict was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
 	time_t latest = 0;
-	for (auto filename : this->usedlibs) {
-
-		auto found = true;
+	for (const auto &externalEntry : this->externalDict) {
+		std::string filename = externalEntry.first;
+		bool found = true;
 
 		// Get an absolute filename for the module
 		if (!fs::path(filename).is_absolute()) {
@@ -167,8 +201,8 @@ time_t FileModule::handleDependencies(bool is_root)
 
 	// Relative filenames which were located are reinserted as absolute filenames
 	for (const auto &files : updates) {
-		this->usedlibs.erase(files.first);
-		this->usedlibs.insert(files.second);
+		this->externalDict.insert({files.second, this->externalDict.at(files.first)});
+		this->externalDict.erase(files.first);
 	}
 	return latest;
 }
@@ -196,6 +230,24 @@ AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileC
 	}
 
 	return node;
+}
+
+std::vector<shared_ptr<UseNode>> FileModule::getUseNodes() const
+{
+	std::vector<shared_ptr<UseNode>> useNodes;
+	for (const auto &node : this->externalList) {
+		if (auto useNode = dynamic_pointer_cast<UseNode>(node)) {
+			useNodes.emplace_back(useNode);
+		}
+	}
+	return useNodes;
+}
+
+void FileModule::resolveExternals()
+{
+	// FIXME: Manage return values from these two functions?
+	this->resolveIncludeNodes();
+	this->resolveUseNodes();
 }
 
 //please preferably use getFilename

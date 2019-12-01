@@ -51,10 +51,10 @@ public:
 	AbstractNode *instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 
 protected:
-	FileContext(const std::shared_ptr<Context> parent) : ModuleContext(parent), usedlibs_p(nullptr) {}
+	FileContext(const std::shared_ptr<Context> parent) : ModuleContext(parent) {}
 
 private:
-	const FileModule::ModuleContainer *usedlibs_p;
+	std::vector<shared_ptr<UseNode>> usedlibs;
 
 	// This sub_* method is needed to minimize stack usage only.
 	ValuePtr sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx, FileModule *usedmod) const;

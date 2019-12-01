@@ -55,3 +55,25 @@ protected:
 };
 
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast);
+
+class ExternalNode : public ASTNode
+{
+public:
+	ExternalNode(std::string filename, const Location &loc) : ASTNode(loc), filename(std::move(filename)) {}
+
+	std::string filename;
+};
+
+class UseNode : public ExternalNode
+{
+public:
+	UseNode(std::string filename, const Location &loc) : ExternalNode(filename, loc) {}
+	virtual void print(std::ostream &stream, const std::string &indent) const;
+};
+
+class IncludeNode : public ExternalNode
+{
+public:
+	IncludeNode(std::string filename, const Location &loc) : ExternalNode(filename, loc) {}
+	virtual void print(std::ostream &stream, const std::string &indent) const;
+};
