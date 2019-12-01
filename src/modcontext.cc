@@ -72,6 +72,7 @@ void ModuleContext::initializeModule(const UserModule &module)
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
+	// FIXME: Filter assignments before doing this
 	for (const auto &assignment : module.scope.assignments) {
 		if (assignment.expr->isLiteral() && this->variables.find(assignment.name) != this->variables.end()) {
 			std::string loc = assignment.location().toRelativeString(this->documentPath());
@@ -229,6 +230,7 @@ void FileContext::initializeModule(const class FileModule &module)
 	this->usedlibs = module.getUseNodes();
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
+	// FIXME: Filter assignments before doing this
 	for (const auto &assignment : module.scope.assignments) {
 		this->set_variable(assignment.name, assignment.expr->evaluate(get_shared_ptr()));
 	}

@@ -262,3 +262,10 @@ const std::string FileModule::getFullpath() const {
 		return "";
 	}
 }
+
+void FileModule::resolveAssignments()
+{
+	// FIXME: We need to walk the tree and call resolveAssignments() for every LocalScope
+	// Note: Needs to happen _after_ resolving included files
+	this->scope.resolveAssignments();
+}

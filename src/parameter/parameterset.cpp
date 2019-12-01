@@ -105,6 +105,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 	try {
 		ContextHandle<Context> ctx{Context::create<Context>()};
 		boost::optional<pt::ptree &> set = getParameterSet(setName);
+		// FIXME: Filter assignments before doing this
 		for (auto &assignment : fileModule->scope.assignments) {
 			for (auto &v : set.get()) {
 				if (v.first == assignment.name) {
