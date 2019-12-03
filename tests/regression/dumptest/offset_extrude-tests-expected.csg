@@ -1,0 +1,85 @@
+group() {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		offset_extrude(r = 1.875, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+			group() {
+				group() {
+					difference() {
+						circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+						multmatrix([[1, 0, 0, 0], [0, 1, 0, -7.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+							circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+						}
+					}
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		offset_extrude(delta = 1.875, chamfer = true, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+			group() {
+				group() {
+					difference() {
+						circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+						multmatrix([[1, 0, 0, 0], [0, 1, 0, -7.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+							circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+						}
+					}
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 60], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		offset_extrude(delta = 1.875, chamfer = false, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+			group() {
+				group() {
+					difference() {
+						circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+						multmatrix([[1, 0, 0, 0], [0, 1, 0, -7.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+							circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 90], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	offset_extrude(r = -1.875, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+		group() {
+			difference() {
+				circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, -7.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					circle($fn = 40, $fa = 12, $fs = 2, r = 7.5);
+				}
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		offset_extrude(r = 1.875, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+			group() {
+				square(size = [15, 15], center = true);
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 30], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		offset_extrude(delta = 1.875, chamfer = true, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+			group() {
+				square(size = [15, 15], center = true);
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 30], [0, 1, 0, 60], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		offset_extrude(delta = 1.875, chamfer = false, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+			group() {
+				square(size = [15, 15], center = true);
+			}
+		}
+	}
+}
+multmatrix([[1, 0, 0, 30], [0, 1, 0, 90], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	offset_extrude(r = -1.875, height = 15, slices = 1, $fn = 40, $fa = 12, $fs = 2) {
+		square(size = [15, 15], center = true);
+	}
+}
+
