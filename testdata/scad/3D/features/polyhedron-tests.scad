@@ -25,3 +25,10 @@ polyhedron(points = [[0,0,0],[1,1,1]], triangles = undef);
 // More malformed polyhedrons
 polyhedron();
 polyhedron(points=[0], faces = [[0]]);
+polyhedron(points=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]], faces = [[0,1,4]]);
+polyhedron(points=[[1,0,0],[-1,0,0]], faces = [[]]);
+polyhedron(points=[[1,0,0],[-1,0,0]], faces = [[0]]);
+polyhedron(points=[[1,0,0],[-1,0,0]], faces = [[0,1]]);
+polyhedron(points=[[1,0,0],[-1,0,0]], faces = [[0,1,1]]);
+polyhedron(points=[[1,0,0],[-1,0,0]], faces = [[0,1,0]]);
+polyhedron(points=[[1,0,0],[0,0,0],[-0.1,1,0],[0,2,0]],faces=[[0,1,3,2]]);

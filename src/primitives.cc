@@ -39,6 +39,7 @@
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include "ModuleInstantiation.h"
+#include "Reindexer.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -551,21 +552,87 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
+		auto points = this->points->toVector();
+		Location loc = this->modinst->location();
+		std::string locStr = loc.toRelativeString(this->document_path);
+
+		// First evaluate and reindex the points, warning in case of dumplicates
+		std::vector<Vector3d> vertices(points.size());
+		std::vector<Vector3f> vertices_f(points.size()); // For tessellate
+		Reindexer<Vector3d> uniqueVertices;
+		std::vector<int> vertex2unique(points.size());
+		std::vector<int> unique2vertex(points.size(),-1);
+		for (size_t i=0; i<points.size(); i++) {
+			const auto &point = points[i];
+			double px, py, pz;
+			if (!point->getVec3(px, py, pz, 0.0) ||
+			    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
+				PRINTB("ERROR: Unable to convert point %s at index %d to a vec3 of numbers, %s",
+				       point->toEchoString() % i % locStr);
+				return p;
+			} else {
+				const Vector3d v(px, py, pz);
+				vertices[i] = v;
+				vertices_f[i] = v.cast<float>();
+				size_t idx = uniqueVertices.lookup(v);
+				vertex2unique[i] = idx;
+				if (unique2vertex[idx] == -1)
+					unique2vertex[idx] = i;
+				else
+					PRINTB("WARNING: Points at indices %d and %d are the same vector: (%.2f, %.2f, %.2f), %s",
+					       unique2vertex[idx] % i % px % py % pz % locStr);
+			}
+		}
+
+		// Build a PolySet and an indexed polygon (for checking purpose)
+		std::vector<std::vector<IndexedFace>> polygons;
 		for (size_t i=0; i<this->faces->toVector().size(); i++)	{
 			p->append_poly();
+		        polygons.push_back(std::vector<IndexedFace>());
+			auto &faces = polygons.back();
+			faces.push_back(IndexedFace());
+			auto &currface = faces.back();
 			const auto &vec = this->faces->toVector()[i]->toVector();
+			if (vec.size() < 3) {
+				std::ostringstream vecStr;
+				for(size_t j=0; j+1<vec.size(); j++)
+					vecStr << (size_t)vec[j]->toDouble() << ", ";
+				if (vec.size()>0)
+					vecStr << (size_t)vec[vec.size()-1]->toDouble();
+				PRINTB("WARNING: Degenerate face of size %d: [%s], %s",
+				       vec.size() % vecStr.str() % locStr);
+			}
 			for (size_t j=0; j<vec.size(); j++) {
 				size_t pt = (size_t)vec[j]->toDouble();
-				if (pt < this->points->toVector().size()) {
-					double px, py, pz;
-					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
-					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
-						return p;
-					}
-					p->insert_vertex(px, py, pz);
-				}
+				if (pt < points.size()) {
+					p->insert_vertex(vertices[pt]);
+					if (currface.empty() ||
+					    (vertex2unique[pt] != currface.back() &&
+					     (j < vec.size() - 1 ||
+					      vertex2unique[pt] != currface.front())))
+						currface.push_back(vertex2unique[pt]);
+					else
+						PRINTB("WARNING: Consecutive duplicate point of index %d in face, %s",
+						       unique2vertex[vertex2unique[pt]] % locStr);
+				} else
+					PRINTB("ERROR: Point index %d is out of bounds, %s",
+					       pt % locStr);
 			}
+			std::vector<IndexedTriangle> triangles;
+			if (GeometryUtils::tessellatePolygonWithHoles
+			    (vertices_f, faces, triangles, nullptr, loc, this->document_path))
+				PRINTB("ERROR: Failed to tessellate face, %s", locStr);
+		}
+
+		// Report any unconnected edges
+		std::vector<IndexedEdge> unconnected =
+			GeometryUtils::reportUnconnectedEdges(polygons);
+		if (!unconnected.empty()) {
+			PRINTB("WARNING: Non-manifold polyhedron, %s", locStr);
+			PRINTB("%d unconnected edges:", unconnected.size());
+			for (const auto &e : unconnected)
+				PRINTB("     (%d,%d)",
+				       unique2vertex[e.first] % unique2vertex[e.second]);
 		}
 	}
 		break;
