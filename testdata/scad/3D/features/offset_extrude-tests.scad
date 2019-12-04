@@ -2,37 +2,36 @@ $fn=40;
 size = 15;
 off = size / 8;
 
-Expand(0)
-ExampleShape();
+offset_types(size*2)
+  angular();
 
-translate([0, size * 6])
-offset_extrude(size, r = -off)
-ExampleShape();
+translate([0,0,size*5]) offset_types(size*2)
+  curved();
 
-Expand(size * 2)
-square([size,size], center = true);
-
-translate([size * 2, size * 6])
-offset_extrude(size, r = -off)
-square([size,size], center = true);
-
-module Expand(x) {
-    translate([x, 0])
-    offset_extrude(size, r = off)
-    children();
-
-    translate([x, size * 2])
-    offset_extrude(size, delta = off, chamfer = true)
-    children();
-
-    translate([x, size * 4])
-    offset_extrude(size, delta = off, chamfer = false)
-    children();
+module offset_types(x) {
+  for(i = [-1,0,1]) { // negative and positive offsets
+    translate([i*x, size *-2])
+      offset_extrude(size, r = i * off)
+        children();
+    translate([i*x, size * 0])
+      offset_extrude(size, delta = i * off, chamfer = true)
+        children();
+    translate([i*x, size * 2])
+      offset_extrude(size, delta = i * off, chamfer = false)
+        children();
+  }
 }
 
-module ExampleShape() {
-    difference() {
-        circle(size / 2);
-        translate([0, -size / 2]) circle(size / 2);
-    }
+module curved() {
+  difference() {
+    circle(size / 2);
+    translate([0, -size / 2]) circle(size / 2);
+  }
+}
+
+module angular() {
+  difference() {
+    square(size, center = true);
+    rotate(-135) square(size);
+  }
 }
