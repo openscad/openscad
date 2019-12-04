@@ -1482,56 +1482,67 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
     }
 
     PolySet *ps_bottom = poly.tessellate(); // bottom
-
     // Flip vertex ordering for bottom polygon
     for(auto &p : ps_bottom->polygons) {
         std::reverse(p.begin(), p.end());
     }
     translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
-
     ps->append(*ps_bottom);
-    ClipperLib::JoinType joinType = node.join_type;
-    double miterLimit = node.miter_limit;
-
-    bool outwards = node.delta > 0;
-    double offset_per_slice = node.delta / node.slices;
-    double h1_size = h1;
-    double height_increment = (h2 - h1) / node.slices;
-    double num_fragments = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
-    double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / num_fragments));
-    auto *last_slice = const_cast<Polygon2d *>(&poly);
-
-    for (int i = 0; i < node.slices; i++) {
-        Polygon2d *s = ClipperUtils::applyOffset(poly, offset_per_slice * (i + 1), joinType, miterLimit, arc_tolerance);
-
-        if (outwards) {
-            PolySet *clipped_polys = difference_polygons(s, last_slice)->tessellate();
-            for(auto &p : clipped_polys->polygons) {
-                std::reverse(p.begin(), p.end());
-            }
-            if (i == 0) {
-                Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), ClipperUtils::applyOffset(poly, offset_per_slice * -1, joinType, miterLimit, arc_tolerance));
-                add_slice_offset(ps, clipped_polys, s, h1_size, tmp_slice, h1_size + height_increment);
-            } else {
-                add_slice_offset(ps, clipped_polys, s, h1_size, last_slice, h1_size + height_increment);
-            }
-        } else {
-            PolySet *clippedPolys = difference_polygons(last_slice, s)->tessellate();
-            add_slice_offset(ps, clippedPolys, last_slice, h1_size + height_increment, s, h1_size);
-        }
-
-        last_slice = s;
-        h1_size = h1_size + height_increment;
-
-        // top layer
-        if (i == node.slices - 1) {
-            PolySet *ps_top = s->tessellate();
-            translate_PolySet(*ps_top, Vector3d(0,0, h2));
-            ps->append(*ps_top);
-        }
-    }
     delete ps_bottom;
 
+    if (node.delta == 0) {
+        size_t slices = node.slices;
+        for (unsigned int j = 0; j < slices; j++) {
+            double height1 = h1 + (h2-h1)*j / slices;
+            double height2 = h1 + (h2-h1)*(j+1) / slices;
+            Vector2d scale1(1,1);
+            add_slice(ps, poly, 0, 0, height1, height2, scale1, scale1);
+        }
+        PolySet *ps_top = poly.tessellate();
+        translate_PolySet(*ps_top, Vector3d(0,0,h2));
+        ps->append(*ps_top);
+        delete ps_top;
+    } else {
+        ClipperLib::JoinType joinType = node.join_type;
+        double miterLimit = node.miter_limit;
+        bool outwards = node.delta > 0;
+        double offset_per_slice = node.delta / node.slices;
+        double h1_size = h1;
+        double height_increment = (h2 - h1) / node.slices;
+        double num_fragments = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
+        double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / num_fragments));
+        auto *last_slice = const_cast<Polygon2d *>(&poly);
+
+        for (int i = 0; i < node.slices; i++) {
+            Polygon2d *s = ClipperUtils::applyOffset(poly, offset_per_slice * (i + 1), joinType, miterLimit, arc_tolerance);
+
+            if (outwards) {
+                PolySet *clipped_polys = difference_polygons(s, last_slice)->tessellate();
+                for(auto &p : clipped_polys->polygons) {
+                    std::reverse(p.begin(), p.end());
+                }
+                if (i == 0) {
+                    Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), ClipperUtils::applyOffset(poly, offset_per_slice * -1, joinType, miterLimit, arc_tolerance));
+                    add_slice_offset(ps, clipped_polys, s, h1_size, tmp_slice, h1_size + height_increment);
+                } else {
+                    add_slice_offset(ps, clipped_polys, s, h1_size, last_slice, h1_size + height_increment);
+                }
+            } else {
+                PolySet *clippedPolys = difference_polygons(last_slice, s)->tessellate();
+                add_slice_offset(ps, clippedPolys, last_slice, h1_size + height_increment, s, h1_size);
+            }
+
+            last_slice = s;
+            h1_size = h1_size + height_increment;
+
+            // top layer
+            if (i == node.slices - 1) {
+                PolySet *ps_top = s->tessellate();
+                translate_PolySet(*ps_top, Vector3d(0,0, h2));
+                ps->append(*ps_top);
+            }
+        }
+    }
     return ps;
 }
 
@@ -1543,7 +1554,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetExtrudeNode &node)
         if (!isSmartCached(node)) {
             const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
             if (geometry) {
-                const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+                auto *polygons = dynamic_cast<const Polygon2d*>(geometry);
                 Geometry *extruded = extrudePolygon(node, *polygons);
                 assert(extruded);
                 geom.reset(extruded);
