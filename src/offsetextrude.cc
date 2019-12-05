@@ -83,11 +83,11 @@ AbstractNode *OffsetExtrudeModule::instantiate(const std::shared_ptr<Context>& c
         auto val = evalctx->getArgValue(0);
         if (val->type() == Value::ValueType::NUMBER) height = val;
     }
-    node->height = 100;
+    node->height = 1;
     height->getFiniteDouble(node->height);
     node->convexity = static_cast<int>(convexity->toDouble());
 
-    if (node->height <= 0) node->height = 0;
+    if (node->height == 0) node->height = 1;
 
     if (node->convexity <= 0)
         node->convexity = 1;
@@ -130,6 +130,7 @@ std::string OffsetExtrudeNode::toString() const
     }
     stream << ", height = " << this->height
            << ", slices = " << this->slices
+           << ", center = " << (this->center ? "true" : "false")
            << ", $fn = " << this->fn
            << ", $fa = " << this->fa
            << ", $fs = " << this->fs << ")";

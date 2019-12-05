@@ -1469,7 +1469,6 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
     bool cvx = poly.is_convex();
     auto *ps = new PolySet(3, !cvx ? boost::tribool(false) : boost::tribool(true));
     ps->setConvexity(node.convexity);
-    if (node.height <= 0) return ps;
 
     double h1, h2;
 
@@ -1483,7 +1482,7 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
 
     PolySet *ps_bottom = poly.tessellate(); // bottom
     // Flip vertex ordering for bottom polygon
-    for(auto &p : ps_bottom->polygons) {
+    for (auto &p : ps_bottom->polygons) {
         std::reverse(p.begin(), p.end());
     }
     translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
@@ -1541,6 +1540,12 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
                 translate_PolySet(*ps_top, Vector3d(0,0, h2));
                 ps->append(*ps_top);
             }
+        }
+    }
+
+    if (node.height < 0) {
+        for (auto &p : ps->polygons) {
+            std::reverse(p.begin(), p.end());
         }
     }
     return ps;

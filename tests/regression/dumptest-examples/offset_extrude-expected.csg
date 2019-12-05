@@ -1,26 +1,26 @@
 group();
 color([1, 0, 0, 1]) {
-	offset_extrude(r = -2, height = 20, slices = 1, $fn = 60, $fa = 12, $fs = 2) {
+	offset_extrude(r = -2, height = 20, slices = 1, center = false, $fn = 60, $fa = 12, $fs = 2) {
 		square(size = [20, 10], center = true);
 	}
 }
 color([0, 0, 1, 1]) {
 	multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		offset_extrude(r = 2, height = 20, slices = 1, $fn = 60, $fa = 12, $fs = 2) {
+		offset_extrude(r = 2, height = 20, slices = 1, center = false, $fn = 60, $fa = 12, $fs = 2) {
 			square(size = [20, 10], center = true);
 		}
 	}
 }
 color([0, 0.501961, 0, 1]) {
 	multmatrix([[1, 0, 0, 60], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		offset_extrude(delta = 2, chamfer = false, height = 20, slices = 1, $fn = 60, $fa = 12, $fs = 2) {
+		offset_extrude(delta = 2, chamfer = false, height = 20, slices = 1, center = false, $fn = 60, $fa = 12, $fs = 2) {
 			square(size = [20, 10], center = true);
 		}
 	}
 }
 color([0.501961, 0, 0.501961, 1]) {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		offset_extrude(delta = 2, chamfer = true, height = 20, slices = 1, $fn = 60, $fa = 12, $fs = 2) {
+		offset_extrude(delta = 2, chamfer = true, height = 20, slices = 1, center = false, $fn = 60, $fa = 12, $fs = 2) {
 			square(size = [20, 10], center = true);
 		}
 	}
@@ -28,7 +28,7 @@ color([0.501961, 0, 0.501961, 1]) {
 color([1, 1, 1, 1]) {
 	multmatrix([[1, 0, 0, 30], [0, 1, 0, 30], [0, 0, 1, 20], [0, 0, 0, 1]]) {
 		multmatrix([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) {
-			offset_extrude(r = 2, height = 20, slices = 10, $fn = 60, $fa = 12, $fs = 2) {
+			offset_extrude(r = 2, height = 20, slices = 10, center = false, $fn = 60, $fa = 12, $fs = 2) {
 				difference() {
 					square(size = [20, 10], center = true);
 					square(size = [4, 4], center = true);
