@@ -314,9 +314,9 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			err = true;
 			} else {
 				const Vector3d v(px, py, pz);
-				node->valid_points[i] = v;
 				vertices_f[i] = v.cast<float>();
 				size_t idx = uniqueVertices.lookup(v);
+				node->valid_points[idx] = v;
 				vertex2unique[i] = idx;
 				if (unique2vertex[idx] == -1)
 					unique2vertex[idx] = i;
