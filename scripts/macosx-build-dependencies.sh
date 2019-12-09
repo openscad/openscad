@@ -510,6 +510,14 @@ build_gettext()
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
+  install_name_tool -id @rpath/libgettextlib.dylib $DEPLOYDIR/lib/libgettextlib-$version.dylib
+
+  install_name_tool -change $DEPLOYDIR/lib/libintl.9.dylib @rpath/libintl.dylib $DEPLOYDIR/lib/libgettextlib-$version.dylib
+
+  install_name_tool -change $DEPLOYDIR/lib/libgettextsrc-$version.dylib @rpath/libgettextsrc.dylib $DEPLOYDIR/bin/msgfmt
+  install_name_tool -change $DEPLOYDIR/lib/libgettextlib-$version.dylib @rpath/libgettextlib.dylib $DEPLOYDIR/bin/msgfmt
+  install_name_tool -change $DEPLOYDIR/lib/libintl.9.dylib @rpath/libintl.dylib $DEPLOYDIR/bin/msgfmt
+
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
 }
 
