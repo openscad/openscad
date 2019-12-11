@@ -418,7 +418,9 @@ public:
   }
 
   std::string operator()(const RangeType &v) const {
-    return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
+	const std::string begin_val{v.begin_val.is_initialized() ? (boost::format("%1% ") % *v.begin_val).str() : ""};
+	const std::string end_val{v.end_val.is_initialized() ? (boost::format(" %1%") % *v.end_val).str() : ""};
+    return (boost::format("[%1%: %2% :%3%]") % begin_val % v.step_val % end_val).str();
   }
 
   std::string operator()(const FunctionType &v) const {
@@ -474,11 +476,11 @@ public:
 
   void operator()(const RangeType &v) const {
     stream << "[";
-    this->operator()(v.begin_val);
+    if (v.begin_val.is_initialized()) this->operator()(*v.begin_val);
     stream << " : ";
     this->operator()(v.step_val);
     stream << " : ";
-    this->operator()(v.end_val);
+    if (v.end_val.is_initialized()) this->operator()(*v.end_val);
     stream << "]";
   }
 
@@ -969,15 +971,40 @@ public:
   Value operator()(const RangeType &range, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     switch(i) {
-    case 0: return {range.begin_val};
+    case 0: return {*range.begin_val};
     case 1: return {range.step_val};
-    case 2: return {range.end_val};
+    case 2: return {*range.end_val};
     }
     return Value::undefined;
   }
 
+  Value operator()(const str_utf8_wrapper &str, const RangeType &range) const {
+	  return getSlice(str, range);
+  }
+
+  Value operator()(const Value::VectorType &vec, const RangeType &range) const {
+	  return getSlice(vec, range);
+  }
+
+  template <typename T>
+  Value getSlice(const T& val, const RangeType &range) const {
+	const auto convert_to_index = [&](boost::optional<double> d, double def) -> long {
+		const long idx = static_cast<long>(round(d.get_value_or(def)));
+		return idx >= 0 ? idx : val.size() + idx;
+	};
+
+	const long beginIdx = std::max(0L, convert_to_index(range.begin_val, 0.0));
+	const long endIdx = std::min(convert_to_index(range.end_val, val.size()), static_cast<long>(val.size() - 1));
+
+	T result;
+	for (long idx = beginIdx; range.is_exclusive() ? idx < endIdx : idx <= endIdx; idx++) {
+		result.push_back(val[idx]);
+	}
+
+	return result;
+  }
+
   template <typename T, typename U> Value operator()(const T &, const U &) const {
-    //    std::cout << "generic bracket_visitor\n";
     return Value::undefined;
   }
 };
@@ -989,66 +1016,76 @@ Value Value::operator[](const Value &v) const
 
 void RangeType::normalize()
 {
-  if ((step_val>0) && (end_val < begin_val)) {
-    std::swap(begin_val,end_val);
+  if (begin_val.is_initialized() && end_val.is_initialized() && step_val > 0 && (*end_val < *begin_val)) {
+    std::swap(begin_val, end_val);
     printDeprecation("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
   }
 }
 
 uint32_t RangeType::numValues() const
 {
-  if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
-		return 0;
-	}
+  if (!begin_val.is_initialized() || !end_val.is_initialized()) {
+	return std::numeric_limits<uint32_t>::max();
+  }
 
-  if (std::isinf(begin_val) || (std::isinf(end_val))) {
+  if (std::isnan(*begin_val) || std::isnan(*end_val) || std::isnan(step_val)) {
+	return 0;
+  }
+
+  if (std::isinf(*begin_val) || (std::isinf(*end_val))) {
     return std::numeric_limits<uint32_t>::max();
   }
 
-  if ((begin_val == end_val) || std::isinf(step_val)) {
+  if ((*begin_val == *end_val) || std::isinf(step_val)) {
     return 1;
   }
   
-  if (step_val == 0) { 
+  if (step_val == 0) {
     return std::numeric_limits<uint32_t>::max();
   }
 
   double numvals;
   if (step_val < 0) {
-    if (begin_val < end_val) {
+    if (*begin_val < *end_val) {
       return 0;
     }
-    numvals = (begin_val - end_val) / (-step_val) + 1;
+    numvals = (*begin_val - *end_val) / (-step_val) + 1;
   } else {
     if (begin_val > end_val) {
       return 0;
     }
-    numvals = (end_val - begin_val) / step_val + 1;
+    numvals = (*end_val - *begin_val) / step_val + 1;
   }
   
   return numvals;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
+RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(*range.begin_val), type(type)
 {
 	update_type();
 }
 
 void RangeType::iterator::update_type()
 {
+	if (!range.end_val.is_initialized()) {
+		return;
+	}
+
+	double end_val = *range.end_val;
+
 	if (range.step_val == 0) {
 		type = type_t::RANGE_TYPE_END;
 	} else if (range.step_val < 0) {
-		if (val < range.end_val) {
+		if (range.is_exclusive() ? val <= end_val : val < end_val) {
 			type = type_t::RANGE_TYPE_END;
 		}
 	} else {
-		if (val > range.end_val) {
+		if (range.is_exclusive() ? val >= end_val : val > end_val) {
 			type = type_t::RANGE_TYPE_END;
 		}
 	}
 
-	if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) type = type_t::RANGE_TYPE_END;
+	if (std::isnan(*range.begin_val) || std::isnan(*range.end_val) || std::isnan(range.step_val)) type = type_t::RANGE_TYPE_END;
 }
 
 RangeType::iterator::reference RangeType::iterator::operator*()

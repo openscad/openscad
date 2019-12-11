@@ -301,33 +301,43 @@ void Literal::print(std::ostream &stream, const std::string &) const
 }
 
 Range::Range(Expression *begin, Expression *end, const Location &loc)
-	: Expression(loc), begin(begin), end(end)
+	: Expression(loc), exclusive(false), begin(begin), end(end)
 {
 }
 
-Range::Range(Expression *begin, Expression *step, Expression *end, const Location &loc)
-	: Expression(loc), begin(begin), step(step), end(end)
+Range::Range(Expression *begin, Expression *step, Expression *end, bool exclusive, const Location &loc)
+	: Expression(loc), exclusive(exclusive), begin(begin), step(step), end(end)
 {
 }
 
 ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 {
-	ValuePtr beginValue = this->begin->evaluate(context);
-	if (beginValue->type() == Value::ValueType::NUMBER) {
-		ValuePtr endValue = this->end->evaluate(context);
-		if (endValue->type() == Value::ValueType::NUMBER) {
-			if (!this->step) {
-				RangeType range(beginValue->toDouble(), endValue->toDouble());
-				return ValuePtr(range);
-			} else {
-				ValuePtr stepValue = this->step->evaluate(context);
-				if (stepValue->type() == Value::ValueType::NUMBER) {
-					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
-					return ValuePtr(range);
-				}
-			}
+	ValuePtr beginValue = this->begin ? this->begin->evaluate(context) : ValuePtr::undefined;
+	if (beginValue != ValuePtr::undefined && beginValue->type() != Value::ValueType::NUMBER) {
+	  return ValuePtr::undefined;
+	}
+
+	ValuePtr endValue = this->end ? this->end->evaluate(context) : ValuePtr::undefined;
+	if (endValue != ValuePtr::undefined && endValue->type() != Value::ValueType::NUMBER) {
+	  return ValuePtr::undefined;
+	}
+
+	boost::optional<double> b;
+	if (beginValue != ValuePtr::undefined) b = beginValue->toDouble();
+	boost::optional<double> e;
+	if (endValue != ValuePtr::undefined) e = endValue->toDouble();
+
+	if (!this->step) {
+		RangeType range(b, e);
+		return ValuePtr(range);
+	} else {
+		ValuePtr stepValue = this->step->evaluate(context);
+		if (stepValue->type() == Value::ValueType::NUMBER) {
+			RangeType range(b, stepValue->toDouble(), e, exclusive);
+			return ValuePtr(range);
 		}
 	}
+
 	return ValuePtr::undefined;
 }
 
@@ -339,15 +349,15 @@ void Range::print(std::ostream &stream, const std::string &) const
 	stream << "]";
 }
 
-bool Range::isLiteral() const {
-    if(!this->step){ 
-        if( begin->isLiteral() && end->isLiteral())
-            return true;
-    }else{
-        if( begin->isLiteral() && end->isLiteral() && step->isLiteral())
-            return true;
-    }
-    return false;
+bool Range::isLiteral() const
+{
+	const bool boundaryLiteral = (begin && begin->isLiteral()) && (end && end->isLiteral());
+	return step ? boundaryLiteral && step->isLiteral() : boundaryLiteral;
+}
+
+bool Range::isValid() const
+{
+	return begin && end;
 }
 
 Vector::Vector(const Location &loc) : Expression(loc)

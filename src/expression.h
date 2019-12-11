@@ -105,11 +105,13 @@ class Range : public Expression
 {
 public:
 	Range(Expression *begin, Expression *end, const Location &loc);
-	Range(Expression *begin, Expression *step, Expression *end, const Location &loc);
+	Range(Expression *begin, Expression *step, Expression *end, bool exclusive, const Location &loc);
 	ValuePtr evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override;
+	bool isValid() const;
 private:
+	bool exclusive;
 	shared_ptr<Expression> begin;
 	shared_ptr<Expression> step;
 	shared_ptr<Expression> end;
