@@ -141,7 +141,7 @@ std::string OffsetExtrudeNode::toString() const
 void register_builtin_offset_extrude()
 {
     Builtins::init("offset_extrude", new OffsetExtrudeModule(), {
-            "offset_extrude(height, r = 1, slices = 1, chamfer = false, center = false[, $fn, $fa, $fs])",
+            "offset_extrude(height, r = 1, slices = 1, center = false[, $fn, $fa, $fs])",
             "offset_extrude(height, delta = 1, slices = 1, chamfer = false, center = false[, $fn, $fa, $fs])",
     });
 }

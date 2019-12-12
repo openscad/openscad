@@ -1430,37 +1430,45 @@ static void add_slice_offset(PolySet *ps, PolySet *edgePs,
     for (auto &polygon : edgePs->polygons) {
         cps->append_poly();
         for (auto p : polygon) {
-            bool didAdd = false;
+            bool did_add = false;
             for (const auto &o1 : slice2->outlines()) {
                 for (auto v1 : o1.vertices) {
                     if (p[0] == v1[0] && p[1] == v1[1]) {
                         cps->append_vertex(p[0], p[1], h1);
-                        didAdd = true;
+                        did_add = true;
                     }
                 }
             }
-            if (!didAdd)
+            if (!did_add)
                 cps->append_vertex(p[0], p[1], h2);
         }
     }
 
     //check for and rotate flat triangles
-    bool didRotate = true;
-    while (didRotate) {
-        didRotate = false;
-        for (unsigned long i = 0; i < cps->polygons.size() && !didRotate; i++) {
-            auto &flat = cps->polygons[i];
-            if (is_poly_flat(flat)) {
-                //find a non-flat triangle which shares an edge and rotate those triangles
-                for (unsigned long j = 0; j < cps->polygons.size() && !didRotate; j++) {
-                    auto &side = cps->polygons[j];
-                    if (!is_poly_flat(side) && rotate_shared_edge(flat, side))
-                        didRotate = true;
-                }
+    bool did_rotate = true;
+    std::list<unsigned long> flat_offsets;
+    for (unsigned long i = 0; i < cps->polygons.size(); i++) {
+        if (is_poly_flat(cps->polygons[i])) {
+            flat_offsets.push_back(i);
+        }
+    }
 
+    while (did_rotate) {
+        did_rotate = false;
+        for (auto i = flat_offsets.begin(); i != flat_offsets.end() && !did_rotate; i++) {
+            auto flat = cps->polygons[*i];
+            //find a non-flat triangle which shares an edge and rotate those triangles
+            for (auto side = cps->polygons.begin(); side != cps->polygons.end() && !did_rotate; side++)
+            {
+                if (!is_poly_flat(*side) && rotate_shared_edge(flat, *side))
+                {
+                    did_rotate = true;
+                    flat_offsets.erase(i);
+                }
             }
         }
     }
+    flat_offsets.clear();
     ps->append(*cps);
 }
 
@@ -1502,8 +1510,8 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
         ps->append(*ps_top);
         delete ps_top;
     } else {
-        ClipperLib::JoinType joinType = node.join_type;
-        double miterLimit = node.miter_limit;
+        ClipperLib::JoinType join_type = node.join_type;
+        double miter_limit = node.miter_limit;
         bool outwards = node.delta > 0;
         double offset_per_slice = node.delta / node.slices;
         double h1_size = h1;
@@ -1513,7 +1521,7 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
         auto *last_slice = const_cast<Polygon2d *>(&poly);
 
         for (int i = 0; i < node.slices; i++) {
-            Polygon2d *s = ClipperUtils::applyOffset(poly, offset_per_slice * (i + 1), joinType, miterLimit, arc_tolerance);
+            Polygon2d *s = ClipperUtils::applyOffset(poly, offset_per_slice * (i + 1), join_type, miter_limit, arc_tolerance);
 
             if (outwards) {
                 PolySet *clipped_polys = difference_polygons(s, last_slice)->tessellate();
@@ -1521,14 +1529,14 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
                     std::reverse(p.begin(), p.end());
                 }
                 if (i == 0) {
-                    Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), ClipperUtils::applyOffset(poly, offset_per_slice * -1, joinType, miterLimit, arc_tolerance));
+                    Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), ClipperUtils::applyOffset(poly, offset_per_slice * -1, join_type, miter_limit, arc_tolerance));
                     add_slice_offset(ps, clipped_polys, s, h1_size, tmp_slice, h1_size + height_increment);
                 } else {
                     add_slice_offset(ps, clipped_polys, s, h1_size, last_slice, h1_size + height_increment);
                 }
             } else {
-                PolySet *clippedPolys = difference_polygons(last_slice, s)->tessellate();
-                add_slice_offset(ps, clippedPolys, last_slice, h1_size + height_increment, s, h1_size);
+                PolySet *clipped_polys = difference_polygons(last_slice, s)->tessellate();
+                add_slice_offset(ps, clipped_polys, last_slice, h1_size + height_increment, s, h1_size);
             }
 
             last_slice = s;
