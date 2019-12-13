@@ -1456,7 +1456,7 @@ static void add_slice_offset(PolySet *ps, PolySet *edgePs,
     while (did_rotate) {
         did_rotate = false;
         for (auto i = flat_offsets.begin(); i != flat_offsets.end() && !did_rotate; i++) {
-            auto flat = cps->polygons[*i];
+            auto &flat = cps->polygons[*i];
             //find a non-flat triangle which shares an edge and rotate those triangles
             for (auto side = cps->polygons.begin(); side != cps->polygons.end() && !did_rotate; side++)
             {

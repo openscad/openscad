@@ -1,6 +1,6 @@
 $fn=40;
 size = 15;
-off = size / 8;
+off = 0;
 
 offset_types(size*3, size/2)
 angular();
@@ -8,7 +8,7 @@ angular();
 offset_types(size*3, -size/2)
 angular();
 
-translate([0,size * 9]) {
+translate([size * 3, 0]) {
     offset_types(size*3, size/2)
     curved();
 
@@ -18,17 +18,15 @@ translate([0,size * 9]) {
 
 
 module offset_types(x, h) {
-  for(i = [-1,0,1]) { // negative and positive offsets
-    translate([i*x, size *-3])
-      offset_extrude(h, r = i * off)
+    translate([x, size *-3])
+      offset_extrude(h, r = off)
         children();
-    translate([i*x, size * 0])
-      offset_extrude(h, delta = i * off, chamfer = true)
+    translate([x, size * 0])
+      offset_extrude(h, delta = off, chamfer = true)
         children();
-    translate([i*x, size * 3])
-      offset_extrude(h, delta = i * off, chamfer = false)
+    translate([x, size * 3])
+      offset_extrude(h, delta = off, chamfer = false)
         children();
-  }
 }
 
 module curved() {
