@@ -168,7 +168,7 @@ namespace CGALUtils {
 			}
 
 			progress_tick();
-			while (q.size() > 2) {
+			while (q.size() > 1) {
 				auto p1 = q.top();
 				q.pop();
 				auto p2 = q.top();
@@ -177,13 +177,7 @@ namespace CGALUtils {
 				progress_tick();
 			}
 
-			if (q.size() == 2) {
-				auto ptr1 = std::const_pointer_cast<CGAL_Nef_polyhedron>(q.top().first); 
-				q.pop();
-				*ptr1 += *q.top().first;
-				progress_tick();
-				return new CGAL_Nef_polyhedron(ptr1->p3);
-			} else if (q.size() == 1) {
+			if (q.size() == 1) {
 				return new CGAL_Nef_polyhedron(q.top().first->p3);
 			} else {
 				return nullptr;
