@@ -169,10 +169,8 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 			Vector3d v(0, 0, 1);
 			bool vConverted = val_v->getVec3(v[0], v[1], v[2], 0.0);
-			if(from_supplied || to_supplied){
-				v[0] = 0;
-				v[1] = 0;
-				v[2] = 1;
+			if(from_supplied){
+				val_from->getVec3(v[0], v[1], v[2], 0.0);
 				if (!aConverted) {
 					a = 0.0;
 				}
