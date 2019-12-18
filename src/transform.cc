@@ -65,7 +65,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		args += Assignment("v");
 		break;
 	case transform_type_e::ROTATE:
-		args += Assignment("a"), Assignment("v");
+		args += Assignment("a"), Assignment("v"), Assignment("from"), Assignment("to");
 		break;
 	case transform_type_e::MIRROR:
 		args += Assignment("v");
@@ -105,6 +105,11 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	else if (this->type == transform_type_e::ROTATE) {
 		auto val_a = c->lookup_variable("a");
 		auto val_v = c->lookup_variable("v");
+		auto val_from = c->lookup_variable("from");
+		auto val_to = c->lookup_variable("to");
+		bool v_supplied = (val_v != ValuePtr::undefined);
+		bool from_supplied = (val_from != ValuePtr::undefined);
+		bool to_supplied = (val_to != ValuePtr::undefined);
 		if (val_a->type() == Value::ValueType::VECTOR) {
 			double sx = 0, sy = 0, sz = 0;
 			double cx = 1, cy = 1, cz = 1;
@@ -132,10 +137,18 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 				ok &= false;
 			}
 			
-			bool v_supplied = (val_v != ValuePtr::undefined);
 			if(ok){
 				if(v_supplied){
-					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored. rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+				if(from_supplied){
+					if(to_supplied){
+						PRINTB("WARNING: When parameter a is supplied as vector, parameters from and to are ignored. rotate(a=%s, from=%s, to=%s), %s", val_a->toEchoString() % val_from->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					} else {
+						PRINTB("WARNING: When parameter a is supplied as vector, parameter from is ignored. rotate(a=%s, from=%s), %s", val_a->toEchoString() % val_from->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					}
+				} else if(to_supplied){
+					PRINTB("WARNING: When parameter a is supplied as vector, parameter to is ignored. rotate(a=%s, to=%s), %s", val_a->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
 			}else{
 				if(v_supplied){
@@ -156,14 +169,64 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 			Vector3d v(0, 0, 1);
 			bool vConverted = val_v->getVec3(v[0], v[1], v[2], 0.0);
+			if(from_supplied || to_supplied){
+				v[0] = 0;
+				v[1] = 0;
+				v[2] = 1;
+				if (!aConverted) {
+					a = 0.0;
+				}
+			}
+			if (from_supplied && to_supplied) {
+				Vector3d from_v(0, 0, 1);
+				Vector3d to_v(0, 0, 1);
+				bool fromConverted = val_from->getVec3(from_v[0], from_v[1], from_v[2], 0.0);
+				bool toConverted = val_to->getVec3(to_v[0], to_v[1], to_v[2], 0.0);
+				if(!fromConverted && !toConverted){
+					PRINTB("WARNING: Problem converting rotate(from=%s, to=%s) parameter, %s", val_from->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else if(!fromConverted){
+					PRINTB("WARNING: Problem converting rotate(..., from=%s) parameter, %s", val_from->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else if(!toConverted){
+					PRINTB("WARNING: Problem converting rotate(..., to=%s) parameter, %s", val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else {
+					double x = from_v[1] * to_v[2] - from_v[2] * to_v[1];
+					double y = from_v[2] * to_v[0] - from_v[0] * to_v[2];
+					double z = from_v[0] * to_v[1] - from_v[1] * to_v[0];
+					Vector3d axis(x,y,z);
+					double from_len = sqrt(from_v[0]*from_v[0] + from_v[1]*from_v[1] + from_v[2]*from_v[2]);
+					double to_len = sqrt(to_v[0]*to_v[0] + to_v[1]*to_v[1] + to_v[2]*to_v[2]);
+					double dotprod = from_v[0]*to_v[0] + from_v[1]*to_v[1] + from_v[2]*to_v[2];
+					double divisor = from_len * to_len;
+					if (divisor == 0.0) {
+						PRINTB("WARNING: Invalid zero-length vector in rotate(from=%s, to=%s) parameter, %s", val_from->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					} else {
+						double ang = acos(dotprod/divisor) * 180.0 / M_PI;
+						node->matrix.rotate(angle_axis_degrees(ang, axis));
+					}
+				}
+			}else if(from_supplied) {
+				PRINTB("WARNING: If parameter from is given, then parameter to must also be given in rotate(from=%s), %s", val_from->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}else if(to_supplied) {
+				PRINTB("WARNING: If parameter to is given, then parameter from must also be given in rotate(to=%s), %s", val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}
 			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-			if(val_v != ValuePtr::undefined && ! vConverted){
+			if(v_supplied && (from_supplied || to_supplied)){
+				if (from_supplied) {
+					if (to_supplied) {
+						PRINTB("WARNING: When parameters from or to are given, parameter v is ignored in rotate(v=%s, from=%s, to=%s) parameter, %s", val_v->toEchoString() % val_from->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					} else {
+						PRINTB("WARNING: When parameter from is given, parameter v is ignored in rotate(v=%s, from=%s) parameter, %s", val_v->toEchoString() % val_from->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					}
+				} else {
+					PRINTB("WARNING: When parameter to is given, parameter v is ignored in rotate(v=%s, to=%s) parameter, %s", val_v->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}else if(v_supplied && ! vConverted){
 				if(aConverted){
 					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}else{
 					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}
-			}else if(!aConverted){
+			}else if(!aConverted && !from_supplied && !to_supplied){
 				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}

@@ -38,6 +38,14 @@ translate([24,0,0])
 rotate([45,30,15],v=[0,0,0])
 cube(s);
 
+translate([28,0,0])
+rotate(from=[0,1,0],to=[1,1,0])
+cube(s);
+
+translate([32,0,0])
+rotate(30,from=[0,1,0],to=[1,1,0])
+cube(s);
+
 //Problems with the parameters
 //We mainly care that this calls create a warning
 color("red")
@@ -66,4 +74,34 @@ translate([-6,0,0])
 
     rotate(["a"],["v"])
     sphere();
+
+    rotate(a=[45,45,45],from=[0,0,1],to=[0,1,0])
+    cube();
+
+    rotate(a=45,v=[1,1,1],from=[0,0,1],to=[0,1,0])
+    cube();
+
+    rotate(a=45,from=3,to=[0,1,0])
+    cube();
+
+    rotate(a=45,from=[0,0,1],to=3)
+    cube();
+
+    rotate(a=45,from="from",to=[0,1,0])
+    cube();
+
+    rotate(a=45,from=[0,0,1],to="to")
+    cube();
+
+    rotate(a=45,from=[0,0,1,2],to=[0,1,0])
+    cube();
+
+    rotate(a=45,from=[0,0,1],to=[0,1,0,2])
+    cube();
+
+    rotate(a=45,from=[0,0,1])
+    cube();
+
+    rotate(a=45,to=[0,0,1])
+    cube();
 }
