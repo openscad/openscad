@@ -234,9 +234,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 								axis[1] = 1;
 								axis[2] = 0;
 							} else {
-								axis[0] = 0;
-								axis[1] = 0;
-								axis[2] = 1;
+								axis = vcross(from_v, Vector3d(0,0,1));
 							}
 						}
 						node->matrix.rotate(angle_axis_degrees(ang, axis));
