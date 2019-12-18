@@ -16,6 +16,9 @@ public:
 						 shared_ptr<class Expression> expr = shared_ptr<class Expression>(),
 						 const Location &loc = Location::NONE)
 		: ASTNode(loc), name(name), expr(expr) { }
+	// map an Assignment to a new name, for resolving arguments
+	Assignment(std::string name, const Assignment& from)
+				: ASTNode(from.loc), name(name), expr(from.expr) { }
 	
 	void print(std::ostream &stream, const std::string &indent) const override;
 
@@ -32,4 +35,4 @@ protected:
        
        
 typedef std::vector<Assignment> AssignmentList;
-typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
+//typedef std::unordered_map<std::string, const Expression*> AssignmentMap;

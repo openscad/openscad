@@ -138,6 +138,23 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 	}
 }
 
+// only lookup for rounded primitives: circle, cylinder, sphere
+void lookup_fn_fs_fa(const std::shared_ptr<Context>& ctx, const ContextHandle<Context> &c, const ModuleInstantiation *inst, PrimitiveNode *node) {
+	node->fn = c->lookup_variable("$fn")->toDouble();
+	node->fs = c->lookup_variable("$fs")->toDouble();
+	node->fa = c->lookup_variable("$fa")->toDouble();
+
+	if (node->fs < F_MINIMUM) {
+		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
+		node->fs = F_MINIMUM;
+	}
+	if (node->fa < F_MINIMUM) {
+		PRINTB("WARNING: $fa too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
+		node->fa = F_MINIMUM;
+	}
+
+}
+
 AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	auto node = new PrimitiveNode(inst, this->type, ctx->documentPath());
@@ -184,18 +201,6 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);
 
-	node->fn = c->lookup_variable("$fn")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fa = c->lookup_variable("$fa")->toDouble();
-
-	if (node->fs < F_MINIMUM) {
-		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
-		node->fs = F_MINIMUM;
-	}
-	if (node->fa < F_MINIMUM) {
-		PRINTB("WARNING: $fa too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
-		node->fa = F_MINIMUM;
-	}
 
 	switch (this->type)  {
 	case primitive_type_e::CUBE: {
@@ -224,6 +229,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::SPHERE: {
+		lookup_fn_fs_fa(ctx, c, inst, node);
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();
@@ -235,6 +241,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::CYLINDER: {
+		lookup_fn_fs_fa(ctx, c, inst, node);
 		const auto h = c->lookup_variable("h");
 		if (h->type() == Value::ValueType::NUMBER) {
 			node->h = h->toDouble();
@@ -317,6 +324,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::CIRCLE: {
+		lookup_fn_fs_fa(ctx, c, inst, node);
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
 		if (r.type() == Value::ValueType::NUMBER) {
 			node->r1 = r.toDouble();

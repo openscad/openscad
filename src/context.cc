@@ -84,15 +84,11 @@ void Context::pop()
 */
 void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
-	// Set any default values
-	for (const auto &arg : args) {
-		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
-	}
-	
+	assert(evalctx);
 	if (evalctx) {
 		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
 		for (const auto &ass : assignments) {
-			this->set_variable(ass.first, ass.second->evaluate(evalctx));
+			this->set_variable(ass.name, ass.expr ? ass.expr->evaluate(evalctx) : ValuePtr::undefined);
 		}
 	}
 }

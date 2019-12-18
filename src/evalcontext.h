@@ -19,7 +19,7 @@ public:
 	ValuePtr getArgValue(size_t i, const std::shared_ptr<Context> ctx = std::shared_ptr<Context>()) const;
 	const AssignmentList & getArgs() const { return this->eval_arguments; }
 
-	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const;
+	AssignmentList resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const;
 
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;

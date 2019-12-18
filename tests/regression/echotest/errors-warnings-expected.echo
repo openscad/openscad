@@ -17,7 +17,7 @@ WARNING: Ignoring radius variable 'r1' as diameter 'd1' is defined too, in file 
 WARNING: Problem converting rotate(a=inf) parameter, in file errors-warnings.scad, line 24
 WARNING: Problem converting rotate(a=[inf, inf]) parameter, in file errors-warnings.scad, line 25
 WARNING: Problem converting rotate(a=nan) parameter, in file errors-warnings.scad, line 26
-WARNING: variable rad not specified as parameter, in file errors-warnings.scad, line 29
+WARNING: variable "rad" not specified as parameter, in file errors-warnings.scad, line 29
 WARNING: Too many unnamed arguments supplied, in file errors-warnings.scad, line 31
 WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 33
 WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 34
@@ -31,8 +31,8 @@ WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, lin
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 47
 WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 54
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 55
-WARNING: argument center supplied more then once, in file errors-warnings.scad, line 58
-WARNING: argument r supplied more then once, in file errors-warnings.scad, line 59
+WARNING: argument "center" supplied more than once, in file errors-warnings.scad, line 58
+WARNING: argument "r" supplied more than once, in file errors-warnings.scad, line 59
 WARNING: rotate_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 61
 WARNING: linear_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 65
 WARNING: linear_extrude(..., scale=inf) could not be converted, in file errors-warnings.scad, line 65

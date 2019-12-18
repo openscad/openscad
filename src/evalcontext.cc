@@ -33,42 +33,111 @@ ValuePtr EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) 
 /*!
   Resolves arguments specified by evalctx, using args to lookup positional arguments.
   optargs is for optional arguments that are not positional arguments.
-  Returns an AssignmentMap (string -> Expression*)
+
+  Returns an AssignmentList (vector<Assignment>) with arguments in same order as "args", from definition
 */
-AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
+AssignmentList EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
 {
-  AssignmentMap resolvedArgs;
-  size_t posarg = 0;
-  bool tooManyWarned=false;
-  // Iterate over positional args
-  for (size_t i=0; i<this->numArgs(); i++) {
+  size_t argc = this->numArgs();
+  AssignmentList resolvedArgs(args.size(), Assignment("",nullptr));
+
+  typedef enum ArgStatus {
+    UNSET = 0,
+    NAMED = 1,
+    POSITIONAL = 2,
+  } ArgStatus;
+  std::vector<ArgStatus> arg_status(args.size(), UNSET);
+
+	// count of positional arguments provided
+  size_t posarg_count = 0;
+	// count of all other arguments provided: optargs, special vars, or variables whose name aren't in args(with warning).
+	size_t extra_count = 0;
+
+  for (size_t i=0; i<argc; i++) {
     const auto &name = this->getArgName(i); // name is optional
-    const auto expr = this->getArgs()[i].expr.get();
-    if (!name.empty()) {
-      if(name.at(0)!='$' && !silent){
-        bool found=false;
-        for(auto const& arg: args) {
-          if(arg.name == name) found=true;
-        }
-        for(auto const& arg: optargs) {
-          if(arg.name == name) found=true;
-        }
-        if(!found){
-          PRINTB("WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
-        }
-      }
-      if(resolvedArgs.find(name) != resolvedArgs.end()){
-          PRINTB("WARNING: argument %s supplied more then once, %s", name % this->loc.toRelativeString(this->documentPath()));
-      }
-      resolvedArgs[name] = expr;
-    }
-    // If positional, find name of arg with this position
-    else if (posarg < args.size()) resolvedArgs[args[posarg++].name] = expr;
-    else if (!silent && !tooManyWarned){
-      PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
-      tooManyWarned=true;
-    }
+    if (name.empty()) {
+			if (posarg_count < args.size()) {
+				// If positional, find name of arg with this position 
+				const auto &name = args[posarg_count].name; // name is optional
+				if (arg_status[posarg_count] == NAMED) {
+					PRINTB("WARNING: positional argument overrides argument \"%s\", %s", name % this->loc.toRelativeString(this->documentPath()));
+				}
+				arg_status[posarg_count] = POSITIONAL;
+				resolvedArgs[posarg_count] = Assignment(name, this->getArgs()[i]);
+			}
+			++posarg_count;
+		} else {				
+
+			bool found = false;
+			size_t i_new;
+
+			if (name.at(0) != '$') {
+				for (size_t j = 0; j < args.size(); ++j) {
+					if(args[j].name == name) { 
+						found = true; 
+						i_new = j;
+						break;
+					}
+				}
+				if (!found) {
+					for (const auto &opt : optargs) {
+						if (opt.name == name) {
+							found = true;
+							i_new = args.size() + extra_count;
+							extra_count++;
+							break; 
+						}
+					}
+				}
+			}
+
+			// argument is special var or not named in definition, check for duplicates anyways
+			if (!found) {
+				for (size_t j = args.size(); j < resolvedArgs.size(); ++j) {
+					if (resolvedArgs[j].name == name) {
+						found = true;
+						i_new = j;
+						break;
+					}
+				}
+			}
+
+			if (found) {
+				if (i_new < arg_status.size()) {
+					if (arg_status[i_new] == NAMED) {
+						PRINTB("WARNING: argument \"%s\" supplied more than once, %s", name % this->loc.toRelativeString(this->documentPath()));
+					} else if (arg_status[i_new] == POSITIONAL) {
+						PRINTB("WARNING: argument \"%s\" overrides positional argument, %s", name % this->loc.toRelativeString(this->documentPath()));
+					}
+				}
+			} else {
+				if (name.at(0) != '$' && !silent) {
+					PRINTB("WARNING: variable \"%s\" not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
+				}
+				i_new = args.size() + extra_count;
+				extra_count++;
+			}
+
+			if (i_new < resolvedArgs.size()) {
+				resolvedArgs[i_new] = this->getArgs()[i];
+				arg_status[i_new] = NAMED;
+			} else {
+				resolvedArgs.push_back(this->getArgs()[i]);
+				arg_status.push_back(NAMED);
+			}
+		}
   }
+
+  if (posarg_count > args.size()) {
+		if (!silent) PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
+  } else {
+		for(size_t i = posarg_count; i < args.size(); ++i) {
+			// resolvedArgs initialized to assignment with empty string name, indicating default param not yet set
+			if (resolvedArgs[i].name.empty()) {
+				resolvedArgs[i] = args[i];
+			}
+		}
+	}
   return resolvedArgs;
 }
 
@@ -84,7 +153,7 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 
 void EvalContext::assignTo(std::shared_ptr<Context> target) const
 {
-	for (const auto &assignment : this->eval_arguments) {
+	for (const auto &assignment : this->getArgs()) {
 		ValuePtr v;
 		if (assignment.expr) v = assignment.expr->evaluate(target);
 		

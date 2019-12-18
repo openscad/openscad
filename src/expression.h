@@ -165,8 +165,7 @@ public:
 	std::string name;
 	shared_ptr<Expression> expr;
 	AssignmentList arguments;
-	AssignmentMap resolvedArguments;
-	std::vector<std::pair<std::string, ValuePtr>> defaultArguments; // Only the ones not mentioned in 'resolvedArguments'
+	AssignmentList resolvedArguments;
 };
 
 class FunctionDefinition : public Expression

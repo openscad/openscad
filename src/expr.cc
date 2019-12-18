@@ -546,30 +546,16 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 */
 void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments)
 {
-	if (this->resolvedArguments.empty()) {
+	if (this->resolvedArguments.empty() && !definition_arguments.empty()) {
 		// Figure out parameter names
 		ContextHandle<EvalContext> ec{Context::create<EvalContext>(context, this->arguments, this->loc)};
 		this->resolvedArguments = ec->resolveArguments(definition_arguments, {}, false);
-		// Assign default values for unspecified parameters
-		for (const auto &arg : definition_arguments) {
-			if (this->resolvedArguments.find(arg.name) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg.name, arg.expr ? arg.expr->evaluate(context) : ValuePtr::undefined);
-			}
-		}
+	}
+	
+	for(const auto &arg :this->resolvedArguments) {
+		tailCallContext->set_variable(arg.name, arg.expr ? arg.expr->evaluate(context) : ValuePtr::undefined);
 	}
 
-	std::vector<std::pair<std::string, ValuePtr>> variables;
-	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
-	// Set default values for unspecified parameters
-	variables.insert(variables.begin(), this->defaultArguments.begin(), this->defaultArguments.end());
-	// Set the given parameters
-	for (const auto &ass : this->resolvedArguments) {
-		variables.emplace_back(ass.first, ass.second->evaluate(context));
-	}
-	// Apply to tailCallContext
-	for (const auto &var : variables) {
-		tailCallContext->set_variable(var.first, var.second);
-	}
 	// Apply config variables ($...)
 	tailCallContext->apply_config_variables(context);
 }
@@ -902,23 +888,18 @@ void LcLet::print(std::ostream &stream, const std::string &) const
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
 {
-	AssignmentList args;
-	args += Assignment("condition"), Assignment("message");
-
+	AssignmentList args{Assignment("condition"), Assignment("message")};
 	ContextHandle<Context> c{Context::create<Context>(context)};
 
-	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
-	for (const auto &arg : args) {
-		auto it = assignments.find(arg.name);
-		if (it != assignments.end()) {
-			c->set_variable(arg.name, assignments[arg.name]->evaluate(evalctx));
-		}
+	AssignmentList assignments = evalctx->resolveArguments(args, {}, false);
+	for (const auto &arg : assignments) {
+		c->set_variable(arg.name, arg.expr ? arg.expr->evaluate(evalctx) : ValuePtr::undefined);
 	}
 	
 	const ValuePtr condition = c->lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition->toBool()) {
-		const Expression *expr = assignments["condition"];
+		const Expression *expr = assignments[0].expr.get();
 		const ValuePtr message = c->lookup_variable("message", true);
 		
 		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
