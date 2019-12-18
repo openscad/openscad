@@ -63,6 +63,14 @@ Vector3d vunit(const Vector3d &v)
 }
 
 
+double constrain(double x, double minval, double maxval)
+{
+	if (x < minval) return minval;
+	if (x > maxval) return maxval;
+	return x;
+}
+
+
 Vector3d vcross(const Vector3d &a, const Vector3d &b)
 {
 	double x = a[1] * b[2] - a[2] * b[1];
@@ -226,7 +234,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 					if (divisor == 0.0) {
 						PRINTB("WARNING: Invalid zero-length vector in rotate(from=%s, to=%s) parameter, %s", val_from->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 					} else {
-						double ang = acos(dotprod/divisor) * 180.0 / M_PI;
+						double ang = acos(constrain(dotprod/divisor, -1.0, 1.0)) * 180.0 / M_PI;
 						Vector3d axis = vcross(from_v, to_v);
 						if (vlen(axis) < 1e-9) {
 							if (abs(from_v[0])<0.01 && abs(from_v[1])<0.01) {
@@ -234,7 +242,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 								axis[1] = 1;
 								axis[2] = 0;
 							} else {
-								axis = vcross(from_v, Vector3d(0,0,1));
+								axis = vunit(vcross(from_v, Vector3d(0,0,1)));
 							}
 						}
 						node->matrix.rotate(angle_axis_degrees(ang, axis));
