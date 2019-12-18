@@ -46,6 +46,38 @@ enum class transform_type_e {
 	MULTMATRIX
 };
 
+
+double vlen(const Vector3d &v)
+{
+	return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+}
+
+
+Vector3d vunit(const Vector3d &v)
+{
+	double l = vlen(v);
+	if (l == 0.0) {
+		l = 1.0;
+	}
+	return Vector3d(v[0]/l, v[1]/l, v[2]/l);
+}
+
+
+Vector3d vcross(const Vector3d &a, const Vector3d &b)
+{
+	double x = a[1] * b[2] - a[2] * b[1];
+	double y = a[2] * b[0] - a[0] * b[2];
+	double z = a[0] * b[1] - a[1] * b[0];
+	return vunit(Vector3d(x,y,z));
+}
+
+
+double vdot(const Vector3d &a, const Vector3d &b)
+{
+	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+
 class TransformModule : public AbstractModule
 {
 public:
@@ -187,18 +219,26 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 				}else if(!toConverted){
 					PRINTB("WARNING: Problem converting rotate(..., to=%s) parameter, %s", val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 				}else {
-					double x = from_v[1] * to_v[2] - from_v[2] * to_v[1];
-					double y = from_v[2] * to_v[0] - from_v[0] * to_v[2];
-					double z = from_v[0] * to_v[1] - from_v[1] * to_v[0];
-					Vector3d axis(x,y,z);
-					double from_len = sqrt(from_v[0]*from_v[0] + from_v[1]*from_v[1] + from_v[2]*from_v[2]);
-					double to_len = sqrt(to_v[0]*to_v[0] + to_v[1]*to_v[1] + to_v[2]*to_v[2]);
-					double dotprod = from_v[0]*to_v[0] + from_v[1]*to_v[1] + from_v[2]*to_v[2];
-					double divisor = from_len * to_len;
+					from_v = vunit(from_v);
+					to_v = vunit(to_v);
+					double dotprod = vdot(from_v,to_v);
+					double divisor = vlen(from_v) * vlen(to_v);
 					if (divisor == 0.0) {
 						PRINTB("WARNING: Invalid zero-length vector in rotate(from=%s, to=%s) parameter, %s", val_from->toEchoString() % val_to->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 					} else {
 						double ang = acos(dotprod/divisor) * 180.0 / M_PI;
+						Vector3d axis = vcross(from_v, to_v);
+						if (vlen(axis) < 1e-9) {
+							if (abs(from_v[0])<0.01 && abs(from_v[1])<0.01) {
+								axis[0] = 0;
+								axis[1] = 1;
+								axis[2] = 0;
+							} else {
+								axis[0] = 0;
+								axis[1] = 0;
+								axis[2] = 1;
+							}
+						}
 						node->matrix.rotate(angle_axis_degrees(ang, axis));
 					}
 				}
