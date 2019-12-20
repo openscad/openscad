@@ -35,4 +35,10 @@ protected:
        
        
 typedef std::vector<Assignment> AssignmentList;
-//typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
+
+// Type for "resolvedArguments".  Includes default argument expressions for those not provided in call.
+//   size is at least that of arguments in the function/module definition
+//   bool indicates context:
+//     true  - use default value, evaluated from definition context.
+//     false - use provided value, evaluated from context of call-site.
+typedef std::vector<std::pair<bool, Assignment> > AssignmentMap;

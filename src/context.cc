@@ -88,7 +88,11 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 	if (evalctx) {
 		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
 		for (const auto &ass : assignments) {
-			this->set_variable(ass.name, ass.expr ? ass.expr->evaluate(evalctx) : ValuePtr::undefined);
+			this->set_variable(ass.second.name,
+				ass.second.expr ?
+					(ass.first ?  ass.second.expr->evaluate(this->parent) : ass.second.expr->evaluate(evalctx)) :
+					ValuePtr::undefined
+			);
 		}
 	}
 }

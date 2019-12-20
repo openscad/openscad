@@ -165,7 +165,7 @@ public:
 	std::string name;
 	shared_ptr<Expression> expr;
 	AssignmentList arguments;
-	AssignmentList resolvedArguments;
+	AssignmentMap resolvedArguments;
 };
 
 class FunctionDefinition : public Expression

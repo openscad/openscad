@@ -36,10 +36,10 @@ ValuePtr EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) 
 
   Returns an AssignmentList (vector<Assignment>) with arguments in same order as "args", from definition
 */
-AssignmentList EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
+AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
 {
   size_t argc = this->numArgs();
-  AssignmentList resolvedArgs(args.size(), Assignment("",nullptr));
+  AssignmentMap resolvedArgs(args.size(), std::make_pair(false, Assignment("",nullptr)));
 
   typedef enum ArgStatus {
     UNSET = 0,
@@ -63,7 +63,7 @@ AssignmentList EvalContext::resolveArguments(const AssignmentList &args, const A
 					PRINTB("WARNING: positional argument overrides argument \"%s\", %s", name % this->loc.toRelativeString(this->documentPath()));
 				}
 				arg_status[posarg_count] = POSITIONAL;
-				resolvedArgs[posarg_count] = Assignment(name, this->getArgs()[i]);
+				resolvedArgs[posarg_count] = std::make_pair(false, Assignment(name, this->getArgs()[i]));
 			}
 			++posarg_count;
 		} else {				
@@ -94,7 +94,7 @@ AssignmentList EvalContext::resolveArguments(const AssignmentList &args, const A
 			// argument is special var or not named in definition, check for duplicates anyways
 			if (!found) {
 				for (size_t j = args.size(); j < resolvedArgs.size(); ++j) {
-					if (resolvedArgs[j].name == name) {
+					if (resolvedArgs[j].second.name == name) {
 						found = true;
 						i_new = j;
 						break;
@@ -119,10 +119,10 @@ AssignmentList EvalContext::resolveArguments(const AssignmentList &args, const A
 			}
 
 			if (i_new < resolvedArgs.size()) {
-				resolvedArgs[i_new] = this->getArgs()[i];
+				resolvedArgs[i_new] = std::make_pair(false, this->getArgs()[i]);
 				arg_status[i_new] = NAMED;
 			} else {
-				resolvedArgs.push_back(this->getArgs()[i]);
+				resolvedArgs.emplace_back(false, this->getArgs()[i]);
 				arg_status.push_back(NAMED);
 			}
 		}
@@ -133,8 +133,8 @@ AssignmentList EvalContext::resolveArguments(const AssignmentList &args, const A
   } else {
 		for(size_t i = posarg_count; i < args.size(); ++i) {
 			// resolvedArgs initialized to assignment with empty string name, indicating default param not yet set
-			if (resolvedArgs[i].name.empty()) {
-				resolvedArgs[i] = args[i];
+			if (resolvedArgs[i].second.name.empty()) {
+				resolvedArgs[i] = std::make_pair(true, args[i]);
 			}
 		}
 	}
