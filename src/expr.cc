@@ -546,7 +546,7 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 */
 void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments)
 {
-	if (this->resolvedArguments.empty() && !definition_arguments.empty()) {
+	if (this->resolvedArguments.empty() && !(definition_arguments.empty() && this->arguments.empty())) {
 		// Figure out parameter names
 		ContextHandle<EvalContext> ec{Context::create<EvalContext>(context, this->arguments, this->loc)};
 		this->resolvedArguments = ec->resolveArguments(definition_arguments, {}, false);
