@@ -31,31 +31,31 @@ ValuePtr EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) 
 }
 
 /*!
-  Resolves arguments specified by evalctx, using args to lookup positional arguments.
-  optargs is for optional arguments that are not positional arguments.
+	Resolves arguments specified by evalctx, using args to lookup positional arguments.
+	optargs is for optional arguments that are not positional arguments.
 
-  Returns an AssignmentList (vector<Assignment>) with arguments in same order as "args", from definition
+	Returns an AssignmentList (vector<Assignment>) with arguments in same order as "args", from definition
 */
 AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
 {
-  size_t argc = this->numArgs();
-  AssignmentMap resolvedArgs(args.size(), std::make_pair(false, Assignment("",nullptr)));
+	size_t argc = this->numArgs();
+	AssignmentMap resolvedArgs(args.size(), std::make_pair(false, Assignment("",nullptr)));
 
-  typedef enum ArgStatus {
-    UNSET = 0,
-    NAMED = 1,
-    POSITIONAL = 2,
-  } ArgStatus;
-  std::vector<ArgStatus> arg_status(args.size(), UNSET);
+	typedef enum ArgStatus {
+		UNSET = 0,
+		NAMED = 1,
+		POSITIONAL = 2,
+	} ArgStatus;
+	std::vector<ArgStatus> arg_status(args.size(), UNSET);
 
 	// count of positional arguments provided
-  size_t posarg_count = 0;
+	size_t posarg_count = 0;
 	// count of all other arguments provided: optargs, special vars, or variables whose name aren't in args(with warning).
 	size_t extra_count = 0;
 
-  for (size_t i=0; i<argc; i++) {
-    const auto &name = this->getArgName(i); // name is optional
-    if (name.empty()) {
+	for (size_t i=0; i<argc; i++) {
+		const auto &name = this->getArgName(i); // name is optional
+		if (name.empty()) {
 			if (posarg_count < args.size()) {
 				// If positional, find name of arg with this position 
 				const auto &name = args[posarg_count].name; // name is optional
@@ -126,11 +126,11 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
 				arg_status.push_back(NAMED);
 			}
 		}
-  }
+	}
 
-  if (posarg_count > args.size()) {
+	if (posarg_count > args.size()) {
 		if (!silent) PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
-  } else {
+	} else {
 		for(size_t i = posarg_count; i < args.size(); ++i) {
 			// resolvedArgs initialized to assignment with empty string name, indicating default param not yet set
 			if (resolvedArgs[i].second.name.empty()) {
@@ -138,7 +138,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
 			}
 		}
 	}
-  return resolvedArgs;
+	return resolvedArgs;
 }
 
 size_t EvalContext::numChildren() const
