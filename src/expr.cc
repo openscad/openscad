@@ -922,7 +922,13 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 	const ValuePtr condition = c->lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition->toBool()) {
-		const Expression *expr = assignments[0].second.expr.get();
+		const Expression *expr;
+		for(const auto &arg : assignments) {
+			if(arg.second.name == "condition") {
+				expr = arg.second.expr.get();
+				break;
+			}
+		}
 		const ValuePtr message = c->lookup_variable("message", true);
 
 		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
