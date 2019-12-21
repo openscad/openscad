@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "builtincontext.h"
 #include "builtin.h"
 #include "expression.h"
