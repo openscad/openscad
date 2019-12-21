@@ -107,7 +107,7 @@ Follow the instructions for the platform you're compiling on below.
 * A C++ compiler supporting C++11
 * [Qt (5.4 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
-* [CGAL (4.8 ->)](https://www.cgal.org/)
+* [CGAL (4.9 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
 * [cmake (2.8 ->, required by CGAL and the test framework)](https://cmake.org/)
