@@ -1,4 +1,4 @@
-DEFINES += ENABLE_CGAL
+DEFINES += ENABLE_CGAL CGAL_HEADER_ONLY
 
 # Optionally specify location of CGAL using the 
 # CGALDIR env. variable
@@ -9,7 +9,7 @@ CGAL_DIR = $$(CGALDIR)
   message("CGAL location: $$CGAL_DIR")
 }
 
-LIBS += -lCGAL -lmpfr -lgmp
+LIBS += -lmpfr -lgmp
 
 *g++* {
   QMAKE_CXXFLAGS += -frounding-math
