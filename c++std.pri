@@ -4,16 +4,16 @@ macx {
   dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
   for(dir, dirs) {
     system(otool -L $${dir}/libboost_thread*  | grep libc++ >& /dev/null ) {
-      message("Using libc++11")
+      message("Using libc++")
       CONFIG += libc++
     }
     else {
       message("Using libstdc++")
       CONFIG += libstdc++
-      c++11 {
-        # libc++ is a requirement for using C++11 
-        warning("Disabling C++11 since libstdc++ dependencies were found")
-        CONFIG -= c++11
+      c++std {
+        # libc++ is a requirement for using C++14 
+        warning("Disabling C++14 since libstdc++ dependencies were found")
+        CONFIG -= c++std
       }
     }
   }
@@ -25,9 +25,9 @@ macx {
   }
 }
 
-c++11 {
-  QMAKE_CXXFLAGS += -std=c++11
-  message("Using C++11")
+c++std {
+  QMAKE_CXXFLAGS += -std=c++14
+  message("Using C++14")
 
   *clang*: {
       # 3rd party libraries will probably violate this for a long time
@@ -39,10 +39,5 @@ c++11 {
 
     QMAKE_CXXFLAGS_WARN_ON += $$CXX11_SUPPRESS_WARNINGS
     QMAKE_OBJECTIVE_CFLAGS_WARN_ON += $$CXX11_SUPPRESS_WARNINGS
-  }
-}
-else {
-  *clang* {
-    QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
   }
 }

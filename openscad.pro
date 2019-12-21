@@ -177,7 +177,7 @@ skip-version-check {
 isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
 
 # Application configuration
-CONFIG += c++11
+CONFIG += c++std
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += glew

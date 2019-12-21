@@ -24,6 +24,9 @@
  *
  */
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "dxfdata.h"
 #include "grid.h"
 #include "printutils.h"
