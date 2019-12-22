@@ -78,7 +78,35 @@ public:
 			 this->step_val == other.step_val &&
 			 this->end_val == other.end_val);
 	}
+
+	bool operator<(const RangeType &other) const {
+		return this->begin_val < other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val < other.step_val || (this->step_val == other.step_val && this->end_val < other.end_val))
+			);
+	}
 	
+	bool operator<=(const RangeType &other) const {
+		return this->begin_val < other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val < other.step_val || (this->step_val == other.step_val && this->end_val <= other.end_val))
+			);
+	}
+
+	bool operator>(const RangeType &other) const {
+		return this->begin_val > other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val > other.step_val || (this->step_val == other.step_val && this->end_val > other.end_val))
+			);
+	}
+
+	bool operator>=(const RangeType &other) const {
+		return this->begin_val > other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val > other.step_val || (this->step_val == other.step_val && this->end_val >= other.end_val))
+			);
+	}
+
 	double begin_value() { return begin_val; }
 	double step_value() { return step_val; }
 	double end_value() { return end_val; }
@@ -88,7 +116,7 @@ public:
 	
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
 	uint32_t numValues() const;
-  
+
 	friend class chr_visitor;
 	friend class tostring_visitor;
 	friend class tostream_visitor;
