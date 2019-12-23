@@ -77,37 +77,52 @@ public:
 		: begin_val(begin), step_val(step), end_val(end) {}
 	
 	bool operator==(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
 		return this == &other ||
+			(n1 == 0 && n2 == 0) ||
 			(this->begin_val == other.begin_val &&
 			 this->step_val == other.step_val &&
-			 this->end_val == other.end_val);
+			 n1 == n2);
 	}
 
 	bool operator<(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n1 == 0) return 0 < n2;
 		return this->begin_val < other.begin_val ||
 			(this->begin_val == other.begin_val &&
-				(this->step_val < other.step_val || (this->step_val == other.step_val && this->end_val < other.end_val))
+				(this->step_val < other.step_val || (this->step_val == other.step_val && n1 < n2))
 			);
 	}
 	
 	bool operator<=(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n1 == 0) return 0 <= n2;
 		return this->begin_val < other.begin_val ||
 			(this->begin_val == other.begin_val &&
-				(this->step_val < other.step_val || (this->step_val == other.step_val && this->end_val <= other.end_val))
+				(this->step_val < other.step_val || (this->step_val == other.step_val && n1 <= n2))
 			);
 	}
 
 	bool operator>(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n2 == 0) return n1 > 0;
 		return this->begin_val > other.begin_val ||
 			(this->begin_val == other.begin_val &&
-				(this->step_val > other.step_val || (this->step_val == other.step_val && this->end_val > other.end_val))
+				(this->step_val > other.step_val || (this->step_val == other.step_val && n1 > n2))
 			);
 	}
 
 	bool operator>=(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n2 == 0) return n1 >= 0;
 		return this->begin_val > other.begin_val ||
 			(this->begin_val == other.begin_val &&
-				(this->step_val > other.step_val || (this->step_val == other.step_val && this->end_val >= other.end_val))
+				(this->step_val > other.step_val || (this->step_val == other.step_val && n1 >= n2))
 			);
 	}
 
