@@ -75,8 +75,9 @@ public:
 	bool operator==(const RangeType &other) const {
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
+		if (n1 == 0) return n2 == 0;
+		if (n2 == 0) return false;
 		return this == &other ||
-			(n1 == 0 && n2 == 0) ||
 			(this->begin_val == other.begin_val &&
 			 this->step_val == other.step_val &&
 			 n1 == n2);
@@ -86,6 +87,7 @@ public:
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
 		if (n1 == 0) return 0 < n2;
+		if (n2 == 0) return false;
 		return this->begin_val < other.begin_val ||
 			(this->begin_val == other.begin_val &&
 				(this->step_val < other.step_val || (this->step_val == other.step_val && n1 < n2))
@@ -96,6 +98,7 @@ public:
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
 		if (n1 == 0) return 0 <= n2;
+		if (n2 == 0) return false;
 		return this->begin_val < other.begin_val ||
 			(this->begin_val == other.begin_val &&
 				(this->step_val < other.step_val || (this->step_val == other.step_val && n1 <= n2))
@@ -106,6 +109,7 @@ public:
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
 		if (n2 == 0) return n1 > 0;
+		if (n1 == 0) return false;
 		return this->begin_val > other.begin_val ||
 			(this->begin_val == other.begin_val &&
 				(this->step_val > other.step_val || (this->step_val == other.step_val && n1 > n2))
@@ -116,6 +120,7 @@ public:
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
 		if (n2 == 0) return n1 >= 0;
+		if (n1 == 0) return false;
 		return this->begin_val > other.begin_val ||
 			(this->begin_val == other.begin_val &&
 				(this->step_val > other.step_val || (this->step_val == other.step_val && n1 >= n2))

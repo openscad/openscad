@@ -340,9 +340,9 @@ ValuePtr Range::evaluate(const Context *context) const
 					double step_val = stepValue->toDouble();
 					if(this->isLiteral()){
 						if ((step_val>0) && (end_val < begin_val)) {
-							print_range_err("is greater", "is positiv", loc, context);
+							print_range_err("is greater", "is positive", loc, context);
 						}else if ((step_val<0) && (end_val > begin_val)) {
-							print_range_err("is smaller", "is negativ", loc, context);
+							print_range_err("is smaller", "is negative", loc, context);
 						}
 					}
 
