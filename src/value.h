@@ -97,7 +97,7 @@ public:
 	bool operator<=(const RangeType &other) const {
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
-		if (n1 == 0) return 0 <= n2;
+		if (n1 == 0) return true; // (0 <= n2) is always true 
 		if (n2 == 0) return false;
 		return this->begin_val < other.begin_val ||
 			(this->begin_val == other.begin_val &&
@@ -119,7 +119,7 @@ public:
 	bool operator>=(const RangeType &other) const {
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
-		if (n2 == 0) return n1 >= 0;
+		if (n2 == 0) return true; // (n1 >= 0) is always true
 		if (n1 == 0) return false;
 		return this->begin_val > other.begin_val ||
 			(this->begin_val == other.begin_val &&

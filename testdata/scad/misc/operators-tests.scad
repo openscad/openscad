@@ -24,17 +24,20 @@ vec_vs_range = [
 ];
 
 for (lhs = vec_vs_range, rhs = vec_vs_range) {
-  // Results should always be true
-  echo(str("(",lhs[0]," == ",rhs[0],") == (",lhs[1]," == ",rhs[1],") -> "),
-            (  lhs[0]   ==   rhs[0]  ) == (  lhs[1]   ==   rhs[1]  ));
-  echo(str("(",lhs[0]," >  ",rhs[0],") == (",lhs[1]," >  ",rhs[1],") -> "),
-            (  lhs[0]   >    rhs[0]  ) == (  lhs[1]   >    rhs[1]  ));
-  echo(str("(",lhs[0]," >= ",rhs[0],") == (",lhs[1]," >= ",rhs[1],") -> "),
-            (  lhs[0]   >=   rhs[0]  ) == (  lhs[1]   >=   rhs[1]  ));
-  echo(str("(",lhs[0]," <  ",rhs[0],") == (",lhs[1]," <  ",rhs[1],") -> "),
-            (  lhs[0]   <    rhs[0]  ) == (  lhs[1]   <    rhs[1]  ));
-  echo(str("(",lhs[0]," <= ",rhs[0],") == (",lhs[1]," <= ",rhs[1],") -> "),
-            (  lhs[0]   <=   rhs[0]  ) == (  lhs[1]   <=   rhs[1]  ));
-  echo(str("(",lhs[0]," != ",rhs[0],") == (",lhs[1]," != ",rhs[1],") -> "),
-            (  lhs[0]   !=   rhs[0]  ) == (  lhs[1]   !=   rhs[1]  ));
+  lh_v = lhs[0];     lh_r = lhs[1];
+  rh_v = rhs[0];     rh_r = rhs[1];
+  eq_v = lh_v==rh_v; eq_r = lh_r==rh_r;
+  gt_v = lh_v> rh_v; gt_r = lh_r> rh_r;
+  ge_v = lh_v>=rh_v; ge_r = lh_r>=rh_r;
+  lt_v = lh_v< rh_v; lt_r = lh_r< rh_r;
+  le_v = lh_v<=rh_v; le_r = lh_r<=rh_r;
+  ne_v = lh_v!=rh_v; ne_r = lh_r!=rh_r;
+  // Boolean results between vector comparison and range comparison should always match   ||||||||||
+  //                          In other words the rightmost value in echos is always true: VVVVVVVVVV
+  echo(str("(",lh_v," == ",rh_v,") == (",lh_r," == ",rh_r,") -> ",eq_v," == ",eq_r," -> ",eq_v==eq_r));
+  echo(str("(",lh_v," >  ",rh_v,") == (",lh_r," >  ",rh_r,") -> ",gt_v," == ",gt_r," -> ",gt_v==gt_r));
+  echo(str("(",lh_v," >= ",rh_v,") == (",lh_r," >  ",rh_r,") -> ",ge_v," == ",ge_r," -> ",ge_v==ge_r));
+  echo(str("(",lh_v," <  ",rh_v,") == (",lh_r," <  ",rh_r,") -> ",lt_v," == ",lt_r," -> ",lt_v==lt_r));
+  echo(str("(",lh_v," <= ",rh_v,") == (",lh_r," <= ",rh_r,") -> ",le_v," == ",le_r," -> ",le_v==le_r));
+  echo(str("(",lh_v," != ",rh_v,") == (",lh_r," != ",rh_r,") -> ",ne_v," == ",ne_r," -> ",ne_v==ne_r));
 }
