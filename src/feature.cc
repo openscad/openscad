@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "feature.h"
 #include "printutils.h"
@@ -72,11 +74,13 @@ Feature::iterator Feature::end()
 	return feature_list.end();
 }
 
-void Feature::dump_features()
+std::string Feature::features()
 {
-	for (map_t::iterator it = feature_map.begin(); it != feature_map.end(); it++) {
-		std::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
-	}
+	const auto seq = boost::make_iterator_range(Feature::begin(), Feature::end());
+	const auto str = [](const Feature * const f) {
+		return (boost::format("%s%s") % f->get_name() % (f->is_enabled() ? "*" : "")).str();
+	};
+	return boost::algorithm::join(boost::adaptors::transform(seq, str), ", ");
 }
 
 ExperimentalFeatureException::ExperimentalFeatureException(const std::string &what_arg)
