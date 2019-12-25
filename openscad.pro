@@ -178,7 +178,7 @@ skip-version-check {
 isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
 
 # Application configuration
-CONFIG += c++11
+CONFIG += c++std
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += glew
@@ -736,9 +736,11 @@ appdata.path = $$PREFIX/share/metainfo
 appdata.extra = mkdir -p \"\$(INSTALL_ROOT)$${appdata.path}\" && cat openscad.appdata.xml | sed -e \"'s/$${APPLICATIONID}/$${APPLICATIONID}$${SUFFIX}/; s/openscad.desktop/openscad$${SUFFIX}.desktop/; s/openscad.png/openscad$${SUFFIX}.png/'\" > \"\$(INSTALL_ROOT)$${appdata.path}/$${APPLICATIONID}$${SUFFIX}.appdata.xml\"
 INSTALLS += appdata
 
-icons.path = $$PREFIX/share/pixmaps
-icons.extra = test -f icons/$${FULLNAME}.png && cp -f icons/$${FULLNAME}.png \"\$(INSTALL_ROOT)$${icons.path}/\" || cp -f icons/openscad.png \"\$(INSTALL_ROOT)$${icons.path}/$${FULLNAME}.png\"
-INSTALLS += icons
+icon48.path = $$PREFIX/share/icons/hicolor/48x48/apps
+icon48.extra = test -f icons/$${FULLNAME}-48.png && cp -f icons/$${FULLNAME}-48.png \"\$(INSTALL_ROOT)$${icon48.path}/$${FULLNAME}.png\" || cp -f icons/openscad-48.png \"\$(INSTALL_ROOT)$${icon48.path}/$${FULLNAME}.png\"
+icon256.path = $$PREFIX/share/icons/hicolor/256x256/apps
+icon256.extra = test -f icons/$${FULLNAME}-256.png && cp -f icons/$${FULLNAME}-256.png \"\$(INSTALL_ROOT)$${icon256.path}/$${FULLNAME}.png\" || cp -f icons/openscad-256.png \"\$(INSTALL_ROOT)$${icon256.path}/$${FULLNAME}.png\"
+INSTALLS += icon48 icon256
 
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"

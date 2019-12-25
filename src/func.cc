@@ -40,17 +40,9 @@
 #include <ctime>
 #include <limits>
 #include <algorithm>
-
-/*
- Random numbers
-
- Newer versions of boost/C++ include a non-deterministic random_device and
- auto/bind()s for random function objects, but we are supporting older systems.
-*/
+#include <random>
 
 #include"boost-utils.h"
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 // hash double
@@ -65,8 +57,7 @@ int process_id = _getpid();
 int process_id = getpid();
 #endif
 
-boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(nullptr) + process_id );
+std::mt19937 deterministic_rng( std::time(nullptr) + process_id );
 
 static void print_argCnt_warning(const char *name, const Context *ctx, const EvalContext *evalctx){
 	PRINTB("WARNING: %s() number of parameters does not match, %s", name % evalctx->loc.toRelativeString(ctx->documentPath()));
@@ -142,30 +133,24 @@ ValuePtr builtin_rands(const Context *ctx, const EvalContext *evalctx)
 		}
 		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
 
-		bool deterministic = false;
 		if (n > 3) {
 			ValuePtr v3 = evalctx->getArgValue(3);
 			if (v3->type() != Value::ValueType::NUMBER) goto quit;
 			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
 			deterministic_rng.seed( seed );
-			deterministic = true;
 		}
 		Value::VectorType vec;
-		if (min==max) { // Boost doesn't allow min == max
+		if (min>=max) { // uniform_real_distribution doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
 		} else {
-			boost::uniform_real<> distributor( min, max );
+			std::uniform_real_distribution<> distributor( min, max );
 			for (size_t i=0; i < numresults; i++) {
-				if ( deterministic ) {
-					vec.push_back(ValuePtr(distributor(deterministic_rng)));
-				} else {
-					vec.push_back(ValuePtr(distributor(lessdeterministic_rng)));
-				}
+				vec.push_back(ValuePtr(distributor(deterministic_rng)));
 			}
 		}
 		return ValuePtr(vec);
-	}else{
+	} else {
 		print_argCnt_warning("rands", ctx, evalctx);
 	}
 quit:

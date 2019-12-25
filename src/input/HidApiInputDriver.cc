@@ -32,6 +32,7 @@
 #include <chrono>
 #include <iomanip>
 #include <bitset>
+#include <fstream>
 #include <ostream>
 #include <codecvt>
 
