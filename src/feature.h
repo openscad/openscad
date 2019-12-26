@@ -27,7 +27,7 @@ public:
 	static iterator begin();
 	static iterator end();
     
-	static void dump_features();
+	static std::string features();
 	static void enable_feature(const std::string &feature_name, bool status = true);
 
 private:
