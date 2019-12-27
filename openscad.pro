@@ -739,9 +739,15 @@ INSTALLS += appdata
 
 icon48.path = $$PREFIX/share/icons/hicolor/48x48/apps
 icon48.extra = test -f icons/$${FULLNAME}-48.png && cp -f icons/$${FULLNAME}-48.png \"\$(INSTALL_ROOT)$${icon48.path}/$${FULLNAME}.png\" || cp -f icons/openscad-48.png \"\$(INSTALL_ROOT)$${icon48.path}/$${FULLNAME}.png\"
+icon64.path = $$PREFIX/share/icons/hicolor/64x64/apps
+icon64.extra = test -f icons/$${FULLNAME}-64.png && cp -f icons/$${FULLNAME}-64.png \"\$(INSTALL_ROOT)$${icon64.path}/$${FULLNAME}.png\" || cp -f icons/openscad-64.png \"\$(INSTALL_ROOT)$${icon64.path}/$${FULLNAME}.png\"
+icon128.path = $$PREFIX/share/icons/hicolor/128x128/apps
+icon128.extra = test -f icons/$${FULLNAME}-128.png && cp -f icons/$${FULLNAME}-128.png \"\$(INSTALL_ROOT)$${icon128.path}/$${FULLNAME}.png\" || cp -f icons/openscad-128.png \"\$(INSTALL_ROOT)$${icon128.path}/$${FULLNAME}.png\"
 icon256.path = $$PREFIX/share/icons/hicolor/256x256/apps
 icon256.extra = test -f icons/$${FULLNAME}-256.png && cp -f icons/$${FULLNAME}-256.png \"\$(INSTALL_ROOT)$${icon256.path}/$${FULLNAME}.png\" || cp -f icons/openscad-256.png \"\$(INSTALL_ROOT)$${icon256.path}/$${FULLNAME}.png\"
-INSTALLS += icon48 icon256
+icon512.path = $$PREFIX/share/icons/hicolor/512x512/apps
+icon512.extra = test -f icons/$${FULLNAME}-512.png && cp -f icons/$${FULLNAME}-512.png \"\$(INSTALL_ROOT)$${icon512.path}/$${FULLNAME}.png\" || cp -f icons/openscad-512.png \"\$(INSTALL_ROOT)$${icon512.path}/$${FULLNAME}.png\"
+INSTALLS += icon48 icon64 icon128 icon256 icon512
 
 man.path = $$PREFIX/share/man/man1
 man.extra = cp -f doc/openscad.1 \"\$(INSTALL_ROOT)$${man.path}/$${FULLNAME}.1\"
