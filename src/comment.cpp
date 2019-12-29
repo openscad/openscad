@@ -265,6 +265,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 	GroupList groupList = collectGroups(fulltext);
 	int parseTill=getLineToStop(fulltext);
 	// Extract parameters for all literal assignments
+	// FIXME: Filter assignments before doing this
 	for (auto &assignment : root_module->scope.assignments) {
 		if (!assignment.expr.get()->isLiteral()) continue; // Only consider literals
 

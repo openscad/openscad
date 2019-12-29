@@ -22,9 +22,10 @@ bool Location::isNone() const{
 	return ((*this)==Location::NONE);
 }
 
-std::string Location::toRelativeString(const std::string &docPath) const{
-	if(this->isNone()) return "location unknown";
-	return "in file "+boostfs_uncomplete((*path), docPath).generic_string()+ ", "+"line " + std::to_string(this->firstLine());
+std::string Location::toRelativeString(const std::string &docPath) const
+{
+	if (this->isNone()) return "location unknown";
+	return STR("in file " << boostfs_uncomplete(*path, docPath).generic_string( ) << ", line " << this->firstLine());
 }
 
 std::ostream &operator<<(std::ostream &stream, const ASTNode &ast)
@@ -38,4 +39,14 @@ std::string ASTNode::dump(const std::string &indent) const
 	std::ostringstream stream;
 	print(stream, indent);
 	return stream.str();
+}
+
+void UseNode::print(std::ostream &stream, const std::string &indent) const
+{
+	stream << indent << "use <" << this->filename << ">\n";
+}
+
+void IncludeNode::print(std::ostream &stream, const std::string &indent) const
+{
+	stream << indent << "include <" << this->filename << ">\n";
 }

@@ -342,6 +342,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;
 	}
+	// FIXME: If we want to export as AST, we should export _before_ resolving includes
+	// and _before_ resolving assignments
+	root_module->resolveExternals();
+	root_module->resolveAssignments();
 
 	// add parameter to AST
 	CommentParser::collectParameters(text.c_str(), root_module);

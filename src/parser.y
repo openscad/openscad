@@ -72,7 +72,6 @@ std::shared_ptr<fs::path> sourcefile(void);
 void lexer_set_parser_sourcefile(const fs::path& path);
 int lexerlex_destroy(void);
 int lexerlex(void);
-static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
 std::stack<LocalScope *> scope_stack;
 FileModule *rootmodule;
@@ -81,7 +80,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
 static fs::path mainFilePath;
-static std::string main_file_folder;
+static std::string sourcefile_folder;
 
 bool fileEnded=false;
 %}
@@ -123,6 +122,7 @@ bool fileEnded=false;
 %token <text> TOK_ID
 %token <text> TOK_STRING
 %token <text> TOK_USE
+%token <text> TOK_INCLUDE
 %token <number> TOK_NUMBER
 
 %token TOK_TRUE
@@ -173,7 +173,13 @@ input
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2), LOC(@2));
+              rootmodule->addExternalNode(make_shared<UseNode>($2, LOC(@2)));
+              free($2);
+            }
+        | input
+	  TOK_INCLUDE
+            {
+              rootmodule->addExternalNode(make_shared<IncludeNode>($2, LOC(@2)));
               free($2);
             }
         | input statement
@@ -221,7 +227,7 @@ inner_input
 assignment
         : TOK_ID '=' expr ';'
             {
-				handle_assignment($1, $3, LOCD("assignment", @$));
+	      scope_stack.top()->addAssignment(Assignment($1, shared_ptr<Expression>($3), LOCD("assignment", @$), fileEnded));
                 free($1);
             }
         ;
@@ -282,7 +288,7 @@ ifelse_statement
 if_statement
         : TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOCD("if", @$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), sourcefile_folder, LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -320,7 +326,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOCD("modulecall", @$));
+                $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
             }
@@ -333,7 +339,7 @@ expr
 			  if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
 			    $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
 			  } else {
-				  PRINTB("WARNING: Support for function literals is disabled %s",
+				PRINTB("WARNING: Support for function literals is disabled %s",
 						  LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
 				$$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
 			  }
@@ -703,68 +709,19 @@ static Location debug_location(const std::string& info, const YYLTYPE& loc)
 }
 #endif
 
-void handle_assignment(const std::string token, Expression *expr, const Location loc)
+bool parse(FileModule *&module, const std::string &text, const std::string &filename, const std::string &mainFile, int debug)
 {
-	bool found = false;
-	for (auto &assignment : scope_stack.top()->assignments) {
-		if (assignment.name == token) {
-			auto mainFile = mainFilePath.string();
-			auto prevFile = assignment.location().fileName();
-			auto currFile = loc.fileName();
-
-			const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-			const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
-			if (fileEnded) {
-				//assignments via commandline
-			} else if (prevFile == mainFile && currFile == mainFile) {
-				//both assignments in the mainFile
-				PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
-						assignment.name %
-						assignment.location().firstLine() %
-						loc.firstLine());
-			} else if (uncPathCurr == uncPathPrev) {
-				//assignment overwritten within the same file
-				//the line number being equal happens, when a file is included multiple times
-				if (assignment.location().firstLine() != loc.firstLine()) {
-					PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-							assignment.name %
-							assignment.location().firstLine() %
-							uncPathPrev %
-							loc.firstLine());
-				}
-			} else if (prevFile == mainFile && currFile != mainFile) {
-				//assignment from the mainFile overwritten by an include
-				PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
-						assignment.name %
-						assignment.location().firstLine() %
-						uncPathPrev %
-						loc.firstLine() %
-						uncPathCurr);
-			}
-			assignment.expr = shared_ptr<Expression>(expr);
-			assignment.setLocation(loc);
-			found = true;
-			break;
-		}
-	}
-	if (!found) {
-		scope_stack.top()->addAssignment(Assignment(token, shared_ptr<Expression>(expr), loc));
-	}
-}
-
-bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
-{
-  fs::path parser_sourcefile = fs::path(fs::absolute(fs::path(filename)).generic_string());
-  main_file_folder = parser_sourcefile.parent_path().string();
+  fs::path parser_sourcefile{fs::absolute(fs::path{filename}).generic_string()};
+  sourcefile_folder = parser_sourcefile.parent_path().string();
   lexer_set_parser_sourcefile(parser_sourcefile);
-  mainFilePath = fs::absolute(fs::path(mainFile));
+  mainFilePath = fs::absolute(fs::path{mainFile});
 
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text.c_str();
-  fileEnded=false;
+  fileEnded = false;
 
-  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().string());
+  rootmodule = new FileModule(sourcefile_folder, parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

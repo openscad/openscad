@@ -22,32 +22,34 @@ public:
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-	void registerUse(const std::string path, const Location &loc);
-	void registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc);
-	std::time_t includesChanged() const;
+	void addExternalNode(const std::shared_ptr<ExternalNode> &node);
+	void resolveUseNodes();
+	void resolveIncludeNodes();
+	time_t includesChanged() const;
 	std::time_t handleDependencies(bool is_root = true);
-	bool hasIncludes() const { return !this->includes.empty(); }
-	bool usesLibraries() const { return !this->usedlibs.empty(); }
+	bool hasExternals() const { return !this->externalDict.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
+	void resolveExternals();
+	std::vector<shared_ptr<UseNode>> getUseNodes() const;
+
 	void clearHandlingDependencies() { this->is_handling_dependencies = false; }
 	void setFilename(const std::string &filename) { this->filename = filename; }
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;
+	void resolveAssignments();
+
 	LocalScope scope;
-	typedef std::unordered_set<std::string> ModuleContainer;
-	ModuleContainer usedlibs;
+	std::unordered_map<std::string, shared_ptr<ExternalNode>> externalDict;
+	std::vector<shared_ptr<ExternalNode>> externalList;
 
 	std::vector<IndicatorData> indicatorData;
-
 private:
 	struct IncludeFile {
 		std::string filename;
 	};
 
-	std::time_t include_modified(const IncludeFile &inc) const;
+	std::time_t includeModified(const IncludeNode &node) const;
 
-	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
-	IncludeContainer includes;
 	bool is_handling_dependencies;
 
 	std::string path;
