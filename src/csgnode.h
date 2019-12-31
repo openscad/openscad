@@ -17,7 +17,7 @@ public:
 
 	CSGNode(Flag flags = FLAG_NONE) : flags(flags) {}
 	virtual ~CSGNode() {}
-	virtual std::string dump() = 0;
+	virtual std::string dump() const = 0;
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
 	unsigned int getFlags() const { return this->flags; }
@@ -41,24 +41,40 @@ public:
 	CSGOperation() {}
 	~CSGOperation() {}
 	void initBoundingBox() override;
-	std::string dump() override;
+	std::string dump() const override;
 
 	shared_ptr<CSGNode> &left() { return this->children[0]; }
 	shared_ptr<CSGNode> &right() { return this->children[1]; }
+	const shared_ptr<CSGNode> &left() const { return this->children[0]; } 
+	const shared_ptr<CSGNode> &right() const { return this->children[1]; }
 
 	OpenSCADOperator getType() const { return this->type; }
 	
 	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
-	static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, CSGNode *left, CSGNode *right) {
-		return createCSGNode(type, shared_ptr<CSGNode>(left), shared_ptr<CSGNode>(right));
-	}
 
 private:
 	CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
-	CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right);
-
 	OpenSCADOperator type;
 	std::vector<shared_ptr<CSGNode> > children;
+};
+
+// very large lists of children can overflow stack due to recursive destruction of shared_ptr, 
+// so move shared_ptrs into a temporary vector
+struct CSGOperationDeleter {
+	void operator()(CSGOperation* node) {
+		std::vector<shared_ptr<CSGNode>> purge;
+		purge.emplace_back(std::move(node->right()));
+		purge.emplace_back(std::move(node->left()));
+		delete node;
+		do {
+			auto op = dynamic_pointer_cast<CSGOperation>(purge.back());
+		  purge.pop_back();
+			if (op && op.use_count() == 1) {
+				purge.emplace_back(std::move(op->right()));
+				purge.emplace_back(std::move(op->left()));
+			}
+		} while(!purge.empty());
+	}
 };
 
 class CSGLeaf : public CSGNode
@@ -68,7 +84,7 @@ public:
 	CSGLeaf(const shared_ptr<const class Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label);
 	~CSGLeaf() {}
 	void initBoundingBox() override;
-	std::string dump() override;
+	std::string dump() const override;
 	std::string label;
 	shared_ptr<const Geometry> geom;
 	Transform3d matrix;

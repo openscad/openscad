@@ -244,7 +244,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
   assert(N);
   CGAL_Polyhedron poly;
   if (N->is_simple()) {
-    nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*N, poly);
+    N->convert_to_polyhedron(poly);
   }
   if (is_weakly_convex(poly)) {
     PRINTD("Minkowski: Object is convex and Nef");
@@ -318,7 +318,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         else if (const CGAL_Nef_polyhedron *n = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i])) {
           CGAL_Polyhedron poly;
           if (n->p3->is_simple()) {
-            nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*n->p3, poly);
+            n->p3->convert_to_polyhedron(poly);
             // FIXME: Can we calculate weakly_convex on a PolyhedronK instead?
             if (is_weakly_convex(poly)) {
               PRINTDB("Minkowski: child %d is convex and Nef", i);
@@ -420,7 +420,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         }
       }
       
-      if (minkowski_ch_it != boost::next(children.begin())) delete operands[0];
+      if (minkowski_ch_it != std::next(children.begin())) delete operands[0];
       
       if (result_parts.size() == 1) {
         PolySet *ps = new PolySet(3,true);
@@ -436,7 +436,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
-        CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+        CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(fake_children.begin(), fake_children.end());
         t.stop();
         if (N) PRINTDB("Minkowski: Union done: %f s",t.time());
         else PRINTDB("Minkowski: Union failed: %f s",t.time());
@@ -650,7 +650,7 @@ int main(int argc, char *argv[])
         std::cerr << "Error importing STL " << filename << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      std::cerr << "Imported " << ps->numFacets() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);

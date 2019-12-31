@@ -29,7 +29,7 @@ public:
 	Geometry *copy() const override { return new PolySet(*this); }
 
 	void quantizeVertices();
-	size_t numPolygons() const { return polygons.size(); }
+	size_t numFacets() const override { return polygons.size(); }
 	void append_poly();
 	void append_poly(const Polygon &poly);
 	void append_vertex(double x, double y, double z = 0.0);

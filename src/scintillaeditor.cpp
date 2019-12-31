@@ -643,59 +643,185 @@ QString ScintillaEditor::selectedText()
 	return qsci->selectedText();
 }
 
-bool ScintillaEditor::eventFilter(QObject* obj, QEvent *e)
+bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	static bool wasChanged=false;
-	static bool previewAfterUndo=false;
-
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-	if (e->type()==QEvent::KeyPress || e->type()==QEvent::KeyRelease) {
-		auto *ke = static_cast<QKeyEvent*>(e);
-#ifdef Q_OS_MAC
-                int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt :: KeypadModifier;
-#else
-                int navigateOnNumberModifiers = Qt::AltModifier;
-#endif
-		if (ke->modifiers()  == navigateOnNumberModifiers) {
-			switch (ke->key())
-			{
-				case Qt::Key_Left:
-				case Qt::Key_Right:
-					if (e->type()==QEvent::KeyPress) {
-						navigateOnNumber(ke->key());
-					}
-					return true;
+	if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
+		auto *keyEvent = static_cast<QKeyEvent*> (e);
 
-				case Qt::Key_Up:
-				case Qt::Key_Down:
-					if (e->type()==QEvent::KeyPress) {
-						if (!wasChanged) qsci->beginUndoAction();
-						if (modifyNumber(ke->key())) {
-							wasChanged=true;
-							previewAfterUndo=true;
-						}
-						if (!wasChanged) qsci->endUndoAction();
-					}
-					return true;
-			}
+		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
+				(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
+				(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
+				(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
+				(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
+				(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
+				(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
+				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
+
+		if (handleKeyEventNavigateNumber(keyEvent)) {
+			return true;
 		}
-		if (previewAfterUndo && e->type()==QEvent::KeyPress) {
-			int k=ke->key() | ke->modifiers();
-			if (wasChanged) qsci->endUndoAction();
-			wasChanged=false;
-			auto *cmd=qsci->standardCommands()->boundTo(k);
-			if ( cmd && ( cmd->command()==QsciCommand::Undo || cmd->command()==QsciCommand::Redo ) )
-				QTimer::singleShot(0,this,SIGNAL(previewRequest()));
-			else if ( cmd || !ke->text().isEmpty() ) {
-				// any insert or command (but not undo/redo) cancels the preview after undo
-				previewAfterUndo=false;
-			}
+		if (handleKeyEventBlockCopy(keyEvent)) {
+			return true;
+		}
+		if (handleKeyEventBlockMove(keyEvent)) {
+			return true;
 		}
 	}
 	return false;
 }
 
+bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
+{
+	unsigned int modifiers = Qt::ControlModifier | Qt::GroupSwitchModifier;
+
+	if (keyEvent->type() != QEvent::KeyRelease) {
+		return false;
+	}
+
+	if (keyEvent->modifiers() != modifiers) {
+		return false;
+	}
+
+	if (keyEvent->key() != Qt::Key_Up && keyEvent->key() != Qt::Key_Down) {
+		return false;
+	}
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int lineFrom, indexFrom, lineTo, indexTo;
+	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+	if (lineFrom < 0) {
+		lineTo = lineFrom = line;
+		indexFrom = indexTo = 0;
+	}
+	int selectionLineTo = lineTo;
+	if (lineTo > lineFrom && indexTo == 0) {
+		lineTo--;
+	}
+
+	bool up = keyEvent->key() == Qt::Key_Up;
+	int directionOffset = up ? -1 : 1;
+	int lineToMove = up ? lineFrom - 1 : lineTo + 1;
+	if (lineToMove < 0) {
+		return false;
+	}
+
+	qsci->beginUndoAction();
+	QString textToMove = qsci->text(lineToMove);
+	QString text;
+	for (int idx = lineFrom;idx <= lineTo;idx++) {
+		text.append(qsci->text(idx));
+	}
+	if (lineToMove >= qsci->lines() - 1) {
+		textToMove.append('\n');
+	}
+	text.insert(up ? text.length() : 0, textToMove);
+	qsci->setSelection(std::min(lineToMove, lineFrom), 0, std::max(lineToMove, lineTo) + 1, 0);
+	qsci->replaceSelectedText(text);
+	qsci->setCursorPosition(line + directionOffset, index);
+	qsci->setSelection(lineFrom + directionOffset, indexFrom, selectionLineTo + directionOffset, indexTo);
+	qsci->endUndoAction();
+	return true;
+}
+
+bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
+{
+	unsigned int modifiers = Qt::ControlModifier | Qt::ShiftModifier;
+
+	if (keyEvent->type() != QEvent::KeyRelease) {
+		return false;
+	}
+
+	if (keyEvent->modifiers() != modifiers) {
+		return false;
+	}
+
+	if (keyEvent->key() != Qt::Key_Up && keyEvent->key() != Qt::Key_Down) {
+		return false;
+	}
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int lineFrom, indexFrom, lineTo, indexTo;
+	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+	if (lineFrom < 0) {
+		lineTo = lineFrom = line;
+		indexFrom = indexTo = 0;
+	}
+
+	bool up = keyEvent->key() == Qt::Key_Up;
+	int selectionLineTo = 0;
+	if (lineTo > lineFrom && indexTo == 0) {
+		lineTo--;
+		selectionLineTo++;
+	}
+	int cursorLine = up ? line : lineTo + 1;
+	int selectionLineFrom = up ? lineFrom : lineTo + 1;
+	selectionLineTo += up ? lineTo : 2 * lineTo - lineFrom + 1;
+
+	qsci->beginUndoAction();
+	QString text;
+	for (int line = lineFrom;line <= lineTo;line++) {
+		text += qsci->text(line);
+	}
+	if (lineTo + 1 >= qsci->lines()) {
+		text.insert(0, '\n');
+	}
+	qsci->insertAt(text, lineTo + 1, 0);
+	qsci->setCursorPosition(cursorLine, index);
+	qsci->setSelection(selectionLineFrom, indexFrom, selectionLineTo, indexTo);
+	qsci->endUndoAction();
+	return true;
+}
+
+bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
+{
+	static bool wasChanged = false;
+	static bool previewAfterUndo = false;
+
+#ifdef Q_OS_MAC
+	unsigned int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier;
+#else
+	unsigned int navigateOnNumberModifiers = Qt::AltModifier;
+#endif
+	if (keyEvent->modifiers() == navigateOnNumberModifiers) {
+		switch (keyEvent->key()) {
+		case Qt::Key_Left:
+		case Qt::Key_Right:
+			if (keyEvent->type() == QEvent::KeyPress) {
+				navigateOnNumber(keyEvent->key());
+			}
+			return true;
+
+		case Qt::Key_Up:
+		case Qt::Key_Down:
+			if (keyEvent->type() == QEvent::KeyPress) {
+				if (!wasChanged) qsci->beginUndoAction();
+				if (modifyNumber(keyEvent->key())) {
+					wasChanged = true;
+					previewAfterUndo = true;
+				}
+				if (!wasChanged) qsci->endUndoAction();
+			}
+			return true;
+		}
+	}
+	if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
+		int k = keyEvent->key() | keyEvent->modifiers();
+		if (wasChanged) qsci->endUndoAction();
+		wasChanged = false;
+		auto *cmd = qsci->standardCommands()->boundTo(k);
+		if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
+			QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+		else if (cmd || !keyEvent->text().isEmpty()) {
+			// any insert or command (but not undo/redo) cancels the preview after undo
+			previewAfterUndo = false;
+		}
+	}
+	return false;
+}
 
 void ScintillaEditor::navigateOnNumber(int key)
 {

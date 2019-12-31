@@ -141,7 +141,7 @@ netbsd* {
 !isEmpty(OPENSCAD_LIBDIR) {
   unix:!macx {
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
-    # need /lib64 beause GLEW installs itself there on 64 bit machines
+    # need /lib64 because GLEW installs itself there on 64 bit machines
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
   }
 }
@@ -561,10 +561,8 @@ SOURCES += \
            src/input/WheelIgnorer.cc
 
 # CGAL
-HEADERS += src/ext/CGAL/convex_hull_3_bugfix.h \
-           src/ext/CGAL/OGL_helper.h \
-           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h \
-           src/ext/CGAL/CGAL_Nef3_workaround.h
+HEADERS += src/ext/CGAL/OGL_helper.h \
+           src/ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h
 
 # LodePNG
 SOURCES += src/ext/lodepng/lodepng.cpp
@@ -643,7 +641,6 @@ opencsg {
 
 cgal {
 HEADERS += src/cgal.h \
-           src/cgalfwd.h \
            src/cgalutils.h \
            src/Reindexer.h \
            src/CGALCache.h \

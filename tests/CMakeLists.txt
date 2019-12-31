@@ -345,6 +345,7 @@ file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad
   ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/box-w-holes-2d.scad
+  ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/line-cap-line-join.scad
   ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/simple-center-2d.scad)
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
@@ -450,6 +451,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}

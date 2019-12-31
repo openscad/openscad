@@ -59,6 +59,7 @@ Context::Context(const Context *parent)
 	}
 	else {
 		this->ctx_stack = new Stack;
+		this->document_path = std::make_shared<std::string>();
 	}
 
 	this->ctx_stack->push_back(this);
@@ -119,6 +120,24 @@ void Context::set_constant(const std::string &name, const Value &value)
 void Context::apply_variables(const Context &other)
 {
 	for (const auto &var : other.variables) {
+		set_variable(var.first, var.second);
+	}
+}
+
+/*!
+  Apply config variables of 'other' to this context, from the full context stack of 'other', bottom-up.
+*/
+void Context::apply_config_variables(const Context &other)
+{
+	if (&other == this) {
+		// Anything in 'other' and its ancestors is already part of this context, no need to descend any further.
+		return;
+	}
+	if (other.parent) {
+		// Assign parent's variables first, since they might be overridden by a child
+		apply_config_variables(*other.parent);
+	}
+	for (const auto &var : other.config_variables) {
 		set_variable(var.first, var.second);
 	}
 }
@@ -187,10 +206,10 @@ bool Context::has_local_variable(const std::string &name) const
  * noinline prevents compiler optimization, as we here specifically
  * optimize for stack usage during normal operating, not runtime during
  * error handling.
- * 
+ *
  * @param what what is ignored
  * @param name name of the ignored object
- * @param loc location of the function/modul call
+ * @param loc location of the function/module call
  * @param docPath document path of the root file, used to calculate the relative path
  */
 static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
@@ -217,7 +236,7 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(this->document_path) / filename).string();
+		return fs::absolute(fs::path(*this->document_path) / filename).string();
 	}
 	else {
 		return filename;
@@ -234,7 +253,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	else {
 		s << boost::format("Context: %p (%p)\n") % this % this->parent;
 	}
-	s << boost::format("  document path: %s\n") % this->document_path;
+	s << boost::format("  document path: %s\n") % *this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {

@@ -23,7 +23,7 @@ jobs:
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
                   rm -rf ~/.gnupg
               else
                   echo "Skipping code signing."
@@ -54,7 +54,7 @@ jobs:
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
                   rm -rf ~/.gnupg
               else
                   echo "Skipping code signing."
@@ -90,7 +90,7 @@ jobs:
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --detach-sign --armor"
-                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha1sum "$a" | tee "${a}.sha1"; sha256sum "$a" | tee "${a}.sha256"; done
+                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
                   rm -rf ~/.gnupg
               else
                   echo "Skipping code signing."
@@ -98,6 +98,104 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
+  openscad-macos:
+    macos:
+      xcode: "10.1.0"
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD MacOS
+          no_output_timeout: 18000
+          command: |
+              system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
+              export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+              echo "PATH = $PATH"
+              export COLUMNS=80 # needed by some macports tool
+              MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
+              MACPORTS_CACHE_SHA512=8a50e1410079bcc8519017c40709dfcae77720daffdbfa217cf131da5c119386e052cf2b0afcd114b0c535c45f0dae4f227c3f60f47fe5bfcdb1f0d0436719a6
+              LIBRARIES_CACHE_SHA512=b024093094bfffb14ca3afd1c36967a2015ef79ff409685eca75ac5e2546b7ba3a899de1ac7e3e34ee961b1eb6f77d01aef8b87df752a150262cbc2bdc6ccd78
+              CI_BASEDIR=/Users/distiller/project
+              export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
+              MACPORTS=MacPorts-2.5.4
+              MACPORTS_CACHE=macports.tar.bz2
+              LIBRARIES_CACHE=libraries.tar.bz2
+              mkdir /tmp/out
+              mkdir -p "$OPENSCAD_LIBRARIES"
+              ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/circleci/"$MACPORTS_CACHE" ) || true
+              ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/circleci/"$LIBRARIES_CACHE" ) || true
+              sudo mkdir -p /opt/local
+              sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
+              if [ -f /opt/local/bin/port ]; then
+                  if [ "$(shasum -a 512 /tmp/$MACPORTS_CACHE | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
+                      echo "Failed to match sha512 for $MACPORTS_CACHE"
+                      exit 1
+                  fi
+                  if [ -f /tmp/libraries.tar.bz2 ]; then
+                      tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/libraries.tar.bz2 || true
+                      if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
+                          echo "Failed to match sha512 for $LIBRARIES_CACHE"
+                          exit 1
+                      fi
+                  fi    
+                  export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
+                  export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
+                  export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
+                  echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
+                  # Our own Qt
+                  export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
+                  unset QMAKESPEC
+                  ./scripts/macosx-build-dependencies.sh double_conversion
+                  ./scripts/macosx-build-dependencies.sh eigen
+                  ./scripts/macosx-build-dependencies.sh gmp
+                  ./scripts/macosx-build-dependencies.sh mpfr
+                  ./scripts/macosx-build-dependencies.sh glew
+                  ./scripts/macosx-build-dependencies.sh gettext
+                  ./scripts/macosx-build-dependencies.sh libffi
+                  ./scripts/macosx-build-dependencies.sh freetype
+                  ./scripts/macosx-build-dependencies.sh ragel
+                  ./scripts/macosx-build-dependencies.sh harfbuzz
+                  ./scripts/macosx-build-dependencies.sh libzip
+                  ./scripts/macosx-build-dependencies.sh libxml2
+                  ./scripts/macosx-build-dependencies.sh fontconfig || true
+                  ./scripts/macosx-build-dependencies.sh hidapi
+                  ./scripts/macosx-build-dependencies.sh libuuid
+                  ./scripts/macosx-build-dependencies.sh lib3mf
+                  ./scripts/macosx-build-dependencies.sh glib2
+                  ./scripts/macosx-build-dependencies.sh boost
+                  ./scripts/macosx-build-dependencies.sh cgal
+                  ./scripts/macosx-build-dependencies.sh qt5
+                  ./scripts/macosx-build-dependencies.sh opencsg
+                  ./scripts/macosx-build-dependencies.sh qscintilla
+                  ./scripts/macosx-build-dependencies.sh -d sparkle
+                  tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
+                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+                  export NUMCPU=4
+                  time ./scripts/release-common.sh -snapshot
+                  OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
+                  shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
+                  shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
+                  cp -v "$OPENSCAD_NAME"* /tmp/out/
+              else
+                  echo "MacPorts not found, installing $MACPORTS"
+                  MACPORTSFILE="$MACPORTS".tar.bz2
+                  curl -s -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
+                  if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
+                      echo "Failed to match sha512 for $MACPORTSFILE"
+                      exit 1
+                  fi
+                  tar xjf "$MACPORTSFILE"
+                  cd "$MACPORTS"
+                  ./configure
+                  make
+                  sudo make install
+                  sudo port -v selfupdate
+                  sudo port install cmake curl pkgconfig autoconf automake libtool
+                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
+                  shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: build
 
 workflows:
   version: 2
@@ -124,3 +222,18 @@ workflows:
                   ignore:
                       - coverity_scan
                       - /^(?i:continuous)$/
+      - openscad-macos:
+          filters:
+              branches:
+                  only:
+                      - circleci-macos
+  scheduled:
+    triggers:
+      - schedule:
+          cron: "30 6 * * 2"
+          filters:
+              branches:
+                  only:
+                      - master
+    jobs:
+      - openscad-macos

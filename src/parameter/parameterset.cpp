@@ -73,7 +73,7 @@ void ParameterSet::addParameterSet(const std::string setName, const pt::ptree & 
 }
 
 /*!
-	Returns true if the file was succesfully read
+	Returns true if the file was successfully read
 */
 bool ParameterSet::readParameterSet(const std::string &filename)
 {

@@ -71,9 +71,10 @@ class TernaryOp : public Expression
 {
 public:
 	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
+	const shared_ptr<Expression> &evaluateStep(const Context *context) const;
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-
+private:
 	shared_ptr<Expression> cond;
 	shared_ptr<Expression> ifexpr;
 	shared_ptr<Expression> elseexpr;
@@ -153,18 +154,22 @@ class FunctionCall : public Expression
 {
 public:
 	FunctionCall(const std::string &funcname, const AssignmentList &arglist, const Location &loc);
+	void prepareTailCallContext(const Context *context, Context *tailCallContext, const AssignmentList &definition_arguments);
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
 public:
 	std::string name;
 	AssignmentList arguments;
+	AssignmentMap resolvedArguments;
+	std::vector<std::pair<std::string, ValuePtr>> defaultArguments; // Only the ones not mentioned in 'resolvedArguments'
 };
 
 class Assert : public Expression
 {
 public:
 	Assert(const AssignmentList &args, Expression *expr, const Location &loc);
+	const shared_ptr<Expression> &evaluateStep(const Context *context) const;
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -176,6 +181,7 @@ class Echo : public Expression
 {
 public:
 	Echo(const AssignmentList &args, Expression *expr, const Location &loc);
+	const shared_ptr<Expression> &evaluateStep(const Context *context) const;
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -187,6 +193,7 @@ class Let : public Expression
 {
 public:
 	Let(const AssignmentList &args, Expression *expr, const Location &loc);
+	const shared_ptr<Expression> &evaluateStep(Context *context) const;
 	ValuePtr evaluate(const class Context *context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:

@@ -953,14 +953,6 @@ Value Value::operator[](const Value &v) const
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }
 
-void RangeType::normalize()
-{
-  if ((step_val>0) && (end_val < begin_val)) {
-    std::swap(begin_val,end_val);
-    printDeprecation("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
-  }
-}
-
 uint32_t RangeType::numValues() const
 {
   if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {

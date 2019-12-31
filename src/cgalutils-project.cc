@@ -21,12 +21,7 @@
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
 
-// Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
-#else
-#include "ext/CGAL/convex_hull_3_bugfix.h"
-#endif
 #pragma pop_macro("NDEBUG")
 
 #include "svg.h"
@@ -200,7 +195,7 @@ namespace CGALUtils {
 				try {
 					PRINTD("Trying alternative intersection using very large thin box: ");
 					std::vector<CGAL_Point_3> pts;
-					// dont use z of 0. there are bugs in CGAL.
+					// don't use z of 0. there are bugs in CGAL.
 					double inf = 1e8;
 					double eps = 0.001;
 					CGAL_Point_3 minpt(-inf, -inf, -eps);

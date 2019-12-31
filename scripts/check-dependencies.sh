@@ -184,11 +184,6 @@ qt_sysver()
     qtver=`qtchooser -run-tool=qmake -qt=5 -v 2>&1`
     if [ $? -eq 0 ] ; then
       export QT_SELECT=5
-    else
-      qtver=`qtchooser -run-tool=qmake -qt=4 -v 2>&1`
-      if [ $? -eq 0 ] ; then
-	export QT_SELECT=4
-      fi
     fi
     qtver=`echo "$qtver" | grep "Using Qt version" | awk '{print $4}'`
   else
@@ -199,17 +194,6 @@ qt_sysver()
     fi
     if [ ! -e $qtpath ]; then
       qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore
-    fi
-    if [ ! -e $qtpath ]; then
-      export QT_SELECT=4
-      qtpath=$1/include/qt4/QtCore/
-    fi
-    if [ ! -e $qtpath ]; then
-      qtpath=$1/include/QtCore
-    fi
-    if [ ! -e $qtpath ]; then
-      # netbsd
-      qtpath=$1/qt4/include/QtCore
     fi
   fi
   if [ -z "$qtver" ]; then
@@ -240,8 +224,6 @@ qscintilla2_sysver()
   # expecting the QT_SELECT already set in case we found qtchooser
   if qmake -v >/dev/null 2>&1 ; then
     QMAKE=qmake
-  elif [ "`command -v qmake-qt4`" ]; then
-    QMAKE=qmake-qt4
   fi
   debug using qmake: $QMAKE
 
@@ -250,7 +232,7 @@ qscintilla2_sysver()
   debug using qtincdir: $qtincdir
   debug using qscipath: $qscipath
   if [ ! -e $qscipath ]; then
-    debug qscipath doesnt exist. giving up on version.
+    debug "qscipath doesn't exist. giving up on version."
     return
   fi
 

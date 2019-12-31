@@ -28,14 +28,15 @@ public:
 	void set_constant(const std::string &name, const Value &value);
 
 	void apply_variables(const Context &other);
+	void apply_config_variables(const Context &other);
 	ValuePtr lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
 	double lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc=Location::NONE) const;
 	std::string lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc=Location::NONE) const;
 
 	bool has_local_variable(const std::string &name) const;
 
-	void setDocumentPath(const std::string &path) { this->document_path = path; }
-	const std::string &documentPath() const { return this->document_path; }
+	void setDocumentPath(const std::string &path) { this->document_path = std::make_shared<std::string>(path); }
+	const std::string &documentPath() const { return *this->document_path; }
 	std::string getAbsolutePath(const std::string &filename) const;
         
 public:
@@ -49,7 +50,7 @@ protected:
 	ValueMap variables;
 	ValueMap config_variables;
 
-	std::string document_path;
+	std::shared_ptr<std::string> document_path;
 
 public:
 #ifdef DEBUG

@@ -247,9 +247,15 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 {
 }
 
+const shared_ptr<Expression> &TernaryOp::evaluateStep(const Context *context) const
+{
+	return this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+}
+
 ValuePtr TernaryOp::evaluate(const Context *context) const
 {
-	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
+	const shared_ptr<Expression> &nextexpr = evaluateStep(context);
+	return nextexpr->evaluate(context);
 }
 
 void TernaryOp::print(std::ostream &stream, const std::string &) const
@@ -295,18 +301,51 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 {
 }
 
+/**
+ * This is separated because both PRINT_DEPRECATION and PRINT use
+ * quite a lot of stack space and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_range_depr(const Location &loc, const Context *ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
+}
+static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const Context *ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
+}
+
 ValuePtr Range::evaluate(const Context *context) const
 {
 	ValuePtr beginValue = this->begin->evaluate(context);
 	if (beginValue->type() == Value::ValueType::NUMBER) {
 		ValuePtr endValue = this->end->evaluate(context);
 		if (endValue->type() == Value::ValueType::NUMBER) {
+			double begin_val = beginValue->toDouble();
+			double end_val   = endValue->toDouble();
+			
 			if (!this->step) {
-				RangeType range(beginValue->toDouble(), endValue->toDouble());
+				if(end_val < begin_val){
+					std::swap(begin_val,end_val);
+					print_range_depr(loc, context);
+				}
+				
+				RangeType range(begin_val, end_val);
 				return ValuePtr(range);
 			} else {
 				ValuePtr stepValue = this->step->evaluate(context);
 				if (stepValue->type() == Value::ValueType::NUMBER) {
+					double step_val = stepValue->toDouble();
+					if(this->isLiteral()){
+						if ((step_val>0) && (end_val < begin_val)) {
+							print_range_err("is greater", "is positiv", loc, context);
+						}else if ((step_val<0) && (end_val > begin_val)) {
+							print_range_err("is smaller", "is negativ", loc, context);
+						}
+					}
+
 					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
 					return ValuePtr(range);
 				}
@@ -454,6 +493,40 @@ static void NOINLINE print_trace(const FunctionCall *val, const Context *ctx){
 	PRINTB("TRACE: called by '%s', %s.", val->name % val->location().toRelativeString(ctx->documentPath()));
 }
 
+/**
+ * Evaluates call parameters using context, and assigns the resulting values to tailCallContext.
+ * As the name suggests, it's meant for basic tail recursion, where the function calls itself.
+*/
+void FunctionCall::prepareTailCallContext(const Context *context, Context *tailCallContext, const AssignmentList &definition_arguments)
+{
+	if (this->resolvedArguments.empty()) {
+		// Figure out parameter names
+		EvalContext ec(context, this->arguments, this->loc);
+		this->resolvedArguments = ec.resolveArguments(definition_arguments, {}, false);
+		// Assign default values for unspecified parameters
+		for (const auto &arg : definition_arguments) {
+			if (this->resolvedArguments.find(arg.name) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg.name, arg.expr ? arg.expr->evaluate(context) : ValuePtr::undefined);
+			}
+		}
+	}
+
+	std::vector<std::pair<std::string, ValuePtr>> variables;
+	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
+	// Set default values for unspecified parameters
+	variables.insert(variables.begin(), this->defaultArguments.begin(), this->defaultArguments.end());
+	// Set the given parameters
+	for (const auto &ass : this->resolvedArguments) {
+		variables.emplace_back(ass.first, ass.second->evaluate(context));
+	}
+	// Apply to tailCallContext
+	for (const auto &var : variables) {
+		tailCallContext->set_variable(var.first, var.second);
+	}
+	// Apply config variables ($...)
+	tailCallContext->apply_config_variables(context);
+}
+
 ValuePtr FunctionCall::evaluate(const Context *context) const
 {
 	if (StackCheck::inst().check()) {
@@ -498,14 +571,20 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
-ValuePtr Assert::evaluate(const Context *context) const
+const shared_ptr<Expression> &Assert::evaluateStep(const Context *context) const
 {
 	EvalContext assert_context(context, this->arguments, this->loc);
 
 	Context c(&assert_context);
 	evaluate_assert(c, &assert_context);
+	return expr;
+}
 
-	ValuePtr result = expr ? expr->evaluate(&c) : ValuePtr::undefined;
+ValuePtr Assert::evaluate(const Context *context) const
+{
+	const shared_ptr<Expression> &nextexpr = evaluateStep(context);
+
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
@@ -521,12 +600,18 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 }
 
+const shared_ptr<Expression> &Echo::evaluateStep(const Context *context) const
+{
+	EvalContext echo_context(context, this->arguments, this->loc);
+	PRINTB("%s", STR("ECHO: " << echo_context));
+	return expr;
+}
+
 ValuePtr Echo::evaluate(const Context *context) const
 {
-	EvalContext echo_context(context, this->arguments, this->loc);	
-	PRINTB("%s", STR("ECHO: " << echo_context));
+	const shared_ptr<Expression> &nextexpr = evaluateStep(context);
 
-	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
@@ -541,12 +626,18 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
+const shared_ptr<Expression> &Let::evaluateStep(Context *context) const
+{
+	evaluate_sequential_assignment(this->arguments, context, this->loc);
+	return this->expr;
+}
+
 ValuePtr Let::evaluate(const Context *context) const
 {
 	Context c(context);
-	evaluate_sequential_assignment(this->arguments, &c, this->loc);
+	const shared_ptr<Expression> &nextexpr = evaluateStep(&c);
 
-	return this->expr->evaluate(&c);
+	return nextexpr->evaluate(&c);
 }
 
 void Let::print(std::ostream &stream, const std::string &) const
