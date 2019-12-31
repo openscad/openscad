@@ -9,8 +9,8 @@
 class UserModule : public AbstractModule, public ASTNode
 {
 public:
-	UserModule(const char *name, const Location &loc) : ASTNode(loc), name(name) { }
-	UserModule(const char *name, const class Feature& feature, const Location &loc) : AbstractModule(feature), ASTNode(loc), name(name) { }
+	UserModule(const char *name, const Location &loc) : ASTNode(loc), name(name), scope(loc) { }
+	UserModule(const char *name, const class Feature& feature, const Location &loc) : AbstractModule(feature), ASTNode(loc), name(name), scope(loc) { } // FIXME: scope should get its own location
 	~UserModule() {}
 
 	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;

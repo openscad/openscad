@@ -195,9 +195,9 @@ statement
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              UserModule *newmodule = new UserModule($2, LOCD("module", @$));
+              UserModule *newmodule = make_shared<UserModule>($2, LOCD("module", @$));
               newmodule->definition_arguments = *$4;
-              scope_stack.top()->addModule($2, newmodule);
+              scope_stack.top()->addChild(newmodule);
               scope_stack.push(&newmodule->scope);
               free($2);
               delete $4;
@@ -208,8 +208,8 @@ statement
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
             {
-              UserFunction *func = new UserFunction($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
-              scope_stack.top()->addFunction(func);
+              UserFunction *func = make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
+              scope_stack.top()->addChild(func);
               free($2);
               delete $4;
             }
@@ -227,7 +227,8 @@ inner_input
 assignment
         : TOK_ID '=' expr ';'
             {
-	      scope_stack.top()->addAssignment(Assignment($1, shared_ptr<Expression>($3), LOCD("assignment", @$), fileEnded));
+	      const auto isOverride = fileEnded;
+	      scope_stack.top()->addChild(make_shared<Assignment>($1, shared_ptr<Expression>($3), LOCD("assignment", @$), isOverride));
                 free($1);
             }
         ;
@@ -288,7 +289,7 @@ ifelse_statement
 if_statement
         : TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), sourcefile_folder, LOCD("if", @$));
+                $<ifelse>$ = make_shared<IfElseModuleInstantiation>(shared_ptr<Expression>($3), sourcefile_folder, LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -326,7 +327,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
+                $$ = make_shared<ModuleInstantiation>($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
             }
@@ -337,17 +338,17 @@ expr
 		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
 			{
 			  if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
-			    $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+			    $$ = make_shared<FunctionDefinition>($6, *$3, LOCD("anonfunc", @$));
 			  } else {
 				PRINTB("WARNING: Support for function literals is disabled %s",
 						  LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
-				$$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+				$$ = make_shared<Literal>(ValuePtr::undefined, LOCD("literal", @$));
 			  }
 			  delete $3;
 			}
         | logic_or '?' expr ':' expr
             {
-              $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
+              $$ = make_shared<TernaryOp>($1, $3, $5, LOCD("ternary", @$));
             }
         | TOK_LET '(' arguments_call ')' expr
             {
@@ -370,7 +371,7 @@ logic_or
         : logic_and
         | logic_or OR logic_and
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
+              $$ = make_shared<BinaryOp>($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
             }
 		;
 
@@ -378,7 +379,7 @@ logic_and
         : equality
         | logic_and AND equality
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
+              $$ = make_shared<BinaryOp>($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
             }
 		;
 
@@ -386,11 +387,11 @@ equality
         : comparison
         | equality EQ comparison
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
+              $$ = make_shared<BinaryOp>($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
             }
         | equality NE comparison
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
+              $$ = make_shared<BinaryOp>($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
             }
 		;
 
@@ -398,7 +399,7 @@ comparison
         : addition
         | comparison '>' addition
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
+              $$ = make_shared<BinaryOp>($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
             }
         | comparison GE addition
             {
@@ -631,13 +632,13 @@ arguments_decl
         | argument_decl
             {
                 $$ = new AssignmentList();
-                $$->push_back(*$1);
+                $$->emplace_back($1);
                 delete $1;
             }
         | arguments_decl ',' optional_commas argument_decl
             {
                 $$ = $1;
-                $$->push_back(*$4);
+                $$->emplace_back($4);
                 delete $4;
             }
         ;

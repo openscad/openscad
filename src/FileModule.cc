@@ -43,7 +43,7 @@ namespace fs = boost::filesystem;
 #include <sys/stat.h>
 
 FileModule::FileModule(const std::string &path, const std::string &filename)
-	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
+	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename), scope(Location::NONE)
 {
 }
 
@@ -119,7 +119,13 @@ void FileModule::resolveIncludeNodes()
 			PRINTB("Can't parse include file '%s'!\n", fullname.c_str());
 			return;
 		}
-		// Add inc_mod to a member container
+		inc_mod->resolveExternals();
+
+		// FIXME: Loop over all children of inc_mod and add to the correct
+		// location of this->scope
+
+		inc_mod->resolveAssignments();
+
 	}
 }
 

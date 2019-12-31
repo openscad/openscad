@@ -1716,6 +1716,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 	this->root_module->resolveExternals();
+	this->root_module->resolveAssignments();
 
 	if (this->root_module!=nullptr) {
 		//add parameters as annotation in AST

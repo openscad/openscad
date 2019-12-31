@@ -8,27 +8,44 @@
 #include "annotation.h"
 #include "UserModule.h"
 
-LocalScope::LocalScope()
+LocalScope::LocalScope(const Location &loc) : ASTNode(loc)
 {
 }
 
 LocalScope::~LocalScope()
 {
-	for (auto &v : children) delete v;
-	for (auto &f : functions) delete f.second;
-	for (auto &m : modules) delete m.second;
 }
 
-void LocalScope::addChild(ModuleInstantiation *modinst) 
+void LocalScope::addChild(ASTNode *node)
+{
+	this->children.emplace_back(node);
+
+	// FIXME: Move this out of the ASTNode subtype
+	if (auto modinst = dynamic_cast<ModuleInstantiation*>(node)) {
+		this->addModuleInst(modinst);
+	}
+	if (auto module = dynamic_cast<UserModule*>(node)) {
+		this->addModule(module->name, module);
+	}
+	if (auto function = dynamic_cast<UserFunction*>(node)) {
+		this->addFunction(function);
+	}
+	if (auto assignment = dynamic_cast<Assignment*>(node)) {
+		this->addAssignment(assignment);
+	}
+// 	FIXME: Add remaining
+}
+
+void LocalScope::addModuleInst(ModuleInstantiation *modinst)
 {
 	assert(modinst);
-	this->children.push_back(modinst);
+	this->children_inst.push_back(modinst);
 }
 
 void LocalScope::addModule(const std::string &name, class UserModule *module)
 {
 	assert(module);
-	this->modules[name] = module;
+	this->modules.emplace(name, module)
 	this->astModules.push_back({name, module});
 }
 
@@ -39,33 +56,33 @@ void LocalScope::addFunction(class UserFunction *func)
 	this->astFunctions.push_back({func->name, func});
 }
 
-void LocalScope::addAssignment(const Assignment &ass)
+void LocalScope::addAssignment(Assignment *ass)
 {
 	this->assignments.push_back(ass);
 }
 
-void LocalScope::print(std::ostream &stream, const std::string &indent, const bool inlined) const
+void LocalScope::print(std::ostream &stream, const std::string &indent) const
 {
-	for (const auto &f : this->astFunctions) {
-		f.second->print(stream, indent);
+	auto newindent = indent;
+	if (this->numElements() == 0) {
+		stream << ";";
 	}
-	for (const auto &m : this->astModules) {
-		m.second->print(stream, indent);
+	else if (this->numElements() > 1) {
+		stream << "{\n";
+		newindent += "\t";
 	}
-	// FIXME: Take note of this behavior change: All assignments printed,
-	// not just the last one for each variable
-	for (const auto &ass : this->assignments) {
-		ass.print(stream, indent);
+	for (const auto &node : this->children) {
+		node->print(stream, newindent);
 	}
-	for (const auto &inst : this->children) {
-		inst->print(stream, indent, inlined);
+	if (this->numElements() > 1) {
+		stream << indent << "}";
 	}
 }
 
 std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr<Context> evalctx) const
 {
 	std::vector<AbstractNode*> childnodes;
-	for(const auto &modinst : this->children) {
+	for(const auto &modinst : this->children_inst) {
 		AbstractNode *node = modinst->evaluate(evalctx);
 		if (node) childnodes.push_back(node);
 	}
@@ -103,46 +120,51 @@ void LocalScope::resolveAssignments()
 		auto &currAssignment = *it;
 		for (auto curr_it = this->assignments.begin(); curr_it != it; curr_it++) {
 			auto &assignment = *curr_it;
-			if (assignment.name == currAssignment.name) {
+			if (assignment->name == currAssignment->name) {
 				// FIXME: Re-enable warnings
-				/*
-				auto mainFile = mainFilePath.string();
-				auto prevFile = assignment.location().fileName();
-				auto currFile = currAssignment.location().fileName();
+//				auto mainFile = mainFilePath.string();
 
-				const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-				const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
-				if (assignment.isOverride) {
+				// auto prevFile = assignment->location().fileName();
+				// auto currFile = currAssignment->location().fileName();
+				// const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
+				// const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+				if (assignment->isOverride) {
 					//assignments via commandline
-				} else if (prevFile == mainFile && currFile == mainFile) {
+				}
+				/*
+				else if (prevFile == mainFile && currFile == mainFile) {
 					//both assignments in the mainFile
 					PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
-								 assignment.name %
-								 assignment.location().firstLine() %
+								 assignment->name %
+								 assignment->location().firstLine() %
 								 loc.firstLine());
-				} else if (uncPathCurr == uncPathPrev) {
-					//assignment overwritten within the same file
-					//the line number being equal happens, when a file is included multiple times
-					if (assignment.location().firstLine() != loc.firstLine()) {
-						PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-									 assignment.name %
-									 assignment.location().firstLine() %
-									 uncPathPrev %
-									 loc.firstLine());
-					}
-				} else if (prevFile == mainFile && currFile != mainFile) {
+				}
+				else */
+				// if (uncPathCurr == uncPathPrev) {
+				// 	//assignment overwritten within the same file
+				// 	//the line number being equal happens, when a file is included multiple times
+				// 	if (assignment->location().firstLine() != loc.firstLine()) {
+				// 		PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
+				// 					 assignment->name %
+				// 					 assignment->location().firstLine() %
+				// 					 uncPathPrev %
+				// 					 loc.firstLine());
+				// 	}
+				// }
+				/*
+				else if (prevFile == mainFile && currFile != mainFile) {
 					//assignment from the mainFile overwritten by an include
 					PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
-								 assignment.name %
-								 assignment.location().firstLine() %
+								 assignment->name %
+								 assignment->location().firstLine() %
 								 uncPathPrev %
 								 loc.firstLine() %
 								 uncPathCurr);
 				}
 				*/
- 				assignment.expr = currAssignment.expr;
-				assignment.setLocation(currAssignment.location());
-				currAssignment.isDisabled = true;
+ 				assignment->expr = currAssignment->expr;
+				assignment->setLocation(currAssignment->location());
+				currAssignment->isDisabled = true;
 				break;
 			}
 		}

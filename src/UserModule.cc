@@ -80,16 +80,13 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 	if (!this->name.empty()) {
 		stream << indent << "module " << this->name << "(";
 		for (size_t i=0; i < this->definition_arguments.size(); i++) {
-			const Assignment &arg = this->definition_arguments[i];
+			const auto &arg = this->definition_arguments[i];
 			if (i > 0) stream << ", ";
-			stream << arg.name;
-			if (arg.expr) stream << " = " << *arg.expr;
+			stream << arg->name;
+			if (arg->expr) stream << " = " << *arg->expr;
 		}
-		stream << ") {\n";
+		stream << ")\n";
 		tab = "\t";
 	}
 	scope.print(stream, indent + tab);
-	if (!this->name.empty()) {
-		stream << indent << "}\n";
-	}
 }

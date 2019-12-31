@@ -64,6 +64,9 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		if (cacheEntry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
+			// FIXME: This isn't necessary once IncludeNode is implemented, but
+			// to pull that off we may need to separate the AST tree from the Module tree
+			// to avoid mutating the AST.
 			if (cacheEntry.parsed_module) {
 				std::time_t mtime = cacheEntry.parsed_module->includesChanged();
 				if (mtime > cacheEntry.includes_mtime) {
@@ -105,6 +108,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		delete cacheEntry.parsed_module;
 		lib_mod = parse(cacheEntry.parsed_module, text, filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
 		lib_mod->resolveExternals();
+		lib_mod->resolveAssignments();
 		PRINTDB("compiled module: %s", filename);
 		cacheEntry.module = lib_mod;
 		cacheEntry.cache_id = cache_id;

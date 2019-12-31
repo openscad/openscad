@@ -927,9 +927,9 @@ ValuePtr builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr
 ValuePtr builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
-		const auto &arg =evalctx->getArgs()[0];
+		const auto arg =evalctx->getArgs()[0];
 		ValuePtr v;
-		if(auto lookup = dynamic_pointer_cast<Lookup> (arg.expr)){
+		if(auto lookup = dynamic_pointer_cast<Lookup> (arg->expr)){
 			v = lookup->evaluateSilently(evalctx);
 		}else{
 			v = evalctx->getArgValue(0);

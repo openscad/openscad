@@ -10,11 +10,10 @@ class ModuleInstantiation : public ASTNode
 {
 public:
 	ModuleInstantiation(const std::string &name, const AssignmentList &args = AssignmentList(), const std::string &source_path = std::string(), const Location &loc = Location::NONE)
-		: ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name), modpath(source_path) { }
+		: ASTNode(loc), arguments(args), scope(loc), tag_root(false), tag_highlight(false), tag_background(false), modname(name), modpath(source_path) { } // FIXME: scope should get its own location
 	~ModuleInstantiation();
 
-	virtual void print(std::ostream &stream, const std::string &indent, const bool inlined) const;
-	void print(std::ostream &stream, const std::string &indent) const override { print(stream, indent, false); };
+	void print(std::ostream &stream, const std::string &indent) const override;
 	class AbstractNode *evaluate(const std::shared_ptr<Context> ctx) const;
 	std::vector<AbstractNode*> instantiateChildren(const std::shared_ptr<Context> evalctx) const;
 
@@ -40,10 +39,10 @@ protected:
 
 class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
-	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
+	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{make_shared<Assignment>("", expr)}, source_path, loc), else_scope(loc) { } // FIXME: else_scope should get its own location
 	~IfElseModuleInstantiation();
 	std::vector<AbstractNode*> instantiateElseChildren(const std::shared_ptr<Context> evalctx) const;
-	void print(std::ostream &stream, const std::string &indent, const bool inlined) const final;
+	void print(std::ostream &stream, const std::string &indent) const override;
 
 	LocalScope else_scope;
 };
