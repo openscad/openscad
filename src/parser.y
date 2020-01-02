@@ -189,7 +189,7 @@ statement
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              shared_ptr<UserModule> newmodule = make_shared<UserModule>($2, LOCD("module", @$));
+              auto newmodule = make_shared<UserModule>($2, LOCD("module", @$));
               newmodule->definition_arguments = *$4;
               auto top = scope_stack.top();
               scope_stack.push(&newmodule->scope);
@@ -203,7 +203,7 @@ statement
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
             {
-              shared_ptr<UserFunction> func = make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
+              auto func = make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
               scope_stack.top()->addChild(std::move(func));
               free($2);
               delete $4;

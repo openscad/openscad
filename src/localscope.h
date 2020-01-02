@@ -22,7 +22,6 @@ private:
 public:
 	void apply(const std::shared_ptr<Context> &ctx) const;
 	bool hasChildren() const {return !(children.empty());};
-	void resolveAssignments();
 
 	std::vector<shared_ptr<ASTNode>> children;
 

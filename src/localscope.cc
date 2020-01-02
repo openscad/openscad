@@ -31,7 +31,6 @@ void LocalScope::addChild(shared_ptr<ASTNode> node)
 	if (auto assignment = dynamic_pointer_cast<Assignment>(node)) {
 		this->addAssignment(std::move(assignment));
 	}
-// 	FIXME: Add remaining
 	this->children.emplace_back(std::move(node));
 }
 
@@ -96,7 +95,6 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr
 */
 void LocalScope::apply(const std::shared_ptr<Context> &ctx) const
 {
-	// FIXME: Filter assignments before doing this
 	for(const auto &assignment : this->assignments) {
 		ctx->set_variable(assignment->name, assignment->expr->evaluate(ctx));
 	}
