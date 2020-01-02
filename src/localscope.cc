@@ -20,16 +20,16 @@ void LocalScope::addChild(shared_ptr<ASTNode> node)
 {
 	// FIXME: Move this out of the ASTNode subtype
 	if (auto modinst = dynamic_pointer_cast<ModuleInstantiation>(node)) {
-		this->addModuleInst(modinst);
+		this->addModuleInst(std::move(modinst));
 	}
 	if (auto module = dynamic_pointer_cast<UserModule>(node)) {
-		this->addModule(module->name, module);
+		this->addModule(std::move(module));
 	}
 	if (auto function = dynamic_pointer_cast<UserFunction>(node)) {
-		this->addFunction(function);
+		this->addFunction(std::move(function));
 	}
 	if (auto assignment = dynamic_pointer_cast<Assignment>(node)) {
-		this->addAssignment(assignment);
+		this->addAssignment(std::move(assignment));
 	}
 // 	FIXME: Add remaining
 	this->children.emplace_back(std::move(node));
@@ -41,11 +41,11 @@ void LocalScope::addModuleInst(shared_ptr<ModuleInstantiation> modinst)
 	this->children_inst.emplace_back(std::move(modinst));
 }
 
-void LocalScope::addModule(const std::string &name, shared_ptr<class UserModule> module)
+void LocalScope::addModule(shared_ptr<class UserModule> module)
 {
 	assert(module);
-	this->modules.emplace(name, module);
-	this->astModules.emplace_back(name, std::move(module));
+	this->modules.emplace(module->name, module);
+	this->astModules.emplace_back(module->name, std::move(module));
 }
 
 void LocalScope::addFunction(shared_ptr<class UserFunction> func)

@@ -16,7 +16,7 @@ public:
 	void addChild(shared_ptr<ASTNode> astnode);
 private:
 	void addModuleInst(shared_ptr<class ModuleInstantiation> astnode);
-	void addModule(const std::string &name, shared_ptr<class UserModule> module);
+	void addModule(shared_ptr<class UserModule> module);
 	void addFunction(shared_ptr<class UserFunction> function);
 	void addAssignment(shared_ptr<class Assignment> assignment);
 public:
