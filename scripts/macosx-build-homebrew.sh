@@ -45,6 +45,10 @@ $TAP tap openscad/homebrew-tap
 # FIXME: We used to require unlinking boost, but doing so also causes us to lose boost.
 # Disabling until we can figure out why we unlinked in the first place
 # brew unlink boost
+
+# Python 2 conflicts with Python 3 links
+brew unlink python@2
+
 for formula in pkg-config eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache; do
   log "Installing formula $formula"
   brew ls --versions $formula
