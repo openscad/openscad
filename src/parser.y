@@ -184,16 +184,16 @@ statement
         | '{' inner_input '}'
         | module_instantiation
             {
-              if ($1) scope_stack.top()->addChild(std::move(shared_ptr<ModuleInstantiation>($1)));
+              if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              auto newmodule = make_shared<UserModule>($2, LOCD("module", @$));
+              UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->definition_arguments = *$4;
               auto top = scope_stack.top();
               scope_stack.push(&newmodule->scope);
-              top->addChild(std::move(newmodule));
+              top->addChild(shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
             }
@@ -203,8 +203,9 @@ statement
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
             {
-              auto func = make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
-              scope_stack.top()->addChild(std::move(func));
+              scope_stack.top()->addChild(
+                make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$))
+              );
               free($2);
               delete $4;
             }
@@ -304,7 +305,7 @@ child_statement
         | '{' child_statements '}'
         | module_instantiation
             {
-                if ($1) scope_stack.top()->addChild(std::move(shared_ptr<ModuleInstantiation>($1)));
+                if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
             }
         ;
 
@@ -745,7 +746,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 		}
 	}
 	if (!found) {
-		scope_stack.top()->addChild(std::move(assignment(token, shared_ptr<Expression>(expr), loc)));
+		scope_stack.top()->addChild(assignment(token, shared_ptr<Expression>(expr), loc));
 	}
 }
 

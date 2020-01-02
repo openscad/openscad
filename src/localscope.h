@@ -13,12 +13,12 @@ public:
 	size_t numElements() const { return assignments.size() + children.size(); }
 	void print(std::ostream &stream, const std::string &indent, const bool inlined = false) const;
 	std::vector<class AbstractNode*> instantiateChildren(const std::shared_ptr<Context> &evalctx) const;
-	void addChild(shared_ptr<ASTNode> astnode);
+	void addChild(shared_ptr<ASTNode> &&astnode);
 private:
-	void addModuleInst(shared_ptr<class ModuleInstantiation> astnode);
-	void addModule(shared_ptr<class UserModule> module);
-	void addFunction(shared_ptr<class UserFunction> function);
-	void addAssignment(shared_ptr<class Assignment> assignment);
+	void addModuleInst(shared_ptr<class ModuleInstantiation> &&astnode);
+	void addModule(shared_ptr<class UserModule> &&module);
+	void addFunction(shared_ptr<class UserFunction> &&function);
+	void addAssignment(shared_ptr<class Assignment> &&assignment);
 public:
 	void apply(const std::shared_ptr<Context> &ctx) const;
 	bool hasChildren() const {return !(children.empty());};
