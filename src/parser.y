@@ -81,7 +81,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
 static fs::path mainFilePath;
-static std::string main_file_folder;
+static std::string sourcefile_folder;
 
 bool fileEnded=false;
 %}
@@ -184,14 +184,14 @@ statement
         | '{' inner_input '}'
         | module_instantiation
             {
-              if ($1) scope_stack.top()->addChild($1);
+              if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
-              UserModule *newmodule = new UserModule($2, LOCD("module", @$));
+              shared_ptr<UserModule> newmodule = make_shared<UserModule>($2, LOCD("module", @$));
               newmodule->definition_arguments = *$4;
-              scope_stack.top()->addModule($2, newmodule);
+              scope_stack.top()->addChild(newmodule);
               scope_stack.push(&newmodule->scope);
               free($2);
               delete $4;
@@ -202,8 +202,8 @@ statement
             }
         | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
             {
-              UserFunction *func = new UserFunction($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
-              scope_stack.top()->addFunction(func);
+              shared_ptr<UserFunction> func = make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$));
+              scope_stack.top()->addChild(func);
               free($2);
               delete $4;
             }
@@ -221,7 +221,7 @@ inner_input
 assignment
         : TOK_ID '=' expr ';'
             {
-				handle_assignment($1, $3, LOCD("assignment", @$));
+                handle_assignment($1, $3, LOCD("assignment", @$));
                 free($1);
             }
         ;
@@ -282,7 +282,7 @@ ifelse_statement
 if_statement
         : TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOCD("if", @$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), sourcefile_folder, LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -303,7 +303,7 @@ child_statement
         | '{' child_statements '}'
         | module_instantiation
             {
-                if ($1) scope_stack.top()->addChild($1);
+                if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
             }
         ;
 
@@ -320,7 +320,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOCD("modulecall", @$));
+                $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
             }
@@ -328,17 +328,17 @@ single_module_instantiation
 
 expr
         : logic_or
-		| TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
-			{
-			  if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
-			    $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
-			  } else {
-				  PRINTB("WARNING: Support for function literals is disabled %s",
-						  LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
-				$$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
-			  }
-			  delete $3;
-			}
+        | TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
+            {
+              if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
+                $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+              } else {
+                PRINTB("WARNING: Support for function literals is disabled %s",
+                LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
+                $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+              }
+              delete $3;
+            }
         | logic_or '?' expr ':' expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
@@ -504,7 +504,7 @@ primary
         | TOK_ID
             {
               $$ = new Lookup($1, LOCD("variable", @$));
-                free($1);
+              free($1);
             }
         | '(' expr ')'
             {
@@ -603,17 +603,17 @@ vector_expr
         : expr
             {
               $$ = new Vector(LOCD("vector", @$));
-              $$->push_back($1);
+              $$->emplace_back($1);
             }
         |  list_comprehension_elements
             {
               $$ = new Vector(LOCD("vector", @$));
-              $$->push_back($1);
+              $$->emplace_back($1);
             }
         | vector_expr ',' optional_commas list_comprehension_elements_or_expr
             {
               $$ = $1;
-              $$->push_back($4);
+              $$->emplace_back($4);
             }
         ;
 
@@ -625,14 +625,12 @@ arguments_decl
         | argument_decl
             {
                 $$ = new AssignmentList();
-                $$->push_back(*$1);
-                delete $1;
+                $$->emplace_back($1);
             }
         | arguments_decl ',' optional_commas argument_decl
             {
                 $$ = $1;
-                $$->push_back(*$4);
-                delete $4;
+                $$->emplace_back($4);
             }
         ;
 
@@ -657,14 +655,12 @@ arguments_call
         | argument_call
             {
                 $$ = new AssignmentList();
-                $$->push_back(*$1);
-                delete $1;
+                $$->emplace_back($1);
             }
         | arguments_call ',' optional_commas argument_call
             {
                 $$ = $1;
-                $$->push_back(*$4);
-                delete $4;
+                $$->emplace_back($4);
             }
         ;
 
@@ -707,9 +703,9 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 {
 	bool found = false;
 	for (auto &assignment : scope_stack.top()->assignments) {
-		if (assignment.name == token) {
+		if (assignment->name == token) {
 			auto mainFile = mainFilePath.string();
-			auto prevFile = assignment.location().fileName();
+			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 
 			const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
@@ -719,52 +715,52 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			} else if (prevFile == mainFile && currFile == mainFile) {
 				//both assignments in the mainFile
 				PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
-						assignment.name %
-						assignment.location().firstLine() %
+						assignment->name %
+						assignment->location().firstLine() %
 						loc.firstLine());
 			} else if (uncPathCurr == uncPathPrev) {
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times
-				if (assignment.location().firstLine() != loc.firstLine()) {
+				if (assignment->location().firstLine() != loc.firstLine()) {
 					PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-							assignment.name %
-							assignment.location().firstLine() %
+							assignment->name %
+							assignment->location().firstLine() %
 							uncPathPrev %
 							loc.firstLine());
 				}
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
 				PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
-						assignment.name %
-						assignment.location().firstLine() %
+						assignment->name %
+						assignment->location().firstLine() %
 						uncPathPrev %
 						loc.firstLine() %
 						uncPathCurr);
 			}
-			assignment.expr = shared_ptr<Expression>(expr);
-			assignment.setLocation(loc);
+			assignment->expr = shared_ptr<Expression>(expr);
+			assignment->setLocation(loc);
 			found = true;
 			break;
 		}
 	}
 	if (!found) {
-		scope_stack.top()->addAssignment(Assignment(token, shared_ptr<Expression>(expr), loc));
+		scope_stack.top()->addAssignment(assignment(token, shared_ptr<Expression>(expr), loc));
 	}
 }
 
 bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
   fs::path parser_sourcefile = fs::path(fs::absolute(fs::path(filename)).generic_string());
-  main_file_folder = parser_sourcefile.parent_path().string();
+  sourcefile_folder = parser_sourcefile.parent_path().string();
   lexer_set_parser_sourcefile(parser_sourcefile);
   mainFilePath = fs::absolute(fs::path(mainFile));
 
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text.c_str();
-  fileEnded=false;
+  fileEnded = false;
 
-  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().string());
+  rootmodule = new FileModule(sourcefile_folder, parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

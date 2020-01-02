@@ -62,19 +62,19 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 	switch (this->type) {
 	case transform_type_e::SCALE:
-		args += Assignment("v");
+		args += assignment("v");
 		break;
 	case transform_type_e::ROTATE:
-		args += Assignment("a"), Assignment("v");
+		args += assignment("a"), assignment("v");
 		break;
 	case transform_type_e::MIRROR:
-		args += Assignment("v");
+		args += assignment("v");
 		break;
 	case transform_type_e::TRANSLATE:
-		args += Assignment("v");
+		args += assignment("v");
 		break;
 	case transform_type_e::MULTMATRIX:
-		args += Assignment("m");
+		args += assignment("m");
 		break;
 	default:
 		assert(false);

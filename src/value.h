@@ -18,7 +18,6 @@
 
 class tostring_visitor;
 class tostream_visitor;
-class ValuePtr;
 class Context;
 class Expression;
 

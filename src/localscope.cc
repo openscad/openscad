@@ -14,34 +14,51 @@ LocalScope::LocalScope()
 
 LocalScope::~LocalScope()
 {
-	for (auto &v : children) delete v;
-	for (auto &f : functions) delete f.second;
-	for (auto &m : modules) delete m.second;
 }
 
-void LocalScope::addChild(ModuleInstantiation *modinst) 
+void LocalScope::addChild(const shared_ptr<ASTNode> &node)
+{
+	this->children.emplace_back(node);
+
+	// FIXME: Move this out of the ASTNode subtype
+	if (auto modinst = dynamic_pointer_cast<ModuleInstantiation>(node)) {
+		this->addModuleInst(modinst);
+	}
+	if (auto module = dynamic_pointer_cast<UserModule>(node)) {
+		this->addModule(module->name, module);
+	}
+	if (auto function = dynamic_pointer_cast<UserFunction>(node)) {
+		this->addFunction(function);
+	}
+	if (auto assignment = dynamic_pointer_cast<Assignment>(node)) {
+		this->addAssignment(assignment);
+	}
+// 	FIXME: Add remaining
+}
+
+void LocalScope::addModuleInst(const shared_ptr<ModuleInstantiation> &modinst)
 {
 	assert(modinst);
-	this->children.push_back(modinst);
+	this->children_inst.emplace_back(modinst);
 }
 
-void LocalScope::addModule(const std::string &name, class UserModule *module)
+void LocalScope::addModule(const std::string &name, const shared_ptr<class UserModule> &module)
 {
 	assert(module);
-	this->modules[name] = module;
-	this->astModules.push_back({name, module});
+	this->modules.emplace(name, module);
+	this->astModules.emplace_back(name, module);
 }
 
-void LocalScope::addFunction(class UserFunction *func)
+void LocalScope::addFunction(const shared_ptr<class UserFunction> &func)
 {
 	assert(func);
 	this->functions[func->name] = func;
-	this->astFunctions.push_back({func->name, func});
+	this->astFunctions.emplace_back(func->name, func);
 }
 
-void LocalScope::addAssignment(const Assignment &ass)
+void LocalScope::addAssignment(const shared_ptr<Assignment> &ass)
 {
-	this->assignments.push_back(ass);
+	this->assignments.emplace_back(ass);
 }
 
 void LocalScope::print(std::ostream &stream, const std::string &indent, const bool inlined) const
@@ -53,17 +70,17 @@ void LocalScope::print(std::ostream &stream, const std::string &indent, const bo
 		m.second->print(stream, indent);
 	}
 	for (const auto &ass : this->assignments) {
-		ass.print(stream, indent);
+		ass->print(stream, indent);
 	}
-	for (const auto &inst : this->children) {
+	for (const auto &inst : this->children_inst) {
 		inst->print(stream, indent, inlined);
 	}
 }
 
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr<Context> evalctx) const
+std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr<Context> &evalctx) const
 {
 	std::vector<AbstractNode*> childnodes;
-	for(const auto &modinst : this->children) {
+	for(const auto &modinst : this->children_inst) {
 		AbstractNode *node = modinst->evaluate(evalctx);
 		if (node) childnodes.push_back(node);
 	}
@@ -78,9 +95,10 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr
 	NB! for loops are special as the local block may depend on variables evaluated by the
 	for loop parameters. The for loop code will handle this specially.
 */
-void LocalScope::apply(const std::shared_ptr<Context> ctx) const
+void LocalScope::apply(const std::shared_ptr<Context> &ctx) const
 {
+	// FIXME: Filter assignments before doing this
 	for(const auto &assignment : this->assignments) {
-		ctx->set_variable(assignment.name, assignment.expr->evaluate(ctx));
+		ctx->set_variable(assignment->name, assignment->expr->evaluate(ctx));
 	}
 }

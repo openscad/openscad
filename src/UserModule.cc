@@ -57,7 +57,7 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
     
 	ContextHandle<ModuleContext> c{Context::create<ModuleContext>(ctx, evalctx)};
 	// set $children first since we might have variables depending on it
-	c->set_variable("$children", ValuePtr(double(inst->scope.children.size())));
+	c->set_variable("$children", ValuePtr(double(inst->scope.children_inst.size())));
 	module_stack.push_back(inst->name());
 	c->set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
 	c->initializeModule(*this);
@@ -80,10 +80,10 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 	if (!this->name.empty()) {
 		stream << indent << "module " << this->name << "(";
 		for (size_t i=0; i < this->definition_arguments.size(); i++) {
-			const Assignment &arg = this->definition_arguments[i];
+			const auto &arg = this->definition_arguments[i];
 			if (i > 0) stream << ", ";
-			stream << arg.name;
-			if (arg.expr) stream << " = " << *arg.expr;
+			stream << arg->name;
+			if (arg->expr) stream << " = " << *arg->expr;
 		}
 		stream << ") {\n";
 		tab = "\t";

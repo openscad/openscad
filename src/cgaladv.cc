@@ -50,10 +50,10 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	AssignmentList args;
 
 	if (type == CgaladvType::MINKOWSKI)
-		args += Assignment("convexity");
+		args += assignment("convexity");
 
 	if (type == CgaladvType::RESIZE)
-		args += Assignment("newsize"), Assignment("auto");
+		args += assignment("newsize"), assignment("auto");
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args);

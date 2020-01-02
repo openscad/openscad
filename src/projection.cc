@@ -47,8 +47,8 @@ AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx,
 {
 	auto node = new ProjectionNode(inst);
 
-	AssignmentList args{Assignment("cut")};
-	AssignmentList optargs{Assignment("convexity")};
+	AssignmentList args{assignment("cut")};
+	AssignmentList optargs{assignment("convexity")};
 	
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);
