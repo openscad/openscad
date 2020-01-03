@@ -659,6 +659,14 @@ public:
   template <typename T> bool operator()(const T &op1, const T &op2) const {
     return op1 == op2;
   }
+
+  bool operator()(const bool &op1, const double &op2) const {
+    return op1 == op2;
+  }
+
+  bool operator()(const double &op1, const bool &op2) const {
+    return op1 == op2;
+  }
 };
 
 bool Value::operator==(const Value &v) const
@@ -679,8 +687,12 @@ bool Value::operator!=(const Value &v) const
 			return false;																											\
 		}																																		\
 																																				\
-		bool operator()(const bool &op1, const bool &op2) const {						\
+		template <typename T> bool operator()(const T &op1, const T &op2) const {	\
 			return op1 op op2;																								\
+		}																																		\
+																																				\
+		bool operator()(const FunctionType &op1, const FunctionType &op2) const {	\
+			return false;																											\
 		}																																		\
 																																				\
 		bool operator()(const bool &op1, const double &op2) const {					\
@@ -688,14 +700,6 @@ bool Value::operator!=(const Value &v) const
 		}																																		\
 																																				\
 		bool operator()(const double &op1, const bool &op2) const {					\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const double &op1, const double &op2) const {				\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
 			return op1 op op2;																								\
 		}																																		\
 	}

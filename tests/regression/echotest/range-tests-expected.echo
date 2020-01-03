@@ -51,11 +51,11 @@ ECHO: "[b02] ", 1
 ECHO: "[b02] ", 3
 ECHO: "[b02] ", 5
 ECHO: "[b03] ----- [1:-1:5]"
-WARNING: begin is smaller than the end, but step is negativ, in file range-tests.scad, line 12
+WARNING: begin is smaller than the end, but step is negative, in file range-tests.scad, line 12
 ECHO: "[b04] ----- [5:1:1]"
-WARNING: begin is greater than the end, but step is positiv, in file range-tests.scad, line 13
+WARNING: begin is greater than the end, but step is positive, in file range-tests.scad, line 13
 ECHO: "[b05] ----- [5:2:1]"
-WARNING: begin is greater than the end, but step is positiv, in file range-tests.scad, line 14
+WARNING: begin is greater than the end, but step is positive, in file range-tests.scad, line 14
 ECHO: "[b06] ----- [5:-1:1]"
 ECHO: "[b06] ", 5
 ECHO: "[b06] ", 4

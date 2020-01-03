@@ -77,12 +77,60 @@ public:
 		: begin_val(begin), step_val(step), end_val(end) {}
 	
 	bool operator==(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n1 == 0) return n2 == 0;
+		if (n2 == 0) return false;
 		return this == &other ||
 			(this->begin_val == other.begin_val &&
 			 this->step_val == other.step_val &&
-			 this->end_val == other.end_val);
+			 n1 == n2);
+	}
+
+	bool operator<(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n1 == 0) return 0 < n2;
+		if (n2 == 0) return false;
+		return this->begin_val < other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val < other.step_val || (this->step_val == other.step_val && n1 < n2))
+			);
 	}
 	
+	bool operator<=(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n1 == 0) return true; // (0 <= n2) is always true 
+		if (n2 == 0) return false;
+		return this->begin_val < other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val < other.step_val || (this->step_val == other.step_val && n1 <= n2))
+			);
+	}
+
+	bool operator>(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n2 == 0) return n1 > 0;
+		if (n1 == 0) return false;
+		return this->begin_val > other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val > other.step_val || (this->step_val == other.step_val && n1 > n2))
+			);
+	}
+
+	bool operator>=(const RangeType &other) const {
+		auto n1 = this->numValues();
+		auto n2 = other.numValues();
+		if (n2 == 0) return true; // (n1 >= 0) is always true
+		if (n1 == 0) return false;
+		return this->begin_val > other.begin_val ||
+			(this->begin_val == other.begin_val &&
+				(this->step_val > other.step_val || (this->step_val == other.step_val && n1 >= n2))
+			);
+	}
+
 	double begin_value() { return begin_val; }
 	double step_value() { return step_val; }
 	double end_value() { return end_val; }
@@ -92,7 +140,7 @@ public:
 	
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
 	uint32_t numValues() const;
-  
+
 	friend class chr_visitor;
 	friend class tostring_visitor;
 	friend class tostream_visitor;

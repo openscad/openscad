@@ -52,7 +52,7 @@ WARNING: module sphere() does not support child modules, in file errors-warnings
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file ../3D/features/for-tests.scad, line 19
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file ../3D/features/for-tests.scad, line 31
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 35
-WARNING: begin is smaller than the end, but step is negativ, in file ../3D/features/for-tests.scad, line 38
+WARNING: begin is smaller than the end, but step is negative, in file ../3D/features/for-tests.scad, line 38
 ECHO: "a"
 ECHO: "↑"
 ECHO: "b"
