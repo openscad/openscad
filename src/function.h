@@ -4,6 +4,7 @@
 #include "value.h"
 #include "Assignment.h"
 #include "feature.h"
+#include "evalcontext.h"
 
 #include <string>
 #include <vector>

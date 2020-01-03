@@ -86,7 +86,7 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 {
 	// Set any default values
 	for (const auto &arg : args) {
-		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
+		set_variable(arg->name, arg->expr ? arg->expr->evaluate(this->parent) : ValuePtr::undefined);
 	}
 	
 	if (evalctx) {
@@ -265,7 +265,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s\n") % arg.name % variables[arg.name];
+				s << boost::format("    %s = %s\n") % arg->name % variables[arg->name];
 			}
 		}
 	}

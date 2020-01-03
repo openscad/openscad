@@ -67,13 +67,13 @@ public:
 AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
   AssignmentList args{
-    Assignment("file"), Assignment("layer"), Assignment("convexity"),
-		Assignment("origin"), Assignment("scale")
+    assignment("file"), assignment("layer"), assignment("convexity"),
+		assignment("origin"), assignment("scale")
 	};
 	
 	AssignmentList optargs{
-		Assignment("width"), Assignment("height"),
-		Assignment("filename"), Assignment("layername"), Assignment("center"), Assignment("dpi")
+		assignment("width"), assignment("height"),
+		assignment("filename"), assignment("layername"), assignment("center"), assignment("dpi")
 	};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};

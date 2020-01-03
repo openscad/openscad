@@ -51,10 +51,10 @@ void UserFunction::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function " << name << "(";
 	for (size_t i=0; i < definition_arguments.size(); i++) {
-		const Assignment &arg = definition_arguments[i];
+		const auto &arg = definition_arguments[i];
 		if (i > 0) stream << ", ";
-		stream << arg.name;
-		if (arg.expr) stream << " = " << *arg.expr;
+		stream << arg->name;
+		if (arg->expr) stream << " = " << *arg->expr;
 	}
 	stream << ") = " << *expr << ";\n";
 }

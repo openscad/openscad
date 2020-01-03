@@ -46,7 +46,7 @@ AbstractNode *RenderModule::instantiate(const std::shared_ptr<Context>& ctx, con
 {
 	auto node = new RenderNode(inst);
 
-	AssignmentList args{Assignment("convexity")};
+	AssignmentList args{assignment("convexity")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args);

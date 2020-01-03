@@ -22,7 +22,7 @@ public:
 	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const;
 
 	size_t numChildren() const;
-	ModuleInstantiation *getChild(size_t i) const;
+	shared_ptr<ModuleInstantiation> getChild(size_t i) const;
 
 	void assignTo(std::shared_ptr<Context> target) const;
 

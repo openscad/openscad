@@ -73,18 +73,18 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		if (assignment.expr->isLiteral() && this->variables.find(assignment.name) != this->variables.end()) {
-			std::string loc = assignment.location().toRelativeString(this->documentPath());
-			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment.name % loc);
+		if (assignment->expr->isLiteral() && this->variables.find(assignment->name) != this->variables.end()) {
+			std::string loc = assignment->location().toRelativeString(this->documentPath());
+			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment->name % loc);
 		}
-		this->set_variable(assignment.name, assignment.expr->evaluate(get_shared_ptr()));
+		this->set_variable(assignment->name, assignment->expr->evaluate(get_shared_ptr()));
 	}
 
 // Experimental code. See issue #399
 //	evaluateAssignments(module.scope.assignments);
 }
 
-const UserFunction *ModuleContext::findLocalFunction(const std::string &name) const
+shared_ptr<const UserFunction> ModuleContext::findLocalFunction(const std::string &name) const
 {
  	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
 		auto f = this->functions_p->find(name)->second;
@@ -97,7 +97,7 @@ const UserFunction *ModuleContext::findLocalFunction(const std::string &name) co
 	return nullptr;
 }
 
-const UserModule *ModuleContext::findLocalModule(const std::string &name) const
+shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &name) const
 {
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		auto m = this->modules_p->find(name)->second;
@@ -148,7 +148,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg.name % variables[arg.name];
+				s << boost::format("    %s = %s") % arg->name % variables[arg->name];
 			}
 		}
 	}
@@ -227,6 +227,6 @@ void FileContext::initializeModule(const class FileModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		this->set_variable(assignment.name, assignment.expr->evaluate(get_shared_ptr()));
+		this->set_variable(assignment->name, assignment->expr->evaluate(get_shared_ptr()));
 	}
 }

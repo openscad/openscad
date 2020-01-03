@@ -80,10 +80,10 @@ namespace /* anonymous*/ {
 
 	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
 		for (size_t i=0; i < l.size(); i++) {
-			const Assignment &arg = l[i];
+			const auto &arg = l[i];
 			if (i > 0) o << ", ";
-			if (!arg.name.empty()) o << arg.name  << " = ";
-			o << *arg.expr;
+			if (!arg->name.empty()) o << arg->name  << " = ";
+			o << *arg->expr;
 		}
 		return o;
 	}
@@ -396,9 +396,9 @@ bool Vector::isLiteral() const {
     return true;
 }
 
-void Vector::push_back(Expression *expr)
+void Vector::emplace_back(Expression *expr)
 {
-	this->children.push_back(shared_ptr<Expression>(expr));
+	this->children.emplace_back(expr);
 }
 
 ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
@@ -488,9 +488,9 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
 	stream << indent << "function(";
 	bool first = true;
 	for (const auto& assignment : definition_arguments) {
-		stream << (first ? "" : ", ") << assignment.name;
-		if (assignment.expr) {
-			stream << " = " << *assignment.expr.get();
+		stream << (first ? "" : ", ") << assignment->name;
+		if (assignment->expr) {
+			stream << " = " << *assignment->expr.get();
 		}
 		first = false;
 	}
@@ -552,8 +552,8 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 		this->resolvedArguments = ec->resolveArguments(definition_arguments, {}, false);
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
-			if (this->resolvedArguments.find(arg.name) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg.name, arg.expr ? arg.expr->evaluate(context) : ValuePtr::undefined);
+			if (this->resolvedArguments.find(arg->name) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg->name, arg->expr ? arg->expr->evaluate(context) : ValuePtr::undefined);
 			}
 		}
 	}
@@ -903,15 +903,15 @@ void LcLet::print(std::ostream &stream, const std::string &) const
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
 {
 	AssignmentList args;
-	args += Assignment("condition"), Assignment("message");
+	args += assignment("condition"), assignment("message");
 
 	ContextHandle<Context> c{Context::create<Context>(context)};
 
 	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
 	for (const auto &arg : args) {
-		auto it = assignments.find(arg.name);
+		auto it = assignments.find(arg->name);
 		if (it != assignments.end()) {
-			c->set_variable(arg.name, assignments[arg.name]->evaluate(evalctx));
+			c->set_variable(arg->name, assignments[arg->name]->evaluate(evalctx));
 		}
 	}
 	
