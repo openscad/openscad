@@ -16,7 +16,7 @@ LocalScope::~LocalScope()
 {
 }
 
-void LocalScope::addChild(shared_ptr<ASTNode> &&node)
+void LocalScope::addChild(shared_ptr<ASTNode> node)
 {
 	// FIXME: Move this out of the ASTNode subtype
 	if (auto modinst = dynamic_pointer_cast<ModuleInstantiation>(node)) {
