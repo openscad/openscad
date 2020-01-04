@@ -546,10 +546,14 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 */
 void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments)
 {
-	if (this->resolvedArguments.empty()) {
+	if (this->resolvedArguments.empty() && !this->arguments.empty()) {
 		// Figure out parameter names
 		ContextHandle<EvalContext> ec{Context::create<EvalContext>(context, this->arguments, this->loc)};
 		this->resolvedArguments = ec->resolveArguments(definition_arguments, {}, false);
+	}
+
+	// FIXME: evaluate defaultArguments in FunctionDefinition / UserFunction and pass to FunctionCall instead of definition_arguments ?
+	if (this->defaultArguments.empty() && !definition_arguments.empty()) {
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
 			if (this->resolvedArguments.find(arg->name) == this->resolvedArguments.end()) {
