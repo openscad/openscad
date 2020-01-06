@@ -459,6 +459,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue3118-recur-limit.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/root-modifiers.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/root-modifier-for.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
