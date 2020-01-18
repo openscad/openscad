@@ -269,7 +269,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const std::string &export_format)
+int cmdline(const char *deps_output_file, const std::string &filename, const std::string &output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const std::string &export_format)
 {
 	Tree tree;
 	boost::filesystem::path doc(filename);
@@ -827,7 +827,7 @@ int main(int argc, char **argv)
 
 	auto original_path = fs::current_path();
 
-	const char *output_file = nullptr;
+	vector<string> output_files;
 	const char *deps_output_file = nullptr;
 	std::string export_format;
 
@@ -835,7 +835,7 @@ int main(int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions\n")
-		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
+		("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg. (May be used multiple time for different exports)\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
@@ -958,19 +958,15 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("o")) {
-		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0], desc, true);
-		output_file = vm["o"].as<string>().c_str();
+		output_files = vm["o"].as<vector<string>>();
 	}
 	if (vm.count("s")) {
 		printDeprecation("The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], desc, true);
-		output_file = vm["s"].as<string>().c_str();
+		output_files.push_back(vm["s"].as<string>());
 	}
 	if (vm.count("x")) {
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], desc, true);
-		output_file = vm["x"].as<string>().c_str();
+		output_files.push_back(vm["x"].as<string>());
 	}
 	if (vm.count("d")) {
 		if (deps_output_file) help(argv[0], desc, true);
@@ -1034,7 +1030,7 @@ int main(int argc, char **argv)
 	Camera camera = get_camera(vm);
 
 	auto cmdlinemode = false;
-	if (output_file) { // cmd-line mode
+	if (!output_files.empty()) { // cmd-line mode
 		cmdlinemode = true;
 		if (!inputFiles.size()) help(argv[0], desc, true);
 	}
@@ -1048,7 +1044,9 @@ int main(int argc, char **argv)
 				rc = info();
 			}
 			else {
-				rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+				for(auto output_file : output_files) {
+					rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+				}
 			}
 		} catch (const HardWarningException &) {
 			rc = 1;
