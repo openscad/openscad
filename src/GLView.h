@@ -39,8 +39,8 @@ public:
 	void setCamera(const Camera &cam);
 	void setupCamera();
 
-	void setColorScheme(const ColorScheme &cs);
-	void setColorScheme(const std::string &cs);
+	virtual void setColorScheme(const ColorScheme &cs);
+	void setColorSchemeByName(const std::string &cs);
 	void updateColorScheme();
 
 	bool showAxes() const { return this->showaxes; }

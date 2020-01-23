@@ -2891,7 +2891,8 @@ void MainWindow::preferences()
 void MainWindow::setColorScheme(const QString &scheme)
 {
 	RenderSettings::inst()->colorscheme = scheme.toStdString();
-	this->qglview->setColorScheme(scheme.toStdString());
+	this->qglview->setColorSchemeByName(scheme.toStdString());
+	this->update(); // needed to update background of QOpenGLWidget in case of transparent GL background
 	this->qglview->updateGL();
 }
 

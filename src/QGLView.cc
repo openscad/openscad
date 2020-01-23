@@ -68,14 +68,21 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
+  #ifdef USE_QOPENGLWIDGET
+    // Needed to show widget background color behind opengl view,
+    // otherwise we would see straight through the GLView.
+    this->setAttribute(Qt::WA_AlwaysStackOnTop);
+    // Make sure Qt will fill the background color with the color we set (in setWidgetBackground).
+    this->setAutoFillBackground(true);
+    setWidgetBackground(*this->colorscheme);
+  #endif
+
   resetView();
 
   this->mouse_drag_active = false;
   this->statusLabel = nullptr;
 
   setMouseTracking(true);
-
-
 
 #if defined(_WIN32) && !defined(USE_QOPENGLWIDGET)
 // see paintGL() + issue160 + wine FAQ
@@ -313,6 +320,23 @@ const QImage & QGLView::grabFrame()
 bool QGLView::save(const char *filename)
 {
   return this->frame.save(filename, "PNG");
+}
+
+void QGLView::setWidgetBackground(const ColorScheme &cs) {
+  auto bgcol = ColorMap::getColor(cs, RenderColor::BACKGROUND_COLOR);
+  // If colorscheme background is not fully opaque,
+  if (bgcol[3] != 1.0f) {
+    bgcol *= 255.0f;
+    auto pal = this->palette();
+    // then make widget background opaque so we don't see desktop/windows behind OpenSCAD
+    pal.setColor(this->backgroundRole(), QColor(bgcol[0], bgcol[1], bgcol[2], 0xFF));
+    this->setPalette(pal);
+  }
+}
+
+void QGLView::setColorScheme(const ColorScheme &cs) {
+  setWidgetBackground(cs);
+  GLView::setColorScheme(cs);
 }
 
 void QGLView::wheelEvent(QWheelEvent *event)

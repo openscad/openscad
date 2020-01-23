@@ -60,7 +60,7 @@ void GLView::setColorScheme(const ColorScheme &cs)
   this->updateColorScheme();
 }
 
-void GLView::setColorScheme(const std::string &cs)
+void GLView::setColorSchemeByName(const std::string &cs)
 {
   const auto colorscheme = ColorMap::inst()->findColorScheme(cs);
   if (colorscheme) {
@@ -125,7 +125,14 @@ void GLView::paintGL()
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
-  glClearColor(bgcol[0], bgcol[1], bgcol[2], bgcol[3]);
+  if (bgcol[3] == 0.0f) {
+    // We render fully transparent backgrounds as clear "black" in OpenGL,
+    // so they don't contribute any color to semi-transparent objects during image export.
+    glClearColor(0,0,0,0);
+    // Actual background color seen by user is handled by QWidget (see QGLView::setWidgetBackground)
+  } else {
+    glClearColor(bgcol[0], bgcol[1], bgcol[2], bgcol[3]);
+  }
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
