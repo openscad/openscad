@@ -171,7 +171,7 @@ time_t FileModule::handleDependencies(bool is_root)
 	// Relative filenames which were located are reinserted as absolute filenames
 	for (const auto &files : updates) {
 		auto pos = std::find(usedlibs.begin(), usedlibs.end(), files.first);
-		f(pos != usedlibs.end())
+		if(pos != usedlibs.end())
 			*pos = files.second;
 	}
 	return latest;
