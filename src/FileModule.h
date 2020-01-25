@@ -34,7 +34,7 @@ public:
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;
 	LocalScope scope;
-	typedef std::unordered_set<std::string> ModuleContainer;
+	typedef std::vector<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
 
 	std::vector<IndicatorData> indicatorData;
