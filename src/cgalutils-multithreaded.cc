@@ -1,5 +1,8 @@
 #ifdef ENABLE_CGAL
 
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
@@ -10,9 +13,6 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/string.hpp>
-
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/mapped_region.hpp>
 
 #include <Eigen/Core>
 
