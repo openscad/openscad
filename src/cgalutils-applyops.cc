@@ -34,6 +34,8 @@
 #include <queue>
 #include <unordered_set>
 
+#include "feature.h"
+
 namespace CGALUtils {
 
 	template<typename Polyhedron>
@@ -85,6 +87,14 @@ namespace CGALUtils {
 		bool foundFirst = false;
 
 		try {
+			// DIFFERENCE is a strictly ordered operation and cannot be multithreaded ?! :(
+			// Multithreaded pipeline
+			#ifdef QT_CORE_LIB // Needed because of Qprocess
+					if (OpenSCADOperator::INTERSECTION == op && Feature::ExperimentalMultiProcessing.is_enabled())
+						return applyMultithreadedOperator(children, op);
+			#endif
+
+			// Default old behaviour
 			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
@@ -142,6 +152,13 @@ namespace CGALUtils {
 
 	CGAL_Nef_polyhedron *applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
+	// Multithreaded pipeline
+	#ifdef QT_CORE_LIB // Needed because of Qprocess
+		if (Feature::ExperimentalMultiProcessing.is_enabled())
+			return applyMultithreadedUnion(chbegin, chend);
+	#endif
+
+		// Default old behaviour
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark

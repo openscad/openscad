@@ -25,6 +25,7 @@ const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable 
 const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalMouseSelection("mouse-selection", "Enable mouse selector");
+const Feature Feature::ExperimentalMultiProcessing("multi-processing", "Enable parallel GCAL rendering");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

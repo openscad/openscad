@@ -936,6 +936,7 @@ int main(int argc, char **argv)
 		("version,v", "print the version")
 		("info", "print information about the build process\n")
 
+		("spawnchild", po::value<vector<string>>()->multitoken(), "spawn renderer worker")
 		("camera", po::value<string>(), "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or =eye_x,y,z,center_x,y,z")
 		("autocenter", "adjust camera to look at object's center")
 		("viewall", "adjust camera to fit object")
@@ -982,6 +983,13 @@ int main(int argc, char **argv)
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		LOG(message_group::None,Location::NONE,"","%1$s\n",e.what());
 		help(argv[0], desc, true);
+	}
+
+	std::string path = boost::filesystem::system_complete(argv[0]).string();
+	CGALUtils::setProgName(path);
+	if (vm.count("spawnchild")) {
+		CGALUtils::spawnOpWorker(vm["spawnchild"].as<vector<string>>());
+		exit(0);
 	}
 
 	OpenSCAD::debug = "";

@@ -80,7 +80,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   endif()
 endif()
 
-set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
+set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options serialization)
 
 find_package(PkgConfig)
 
@@ -392,6 +392,13 @@ elseif(UNIX)
     find_library(X11_LIBRARY X11)
     set(PLATFORM_LIBS ${X11_LIBRARY})
   endif()
+  find_library(RT_LIBRARY rt)
+  if(NOT RT_LIBRARY)
+    message(FATAL_ERROR "librt not found")
+  else()
+    set(PLATFORM_LIBS ${PLATFORM_LIBS} ${RT_LIBRARY})
+    message(STATUS "librt: ${RT_LIBRARY}")
+  endif()
 elseif(WIN32)
   add_definitions(-DNOGDI)
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
@@ -534,7 +541,16 @@ set(CGAL_SOURCES
   src/cgalutils-tess.cc
   src/export_nef.cc
   src/import_nef.cc
+<<<<<<< HEAD
   src/CGAL_Nef_polyhedron.cc
+=======
+  src/cgalutils.cc 
+  src/cgalutils-applyops.cc 
+  src/cgalutils-project.cc 
+  src/cgalutils-tess.cc 
+  src/cgalutils-polyhedron.cc 
+  src/cgalutils-multithreaded.cc
+>>>>>>> Implement #391
   src/CGALCache.cc
   src/CSGTreeEvaluator.cc
   src/Polygon2d-CGAL.cc

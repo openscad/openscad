@@ -117,6 +117,10 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
+unix {
+  LIBS += -lrt
+}
+
 CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
 CONFIG += scintilla
@@ -657,6 +661,7 @@ HEADERS += src/cgal.h \
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-applyops.cc \
+           src/cgalutils-multithreaded.cc \
            src/cgalutils-project.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
