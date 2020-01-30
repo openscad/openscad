@@ -395,8 +395,12 @@ inline void mergeNonIntersectingPolySets(std::vector<std::vector<unsigned>> &mer
 	}
 }
 
-// template <typename functor1, typename functor2, typename functor3>
+#if 0 // C++14 feature currently not supported by all c++14 compilers
 void separateDifferentGeometries(const Geometry::GeometryItem &it, auto F1, auto F2, auto F3)
+#else
+template <typename functor1, typename functor2, typename functor3>
+void separateDifferentGeometries(const Geometry::GeometryItem &it, functor1 F1, functor2 F2, functor3 F3)
+#endif
 {
 	const shared_ptr<const Geometry> &chgeom = it.second;
 	shared_ptr<const CGAL_Nef_polyhedron> curChild =
@@ -605,18 +609,18 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 		bool bad_flag = false;
 		separateDifferentGeometries(
 				it,
-				[&](auto polyset) {
+				[&](const PolySet *polyset) {
 					if (op == OpenSCADOperator::INTERSECTION && polyset->isEmpty())
 						bad_flag = true; // Intersecting with nothing
 					solids.push_back({TYPE_MEM::LOCAL, polyset, nullptr});
 					// polysets.push_back(chps);
 				},
-				[&](auto polyhedron) {
+				[&](std::shared_ptr<const CGAL_Nef_polyhedron> polyhedron) {
 					if (op == OpenSCADOperator::INTERSECTION && polyhedron->isEmpty())
 						bad_flag = true; // Intersecting with nothing
 					solids.push_back({TYPE_MEM::LOCAL, nullptr, polyhedron});
 				},
-				[&](auto node_mark) {
+				[&](int node_mark) {
 					//
 					node_marks.push_back(node_mark);
 				});
@@ -650,15 +654,15 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::iterator chbe
 		for (auto it = chbegin; it != chend; ++it) {
 			separateDifferentGeometries(
 					*it,
-					[&](auto polyset) {
+					[&](const PolySet* polyset) {
 						// Separated PolySets
 						polysets.push_back(polyset);
 					},
-					[&](auto polyhedron) {
+					[&](std::shared_ptr<const CGAL_Nef_polyhedron> polyhedron) {
 						// Separated Polyhedrons
 						if (!polyhedron->isEmpty()) polyhedrons.push_back(polyhedron);
 					},
-					[&](auto node_mark) {
+					[&](int node_mark) {
 						// Separated nodemarks
 						node_marks.push_back(node_mark);
 					});
