@@ -117,7 +117,7 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
-unix {
+unix:!macx {
   LIBS += -lrt
 }
 
