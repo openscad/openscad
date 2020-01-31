@@ -58,7 +58,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
         }
       }
       if(resolvedArgs.find(name) != resolvedArgs.end()){
-          PRINTB("WARNING: argument %s supplied more then once, %s", name % this->loc.toRelativeString(this->documentPath()));
+          PRINTB("WARNING: argument %s supplied more than once, %s", name % this->loc.toRelativeString(this->documentPath()));
       }
       resolvedArgs[name] = expr;
     }
