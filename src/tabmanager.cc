@@ -719,3 +719,11 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
     const QString filename = QString::fromStdString(editor->indicatorData[val].path);
     this->open(filename);
 }
+
+void TabManager::copyToEndOfLine(){
+    clipBoard = QGuiApplication::clipboard();
+    QString textToEnd = editor->stringToEndOfTheLine();
+    std::string str = "Hello ";
+    QString qstr = QString::fromStdString(str);
+    clipBoard->setText(textToEnd);
+}

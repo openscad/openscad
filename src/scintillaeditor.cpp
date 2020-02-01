@@ -1208,3 +1208,12 @@ void ScintillaEditor::jumpToNextError()
 {
 	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
 }
+
+QString ScintillaEditor::stringToEndOfTheLine(){
+    int line,index,line_len,position_start;
+    qsci->getCursorPosition(&line,&index);
+    position_start = qsci->positionFromLineIndex(line,0);
+    line_len = qsci->lineLength(line);
+    QString textToEnd = qsci->text((position_start+index),(position_start+line_len));
+    return textToEnd;
+}
