@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-17 10:19+0100\n"
-"PO-Revision-Date: 2016-09-13 23:33+0200\n"
-"Last-Translator: Marek Pikuła <marek.pikula@sent.tech>\n"
+"PO-Revision-Date: 2020-02-01 16:27+0100\n"
+"Last-Translator: Bartłomiej Wiśniowski <bwisn_dev@outlook.com>\n"
 "Language-Team: \n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
 msgid "About OpenSCAD"
@@ -42,7 +42,7 @@ msgstr ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Program CAD do bryłowego modelownia 3D</p>\n"
+"2em;\">Program CAD do bryłowego modelowania 3D</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -75,7 +75,7 @@ msgstr "Resetuj widok"
 #: objects/ui_AxisConfigWidget.h:849 objects/ui_AxisConfigWidget.h:851
 #: objects/ui_AxisConfigWidget.h:862
 msgid "DeadZone"
-msgstr ""
+msgstr "Martwa strefa"
 
 #: objects/ui_AxisConfigWidget.h:839
 msgid "Auto Trim Axes"
@@ -83,44 +83,43 @@ msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:853
 msgid "Axis 2"
-msgstr ""
+msgstr "Oś 2"
 
 #: objects/ui_AxisConfigWidget.h:854
 msgid "Axis 0"
-msgstr ""
+msgstr "Oś 0"
 
 #: objects/ui_AxisConfigWidget.h:855
 msgid "Axis 3"
-msgstr ""
+msgstr "Oś 3"
 
 #: objects/ui_AxisConfigWidget.h:856
 msgid "Axis 6"
-msgstr ""
+msgstr "Oś 6"
 
 #: objects/ui_AxisConfigWidget.h:857
 msgid "Axis 8"
-msgstr ""
+msgstr "Oś 8"
 
 #: objects/ui_AxisConfigWidget.h:858
 msgid "Axis 7"
-msgstr ""
+msgstr "Oś 7"
 
 #: objects/ui_AxisConfigWidget.h:859
 msgid "Axis 5"
-msgstr ""
+msgstr "Oś 5"
 
 #: objects/ui_AxisConfigWidget.h:860
 msgid "Axis 1"
-msgstr ""
+msgstr "Oś 1"
 
 #: objects/ui_AxisConfigWidget.h:861
 msgid "Axis 4"
-msgstr ""
+msgstr "Oś 4"
 
 #: objects/ui_AxisConfigWidget.h:864
-#, fuzzy
 msgid "Rotation"
-msgstr "&Dokumentacja"
+msgstr "&Rotacja"
 
 #: objects/ui_AxisConfigWidget.h:865
 #, fuzzy
@@ -129,7 +128,7 @@ msgstr "Przybliż"
 
 #: objects/ui_AxisConfigWidget.h:866
 msgid "X"
-msgstr ""
+msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:867
 msgid "Gain"
@@ -137,15 +136,15 @@ msgstr ""
 
 #: objects/ui_AxisConfigWidget.h:868
 msgid "Y"
-msgstr ""
+msgstr "Y"
 
 #: objects/ui_AxisConfigWidget.h:869
 msgid "Z"
-msgstr ""
+msgstr "Z"
 
 #: objects/ui_AxisConfigWidget.h:870
 msgid "Translation"
-msgstr ""
+msgstr "Translacja"
 
 #: objects/ui_AxisConfigWidget.h:871
 #, fuzzy
@@ -159,7 +158,7 @@ msgstr "Wklej przesunięcie podglądu (&translate)"
 
 #: objects/ui_AxisConfigWidget.h:873
 msgid "Axis Setup:"
-msgstr ""
+msgstr "Ustawienia osi:"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
@@ -172,105 +171,103 @@ msgstr "Spacji"
 
 #: objects/ui_AxisConfigWidget.h:876
 msgid "HIDAPI"
-msgstr ""
+msgstr "HIDAPI"
 
 #: objects/ui_AxisConfigWidget.h:877
 msgid "QGamepad"
-msgstr ""
+msgstr "QGamepad"
 
 #: objects/ui_AxisConfigWidget.h:878
 msgid "Joystick"
-msgstr ""
+msgstr "Joystick"
 
 #: objects/ui_AxisConfigWidget.h:879
 msgid "DBus"
-msgstr ""
+msgstr "DBus"
 
 #: objects/ui_AxisConfigWidget.h:880
 msgid "Axes Mapping:"
-msgstr ""
+msgstr "Mapowanie osi:"
 
 #: objects/ui_ButtonConfigWidget.h:267
 msgid "Button 2"
-msgstr ""
+msgstr "Przycisk 2"
 
 #: objects/ui_ButtonConfigWidget.h:268
 msgid "Button 3"
-msgstr ""
+msgstr "Przycisk 3"
 
 #: objects/ui_ButtonConfigWidget.h:269
 msgid "Button 5"
-msgstr ""
+msgstr "Przycisk 5"
 
 #: objects/ui_ButtonConfigWidget.h:270
 msgid "Button 6"
-msgstr ""
+msgstr "Przycisk 6"
 
 #: objects/ui_ButtonConfigWidget.h:271
 msgid "Button 4"
-msgstr ""
+msgstr "Przycisk 4"
 
 #: objects/ui_ButtonConfigWidget.h:272
 msgid "Button 9"
-msgstr ""
+msgstr "Przycisk 9"
 
 #: objects/ui_ButtonConfigWidget.h:273
 msgid "Button 8"
-msgstr ""
+msgstr "Przycisk 8"
 
 #: objects/ui_ButtonConfigWidget.h:274
 msgid "Button 7"
-msgstr ""
+msgstr "Przycisk 7"
 
 #: objects/ui_ButtonConfigWidget.h:275
 msgid "Button 0"
-msgstr ""
+msgstr "Przycisk 0"
 
 #: objects/ui_ButtonConfigWidget.h:276
 msgid "Button 1"
-msgstr ""
+msgstr "Przycisk 1"
 
 #: objects/ui_ButtonConfigWidget.h:277
 msgid "Button 12"
-msgstr ""
+msgstr "Przycisk 12"
 
 #: objects/ui_ButtonConfigWidget.h:278
 msgid "Button 10"
-msgstr ""
+msgstr "Przycisk 10"
 
 #: objects/ui_ButtonConfigWidget.h:279
 msgid "Button 11"
-msgstr ""
+msgstr "Przycisk 11"
 
 #: objects/ui_ButtonConfigWidget.h:280
 msgid "Button 13"
-msgstr ""
+msgstr "Przycisk 13"
 
 #: objects/ui_ButtonConfigWidget.h:281
 msgid "Button 14"
-msgstr ""
+msgstr "Przycisk 14"
 
 #: objects/ui_ButtonConfigWidget.h:282
 msgid "Button 15"
-msgstr ""
+msgstr "Przycisk 15"
 
 #: objects/ui_Console.h:42
 msgid "Clear"
-msgstr ""
+msgstr "Wyczyść"
 
 #: objects/ui_Console.h:44
-#, fuzzy
 msgid "Clear console"
-msgstr "Konsola"
+msgstr "Wyczyść konsolę"
 
 #: objects/ui_Console.h:46
-#, fuzzy
 msgid "Save As"
-msgstr "Zapisz &jako…"
+msgstr "Zapisz &jako"
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
-msgstr ""
+msgstr "Zapisz zawartość konsoli do pliku"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -485,23 +482,20 @@ msgid "Ctrl+Shift+C"
 msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:958
-#, fuzzy
 msgid "Copy viewport transl&ation"
-msgstr "Wklej przesunięcie podglądu (&translate)"
+msgstr "Kopiuj przesunięcie podglądu (&translate)"
 
 #: objects/ui_MainWindow.h:960
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:962
-#, fuzzy
 msgid "Cop&y viewport rotation"
-msgstr "Wklej obrót po&dglądu (rotate)"
+msgstr "Kopiuj obrót podglądu (&rotation)"
 
 #: objects/ui_MainWindow.h:963
-#, fuzzy
 msgid "Copy vie&wport distance"
-msgstr "Kopiuj podgląd"
+msgstr "Kopiuj odległość podglądu (&distance)"
 
 #: objects/ui_MainWindow.h:964
 msgid "Increase Font &Size"
@@ -549,11 +543,11 @@ msgstr "F6"
 
 #: objects/ui_MainWindow.h:985
 msgid "&3D Print"
-msgstr ""
+msgstr "Drukuj &3D"
 
 #: objects/ui_MainWindow.h:987
 msgid "F8"
-msgstr ""
+msgstr "F8"
 
 #: objects/ui_MainWindow.h:989
 msgid "&Check Validity"
@@ -577,7 +571,7 @@ msgstr "Eksportuj jako &STL…"
 
 #: objects/ui_MainWindow.h:995
 msgid "F7"
-msgstr ""
+msgstr "F7"
 
 #: objects/ui_MainWindow.h:997
 msgid "Export as &OFF..."
@@ -832,9 +826,8 @@ msgid "Export as &AMF..."
 msgstr "Eksportuj jako &AMF…"
 
 #: objects/ui_MainWindow.h:1100
-#, fuzzy
 msgid "Export as &3MF..."
-msgstr "Eksportuj jako &AMF…"
+msgstr "Eksportuj jako &3MF…"
 
 #: objects/ui_MainWindow.h:1101
 msgid "Zoom In"
@@ -949,13 +942,12 @@ msgid "Search string"
 msgstr "Wyszukaj tekst"
 
 #: objects/ui_MainWindow.h:1140
-#, fuzzy
 msgid "Prev."
 msgstr "Podgląd"
 
 #: objects/ui_MainWindow.h:1141
 msgid "Next"
-msgstr ""
+msgstr "Dalej"
 
 #: objects/ui_MainWindow.h:1142
 msgid "Done"
@@ -1019,35 +1011,35 @@ msgstr ""
 
 #: objects/ui_ParameterEntryWidget.h:341
 msgid "Parameter"
-msgstr ""
+msgstr "Parametr"
 
 #: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
 msgid "Description"
-msgstr ""
+msgstr "Opis"
 
 #: objects/ui_ParameterWidget.h:161
 msgid "save preset"
-msgstr ""
+msgstr "zapisz preset"
 
 #: objects/ui_ParameterWidget.h:163
 msgid "delete current preset"
-msgstr ""
+msgstr "usuń aktualny preset"
 
 #: objects/ui_ParameterWidget.h:165
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: objects/ui_ParameterWidget.h:167
 msgid "preset selection"
-msgstr ""
+msgstr "wybieranie presetu"
 
 #: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
 msgid "add new preset"
-msgstr ""
+msgstr "dodaj nowy preset"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "+"
-msgstr ""
+msgstr "+"
 
 #: objects/ui_ParameterWidget.h:174
 #, fuzzy
@@ -1055,26 +1047,24 @@ msgid "Automatic Preview"
 msgstr "&Automatycznie przeładuj i pokaż podgląd"
 
 #: objects/ui_ParameterWidget.h:175
-#, fuzzy
 msgid "Show Details"
-msgstr "Pokaż osie"
+msgstr "Pokaż detale"
 
 #: objects/ui_ParameterWidget.h:176
 msgid "Inline Details"
 msgstr ""
 
 #: objects/ui_ParameterWidget.h:177
-#, fuzzy
 msgid "Hide Details"
-msgstr "Ukryj paski narzędzi"
+msgstr "Ukryj detale"
 
 #: objects/ui_ParameterWidget.h:178
 msgid "Description Only"
-msgstr ""
+msgstr "Tylko opis"
 
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
-msgstr ""
+msgstr "resetuj wszystkie parametry do wartości aktualnego presetu"
 
 #: objects/ui_ParameterWidget.h:183
 #, fuzzy
@@ -1086,7 +1076,6 @@ msgid "3D View"
 msgstr "Widok 3D"
 
 #: objects/ui_Preferences.h:1439
-#, fuzzy
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Zaawansowane"
@@ -1114,11 +1103,11 @@ msgstr "Pokaż osie"
 
 #: objects/ui_Preferences.h:1448
 msgid "Input driver configuration and Axis mapping"
-msgstr ""
+msgstr "Konfiguracja wejść i mapowanie osi"
 
 #: objects/ui_Preferences.h:1450
 msgid "Buttons"
-msgstr ""
+msgstr "Przyciski"
 
 #: objects/ui_Preferences.h:1451 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
@@ -1328,23 +1317,23 @@ msgstr "Sprawdź teraz"
 
 #: objects/ui_Preferences.h:1518
 msgid "Last checked: "
-msgstr "Ostatnio sprawdzono:"
+msgstr "Ostatnio sprawdzono: "
 
 #: objects/ui_Preferences.h:1520 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
-msgstr ""
+msgstr "OctoPrint"
 
 #: objects/ui_Preferences.h:1521
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: objects/ui_Preferences.h:1522
 msgid "API Key"
-msgstr ""
+msgstr "Klucz API"
 
 #: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1524
 msgid "Load"
-msgstr ""
+msgstr "Załaduj"
 
 #: objects/ui_Preferences.h:1526
 #, fuzzy
@@ -1353,20 +1342,19 @@ msgstr "Sprawdź teraz"
 
 #: objects/ui_Preferences.h:1527
 msgid "Slicing Profile"
-msgstr ""
+msgstr "Profil Slicera"
 
 #: objects/ui_Preferences.h:1528
 msgid "Slicing Engine"
-msgstr ""
+msgstr "Silnik Slicera"
 
 #: objects/ui_Preferences.h:1529
 msgid "File Format"
-msgstr ""
+msgstr "Format pliku"
 
 #: objects/ui_Preferences.h:1530
-#, fuzzy
 msgid "Action"
-msgstr "Aplikacja"
+msgstr "Akcja"
 
 #: objects/ui_Preferences.h:1531
 #, fuzzy
@@ -1375,7 +1363,7 @@ msgstr "Pokaż osie"
 
 #: objects/ui_Preferences.h:1532
 msgid "Note: The API key is stored unencrypted in the application settings."
-msgstr ""
+msgstr "Uwaga: Klucz API przechowywany jest w jawnej postaci."
 
 #: objects/ui_Preferences.h:1533
 msgid "OpenCSG"
@@ -1391,7 +1379,7 @@ msgstr "Włącz dla OpenGL 1.x"
 
 #: objects/ui_Preferences.h:1536
 msgid "Turn off rendering at "
-msgstr "Wyłącz renderowanie przy"
+msgstr "Wyłącz renderowanie przy "
 
 #: objects/ui_Preferences.h:1537
 msgid "elements"
@@ -1403,7 +1391,7 @@ msgstr "Wymuś Goldfeather"
 
 #: objects/ui_Preferences.h:1539
 msgid "CGAL"
-msgstr ""
+msgstr "CGAL"
 
 #: objects/ui_Preferences.h:1540
 msgid "CGAL Cache size"
@@ -1419,7 +1407,7 @@ msgstr "Rozmiar pamięci podręcznej PolySetów"
 
 #: objects/ui_Preferences.h:1544
 msgid "User Interface"
-msgstr ""
+msgstr "Interfejs Użytkownika"
 
 #: objects/ui_Preferences.h:1545
 msgid "Allow opening multiple documents"
@@ -1449,7 +1437,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1551
 msgid "Play sound notification on render complete"
-msgstr ""
+msgstr "Odtwarzaj dźwięk po ukończeniu renderowania"
 
 #: objects/ui_Preferences.h:1552
 msgid "OpenSCAD Language Features"
@@ -1461,7 +1449,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1554
 msgid "Stop on the first warning"
-msgstr ""
+msgstr "Zatrzymaj się na pierwszym ostrzeżeniu"
 
 #: objects/ui_Preferences.h:1555
 msgid "check the parameter range for builtin modules"
@@ -1469,11 +1457,11 @@ msgstr ""
 
 #: objects/ui_PrintInitDialog.h:111
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #: objects/ui_PrintInitDialog.h:113
 msgid "%1"
-msgstr ""
+msgstr "%1"
 
 #: objects/ui_ProgressWidget.h:70
 msgid "%v / %m"
@@ -1494,7 +1482,7 @@ msgstr ""
 
 #: src/Console.cc:53
 msgid "Save console content"
-msgstr ""
+msgstr "Zapisz zawartość konsoli do pliku"
 
 #: src/export.cc:77
 #, c-format
@@ -1527,7 +1515,7 @@ msgstr[2] "Podczas kompilacji wygenerowano %1 ostrzeżeń."
 
 #: src/mainwin.cc:1186
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr "Szczegóły w <a href=\"#console\">oknie konsoli</a>."
+msgstr " Szczegóły w <a href=\"#console\">oknie konsoli</a>."
 
 #: src/mainwin.cc:1579
 msgid "Failed to open file for writing"
@@ -1625,7 +1613,7 @@ msgstr "Bez tytułu"
 
 #: src/mainwin.cc:3205
 msgid "/"
-msgstr ""
+msgstr "/"
 
 #: src/OpenSCADApp.cc:61
 msgid "Unknown error"
@@ -1654,7 +1642,7 @@ msgstr ""
 #: src/Preferences.cc:235 src/Preferences.cc:240 src/Preferences.cc:710
 #: src/Preferences.cc:746
 msgid "<Default>"
-msgstr ""
+msgstr "<Domyślny>"
 
 #: src/Preferences.cc:694
 msgid "Success: Server Version = %2, API Version = %1"
@@ -1662,7 +1650,7 @@ msgstr ""
 
 #: src/Preferences.cc:696 src/Preferences.cc:720 src/Preferences.cc:756
 msgid "Error"
-msgstr ""
+msgstr "Błąd"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
@@ -1708,12 +1696,12 @@ msgstr ""
 #: src/settings.cc:77
 #, c-format
 msgid "Axis %d"
-msgstr ""
+msgstr "Oś %d"
 
 #: src/settings.cc:81
 #, c-format
 msgid "Axis %d (inverted)"
-msgstr ""
+msgstr "Oś %d (odwrócona)"
 
 #: src/settings.cc:90
 #, fuzzy
@@ -1742,7 +1730,7 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:237
 msgid "changes on current preset not saved"
-msgstr ""
+msgstr "zmiany w obecnym presecie są niezapisane"
 
 #: src/parameter/ParameterWidget.cc:81
 msgid ""
@@ -1752,11 +1740,11 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:164
 msgid "remove current preset"
-msgstr ""
+msgstr "usuń obecny preset"
 
 #: src/parameter/ParameterWidget.cc:166
 msgid "save current preset"
-msgstr ""
+msgstr "zapisz obecny preset"
 
 #: src/parameter/ParameterWidget.cc:168 src/parameter/ParameterWidget.cc:169
 #: src/parameter/ParameterWidget.cc:170
@@ -1774,13 +1762,12 @@ msgid ""
 msgstr ""
 
 #: src/parameter/ParameterWidget.cc:279
-#, fuzzy
 msgid "Do you want to delete the current preset?"
-msgstr "Czy chcesz zapisać zmiany?"
+msgstr "Czy chcesz usunąć aktualny preset?"
 
 #: src/parameter/ParameterWidget.cc:281
 msgid "Do you want to delete the current preset '%1'?"
-msgstr ""
+msgstr "Czy chcesz usunąć preset '%1'?"
 
 #: src/parameter/ParameterWidget.cc:516
 msgid "Create new set of parameter"
@@ -1795,11 +1782,8 @@ msgid "Set Name %1 already exists"
 msgstr ""
 
 #: src/parameter/ParameterWidget.cc:528
-#, fuzzy
 msgid "The set name  %1 already exists. Do you want overwrite it?"
-msgstr ""
-"%1 już istnieje.\n"
-"Czy chcesz zamienić?"
+msgstr "%1 już istnieje. Czy chcesz go nadpisać?"
 
 #: src/parameter/ParameterWidget.cc:572
 msgid "Saving presets"
@@ -1842,7 +1826,7 @@ msgstr ""
 
 #: src/input/ButtonConfigWidget.cc:186
 msgid "(not supported)"
-msgstr ""
+msgstr "(niewspierane)"
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1858,7 +1842,7 @@ msgstr "Zaawansowane"
 
 #: examples/examples.json:30
 msgid "Parametric"
-msgstr ""
+msgstr "Parametryczny"
 
 #: examples/examples.json:34
 msgid "Old"
