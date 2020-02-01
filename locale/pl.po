@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-17 10:19+0100\n"
-"PO-Revision-Date: 2020-02-01 16:27+0100\n"
+"PO-Revision-Date: 2020-02-01 16:43+0100\n"
 "Last-Translator: Bartłomiej Wiśniowski <bwisn_dev@outlook.com>\n"
 "Language-Team: \n"
 "Language: pl_PL\n"
@@ -62,12 +62,11 @@ msgstr "Preferencje"
 #: objects/ui_AxisConfigWidget.h:850 objects/ui_AxisConfigWidget.h:852
 #: objects/ui_AxisConfigWidget.h:863
 msgid "Trim"
-msgstr ""
+msgstr "Trymowanie"
 
 #: objects/ui_AxisConfigWidget.h:837
-#, fuzzy
 msgid "Reset Trim"
-msgstr "Resetuj widok"
+msgstr "Resetuj trymowanie"
 
 #: objects/ui_AxisConfigWidget.h:838 objects/ui_AxisConfigWidget.h:841
 #: objects/ui_AxisConfigWidget.h:842 objects/ui_AxisConfigWidget.h:843
@@ -79,7 +78,7 @@ msgstr "Martwa strefa"
 
 #: objects/ui_AxisConfigWidget.h:839
 msgid "Auto Trim Axes"
-msgstr ""
+msgstr "Trymuj osie automatycznie"
 
 #: objects/ui_AxisConfigWidget.h:853
 msgid "Axis 2"
@@ -132,7 +131,7 @@ msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:867
 msgid "Gain"
-msgstr ""
+msgstr "Wzmocnienie"
 
 #: objects/ui_AxisConfigWidget.h:868
 msgid "Y"
@@ -162,7 +161,7 @@ msgstr "Ustawienia osi:"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
-msgstr ""
+msgstr "<b>Wybór sterownika:</b> <i>(wymaga restartu)</i>"
 
 #: objects/ui_AxisConfigWidget.h:875
 #, fuzzy
@@ -1111,11 +1110,11 @@ msgstr "Przyciski"
 
 #: objects/ui_Preferences.h:1451 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
-msgstr ""
+msgstr "Druk 3D"
 
 #: objects/ui_Preferences.h:1453
 msgid "3D Printing Services"
-msgstr ""
+msgstr "Usługi druku 3D"
 
 #: objects/ui_Preferences.h:1455
 msgid "Color scheme:"
@@ -1127,7 +1126,7 @@ msgstr "Pokazuj ostrzeżenia i błędy w widoku 3D"
 
 #: objects/ui_Preferences.h:1457
 msgid "mouse centric zoom"
-msgstr ""
+msgstr "Przybliżaj do kursora myszy"
 
 #: objects/ui_Preferences.h:1458
 msgid "Editor Type"
@@ -1336,17 +1335,16 @@ msgid "Load"
 msgstr "Załaduj"
 
 #: objects/ui_Preferences.h:1526
-#, fuzzy
 msgid "Check"
-msgstr "Sprawdź teraz"
+msgstr "Sprawdź"
 
 #: objects/ui_Preferences.h:1527
 msgid "Slicing Profile"
-msgstr "Profil Slicera"
+msgstr "Profil slicera"
 
 #: objects/ui_Preferences.h:1528
 msgid "Slicing Engine"
-msgstr "Silnik Slicera"
+msgstr "Silnik slicera"
 
 #: objects/ui_Preferences.h:1529
 msgid "File Format"
@@ -1433,7 +1431,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1550
 msgid "Bring window to front after automatic reload"
-msgstr ""
+msgstr "Przenieś okno na górę po automatycznym przeładowaniu"
 
 #: objects/ui_Preferences.h:1551
 msgid "Play sound notification on render complete"
@@ -1564,7 +1562,7 @@ msgstr ""
 
 #: src/mainwin.cc:2218
 msgid "Upload Error"
-msgstr ""
+msgstr "Błąd uploadu"
 
 #: src/mainwin.cc:2530
 msgid "Export %1 File"
@@ -1654,7 +1652,7 @@ msgstr "Błąd"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
-msgstr ""
+msgstr "Usługa druku niedostępna"
 
 #: src/QGLView.cc:150
 msgid ""
@@ -1714,19 +1712,19 @@ msgstr "Po wcięciu"
 
 #: src/settings.cc:185
 msgid "Upload only"
-msgstr ""
+msgstr "Tylko uploaduj"
 
 #: src/settings.cc:185
 msgid "Upload & Slice"
-msgstr ""
+msgstr "Uploaduj i slice'uj"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Select for printing"
-msgstr ""
+msgstr "Uploaduj, slice'uj i wybierz do drukowania"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Start printing"
-msgstr ""
+msgstr "Uploaduj, slice'uj i rozpocznij drukowanie"
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:237
 msgid "changes on current preset not saved"
@@ -1797,11 +1795,14 @@ msgstr ""
 msgid ""
 "This driver was not enabled during build time and is thus not available."
 msgstr ""
+"Sterownik nie został włączony podczas kompilacji, dlatego nie jest dostępny."
 
 #: src/input/AxisConfigWidget.h:93
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
 msgstr ""
+"Sterownik DBUS jest używany tylko dla zdalnego sterowania. Obsługiwany tylko "
+"pod Linuxem"
 
 #: src/input/AxisConfigWidget.h:94
 msgid ""
@@ -1822,7 +1823,7 @@ msgstr ""
 
 #: src/input/AxisConfigWidget.h:97
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr ""
+msgstr "Sterownik QGAMEPAD obsługuje pady na wielu platformach."
 
 #: src/input/ButtonConfigWidget.cc:186
 msgid "(not supported)"
