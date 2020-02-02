@@ -61,7 +61,7 @@ public:
 	void setIndicator(const std::vector<IndicatorData> &indicatorData) override;
 	QMenu *createStandardContextMenu() override;
 	QPoint mapToGlobal(const QPoint &) override;
-    QString stringToEndOfTheLine() override;
+    void stringToEndOfTheLine() override;
 
 private:
 	void getRange(int *lineFrom, int *lineTo);

@@ -3,7 +3,6 @@
 #include <functional>
 #include <QObject>
 #include <QSet>
-#include <QClipboard>
 #include "editor.h"
 #include "tabwidget.h"
 
@@ -41,7 +40,6 @@ signals:
 private:
     MainWindow *par;
     TabWidget *tabWidget;
-    QClipboard *clipBoard;
 
     bool maybeSave(int);
     void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);
@@ -88,6 +86,6 @@ public slots:
     void closeCurrentTab();
     void nextTab();
     void prevTab();
-    void copyToEndOfLine();
+    void cutToEndOfLine();
 
 };

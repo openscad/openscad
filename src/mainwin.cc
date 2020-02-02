@@ -311,7 +311,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->fileActionReload->setShortcuts(shortcuts);
 
     CtrlK = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K),this);
-    connect(CtrlK,SIGNAL(activated()),tabManager,SLOT(copyToEndOfLine()));
+    connect(CtrlK,SIGNAL(activated()),tabManager,SLOT(cutToEndOfLine()));
 
 #endif
 
