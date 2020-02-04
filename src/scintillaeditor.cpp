@@ -152,6 +152,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
 	c->setAlternateKey(0);
 
+    c=qsci->standardCommands()->find(QsciCommand::LineCut);
+    c->setKey(Qt::Key_K | Qt::CTRL);
+    c->setAlternateKey(0);
+
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
 
