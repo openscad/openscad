@@ -98,12 +98,14 @@ public:
 	{
 		assert(PS_TYPES::NONE == ps_type);
 		const_ps = ps;
+		ps_type = PS_TYPES::CONST;
 		return *this;
 	}
 	PolySetHolder &operator=(std::shared_ptr<PolySet> ps)
 	{
 		assert(PS_TYPES::NONE == ps_type);
 		local_ps = ps;
+		ps_type = PS_TYPES::LOCAL;
 		return *this;
 	}
 };
@@ -584,11 +586,11 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 	}
 }
 
-inline void buildSolidsList(PolySetHolder sets[], std::vector<std::vector<unsigned>> &merge_tree,
+inline void buildSolidsList(PolySetHolder sets[], unsigned sets_size,
 														std::vector<shared_ptr<const CGAL_Nef_polyhedron>> &polyhedrons,
 														std::list<AVAIL_GEOMETRY> &solids)
 {
-	for (unsigned i = 0; i < merge_tree.size(); ++i) {
+	for (unsigned i = 0; i < sets_size; ++i) {
 		solids.push_back({TYPE_MEM::LOCAL, sets[i], nullptr});
 	}
 	for (auto &it : polyhedrons) {
@@ -678,7 +680,7 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::iterator chbe
 
 		// 3. Prepare the solids for the multithreaded ops
 		std::list<AVAIL_GEOMETRY> solids;
-		buildSolidsList(sets, merge_tree, polyhedrons, solids);
+		buildSolidsList(sets, merge_tree.size(), polyhedrons, solids);
 
 		// 4. OR as many solids as possible in parallel
 		applyMultithreadedOps(solids, "u");
