@@ -3201,19 +3201,19 @@ QString MainWindow::exportPath(const char *suffix) {
 	auto path_it = this->export_paths.find(suffix);
 	if(path_it != export_paths.end())
 	{
-		path = QFileInfo(path_it->second).absolutePath();
+		path = QFileInfo(path_it->second).absolutePath() + QString("/");
 		if(this->fileName.isEmpty())
-			path += QString(_("/Untitled")) + suffix;
+			path += QString(_("Untitled")) + suffix;
 		else
-			path += QString(_("/")) + QFileInfo(this->fileName).completeBaseName() + suffix;
+			path += QFileInfo(this->fileName).completeBaseName() + suffix;
 	}
 	else
 	{
 		if (this->fileName.isEmpty()) {
-			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString(_("/Untitled")) + suffix;
+			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") + QString(_("Untitled")) + suffix;
 		} else {
 			auto info = QFileInfo(this->fileName);
-			path = info.absolutePath() + QString(_("/")) + info.completeBaseName() + suffix;
+			path = info.absolutePath() + QString("/") + info.completeBaseName() + suffix;
 		}
 	}
 	return path;
