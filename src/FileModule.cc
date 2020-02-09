@@ -65,7 +65,10 @@ void FileModule::registerUse(const std::string path)
 			PRINTB("ERROR: Can't read font with path '%s'", path);
 		}
 	} else {
-		usedlibs.insert(path);
+		auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);
+		if(pos != usedlibs.end())
+			usedlibs.erase(pos);
+		usedlibs.insert(usedlibs.begin(), path);
 	}
 }
 
@@ -149,8 +152,9 @@ time_t FileModule::handleDependencies(bool is_root)
 
 	// Relative filenames which were located are reinserted as absolute filenames
 	for (const auto &files : updates) {
-		this->usedlibs.erase(files.first);
-		this->usedlibs.insert(files.second);
+		auto pos = std::find(usedlibs.begin(), usedlibs.end(), files.first);
+		if(pos != usedlibs.end())
+			*pos = files.second;
 	}
 	return latest;
 }
