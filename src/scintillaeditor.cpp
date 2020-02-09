@@ -273,7 +273,8 @@ void ScintillaEditor::applySettings()
 	if(Preferences::inst()->getValue("editor/enableAutocomplete").toBool())
 	{
 		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
-		qsci->setAutoCompletionFillupsEnabled(true);
+		qsci->setAutoCompletionFillupsEnabled(false);
+ 		qsci->setAutoCompletionFillups("(");		
 		qsci->setCallTipsVisible(10);
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
 	}
