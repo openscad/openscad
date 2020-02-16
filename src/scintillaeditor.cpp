@@ -1,20 +1,24 @@
+#include <ciso646> // C alternative tokens (xor)
 #include <stdlib.h>
 #include <algorithm>
+#include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 #include <QString>
 #include <QChar>
-#include "scintillaeditor.h"
+#include <QShortcut>
 #include <Qsci/qscicommandset.h>
+
+#include "scintillaeditor.h"
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
 #include "QSettingsCached.h"
-#include <ciso646> // C alternative tokens (xor)
-#include <boost/filesystem.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+
 namespace fs=boost::filesystem;
 
-QString ScintillaEditor::cursorPlaceHolder = "^~^";
+const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
 class SettingsConverter {
 public:
@@ -151,6 +155,20 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	// Ctrl-Ins displays templates
 	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
 	c->setAlternateKey(0);
+
+#ifdef Q_OS_MAC
+	const unsigned long modifier = Qt::META;
+#else
+	const unsigned long modifier = Qt::CTRL;
+#endif
+
+	QShortcut *shortcutCalltip;
+	shortcutCalltip = new QShortcut(modifier | Qt::SHIFT | Qt::Key_Space, this);
+	connect(shortcutCalltip, &QShortcut::activated, [=]() { qsci->callTip(); });
+
+	QShortcut *shortcutAutocomplete;
+	shortcutAutocomplete = new QShortcut(modifier | Qt::Key_Space, this);
+	connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAll(); });
 
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
