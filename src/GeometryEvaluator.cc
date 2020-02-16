@@ -1209,6 +1209,9 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 					// If we got a const object, make a copy
 					if (res.isConst()) editablegeom.reset(geom->copy());
 					else editablegeom = res.ptr();
+					if (editablegeom->getConvexity() != node.convexity) {
+						editablegeom->setConvexity(node.convexity);
+					}
 					geom = editablegeom;
 
 					shared_ptr<CGAL_Nef_polyhedron> N = dynamic_pointer_cast<CGAL_Nef_polyhedron>(editablegeom);
