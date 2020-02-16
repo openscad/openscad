@@ -1,17 +1,20 @@
+#include <ciso646> // C alternative tokens (xor)
 #include <stdlib.h>
 #include <algorithm>
+#include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 #include <QString>
 #include <QChar>
-#include "scintillaeditor.h"
 #include <Qsci/qscicommandset.h>
+
+#include "scintillaeditor.h"
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "settings.h"
 #include "QSettingsCached.h"
-#include <ciso646> // C alternative tokens (xor)
-#include <boost/filesystem.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+
 namespace fs=boost::filesystem;
 
 QString ScintillaEditor::cursorPlaceHolder = "^~^";

@@ -1,21 +1,22 @@
 #pragma once
 
+#include <functional>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 #include <QMap>
 #include <QObject>
 #include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
-#include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
-#include <functional>
-#include "editor.h"
-#include "scadlexer.h"
-#include "scadapi.h"
-#include "parsersettings.h"
+#include <Qsci/qsciscintilla.h>
 
+#include "editor.h"
 #include "memory.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+#include "scadapi.h"
+#include "scadlexer.h"
+#include "parsersettings.h"
 
 class EditorColorScheme
 {
