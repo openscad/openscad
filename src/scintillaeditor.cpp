@@ -7,6 +7,7 @@
 
 #include <QString>
 #include <QChar>
+#include <QShortcut>
 #include <Qsci/qscicommandset.h>
 
 #include "scintillaeditor.h"
@@ -154,6 +155,14 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	// Ctrl-Ins displays templates
 	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
 	c->setAlternateKey(0);
+
+	QShortcut *shortcutCalltip;
+	shortcutCalltip = new QShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Space, this);
+	connect(shortcutCalltip, &QShortcut::activated, [=]() { qsci->callTip(); });
+
+	QShortcut *shortcutAutocomplete;
+	shortcutAutocomplete = new QShortcut(Qt::CTRL | Qt::Key_Space, this);
+	connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAll(); });
 
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
