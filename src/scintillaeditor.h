@@ -148,5 +148,5 @@ private:
 	ScadApi *api;
 	QStringList userList;
 	QMap<QString, ScadTemplate> templateMap;
-	static QString cursorPlaceHolder;
+	static const QString cursorPlaceHolder;
 };

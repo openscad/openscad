@@ -17,7 +17,7 @@
 
 namespace fs=boost::filesystem;
 
-QString ScintillaEditor::cursorPlaceHolder = "^~^";
+const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
 class SettingsConverter {
 public:
