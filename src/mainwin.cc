@@ -94,6 +94,15 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
+#include <QDebug> 
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QFile>
+#include <QVariant>
+
+
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -2645,12 +2654,9 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
-	// readJson();
 	bool showaxes = viewActionShowAxes->isChecked();
 	QSettingsCached settings;
 	settings.setValue("view/showAxes", showaxes);
-	std::cout<<"overriding\n";
-	// viewActionShowAxes->setShortcut(q_("Ctrl+M", nullptr));
 	this->viewActionShowScaleProportional->setEnabled(showaxes);
 	this->qglview->setShowAxes(showaxes);
 	this->qglview->updateGL();
