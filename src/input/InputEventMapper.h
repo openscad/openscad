@@ -53,6 +53,7 @@ private:
     double getAxisValue(int config);
     int parseSettingValue(const std::string val);
     bool generateDeferredEvents();
+    void considerGeneratingDeferredEvents();
     bool button_state[max_buttons];
     bool button_state_last[max_buttons];
     

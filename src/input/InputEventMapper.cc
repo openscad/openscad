@@ -157,9 +157,16 @@ bool InputEventMapper::generateDeferredEvents()
     return any;
 }
 
+void InputEventMapper::considerGeneratingDeferredEvents()
+{
+    if (!timer->isActive()) {
+        timer->start(30);
+    }
+}
+
 void InputEventMapper::onTimer()
 {
-    generateDeferredEvents();
+    bool generated_any_events = generateDeferredEvents();
 
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
     for (int i = 0; i < max_buttons; i++ ){
@@ -172,11 +179,17 @@ void InputEventMapper::onTimer()
        Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
 
+    if (!generated_any_events) {
+        // the current axis positions do not generate input events,
+        // so we can stop the polling which is used to to generate them
+        timer->stop();
+    }
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)
 {
     axisRawValue[event->axis] = event->value;
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
@@ -200,6 +213,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
             InputDriverManager::instance()->postEvent(inputEvent);
         }
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onTranslateEvent(InputEventTranslate *event)
@@ -258,6 +272,7 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[5] = parseSettingValue(s->get(Settings::Settings::inputRotateZVPRel).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
     zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputGainUpdated()
@@ -273,6 +288,8 @@ void InputEventMapper::onInputGainUpdated()
     rotateVPRelGain = s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
 
     zoomGain = s->get(Settings::Settings::inputZoomGain).toDouble();
+
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputCalibrationUpdated()
@@ -291,6 +308,7 @@ void InputEventMapper::onInputCalibrationUpdated()
             axisDeadzone[a] = setting->get(*ent).toDouble();
         }
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisAutoTrim()
@@ -302,6 +320,7 @@ void InputEventMapper::onAxisAutoTrim()
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
         s->set(*ent, axisTrimValue[i]);
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisTrimReset()
@@ -313,6 +332,7 @@ void InputEventMapper::onAxisTrimReset()
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
         s->set(*ent, axisTrimValue[i]);
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::stop(){
