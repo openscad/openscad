@@ -101,7 +101,7 @@
 #include <QJsonValue>
 #include <QFile>
 #include <QVariant>
-
+#include "shortcuts.h"
 
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
@@ -477,6 +477,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
+	ShortCutConfigurator scConfig;
+	scConfig.apply(this->viewerToolBar->actions());
+	scConfig.apply(this->editortoolbar->actions());
+
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
@@ -577,139 +581,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	show();
 
 
-	//Define every shortcut
-
-	std::string absolutePath = PlatformUtils::resourceBasePath()+"/shortcuts/shortcuts.json";
-	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
-
-	//reading json file to get shortcuts
-	QFile jsonFile(finalPath);
-	if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-	qDebug() << "Unable to open file, exiting...";
-	return;
-	}
-
-	QByteArray jsonData = jsonFile.readAll();
-	QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-	QJsonObject jObject = doc.object();
-	QVariantMap json_map = jObject.toVariantMap();
-
-
-	//get shortcuts of each action from shortcuts.json
-
-	const char *newFile = json_map["New File"].toString().toStdString().c_str();
-	const char *openFile = json_map["Open File"].toString().toStdString().c_str();
-	const char *saveFile = json_map["Save File"].toString().toStdString().c_str();
-	const char *saveFileAs = json_map["Save File As"].toString().toStdString().c_str();
-	const char *Reload = json_map["Reload"].toString().toStdString().c_str();
-	const char *Quit = json_map["Quit"].toString().toStdString().c_str();
-	const char *Undo = json_map["Undo"].toString().toStdString().c_str();
-	const char *Redo1 = json_map["Redo1"].toString().toStdString().c_str();
-	const char *Redo2 = json_map["Redo2"].toString().toStdString().c_str();
-	const char *Cut = json_map["Cut"].toString().toStdString().c_str();
-	const char *Copy = json_map["Copy"].toString().toStdString().c_str();
-	const char *Paste = json_map["Paste"].toString().toStdString().c_str();
-	const char *Indent = json_map["Indent"].toString().toStdString().c_str();
-	const char *Comment = json_map["Comment"].toString().toStdString().c_str();
-	const char *Uncomment = json_map["Uncomment"].toString().toStdString().c_str();
-	const char *showNextTab = json_map["Show Next Tab"].toString().toStdString().c_str();
-	const char *showPreviousTab = json_map["Show Previous Tab"].toString().toStdString().c_str();
-	const char *copyViewportImage = json_map["Copy Viewport Image"].toString().toStdString().c_str();
-	const char *copyViewportTranslation = json_map["Copy Viewport Translation"].toString().toStdString().c_str();
-	const char *increaseFontSize = json_map["Increase Font Size"].toString().toStdString().c_str();
-	const char *decreaseFontSize = json_map["Decrease Font Size"].toString().toStdString().c_str();
-	const char *reloadAndPreview = json_map["Reload and Preview"].toString().toStdString().c_str();
-	const char *viewDesignPreview = json_map["View Design Preview"].toString().toStdString().c_str();
-	const char *Render = json_map["Render"].toString().toStdString().c_str();
-	const char *Three_DPrint = json_map["3D Print"].toString().toStdString().c_str();
-	const char *exportAsSTL = json_map["Export as STL"].toString().toStdString().c_str();
-	const char *viewPreview = json_map["View Action Preview"].toString().toStdString().c_str();
-	const char *Surfaces = json_map["Surfaces"].toString().toStdString().c_str();
-	const char *wireFrame = json_map["Wireframe"].toString().toStdString().c_str();
-	const char *thrownTogether = json_map["Thrown Together"].toString().toStdString().c_str();
-	const char *Edges = json_map["Edges"].toString().toStdString().c_str();
-	const char *Axes = json_map["Axes"].toString().toStdString().c_str();
-	const char *crossHairs = json_map["Crosshairs"].toString().toStdString().c_str();
-	const char *Top = json_map["Top"].toString().toStdString().c_str();
-	const char *Bottom = json_map["Bottom"].toString().toStdString().c_str();
-	const char *Left = json_map["Left"].toString().toStdString().c_str();
-	const char *Right = json_map["Right"].toString().toStdString().c_str();
-	const char *Front = json_map["Front"].toString().toStdString().c_str();
-	const char *Back = json_map["Back"].toString().toStdString().c_str();
-	const char *Diagonal = json_map["Diagonal"].toString().toStdString().c_str();
-	const char *Close = json_map["Close"].toString().toStdString().c_str();
-	const char *Find = json_map["Find"].toString().toStdString().c_str();
-	const char *findAndReplace = json_map["Find And Replace"].toString().toStdString().c_str();
-	const char *findNext = json_map["Find Next"].toString().toStdString().c_str();
-	const char *findPrevious = json_map["Find Previous"].toString().toStdString().c_str();
-	const char *selectionFind = json_map["Use Selection for Find"].toString().toStdString().c_str();
-	const char *nextError = json_map["Jump To Next Error"].toString().toStdString().c_str();
-	const char *zoomIn = json_map["Zoom In"].toString().toStdString().c_str();
-	const char *zoomOut = json_map["Zoom Out"].toString().toStdString().c_str();
-	const char *viewAll = json_map["View All"].toString().toStdString().c_str();
-	const char *toggleBookmark = json_map["Toggle Bookmark"].toString().toStdString().c_str();
-	const char *nextBookmark = json_map["Next Bookmark"].toString().toStdString().c_str();
-	const char *previousBookmark = json_map["Previous Bookmark"].toString().toStdString().c_str();
-	const char *Unindent = json_map["Unindent"].toString().toStdString().c_str();
-
-
-	//set shortcuts
-	fileActionNew->setShortcut(q_(newFile, nullptr));
-	fileActionOpen->setShortcut(q_(openFile, nullptr));
-	fileActionSave->setShortcut(q_(saveFile, nullptr));
-	fileActionSaveAs->setShortcut(q_(saveFileAs, nullptr));
-	fileActionReload->setShortcut(q_(Reload, nullptr));
-	fileActionQuit->setShortcut(q_(Quit, nullptr));
-	editActionUndo->setShortcut(q_(Undo, nullptr));
-	editActionRedo->setShortcut(q_(Redo1, nullptr));
-	editActionRedo_2->setShortcut(q_(Redo2, nullptr));
-	editActionCut->setShortcut(q_(Cut, nullptr));
-	editActionCopy->setShortcut(q_(Copy, nullptr));
-	editActionPaste->setShortcut(q_(Paste, nullptr));
-	editActionIndent->setShortcut(q_(Indent, nullptr));
-	editActionComment->setShortcut(q_(Comment, nullptr));
-	editActionUncomment->setShortcut(q_(Uncomment, nullptr));
-	editActionNextTab->setShortcut(q_(showNextTab, nullptr));
-	editActionPrevTab->setShortcut(q_(showPreviousTab, nullptr));
-	editActionCopyViewport->setShortcut(q_(copyViewportImage, nullptr));
-	editActionCopyVPT->setShortcut(q_(copyViewportTranslation, nullptr));
-	editActionZoomTextIn->setShortcut(q_(increaseFontSize, nullptr));
-	editActionZoomTextOut->setShortcut(q_(decreaseFontSize, nullptr));
-	designActionReloadAndPreview->setShortcut(q_(reloadAndPreview, nullptr));
-	designActionPreview->setShortcut(q_(viewDesignPreview, nullptr));
-	designActionRender->setShortcut(q_(Render, nullptr));
-	designAction3DPrint->setShortcut(q_(Three_DPrint, nullptr));
-	fileActionExportSTL->setShortcut(q_(exportAsSTL, nullptr));
-	viewActionPreview->setShortcut(q_(viewPreview, nullptr));
-	viewActionSurfaces->setShortcut(q_(Surfaces, nullptr));
-	viewActionWireframe->setShortcut(q_(wireFrame, nullptr));
-	viewActionThrownTogether->setShortcut(q_(thrownTogether, nullptr));
-	viewActionShowEdges->setShortcut(q_(Edges, nullptr));
-	viewActionShowAxes->setShortcut(q_(Axes, nullptr));
-	viewActionShowCrosshairs->setShortcut(q_(crossHairs, nullptr));
-	viewActionTop->setShortcut(q_(Top, nullptr));
-	viewActionBottom->setShortcut(q_(Bottom, nullptr));
-	viewActionLeft->setShortcut(q_(Left, nullptr));
-	viewActionRight->setShortcut(q_(Right, nullptr));
-	viewActionFront->setShortcut(q_(Front, nullptr));
-	viewActionBack->setShortcut(q_(Back, nullptr));
-	viewActionDiagonal->setShortcut(q_(Diagonal, nullptr));
-	fileActionClose->setShortcut(q_(Close, nullptr));
-	editActionFind->setShortcut(q_(Find, nullptr));
-	editActionFindAndReplace->setShortcut(q_(findAndReplace, nullptr));
-	editActionFindNext->setShortcut(q_(findNext, nullptr));
-	editActionFindPrevious->setShortcut(q_(findPrevious, nullptr));
-	editActionUseSelectionForFind->setShortcut(q_(selectionFind, nullptr));
-	editActionJumpToNextError->setShortcut(q_(nextError, nullptr));
-	viewActionZoomIn->setShortcut(q_(zoomIn, nullptr));
-	viewActionZoomOut->setShortcut(q_(zoomOut, nullptr));
-	viewActionViewAll->setShortcut(q_(viewAll, nullptr));
-	editActionToggleBookmark->setShortcut(q_(toggleBookmark, nullptr));
-	editActionNextBookmark->setShortcut(q_(nextBookmark, nullptr));
-	editActionPrevBookmark->setShortcut(q_(previousBookmark, nullptr));
-	editActionUnindent->setShortcut(q_(Unindent, nullptr));
-
 #ifdef ENABLE_OPENCSG
 	viewModePreview();
 #else
@@ -744,6 +615,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		}
 
 		const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+
 		if (shortCut.isEmpty()) {
 	    continue;
 		}
