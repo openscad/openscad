@@ -106,8 +106,9 @@ double InputEventMapper::getAxisValue(int config)
     return scale(val);
 }
 
-void InputEventMapper::onTimer()
+bool InputEventMapper::generateDeferredEvents()
 {
+    bool any = false;
     const double threshold = 0.01;
 
     double tx = getAxisValue(translate[0])*translationGain;
@@ -116,6 +117,7 @@ void InputEventMapper::onTimer()
     if ((fabs(tx) > threshold) || (fabs(ty) > threshold) || (fabs(tz) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(tx, ty, tz);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double txVPRel = getAxisValue(translate[3])*translationVPRelGain;
@@ -124,6 +126,7 @@ void InputEventMapper::onTimer()
     if ((fabs(txVPRel) > threshold) || (fabs(tyVPRel) > threshold) || (fabs(tzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true, false);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double rx = getAxisValue(rotate[0])*rotateGain;
@@ -132,6 +135,7 @@ void InputEventMapper::onTimer()
     if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate(rx, ry, rz);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double rxVPRel = getAxisValue(rotate[3])*rotateVPRelGain;
@@ -140,13 +144,22 @@ void InputEventMapper::onTimer()
     if ((fabs(rxVPRel) > threshold) || (fabs(ryVPRel) > threshold) || (fabs(rzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate2(rxVPRel, ryVPRel, rzVPRel);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double z = (getAxisValue(zoom)+getAxisValue(zoom2))*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
+
+    return any;
+}
+
+void InputEventMapper::onTimer()
+{
+    generateDeferredEvents();
 
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
     for (int i = 0; i < max_buttons; i++ ){
