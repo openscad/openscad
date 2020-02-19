@@ -17,8 +17,8 @@ ShortCutConfigurator::ShortCutConfigurator(){
 
 void ShortCutConfigurator::apply(const QList<QAction *> &actions)
 {
+	std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
 
-	std::string absolutePath = PlatformUtils::resourceBasePath()+"/shortcuts/shortcuts.json";
 	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
 
 	QFile jsonFile(finalPath);
@@ -44,9 +44,7 @@ void ShortCutConfigurator::apply(const QList<QAction *> &actions)
         }
     
         QString actionName = action->objectName();
-
         QString shortcut =  json_map[actionName].toString();
-
         if(!shortcut.isEmpty()) {
         const char *customShortcut=shortcut.toStdString().c_str();
         action->setShortcut(q_(customShortcut, nullptr));
