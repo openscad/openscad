@@ -1526,6 +1526,14 @@
     <string>Hide Customizer</string>
    </property>
   </action>
+  <action name="viewActionRotateSmallX">
+   <property name="text">
+    <string>Rotate X Small Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

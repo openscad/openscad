@@ -411,6 +411,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
+    // View rotation shortcuts
+    connect(this->viewActionRotateSmallX, SIGNAL(triggered()), this, SLOT(rotateViewAngleSmallX()));
+
+    this->addAction(this->viewActionRotateSmallX);
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -2571,6 +2575,12 @@ void MainWindow::animateUpdate()
 			animate_timer->start();
 		}
 	}
+}
+
+void MainWindow::rotateViewAngleSmallX()
+{
+	qglview->cam.object_rot[0] += 5; // << 90,0,0;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleTop()

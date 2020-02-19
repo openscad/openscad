@@ -255,6 +255,7 @@ public slots:
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
 	void viewModeAnimate();
+    void rotateViewAngleSmallX();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();
