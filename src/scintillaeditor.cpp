@@ -1210,11 +1210,11 @@ void ScintillaEditor::jumpToNextError()
 }
 
 void ScintillaEditor::stringToEndOfTheLine(){
-    int line,index,line_len;
-    qsci->getCursorPosition(&line,&index);
-    //position_start = qsci->positionFromLineIndex(line,0);
-    line_len = qsci->lineLength(line);
-    //QString textToEnd = qsci->text((position_start+index),(position_start+line_len));
-    qsci->setSelection(line,index,line,line_len);
-    qsci->cut();
+    if(qsci->hasFocus()){
+        int line,index,line_len;
+        qsci->getCursorPosition(&line,&index);
+        line_len = qsci->lineLength(line);
+        qsci->setSelection(line,index,line,line_len);
+        qsci->cut();
+    }
 }
