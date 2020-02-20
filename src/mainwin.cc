@@ -94,13 +94,6 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
-#include <QDebug> 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QFile>
-#include <QVariant>
 #include "shortcuts.h"
 
 
