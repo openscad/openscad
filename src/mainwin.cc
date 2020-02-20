@@ -184,7 +184,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->consoleDock->setAction(this->viewActionHideConsole);
 	this->parameterDock->setConfigKey("view/hideCustomizer");
 	this->parameterDock->setAction(this->viewActionHideParameters);
-
+	
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
 
@@ -2762,8 +2762,10 @@ void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
+		QTimer::singleShot(0,consoleDock,SLOT(setFocus()));
 	} else {
 		editorDock->show();
+		QTimer::singleShot(0,editorDock,SLOT(setFocus()));
 	}
 }
 

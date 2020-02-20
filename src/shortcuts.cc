@@ -45,8 +45,7 @@ void ShortCutConfigurator::apply(const QList<QAction *> &actions)
         QString actionName = action->objectName();
         QString shortcut =  json_map[actionName].toString();
         if(!shortcut.isEmpty()) {
-        const char *customShortcut=shortcut.toStdString().c_str();
-        action->setShortcut(q_(customShortcut, nullptr));
+        action->setShortcut(QKeySequence(shortcut));
         }
     }
 
