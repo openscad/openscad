@@ -35,18 +35,18 @@ void ShortCutConfigurator::apply(const QList<QAction *> &actions)
 
     for (auto &action : actions) 
     {
-        const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
-        //handle the case, if shortcut is not defined for an action
-        if (shortCut.isEmpty())
-        {
-        continue;
-        }
-    
+            
         QString actionName = action->objectName();
-        QString shortcut =  json_map[actionName].toString();
-        if(!shortcut.isEmpty()) {
-        action->setShortcut(QKeySequence(shortcut));
+ 
+        QMap<QString, QVariant>::const_iterator i = json_map.find(actionName);
+        //check if the actions new shortcut exists in the file or not
+        //This would allow users to remove any default shortcut, by just leaving the key's value for an action name as empty.
+        if(i != json_map.end() && i.key() == actionName)
+        {
+            QString shortcut =  json_map[actionName].toString().trimmed();
+            action->setShortcut(QKeySequence(shortcut));
         }
+
     }
 
 }
