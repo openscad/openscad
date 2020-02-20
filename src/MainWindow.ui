@@ -1526,14 +1526,106 @@
     <string>Hide Customizer</string>
    </property>
   </action>
-  <action name="viewActionRotateSmallX">
+
+  <action name="viewActionRotateSmallForwardX">
    <property name="text">
-    <string>Rotate X Small Step</string>
+    <string>Rotate X Forward Small Step</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+J</string>
    </property>
   </action>
+  <action name="viewActionRotateSmallBackwardX">
+   <property name="text">
+    <string>Rotate X Backward Small Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="viewActionRotateBigForwardX">
+   <property name="text">
+    <string>Rotate X Forward Big Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+J</string>
+   </property>
+  </action>
+  <action name="viewActionRotateBigBackwardX">
+   <property name="text">
+    <string>Rotate X Backward Big Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+M</string>
+   </property>
+  </action>
+
+  <action name="viewActionRotateSmallForwardY">
+   <property name="text">
+    <string>Rotate Y Forward Small Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="viewActionRotateSmallBackwardY">
+   <property name="text">
+    <string>Rotate Y Backward Small Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="viewActionRotateBigForwardY">
+   <property name="text">
+    <string>Rotate Y Forward Big Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+K</string>
+   </property>
+  </action>
+  <action name="viewActionRotateBigBackwardY">
+   <property name="text">
+    <string>Rotate Y Backward Big Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+,</string>
+   </property>
+  </action>
+
+  <action name="viewActionRotateSmallForwardZ">
+   <property name="text">
+    <string>Rotate Z Forward Small Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="viewActionRotateSmallBackwardZ">
+   <property name="text">
+    <string>Rotate Z Backward Small Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+.</string>
+   </property>
+  </action>
+  <action name="viewActionRotateBigForwardZ">
+   <property name="text">
+    <string>Rotate Z Forward Big Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+L</string>
+   </property>
+  </action>
+  <action name="viewActionRotateBigBackwardZ">
+   <property name="text">
+    <string>Rotate Z Backward Big Step</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+.</string>
+   </property>
+  </action>
+
  </widget>
  <customwidgets>
   <customwidget>

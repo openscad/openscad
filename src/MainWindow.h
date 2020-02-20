@@ -40,6 +40,7 @@ public:
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
 	EditorInterface *customizerEditor;
+    QList<QAction *> rotationActions;
 
 	ContextHandle<BuiltinContext> top_ctx;
 	FileModule *root_module;      // Result of parsing
@@ -122,6 +123,7 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
+    void rotateViewAngle(int axis, int step);
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
@@ -255,7 +257,18 @@ public slots:
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
 	void viewModeAnimate();
-    void rotateViewAngleSmallX();
+    void viewRotateSmallForwardX();
+    void viewRotateSmallBackwardX();
+    void viewRotateBigForwardX();
+    void viewRotateBigBackwardX();
+    void viewRotateSmallForwardY();
+    void viewRotateSmallBackwardY();
+    void viewRotateBigForwardY();
+    void viewRotateBigBackwardY();
+    void viewRotateSmallForwardZ();
+    void viewRotateSmallBackwardZ();
+    void viewRotateBigForwardZ();
+    void viewRotateBigBackwardZ();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();

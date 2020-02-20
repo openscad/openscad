@@ -412,9 +412,42 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
     // View rotation shortcuts
-    connect(this->viewActionRotateSmallX, SIGNAL(triggered()), this, SLOT(rotateViewAngleSmallX()));
+    //connect(this->viewActionRotateSmallX, SIGNAL(triggered()), this, SLOT(rotateViewAngleSmallX()));
 
-    this->addAction(this->viewActionRotateSmallX);
+    //this->addAction(this->viewActionRotateSmallX);
+
+    connect(this->viewActionRotateSmallForwardX, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardX()));
+    connect(this->viewActionRotateSmallBackwardX, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardX()));
+    connect(this->viewActionRotateBigForwardX, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardX()));
+    connect(this->viewActionRotateBigBackwardX, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardX()));
+    connect(this->viewActionRotateSmallForwardY, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardY()));
+    connect(this->viewActionRotateSmallBackwardY, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardY()));
+    connect(this->viewActionRotateBigForwardY, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardY()));
+    connect(this->viewActionRotateBigBackwardY, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardY()));
+    connect(this->viewActionRotateSmallForwardZ, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardZ()));
+    connect(this->viewActionRotateSmallBackwardZ, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardZ()));
+    connect(this->viewActionRotateBigForwardZ, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardZ()));
+    connect(this->viewActionRotateBigBackwardZ, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardZ()));
+
+
+    this->rotationActions.append(this->viewActionRotateSmallForwardX);
+    this->rotationActions.append(this->viewActionRotateSmallBackwardX);
+    this->rotationActions.append(this->viewActionRotateBigForwardX);
+    this->rotationActions.append(this->viewActionRotateBigBackwardX);
+    this->rotationActions.append(this->viewActionRotateSmallForwardY);
+    this->rotationActions.append(this->viewActionRotateSmallBackwardY);
+    this->rotationActions.append(this->viewActionRotateBigForwardY);
+    this->rotationActions.append(this->viewActionRotateBigBackwardY);
+    this->rotationActions.append(this->viewActionRotateSmallForwardZ);
+    this->rotationActions.append(this->viewActionRotateSmallBackwardZ);
+    this->rotationActions.append(this->viewActionRotateBigForwardZ);
+    this->rotationActions.append(this->viewActionRotateBigBackwardZ);
+
+    foreach(QAction* action, this->rotationActions)
+    {
+        this->addAction(action);
+    }
+
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -2577,11 +2610,25 @@ void MainWindow::animateUpdate()
 	}
 }
 
-void MainWindow::rotateViewAngleSmallX()
+void MainWindow::rotateViewAngle(int axis, int step)
 {
-	qglview->cam.object_rot[0] += 5; // << 90,0,0;
+	qglview->cam.object_rot[axis] += step;
 	this->qglview->updateGL();
 }
+
+void MainWindow::viewRotateSmallForwardX() {this->rotateViewAngle(0, 1);}
+void MainWindow::viewRotateSmallBackwardX() {this->rotateViewAngle(0, -1);}
+void MainWindow::viewRotateBigForwardX() {this->rotateViewAngle(0, 8);}
+void MainWindow::viewRotateBigBackwardX() {this->rotateViewAngle(0, -8);}
+void MainWindow::viewRotateSmallForwardY() {this->rotateViewAngle(1, 1);}
+void MainWindow::viewRotateSmallBackwardY() {this->rotateViewAngle(1, -1);}
+void MainWindow::viewRotateBigForwardY() {this->rotateViewAngle(1, 8);}
+void MainWindow::viewRotateBigBackwardY() {this->rotateViewAngle(1, -8);}
+void MainWindow::viewRotateSmallForwardZ() {this->rotateViewAngle(2, 1);}
+void MainWindow::viewRotateSmallBackwardZ() {this->rotateViewAngle(2, -1);}
+void MainWindow::viewRotateBigForwardZ() {this->rotateViewAngle(2, 8);}
+void MainWindow::viewRotateBigBackwardZ() {this->rotateViewAngle(2, -8);}
+
 
 void MainWindow::viewAngleTop()
 {
