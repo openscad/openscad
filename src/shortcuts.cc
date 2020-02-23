@@ -60,8 +60,16 @@ void ShortCutConfigurator::apply(const QList<QAction *> &actions)
             foreach (const QJsonValue & v, array)
             {
                 QString shortcut = v.toString();
-                if(shortcut.length()==0) continue;
+                if(shortcut.isEmpty()) continue;
+                const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+                if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
+                {
+                    if(shortCut.isEmpty()) continue;
+                    shortcutsListFinal.append(shortCut);
+		        }
+                else {
                 shortcutsListFinal.append(shortcut);
+                }
             }
 
             action->setShortcuts(shortcutsListFinal);
