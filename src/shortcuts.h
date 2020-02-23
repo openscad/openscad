@@ -2,6 +2,7 @@
 #include <QAction>
 #include <QObject>
 #include <QList>
+#include <QJsonValue>
 
 class ShortCutConfigurator : public QObject
 {

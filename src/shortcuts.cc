@@ -14,6 +14,7 @@ ShortCutConfigurator::ShortCutConfigurator(){
 
 }
 
+
 void ShortCutConfigurator::apply(const QList<QAction *> &actions)
 {
 	std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
@@ -30,21 +31,41 @@ void ShortCutConfigurator::apply(const QList<QAction *> &actions)
 
 	QByteArray jsonData = jsonFile.readAll();
 	QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-	QJsonObject jObject = doc.object();
-	QVariantMap json_map = jObject.toVariantMap();
+	QJsonObject object = doc.object();
+
 
     for (auto &action : actions) 
     {
             
         QString actionName = action->objectName();
- 
-        QMap<QString, QVariant>::const_iterator i = json_map.find(actionName);
+        QList<QKeySequence> shortcutsListFinal;
+
         //check if the actions new shortcut exists in the file or not
         //This would allow users to remove any default shortcut, by just leaving the key's value for an action name as empty.
-        if(i != json_map.end() && i.key() == actionName)
+        QJsonObject::const_iterator i = object.find(actionName);
+        if(i != object.end() && i.key() == actionName)
         {
-            QString shortcut =  json_map[actionName].toString().trimmed();
-            action->setShortcut(QKeySequence(shortcut));
+            QJsonValue val = object.value(actionName);
+            //check if it is an array or not
+            if(!val.isArray())
+            {
+                QString singleShortcut = val.toString().trimmed();
+                action->setShortcut(QKeySequence(singleShortcut));
+            }
+            else
+            {
+
+            //create a key sequence
+            QJsonArray array = val.toArray();
+            foreach (const QJsonValue & v, array)
+            {
+                QString shortcut = v.toString();
+                if(shortcut.length()==0) continue;
+                shortcutsListFinal.append(shortcut);
+            }
+
+            action->setShortcuts(shortcutsListFinal);
+            }   
         }
 
     }
