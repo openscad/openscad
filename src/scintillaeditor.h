@@ -88,6 +88,7 @@ private:
 	void addTemplate(const fs::path path);
 	void updateSymbolMarginVisibility();
 	void findMarker(int, int, std::function<int(int)>);
+    int getCharCount(int line);
 
 signals:
 	void previewRequest(void);
