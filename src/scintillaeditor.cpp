@@ -1220,5 +1220,5 @@ void ScintillaEditor::stringToEndOfTheLine(){
 }
 
 int ScintillaEditor::getCharCount(int line){
-    return qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+    return qsci->text(line).remove(QRegExp("[\n\r]$")).toStdU32String().length();
 }
