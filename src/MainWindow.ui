@@ -1532,7 +1532,7 @@
     <string>Rotate X Forward Small Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+J</string>
+    <string>Alt+J</string>
    </property>
   </action>
   <action name="viewActionRotateSmallBackwardX">
@@ -1540,7 +1540,7 @@
     <string>Rotate X Backward Small Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+M</string>
+    <string>Alt+M</string>
    </property>
   </action>
   <action name="viewActionRotateBigForwardX">
@@ -1548,7 +1548,7 @@
     <string>Rotate X Forward Big Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+J</string>
+    <string>Alt+Shift+J</string>
    </property>
   </action>
   <action name="viewActionRotateBigBackwardX">
@@ -1556,7 +1556,7 @@
     <string>Rotate X Backward Big Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+M</string>
+    <string>Alt+Shift+M</string>
    </property>
   </action>
 
@@ -1565,7 +1565,7 @@
     <string>Rotate Y Forward Small Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+K</string>
+    <string>Alt+K</string>
    </property>
   </action>
   <action name="viewActionRotateSmallBackwardY">
@@ -1573,7 +1573,7 @@
     <string>Rotate Y Backward Small Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+,</string>
+    <string>Alt+,</string>
    </property>
   </action>
   <action name="viewActionRotateBigForwardY">
@@ -1581,7 +1581,7 @@
     <string>Rotate Y Forward Big Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+K</string>
+    <string>Alt+Shift+K</string>
    </property>
   </action>
   <action name="viewActionRotateBigBackwardY">
@@ -1589,7 +1589,7 @@
     <string>Rotate Y Backward Big Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+,</string>
+    <string>Alt+Shift+,</string>
    </property>
   </action>
 
@@ -1598,7 +1598,7 @@
     <string>Rotate Z Forward Small Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+L</string>
+    <string>Alt+L</string>
    </property>
   </action>
   <action name="viewActionRotateSmallBackwardZ">
@@ -1606,7 +1606,7 @@
     <string>Rotate Z Backward Small Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+.</string>
+    <string>Alt+.</string>
    </property>
   </action>
   <action name="viewActionRotateBigForwardZ">
@@ -1614,7 +1614,7 @@
     <string>Rotate Z Forward Big Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+L</string>
+    <string>Alt+Shift+L</string>
    </property>
   </action>
   <action name="viewActionRotateBigBackwardZ">
@@ -1622,7 +1622,7 @@
     <string>Rotate Z Backward Big Step</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+.</string>
+    <string>Alt+Shift+.</string>
    </property>
   </action>
 
