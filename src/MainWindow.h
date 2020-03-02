@@ -123,7 +123,6 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
-    void rotateViewAngle(int axis, int step);
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;

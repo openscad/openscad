@@ -411,11 +411,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
+
     // View rotation shortcuts
-    //connect(this->viewActionRotateSmallX, SIGNAL(triggered()), this, SLOT(rotateViewAngleSmallX()));
-
-    //this->addAction(this->viewActionRotateSmallX);
-
     connect(this->viewActionRotateSmallForwardX, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardX()));
     connect(this->viewActionRotateSmallBackwardX, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardX()));
     connect(this->viewActionRotateBigForwardX, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardX()));
@@ -428,7 +425,6 @@ MainWindow::MainWindow(const QStringList &filenames)
     connect(this->viewActionRotateSmallBackwardZ, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardZ()));
     connect(this->viewActionRotateBigForwardZ, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardZ()));
     connect(this->viewActionRotateBigBackwardZ, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardZ()));
-
 
     this->rotationActions.append(this->viewActionRotateSmallForwardX);
     this->rotationActions.append(this->viewActionRotateSmallBackwardX);
@@ -2610,24 +2606,18 @@ void MainWindow::animateUpdate()
 	}
 }
 
-void MainWindow::rotateViewAngle(int axis, int step)
-{
-	qglview->cam.object_rot[axis] += step;
-	this->qglview->updateGL();
-}
-
-void MainWindow::viewRotateSmallForwardX() {this->rotateViewAngle(0, 1);}
-void MainWindow::viewRotateSmallBackwardX() {this->rotateViewAngle(0, -1);}
-void MainWindow::viewRotateBigForwardX() {this->rotateViewAngle(0, 8);}
-void MainWindow::viewRotateBigBackwardX() {this->rotateViewAngle(0, -8);}
-void MainWindow::viewRotateSmallForwardY() {this->rotateViewAngle(1, 1);}
-void MainWindow::viewRotateSmallBackwardY() {this->rotateViewAngle(1, -1);}
-void MainWindow::viewRotateBigForwardY() {this->rotateViewAngle(1, 8);}
-void MainWindow::viewRotateBigBackwardY() {this->rotateViewAngle(1, -8);}
-void MainWindow::viewRotateSmallForwardZ() {this->rotateViewAngle(2, 1);}
-void MainWindow::viewRotateSmallBackwardZ() {this->rotateViewAngle(2, -1);}
-void MainWindow::viewRotateBigForwardZ() {this->rotateViewAngle(2, 8);}
-void MainWindow::viewRotateBigBackwardZ() {this->rotateViewAngle(2, -8);}
+void MainWindow::viewRotateSmallForwardX() {this->qglview->rotate(1, 0, 0, true);}
+void MainWindow::viewRotateSmallBackwardX() {this->qglview->rotate(-1, 0, 0, true);}
+void MainWindow::viewRotateBigForwardX() {this->qglview->rotate(8, 0, 0, true);}
+void MainWindow::viewRotateBigBackwardX() {this->qglview->rotate(-8, 0, 0, true);}
+void MainWindow::viewRotateSmallForwardY() {this->qglview->rotate(0, 1, 0, true);}
+void MainWindow::viewRotateSmallBackwardY() {this->qglview->rotate(0, -1, 0, true);}
+void MainWindow::viewRotateBigForwardY() {this->qglview->rotate(0, 8, 0, true);}
+void MainWindow::viewRotateBigBackwardY() {this->qglview->rotate(0, -8, 0, true);}
+void MainWindow::viewRotateSmallForwardZ() {this->qglview->rotate(0, 0, 1, true);}
+void MainWindow::viewRotateSmallBackwardZ() {this->qglview->rotate(0, 0, -1, true);}
+void MainWindow::viewRotateBigForwardZ() {this->qglview->rotate(0, 0, 8, true);}
+void MainWindow::viewRotateBigBackwardZ() {this->qglview->rotate(0, 0, -8, true);}
 
 
 void MainWindow::viewAngleTop()
