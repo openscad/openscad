@@ -51,18 +51,18 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& 
 #endif
 #include "ThrownTogetherRenderer.h"
 
-bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output)
+std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& options, Camera camera)
 {
-	PRINTD("export_png_preview_common");
+	PRINTD("prepare_preview_common");
 	CsgInfo csgInfo = CsgInfo();
 	csgInfo.compile_products(tree);
 
-	OffscreenView *glview;
+	std::unique_ptr<OffscreenView> glview;
 	try {
-		glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
+		glview.reset(new OffscreenView(camera.pixel_width, camera.pixel_height));
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
-		return false;
+		return 0;
 	}
 
 #ifdef ENABLE_OPENCSG
@@ -75,7 +75,7 @@ bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, s
 		glview->setRenderer(&openCSGRenderer);
 #else
 		fprintf(stderr,"This openscad was built without OpenCSG support\n");
-		return false;
+		return 0;
 #endif
 	}
 	else {
@@ -94,6 +94,12 @@ bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, s
 	glview->setShowScaleProportional(options["scales"]);
 	glview->setShowEdges(options["edges"]);
 	glview->paintGL();
+	return glview;
+}
+
+bool export_png(OffscreenView *glview, std::ostream &output)
+{
+	PRINTD("export_png_preview_common");
 	glview->save(output);
 	return true;
 }
