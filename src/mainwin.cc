@@ -1119,8 +1119,12 @@ void MainWindow::instantiateRoot()
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
-			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
+			const Location *nextLocation = nullptr;
+			if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
 				this->root_node = this->absolute_root_node;
+			}
+			if (nextLocation) {
+				PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
