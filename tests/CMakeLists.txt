@@ -358,6 +358,7 @@ file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
+file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_SOURCE_DIR}/../examples/Old/example015.scad
@@ -696,15 +697,17 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
 #)
 
-list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
-list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
-foreach(FILE ${BUGS_FILES})
+list(APPEND OPENCSGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
+list(APPEND CGALPNGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
+foreach(FILE ${BUGS_FILES} ${BUGS_2D_FILES})
   get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
+endforeach()
+foreach(FILE ${BUGS_FILES})
   get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(monotonepngtest ${FILE} TEST_FULLNAME)
