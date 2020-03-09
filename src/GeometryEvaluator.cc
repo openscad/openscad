@@ -201,14 +201,20 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	if (points.size() > 0) {
 		// Apply hull
 		std::list<CGALPoint2> result;
-		CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
-
-		// Construct Polygon2d
-		Outline2d outline;
-		for(const auto &p : result) {
-			outline.vertices.push_back(Vector2d(p[0], p[1]));
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
+			// Construct Polygon2d
+			Outline2d outline;
+			for(const auto &p : result) {
+				outline.vertices.push_back(Vector2d(p[0], p[1]));
+			}
+			geometry->addOutline(outline);
 		}
-		geometry->addOutline(outline);
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %s", e.what());
+		}
+		CGAL::set_error_behaviour(old_behaviour);
 	}
 	return geometry;
 }
@@ -1209,6 +1215,9 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 					// If we got a const object, make a copy
 					if (res.isConst()) editablegeom.reset(geom->copy());
 					else editablegeom = res.ptr();
+					if (editablegeom->getConvexity() != node.convexity) {
+						editablegeom->setConvexity(node.convexity);
+					}
 					geom = editablegeom;
 
 					shared_ptr<CGAL_Nef_polyhedron> N = dynamic_pointer_cast<CGAL_Nef_polyhedron>(editablegeom);

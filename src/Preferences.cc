@@ -555,7 +555,9 @@ void Preferences::on_comboBoxLineWrap_activated(int val)
 
 void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 {
-	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentText() == "Same");
+	//Next Line disables the Indent Spin-Box when 'Same' or 'Indented' is choosen from LineWrapIndentationStyle Combo-Box.
+	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+	
 	applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
 }
 
@@ -932,7 +934,13 @@ void Preferences::updateGUI()
 	initCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
 	initCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
 	initCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
-	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
+	
+	/* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from LineWrapIndentationStyle Combo-box, just after launching the openscad application.
+	Removing this line will cause misbehaviour, and will not disable the Indent spin-box untill you interact with the LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled.
+	For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
+	*/
+	this->spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+
 
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintUrl).toString()));
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintApiKey).toString()));

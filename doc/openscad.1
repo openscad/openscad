@@ -1,4 +1,4 @@
-.TH OPENSCAD 1 "2019.04"
+.TH OPENSCAD 1 "2020.02"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
@@ -15,13 +15,17 @@ CAD aspects rather than artistic ones.
 OpenSCAD will start as a graphical program unless export options are given (see
 below). For the usage of the GUI and a description of the OpenSCAD language see
 the OpenSCAD user manual at https://en.wikibooks.org/wiki/OpenSCAD_User_Manual.
+A tutorial can be found at https://en.wikibooks.org/wiki/OpenSCAD_Tutorial.
 .SH OPTIONS
 
 .TP
-\fB-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, AMF, 3MF, DXF, SVG, or PNG
-format, depending on file extension of \fIoutputfile\fP. If this
+\fB\-o\fP \fIoutputfile\fP
+Export the given file to \fIoutputfile\fP in STL, OFF, AMF, 3MF, DXF, SVG,
+or PNG format, depending on file extension of \fIoutputfile\fP. If this
 option is given, the GUI will not be started.
+
+Known extensions: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term,
+nef3, nefdbg.
 
 Additional formats, which are mainly used for debugging and testing (but can
 also be used in automation), are AST (the input file as parsed and serialized
@@ -32,6 +36,10 @@ output file will be written, but the file will still be evaluated and all
 \fBecho\fP commands will be written to the standard error output. (The
 rendering process will still take place if the \fB\-\-render\fP option is
 given.)
+.TP
+\fB\--export-format
+Overrides format of exported scad file when using option \fB\-o\fP, arg can
+be any of its supported file extensions.
 .TP
 \fB\-q
 Quiet mode (don't print anything except errors)
@@ -50,6 +58,15 @@ This option can be used to assign constant values to OpenSCAD variables. The
 variable's value is an expression, so if this mechanism is used to assign
 strings, care has to be taken that the shell does not consume quotation marks.
 More than one \fB-D\fP option can be given.
+.TP
+.B \-p
+Customizer parameter file.
+.TP
+.B \-p
+Customizer parameter set.
+.TP
+.B \-v
+Print version.
 .TP
 .B \-\-render
 If exporting an image, render the model fully. (Default is preview)
@@ -91,9 +108,11 @@ projection
 .B \-\-colorscheme=\fIscheme
 If exporting an image, use the specified color scheme for the rendering.
 \fIscheme\fP can be any of \fBCornfield\fP, \fBSunset\fP, \fBMetallic\fP,
-\fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP or \fBDeepOcean\fP.
+\fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP or \fBDeepOcean\fP
+\fBSolarized\fP, \fBTomorrow\fP, \fBTomorrow 2\fP, \fBTomorrow Night\fP,
+\fBMonotone\fP.
 .TP
-.B \-v, \-\-hardwarnings
+.B \-\-hardwarnings
 Stop on the first warning
 .TP
 .B \-\-check-parameters=[true|false]
