@@ -69,35 +69,15 @@ void ParameterVirtualWidget::setPrecision(double number){
 	}
 }
 
-double ParameterVirtualWidget::getHighestPrecision(Value::VectorType vec){
-	
-	int highestPrecision= 0,highestPrecisionIndex=0;
-    for(int i=0;i<vec.size();i++)
+//functional overloading to handle the case of vectors
+void ParameterVirtualWidget::setPrecision(Value::VectorType vec){
+	int highestPrecision= 0;
+    for(long unsigned int i=0;i<vec.size();i++)
 	{
-		//convert double to string
-        std::ostringstream bufferStream;
-        bufferStream<<vec[i]->toDouble();
-        std::string numStr= bufferStream.str();
-
-		//find number of digits are decimal
-        int pos = numStr.find(".");
-
-		if(pos>0)
-		{
-        	std::string doubleStr = numStr.substr(pos+1);
-        	if(i == 0)
-			{
-            	highestPrecision = doubleStr.length();
-        	}
-        	else if(doubleStr.length() > highestPrecision)
-			{
-          	 	highestPrecision = doubleStr.length();
-		   		highestPrecisionIndex=i;
-        	}
-		}
-    }
-	return vec[highestPrecisionIndex]->toDouble();
-
+		ParameterVirtualWidget::setPrecision(vec[i]->toDouble());
+		if(this->decimalPrecision>highestPrecision) highestPrecision = this->decimalPrecision;
+	}
+	this->decimalPrecision = highestPrecision;
 }
 
 void ParameterVirtualWidget::setDescription(const QString& description) {

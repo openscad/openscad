@@ -26,7 +26,7 @@ signals:
 protected:
 	int decimalPrecision;
 	virtual void setPrecision(double number);
-	virtual double getHighestPrecision(Value::VectorType vec);
+	virtual void setPrecision(Value::VectorType vec);
 	
 private:
 	void setName(QString name);

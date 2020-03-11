@@ -52,12 +52,10 @@ void ParameterVector::setValue()
 	double minV = object->values->toRange().begin_value();
 	double step = object->values->toRange().step_value();
 	double maxV = object->values->toRange().end_value();
-
-	double highestPrecisionValue = getHighestPrecision(vec);
 	
 	if(step==0){
 		step=1;
-		setPrecision(highestPrecisionValue);
+		setPrecision(vec);
 	}else{
 		setPrecision(step);
 	}
