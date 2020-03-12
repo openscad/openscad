@@ -625,6 +625,8 @@ Expression * FunctionCall::create(const std::string &funcname, const AssignmentL
 		return new Echo(arglist, expr, loc);
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
+	} else if (funcname == "error") {
+		return new Error(arglist,expr,loc);
 	}
 	return nullptr;
 
@@ -683,6 +685,33 @@ ValuePtr Echo::evaluate(const std::shared_ptr<Context>& context) const
 void Echo::print(std::ostream &stream, const std::string &) const
 {
 	stream << "echo(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
+}
+
+Error::Error(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
+{
+
+}
+
+const shared_ptr<Expression>& Error::evaluateStep(const std::shared_ptr<Context>& context) const
+{
+	ContextHandle<EvalContext> error_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	PRINTB("%s", STR("ERROR: " << *error_context.ctx));
+	return expr;
+}
+
+ValuePtr Error::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
+	return result;
+}
+
+void Error::print(std::ostream &stream, const std::string &) const
+{
+	stream << "error(" << this->arguments << ")";
 	if (this->expr) stream << " " << *this->expr;
 }
 
@@ -970,6 +999,10 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 			else if (typeid(*subExpr) == typeid(Assert)) {
 				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
 				subExpr = assertion->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Error)) {
+				const shared_ptr<Error> &error = static_pointer_cast<Error>(subExpr);					
+				subExpr = error->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(Echo)) {
 				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);

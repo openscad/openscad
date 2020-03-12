@@ -226,6 +226,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 "else"		return TOK_ELSE;
 "let"		return TOK_LET;
 "assert"	return TOK_ASSERT;
+"error"   return TOK_ERROR;
 "echo"	        return TOK_ECHO;
 "for"		return TOK_FOR;
 "each"		return TOK_EACH;
