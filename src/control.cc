@@ -42,6 +42,7 @@ public: // types
 		CHILDREN,
 		ECHO,
 		ASSERT,
+		ERROR,
 		ASSIGN,
 		FOR,
 		LET,
@@ -291,6 +292,16 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	}
 		break;
 
+	case Type::ERROR: {
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
+		PRINTB("%s", STR("ERROR: " << *evalctx));
+		ContextHandle<Context> c{Context::create<Context>(evalctx)};
+		inst->scope.apply(c.ctx);
+		node->children = inst->instantiateChildren(c.ctx);
+	}
+		break;
+
 	case Type::LET: {
 		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
 		else node = new GroupNode(inst);
@@ -374,6 +385,11 @@ void register_builtin_control()
 				{
 					"assert(boolean)",
 					"assert(boolean, string)",
+				});
+
+	Builtins::init("error", new ControlModule(ControlModule::Type::ERROR),
+				{
+					"error(arg, ...)",
 				});
 
 	Builtins::init("for", new ControlModule(ControlModule::Type::FOR),
