@@ -294,6 +294,7 @@ private:
 };
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
+void evaluate_error(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
 
 ValuePtr evaluate_function(const std::string& name,
 		const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,

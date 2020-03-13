@@ -295,8 +295,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	case Type::ERROR: {
 		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
 		else node = new GroupNode(inst);
-		PRINTB("%s", STR("ERROR: " << *evalctx));
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
+		evaluate_error(c.ctx, evalctx);
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);
 	}

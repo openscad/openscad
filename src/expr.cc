@@ -697,7 +697,8 @@ Error::Error(const AssignmentList &args, Expression *expr, const Location &loc)
 const shared_ptr<Expression>& Error::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<EvalContext> error_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	PRINTB("%s", STR("ERROR: " << *error_context.ctx));
+	ContextHandle<Context> c{Context::create<Context>(error_context.ctx)};
+	evaluate_error(c.ctx, error_context.ctx);
 	return expr;
 }
 
@@ -963,6 +964,30 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
+}
+
+void evaluate_error(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> errorctx)
+{
+	ContextHandle<Context> c{Context::create<Context>(context)};
+	const auto locs = errorctx->loc.toRelativeString(context->documentPath());;
+
+	//get args
+	AssignmentList args;
+	args += assignment("errormessage");
+
+
+	//currently defined for one arguement, can extend in future to multiple arguements
+	AssignmentMap assignments = errorctx->resolveArguments(args, {}, false);
+	for (const auto &arg : args) {
+		auto it = assignments.find(arg->name);
+		if (it != assignments.end()) {
+			c->set_variable(arg->name, assignments[arg->name]->evaluate(errorctx));
+		}
+	}
+
+	const ValuePtr message = c->lookup_variable("errormessage", true);
+	PRINTB("ERROR: %s %s",message->toEchoString()%locs);
+
 }
 
 ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
