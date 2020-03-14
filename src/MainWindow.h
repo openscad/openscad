@@ -40,6 +40,7 @@ public:
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
 	EditorInterface *customizerEditor;
+    QList<QAction *> rotationActions;
 
 	ContextHandle<BuiltinContext> top_ctx;
 	FileModule *root_module;      // Result of parsing
@@ -255,6 +256,18 @@ public slots:
 	void viewModeShowCrosshairs();
 	void viewModeShowScaleProportional();
 	void viewModeAnimate();
+    void viewRotateSmallForwardX();
+    void viewRotateSmallBackwardX();
+    void viewRotateBigForwardX();
+    void viewRotateBigBackwardX();
+    void viewRotateSmallForwardY();
+    void viewRotateSmallBackwardY();
+    void viewRotateBigForwardY();
+    void viewRotateBigBackwardY();
+    void viewRotateSmallForwardZ();
+    void viewRotateSmallBackwardZ();
+    void viewRotateBigForwardZ();
+    void viewRotateBigBackwardZ();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();

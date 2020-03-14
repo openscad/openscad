@@ -411,6 +411,39 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
+
+    // View rotation shortcuts
+    connect(this->viewActionRotateSmallForwardX, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardX()));
+    connect(this->viewActionRotateSmallBackwardX, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardX()));
+    connect(this->viewActionRotateBigForwardX, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardX()));
+    connect(this->viewActionRotateBigBackwardX, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardX()));
+    connect(this->viewActionRotateSmallForwardY, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardY()));
+    connect(this->viewActionRotateSmallBackwardY, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardY()));
+    connect(this->viewActionRotateBigForwardY, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardY()));
+    connect(this->viewActionRotateBigBackwardY, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardY()));
+    connect(this->viewActionRotateSmallForwardZ, SIGNAL(triggered()), this,  SLOT(viewRotateSmallForwardZ()));
+    connect(this->viewActionRotateSmallBackwardZ, SIGNAL(triggered()), this, SLOT(viewRotateSmallBackwardZ()));
+    connect(this->viewActionRotateBigForwardZ, SIGNAL(triggered()), this,    SLOT(viewRotateBigForwardZ()));
+    connect(this->viewActionRotateBigBackwardZ, SIGNAL(triggered()), this,   SLOT(viewRotateBigBackwardZ()));
+
+    this->rotationActions.append(this->viewActionRotateSmallForwardX);
+    this->rotationActions.append(this->viewActionRotateSmallBackwardX);
+    this->rotationActions.append(this->viewActionRotateBigForwardX);
+    this->rotationActions.append(this->viewActionRotateBigBackwardX);
+    this->rotationActions.append(this->viewActionRotateSmallForwardY);
+    this->rotationActions.append(this->viewActionRotateSmallBackwardY);
+    this->rotationActions.append(this->viewActionRotateBigForwardY);
+    this->rotationActions.append(this->viewActionRotateBigBackwardY);
+    this->rotationActions.append(this->viewActionRotateSmallForwardZ);
+    this->rotationActions.append(this->viewActionRotateSmallBackwardZ);
+    this->rotationActions.append(this->viewActionRotateBigForwardZ);
+    this->rotationActions.append(this->viewActionRotateBigBackwardZ);
+
+    foreach(QAction* action, this->rotationActions)
+    {
+        this->addAction(action);
+    }
+
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -2576,6 +2609,20 @@ void MainWindow::animateUpdate()
 		}
 	}
 }
+
+void MainWindow::viewRotateSmallForwardX() {this->qglview->rotate(1, 0, 0, true);}
+void MainWindow::viewRotateSmallBackwardX() {this->qglview->rotate(-1, 0, 0, true);}
+void MainWindow::viewRotateBigForwardX() {this->qglview->rotate(8, 0, 0, true);}
+void MainWindow::viewRotateBigBackwardX() {this->qglview->rotate(-8, 0, 0, true);}
+void MainWindow::viewRotateSmallForwardY() {this->qglview->rotate(0, 1, 0, true);}
+void MainWindow::viewRotateSmallBackwardY() {this->qglview->rotate(0, -1, 0, true);}
+void MainWindow::viewRotateBigForwardY() {this->qglview->rotate(0, 8, 0, true);}
+void MainWindow::viewRotateBigBackwardY() {this->qglview->rotate(0, -8, 0, true);}
+void MainWindow::viewRotateSmallForwardZ() {this->qglview->rotate(0, 0, 1, true);}
+void MainWindow::viewRotateSmallBackwardZ() {this->qglview->rotate(0, 0, -1, true);}
+void MainWindow::viewRotateBigForwardZ() {this->qglview->rotate(0, 0, 8, true);}
+void MainWindow::viewRotateBigBackwardZ() {this->qglview->rotate(0, 0, -8, true);}
+
 
 void MainWindow::viewAngleTop()
 {
