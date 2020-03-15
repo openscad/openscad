@@ -43,14 +43,18 @@ void LocalScope::addModuleInst(shared_ptr<ModuleInstantiation> &&modinst)
 void LocalScope::addModule(shared_ptr<class UserModule> &&module)
 {
 	assert(module);
-	this->modules.emplace(module->name, module);
+	auto it=this->modules.find(module->name);
+ 	if(it!=this->modules.end()) it->second=module;
+    else this->modules.emplace(module->name, module);
 	this->astModules.emplace_back(module->name, std::move(module));
 }
 
 void LocalScope::addFunction(shared_ptr<class UserFunction> &&func)
 {
 	assert(func);
-	this->functions.emplace(func->name, func);
+	auto it=this->functions.find(func->name);
+ 	if(it!=this->functions.end()) it->second=func;
+ 	else this->functions.emplace(func->name, func);
 	this->astFunctions.emplace_back(func->name, std::move(func));
 }
 
