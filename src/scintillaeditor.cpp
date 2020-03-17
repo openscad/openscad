@@ -16,6 +16,9 @@
 #include "settings.h"
 #include "QSettingsCached.h"
 
+#include <QWheelEvent>
+#include<QPoint>
+
 namespace fs=boost::filesystem;
 
 const QString ScintillaEditor::cursorPlaceHolder = "^~^";
@@ -782,7 +785,17 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-	if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
+	if(e->type() == QEvent::Wheel)
+	{
+		std::cout<<"hello\n";
+		auto *wheelEvent = static_cast <QWheelEvent*> (e);
+		if(handleWheelEventNavigateNumber(wheelEvent)){
+			std::cout<<"wheel event triggered\n";
+			return true;
+		}
+	}
+
+	else if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
 		auto *keyEvent = static_cast<QKeyEvent*> (e);
 
 		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
@@ -795,8 +808,10 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
 
 		if (handleKeyEventNavigateNumber(keyEvent)) {
+			std::cout<<"event triggered\n";
 			return true;
 		}
+
 		if (handleKeyEventBlockCopy(keyEvent)) {
 			return true;
 		}
@@ -958,6 +973,47 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 	return false;
 }
 
+bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
+{
+	static bool wasChanged = false;
+	static bool previewAfterUndo = false;
+
+	unsigned int navigateOnWheelModifiers = Qt::ScrollBegin;
+
+	std::cout<<wheelEvent->modifiers()<<"************"<<std::endl;
+	QPoint numPixels = wheelEvent->pixelDelta();
+	QPoint numDegrees = wheelEvent->angleDelta() / 8;
+	// std::cout<<"aajbkcaskamcs"<<numDegrees.y()<<std::endl;
+	if (!numPixels) {
+		case Qt::Key_Up:
+		case Qt::Key_Down:
+			if (keyEvent->type() == QEvent::KeyPress) {
+				if (!wasChanged) qsci->beginUndoAction();
+				if (modifyNumber(numPixels)) {
+					wasChanged = true;
+					previewAfterUndo = true;
+				}
+				if (!wasChanged) qsci->endUndoAction();
+			}
+			return true;
+		}
+	}
+	// if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
+	// 	int k = keyEvent->key() | keyEvent->modifiers();
+	// 	if (wasChanged) qsci->endUndoAction();
+	// 	wasChanged = false;
+	// 	auto *cmd = qsci->standardCommands()->boundTo(k);
+	// 	if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
+	// 		QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+	// 	else if (cmd || !keyEvent->text().isEmpty()) {
+	// 		// any insert or command (but not undo/redo) cancels the preview after undo
+	// 		previewAfterUndo = false;
+	// 	}
+	// }
+	// return false;
+	return true;
+}
+
 void ScintillaEditor::navigateOnNumber(int key)
 {
 	int line, index;
@@ -1048,6 +1104,8 @@ bool ScintillaEditor::modifyNumber(int key)
 	emit previewRequest();
 	return true;
 }
+
+
 
 void ScintillaEditor::onUserListSelected(const int, const QString &text)
 {
