@@ -84,6 +84,7 @@ private:
 	bool handleKeyEventBlockMove(QKeyEvent *);
 	void navigateOnNumber(int key);
 	bool modifyNumber(int key);
+	bool modifyNumberByWheel(int key);
 	void noColor();
 
 	void setLexer(ScadLexer *lexer);

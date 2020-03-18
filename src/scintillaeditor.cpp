@@ -787,10 +787,8 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 
 	if(e->type() == QEvent::Wheel)
 	{
-		std::cout<<"hello\n";
 		auto *wheelEvent = static_cast <QWheelEvent*> (e);
 		if(handleWheelEventNavigateNumber(wheelEvent)){
-			std::cout<<"wheel event triggered\n";
 			return true;
 		}
 	}
@@ -808,7 +806,6 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
 
 		if (handleKeyEventNavigateNumber(keyEvent)) {
-			std::cout<<"event triggered\n";
 			return true;
 		}
 
@@ -978,40 +975,48 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 	static bool wasChanged = false;
 	static bool previewAfterUndo = false;
 
-	unsigned int navigateOnWheelModifiers = Qt::ScrollBegin;
+	if ((wheelEvent->modifiers() && Qt::AltModifier))
+	 {
+		 	std::cout<<wheelEvent->x()<<" These are the positions"<<wheelEvent->y()<<std::endl;
+			// std::cout<<wheelEvent->delta()<<"****\n";
+			if (!wasChanged) qsci->beginUndoAction();
 
-	std::cout<<wheelEvent->modifiers()<<"************"<<std::endl;
-	QPoint numPixels = wheelEvent->pixelDelta();
-	QPoint numDegrees = wheelEvent->angleDelta() / 8;
-	// std::cout<<"aajbkcaskamcs"<<numDegrees.y()<<std::endl;
-	if (!numPixels) {
-		case Qt::Key_Up:
-		case Qt::Key_Down:
-			if (keyEvent->type() == QEvent::KeyPress) {
-				if (!wasChanged) qsci->beginUndoAction();
-				if (modifyNumber(numPixels)) {
+			if (wheelEvent->delta() < 0) {
+				// increase value
+				if (modifyNumberByWheel(1)) {
 					wasChanged = true;
 					previewAfterUndo = true;
 				}
-				if (!wasChanged) qsci->endUndoAction();
+
+				// std::cout << "Value will be increased\n";
+		}
+		else if (wheelEvent->delta() > 0) {
+			//decrease value
+			if (modifyNumberByWheel(-1)) {
+				wasChanged = true;
+				previewAfterUndo = true;
 			}
-			return true;
+
+			// std::cout << "Value will be decreased\n";
+		}
+
+		if (!wasChanged) qsci->endUndoAction();
+	}
+
+	
+	if (previewAfterUndo) {
+		int k = wheelEvent->modifiers() && Qt::AltModifier;
+		if (wasChanged) qsci->endUndoAction();
+		wasChanged = false;
+		auto *cmd = qsci->standardCommands()->boundTo(k);
+		if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
+			QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+		else if (cmd || !wheelEvent->delta()) {
+			// any insert or command (but not undo/redo) cancels the preview after undo
+			previewAfterUndo = false;
 		}
 	}
-	// if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
-	// 	int k = keyEvent->key() | keyEvent->modifiers();
-	// 	if (wasChanged) qsci->endUndoAction();
-	// 	wasChanged = false;
-	// 	auto *cmd = qsci->standardCommands()->boundTo(k);
-	// 	if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
-	// 		QTimer::singleShot(0, this, SIGNAL(previewRequest()));
-	// 	else if (cmd || !keyEvent->text().isEmpty()) {
-	// 		// any insert or command (but not undo/redo) cancels the preview after undo
-	// 		previewAfterUndo = false;
-	// 	}
-	// }
-	// return false;
-	return true;
+	return false;
 }
 
 void ScintillaEditor::navigateOnNumber(int key)
@@ -1080,6 +1085,63 @@ bool ScintillaEditor::modifyNumber(int key)
 		case Qt::Key_Up:   number+=step; break;
 		case Qt::Key_Down: number-=step; break;
 	}
+	auto negative=number<0;
+	if (negative) number=-number;
+	auto newnr=QString::number(number);
+	if (decimals) {
+		if (newnr.length()<=decimals) newnr.prepend(QString(decimals-newnr.length()+1,'0'));
+		newnr=newnr.left(newnr.length()-decimals)+"."+newnr.right(decimals);
+	}
+	if (tail>newnr.length()) {
+		newnr.prepend(QString(tail-newnr.length(),'0'));
+	}
+	if (negative) newnr.prepend('-');
+	else if (sign) newnr.prepend('+');
+	qsci->setSelection(line, begin, line, end);
+	qsci->replaceSelectedText(newnr);
+
+	qsci->selectAll(false);
+	if (hadSelection)
+	{
+		qsci->setSelection(lineFrom, indexFrom, lineTo, indexTo);
+	}
+	qsci->setCursorPosition(line, begin+newnr.length()-tail);
+	emit previewRequest();
+	return true;
+}
+
+
+bool ScintillaEditor::modifyNumberByWheel(int key)
+{
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	auto text=qsci->text(line);
+
+	int lineFrom, indexFrom, lineTo, indexTo;
+	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+	auto hadSelection=qsci->hasSelectedText();
+
+	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
+	if (end<0) end=text.length();
+	auto nr=text.mid(begin,end-begin);
+	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d"))) ) return false;
+	auto sign=nr[0]=='+'||nr[0]=='-';
+	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
+	auto curpos=index-begin;
+	auto dotpos=nr.indexOf('.');
+	auto decimals=dotpos<0?0:nr.length()-dotpos-1;
+	auto number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
+	auto tail=nr.length()-curpos;
+	auto exponent=tail-((dotpos>=curpos)?1:0);
+	long long int step;
+	for (int i=exponent; i>0; i--) step*=10;
+
+	switch (key) {
+		case 1:   step=1; break;
+		case 2: step=(-1); break;
+	}
+	number+=step;
 	auto negative=number<0;
 	if (negative) number=-number;
 	auto newnr=QString::number(number);
