@@ -18,12 +18,14 @@ public:
 
 	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
+	void collect();
 	AbstractNode *instantiateWithFileContext(const std::shared_ptr<class FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
 	void registerUse(const std::string path, const Location &loc);
 	void registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc);
+	void registerModule(const std::string name,const std::string path, const Location &loc);
 	std::time_t includesChanged() const;
 	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }
@@ -38,6 +40,9 @@ public:
 	ModuleContainer usedlibs;
 
 	std::vector<IndicatorData> indicatorData;
+	// std::vector<IndicatorData> jumpIndicatorData;
+	std::map<std::string,int> jumpData;
+	std::map<std::string,int>jumpFrom;
 
 private:
 	struct IncludeFile {

@@ -77,6 +77,7 @@ private slots:
     void updateFindState();
 
     void onHyperlinkIndicatorClicked(int pos);
+    // void onJumpHyperlinkIndicatorClicked(int pos);
 
 public slots:
     void actionNew();

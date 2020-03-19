@@ -22,11 +22,14 @@ private:
 public:
 	void apply(const std::shared_ptr<Context> &ctx) const;
 	bool hasChildren() const {return !(children.empty());};
-
+	void collectData(std::map<std::string,int>&jump_data);
 	std::vector<shared_ptr<ASTNode>> children;
 
 	AssignmentList assignments;
 	std::vector<shared_ptr<ModuleInstantiation>> children_inst;
+
+	//we can take modules list from here
+	//ModuleList modules;
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
 	// FIXME: Should we split this class into an ASTNode and a run-time support class?
@@ -37,4 +40,5 @@ public:
 	typedef std::unordered_map<std::string, shared_ptr<UserModule>> ModuleContainer;
 	ModuleContainer	modules;
 	std::vector<std::pair<std::string, shared_ptr<UserModule>>> astModules;
+
 };

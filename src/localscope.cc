@@ -74,6 +74,16 @@ void LocalScope::print(std::ostream &stream, const std::string &indent, const bo
 		inst->print(stream, indent, inlined);
 	}
 }
+void LocalScope::collectData(std::map<std::string, int>&jump_data)
+{
+	for (const auto &m : this->astModules) {
+	m.second->collectData(jump_data);
+	}
+	for (const auto &inst : this->children_inst) {
+		inst->collectData(jump_data);
+	}
+	// std::cout << jump_data.size() << std::endl;
+}
 
 std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr<Context> &evalctx) const
 {

@@ -28,6 +28,7 @@ public:
 	virtual bool canUndo() = 0;
 	virtual void addTemplate() = 0;
 	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
+	// virtual void setJumpIndicator(const std::vector<IndicatorData>& jumpIndicatorData) = 0;
 	virtual QMenu * createStandardContextMenu() = 0;
 	virtual QPoint mapToGlobal(const QPoint &) = 0;
 
@@ -72,4 +73,5 @@ public:
 	QString filepath;
 	std::string autoReloadId;
 	std::vector<IndicatorData> indicatorData;
+	std::vector<IndicatorData> jumpIndicatorData;
 };

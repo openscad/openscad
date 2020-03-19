@@ -1714,6 +1714,8 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
+
+	if(this->root_module) std::cout<<typeid(this->root_module).name()<<std::endl;
 	if (this->root_module!=nullptr) {
 		//add parameters as annotation in AST
 		CommentParser::collectParameters(fulltext,this->root_module);
@@ -1722,6 +1724,16 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		customizerEditor = activeEditor;
 		this->parameterWidget->setEnabled(true);
 		this->activeEditor->setIndicator(this->root_module->indicatorData);
+		this->activeEditor->setIndicator(this->root_module->jumpIndicatorData);
+		this->root_module->collect();
+		std::cout << root_module->jumpData.size() << " from main window\n";
+		for (auto it = root_module->jumpData.begin(); it != root_module->jumpData.end(); it++) {
+			std::cout << it->first << " ---- " << it->second << std::endl;
+		}
+		std::cout << "*************************************\n";
+		for (auto it = root_module->jumpFrom.begin(); it != root_module->jumpFrom.end(); it++) {
+			std::cout << it->first << " ----- " << it->second << std::endl;
+		}
 	}
 }
 
@@ -2165,6 +2177,7 @@ void MainWindow::exceptionCleanup(){
 
 void MainWindow::actionDisplayAST()
 {
+
 	setCurrentOutput();
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
@@ -2934,7 +2947,7 @@ void MainWindow::consoleOutput(const QString &msg)
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
+		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></a>&nbsp;");
 	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
 	} else if (msg.startsWith("TRACE:")) {

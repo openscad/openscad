@@ -322,6 +322,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
+                rootmodule->registerModule(std::string($1),sourcefile_folder, LOC(@$));
                 $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
@@ -764,8 +765,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
 
   rootmodule = new FileModule(sourcefile_folder, parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
-  //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
-
+         PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
   parserdebug = debug;
   int parserretval = -1;
   try{

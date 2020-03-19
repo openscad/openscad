@@ -39,6 +39,7 @@
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
+#include <cstdio>
 
 FileModule::FileModule(const std::string &path, const std::string &filename)
 	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
@@ -52,6 +53,12 @@ FileModule::~FileModule()
 void FileModule::print(std::ostream &stream, const std::string &indent) const
 {
 	scope.print(stream, indent);
+}
+
+void FileModule::collect()
+{
+	scope.collectData(this->jumpData);
+	scope.collectDataCalls(this->jumpFrom);
 }
 
 void FileModule::registerUse(const std::string path, const Location &loc)
@@ -94,7 +101,17 @@ void FileModule::registerInclude(const std::string &localpath, const std::string
 		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
 	}
 }
+void FileModule::registerModule(const std::string name,const std::string path, const Location &loc)
+{
+	PRINTDB("registerModule(): (%p) %d, %d - %d, %d (%s) -> %s",
+					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
+							loc.fileName() % path);
 
+		if (!loc.isNone()) {
+			indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),
+																 loc.lastColumn() - loc.firstColumn(), path);
+		}
+}
 time_t FileModule::includesChanged() const
 {
 	time_t latest = 0;

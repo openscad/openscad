@@ -221,6 +221,7 @@ void TabManager::createTab(const QString &filename)
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
     connect(editor, SIGNAL(hyperlinkIndicatorClicked(int)), this, SLOT(onHyperlinkIndicatorClicked(int)));
+    // connect(editor, SIGNAL(jumpHyperlinkIndicatorClicked(int)), this, SLOT(onJumpHyperlinkIndicatorClicked(int)));
 
     int idx = tabWidget->addTab(editor, _("Untitled.scad"));
     if(!editorList.isEmpty()) {
@@ -719,3 +720,10 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
     const QString filename = QString::fromStdString(editor->indicatorData[val].path);
     this->open(filename);
 }
+
+// void TabManager::onJumpHyperlinkIndicatorClicked(int val)
+// {
+//     // const QString filename = QString::fromStdString(editor->indicatorData[val].path);
+//     // this->open(filename);
+//     std::cout<<"i was clicked\n";
+// }
