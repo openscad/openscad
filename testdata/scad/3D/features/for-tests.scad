@@ -75,10 +75,10 @@ for(i = [inf:0]) {}
 for(i = [ninf:0]) {}
 
 for(i = [0:2:inf]) {}
-for(i = [0:2:ninf]) {}
-for(i = [inf:2:0]) {}
+for(i = [0:2:ninf]) {}    // 0 values, begin > end
+for(i = [inf:2:0]) {}     // 0 values, begin > end
 for(i = [ninf:2:0]) {}
-for(i = [inf:2:inf]) {}
-for(i = [ninf:2:ninf]) {}
-for(i = [inf:2:ninf]) {}
+for(i = [inf:2:inf]) {}   // 1 value,  begin == end
+for(i = [ninf:2:ninf]) {} // 1 value,  begin == end
+for(i = [inf:2:ninf]) {}  // 0 values, begin > end
 for(i = [ninf:2:inf]) {}
