@@ -77,7 +77,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		if (it_values->type() == Value::ValueType::RANGE) {
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
-			if (steps >= 10000) {
+			if (steps >= RangeType::MAX_RANGE_STEPS) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
 			} else {
 				for (RangeType::iterator it = range.begin();it != range.end();it++) {
@@ -246,7 +246,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			else if (value->type() == Value::ValueType::RANGE) {
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
-				if (steps >= 10000) {
+				if (steps >= RangeType::MAX_RANGE_STEPS) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps % evalctx->loc.toRelativeString(ctx->documentPath()));
 					return nullptr;
 				}
