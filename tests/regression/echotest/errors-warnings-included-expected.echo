@@ -71,12 +71,7 @@ DEPRECATED: Using ranges of the form [begin:end] with begin value greater than t
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 74
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 75
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 77
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 78
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 79
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 80
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 81
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 82
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 83
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 84
 ECHO: "mainfile"
 WARNING: Ignoring unknown variable 'notDefinedVariable', in file errors-warnings-included.scad, line 5.
