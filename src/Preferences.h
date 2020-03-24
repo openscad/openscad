@@ -6,22 +6,7 @@
 #include "qtgettext.h"
 #include "ui_Preferences.h"
 #include "settings.h"
-
 #include "initConfig.h"
-
-// template <class WidgetPtr>
-// class BlockSignals
-// {
-// public:
-// 	BlockSignals(WidgetPtr w) : w(w) { w->blockSignals(true); }
-// 	~BlockSignals() { w->blockSignals(false); }
-// 	WidgetPtr operator->() const { return w; }
-
-// 	BlockSignals(const BlockSignals&) = delete;
-// 	BlockSignals& operator=(BlockSignals const&) = delete;
-// private:
-// 	WidgetPtr w;
-// };
 
 class Preferences : public QMainWindow, public Ui::Preferences,public InitConfigurator
 {
