@@ -7,21 +7,23 @@
 #include "ui_Preferences.h"
 #include "settings.h"
 
-template <class WidgetPtr>
-class BlockSignals
-{
-public:
-	BlockSignals(WidgetPtr w) : w(w) { w->blockSignals(true); }
-	~BlockSignals() { w->blockSignals(false); }
-	WidgetPtr operator->() const { return w; }
+#include "initConfig.h"
 
-	BlockSignals(const BlockSignals&) = delete;
-	BlockSignals& operator=(BlockSignals const&) = delete;
-private:
-	WidgetPtr w;
-};
+// template <class WidgetPtr>
+// class BlockSignals
+// {
+// public:
+// 	BlockSignals(WidgetPtr w) : w(w) { w->blockSignals(true); }
+// 	~BlockSignals() { w->blockSignals(false); }
+// 	WidgetPtr operator->() const { return w; }
 
-class Preferences : public QMainWindow, public Ui::Preferences
+// 	BlockSignals(const BlockSignals&) = delete;
+// 	BlockSignals& operator=(BlockSignals const&) = delete;
+// private:
+// 	WidgetPtr w;
+// };
+
+class Preferences : public QMainWindow, public Ui::Preferences,public InitConfigurator
 {
 	Q_OBJECT;
 
@@ -133,16 +135,6 @@ private:
 	void hidePasswords();
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
-	/** Initialize checkbox from the settings value */
-	void initCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntry& entry);
-	/** Initialize combobox list values from the settings range values */
-	void initComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry);
-	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBoxRange(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize spinbox double value from the settings value */
-	void initSpinBoxDouble(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry);
-	/** Update combobox from current settings */
-	void updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry);
 

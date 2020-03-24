@@ -285,6 +285,7 @@ HEADERS += src/version_check.h \
            src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
+           src/initConfig.h \
            src/Preferences.h \
            src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
@@ -480,6 +481,7 @@ SOURCES += \
            src/settings.cc \
            src/rendersettings.cc \
            src/highlighter.cc \
+           src/initConfig.cc \
            src/Preferences.cc \
            src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
