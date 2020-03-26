@@ -407,7 +407,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
-	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
+    connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideToolbars()));
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -620,7 +620,7 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 	hideConsole();
 	viewActionHideEditor->setChecked(editor);
 	hideEditor();
-	viewActionHideToolBars->setChecked(toolbar);
+    viewActionHideEditorToolBar->setChecked(toolbar);
 	hideToolbars();
 	viewActionHideParameters->setChecked(customizer);
 	hideParameters();
@@ -2737,14 +2737,14 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 void MainWindow::hideToolbars()
 {
 	QSettingsCached settings;
-	bool shouldHide = viewActionHideToolBars->isChecked();
-	settings.setValue("view/hideToolbar", shouldHide);
+    bool shouldHide = viewActionHideEditorToolBar->isChecked();
+    settings.setValue("view/hideEditorToolbar", shouldHide);
 
 	if (shouldHide) {
-		viewerToolBar->hide();
+        //viewerToolBar->hide();
 		editortoolbar->hide();
 	} else {
-		viewerToolBar->show();
+        //viewerToolBar->show();
 		editortoolbar->show();
 	}
 }

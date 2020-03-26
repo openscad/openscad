@@ -272,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>18</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -412,7 +412,7 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
-    <addaction name="viewActionHideToolBars"/>
+    <addaction name="viewActionHideEditorToolBar"/>
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
     <addaction name="viewActionHideParameters"/>
@@ -447,31 +447,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <widget class="QWidget" name="tabToolBarContents">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_1">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-   </layout>
-   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="maximumSize">
@@ -1335,7 +1310,7 @@
     <string>Jump to next error</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+ALT+E</string>
+    <string>Ctrl+Alt+E</string>
    </property>
   </action>
   <action name="designActionFlushCaches">
@@ -1471,7 +1446,7 @@
     <string>Toggle Bookmark</string>
    </property>
    <property name="shortcut">
-    <string>CTRL+F2</string>
+    <string>Ctrl+F2</string>
    </property>
   </action>
   <action name="editActionNextBookmark">
@@ -1487,15 +1462,15 @@
     <string>Jump to previous bookmark</string>
    </property>
    <property name="shortcut">
-    <string>SHIFT+F2</string>
+    <string>Shift+F2</string>
    </property>
   </action>
-  <action name="viewActionHideToolBars">
+  <action name="viewActionHideEditorToolBar">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide toolbars</string>
+    <string>Hide Editor toolbar</string>
    </property>
   </action>
   <action name="editActionUnindent">
@@ -1561,6 +1536,5 @@
  <resources>
   <include location="../openscad.qrc"/>
  </resources>
- <connections>
- </connections>
+ <connections/>
 </ui>
