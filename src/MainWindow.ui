@@ -413,6 +413,7 @@
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
     <addaction name="viewActionHideEditorToolBar"/>
+    <addaction name="viewActionHide3DViewToolBar"/>
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
     <addaction name="viewActionHideParameters"/>
@@ -1499,6 +1500,14 @@
    </property>
    <property name="text">
     <string>Hide Customizer</string>
+   </property>
+  </action>
+  <action name="viewActionHide3DViewToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide 3D view toolbar</string>
    </property>
   </action>
  </widget>

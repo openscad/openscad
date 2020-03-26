@@ -407,7 +407,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
-    connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideToolbars()));
+    connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
+    connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -516,14 +517,15 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideConsole = settings.value("view/hideConsole").toBool();
 	bool hideEditor = settings.value("view/hideEditor").toBool();
 	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
-	bool hideToolbar = settings.value("view/hideToolbar").toBool();
+    bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
+    bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 	
 	// make sure it looks nice..
 	auto windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
-	updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideToolbar);
+    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideEditorToolbar, hide3DViewToolbar);
 
 	if (windowState.size() == 0) {
 		/*
@@ -614,14 +616,16 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar)
 {
 	viewActionHideConsole->setChecked(console);
 	hideConsole();
 	viewActionHideEditor->setChecked(editor);
 	hideEditor();
-    viewActionHideEditorToolBar->setChecked(toolbar);
-	hideToolbars();
+    viewActionHideEditorToolBar->setChecked(editorToolbar);
+    hideEditorToolbar();
+    viewActionHide3DViewToolBar->setChecked(viewToolbar);
+    hide3DViewToolbar();
 	viewActionHideParameters->setChecked(customizer);
 	hideParameters();
 }
@@ -2734,19 +2738,30 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
-void MainWindow::hideToolbars()
+void MainWindow::hideEditorToolbar()
 {
 	QSettingsCached settings;
     bool shouldHide = viewActionHideEditorToolBar->isChecked();
     settings.setValue("view/hideEditorToolbar", shouldHide);
 
 	if (shouldHide) {
-        //viewerToolBar->hide();
 		editortoolbar->hide();
 	} else {
-        //viewerToolBar->show();
 		editortoolbar->show();
 	}
+}
+
+void MainWindow::hide3DViewToolbar()
+{
+    QSettingsCached settings;
+    bool shouldHide = viewActionHide3DViewToolBar->isChecked();
+    settings.setValue("view/hide3DViewToolbar", shouldHide);
+
+    if (shouldHide) {
+        viewerToolBar->hide();
+    } else {
+        viewerToolBar->show();
+    }
 }
 
 void MainWindow::hideEditor()

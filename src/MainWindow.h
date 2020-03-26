@@ -115,7 +115,7 @@ private:
 
 	void loadViewSettings();
 	void loadDesignSettings();
-	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
+    void updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
 	void show_examples();
@@ -153,7 +153,8 @@ private slots:
 	void copyViewportRotation();
 	void copyViewportDistance();
 	void preferences();
-	void hideToolbars();
+    void hideEditorToolbar();
+    void hide3DViewToolbar();
 	void hideEditor();
 	void hideConsole();
 	void showConsole();
