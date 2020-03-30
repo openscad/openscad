@@ -1,0 +1,15 @@
+ERROR: 3 in file error-tests.scad, line 4
+ERROR: "t1" in file error-tests.scad, line 7
+ERROR: 18 in file error-tests.scad, line 10
+ERROR: "False" in file error-tests.scad, line 13
+ERROR: undef in file error-tests.scad, line 16
+ERROR: undef in file error-tests.scad, line 19
+ERROR: undef in file error-tests.scad, line 22
+ECHO: t0 = undef
+ECHO: t1 = undef
+ECHO: t2 = undef
+ECHO: t3 = undef
+ECHO: t4 = 18
+ECHO: t5 = [3, 6]
+ECHO: t6 = [[1, 6], [2, 6], [3, 6]]
+ECHO: t7 = "value: 17"
