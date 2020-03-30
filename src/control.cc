@@ -43,6 +43,7 @@ public: // types
 		ECHO,
 		ASSERT,
 		ERROR,
+		WARNING,
 		ASSIGN,
 		FOR,
 		LET,
@@ -302,6 +303,16 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	}
 		break;
 
+	case Type::WARNING: {
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
+		ContextHandle<Context> c{Context::create<Context>(evalctx)};
+		evaluate_warning(c.ctx, evalctx);
+		inst->scope.apply(c.ctx);
+		node->children = inst->instantiateChildren(c.ctx);
+	}
+		break;
+
 	case Type::LET: {
 		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
 		else node = new GroupNode(inst);
@@ -390,6 +401,11 @@ void register_builtin_control()
 	Builtins::init("error", new ControlModule(ControlModule::Type::ERROR),
 				{
 					"error(arg, ...)",
+				});
+
+	Builtins::init("warning", new ControlModule(ControlModule::Type::WARNING),
+				{
+					"warning(arg, ...)",
 				});
 
 	Builtins::init("for", new ControlModule(ControlModule::Type::FOR),
