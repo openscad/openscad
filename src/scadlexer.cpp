@@ -7,7 +7,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	// -> Style: Keyword (lexer.l)
 	keywordSet[0] =
 		"if else let for each module function true false undef "
-		"include use assert";
+		"include use assert error warning";
 
 	// -> Style: KeywordSet2 (func.cc)
 	keywordSet[1] =
