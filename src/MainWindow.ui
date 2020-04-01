@@ -236,6 +236,7 @@
         <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
+         <addaction name="fileActionExportSTL2"/>
          <addaction name="separator"/>
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
@@ -255,7 +256,6 @@
          <addaction name="viewActionShowAxes"/>
          <addaction name="viewActionShowScaleProportional"/>
          <addaction name="viewActionShowEdges"/>
-         <addaction name="fileActionExportSTL2"/>
         </widget>
        </item>
       </layout>

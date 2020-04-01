@@ -2759,11 +2759,11 @@ void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
-		viewerToolBar->actions().at(21)->setVisible(true);
+		viewerToolBar->actions().at(2)->setVisible(true);
 		editortoolbar->actions().at(12)->setVisible(false);
 	} else {
 		editorDock->show();
-		viewerToolBar->actions().at(21)->setVisible(false);
+		viewerToolBar->actions().at(2)->setVisible(false);
 		editortoolbar->actions().at(12)->setVisible(true);
 	}
 }
