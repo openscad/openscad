@@ -255,6 +255,7 @@
          <addaction name="viewActionShowAxes"/>
          <addaction name="viewActionShowScaleProportional"/>
          <addaction name="viewActionShowEdges"/>
+         <addaction name="fileActionExportSTL2"/>
         </widget>
        </item>
       </layout>
@@ -998,6 +999,18 @@
    </property>
   </action>
   <action name="fileActionExportSTL">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as &amp;STL...</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="fileActionExportSTL2">
    <property name="icon">
     <iconset resource="../openscad.qrc">
      <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
