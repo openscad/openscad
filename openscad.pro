@@ -194,6 +194,7 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
+CONFIG += cairo
 
 # Make experimental features available
 experimental {
