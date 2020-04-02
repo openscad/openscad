@@ -352,7 +352,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-	// connect(this->fileActionExportSTL2, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
 	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
@@ -498,7 +497,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
-	// initActionIcon(fileActionExportSTL2, ":/images/STL.png", ":/images/STL-white.png");
 	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
 	initActionIcon(fileActionExport3MF, ":/images/3MF.png", ":/images/3MF-white.png");
 	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
