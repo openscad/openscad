@@ -259,6 +259,7 @@ HEADERS += src/AST.h \
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/Assignment.cc \
+           src/export_pdf.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \

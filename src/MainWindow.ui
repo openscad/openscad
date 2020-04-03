@@ -272,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>18</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -300,6 +300,7 @@
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
+     <addaction name="fileActionExportPDF"/>
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
@@ -1335,7 +1336,7 @@
     <string>Jump to next error</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+ALT+E</string>
+    <string>Ctrl+Alt+E</string>
    </property>
   </action>
   <action name="designActionFlushCaches">
@@ -1471,7 +1472,7 @@
     <string>Toggle Bookmark</string>
    </property>
    <property name="shortcut">
-    <string>CTRL+F2</string>
+    <string>Ctrl+F2</string>
    </property>
   </action>
   <action name="editActionNextBookmark">
@@ -1487,7 +1488,7 @@
     <string>Jump to previous bookmark</string>
    </property>
    <property name="shortcut">
-    <string>SHIFT+F2</string>
+    <string>Shift+F2</string>
    </property>
   </action>
   <action name="viewActionHideToolBars">
@@ -1526,6 +1527,11 @@
     <string>Hide Customizer</string>
    </property>
   </action>
+  <action name="fileActionExportPDF">
+   <property name="text">
+    <string>Export as PDF...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1561,6 +1567,5 @@
  <resources>
   <include location="../openscad.qrc"/>
  </resources>
- <connections>
- </connections>
+ <connections/>
 </ui>
