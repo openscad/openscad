@@ -23,7 +23,8 @@ enum class FileFormat {
 	AST,
 	TERM,
 	ECHO,
-	PNG
+    PNG,
+    PDF
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
@@ -37,6 +38,8 @@ void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
+
+void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
@@ -58,6 +61,7 @@ struct ExportFileFormatOptions {
 		{"term", FileFormat::TERM},
 		{"echo", FileFormat::ECHO},
 		{"png", FileFormat::PNG},
+        {"pdf", FileFormat::PDF},
 	};
 };
 

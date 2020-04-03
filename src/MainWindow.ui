@@ -300,6 +300,7 @@
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
+     <addaction name="fileActionExportPDF"/>
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
@@ -1530,12 +1531,19 @@
     <string>Hide Customizer</string>
    </property>
   </action>
+
   <action name="viewActionHide3DViewToolBar">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>Hide 3D view toolbar</string>
+   </property>
+  </action>
+
+  <action name="fileActionExportPDF">
+   <property name="text">
+    <string>Export as PDF...</string>
    </property>
   </action>
  </widget>

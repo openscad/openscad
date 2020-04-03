@@ -205,6 +205,7 @@ private slots:
 	void actionExportAMF();
 	void actionExportDXF();
 	void actionExportSVG();
+    void actionExportPDF();
 	void actionExportCSG();
 	void actionExportImage();
 	void actionCopyViewport();
