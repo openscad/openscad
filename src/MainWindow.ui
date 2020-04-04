@@ -435,6 +435,9 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="tabToolBar">
+    <property name="windowTitle">
+    <string>Tabs</string>
+   </property>
    <property name="movable">
     <bool>false</bool>
    </property>
