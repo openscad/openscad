@@ -68,6 +68,14 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
 	const char *name2open, const char *name2display)
 {
+    if (format == FileFormat::PDF){
+        bool onerror = false;
+        export_pdf(root_geom,name2open,name2display,onerror);
+        if (onerror) {
+            PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
+        }
+        return;
+    }
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
 	if (format == FileFormat::_3MF) {
 		mode |= std::ios::binary;
