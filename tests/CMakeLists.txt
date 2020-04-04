@@ -356,6 +356,7 @@ file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.sca
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
+file(GLOB REDEFINITION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/redefinition/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
@@ -393,9 +394,10 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
 list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-comment.scad
                           ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-include.scad
                           ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-string.scad
-                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad)
+                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad
+                          )
 
-list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
+list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate-parameters.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
