@@ -28,7 +28,7 @@ enum class FileFormat {
 };
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
-											const char *name2open, const char *name2display);
+                                            const char *name2open, const char *name2display);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -39,7 +39,7 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 
-void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open);
+void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, const char *name2display, bool &onerror);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
