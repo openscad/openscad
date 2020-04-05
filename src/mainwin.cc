@@ -584,6 +584,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	for(int i = 1; i < filenames.size(); i++)
 		tabManager->createTab(filenames[i]);
+
+	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
+	if (!editorDock->isVisible()) {
+		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
+		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
+	}
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -2674,6 +2680,13 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 {
 	changedTopLevelEditor(editorDock->isFloating());
 	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
+	
+	if (editorDock->isVisible()) viewerToolBar->removeAction(this->fileActionExportSTL);
+	else{
+		 QAction *beforeAction = viewerToolBar->actions().at(2);
+		 viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
+	 }
+	 
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
@@ -2772,7 +2785,7 @@ void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
-	} else {
+	}else {
 		editorDock->show();
 	}
 }
