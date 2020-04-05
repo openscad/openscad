@@ -356,8 +356,10 @@ file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.sca
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
+file(GLOB REDEFINITION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/redefinition/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
+file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_SOURCE_DIR}/../examples/Old/example015.scad
@@ -392,9 +394,10 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
 list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-comment.scad
                           ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-include.scad
                           ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-string.scad
-                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad)
+                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad
+                          )
 
-list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
+list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate-parameters.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
@@ -459,6 +462,9 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue3118-recur-limit.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/root-modifiers.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/root-modifier-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/use-order-test/use-order-test.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -695,15 +701,17 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
 #)
 
-list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
-list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
-foreach(FILE ${BUGS_FILES})
+list(APPEND OPENCSGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
+list(APPEND CGALPNGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
+foreach(FILE ${BUGS_FILES} ${BUGS_2D_FILES})
   get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
+endforeach()
+foreach(FILE ${BUGS_FILES})
   get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(monotonepngtest ${FILE} TEST_FULLNAME)

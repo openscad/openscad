@@ -815,12 +815,21 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 	assert(vectorvec.size() == matrixvec.size());
 // Vector * Matrix
 	VectorType dstv;
-	for (size_t i=0;i<matrixvec[0]->toVector().size();i++) {
+	size_t firstRowSize =  matrixvec[0]->toVector().size();
+	for (size_t i=0;i<firstRowSize;i++) {
 		double r_e = 0.0;
 		for (size_t j=0;j<vectorvec.size();j++) {
 			if (matrixvec[j]->type() != ValueType::VECTOR ||
-					matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER || 
-					vectorvec[j]->type() != ValueType::NUMBER) {
+					matrixvec[j]->toVector().size() != firstRowSize) {
+				PRINTB("WARNING: Matrix must be rectangular. Problem at row %lu", j);
+				return Value::undefined;
+			}
+			if (vectorvec[j]->type() != ValueType::NUMBER) {
+				PRINTB("WARNING: Vector must contain only numbers. Problem at index %lu", j);
+				return Value::undefined;
+			}
+			if (matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER) {
+				PRINTB("WARNING: Matrix must contain only numbers. Problem at row %lu, col %lu", j % i);
 				return Value::undefined;
 			}
 			r_e += vectorvec[j]->toDouble() * matrixvec[j]->toVector()[i]->toDouble();
