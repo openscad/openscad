@@ -1532,6 +1532,12 @@
    </property>
   </action>
 
+  <action name="fileActionExportPDF">
+   <property name="text">
+    <string>Export as PDF...</string>
+   </property>
+  </action>
+  
   <action name="viewActionHide3DViewToolBar">
    <property name="checkable">
     <bool>true</bool>
@@ -1541,11 +1547,6 @@
    </property>
   </action>
 
-  <action name="fileActionExportPDF">
-   <property name="text">
-    <string>Export as PDF...</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>
