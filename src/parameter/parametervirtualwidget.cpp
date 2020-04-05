@@ -69,6 +69,17 @@ void ParameterVirtualWidget::setPrecision(double number){
 	}
 }
 
+//functional overloading to handle the case of vectors
+void ParameterVirtualWidget::setPrecision(Value::VectorType vec){
+	int highestPrecision= 0;
+    for(long unsigned int i=0;i<vec.size();i++)
+	{
+		ParameterVirtualWidget::setPrecision(vec[i]->toDouble());
+		if(this->decimalPrecision>highestPrecision) highestPrecision = this->decimalPrecision;
+	}
+	this->decimalPrecision = highestPrecision;
+}
+
 void ParameterVirtualWidget::setDescription(const QString& description) {
 	if(!description.isEmpty()){
 		this->labelDescription->show();
