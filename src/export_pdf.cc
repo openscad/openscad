@@ -1,11 +1,13 @@
-#include <cairo.h>
-#include <cairo-pdf.h>
-#include <cmath>
-
 #include "export.h"
 #include "polyset.h"
 #include "polyset-utils.h"
 #include "printutils.h"
+
+#ifdef ENABLE_CAIRO
+
+#include <cairo.h>
+#include <cairo-pdf.h>
+#include <cmath>
 
 // A4 Size Paper
 #define WPOINTS 595.
@@ -119,3 +121,8 @@ void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, c
     cairo_destroy(cr);
 
 }
+#else //ENABLE_CAIRO
+void export_pdf(const shared_ptr<const Geometry> &, const char *, const char *, bool &){
+    PRINT("Export to PDF format was not enabled when building the application.");
+}
+#endif //ENABLE_CAIRO
