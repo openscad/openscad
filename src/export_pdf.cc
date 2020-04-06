@@ -122,7 +122,11 @@ void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, c
 
 }
 #else //ENABLE_CAIRO
+
 void export_pdf(const shared_ptr<const Geometry> &, const char *, const char *, bool &){
+
     PRINT("Export to PDF format was not enabled when building the application.");
+
 }
+
 #endif //ENABLE_CAIRO
