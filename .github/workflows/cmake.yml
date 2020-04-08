@@ -1,0 +1,23 @@
+name: Ubuntu 18.04 CMake
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Submodules
+      run: git submodule update --init --recursive
+    - name: Install dependencies
+      run: ./scripts/travis-ci-before-install-linux.sh bionic
+    - name: Dependency fixup
+      run: sudo apt-get install qt5-default gettext
+    - name: Build and test
+      run: ./scripts/github-ci.sh
