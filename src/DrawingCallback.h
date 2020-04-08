@@ -32,7 +32,7 @@
 
 class DrawingCallback {
 public:
-    DrawingCallback(unsigned long fn);
+    DrawingCallback(unsigned long fn, double size);
     virtual ~DrawingCallback();
     
     void start_glyph();
@@ -50,6 +50,7 @@ private:
     Vector2d offset;
     Vector2d advance;
     unsigned long fn;
+    double size;
 
 	Outline2d outline;
 	class Polygon2d *polygon;
