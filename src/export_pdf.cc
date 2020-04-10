@@ -211,7 +211,7 @@ void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, b
 }
 #else //ENABLE_CAIRO
 
-void export_pdf(const shared_ptr<const Geometry> &, ExportInfo , boo &){
+void export_pdf(const shared_ptr<const Geometry> &, ExportInfo , bool &){
 
     PRINT("Export to PDF format was not enabled when building the application.");
 
