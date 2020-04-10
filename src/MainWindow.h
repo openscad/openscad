@@ -21,6 +21,9 @@
 #include "input/InputDriver.h"
 #include "editor.h"
 #include "tabmanager.h"
+#include <memory>
+
+class MouseSelector;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -57,6 +60,7 @@ public:
 #endif
 #ifdef ENABLE_OPENCSG
 	class OpenCSGRenderer *opencsgRenderer;
+	std::unique_ptr<MouseSelector> selector;
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
@@ -271,6 +275,7 @@ public slots:
 	void viewAll();
 	void animateUpdateDocChanged();
 	void animateUpdate();
+	void selectObject(QPoint coordinate);
 	void dragEnterEvent(QDragEnterEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
 	void helpAbout();

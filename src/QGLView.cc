@@ -194,6 +194,10 @@ void QGLView::paintGL()
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
+  if (!mouse_drag_active) {
+    mouse_drag_moved = false;
+  }
+
   mouse_drag_active = true;
   last_mouse = event->globalPos();
 }
@@ -246,19 +250,20 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
+    mouse_drag_moved = true;
     if (event->buttons() & Qt::LeftButton
 #ifdef Q_OS_MAC
             && !(event->modifiers() & Qt::MetaModifier)
 #endif
       ) {
-      // Left button rotates in xz, Shift-left rotates in xy
-      // On Mac, Ctrl-Left is handled as right button on other platforms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-                rotate(dy, dx, 0.0, true);
-	}
-      else {
+        // Left button rotates in xz, Shift-left rotates in xy
+        // On Mac, Ctrl-Left is handled as right button on other platforms
+        if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+          rotate(dy, dx, 0.0, true);
+        }
+        else {
                 rotate(dy, 0.0, dx, true);
-	}
+      }
 
       normalizeAngle(cam.object_rot.x());
       normalizeAngle(cam.object_rot.y());
@@ -292,10 +297,17 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
     last_mouse = this_mouse;
 }
 
-void QGLView::mouseReleaseEvent(QMouseEvent*)
+void QGLView::mouseReleaseEvent(QMouseEvent *event)
 {
   mouse_drag_active = false;
   releaseMouse();
+
+  if (!mouse_drag_moved) {
+    QPoint point = event->pos();
+    //point.setY(this->height() - point.y());
+    emit doSelectObject(point);
+  }
+  mouse_drag_moved = false;
 }
 
 const QImage & QGLView::grabFrame()
@@ -347,7 +359,7 @@ void QGLView::zoomCursor(int x, int y, int zoom)
   const auto old_dist = cam.zoomValue();
   this->cam.zoom(zoom, true);
   const auto dist = cam.zoomValue();
-  const auto ratio = old_dist / dist - 1.0; 
+  const auto ratio = old_dist / dist - 1.0;
   // screen coordinates from -1 to 1
   const auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
   const auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;

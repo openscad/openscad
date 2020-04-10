@@ -292,7 +292,7 @@ void ScintillaEditor::applySettings()
 	{
 		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
 		qsci->setAutoCompletionFillupsEnabled(false);
- 		qsci->setAutoCompletionFillups("(");		
+ 		qsci->setAutoCompletionFillups("(");
 		qsci->setCallTipsVisible(10);
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
 	}
@@ -702,13 +702,13 @@ void ScintillaEditor::replaceAll(const QString &findText, const QString &replace
                       false /*wrap*/, true /*forward*/, 0, 0)) {
 #elif QSCINTILLA_VERSION >= 0x020700
   qsci->selectAll();
-  if (qsci->findFirstInSelection(findText, 
-                      false /*re*/, false /*cs*/, false /*wo*/, 
+  if (qsci->findFirstInSelection(findText,
+                      false /*re*/, false /*cs*/, false /*wo*/,
                       false /*wrap*/, true /*forward*/)) {
 #else
     // findFirstInSelection() was introduced in QScintilla 2.7
-  if (qsci->findFirst(findText, 
-                      false /*re*/, false /*cs*/, false /*wo*/, 
+  if (qsci->findFirst(findText,
+                      false /*re*/, false /*cs*/, false /*wo*/,
                       false /*wrap*/, true /*forward*/, 0, 0)) {
 #endif
     qsci->replace(replaceText);
@@ -1171,6 +1171,11 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
 		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
 	}
+}
+
+void ScintillaEditor::setCursorPosition(int line, int col)
+{
+	qsci->setCursorPosition(line, col);
 }
 
 void ScintillaEditor::updateSymbolMarginVisibility()

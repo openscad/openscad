@@ -17,7 +17,7 @@ endif()
 cmake_minimum_required(VERSION 3.3)
 
 # CMP0071 introduced in 3.10.2
-if (CMAKE_VERSION VERSION_GREATER "3.10.1") 
+if (CMAKE_VERSION VERSION_GREATER "3.10.1")
   cmake_policy(SET CMP0071 OLD)
 endif()
 
@@ -81,7 +81,7 @@ macro(find_graphics)
     find_package(OpenGL REQUIRED QUIET)
     list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
 
-    if(MSVC) 
+    if(MSVC)
       find_package(GLEW CONFIG REQUIRED QUIET)
       message(STATUS "GLEW: Using target GLEW::GLEW")
       list(APPEND COMMON_LIBRARIES GLEW::GLEW)
@@ -156,7 +156,7 @@ if (MSVC)
 
   find_package(unofficial-fontconfig CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
-  
+
   find_package(unofficial-glib CONFIG REQUIRED)
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
@@ -310,7 +310,7 @@ if(NOT HEADLESS)
   else()
     message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
   endif()
-  
+
   find_package(Qt5Gamepad QUIET)
   if (Qt5Gamepad_FOUND)
     message(STATUS "Gamepad input driver enabled")
@@ -403,62 +403,62 @@ set(CORE_SOURCES
   src/linalg.cc
   src/colormap.cc
   src/Camera.cc
-  src/handle_dep.cc 
-  src/value.cc 
-  src/calc.cc 
-  src/hash.cc 
+  src/handle_dep.cc
+  src/value.cc
+  src/calc.cc
+  src/hash.cc
   src/expr.cc
   src/degree_trig.cc
-  src/func.cc 
-  src/function.cc 
+  src/func.cc
+  src/function.cc
   src/stackcheck.h
-  src/localscope.cc 
-  src/module.cc 
-  src/FileModule.cc 
-  src/UserModule.cc 
-  src/GroupModule.cc 
-  src/AST.cc 
-  src/ModuleInstantiation.cc 
-  src/ModuleCache.cc 
+  src/localscope.cc
+  src/module.cc
+  src/FileModule.cc
+  src/UserModule.cc
+  src/GroupModule.cc
+  src/AST.cc
+  src/ModuleInstantiation.cc
+  src/ModuleCache.cc
   src/StatCache.cc
-  src/node.cc 
-  src/NodeVisitor.cc 
-  src/context.cc 
+  src/node.cc
+  src/NodeVisitor.cc
+  src/context.cc
   src/builtincontext.cc
-  src/modcontext.cc 
-  src/evalcontext.cc 
+  src/modcontext.cc
+  src/evalcontext.cc
   src/version.cc
   src/feature.cc
-  src/csgnode.cc 
-  src/CSGTreeNormalizer.cc 
-  src/Geometry.cc 
-  src/Polygon2d.cc 
-  src/csgops.cc 
-  src/transform.cc 
-  src/color.cc 
-  src/primitives.cc 
-  src/projection.cc 
-  src/cgaladv.cc 
-  src/surface.cc 
-  src/control.cc 
-  src/render.cc 
-  src/rendersettings.cc 
-  src/dxfdata.cc 
-  src/dxfdim.cc 
-  src/offset.cc 
-  src/linearextrude.cc 
-  src/rotateextrude.cc 
-  src/text.cc 
-  src/printutils.cc 
-  src/fileutils.cc 
-  src/progress.cc 
-  src/boost-utils.cc 
+  src/csgnode.cc
+  src/CSGTreeNormalizer.cc
+  src/Geometry.cc
+  src/Polygon2d.cc
+  src/csgops.cc
+  src/transform.cc
+  src/color.cc
+  src/primitives.cc
+  src/projection.cc
+  src/cgaladv.cc
+  src/surface.cc
+  src/control.cc
+  src/render.cc
+  src/rendersettings.cc
+  src/dxfdata.cc
+  src/dxfdim.cc
+  src/offset.cc
+  src/linearextrude.cc
+  src/rotateextrude.cc
+  src/text.cc
+  src/printutils.cc
+  src/fileutils.cc
+  src/progress.cc
+  src/boost-utils.cc
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
   src/RenderStatistic.cc
   src/ext/lodepng/lodepng.cpp
-  src/PlatformUtils.cc 
+  src/PlatformUtils.cc
   src/libsvg/circle.cc
   src/libsvg/ellipse.cc
   src/libsvg/group.cc
@@ -477,7 +477,7 @@ set(CORE_SOURCES
   src/libsvg/util.cc
   src/clipper-utils.cc
   src/Assignment.cc
-  src/annotation.cc 
+  src/annotation.cc
   src/ext/polyclipping/clipper.cpp
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
@@ -486,7 +486,7 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 
 set(NOCGAL_SOURCES
-  src/builtin.cc 
+  src/builtin.cc
   src/import.cc
   src/import_3mf.cc
   src/import_stl.cc
@@ -507,15 +507,15 @@ set(NOCGAL_SOURCES
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  src/CSGTreeEvaluator.cc 
-  src/CGAL_Nef_polyhedron.cc 
+  src/CSGTreeEvaluator.cc
+  src/CGAL_Nef_polyhedron.cc
   src/export_nef.cc
   src/import_nef.cc
-  src/cgalutils.cc 
-  src/cgalutils-applyops.cc 
-  src/cgalutils-project.cc 
-  src/cgalutils-tess.cc 
-  src/cgalutils-polyhedron.cc 
+  src/cgalutils.cc
+  src/cgalutils-applyops.cc
+  src/cgalutils-project.cc
+  src/cgalutils-tess.cc
+  src/cgalutils-polyhedron.cc
   src/CGALCache.cc
   src/Polygon2d-CGAL.cc
   src/svg.cc
@@ -523,9 +523,9 @@ set(CGAL_SOURCES
 
 include_directories("src/ext/libtess2/Include")
 set(COMMON_SOURCES
-  src/nodedumper.cc 
-  src/GeometryCache.cc 
-  src/clipper-utils.cc 
+  src/nodedumper.cc
+  src/GeometryCache.cc
+  src/clipper-utils.cc
   src/Tree.cc
   src/comment.cpp
   src/parameter/parameterset.cpp
@@ -537,7 +537,9 @@ set(COMMON_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/Tree.cc)
+  src/Tree.cc
+  src/initConfig.cc
+  )
 
 #
 # Offscreen OpenGL context source code
@@ -565,6 +567,7 @@ else()
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
     src/render.cc
+    src/mouseselector.cc
     src/OpenCSGRenderer.cc)
 endif()
 

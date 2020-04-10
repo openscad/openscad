@@ -29,6 +29,15 @@
 #include "polyset.h"
 #include "csgnode.h"
 
+#define OPENGL_TEST(place) \
+{ \
+	auto err = glGetError(); \
+	if (err != GL_NO_ERROR) { \
+		fprintf(stderr, "OpenGL error " place ":\n %s\n\n", gluErrorString(err)); \
+	} \
+}
+
+
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 
@@ -56,25 +65,32 @@ private:
 OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 																 shared_ptr<CSGProducts> highlights_products,
 																 shared_ptr<CSGProducts> background_products,
-																 GLint *shaderinfo)
-	: root_products(root_products), 
-		highlights_products(highlights_products), 
+																 GLView::shaderinfo_t *shaderinfo)
+	: root_products(root_products),
+		highlights_products(highlights_products),
 		background_products(background_products), shaderinfo(shaderinfo)
 {
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
-	GLint *shaderinfo = this->shaderinfo;
-	if (!shaderinfo[0]) shaderinfo = nullptr;
+	GLView::shaderinfo_t *shaderinfo = this->shaderinfo;
+	if (!shaderinfo->progid) shaderinfo = nullptr;
+	if (!showedges) shaderinfo = nullptr;
+
+	this->draw_with_shader(shaderinfo);
+}
+
+void OpenCSGRenderer::draw_with_shader(const GLView::shaderinfo_t *shaderinfo) const
+{
 	if (this->root_products) {
-		renderCSGProducts(*this->root_products, showedges ? shaderinfo : nullptr, false, false);
+		renderCSGProducts(*this->root_products, shaderinfo, false, false);
 	}
 	if (this->background_products) {
-		renderCSGProducts(*this->background_products, showedges ? shaderinfo : nullptr, false, true);
+		renderCSGProducts(*this->background_products, shaderinfo, false, true);
 	}
 	if (this->highlights_products) {
-		renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : nullptr, true, false);
+		renderCSGProducts(*this->highlights_products, shaderinfo, true, false);
 	}
 }
 
@@ -88,7 +104,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 	return prim;
 }
 
-void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo, 
+void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, const GLView::shaderinfo_t *shaderinfo,
 										bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
@@ -104,12 +120,19 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			OpenCSG::render(primitives);
 			glDepthFunc(GL_EQUAL);
 		}
-		if (shaderinfo) glUseProgram(shaderinfo[0]);
+		OPENGL_TEST("start");
+		if (shaderinfo) glUseProgram(shaderinfo->progid);
+		OPENGL_TEST("load shader");
 
 		for(const auto &csgobj : product.intersections) {
+			if (shaderinfo && shaderinfo->type == GLView::shaderinfo_t::SELECT_RENDERING) {
+				glVertexAttribI1i(shaderinfo->data.select_rendering.identifier, csgobj.leaf->index);
+				OPENGL_TEST("setup shader");
+			}
+
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
-			
+			csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
+
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
 				colormode = ColorMode::HIGHLIGHT;
@@ -118,10 +141,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = ColorMode::MATERIAL;
 			}
-			
+
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
-			
+
 			const Color4f c1 = setColor(colormode, c.data(), shaderinfo);
 			if (c1[3] == 1.0f) {
 				// object is opaque, draw normally
@@ -135,13 +158,14 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 				glDisable(GL_CULL_FACE);
 			}
+			OPENGL_TEST("render");
 
 			glPopMatrix();
 		}
 		for(const auto &csgobj : product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-			
+
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
 				colormode = ColorMode::HIGHLIGHT;
@@ -150,7 +174,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = ColorMode::CUTOUT;
 			}
-			
+
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
