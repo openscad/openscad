@@ -41,70 +41,75 @@ void draw_axis(cairo_t *cr, OriginPosition pos){
 
     if(pos == OriginPosition::CENTER){
 
-        cairo_move_to(cr, (WPOINTS/2.)-MARGIN ,0.);
-        cairo_line_to(cr, -(WPOINTS/2.)+MARGIN, 0.);
-
         for(int i=1;i<10;i++){
-            cairo_move_to(cr, i*offset, -3.0);
-            cairo_line_to(cr, i*offset, 3.0);
+            cairo_move_to(cr, i*offset, -(HPOINTS/2.));
+            cairo_line_to(cr, i*offset, -(HPOINTS/2.)+3.);
             cairo_stroke(cr);
-            cairo_move_to(cr,(i*offset)-3.0, 10.0);
-            std::string num = std::to_string(i*10);
-            cairo_show_text(cr, num.c_str());
+            cairo_move_to(cr,i*offset, -(HPOINTS/2.)+10.);
+            if(i%2==0){
+                std::string num = std::to_string(i*10);
+                cairo_show_text(cr, num.c_str());
+            }
         }
         for(int i=1;i<10;i++){
-            cairo_move_to(cr, -i*offset, -3.0);
-            cairo_line_to(cr, -i*offset, 3.0);
+            cairo_move_to(cr, -i*offset, -(HPOINTS/2.));
+            cairo_line_to(cr, -i*offset, -(HPOINTS/2.)+3.);
             cairo_stroke(cr);
-            cairo_move_to(cr,(-i*offset)-3.0, 10.0);
-            std::string num = std::to_string(-i*10);
-            cairo_show_text(cr, num.c_str());
+            cairo_move_to(cr,-i*offset, -(HPOINTS/2.)+10.);
+            if(i%2==0){
+                std::string num = std::to_string(-i*10);
+                cairo_show_text(cr, num.c_str());
+            }
         }
-
-        cairo_move_to(cr, 0., (HPOINTS/2.)-MARGIN);
-        cairo_line_to(cr, 0., -(HPOINTS/2.)+MARGIN);
 
         for(int i=1;i<15;i++){
-            cairo_move_to(cr, 3.0 , -i*offset);
-            cairo_line_to(cr, -3.0, -i*offset);
+            cairo_move_to(cr, -(WPOINTS/2.) , -i*offset);
+            cairo_line_to(cr, -(WPOINTS/2.)+3.0, -i*offset);
             cairo_stroke(cr);
-            cairo_move_to(cr, -15., (-i*offset)+3.);
-            std::string num = std::to_string(i*10);
-            cairo_show_text(cr, num.c_str());
+            cairo_move_to(cr, -(WPOINTS/2.)+6.0, -i*offset);
+            if(i%2==0){
+                std::string num = std::to_string(i*10);
+                cairo_show_text(cr, num.c_str());
+            }
         }
         for(int i=1;i<15;i++){
-            cairo_move_to(cr, 3.0 , i*offset);
-            cairo_line_to(cr, -3.0, i*offset);
+            cairo_move_to(cr, -(WPOINTS/2.), i*offset);
+            cairo_line_to(cr, -(WPOINTS/2.)+3.0, i*offset);
             cairo_stroke(cr);
-            cairo_move_to(cr, -18., (i*offset)+3.);
-            std::string num = std::to_string(-i*10);
-            cairo_show_text(cr, num.c_str());
+            cairo_move_to(cr, -(WPOINTS/2.)+6.0, i*offset);
+            if(i%2==0){
+                std::string num = std::to_string(-i*10);
+                cairo_show_text(cr, num.c_str());
+            }
         }
+        cairo_set_source_rgba(cr, 0., 0., 0., 1.0);
+        cairo_move_to(cr, 0.,-(HPOINTS/2.));
+        cairo_line_to(cr, 0., -(HPOINTS/2.)+10.);
+        cairo_move_to(cr, -(WPOINTS/2.), 0.);
+        cairo_line_to(cr, -(WPOINTS/2.)+10., 0.);
+        cairo_stroke(cr);
 
     }else{
 
-        cairo_move_to(cr, -10., 0.);
-        cairo_line_to(cr, WPOINTS-(2*MARGIN), 0.);
-
         for(int i=1;i<20;i++){
-            cairo_move_to(cr, i*offset, -3.0);
-            cairo_line_to(cr, i*offset, 3.0);
+            cairo_move_to(cr, i*offset, -HPOINTS);
+            cairo_line_to(cr, i*offset, -HPOINTS+3.0);
             cairo_stroke(cr);
-            cairo_move_to(cr,(i*offset)-3.0, 10.0);
-            std::string num = std::to_string(i*10);
-            cairo_show_text(cr, num.c_str());
+            cairo_move_to(cr,(i*offset), -HPOINTS+10.0);
+            if(i%2==0){
+                std::string num = std::to_string(i*10);
+                cairo_show_text(cr, num.c_str());
+            }
         }
-
-        cairo_move_to(cr, 0., 10.);
-        cairo_line_to(cr, 0., -HPOINTS+(2*MARGIN));
-
-        for(int i=1;i<29;i++){
-            cairo_move_to(cr, 3.0 , -i*offset);
-            cairo_line_to(cr, -3.0, -i*offset);
+        for(int i=1;i<30;i++){
+            cairo_move_to(cr, 0., -HPOINTS+(i*offset));
+            cairo_line_to(cr, 3.0, -HPOINTS+(i*offset));
             cairo_stroke(cr);
-            cairo_move_to(cr, -15., (-i*offset)+3.);
-            std::string num = std::to_string(i*10);
-            cairo_show_text(cr, num.c_str());
+            cairo_move_to(cr, 5.0, -HPOINTS+(i*offset));
+            if(i%2==0){
+                std::string num = std::to_string(i*10);
+                cairo_show_text(cr, num.c_str());
+            }
         }
     }
 }
@@ -150,9 +155,9 @@ void draw_geom(const shared_ptr<const Geometry> &geom, cairo_t *cr, bool &inpape
     }
 }
 
-void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, const char *name2display, bool &onerror){
+void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, bool &onerror){
 
-    cairo_surface_t *surface = cairo_pdf_surface_create(name2open, WPOINTS, HPOINTS);
+    cairo_surface_t *surface = cairo_pdf_surface_create(exportInfo.name2open, WPOINTS, HPOINTS);
     if(cairo_surface_status(surface)==cairo_status_t::CAIRO_STATUS_NULL_POINTER){
         onerror=true;
         cairo_surface_destroy(surface);
@@ -164,8 +169,8 @@ void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, c
 
     cairo_t *cr = cairo_create(surface);
 
-    cairo_set_source_rgba(cr, 1., 0., 0., 1.0);
-    cairo_set_line_width(cr, 0.9);
+    cairo_set_source_rgba(cr, 0., 0., 0., 1.0);
+    cairo_set_line_width(cr, 1);
 
     BoundingBox bbox = geom->getBoundingBox();
     int minx = (int)floor(bbox.min().x());
@@ -181,7 +186,8 @@ void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, c
         draw_geom(geom, cr, inpaper, OriginPosition::BUTTOMLEFT);
         cairo_stroke(cr);
         cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-        draw_name(name2display,cr, 10., -HPOINTS+(3.*MARGIN));
+        draw_name(exportInfo.sourceFileName,cr, 10., -HPOINTS+(3.*MARGIN));
+        cairo_translate(cr, -MARGIN, MARGIN);
         draw_axis(cr, OriginPosition::BUTTOMLEFT);
 
     }else {
@@ -190,7 +196,7 @@ void export_pdf(const shared_ptr<const Geometry> &geom, const char *name2open, c
         draw_geom(geom, cr, inpaper, OriginPosition::CENTER);
         cairo_stroke(cr);
         cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-        draw_name(name2display,cr, -(WPOINTS/2.)+MARGIN, -(HPOINTS/2.)+MARGIN);
+        draw_name(exportInfo.sourceFileName,cr, -(WPOINTS/2.)+MARGIN, -(HPOINTS/2.)+MARGIN);
         draw_axis(cr, OriginPosition::CENTER);
     }
 

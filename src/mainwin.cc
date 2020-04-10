@@ -1948,7 +1948,15 @@ void MainWindow::sendToOctoPrint()
 		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
 	}
 
-	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
+    ExportInfo exportInfo;
+    exportInfo.format = exportFileFormat;
+    exportInfo.name2open = exportFileName.toLocal8Bit().constData();
+    exportInfo.name2display = exportFileName.toUtf8();
+    auto fnameba = activeEditor->filepath.toLocal8Bit();
+    const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+    exportInfo.sourceFileName = fname;
+
+    exportFileByName(this->root_geom, exportInfo);
 
 	try {
 		this->progresswidget = new ProgressWidget(this);
@@ -1987,7 +1995,15 @@ void MainWindow::sendToPrintService()
 	const QString exportFilename = exportFile.fileName();
 	
 	//Render the stl to a temporary file:
-	exportFileByName(this->root_geom, FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8());
+    ExportInfo exportInfo;
+    exportInfo.format = FileFormat::STL;
+    exportInfo.name2open = exportFilename.toLocal8Bit().constData();
+    exportInfo.name2display = exportFilename.toUtf8();
+    auto fnameba = activeEditor->filepath.toLocal8Bit();
+    const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+    exportInfo.sourceFileName = fname;
+
+    exportFileByName(this->root_geom, exportInfo);
 
 	//Create a name that the order process will use to refer to the file. Base it off of the project name
 	QString userFacingName = "unsaved.stl";
@@ -2347,9 +2363,17 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 		return;
 	}
 	this->export_paths[suffix] = exportFilename;
-	exportFileByName(this->root_geom, format,
-		exportFilename.toLocal8Bit().constData(),
-		exportFilename.toUtf8());
+
+    ExportInfo exportInfo;
+    exportInfo.format = format;
+    exportInfo.name2open = exportFilename.toLocal8Bit().constData();
+    exportInfo.name2display = exportFilename.toUtf8();
+    auto fnameba = activeEditor->filepath.toLocal8Bit();
+    const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+    exportInfo.sourceFileName = fname;
+
+    exportFileByName(this->root_geom, exportInfo);
+
 	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -3020,7 +3044,7 @@ QString MainWindow::exportPath(const char *suffix) {
 		if(activeEditor->filepath.isEmpty())
 			path += QString(_("Untitled")) + suffix;
 		else
-			path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
+            path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
 	}
 	else
 	{
