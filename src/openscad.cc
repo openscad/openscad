@@ -269,26 +269,37 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const std::string &export_format)
+struct CommandLine
+{
+    const char *deps_output_file;
+    const std::string &filename;
+    const char *output_file;
+    const fs::path &original_path;
+    const std::string &parameterFile;
+    const std::string &setName;
+    const ViewOptions& viewOptions;
+    Camera camera;
+    const std::string &export_format;
+    unsigned animate_frames;
+};
+
+int do_export(const CommandLine &cmd, Tree &tree, ContextHandle<BuiltinContext> &, FileFormat, FileModule *root_module);
+
+int cmdline(const CommandLine &cmd)
 {
 	Tree tree;
-	boost::filesystem::path doc(filename);
+	boost::filesystem::path doc(cmd.filename);
 	tree.setDocumentPath(doc.remove_filename().string());
-#ifdef ENABLE_CGAL
-	GeometryEvaluator geomevaluator(tree);
-#endif
 
 	ExportFileFormatOptions exportFileFormatOptions;
 	FileFormat curFormat;
 	std::string formatName;
-	std::string output_file_str = output_file;
-	const char *new_output_file = nullptr;
 
-	if(!export_format.empty()) {
-		formatName = export_format;
+	if(!cmd.export_format.empty()) {
+		formatName = cmd.export_format;
 	}
 	else {
-		auto suffix = fs::path(output_file_str).extension().generic_string();
+		auto suffix = fs::path(cmd.output_file).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
@@ -297,19 +308,19 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 	if(formatName.empty()) {
-		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
+		PRINTB("Unknown suffix for output file %s\n", cmd.output_file);
 		return 1;
 	}
 
 	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
-	std::string filename_str = fs::path(output_file_str).generic_string();
-	new_output_file = filename_str.c_str();
+	std::string filename_str = fs::path(cmd.output_file).generic_string();
+	const char *new_output_file = filename_str.c_str();
 
 	set_render_color_scheme(arg_colorscheme, true);
 
 	// Top context - this context only holds builtins
 	ContextHandle<BuiltinContext> top_ctx{Context::create<BuiltinContext>()};
-	const bool preview = curFormat == FileFormat::PNG ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+	const bool preview = curFormat == FileFormat::PNG ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx->set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx->dump(nullptr, nullptr));
@@ -320,46 +331,89 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 	FileModule *root_module;
-	ModuleInstantiation root_inst("group");
-	const AbstractNode *root_node;
-	AbstractNode *absolute_root_node;
-	shared_ptr<const Geometry> root_geom;
 
-	handle_dep(filename);
+	handle_dep(cmd.filename);
 
-	std::ifstream ifs(filename.c_str());
+	std::ifstream ifs(cmd.filename.c_str());
 	if (!ifs.is_open()) {
-		PRINTB("Can't open input file '%s'!\n", filename.c_str());
+		PRINTB("Can't open input file '%s'!\n", cmd.filename.c_str());
 		return 1;
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n\x03\n" + commandline_commands;
-	if (!parse(root_module, text, filename, filename, false)) {
+	if (!parse(root_module, text, cmd.filename, cmd.filename, false)) {
 		delete root_module;  // parse failed
 		root_module = nullptr;
 	}
 	if (!root_module) {
-		PRINTB("Can't parse file '%s'!\n", filename.c_str());
+		PRINTB("Can't parse file '%s'!\n", cmd.filename.c_str());
 		return 1;
 	}
 
 	// add parameter to AST
 	CommentParser::collectParameters(text.c_str(), root_module);
-	if (!parameterFile.empty() && !setName.empty()) {
+	if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
 		ParameterSet param;
-		param.readParameterSet(parameterFile);
-		param.applyParameterSet(root_module, setName);
+		param.readParameterSet(cmd.parameterFile);
+		param.applyParameterSet(root_module, cmd.setName);
 	}
-    
+
 	root_module->handleDependencies();
 
-	auto fpath = fs::absolute(fs::path(filename));
+	auto fpath = fs::absolute(fs::path(cmd.filename));
 	auto fparent = fpath.parent_path();
 	fs::current_path(fparent);
 	top_ctx->setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
-	absolute_root_node = root_module->instantiate(top_ctx.ctx, &root_inst, nullptr);
+
+	if (cmd.animate_frames == 0) {
+		return do_export(cmd, tree, top_ctx, curFormat, root_module);
+	}
+	else {
+		// export the requested number of animated frames
+		for (unsigned frame = 0; frame < cmd.animate_frames; ++frame) {
+			double t = frame * (1.0 / cmd.animate_frames);
+			top_ctx->set_variable("$t", Value(t));
+
+			std::ostringstream oss;
+			oss << std::setw(5) << std::setfill('0') << frame;
+
+			auto frame_file = fs::path(cmd.output_file);
+			auto extension = frame_file.extension();
+			frame_file.replace_extension();
+			frame_file += oss.str();
+			frame_file.replace_extension(extension);
+			string frame_str = frame_file.generic_string();
+
+			PRINTB("Exporting %s...", frame_str);
+			
+			CommandLine frame_cmd = cmd;
+			frame_cmd.output_file = frame_str.c_str();
+
+			int r = do_export(frame_cmd, tree, top_ctx, curFormat, root_module);
+			if (r != 0) {
+				return r;
+			}
+		}
+
+		return 0;
+	}
+}
+
+int do_export(const CommandLine &cmd, Tree &tree, ContextHandle<BuiltinContext> &top_ctx, FileFormat curFormat, FileModule *root_module)
+{
+	const std::string filename_str = fs::path(cmd.output_file).generic_string();
+	const char *new_output_file = filename_str.c_str();
+
+	auto fpath = fs::absolute(fs::path(cmd.filename));
+	auto fparent = fpath.parent_path();
+
+	ModuleInstantiation root_inst("group");
+	AbstractNode *absolute_root_node = root_module->instantiate(top_ctx.ctx, &root_inst, nullptr);
+
+	const AbstractNode *root_node;
+	shared_ptr<const Geometry> root_geom;
 
 	// Do we have an explicit root node (! modifier)?
 	const Location *nextLocation = nullptr;
@@ -372,10 +426,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 
-	if (deps_output_file) {
-		fs::current_path(original_path);
-		std::string deps_out(deps_output_file);
-		std::string geom_out(output_file);
+	if (cmd.deps_output_file) {
+		fs::current_path(cmd.original_path);
+		std::string deps_out(cmd.deps_output_file);
+		std::string geom_out(cmd.output_file);
 		int result = write_deps(deps_out, geom_out);
 		if (!result) {
 			PRINT("error writing deps");
@@ -384,7 +438,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 	if (curFormat == FileFormat::CSG) {
-		fs::current_path(original_path);
+		fs::current_path(cmd.original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -396,7 +450,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		}
 	}
 	else if (curFormat == FileFormat::AST) {
-		fs::current_path(original_path);
+		fs::current_path(cmd.original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -411,7 +465,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
-		fs::current_path(original_path);
+		fs::current_path(cmd.original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -426,15 +480,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		}
 	}
 	else {
-
 #ifdef ENABLE_CGAL
-		if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+		GeometryEvaluator geomevaluator(tree);
+		if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
 			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (root_geom) {
-				if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
+				if (cmd.viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 					if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
 						auto flatlist = geomlist->flatten();
 						for (auto &child : flatlist) {
@@ -453,7 +507,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			}
 		}
 
-		fs::current_path(original_path);
+		fs::current_path(cmd.original_path);
 
 		if(curFormat == FileFormat::STL ||
 			curFormat == FileFormat::OFF ||
@@ -481,10 +535,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 				success = false;
 			}
 			else {
-				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, viewOptions, camera, fstream);
+				if (cmd.viewOptions.renderer == RenderType::CGAL || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+					success = export_png(root_geom, cmd.viewOptions, cmd.camera, fstream);
 				} else {
-					success = export_preview_png(tree, viewOptions, camera, fstream);
+					success = export_preview_png(tree, cmd.viewOptions, cmd.camera, fstream);
 				}
 				fstream.close();
 			}
@@ -862,6 +916,7 @@ int main(int argc, char **argv)
 		("imgsize", po::value<string>(), "=width,height of exported png")
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
+		("animate", po::value<unsigned>(), "export N animated frames")
 		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
@@ -1034,9 +1089,18 @@ int main(int argc, char **argv)
 		}
 	}
 
+	unsigned animate_frames = 0;
+	if (vm.count("animate")) {
+		animate_frames = vm["animate"].as<unsigned>();
+	}
+
 	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
+
+	if (animate_frames && !output_file) {
+		output_file = "frame.png";
+	}
 
 	auto cmdlinemode = false;
 	if (output_file) { // cmd-line mode
@@ -1053,7 +1117,7 @@ int main(int argc, char **argv)
 				rc = info();
 			}
 			else {
-				rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+				rc = cmdline({deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format, animate_frames});
 			}
 		} catch (const HardWarningException &) {
 			rc = 1;
