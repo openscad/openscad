@@ -322,7 +322,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
-                rootmodule->registerModule(std::string($1),sourcefile_folder, LOC(@$));
+                rootmodule->registerModule(sourcefile_folder, LOC(@$));
                 $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;

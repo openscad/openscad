@@ -60,7 +60,7 @@ public:
 	bool canUndo() override;
 	void addTemplate() override;
 	void setIndicator(const std::vector<IndicatorData> &indicatorData) override;
-	// void setJumpIndicator(const std::vector<IndicatorData> &jumpIndicatorData) override;
+	void setJumpIndicator(const std::vector<IndicatorData> &jumpIndicatorData) override;
 	QMenu *createStandardContextMenu() override;
 	QPoint mapToGlobal(const QPoint &) override;
 

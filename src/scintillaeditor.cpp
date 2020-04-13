@@ -1147,7 +1147,6 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
 	this->indicatorData = indicatorData;
-	std::cout<<indicatorData.size()<<" sizzzzzze\n";
 	int idx = 0;
 	for (const auto& data : indicatorData) {
 		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
@@ -1157,21 +1156,20 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 	}
 
 }
-// void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpIndicatorData)
-// {
-// 	std::cout<<"hello world\n";
-// 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
-// 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
-// 	// this->jumpIndicatorData = jumpIndicatorData;
-// 	// std::cout<<jumpIndicatorData.size()<<" sizzzzzze jumppppp\n";
-// 	// int idx = 0;
-// 	// for (const auto& data : jumpIndicatorData) {
-// 	// 	int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
-// 	// 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
-// 	// 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
-// 	// 	idx++;
-// 	// }
-// }
+void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpIndicatorData)
+{
+	this->jumpIndicatorData = jumpIndicatorData;
+	// qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
+	// qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
+	// std::cout<<jumpIndicatorData.size()<<" sizzzzzze jumppppp\n";
+	// int idx = 0;
+	// for (const auto& data : jumpIndicatorData) {
+	// 	int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+	// 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
+	// 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+	// 	idx++;
+	// }
+}
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {

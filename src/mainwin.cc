@@ -1724,7 +1724,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		customizerEditor = activeEditor;
 		this->parameterWidget->setEnabled(true);
 		this->activeEditor->setIndicator(this->root_module->indicatorData);
-		// this->activeEditor->setIndicator(this->root_module->jumpIndicatorData);
+		this->activeEditor->setJumpIndicator(this->root_module->jumpIndicatorData);
 		this->root_module->collect();
 		std::cout << root_module->jumpData.size() << " from main window\n";
 		for (auto it = root_module->jumpData.begin(); it != root_module->jumpData.end(); it++) {
