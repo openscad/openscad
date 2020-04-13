@@ -144,7 +144,7 @@ private:
 	static const int hyperlinkIndicatorOffset = 100;
 	static const int errMarkerNumber = 2;
 	static const int bmMarkerNumber = 3;
-	// static const int jumpHyperlinkIndicatorNumber = 12;
+	static const int jumpHyperlinkIndicatorNumber = 12;
 
 	ScadLexer *lexer;
 	QFont currentFont;

@@ -204,6 +204,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
 	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
 	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
+
+	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, jumpHyperlinkIndicatorNumber);
+	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, jumpHyperlinkIndicatorNumber);
 	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
 }
 
@@ -469,6 +472,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
         qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
         qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
         qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(0, 24, 168, 100)), jumpHyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(0, 24, 168, 100)), jumpHyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(0, 24, 168, 100)), jumpHyperlinkIndicatorNumber);//violet
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
@@ -501,6 +507,9 @@ void ScintillaEditor::noColor()
     qsci->setIndicatorForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
     qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), hyperlinkIndicatorNumber); // only alpha part is used
     qsci->setIndicatorHoverForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
+    qsci->setIndicatorForegroundColor(QColor(0, 24, 168, 128), jumpHyperlinkIndicatorNumber);//violet
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), jumpHyperlinkIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorHoverForegroundColor(QColor(0, 24, 168, 128), jumpHyperlinkIndicatorNumber);//violet
 	qsci->setCaretLineBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
 	qsci->setSelectionForegroundColor(Qt::black);
@@ -1159,16 +1168,16 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpIndicatorData)
 {
 	this->jumpIndicatorData = jumpIndicatorData;
-	// qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
-	// qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
+	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
 	// std::cout<<jumpIndicatorData.size()<<" sizzzzzze jumppppp\n";
-	// int idx = 0;
-	// for (const auto& data : jumpIndicatorData) {
-	// 	int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
-	// 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
-	// 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
-	// 	idx++;
-	// }
+	int idx = 0;
+	for (const auto& data : jumpIndicatorData) {
+		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
+		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+		idx++;
+	}
 }
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
