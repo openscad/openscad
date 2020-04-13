@@ -1726,11 +1726,11 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		this->activeEditor->setIndicator(this->root_module->indicatorData);
 		this->activeEditor->setJumpIndicator(this->root_module->jumpIndicatorData);
 		this->root_module->collect();
-		std::cout << root_module->jumpData.size() << " from main window\n";
-		for (auto it = root_module->jumpData.begin(); it != root_module->jumpData.end(); it++) {
-			std::cout << it->first << " ---- " << it->second << std::endl;
-		}
-		std::cout << "*************************************\n";
+		// std::cout << root_module->jumpData.size() << " from main window\n";
+		// for (auto it = root_module->jumpData.begin(); it != root_module->jumpData.end(); it++) {
+		// 	std::cout << it->first << " ---- " << it->second << std::endl;
+		// }
+		// std::cout << "*************************************\n";
 		// for (auto it = root_module->jumpFrom.begin(); it != root_module->jumpFrom.end(); it++) {
 		// 	std::cout << it->first << " ----- " << it->second << std::endl;
 		// }

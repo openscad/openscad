@@ -45,7 +45,6 @@ static void NOINLINE print_err(std::string name, const Location &loc,const std::
 
 AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	std::cout<<"a user module\n";
 	if (StackCheck::inst().check()) {
 		print_err(inst->name(),loc,ctx);
 		throw RecursionException::create("module", inst->name(),loc);
@@ -100,15 +99,10 @@ void UserModule::collectData(std::map<std::string, int> &jump_data)
 
 	scope.collectData(jump_data);
 	if (!this->name.empty()) {
-	std::cout<<this->name<<"name\n";
+	// std::cout<<this->name<<"name\n";
 
 	jump_data.emplace(this->name,this->location().firstLine());
-	// std::cout << jump_data.size() << std::endl;
 	}
 
-	// std::cout<<jump.size()<<std::endl;
-	// std::ostringstream ss;
-	// ss << stream.rdbuf();
-	// std::string temp=ss.str();
-	// std::cout << temp << "@@@11@@@@" << std::endl;
+
 }

@@ -108,7 +108,6 @@ void FileModule::registerModule(const std::string name,const std::string path, c
 							loc.fileName() % path);
 
 		if (!loc.isNone()) {
-			std::cout<<"hey i'm called "<<loc.firstLine()<<"\n";
 			jumpIndicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),
 																 loc.lastColumn() - loc.firstColumn(), path,name);
 		}

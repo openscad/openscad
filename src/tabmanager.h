@@ -87,4 +87,5 @@ public slots:
     void closeCurrentTab();
     void nextTab();
     void prevTab();
+    void jump(int,int);
 };

@@ -17,6 +17,7 @@
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
+#include <QTimer>
 
 TabManager::TabManager(MainWindow *o, const QString &filename)
 {
@@ -725,8 +726,24 @@ void TabManager::onJumpHyperlinkIndicatorClicked(int val)
 {
     std::cout<<"mission impossinle\n";
     std::cout<<editor->jumpIndicatorData[val].name<<std::endl;
-    // ((ScintillaEditor *)editor)->qsci->SendScintilla(QsciScintilla::SCI_GOTOLINE, 2);
-		// ((ScintillaEditor *)editor)->qsci->setCursorPosition(2,0);
-    editor->jumpToLine(2,0);
+    int line,col=0;
+    auto it = par->root_module->jumpData.find(editor->jumpIndicatorData[val].name);
+    if (it != par->root_module->jumpData.end())
+    {
+    std::cout<< "jump to "<<it->first<<" at "<<it->second<<std::endl;
+    line = it->second;
+    QTimer::singleShot(300, [this,line,col]() { this->jump(line,col); });
+    }
+    else return;
 
+        // for (auto it = par->root_module->jumpData.begin(); it != par->root_module->jumpData.end();
+        //             it++) {
+        //     std::cout << it->first << " ---- " << it->second << std::endl;
+        // }
+
+}
+
+void TabManager::jump(int line,int col)
+{
+	editor->jumpToLine(line-1,col);
 }
