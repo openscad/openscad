@@ -1909,6 +1909,17 @@ void MainWindow::action3DPrint()
 #endif
 }
 
+namespace {
+ExportInfo createExportInfo(FileFormat format, const char* name2open, const char* name2display, const char* sourceFileName){
+    ExportInfo exportInfo;
+    exportInfo.format = format;
+    exportInfo.name2open = name2open;
+    exportInfo.name2display = name2display;
+    exportInfo.sourceFileName = sourceFileName;
+    return exportInfo;
+}
+}
+
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -1948,13 +1959,10 @@ void MainWindow::sendToOctoPrint()
 		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
 	}
 
-    ExportInfo exportInfo;
-    exportInfo.format = exportFileFormat;
-    exportInfo.name2open = exportFileName.toLocal8Bit().constData();
-    exportInfo.name2display = exportFileName.toUtf8();
     auto fnameba = activeEditor->filepath.toLocal8Bit();
     const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-    exportInfo.sourceFileName = fname;
+    ExportInfo exportInfo;
+    exportInfo = createExportInfo(exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8(), fname);
 
     exportFileByName(this->root_geom, exportInfo);
 
@@ -1995,13 +2003,10 @@ void MainWindow::sendToPrintService()
 	const QString exportFilename = exportFile.fileName();
 	
 	//Render the stl to a temporary file:
-    ExportInfo exportInfo;
-    exportInfo.format = FileFormat::STL;
-    exportInfo.name2open = exportFilename.toLocal8Bit().constData();
-    exportInfo.name2display = exportFilename.toUtf8();
     auto fnameba = activeEditor->filepath.toLocal8Bit();
     const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-    exportInfo.sourceFileName = fname;
+    ExportInfo exportInfo;
+    exportInfo = createExportInfo(FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8(), fname);
 
     exportFileByName(this->root_geom, exportInfo);
 
@@ -2364,13 +2369,10 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 	}
 	this->export_paths[suffix] = exportFilename;
 
-    ExportInfo exportInfo;
-    exportInfo.format = format;
-    exportInfo.name2open = exportFilename.toLocal8Bit().constData();
-    exportInfo.name2display = exportFilename.toUtf8();
     auto fnameba = activeEditor->filepath.toLocal8Bit();
     const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-    exportInfo.sourceFileName = fname;
+    ExportInfo exportInfo;
+    exportInfo = createExportInfo(format, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8(), fname);
 
     exportFileByName(this->root_geom, exportInfo);
 
