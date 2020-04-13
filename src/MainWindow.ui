@@ -1533,6 +1533,10 @@
   </action>
 
   <action name="fileActionExportPDF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/PDF.png</normaloff>:/images/PDF.png</iconset>
+   </property>
    <property name="text">
     <string>Export as PDF...</string>
    </property>
