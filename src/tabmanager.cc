@@ -723,11 +723,10 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
 
 void TabManager::onJumpHyperlinkIndicatorClicked(int val)
 {
-    // const QString filename = QString::fromStdString(editor->indicatorData[val].path);
-    // this->open(filename);
     std::cout<<"mission impossinle\n";
-    std::cout<<editor->indicatorData[val].linenr<<std::endl;
-    std::cout<<editor->indicatorData[val].colnr<<std::endl;
-    std::cout<<editor->indicatorData[val].nrofchar<<std::endl;
-    std::cout<<"end\n";
+    std::cout<<editor->jumpIndicatorData[val].name<<std::endl;
+    // ((ScintillaEditor *)editor)->qsci->SendScintilla(QsciScintilla::SCI_GOTOLINE, 2);
+		// ((ScintillaEditor *)editor)->qsci->setCursorPosition(2,0);
+    editor->jumpToLine(2,0);
+
 }

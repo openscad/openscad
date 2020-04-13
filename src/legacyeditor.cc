@@ -336,3 +336,8 @@ void LegacyEditor::prevBookmark()
 void LegacyEditor::jumpToNextError()
 {
 }
+
+void LegacyEditor::jumpToLine(const int line,const int col)
+{
+
+}

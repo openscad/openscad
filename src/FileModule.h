@@ -9,6 +9,7 @@
 #include "value.h"
 #include "localscope.h"
 #include "indicatordata.h"
+#include "jumpindicatordata.h"
 
 class FileModule : public AbstractModule, public ASTNode
 {
@@ -25,7 +26,7 @@ public:
 	const std::string &modulePath() const { return this->path; }
 	void registerUse(const std::string path, const Location &loc);
 	void registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc);
-	void registerModule(const std::string path, const Location &loc);
+	void registerModule(const std::string name,const std::string path, const Location &loc);
 	std::time_t includesChanged() const;
 	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }
@@ -40,7 +41,7 @@ public:
 	ModuleContainer usedlibs;
 
 	std::vector<IndicatorData> indicatorData;
-	std::vector<IndicatorData> jumpIndicatorData;
+	std::vector<JumpIndicatorData> jumpIndicatorData;
 	std::map<std::string,int> jumpData;
 	// std::map<std::string,int>jumpFrom;
 

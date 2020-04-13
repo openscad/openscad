@@ -208,6 +208,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, jumpHyperlinkIndicatorNumber);
 	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, jumpHyperlinkIndicatorNumber);
 	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
+
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint &pos)
@@ -1165,7 +1166,7 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 	}
 
 }
-void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpIndicatorData)
+void ScintillaEditor::setJumpIndicator(const std::vector<JumpIndicatorData>& jumpIndicatorData)
 {
 	this->jumpIndicatorData = jumpIndicatorData;
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
@@ -1182,13 +1183,14 @@ void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpInd
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
 	if((state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+	// if(state == Qt::ControlModifier)
 	{
-		hyperlinkIndicator(line,col);
+		jumpHyperlinkIndicator(line, col);
 	}
-	else if(state == Qt::ShiftModifier)
-	{
+	else if ((state == Qt::AltModifier || state == (Qt::ControlModifier | Qt::AltModifier))) {
 		std::cout<<" shift captured\n";
-		jumpHyperlinkIndicator(line,col);
+		hyperlinkIndicator(line, col);
+		
 	}
 	else return;
 }
@@ -1275,4 +1277,11 @@ void ScintillaEditor::prevBookmark()
 void ScintillaEditor::jumpToNextError()
 {
 	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
+}
+
+
+void ScintillaEditor::jumpToLine(const int line,const int col)
+{
+	std::cout<<"Jump Fired\n";
+	qsci->setCursorPosition(line, col);
 }
