@@ -42,7 +42,7 @@ public:
 	std::vector<IndicatorData> indicatorData;
 	// std::vector<IndicatorData> jumpIndicatorData;
 	std::map<std::string,int> jumpData;
-	std::map<std::string,int>jumpFrom;
+	// std::map<std::string,int>jumpFrom;
 
 private:
 	struct IncludeFile {

@@ -2,7 +2,7 @@
 
 #include "AST.h"
 #include "Assignment.h"
-#include <unordered_map>
+#include <map>
 
 class LocalScope
 {

@@ -79,9 +79,9 @@ void LocalScope::collectData(std::map<std::string, int>&jump_data)
 	for (const auto &m : this->astModules) {
 	m.second->collectData(jump_data);
 	}
-	for (const auto &inst : this->children_inst) {
-		inst->collectData(jump_data);
-	}
+	// for (const auto &inst : this->children_inst) {
+	// 	inst->collectData(jump_data);
+	// }
 	// std::cout << jump_data.size() << std::endl;
 }
 

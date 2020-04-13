@@ -58,7 +58,7 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 void FileModule::collect()
 {
 	scope.collectData(this->jumpData);
-	scope.collectDataCalls(this->jumpFrom);
+	// scope.collectDataCalls(this->jumpFrom);
 }
 
 void FileModule::registerUse(const std::string path, const Location &loc)

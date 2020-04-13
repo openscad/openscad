@@ -53,12 +53,12 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 		stream << indent << "}\n";
 	}
 }
-void ModuleInstantiation::collectData(std::map<std::string, int> &jump_data)
-{
-	scope.collectData(jump_data);
-	jump_data.emplace(modname + "call", this->location().firstLine());
-	// std::cout << modname + "call " << this->location().firstLine() << std::endl;
-}
+// void ModuleInstantiation::collectData(std::map<std::string, int> &jump_data)
+// {
+// 	scope.collectData(jump_data);
+// 	jump_data.emplace(modname + "call", this->location().firstLine());
+// 	// std::cout << modname + "call " << this->location().firstLine() << std::endl;
+// }
 void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
 	ModuleInstantiation::print(stream, indent, inlined);
