@@ -1170,7 +1170,6 @@ void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpInd
 	this->jumpIndicatorData = jumpIndicatorData;
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
-	// std::cout<<jumpIndicatorData.size()<<" sizzzzzze jumppppp\n";
 	int idx = 0;
 	for (const auto& data : jumpIndicatorData) {
 		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
@@ -1182,17 +1181,44 @@ void ScintillaEditor::setJumpIndicator(const std::vector<IndicatorData>& jumpInd
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-	if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
-		return;
+	if((state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+	{
+		hyperlinkIndicator(line,col);
+	}
+	else if(state == Qt::ShiftModifier)
+	{
+		std::cout<<" shift captured\n";
+		jumpHyperlinkIndicator(line,col);
+	}
+	else return;
+}
 
+void ScintillaEditor::hyperlinkIndicator(int line, int col)
+{
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
 	int pos = qsci->positionFromLineIndex(line, col);
-	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT,
+	ScintillaEditor::hyperlinkIndicatorNumber, pos);
 
 	// checking if indicator clicked is hyperlinkIndicator
 	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
 		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+	}
+}
+
+void ScintillaEditor::jumpHyperlinkIndicator(int line, int col)
+{
+	std::cout<<" shift pressed\n";
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
+
+	int pos = qsci->positionFromLineIndex(line, col);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT,
+	ScintillaEditor::jumpHyperlinkIndicatorNumber, pos);
+
+	// checking if indicator clicked is hyperlinkIndicator
+	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+jumpIndicatorData.size())	{
+		emit jumpHyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
 	}
 }
 

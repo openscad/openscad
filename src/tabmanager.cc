@@ -221,7 +221,7 @@ void TabManager::createTab(const QString &filename)
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
     connect(editor, SIGNAL(hyperlinkIndicatorClicked(int)), this, SLOT(onHyperlinkIndicatorClicked(int)));
-    // connect(editor, SIGNAL(jumpHyperlinkIndicatorClicked(int)), this, SLOT(onJumpHyperlinkIndicatorClicked(int)));
+    connect(editor, SIGNAL(jumpHyperlinkIndicatorClicked(int)), this, SLOT(onJumpHyperlinkIndicatorClicked(int)));
 
     int idx = tabWidget->addTab(editor, _("Untitled.scad"));
     if(!editorList.isEmpty()) {
@@ -721,9 +721,13 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
     this->open(filename);
 }
 
-// void TabManager::onJumpHyperlinkIndicatorClicked(int val)
-// {
-//     // const QString filename = QString::fromStdString(editor->indicatorData[val].path);
-//     // this->open(filename);
-//     std::cout<<"i was clicked\n";
-// }
+void TabManager::onJumpHyperlinkIndicatorClicked(int val)
+{
+    // const QString filename = QString::fromStdString(editor->indicatorData[val].path);
+    // this->open(filename);
+    std::cout<<"mission impossinle\n";
+    std::cout<<editor->indicatorData[val].linenr<<std::endl;
+    std::cout<<editor->indicatorData[val].colnr<<std::endl;
+    std::cout<<editor->indicatorData[val].nrofchar<<std::endl;
+    std::cout<<"end\n";
+}
