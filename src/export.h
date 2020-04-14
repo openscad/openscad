@@ -29,9 +29,11 @@ enum class FileFormat {
 
 struct ExportInfo {
     FileFormat format;
-    const char *name2display, *name2open, *sourceFileName;
+    std::string name2display;
+	std::string name2open;
+	std::string sourceFilePath;
+	std::string sourceFileName;
 };
-
 
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, ExportInfo exportInfo);
 

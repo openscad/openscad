@@ -2,6 +2,8 @@
 #include "polyset.h"
 #include "polyset-utils.h"
 #include "printutils.h"
+#include "version.h"
+#include "version_helper.h"
 
 #include <string>
 #include <cmath>
@@ -16,6 +18,10 @@
 #define WPOINTS 595.
 #define HPOINTS 842.
 #define MARGIN 20.
+
+const std::string get_cairo_version() {
+	return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
+}
 
 enum class OriginPosition{
   BUTTOMLEFT,
@@ -157,15 +163,19 @@ void draw_geom(const shared_ptr<const Geometry> &geom, cairo_t *cr, bool &inpape
 
 void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, bool &onerror){
 
-    cairo_surface_t *surface = cairo_pdf_surface_create(exportInfo.name2open, WPOINTS, HPOINTS);
+    cairo_surface_t *surface = cairo_pdf_surface_create(exportInfo.name2open.c_str(), WPOINTS, HPOINTS);
     if(cairo_surface_status(surface)==cairo_status_t::CAIRO_STATUS_NULL_POINTER){
         onerror=true;
         cairo_surface_destroy(surface);
         return;
     }
 
-//    cairo_pdf_surface_set_metadata (surface, CAIRO_PDF_METADATA_TITLE, name2display);
-//    cairo_pdf_surface_set_metadata (surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD");
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+	cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, exportInfo.sourceFileName.c_str());
+	cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD (https://www.openscad.org/)");
+	cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, "");
+	cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
+#endif
 
     cairo_t *cr = cairo_create(surface);
 
@@ -186,7 +196,7 @@ void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, b
         draw_geom(geom, cr, inpaper, OriginPosition::BUTTOMLEFT);
         cairo_stroke(cr);
         cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-        draw_name(exportInfo.sourceFileName,cr, 10., -HPOINTS+(3.*MARGIN));
+        draw_name(exportInfo.sourceFilePath.c_str(),cr, 10., -HPOINTS+(3.*MARGIN));
         cairo_translate(cr, -MARGIN, MARGIN);
         draw_axis(cr, OriginPosition::BUTTOMLEFT);
 
@@ -196,7 +206,7 @@ void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, b
         draw_geom(geom, cr, inpaper, OriginPosition::CENTER);
         cairo_stroke(cr);
         cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-        draw_name(exportInfo.sourceFileName,cr, -(WPOINTS/2.)+MARGIN, -(HPOINTS/2.)+MARGIN);
+        draw_name(exportInfo.sourceFilePath.c_str(),cr, -(WPOINTS/2.)+MARGIN, -(HPOINTS/2.)+MARGIN);
         draw_axis(cr, OriginPosition::CENTER);
     }
 
@@ -210,6 +220,11 @@ void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, b
 
 }
 #else //ENABLE_CAIRO
+
+const std::string get_cairo_version() {
+	const std::string cairo_version = "(not enabled)";
+	return cairo_version;
+}
 
 void export_pdf(const shared_ptr<const Geometry> &, ExportInfo , bool &){
 

@@ -79,7 +79,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, ExportInfo ex
     if (exportInfo.format == FileFormat::_3MF) {
 		mode |= std::ios::binary;
 	}
-    std::ofstream fstream(exportInfo.name2open, mode);
+    std::ofstream fstream(exportInfo.name2open.c_str(), mode);
 	if (!fstream.is_open()) {
         PRINTB(_("Can't open file \"%s\" for export"), exportInfo.name2display);
 	} else {
