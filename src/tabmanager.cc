@@ -724,23 +724,14 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
 
 void TabManager::onJumpHyperlinkIndicatorClicked(int val)
 {
-    std::cout<<"mission impossinle\n";
-    std::cout<<editor->jumpIndicatorData[val].path<<std::endl;
     int line,col=0;
-    auto it = par->root_module->jumpData.find(editor->jumpIndicatorData[val].name);
-    if (it != par->root_module->jumpData.end())
+    auto it = par->root_module->jumpToData.find(editor->jumpIndicatorData[val].name);
+    if (it != par->root_module->jumpToData.end())
     {
-    std::cout<< "jump to "<<it->first<<" at "<<it->second<<std::endl;
-    line = it->second;
+    line = it->second.linenr;
     QTimer::singleShot(300, [this,line,col]() { this->jump(line,col); });
     }
     else return;
-
-        for (auto it = par->root_module->jumpData.begin(); it != par->root_module->jumpData.end();
-                    it++) {
-            std::cout << it->first << " ---- " << it->second << std::endl;
-        }
-
 }
 
 void TabManager::jump(int line,int col)

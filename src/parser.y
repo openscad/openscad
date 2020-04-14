@@ -190,6 +190,7 @@ statement
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
+              rootmodule->registerJumpTo($2,sourcefile_folder, LOC(@$));
               newmodule->definition_arguments = *$4;
               auto top = scope_stack.top();
               scope_stack.push(&newmodule->scope);

@@ -55,11 +55,11 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 	scope.print(stream, indent);
 }
 
-void FileModule::collect()
-{
-	scope.collectData(this->jumpData);
-	// scope.collectDataCalls(this->jumpFrom);
-}
+// void FileModule::collect()
+// {
+// 	scope.collectData(this->jumpData);
+// 	// scope.collectDataCalls(this->jumpFrom);
+// }
 
 void FileModule::registerUse(const std::string path, const Location &loc)
 {
@@ -108,10 +108,23 @@ void FileModule::registerModule(const std::string name,const std::string path, c
 							loc.fileName() % path);
 
 		if (!loc.isNone()) {
-			jumpIndicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),
-																 loc.lastColumn() - loc.firstColumn(), path,name);
+			jumpIndicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), path,name);
 		}
 }
+
+void FileModule::registerJumpTo(const std::string name,const std::string path, const Location &loc)
+{
+	PRINTDB("registerModule(): (%p) %d, %d - %d, %d (%s) -> %s",
+					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
+							loc.fileName() % path);
+
+		if (!loc.isNone()) {
+			std::string filePath = 	this->getFullpath();
+			JumpIndicatorData *temp = new JumpIndicatorData(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), filePath,name);
+			jumpToData.emplace(name,*temp);
+		}
+}
+
 time_t FileModule::includesChanged() const
 {
 	time_t latest = 0;
