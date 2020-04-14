@@ -408,7 +408,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
-	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
+    connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
+    connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -517,14 +518,15 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideConsole = settings.value("view/hideConsole").toBool();
 	bool hideEditor = settings.value("view/hideEditor").toBool();
 	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
-	bool hideToolbar = settings.value("view/hideToolbar").toBool();
+    bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
+    bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 	
 	// make sure it looks nice..
 	auto windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
-	updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideToolbar);
+    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideEditorToolbar, hide3DViewToolbar);
 
 	if (windowState.size() == 0) {
 		/*
@@ -583,6 +585,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	for(int i = 1; i < filenames.size(); i++)
 		tabManager->createTab(filenames[i]);
+
+	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
+	if (!editorDock->isVisible()) {
+		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
+		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
+	}
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -615,14 +623,16 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar)
 {
 	viewActionHideConsole->setChecked(console);
 	hideConsole();
 	viewActionHideEditor->setChecked(editor);
 	hideEditor();
-	viewActionHideToolBars->setChecked(toolbar);
-	hideToolbars();
+    viewActionHideEditorToolBar->setChecked(editorToolbar);
+    hideEditorToolbar();
+    viewActionHide3DViewToolBar->setChecked(viewToolbar);
+    hide3DViewToolbar();
 	viewActionHideParameters->setChecked(customizer);
 	hideParameters();
 }
@@ -1120,8 +1130,12 @@ void MainWindow::instantiateRoot()
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
-			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
+			const Location *nextLocation = nullptr;
+			if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
 				this->root_node = this->absolute_root_node;
+			}
+			if (nextLocation) {
+				PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1895,6 +1909,17 @@ void MainWindow::action3DPrint()
 #endif
 }
 
+namespace {
+ExportInfo createExportInfo(FileFormat format, const char* name2open, const char* name2display, const char* sourceFileName){
+    ExportInfo exportInfo;
+    exportInfo.format = format;
+    exportInfo.name2open = name2open;
+    exportInfo.name2display = name2display;
+    exportInfo.sourceFileName = sourceFileName;
+    return exportInfo;
+}
+}
+
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -1934,7 +1959,12 @@ void MainWindow::sendToOctoPrint()
 		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
 	}
 
-	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
+    auto fnameba = activeEditor->filepath.toLocal8Bit();
+    const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+    ExportInfo exportInfo;
+    exportInfo = createExportInfo(exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8(), fname);
+
+    exportFileByName(this->root_geom, exportInfo);
 
 	try {
 		this->progresswidget = new ProgressWidget(this);
@@ -1973,7 +2003,12 @@ void MainWindow::sendToPrintService()
 	const QString exportFilename = exportFile.fileName();
 	
 	//Render the stl to a temporary file:
-	exportFileByName(this->root_geom, FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8());
+    auto fnameba = activeEditor->filepath.toLocal8Bit();
+    const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+    ExportInfo exportInfo;
+    exportInfo = createExportInfo(FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8(), fname);
+
+    exportFileByName(this->root_geom, exportInfo);
 
 	//Create a name that the order process will use to refer to the file. Base it off of the project name
 	QString userFacingName = "unsaved.stl";
@@ -2333,9 +2368,14 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 		return;
 	}
 	this->export_paths[suffix] = exportFilename;
-	exportFileByName(this->root_geom, format,
-		exportFilename.toLocal8Bit().constData(),
-		exportFilename.toUtf8());
+
+    auto fnameba = activeEditor->filepath.toLocal8Bit();
+    const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+    ExportInfo exportInfo;
+    exportInfo = createExportInfo(format, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8(), fname);
+
+    exportFileByName(this->root_geom, exportInfo);
+
 	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -2672,6 +2712,13 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 {
 	changedTopLevelEditor(editorDock->isFloating());
 	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
+	
+	if (editorDock->isVisible()) viewerToolBar->removeAction(this->fileActionExportSTL);
+	else{
+		 QAction *beforeAction = viewerToolBar->actions().at(2);
+		 viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
+	 }
+	 
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
@@ -2740,26 +2787,37 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
-void MainWindow::hideToolbars()
+void MainWindow::hideEditorToolbar()
 {
 	QSettingsCached settings;
-	bool shouldHide = viewActionHideToolBars->isChecked();
-	settings.setValue("view/hideToolbar", shouldHide);
+    bool shouldHide = viewActionHideEditorToolBar->isChecked();
+    settings.setValue("view/hideEditorToolbar", shouldHide);
 
 	if (shouldHide) {
-		viewerToolBar->hide();
 		editortoolbar->hide();
 	} else {
-		viewerToolBar->show();
 		editortoolbar->show();
 	}
+}
+
+void MainWindow::hide3DViewToolbar()
+{
+    QSettingsCached settings;
+    bool shouldHide = viewActionHide3DViewToolBar->isChecked();
+    settings.setValue("view/hide3DViewToolbar", shouldHide);
+
+    if (shouldHide) {
+        viewerToolBar->hide();
+    } else {
+        viewerToolBar->show();
+    }
 }
 
 void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
-	} else {
+	}else {
 		editorDock->show();
 	}
 }
@@ -2988,7 +3046,7 @@ QString MainWindow::exportPath(const char *suffix) {
 		if(activeEditor->filepath.isEmpty())
 			path += QString(_("Untitled")) + suffix;
 		else
-			path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
+            path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
 	}
 	else
 	{

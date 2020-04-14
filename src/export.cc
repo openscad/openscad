@@ -65,29 +65,28 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	}
 }
 
-void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
-	const char *name2open, const char *name2display)
+void exportFileByName(const shared_ptr<const Geometry> &root_geom, ExportInfo exportInfo)
 {
-    if (format == FileFormat::PDF){
+    if (exportInfo.format == FileFormat::PDF){
         bool onerror = false;
-        export_pdf(root_geom,name2open,name2display,onerror);
+        export_pdf(root_geom, exportInfo, onerror);
         if (onerror) {
-            PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
+            PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), exportInfo.name2display);
         }
         return;
     }
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
-	if (format == FileFormat::_3MF) {
+    if (exportInfo.format == FileFormat::_3MF) {
 		mode |= std::ios::binary;
 	}
-	std::ofstream fstream(name2open, mode);
+    std::ofstream fstream(exportInfo.name2open, mode);
 	if (!fstream.is_open()) {
-		PRINTB(_("Can't open file \"%s\" for export"), name2display);
+        PRINTB(_("Can't open file \"%s\" for export"), exportInfo.name2display);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
 		try {
-			exportFile(root_geom, fstream, format);
+            exportFile(root_geom, fstream, exportInfo.format);
 		} catch (std::ios::failure&) {
 			onerror = true;
 		}
@@ -97,7 +96,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 			onerror = true;
 		}
 		if (onerror) {
-			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
+            PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), exportInfo.name2display);
 		}
 	}
 }

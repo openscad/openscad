@@ -104,6 +104,8 @@
     <file>images/STL-white.png</file>
     <file>images/SVG.png</file>
     <file>images/SVG-white.png</file>
+    <file>images/PDF.png</file>
+    <file>images/PDF-white.png</file>
     <file>sounds/complete.wav</file>
   </qresource>
 </RCC>

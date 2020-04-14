@@ -413,7 +413,8 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
-    <addaction name="viewActionHideToolBars"/>
+    <addaction name="viewActionHideEditorToolBar"/>
+    <addaction name="viewActionHide3DViewToolBar"/>
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
     <addaction name="viewActionHideParameters"/>
@@ -436,6 +437,9 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="tabToolBar">
+    <property name="windowTitle">
+    <string>Tabs</string>
+   </property>
    <property name="movable">
     <bool>false</bool>
    </property>
@@ -1491,12 +1495,12 @@
     <string>Shift+F2</string>
    </property>
   </action>
-  <action name="viewActionHideToolBars">
+  <action name="viewActionHideEditorToolBar">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide toolbars</string>
+    <string>Hide Editor toolbar</string>
    </property>
   </action>
   <action name="editActionUnindent">
@@ -1527,11 +1531,26 @@
     <string>Hide Customizer</string>
    </property>
   </action>
+
   <action name="fileActionExportPDF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/PDF.png</normaloff>:/images/PDF.png</iconset>
+   </property>
    <property name="text">
     <string>Export as PDF...</string>
    </property>
   </action>
+  
+  <action name="viewActionHide3DViewToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide 3D view toolbar</string>
+   </property>
+  </action>
+
  </widget>
  <customwidgets>
   <customwidget>

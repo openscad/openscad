@@ -245,7 +245,12 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINT("Current top level object is empty.");
 		return false;
 	}
-	exportFileByName(root_geom, format, filename, filename);
+    ExportInfo exportInfo;
+    exportInfo.format = format;
+    exportInfo.name2open = filename;
+    exportInfo.name2display = filename;
+
+    exportFileByName(root_geom, exportInfo);
 	return true;
 }
 
@@ -321,7 +326,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
-	AbstractNode *root_node;
+	const AbstractNode *root_node;
 	AbstractNode *absolute_root_node;
 	shared_ptr<const Geometry> root_geom;
 
@@ -362,10 +367,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	absolute_root_node = root_module->instantiate(top_ctx.ctx, &root_inst, nullptr);
 
 	// Do we have an explicit root node (! modifier)?
-	if (!(root_node = find_root_tag(absolute_root_node))) {
+	const Location *nextLocation = nullptr;
+	if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
 		root_node = absolute_root_node;
 	}
 	tree.setRoot(root_node);
+	if (nextLocation) {
+		PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
+	}
+
 
 	if (deps_output_file) {
 		fs::current_path(original_path);
