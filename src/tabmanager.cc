@@ -725,7 +725,7 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
 void TabManager::onJumpHyperlinkIndicatorClicked(int val)
 {
     std::cout<<"mission impossinle\n";
-    std::cout<<editor->jumpIndicatorData[val].name<<std::endl;
+    std::cout<<editor->jumpIndicatorData[val].path<<std::endl;
     int line,col=0;
     auto it = par->root_module->jumpData.find(editor->jumpIndicatorData[val].name);
     if (it != par->root_module->jumpData.end())
@@ -736,10 +736,10 @@ void TabManager::onJumpHyperlinkIndicatorClicked(int val)
     }
     else return;
 
-        // for (auto it = par->root_module->jumpData.begin(); it != par->root_module->jumpData.end();
-        //             it++) {
-        //     std::cout << it->first << " ---- " << it->second << std::endl;
-        // }
+        for (auto it = par->root_module->jumpData.begin(); it != par->root_module->jumpData.end();
+                    it++) {
+            std::cout << it->first << " ---- " << it->second << std::endl;
+        }
 
 }
 
