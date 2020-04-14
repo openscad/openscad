@@ -1211,7 +1211,6 @@ void ScintillaEditor::hyperlinkIndicator(int line, int col)
 
 void ScintillaEditor::jumpHyperlinkIndicator(int line, int col)
 {
-	std::cout<<" shift pressed\n";
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
 
 	int pos = qsci->positionFromLineIndex(line, col);
