@@ -1182,11 +1182,11 @@ void ScintillaEditor::setJumpIndicator(const std::vector<JumpIndicatorData>& jum
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-	if((state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+	if((state == Qt::AltModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
 	{
 		jumpHyperlinkIndicator(line, col);
 	}
-	else if ((state == Qt::AltModifier || state == (Qt::ControlModifier | Qt::AltModifier))) {
+	else if ((state == Qt::ControlModifier || state == (Qt::ControlModifier | Qt::AltModifier))) {
 		hyperlinkIndicator(line, col);
 		
 	}
