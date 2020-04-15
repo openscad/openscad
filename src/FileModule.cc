@@ -119,10 +119,10 @@ void FileModule::registerJumpTo(const std::string name,const std::string path, c
 							loc.fileName() % path);
 
 		if (!loc.isNone()) {
-			// std::string filePath = 	this->getFullpath();
-			// std::cout<<loc.filePath().string()<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5\n";
 			JumpIndicatorData *temp = new JumpIndicatorData(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), loc.filePath().string(),name);
-			jumpToData.emplace(name,*temp);
+			auto it = jumpToData.find(name);
+			if(it!=jumpToData.end()) it->second=*temp;
+			else jumpToData.emplace(name,*temp);
 		}
 }
 
