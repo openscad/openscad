@@ -766,7 +766,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
 
   rootmodule = new FileModule(sourcefile_folder, parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
-         PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
+        //  PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
   parserdebug = debug;
   int parserretval = -1;
   try{

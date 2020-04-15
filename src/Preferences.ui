@@ -27,11 +27,20 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -105,7 +114,16 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -118,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>606</width>
-             <height>755</height>
+             <width>512</width>
+             <height>793</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -161,7 +179,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>DejaVu Sans</family>
+                    <family>Lucida Grande</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -663,15 +681,15 @@
                </item>
                <item row="1" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_30">
-                 <item>
-                  <widget class="QLabel" name="labelCharacterThreshold">
-                   <property name="text">
-                    <string>Character Threshold</string>
-                   </property>
-                  </widget>
+                  <item>
+                    <widget class="QLabel" name="labelCharacterThreshold">
+                     <property name="text">
+                      <string>Character Threshold</string>
+                     </property>
+                    </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="lineEditCharacterThreshold"/>
+                  <widget class="QLineEdit" name="lineEditCharacterThreshold" />
                  </item>
                 </layout>
                </item>
@@ -1121,7 +1139,16 @@
       </widget>
       <widget class="QWidget" name="pageFeatures">
        <layout class="QGridLayout" name="gridLayout_2">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -1158,8 +1185,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>84</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1453,7 +1480,16 @@
       </widget>
       <widget class="QWidget" name="pageAdvanced">
        <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -1472,8 +1508,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>606</width>
-             <height>710</height>
+             <width>602</width>
+             <height>891</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1763,7 +1799,16 @@
       </widget>
       <widget class="QWidget" name="pageInput">
        <layout class="QGridLayout" name="gridLayout_13">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -1787,7 +1832,16 @@
       </widget>
       <widget class="QWidget" name="pageInputButton">
        <layout class="QGridLayout" name="gridLayout_14">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="3" column="1">
@@ -1846,7 +1900,6 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
-   <addaction name="separator"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">

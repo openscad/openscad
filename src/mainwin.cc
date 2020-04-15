@@ -1714,8 +1714,6 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
-
-	if(this->root_module) std::cout<<typeid(this->root_module).name()<<std::endl;
 	if (this->root_module!=nullptr) {
 		//add parameters as annotation in AST
 		CommentParser::collectParameters(fulltext,this->root_module);
@@ -1725,10 +1723,6 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		this->parameterWidget->setEnabled(true);
 		this->activeEditor->setIndicator(this->root_module->indicatorData);
 		this->activeEditor->setJumpIndicator(this->root_module->jumpIndicatorData);
-		// for (auto it = root_module->jumpToData.begin(); it != root_module->jumpToData.end(); it++) {
-		// 	std::cout << it->first << " ---- " << it->second.name << " "<<it->second.path<< " "<<it->second.linenr << std::endl;
-		// }
-		// std::cout << "*************************************\n";
 	}
 }
 
