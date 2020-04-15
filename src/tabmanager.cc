@@ -727,8 +727,14 @@ void TabManager::onJumpHyperlinkIndicatorClicked(int val)
     int line,col=0;
     auto it = par->root_module->jumpToData.find(editor->jumpIndicatorData[val].name);
     if (it != par->root_module->jumpToData.end())
-    {
+    {   
     line = it->second.linenr;
+    if(editor->filepath.toStdString() != it->second.path)
+    {
+    const QString filename = QString::fromStdString(it->second.path);
+    this->open(filename);
+    }
+    // added this delay, as clicking on the indicator, sets the cursor at the position clicked, supressing the JumpToLine API
     QTimer::singleShot(300, [this,line,col]() { this->jump(line,col); });
     }
     else return;

@@ -28,8 +28,6 @@ public:
 	AssignmentList assignments;
 	std::vector<shared_ptr<ModuleInstantiation>> children_inst;
 
-	//we can take modules list from here
-	//ModuleList modules;
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
 	// FIXME: Should we split this class into an ASTNode and a run-time support class?
