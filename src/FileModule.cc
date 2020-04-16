@@ -97,7 +97,7 @@ void FileModule::registerInclude(const std::string &localpath, const std::string
 }
 void FileModule::registerJumpFrom(const std::string name, const Location &loc)
 {
-	PRINTDB("registerModule(): (%p) %d, %d - %d, %d (%s) -> %s",
+	PRINTDB("registerJumpFrom(): (%p) %d, %d - %d, %d (%s) -> %s",
 					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
 							loc.fileName());
 
@@ -108,7 +108,7 @@ void FileModule::registerJumpFrom(const std::string name, const Location &loc)
 
 void FileModule::registerJumpTo(const std::string name, const Location &loc)
 {
-	PRINTDB("registerModule(): (%p) %d, %d - %d, %d (%s) -> %s",
+	PRINTDB("registerJumpTo(): (%p) %d, %d - %d, %d (%s) -> %s",
 					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
 							loc.fileName());
 

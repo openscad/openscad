@@ -19,7 +19,6 @@ public:
 
 	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-	// void collect();
 	AbstractNode *instantiateWithFileContext(const std::shared_ptr<class FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }

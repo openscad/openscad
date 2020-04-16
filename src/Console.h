@@ -27,6 +27,7 @@
 #pragma once
 
 #include <QPlainTextEdit>
+
 #include "qtgettext.h"
 #include "ui_Console.h"
 
@@ -37,10 +38,10 @@ class Console : public QPlainTextEdit, public Ui::Console
 public:
 	Console(QWidget *parent = nullptr);
 	virtual ~Console();
+
 	void contextMenuEvent(QContextMenuEvent *event) override;
 
 public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
-
 };
