@@ -101,22 +101,22 @@ void FileModule::registerInclude(const std::string &localpath, const std::string
 		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
 	}
 }
-void FileModule::registerModule(const std::string name,const std::string path, const Location &loc)
+void FileModule::registerJumpFrom(const std::string name, const Location &loc)
 {
 	PRINTDB("registerModule(): (%p) %d, %d - %d, %d (%s) -> %s",
 					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
-							loc.fileName() % path);
+							loc.fileName());
 
 		if (!loc.isNone()) {
-			jumpIndicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), path,name);
+			jumpIndicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), loc.filePath().string(),name);
 		}
 }
 
-void FileModule::registerJumpTo(const std::string name,const std::string path, const Location &loc)
+void FileModule::registerJumpTo(const std::string name, const Location &loc)
 {
 	PRINTDB("registerModule(): (%p) %d, %d - %d, %d (%s) -> %s",
 					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
-							loc.fileName() % path);
+							loc.fileName());
 
 		if (!loc.isNone()) {
 			JumpIndicatorData *temp = new JumpIndicatorData(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), loc.filePath().string(),name);

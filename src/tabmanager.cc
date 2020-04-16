@@ -724,10 +724,9 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
 
 void TabManager::onJumpHyperlinkIndicatorClicked(int val)
 {
-    int line,col=0;
-    auto it = par->root_module->jumpToData.find(editor->jumpIndicatorData[val].name);
-    if (it != par->root_module->jumpToData.end())
-    {   
+	int line, col = 0;
+	auto it = par->root_module->jumpToData.find(editor->jumpIndicatorData[val].name);
+	if (it != par->root_module->jumpToData.end()) { 
     line = it->second.linenr;
     if(editor->filepath.toStdString() != it->second.path)
     {

@@ -1173,9 +1173,11 @@ void ScintillaEditor::setJumpIndicator(const std::vector<JumpIndicatorData>& jum
 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
 	int idx = 0;
 	for (const auto& data : jumpIndicatorData) {
+		if (data.path == this->filepath.toStdString()){
 		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
 		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
 		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+		}
 		idx++;
 	}
 }

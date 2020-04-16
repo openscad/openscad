@@ -190,7 +190,7 @@ statement
         | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
             {
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
-              rootmodule->registerJumpTo($2,sourcefile_folder, LOC(@$));
+              rootmodule->registerJumpTo($2, LOC(@$));
               newmodule->definition_arguments = *$4;
               auto top = scope_stack.top();
               scope_stack.push(&newmodule->scope);
@@ -323,7 +323,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
-                rootmodule->registerModule($1,sourcefile_folder, LOC(@$));
+                rootmodule->registerJumpFrom($1, LOC(@$));
                 $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
@@ -778,7 +778,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   lexerdestroy();
   lexerlex_destroy();
 
-  module = rootmodule;
+  module = rootmodule;  
   if (parserretval != 0) return false;
 
   parser_error_pos = -1;
