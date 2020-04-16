@@ -55,12 +55,6 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 	scope.print(stream, indent);
 }
 
-// void FileModule::collect()
-// {
-// 	scope.collectData(this->jumpData);
-// 	// scope.collectDataCalls(this->jumpFrom);
-// }
-
 void FileModule::registerUse(const std::string path, const Location &loc)
 {
 	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %

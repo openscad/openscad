@@ -94,15 +94,3 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 	}
 }
 
-// void UserModule::collectData(std::map<std::string, int> &jump_data)
-// {
-
-// 	scope.collectData(jump_data);
-// 	if (!this->name.empty()) {
-//  std::cout<<this->name<<"name\n";
-
-// 	jump_data.emplace(this->name,this->location().firstLine());
-// 	}
-
-
-// }

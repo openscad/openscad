@@ -14,7 +14,6 @@ public:
 	~ModuleInstantiation();
 
 	virtual void print(std::ostream &stream, const std::string &indent, const bool inlined) const;
-	// void collectData(std::map<std::string, int> &jump_data);
 	void print(std::ostream &stream, const std::string &indent) const override { print(stream, indent, false); };
 	class AbstractNode *evaluate(const std::shared_ptr<Context> ctx) const;
 	std::vector<AbstractNode*> instantiateChildren(const std::shared_ptr<Context> evalctx) const;

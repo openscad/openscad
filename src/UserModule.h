@@ -15,7 +15,6 @@ public:
 
 	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-	// void collectData(std::map<std::string, int> &jump_data);
 	static const std::string& stack_element(int n) { return module_stack[n]; };
 	static int stack_size() { return module_stack.size(); };
 
