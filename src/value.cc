@@ -659,6 +659,14 @@ public:
   template <typename T> bool operator()(const T &op1, const T &op2) const {
     return op1 == op2;
   }
+
+  bool operator()(const bool &op1, const double &op2) const {
+    return op1 == op2;
+  }
+
+  bool operator()(const double &op1, const bool &op2) const {
+    return op1 == op2;
+  }
 };
 
 bool Value::operator==(const Value &v) const
@@ -679,8 +687,12 @@ bool Value::operator!=(const Value &v) const
 			return false;																											\
 		}																																		\
 																																				\
-		bool operator()(const bool &op1, const bool &op2) const {						\
+		template <typename T> bool operator()(const T &op1, const T &op2) const {	\
 			return op1 op op2;																								\
+		}																																		\
+																																				\
+		bool operator()(const FunctionType &op1, const FunctionType &op2) const {	\
+			return false;																											\
 		}																																		\
 																																				\
 		bool operator()(const bool &op1, const double &op2) const {					\
@@ -688,14 +700,6 @@ bool Value::operator!=(const Value &v) const
 		}																																		\
 																																				\
 		bool operator()(const double &op1, const bool &op2) const {					\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const double &op1, const double &op2) const {				\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
 			return op1 op op2;																								\
 		}																																		\
 	}
@@ -811,12 +815,21 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 	assert(vectorvec.size() == matrixvec.size());
 // Vector * Matrix
 	VectorType dstv;
-	for (size_t i=0;i<matrixvec[0]->toVector().size();i++) {
+	size_t firstRowSize =  matrixvec[0]->toVector().size();
+	for (size_t i=0;i<firstRowSize;i++) {
 		double r_e = 0.0;
 		for (size_t j=0;j<vectorvec.size();j++) {
 			if (matrixvec[j]->type() != ValueType::VECTOR ||
-					matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER || 
-					vectorvec[j]->type() != ValueType::NUMBER) {
+					matrixvec[j]->toVector().size() != firstRowSize) {
+				PRINTB("WARNING: Matrix must be rectangular. Problem at row %lu", j);
+				return Value::undefined;
+			}
+			if (vectorvec[j]->type() != ValueType::NUMBER) {
+				PRINTB("WARNING: Vector must contain only numbers. Problem at index %lu", j);
+				return Value::undefined;
+			}
+			if (matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER) {
+				PRINTB("WARNING: Matrix must contain only numbers. Problem at row %lu, col %lu", j % i);
 				return Value::undefined;
 			}
 			r_e += vectorvec[j]->toDouble() * matrixvec[j]->toVector()[i]->toDouble();
@@ -1085,9 +1098,9 @@ std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
 	stream << "function(";
 	bool first = true;
 	for (const auto& arg : f.args) {
-		stream << (first ? "" : ", ") << arg.name;
-		if (arg.expr) {
-			stream << " = " << *arg.expr;
+		stream << (first ? "" : ", ") << arg->name;
+		if (arg->expr) {
+			stream << " = " << *arg->expr;
 		}
 		first = false;
 	}

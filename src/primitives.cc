@@ -153,29 +153,29 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 	switch (this->type) {
 	case primitive_type_e::CUBE:
-		args += Assignment("size"), Assignment("center");
+		args += assignment("size"), assignment("center");
 		break;
 	case primitive_type_e::SPHERE:
-		args += Assignment("r");
-		optargs += Assignment("d");
+		args += assignment("r");
+		optargs += assignment("d");
 		break;
 	case primitive_type_e::CYLINDER:
-		args += Assignment("h"), Assignment("r1"), Assignment("r2"), Assignment("center");
-		optargs += Assignment("r"),  Assignment("d"), Assignment("d1"),  Assignment("d2");
+		args += assignment("h"), assignment("r1"), assignment("r2"), assignment("center");
+		optargs += assignment("r"),  assignment("d"), assignment("d1"),  assignment("d2");
 		break;
 	case primitive_type_e::POLYHEDRON:
-		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
-		optargs += Assignment("triangles");
+		args += assignment("points"), assignment("faces"), assignment("convexity");
+		optargs += assignment("triangles");
 		break;
 	case primitive_type_e::SQUARE:
-		args += Assignment("size"), Assignment("center");
+		args += assignment("size"), assignment("center");
 		break;
 	case primitive_type_e::CIRCLE:
-		args += Assignment("r");
-		optargs += Assignment("d");
+		args += assignment("r");
+		optargs += assignment("d");
 		break;
 	case primitive_type_e::POLYGON:
-		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
+		args += assignment("points"), assignment("paths"), assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");

@@ -84,8 +84,8 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 {
 	auto node = new SurfaceNode(inst);
 
-	AssignmentList args{Assignment("file"), Assignment("center"), Assignment("convexity")};
-	AssignmentList optargs{Assignment("center"),Assignment("invert")};
+	AssignmentList args{assignment("file"), assignment("center"), assignment("convexity")};
+	AssignmentList optargs{assignment("center"),assignment("invert")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);

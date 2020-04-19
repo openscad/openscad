@@ -258,7 +258,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 {
 	auto node = new ColorNode(inst);
 
-	AssignmentList args{Assignment("c"), Assignment("alpha")};
+	AssignmentList args{assignment("c"), assignment("alpha")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args);

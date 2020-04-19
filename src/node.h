@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "BaseVisitable.h"
+#include "AST.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const class AbstractNode*, void*, int);
@@ -131,4 +132,4 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);
-AbstractNode *find_root_tag(AbstractNode *n);
+AbstractNode *find_root_tag(AbstractNode *node, const Location **nextLocation = nullptr);

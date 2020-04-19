@@ -1,0 +1,12 @@
+difference() {
+	resize(newsize = [50,50,15], auto = [0,0,0], convexity = 2) {
+		difference() {
+			cube(size = [10, 10, 5], center = true);
+			cylinder($fn = 20, $fa = 12, $fs = 2, h = 8, r1 = 1, r2 = 1, center = true);
+		}
+	}
+	multmatrix([[1, 0, 0, 15], [0, 1, 0, 15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		cube(size = [10, 10, 20], center = true);
+	}
+}
+

@@ -97,12 +97,12 @@ values:
     value
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
+        $$->emplace_back($1);
     }
     |values ',' value
     {
         $$ = $1;
-        $$->push_back($3);
+        $$->emplace_back($3);
     }
     ;
 
@@ -110,26 +110,26 @@ labeled_vectors:
     num ':' num
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     |num ':' wordexpr
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     |wordexpr ':' num
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     |wordexpr ':' wordexpr
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     ;
 
@@ -151,18 +151,22 @@ word:
         std::ostringstream strs;
         strs << $1 << " " << $2;
         $$ = strdup(strs.str().c_str());
+        free($1);
     }
     | NUM word
     {
         std::ostringstream strs;
         strs << $1 << " " << $2;
         $$ = strdup(strs.str().c_str());
+        free($2);
     }
     | word WORD
     {
         std::ostringstream strs;
         strs << $1 << " " << $2;
         $$ = strdup(strs.str().c_str());
+        free($1);
+        free($2);
     }
 %%
 

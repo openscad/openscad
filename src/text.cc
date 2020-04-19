@@ -48,10 +48,10 @@ AbstractNode *TextModule::instantiate(const std::shared_ptr<Context>& ctx, const
 {
 	auto node = new TextNode(inst);
 
-	AssignmentList args{Assignment("text"), Assignment("size"), Assignment("font")};
+	AssignmentList args{assignment("text"), assignment("size"), assignment("font")};
 	AssignmentList optargs{
-		Assignment("direction"), Assignment("language"), Assignment("script"),
-		Assignment("halign"), Assignment("valign"), Assignment("spacing")
+		assignment("direction"), assignment("language"), assignment("script"),
+		assignment("halign"), assignment("valign"), assignment("spacing")
 	};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};

@@ -555,7 +555,9 @@ void Preferences::on_comboBoxLineWrap_activated(int val)
 
 void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 {
-	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentText() == "Same");
+	//Next Line disables the Indent Spin-Box when 'Same' or 'Indented' is choosen from LineWrapIndentationStyle Combo-Box.
+	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+	
 	applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
 }
 
@@ -932,64 +934,21 @@ void Preferences::updateGUI()
 	initCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
 	initCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
 	initCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
-	this->spinBoxLineWrapIndentationIndent->setDisabled(this->comboBoxLineWrapIndentationStyle->currentText() == "Same");
+
+	
+
+	/* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from LineWrapIndentationStyle Combo-box, just after launching the openscad application.
+	Removing this line will cause misbehaviour, and will not disable the Indent spin-box untill you interact with the LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled.
+	For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
+	*/
+	this->spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+
 
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintUrl).toString()));
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintApiKey).toString()));
 	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
 	updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine);
 	updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile);
-}
-
-void Preferences::initCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntry& entry)
-{
-	const Settings::Settings *s = Settings::Settings::inst();
-	checkBox->setChecked(s->get(entry).toBool());
-}
-
-void Preferences::initComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry)
-{
-	comboBox->clear();
-	// Range is a vector of 2D vectors: [[name, value], ...]
-	for(const auto &v : entry.range().toVector()) {
-		QString val = QString::fromStdString(v[0]->toString());
-		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
-		comboBox->addItem(qtext, val);
-	}
-}
-
-void Preferences::initSpinBoxRange(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry)
-{
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
-}
-
-void Preferences::initSpinBoxDouble(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry)
-{
-	const Settings::Settings *s = Settings::Settings::inst();
-	spinBox->setValue(s->get(entry).toDouble());
-}
-
-void Preferences::updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry)
-{
-	Settings::Settings *s = Settings::Settings::inst();
-
-	const Value &value = s->get(entry);
-	QString text = QString::fromStdString(value.toString());
-	int idx = comboBox->findData(text);
-	if (idx >= 0) {
-		comboBox->setCurrentIndex(idx);
-	} else {
-		const Value &defaultValue = entry.defaultValue();
-		QString defaultText = QString::fromStdString(defaultValue.toString());
-		int defIdx = comboBox->findData(defaultText);
-		if (defIdx >= 0) {
-			comboBox->setCurrentIndex(defIdx);
-		} else {
-			comboBox->setCurrentIndex(0);
-		}
-	}
 }
 
 void Preferences::applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry)

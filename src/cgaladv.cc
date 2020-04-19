@@ -49,11 +49,13 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 
 	AssignmentList args;
 
-	if (type == CgaladvType::MINKOWSKI)
-		args += Assignment("convexity");
+	if (type == CgaladvType::MINKOWSKI) {
+		args += assignment("convexity");
+	}
 
-	if (type == CgaladvType::RESIZE)
-		args += Assignment("newsize"), Assignment("auto");
+	if (type == CgaladvType::RESIZE) {
+		args += assignment("newsize"), assignment("auto"), assignment("convexity");
+	}
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args);
@@ -64,9 +66,8 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c->lookup_variable("convexity", true);
-	}
-
-	if (type == CgaladvType::RESIZE) {
+	} else if (type == CgaladvType::RESIZE) {
+		convexity = c->lookup_variable("convexity", true);
 		auto ns = c->lookup_variable("newsize");
 		node->newsize << 0,0,0;
 		if ( ns->type() == Value::ValueType::VECTOR ) {
@@ -132,6 +133,7 @@ std::string CgaladvNode::toString() const
 		  << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
 		  << ", auto = ["
 		  << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
+		  << ", convexity = " << this->convexity
 		  << ")";
 		break;
 	default:
@@ -145,7 +147,7 @@ void register_builtin_cgaladv()
 {
 	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI),
 				{
-					"minkowski()",
+					"minkowski(convexity = number)",
 				});
 
 	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL),
@@ -158,5 +160,6 @@ void register_builtin_cgaladv()
 					"resize([x, y, z])",
 					"resize([x, y, z], boolean)",
 					"resize([x, y, z], [boolean, boolean, boolean])",
+					"resize([x, y, z], [boolean, boolean, boolean], convexity = number)",
 				});
 }

@@ -93,25 +93,35 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 	return stream;
 }
 
-// Do we have an explicit root node (! modifier)?
-AbstractNode *find_root_tag(AbstractNode *n)
+/*!
+	Locates and returns the node containing a root modifier (!).
+	Returns nullptr if no root modifier was found.
+	If a second root modifier was found, nextLocation (if non-zero) will be set to point to
+	the location of that second modifier.
+*/
+AbstractNode *find_root_tag(AbstractNode *node, const Location **nextLocation)
 {
-	std::vector<AbstractNode*> rootTags;
+	AbstractNode *rootTag = nullptr;
 
-	std::function <void (AbstractNode *n)> find_root_tags = [&](AbstractNode *n) {
-		for (auto v : n->children) {
-			if (v->modinst->tag_root) rootTags.push_back(v);
-			find_root_tags(v);
+	std::function <void (AbstractNode *)> recursive_find_tag = [&](AbstractNode *node) {
+		for (auto child : node->children) {
+			if (child->modinst->tag_root) {
+				if (!rootTag) {
+					rootTag = child;
+					// shortcut if we're not interested in further root modifiers
+					if (!nextLocation) return;
+				}
+				else if (nextLocation && rootTag->modinst != child->modinst) {
+					// Throw if we have more than one root modifier in the source
+					*nextLocation = &child->modinst->location();
+					return;
+				}
+			}
+			recursive_find_tag(child);
 		}
 	};
 
-	find_root_tags(n);
+	recursive_find_tag(node);
 
-	if (rootTags.size() == 0) return nullptr;
-	if (rootTags.size() > 1) {
-		for (const auto& rootTag : rootTags) {
-			PRINTB("WARNING: Root Modifier (!) Added At Line%d \n", rootTag->modinst->location().firstLine());
-		}
-	}
-	return rootTags.front();
+	return rootTag;
 }

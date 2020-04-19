@@ -31,8 +31,8 @@
 #include "Polygon2d.h"
 #include "DrawingCallback.h"
 
-DrawingCallback::DrawingCallback(unsigned long fn) :
-	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn), polygon(nullptr)
+DrawingCallback::DrawingCallback(unsigned long fn, double size) :
+	pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn), polygon(nullptr), size(size)
 {
 }
 
@@ -76,7 +76,7 @@ void DrawingCallback::add_glyph_advance(double advance_x, double advance_y)
 
 void DrawingCallback::add_vertex(const Vector2d &v)
 {
-	this->outline.vertices.push_back(v + offset + advance);
+	this->outline.vertices.push_back(size*(v + offset + advance));
 }
 
 void DrawingCallback::move_to(const Vector2d &to)

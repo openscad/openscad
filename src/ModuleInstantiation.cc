@@ -37,10 +37,10 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 	if (!inlined) stream << indent;
 	stream << modname + "(";
 	for (size_t i=0; i < this->arguments.size(); i++) {
-		const Assignment &arg = this->arguments[i];
+		const auto &arg = this->arguments[i];
 		if (i > 0) stream << ", ";
-		if (!arg.name.empty()) stream << arg.name << " = ";
-		stream << *arg.expr;
+		if (!arg->name.empty()) stream << arg->name << " = ";
+		stream << *arg->expr;
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";

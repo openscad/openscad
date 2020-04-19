@@ -266,14 +266,14 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 	int parseTill=getLineToStop(fulltext);
 	// Extract parameters for all literal assignments
 	for (auto &assignment : root_module->scope.assignments) {
-		if (!assignment.expr.get()->isLiteral()) continue; // Only consider literals
+		if (!assignment->expr.get()->isLiteral()) continue; // Only consider literals
 
 		// get location of assignment node
-		int firstLine = assignment.location().firstLine();
+		int firstLine = assignment->location().firstLine();
 		if(firstLine>=parseTill || (
-			assignment.location().fileName() != "" &&
-			assignment.location().fileName() != root_module->getFilename() &&
-			assignment.location().fileName() != root_module->getFullpath()
+			assignment->location().fileName() != "" &&
+			assignment->location().fileName() != root_module->getFilename() &&
+			assignment->location().fileName() != root_module->getFullpath()
 			)) {
 			continue;
 		}
@@ -308,6 +308,6 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 				break;
 			}
 		}
-		assignment.addAnnotations(annotationList);
+		assignment->addAnnotations(annotationList);
 	}
 }

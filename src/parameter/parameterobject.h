@@ -27,7 +27,7 @@ private:
 	void setValue(const ValuePtr defaultValue, const ValuePtr values);
 
 public:
-	ParameterObject(std::shared_ptr<Context> context, const Assignment &assignment, const ValuePtr defaultValue);
-	void applyParameter(Assignment &assignment);
+	ParameterObject(std::shared_ptr<Context> context, const shared_ptr<Assignment> &assignment, const ValuePtr defaultValue);
+	void applyParameter(const shared_ptr<Assignment> &assignment);
 	bool operator==(const ParameterObject &second);
 };
