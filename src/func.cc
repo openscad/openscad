@@ -32,8 +32,11 @@
 #include "stackcheck.h"
 #include "exceptions.h"
 #include "memory.h"
+#include "calc.h"
 #include "UserModule.h"
 #include "degree_trig.h"
+#include "Polygon2d.h"
+#include "clipper-utils.h"
 
 #include <cmath>
 #include <sstream>
@@ -924,6 +927,639 @@ ValuePtr builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr
 	return ValuePtr(result);
 }
 
+ValuePtr builtin_union_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	size_t n = evalctx->numArgs();
+	bool from_args;
+	ValuePtr v0 = evalctx->getArgValue(0);
+	std::vector<const Polygon2d*> polygons;
+	Value::VectorType vec;
+	Value::VectorType out;
+	Polygon2d *outpoly;
+
+	from_args = n!=1;
+	if (n < 1) {
+		print_argCnt_warning("union_paths", ctx, evalctx);
+		return ValuePtr::undefined;
+	}
+	if (n == 1) {
+		if (v0->type() != Value::ValueType::VECTOR) goto quit;
+		if (v0->toVector().empty()) {
+			return v0;
+		}
+		n = v0->toVector().size();
+	}
+
+	for (size_t i = 0; i < n; i++) {
+		ValuePtr pgon = from_args?
+			evalctx->getArgValue(i) :
+			v0->toVector()[i];
+		if (pgon->type() != Value::ValueType::VECTOR) goto quit;
+		if (pgon->toVector().empty()) {
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+			continue;
+		}
+		ValuePtr oline0 = pgon->toVector()[0];
+		if (oline0->type() != Value::ValueType::VECTOR) goto quit;
+		if (oline0->toVector().empty()) goto quit;
+		ValuePtr point0 = oline0->toVector()[0];
+		if (point0->type() == Value::ValueType::NUMBER) {
+			// Outline Path
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+		} else {
+			// Region/Polygon2d
+			vec.push_back(ValuePtr(pgon));
+		}
+	}
+
+	// Check arguments first.
+	for (size_t i = 0; i < vec.size(); i++) {
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->type() != Value::ValueType::VECTOR) goto quit;
+			for (size_t k = 0; k < oline->toVector().size(); k++) {
+				ValuePtr point = oline->toVector()[k];
+				if (point->type() != Value::ValueType::VECTOR) goto quit;
+				if (point->toVector().size() != 2) goto quit;
+				for (size_t l = 0; l < 2; l++) {
+					ValuePtr val = point->toVector()[l];
+					if (val->type() != Value::ValueType::NUMBER) goto quit;
+				}
+			}
+		}
+	}
+
+	for (size_t i = 0; i < vec.size(); i++) {
+		Polygon2d poly;
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->toVector().size() >= 2) {
+				Outline2d outline;
+				for (size_t k = 0; k < oline->toVector().size(); k++) {
+					ValuePtr point = oline->toVector()[k];
+					double x = point->toVector()[0]->toDouble();
+					double y = point->toVector()[1]->toDouble();
+					outline.vertices.push_back(Vector2d(x, y));
+					outline.positive = true;
+				}
+				poly.addOutline(outline);
+			}
+		}
+		Polygon2d *sanpoly = ClipperUtils::sanitize(poly);
+		polygons.push_back(sanpoly);
+	}
+
+	outpoly = ClipperUtils::apply(polygons, ClipperLib::ctUnion);
+	for (const auto& oline : outpoly->outlines()) {
+		Value::VectorType outline;
+		for (const auto& vertex : oline.vertices) {
+			Value::VectorType point;
+			point.push_back(ValuePtr(vertex[0]));
+			point.push_back(ValuePtr(vertex[1]));
+			outline.push_back(ValuePtr(point));
+		}
+		out.push_back(ValuePtr(outline));
+	}
+	delete outpoly;
+	return ValuePtr(out);
+
+quit:
+	print_argConvert_warning("union_paths", ctx, evalctx);
+	return ValuePtr::undefined;
+}
+
+
+ValuePtr builtin_difference_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	size_t n = evalctx->numArgs();
+	bool from_args;
+	ValuePtr v0 = evalctx->getArgValue(0);
+	std::vector<const Polygon2d*> polygons;
+	Value::VectorType vec;
+	Value::VectorType out;
+	Polygon2d *outpoly;
+
+	from_args = n!=1;
+	if (n < 1) {
+		print_argCnt_warning("difference_paths", ctx, evalctx);
+		return ValuePtr::undefined;
+	}
+	if (n == 1) {
+		if (v0->type() != Value::ValueType::VECTOR) goto quit;
+		if (v0->toVector().empty()) {
+			return v0;
+		}
+		n = v0->toVector().size();
+	}
+
+	for (size_t i = 0; i < n; i++) {
+		ValuePtr pgon = from_args?
+			evalctx->getArgValue(i) :
+			v0->toVector()[i];
+		if (pgon->type() != Value::ValueType::VECTOR) goto quit;
+		if (pgon->toVector().empty()) {
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+			continue;
+		}
+		ValuePtr oline0 = pgon->toVector()[0];
+		if (oline0->type() != Value::ValueType::VECTOR) goto quit;
+		if (oline0->toVector().empty()) goto quit;
+		ValuePtr point0 = oline0->toVector()[0];
+		if (point0->type() == Value::ValueType::NUMBER) {
+			// Outline Path
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+		} else {
+			// Region/Polygon2d
+			vec.push_back(ValuePtr(pgon));
+		}
+	}
+
+	// Check arguments first.
+	for (size_t i = 0; i < vec.size(); i++) {
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->type() != Value::ValueType::VECTOR) goto quit;
+			for (size_t k = 0; k < oline->toVector().size(); k++) {
+				ValuePtr point = oline->toVector()[k];
+				if (point->type() != Value::ValueType::VECTOR) goto quit;
+				if (point->toVector().size() != 2) goto quit;
+				for (size_t l = 0; l < 2; l++) {
+					ValuePtr val = point->toVector()[l];
+					if (val->type() != Value::ValueType::NUMBER) goto quit;
+				}
+			}
+		}
+	}
+
+	for (size_t i = 0; i < vec.size(); i++) {
+		Polygon2d poly;
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->toVector().size() >= 2) {
+				Outline2d outline;
+				for (size_t k = 0; k < oline->toVector().size(); k++) {
+					ValuePtr point = oline->toVector()[k];
+					double x = point->toVector()[0]->toDouble();
+					double y = point->toVector()[1]->toDouble();
+					outline.vertices.push_back(Vector2d(x, y));
+					outline.positive = true;
+				}
+				poly.addOutline(outline);
+			}
+		}
+		Polygon2d *sanpoly = ClipperUtils::sanitize(poly);
+		polygons.push_back(sanpoly);
+	}
+
+	outpoly = ClipperUtils::apply(polygons, ClipperLib::ctDifference);
+	for (const auto& oline : outpoly->outlines()) {
+		Value::VectorType outline;
+		for (const auto& vertex : oline.vertices) {
+			Value::VectorType point;
+			point.push_back(ValuePtr(vertex[0]));
+			point.push_back(ValuePtr(vertex[1]));
+			outline.push_back(ValuePtr(point));
+		}
+		out.push_back(ValuePtr(outline));
+	}
+	delete outpoly;
+	return ValuePtr(out);
+
+quit:
+	print_argConvert_warning("difference_paths", ctx, evalctx);
+	return ValuePtr::undefined;
+}
+
+
+ValuePtr builtin_intersect_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	size_t n = evalctx->numArgs();
+	bool from_args;
+	ValuePtr v0 = evalctx->getArgValue(0);
+	std::vector<const Polygon2d*> polygons;
+	Value::VectorType vec;
+	Value::VectorType out;
+	Polygon2d *outpoly;
+
+	from_args = n!=1;
+	if (n < 1) {
+		print_argCnt_warning("intersect_paths", ctx, evalctx);
+		return ValuePtr::undefined;
+	}
+	if (n == 1) {
+		if (v0->type() != Value::ValueType::VECTOR) goto quit;
+		if (v0->toVector().empty()) {
+			return v0;
+		}
+		n = v0->toVector().size();
+	}
+
+	for (size_t i = 0; i < n; i++) {
+		ValuePtr pgon = from_args?
+			evalctx->getArgValue(i) :
+			v0->toVector()[i];
+		if (pgon->type() != Value::ValueType::VECTOR) goto quit;
+		if (pgon->toVector().empty()) {
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+			continue;
+		}
+		ValuePtr oline0 = pgon->toVector()[0];
+		if (oline0->type() != Value::ValueType::VECTOR) goto quit;
+		if (oline0->toVector().empty()) goto quit;
+		ValuePtr point0 = oline0->toVector()[0];
+		if (point0->type() == Value::ValueType::NUMBER) {
+			// Outline Path
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+		} else {
+			// Region/Polygon2d
+			vec.push_back(ValuePtr(pgon));
+		}
+	}
+
+	// Check arguments first.
+	for (size_t i = 0; i < vec.size(); i++) {
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->type() != Value::ValueType::VECTOR) goto quit;
+			for (size_t k = 0; k < oline->toVector().size(); k++) {
+				ValuePtr point = oline->toVector()[k];
+				if (point->type() != Value::ValueType::VECTOR) goto quit;
+				if (point->toVector().size() != 2) goto quit;
+				for (size_t l = 0; l < 2; l++) {
+					ValuePtr val = point->toVector()[l];
+					if (val->type() != Value::ValueType::NUMBER) goto quit;
+				}
+			}
+		}
+	}
+
+	for (size_t i = 0; i < vec.size(); i++) {
+		Polygon2d poly;
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->toVector().size() >= 2) {
+				Outline2d outline;
+				for (size_t k = 0; k < oline->toVector().size(); k++) {
+					ValuePtr point = oline->toVector()[k];
+					double x = point->toVector()[0]->toDouble();
+					double y = point->toVector()[1]->toDouble();
+					outline.vertices.push_back(Vector2d(x, y));
+					outline.positive = true;
+				}
+				poly.addOutline(outline);
+			}
+		}
+		Polygon2d *sanpoly = ClipperUtils::sanitize(poly);
+		polygons.push_back(sanpoly);
+	}
+
+	outpoly = ClipperUtils::apply(polygons, ClipperLib::ctIntersection);
+	for (const auto& oline : outpoly->outlines()) {
+		Value::VectorType outline;
+		for (const auto& vertex : oline.vertices) {
+			Value::VectorType point;
+			point.push_back(ValuePtr(vertex[0]));
+			point.push_back(ValuePtr(vertex[1]));
+			outline.push_back(ValuePtr(point));
+		}
+		out.push_back(ValuePtr(outline));
+	}
+	delete outpoly;
+	return ValuePtr(out);
+
+quit:
+	print_argConvert_warning("intersect_paths", ctx, evalctx);
+	return ValuePtr::undefined;
+}
+
+
+ValuePtr builtin_minkowski_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	size_t n = evalctx->numArgs();
+	bool from_args;
+	ValuePtr v0 = evalctx->getArgValue(0);
+	std::vector<const Polygon2d*> polygons;
+	Value::VectorType vec;
+	Value::VectorType out;
+	Polygon2d *outpoly;
+
+	from_args = n!=1;
+	if (n < 1) {
+		print_argCnt_warning("minkowski_paths", ctx, evalctx);
+		return ValuePtr::undefined;
+	}
+	if (n == 1) {
+		if (v0->type() != Value::ValueType::VECTOR) goto quit;
+		if (v0->toVector().empty()) {
+			return v0;
+		}
+		n = v0->toVector().size();
+	}
+
+	for (size_t i = 0; i < n; i++) {
+		ValuePtr pgon = from_args?
+			evalctx->getArgValue(i) :
+			v0->toVector()[i];
+		if (pgon->type() != Value::ValueType::VECTOR) goto quit;
+		if (pgon->toVector().empty()) {
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+			continue;
+		}
+		ValuePtr oline0 = pgon->toVector()[0];
+		if (oline0->type() != Value::ValueType::VECTOR) goto quit;
+		if (oline0->toVector().empty()) goto quit;
+		ValuePtr point0 = oline0->toVector()[0];
+		if (point0->type() == Value::ValueType::NUMBER) {
+			// Outline Path
+			Value::VectorType vec2;
+			vec2.push_back(pgon);
+			vec.push_back(ValuePtr(vec2));
+		} else {
+			// Region/Polygon2d
+			vec.push_back(ValuePtr(pgon));
+		}
+	}
+
+	// Check arguments first.
+	for (size_t i = 0; i < vec.size(); i++) {
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->type() != Value::ValueType::VECTOR) goto quit;
+			for (size_t k = 0; k < oline->toVector().size(); k++) {
+				ValuePtr point = oline->toVector()[k];
+				if (point->type() != Value::ValueType::VECTOR) goto quit;
+				if (point->toVector().size() != 2) goto quit;
+				for (size_t l = 0; l < 2; l++) {
+					ValuePtr val = point->toVector()[l];
+					if (val->type() != Value::ValueType::NUMBER) goto quit;
+				}
+			}
+		}
+	}
+
+	for (size_t i = 0; i < vec.size(); i++) {
+		Polygon2d poly;
+		ValuePtr pgon = vec[i];
+		for (size_t j = 0; j < pgon->toVector().size(); j++) {
+			ValuePtr oline = pgon->toVector()[j];
+			if (oline->toVector().size() >= 2) {
+				Outline2d outline;
+				for (size_t k = 0; k < oline->toVector().size(); k++) {
+					ValuePtr point = oline->toVector()[k];
+					double x = point->toVector()[0]->toDouble();
+					double y = point->toVector()[1]->toDouble();
+					outline.vertices.push_back(Vector2d(x, y));
+					outline.positive = true;
+				}
+				poly.addOutline(outline);
+			}
+		}
+		Polygon2d *sanpoly = ClipperUtils::sanitize(poly);
+		polygons.push_back(sanpoly);
+	}
+
+	outpoly = ClipperUtils::applyMinkowski(polygons);
+	for (const auto& oline : outpoly->outlines()) {
+		Value::VectorType outline;
+		for (const auto& vertex : oline.vertices) {
+			Value::VectorType point;
+			point.push_back(ValuePtr(vertex[0]));
+			point.push_back(ValuePtr(vertex[1]));
+			outline.push_back(ValuePtr(point));
+		}
+		out.push_back(ValuePtr(outline));
+	}
+	delete outpoly;
+	return ValuePtr(out);
+
+quit:
+	print_argConvert_warning("minkowski_paths", ctx, evalctx);
+	return ValuePtr::undefined;
+}
+
+
+ValuePtr builtin_offset_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	AssignmentList args{Assignment("paths")};
+	AssignmentList optargs{
+		Assignment("r"),
+		Assignment("delta"),
+		Assignment("chamfer")
+	};
+
+	Value::VectorType vec;
+	Value::VectorType out;
+	Polygon2d poly;
+	Polygon2d *sanpoly;
+	Polygon2d *outpoly;
+	double n;
+	double arc_tolerance;
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+
+	const auto paths = c->lookup_variable("paths", true);
+	const auto r = c->lookup_variable("r", true);
+	const auto delta = c->lookup_variable("delta", true);
+	const auto chamfer = c->lookup_variable("chamfer", true);
+	const auto fn = c->lookup_variable("$fn", true);
+	const auto fs = c->lookup_variable("$fs", true);
+	const auto fa = c->lookup_variable("$fa", true);
+	//PRINTB("%s", STR("DEBUG: paths = " << *paths));
+
+	double offset_delta = 0.0;
+	auto join_type = ClipperLib::jtRound;
+	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
+		r->getDouble(offset_delta);
+	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
+		delta->getDouble(offset_delta);
+		join_type = ClipperLib::jtMiter;
+		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+			join_type = ClipperLib::jtSquare;
+		}
+	}
+
+	if (!paths->isDefinedAs(Value::ValueType::VECTOR)) goto quit;
+	if (paths->toVector().empty()) {
+		return ValuePtr(paths);
+	}
+
+	for (size_t i = 0; i < paths->toVector().size(); i++) {
+		ValuePtr path = paths->toVector()[i];
+		if (path->type() != Value::ValueType::VECTOR) goto quit;
+		if (path->toVector().empty()) goto quit;
+		ValuePtr point0 = path->toVector()[0];
+		if (point0->type() == Value::ValueType::NUMBER) {
+			// paths var is set to a path
+			vec.push_back(ValuePtr(paths));
+			break;
+		} else {
+			// paths var is set to paths
+			vec.push_back(ValuePtr(path));
+		}
+	}
+
+	// Check arguments first.
+	for (size_t j = 0; j < vec.size(); j++) {
+		ValuePtr oline = vec[j];
+		if (oline->type() != Value::ValueType::VECTOR) goto quit;
+		for (size_t k = 0; k < oline->toVector().size(); k++) {
+			ValuePtr point = oline->toVector()[k];
+			if (point->type() != Value::ValueType::VECTOR) goto quit;
+			if (point->toVector().size() != 2) goto quit;
+			for (size_t l = 0; l < 2; l++) {
+				ValuePtr val = point->toVector()[l];
+				if (val->type() != Value::ValueType::NUMBER) goto quit;
+			}
+		}
+	}
+
+	for (size_t j = 0; j < vec.size(); j++) {
+		ValuePtr oline = vec[j];
+		if (oline->toVector().size() >= 2) {
+			Outline2d outline;
+			for (size_t k = 0; k < oline->toVector().size(); k++) {
+				ValuePtr point = oline->toVector()[k];
+				double x = point->toVector()[0]->toDouble();
+				double y = point->toVector()[1]->toDouble();
+				outline.vertices.push_back(Vector2d(x, y));
+				outline.positive = true;
+			}
+			poly.addOutline(outline);
+		}
+	}
+	sanpoly = ClipperUtils::sanitize(poly);
+
+	n = Calc::get_fragments_from_r(std::abs(offset_delta), fn, fs, fa);
+	arc_tolerance = std::abs(offset_delta) * (1 - cos_degrees(180 / n));
+	outpoly = ClipperUtils::applyOffset(*sanpoly, offset_delta, join_type, 1000000.0, arc_tolerance);
+	delete sanpoly;
+
+	for (const auto& oline : outpoly->outlines()) {
+		Value::VectorType outline;
+		for (const auto& vertex : oline.vertices) {
+			Value::VectorType point;
+			point.push_back(ValuePtr(vertex[0]));
+			point.push_back(ValuePtr(vertex[1]));
+			outline.push_back(ValuePtr(point));
+		}
+		out.push_back(ValuePtr(outline));
+	}
+	delete outpoly;
+	return ValuePtr(out);
+
+quit:
+	print_argConvert_warning("offset_paths", ctx, evalctx);
+	return ValuePtr::undefined;
+}
+
+
+ValuePtr builtin_point_in_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	// Returns -1 if point is on region perimeter, 0 if outside region, 1 if inside region.
+	AssignmentList args{Assignment("paths"), Assignment("point")};
+	AssignmentList optargs{};
+
+	Value::VectorType vec;
+	Value::VectorType out;
+	Polygon2d poly;
+	Polygon2d *sanpoly;
+	int result;
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+
+	const auto paths = c->lookup_variable("paths", true);
+	const auto point = c->lookup_variable("point", true);
+
+	if (!point->isDefinedAs(Value::ValueType::VECTOR)) goto quit;
+	if (point->toVector().size() != 2) goto quit;
+	for (size_t i = 0; i < point->toVector().size(); i++) {
+		ValuePtr val = point->toVector()[i];
+		if (!val->isDefinedAs(Value::ValueType::NUMBER)) goto quit;
+	}
+
+	if (!paths->isDefinedAs(Value::ValueType::VECTOR)) goto quit;
+	if (paths->toVector().empty()) {
+		return ValuePtr(paths);
+	}
+
+	for (size_t i = 0; i < paths->toVector().size(); i++) {
+		ValuePtr path = paths->toVector()[i];
+		if (path->type() != Value::ValueType::VECTOR) goto quit;
+		if (path->toVector().empty()) goto quit;
+		ValuePtr point0 = path->toVector()[0];
+		if (point0->type() == Value::ValueType::NUMBER) {
+			// paths var is set to a path
+			vec.push_back(ValuePtr(paths));
+			break;
+		} else {
+			// paths var is set to paths
+			vec.push_back(ValuePtr(path));
+		}
+	}
+
+	// Check paths argument.
+	for (size_t j = 0; j < vec.size(); j++) {
+		ValuePtr oline = vec[j];
+		if (oline->type() != Value::ValueType::VECTOR) goto quit;
+		for (size_t k = 0; k < oline->toVector().size(); k++) {
+			ValuePtr point = oline->toVector()[k];
+			if (point->type() != Value::ValueType::VECTOR) goto quit;
+			if (point->toVector().size() != 2) goto quit;
+			for (size_t l = 0; l < 2; l++) {
+				ValuePtr val = point->toVector()[l];
+				if (val->type() != Value::ValueType::NUMBER) goto quit;
+			}
+		}
+	}
+
+	for (size_t j = 0; j < vec.size(); j++) {
+		ValuePtr oline = vec[j];
+		if (oline->toVector().size() >= 2) {
+			Outline2d outline;
+			for (size_t k = 0; k < oline->toVector().size(); k++) {
+				ValuePtr point = oline->toVector()[k];
+				double x = point->toVector()[0]->toDouble();
+				double y = point->toVector()[1]->toDouble();
+				outline.vertices.push_back(Vector2d(x, y));
+				outline.positive = true;
+			}
+			poly.addOutline(outline);
+		}
+	}
+	sanpoly = ClipperUtils::sanitize(poly);
+
+	result = ClipperUtils::pointInRegion(*sanpoly, point->toVector()[0]->toDouble(), point->toVector()[1]->toDouble());
+	delete sanpoly;
+
+	return ValuePtr((double)result);
+
+quit:
+	print_argConvert_warning("offset_paths", ctx, evalctx);
+	return ValuePtr::undefined;
+}
+
+
 ValuePtr builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() == 1) {
@@ -953,6 +1589,21 @@ ValuePtr builtin_is_list(const std::shared_ptr<Context> ctx, const std::shared_p
 		}
 	}else{
 		print_argCnt_warning("is_list", ctx, evalctx);
+	}
+	return ValuePtr::undefined;
+}
+
+ValuePtr builtin_is_range(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		ValuePtr v = evalctx->getArgValue(0);
+		if (v->type() == Value::ValueType::RANGE){
+			return ValuePtr(true);
+		}else{
+			return ValuePtr(false);
+		}
+	}else{
+		print_argCnt_warning("is_range", ctx, evalctx);
 	}
 	return ValuePtr::undefined;
 }
@@ -1181,6 +1832,50 @@ void register_builtin_functions()
 					"parent_module(number) -> string",
 				});
 
+	Builtins::init("union_paths", new BuiltinFunction(&builtin_union_paths),
+				{
+					"union_paths(path, path, ...) -> pathlist",
+					"union_paths(pathlist, pathlist, ...) -> pathlist",
+					"union_paths(list_of_paths) -> pathlist",
+					"union_paths(list_of_pathlists) -> pathlist",
+				});
+
+	Builtins::init("difference_paths", new BuiltinFunction(&builtin_difference_paths),
+				{
+					"difference_paths(path, path, ...) -> pathlist",
+					"difference_paths(pathlist, pathlist, ...) -> pathlist",
+					"difference_paths(list_of_paths) -> pathlist",
+					"difference_paths(list_of_pathlists) -> pathlist",
+				});
+
+	Builtins::init("intersect_paths", new BuiltinFunction(&builtin_intersect_paths),
+				{
+					"intersect_paths(path, path, ...) -> pathlist",
+					"intersect_paths(pathlist, pathlist, ...) -> pathlist",
+					"intersect_paths(list_of_paths) -> pathlist",
+					"intersect_paths(list_of_pathlists) -> pathlist",
+				});
+
+	Builtins::init("minkowski_paths", new BuiltinFunction(&builtin_minkowski_paths),
+				{
+					"minkowski_paths(path, path, ...) -> pathlist",
+					"minkowski_paths(pathlist, pathlist, ...) -> pathlist",
+					"minkowski_paths(list_of_paths) -> pathlist",
+					"minkowski_paths(list_of_pathlists) -> pathlist",
+				});
+
+	Builtins::init("offset_paths", new BuiltinFunction(&builtin_offset_paths),
+				{
+					"offset_paths(path, r|delta, [chamfer]) -> pathlist",
+					"offset_paths(pathlist, r|delta, [chamfer]) -> pathlist",
+				});
+
+	Builtins::init("point_in_paths", new BuiltinFunction(&builtin_point_in_paths),
+				{
+					"point_in_paths(path, point) -> int",
+					"point_in_paths(pathlist, point) -> int",
+				});
+
 	Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
 				{
 					"is_undef(arg) -> boolean",
@@ -1189,6 +1884,11 @@ void register_builtin_functions()
 	Builtins::init("is_list", new BuiltinFunction(&builtin_is_list),
 				{
 					"is_list(arg) -> boolean",
+				});
+
+	Builtins::init("is_range", new BuiltinFunction(&builtin_is_range),
+				{
+					"is_range(arg) -> boolean",
 				});
 
 	Builtins::init("is_num", new BuiltinFunction(&builtin_is_num),

@@ -91,6 +91,19 @@ namespace ClipperUtils {
 		return result;
 	}
 
+	int pointInRegion(const Polygon2d &polygon, double x, double y)
+	{
+		ClipperLib::IntPoint pt(x*CLIPPER_SCALE, y*CLIPPER_SCALE);
+		int result = 0;
+		for (const auto& oline : polygon.outlines()) {
+			int res = ClipperLib::PointInPolygon(pt, fromOutline2d(oline,true));
+			if (res < -1) return -1;
+			if (res > 0) result = 1 - result;
+		}
+		return result;
+	}
+
+
 	/*!
 		Apply the clipper operator to the given paths.
 
