@@ -34,6 +34,7 @@
 #include "memory.h"
 #include "calc.h"
 #include "UserModule.h"
+#include "Assignment.h"
 #include "degree_trig.h"
 #include "Polygon2d.h"
 #include "clipper-utils.h"
@@ -1361,11 +1362,11 @@ quit:
 
 ValuePtr builtin_offset_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
-	AssignmentList args{Assignment("paths")};
+	AssignmentList args{assignment("paths")};
 	AssignmentList optargs{
-		Assignment("r"),
-		Assignment("delta"),
-		Assignment("chamfer")
+		assignment("r"),
+		assignment("delta"),
+		assignment("chamfer")
 	};
 
 	Value::VectorType vec;
@@ -1477,7 +1478,7 @@ quit:
 ValuePtr builtin_point_in_paths(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	// Returns -1 if point is on region perimeter, 0 if outside region, 1 if inside region.
-	AssignmentList args{Assignment("paths"), Assignment("point")};
+	AssignmentList args{assignment("paths"), assignment("point")};
 	AssignmentList optargs{};
 
 	Value::VectorType vec;
