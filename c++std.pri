@@ -26,7 +26,7 @@ macx {
 }
 
 c++std {
-  QMAKE_CXXFLAGS += -std=c++14
+  CONFIG += c++14 strict_c++
   message("Using C++14")
 
   *clang*: {
