@@ -36,17 +36,19 @@ class OpenCSGPrim : public OpenCSG::Primitive
 {
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
-			OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE) { }
+	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity, const OpenCSGRenderer &renderer) :
+			OpenCSG::Primitive(operation, convexity), renderer(renderer), csgmode(Renderer::CSGMODE_NONE) { }
 	shared_ptr<const Geometry> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
 	void render() override {
 		glPushMatrix();
 		glMultMatrixd(m.data());
-		Renderer::render_surface(geom, csgmode, m);
+		renderer.render_surface(geom, csgmode, m);
 		glPopMatrix();
 	}
+private:
+	const OpenCSGRenderer &renderer;
 };
 
 #endif
@@ -79,7 +81,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 // Primitive for rendering using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
-	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity());
+	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
 	prim->geom = csgobj.leaf->geom;
 	prim->m = csgobj.leaf->matrix;
     prim->csgmode = get_csgmode(highlight_mode, background_mode, type);
