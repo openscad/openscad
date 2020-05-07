@@ -16,6 +16,7 @@ class Renderer
 public:
 	Renderer();
 	virtual ~Renderer() {}
+	virtual void resize(int /* w */, int /* h */) {};
 	virtual void draw(bool showfaces, bool showedges) const = 0;
 	virtual BoundingBox getBoundingBox() const = 0;
 	

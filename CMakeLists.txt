@@ -563,6 +563,7 @@ else()
     src/CGALRenderer.cc
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
+    src/VBORenderer.cc
     src/render.cc
     src/OpenCSGRenderer.cc)
 endif()

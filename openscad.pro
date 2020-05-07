@@ -273,6 +273,7 @@ HEADERS += src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
+           src/VBORenderer.h \
            src/settings.h \
            src/rendersettings.h \
            src/colormap.h \
@@ -512,6 +513,7 @@ SOURCES += \
            src/import_amf.cc \
            src/import_3mf.cc \
            src/renderer.cc \
+           src/VBORenderer.cc \
            src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
            src/svg.cc \

@@ -43,6 +43,7 @@ GLView::GLView()
 void GLView::setRenderer(Renderer* r)
 {
   renderer = r;
+	if (this->renderer) { this->renderer->resize(cam.pixel_width,cam.pixel_height); }
 }
 
 /* update the color schemes of the Renderer attached to this GLView
@@ -81,6 +82,7 @@ void GLView::resizeGL(int w, int h)
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
   aspectratio = 1.0*w/h;
+	if (this->renderer) { this->renderer->resize(cam.pixel_width,cam.pixel_height); }
 }
 
 void GLView::setCamera(const Camera &cam)
@@ -809,4 +811,3 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		}
 	}
 }
-
