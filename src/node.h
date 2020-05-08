@@ -62,6 +62,8 @@ public:
 	int idx; // Node index (unique per tree)
 
     const Location location;
+
+    const AbstractNode *getNodeByID(int idx) const;
 };
 
 class AbstractIntersectionNode : public AbstractNode

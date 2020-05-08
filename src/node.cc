@@ -54,6 +54,18 @@ std::string AbstractNode::toString() const
 	return this->name() + "()";
 }
 
+const AbstractNode *AbstractNode::getNodeByID(int idx) const
+{
+    if (this->idx == idx) { return this; }
+    for (const auto &node : this->children) {
+        auto res = node->getNodeByID(idx);
+        if (res) {
+            return res;
+        }
+    }
+    return nullptr;
+}
+
 std::string GroupNode::name() const
 {
 	return "group";
