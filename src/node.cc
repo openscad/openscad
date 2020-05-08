@@ -24,6 +24,7 @@
  *
  */
 
+#include "evalcontext.h"
 #include "node.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
@@ -35,7 +36,11 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), progress_mark(0), idx(idx_counter++)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) :
+    modinst(mi),
+    progress_mark(0),
+    idx(idx_counter++),
+    location((ctx)?ctx->loc:Location(0, 0, 0, 0, nullptr))
 {
 }
 

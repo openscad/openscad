@@ -12,7 +12,9 @@ extern void *progress_report_vp;
 void progress_report_prep(class AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
-/*!  
+class EvalContext;
+
+/*!
 
 	The node tree is the result of evaluation of a module instantiation
 	tree.  Both the module tree and the node tree are regenerated from
@@ -28,19 +30,19 @@ class AbstractNode : public BaseVisitable
 	static size_t idx_counter;   // Node instantiation index
 public:
 	VISITABLE();
-	AbstractNode(const class ModuleInstantiation *mi);
+	AbstractNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx);
 	~AbstractNode();
 	virtual std::string toString() const;
-	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be 
+	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
 	virtual std::string name() const = 0;
   /*! Should return a Geometry instance describing the node. Returns nullptr if smth.
-		goes wrong. This is only called by PolySetEvaluator, to make sure polysets 
+		goes wrong. This is only called by PolySetEvaluator, to make sure polysets
 		are inserted into the cache*/
 	virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return nullptr; }
 
-	const std::vector<AbstractNode*> &getChildren() const { 
+	const std::vector<AbstractNode*> &getChildren() const {
 		return this->children;
 	}
 	size_t index() const { return this->idx; }
@@ -58,13 +60,15 @@ public:
 	void progress_report() const;
 
 	int idx; // Node index (unique per tree)
+
+    const Location location;
 };
 
 class AbstractIntersectionNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
+	AbstractIntersectionNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { };
 	~AbstractIntersectionNode() { };
 	std::string toString() const override;
 	std::string name() const override;
@@ -74,7 +78,7 @@ class AbstractPolyNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
+	AbstractPolyNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { };
 	~AbstractPolyNode() { };
 
 	enum class render_mode_e {
@@ -91,7 +95,7 @@ class ListNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	ListNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
+	ListNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { }
 	~ListNode() { }
 	std::string name() const override;
 };
@@ -104,7 +108,7 @@ class GroupNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	GroupNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
+	GroupNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { }
 	~GroupNode() { }
 	std::string name() const override;
 };
@@ -117,7 +121,7 @@ class RootNode : public GroupNode
 public:
 	VISITABLE();
 
-	RootNode(const class ModuleInstantiation *mi) : GroupNode(mi) { }
+	RootNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : GroupNode(mi, ctx) { }
 	~RootNode() { }
 	std::string name() const override;
 };
@@ -126,7 +130,7 @@ class LeafNode : public AbstractPolyNode
 {
 public:
 	VISITABLE();
-	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { };
+	LeafNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx) { };
 	~LeafNode() { };
 	virtual const class Geometry *createGeometry() const = 0;
 };

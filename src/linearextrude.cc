@@ -53,7 +53,7 @@ public:
 
 AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new LinearExtrudeNode(inst);
+	auto node = new LinearExtrudeNode(inst, evalctx);
 
 	AssignmentList args{assignment("file"), assignment("layer"), assignment("height"), assignment("origin"), assignment("scale"), assignment("center"), assignment("twist"), assignment("slices")};
 	AssignmentList optargs{assignment("convexity")};
@@ -152,7 +152,7 @@ std::string LinearExtrudeNode::toString() const
 	std::ostringstream stream;
 
 	stream << this->name() << "(";
-	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+	if (!this->filename.empty()) { // Ignore deprecated parameters if empty
 		fs::path path((std::string)this->filename);
 		stream <<
 			"file = " << this->filename << ", "
@@ -165,7 +165,7 @@ std::string LinearExtrudeNode::toString() const
 		"height = " << std::dec << this->height << ", "
 		"center = " << (this->center?"true":"false") << ", "
 		"convexity = " << this->convexity;
-	
+
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist;
 	}
@@ -174,7 +174,7 @@ std::string LinearExtrudeNode::toString() const
 	}
 	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-	
+
 	return stream.str();
 }
 
