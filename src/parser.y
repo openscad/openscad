@@ -68,6 +68,7 @@ int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
+bool lexer_is_main_file();
 std::shared_ptr<fs::path> sourcefile(void);
 void lexer_set_parser_sourcefile(const fs::path& path);
 int lexerlex_destroy(void);
@@ -81,6 +82,7 @@ extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
 static fs::path mainFilePath;
+static bool parsingMainFile;
 static std::string sourcefile_folder;
 
 bool fileEnded=false;
@@ -173,7 +175,7 @@ input
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2), LOC(@2));
+              rootmodule->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
               free($2);
             }
         | input statement
@@ -752,10 +754,13 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 
 bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
-  fs::path parser_sourcefile = fs::path(fs::absolute(fs::path(filename)).generic_string());
+  fs::path filepath = fs::absolute(fs::path(filename));
+  mainFilePath = fs::absolute(fs::path(mainFile));
+  parsingMainFile = mainFilePath == filepath;
+
+  fs::path parser_sourcefile = fs::path(filepath).generic_string();
   sourcefile_folder = parser_sourcefile.parent_path().string();
   lexer_set_parser_sourcefile(parser_sourcefile);
-  mainFilePath = fs::absolute(fs::path(mainFile));
 
   lexerin = NULL;
   parser_error_pos = -1;
