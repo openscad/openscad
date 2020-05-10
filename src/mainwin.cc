@@ -48,11 +48,11 @@
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
-#ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
+#ifdef ENABLE_OPENCSG
 #include <opencsg.h>
-#endif
+#endif // ENABLE_OPENCSG
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
@@ -1174,16 +1174,12 @@ void MainWindow::compileCSG()
 #else
 			// FIXME: Will we support this?
 #endif
-#ifdef ENABLE_OPENCSG
 			CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
-#endif
 
 		progress_report_prep(this->root_node, report_func, this);
 		try {
-#ifdef ENABLE_OPENCSG
 			this->processEvents();
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
-#endif
 			GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 			CGALCache::instance()->print();
