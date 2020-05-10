@@ -393,13 +393,13 @@ void VBORenderer::create_surface(shared_ptr<const Geometry> geom, std::vector<Ve
 					create_triangle(render_buffer, color, p0, p2, p1, false, true, false, mirrored);
 				}
 			}
-
-			vertex_set.draw_size = render_buffer.size() - render_buffer_start_size;
-			vertex_set.start_offset = 0;
-			if (render_buffer_start_size) {
-				vertex_set.start_offset = prev_start_offset + prev_draw_size*sizeof(Vertex);
-			}
 		}
+
+    vertex_set.draw_size = render_buffer.size() - render_buffer_start_size;
+    vertex_set.start_offset = 0;
+    if (render_buffer_start_size) {
+      vertex_set.start_offset = prev_start_offset + prev_draw_size*sizeof(Vertex);
+    }
 	}
 	else {
 		assert(false && "Cannot render object with no dimension");
