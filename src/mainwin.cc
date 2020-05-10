@@ -437,10 +437,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
-					this, SLOT(openCSGSettingsChanged()));
-	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
-					this, SLOT(setColorScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),this, SLOT(openCSGSettingsChanged()));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),this, SLOT(setColorScheme(const QString&)));
 
 	Preferences::inst()->apply_win(); // not sure if to be commented, checked must not be commented(done some changes in apply())
 
@@ -470,9 +468,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
-	ShortCutConfigurator scConfig;
-	scConfig.apply(this->viewerToolBar->actions());
-	scConfig.apply(this->editortoolbar->actions());
+	setShortcutsforMenuActions();
 
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
@@ -616,6 +612,14 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
 		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
+}
+
+
+void MainWindow::setShortcutsforMenuActions()
+{
+	ShortCutConfigurator scConfig;
+	QList<QAction *>allActions = this->findChildren<QAction *>();
+	scConfig.apply(allActions);
 }
 
 /**

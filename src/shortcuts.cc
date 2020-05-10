@@ -38,44 +38,46 @@ void ShortCutConfigurator::apply(const QList<QAction *> &actions)
     {
             
         QString actionName = action->objectName();
-        QList<QKeySequence> shortcutsListFinal;
-
-        //check if the actions new shortcut exists in the file or not
-        //This would allow users to remove any default shortcut, by just leaving the key's value for an action name as empty.
-        QJsonObject::const_iterator i = object.find(actionName);
-        if(i != object.end() && i.key() == actionName)
+        if(!actionName.isEmpty())
         {
-            QJsonValue val = object.value(actionName);
-            //check if it is an array or not
-            if(!val.isArray())
-            {
-                QString singleShortcut = val.toString().trimmed();
-                action->setShortcut(QKeySequence(singleShortcut));
-            }
-            else
-            {
+            QList<QKeySequence> shortcutsListFinal;
 
-            //create a key sequence
-            QJsonArray array = val.toArray();
-            foreach (const QJsonValue & v, array)
+            //check if the actions new shortcut exists in the file or not
+            //This would allow users to remove any default shortcut, by just leaving the key's value for an action name as empty.
+            QJsonObject::const_iterator i = object.find(actionName);
+            if(i != object.end() && i.key() == actionName)
             {
-                QString shortcut = v.toString();
-                if(shortcut.isEmpty()) continue;
-                const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
-                if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
+                QJsonValue val = object.value(actionName);
+                //check if it is an array or not
+                if(!val.isArray())
                 {
-                    if(shortCut.isEmpty()) continue;
-                    shortcutsListFinal.append(shortCut);
-		        }
-                else {
-                shortcutsListFinal.append(shortcut);
+                    QString singleShortcut = val.toString().trimmed();
+                    action->setShortcut(QKeySequence(singleShortcut));
                 }
+                else
+                {
+
+                //create a key sequence
+                QJsonArray array = val.toArray();
+                foreach (const QJsonValue & v, array)
+                {
+                    QString shortcut = v.toString();
+                    if(shortcut.isEmpty()) continue;
+                    const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+                    if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
+                    {
+                        if(shortCut.isEmpty()) continue;
+                        shortcutsListFinal.append(shortCut);
+                    }
+                    else {
+                    shortcutsListFinal.append(shortcut);
+                    }
+                }
+
+                action->setShortcuts(shortcutsListFinal);
+                }   
             }
-
-            action->setShortcuts(shortcutsListFinal);
-            }   
         }
-
     }
 
 }
