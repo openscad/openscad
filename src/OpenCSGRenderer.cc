@@ -218,6 +218,7 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 
 OpenCSGRenderer::~OpenCSGRenderer()
 {
+  if (product_vertex_sets) {
 	for (auto &vertex_sets : *product_vertex_sets) {
 			glDeleteBuffers(1,&vertex_sets->first);
 			for (auto &vertex_set : *vertex_sets->second) {
@@ -228,6 +229,7 @@ OpenCSGRenderer::~OpenCSGRenderer()
 	}
 	product_vertex_sets->clear();
 	delete product_vertex_sets;
+}
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
@@ -253,12 +255,19 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 // Primitive for drawing using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const VertexSet &vertex_set, const GLuint vbo) const
 {
-	return new OpenCSGPrim(vertex_set.operation, vertex_set.convexity, *this, vertex_set, vbo);
+  if (vertex_set.operation == OpenSCADOperator::INTERSECTION)
+    return new OpenCSGPrim(OpenCSG::Intersection, vertex_set.convexity, *this, vertex_set, vbo);
+
+  if (vertex_set.operation == OpenSCADOperator::DIFFERENCE)
+    return new OpenCSGPrim(OpenCSG::Subtraction, vertex_set.convexity, *this, vertex_set, vbo);
+
+  return nullptr;
 }
 
-void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo,
+void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint * /*shaderinfo*/,
 										bool highlight_mode, bool background_mode) const
 {
+#ifdef ENABLE_OPENCSG
 	std::vector<Vertex> *render_buffer = new std::vector<Vertex>();
 	std::vector<VertexSet *> *vertex_sets = 0;
 	VertexSet *prev = 0;
@@ -276,7 +285,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			for(const auto &csgobj : product.intersections) {
 				if (csgobj.leaf->geom && vertex_sets) {
 					prev = (vertex_sets->empty() ? 0 : vertex_sets->back());
-					vertex_set = new VertexSet({true, OpenCSG::Intersection, csgobj.leaf->geom->getConvexity(), 0, 0, false, false});
+					vertex_set = new VertexSet({true, OpenSCADOperator::INTERSECTION, csgobj.leaf->geom->getConvexity(), 0, 0, false, false});
 					GLintptr prev_start_offset = 0;
 					GLsizei prev_draw_size = 0;
 					if (prev) {
@@ -322,7 +331,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			for(const auto &csgobj : product.subtractions) {
 				if (csgobj.leaf->geom && vertex_sets) {
 					prev = (vertex_sets->empty() ? 0 : vertex_sets->back());
-					vertex_set = new VertexSet({true, OpenCSG::Subtraction, csgobj.leaf->geom->getConvexity(), 0, 0, false, false});
+					vertex_set = new VertexSet({true, OpenSCADOperator::DIFFERENCE, csgobj.leaf->geom->getConvexity(), 0, 0, false, false});
 					GLintptr prev_start_offset = 0;
 					GLsizei prev_draw_size = 0;
 					if (prev) {
@@ -369,6 +378,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		}
 	}
 	delete render_buffer;
+#endif // ENABLE_OPENCSG
 }
 
 void OpenCSGRenderer::drawCSGProducts(bool use_edge_shader) const
@@ -380,7 +390,10 @@ void OpenCSGRenderer::drawCSGProducts(bool use_edge_shader) const
 		if (vertex_sets) {
 			for(const auto &vertex_set : *vertex_sets->second) {
 				if (vertex_set->is_opencsg_vertex_set) {
-					primitives.push_back(createCSGPrimitive(*vertex_set, vertex_sets->first));
+          OpenCSG::Primitive *primative = nullptr;
+          if ((primative = createCSGPrimitive(*vertex_set, vertex_sets->first)) != nullptr) {
+					  primitives.push_back(primative);
+          }
 				}
 			}
 

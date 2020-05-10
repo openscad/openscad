@@ -14,7 +14,7 @@ public:
 	typedef struct _VertexSet
 	{
 		bool is_opencsg_vertex_set;
-		OpenCSG::Operation operation;
+		OpenSCADOperator operation;
 		unsigned int convexity;
 		GLsizei draw_size;
 		GLintptr start_offset;
