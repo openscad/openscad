@@ -113,7 +113,7 @@ jobs:
               export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
               MACPORTS_CACHE_SHA512=8a50e1410079bcc8519017c40709dfcae77720daffdbfa217cf131da5c119386e052cf2b0afcd114b0c535c45f0dae4f227c3f60f47fe5bfcdb1f0d0436719a6
-              LIBRARIES_CACHE_SHA512=b024093094bfffb14ca3afd1c36967a2015ef79ff409685eca75ac5e2546b7ba3a899de1ac7e3e34ee961b1eb6f77d01aef8b87df752a150262cbc2bdc6ccd78
+              LIBRARIES_CACHE_SHA512=e4b5e48bb1a78970ab80ae4d134ea0bccbf5c31c91199e3ad5feed7e994ae81a8dce93de3b27463a9a92d6deb57abb160af8da20c38a0883ea3f1c9da851b3f9
               CI_BASEDIR=/Users/distiller/project
               export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
               MACPORTS=MacPorts-2.5.4

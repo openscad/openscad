@@ -286,6 +286,7 @@ HEADERS += src/version_check.h \
            src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
+           src/initConfig.h \
            src/Preferences.h \
            src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
@@ -481,6 +482,7 @@ SOURCES += \
            src/settings.cc \
            src/rendersettings.cc \
            src/highlighter.cc \
+           src/initConfig.cc \
            src/Preferences.cc \
            src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
@@ -686,7 +688,7 @@ target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # Run translation update scripts as last step after linking the target
-QMAKE_POST_LINK += "$$PWD/scripts/translation-make.sh"
+QMAKE_POST_LINK += "'$$PWD/scripts/translation-make.sh'"
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)
