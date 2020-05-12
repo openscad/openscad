@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>512</width>
-             <height>793</height>
+             <width>538</width>
+             <height>766</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -179,7 +179,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Lucida Grande</family>
+                    <family>DejaVu Sans</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -681,15 +681,15 @@
                </item>
                <item row="1" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_30">
-                  <item>
-                    <widget class="QLabel" name="labelCharacterThreshold">
-                     <property name="text">
-                      <string>Character Threshold</string>
-                     </property>
-                    </widget>
+                 <item>
+                  <widget class="QLabel" name="labelCharacterThreshold">
+                   <property name="text">
+                    <string>Character Threshold</string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="lineEditCharacterThreshold" />
+                  <widget class="QLineEdit" name="lineEditCharacterThreshold"/>
                  </item>
                 </layout>
                </item>
@@ -1509,7 +1509,7 @@
              <x>0</x>
              <y>0</y>
              <width>602</width>
-             <height>891</height>
+             <height>747</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1863,6 +1863,39 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageShortcuts">
+       <layout class="QGridLayout" name="gridLayout_15">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_InputAxis">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="ShortcutConfigurator" name="shortcutconfigurator">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>98</width>
+             <height>28</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1900,6 +1933,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
+   <addaction name="prefsActionShortcuts"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -2006,6 +2040,11 @@
     <string>3D Printing Services</string>
    </property>
   </action>
+  <action name="prefsActionShortcuts">
+   <property name="text">
+    <string>Shortcuts</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -2018,6 +2057,12 @@
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
    <header>input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ShortcutConfigurator</class>
+   <extends>QWidget</extends>
+   <header>ShortcutConfigurator.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
