@@ -234,14 +234,14 @@ FORMS   += src/MainWindow.ui \
            src/FontListDialog.ui \
            src/PrintInitDialog.ui \
            src/ProgressWidget.ui \
+           src/ShortcutConfigurator.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
            src/Console.ui \
            src/parameter/ParameterWidget.ui \
            src/parameter/ParameterEntryWidget.ui \
            src/input/ButtonConfigWidget.ui \
-           src/input/AxisConfigWidget.ui \
-           src/shortcuts.ui
+           src/input/AxisConfigWidget.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 
