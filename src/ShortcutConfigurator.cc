@@ -4,24 +4,24 @@
 #include <QJsonValue>
 #include <QFile>
 #include <QVariant>
-#include "shortcuts.h"
+#include "ShortcutConfigurator.h"
 #include "PlatformUtils.h"
 #include "printutils.h"
 #include "qtgettext.h"
 
-ShortCutConfigurator::ShortCutConfigurator(QWidget *parent): QWidget(parent)
+ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
 
 setupUi(this);
 
 }
 
-ShortCutConfigurator::~ShortCutConfigurator()
+ShortcutConfigurator::~ShortcutConfigurator()
 {
     
 }
 
-void ShortCutConfigurator::apply(const QList<QAction *> &actions)
+void ShortcutConfigurator::apply(const QList<QAction *> &actions)
 {
 	std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
 

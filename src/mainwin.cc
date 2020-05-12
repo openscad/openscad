@@ -94,7 +94,7 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
-#include "shortcuts.h"
+#include "ShortcutConfigurator.h"
 
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
@@ -625,7 +625,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 
 void MainWindow::setShortcutsforMenuActions()
 {
-	ShortCutConfigurator scConfig;
+	ShortcutConfigurator scConfig;
 	QList<QAction *>allActions = this->findChildren<QAction *>();
 	scConfig.apply(allActions);
 }

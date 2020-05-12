@@ -6,11 +6,11 @@
 #include <QList>
 #include <QJsonValue>
 
-class ShortCutConfigurator : public QWidget, public Ui::Shortcut
+class ShortcutConfigurator : public QWidget, public Ui::Shortcut
 {
  Q_OBJECT 
 public:
-    ShortCutConfigurator(QWidget *parent = 0);
-    virtual ~ShortCutConfigurator();
+    ShortcutConfigurator(QWidget *parent = 0);
+    virtual ~ShortcutConfigurator();
     void apply(const QList<QAction *> &actions);
 };
