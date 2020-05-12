@@ -240,7 +240,8 @@ FORMS   += src/MainWindow.ui \
            src/parameter/ParameterWidget.ui \
            src/parameter/ParameterEntryWidget.ui \
            src/input/ButtonConfigWidget.ui \
-           src/input/AxisConfigWidget.ui
+           src/input/AxisConfigWidget.ui \
+           src/shortcuts.ui
 
 # AST nodes
 FLEXSOURCES += src/lexer.l 

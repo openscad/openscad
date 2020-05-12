@@ -9,11 +9,17 @@
 #include "printutils.h"
 #include "qtgettext.h"
 
-ShortCutConfigurator::ShortCutConfigurator(){
+ShortCutConfigurator::ShortCutConfigurator(QWidget *parent): QWidget(parent)
+{
 
+setupUi(this);
 
 }
 
+ShortCutConfigurator::~ShortCutConfigurator()
+{
+    
+}
 
 void ShortCutConfigurator::apply(const QList<QAction *> &actions)
 {
