@@ -9,6 +9,7 @@
 #include "printutils.h"
 #include "qtgettext.h"
 #include <QAbstractItemModel>
+#include <QHeaderView>
 
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
@@ -26,43 +27,42 @@ void ShortcutConfigurator::collectActions(const QList<QAction *> &actions)
     actionList = actions;
 }
 
-QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent)
+QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
 {
-        
-
-    const int numRows = 10;
-    const int numColumns = 10;
-
+    const int numRows = actions.size();
+    const int numColumns = 3;
+    int row = 0;
     QStandardItemModel* model = new QStandardItemModel(numRows, numColumns);
-    for (int row = 0; row < numRows; ++row)
+    QList<QString> labels = QList<QString>() << QString("Action") << QString("Shortcut")<<QString("Alternative"); 
+    model->setHorizontalHeaderLabels(labels);
+    for (auto &action : actions) 
     {
-        for (int column = 0; column < numColumns; ++column)
+        QString actionName = action->objectName();
+        if(!actionName.isEmpty())
         {
-            QString text = QString('A' + row) + QString::number(column + 1);
-            QStandardItem* item = new QStandardItem(text);
-            model->setItem(row, column, item);
-        }
-     }
+        QStandardItem* actionNameItem = new QStandardItem(actionName);
+        model->setItem(row, 0, actionNameItem);
 
+        const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+        QStandardItem* shortcutItem = new QStandardItem(shortCut);
+        model->setItem(row, 1, shortcutItem);
+        row++;
+        }
+    }
     return model;
 }
 
-void ShortcutConfigurator::initGUI()
+void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
 {
-    
     QTableView *shortcutTableView = this->findChild<QTableView *>();
-    // std::cout<<table->objectName().toStdString()<<" initGUI"<<std::endl;
-    initTable(shortcutTableView);
-    // table->setModel(createModel(table));
-
-
+    shortcutTableView->verticalHeader()->hide();
+    shortcutTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    initTable(shortcutTableView,allActions);
 }
 
-void ShortcutConfigurator::initTable(QTableView *shortcutsTable)
+void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
 {
-    
-    shortcutsTable->setModel(createModel(shortcutsTable));
-
+    shortcutsTable->setModel(createModel(shortcutsTable,allActions));
 }
 
 void ShortcutConfigurator::apply(const QList<QAction *> &actions)

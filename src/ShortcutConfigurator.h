@@ -13,10 +13,10 @@ class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 public:
     ShortcutConfigurator(QWidget *parent = 0);
     virtual ~ShortcutConfigurator();
-    QStandardItemModel* createModel(QObject* parent);
+    QStandardItemModel* createModel(QObject* parent,const QList<QAction *> &actions);
     void collectActions(const QList<QAction *> &actions);
-    void initGUI();
-    void initTable(QTableView *shortcutsTable);
+    void initGUI(const QList<QAction *> &allActions);
+    void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
     void apply(const QList<QAction *> &actions);
     QList<QAction *> actionList;
 };
