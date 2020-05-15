@@ -8,17 +8,61 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
 #include "qtgettext.h"
+#include <QAbstractItemModel>
 
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
-
-setupUi(this);
-
+    setupUi(this);
 }
 
 ShortcutConfigurator::~ShortcutConfigurator()
 {
     
+}
+
+
+void ShortcutConfigurator::collectActions(const QList<QAction *> &actions)
+{
+    actionList = actions;
+}
+
+QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent)
+{
+        
+
+    const int numRows = 10;
+    const int numColumns = 10;
+
+    QStandardItemModel* model = new QStandardItemModel(numRows, numColumns);
+    for (int row = 0; row < numRows; ++row)
+    {
+        for (int column = 0; column < numColumns; ++column)
+        {
+            QString text = QString('A' + row) + QString::number(column + 1);
+            QStandardItem* item = new QStandardItem(text);
+            model->setItem(row, column, item);
+        }
+     }
+
+    return model;
+}
+
+void ShortcutConfigurator::initGUI()
+{
+    
+    QTableView *shortcutTableView = this->findChild<QTableView *>();
+    // std::cout<<table->objectName().toStdString()<<" initGUI"<<std::endl;
+    initTable(shortcutTableView);
+    // table->setModel(createModel(table));
+
+
+}
+
+void ShortcutConfigurator::initTable(QTableView *shortcutsTable)
+{
+    
+    shortcutsTable->setModel(createModel(shortcutsTable));
+
 }
 
 void ShortcutConfigurator::apply(const QList<QAction *> &actions)

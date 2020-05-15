@@ -6,59 +6,42 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>652</width>
+    <height>496</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Shortcut</string>
   </property>
-  <widget class="QComboBox" name="comboBox">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>120</y>
-     <width>86</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <item>
-    <property name="text">
-     <string>Hello</string>
-    </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="1" column="0">
+    <widget class="QPushButton" name="reset">
+     <property name="text">
+      <string>Reset</string>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>Hello2</string>
-    </property>
-   </item>
-  </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>250</y>
-     <width>177</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QPushButton" name="pushButton">
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pushButton_2">
+   <item row="1" column="1">
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QPushButton" name="cancel">
       <property name="text">
        <string>Cancel</string>
       </property>
      </widget>
-    </item>
-   </layout>
-  </widget>
+     <widget class="QPushButton" name="save">
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QTableView" name="shortcutsTable"/>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

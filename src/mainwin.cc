@@ -474,6 +474,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
+	instance->shortcutconfigurator->initGUI();
 
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
@@ -627,6 +628,7 @@ void MainWindow::setShortcutsforMenuActions()
 {
 	ShortcutConfigurator scConfig;
 	QList<QAction *>allActions = this->findChildren<QAction *>();
+	scConfig.initGUI();
 	scConfig.apply(allActions);
 }
 
