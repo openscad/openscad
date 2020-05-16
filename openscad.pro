@@ -194,7 +194,7 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
-
+CONFIG += hiredis
 # Make experimental features available
 experimental {
   DEFINES += ENABLE_EXPERIMENTAL
