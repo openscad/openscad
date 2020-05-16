@@ -83,6 +83,7 @@ parts:
 
   openscad-nightly:
     disable-parallel: true
+    source: .
     plugin: qmake
     qt-version: qt5
     after: [ desktop-qt5, opencsg, cgal, lib3mf ]
