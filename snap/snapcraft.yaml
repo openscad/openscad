@@ -1,6 +1,6 @@
 name: openscad-nightly
 title: OpenSCAD-Nightly
-base: core18
+base: core
 version: "git"
 summary: OpenSCAD - Design. Code. Create.
 description: >
@@ -59,7 +59,7 @@ parts:
     build-packages:
     - freeglut3-dev
     stage-packages:
-    - libglew2.0
+    - libglew1.13
 
   cgal:
     disable-parallel: true
@@ -71,13 +71,17 @@ parts:
     - libboost-dev
     - libboost-thread-dev
     stage-packages:
-    - libboost-system1.65.1
-    - libboost-thread1.65.1
+    - libboost-system1.58.0
+    - libboost-thread1.58.0
 
   lib3mf:
     source: https://github.com/3MFConsortium/lib3mf/archive/v1.8.1.tar.gz
     plugin: cmake
     configflags: [ "-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DLIB3MF_TESTS=OFF" ]
+    override-pull: |
+        snapcraftctl pull
+        sed -i -e 's/\<DESCRIPTION.*/LANGUAGES CXX)/' CMakeLists.txt
+        cat -n CMakeLists.txt
     build-packages:
     - uuid-dev
 
@@ -125,18 +129,18 @@ parts:
     stage-packages:
     - qtwayland5
     - libasyncns0
-    - libboost-filesystem1.65.1
-    - libboost-regex1.65.1
-    - libboost-system1.65.1
-    - libboost-program-options1.65.1
-    - libcgal13
+    - libboost-filesystem1.58.0
+    - libboost-regex1.58.0
+    - libboost-system1.58.0
+    - libboost-program-options1.58.0
+    - libdouble-conversion1v5
     - libflac8
-    - libglew2.0
+    - libglew1.13
     - libglu1-mesa
-    - libmpfr6
+    - libmpfr4
     - libogg0
     - libpulse0
-    - libqscintilla2-qt5-13
+    - libqt5scintilla2-12v5
     - libqt5multimedia5
     - libqt5printsupport5
     - libsndfile1
