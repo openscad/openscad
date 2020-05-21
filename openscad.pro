@@ -252,7 +252,8 @@ HEADERS += src/AST.h \
            src/Assignment.h \
            src/expression.h \
            src/function.h \
-           src/module.h \           
+           src/module.h \            \
+           src/pcache.h
            src/UserModule.h \
 
 SOURCES += src/AST.cc \
@@ -262,7 +263,8 @@ SOURCES += src/AST.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc
+           src/annotation.cc \
+           src/pcache.cpp
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
