@@ -1,5 +1,7 @@
 #include "pcache.h"
 
+#ifdef ENABLE_HIREDIS
+
 PCache::PCache(){
     host.clear();
     port = 6379;
@@ -114,3 +116,5 @@ bool PCache::checkReply(redisReply *reply){
     }
     return false;
 }
+
+#endif
