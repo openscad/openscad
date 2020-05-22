@@ -134,14 +134,14 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			glLineWidth(2);
 			// FIXME:	const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
 			glColor3f(1.0f, 0.0f, 0.0f);
-			polyset->render_edges(CSGMODE_NONE);
+			this->render_edges(polyset, CSGMODE_NONE);
 			glEnable(GL_DEPTH_TEST);
 		}
 		else {
 			// Draw 3D polygons
 			const Color4f c(-1,-1,-1,-1);	
 			setColor(ColorMode::MATERIAL, c.data(), nullptr);
-			polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
+			this->render_surface(polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 		}
 	}
 
