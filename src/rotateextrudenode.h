@@ -7,7 +7,7 @@ class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
 	VISITABLE();
-	RotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+	RotateExtrudeNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx) {
 		convexity = 0;
 		fn = fs = fa = 0;
 		origin_x = origin_y = scale = 0;

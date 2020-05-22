@@ -24,6 +24,7 @@
  *
  */
 
+#include "evalcontext.h"
 #include "node.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
@@ -35,7 +36,11 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), progress_mark(0), idx(idx_counter++)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) :
+    modinst(mi),
+    progress_mark(0),
+    idx(idx_counter++),
+    location((ctx)?ctx->loc:Location(0, 0, 0, 0, nullptr))
 {
 }
 
@@ -47,6 +52,18 @@ AbstractNode::~AbstractNode()
 std::string AbstractNode::toString() const
 {
 	return this->name() + "()";
+}
+
+const AbstractNode *AbstractNode::getNodeByID(int idx) const
+{
+    if (this->idx == idx) { return this; }
+    for (const auto &node : this->children) {
+        auto res = node->getNodeByID(idx);
+        if (res) {
+            return res;
+        }
+    }
+    return nullptr;
 }
 
 std::string GroupNode::name() const

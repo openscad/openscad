@@ -50,7 +50,6 @@ namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/detail/endian.hpp>
 #include <cstdint>
 
 extern PolySet * import_amf(std::string, const Location &loc);
@@ -70,7 +69,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
     assignment("file"), assignment("layer"), assignment("convexity"),
 		assignment("origin"), assignment("scale")
 	};
-	
+
 	AssignmentList optargs{
 		assignment("width"), assignment("height"),
 		assignment("filename"), assignment("layername"), assignment("center"), assignment("dpi")
@@ -105,7 +104,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 		else if (ext == ".svg") actualtype = ImportType::SVG;
 	}
 
-	auto node = new ImportNode(inst, actualtype);
+	auto node = new ImportNode(inst, evalctx, actualtype);
 
 	node->fn = c->lookup_variable("$fn")->toDouble();
 	node->fs = c->lookup_variable("$fs")->toDouble();
@@ -156,7 +155,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	auto height = c->lookup_variable("height", true);
 	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
 	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
-	
+
 	return node;
 }
 
