@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-17 10:19+0100\n"
+"POT-Creation-Date: 2020-05-23 01:30+0200\n"
 "PO-Revision-Date: 2020-02-01 16:43+0100\n"
 "Last-Translator: Bartłomiej Wiśniowski <bwisn_dev@outlook.com>\n"
 "Language-Team: \n"
@@ -51,142 +51,155 @@ msgstr ""
 msgid "OK"
 msgstr "OK"
 
-#: objects/ui_AxisConfigWidget.h:834 objects/ui_ButtonConfigWidget.h:266
-#: objects/ui_Preferences.h:1437
+#: objects/ui_AxisConfigWidget.h:853 objects/ui_ButtonConfigWidget.h:266
+#: objects/ui_Preferences.h:1457
 msgid "Preferences"
 msgstr "Preferencje"
 
-#: objects/ui_AxisConfigWidget.h:835 objects/ui_AxisConfigWidget.h:836
-#: objects/ui_AxisConfigWidget.h:840 objects/ui_AxisConfigWidget.h:844
-#: objects/ui_AxisConfigWidget.h:846 objects/ui_AxisConfigWidget.h:848
-#: objects/ui_AxisConfigWidget.h:850 objects/ui_AxisConfigWidget.h:852
-#: objects/ui_AxisConfigWidget.h:863
+#: objects/ui_AxisConfigWidget.h:854 objects/ui_AxisConfigWidget.h:855
+#: objects/ui_AxisConfigWidget.h:859 objects/ui_AxisConfigWidget.h:863
+#: objects/ui_AxisConfigWidget.h:865 objects/ui_AxisConfigWidget.h:867
+#: objects/ui_AxisConfigWidget.h:869 objects/ui_AxisConfigWidget.h:871
+#: objects/ui_AxisConfigWidget.h:882
 msgid "Trim"
 msgstr "Trymowanie"
 
-#: objects/ui_AxisConfigWidget.h:837
+#: objects/ui_AxisConfigWidget.h:856
 msgid "Reset Trim"
 msgstr "Resetuj trymowanie"
 
-#: objects/ui_AxisConfigWidget.h:838 objects/ui_AxisConfigWidget.h:841
-#: objects/ui_AxisConfigWidget.h:842 objects/ui_AxisConfigWidget.h:843
-#: objects/ui_AxisConfigWidget.h:845 objects/ui_AxisConfigWidget.h:847
-#: objects/ui_AxisConfigWidget.h:849 objects/ui_AxisConfigWidget.h:851
-#: objects/ui_AxisConfigWidget.h:862
+#: objects/ui_AxisConfigWidget.h:857 objects/ui_AxisConfigWidget.h:860
+#: objects/ui_AxisConfigWidget.h:861 objects/ui_AxisConfigWidget.h:862
+#: objects/ui_AxisConfigWidget.h:864 objects/ui_AxisConfigWidget.h:866
+#: objects/ui_AxisConfigWidget.h:868 objects/ui_AxisConfigWidget.h:870
+#: objects/ui_AxisConfigWidget.h:881
 msgid "DeadZone"
 msgstr "Martwa strefa"
 
-#: objects/ui_AxisConfigWidget.h:839
+#: objects/ui_AxisConfigWidget.h:858
 msgid "Auto Trim Axes"
 msgstr "Trymuj osie automatycznie"
 
-#: objects/ui_AxisConfigWidget.h:853
+#: objects/ui_AxisConfigWidget.h:872
 msgid "Axis 2"
 msgstr "Oś 2"
 
-#: objects/ui_AxisConfigWidget.h:854
+#: objects/ui_AxisConfigWidget.h:873
 msgid "Axis 0"
 msgstr "Oś 0"
 
-#: objects/ui_AxisConfigWidget.h:855
+#: objects/ui_AxisConfigWidget.h:874
 msgid "Axis 3"
 msgstr "Oś 3"
 
-#: objects/ui_AxisConfigWidget.h:856
+#: objects/ui_AxisConfigWidget.h:875
 msgid "Axis 6"
 msgstr "Oś 6"
 
-#: objects/ui_AxisConfigWidget.h:857
+#: objects/ui_AxisConfigWidget.h:876
 msgid "Axis 8"
 msgstr "Oś 8"
 
-#: objects/ui_AxisConfigWidget.h:858
+#: objects/ui_AxisConfigWidget.h:877
 msgid "Axis 7"
 msgstr "Oś 7"
 
-#: objects/ui_AxisConfigWidget.h:859
+#: objects/ui_AxisConfigWidget.h:878
 msgid "Axis 5"
 msgstr "Oś 5"
 
-#: objects/ui_AxisConfigWidget.h:860
+#: objects/ui_AxisConfigWidget.h:879
 msgid "Axis 1"
 msgstr "Oś 1"
 
-#: objects/ui_AxisConfigWidget.h:861
+#: objects/ui_AxisConfigWidget.h:880
 msgid "Axis 4"
 msgstr "Oś 4"
 
-#: objects/ui_AxisConfigWidget.h:864
+#: objects/ui_AxisConfigWidget.h:883
 msgid "Rotation"
 msgstr "&Rotacja"
 
-#: objects/ui_AxisConfigWidget.h:865
+#: objects/ui_AxisConfigWidget.h:884
 #, fuzzy
 msgid "Zoom"
 msgstr "Przybliż"
 
-#: objects/ui_AxisConfigWidget.h:866
+#: objects/ui_AxisConfigWidget.h:885
 msgid "X"
 msgstr "X"
 
-#: objects/ui_AxisConfigWidget.h:867
+#: objects/ui_AxisConfigWidget.h:886
 msgid "Gain"
 msgstr "Wzmocnienie"
 
-#: objects/ui_AxisConfigWidget.h:868
+#: objects/ui_AxisConfigWidget.h:887
 msgid "Y"
 msgstr "Y"
 
-#: objects/ui_AxisConfigWidget.h:869
+#: objects/ui_AxisConfigWidget.h:888
 msgid "Z"
 msgstr "Z"
 
-#: objects/ui_AxisConfigWidget.h:870
+#: objects/ui_AxisConfigWidget.h:889
 msgid "Translation"
 msgstr "Translacja"
 
-#: objects/ui_AxisConfigWidget.h:871
+#: objects/ui_AxisConfigWidget.h:890
 #, fuzzy
 msgid "ViewPort rel.<br/>Translation"
 msgstr "Wklej przesunięcie podglądu (&translate)"
 
-#: objects/ui_AxisConfigWidget.h:872
+#: objects/ui_AxisConfigWidget.h:891
 #, fuzzy
 msgid "ViewPort rel.<br />Rotation"
 msgstr "Wklej przesunięcie podglądu (&translate)"
 
-#: objects/ui_AxisConfigWidget.h:873
+#: objects/ui_AxisConfigWidget.h:892
 msgid "Axis Setup:"
 msgstr "Ustawienia osi:"
 
-#: objects/ui_AxisConfigWidget.h:874
+#: objects/ui_AxisConfigWidget.h:893
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
 msgstr "<b>Wybór sterownika:</b> <i>(wymaga restartu)</i>"
 
-#: objects/ui_AxisConfigWidget.h:875
+#: objects/ui_AxisConfigWidget.h:894
 #, fuzzy
 msgid "SpaceNav"
 msgstr "Spacji"
 
-#: objects/ui_AxisConfigWidget.h:876
+#: objects/ui_AxisConfigWidget.h:895
 msgid "HIDAPI"
 msgstr "HIDAPI"
 
-#: objects/ui_AxisConfigWidget.h:877
+#: objects/ui_AxisConfigWidget.h:896
 msgid "QGamepad"
 msgstr "QGamepad"
 
-#: objects/ui_AxisConfigWidget.h:878
+#: objects/ui_AxisConfigWidget.h:897
 msgid "Joystick"
 msgstr "Joystick"
 
-#: objects/ui_AxisConfigWidget.h:879
+#: objects/ui_AxisConfigWidget.h:898
 msgid "DBus"
 msgstr "DBus"
 
-#: objects/ui_AxisConfigWidget.h:880
+#: objects/ui_AxisConfigWidget.h:899
 msgid "Axes Mapping:"
 msgstr "Mapowanie osi:"
+
+#: objects/ui_AxisConfigWidget.h:900
+msgid "Status:"
+msgstr ""
+
+#: objects/ui_AxisConfigWidget.h:901
+#, fuzzy
+msgid "TextLabel"
+msgstr "Tekst"
+
+#: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1461
+msgid "Update"
+msgstr "Aktualizuj"
 
 #: objects/ui_ButtonConfigWidget.h:267
 msgid "Button 2"
@@ -355,612 +368,693 @@ msgstr "Informacje o bibliotekach i kompilacji"
 msgid "OpenSCAD Detailed Library and Build Information"
 msgstr "Dokładne dane OpenSCAD o bibliotekach i kompilacji"
 
-#: objects/ui_MainWindow.h:895
-msgid "&New"
-msgstr "&Nowy"
+#: objects/ui_MainWindow.h:955
+#, fuzzy
+msgid "&New File"
+msgstr "&Plik"
 
-#: objects/ui_MainWindow.h:897
+#: objects/ui_MainWindow.h:957
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
-#: objects/ui_MainWindow.h:899
-msgid "&Open..."
-msgstr "&Otwórz…"
+#: objects/ui_MainWindow.h:959
+msgid "New Window"
+msgstr ""
 
-#: objects/ui_MainWindow.h:901
+#: objects/ui_MainWindow.h:960
+#, fuzzy
+msgid "&Open File"
+msgstr "&Plik"
+
+#: objects/ui_MainWindow.h:962
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
-#: objects/ui_MainWindow.h:903
+#: objects/ui_MainWindow.h:964
+msgid "Open in New Window"
+msgstr ""
+
+#: objects/ui_MainWindow.h:965
 msgid "&Save"
 msgstr "&Zapisz"
 
-#: objects/ui_MainWindow.h:905
+#: objects/ui_MainWindow.h:967
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
-#: objects/ui_MainWindow.h:907
+#: objects/ui_MainWindow.h:969
 msgid "Save &As..."
 msgstr "Zapisz &jako…"
 
-#: objects/ui_MainWindow.h:909
+#: objects/ui_MainWindow.h:971
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
-#: objects/ui_MainWindow.h:911
+#: objects/ui_MainWindow.h:973
+#, fuzzy
+msgid "Save All"
+msgstr "Zapisz &jako"
+
+#: objects/ui_MainWindow.h:974
 msgid "&Reload"
 msgstr "P&rzeładuj"
 
-#: objects/ui_MainWindow.h:913
+#: objects/ui_MainWindow.h:976
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
-#: objects/ui_MainWindow.h:915
+#: objects/ui_MainWindow.h:978
 msgid "&Quit"
 msgstr "Z&amknij"
 
-#: objects/ui_MainWindow.h:917
+#: objects/ui_MainWindow.h:980
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
-#: objects/ui_MainWindow.h:919
+#: objects/ui_MainWindow.h:982
 msgid "&Undo"
 msgstr "&Cofnij"
 
-#: objects/ui_MainWindow.h:921
+#: objects/ui_MainWindow.h:984
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
-#: objects/ui_MainWindow.h:923
+#: objects/ui_MainWindow.h:986
 msgid "&Redo"
 msgstr "&Powtórz"
 
-#: objects/ui_MainWindow.h:925
+#: objects/ui_MainWindow.h:988
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
-#: objects/ui_MainWindow.h:928
+#: objects/ui_MainWindow.h:991
 msgid "Ctrl+Y"
 msgstr "Ctrl+Y"
 
-#: objects/ui_MainWindow.h:930
+#: objects/ui_MainWindow.h:993
 msgid "Cu&t"
 msgstr "W&ytnij"
 
-#: objects/ui_MainWindow.h:932
+#: objects/ui_MainWindow.h:995
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
-#: objects/ui_MainWindow.h:934
+#: objects/ui_MainWindow.h:997
 msgid "&Copy"
 msgstr "&Kopiuj"
 
-#: objects/ui_MainWindow.h:936
+#: objects/ui_MainWindow.h:999
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
-#: objects/ui_MainWindow.h:938
+#: objects/ui_MainWindow.h:1001
 msgid "&Paste"
 msgstr "&Wklej"
 
-#: objects/ui_MainWindow.h:940
+#: objects/ui_MainWindow.h:1003
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
-#: objects/ui_MainWindow.h:942
+#: objects/ui_MainWindow.h:1005
 msgid "&Indent"
 msgstr "Zró&b wcięcie"
 
-#: objects/ui_MainWindow.h:944
+#: objects/ui_MainWindow.h:1007
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
-#: objects/ui_MainWindow.h:946
+#: objects/ui_MainWindow.h:1009
 msgid "C&omment"
 msgstr "K&omentuj"
 
-#: objects/ui_MainWindow.h:948
+#: objects/ui_MainWindow.h:1011
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
-#: objects/ui_MainWindow.h:950
+#: objects/ui_MainWindow.h:1013
 msgid "Unco&mment"
 msgstr "Odko&mentuj"
 
-#: objects/ui_MainWindow.h:952
+#: objects/ui_MainWindow.h:1015
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-#: objects/ui_MainWindow.h:954
+#: objects/ui_MainWindow.h:1017
+#, fuzzy
+msgid "Show Next Tab"
+msgstr "Pokaż detale"
+
+#: objects/ui_MainWindow.h:1019
+#, fuzzy
+msgid "Ctrl+Tab"
+msgstr "Ctrl+T"
+
+#: objects/ui_MainWindow.h:1021
+msgid "Show Previous Tab"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1023
+#, fuzzy
+msgid "Ctrl+Shift+Tab"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1025
 #, fuzzy
 msgid "Copy viewport ima&ge"
 msgstr "Kopiuj podgląd"
 
-#: objects/ui_MainWindow.h:956
+#: objects/ui_MainWindow.h:1027
 msgid "Ctrl+Shift+C"
 msgstr "Ctrl+Shift+C"
 
-#: objects/ui_MainWindow.h:958
+#: objects/ui_MainWindow.h:1029
 msgid "Copy viewport transl&ation"
 msgstr "Kopiuj przesunięcie podglądu (&translate)"
 
-#: objects/ui_MainWindow.h:960
+#: objects/ui_MainWindow.h:1031
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
-#: objects/ui_MainWindow.h:962
+#: objects/ui_MainWindow.h:1033
 msgid "Cop&y viewport rotation"
 msgstr "Kopiuj obrót podglądu (&rotation)"
 
-#: objects/ui_MainWindow.h:963
+#: objects/ui_MainWindow.h:1034
 msgid "Copy vie&wport distance"
 msgstr "Kopiuj odległość podglądu (&distance)"
 
-#: objects/ui_MainWindow.h:964
+#: objects/ui_MainWindow.h:1035
 msgid "Increase Font &Size"
 msgstr "Zw&iększ wielkość tekstu"
 
-#: objects/ui_MainWindow.h:966
+#: objects/ui_MainWindow.h:1037
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
-#: objects/ui_MainWindow.h:968
+#: objects/ui_MainWindow.h:1039
 msgid "Decrease Font Si&ze"
 msgstr "Zmni&ejsz wielkość tekstu"
 
-#: objects/ui_MainWindow.h:970
+#: objects/ui_MainWindow.h:1041
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
-#: objects/ui_MainWindow.h:972
+#: objects/ui_MainWindow.h:1043
 msgid "H&ide editor"
 msgstr "Ukryj ed&ytor"
 
-#: objects/ui_MainWindow.h:973
+#: objects/ui_MainWindow.h:1044
 msgid "&Reload and Preview"
 msgstr "Pr&zeładowanie i podgląd"
 
-#: objects/ui_MainWindow.h:975
+#: objects/ui_MainWindow.h:1046
 msgid "F4"
 msgstr "F4"
 
-#: objects/ui_MainWindow.h:977
+#: objects/ui_MainWindow.h:1048
 msgid "&Preview"
 msgstr "&Podgląd"
 
-#: objects/ui_MainWindow.h:979
+#: objects/ui_MainWindow.h:1050
 msgid "F5"
 msgstr "F5"
 
-#: objects/ui_MainWindow.h:981
+#: objects/ui_MainWindow.h:1052
 msgid "R&ender"
 msgstr "&Renderuj"
 
-#: objects/ui_MainWindow.h:983
+#: objects/ui_MainWindow.h:1054
 msgid "F6"
 msgstr "F6"
 
-#: objects/ui_MainWindow.h:985
+#: objects/ui_MainWindow.h:1056
 msgid "&3D Print"
 msgstr "Drukuj &3D"
 
-#: objects/ui_MainWindow.h:987
+#: objects/ui_MainWindow.h:1058
 msgid "F8"
 msgstr "F8"
 
-#: objects/ui_MainWindow.h:989
+#: objects/ui_MainWindow.h:1060
 msgid "&Check Validity"
 msgstr "&Sprawdź poprawność"
 
-#: objects/ui_MainWindow.h:990
+#: objects/ui_MainWindow.h:1061
 msgid "Display A&ST..."
 msgstr "Pokaż AS&T…"
 
-#: objects/ui_MainWindow.h:991
+#: objects/ui_MainWindow.h:1062
 msgid "Display CSG &Tree..."
 msgstr "Pokaż &drzewo CSG…"
 
-#: objects/ui_MainWindow.h:992
+#: objects/ui_MainWindow.h:1063
 msgid "Display CSG Pr&oducts..."
 msgstr "Pokaż pr&odukty CSG…"
 
-#: objects/ui_MainWindow.h:993
+#: objects/ui_MainWindow.h:1064
 msgid "Export as &STL..."
 msgstr "Eksportuj jako &STL…"
 
-#: objects/ui_MainWindow.h:995
+#: objects/ui_MainWindow.h:1066
 msgid "F7"
 msgstr "F7"
 
-#: objects/ui_MainWindow.h:997
+#: objects/ui_MainWindow.h:1068
 msgid "Export as &OFF..."
 msgstr "Eksportuj jako &OFF…"
 
-#: objects/ui_MainWindow.h:998
+#: objects/ui_MainWindow.h:1069
 msgid "Preview"
 msgstr "Podgląd"
 
-#: objects/ui_MainWindow.h:1000
+#: objects/ui_MainWindow.h:1071
 msgid "F9"
 msgstr "F9"
 
-#: objects/ui_MainWindow.h:1002
+#: objects/ui_MainWindow.h:1073
 msgid "Surfaces"
 msgstr "Ściany"
 
-#: objects/ui_MainWindow.h:1004
+#: objects/ui_MainWindow.h:1075
 msgid "F10"
 msgstr "F10"
 
-#: objects/ui_MainWindow.h:1006
+#: objects/ui_MainWindow.h:1077
 msgid "Wireframe"
 msgstr "Szkielet"
 
-#: objects/ui_MainWindow.h:1008
+#: objects/ui_MainWindow.h:1079
 msgid "F11"
 msgstr "F11"
 
-#: objects/ui_MainWindow.h:1010
+#: objects/ui_MainWindow.h:1081
 msgid "Thrown Together"
 msgstr "Wszystko razem"
 
-#: objects/ui_MainWindow.h:1012
+#: objects/ui_MainWindow.h:1083
 msgid "F12"
 msgstr "F12"
 
-#: objects/ui_MainWindow.h:1014
+#: objects/ui_MainWindow.h:1085
 msgid "Show Edges"
 msgstr "Pokaż krawędzie"
 
-#: objects/ui_MainWindow.h:1016
+#: objects/ui_MainWindow.h:1087
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
-#: objects/ui_MainWindow.h:1018
+#: objects/ui_MainWindow.h:1089
 msgid "Show Axes"
 msgstr "Pokaż osie"
 
-#: objects/ui_MainWindow.h:1020
+#: objects/ui_MainWindow.h:1091
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
-#: objects/ui_MainWindow.h:1022
+#: objects/ui_MainWindow.h:1093
 msgid "Show Crosshairs"
 msgstr "Pokaż celownik"
 
-#: objects/ui_MainWindow.h:1024
+#: objects/ui_MainWindow.h:1095
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
-#: objects/ui_MainWindow.h:1026
+#: objects/ui_MainWindow.h:1097
 msgid "Show Scale Markers"
 msgstr "Pokaż podziałkę"
 
-#: objects/ui_MainWindow.h:1027
+#: objects/ui_MainWindow.h:1098
 msgid "Animate"
 msgstr "Animuj"
 
-#: objects/ui_MainWindow.h:1028
+#: objects/ui_MainWindow.h:1099
 msgid "&Top"
 msgstr "Z &góry"
 
-#: objects/ui_MainWindow.h:1030
+#: objects/ui_MainWindow.h:1101
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
-#: objects/ui_MainWindow.h:1032
+#: objects/ui_MainWindow.h:1103
 msgid "&Bottom"
 msgstr "Od &dołu"
 
-#: objects/ui_MainWindow.h:1034
+#: objects/ui_MainWindow.h:1105
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
-#: objects/ui_MainWindow.h:1036
+#: objects/ui_MainWindow.h:1107
 msgid "&Left"
 msgstr "Z &lewej"
 
-#: objects/ui_MainWindow.h:1038
+#: objects/ui_MainWindow.h:1109
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
-#: objects/ui_MainWindow.h:1040
+#: objects/ui_MainWindow.h:1111
 msgid "&Right"
 msgstr "Z &prawej"
 
-#: objects/ui_MainWindow.h:1042
+#: objects/ui_MainWindow.h:1113
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
-#: objects/ui_MainWindow.h:1044
+#: objects/ui_MainWindow.h:1115
 msgid "&Front"
 msgstr "Z p&rzodu"
 
-#: objects/ui_MainWindow.h:1046
+#: objects/ui_MainWindow.h:1117
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
-#: objects/ui_MainWindow.h:1048
+#: objects/ui_MainWindow.h:1119
 msgid "Bac&k"
 msgstr "Z &tyłu"
 
-#: objects/ui_MainWindow.h:1050
+#: objects/ui_MainWindow.h:1121
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
-#: objects/ui_MainWindow.h:1052
+#: objects/ui_MainWindow.h:1123
 msgid "&Diagonal"
 msgstr "Po pr&zekątnej"
 
-#: objects/ui_MainWindow.h:1054
+#: objects/ui_MainWindow.h:1125
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
-#: objects/ui_MainWindow.h:1056
+#: objects/ui_MainWindow.h:1127
 msgid "Ce&nter"
 msgstr "&Wyśrodkuj"
 
-#: objects/ui_MainWindow.h:1057
+#: objects/ui_MainWindow.h:1128
 msgid "&Perspective"
 msgstr "P&erspektywa"
 
-#: objects/ui_MainWindow.h:1058
+#: objects/ui_MainWindow.h:1129
 msgid "&Orthogonal"
 msgstr "Pr&ojekcja równoległa"
 
-#: objects/ui_MainWindow.h:1059
+#: objects/ui_MainWindow.h:1130
 msgid "H&ide console"
 msgstr "Ukryj &konsolę"
 
-#: objects/ui_MainWindow.h:1060
+#: objects/ui_MainWindow.h:1131
 msgid "&About"
 msgstr "&O programie"
 
-#: objects/ui_MainWindow.h:1061
+#: objects/ui_MainWindow.h:1132
 msgid "&Documentation"
 msgstr "&Dokumentacja"
 
-#: objects/ui_MainWindow.h:1062
+#: objects/ui_MainWindow.h:1133
 msgid "Clear Recent"
 msgstr "Wyczyść ostatnio używane"
 
-#: objects/ui_MainWindow.h:1063
+#: objects/ui_MainWindow.h:1134
 msgid "Export as &DXF..."
 msgstr "Eksportuj jako &DXF…"
 
-#: objects/ui_MainWindow.h:1064
+#: objects/ui_MainWindow.h:1135
 msgid "&Close"
 msgstr "Zamknij &dokument"
 
-#: objects/ui_MainWindow.h:1066
+#: objects/ui_MainWindow.h:1137
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
-#: objects/ui_MainWindow.h:1068
+#: objects/ui_MainWindow.h:1139
 msgid "&Preferences"
 msgstr "Pre&ferencje"
 
-#: objects/ui_MainWindow.h:1069
+#: objects/ui_MainWindow.h:1140
 msgid "&Find..."
 msgstr "&Znajdź…"
 
-#: objects/ui_MainWindow.h:1071
+#: objects/ui_MainWindow.h:1142
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
-#: objects/ui_MainWindow.h:1073
+#: objects/ui_MainWindow.h:1144
 msgid "Fin&d and Replace..."
 msgstr "Z&najdź i zastąp…"
 
-#: objects/ui_MainWindow.h:1075
+#: objects/ui_MainWindow.h:1146
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
-#: objects/ui_MainWindow.h:1077
+#: objects/ui_MainWindow.h:1148
 msgid "Find Ne&xt"
 msgstr "Zn&ajdź następny"
 
-#: objects/ui_MainWindow.h:1079
+#: objects/ui_MainWindow.h:1150
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
-#: objects/ui_MainWindow.h:1081
+#: objects/ui_MainWindow.h:1152
 msgid "Find Pre&vious"
 msgstr "Zna&jdź poprzedni"
 
-#: objects/ui_MainWindow.h:1083
+#: objects/ui_MainWindow.h:1154
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
-#: objects/ui_MainWindow.h:1085
+#: objects/ui_MainWindow.h:1156
 msgid "Use Se&lection for Find"
 msgstr "&Użyj zaznaczenia do wyszukiwania"
 
-#: objects/ui_MainWindow.h:1087
+#: objects/ui_MainWindow.h:1158
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
-#: objects/ui_MainWindow.h:1089
+#: objects/ui_MainWindow.h:1160
+msgid "Jump to next error"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1162
+#, fuzzy
+msgid "Ctrl+Alt+E"
+msgstr "Ctrl+Alt+F"
+
+#: objects/ui_MainWindow.h:1164
 msgid "&Flush Caches"
 msgstr "&Wyczyść pamięć podręczną"
 
-#: objects/ui_MainWindow.h:1090
+#: objects/ui_MainWindow.h:1165
 msgid "&OpenSCAD Homepage"
 msgstr "Strona główna Open&SCAD"
 
-#: objects/ui_MainWindow.h:1091
+#: objects/ui_MainWindow.h:1166
 msgid "&Automatic Reload and Preview"
 msgstr "&Automatycznie przeładuj i pokaż podgląd"
 
-#: objects/ui_MainWindow.h:1092
+#: objects/ui_MainWindow.h:1167
 msgid "Export as &Image..."
 msgstr "Eksportuj jako &obraz…"
 
-#: objects/ui_MainWindow.h:1093
+#: objects/ui_MainWindow.h:1168
 msgid "Export as &CSG..."
 msgstr "Eksportuj jako &CSG…"
 
-#: objects/ui_MainWindow.h:1094
+#: objects/ui_MainWindow.h:1169
 msgid "&Library info"
 msgstr "Informacje o &bibliotekach"
 
-#: objects/ui_MainWindow.h:1095
+#: objects/ui_MainWindow.h:1170
 msgid "Show &Library Folder..."
 msgstr "Pokaż folder &bibliotek…"
 
-#: objects/ui_MainWindow.h:1096
+#: objects/ui_MainWindow.h:1171
 msgid "Reset View"
 msgstr "Resetuj widok"
 
-#: objects/ui_MainWindow.h:1097
+#: objects/ui_MainWindow.h:1172
 msgid "&Font List"
 msgstr "Lista &fontów"
 
-#: objects/ui_MainWindow.h:1098
+#: objects/ui_MainWindow.h:1173
 msgid "Export as S&VG..."
 msgstr "Eksportuj jako S&VG…"
 
-#: objects/ui_MainWindow.h:1099
+#: objects/ui_MainWindow.h:1174
 msgid "Export as &AMF..."
 msgstr "Eksportuj jako &AMF…"
 
-#: objects/ui_MainWindow.h:1100
+#: objects/ui_MainWindow.h:1175
 msgid "Export as &3MF..."
 msgstr "Eksportuj jako &3MF…"
 
-#: objects/ui_MainWindow.h:1101
+#: objects/ui_MainWindow.h:1176
 msgid "Zoom In"
 msgstr "Przybliż"
 
-#: objects/ui_MainWindow.h:1103
+#: objects/ui_MainWindow.h:1178
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
-#: objects/ui_MainWindow.h:1105
+#: objects/ui_MainWindow.h:1180
 msgid "Zoom Out"
 msgstr "Oddal"
 
-#: objects/ui_MainWindow.h:1107
+#: objects/ui_MainWindow.h:1182
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
-#: objects/ui_MainWindow.h:1109
+#: objects/ui_MainWindow.h:1184
 msgid "View All"
 msgstr "Pokaż wszystko"
 
-#: objects/ui_MainWindow.h:1111
+#: objects/ui_MainWindow.h:1186
 msgid "Ctrl+Shift+V"
 msgstr "Ctrl+Shift+V"
 
-#: objects/ui_MainWindow.h:1113
+#: objects/ui_MainWindow.h:1188
 msgid "Conv&ert Tabs to Spaces"
 msgstr "Konwertuj tabulacje na &spacje"
 
-#: objects/ui_MainWindow.h:1114
-msgid "Hide toolbars"
+#: objects/ui_MainWindow.h:1189
+msgid "Toggle Bookmark"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1191
+#, fuzzy
+msgid "Ctrl+F2"
+msgstr "Ctrl+F"
+
+#: objects/ui_MainWindow.h:1193
+msgid "Jump to next bookmark"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1195
+#, fuzzy
+msgid "F2"
+msgstr "F12"
+
+#: objects/ui_MainWindow.h:1197
+msgid "Jump to previous bookmark"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1199
+#, fuzzy
+msgid "Shift+F2"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1201
+#, fuzzy
+msgid "Hide Editor toolbar"
 msgstr "Ukryj paski narzędzi"
 
-#: objects/ui_MainWindow.h:1115
+#: objects/ui_MainWindow.h:1202
 msgid "U&nindent"
 msgstr "U&suń wcięcie"
 
-#: objects/ui_MainWindow.h:1117
+#: objects/ui_MainWindow.h:1204
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
-#: objects/ui_MainWindow.h:1119
+#: objects/ui_MainWindow.h:1206
 msgid "&Cheat Sheet"
 msgstr "Ś&ciąga"
 
-#: objects/ui_MainWindow.h:1120
+#: objects/ui_MainWindow.h:1207
 msgid "Hide Customizer"
 msgstr ""
 
-#: objects/ui_MainWindow.h:1121
+#: objects/ui_MainWindow.h:1208
+#, fuzzy
+msgid "Hide 3D view toolbar"
+msgstr "Ukryj paski narzędzi"
+
+#: objects/ui_MainWindow.h:1209
 msgid "Message"
 msgstr "Wiadomość"
 
-#: objects/ui_MainWindow.h:1124
+#: objects/ui_MainWindow.h:1212
 msgid "Time:"
 msgstr "Czas:"
 
-#: objects/ui_MainWindow.h:1125
+#: objects/ui_MainWindow.h:1213
 msgid "FPS:"
 msgstr "FPS:"
 
-#: objects/ui_MainWindow.h:1126
+#: objects/ui_MainWindow.h:1214
 msgid "Steps:"
 msgstr "Kroki:"
 
-#: objects/ui_MainWindow.h:1127
+#: objects/ui_MainWindow.h:1215
 msgid "Dump Pictures"
 msgstr "Eksportuj klatki"
 
-#: objects/ui_MainWindow.h:1128
+#: objects/ui_MainWindow.h:1216
 msgid "&File"
 msgstr "&Plik"
 
-#: objects/ui_MainWindow.h:1129
+#: objects/ui_MainWindow.h:1217
 msgid "Recen&t Files"
 msgstr "O&statnie pliki"
 
-#: objects/ui_MainWindow.h:1130
+#: objects/ui_MainWindow.h:1218
 msgid "&Examples"
 msgstr "&Przykłady"
 
-#: objects/ui_MainWindow.h:1131
+#: objects/ui_MainWindow.h:1219
 msgid "E&xport"
 msgstr "&Eksportuj"
 
-#: objects/ui_MainWindow.h:1132
+#: objects/ui_MainWindow.h:1220
 msgid "&Edit"
 msgstr "&Edycja"
 
-#: objects/ui_MainWindow.h:1133
+#: objects/ui_MainWindow.h:1221
 msgid "&Design"
 msgstr "P&rojekt"
 
-#: objects/ui_MainWindow.h:1134
+#: objects/ui_MainWindow.h:1222
 msgid "&View"
 msgstr "&Widok"
 
-#: objects/ui_MainWindow.h:1135
+#: objects/ui_MainWindow.h:1223
 msgid "&Help"
 msgstr "P&omoc"
 
-#: objects/ui_MainWindow.h:1136
+#: objects/ui_MainWindow.h:1224 objects/ui_Preferences.h:1486
+#: src/settings.cc:176
+msgid "Tabs"
+msgstr "Tabulacji"
+
+#: objects/ui_MainWindow.h:1225 src/tabmanager.cc:375
 msgid "Find"
 msgstr "Znajdź"
 
-#: objects/ui_MainWindow.h:1137 objects/ui_MainWindow.h:1144
+#: objects/ui_MainWindow.h:1226 objects/ui_MainWindow.h:1233
 msgid "Replace"
 msgstr "Zastąp"
 
-#: objects/ui_MainWindow.h:1139
+#: objects/ui_MainWindow.h:1228
 msgid "Search string"
 msgstr "Wyszukaj tekst"
 
-#: objects/ui_MainWindow.h:1140
+#: objects/ui_MainWindow.h:1229
 msgid "Prev."
 msgstr "Podgląd"
 
-#: objects/ui_MainWindow.h:1141
+#: objects/ui_MainWindow.h:1230
 msgid "Next"
 msgstr "Dalej"
 
-#: objects/ui_MainWindow.h:1142
+#: objects/ui_MainWindow.h:1231
 msgid "Done"
 msgstr "Gotowe"
 
-#: objects/ui_MainWindow.h:1143
+#: objects/ui_MainWindow.h:1232
 msgid "Replacement string"
 msgstr "Zamień na tekst"
 
-#: objects/ui_MainWindow.h:1145
+#: objects/ui_MainWindow.h:1234
 msgid "All"
 msgstr "Wszystko"
 
-#: objects/ui_MainWindow.h:1146
+#: objects/ui_MainWindow.h:1235
 msgid "Customizer Widget"
 msgstr ""
 
@@ -1032,7 +1126,7 @@ msgstr "-"
 msgid "preset selection"
 msgstr "wybieranie presetu"
 
-#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:162
+#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:154
 msgid "add new preset"
 msgstr "dodaj nowy preset"
 
@@ -1070,388 +1164,392 @@ msgstr "resetuj wszystkie parametry do wartości aktualnego presetu"
 msgid "Reset"
 msgstr "Resetuj widok"
 
-#: objects/ui_Preferences.h:1438
+#: objects/ui_Preferences.h:1458
 msgid "3D View"
 msgstr "Widok 3D"
 
-#: objects/ui_Preferences.h:1439
+#: objects/ui_Preferences.h:1459
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Zaawansowane"
 
-#: objects/ui_Preferences.h:1440 src/mainwin.cc:2888
+#: objects/ui_Preferences.h:1460 src/mainwin.cc:2704 src/mainwin.cc:2709
 msgid "Editor"
 msgstr "Edytor"
 
-#: objects/ui_Preferences.h:1441
-msgid "Update"
-msgstr "Aktualizuj"
-
-#: objects/ui_Preferences.h:1442 objects/ui_Preferences.h:1519
+#: objects/ui_Preferences.h:1462 objects/ui_Preferences.h:1537
 msgid "Features"
 msgstr "Funkcje"
 
-#: objects/ui_Preferences.h:1444
+#: objects/ui_Preferences.h:1464
 msgid "Enable/Disable experimental features"
 msgstr "Włącz/wyłącz eksperymentalne funkcje"
 
-#: objects/ui_Preferences.h:1446
+#: objects/ui_Preferences.h:1466
 #, fuzzy
 msgid "Axes"
 msgstr "Pokaż osie"
 
-#: objects/ui_Preferences.h:1448
+#: objects/ui_Preferences.h:1468
 msgid "Input driver configuration and Axis mapping"
 msgstr "Konfiguracja wejść i mapowanie osi"
 
-#: objects/ui_Preferences.h:1450
+#: objects/ui_Preferences.h:1470
 msgid "Buttons"
 msgstr "Przyciski"
 
-#: objects/ui_Preferences.h:1451 objects/ui_PrintInitDialog.h:109
+#: objects/ui_Preferences.h:1471 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
 msgstr "Druk 3D"
 
-#: objects/ui_Preferences.h:1453
+#: objects/ui_Preferences.h:1473
 msgid "3D Printing Services"
 msgstr "Usługi druku 3D"
 
-#: objects/ui_Preferences.h:1455
+#: objects/ui_Preferences.h:1475
 msgid "Color scheme:"
 msgstr "Schemat kolorów:"
 
-#: objects/ui_Preferences.h:1456
+#: objects/ui_Preferences.h:1476
 msgid "Show Warnings and Errors in 3D View"
 msgstr "Pokazuj ostrzeżenia i błędy w widoku 3D"
 
-#: objects/ui_Preferences.h:1457
+#: objects/ui_Preferences.h:1477
 msgid "mouse centric zoom"
 msgstr "Przybliżaj do kursora myszy"
 
-#: objects/ui_Preferences.h:1458
-msgid "Editor Type"
-msgstr "Rodzaj edytora"
-
-#: objects/ui_Preferences.h:1459
-msgid "Simple Editor"
-msgstr "Prosty edytor"
-
-#: objects/ui_Preferences.h:1460
-msgid "QScintilla Editor"
-msgstr "Edytor QScintilla"
-
-#: objects/ui_Preferences.h:1462
-msgid "(requires restart)"
-msgstr "(wymaga ponownego uruchomienia)"
-
-#: objects/ui_Preferences.h:1463
+#: objects/ui_Preferences.h:1478
 msgid "Font"
 msgstr "Font"
 
-#: objects/ui_Preferences.h:1464
+#: objects/ui_Preferences.h:1479
 msgid "Color syntax highlighting"
 msgstr "Podkreślanie składni kolorem"
 
-#: objects/ui_Preferences.h:1465
+#: objects/ui_Preferences.h:1480
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
 msgstr "Ctrl/Cmd-kółko-myszy przybliża tekst"
 
-#: objects/ui_Preferences.h:1466
+#: objects/ui_Preferences.h:1481
 msgid "Indentation"
 msgstr "Wcięcia"
 
-#: objects/ui_Preferences.h:1467
+#: objects/ui_Preferences.h:1482
 msgid "Auto Indent"
 msgstr "Automatyczne wcięcia"
 
-#: objects/ui_Preferences.h:1468
+#: objects/ui_Preferences.h:1483
 msgid "Backspace unindents"
 msgstr "Backspace usuwa wcięcie"
 
-#: objects/ui_Preferences.h:1469
+#: objects/ui_Preferences.h:1484
 msgid "Indent using"
 msgstr "Do wcięć używaj"
 
-#: objects/ui_Preferences.h:1470 src/settings.cc:176
+#: objects/ui_Preferences.h:1485 src/settings.cc:176
 msgid "Spaces"
 msgstr "Spacji"
 
-#: objects/ui_Preferences.h:1471 src/settings.cc:176
-msgid "Tabs"
-msgstr "Tabulacji"
-
-#: objects/ui_Preferences.h:1473
+#: objects/ui_Preferences.h:1488
 msgid "Indentation width"
 msgstr "Szerokość wcięć"
 
-#: objects/ui_Preferences.h:1474
+#: objects/ui_Preferences.h:1489
 msgid "Tab width"
 msgstr "Szerokość tabulacji"
 
-#: objects/ui_Preferences.h:1475
+#: objects/ui_Preferences.h:1490
 msgid "Tab key function"
 msgstr "Funkcja klawisza Tab"
 
-#: objects/ui_Preferences.h:1476 objects/ui_Preferences.h:1501
+#: objects/ui_Preferences.h:1491 objects/ui_Preferences.h:1519
 #: src/settings.cc:177
 msgid "Indent"
 msgstr "Wcięcie"
 
-#: objects/ui_Preferences.h:1477 src/settings.cc:177
+#: objects/ui_Preferences.h:1492 src/settings.cc:177
 msgid "Insert Tab"
 msgstr "Wstaw Tab"
 
-#: objects/ui_Preferences.h:1479
+#: objects/ui_Preferences.h:1494
 msgid "Show whitespace"
 msgstr "Pokazuj znaki niedrukowalne"
 
-#: objects/ui_Preferences.h:1480 src/settings.cc:172
+#: objects/ui_Preferences.h:1495 src/settings.cc:172
 msgid "Never"
 msgstr "Nigdy"
 
-#: objects/ui_Preferences.h:1481 src/settings.cc:172
+#: objects/ui_Preferences.h:1496 src/settings.cc:172
 msgid "Always"
 msgstr "Zawsze"
 
-#: objects/ui_Preferences.h:1482
+#: objects/ui_Preferences.h:1497
 msgid "Only after indentation"
 msgstr "Tylko po wcięciu"
 
-#: objects/ui_Preferences.h:1484
+#: objects/ui_Preferences.h:1499
 msgid "Size"
 msgstr "Rozmiar"
 
-#: objects/ui_Preferences.h:1485
+#: objects/ui_Preferences.h:1500
 msgid "Display"
 msgstr "Wygląd"
 
-#: objects/ui_Preferences.h:1486
+#: objects/ui_Preferences.h:1501
 msgid "Enable brace matching"
 msgstr "Włącz dopasowywanie nawiasów"
 
-#: objects/ui_Preferences.h:1487
+#: objects/ui_Preferences.h:1502
 msgid "Highlight current line"
 msgstr "Zakreśl aktywną linijkę"
 
-#: objects/ui_Preferences.h:1488
+#: objects/ui_Preferences.h:1503
 msgid "Display Line Numbers"
 msgstr "Numeruj linijki"
 
-#: objects/ui_Preferences.h:1489 objects/ui_Preferences.h:1514
+#: objects/ui_Preferences.h:1504
+msgid "Autocomplete"
+msgstr ""
+
+#: objects/ui_Preferences.h:1505
+msgid "Enable Autocompletion"
+msgstr ""
+
+#: objects/ui_Preferences.h:1506
+msgid "Character Threshold"
+msgstr ""
+
+#: objects/ui_Preferences.h:1507 objects/ui_Preferences.h:1532
 msgid "Line wrap"
 msgstr "Zawijanie wierszy"
 
-#: objects/ui_Preferences.h:1490 objects/ui_Preferences.h:1503
-#: objects/ui_Preferences.h:1509 src/settings.cc:73 src/settings.cc:89
+#: objects/ui_Preferences.h:1508 objects/ui_Preferences.h:1521
+#: objects/ui_Preferences.h:1527 src/settings.cc:73 src/settings.cc:89
 #: src/settings.cc:167 src/settings.cc:170 src/settings.cc:171
 msgid "None"
 msgstr "Brak"
 
-#: objects/ui_Preferences.h:1491 src/settings.cc:167
+#: objects/ui_Preferences.h:1509 src/settings.cc:167
 msgid "Wrap at character boundaries"
 msgstr "Zawijaj na znakach"
 
-#: objects/ui_Preferences.h:1492 src/settings.cc:167
+#: objects/ui_Preferences.h:1510 src/settings.cc:167
 msgid "Wrap at word boundaries"
 msgstr "Zawijaj na słowach"
 
-#: objects/ui_Preferences.h:1494
+#: objects/ui_Preferences.h:1512
 msgid "Line wrap indentation"
 msgstr "Wcięcie zawiniętych linijek"
 
-#: objects/ui_Preferences.h:1495
+#: objects/ui_Preferences.h:1513
 msgid "Line wrap visualization"
 msgstr "Wizualizacja zawiniętych linijek"
 
-#: objects/ui_Preferences.h:1496
+#: objects/ui_Preferences.h:1514
 msgid "Style"
 msgstr "Styl"
 
-#: objects/ui_Preferences.h:1497 src/settings.cc:168
+#: objects/ui_Preferences.h:1515 src/settings.cc:168
 msgid "Fixed"
 msgstr "Na sztywno"
 
-#: objects/ui_Preferences.h:1498 src/settings.cc:168
+#: objects/ui_Preferences.h:1516 src/settings.cc:168
 msgid "Same"
 msgstr "Takie samo"
 
-#: objects/ui_Preferences.h:1499 src/settings.cc:168
+#: objects/ui_Preferences.h:1517 src/settings.cc:168
 msgid "Indented"
 msgstr "Wcięte"
 
-#: objects/ui_Preferences.h:1502
+#: objects/ui_Preferences.h:1520
 msgid "Start"
 msgstr "Początek"
 
-#: objects/ui_Preferences.h:1504 objects/ui_Preferences.h:1510
+#: objects/ui_Preferences.h:1522 objects/ui_Preferences.h:1528
 #: src/settings.cc:170 src/settings.cc:171
 msgid "Text"
 msgstr "Tekst"
 
-#: objects/ui_Preferences.h:1505 objects/ui_Preferences.h:1511
+#: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1529
 #: src/settings.cc:170 src/settings.cc:171
 msgid "Border"
 msgstr "Krawędź"
 
-#: objects/ui_Preferences.h:1506 objects/ui_Preferences.h:1512
+#: objects/ui_Preferences.h:1524 objects/ui_Preferences.h:1530
 #: src/settings.cc:170 src/settings.cc:171
 msgid "Margin"
 msgstr "Margines"
 
-#: objects/ui_Preferences.h:1508
+#: objects/ui_Preferences.h:1526
 msgid "End"
 msgstr "Koniec"
 
-#: objects/ui_Preferences.h:1515
+#: objects/ui_Preferences.h:1533
 msgid "Automatically check for updates"
 msgstr "Automatycznie sprawdzaj aktualizacje"
 
-#: objects/ui_Preferences.h:1516
+#: objects/ui_Preferences.h:1534
 msgid "Include development snapshots"
 msgstr "Bierz pod uwagę wersje rozwojowe"
 
-#: objects/ui_Preferences.h:1517
+#: objects/ui_Preferences.h:1535
 msgid "Check Now"
 msgstr "Sprawdź teraz"
 
-#: objects/ui_Preferences.h:1518
+#: objects/ui_Preferences.h:1536
 msgid "Last checked: "
 msgstr "Ostatnio sprawdzono: "
 
-#: objects/ui_Preferences.h:1520 objects/ui_PrintInitDialog.h:114
+#: objects/ui_Preferences.h:1538 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
 msgstr "OctoPrint"
 
-#: objects/ui_Preferences.h:1521
+#: objects/ui_Preferences.h:1539
 msgid "URL"
 msgstr "URL"
 
-#: objects/ui_Preferences.h:1522
+#: objects/ui_Preferences.h:1540
 msgid "API Key"
 msgstr "Klucz API"
 
-#: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1524
+#: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1542
 msgid "Load"
 msgstr "Załaduj"
 
-#: objects/ui_Preferences.h:1526
+#: objects/ui_Preferences.h:1544
 msgid "Check"
 msgstr "Sprawdź"
 
-#: objects/ui_Preferences.h:1527
+#: objects/ui_Preferences.h:1545
 msgid "Slicing Profile"
 msgstr "Profil slicera"
 
-#: objects/ui_Preferences.h:1528
+#: objects/ui_Preferences.h:1546
 msgid "Slicing Engine"
 msgstr "Silnik slicera"
 
-#: objects/ui_Preferences.h:1529
+#: objects/ui_Preferences.h:1547
 msgid "File Format"
 msgstr "Format pliku"
 
-#: objects/ui_Preferences.h:1530
+#: objects/ui_Preferences.h:1548
 msgid "Action"
 msgstr "Akcja"
 
-#: objects/ui_Preferences.h:1531
+#: objects/ui_Preferences.h:1549
 #, fuzzy
 msgid "Show"
 msgstr "Pokaż osie"
 
-#: objects/ui_Preferences.h:1532
+#: objects/ui_Preferences.h:1550
 msgid "Note: The API key is stored unencrypted in the application settings."
 msgstr "Uwaga: Klucz API przechowywany jest w jawnej postaci."
 
-#: objects/ui_Preferences.h:1533
+#: objects/ui_Preferences.h:1551
 msgid "OpenCSG"
 msgstr "OpenCSG"
 
-#: objects/ui_Preferences.h:1534
+#: objects/ui_Preferences.h:1552
 msgid "Show capability warning"
 msgstr "Pokazuj ostrzeżenia o rozszerzeniach"
 
-#: objects/ui_Preferences.h:1535
+#: objects/ui_Preferences.h:1553
 msgid "Enable for OpenGL 1.x"
 msgstr "Włącz dla OpenGL 1.x"
 
-#: objects/ui_Preferences.h:1536
+#: objects/ui_Preferences.h:1554
 msgid "Turn off rendering at "
 msgstr "Wyłącz renderowanie przy "
 
-#: objects/ui_Preferences.h:1537
+#: objects/ui_Preferences.h:1555
 msgid "elements"
 msgstr "elementach"
 
-#: objects/ui_Preferences.h:1538
+#: objects/ui_Preferences.h:1556
 msgid "Force Goldfeather"
 msgstr "Wymuś Goldfeather"
 
-#: objects/ui_Preferences.h:1539
+#: objects/ui_Preferences.h:1557
 msgid "CGAL"
 msgstr "CGAL"
 
-#: objects/ui_Preferences.h:1540
+#: objects/ui_Preferences.h:1558
 msgid "CGAL Cache size"
 msgstr "Rozmiar cache CGAL"
 
-#: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1543
+#: objects/ui_Preferences.h:1559 objects/ui_Preferences.h:1561
 msgid "MB"
 msgstr "MB"
 
-#: objects/ui_Preferences.h:1542
+#: objects/ui_Preferences.h:1560
 msgid "PolySet Cache size"
 msgstr "Rozmiar pamięci podręcznej PolySetów"
 
-#: objects/ui_Preferences.h:1544
+#: objects/ui_Preferences.h:1562
 msgid "User Interface"
 msgstr "Interfejs Użytkownika"
 
-#: objects/ui_Preferences.h:1545
-msgid "Allow opening multiple documents"
-msgstr "Pozwalaj na otwieranie wielu dokumentów"
-
-#: objects/ui_Preferences.h:1546
+#: objects/ui_Preferences.h:1563
 msgid "Enable docking of Editor and Console in different places"
 msgstr "Włącz dokowanie edytora i konsoli w różnych miejscach"
 
-#: objects/ui_Preferences.h:1547
+#: objects/ui_Preferences.h:1564
 msgid "Enable undocking of Editor and Console to separate windows"
 msgstr "Włącz przenoszenie edytora i konsoli do osobnych okien"
 
-#: objects/ui_Preferences.h:1548
+#: objects/ui_Preferences.h:1565
 msgid "Show Welcome Screen"
 msgstr "Pokaż ekran powitalny"
 
-#: objects/ui_Preferences.h:1549
+#: objects/ui_Preferences.h:1566
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr ""
 "Włącz tłumaczenie interfejsu użytkownika (wymaga uruchomienia ponownie "
 "programu)"
 
-#: objects/ui_Preferences.h:1550
+#: objects/ui_Preferences.h:1567
 msgid "Bring window to front after automatic reload"
 msgstr "Przenieś okno na górę po automatycznym przeładowaniu"
 
-#: objects/ui_Preferences.h:1551
+#: objects/ui_Preferences.h:1568
 msgid "Play sound notification on render complete"
 msgstr "Odtwarzaj dźwięk po ukończeniu renderowania"
 
-#: objects/ui_Preferences.h:1552
+#: objects/ui_Preferences.h:1569
+#, fuzzy
+msgid "Play sound when render completion time is at least"
+msgstr "Odtwarzaj dźwięk po ukończeniu renderowania"
+
+#: objects/ui_Preferences.h:1570
+msgid "sec"
+msgstr ""
+
+#: objects/ui_Preferences.h:1571
 msgid "OpenSCAD Language Features"
 msgstr ""
 
-#: objects/ui_Preferences.h:1553
+#: objects/ui_Preferences.h:1572
 msgid "Warn when there is a parameter mismatch in user module calls"
 msgstr ""
 
-#: objects/ui_Preferences.h:1554
+#: objects/ui_Preferences.h:1573
 msgid "Stop on the first warning"
 msgstr "Zatrzymaj się na pierwszym ostrzeżeniu"
 
-#: objects/ui_Preferences.h:1555
-msgid "check the parameter range for builtin modules"
+#: objects/ui_Preferences.h:1574
+msgid "Check the parameter range for builtin modules"
 msgstr ""
+
+#: objects/ui_Preferences.h:1575
+msgid "Debugging"
+msgstr ""
+
+#: objects/ui_Preferences.h:1576
+#, fuzzy
+msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
+msgstr ""
+"Włącz tłumaczenie interfejsu użytkownika (wymaga uruchomienia ponownie "
+"programu)"
 
 #: objects/ui_PrintInitDialog.h:111
 msgid "Cancel"
@@ -1482,73 +1580,40 @@ msgstr ""
 msgid "Save console content"
 msgstr "Zapisz zawartość konsoli do pliku"
 
-#: src/export.cc:77
+#: src/export.cc:78
 #, c-format
 msgid "Can't open file \"%s\" for export"
 msgstr "Nie można otworzyć pliku \"%s\" do eksportu"
 
-#: src/export.cc:92
+#: src/export.cc:93
 #, c-format
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr "Błąd: \"%s\" – błąd zapisu. (Pełny dysk?)"
 
-#: src/mainwin.cc:915 src/mainwin.cc:1601
-msgid "Untitled.scad"
-msgstr "Bez tytułu.scad"
-
-#: src/mainwin.cc:1169
+#: src/mainwin.cc:1037
 msgid "Compile error."
 msgstr "Błąd kompilacji."
 
-#: src/mainwin.cc:1172
+#: src/mainwin.cc:1040
 msgid "Error while compiling '%1'."
 msgstr "Błąd podczas kompilowania '%1'."
 
-#: src/mainwin.cc:1176
+#: src/mainwin.cc:1044
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "Podczas kompilacji wygenerowano %1 ostrzeżenie."
 msgstr[1] "Podczas kompilacji wygenerowano %1 ostrzeżenia."
 msgstr[2] "Podczas kompilacji wygenerowano %1 ostrzeżeń."
 
-#: src/mainwin.cc:1186
+#: src/mainwin.cc:1054
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr " Szczegóły w <a href=\"#console\">oknie konsoli</a>."
 
-#: src/mainwin.cc:1579
-msgid "Failed to open file for writing"
-msgstr "Nie udało się zapisać do pliku"
-
-#: src/mainwin.cc:1589
-#, c-format
-msgid "Saved design '%s'."
-msgstr "Zapisano projekt „%s”."
-
-#: src/mainwin.cc:1592
-msgid "Error saving design"
-msgstr "Błąd przy zapisie projektu"
-
-#: src/mainwin.cc:1600
-msgid "Save File"
-msgstr "Zapisz plik"
-
-#: src/mainwin.cc:1602
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "Projekty OpenSCAD (*.scad)"
-
-#: src/mainwin.cc:1612
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 już istnieje.\n"
-"Czy chcesz zamienić?"
-
-#: src/mainwin.cc:1976
+#: src/mainwin.cc:1768
 msgid "Application"
 msgstr "Aplikacja"
 
-#: src/mainwin.cc:1977
+#: src/mainwin.cc:1769
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
@@ -1556,62 +1621,55 @@ msgstr ""
 "Dokument został zmodyfikowany.\n"
 "Czy na pewno chcesz go przeładować?"
 
-#: src/mainwin.cc:2217
+#: src/mainwin.cc:2006
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
 msgstr ""
 
-#: src/mainwin.cc:2218
+#: src/mainwin.cc:2007
 msgid "Upload Error"
 msgstr "Błąd uploadu"
 
-#: src/mainwin.cc:2530
+#: src/mainwin.cc:2341
 msgid "Export %1 File"
 msgstr "Eksportuj plik %1"
 
-#: src/mainwin.cc:2531
+#: src/mainwin.cc:2342
 msgid "%1 Files (*%2)"
 msgstr "Pliki %1 (*%2)"
 
-#: src/mainwin.cc:2589
+#: src/mainwin.cc:2398
 msgid "Export CSG File"
 msgstr "Eksportuj plik CSG"
 
-#: src/mainwin.cc:2589
+#: src/mainwin.cc:2398
 msgid "CSG Files (*.csg)"
 msgstr "Pliki CSG (*.csg)"
 
-#: src/mainwin.cc:2618
+#: src/mainwin.cc:2425
 msgid "Export Image"
 msgstr "Eksportuj obrazek"
 
-#: src/mainwin.cc:2618
+#: src/mainwin.cc:2425
 msgid "PNG Files (*.png)"
 msgstr "Pliki PBG (*.png)"
 
-#: src/mainwin.cc:2893
+#: src/mainwin.cc:2725 src/mainwin.cc:2730
 msgid "Console"
 msgstr "Konsola"
 
-#: src/mainwin.cc:2898
+#: src/mainwin.cc:2742
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:3042
-msgid "The document has been modified."
-msgstr "Dokument został zmodyfikowany."
+#: src/mainwin.cc:2750 src/tabmanager.cc:225 src/tabmanager.cc:463
+#: src/tabmanager.cc:521 src/tabmanager.cc:684
+msgid "Untitled.scad"
+msgstr "Bez tytułu.scad"
 
-#: src/mainwin.cc:3043
-msgid "Do you want to save your changes?"
-msgstr "Czy chcesz zapisać zmiany?"
-
-#: src/mainwin.cc:3202
+#: src/mainwin.cc:3015 src/mainwin.cc:3022
 #, fuzzy
-msgid "/Untitled"
+msgid "Untitled"
 msgstr "Bez tytułu"
-
-#: src/mainwin.cc:3205
-msgid "/"
-msgstr "/"
 
 #: src/OpenSCADApp.cc:61
 msgid "Unknown error"
@@ -1637,16 +1695,16 @@ msgstr ""
 "Fontconfig musi zaktualizować pamięć podręczną fontów.\n"
 "Może to zająć kilka minut."
 
-#: src/Preferences.cc:235 src/Preferences.cc:240 src/Preferences.cc:710
-#: src/Preferences.cc:746
+#: src/Preferences.cc:241 src/Preferences.cc:246 src/Preferences.cc:737
+#: src/Preferences.cc:773
 msgid "<Default>"
 msgstr "<Domyślny>"
 
-#: src/Preferences.cc:694
+#: src/Preferences.cc:721
 msgid "Success: Server Version = %2, API Version = %1"
 msgstr ""
 
-#: src/Preferences.cc:696 src/Preferences.cc:720 src/Preferences.cc:756
+#: src/Preferences.cc:723 src/Preferences.cc:747 src/Preferences.cc:783
 msgid "Error"
 msgstr "Błąd"
 
@@ -1726,7 +1784,76 @@ msgstr "Uploaduj, slice'uj i wybierz do drukowania"
 msgid "Upload, Slice & Start printing"
 msgstr "Uploaduj, slice'uj i rozpocznij drukowanie"
 
-#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:237
+#: src/tabmanager.cc:380
+#, fuzzy
+msgid "Find Next"
+msgstr "Zn&ajdź następny"
+
+#: src/tabmanager.cc:385
+#, fuzzy
+msgid "Find Previous"
+msgstr "Zna&jdź poprzedni"
+
+#: src/tabmanager.cc:410
+msgid "Copy file name"
+msgstr ""
+
+#: src/tabmanager.cc:416
+msgid "Copy full path"
+msgstr ""
+
+#: src/tabmanager.cc:421
+#, fuzzy
+msgid "Close Tab"
+msgstr "Zamknij"
+
+#: src/tabmanager.cc:567
+msgid "The document has been modified."
+msgstr "Dokument został zmodyfikowany."
+
+#: src/tabmanager.cc:568
+msgid "Do you want to save your changes?"
+msgstr "Czy chcesz zapisać zmiany?"
+
+#: src/tabmanager.cc:600
+#, fuzzy
+msgid "Some of the tabs are modified."
+msgstr "Dokument został zmodyfikowany."
+
+#: src/tabmanager.cc:601
+msgid "All unsaved changes will be lost."
+msgstr ""
+
+#: src/tabmanager.cc:662
+msgid "Failed to open file for writing"
+msgstr "Nie udało się zapisać do pliku"
+
+#: src/tabmanager.cc:672
+#, c-format
+msgid "Saved design '%s'."
+msgstr "Zapisano projekt „%s”."
+
+#: src/tabmanager.cc:675
+msgid "Error saving design"
+msgstr "Błąd przy zapisie projektu"
+
+#: src/tabmanager.cc:683
+msgid "Save File"
+msgstr "Zapisz plik"
+
+#: src/tabmanager.cc:685
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "Projekty OpenSCAD (*.scad)"
+
+#: src/tabmanager.cc:695
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 już istnieje.\n"
+"Czy chcesz zamienić?"
+
+#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:231
 msgid "changes on current preset not saved"
 msgstr "zmiany w obecnym presecie są niezapisane"
 
@@ -1736,96 +1863,96 @@ msgid ""
 "to reset this preset and lose your changes?"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:164
+#: src/parameter/ParameterWidget.cc:156
 msgid "remove current preset"
 msgstr "usuń obecny preset"
 
-#: src/parameter/ParameterWidget.cc:166
+#: src/parameter/ParameterWidget.cc:158
 msgid "save current preset"
 msgstr "zapisz obecny preset"
 
-#: src/parameter/ParameterWidget.cc:168 src/parameter/ParameterWidget.cc:169
-#: src/parameter/ParameterWidget.cc:170
+#: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
+#: src/parameter/ParameterWidget.cc:162
 msgid "JSON file read only"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:221
+#: src/parameter/ParameterWidget.cc:215
 msgid "design default values"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:239
+#: src/parameter/ParameterWidget.cc:233
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:279
+#: src/parameter/ParameterWidget.cc:273
 msgid "Do you want to delete the current preset?"
 msgstr "Czy chcesz usunąć aktualny preset?"
 
-#: src/parameter/ParameterWidget.cc:281
+#: src/parameter/ParameterWidget.cc:275
 msgid "Do you want to delete the current preset '%1'?"
 msgstr "Czy chcesz usunąć preset '%1'?"
 
-#: src/parameter/ParameterWidget.cc:516
+#: src/parameter/ParameterWidget.cc:515
 msgid "Create new set of parameter"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:516
+#: src/parameter/ParameterWidget.cc:515
 msgid "Enter name of the parameter set"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:527
+#: src/parameter/ParameterWidget.cc:526
 msgid "Set Name %1 already exists"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:528
+#: src/parameter/ParameterWidget.cc:527
 msgid "The set name  %1 already exists. Do you want overwrite it?"
 msgstr "%1 już istnieje. Czy chcesz go nadpisać?"
 
-#: src/parameter/ParameterWidget.cc:572
+#: src/parameter/ParameterWidget.cc:571
 msgid "Saving presets"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:573
+#: src/parameter/ParameterWidget.cc:572
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
 msgstr ""
 
-#: src/input/AxisConfigWidget.h:91
+#: src/input/AxisConfigWidget.h:84
 msgid ""
 "This driver was not enabled during build time and is thus not available."
 msgstr ""
 "Sterownik nie został włączony podczas kompilacji, dlatego nie jest dostępny."
 
-#: src/input/AxisConfigWidget.h:93
+#: src/input/AxisConfigWidget.h:86
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
 msgstr ""
 "Sterownik DBUS jest używany tylko dla zdalnego sterowania. Obsługiwany tylko "
 "pod Linuxem"
 
-#: src/input/AxisConfigWidget.h:94
+#: src/input/AxisConfigWidget.h:87
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
 msgstr ""
 
-#: src/input/AxisConfigWidget.h:95
+#: src/input/AxisConfigWidget.h:88
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
 
-#: src/input/AxisConfigWidget.h:96
+#: src/input/AxisConfigWidget.h:89
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
 msgstr ""
 
-#: src/input/AxisConfigWidget.h:97
+#: src/input/AxisConfigWidget.h:90
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
 msgstr "Sterownik QGAMEPAD obsługuje pady na wielu platformach."
 
-#: src/input/ButtonConfigWidget.cc:186
+#: src/input/ButtonConfigWidget.cc:185
 msgid "(not supported)"
 msgstr "(niewspierane)"
 
@@ -1904,6 +2031,30 @@ msgstr ""
 "użyć plików w formacie Autocad DXF. Oprócz ścieżek 2D można z tych plików "
 "wczytywać parametry projektu. Dodatkowo OpenSCAD może wczytywać i tworzyć "
 "modele 3D w formacie STL i OFF."
+
+#~ msgid "&New"
+#~ msgstr "&Nowy"
+
+#~ msgid "&Open..."
+#~ msgstr "&Otwórz…"
+
+#~ msgid "Editor Type"
+#~ msgstr "Rodzaj edytora"
+
+#~ msgid "Simple Editor"
+#~ msgstr "Prosty edytor"
+
+#~ msgid "QScintilla Editor"
+#~ msgstr "Edytor QScintilla"
+
+#~ msgid "(requires restart)"
+#~ msgstr "(wymaga ponownego uruchomienia)"
+
+#~ msgid "Allow opening multiple documents"
+#~ msgstr "Pozwalaj na otwieranie wielu dokumentów"
+
+#~ msgid "/"
+#~ msgstr "/"
 
 #~ msgid "Untitled.csg"
 #~ msgstr "Bez tytułu.csg"
