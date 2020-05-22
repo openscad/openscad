@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <functional>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -9,6 +10,7 @@
 #include "Camera.h"
 #include "memory.h"
 
+class PolySet;
 
 enum class FileFormat {
 	STL,
@@ -96,3 +98,43 @@ struct ViewOptions {
 
 bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
 bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output);
+
+namespace Export {
+
+struct Triangle {
+	std::array<int, 3> key;
+	Triangle(int p1, int p2, int p3)
+	{
+		// sort vertices with smallest value first without
+		// changing winding order of the triangle.
+		// See https://github.com/nophead/Mendel90/blob/master/c14n_stl.py
+
+        if (p1 < p2) {
+            if (p1 < p3) {
+                key = {p1, p2, p3}; // v1 is the smallest
+			} else {
+                key = {p3, p1, p2}; // v3 is the smallest
+			}
+		} else {
+            if (p2 < p3) {
+                key = {p2, p3, p1}; // v2 is the smallest
+            } else {
+                key = {p3, p1, p2}; // v3 is the smallest
+			}
+		}
+	}
+};
+
+class ExportMesh {
+public:
+	ExportMesh(const PolySet &ps);
+
+	bool foreach_vertex(const std::function<bool(const std::array<double, 3>&)> callback) const;
+	bool foreach_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const;
+
+private:
+	std::map<std::array<double, 3>, int> vertexMap;
+	std::vector<Triangle> triangles;
+};
+
+}
