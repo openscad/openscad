@@ -105,6 +105,8 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 {
 	PRINTD("setColorScheme");
 	Renderer::setColorScheme(cs);
+	colormap[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
+	colormap[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
 	this->polyhedrons.clear(); // Mark as dirty
 	PRINTD("setColorScheme done");
 }
@@ -117,9 +119,8 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		if (polyset->getDimension() == 2) {
 			// Draw 2D polygons
 			glDisable(GL_LIGHTING);
-			// FIXME:	const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
-			glColor3f(0.0f, 0.75f, 0.60f);
-
+			setColor(ColorMode::CGAL_FACE_2D_COLOR);
+			
 			for (const auto &polygon : polyset->polygons) {
 				glBegin(GL_POLYGON);
 				for (const auto &p : polygon) {
@@ -132,15 +133,13 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			glDisable(GL_DEPTH_TEST);
 
 			glLineWidth(2);
-			// FIXME:	const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
-			glColor3f(1.0f, 0.0f, 0.0f);
+			setColor(ColorMode::CGAL_EDGE_2D_COLOR);
 			this->render_edges(polyset, CSGMODE_NONE);
 			glEnable(GL_DEPTH_TEST);
 		}
 		else {
 			// Draw 3D polygons
-			const Color4f c(-1,-1,-1,-1);	
-			setColor(ColorMode::MATERIAL, c.data(), nullptr);
+			setColor(ColorMode::MATERIAL);
 			this->render_surface(polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 		}
 	}
