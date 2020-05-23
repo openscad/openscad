@@ -1026,7 +1026,9 @@ uint32_t RangeType::numValues() const
 	}
  
 	// Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
-	return std::nextafter((end_val - begin_val) / step_val, std::numeric_limits<uint32_t>::max()) + 1;
+	const uint32_t max = std::numeric_limits<uint32_t>::max();
+	uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
+	return (num_steps == max) ? max : num_steps + 1;
 }
 
 RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type), 
