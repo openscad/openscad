@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
 "PO-Revision-Date: 2015-03-06 10:27+0100\n"
 "Last-Translator: Miro Hrončok <miro@hroncok.cz>\n"
 "Language-Team: Czech <miro@hroncok.cz>\n"
@@ -268,7 +268,7 @@ msgstr "Konzole"
 
 #: objects/ui_Console.h:46
 #, fuzzy
-msgid "Save As"
+msgid "Save As..."
 msgstr "Uložit &jako..."
 
 #: objects/ui_Console.h:48
@@ -1037,8 +1037,8 @@ msgstr "Hledaný řetězec"
 
 #: objects/ui_MainWindow.h:1229
 #, fuzzy
-msgid "Prev."
-msgstr "Náhled"
+msgid "Previous"
+msgstr "Najít &předchozí"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -2005,6 +2005,14 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Save As"
+#~ msgstr "Uložit &jako..."
+
+#, fuzzy
+#~ msgid "Prev."
+#~ msgstr "Náhled"
 
 #~ msgid "&New"
 #~ msgstr "&Nový"

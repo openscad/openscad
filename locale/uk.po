@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2018.08.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
 "PO-Revision-Date: 2018-11-11 13:00+0200\n"
 "Last-Translator: Kyrylo Romanenko <romanenko-kv@hotmail.com>\n"
 "Language-Team: Ukrainian\n"
@@ -276,7 +276,7 @@ msgstr "Консоль"
 
 #: objects/ui_Console.h:46
 #, fuzzy
-msgid "Save As"
+msgid "Save As..."
 msgstr "Зберегти &як..."
 
 #: objects/ui_Console.h:48
@@ -1041,8 +1041,9 @@ msgid "Search string"
 msgstr "Шукати рядок"
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
-msgstr "Попередній"
+#, fuzzy
+msgid "Previous"
+msgstr "Знайти &попереднє"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -2030,6 +2031,13 @@ msgstr ""
 "обміну даних для цих 2D контурів використовуються файли AutoCAD DXF. Окрім "
 "файлів DXF OpenSCAD може читати та створювати 3D моделі у форматах файлів "
 "STL та OFF."
+
+#, fuzzy
+#~ msgid "Save As"
+#~ msgstr "Зберегти &як..."
+
+#~ msgid "Prev."
+#~ msgstr "Попередній"
 
 #~ msgid "&New"
 #~ msgstr "&Новий"

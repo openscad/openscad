@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2020.02.01\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
 "PO-Revision-Date: 2020-04-20 17:00+0400\n"
 "Last-Translator: Sargis Malkonyan <melkonyansarg@gmail.com>\n"
 "Language-Team: Agarak Armath Engineering Laboratories\n"
@@ -269,8 +269,9 @@ msgid "Clear console"
 msgstr "Մաքրել հրամանների վահանակը"
 
 #: objects/ui_Console.h:46
-msgid "Save As"
-msgstr "Պահպանել որպես՝"
+#, fuzzy
+msgid "Save As..."
+msgstr "Պահել &որպես..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
@@ -1030,8 +1031,9 @@ msgid "Search string"
 msgstr "Գտնել շարք"
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
-msgstr "Նախորդ"
+#, fuzzy
+msgid "Previous"
+msgstr "&Փնտրել նախորդը"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -2032,6 +2034,12 @@ msgstr ""
 "հնարավոր է նաև կարդալ դիզայնի կարգաբերումները DXF նիշքերից: Բացի DXF "
 "նիշքերից, OpenSCAD- ը կարող է կարդալ և ստեղծել 3D մոդելներ STL և OFF նիշքերի "
 "ձևաչափերով:"
+
+#~ msgid "Save As"
+#~ msgstr "Պահպանել որպես՝"
+
+#~ msgid "Prev."
+#~ msgstr "Նախորդ"
 
 #~ msgid "&New"
 #~ msgstr "&Նոր"

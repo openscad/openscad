@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
 "PO-Revision-Date: 2019-09-17 \n"
 "Last-Translator: Pierre ROUZEAU <github.com/PRouzeau>\n"
 "Language-Team: French\n"
@@ -271,7 +271,8 @@ msgid "Clear console"
 msgstr "Effacer la console"
 
 #: objects/ui_Console.h:46
-msgid "Save As"
+#, fuzzy
+msgid "Save As..."
 msgstr "Enregistrer &sous..."
 
 #: objects/ui_Console.h:48
@@ -1034,8 +1035,9 @@ msgid "Search string"
 msgstr "Rechercher une chaîne de caractères"
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
-msgstr "Précédent"
+#, fuzzy
+msgid "Previous"
+msgstr "Rechercher &Précédent"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -2047,6 +2049,12 @@ msgstr ""
 "2D pour l'extrusion il est aussi possible de lire les paramètres des "
 "fichiers DXF. En sus des fichiers DXF, OpenSCAD peut lire et créer des "
 "modèles 3D aux formats STL et OFF."
+
+#~ msgid "Save As"
+#~ msgstr "Enregistrer &sous..."
+
+#~ msgid "Prev."
+#~ msgstr "Précédent"
 
 #~ msgid "&New"
 #~ msgstr "&Nouveau"

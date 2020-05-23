@@ -10,7 +10,7 @@ msgstr ""
 "#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2020.05.23)  #-#-#-#-#\n"
 "Project-Id-Version: OpenSCAD 2020.05.23\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -269,7 +269,7 @@ msgid "Clear console"
 msgstr ""
 
 #: objects/ui_Console.h:46
-msgid "Save As"
+msgid "Save As..."
 msgstr ""
 
 #: objects/ui_Console.h:48
@@ -1008,7 +1008,7 @@ msgid "Search string"
 msgstr ""
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
+msgid "Previous"
 msgstr ""
 
 #: objects/ui_MainWindow.h:1230

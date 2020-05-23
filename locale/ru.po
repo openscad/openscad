@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
 "PO-Revision-Date: 2019-12-11 12:05+0300\n"
 "Last-Translator: Alexander Kurachenko <alexander@basealt.ru>\n"
 "Language-Team: \n"
@@ -270,8 +270,9 @@ msgid "Clear console"
 msgstr "Очистить консоль"
 
 #: objects/ui_Console.h:46
-msgid "Save As"
-msgstr "Сохранить как"
+#, fuzzy
+msgid "Save As..."
+msgstr "Сохранить &как..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
@@ -1030,8 +1031,9 @@ msgid "Search string"
 msgstr "Искать строчку"
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
-msgstr "Пред."
+#, fuzzy
+msgid "Previous"
+msgstr "Искать пре&дыдущее"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -2022,6 +2024,12 @@ msgstr ""
 "файлы Autocad DXF. В дополнение к двухмерному пути экструзии, возможно "
 "чтение проектных параметров из файлов DX. Помимо файлов DXF, OpenSCAD может "
 "читать и создавать 3D-модели в форматах STL и OFF."
+
+#~ msgid "Save As"
+#~ msgstr "Сохранить как"
+
+#~ msgid "Prev."
+#~ msgstr "Пред."
 
 #~ msgid "&New"
 #~ msgstr "&Создать"

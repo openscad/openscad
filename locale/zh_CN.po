@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
 "PO-Revision-Date: 2019-12-25 16:10+0800\n"
 "Last-Translator: 玉堂白鹤 <yjwork@qq.com>\n"
 "Language-Team: \n"
@@ -270,8 +270,9 @@ msgid "Clear console"
 msgstr "清除控制台"
 
 #: objects/ui_Console.h:46
-msgid "Save As"
-msgstr "另存为"
+#, fuzzy
+msgid "Save As..."
+msgstr "另存为(&A)..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
@@ -1030,8 +1031,9 @@ msgid "Search string"
 msgstr "搜索字符串"
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
-msgstr "上一个"
+#, fuzzy
+msgid "Previous"
+msgstr "查找上一个(&V)"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -1995,6 +1997,12 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#~ msgid "Save As"
+#~ msgstr "另存为"
+
+#~ msgid "Prev."
+#~ msgstr "上一个"
 
 #~ msgid "&New"
 #~ msgstr "新建(&N)"
