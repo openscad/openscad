@@ -160,7 +160,7 @@ bool InputEventMapper::generateDeferredEvents()
 void InputEventMapper::considerGeneratingDeferredEvents()
 {
     if (!timer->isActive()) {
-        timer->start(30);
+        QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 30));
     }
 }
 
