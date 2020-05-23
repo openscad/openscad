@@ -8,15 +8,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 01:30+0200\n"
-"PO-Revision-Date: 2019-02-17 12:57+0100\n"
+"POT-Creation-Date: 2020-05-23 03:16+0200\n"
+"PO-Revision-Date: 2020-05-23 03:18+0200\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.3.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -77,7 +77,7 @@ msgstr ""
 #: objects/ui_AxisConfigWidget.h:868 objects/ui_AxisConfigWidget.h:870
 #: objects/ui_AxisConfigWidget.h:881
 msgid "DeadZone"
-msgstr ""
+msgstr "Inaktiver Bereich"
 
 #: objects/ui_AxisConfigWidget.h:858
 msgid "Auto Trim Axes"
@@ -195,12 +195,11 @@ msgstr "Achsenzuordnung:"
 
 #: objects/ui_AxisConfigWidget.h:900
 msgid "Status:"
-msgstr ""
+msgstr "Status:"
 
 #: objects/ui_AxisConfigWidget.h:901
-#, fuzzy
 msgid "TextLabel"
-msgstr "Text"
+msgstr "TextLabel"
 
 #: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1461
 msgid "Update"
@@ -272,20 +271,19 @@ msgstr "Knopf 15"
 
 #: objects/ui_Console.h:42
 msgid "Clear"
-msgstr ""
+msgstr "Löschen"
 
 #: objects/ui_Console.h:44
-#, fuzzy
 msgid "Clear console"
-msgstr "Konsole"
+msgstr "Konsole löschen"
 
 #: objects/ui_Console.h:46
-msgid "Save As"
-msgstr "Speichern Unter..."
+msgid "Save As..."
+msgstr "Speichern &Unter..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
-msgstr ""
+msgstr "Log in Datei speichern"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -375,9 +373,8 @@ msgid "OpenSCAD Detailed Library and Build Information"
 msgstr "Detailierte Informationen über diese OpenSCAD Version"
 
 #: objects/ui_MainWindow.h:955
-#, fuzzy
 msgid "&New File"
-msgstr "&Datei"
+msgstr "&Neue Datei"
 
 #: objects/ui_MainWindow.h:957
 msgid "Ctrl+N"
@@ -385,12 +382,11 @@ msgstr "Ctrl+N"
 
 #: objects/ui_MainWindow.h:959
 msgid "New Window"
-msgstr ""
+msgstr "Neues Fenster"
 
 #: objects/ui_MainWindow.h:960
-#, fuzzy
 msgid "&Open File"
-msgstr "&Datei"
+msgstr "&Datei öffen"
 
 #: objects/ui_MainWindow.h:962
 msgid "Ctrl+O"
@@ -398,7 +394,7 @@ msgstr "Ctrl+O"
 
 #: objects/ui_MainWindow.h:964
 msgid "Open in New Window"
-msgstr ""
+msgstr "In neuem Fenster öffenen"
 
 #: objects/ui_MainWindow.h:965
 msgid "&Save"
@@ -417,9 +413,8 @@ msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:973
-#, fuzzy
 msgid "Save All"
-msgstr "Speichern Unter..."
+msgstr "Alles Speichern"
 
 #: objects/ui_MainWindow.h:974
 msgid "&Reload"
@@ -506,51 +501,44 @@ msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
 #: objects/ui_MainWindow.h:1017
-#, fuzzy
 msgid "Show Next Tab"
-msgstr "Details anzeigen"
+msgstr "Nächsten Reitern anzeigen"
 
 #: objects/ui_MainWindow.h:1019
-#, fuzzy
 msgid "Ctrl+Tab"
-msgstr "Ctrl+T"
+msgstr "Ctrl+Tab"
 
 #: objects/ui_MainWindow.h:1021
 msgid "Show Previous Tab"
-msgstr ""
+msgstr "Vorheriger Reiter"
 
 #: objects/ui_MainWindow.h:1023
-#, fuzzy
 msgid "Ctrl+Shift+Tab"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+Tab"
 
 #: objects/ui_MainWindow.h:1025
-#, fuzzy
 msgid "Copy viewport ima&ge"
-msgstr "Viewport kopieren"
+msgstr "Viewport Bild kopieren"
 
 #: objects/ui_MainWindow.h:1027
 msgid "Ctrl+Shift+C"
 msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1029
-#, fuzzy
 msgid "Copy viewport transl&ation"
-msgstr "Aktuelle Versch&iebung einfügen"
+msgstr "Aktuelle Versch&iebung kopieren"
 
 #: objects/ui_MainWindow.h:1031
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:1033
-#, fuzzy
 msgid "Cop&y viewport rotation"
-msgstr "Aktuelle Ro&tation einfügen"
+msgstr "Aktuelle Ro&tation kopieren"
 
 #: objects/ui_MainWindow.h:1034
-#, fuzzy
 msgid "Copy vie&wport distance"
-msgstr "Viewport kopieren"
+msgstr "Aktuellen Abstand kopieren"
 
 #: objects/ui_MainWindow.h:1035
 msgid "Increase Font &Size"
@@ -838,12 +826,11 @@ msgstr "Ctrl+E"
 
 #: objects/ui_MainWindow.h:1160
 msgid "Jump to next error"
-msgstr ""
+msgstr "Zum nächsten Fehler springen"
 
 #: objects/ui_MainWindow.h:1162
-#, fuzzy
 msgid "Ctrl+Alt+E"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+E"
 
 #: objects/ui_MainWindow.h:1164
 msgid "&Flush Caches"
@@ -923,35 +910,31 @@ msgstr "Tabs in Leerzeichen &umwandeln"
 
 #: objects/ui_MainWindow.h:1189
 msgid "Toggle Bookmark"
-msgstr ""
+msgstr "Marker umschalten"
 
 #: objects/ui_MainWindow.h:1191
-#, fuzzy
 msgid "Ctrl+F2"
-msgstr "Ctrl+F"
+msgstr "Ctrl+F2"
 
 #: objects/ui_MainWindow.h:1193
 msgid "Jump to next bookmark"
-msgstr ""
+msgstr "Zum nächsten Marker springen"
 
 #: objects/ui_MainWindow.h:1195
-#, fuzzy
 msgid "F2"
-msgstr "F12"
+msgstr "F2"
 
 #: objects/ui_MainWindow.h:1197
 msgid "Jump to previous bookmark"
-msgstr ""
+msgstr "Zum vorherigen Marker springen"
 
 #: objects/ui_MainWindow.h:1199
-#, fuzzy
 msgid "Shift+F2"
-msgstr "Ctrl+Shift+S"
+msgstr "Shift+F2"
 
 #: objects/ui_MainWindow.h:1201
-#, fuzzy
 msgid "Hide Editor toolbar"
-msgstr "Symbolleisten verstecken"
+msgstr "Editor Symbolleiste verstecken"
 
 #: objects/ui_MainWindow.h:1202
 msgid "U&nindent"
@@ -970,9 +953,8 @@ msgid "Hide Customizer"
 msgstr "Customizer verstecken"
 
 #: objects/ui_MainWindow.h:1208
-#, fuzzy
 msgid "Hide 3D view toolbar"
-msgstr "Symbolleisten verstecken"
+msgstr "3D Symbolleiste verstecken"
 
 #: objects/ui_MainWindow.h:1209
 msgid "Message"
@@ -1044,8 +1026,8 @@ msgid "Search string"
 msgstr "Suchtext"
 
 #: objects/ui_MainWindow.h:1229
-msgid "Prev."
-msgstr "Vorheriges"
+msgid "Previous"
+msgstr "Rückwärts suchen"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -1161,7 +1143,7 @@ msgstr "Details verstecken"
 
 #: objects/ui_ParameterWidget.h:178
 msgid "Description Only"
-msgstr "nur Beschreibung"
+msgstr "Nur Beschreibung"
 
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
@@ -1169,7 +1151,7 @@ msgstr "alle Parameter auf die aktuelle Voreinstellung zurücksetzen"
 
 #: objects/ui_ParameterWidget.h:183
 msgid "Reset"
-msgstr "zurücksetzen"
+msgstr "Zurücksetzen"
 
 #: objects/ui_Preferences.h:1458
 msgid "3D View"
@@ -1222,7 +1204,7 @@ msgstr "Fehler und Warnungen in der 3D Ansicht anzeigen"
 
 #: objects/ui_Preferences.h:1477
 msgid "mouse centric zoom"
-msgstr ""
+msgstr "Vergrößern an Maus zentrieren"
 
 #: objects/ui_Preferences.h:1478
 msgid "Font"
@@ -1246,7 +1228,7 @@ msgstr "Automatisch einrücken"
 
 #: objects/ui_Preferences.h:1483
 msgid "Backspace unindents"
-msgstr ""
+msgstr "Backspace verringert Einzug"
 
 #: objects/ui_Preferences.h:1484
 msgid "Indent using"
@@ -1283,15 +1265,15 @@ msgstr "Formatierungsymbole anzeigen"
 
 #: objects/ui_Preferences.h:1495 src/settings.cc:172
 msgid "Never"
-msgstr "nie"
+msgstr "Nie"
 
 #: objects/ui_Preferences.h:1496 src/settings.cc:172
 msgid "Always"
-msgstr "immer"
+msgstr "Immer"
 
 #: objects/ui_Preferences.h:1497
 msgid "Only after indentation"
-msgstr "nur nach Einrückung"
+msgstr "Nur nach Einrückung"
 
 #: objects/ui_Preferences.h:1499
 msgid "Size"
@@ -1303,7 +1285,7 @@ msgstr "Anzeige"
 
 #: objects/ui_Preferences.h:1501
 msgid "Enable brace matching"
-msgstr "zusammengehörige Klammern hervorheben"
+msgstr "Zusammengehörige Klammern hervorheben"
 
 #: objects/ui_Preferences.h:1502
 msgid "Highlight current line"
@@ -1315,15 +1297,15 @@ msgstr "Zeilennummern anzeigen"
 
 #: objects/ui_Preferences.h:1504
 msgid "Autocomplete"
-msgstr ""
+msgstr "Automatisch vervollständigen"
 
 #: objects/ui_Preferences.h:1505
 msgid "Enable Autocompletion"
-msgstr ""
+msgstr "Automatisches Vervollständigen einschalten"
 
 #: objects/ui_Preferences.h:1506
 msgid "Character Threshold"
-msgstr ""
+msgstr "Zeichengrenze"
 
 #: objects/ui_Preferences.h:1507 objects/ui_Preferences.h:1532
 msgid "Line wrap"
@@ -1333,15 +1315,15 @@ msgstr "Zeilenumbruch"
 #: objects/ui_Preferences.h:1527 src/settings.cc:73 src/settings.cc:89
 #: src/settings.cc:167 src/settings.cc:170 src/settings.cc:171
 msgid "None"
-msgstr "nie"
+msgstr "Nie"
 
 #: objects/ui_Preferences.h:1509 src/settings.cc:167
 msgid "Wrap at character boundaries"
-msgstr "an jedem Zeichen"
+msgstr "An jedem Zeichen"
 
 #: objects/ui_Preferences.h:1510 src/settings.cc:167
 msgid "Wrap at word boundaries"
-msgstr "an Wörtern"
+msgstr "An Wörtern"
 
 #: objects/ui_Preferences.h:1512
 msgid "Line wrap indentation"
@@ -1412,46 +1394,44 @@ msgstr "OctoPrint"
 
 #: objects/ui_Preferences.h:1539
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: objects/ui_Preferences.h:1540
 msgid "API Key"
-msgstr ""
+msgstr "API Key"
 
 #: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1542
 msgid "Load"
-msgstr "laden"
+msgstr "Laden"
 
 #: objects/ui_Preferences.h:1544
-#, fuzzy
 msgid "Check"
-msgstr "Jetzt suchen"
+msgstr "Prüfen"
 
 #: objects/ui_Preferences.h:1545
 msgid "Slicing Profile"
-msgstr ""
+msgstr "Slicing Profil"
 
 #: objects/ui_Preferences.h:1546
 msgid "Slicing Engine"
-msgstr ""
+msgstr "Slicing Engine"
 
 #: objects/ui_Preferences.h:1547
 msgid "File Format"
-msgstr ""
+msgstr "Datei Format"
 
 #: objects/ui_Preferences.h:1548
-#, fuzzy
 msgid "Action"
-msgstr "Application"
+msgstr "Aktion"
 
 #: objects/ui_Preferences.h:1549
-#, fuzzy
 msgid "Show"
-msgstr "Koordinaten&achsen anzeigen"
+msgstr "Anzeigen"
 
 #: objects/ui_Preferences.h:1550
 msgid "Note: The API key is stored unencrypted in the application settings."
 msgstr ""
+"Hinweis: Der API Key wird unverschlüsselt in den Einstellungen gespeichert."
 
 #: objects/ui_Preferences.h:1551
 msgid "OpenCSG"
@@ -1479,7 +1459,7 @@ msgstr "Goldfeather Algorithmus erzwingen"
 
 #: objects/ui_Preferences.h:1557
 msgid "CGAL"
-msgstr ""
+msgstr "CGAL"
 
 #: objects/ui_Preferences.h:1558
 msgid "CGAL Cache size"
@@ -1495,7 +1475,7 @@ msgstr "PolySet Cache Größe"
 
 #: objects/ui_Preferences.h:1562
 msgid "User Interface"
-msgstr ""
+msgstr "Benutzerinterface"
 
 #: objects/ui_Preferences.h:1563
 msgid "Enable docking of Editor and Console in different places"
@@ -1522,46 +1502,44 @@ msgid "Play sound notification on render complete"
 msgstr "Ton abspielen wenn rendern abgeschlossen ist"
 
 #: objects/ui_Preferences.h:1569
-#, fuzzy
 msgid "Play sound when render completion time is at least"
-msgstr "Ton abspielen wenn rendern abgeschlossen ist"
+msgstr "Ton abspielen wenn das Rendern abgeschlossen ist"
 
 #: objects/ui_Preferences.h:1570
 msgid "sec"
-msgstr ""
+msgstr "sec"
 
 #: objects/ui_Preferences.h:1571
 msgid "OpenSCAD Language Features"
-msgstr ""
+msgstr "OpenSCAD Spracheigenschaften"
 
 #: objects/ui_Preferences.h:1572
 msgid "Warn when there is a parameter mismatch in user module calls"
-msgstr ""
+msgstr "Warnen bei nicht übereinstimmenden Parametern"
 
 #: objects/ui_Preferences.h:1573
 msgid "Stop on the first warning"
-msgstr ""
+msgstr "Bei erster Warnung abbrechen"
 
 #: objects/ui_Preferences.h:1574
 msgid "Check the parameter range for builtin modules"
-msgstr ""
+msgstr "Parameter Bereiche für System-Module prüfen"
 
 #: objects/ui_Preferences.h:1575
 msgid "Debugging"
-msgstr ""
+msgstr "Fehlersuche"
 
 #: objects/ui_Preferences.h:1576
-#, fuzzy
 msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
-msgstr "Lokalisierung der GUI einschalten (benötigt Neustart von OpenSCAD)"
+msgstr "Protokoll für HIDAPI einschalten (benötigt Neustart von OpenSCAD)"
 
 #: objects/ui_PrintInitDialog.h:111
 msgid "Cancel"
-msgstr ""
+msgstr "Abbrechen"
 
 #: objects/ui_PrintInitDialog.h:113
 msgid "%1"
-msgstr ""
+msgstr "%1"
 
 #: objects/ui_ProgressWidget.h:70
 msgid "%v / %m"
@@ -1569,7 +1547,7 @@ msgstr "%v / %m"
 
 #: src/Network.h:116
 msgid "Timeout error"
-msgstr ""
+msgstr "Zeitüberschreitung"
 
 #: src/Camera.cc:125
 #, c-format
@@ -1582,7 +1560,7 @@ msgstr ""
 
 #: src/Console.cc:53
 msgid "Save console content"
-msgstr ""
+msgstr "Log speichern"
 
 #: src/export.cc:78
 #, c-format
@@ -1596,7 +1574,7 @@ msgstr "FEHLER:  \"%s\" Schreibfehler. (Speichervoll?)"
 
 #: src/mainwin.cc:1037
 msgid "Compile error."
-msgstr "Fehler"
+msgstr "Fehler."
 
 #: src/mainwin.cc:1040
 msgid "Error while compiling '%1'."
@@ -1626,11 +1604,11 @@ msgstr ""
 
 #: src/mainwin.cc:2006
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr ""
+msgstr "Design Export überschreitet das Limit des Services von %1 MB."
 
 #: src/mainwin.cc:2007
 msgid "Upload Error"
-msgstr ""
+msgstr "Fehler beim Hochladen"
 
 #: src/mainwin.cc:2341
 msgid "Export %1 File"
@@ -1670,9 +1648,8 @@ msgid "Untitled.scad"
 msgstr "Unbenannt.scad"
 
 #: src/mainwin.cc:3015 src/mainwin.cc:3022
-#, fuzzy
 msgid "Untitled"
-msgstr "/Unbenannt"
+msgstr "Unbenannt"
 
 #: src/OpenSCADApp.cc:61
 msgid "Unknown error"
@@ -1687,6 +1664,9 @@ msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
+"Ein kritischer Fehler wurde abgefangen. Die Anwendung könnte jetzt instabil "
+"laufen:\n"
+"%1"
 
 #: src/OpenSCADApp.cc:88
 msgid ""
@@ -1699,11 +1679,11 @@ msgstr ""
 #: src/Preferences.cc:241 src/Preferences.cc:246 src/Preferences.cc:737
 #: src/Preferences.cc:773
 msgid "<Default>"
-msgstr ""
+msgstr "<Standard>"
 
 #: src/Preferences.cc:721
 msgid "Success: Server Version = %2, API Version = %1"
-msgstr ""
+msgstr "Erfolg: Server Version = %2, API Version = %1"
 
 #: src/Preferences.cc:723 src/Preferences.cc:747 src/Preferences.cc:783
 msgid "Error"
@@ -1711,7 +1691,7 @@ msgstr "Fehler"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
-msgstr ""
+msgstr "Druck-Service nicht verfügbar"
 
 #: src/QGLView.cc:150
 msgid ""
@@ -1767,46 +1747,43 @@ msgstr "Perspektive umschalten"
 
 #: src/settings.cc:172
 msgid "After indentation"
-msgstr "nach Einrückung"
+msgstr "Nach Einrückung"
 
 #: src/settings.cc:185
 msgid "Upload only"
-msgstr ""
+msgstr "Nur hochladen"
 
 #: src/settings.cc:185
 msgid "Upload & Slice"
-msgstr ""
+msgstr "Hochladen & Slicen"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Select for printing"
-msgstr ""
+msgstr "Hochladen, Slicen und für Druck auswählen"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Start printing"
-msgstr ""
+msgstr "Hochladen, Slicen und Druck starten"
 
 #: src/tabmanager.cc:380
-#, fuzzy
 msgid "Find Next"
-msgstr "&Weiter suchen"
+msgstr "Weiter suchen"
 
 #: src/tabmanager.cc:385
-#, fuzzy
 msgid "Find Previous"
-msgstr "Rüc&kwärts suchen"
+msgstr "Rückwärts suchen"
 
 #: src/tabmanager.cc:410
 msgid "Copy file name"
-msgstr ""
+msgstr "Dateiname kopieren"
 
 #: src/tabmanager.cc:416
 msgid "Copy full path"
-msgstr ""
+msgstr "Pfad kopieren"
 
 #: src/tabmanager.cc:421
-#, fuzzy
 msgid "Close Tab"
-msgstr "Schließen"
+msgstr "Reiter schließen"
 
 #: src/tabmanager.cc:567
 msgid "The document has been modified."
@@ -1817,13 +1794,12 @@ msgid "Do you want to save your changes?"
 msgstr "Möchten Sie die Änderungen speichern?"
 
 #: src/tabmanager.cc:600
-#, fuzzy
 msgid "Some of the tabs are modified."
-msgstr "Das Dokument wurde verändert."
+msgstr "Einige Dokumente wurden verändert."
 
 #: src/tabmanager.cc:601
 msgid "All unsaved changes will be lost."
-msgstr ""
+msgstr "Alle nicht gespeicherten Änderungen werden verloren gehen."
 
 #: src/tabmanager.cc:662
 msgid "Failed to open file for writing"
@@ -1910,7 +1886,7 @@ msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
 
 #: src/parameter/ParameterWidget.cc:526
 msgid "Set Name %1 already exists"
-msgstr "Set %1 existiert bereits."
+msgstr "Set %1 existiert bereits"
 
 #: src/parameter/ParameterWidget.cc:527
 msgid "The set name  %1 already exists. Do you want overwrite it?"
@@ -1930,32 +1906,39 @@ msgstr ""
 msgid ""
 "This driver was not enabled during build time and is thus not available."
 msgstr ""
+"Der Treiber ist nicht verfügbar, da er beim Erstellen des Programms nicht "
+"aktiviert wurde."
 
 #: src/input/AxisConfigWidget.h:86
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
-msgstr ""
+msgstr "Der DBUS Treiber dient der Fernsteuerung, nur für Linux."
 
 #: src/input/AxisConfigWidget.h:87
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
 msgstr ""
+"Der HIDAPI Treiber kommuniziert direkt mit 3D Maus, nur Windows und MacOS."
 
 #: src/input/AxisConfigWidget.h:88
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
+"Der SpaceNav Treiber ermöglicht die Nutzung aller vom spacenavd Dienst "
+"unterstützen Geräte, nur Linux."
 
 #: src/input/AxisConfigWidget.h:89
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
 msgstr ""
+"Der Joystick Treiber bedient die Linux Joystick Schnittstelle (/dev/input/"
+"js0), nur Linux."
 
 #: src/input/AxisConfigWidget.h:90
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr ""
+msgstr "Der QGamepad Treiber unterstützt Gamepads auf allen Platformen."
 
 #: src/input/ButtonConfigWidget.cc:185
 msgid "(not supported)"
@@ -1971,7 +1954,7 @@ msgstr "Funktionen"
 
 #: examples/examples.json:20
 msgid "Advanced"
-msgstr "weiterführende Beispiele"
+msgstr "Weiterführende Beispiele"
 
 #: examples/examples.json:30
 msgid "Parametric"
@@ -1984,7 +1967,7 @@ msgstr "Frühere"
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in:6
 msgid "The Programmers Solid 3D CAD Modeller"
-msgstr ""
+msgstr "The Programmers Solid 3D CAD Modeller"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:20
@@ -1996,6 +1979,12 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
+"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"software for creating 3D models (such as Blender) it does not focus on the "
+"artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
+"might be the application you are looking for when you are planning to create "
+"3D models of machine parts but pretty sure is not what you are looking for "
+"when you are more interested in creating computer-animated movies."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:21
@@ -2007,6 +1996,12 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
+"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
+"compiler that reads in a script file that describes the object and renders "
+"the 3D model from this script file. This gives you (the designer) full "
+"control over the modelling process and enables you to easily change any step "
+"in the modelling process or make designs that are defined by configurable "
+"parameters."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:22
@@ -2018,6 +2013,18 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+"OpenSCAD provides two main modelling techniques: First there is constructive "
+"solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
+"data exchange format for this 2D outlines Autocad DXF files are used. In "
+"addition to 2D paths for extrusion it is also possible to read design "
+"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
+"models in the STL and OFF file formats."
+
+#~ msgid "Save As"
+#~ msgstr "Speichern Unter..."
+
+#~ msgid "Prev."
+#~ msgstr "Vorheriges"
 
 #~ msgid "&New"
 #~ msgstr "&Neu"
