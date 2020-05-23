@@ -494,6 +494,21 @@ void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 	emit openCSGSettingsChanged();
 }
 
+void Preferences::on_enablePersistentCache_toggled(bool state)
+{
+    QSettingsCached settings;
+    settings.setValue("advanced/enable_persistent_cache", state);
+    if(state){
+        this->ipAddressEdit->setDisabled(false);
+        this->portNumberEdit->setDisabled(false);
+        this->connectBtn->setDisabled(false);
+    }else{
+        this->ipAddressEdit->setDisabled(true);
+        this->portNumberEdit->setDisabled(true);
+        this->connectBtn->setDisabled(true);
+    }
+}
+
 void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 {
 	QSettingsCached settings;
