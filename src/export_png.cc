@@ -97,10 +97,10 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& op
 	return glview;
 }
 
-bool export_png(OffscreenView *glview, std::ostream &output)
+bool export_png(const OffscreenView &glview, std::ostream &output)
 {
 	PRINTD("export_png_preview_common");
-	glview->save(output);
+	glview.save(output);
 	return true;
 }
 

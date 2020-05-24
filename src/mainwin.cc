@@ -2069,7 +2069,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		RenderStatistic::printCacheStatistic();
 		RenderStatistic::printRenderingTime(ms);
 		if (!root_geom->isEmpty()) {
-			RenderStatistic().print(root_geom.get());
+			RenderStatistic().print(*root_geom);
 		}
 		PRINT("Rendering finished.\n");
 

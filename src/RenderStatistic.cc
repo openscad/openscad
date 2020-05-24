@@ -54,9 +54,9 @@ void RenderStatistic::printRenderingTime(std::chrono::milliseconds ms)
   );
 }
 
-void RenderStatistic::print(const Geometry *geom)
+void RenderStatistic::print(const Geometry &geom)
 {
-  geom->accept(*this);
+  geom.accept(*this);
 }
 
 void RenderStatistic::visit(const GeometryList& geomlist)

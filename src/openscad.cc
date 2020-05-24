@@ -469,7 +469,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		RenderStatistic::printCacheStatistic();
 		RenderStatistic::printRenderingTime( std::chrono::duration_cast<std::chrono::milliseconds>(end-begin) );
 		if (root_geom && !root_geom->isEmpty()) {
-			RenderStatistic().print(root_geom.get());
+			RenderStatistic().print(*root_geom);
 		}
 
 		fs::current_path(original_path);
@@ -503,7 +503,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
 					success = export_png(root_geom, viewOptions, camera, fstream);
 				} else {
-					success = export_png(glview.get(), fstream);
+					success = export_png(*glview, fstream);
 				}
 				fstream.close();
 			}

@@ -54,7 +54,7 @@ public:
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
-	virtual bool save(const char *filename) = 0;
+	virtual bool save(const char *filename) const = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
 

@@ -306,7 +306,7 @@ const QImage & QGLView::grabFrame()
 	return this->frame;
 }
 
-bool QGLView::save(const char *filename)
+bool QGLView::save(const char *filename) const
 {
   return this->frame.save(filename, "PNG");
 }

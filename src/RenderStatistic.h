@@ -58,7 +58,7 @@ public:
    * Actaully print the statistic based on the given Geometry
    * @arg geom A Geometry-derived object statistic for which we should print.
    */
-  void print(const Geometry *geom);
+  void print(const Geometry &geom);
   
 protected:
   void visit(const class GeometryList &node) override;

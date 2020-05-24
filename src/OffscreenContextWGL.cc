@@ -225,7 +225,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return false;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
 {
   if (!ctx) return false;
   wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
