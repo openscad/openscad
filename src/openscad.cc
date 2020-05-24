@@ -472,7 +472,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			}
 		}
 
-		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG) {
+		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
 			if (!checkAndExport(root_geom, 2, curFormat, new_output_file)) {
 				return 1;
 			}
