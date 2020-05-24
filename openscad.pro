@@ -361,6 +361,7 @@ HEADERS += src/version_check.h \
            src/system-gl.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
+           src/RenderStatistic.h \
            src/svg.h \
            \
            src/OffscreenView.h \
@@ -446,7 +447,6 @@ SOURCES += \
            src/polyset-utils.cc \
            src/GeometryUtils.cc \
            src/polyset.cc \
-           src/polyset-gl.cc \
            src/csgops.cc \
            src/transform.cc \
            src/color.cc \
@@ -469,6 +469,7 @@ SOURCES += \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
+           src/RenderStatistic.cc \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
@@ -688,7 +689,7 @@ target.path = $$PREFIX/bin/
 INSTALLS += target
 
 # Run translation update scripts as last step after linking the target
-QMAKE_POST_LINK += "$$PWD/scripts/translation-make.sh"
+QMAKE_POST_LINK += "'$$PWD/scripts/translation-make.sh'"
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)

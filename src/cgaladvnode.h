@@ -14,7 +14,7 @@ class CgaladvNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	CgaladvNode(const ModuleInstantiation *mi, CgaladvType type) : AbstractNode(mi), type(type) {
+	CgaladvNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, CgaladvType type) : AbstractNode(mi, ctx), type(type) {
 		convexity = 1;
 	}
 	~CgaladvNode() { }

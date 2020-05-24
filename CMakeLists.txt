@@ -466,6 +466,7 @@ set(CORE_SOURCES
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
+  src/RenderStatistic.cc
   src/ext/lodepng/lodepng.cpp
   src/PlatformUtils.cc
   src/libsvg/circle.cc
@@ -512,7 +513,6 @@ set(NOCGAL_SOURCES
   src/export_pdf.cc
   src/LibraryInfo.cc
   src/polyset.cc
-  src/polyset-gl.cc
   src/polyset-utils.cc
   src/GeometryUtils.cc)
 

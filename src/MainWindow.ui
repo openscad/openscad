@@ -579,7 +579,7 @@
         <item row="0" column="2">
          <widget class="QPushButton" name="findPrevButton">
           <property name="text">
-           <string>Prev.</string>
+           <string>Previous</string>
           </property>
          </widget>
         </item>

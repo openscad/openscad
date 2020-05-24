@@ -36,7 +36,7 @@
 #include "compiler_specific.h"
 #include <sstream>
 
-std::vector<std::string> UserModule::module_stack;
+std::vector<std::string> StaticModuleNameStack::stack;
 
 static void NOINLINE print_err(std::string name, const Location &loc,const std::shared_ptr<const Context> ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
@@ -54,22 +54,21 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	// At this point we know that nobody will modify the dependencies of the local scope
 	// passed to this instance, so we can populate the context
 	inst->scope.apply(evalctx);
-    
+
 	ContextHandle<ModuleContext> c{Context::create<ModuleContext>(ctx, evalctx)};
 	// set $children first since we might have variables depending on it
 	c->set_variable("$children", ValuePtr(double(inst->scope.children_inst.size())));
-	module_stack.push_back(inst->name());
-	c->set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
+	StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
+	c->set_variable("$parent_modules", ValuePtr(double(StaticModuleNameStack::size())));
 	c->initializeModule(*this);
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new GroupNode(inst);
+	AbstractNode *node = new GroupNode(inst, evalctx);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(c.ctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	module_stack.pop_back();
 
 	return node;
 }

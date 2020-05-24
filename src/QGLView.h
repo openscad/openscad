@@ -47,7 +47,7 @@ public:
 #endif
 
 	const QImage & grabFrame();
-	bool save(const char *filename) override;
+	bool save(const char *filename) const override;
 	void resetView();
 	void viewAll();
 
