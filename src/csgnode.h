@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include "memory.h"
 #include "linalg.h"
 #include "enums.h"
