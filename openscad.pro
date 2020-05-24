@@ -359,6 +359,7 @@ HEADERS += src/version_check.h \
            src/system-gl.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
+           src/RenderStatistic.h \
            src/svg.h \
            \
            src/OffscreenView.h \
@@ -466,6 +467,7 @@ SOURCES += \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
+           src/RenderStatistic.cc \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \

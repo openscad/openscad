@@ -35,7 +35,6 @@
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
-#include "polyset.h"
 #include "csgnode.h"
 #include "highlighter.h"
 #include "builtin.h"
@@ -48,6 +47,7 @@
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
+#include "RenderStatistic.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -1184,10 +1184,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
-			GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-			CGALCache::instance()->print();
-#endif
+			RenderStatistic::printCacheStatistic();
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
@@ -1271,8 +1268,8 @@ void MainWindow::compileCSG()
 																														this->highlights_products,
 																														this->background_products);
 		PRINT("Compile and preview finished.");
-		int s = this->renderingTime.elapsed() / 1000;
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
+		RenderStatistic::printRenderingTime(ms);
 		this->processEvents();
 	}catch(const HardWarningException&){
 		exceptionCleanup();
@@ -2067,47 +2064,12 @@ void MainWindow::cgalRender()
 void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
-
-	unsigned int s = this->renderingTime.elapsed() / 1000;
-
+	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
 	if (root_geom) {
-		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-		CGALCache::instance()->print();
-#endif
-
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-
-		if (root_geom && !root_geom->isEmpty()) {
-			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
-				if (N->getDimension() == 3) {
-					bool simple = N->p3->is_simple();
-					PRINT("   Top level object is a 3D object:");
-					PRINTB("   Simple:     %6s", (simple ? "yes" : "no"));
-					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
-					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
-					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
-					PRINTB("   Halffacets: %6d", N->p3->number_of_halffacets());
-					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
-					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
-					if (!simple) {
-						PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair!");
-					}
-				}
-			}
-			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
-				assert(ps->getDimension() == 3);
-				PRINT("   Top level object is a 3D object:");
-				PRINTB("   Facets:     %6d", ps->numFacets());
-			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
-				PRINT("   Top level object is a 2D object:");
-				PRINTB("   Contours:     %6d", poly->outlines().size());
-			} else  if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(root_geom.get())) {
-				PRINT("   Top level object is a list of objects:");
-				PRINTB("   Objects:     %d", geomlist->getChildren().size());
-			} else {
-				assert(false && "Unknown geometry type");
-			}
+		RenderStatistic::printCacheStatistic();
+		RenderStatistic::printRenderingTime(ms);
+		if (!root_geom->isEmpty()) {
+			RenderStatistic().print(root_geom.get());
 		}
 		PRINT("Rendering finished.\n");
 
@@ -2125,7 +2087,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	updateStatusBar(nullptr);
 
 	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
-		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
+		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
 	{
 		QSound::play(":sounds/complete.wav");
 	}
