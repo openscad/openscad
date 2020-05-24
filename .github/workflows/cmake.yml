@@ -21,3 +21,7 @@ jobs:
       run: sudo apt-get install qt5-default gettext
     - name: Build and test
       run: ./scripts/github-ci.sh
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Upload test results
+        path: tests/Testing/Temporary/*_report.html
