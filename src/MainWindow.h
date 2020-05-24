@@ -97,6 +97,7 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
+	void setCursor();
 
 public:
 	static void consoleOutput(const std::string &msg, void *userdata);

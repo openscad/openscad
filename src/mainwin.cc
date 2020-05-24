@@ -2147,19 +2147,42 @@ void MainWindow::selectObject(QPoint mouse)
 			ss << step->name() << " (" << step->location.fileName() << ":" << step->location.firstLine()
 				 << ")";
 			auto location = step->location;
-			tracemenu.addAction(QString::fromStdString(ss.str()), this, [this, location]() {
-				if (!fs::is_directory(location.filePath())) {
-					this->tabManager->open(QString::fromStdString(location.fileName()));
-				}
-				// move the cursor, the editor is 0 based whereby location is 1 based
-				this->activeEditor->setCursorPosition(location.firstLine() - 1, location.firstColumn() - 1);
-			});
+			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
+			action->setProperty("file", QString::fromStdString(location.fileName()));
+			action->setProperty("line", location.firstLine());
+			action->setProperty("column", location.firstColumn());
+
+			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
 		}
 
 		tracemenu.exec(this->qglview->mapToGlobal(mouse));
 	}
 }
 
+/**
+ * Expects the sender to have properties "file", "line" and "column" defined
+ */
+void MainWindow::setCursor()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
+			!action->property("column").isValid()) {
+		return;
+	}
+
+	auto file = action->property("file").toString();
+	auto line = action->property("line").toInt();
+	auto column = action->property("column").toInt();
+
+	// Unsaved files do have the pwd as current path, therefore we will not open a new
+	// tab on click
+	if (!fs::is_directory(fs::path(file.toStdString()))) {
+		this->tabManager->open(file);
+	}
+
+	// move the cursor, the editor is 0 based whereby location is 1 based
+	this->activeEditor->setCursorPosition(line - 1, column - 1);
+}
 
 /**
  * Switch version label and progress widget. When switching to the progress
