@@ -240,6 +240,16 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
+find_package(Cairo QUIET)
+if (CAIRO_VERSION)
+  message(STATUS "Cairo: ${CAIRO_VERSION}")
+  include_directories(${CAIRO_INCLUDE_DIRS})
+  list(APPEND COMMON_LIBRARIES ${CAIRO_LIBRARIES})
+  add_definitions(-DENABLE_CAIRO)
+else()
+  message(STATUS "Cairo: disabled")
+endif()
+
 find_package(FLEX REQUIRED QUIET)
 message(STATUS "Flex: ${FLEX_VERSION}")
 
