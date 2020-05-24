@@ -2113,9 +2113,9 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
  */
 void MainWindow::selectObject(QPoint mouse)
 {
-  if (!Feature::ExperimentalMouseSelection.is_enabled()) {
-    return;
-  }
+	if (!Feature::ExperimentalMouseSelection.is_enabled()) {
+		return;
+	}
 
 	// selecting without a renderer?!
 	if (!this->qglview->renderer) {
@@ -2123,7 +2123,7 @@ void MainWindow::selectObject(QPoint mouse)
 	}
 
 	// Nothing to select
-	if (!this->root_products)  {
+	if (!this->root_products) {
 		return;
 	}
 
@@ -2132,24 +2132,34 @@ void MainWindow::selectObject(QPoint mouse)
 
 	// Select the object at mouse coordinates
 	int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
-  std::deque<const AbstractNode *> path;
+	std::deque<const AbstractNode *> path;
 	const AbstractNode *result = this->root_node->getNodeByID(index, path);
 
 	if (result) {
-		// TODO: Create a calltracewidget instead of selecting directly in the editor
-
-		// Caveat: Files that have not been do not have a filename defined, only CWD
-		// Skip opening a specific tab - since unsaved files can not be included
-		// and have to be the currently active root file
-		if (!fs::is_directory(result->location.filePath())) {
-			this->tabManager->open(QString::fromStdString(result->location.fileName()));
+		// Create context menu with the backtrace
+		QMenu tracemenu(this);
+		std::stringstream ss;
+		for (const auto *step : path) {
+			if (step->name() == "root") {
+				continue;
+			}
+			ss.str("");
+			ss << step->name() << " (" << step->location.fileName() << ":" << step->location.firstLine()
+				 << ")";
+			auto location = step->location;
+			tracemenu.addAction(QString::fromStdString(ss.str()), this, [this, location]() {
+				if (!fs::is_directory(location.filePath())) {
+					this->tabManager->open(QString::fromStdString(location.fileName()));
+				}
+				// move the cursor, the editor is 0 based whereby location is 1 based
+				this->activeEditor->setCursorPosition(location.firstLine() - 1, location.firstColumn() - 1);
+			});
 		}
 
-		// move the cursor, the editor is 0 based whereby location is 1 based
-		this->activeEditor->setCursorPosition(result->location.firstLine() - 1,
-		                                      result->location.firstColumn() - 1);
+		tracemenu.exec(this->qglview->mapToGlobal(mouse));
 	}
 }
+
 
 /**
  * Switch version label and progress widget. When switching to the progress
