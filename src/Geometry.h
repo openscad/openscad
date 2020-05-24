@@ -7,11 +7,13 @@
 #include "linalg.h"
 #include "memory.h"
 
+class GeometryVisitor;
+
 class Geometry
 {
 public:
-  typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
-  typedef std::list<GeometryItem> Geometries;
+	typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry>> GeometryItem;
+	typedef std::list<GeometryItem> Geometries;
 
 	Geometry() : convexity(1) {}
 	virtual ~Geometry() {}
@@ -27,13 +29,35 @@ public:
 	unsigned int getConvexity() const { return convexity; }
 	void setConvexity(int c) { this->convexity = c; }
 
+	virtual void accept(class GeometryVisitor &visitor) const = 0;
 protected:
 	int convexity;
 };
 
+/**
+ * A Base clss for simple visitors to process different Geometry subclasses uniformly
+ */
+class GeometryVisitor
+{
+public:
+	virtual void visit(const class GeometryList &node) = 0;
+	virtual void visit(const class PolySet &node) = 0;
+	virtual void visit(const class Polygon2d &node) = 0;
+#ifdef ENABLE_CGAL
+	virtual void visit(const class CGAL_Nef_polyhedron &node) = 0;
+#endif
+	virtual ~GeometryVisitor(){};
+};
+
+#define VISITABLE_GEOMETRY() \
+	void accept(class GeometryVisitor &visitor) const override {\
+		visitor.visit(*this);\
+	}
+
 class GeometryList : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Geometries children;
 
 	GeometryList();
@@ -48,7 +72,7 @@ public:
 	Geometry *copy() const override { return new GeometryList(*this); };
 	size_t numFacets() const override { assert(false && "not implemented"); return 0; };
 
-	const Geometries &getChildren() const { 
+	const Geometries &getChildren() const {
 		return this->children;
 	}
 

@@ -456,6 +456,7 @@ set(CORE_SOURCES
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
+  src/RenderStatistic.cc
   src/ext/lodepng/lodepng.cpp
   src/PlatformUtils.cc 
   src/libsvg/circle.cc

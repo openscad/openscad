@@ -96,8 +96,11 @@ struct ViewOptions {
 	
 };
 
+class OffscreenView;
+
+std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& options, Camera camera);
 bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
-bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output);
+bool export_png(const OffscreenView &glview, std::ostream &output);
 
 namespace Export {
 
