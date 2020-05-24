@@ -28,6 +28,8 @@ enum class FileFormat {
 	PNG
 };
 
+bool canPreview(const FileFormat format);
+
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
 											const char *name2open, const char *name2display);
 
