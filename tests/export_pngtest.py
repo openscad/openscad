@@ -24,10 +24,9 @@ gs_cmd = [
     "-dNOPAUSE",
     "-dBATCH",
     "-sDEVICE=pnggray",
-    "-dTextAlphaBits=4",
-    "-dGraphicsAlphaBits=4",
-    "-dDownScaleFactor=3",
-    "-r600"
+    "-dTextAlphaBits=1",
+    "-dGraphicsAlphaBits=1",
+    "-r300"
 ]
 
 def failquit(*args):
