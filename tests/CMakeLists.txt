@@ -199,11 +199,15 @@ endfunction()
 #
 find_package(PythonInterp 3.4 REQUIRED)
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
   # If sharing results with another test, pass on this to the python script
   if (TESTCMD_EXPECTEDDIR)
     set(EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
+  endif()
+
+  if (TESTCMD_KERNEL)
+    set(EXTRA_OPTIONS -k ${TESTCMD_KERNEL})
   endif()
 
   if (TESTCMD_EXE)
@@ -902,7 +906,7 @@ add_cmdline_test(amfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/
 add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=3MF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
-add_cmdline_test(pdfexporttest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/export_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=PDF EXPECTEDDIR pdfexporttest SUFFIX png FILES ${SCAD_PDF_FILES})
+add_cmdline_test(pdfexporttest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/export_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=PDF KERNEL Square:2 EXPECTEDDIR pdfexporttest SUFFIX png FILES ${SCAD_PDF_FILES})
 
 
 #

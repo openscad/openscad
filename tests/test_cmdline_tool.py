@@ -155,7 +155,7 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
@@ -283,6 +283,7 @@ def usage():
     print("Options:", file=sys.stderr)
     print("  -g, --generate           Generate expected output for the given tests", file=sys.stderr)
     print("  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt", file=sys.stderr)
+    print("  -k, --kernel=<name[:n]>  Define kernel name and optionally size for morphology processing, default is Square:1", file=sys.stderr)
     print("  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)", file=sys.stderr)
     print("  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)", file=sys.stderr)
     print("  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
@@ -292,7 +293,7 @@ if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected_dir=", "test=", "file=", "comparator="])
         debug('getopt args:'+str(sys.argv))
     except (getopt.GetoptError) as err:
         usage()
@@ -303,6 +304,7 @@ if __name__ == '__main__':
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
+    options.kernel = "Square:1"
     options.comparator = ""
 
     for o, a in opts:
@@ -310,6 +312,8 @@ if __name__ == '__main__':
         elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = a[1:]
             else: options.suffix = a
+        elif o in ("-k", "--kernel"):
+            options.kernel = a
         elif o in ("-e", "--expected-dir"):
             options.expecteddir = a
         elif o in ("-t", "--test"):
