@@ -91,7 +91,6 @@ using boost::bad_lexical_cast;
 using boost::is_any_of;
 
 std::string commandline_commands;
-std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
@@ -374,10 +373,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	if (nextLocation) {
 		PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
 	}
-
+	fs::current_path(original_path);
 
 	if (deps_output_file) {
-		fs::current_path(original_path);
 		std::string deps_out(deps_output_file);
 		std::string geom_out(output_file);
 		int result = write_deps(deps_out, geom_out);
@@ -388,7 +386,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 	if (curFormat == FileFormat::CSG) {
-		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -397,10 +394,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
 			fstream << tree.getString(*root_node, "\t") << "\n";
 			fstream.close();
+			fs::current_path(original_path);
 		}
 	}
 	else if (curFormat == FileFormat::AST) {
-		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -409,13 +406,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
 			fstream << root_module->dump("");
 			fstream.close();
+			fs::current_path(original_path);
 		}
 	}
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
-		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -431,11 +428,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 	else if (curFormat == FileFormat::ECHO) {
 		// echo -> don't need to evaluate any geometry
-		// FIXME: it looks like the current_path reset may be done before all branches
-		fs::current_path(original_path);
 	}
 	else {
-
 #ifdef ENABLE_CGAL
 		// start measuring render time
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -471,8 +465,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		if (root_geom && !root_geom->isEmpty()) {
 			RenderStatistic().print(*root_geom);
 		}
-
-		fs::current_path(original_path);
 
 		if(curFormat == FileFormat::STL ||
 			curFormat == FileFormat::OFF ||
@@ -1052,8 +1044,6 @@ int main(int argc, char **argv)
 			PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
 		}
 	}
-
-	currentdir = fs::current_path().generic_string();
 
 	Camera camera = get_camera(vm);
 
