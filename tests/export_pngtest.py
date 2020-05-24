@@ -18,6 +18,18 @@ from __future__ import print_function
 
 import sys, os, re, subprocess, argparse
 
+gs_cmd = [
+    "gs",
+    "-dSAFER",
+    "-dNOPAUSE",
+    "-dBATCH",
+    "-sDEVICE=pnggray",
+    "-dTextAlphaBits=4",
+    "-dGraphicsAlphaBits=4",
+    "-dDownScaleFactor=3",
+    "-r600"
+]
+
 def failquit(*args):
     if len(args)!=0: print(args)
     print('export_import_pngtest args:',str(sys.argv))
@@ -71,7 +83,7 @@ result = subprocess.call(export_cmd, env = fontenv)
 if result != 0:
     failquit('OpenSCAD failed with return code ' + str(result))
 
-convert_cmd = ["gs", "-dNOPAUSE", "-dBATCH", "-sDEVICE=png16m", "-r200", "-sOutputFile=\"" + pngfile + "\"", exportfile]
+convert_cmd = gs_cmd + ["-sOutputFile=\"" + pngfile + "\"", exportfile]
 print('Running Converter:', ' '.join(convert_cmd), file=sys.stderr)
 result = subprocess.call(convert_cmd)
 if result != 0:
