@@ -34,6 +34,14 @@
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
+bool canPreview(const FileFormat format) {
+	return (format == FileFormat::AST ||
+					format == FileFormat::CSG ||
+					format == FileFormat::ECHO ||
+					format == FileFormat::TERM ||
+					format == FileFormat::PNG);
+}
+
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
