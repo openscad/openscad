@@ -288,6 +288,8 @@ void GLView::enable_opencsg_shaders()
 
 
 #ifdef DEBUG
+// Requires OpenGL 4.3+ 
+/*
   void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar* message, const void* userParam)
   {
@@ -295,20 +297,24 @@ void GLView::enable_opencsg_shaders()
             (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
             type, severity, message);
   }
+//*/
 #endif
 
 void GLView::initializeGL()
 {
+#ifdef DEBUG
+/*
+  // Requires OpenGL 4.3+
+  glEnable              ( GL_DEBUG_OUTPUT );
+  glDebugMessageCallback( MessageCallback, 0 );
+//*/
+#endif
+
   glEnable(GL_DEPTH_TEST);
   glDepthRange(-far_far_away, +far_far_away);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-#ifdef DEBUG
-  glEnable              ( GL_DEBUG_OUTPUT );
-  glDebugMessageCallback( MessageCallback, 0 );
-#endif
 
   GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
   GLfloat light_position0[] = {-1.0, +1.0, +1.0, 0.0};
