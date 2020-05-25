@@ -287,7 +287,7 @@ void GLView::enable_opencsg_shaders()
 #endif
 
 
-#if #DEBUG
+#ifdef DEBUG
   void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar* message, const void* userParam)
   {
@@ -305,7 +305,7 @@ void GLView::initializeGL()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#if #DEBUG
+#ifdef DEBUG
   glEnable              ( GL_DEBUG_OUTPUT );
   glDebugMessageCallback( MessageCallback, 0 );
 #endif
