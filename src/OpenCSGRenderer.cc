@@ -25,6 +25,7 @@
  */
 
 #include "system-gl.h"
+#include "GLView.h"
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
 #include "csgnode.h"
@@ -66,7 +67,7 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	GLint *shaderinfo = this->shaderinfo;
-	if (!shaderinfo[0]) shaderinfo = nullptr;
+	if (!shaderinfo[ShaderInfo::EDGESHADER_PROG]) shaderinfo = nullptr;
 	if (this->root_products) {
 		renderCSGProducts(*this->root_products, showedges ? shaderinfo : nullptr, false, false);
 	}
@@ -104,7 +105,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			OpenCSG::render(primitives);
 			glDepthFunc(GL_EQUAL);
 		}
-		if (shaderinfo) glUseProgram(shaderinfo[0]);
+		if (shaderinfo) glUseProgram(shaderinfo[ShaderInfo::EDGESHADER_PROG]);
 
 		for(const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;

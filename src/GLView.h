@@ -25,6 +25,14 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #include "Camera.h"
 #include "colormap.h"
 
+enum ShaderInfo {
+	EDGESHADER_PROG = 0,
+	COLOR1,
+	COLOR2,
+	BARYCENTRIC,
+	SHADERINFO_SIZE
+};
+
 class GLView
 {
 public:
@@ -70,7 +78,7 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	GLint shaderinfo[11];
+	GLint shaderinfo[ShaderInfo::SHADERINFO_SIZE];
 	bool is_opencsg_capable;
 	bool has_shaders;
 	void enable_opencsg_shaders();
