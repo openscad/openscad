@@ -256,12 +256,6 @@ void GLView::enable_opencsg_shaders()
     shaderinfo[ShaderInfo::COLOR1]          = glGetUniformLocation(edgeshader_prog, "color1");
     shaderinfo[ShaderInfo::COLOR2]          = glGetUniformLocation(edgeshader_prog, "color2");
     shaderinfo[ShaderInfo::BARYCENTRIC]     = glGetAttribLocation(edgeshader_prog, "barycentric");
-    //shaderinfo[ShaderInfo::TRIG]            = glGetAttribLocation(edgeshader_prog, "trig");
-    //shaderinfo[ShaderInfo::POS_B]           = glGetAttribLocation(edgeshader_prog, "pos_b");
-    //shaderinfo[ShaderInfo::POS_C]           = glGetAttribLocation(edgeshader_prog, "pos_c");
-    //shaderinfo[ShaderInfo::MASK]            = glGetAttribLocation(edgeshader_prog, "mask");
-    //shaderinfo[ShaderInfo::XSCALE]          = glGetUniformLocation(edgeshader_prog, "xscale");
-    //shaderinfo[ShaderInfo::YSCALE]          = glGetUniformLocation(edgeshader_prog, "yscale");
 
     err = glGetError();
     if (err != GL_NO_ERROR) {

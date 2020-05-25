@@ -10,7 +10,7 @@
 #include "grid.h"
 #include <Eigen/LU>
 
-#if DEBUG
+#ifdef ENABLE_OPENCSG
   #include "GLView.h"
 #endif
 
