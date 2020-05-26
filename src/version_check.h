@@ -43,8 +43,8 @@ a time, to avoid confusion.
 
 
 #include <boost/version.hpp>
-// boost 1.3.5 = 103500
-#if BOOST_VERSION < 103500
+// boost 1.55 = 105500
+#if BOOST_VERSION < 105500
 #error boost library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
