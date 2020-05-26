@@ -92,12 +92,14 @@ a time, to avoid confusion.
 #else
 #endif // ENABLE_OPENCSG
 
+
 #ifndef OPENSCAD_NOGUI
 #include <QtCore/qglobal.h>
-#if QT_VERSION < 0x040400
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 #error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #endif // QT
 #endif
+
 
 #ifdef ENABLE_OPENCSG
 #endif // OpenCSG
@@ -122,4 +124,3 @@ a time, to avoid confusion.
 #endif
 
 #endif // OPENSCAD_SKIP_VERSION_CHECK
-
