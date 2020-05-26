@@ -127,19 +127,19 @@ static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d 
 	double d1 = e1 ? 0.0 : 1.0;
 	double d2 = e2 ? 0.0 : 1.0;
 	if (mirror) {
-		glVertexAttrib3d(shaderinfo[ShaderInfo::BARYCENTRIC], 1.0, d1, d2);
-		glVertex3d(p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3d(shaderinfo[ShaderInfo::BARYCENTRIC], d0, d1, 1.0);
-		glVertex3d(p2[0], p2[1], p2[2] + z);
-		glVertexAttrib3d(shaderinfo[ShaderInfo::BARYCENTRIC], d0, 1.0, d2);
-		glVertex3d(p1[0], p1[1], p1[2] + z);
+		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], 1.0, d1, d2);
+		glVertex3f(p0[0], p0[1], p0[2] + z);
+		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, d1, 1.0);
+		glVertex3f(p2[0], p2[1], p2[2] + z);
+		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, 1.0, d2);
+		glVertex3f(p1[0], p1[1], p1[2] + z);
   } else {
-		glVertexAttrib3d(shaderinfo[ShaderInfo::BARYCENTRIC], 1.0, d1, d2);
-		glVertex3d(p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3d(shaderinfo[ShaderInfo::BARYCENTRIC], d0, 1.0, d2);
-		glVertex3d(p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3d(shaderinfo[ShaderInfo::BARYCENTRIC], d0, d1, 1.0);
-		glVertex3d(p2[0], p2[1], p2[2] + z);
+		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], 1.0, d1, d2);
+		glVertex3f(p0[0], p0[1], p0[2] + z);
+		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, 1.0, d2);
+		glVertex3f(p1[0], p1[1], p1[2] + z);
+		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, d1, 1.0);
+		glVertex3f(p2[0], p2[1], p2[2] + z);
 	}
 }
 #endif
@@ -147,10 +147,10 @@ static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d 
 #ifndef NULLGL
 static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, double z, bool mirror)
 {
-	glVertex3d(p0[0], p0[1], p0[2] + z);
-	if (!mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
-	glVertex3d(p2[0], p2[1], p2[2] + z);
-	if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
+	glVertex3f(p0[0], p0[1], p0[2] + z);
+	if (!mirror) glVertex3f(p1[0], p1[1], p1[2] + z);
+	glVertex3f(p2[0], p2[1], p2[2] + z);
+	if (mirror) glVertex3f(p1[0], p1[1], p1[2] + z);
 }
 
 static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
@@ -162,7 +162,7 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 	double ny = az*bx - ax*bz;
 	double nz = ax*by - ay*bx;
 	double nl = sqrt(nx*nx + ny*ny + nz*nz);
-	glNormal3d(nx / nl, ny / nl, nz / nl);
+	glNormal3f(nx / nl, ny / nl, nz / nl);
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
 		draw_triangle(shaderinfo, p0, p1, p2, e0, e1, e2, z, mirrored);

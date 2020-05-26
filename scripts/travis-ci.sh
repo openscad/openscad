@@ -58,7 +58,8 @@ travis_start ctest "Running tests using ctest"
 # opencsgtest_issue1258
 # throwntogethertest_issue1089
 # throwntogethertest_issue1215
-ctest $PARALLEL_CTEST -E "\
+
+ctest $PARALLEL_CTEST -R edge -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
 opencsgtest_rotate_extrude-hole|\

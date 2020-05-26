@@ -153,6 +153,25 @@ void GLView::paintGL()
 }
 
 #ifdef ENABLE_OPENCSG
+
+void glErrorCheck() {
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
+  }
+}
+
+void glCompileCheck(GLuint shader) {
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status == GL_FALSE) {
+    int loglen;
+    char logbuffer[1000];
+    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
+    PRINTDB("OpenGL Shader Program Compile Error:\n%s", logbuffer);
+  }
+}
+
 void GLView::enable_opencsg_shaders()
 {
   const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
@@ -186,24 +205,18 @@ void GLView::enable_opencsg_shaders()
   }
 
   if (opencsg_support && this->has_shaders) {
-    /*
-      Uniforms:
-        color1 - face color
-        color2 - edge color
 
-      Attributes:
-        barycentric - barycentric form of vertex coord 
-                      either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
-
-      Outputs:
-        vBC - varying barycentric coordinates
-        shading
-     */
     const char *vs_source = R"VS_PROG(
-      attribute vec3 barycentric;
-      varying vec3 vBC;
-      varying float shading;
-      void main() {
+      #version 110
+
+      uniform vec4 color1;        // face color
+      uniform vec4 color2;        // edge color
+      attribute vec3 barycentric; // barycentric form of vertex coord
+                                  // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
+      varying vec3 vBC;           // varying barycentric coords
+      varying float shading;      // multiplied by color1. color2 is without lighting
+
+      void main(void) {
         gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
         vBC = barycentric;
         vec3 normal, lightDir;
@@ -213,11 +226,9 @@ void GLView::enable_opencsg_shaders()
       }
     )VS_PROG";
 
-    /*
-      Inputs:
-        shading  - multiplied by color1. color2 is without lighting
-    */
     const char *fs_source = R"FS_PROG(
+      #version 110
+
       uniform vec4 color1, color2;
       varying vec3 vBC;
       varying float shading;
@@ -228,46 +239,50 @@ void GLView::enable_opencsg_shaders()
         return t * t * (3.0 - 2.0 * t);
       }
 
-      float edgeFactor(){
+      float edgeFactor() {
         const float th = 1.414; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
         const float fade = 1.414; // thickness of fade (antialiasing) in screen pixels
         vec3 d = fwidth(vBC);
-        vec3 a3 = smoothstep3f((th-fade)*d, th*d, vBC);
+        //vec3 d = abs(dFdx(vBC)); + abs(dFdy(vBC));
+        //vec3 d = vec3(1.0, 1.0, 1.0);
+        vec3 a3 = smoothstep((th-fade)*d, th*d, vBC);
         return min(min(a3.x, a3.y), a3.z);
       }
 
-      void main() {
+      void main(void) {
         gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
+        //gl_FragColor = vec4(vec3(edgeFactor()), 1.0);
       }
     )FS_PROG";
+
+    // Does this help mac CI server graphical glitches?
+    glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_NICEST);
 
     auto vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
     glCompileShader(vs);
+    glCompileCheck(vs);
+    glErrorCheck();
 
     auto fs = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
     glCompileShader(fs);
+    glCompileCheck(fs);
+    glErrorCheck();
 
     auto edgeshader_prog = glCreateProgram();
     glAttachShader(edgeshader_prog, vs);
     glAttachShader(edgeshader_prog, fs);
     glLinkProgram(edgeshader_prog);
-
-   auto err = glGetError();
-    if (err != GL_NO_ERROR) {
-      fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-    }
+    glErrorCheck();
 
     shaderinfo[ShaderInfo::EDGESHADER_PROG] = edgeshader_prog;
     shaderinfo[ShaderInfo::COLOR1]          = glGetUniformLocation(edgeshader_prog, "color1");
+    glErrorCheck();
     shaderinfo[ShaderInfo::COLOR2]          = glGetUniformLocation(edgeshader_prog, "color2");
+    glErrorCheck();
     shaderinfo[ShaderInfo::BARYCENTRIC]     = glGetAttribLocation(edgeshader_prog, "barycentric");
-
-    err = glGetError();
-    if (err != GL_NO_ERROR) {
-      fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-    }
+    glErrorCheck();
 
     GLint status;
     glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
@@ -300,7 +315,7 @@ void GLView::enable_opencsg_shaders()
   void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar* message, const void* userParam)
   {
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%X, severity = 0x%X, message = %s\n",
             (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
             type, severity, message);
   }
