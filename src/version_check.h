@@ -55,27 +55,11 @@ a time, to avoid confusion.
 #include <CGAL/version.h>
 #pragma pop_macro("NDEBUG")
 
-#if CGAL_VERSION_NR < 1030601000
+#if CGAL_VERSION_NR < 1040900000
 #error CGAL library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
+#endif //ENABLE_CGAL
 #else
 
-#if CGAL_VERSION_NR < 1040021000
-#warning "======================="
-#warning "."
-#warning "."
-#warning "."
-#warning "."
-#warning CGAL library version is old, risking buggy behavior. Please see README.md. Continuing anyway.
-#warning "."
-#warning "."
-#warning "."
-#warning "."
-#warning "======================="
-#ifdef __clang__
-#error For Clang to work, CGAL must be >= 4.0.2
-#endif
-#endif // CGAL_VERSION_NR < 10400010000
-#endif //ENABLE_CGAL
 
 #ifdef ENABLE_OPENCSG
 #include <GL/glew.h>
