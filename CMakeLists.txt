@@ -602,10 +602,8 @@ set(GUI_SOURCES
   src/Console.cc
   src/UIUtils.cc
   src/scadlexer.cpp
-  src/highlighter.cc
   src/cgalworker.cc
   src/editor.cc
-  src/legacyeditor.cc
   src/scintillaeditor.cpp
   src/launchingscreen.cc
   src/QWordSearchField.cc

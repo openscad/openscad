@@ -36,7 +36,6 @@
 #include "printutils.h"
 #include "node.h"
 #include "csgnode.h"
-#include "highlighter.h"
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
