@@ -179,7 +179,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>DejaVu Sans</family>
+                    <family>Lucida Grande</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
