@@ -1,4 +1,5 @@
 #include "pcache.h"
+#include "printutils.h"
 
 #ifdef ENABLE_HIREDIS
 

@@ -26,7 +26,7 @@ public:
     static PCache* getInst(){if(!pCache) pCache = new PCache; return pCache;}
 
     void disconnect();
-    virtual ~PCache() {}
+    virtual ~PCache() {disconnect();}
 
 private:
     redisContext* rct;

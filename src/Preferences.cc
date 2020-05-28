@@ -157,6 +157,7 @@ void Preferences::init() {
 	this->defaultmap["editor/enableAutocomplete"] = true;
 	this->defaultmap["editor/characterThreshold"] = 1;
 
+
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
@@ -501,12 +502,31 @@ void Preferences::on_enablePersistentCache_toggled(bool state)
     if(state){
         this->ipAddressEdit->setDisabled(false);
         this->portNumberEdit->setDisabled(false);
-        this->connectBtn->setDisabled(false);
+        this->enablePasswordAuth->setDisabled(false);
     }else{
         this->ipAddressEdit->setDisabled(true);
         this->portNumberEdit->setDisabled(true);
-        this->connectBtn->setDisabled(true);
+        this->enablePasswordAuth->setDisabled(true);
     }
+}
+
+void Preferences::on_enablePasswordAuth_toggled(bool state){
+    QSettingsCached settings;
+    settings.setValue("advanced/enablePasswordAuth", state);
+    if(state){
+        this->passwordEdit->setDisabled(false);
+    }else{
+        this->passwordEdit->setDisabled(true);
+    }
+}
+void Preferences::on_ipAddressEdit_textChanged(const QString &text){
+    QSettingsCached settings;
+    settings.setValue("advanced/ipAddressEdit", text);
+}
+
+void Preferences::on_portNumberEdit_textChanged(const QString &text){
+    QSettingsCached settings;
+    settings.setValue("advanced/portNumberEdit", text);
 }
 
 void Preferences::on_mouseWheelZoomBox_toggled(bool state)

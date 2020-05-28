@@ -1170,6 +1170,7 @@ void MainWindow::compileCSG()
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
+
 #ifdef ENABLE_CGAL
 			GeometryEvaluator geomevaluator(this->tree);
 #else

@@ -1507,9 +1507,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-126</y>
+             <y>0</y>
              <width>602</width>
-             <height>909</height>
+             <height>971</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1689,13 +1689,34 @@
                    </property>
                   </widget>
                  </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enablePasswordAuth">
+                 <property name="text">
+                  <string>Have a password</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc3">
                  <item>
-                  <widget class="QPushButton" name="connectBtn">
+                  <widget class="QLabel" name="label_pc4">
+                   <property name="text">
+                    <string>Password</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="passwordEdit">
                    <property name="enabled">
                     <bool>true</bool>
                    </property>
                    <property name="text">
-                    <string>Connect</string>
+                    <string/>
                    </property>
                   </widget>
                  </item>
