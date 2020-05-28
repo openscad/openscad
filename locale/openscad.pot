@@ -1,4 +1,4 @@
-# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2020.05.23)  #-#-#-#-#
+# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2020.05.28)  #-#-#-#-#
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
@@ -7,10 +7,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2020.05.23)  #-#-#-#-#\n"
-"Project-Id-Version: OpenSCAD 2020.05.23\n"
+"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2020.05.28)  #-#-#-#-#\n"
+"Project-Id-Version: OpenSCAD 2020.05.28\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 03:18+0200\n"
+"POT-Creation-Date: 2020-05-28 14:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-05-23 03:18+0200\n"
+"POT-Creation-Date: 2020-05-28 14:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1134,7 +1134,7 @@ msgctxt "preferences"
 msgid "Advanced"
 msgstr ""
 
-#: objects/ui_Preferences.h:1460 src/mainwin.cc:2704 src/mainwin.cc:2709
+#: objects/ui_Preferences.h:1460 src/mainwin.cc:2666 src/mainwin.cc:2671
 msgid "Editor"
 msgstr ""
 
@@ -1531,12 +1531,12 @@ msgstr ""
 msgid "Save console content"
 msgstr ""
 
-#: src/export.cc:78
+#: src/export.cc:86
 #, c-format
 msgid "Can't open file \"%s\" for export"
 msgstr ""
 
-#: src/export.cc:93
+#: src/export.cc:101
 #, c-format
 msgid "ERROR: \"%s\" write error. (Disk full?)"
 msgstr ""
@@ -1559,62 +1559,62 @@ msgstr[1] ""
 msgid " For details see <a href=\"#console\">console window</a>."
 msgstr ""
 
-#: src/mainwin.cc:1768
+#: src/mainwin.cc:1765
 msgid "Application"
 msgstr ""
 
-#: src/mainwin.cc:1769
+#: src/mainwin.cc:1766
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
 
-#: src/mainwin.cc:2006
+#: src/mainwin.cc:2003
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
 msgstr ""
 
-#: src/mainwin.cc:2007
+#: src/mainwin.cc:2004
 msgid "Upload Error"
 msgstr ""
 
-#: src/mainwin.cc:2341
+#: src/mainwin.cc:2303
 msgid "Export %1 File"
 msgstr ""
 
-#: src/mainwin.cc:2342
+#: src/mainwin.cc:2304
 msgid "%1 Files (*%2)"
 msgstr ""
 
-#: src/mainwin.cc:2398
+#: src/mainwin.cc:2360
 msgid "Export CSG File"
 msgstr ""
 
-#: src/mainwin.cc:2398
+#: src/mainwin.cc:2360
 msgid "CSG Files (*.csg)"
 msgstr ""
 
-#: src/mainwin.cc:2425
+#: src/mainwin.cc:2387
 msgid "Export Image"
 msgstr ""
 
-#: src/mainwin.cc:2425
+#: src/mainwin.cc:2387
 msgid "PNG Files (*.png)"
 msgstr ""
 
-#: src/mainwin.cc:2725 src/mainwin.cc:2730
+#: src/mainwin.cc:2687 src/mainwin.cc:2692
 msgid "Console"
 msgstr ""
 
-#: src/mainwin.cc:2742
+#: src/mainwin.cc:2704
 msgid "Customizer"
 msgstr ""
 
-#: src/mainwin.cc:2750 src/tabmanager.cc:225 src/tabmanager.cc:463
+#: src/mainwin.cc:2712 src/tabmanager.cc:225 src/tabmanager.cc:463
 #: src/tabmanager.cc:521 src/tabmanager.cc:684
 msgid "Untitled.scad"
 msgstr ""
 
-#: src/mainwin.cc:3015 src/mainwin.cc:3022
+#: src/mainwin.cc:2977 src/mainwin.cc:2984
 msgid "Untitled"
 msgstr ""
 
