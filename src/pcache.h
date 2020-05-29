@@ -11,8 +11,10 @@ class PCache
 public:
     PCache();
 
-    void init(const std::string _host, const uint16_t _port);
+    void init(const std::string _host, const uint16_t _port, const std::string _pass);
     void connect();
+    void connectWithPassword();
+    bool Authorize();
     bool insert(const std::string& key, const std::string& serializedgeom);
     bool get(const std::string& key, std::string& serializedgeom);
     bool contains(const std::string& key, bool& ret);
@@ -32,7 +34,7 @@ private:
     redisContext* rct;
     redisReply* reply;
     bool cstatus;
-    std::string host;
+    std::string host, pass;
     uint16_t port;
     std::string err;
 

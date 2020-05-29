@@ -12,9 +12,10 @@ PCache::PCache(){
     cstatus = false;
 }
 
-void PCache::init(const std::string _host, const uint16_t _port){
+void PCache::init(const std::string _host, const uint16_t _port, const std::string _pass){
     host = _host;
     port = _port;
+    pass = _pass;
 }
 
 void PCache::connect(){
@@ -27,6 +28,24 @@ void PCache::connect(){
         }
     }
 
+}
+
+void PCache::connectWithPassword(){
+    rct = redisConnect(host.c_str(), port);
+    if(checkContext(rct)){
+        //do something to communicate the err to user and store cache in an usual way.
+    }else{
+        if(!Authorize()){
+            //do something to communicate the err to user and store cache in an usual way.
+        }
+    }
+}
+
+bool PCache::Authorize(){
+    reply= static_cast<redisReply*>(redisCommand(rct, "AUTH %s", pass.c_str()));
+    if(checkReply(reply)){
+        return false; //problem
+    }else return true;
 }
 
 void PCache::disconnect(){
