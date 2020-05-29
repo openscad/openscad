@@ -1,9 +1,8 @@
-group();
 difference() {
 	sphere($fn = 0, $fa = 12, $fs = 2, r = 20);
 	multmatrix([[1, 0, 0, -2.92], [0, 1, 0, 0.5], [0, 0, 1, 20], [0, 0, 0, 1]]) {
 		multmatrix([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) {
-			import(file = "example012.stl", layer = "", origin = [0, 0], scale = 1, convexity = 5, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+			import(file = "example012.stl", layer = "", origin = [0, 0], scale = 1, convexity = 5, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 		}
 	}
 }

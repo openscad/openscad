@@ -1,4 +1,3 @@
-group();
 color([1, 0, 0, 1]) {
 	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
 		multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -43,3 +42,4 @@ color([1, 0, 1, 1]) {
 		}
 	}
 }
+
