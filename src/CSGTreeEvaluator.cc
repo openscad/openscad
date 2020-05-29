@@ -56,8 +56,14 @@ void CSGTreeEvaluator::applyBackgroundAndHighlight(State & /*state*/, const Abst
 
 void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
 {
+	const auto &vc = this->visitedchildren[node.index()];
+	if (vc.empty()) {
+		this->stored_term[node.index()] = CSGNode::createEmptySet();
+		return;
+	}
+
 	shared_ptr<CSGNode> t1;
-	for(const auto &chnode : this->visitedchildren[node.index()]) {
+	for(const auto &chnode : vc) {
 		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
@@ -85,7 +91,7 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 				t = CSGOperation::createCSGNode(op, t1, t2);
 			}
 			// Handle highlight
-				switch (op) {
+			switch (op) {
 				case OpenSCADOperator::DIFFERENCE:
 					if (t != t1 && t1->isHighlight()) {
 						t->setHighlight(true);
@@ -95,11 +101,10 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 					}
 					break;
 				case OpenSCADOperator::INTERSECTION:
-					if (t && t != t1 && t != t2 &&
+					if (t && !t->isEmptySet() && t != t1 && t != t2 &&
 							t1->isHighlight() && t2->isHighlight()) {
 						t->setHighlight(true);
-					}
-					else {
+					}	else {
 						if (t != t1 && t1->isHighlight()) {
 							this->highlightNodes.push_back(t1);
 						}
@@ -122,11 +127,11 @@ void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, O
 						t = t1;
 					}
 					break;
-                case OpenSCADOperator::MINKOWSKI:
-                case OpenSCADOperator::HULL:
-                case OpenSCADOperator::RESIZE:
-                    break;
-				}
+				case OpenSCADOperator::MINKOWSKI:
+				case OpenSCADOperator::HULL:
+				case OpenSCADOperator::RESIZE:
+					break;
+			}
 			t1 = t;
 		}
 	}

@@ -417,7 +417,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
 		}
 		else {
-			if (!root_raw_term)
+			if (!root_raw_term || root_raw_term->isEmptySet())
 				fstream << "No top-level CSG object\n";
 			else {
 				fstream << root_raw_term->dump() << "\n";

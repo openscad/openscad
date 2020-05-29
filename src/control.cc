@@ -278,6 +278,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);
+		// echo without child geometries should not count as valid CSGNode
+		if (node->children.empty()) return nullptr;
 	}
 		break;
 
@@ -288,6 +290,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		evaluate_assert(c.ctx, evalctx);
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);
+		// assert without child geometries should not count as valid CSGNode
+		if (node->children.empty()) return nullptr;
 	}
 		break;
 
