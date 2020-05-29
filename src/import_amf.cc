@@ -100,6 +100,7 @@ AmfImporter::AmfImporter(const Location &loc) : polySet(nullptr), x(0), y(0), z(
 
 AmfImporter::~AmfImporter()
 {
+	delete polySet;
 }
 	
 void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
