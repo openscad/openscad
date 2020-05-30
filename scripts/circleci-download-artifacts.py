@@ -61,7 +61,7 @@ def new_builds():
 	try:
 		with open(cache_file) as infile:
 			last_builds = json.load(infile)
-	except:
+	except Exception:
 		last_builds = {}
 
 	builds = latest_builds()
