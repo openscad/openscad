@@ -63,7 +63,7 @@ class SurfaceNode : public LeafNode
 {
 public:
 	VISITABLE();
-	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
+	SurfaceNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : LeafNode(mi, ctx), center(false), invert(false), convexity(1) { }
 	std::string toString() const override;
 	std::string name() const override { return "surface"; }
 
@@ -71,7 +71,7 @@ public:
 	bool center;
 	bool invert;
 	int convexity;
-	
+
 	const Geometry *createGeometry() const override;
 private:
 	void convert_image(img_data_t &data, std::vector<uint8_t> &img, unsigned int width, unsigned int height) const;
@@ -82,7 +82,7 @@ private:
 
 AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new SurfaceNode(inst);
+	auto node = new SurfaceNode(inst, evalctx);
 
 	AssignmentList args{assignment("file"), assignment("center"), assignment("convexity")};
 	AssignmentList optargs{assignment("center"),assignment("invert")};
@@ -136,25 +136,25 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 {
 	img_data_t data;
 	std::vector<uint8_t> png;
-	int ret_val = 0;	
+	int ret_val = 0;
 	try{
 		 ret_val = lodepng::load_file(png, filename);
 	}catch(std::bad_alloc &ba){
-		
+
 		PRINTB("WARNING: bad_alloc caught for '%s'.", ba.what());
-		return data;	
+		return data;
 	}
 
 	if(ret_val == 78){
 		PRINTB("WARNING: The file '%s' couldn't be opened.", filename);
-		return data;	
+		return data;
 	}
-	
+
 	if (!is_png(png)) {
 		png.clear();
 		return read_dat(filename);
 	}
-	
+
 	unsigned int width, height;
 	std::vector<uint8_t> img;
 	auto error = lodepng::decode(img, width, height, png);
@@ -163,9 +163,9 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 		data.clear();
 		return data;
 	}
-	
+
 	convert_image(data, img, width, height);
-	
+
 	return data;
 }
 
@@ -211,7 +211,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   	}
 		lines++;
 	}
-	
+
 	return data;
 }
 
@@ -221,7 +221,7 @@ const Geometry *SurfaceNode::createGeometry() const
 
 	auto p = new PolySet(3);
 	p->setConvexity(convexity);
-	
+
 	int lines = 0;
 	int columns = 0;
 	double min_val = 0;

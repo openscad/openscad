@@ -32,7 +32,7 @@
 
 AbstractNode *GroupModule::instantiate(const std::shared_ptr<Context>&, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new GroupNode(inst);
+	auto node = new GroupNode(inst, evalctx);
 	inst->scope.apply(evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

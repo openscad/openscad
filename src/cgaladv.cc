@@ -45,7 +45,7 @@ public:
 
 AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new CgaladvNode(inst, type);
+	auto node = new CgaladvNode(inst, evalctx, type);
 
 	AssignmentList args;
 
@@ -63,7 +63,7 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 
 	auto convexity = ValuePtr::undefined;
 	auto path = ValuePtr::undefined;
-	
+
 	if (type == CgaladvType::MINKOWSKI) {
 		convexity = c->lookup_variable("convexity", true);
 	} else if (type == CgaladvType::RESIZE) {

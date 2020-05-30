@@ -56,7 +56,7 @@ public:
 
 AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new TransformNode(inst);
+	auto node = new TransformNode(inst, evalctx);
 
 	AssignmentList args;
 
@@ -131,7 +131,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			if (val_a->toVector().size() > 3) {
 				ok &= false;
 			}
-			
+
 			bool v_supplied = (val_v != ValuePtr::undefined);
 			if(ok){
 				if(v_supplied){
@@ -171,7 +171,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	else if (this->type == transform_type_e::MIRROR) {
 		auto val_v = c->lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
-	
+
 		if (val_v->getVec3(x, y, z, 0.0)) {
 			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
@@ -207,7 +207,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v->toVector().size() && v->toVector()[y]->type() == 
+				if (y < v->toVector().size() && v->toVector()[y]->type() ==
 						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
@@ -243,7 +243,7 @@ std::string TransformNode::toString() const
 	return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi), matrix(Transform3d::Identity())
+TransformNode::TransformNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx), matrix(Transform3d::Identity())
 {
 }
 

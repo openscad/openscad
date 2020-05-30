@@ -39,7 +39,6 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity, const OpenCSGRenderer &renderer) :
 			OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE), renderer(renderer) { }
-
 	shared_ptr<const Geometry> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
@@ -81,8 +80,8 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 																 shared_ptr<CSGProducts> highlights_products,
 																 shared_ptr<CSGProducts> background_products,
 																 GLint *shaderinfo)
-	: root_products(root_products), 
-		highlights_products(highlights_products), 
+	: root_products(root_products),
+		highlights_products(highlights_products),
 		background_products(background_products), shaderinfo(shaderinfo)
 {
 }
@@ -116,7 +115,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 	return prim;
 }
 
-void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo, 
+void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo,
 										bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
@@ -137,7 +136,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		for(const auto &csgobj : product.intersections) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
-			
+
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
 				colormode = ColorMode::HIGHLIGHT;
@@ -146,10 +145,10 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = ColorMode::MATERIAL;
 			}
-			
+
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());
-			
+
 			const Color4f c1 = setColor(colormode, c.data(), shaderinfo);
 			if (c1[3] == 1.0f) {
 				// object is opaque, draw normally
@@ -169,7 +168,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 		for(const auto &csgobj : product.subtractions) {
 			const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-			
+
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
 				colormode = ColorMode::HIGHLIGHT;
@@ -178,7 +177,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			} else {
 				colormode = ColorMode::CUTOUT;
 			}
-			
+
 			setColor(colormode, c.data(), shaderinfo);
 			glPushMatrix();
 			glMultMatrixd(csgobj.leaf->matrix.data());

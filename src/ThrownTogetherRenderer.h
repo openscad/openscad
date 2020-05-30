@@ -1,10 +1,13 @@
 #pragma once
 
 #include "renderer.h"
-#include "VBORenderer.h"
 #include "csgnode.h"
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
+
+#ifdef ENABLE_EXPERIMENTAL
+#include "VBORenderer.h"
+#endif // ENABLE_EXPERIMENTAL
 
 #ifdef ENABLE_EXPERIMENTAL
 class ThrownTogetherRenderer : public VBORenderer
@@ -20,7 +23,7 @@ public:
 	void draw(bool showfaces, bool showedges) const override;
 	BoundingBox getBoundingBox() const override;
 private:
-	void renderCSGProducts(const CSGProducts &products, bool highlight_mode, bool background_mode, bool showedges, 
+	void renderCSGProducts(const CSGProducts &products, bool highlight_mode, bool background_mode, bool showedges,
 											bool fberror = false) const;
 #ifdef ENABLE_EXPERIMENTAL
   Renderer::ColorMode getColorMode(const CSGNode::Flag &flags, bool highlight_mode,

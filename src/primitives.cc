@@ -67,7 +67,7 @@ class PrimitiveNode : public LeafNode
 {
 public:
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type, const std::string &docPath) : LeafNode(mi), document_path(docPath), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, primitive_type_e type, const std::string &docPath) : LeafNode(mi, ctx), document_path(docPath), type(type) { }
 	std::string toString() const override;
 	std::string name() const override {
 		switch (this->type) {
@@ -112,7 +112,7 @@ public:
  * Return a radius value by looking up both a diameter and radius variable.
  * The diameter has higher priority, so if found an additionally set radius
  * value is ignored.
- * 
+ *
  * @param ctx data context with variable values.
  * @param radius_var name of the variable to lookup for the radius value.
  * @param diameter_var name of the variable to lookup for the diameter value.
@@ -124,7 +124,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 	auto d = ctx->lookup_variable(diameter_var, true);
 	auto r = ctx->lookup_variable(radius_var, true);
 	const auto r_defined = (r->type() == Value::ValueType::NUMBER);
-	
+
 	if (d->type() == Value::ValueType::NUMBER) {
 		if (r_defined) {
 			std::string locStr = loc.toRelativeString(ctx->documentPath());
@@ -140,7 +140,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 
 AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new PrimitiveNode(inst, this->type, ctx->documentPath());
+	auto node = new PrimitiveNode(inst, evalctx, this->type, ctx->documentPath());
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -243,7 +243,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
 		const auto r1 = lookup_radius(c.ctx, inst->location(), "d1", "r1");
 		const auto r2 = lookup_radius(c.ctx, inst->location(), "d2", "r2");
-		if(r.type() == Value::ValueType::NUMBER && 
+		if(r.type() == Value::ValueType::NUMBER &&
 			(r1.type() == Value::ValueType::NUMBER || r2.type() == Value::ValueType::NUMBER)
 			){
 				PRINTB("WARNING: Cylinder parameters ambiguous, %s", inst->location().toRelativeString(ctx->documentPath()));
@@ -267,8 +267,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
 				PRINTB("WARNING: cylinder(r1=%s, r2=%s, ...), %s",
-					(r1.type() == Value::ValueType::NUMBER ? r1.toEchoString() : r.toEchoString()) % 
-					(r2.type() == Value::ValueType::NUMBER ? r2.toEchoString() : r.toEchoString()) % 
+					(r1.type() == Value::ValueType::NUMBER ? r1.toEchoString() : r.toEchoString()) %
+					(r2.type() == Value::ValueType::NUMBER ? r2.toEchoString() : r.toEchoString()) %
 					inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
@@ -479,8 +479,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			p->append_poly();
 			for (int i = 0; i < fragments; i++) {
-				p->insert_vertex(ring[rings-1].points[i].x, 
-												 ring[rings-1].points[i].y, 
+				p->insert_vertex(ring[rings-1].points[i].x,
+												 ring[rings-1].points[i].y,
 												 ring[rings-1].z);
 			}
 		}
@@ -508,7 +508,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			generate_circle(circle1.data(), r1, fragments);
 			generate_circle(circle2.data(), r2, fragments);
-		
+
 			for (int i=0; i<fragments; i++) {
 				int j = (i+1) % fragments;
 				if (r1 == r2) {
@@ -615,7 +615,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (unsigned int i=0;i<vec.size();i++) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", 
+					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s",
 								 val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
@@ -638,7 +638,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					p->addOutline(curroutline);
 				}
 			}
-        
+
 			if (p->outlines().size() > 0) {
 				p->setConvexity(convexity);
 			}

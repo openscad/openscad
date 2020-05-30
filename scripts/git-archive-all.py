@@ -205,7 +205,7 @@ class GitArchiver(object):
         try:
             global_attributes_abspath = self.read_shell("git config --get core.attributesfile", repo_abspath).rstrip()
             exclude_patterns[()] = read_attributes(global_attributes_abspath)
-        except:
+        except Exception:
             # And valid to not have them.
             pass
 

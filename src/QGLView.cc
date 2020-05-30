@@ -210,8 +210,9 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-	double x = event->pos().x() * this->getDPI();
-	double y = viewport[3] - event->pos().y() * this->getDPI();
+	const double dpi = this->getDPI();
+	const double x = event->pos().x() * dpi;
+	const double y = viewport[3] - event->pos().y() * dpi;
 	GLfloat z = 0;
 
 	glGetError(); // clear error state so we don't pick up previous errors
@@ -306,7 +307,7 @@ const QImage & QGLView::grabFrame()
 	return this->frame;
 }
 
-bool QGLView::save(const char *filename)
+bool QGLView::save(const char *filename) const
 {
   return this->frame.save(filename, "PNG");
 }
