@@ -27,12 +27,12 @@ void OffscreenView::display_opencsg_warning()
 }
 #endif
 
-bool OffscreenView::save(const char *filename)
+bool OffscreenView::save(const char *filename) const
 {
   return save_framebuffer(this->ctx, filename);
 }
 
-bool OffscreenView::save(std::ostream &output)
+bool OffscreenView::save(std::ostream &output) const
 {
   return save_framebuffer(this->ctx, output);
 }

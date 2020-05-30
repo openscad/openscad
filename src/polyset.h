@@ -13,6 +13,7 @@ BOOST_TRIBOOL_THIRD_STATE(unknown)
 class PolySet : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Polygons polygons;
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);

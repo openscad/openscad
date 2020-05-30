@@ -561,7 +561,7 @@ public:
 	std::string operator()(const RangeType &v) const
 		{
 			const uint32_t steps = v.numValues();
-			if (steps >= 10000) {
+			if (steps >= RangeType::MAX_RANGE_STEPS) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 				return "";
 			}
@@ -1002,39 +1002,37 @@ Value Value::operator[](const Value &v) const
 
 uint32_t RangeType::numValues() const
 {
-  if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
+
+	if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
 		return 0;
 	}
 
-  if (std::isinf(begin_val) || (std::isinf(end_val))) {
-    return std::numeric_limits<uint32_t>::max();
-  }
+	if (step_val < 0) {
+		if (begin_val < end_val) {
+			return 0;
+		}
+	} else {
+		if (begin_val > end_val) {
+		return 0;
+		}
+	}
 
-  if ((begin_val == end_val) || std::isinf(step_val)) {
-    return 1;
-  }
-  
-  if (step_val == 0) { 
-    return std::numeric_limits<uint32_t>::max();
-  }
+	if ((begin_val == end_val) || std::isinf(step_val)) {
+		return 1;
+	}
 
-  double numvals;
-  if (step_val < 0) {
-    if (begin_val < end_val) {
-      return 0;
-    }
-    numvals = (begin_val - end_val) / (-step_val) + 1;
-  } else {
-    if (begin_val > end_val) {
-      return 0;
-    }
-    numvals = (end_val - begin_val) / step_val + 1;
-  }
-  
-  return numvals;
+	if (std::isinf(begin_val) || std::isinf(end_val) || step_val == 0) {
+		return std::numeric_limits<uint32_t>::max();
+	}
+ 
+	// Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
+	const uint32_t max = std::numeric_limits<uint32_t>::max();
+	uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
+	return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
+RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type), 
+		num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
 {
 	update_type();
 }
@@ -1044,16 +1042,19 @@ void RangeType::iterator::update_type()
 	if (range.step_val == 0) {
 		type = type_t::RANGE_TYPE_END;
 	} else if (range.step_val < 0) {
-		if (val < range.end_val) {
+		if (i_step >= num_values) {
 			type = type_t::RANGE_TYPE_END;
 		}
 	} else {
-		if (val > range.end_val) {
+		if (i_step >= num_values) {
 			type = type_t::RANGE_TYPE_END;
 		}
 	}
 
-	if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) type = type_t::RANGE_TYPE_END;
+	if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) {
+		type = type_t::RANGE_TYPE_END;
+		i_step = num_values;
+	}
 }
 
 RangeType::iterator::reference RangeType::iterator::operator*()
@@ -1068,7 +1069,7 @@ RangeType::iterator::pointer RangeType::iterator::operator->()
 
 RangeType::iterator::self_type RangeType::iterator::operator++()
 {
-	val += range.step_val;
+	val = range.begin_val + range.step_val * ++i_step;
 	update_type();
 	return *this;
 }

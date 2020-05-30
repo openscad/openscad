@@ -1,29 +1,26 @@
-#
-#
-# <soniczerops@gmail.com>, 2013, 2014, 2015.
-# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2015-2018.
-# Alexander Kurachenko <alexander@basealt.ru>, 2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2015.03\n"
+"Project-Id-Version: OpenSCAD 2020.02.01\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-23 03:16+0200\n"
-"PO-Revision-Date: 2019-12-11 12:05+0300\n"
-"Last-Translator: Alexander Kurachenko <alexander@basealt.ru>\n"
-"Language-Team: \n"
-"Language: ru\n"
+"PO-Revision-Date: 2020-04-20 17:00+0400\n"
+"Last-Translator: Sargis Malkonyan <melkonyansarg@gmail.com>\n"
+"Language-Team: Agarak Armath Engineering Laboratories\n"
+"Language: hy_AM\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.8.12\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 2.3\n"
+"X-Language: hy_AM\n"
+"X-Source-Language: hy_AM\n"
 
 #: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
 msgid "About OpenSCAD"
-msgstr "О программе OpenSCAD"
+msgstr "OpenSCAD-ի մասին"
 
 #: objects/ui_AboutDialog.h:102 objects/ui_launchingscreen.h:306
+#, fuzzy
 msgid ""
 "<html><head/><body>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
@@ -41,20 +38,20 @@ msgstr ""
 "weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: normal; font-size: 12pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Твердотельное моделирование для программистов</p>\n"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">Եռաչափ մոդելավորում ծրագրավորման միջոցով</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
 
 #: objects/ui_AboutDialog.h:109
 msgid "OK"
-msgstr "ОК"
+msgstr "Լավ"
 
 #: objects/ui_AxisConfigWidget.h:853 objects/ui_ButtonConfigWidget.h:266
 #: objects/ui_Preferences.h:1457
 msgid "Preferences"
-msgstr "Параметры"
+msgstr "Կարգավորումներ"
 
 #: objects/ui_AxisConfigWidget.h:854 objects/ui_AxisConfigWidget.h:855
 #: objects/ui_AxisConfigWidget.h:859 objects/ui_AxisConfigWidget.h:863
@@ -62,11 +59,11 @@ msgstr "Параметры"
 #: objects/ui_AxisConfigWidget.h:869 objects/ui_AxisConfigWidget.h:871
 #: objects/ui_AxisConfigWidget.h:882
 msgid "Trim"
-msgstr "Обрезать"
+msgstr "Կտրել"
 
 #: objects/ui_AxisConfigWidget.h:856
 msgid "Reset Trim"
-msgstr "Сбросить обрезку"
+msgstr "Չեղարկել կտրումը"
 
 #: objects/ui_AxisConfigWidget.h:857 objects/ui_AxisConfigWidget.h:860
 #: objects/ui_AxisConfigWidget.h:861 objects/ui_AxisConfigWidget.h:862
@@ -74,55 +71,55 @@ msgstr "Сбросить обрезку"
 #: objects/ui_AxisConfigWidget.h:868 objects/ui_AxisConfigWidget.h:870
 #: objects/ui_AxisConfigWidget.h:881
 msgid "DeadZone"
-msgstr "Мёртвая зона"
+msgstr "Մեռյալ գոտի"
 
 #: objects/ui_AxisConfigWidget.h:858
 msgid "Auto Trim Axes"
-msgstr "Автоматически обрезать оси"
+msgstr "Ավտոմատ հետ բերել կտրած հատվածը"
 
 #: objects/ui_AxisConfigWidget.h:872
 msgid "Axis 2"
-msgstr "Ось 2"
+msgstr "Առանցք 2"
 
 #: objects/ui_AxisConfigWidget.h:873
 msgid "Axis 0"
-msgstr "Ось 0"
+msgstr "Առանցք 0"
 
 #: objects/ui_AxisConfigWidget.h:874
 msgid "Axis 3"
-msgstr "Ось 3"
+msgstr "Առանցք 3"
 
 #: objects/ui_AxisConfigWidget.h:875
 msgid "Axis 6"
-msgstr "Ось 6"
+msgstr "Առանցք 6"
 
 #: objects/ui_AxisConfigWidget.h:876
 msgid "Axis 8"
-msgstr "Ось 8"
+msgstr "Առանցք 8"
 
 #: objects/ui_AxisConfigWidget.h:877
 msgid "Axis 7"
-msgstr "Ось 7"
+msgstr "Առանցք 7"
 
 #: objects/ui_AxisConfigWidget.h:878
 msgid "Axis 5"
-msgstr "Ось 5"
+msgstr "Առանցք 5"
 
 #: objects/ui_AxisConfigWidget.h:879
 msgid "Axis 1"
-msgstr "Ось 1"
+msgstr "Առանցք 1"
 
 #: objects/ui_AxisConfigWidget.h:880
 msgid "Axis 4"
-msgstr "Ось 4"
+msgstr "Առանցք 4"
 
 #: objects/ui_AxisConfigWidget.h:883
 msgid "Rotation"
-msgstr "Вращение"
+msgstr "Պտտում"
 
 #: objects/ui_AxisConfigWidget.h:884
 msgid "Zoom"
-msgstr "Увеличение"
+msgstr "Խոշորացում"
 
 #: objects/ui_AxisConfigWidget.h:885
 msgid "X"
@@ -130,7 +127,7 @@ msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:886
 msgid "Gain"
-msgstr "Усиление"
+msgstr "Աճացնել"
 
 #: objects/ui_AxisConfigWidget.h:887
 msgid "Y"
@@ -142,23 +139,25 @@ msgstr "Z"
 
 #: objects/ui_AxisConfigWidget.h:889
 msgid "Translation"
-msgstr "Сдвиг"
+msgstr "Մոդելի թարգմանություն"
 
 #: objects/ui_AxisConfigWidget.h:890
 msgid "ViewPort rel.<br/>Translation"
-msgstr "Отн. сдвиг<br/>вьюпорта"
+msgstr "ViewPort rel.<br/>Թարգմանություն"
 
 #: objects/ui_AxisConfigWidget.h:891
 msgid "ViewPort rel.<br />Rotation"
-msgstr "Отн. вращение<br />вьюпорта"
+msgstr "ViewPort rel.<br />Պտտում"
 
 #: objects/ui_AxisConfigWidget.h:892
 msgid "Axis Setup:"
-msgstr "Настройка осей:"
+msgstr "Առանցքի կարգաբերում ՝"
 
 #: objects/ui_AxisConfigWidget.h:893
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
-msgstr "<b>Выбор драйвера:</b> <i>(требует перезапуска OpenSCAD)</i>"
+msgstr ""
+"<b>Driver֊ի ընտրություն:</b> <i>(փոփոխությունից հետո անհրաժեշտ է "
+"վերագործարկել OpenSCAD֊ը)</i>"
 
 #: objects/ui_AxisConfigWidget.h:894
 msgid "SpaceNav"
@@ -174,7 +173,7 @@ msgstr "QGamepad"
 
 #: objects/ui_AxisConfigWidget.h:897
 msgid "Joystick"
-msgstr "Джойстик"
+msgstr "Joystick"
 
 #: objects/ui_AxisConfigWidget.h:898
 msgid "DBus"
@@ -182,7 +181,7 @@ msgstr "DBus"
 
 #: objects/ui_AxisConfigWidget.h:899
 msgid "Axes Mapping:"
-msgstr "Соответствие осей:"
+msgstr "Առանցքների տեղորոշում ՝"
 
 #: objects/ui_AxisConfigWidget.h:900
 msgid "Status:"
@@ -191,109 +190,109 @@ msgstr ""
 #: objects/ui_AxisConfigWidget.h:901
 #, fuzzy
 msgid "TextLabel"
-msgstr "Текст"
+msgstr "Տեքստ"
 
 #: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1461
 msgid "Update"
-msgstr "Обновления"
+msgstr "Թարմացնել"
 
 #: objects/ui_ButtonConfigWidget.h:267
 msgid "Button 2"
-msgstr "Кнопка 2"
+msgstr "Կոճակ 2"
 
 #: objects/ui_ButtonConfigWidget.h:268
 msgid "Button 3"
-msgstr "Кнопка 3"
+msgstr "Կոճակ 3"
 
 #: objects/ui_ButtonConfigWidget.h:269
 msgid "Button 5"
-msgstr "Кнопка 5"
+msgstr "Կոճակ 5"
 
 #: objects/ui_ButtonConfigWidget.h:270
 msgid "Button 6"
-msgstr "Кнопка 6"
+msgstr "Կոճակ 6"
 
 #: objects/ui_ButtonConfigWidget.h:271
 msgid "Button 4"
-msgstr "Кнопка 4"
+msgstr "Կոճակ 4"
 
 #: objects/ui_ButtonConfigWidget.h:272
 msgid "Button 9"
-msgstr "Кнопка 9"
+msgstr "Կոճակ 9"
 
 #: objects/ui_ButtonConfigWidget.h:273
 msgid "Button 8"
-msgstr "Кнопка 8"
+msgstr "Կոճակ 8"
 
 #: objects/ui_ButtonConfigWidget.h:274
 msgid "Button 7"
-msgstr "Кнопка 7"
+msgstr "Կոճակ 7"
 
 #: objects/ui_ButtonConfigWidget.h:275
 msgid "Button 0"
-msgstr "Кнопка 0"
+msgstr "Կոճակ 0"
 
 #: objects/ui_ButtonConfigWidget.h:276
 msgid "Button 1"
-msgstr "Кнопка 1"
+msgstr "Կոճակ 1"
 
 #: objects/ui_ButtonConfigWidget.h:277
 msgid "Button 12"
-msgstr "Кнопка 12"
+msgstr "Կոճակ 12"
 
 #: objects/ui_ButtonConfigWidget.h:278
 msgid "Button 10"
-msgstr "Кнопка 10"
+msgstr "Կոճակ 10"
 
 #: objects/ui_ButtonConfigWidget.h:279
 msgid "Button 11"
-msgstr "Кнопка 11"
+msgstr "Կոճակ 11"
 
 #: objects/ui_ButtonConfigWidget.h:280
 msgid "Button 13"
-msgstr "Кнопка 13"
+msgstr "Կոճակ 13"
 
 #: objects/ui_ButtonConfigWidget.h:281
 msgid "Button 14"
-msgstr "Кнопка 14"
+msgstr "Կոճակ 14"
 
 #: objects/ui_ButtonConfigWidget.h:282
 msgid "Button 15"
-msgstr "Кнопка 15"
+msgstr "Կոճակ 15"
 
 #: objects/ui_Console.h:42
 msgid "Clear"
-msgstr "Очистить"
+msgstr "Մաքրել"
 
 #: objects/ui_Console.h:44
 msgid "Clear console"
-msgstr "Очистить консоль"
+msgstr "Մաքրել հրամանների վահանակը"
 
 #: objects/ui_Console.h:46
 #, fuzzy
 msgid "Save As..."
-msgstr "Сохранить &как..."
+msgstr "Պահել &որպես..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
-msgstr "Сохранить содержимое консоли в файл"
+msgstr "Պահել վահանակի պարունակությունը նիշքում"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
-msgstr "Список шрифтов, доступных в OpenSCAD"
+msgstr "OpenSCAD Տառատեսակների ցանկ"
 
 #: objects/ui_FontListDialog.h:104 objects/ui_LibraryInfoDialog.h:74
 #: objects/ui_PrintInitDialog.h:110
 msgid "&OK"
-msgstr "&ОК"
+msgstr "&Հաստատել"
 
 #: objects/ui_FontListDialog.h:105
 msgid "Copy to Clipboard"
-msgstr "Скопировать в буфер"
+msgstr "Պատճենել պատկերը"
 
 #: objects/ui_FontListDialog.h:106
 msgid "Filter:"
-msgstr "Фильтр:"
+msgstr "Զտիչ ՝"
 
 #: objects/ui_FontListDialog.h:107
 msgid ""
@@ -307,68 +306,69 @@ msgid ""
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
 "Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>В этом списке перечислены шрифты, которые можно "
-"использовать в OpenSCAD.</p><p>Пример кода:</p><pre style=\" margin-"
+"<html><head/><body><p>Այս ցանկը ցույց է տալիս այն տառատեսակները, որոնք արդեն "
+"իսկ գրանցված են OpenSCAD֊ում.</p><p>Օրինակ:</p><pre style=\" margin-"
 "top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-"
 "indent:0; text-indent:0px;\"><span style=\" font-family:'Courier New,"
-"courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</"
-"span></pre><pre style=\" margin-top:0px; margin-bottom:12px; margin-"
-"left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span "
-"style=\" font-family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, "
-"font = &quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+"courier';\">  Տեքստ(&quot;OpenSCAD&quot;, տառատեսակը = &quot;DejaVu "
+"Sans&quot;);</span></pre><pre style=\" margin-top:0px; margin-bottom:12px; "
+"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"
+"\"><span style=\" font-family:'Courier New,courier';\">  text(&quot;"
+"OpenSCAD&quot;, font = &quot;Liberation Sans:style=Italic&quot;);</span></"
+"pre></body></html>"
 
 #: objects/ui_launchingscreen.h:295
 msgid "Welcome to OpenSCAD"
-msgstr "Добро пожаловать в OpenSCAD"
+msgstr "Բարի գալուստ OpenSCAD"
 
 #: objects/ui_launchingscreen.h:296
 msgid "New"
-msgstr "Создать"
+msgstr "Նոր"
 
 #: objects/ui_launchingscreen.h:297
 msgid "Open"
-msgstr "Открыть"
+msgstr "Բացել"
 
 #: objects/ui_launchingscreen.h:298
 msgid "Help"
-msgstr "Помощь"
+msgstr "Օգնություն"
 
 #: objects/ui_launchingscreen.h:299
 msgid "Recents"
-msgstr "Недавние файлы"
+msgstr "Վերջին նիշքերը"
 
 #: objects/ui_launchingscreen.h:300
 msgid "Open Recent"
-msgstr "Открыть недавний файл"
+msgstr "Բացել վերջին նիշքերը"
 
 #: objects/ui_launchingscreen.h:301 objects/ui_launchingscreen.h:303
 msgid "Examples"
-msgstr "Примеры"
+msgstr "Օրինակներ"
 
 #: objects/ui_launchingscreen.h:304
 msgid "Open Example"
-msgstr "Открыть пример"
+msgstr "Բացել օրինակ"
 
 #: objects/ui_launchingscreen.h:313
 msgid "Don't show again"
-msgstr "Больше не показывать"
+msgstr "Այլևս չցուցադրել"
 
 #: objects/ui_launchingscreen.h:314
 msgid "Version"
-msgstr "Версия"
+msgstr "Տարբերակ"
 
 #: objects/ui_LibraryInfoDialog.h:72
 msgid "Lib & Build Info"
-msgstr "Информация о сборке"
+msgstr "Գրադար․ և կառուց․ տեղեկ․"
 
 #: objects/ui_LibraryInfoDialog.h:73
 msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "Подробная информация о библиотеках и сборке OpenSCAD"
+msgstr "OpenSCAD֊ի ամբողջական գրադարանները և կառուցման տեղեկատվությունը"
 
 #: objects/ui_MainWindow.h:955
 #, fuzzy
 msgid "&New File"
-msgstr "&Файл"
+msgstr "&Նիշք"
 
 #: objects/ui_MainWindow.h:957
 msgid "Ctrl+N"
@@ -381,7 +381,7 @@ msgstr ""
 #: objects/ui_MainWindow.h:960
 #, fuzzy
 msgid "&Open File"
-msgstr "&Файл"
+msgstr "&Նիշք"
 
 #: objects/ui_MainWindow.h:962
 msgid "Ctrl+O"
@@ -393,7 +393,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:965
 msgid "&Save"
-msgstr "Со&хранить"
+msgstr "&Պահել"
 
 #: objects/ui_MainWindow.h:967
 msgid "Ctrl+S"
@@ -401,7 +401,7 @@ msgstr "Ctrl+S"
 
 #: objects/ui_MainWindow.h:969
 msgid "Save &As..."
-msgstr "Сохранить &как..."
+msgstr "Պահել &որպես..."
 
 #: objects/ui_MainWindow.h:971
 msgid "Ctrl+Shift+S"
@@ -410,11 +410,11 @@ msgstr "Ctrl+Shift+S"
 #: objects/ui_MainWindow.h:973
 #, fuzzy
 msgid "Save All"
-msgstr "Сохранить как"
+msgstr "Պահպանել որպես՝"
 
 #: objects/ui_MainWindow.h:974
 msgid "&Reload"
-msgstr "&Обновить"
+msgstr "&Կրկին բեռնել"
 
 #: objects/ui_MainWindow.h:976
 msgid "Ctrl+R"
@@ -422,7 +422,7 @@ msgstr "Ctrl+R"
 
 #: objects/ui_MainWindow.h:978
 msgid "&Quit"
-msgstr "&Выход"
+msgstr "&Փակել"
 
 #: objects/ui_MainWindow.h:980
 msgid "Ctrl+Q"
@@ -430,7 +430,7 @@ msgstr "Ctrl+Q"
 
 #: objects/ui_MainWindow.h:982
 msgid "&Undo"
-msgstr "&Отменить"
+msgstr "& Հետ գնալ"
 
 #: objects/ui_MainWindow.h:984
 msgid "Ctrl+Z"
@@ -438,7 +438,7 @@ msgstr "Ctrl+Z"
 
 #: objects/ui_MainWindow.h:986
 msgid "&Redo"
-msgstr "&Повторить"
+msgstr "&Առաջ գնալ"
 
 #: objects/ui_MainWindow.h:988
 msgid "Ctrl+Shift+Z"
@@ -450,7 +450,7 @@ msgstr "Ctrl+Y"
 
 #: objects/ui_MainWindow.h:993
 msgid "Cu&t"
-msgstr "Вы&резать"
+msgstr "&Կտրել"
 
 #: objects/ui_MainWindow.h:995
 msgid "Ctrl+X"
@@ -458,7 +458,7 @@ msgstr "Ctrl+X"
 
 #: objects/ui_MainWindow.h:997
 msgid "&Copy"
-msgstr "&Копировать"
+msgstr "&Պատճենել"
 
 #: objects/ui_MainWindow.h:999
 msgid "Ctrl+C"
@@ -466,7 +466,7 @@ msgstr "Ctrl+C"
 
 #: objects/ui_MainWindow.h:1001
 msgid "&Paste"
-msgstr "&Вставить"
+msgstr "&Տեղադրել"
 
 #: objects/ui_MainWindow.h:1003
 msgid "Ctrl+V"
@@ -474,7 +474,7 @@ msgstr "Ctrl+V"
 
 #: objects/ui_MainWindow.h:1005
 msgid "&Indent"
-msgstr "&Добавить отступ"
+msgstr "&Դրոշմել"
 
 #: objects/ui_MainWindow.h:1007
 msgid "Ctrl+I"
@@ -482,7 +482,7 @@ msgstr "Ctrl+I"
 
 #: objects/ui_MainWindow.h:1009
 msgid "C&omment"
-msgstr "Зако&мментировать"
+msgstr "&Մեկնաբանություն"
 
 #: objects/ui_MainWindow.h:1011
 msgid "Ctrl+D"
@@ -490,7 +490,7 @@ msgstr "Ctrl+D"
 
 #: objects/ui_MainWindow.h:1013
 msgid "Unco&mment"
-msgstr "Р&аскомментировать"
+msgstr "&Առանց մեկնաբանության"
 
 #: objects/ui_MainWindow.h:1015
 msgid "Ctrl+Shift+D"
@@ -499,7 +499,7 @@ msgstr "Ctrl+Shift+D"
 #: objects/ui_MainWindow.h:1017
 #, fuzzy
 msgid "Show Next Tab"
-msgstr "Показать описание"
+msgstr "Ցույց տալ բոլոր մասերը"
 
 #: objects/ui_MainWindow.h:1019
 #, fuzzy
@@ -513,11 +513,11 @@ msgstr ""
 #: objects/ui_MainWindow.h:1023
 #, fuzzy
 msgid "Ctrl+Shift+Tab"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1025
 msgid "Copy viewport ima&ge"
-msgstr "Копировать содер&жимое вьюпорта"
+msgstr "Պատճենել &դիտման պատկերը"
 
 #: objects/ui_MainWindow.h:1027
 msgid "Ctrl+Shift+C"
@@ -525,7 +525,7 @@ msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1029
 msgid "Copy viewport transl&ation"
-msgstr "Копировать сме&щение вьюпорта"
+msgstr "Պատճենել &դիտման թարգմանություն"
 
 #: objects/ui_MainWindow.h:1031
 msgid "Ctrl+T"
@@ -533,15 +533,15 @@ msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:1033
 msgid "Cop&y viewport rotation"
-msgstr "Копировать вращ&ение вьюпорта"
+msgstr "Պատճենել դիտման պտտումը"
 
 #: objects/ui_MainWindow.h:1034
 msgid "Copy vie&wport distance"
-msgstr "Коп&ировать расстояние вьюпорта"
+msgstr "Պատճենել դիտման հեռավորությունը"
 
 #: objects/ui_MainWindow.h:1035
 msgid "Increase Font &Size"
-msgstr "Увели&чить размер шрифта"
+msgstr "Մեծացնել տառաչափը"
 
 #: objects/ui_MainWindow.h:1037
 msgid "Ctrl++"
@@ -549,7 +549,7 @@ msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:1039
 msgid "Decrease Font Si&ze"
-msgstr "У&меньшить размер шрифта"
+msgstr "Փոքրացնել տառաչափը"
 
 #: objects/ui_MainWindow.h:1041
 msgid "Ctrl+-"
@@ -557,11 +557,11 @@ msgstr "Ctrl+-"
 
 #: objects/ui_MainWindow.h:1043
 msgid "H&ide editor"
-msgstr "&Скрыть редактор"
+msgstr "Թաքցնել խմբագիչը"
 
 #: objects/ui_MainWindow.h:1044
 msgid "&Reload and Preview"
-msgstr "&Обновить и выполнить предпросмотр"
+msgstr "&Կրկին բեռնել և ցուցադրել"
 
 #: objects/ui_MainWindow.h:1046
 msgid "F4"
@@ -569,7 +569,7 @@ msgstr "F4"
 
 #: objects/ui_MainWindow.h:1048
 msgid "&Preview"
-msgstr "&Предпросмотр"
+msgstr "&Ցուցադրել"
 
 #: objects/ui_MainWindow.h:1050
 msgid "F5"
@@ -577,7 +577,7 @@ msgstr "F5"
 
 #: objects/ui_MainWindow.h:1052
 msgid "R&ender"
-msgstr "&Рендеринг"
+msgstr "Հրապարակել"
 
 #: objects/ui_MainWindow.h:1054
 msgid "F6"
@@ -585,7 +585,7 @@ msgstr "F6"
 
 #: objects/ui_MainWindow.h:1056
 msgid "&3D Print"
-msgstr "&3D Печать"
+msgstr "&3D տպագրություն"
 
 #: objects/ui_MainWindow.h:1058
 msgid "F8"
@@ -593,23 +593,23 @@ msgstr "F8"
 
 #: objects/ui_MainWindow.h:1060
 msgid "&Check Validity"
-msgstr "Проверить &корректность"
+msgstr "&Ստուգել վավերականությունը"
 
 #: objects/ui_MainWindow.h:1061
 msgid "Display A&ST..."
-msgstr "Показать &AST..."
+msgstr "Ցուցադրել A&ST..."
 
 #: objects/ui_MainWindow.h:1062
 msgid "Display CSG &Tree..."
-msgstr "Показать &дерево CSG..."
+msgstr "Ցուցադրել CSG &Tree..."
 
 #: objects/ui_MainWindow.h:1063
 msgid "Display CSG Pr&oducts..."
-msgstr "Показать &результаты CSG..."
+msgstr "Ցուցադրել CSG Pr&oducts..."
 
 #: objects/ui_MainWindow.h:1064
 msgid "Export as &STL..."
-msgstr "Экспортировать в &STL..."
+msgstr "Արտահանել որպես &STL..."
 
 #: objects/ui_MainWindow.h:1066
 msgid "F7"
@@ -617,11 +617,11 @@ msgstr "F7"
 
 #: objects/ui_MainWindow.h:1068
 msgid "Export as &OFF..."
-msgstr "Экспортировать в &OFF..."
+msgstr "Արտահանել որպես &OFF"
 
 #: objects/ui_MainWindow.h:1069
 msgid "Preview"
-msgstr "Предпросмотр"
+msgstr "Նախատեսք"
 
 #: objects/ui_MainWindow.h:1071
 msgid "F9"
@@ -629,7 +629,7 @@ msgstr "F9"
 
 #: objects/ui_MainWindow.h:1073
 msgid "Surfaces"
-msgstr "Поверхности"
+msgstr "Հարթություններ"
 
 #: objects/ui_MainWindow.h:1075
 msgid "F10"
@@ -637,7 +637,7 @@ msgstr "F10"
 
 #: objects/ui_MainWindow.h:1077
 msgid "Wireframe"
-msgstr "Каркас"
+msgstr "Սխեմատիկ տեսքը"
 
 #: objects/ui_MainWindow.h:1079
 msgid "F11"
@@ -645,7 +645,7 @@ msgstr "F11"
 
 #: objects/ui_MainWindow.h:1081
 msgid "Thrown Together"
-msgstr "Всё вместе"
+msgstr "Միասին ոլորած"
 
 #: objects/ui_MainWindow.h:1083
 msgid "F12"
@@ -653,7 +653,7 @@ msgstr "F12"
 
 #: objects/ui_MainWindow.h:1085
 msgid "Show Edges"
-msgstr "Показывать рёбра"
+msgstr "Ցուցադրել եզրերը"
 
 #: objects/ui_MainWindow.h:1087
 msgid "Ctrl+1"
@@ -661,7 +661,7 @@ msgstr "Ctrl+1"
 
 #: objects/ui_MainWindow.h:1089
 msgid "Show Axes"
-msgstr "Показывать оси"
+msgstr "Ցուցադրել առանցքները"
 
 #: objects/ui_MainWindow.h:1091
 msgid "Ctrl+2"
@@ -669,7 +669,7 @@ msgstr "Ctrl+2"
 
 #: objects/ui_MainWindow.h:1093
 msgid "Show Crosshairs"
-msgstr "Показывать перекрестия"
+msgstr "Ցույց տալ հատման կետերը"
 
 #: objects/ui_MainWindow.h:1095
 msgid "Ctrl+3"
@@ -677,15 +677,15 @@ msgstr "Ctrl+3"
 
 #: objects/ui_MainWindow.h:1097
 msgid "Show Scale Markers"
-msgstr "Показывать метки масштаба"
+msgstr "Ցուցադրել մասշատբի նշումները"
 
 #: objects/ui_MainWindow.h:1098
 msgid "Animate"
-msgstr "Анимировать"
+msgstr "Կենդանացնել"
 
 #: objects/ui_MainWindow.h:1099
 msgid "&Top"
-msgstr "&Сверху"
+msgstr "&Գագաթ"
 
 #: objects/ui_MainWindow.h:1101
 msgid "Ctrl+4"
@@ -693,7 +693,7 @@ msgstr "Ctrl+4"
 
 #: objects/ui_MainWindow.h:1103
 msgid "&Bottom"
-msgstr "С&низу"
+msgstr "&Ներգևի մաս"
 
 #: objects/ui_MainWindow.h:1105
 msgid "Ctrl+5"
@@ -701,7 +701,7 @@ msgstr "Ctrl+5"
 
 #: objects/ui_MainWindow.h:1107
 msgid "&Left"
-msgstr "С&лева"
+msgstr "&Ձախ"
 
 #: objects/ui_MainWindow.h:1109
 msgid "Ctrl+6"
@@ -709,7 +709,7 @@ msgstr "Ctrl+6"
 
 #: objects/ui_MainWindow.h:1111
 msgid "&Right"
-msgstr "С&права"
+msgstr "&Աջ"
 
 #: objects/ui_MainWindow.h:1113
 msgid "Ctrl+7"
@@ -717,7 +717,7 @@ msgstr "Ctrl+7"
 
 #: objects/ui_MainWindow.h:1115
 msgid "&Front"
-msgstr "Сп&ереди"
+msgstr "&Դիմաց"
 
 #: objects/ui_MainWindow.h:1117
 msgid "Ctrl+8"
@@ -725,7 +725,7 @@ msgstr "Ctrl+8"
 
 #: objects/ui_MainWindow.h:1119
 msgid "Bac&k"
-msgstr "Сза&ди"
+msgstr "&Հետև"
 
 #: objects/ui_MainWindow.h:1121
 msgid "Ctrl+9"
@@ -733,7 +733,7 @@ msgstr "Ctrl+9"
 
 #: objects/ui_MainWindow.h:1123
 msgid "&Diagonal"
-msgstr "&Аксонометрический"
+msgstr "&Անկյունագիծ"
 
 #: objects/ui_MainWindow.h:1125
 msgid "Ctrl+0"
@@ -741,39 +741,39 @@ msgstr "Ctrl+0"
 
 #: objects/ui_MainWindow.h:1127
 msgid "Ce&nter"
-msgstr "По &центру"
+msgstr "&Կենտրոն"
 
 #: objects/ui_MainWindow.h:1128
 msgid "&Perspective"
-msgstr "Перспект&ива"
+msgstr "&Տեսարան"
 
 #: objects/ui_MainWindow.h:1129
 msgid "&Orthogonal"
-msgstr "Орто&гональная проекция"
+msgstr "&Օրթոգոնալ/անկյունների ներգրավում"
 
 #: objects/ui_MainWindow.h:1130
 msgid "H&ide console"
-msgstr "&Скрыть консоль"
+msgstr "&Թաքցնել վահանակը"
 
 #: objects/ui_MainWindow.h:1131
 msgid "&About"
-msgstr "&О программе"
+msgstr "&Մեր մասին"
 
 #: objects/ui_MainWindow.h:1132
 msgid "&Documentation"
-msgstr "&Документация"
+msgstr "&Փաստաթղթեր"
 
 #: objects/ui_MainWindow.h:1133
 msgid "Clear Recent"
-msgstr "Очистить список"
+msgstr "Մաքրել վերջին նիշքերը"
 
 #: objects/ui_MainWindow.h:1134
 msgid "Export as &DXF..."
-msgstr "Экспортировать в &DXF..."
+msgstr "Պահպանել որպես &DXF..."
 
 #: objects/ui_MainWindow.h:1135
 msgid "&Close"
-msgstr "&Закрыть"
+msgstr "&Փակել"
 
 #: objects/ui_MainWindow.h:1137
 msgid "Ctrl+W"
@@ -781,11 +781,11 @@ msgstr "Ctrl+W"
 
 #: objects/ui_MainWindow.h:1139
 msgid "&Preferences"
-msgstr "&Параметры"
+msgstr "&Կարգավորումներ"
 
 #: objects/ui_MainWindow.h:1140
 msgid "&Find..."
-msgstr "&Найти..."
+msgstr "&Գտնել"
 
 #: objects/ui_MainWindow.h:1142
 msgid "Ctrl+F"
@@ -793,7 +793,7 @@ msgstr "Ctrl+F"
 
 #: objects/ui_MainWindow.h:1144
 msgid "Fin&d and Replace..."
-msgstr "Найти и &заменить..."
+msgstr "Գտնել և &փոխարինել"
 
 #: objects/ui_MainWindow.h:1146
 msgid "Ctrl+Alt+F"
@@ -801,7 +801,7 @@ msgstr "Ctrl+Alt+F"
 
 #: objects/ui_MainWindow.h:1148
 msgid "Find Ne&xt"
-msgstr "Искать следую&щее"
+msgstr "&Փնտրել հաջորդը"
 
 #: objects/ui_MainWindow.h:1150
 msgid "Ctrl+G"
@@ -809,7 +809,7 @@ msgstr "Ctrl+G"
 
 #: objects/ui_MainWindow.h:1152
 msgid "Find Pre&vious"
-msgstr "Искать пре&дыдущее"
+msgstr "&Փնտրել նախորդը"
 
 #: objects/ui_MainWindow.h:1154
 msgid "Ctrl+Shift+G"
@@ -817,7 +817,7 @@ msgstr "Ctrl+Shift+G"
 
 #: objects/ui_MainWindow.h:1156
 msgid "Use Se&lection for Find"
-msgstr "Искать &выделенный текст"
+msgstr "&Օգտագործել ընտրանքը փնտրելու համար"
 
 #: objects/ui_MainWindow.h:1158
 msgid "Ctrl+E"
@@ -834,55 +834,55 @@ msgstr "Ctrl+Alt+F"
 
 #: objects/ui_MainWindow.h:1164
 msgid "&Flush Caches"
-msgstr "О&чистить кэш"
+msgstr "&Մաքրել «քեշը»"
 
 #: objects/ui_MainWindow.h:1165
 msgid "&OpenSCAD Homepage"
-msgstr "&Сайт OpenSCAD"
+msgstr "&OpenSCAD գլխավոր կայք"
 
 #: objects/ui_MainWindow.h:1166
 msgid "&Automatic Reload and Preview"
-msgstr "&Автоматическое обновление и предпросмотр"
+msgstr "&Ավտոմատ բեռնում և նախադիտում"
 
 #: objects/ui_MainWindow.h:1167
 msgid "Export as &Image..."
-msgstr "Экспортировать в &растр..."
+msgstr "&Արտահանել որպես նկար..."
 
 #: objects/ui_MainWindow.h:1168
 msgid "Export as &CSG..."
-msgstr "Экспортировать в &CSG..."
+msgstr "Արտահանել որպես &CSG..."
 
 #: objects/ui_MainWindow.h:1169
 msgid "&Library info"
-msgstr "&Информация о сборке"
+msgstr "&Գրադարանի մասին"
 
 #: objects/ui_MainWindow.h:1170
 msgid "Show &Library Folder..."
-msgstr "Открыть папку с ка&талогом..."
+msgstr "Ցուցադրել &Գրադարանի պանակը..."
 
 #: objects/ui_MainWindow.h:1171
 msgid "Reset View"
-msgstr "Сбросить вид"
+msgstr "Բերել սկզբնական տեսքի"
 
 #: objects/ui_MainWindow.h:1172
 msgid "&Font List"
-msgstr "Список &шрифтов"
+msgstr "&Տառատեսակի ցանկ"
 
 #: objects/ui_MainWindow.h:1173
 msgid "Export as S&VG..."
-msgstr "Экспортировать в SVG..."
+msgstr "Արտահանել որպես &SVG..."
 
 #: objects/ui_MainWindow.h:1174
 msgid "Export as &AMF..."
-msgstr "Экспортировать в &AMF..."
+msgstr "Արտահանել որպես &AMF..."
 
 #: objects/ui_MainWindow.h:1175
 msgid "Export as &3MF..."
-msgstr "Экспортировать в &3MF..."
+msgstr "Արտահանել որպես &AMF..."
 
 #: objects/ui_MainWindow.h:1176
 msgid "Zoom In"
-msgstr "Увеличить масштаб"
+msgstr "Մոտեցնել"
 
 #: objects/ui_MainWindow.h:1178
 msgid "Ctrl+]"
@@ -890,7 +890,7 @@ msgstr "Ctrl+]"
 
 #: objects/ui_MainWindow.h:1180
 msgid "Zoom Out"
-msgstr "Уменьшить масштаб"
+msgstr "Հեռվացնել"
 
 #: objects/ui_MainWindow.h:1182
 msgid "Ctrl+["
@@ -898,7 +898,7 @@ msgstr "Ctrl+["
 
 #: objects/ui_MainWindow.h:1184
 msgid "View All"
-msgstr "Показать все"
+msgstr "Տեսնել բոլորը"
 
 #: objects/ui_MainWindow.h:1186
 msgid "Ctrl+Shift+V"
@@ -906,7 +906,7 @@ msgstr "Ctrl+Shift+V"
 
 #: objects/ui_MainWindow.h:1188
 msgid "Conv&ert Tabs to Spaces"
-msgstr "Прео&бразовать табуляцию в пробелы"
+msgstr "Փոխակերպել ներդիները տարածքների"
 
 #: objects/ui_MainWindow.h:1189
 msgid "Toggle Bookmark"
@@ -933,16 +933,16 @@ msgstr ""
 #: objects/ui_MainWindow.h:1199
 #, fuzzy
 msgid "Shift+F2"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1201
 #, fuzzy
 msgid "Hide Editor toolbar"
-msgstr "Скрыть панели"
+msgstr "Թաքցնել գործիքների վահանակը"
 
 #: objects/ui_MainWindow.h:1202
 msgid "U&nindent"
-msgstr "У&брать отступы"
+msgstr "Հեռացնել դատարկ տողերը"
 
 #: objects/ui_MainWindow.h:1204
 msgid "Ctrl+Shift+I"
@@ -950,24 +950,24 @@ msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:1206
 msgid "&Cheat Sheet"
-msgstr "&Шпаргалка"
+msgstr "&Սևագրիր"
 
 #: objects/ui_MainWindow.h:1207
 msgid "Hide Customizer"
-msgstr "Скрыть настройщик"
+msgstr "Թաքցնել հարմարեցման վահանակը "
 
 #: objects/ui_MainWindow.h:1208
 #, fuzzy
 msgid "Hide 3D view toolbar"
-msgstr "Скрыть панели"
+msgstr "Թաքցնել գործիքների վահանակը"
 
 #: objects/ui_MainWindow.h:1209
 msgid "Message"
-msgstr "Сообщение"
+msgstr "Հաղորդագրություն"
 
 #: objects/ui_MainWindow.h:1212
 msgid "Time:"
-msgstr "Время:"
+msgstr "ժամ։"
 
 #: objects/ui_MainWindow.h:1213
 msgid "FPS:"
@@ -975,89 +975,89 @@ msgstr "FPS:"
 
 #: objects/ui_MainWindow.h:1214
 msgid "Steps:"
-msgstr "Шагов:"
+msgstr "Քայլեր։"
 
 #: objects/ui_MainWindow.h:1215
 msgid "Dump Pictures"
-msgstr "Сохранять кадры"
+msgstr "Թափոն նկարները"
 
 #: objects/ui_MainWindow.h:1216
 msgid "&File"
-msgstr "&Файл"
+msgstr "&Նիշք"
 
 #: objects/ui_MainWindow.h:1217
 msgid "Recen&t Files"
-msgstr "&Недавние файлы"
+msgstr "&Վերջին նիշքերը"
 
 #: objects/ui_MainWindow.h:1218
 msgid "&Examples"
-msgstr "&Примеры"
+msgstr "&Օրինակներ"
 
 #: objects/ui_MainWindow.h:1219
 msgid "E&xport"
-msgstr "&Экспортировать"
+msgstr "&Արտահանել"
 
 #: objects/ui_MainWindow.h:1220
 msgid "&Edit"
-msgstr "&Правка"
+msgstr "&Խմբագրել"
 
 #: objects/ui_MainWindow.h:1221
 msgid "&Design"
-msgstr "&Модель"
+msgstr "&Դիզայն"
 
 #: objects/ui_MainWindow.h:1222
 msgid "&View"
-msgstr "&Вид"
+msgstr "&Տեսք"
 
 #: objects/ui_MainWindow.h:1223
 msgid "&Help"
-msgstr "&Справка"
+msgstr "&Օգնություն"
 
 #: objects/ui_MainWindow.h:1224 objects/ui_Preferences.h:1486
 #: src/settings.cc:176
 msgid "Tabs"
-msgstr "Табуляцией"
+msgstr "Ներդիրներ"
 
 #: objects/ui_MainWindow.h:1225 src/tabmanager.cc:375
 msgid "Find"
-msgstr "Найти"
+msgstr "Փնտրել"
 
 #: objects/ui_MainWindow.h:1226 objects/ui_MainWindow.h:1233
 msgid "Replace"
-msgstr "Заменить"
+msgstr "Փոխարինել"
 
 #: objects/ui_MainWindow.h:1228
 msgid "Search string"
-msgstr "Искать строчку"
+msgstr "Գտնել շարք"
 
 #: objects/ui_MainWindow.h:1229
 #, fuzzy
 msgid "Previous"
-msgstr "Искать пре&дыдущее"
+msgstr "&Փնտրել նախորդը"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
-msgstr "След."
+msgstr "Հաջորդ"
 
 #: objects/ui_MainWindow.h:1231
 msgid "Done"
-msgstr "Готово"
+msgstr "Կատարված"
 
 #: objects/ui_MainWindow.h:1232
 msgid "Replacement string"
-msgstr "Строка замены"
+msgstr "Փոխարինել շարքը"
 
 #: objects/ui_MainWindow.h:1234
 msgid "All"
-msgstr "Все"
+msgstr "Ամբողջը"
 
 #: objects/ui_MainWindow.h:1235
 msgid "Customizer Widget"
-msgstr "Виджет настрощика"
+msgstr "Հարմարեցնել Widget֊ը"
 
 #: objects/ui_OpenCSGWarningDialog.h:83
 msgid "OpenGL Warning"
-msgstr "Предупреждение OpenGL"
+msgstr "OpenGL զգուշացում"
 
 #: objects/ui_OpenCSGWarningDialog.h:84
 msgid ""
@@ -1085,35 +1085,35 @@ msgstr ""
 
 #: objects/ui_OpenCSGWarningDialog.h:89
 msgid "Enable OpenCSG"
-msgstr "Включить OpenCSG"
+msgstr "Միացնել OpenCSG"
 
 #: objects/ui_OpenCSGWarningDialog.h:90
 msgid "Show this message again"
-msgstr "Показывать снова"
+msgstr "Կրկին ցուցադրել այս հաղորդագրությունը"
 
 #: objects/ui_OpenCSGWarningDialog.h:91
 msgid "Close"
-msgstr "Закрыть"
+msgstr "Փակել"
 
 #: objects/ui_ParameterEntryWidget.h:339 objects/ui_ParameterWidget.h:160
 msgid "Form"
-msgstr "Форма"
+msgstr "Ձև"
 
 #: objects/ui_ParameterEntryWidget.h:341
 msgid "Parameter"
-msgstr "Параметр"
+msgstr "Պարամետր"
 
 #: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
 msgid "Description"
-msgstr "Описание"
+msgstr "Նկարագրություն"
 
 #: objects/ui_ParameterWidget.h:161
 msgid "save preset"
-msgstr "сохранить предустановку"
+msgstr "պահպանել նախադրվածը"
 
 #: objects/ui_ParameterWidget.h:163
 msgid "delete current preset"
-msgstr "удалить выбранную предустановку"
+msgstr "հեռացնել առկա նախադրվածը"
 
 #: objects/ui_ParameterWidget.h:165
 msgid "-"
@@ -1121,11 +1121,11 @@ msgstr "-"
 
 #: objects/ui_ParameterWidget.h:167
 msgid "preset selection"
-msgstr "выбор предустановки"
+msgstr "նախադրել ընտրությունը"
 
 #: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:154
 msgid "add new preset"
-msgstr "создать предустановку"
+msgstr "ավելացնել նոր նախադրություն"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "+"
@@ -1133,173 +1133,173 @@ msgstr "+"
 
 #: objects/ui_ParameterWidget.h:174
 msgid "Automatic Preview"
-msgstr "Автопредпросмотр"
+msgstr "Ավտոմատ նախադիտում"
 
 #: objects/ui_ParameterWidget.h:175
 msgid "Show Details"
-msgstr "Показать описание"
+msgstr "Ցույց տալ բոլոր մասերը"
 
 #: objects/ui_ParameterWidget.h:176
 msgid "Inline Details"
-msgstr "Описание в одну строку"
+msgstr "Ներգծել բոլոր մասները"
 
 #: objects/ui_ParameterWidget.h:177
 msgid "Hide Details"
-msgstr "Скрыть описание"
+msgstr "Թաքցնել մանրամասները"
 
 #: objects/ui_ParameterWidget.h:178
 msgid "Description Only"
-msgstr "Только описание"
+msgstr "Միայն նկարագրություն"
 
 #: objects/ui_ParameterWidget.h:181
 msgid "reset all parameters to the currently selected preset"
-msgstr "сбросить все параметры к выбранной предустановке"
+msgstr "Վերականգնել բոլոր պարամետրերը ներկա ընտրված տարբերակի"
 
 #: objects/ui_ParameterWidget.h:183
 msgid "Reset"
-msgstr "Сбросить"
+msgstr "Բերել սկզբնական վիճակի"
 
 #: objects/ui_Preferences.h:1458
 msgid "3D View"
-msgstr "Просмотр 3D"
+msgstr "3D տեսք"
 
 #: objects/ui_Preferences.h:1459
 msgctxt "preferences"
 msgid "Advanced"
-msgstr "Дополнительно"
+msgstr "Առաջատար"
 
 #: objects/ui_Preferences.h:1460 src/mainwin.cc:2704 src/mainwin.cc:2709
 msgid "Editor"
-msgstr "Редактор"
+msgstr "Խմբագիր"
 
 #: objects/ui_Preferences.h:1462 objects/ui_Preferences.h:1537
 msgid "Features"
-msgstr "Функции"
+msgstr "Հնարավորություններ"
 
 #: objects/ui_Preferences.h:1464
 msgid "Enable/Disable experimental features"
-msgstr "Включить/Выключить экспериментальные возможности"
+msgstr "Միացնել/Անջատել փորձնական հնարավորությունները"
 
 #: objects/ui_Preferences.h:1466
 msgid "Axes"
-msgstr "Оси"
+msgstr "Առանցքներ"
 
 #: objects/ui_Preferences.h:1468
 msgid "Input driver configuration and Axis mapping"
-msgstr "Конфигурация драйвера устройства ввода и соответствия осей"
+msgstr "Ներմուծել driver֊ի կարգաբերումը և առանցքների տեղորոշումը"
 
 #: objects/ui_Preferences.h:1470
 msgid "Buttons"
-msgstr "Кнопки"
+msgstr "Կոճակներ"
 
 #: objects/ui_Preferences.h:1471 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
-msgstr "3D Печать"
+msgstr "Եռաչափ տպագրություն"
 
 #: objects/ui_Preferences.h:1473
 msgid "3D Printing Services"
-msgstr "Сервисы 3D Печати"
+msgstr "Եռաչափ տպագրության ծառայություններ"
 
 #: objects/ui_Preferences.h:1475
 msgid "Color scheme:"
-msgstr "Цветовая схема:"
+msgstr "Գունային համակարգ։"
 
 #: objects/ui_Preferences.h:1476
 msgid "Show Warnings and Errors in 3D View"
-msgstr "Показывать ошибки и предупреждения в 3D виде"
+msgstr "Ցուցադրել զգուշացումները և սխալները 3D տեսքով"
 
 #: objects/ui_Preferences.h:1477
 msgid "mouse centric zoom"
-msgstr "масштабировать относительно мыши"
+msgstr "մկնիկի կենտրոնային խոշորացում"
 
 #: objects/ui_Preferences.h:1478
 msgid "Font"
-msgstr "Шрифт"
+msgstr "Տառատեսակ"
 
 #: objects/ui_Preferences.h:1479
 msgid "Color syntax highlighting"
-msgstr "Подсветка синтаксиса"
+msgstr "Գունային այլագրի առանձնացում"
 
 #: objects/ui_Preferences.h:1480
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Ctrl/Cmd-Колёсико-мыши увеличивает текст"
+msgstr "Ctrl/Cmd-Mouse-wheel zooms text"
 
 #: objects/ui_Preferences.h:1481
 msgid "Indentation"
-msgstr "Отступы"
+msgstr "Կտրվածքների պատրաստում"
 
 #: objects/ui_Preferences.h:1482
 msgid "Auto Indent"
-msgstr "Автоматические отступы"
+msgstr "Ավտոմատ կտրվածք"
 
 #: objects/ui_Preferences.h:1483
 msgid "Backspace unindents"
-msgstr "Backspace убирает отступы"
+msgstr "Backspace unindents"
 
 #: objects/ui_Preferences.h:1484
 msgid "Indent using"
-msgstr "Делать отступы"
+msgstr "Օգտագործել կտրվածքը"
 
 #: objects/ui_Preferences.h:1485 src/settings.cc:176
 msgid "Spaces"
-msgstr "Пробелами"
+msgstr "Տարածքներ"
 
 #: objects/ui_Preferences.h:1488
 msgid "Indentation width"
-msgstr "Ширина отступа"
+msgstr "Կտրվածքի հաստություն"
 
 #: objects/ui_Preferences.h:1489
 msgid "Tab width"
-msgstr "Ширина табуляции"
+msgstr "Ներդիրի հաստություն"
 
 #: objects/ui_Preferences.h:1490
 msgid "Tab key function"
-msgstr "Функция клавиши Tab"
+msgstr "Ներդիրի ստեղնի գործառույթ"
 
 #: objects/ui_Preferences.h:1491 objects/ui_Preferences.h:1519
 #: src/settings.cc:177
 msgid "Indent"
-msgstr "Добавить отступ"
+msgstr "Կտրվածք"
 
 #: objects/ui_Preferences.h:1492 src/settings.cc:177
 msgid "Insert Tab"
-msgstr "Вставить табуляцию"
+msgstr "Տեղադրել ներդիր"
 
 #: objects/ui_Preferences.h:1494
 msgid "Show whitespace"
-msgstr "Показывать пробелы"
+msgstr "Ցուցադրել դատարկ տարածքները"
 
 #: objects/ui_Preferences.h:1495 src/settings.cc:172
 msgid "Never"
-msgstr "Никогда"
+msgstr "Երբեք"
 
 #: objects/ui_Preferences.h:1496 src/settings.cc:172
 msgid "Always"
-msgstr "Всегда"
+msgstr "Մշտապես"
 
 #: objects/ui_Preferences.h:1497
 msgid "Only after indentation"
-msgstr "Только после отступа"
+msgstr "Միայն կտրատումից հետո"
 
 #: objects/ui_Preferences.h:1499
 msgid "Size"
-msgstr "Размер"
+msgstr "Չափս"
 
 #: objects/ui_Preferences.h:1500
 msgid "Display"
-msgstr "Вид"
+msgstr "Ցուցադրել"
 
 #: objects/ui_Preferences.h:1501
 msgid "Enable brace matching"
-msgstr "Подсвечивать парные скобки"
+msgstr "Միացնել փակագծի համընկնումը"
 
 #: objects/ui_Preferences.h:1502
 msgid "Highlight current line"
-msgstr "Выделять текущую строку"
+msgstr "Ընդգծել այս գիծը"
 
 #: objects/ui_Preferences.h:1503
 msgid "Display Line Numbers"
-msgstr "Показывать номера строк"
+msgstr "Ցուցադրել գծի համարները"
 
 #: objects/ui_Preferences.h:1504
 msgid "Autocomplete"
@@ -1315,84 +1315,84 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1507 objects/ui_Preferences.h:1532
 msgid "Line wrap"
-msgstr "Перенос строк"
+msgstr "Գծի փաթաթում"
 
 #: objects/ui_Preferences.h:1508 objects/ui_Preferences.h:1521
 #: objects/ui_Preferences.h:1527 src/settings.cc:73 src/settings.cc:89
 #: src/settings.cc:167 src/settings.cc:170 src/settings.cc:171
 msgid "None"
-msgstr "Нет"
+msgstr "Ոչ մեկը"
 
 #: objects/ui_Preferences.h:1509 src/settings.cc:167
 msgid "Wrap at character boundaries"
-msgstr "Перенос с границы символа"
+msgstr "Փաթեավորել կերպարի սահմանները"
 
 #: objects/ui_Preferences.h:1510 src/settings.cc:167
 msgid "Wrap at word boundaries"
-msgstr "Перенос с границы слова"
+msgstr "Պահել բառի սահմաններում"
 
 #: objects/ui_Preferences.h:1512
 msgid "Line wrap indentation"
-msgstr "Отступы в переносах"
+msgstr "Կտրել գծի սահմանում"
 
 #: objects/ui_Preferences.h:1513
 msgid "Line wrap visualization"
-msgstr "Вид переносов строк"
+msgstr "Գծի փաթեթավորման վիզուալիզացիա"
 
 #: objects/ui_Preferences.h:1514
 msgid "Style"
-msgstr "Стиль"
+msgstr "Ոճ"
 
 #: objects/ui_Preferences.h:1515 src/settings.cc:168
 msgid "Fixed"
-msgstr "Фиксированный"
+msgstr "Ֆիքսված"
 
 #: objects/ui_Preferences.h:1516 src/settings.cc:168
 msgid "Same"
-msgstr "Такой же"
+msgstr "Նույնությամբ"
 
 #: objects/ui_Preferences.h:1517 src/settings.cc:168
 msgid "Indented"
-msgstr "С отступами"
+msgstr "Ատամնավոր"
 
 #: objects/ui_Preferences.h:1520
 msgid "Start"
-msgstr "Начало"
+msgstr "Մեկնարկ"
 
 #: objects/ui_Preferences.h:1522 objects/ui_Preferences.h:1528
 #: src/settings.cc:170 src/settings.cc:171
 msgid "Text"
-msgstr "Текст"
+msgstr "Տեքստ"
 
 #: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1529
 #: src/settings.cc:170 src/settings.cc:171
 msgid "Border"
-msgstr "Граница"
+msgstr "Սահման"
 
 #: objects/ui_Preferences.h:1524 objects/ui_Preferences.h:1530
 #: src/settings.cc:170 src/settings.cc:171
 msgid "Margin"
-msgstr "Поле"
+msgstr "Եզրեր"
 
 #: objects/ui_Preferences.h:1526
 msgid "End"
-msgstr "Конец"
+msgstr "Վերջ"
 
 #: objects/ui_Preferences.h:1533
 msgid "Automatically check for updates"
-msgstr "Автоматически проверять обновления"
+msgstr "Ինքնուրույն ստուգել թարմացումները"
 
 #: objects/ui_Preferences.h:1534
 msgid "Include development snapshots"
-msgstr "Включая рабочие сборки"
+msgstr "Ներառել ծրագրավորման դրվագները"
 
 #: objects/ui_Preferences.h:1535
 msgid "Check Now"
-msgstr "Проверить сейчас"
+msgstr "Ստուգել հիմա"
 
 #: objects/ui_Preferences.h:1536
 msgid "Last checked: "
-msgstr "Последняя проверка: "
+msgstr "Վերջին ստուգումը:"
 
 #: objects/ui_Preferences.h:1538 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
@@ -1404,39 +1404,39 @@ msgstr "URL"
 
 #: objects/ui_Preferences.h:1540
 msgid "API Key"
-msgstr "Ключ API"
+msgstr "API Key"
 
 #: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1542
 msgid "Load"
-msgstr "Загрузить"
+msgstr "Բեռնել"
 
 #: objects/ui_Preferences.h:1544
 msgid "Check"
-msgstr "Проверить"
+msgstr "Ստուգել"
 
 #: objects/ui_Preferences.h:1545
 msgid "Slicing Profile"
-msgstr "Профиль слайсера"
+msgstr "Շերտավորել պրոֆիլը"
 
 #: objects/ui_Preferences.h:1546
 msgid "Slicing Engine"
-msgstr "Движок слайсера"
+msgstr "Շերտավորել գործիքը"
 
 #: objects/ui_Preferences.h:1547
 msgid "File Format"
-msgstr "Формат"
+msgstr "Նիշքի ձևաչափը"
 
 #: objects/ui_Preferences.h:1548
 msgid "Action"
-msgstr "Действие"
+msgstr "Գործողություն"
 
 #: objects/ui_Preferences.h:1549
 msgid "Show"
-msgstr "Показать"
+msgstr "Ցույց տալ"
 
 #: objects/ui_Preferences.h:1550
 msgid "Note: The API key is stored unencrypted in the application settings."
-msgstr "Примечание: ключ API сохранён без шифрования в настройках приложения."
+msgstr "Նշում:  API֊ի կոճակը գաղտնագրով պահված է հավելվածի կարգաբերումներում."
 
 #: objects/ui_Preferences.h:1551
 msgid "OpenCSG"
@@ -1444,23 +1444,23 @@ msgstr "OpenCSG"
 
 #: objects/ui_Preferences.h:1552
 msgid "Show capability warning"
-msgstr "Показывать предупреждение о возможностях"
+msgstr "Ցուցադրել հնարավոր զգուշացումները"
 
 #: objects/ui_Preferences.h:1553
 msgid "Enable for OpenGL 1.x"
-msgstr "Включить для OpenGL 1.x"
+msgstr "Միացնել OpenGL 1.x տարբերակի համար"
 
 #: objects/ui_Preferences.h:1554
 msgid "Turn off rendering at "
-msgstr "Отключать отрисовку на "
+msgstr "Անջատել տարածումը"
 
 #: objects/ui_Preferences.h:1555
 msgid "elements"
-msgstr "элементах"
+msgstr "տարրեր"
 
 #: objects/ui_Preferences.h:1556
 msgid "Force Goldfeather"
-msgstr "Принудительно использовать Goldfeather"
+msgstr "Ստիպել Goldfeather"
 
 #: objects/ui_Preferences.h:1557
 msgid "CGAL"
@@ -1468,48 +1468,48 @@ msgstr "CGAL"
 
 #: objects/ui_Preferences.h:1558
 msgid "CGAL Cache size"
-msgstr "Размер кэша CGAL"
+msgstr "CGAL֊ի «քեշ»- ի չափը"
 
 #: objects/ui_Preferences.h:1559 objects/ui_Preferences.h:1561
 msgid "MB"
-msgstr "MБ"
+msgstr "ՄԲ"
 
 #: objects/ui_Preferences.h:1560
 msgid "PolySet Cache size"
-msgstr "Размер кэша PolySet"
+msgstr "PolySet֊ի «քեշ»- ի չափը"
 
 #: objects/ui_Preferences.h:1562
 msgid "User Interface"
-msgstr "Интерфейс"
+msgstr "Միջերես"
 
 #: objects/ui_Preferences.h:1563
 msgid "Enable docking of Editor and Console in different places"
-msgstr "Включить прилипание редактора и консоли в разных местах"
+msgstr "Միացնել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր տեղերում"
 
 #: objects/ui_Preferences.h:1564
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr "Включить перетаскивание редактора и консоли в разные окна"
+msgstr "Անջատել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր պատուհաններում"
 
 #: objects/ui_Preferences.h:1565
 msgid "Show Welcome Screen"
-msgstr "Показывать экран приветствия"
+msgstr "Ցույց տալ ԲԱՐԻ ԳԱԼՈՒՍՏ֊ը"
 
 #: objects/ui_Preferences.h:1566
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
-msgstr "Включить локализацию интерфейса (необходимо перезапустить OpenSCAD)"
+msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է OpenSCAD֊ի վերագործարկում)"
 
 #: objects/ui_Preferences.h:1567
 msgid "Bring window to front after automatic reload"
-msgstr "Вывести окно на передний план после автоматической перезагрузки"
+msgstr "Բերել պատուհանը առջևի մաս  ավտոմատ բեռնումից հետո"
 
 #: objects/ui_Preferences.h:1568
 msgid "Play sound notification on render complete"
-msgstr "Проигрывать звук при завершении рендеринга"
+msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
 
 #: objects/ui_Preferences.h:1569
 #, fuzzy
 msgid "Play sound when render completion time is at least"
-msgstr "Проигрывать звук при завершении рендеринга"
+msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
 
 #: objects/ui_Preferences.h:1570
 msgid "sec"
@@ -1517,20 +1517,20 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1571
 msgid "OpenSCAD Language Features"
-msgstr "Особенности языка OpenSCAD"
+msgstr "OpenSCAD լեզվային հատկություններ"
 
 #: objects/ui_Preferences.h:1572
 msgid "Warn when there is a parameter mismatch in user module calls"
-msgstr "Предупреждать при несовпадении параметров в вызовах модуля"
+msgstr "Շգուշացնել, երբ օգտատերը կանչել է սխալ պարամետրեր "
 
 #: objects/ui_Preferences.h:1573
 msgid "Stop on the first warning"
-msgstr "Остановиться на первом предупреждении"
+msgstr "Կանգնեցնել առաջին զգուշացումից"
 
 #: objects/ui_Preferences.h:1574
 #, fuzzy
 msgid "Check the parameter range for builtin modules"
-msgstr "проверять диапазон параметров для встроенных модулей"
+msgstr "ստուգել պարամետրերի միջակայքը ներքին մոդուլների համար"
 
 #: objects/ui_Preferences.h:1575
 msgid "Debugging"
@@ -1539,11 +1539,11 @@ msgstr ""
 #: objects/ui_Preferences.h:1576
 #, fuzzy
 msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
-msgstr "Включить локализацию интерфейса (необходимо перезапустить OpenSCAD)"
+msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է OpenSCAD֊ի վերագործարկում)"
 
 #: objects/ui_PrintInitDialog.h:111
 msgid "Cancel"
-msgstr "Отмена"
+msgstr "Չեղարկել"
 
 #: objects/ui_PrintInitDialog.h:113
 msgid "%1"
@@ -1555,7 +1555,7 @@ msgstr "%v / %m"
 
 #: src/Network.h:116
 msgid "Timeout error"
-msgstr "Превышено время ожидания"
+msgstr "Ժամանակի ավարտի սխալմունք"
 
 #: src/Camera.cc:125
 #, c-format
@@ -1563,127 +1563,126 @@ msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f"
 msgstr ""
-"Вьюпорт: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
-"distance = %.2f"
+"Տեսաշերտ՝ թարգմանել = [ %.2f %.2f %.2f ], պտտել = [ %.2f %.2f %.2f ], "
+"հեռավորություն = %.2f"
 
 #: src/Console.cc:53
 msgid "Save console content"
-msgstr "Сохранить содержимое консоли"
+msgstr "Պահել վահանակի պարունակությունը"
 
 #: src/export.cc:78
 #, c-format
 msgid "Can't open file \"%s\" for export"
-msgstr "Не удалось открыть файл \"%s\" для экспорта"
+msgstr "Նիշքը բացել հնարավոր չէ\"%s\" տարածման համար"
 
 #: src/export.cc:93
 #, c-format
 msgid "ERROR: \"%s\" write error. (Disk full?)"
-msgstr "Ошибка записи: «%s». (Диск переполнен?)"
+msgstr "ՍԽԱԼՄՈՒՆՔ: \"%s\" չստացվեց պահել/գրել (Սկավառակը լցված է?)"
 
 #: src/mainwin.cc:1037
 msgid "Compile error."
-msgstr "Ошибка компиляции."
+msgstr "Կառուցման/կամպիլիացիայի/ սխալմունք։"
 
 #: src/mainwin.cc:1040
 msgid "Error while compiling '%1'."
-msgstr "«%1»: ошибка компиляции"
+msgstr "Կոմպիլացիայի ժամանակ խնդիր է ծագել '%1'."
 
 #: src/mainwin.cc:1044
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "При компиляции создано %1 предупреждение."
-msgstr[1] "При компиляции создано %1 предупреждения."
-msgstr[2] "При компиляции выведено %1 предупреждений."
+msgstr[0] " Կառուցումը իրականացվել %1 Զգուշացում։"
+msgstr[1] "Կոմպիլացիան ստեղծված է %1 զգուշացումներ։"
 
 #: src/mainwin.cc:1054
 msgid " For details see <a href=\"#console\">console window</a>."
-msgstr "Подробнее см. в <a href=\"#console\">окне консоли</a>."
+msgstr "Տեսնել ավելին՝ <a href=\"#console\">վահանակի պատուհանը</a>."
 
 #: src/mainwin.cc:1768
 msgid "Application"
-msgstr "Приложение"
+msgstr "Ծրագիր"
 
 #: src/mainwin.cc:1769
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
-"Документ был изменён.\n"
-"Перезагрузить файл?"
+"Փաստաթուղթը փոփոխված է.\n"
+"Իսկապե՞ս ցանկանում եք այն վերաբեռնել։"
 
 #: src/mainwin.cc:2006
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr "Экспортированный проект превышает лимит загрузки сервиса (%1 МБ)."
+msgstr "Տարածվող էսքիզը գերազանցում է 1ՄԲ նիշքի սահմանափակումը"
 
 #: src/mainwin.cc:2007
 msgid "Upload Error"
-msgstr "Ошибка загрузки"
+msgstr "Վերբեռնման սխալմունք"
 
 #: src/mainwin.cc:2341
 msgid "Export %1 File"
-msgstr "Экспортировать файл %1"
+msgstr "Արտահանել նիշք %1"
 
 #: src/mainwin.cc:2342
 msgid "%1 Files (*%2)"
-msgstr "Файлы %1 (*%2)"
+msgstr "%1 Նիշքեր (*%2)"
 
 #: src/mainwin.cc:2398
 msgid "Export CSG File"
-msgstr "Экспортировать файл CSG"
+msgstr "Արտահանել CSG նիշքը"
 
 #: src/mainwin.cc:2398
 msgid "CSG Files (*.csg)"
-msgstr "Файлы CSG (*.csg)"
+msgstr "CSG Նիշքեր (*.csg)"
 
 #: src/mainwin.cc:2425
 msgid "Export Image"
-msgstr "Экспортировать изображение"
+msgstr "Արտահանել նկար"
 
 #: src/mainwin.cc:2425
 msgid "PNG Files (*.png)"
-msgstr "Файлы PNG (*.png)"
+msgstr "PNG Նիշքեր (*.png)"
 
 #: src/mainwin.cc:2725 src/mainwin.cc:2730
 msgid "Console"
-msgstr "Консоль"
+msgstr "Վահանակ"
 
 #: src/mainwin.cc:2742
 msgid "Customizer"
-msgstr "Настройщик"
+msgstr "Անհատական հարմարեցում"
 
 #: src/mainwin.cc:2750 src/tabmanager.cc:225 src/tabmanager.cc:463
 #: src/tabmanager.cc:521 src/tabmanager.cc:684
 msgid "Untitled.scad"
-msgstr "Безымянный.scad"
+msgstr "Անանուն.scad"
 
 #: src/mainwin.cc:3015 src/mainwin.cc:3022
 #, fuzzy
 msgid "Untitled"
-msgstr "/Безымянный"
+msgstr "/Անանուն"
 
 #: src/OpenSCADApp.cc:61
 msgid "Unknown error"
-msgstr "Неизвестная ошибка"
+msgstr "Անհայտ սխալ"
 
 #: src/OpenSCADApp.cc:64
 msgid "Critical Error"
-msgstr "Критическая ошибка"
+msgstr "Վճռորոշ սխալ"
 
 #: src/OpenSCADApp.cc:64
 msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
-"Критическая ошибка. Приложение может работать нестабильно:\n"
-"%1"
+"Վճռորոշ սխալ է իհայտ եկել. Ծրագիրը կարող է դառնալ անկայուն:\n"
+" %1"
 
 #: src/OpenSCADApp.cc:88
 msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
-"Библиотеке Fontconfig требуется обновить кеш шрифтов.\n"
-"Это может занять несколько минут."
+"Տառաչափի կարգավորմանը անհրաժեշտ է թարմացնել տառատեսակի cache֊ը։\n"
+"Այն կարող է տևել մի քանի րոպե։"
 
 #: src/Preferences.cc:241 src/Preferences.cc:246 src/Preferences.cc:737
 #: src/Preferences.cc:773
@@ -1692,22 +1691,22 @@ msgstr "<Default>"
 
 #: src/Preferences.cc:721
 msgid "Success: Server Version = %2, API Version = %1"
-msgstr "Выполнено. Версия сервера = %2, версия API = %1"
+msgstr "Հաջողված ՝ Server-ի տարբերակը = %2, API-ի տարբերակը = %1"
 
 #: src/Preferences.cc:723 src/Preferences.cc:747 src/Preferences.cc:783
 msgid "Error"
-msgstr "Ошибка"
+msgstr "Սխալմունք"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
-msgstr "Сервис печати не доступен"
+msgstr "Տպագրության ծառայությունը անհասանելի է"
 
 #: src/QGLView.cc:150
 msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
 msgstr ""
-"Предупреждение: возможны ошибки рендеринга OpenCSG.\n"
+"Զգուշացում։ Հնարավոր է առաջանան OpenCSG֊ի սխալմունքներ.\n"
 "\n"
 
 #: src/QGLView.cc:153
@@ -1716,8 +1715,8 @@ msgid ""
 "disabled.\n"
 "\n"
 msgstr ""
-"Предупреждение: не найдены расширения OpenGL для OpenCSG. OpenCSG был "
-"отключен.\n"
+"Զհուշացում: Բացակայում է OpenGL֊ը  OpenCSG - ի համար։ OpenCSG ֊ն անջատված "
+"է։\n"
 "\n"
 
 #: src/QGLView.cc:156
@@ -1726,9 +1725,9 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"Крайне рекомендуется использовать OpenSCAD на системе с поддержкой OpenGL "
-"2.0 или новее.\n"
-"Информация о модуле рендеринга:\n"
+"Խորհուրդ է տրվում օգտագործել OpenSCAD֊ը  OpenGL 2.0 կամ ավելի նոր համակարգի "
+"վրա\n"
+"Ձեր տեղեկություններն այսպիսինն են:\n"
 
 #: src/QGLView.cc:159
 msgid ""
@@ -1736,53 +1735,53 @@ msgid ""
 "%2 (%3)\n"
 "OpenGL version %4\n"
 msgstr ""
-"Версия GLEW %1\n"
+"GLEW֊ի տեսակը%1\n"
 "%2 (%3)\n"
-"Версия OpenGL %4\n"
+"OpenGL֊ի  տեսակը %4\n"
 
 #: src/settings.cc:77
 #, c-format
 msgid "Axis %d"
-msgstr "Ось %d"
+msgstr "Առանցք %d"
 
 #: src/settings.cc:81
 #, c-format
 msgid "Axis %d (inverted)"
-msgstr "Ось %d (инвертирована)"
+msgstr "Առանցք %d (փոխակերպված)"
 
 #: src/settings.cc:90
 msgid "Toggle Perspective"
-msgstr "Переключить перспективу"
+msgstr "Փոխարկել հեռանկարը"
 
 #: src/settings.cc:172
 msgid "After indentation"
-msgstr "После отступа"
+msgstr "Ատամնաձեւ կտրումից հետո"
 
 #: src/settings.cc:185
 msgid "Upload only"
-msgstr "Только загрузить"
+msgstr "Միայն վերբեռնել"
 
 #: src/settings.cc:185
 msgid "Upload & Slice"
-msgstr "Загрузить и нарезать"
+msgstr "Վերբեռնել և մասնատել"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Select for printing"
-msgstr "Загрузить, нарезать и подготовить печать"
+msgstr "Վերբեռնել, մասնատել և ընտրել տպագրության համար"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Start printing"
-msgstr "Загрузить, нарезать и начать печать"
+msgstr "Վերբեռնել, մասնատել և սկսել տպագրությունը"
 
 #: src/tabmanager.cc:380
 #, fuzzy
 msgid "Find Next"
-msgstr "Искать следую&щее"
+msgstr "&Փնտրել հաջորդը"
 
 #: src/tabmanager.cc:385
 #, fuzzy
 msgid "Find Previous"
-msgstr "Искать пре&дыдущее"
+msgstr "&Փնտրել նախորդը"
 
 #: src/tabmanager.cc:410
 msgid "Copy file name"
@@ -1795,20 +1794,20 @@ msgstr ""
 #: src/tabmanager.cc:421
 #, fuzzy
 msgid "Close Tab"
-msgstr "Закрыть"
+msgstr "Փակել"
 
 #: src/tabmanager.cc:567
 msgid "The document has been modified."
-msgstr "Документ был изменён."
+msgstr "Փաստաթուղթը ձևափոխվել է"
 
 #: src/tabmanager.cc:568
 msgid "Do you want to save your changes?"
-msgstr "Сохранить изменения?"
+msgstr "Ցանկանում եք պահպանել կատարած փոփոխությունները?"
 
 #: src/tabmanager.cc:600
 #, fuzzy
 msgid "Some of the tabs are modified."
-msgstr "Документ был изменён."
+msgstr "Փաստաթուղթը ձևափոխվել է"
 
 #: src/tabmanager.cc:601
 msgid "All unsaved changes will be lost."
@@ -1816,165 +1815,172 @@ msgstr ""
 
 #: src/tabmanager.cc:662
 msgid "Failed to open file for writing"
-msgstr "Не удалось открыть файл для записи"
+msgstr "Չհաջողվեց բացել նիշքը խմբագրելու համար"
 
 #: src/tabmanager.cc:672
 #, c-format
 msgid "Saved design '%s'."
-msgstr "Проект «%s» сохранён."
+msgstr "Պահպանված տեսքը'%s'"
 
 #: src/tabmanager.cc:675
 msgid "Error saving design"
-msgstr "Ошибка при сохранении проекта"
+msgstr "Էսքիզը չհաջողվեց պահպանել"
 
 #: src/tabmanager.cc:683
 msgid "Save File"
-msgstr "Сохранить файл"
+msgstr "Պահպանել նիշքը"
 
 #: src/tabmanager.cc:685
 msgid "OpenSCAD Designs (*.scad)"
-msgstr "Модели OpenSCAD (*.scad)"
+msgstr "OpenSCAD֊ի դիզայն (*.scad)"
 
 #: src/tabmanager.cc:695
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
-"%1 уже существует.\n"
-"Перезаписать?"
+"%1 արդեն գոյություն ունի.\n"
+"Ցանկանո՞ւմ եք փոխարինել այն։"
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:231
 msgid "changes on current preset not saved"
-msgstr "изменения текущей предустановки не сохранены"
+msgstr "ընթացիկ նախադրվածքի փոփոխությունները չեն պահպանվել"
 
 #: src/parameter/ParameterWidget.cc:81
 msgid ""
 "The changes on the current preset %1 are not saved yet. Do you really want "
 "to reset this preset and lose your changes?"
 msgstr ""
-"Текущая предустановка %1 изменена, но не сохранена. Сбросить предустановку с "
-"потерей изменений?"
+"Ընթացիկ կանխադրված% 1-ի փոփոխությունները դեռևս չեն պահպանվել: Իսկապե՞ս "
+"ցանկանում եք վերագործարկել այս նախադրվածը և կորցնել ձեր փոփոխությունները:"
 
 #: src/parameter/ParameterWidget.cc:156
 msgid "remove current preset"
-msgstr "удалить выбранную предустановку"
+msgstr "հեռացնել ընթացիկ նախադրվածը"
 
 #: src/parameter/ParameterWidget.cc:158
 msgid "save current preset"
-msgstr "сохранить выбранную предустановку"
+msgstr "պահպանեք ընթացիկ նախադրվածը"
 
 #: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
 #: src/parameter/ParameterWidget.cc:162
 msgid "JSON file read only"
-msgstr "файл JSON только для чтения"
+msgstr "միայն JSON նիշքերը կարդալու համար"
 
 #: src/parameter/ParameterWidget.cc:215
 msgid "design default values"
-msgstr "значения проекта по умолчанию"
+msgstr "Դիզայնի սկզբնական արժեքները"
 
 #: src/parameter/ParameterWidget.cc:233
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
 msgstr ""
-"Текущая предустановка %1 изменена, но не сохранена. Выбрать другую "
-"предустановку с потерей изменений?"
+"Ընթացիկ նախադրված %1 -ը պարունակում է փոփոխություններ, բայց դեռևս պահպանված "
+"չէ: Իսկապե՞ս ցանկանում եք փոխել նախադրվածը և կորցնել ձեր փոփոխությունները:"
 
 #: src/parameter/ParameterWidget.cc:273
 msgid "Do you want to delete the current preset?"
-msgstr "Удалить выбранную предустановку?"
+msgstr "Ցանկանո՞ւմ եք ջնջել ընթացիկ նախադրվածը:"
 
 #: src/parameter/ParameterWidget.cc:275
 msgid "Do you want to delete the current preset '%1'?"
-msgstr "Удалить выбранную предустановку «%1»?"
+msgstr "Ցանկանում եք ջնջել ընթացիկ փոփոխությունները %1'?"
 
 #: src/parameter/ParameterWidget.cc:515
 msgid "Create new set of parameter"
-msgstr "Создать новый набор параметров"
+msgstr "Ստեղծեք պարամետրերի նոր հավաքածու"
 
 #: src/parameter/ParameterWidget.cc:515
 msgid "Enter name of the parameter set"
-msgstr "Введите название нового набора параметров"
+msgstr "Մուտքագրեք պարամետրերի հավաքածուի անունը"
 
 #: src/parameter/ParameterWidget.cc:526
 msgid "Set Name %1 already exists"
-msgstr "Название «%1» уже существует"
+msgstr "Անուն %1-ը արդեն գոյություն ունի"
 
 #: src/parameter/ParameterWidget.cc:527
 msgid "The set name  %1 already exists. Do you want overwrite it?"
-msgstr "Название «%1» уже существует. Перезаписать?"
+msgstr ""
+"%1 Արդեն գոյություն ունի.\n"
+"Վերաշարադրե՞նք"
 
 #: src/parameter/ParameterWidget.cc:571
 msgid "Saving presets"
-msgstr "Сохранение предустановок"
+msgstr "Պահպանված նախադրումներ"
 
 #: src/parameter/ParameterWidget.cc:572
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr "Файл %1 обнаружен, но не может быть прочтён. Перезаписать %1?"
+msgstr "%1 ֊ը գտնվեց, բայց անընթեռնելի էր: Ցանկանո՞ւմ եք վերագրել %1:"
 
 #: src/input/AxisConfigWidget.h:84
 msgid ""
 "This driver was not enabled during build time and is thus not available."
-msgstr "Драйвер не был включён при компиляции и поэтому недоступен."
+msgstr ""
+"Այս սարքավարը չի ակտիվացել ծրագրի կառուցման ընթացքում, ուստի այն հասանելի չէ:"
 
 #: src/input/AxisConfigWidget.h:86
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
 msgstr ""
-"Драйвер DBUS предназначен не для реальных устройств, а для удалённого "
-"контроля (только Linux)."
+"DBUS սարքավարը իրական սարքերի համար չե, այլ հեռավար սարքերի, միայն Լինուքսի "
+"համար։"
 
 #: src/input/AxisConfigWidget.h:87
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
-msgstr "Драйвер HIDAPI работает непосредственно с 3D мышью (Windows и macOS)."
+msgstr ""
+"HIDAPI սարքավարը ուղիղ կապակցվում է եռաչափ մկնիկի հետ, հասանելի է Windows և "
+"macOS համակարգերում։"
 
 #: src/input/AxisConfigWidget.h:88
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
-"Драйвер SpaceNav включает 3D устройства, использующие службу spacenavd "
-"(только Linux)."
+"SpaceNav սարքավարը հնարավորություն է տալիս միացնել եռաչափ-մուտքային սարքերին "
+"օգտագործելով spacenavd daemon, հասանելի է միայն Լինուքսում։"
 
 #: src/input/AxisConfigWidget.h:89
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
-msgstr "Драйвер джойстика использует устройство /dev/input/js0 (только Linux)."
+msgstr ""
+"Joystick սարքավարը օգտագործվում է Լինուքսի ղեկավարման սարքը (ֆիքսված հասցե "
+"՝ /dev/input/js0), հասանելի է միայն Լինուքսում։ "
 
 #: src/input/AxisConfigWidget.h:90
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr "Драйвер QGAMEPAD для мультиплатформенной поддержки геймпадов."
+msgstr "The QGAMEPAD դրայվերը  multiplattform Gamepad֊ի աւակցման համար է։"
 
 #: src/input/ButtonConfigWidget.cc:185
 msgid "(not supported)"
-msgstr "(не поддерживается)"
+msgstr "(չի աջակցվում)"
 
 #: examples/examples.json:2
 msgid "Basics"
-msgstr "Примитивы"
+msgstr "Հիմունքներ"
 
 #: examples/examples.json:13
 msgid "Functions"
-msgstr "Функции"
+msgstr "Գործառույթներ/Ֆունկցիաներ"
 
 #: examples/examples.json:20
 msgid "Advanced"
-msgstr "Дополнительные"
+msgstr "Բարդ"
 
 #: examples/examples.json:30
 msgid "Parametric"
-msgstr "Параметрические"
+msgstr "Նախընտրանքային"
 
 #: examples/examples.json:34
 msgid "Old"
-msgstr "Устаревшие"
+msgstr "Նախկինում օգտագործած"
 
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in:6
 msgid "The Programmers Solid 3D CAD Modeller"
-msgstr "Твердотельная 3D-САПР для программистов"
+msgstr ""
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:20
@@ -1986,12 +1992,13 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD — это приложение для создания трёхмерных моделей САПР. В отличие от "
-"большинства аналогичных свободных программ (например, Blender), в OpenSCAD "
-"основной упор сделан не на художественных аспектах моделирования, а на "
-"автоматизации проектирования. Другими словами, OpenSCAD больше подходит для "
-"изготовления трёхмерных моделей механизмов, чем для создания компьютерной "
-"анимации. "
+"OpenSCAD- ը 3D CAD մոդելներ ստեղծելու ծրագիր է: Ի տարբերություն 3D մոդելների "
+"ստեղծման համար նախատեսված շատ անվճար ծրագրաշարի (օրինակ ՝ Blender), այն չի "
+"կենտրոնանում 3D մոդելավորման գեղարվեստական բաղադրիչի վրա, փոխարենը ՝ CAD ֊ի: "
+"Այսպիսով, սա կարող է լինել այն ծրագիրը, որը փնտրում եք, երբ նախատեսում եք "
+"ստեղծել մեքենայական մասերի 3D մոդելներ, բայց միանգամայն համոզված ենք, որ այն "
+"ձեզ պետք չի գա, եթե ավելի շատ հետաքրքրված եք համակարգչային անիմացիոն "
+"կերպարների/ կինոնկարների ստեղծմամբ:"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:21
@@ -2003,11 +2010,12 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD не является интерактивным редактором моделей. Это скорее "
-"компилятор, который считывает описывающий объект скрипт и отрисовывает "
-"соответствующую модель. Это расширяет возможности моделирования и позволяет "
-"легко изменить любой из этапов этого процесса. Вы можете создавать любые "
-"модели на основе настраиваемых параметров."
+"OpenSCAD- ը ինտերակտիվ մոդերատոր չէ: Փոխարենը այն 3D կազմողի պես մի բան է, "
+"որը կարդում է օբյեկտը նկարագրող սցենարի նիշքը  և այս սցենարի նիշքից "
+"ներկայացնում է 3D մոդելը: Սա ձեզ (դիզայներին) լիակատար վերահսկողություն է "
+"տալիս մոդելավորման գործընթացի վրա և հնարավորություն է տալիս հեշտությամբ "
+"փոխել մոդելավորման գործընթացում կատարված ցանկացած քայլ կամ կատարել այնպիսի "
+"ձևավորումներ, որոնք որոշվում են կարգավորելի պարամետրերով:"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:22
@@ -2019,62 +2027,43 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenScad предлагает два основных метода моделирования: конструктивная "
-"сплошная геометрия и экструзия. Для задания двухмерных контуров используются "
-"файлы Autocad DXF. В дополнение к двухмерному пути экструзии, возможно "
-"чтение проектных параметров из файлов DX. Помимо файлов DXF, OpenSCAD может "
-"читать и создавать 3D-модели в форматах STL и OFF."
+"OpenSCAD- ը տրամադրում է մոդելավորման երկու հիմնական տեխնիկա. Նախ կա "
+"կառուցողական ամուր երկրաչափություն (aka CSG), երկրորդը `2D ուրվագծերի "
+"արտահոսքն է: Որպես այս 2D ուրվագծերի տվյալների փոխանակման ձևաչափ ՝ "
+"օգտագործվում են Autocad DXF նիշքեր: Բացի արտածման համար 2D ուրվագծերից "
+"հնարավոր է նաև կարդալ դիզայնի կարգաբերումները DXF նիշքերից: Բացի DXF "
+"նիշքերից, OpenSCAD- ը կարող է կարդալ և ստեղծել 3D մոդելներ STL և OFF նիշքերի "
+"ձևաչափերով:"
 
 #~ msgid "Save As"
-#~ msgstr "Сохранить как"
+#~ msgstr "Պահպանել որպես՝"
 
 #~ msgid "Prev."
-#~ msgstr "Пред."
+#~ msgstr "Նախորդ"
 
 #~ msgid "&New"
-#~ msgstr "&Создать"
+#~ msgstr "&Նոր"
 
 #~ msgid "&Open..."
-#~ msgstr "&Открыть..."
-
-#~ msgid "Editor Type"
-#~ msgstr "Редактор"
-
-#~ msgid "Simple Editor"
-#~ msgstr "Простой редактор"
-
-#~ msgid "QScintilla Editor"
-#~ msgstr "Редактор QScintilla"
+#~ msgstr "&Բացել..."
 
 #~ msgid "(requires restart)"
-#~ msgstr "(требуется перезапуск)"
-
-#~ msgid "Allow opening multiple documents"
-#~ msgstr "Разрешить открытие нескольких документов"
+#~ msgstr "(Անհրաժեշտ է վերագործարկել)"
 
 #~ msgid "/"
 #~ msgstr "/"
 
-#~ msgid "Untitled.csg"
-#~ msgstr "Безымянный.csg"
+#~ msgid "Allow opening multiple documents"
+#~ msgstr "Թույլատրել բազմակի փաստաթղթեր բացելը"
 
-#~ msgid "Untitled.png"
-#~ msgstr "Безымянный.png"
+#~ msgid "Editor Type"
+#~ msgstr "Խմբագրիչի Տեսակը"
 
-#~ msgid "no preset selected"
-#~ msgstr "Предустановка не выбрана"
+#~ msgid "QScintilla Editor"
+#~ msgstr "QScintilla խմբագրիչ"
 
-#~ msgid "<"
-#~ msgstr "<"
+#~ msgid "Simple Editor"
+#~ msgstr "Պարզ խմբագրիչ"
 
-#~ msgid ">"
-#~ msgstr ">"
-
-#~ msgid "Shapes"
-#~ msgstr "Формы"
-
-#~ msgid "Extrusion"
-#~ msgstr "Выдавливание"
-
-#~ msgid "Untitled%1"
-#~ msgstr "Безымянный%1"
+#~ msgid "Եռաչափ մոդելավորում ծրագրավորման միջոցով"
+#~ msgstr "Եռաչափ մոդելավորում ծրագրավորման միջոցով"

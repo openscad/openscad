@@ -106,8 +106,9 @@ double InputEventMapper::getAxisValue(int config)
     return scale(val);
 }
 
-void InputEventMapper::onTimer()
+bool InputEventMapper::generateDeferredEvents()
 {
+    bool any = false;
     const double threshold = 0.01;
 
     double tx = getAxisValue(translate[0])*translationGain;
@@ -116,6 +117,7 @@ void InputEventMapper::onTimer()
     if ((fabs(tx) > threshold) || (fabs(ty) > threshold) || (fabs(tz) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(tx, ty, tz);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double txVPRel = getAxisValue(translate[3])*translationVPRelGain;
@@ -124,6 +126,7 @@ void InputEventMapper::onTimer()
     if ((fabs(txVPRel) > threshold) || (fabs(tyVPRel) > threshold) || (fabs(tzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true, false);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double rx = getAxisValue(rotate[0])*rotateGain;
@@ -132,6 +135,7 @@ void InputEventMapper::onTimer()
     if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate(rx, ry, rz);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double rxVPRel = getAxisValue(rotate[3])*rotateVPRelGain;
@@ -140,13 +144,29 @@ void InputEventMapper::onTimer()
     if ((fabs(rxVPRel) > threshold) || (fabs(ryVPRel) > threshold) || (fabs(rzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate2(rxVPRel, ryVPRel, rzVPRel);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double z = (getAxisValue(zoom)+getAxisValue(zoom2))*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
+
+    return any;
+}
+
+void InputEventMapper::considerGeneratingDeferredEvents()
+{
+    if (!timer->isActive()) {
+        QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 30));
+    }
+}
+
+void InputEventMapper::onTimer()
+{
+    bool generated_any_events = generateDeferredEvents();
 
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
     for (int i = 0; i < max_buttons; i++ ){
@@ -159,11 +179,17 @@ void InputEventMapper::onTimer()
        Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
 
+    if (!generated_any_events) {
+        // the current axis positions do not generate input events,
+        // so we can stop the polling which is used to to generate them
+        timer->stop();
+    }
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)
 {
     axisRawValue[event->axis] = event->value;
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
@@ -187,6 +213,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
             InputDriverManager::instance()->postEvent(inputEvent);
         }
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onTranslateEvent(InputEventTranslate *event)
@@ -245,6 +272,7 @@ void InputEventMapper::onInputMappingUpdated()
     rotate[5] = parseSettingValue(s->get(Settings::Settings::inputRotateZVPRel).toString());
     zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
     zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputGainUpdated()
@@ -260,6 +288,8 @@ void InputEventMapper::onInputGainUpdated()
     rotateVPRelGain = s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
 
     zoomGain = s->get(Settings::Settings::inputZoomGain).toDouble();
+
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputCalibrationUpdated()
@@ -278,6 +308,7 @@ void InputEventMapper::onInputCalibrationUpdated()
             axisDeadzone[a] = setting->get(*ent).toDouble();
         }
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisAutoTrim()
@@ -289,6 +320,7 @@ void InputEventMapper::onAxisAutoTrim()
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
         s->set(*ent, axisTrimValue[i]);
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisTrimReset()
@@ -300,6 +332,7 @@ void InputEventMapper::onAxisTrimReset()
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
         s->set(*ent, axisTrimValue[i]);
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::stop(){
