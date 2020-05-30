@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "boost-utils.h"
 #include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
@@ -2152,14 +2153,19 @@ void MainWindow::selectObject(QPoint mouse)
 			fs::path libpath = get_library_for_path(location.filePath());
 			if (!libpath.empty()) {
 				// Display the library (without making the window too wide!)
-				ss << step->name() << " (in library "
-					 << location.fileName().substr(libpath.string().length() + 1) << " line "
-					 << location.firstLine() << ")";
+				ss << step->name() << " (library "
+				   << location.fileName().substr(libpath.string().length() + 1) << ":"
+				   << location.firstLine() << ")";
+			}
+			else if (activeEditor->filepath.toStdString() == location.fileName()) {
+				ss << step->name() << " (" << location.filePath().filename().string() << ":"
+				   << location.firstLine() << ")";
 			}
 			else {
+				auto relname = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+				  .generic_string();
 				// Set the displayed name relative to the active editor window
-				ss << step->name() << " ("
-					 << location.toRelativeString(activeEditor->filepath.toStdString()) << ")";
+				ss << step->name() << " (" << relname << ":" << location.firstLine() << ")";
 			}
 
 			// Prepare the action to be sent
