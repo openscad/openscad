@@ -60,8 +60,12 @@ public:
 	bool canUndo() override;
 	void addTemplate() override;
 	void setIndicator(const std::vector<IndicatorData> &indicatorData) override;
+	void setJumpIndicator(const std::vector<JumpIndicatorData> &jumpIndicatorData) override;
+	void hyperlinkIndicator(int line, int col);
+	void jumpHyperlinkIndicator(int line, int col);
 	QMenu *createStandardContextMenu() override;
 	QPoint mapToGlobal(const QPoint &) override;
+	void jumpToLine(const int line, const int col) override;
 
 private:
 	void getRange(int *lineFrom, int *lineTo);
@@ -92,6 +96,7 @@ private:
 signals:
 	void previewRequest(void);
 	void hyperlinkIndicatorClicked(int val);
+	void jumpHyperlinkIndicatorClicked(int val);
 
 public slots:
 	void zoomIn() override;
@@ -142,6 +147,7 @@ private:
 	static const int hyperlinkIndicatorOffset = 100;
 	static const int errMarkerNumber = 2;
 	static const int bmMarkerNumber = 3;
+	static const int jumpHyperlinkIndicatorNumber = 12;
 
 	ScadLexer *lexer;
 	QFont currentFont;

@@ -204,7 +204,11 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
 	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
 	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
+
+	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, jumpHyperlinkIndicatorNumber);
+	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, jumpHyperlinkIndicatorNumber);
 	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
+
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint &pos)
@@ -469,6 +473,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
         qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
         qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
         qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(0, 24, 168, 100)), jumpHyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(0, 24, 168, 100)), jumpHyperlinkIndicatorNumber);//violet
+        qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(0, 24, 168, 100)), jumpHyperlinkIndicatorNumber);//violet
 		qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
 		qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
 		qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
@@ -501,6 +508,9 @@ void ScintillaEditor::noColor()
     qsci->setIndicatorForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
     qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), hyperlinkIndicatorNumber); // only alpha part is used
     qsci->setIndicatorHoverForegroundColor(QColor(139, 24, 168, 128), hyperlinkIndicatorNumber);//violet
+    qsci->setIndicatorForegroundColor(QColor(0, 24, 168, 128), jumpHyperlinkIndicatorNumber);//violet
+    qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), jumpHyperlinkIndicatorNumber); // only alpha part is used
+    qsci->setIndicatorHoverForegroundColor(QColor(0, 24, 168, 128), jumpHyperlinkIndicatorNumber);//violet
 	qsci->setCaretLineBackgroundColor(Qt::white);
 	qsci->setWhitespaceForegroundColor(Qt::black);
 	qsci->setSelectionForegroundColor(Qt::black);
@@ -1147,7 +1157,6 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
 	this->indicatorData = indicatorData;
-
 	int idx = 0;
 	for (const auto& data : indicatorData) {
 		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
@@ -1155,21 +1164,62 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
 		idx++;
 	}
+
+}
+void ScintillaEditor::setJumpIndicator(const std::vector<JumpIndicatorData>& jumpIndicatorData)
+{
+	this->jumpIndicatorData = jumpIndicatorData;
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
+	qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
+	int idx = 0;
+	for (const auto& data : jumpIndicatorData) {
+		if (data.path == this->filepath.toStdString()){
+		int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+		qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
+		qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+		}
+		idx++;
+	}
 }
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-	if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
-		return;
+	if((state == Qt::AltModifier || state == (Qt::ControlModifier|Qt::AltModifier)))
+	{
+		jumpHyperlinkIndicator(line, col);
+	}
+	else if ((state == Qt::ControlModifier || state == (Qt::ControlModifier | Qt::AltModifier))) {
+		hyperlinkIndicator(line, col);
+		
+	}
+	else return;
+}
 
+void ScintillaEditor::hyperlinkIndicator(int line, int col)
+{
 	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
 	int pos = qsci->positionFromLineIndex(line, col);
-	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT,
+	ScintillaEditor::hyperlinkIndicatorNumber, pos);
 
 	// checking if indicator clicked is hyperlinkIndicator
 	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
 		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+	}
+}
+
+void ScintillaEditor::jumpHyperlinkIndicator(int line, int col)
+{
+	qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, jumpHyperlinkIndicatorNumber);
+
+	int pos = qsci->positionFromLineIndex(line, col);
+	int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT,
+	ScintillaEditor::jumpHyperlinkIndicatorNumber, pos);
+
+	// checking if indicator clicked is hyperlinkIndicator
+	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+jumpIndicatorData.size())	{
+		emit jumpHyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
 	}
 }
 
@@ -1226,4 +1276,10 @@ void ScintillaEditor::prevBookmark()
 void ScintillaEditor::jumpToNextError()
 {
 	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
+}
+
+
+void ScintillaEditor::jumpToLine(const int line,const int col)
+{
+	qsci->setCursorPosition(line, col);
 }

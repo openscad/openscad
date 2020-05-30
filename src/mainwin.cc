@@ -1733,6 +1733,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 		customizerEditor = activeEditor;
 		this->parameterWidget->setEnabled(true);
 		this->activeEditor->setIndicator(this->root_module->indicatorData);
+		this->activeEditor->setJumpIndicator(this->root_module->jumpIndicatorData);
 	}
 }
 
@@ -2141,6 +2142,7 @@ void MainWindow::exceptionCleanup(){
 
 void MainWindow::actionDisplayAST()
 {
+
 	setCurrentOutput();
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);

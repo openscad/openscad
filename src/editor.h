@@ -7,6 +7,7 @@
 #include <QScrollBar>
 #include <QTextEdit>
 #include "indicatordata.h"
+#include "jumpindicatordata.h"
 
 class EditorInterface : public QWidget
 {
@@ -28,6 +29,8 @@ public:
 	virtual bool canUndo() = 0;
 	virtual void addTemplate() = 0;
 	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
+	virtual void setJumpIndicator(const std::vector<JumpIndicatorData>& jumpIndicatorData) = 0;
+	virtual void jumpToLine(const int line,const int col) = 0;
 	virtual QMenu * createStandardContextMenu() = 0;
 	virtual QPoint mapToGlobal(const QPoint &) = 0;
 
@@ -72,4 +75,5 @@ public:
 	QString filepath;
 	std::string autoReloadId;
 	std::vector<IndicatorData> indicatorData;
+	std::vector<JumpIndicatorData> jumpIndicatorData;
 };

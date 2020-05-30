@@ -2,7 +2,7 @@
 
 #include "AST.h"
 #include "Assignment.h"
-#include <unordered_map>
+#include <map>
 
 class LocalScope
 {
@@ -22,11 +22,11 @@ private:
 public:
 	void apply(const std::shared_ptr<Context> &ctx) const;
 	bool hasChildren() const {return !(children.empty());};
-
 	std::vector<shared_ptr<ASTNode>> children;
 
 	AssignmentList assignments;
 	std::vector<shared_ptr<ModuleInstantiation>> children_inst;
+
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
 	// FIXME: Should we split this class into an ASTNode and a run-time support class?
@@ -37,4 +37,5 @@ public:
 	typedef std::unordered_map<std::string, shared_ptr<UserModule>> ModuleContainer;
 	ModuleContainer	modules;
 	std::vector<std::pair<std::string, shared_ptr<UserModule>>> astModules;
+
 };

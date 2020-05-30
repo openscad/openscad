@@ -92,3 +92,4 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 		stream << indent << "}\n";
 	}
 }
+

@@ -1,5 +1,7 @@
 #include "parameterextractor.h"
 #include "modcontext.h"
+#include <memory>
+#include "UserModule.h"
 
 ParameterExtractor::ParameterExtractor()
 {
@@ -32,8 +34,10 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
   ContextHandle<Context> ctx{Context::create<Context>()};
 
   ParameterPos.clear();
+ 
   for (auto &assignment : module->scope.assignments) {
     const Annotation *param = assignment->annotation("Parameter");
+    // std::cout<<param->getName()<<std::endl;
     if (!param) continue;
 
     const ValuePtr defaultValue = assignment->expr->evaluate(ctx.ctx);

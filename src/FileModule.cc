@@ -39,6 +39,7 @@
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
+#include <cstdio>
 
 FileModule::FileModule(const std::string &path, const std::string &filename)
 	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
@@ -93,6 +94,30 @@ void FileModule::registerInclude(const std::string &localpath, const std::string
 	if (!loc.isNone()) {
 		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
 	}
+}
+void FileModule::registerJumpFrom(const std::string name, const Location &loc)
+{
+	PRINTDB("registerJumpFrom(): (%p) %d, %d - %d, %d (%s) -> %s",
+					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
+							loc.fileName());
+
+		if (!loc.isNone()) {
+			jumpIndicatorData.emplace_back(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), loc.filePath().string(),name);
+		}
+}
+
+void FileModule::registerJumpTo(const std::string name, const Location &loc)
+{
+	PRINTDB("registerJumpTo(): (%p) %d, %d - %d, %d (%s) -> %s",
+					this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
+							loc.fileName());
+
+		if (!loc.isNone()) {
+			JumpIndicatorData *temp = new JumpIndicatorData(loc.firstLine(), loc.firstColumn(),loc.lastColumn() - loc.firstColumn(), loc.filePath().string(),name);
+			auto it = jumpToData.find(name);
+			if(it!=jumpToData.end()) it->second=*temp;
+			else jumpToData.emplace(name,*temp);
+		}
 }
 
 time_t FileModule::includesChanged() const

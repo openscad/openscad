@@ -19,6 +19,7 @@ public:
 	bool findString(const QString & exp, bool findBackwards) const;
 	QStringList colorSchemes() override;
     bool canUndo() override;
+	void jumpToLine(const int,const int) override;
 
 public slots:
 	void zoomIn() override;

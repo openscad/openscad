@@ -17,6 +17,7 @@
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
+#include <QTimer>
 
 TabManager::TabManager(MainWindow *o, const QString &filename)
 {
@@ -221,6 +222,7 @@ void TabManager::createTab(const QString &filename)
     editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
     connect(editor, SIGNAL(hyperlinkIndicatorClicked(int)), this, SLOT(onHyperlinkIndicatorClicked(int)));
+    connect(editor, SIGNAL(jumpHyperlinkIndicatorClicked(int)), this, SLOT(onJumpHyperlinkIndicatorClicked(int)));
 
     int idx = tabWidget->addTab(editor, _("Untitled.scad"));
     if(!editorList.isEmpty()) {
@@ -718,4 +720,26 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
 {
     const QString filename = QString::fromStdString(editor->indicatorData[val].path);
     this->open(filename);
+}
+
+void TabManager::onJumpHyperlinkIndicatorClicked(int val)
+{
+	int line, col = 0;
+	auto it = par->root_module->jumpToData.find(editor->jumpIndicatorData[val].name);
+	if (it != par->root_module->jumpToData.end()) { 
+    line = it->second.linenr;
+    if(editor->filepath.toStdString() != it->second.path)
+    {
+    const QString filename = QString::fromStdString(it->second.path);
+    this->open(filename);
+    }
+    // added this delay, as clicking on the indicator, sets the cursor at the position clicked, supressing the JumpToLine API
+    QTimer::singleShot(300, [this,line,col]() { this->jump(line,col); });
+    }
+    else return;
+}
+
+void TabManager::jump(int line,int col)
+{
+	editor->jumpToLine(line-1,col);
 }
