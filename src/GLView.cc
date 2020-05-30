@@ -147,7 +147,6 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    //this->renderer->draw_with_shader(&selector->shaderinfo);
     this->renderer->draw(showfaces, showedges);
   }
 

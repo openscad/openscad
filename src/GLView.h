@@ -72,7 +72,7 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	/// This struct describes the attributes to all shaders in use
+	/// Shader attribute identifiers
 	struct shaderinfo_t {
 		enum shader_type_t {
 			NONE,

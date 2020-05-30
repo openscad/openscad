@@ -2140,7 +2140,7 @@ void MainWindow::selectObject(QPoint mouse)
 		QMenu tracemenu(this);
 		std::stringstream ss;
 		for (const auto *step : path) {
-      // Skip certain node types
+			// Skip certain node types
 			if (step->name() == "root") {
 				continue;
 			}
@@ -2148,21 +2148,21 @@ void MainWindow::selectObject(QPoint mouse)
 			auto location = step->location;
 			ss.str("");
 
-      // Check if the path is contained in a library (using parsersettings.h)
-      fs::path libpath = get_library_for_path(location.filePath());
+			// Check if the path is contained in a library (using parsersettings.h)
+			fs::path libpath = get_library_for_path(location.filePath());
 			if (!libpath.empty()) {
-        // Display the library (without making the window too wide!)
+				// Display the library (without making the window too wide!)
 				ss << step->name() << " (in library "
 					 << location.fileName().substr(libpath.string().length() + 1) << " line "
 					 << location.firstLine() << ")";
 			}
 			else {
-        // Set the displayed name relative to the active editor window
+				// Set the displayed name relative to the active editor window
 				ss << step->name() << " ("
 					 << location.toRelativeString(activeEditor->filepath.toStdString()) << ")";
 			}
 
-      // Prepare the action to be sent
+			// Prepare the action to be sent
 			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
 			action->setProperty("file", QString::fromStdString(location.fileName()));
 			action->setProperty("line", location.firstLine());

@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <deque>
 #include "memory.h"
 #include "linalg.h"
 #include "enums.h"
@@ -91,7 +90,7 @@ public:
 	Transform3d matrix;
 	Color4f color;
 
-  const int index;
+	const int index;
 
 	friend class CSGProducts;
 };
@@ -127,7 +126,7 @@ class CSGProducts
 {
 public:
 	CSGProducts() {
-    this->createProduct();
+		this->createProduct();
 	}
 	~CSGProducts() {}
 

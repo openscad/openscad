@@ -15,12 +15,12 @@
  */
 
 #define OPENGL_TEST(place) \
-{ \
+do { \
   auto err = glGetError(); \
   if (err != GL_NO_ERROR) { \
     fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
   } \
-}
+} while (false)
 
 MouseSelector::MouseSelector(GLView *view) {
   this->view = view;
@@ -46,7 +46,7 @@ void MouseSelector::reset(GLView *view) {
 void MouseSelector::init_shader() {
   /*
     Attributes:
-      * identifier - index of the currently selected object
+      * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
   */
   const char *vs_source =
     "void main() {\n"
@@ -72,7 +72,7 @@ void MouseSelector::init_shader() {
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-    fprintf(stderr, "OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
+    fprintf(stderr, __FILE__ ": OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
   }
 
   auto fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -84,7 +84,7 @@ void MouseSelector::init_shader() {
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-    fprintf(stderr, "OpenGL fragment shader Error:\n%.*s\n\n", loglen, logbuffer);
+    fprintf(stderr, __FILE__ ": OpenGL fragment shader Error:\n%.*s\n\n", loglen, logbuffer);
   }
 
   // Link
@@ -100,28 +100,26 @@ void MouseSelector::init_shader() {
     int loglen;
     char logbuffer[1000];
     glGetProgramInfoLog(selecthader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    fprintf(stderr, "OpenGL Program Linker Error:\n%.*s\n\n", loglen, logbuffer);
+    fprintf(stderr, __FILE__ ": OpenGL Program Linker Error:\n%.*s\n\n", loglen, logbuffer);
   } else {
     int loglen;
     char logbuffer[1000];
     glGetProgramInfoLog(selecthader_prog, sizeof(logbuffer), &loglen, logbuffer);
     if (loglen > 0) {
-      fprintf(stderr, "OpenGL Program Link OK:\n%.*s\n\n", loglen, logbuffer);
+      fprintf(stderr, __FILE__ ": OpenGL Program Link OK:\n%.*s\n\n", loglen, logbuffer);
     }
     glValidateProgram(selecthader_prog);
     glGetProgramInfoLog(selecthader_prog, sizeof(logbuffer), &loglen, logbuffer);
     if (loglen > 0) {
-      fprintf(stderr, "OpenGL Program Validation results:\n%.*s\n\n", loglen, logbuffer);
+      fprintf(stderr, __FILE__ ": OpenGL Program Validation results:\n%.*s\n\n", loglen, logbuffer);
     }
   }
 
-  // store identifiers for later use
   this->shaderinfo.progid = selecthader_prog;
   this->shaderinfo.type = GLView::shaderinfo_t::SELECT_RENDERING;
-  // GLint identifier = glGetAttribLocation(selecthader_prog, "identifier");
   GLint identifier = glGetUniformLocation(selecthader_prog, "frag_idcolor");
   if (identifier < 0) {
-    fprintf(stderr, "GL symbol retrieval went wrong, id is %i\n\n", identifier);
+    fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);
     this->shaderinfo.data.select_rendering.identifier = 0;
   }
   else {

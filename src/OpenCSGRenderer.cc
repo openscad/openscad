@@ -30,13 +30,12 @@
 #include "csgnode.h"
 
 #define OPENGL_TEST(place) \
-{ \
+do { \
 	auto err = glGetError(); \
 	if (err != GL_NO_ERROR) { \
 		fprintf(stderr, "OpenGL error " place ":\n %s\n\n", gluErrorString(err)); \
 	} \
-}
-
+} while (false)
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
