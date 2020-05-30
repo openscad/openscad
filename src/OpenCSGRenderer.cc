@@ -124,9 +124,12 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, const GLVie
 		if (shaderinfo) glUseProgram(shaderinfo->progid);
 		OPENGL_TEST("load shader");
 
-		for(const auto &csgobj : product.intersections) {
+		for (const auto &csgobj : product.intersections) {
 			if (shaderinfo && shaderinfo->type == GLView::shaderinfo_t::SELECT_RENDERING) {
-				glVertexAttribI1i(shaderinfo->data.select_rendering.identifier, csgobj.leaf->index);
+				int identifier = csgobj.leaf->index;
+				glUniform3f(shaderinfo->data.select_rendering.identifier,
+										((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
+										((identifier >> 16) & 0xff) / 255.0f);
 				OPENGL_TEST("setup shader");
 			}
 

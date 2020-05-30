@@ -16,10 +16,10 @@
 
 #define OPENGL_TEST(place) \
 { \
-	auto err = glGetError(); \
-	if (err != GL_NO_ERROR) { \
-		fprintf(stderr, "OpenGL error " place ":\n %s\n\n", gluErrorString(err)); \
-	} \
+  auto err = glGetError(); \
+  if (err != GL_NO_ERROR) { \
+    fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
+  } \
 }
 
 MouseSelector::MouseSelector(GLView *view) {
@@ -49,22 +49,14 @@ void MouseSelector::init_shader() {
       * identifier - index of the currently selected object
   */
   const char *vs_source =
-    "#version 130\n"
-    "in int identifier;\n"
-    "out vec4 frag_idcolor;\n"
     "void main() {\n"
-    "  frag_idcolor = vec4(((identifier >> 0) & 0xff) / 255.0,\n"
-    "                      ((identifier >> 8) & 0xff) / 255.0,\n"
-    "                      ((identifier >> 16) & 0xff) / 255.0, \n"
-    "                      1.0);\n"
     "  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
     "}\n";
 
   const char *fs_source =
-    "#version 130\n"
-    "in vec4 frag_idcolor;\n"
+    "uniform vec3 frag_idcolor;\n"
     "void main() {\n"
-    "  gl_FragColor = frag_idcolor;\n"
+    "  gl_FragColor = vec4(frag_idcolor, 1.0);\n"
     "}\n";
 
   GLenum err;
@@ -72,6 +64,7 @@ void MouseSelector::init_shader() {
 
   // Compile the shaders
   auto vs = glCreateShader(GL_VERTEX_SHADER);
+  OPENGL_TEST("Vertex Shader");
   glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
   glCompileShader(vs);
   glGetShaderiv(vs, GL_COMPILE_STATUS, &shaderstatus);
@@ -83,6 +76,7 @@ void MouseSelector::init_shader() {
   }
 
   auto fs = glCreateShader(GL_FRAGMENT_SHADER);
+  OPENGL_TEST("Fragment Shader");
   glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
   glCompileShader(fs);
   glGetShaderiv(fs, GL_COMPILE_STATUS, &shaderstatus);
@@ -124,12 +118,15 @@ void MouseSelector::init_shader() {
   // store identifiers for later use
   this->shaderinfo.progid = selecthader_prog;
   this->shaderinfo.type = GLView::shaderinfo_t::SELECT_RENDERING;
-  GLint identifier = glGetAttribLocation(selecthader_prog, "identifier");
-  this->shaderinfo.data.select_rendering.identifier = identifier;
+  // GLint identifier = glGetAttribLocation(selecthader_prog, "identifier");
+  GLint identifier = glGetUniformLocation(selecthader_prog, "frag_idcolor");
   if (identifier < 0) {
-    fprintf(stderr, "GL symbol retrieval went wrong, id is negative\n\n");
+    fprintf(stderr, "GL symbol retrieval went wrong, id is %i\n\n", identifier);
+    this->shaderinfo.data.select_rendering.identifier = 0;
   }
-
+  else {
+    this->shaderinfo.data.select_rendering.identifier = identifier;
+  }
 }
 
 /**

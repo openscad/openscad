@@ -106,8 +106,11 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, con
 	const Transform3d &m = csgobj.leaf->matrix;
 
 	if (shaderinfo && shaderinfo->type == GLView::shaderinfo_t::SELECT_RENDERING) {
-		glVertexAttribI1i(shaderinfo->data.select_rendering.identifier, csgobj.leaf->index);
-	} else {
+		int identifier = csgobj.leaf->index;
+		glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
+								((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
+	}
+	else {
 		setColor(colormode, c.data());
 	}
 	glPushMatrix();
