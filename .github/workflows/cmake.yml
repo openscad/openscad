@@ -12,12 +12,24 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v1
     - name: Submodules
       run: git submodule update --init --recursive
     - name: Install dependencies
       run: ./scripts/travis-ci-before-install-linux.sh bionic
     - name: Dependency fixup
-      run: sudo apt-get install qt5-default gettext
+      run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
       run: ./scripts/github-ci.sh
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: Test Result Report
+        path: tests/Testing/Temporary/*_report.html
+    - name: Upload Code Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Code Coverage Report
+        path: c/coverage*.html
