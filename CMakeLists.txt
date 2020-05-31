@@ -28,6 +28,15 @@ option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
+option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
+
+if(PROFILE)
+SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
+SET(GCC_COVERAGE_LINK_FLAGS    "--coverage")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+endif()
 
 if (NULLGL)
   set(HEADLESS ON)
@@ -56,7 +65,7 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 # Use same optimization as qmake build
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
