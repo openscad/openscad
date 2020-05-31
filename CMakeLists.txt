@@ -56,7 +56,7 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 # Use same optimization as qmake build
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
