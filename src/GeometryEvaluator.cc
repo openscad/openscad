@@ -161,16 +161,12 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 		}
 		case OpenSCADOperator::UNION:
 		{
-			CGAL_Nef_polyhedron* N = CGALUtils::applyUnion(children.begin(), children.end());
-			return ResultObject(N);
+			return ResultObject(CGALUtils::applyUnion3D(children.begin(), children.end()));
 			break;
 		}
 		default: 
 		{
-			CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
-			// FIXME: Clarify when we can return nullptr and what that means
-			if (!N) N = new CGAL_Nef_polyhedron;
-			return ResultObject(N);
+			return ResultObject(CGALUtils::applyOperator3D(children, op));
 			break;
 		}
 	}

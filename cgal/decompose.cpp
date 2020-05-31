@@ -436,7 +436,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
-        CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(fake_children.begin(), fake_children.end());
+        CGAL_Nef_polyhedron *N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         t.stop();
         if (N) PRINTDB("Minkowski: Union done: %f s",t.time());
         else PRINTDB("Minkowski: Union failed: %f s",t.time());
@@ -456,7 +456,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
     
-    CGAL_Nef_polyhedron *N = applyOperator(children, OPENSCAD_MINKOWSKI);
+    CGAL_Nef_polyhedron *N = applyOperator3D(children, OPENSCAD_MINKOWSKI);
     return N;
   }
 }
