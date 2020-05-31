@@ -114,11 +114,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 	for(const auto &item : this->visitedchildren[node.index()]) {
 		if (!isValidDim(item, dim)) break;
 	}
-	if (dim == 2) {
-		Polygon2d *p2d = applyToChildren2D(node, op);
-		assert(p2d);
-		return ResultObject(p2d);
-	}
+	if (dim == 2) return ResultObject(applyToChildren2D(node, op));
 	else if (dim == 3) return applyToChildren3D(node, op);
 	return ResultObject();
 }
@@ -152,7 +148,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 		{
 			Geometry::Geometries actualchildren;
 			for(const auto &item : children) {
-				if (!item.second->isEmpty()) actualchildren.push_back(item);
+				if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
 			}
 			if (actualchildren.empty()) return ResultObject();
 			if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
@@ -188,9 +184,11 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	// Collect point cloud
 	std::list<CGALPoint2> points;
 	for(const auto &p : children) {
-		for(const auto &o : p->outlines()) {
-			for(const auto &v : o.vertices) {
-				points.push_back(CGALPoint2(v[0], v[1]));
+		if (p) {
+			for(const auto &o : p->outlines()) {
+				for(const auto &v : o.vertices) {
+					points.push_back(CGALPoint2(v[0], v[1]));
+				}
 			}
 		}
 	}
@@ -255,15 +253,21 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 		smartCacheInsert(*chnode, chgeom);
 		
 		if (chgeom) {
-			if (chgeom->getDimension() == 2) {
-				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
-				assert(polygons);
-				children.push_back(polygons);
-			}
-			else {
+			if (chgeom->getDimension() == 3) {
 				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
 				PRINTB("WARNING: Ignoring 3D child object for 2D operation, %s", loc);
+				children.push_back(nullptr); // replace 3D geometry with empty geometry
+			}	else {
+				if (chgeom->isEmpty()) {
+					children.push_back(nullptr);
+				} else {
+					const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
+					assert(polygons);
+					children.push_back(polygons);
+				}
 			}
+		} else {
+			children.push_back(nullptr);
 		}
 	}
 	return children;
@@ -328,19 +332,17 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		// sibling object. 
 		smartCacheInsert(*chnode, chgeom);
 		
-		if (chgeom) {
-			if (chgeom->getDimension() == 2) {
-				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
-			}
-			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
-				children.push_back(item);
-			}
+		if (chgeom && chgeom->getDimension() == 2) {
+			std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
+			PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
+			children.push_back(std::make_pair(item.first, nullptr)); // replace 2D geometry with empty geometry
+		} else {
+			// Add children if geometry is 3D OR null/empty
+			children.push_back(item);
 		}
 	}
 	return children;
 }
-
 /*!
 	
 */
@@ -361,7 +363,11 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 	}
 
 	if (children.size() == 1) {
-		return new Polygon2d(*children[0]); // Copy
+		if (children[0]) {
+			return new Polygon2d(*children[0]); // Copy
+		} else {
+			return nullptr;
+		}
 	}
 
 	ClipperLib::ClipType clipType;

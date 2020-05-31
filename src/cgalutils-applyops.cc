@@ -94,19 +94,24 @@ namespace CGALUtils {
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
 				// Initialize N with first expected geometric object
-				if (!N) {
-					N = new CGAL_Nef_polyhedron(*chN);
+				if (!foundFirst) {
+					if (chN) {
+						N = new CGAL_Nef_polyhedron(*chN);
+					} else { // first child geometry might be empty/null
+						N = nullptr;
+					}
+					foundFirst = true;
 					continue;
 				}
 				
 				// Intersecting something with nothing results in nothing
-				if (chN->isEmpty()) {
-					if (op == OpenSCADOperator::INTERSECTION) *N = *chN;
+				if (!chN || chN->isEmpty()) {
+					if (op == OpenSCADOperator::INTERSECTION) N = nullptr;
 					continue;
 				}
 				
 				// empty op <something> => empty
-				if (N->isEmpty()) continue;
+				if (!N || N->isEmpty()) continue;
 				
 				switch (op) {
 				case OpenSCADOperator::INTERSECTION:

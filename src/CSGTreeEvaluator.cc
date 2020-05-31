@@ -208,6 +208,8 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractPolyNode &node)
 			auto geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+			} else {
+				t1 = CSGNode::createEmptySet();
 			}
 			node.progress_report();
 		}
@@ -264,6 +266,8 @@ Response CSGTreeEvaluator::visit(State &state, const RenderNode &node)
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+			} else {
+				t1 = CSGNode::createEmptySet();
 			}
 			node.progress_report();
 		}
@@ -283,6 +287,8 @@ Response CSGTreeEvaluator::visit(State &state, const CgaladvNode &node)
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+			} else {
+				t1 = CSGNode::createEmptySet();
 			}
 			node.progress_report();
 		}

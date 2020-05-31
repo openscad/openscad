@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "memory.h"
+#include "Geometry.h"
 #include "linalg.h"
 #include "enums.h"
 
@@ -87,7 +88,7 @@ public:
 	CSGLeaf(const shared_ptr<const class Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label);
 	~CSGLeaf() {}
 	void initBoundingBox() override;
-	bool isEmptySet() override { return geom == nullptr; }
+	bool isEmptySet() override { return geom == nullptr || geom->isEmpty(); }
 	std::string dump() const override;
 	std::string label;
 	shared_ptr<const Geometry> geom;
