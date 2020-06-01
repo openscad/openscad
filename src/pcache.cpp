@@ -64,6 +64,7 @@ bool PCache::ping(){
     if(checkReply(reply)){
         return false;
     }
+    freeReplyObject(reply);
     return true;
 }
 
@@ -73,6 +74,7 @@ bool PCache::insert(const std::string& key, const std::string& serializedGeom){
         //do something to communicate this to the user and store cache in an usual way.
         return false;
     }
+    freeReplyObject(reply);
     return true;
 }
 
@@ -83,6 +85,7 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
         return false;
     }
     serializedGeom = reply->str;
+    freeReplyObject(reply);
     return true;
 }
 
@@ -113,6 +116,7 @@ bool PCache::contains(const std::string &key, bool &ret){
     }else{
         ret = false;
     }
+    freeReplyObject(reply);
     return true;
 }
 
@@ -122,6 +126,7 @@ bool PCache::clear(){
         //do something to communicate this to the user and store cache in an usual way.
         return false;
     }
+    freeReplyObject(reply);
     return true;
 }
 
@@ -134,11 +139,13 @@ void PCache::print(){
         return;
     }
     PRINTB("CGAL Polyhedrons in cache: %d", reply->elements);
+    freeReplyObject(reply);
     reply = static_cast<redisReply*>(redisCommand(rct, "KEYS GEOM-*"));
     if(checkReply(reply)){
         return;
     }
     PRINTB("Geometries in cache: %d", reply->elements);
+    freeReplyObject(reply);
 }
 
 bool PCache::checkContext(redisContext *rct){
