@@ -139,18 +139,55 @@ QString ShortcutConfigurator::getData(int row,int col)
 
 void ShortcutConfigurator::UpdateData(const QModelIndex & indexA, const QModelIndex & indexB)
 {
-    QString updatedShortcut = getData(indexA.row(),indexA.column());
-    std::cout<<updatedShortcut.toStdString()<<std::endl;
-    QString updatedAction = getData(indexA.row(),indexA.column()-1);
-    std::cout<<updatedAction.toStdString()<<std::endl;
+    QString updatedAction = getData(indexA.row(),0);
 
-  
-    //update the shortcut
     auto itr = this->shortcutsMap.find(updatedAction);
     QAction* changedAction = itr.value();
-    changedAction->setShortcut(QKeySequence(updatedShortcut));
+
+    QString updatedShortcut = getData(indexA.row(),indexA.column());
+
+    QList<QKeySequence> shortcutsListFinal;
+
+    if(indexA.column()==1)
+    {
+ 
+        // primary shortcut
+
+        // get the primary (updatedShortcut)
+        shortcutsListFinal.append(updatedShortcut);
+
+        // check if secondary already exists , and add it to sequence
+        QString secondaryShortcut = getData(indexA.row(),2);
+        if(!secondaryShortcut.isEmpty())
+        {
+            shortcutsListFinal.append(secondaryShortcut);
+            changedAction->setShortcuts(shortcutsListFinal);
+        }
+        else
+        {
+            changedAction->setShortcut(QKeySequence(updatedShortcut));
+        }
 
 
+    }
+    else if(indexA.column()==2)
+    {
+        // alternative shortcut
+
+        //check if primary is defined
+        QString primaryShortcut = getData(indexA.row(),1);
+        if(!primaryShortcut.isEmpty())
+        {
+        shortcutsListFinal.append(primaryShortcut);
+        shortcutsListFinal.append(updatedShortcut);
+        changedAction->setShortcuts(shortcutsListFinal);
+        }
+
+    }
+
+ 
     // write into the file
+
+
 
 }
