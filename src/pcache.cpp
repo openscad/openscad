@@ -125,6 +125,22 @@ bool PCache::clear(){
     return true;
 }
 
+void PCache::print(){
+    if(!cstatus){
+        return;
+    }
+    reply = static_cast<redisReply*>(redisCommand(rct, "KEYS CGAL-*"));
+    if(checkReply(reply)){
+        return;
+    }
+    PRINTB("CGAL Polyhedrons in cache: %d", reply->elements);
+    reply = static_cast<redisReply*>(redisCommand(rct, "KEYS GEOM-*"));
+    if(checkReply(reply)){
+        return;
+    }
+    PRINTB("Geometries in cache: %d", reply->elements);
+}
+
 bool PCache::checkContext(redisContext *rct){
     if(rct == NULL || rct->err){
         if(rct){

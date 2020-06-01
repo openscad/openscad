@@ -28,6 +28,7 @@ public:
     bool checkReply(redisReply* reply);
     bool checkContext(redisContext* rct);
     bool clear();
+    void print();
 
     static PCache* getInst(){if(!pCache) pCache = new PCache; return pCache;}
 
