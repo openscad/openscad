@@ -15,6 +15,10 @@ public:
     void connect();
     void connectWithPassword();
     bool Authorize();
+    bool insertCGAL(const std::string& key, const std::string& serializedgeom);
+    bool insertGeometry(const std::string& key, const std::string& serializedgeom);
+    bool getCGAL(const std::string& key, std::string& serializedgeom);
+    bool getGeometry(const std::string& key, std::string& serializedgeom);
     bool insert(const std::string& key, const std::string& serializedgeom);
     bool get(const std::string& key, std::string& serializedgeom);
     bool contains(const std::string& key, bool& ret);

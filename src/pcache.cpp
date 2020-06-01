@@ -86,6 +86,22 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
     return true;
 }
 
+bool PCache::insertCGAL(const std::string &key, const std::string &serializedgeom){
+    return insert("CGAL-"+key, serializedgeom);
+}
+
+bool PCache::insertGeometry(const std::string &key, const std::string &serializedgeom){
+    return insert("GEOM-"+key, serializedgeom);
+}
+
+bool PCache::getCGAL(const std::string &key, std::string &serializedgeom){
+    return get("CGAL-"+key, serializedgeom);
+}
+
+bool PCache::getGeometry(const std::string &key, std::string &serializedgeom){
+    return get("GEOM-"+key, serializedgeom);
+}
+
 bool PCache::contains(const std::string &key, bool &ret){
     reply = static_cast<redisReply*>(redisCommand(rct, "KEYS %s", key.c_str()));
     if(checkReply(reply)){
