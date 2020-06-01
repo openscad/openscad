@@ -22,11 +22,6 @@ ShortcutConfigurator::~ShortcutConfigurator()
 }
 
 
-void ShortcutConfigurator::collectActions(const QList<QAction *> &actions)
-{
-    actionList = actions;
-}
-
 QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
 {
     const int numRows = actions.size();
@@ -42,10 +37,12 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         {
         QStandardItem* actionNameItem = new QStandardItem(actionName);
         model->setItem(row, 0, actionNameItem);
+        actionNameItem->setFlags(actionNameItem->flags() &  ~Qt::ItemIsEditable);
 
         const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
         QStandardItem* shortcutItem = new QStandardItem(shortCut);
         model->setItem(row, 1, shortcutItem);
+        this->shortcutsMap.insert(actionName,action);
         row++;
         }
     }
@@ -58,6 +55,8 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
     shortcutTableView->verticalHeader()->hide();
     shortcutTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     initTable(shortcutTableView,allActions);
+    connect(shortcutTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),SLOT(UpdateData(QModelIndex,QModelIndex)));
+
 }
 
 void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
@@ -129,5 +128,29 @@ void ShortcutConfigurator::apply(const QList<QAction *> &actions)
             }
         }
     }
+
+}
+
+QString ShortcutConfigurator::getData(int row,int col)
+{
+    QTableView *shortcutTableView = this->findChild<QTableView *>();
+    return shortcutTableView->model()->index(row,col).data().toString();
+}
+
+void ShortcutConfigurator::UpdateData(const QModelIndex & indexA, const QModelIndex & indexB)
+{
+    QString updatedShortcut = getData(indexA.row(),indexA.column());
+    std::cout<<updatedShortcut.toStdString()<<std::endl;
+    QString updatedAction = getData(indexA.row(),indexA.column()-1);
+    std::cout<<updatedAction.toStdString()<<std::endl;
+
+  
+    //update the shortcut
+    auto itr = this->shortcutsMap.find(updatedAction);
+    QAction* changedAction = itr.value();
+    changedAction->setShortcut(QKeySequence(updatedShortcut));
+
+
+    // write into the file
 
 }

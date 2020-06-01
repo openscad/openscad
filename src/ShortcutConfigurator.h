@@ -18,5 +18,8 @@ public:
     void initGUI(const QList<QAction *> &allActions);
     void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
     void apply(const QList<QAction *> &actions);
-    QList<QAction *> actionList;
+    QString getData(int row,int col);
+    QMap<QString, QAction *> shortcutsMap;
+private slots:
+    void UpdateData(const QModelIndex & indexA, const QModelIndex & indexB);
 };

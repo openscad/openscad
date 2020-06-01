@@ -476,7 +476,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	instance->ButtonConfig->init();
 	QList<QAction *>allActions = this->findChildren<QAction *>();
 	instance->shortcutconfigurator->initGUI(allActions);
-	// instance->shortcutconfigurator->collectActions(allActions);
 
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
