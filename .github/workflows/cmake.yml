@@ -1,4 +1,4 @@
-name: Ubuntu 18.04 CMake
+name: cmake
 
 on:
   push:
@@ -9,12 +9,13 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ ubuntu-18.04, ubuntu-20.04 ]
 
     runs-on: ${{ matrix.os }}
 
-    name: Ubuntu CMake (${{ matrix.os }})
+    name: ${{ matrix.os }}
 
     steps:
     - name: Checkout
