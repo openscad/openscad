@@ -6,6 +6,8 @@
 #include <QList>
 #include <QJsonValue>
 #include <QStandardItemModel>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 {
@@ -14,12 +16,13 @@ public:
     ShortcutConfigurator(QWidget *parent = 0);
     virtual ~ShortcutConfigurator();
     QStandardItemModel* createModel(QObject* parent,const QList<QAction *> &actions);
-    void collectActions(const QList<QAction *> &actions);
     void initGUI(const QList<QAction *> &allActions);
     void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
-    void apply(const QList<QAction *> &actions);
+    void applyConfigFile(const QList<QAction *> &actions);
+    void readConfigFile(QJsonObject *object);
+    bool writeToConfigFile(QJsonObject *object);
     QString getData(int row,int col);
     QMap<QString, QAction *> shortcutsMap;
 private slots:
-    void UpdateData(const QModelIndex & indexA, const QModelIndex & indexB);
+    void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
 };

@@ -630,7 +630,7 @@ void MainWindow::setShortcutsforMenuActions()
 	ShortcutConfigurator scConfig;
 	QList<QAction *>allActions = this->findChildren<QAction *>();
 	scConfig.initGUI(allActions);
-	scConfig.apply(allActions);
+	scConfig.applyConfigFile(allActions);
 }
 
 /**

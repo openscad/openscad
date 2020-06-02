@@ -63,7 +63,7 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
     shortcutTableView->verticalHeader()->hide();
     shortcutTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     initTable(shortcutTableView,allActions);
-    connect(shortcutTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),SLOT(UpdateData(QModelIndex,QModelIndex)));
+    connect(shortcutTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),SLOT(updateShortcut(QModelIndex,QModelIndex)));
 
 }
 
@@ -72,24 +72,10 @@ void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAct
     shortcutsTable->setModel(createModel(shortcutsTable,allActions));
 }
 
-void ShortcutConfigurator::apply(const QList<QAction *> &actions)
+void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
 {
-	std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
-
-	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
-
-	QFile jsonFile(finalPath);
-	
-    //check if a User-Defined Shortcuts file exists or not
-	if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-	return;
-	}
-
-	QByteArray jsonData = jsonFile.readAll();
-	QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-	QJsonObject object = doc.object();
-
+    QJsonObject object;
+    readConfigFile(&object);    
 
     for (auto &action : actions) 
     {
@@ -145,7 +131,47 @@ QString ShortcutConfigurator::getData(int row,int col)
     return shortcutTableView->model()->index(row,col).data().toString();
 }
 
-void ShortcutConfigurator::UpdateData(const QModelIndex & indexA, const QModelIndex & indexB)
+void ShortcutConfigurator::readConfigFile(QJsonObject* object)
+{
+    std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
+
+	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
+
+	QFile jsonFile(finalPath);
+	
+    //check if a User-Defined Shortcuts file exists or not
+	if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+	return ;
+	}
+
+	QByteArray jsonData = jsonFile.readAll();
+	QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+	*object = doc.object();
+}
+
+bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
+{
+
+    std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
+
+	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
+
+	QFile jsonFile(finalPath);
+
+	if (!jsonFile.open(QIODevice::WriteOnly))
+	{
+	return false;
+	}
+
+    QJsonDocument doc(*object);
+    jsonFile.write(doc.toJson());
+    jsonFile.close();
+    return true;
+}
+
+
+void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB)
 {
     QString updatedAction = getData(indexA.row(),0);
 
@@ -156,11 +182,10 @@ void ShortcutConfigurator::UpdateData(const QModelIndex & indexA, const QModelIn
 
     QList<QKeySequence> shortcutsListFinal;
 
+    bool singleShortcutUpdate = false;
+
     if(indexA.column()==1)
     {
- 
-        // primary shortcut
-
         // get the primary (updatedShortcut)
         shortcutsListFinal.append(updatedShortcut);
 
@@ -174,14 +199,13 @@ void ShortcutConfigurator::UpdateData(const QModelIndex & indexA, const QModelIn
         else
         {
             changedAction->setShortcut(QKeySequence(updatedShortcut));
+            singleShortcutUpdate = true;
         }
 
 
     }
     else if(indexA.column()==2)
     {
-        // alternative shortcut
-
         //check if primary is defined
         QString primaryShortcut = getData(indexA.row(),1);
         if(!primaryShortcut.isEmpty())
@@ -193,9 +217,24 @@ void ShortcutConfigurator::UpdateData(const QModelIndex & indexA, const QModelIn
 
     }
 
- 
     // write into the file
+    QJsonObject object;
+    readConfigFile(&object);
 
+    if(singleShortcutUpdate)
+    {
+        object.insert(updatedAction,updatedShortcut);
+    }
+    else
+    {
+        QJsonArray array;
+        for (auto & shortcut : shortcutsListFinal) array.append(shortcut.toString());
 
+        QJsonValue newValue = QJsonValue(array);
+        object.insert(updatedAction,newValue);            
+    }
+    writeToConfigFile(&object);
+
+    //raise proper errors in every condition [ToDo]
 
 }
