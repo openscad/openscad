@@ -39,9 +39,17 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         model->setItem(row, 0, actionNameItem);
         actionNameItem->setFlags(actionNameItem->flags() &  ~Qt::ItemIsEditable);
 
-        const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
-        QStandardItem* shortcutItem = new QStandardItem(shortCut);
-        model->setItem(row, 1, shortcutItem);
+
+        const QList<QKeySequence> shortcutsList = action->shortcuts();
+        int index = 1;
+        for(auto &shortcutSeq : shortcutsList)
+        {
+            const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
+            QStandardItem* shortcutItem = new QStandardItem(shortcut);
+            model->setItem(row, index, shortcutItem);
+            index++;
+
+        }
         this->shortcutsMap.insert(actionName,action);
         row++;
         }
