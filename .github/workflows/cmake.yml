@@ -1,4 +1,4 @@
-name: Ubuntu 18.04 CMake
+name: cmake
 
 on:
   push:
@@ -8,8 +8,14 @@ on:
 
 jobs:
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-18.04, ubuntu-20.04 ]
 
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }}
 
     steps:
     - name: Checkout
@@ -26,10 +32,10 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
-        name: Test Result Report
+        name: Test Result Report (${{ matrix.os }})
         path: tests/Testing/Temporary/*_report.html
     - name: Upload Code Coverage Report
       uses: actions/upload-artifact@v2
       with:
-        name: Code Coverage Report
+        name: Code Coverage Report (${{ matrix.os }})
         path: c/coverage*.html
