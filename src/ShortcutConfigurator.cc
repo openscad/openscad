@@ -28,7 +28,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
     const int numColumns = 3;
     int row = 0;
     QStandardItemModel* model = new QStandardItemModel(numRows, numColumns);
-    QList<QString> labels = QList<QString>() << QString("Action") << QString("Shortcut")<<QString("Alternative"); 
+    QList<QString> labels = QList<QString>() << QString("Action") << QString("Shortcut")<<QString("Alternative-1"); 
     model->setHorizontalHeaderLabels(labels);
     for (auto &action : actions) 
     {
@@ -46,6 +46,13 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         {
             const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
             QStandardItem* shortcutItem = new QStandardItem(shortcut);
+            if(index>2)
+            {
+                model->setColumnCount(index+1);
+                QString label = QStringLiteral("Alternative-%1").arg(index-1);
+                labels.push_back(label);
+                model->setHorizontalHeaderLabels(labels);
+            }
             model->setItem(row, index, shortcutItem);
             index++;
 
