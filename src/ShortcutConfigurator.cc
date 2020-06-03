@@ -45,6 +45,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         for(auto &shortcutSeq : shortcutsList)
         {
             const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
+            shortcutOccupied.insert(shortcut,true);
             QStandardItem* shortcutItem = new QStandardItem(shortcut);
             if(index>2)
             {
@@ -196,11 +197,14 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
         // get the primary (updatedShortcut)
         shortcutsListFinal.append(updatedShortcut);
 
-        // check if secondary already exists , and add it to sequence
-        QString secondaryShortcut = getData(indexA.row(),2);
-        if(!secondaryShortcut.isEmpty())
+        QList<QKeySequence>assignedShortcuts = changedAction->shortcuts();
+
+        if(assignedShortcuts.size()!=0)
         {
-            shortcutsListFinal.append(secondaryShortcut);
+            for(int i=1;i<assignedShortcuts.size();i++)
+            {
+                shortcutsListFinal.append(assignedShortcuts[i]);                    
+            }
             changedAction->setShortcuts(shortcutsListFinal);
         }
         else
@@ -211,15 +215,35 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
 
     }
-    else if(indexA.column()==2)
+    else if(indexA.column()>=1)
     {
-        //check if primary is defined
+   
         QString primaryShortcut = getData(indexA.row(),1);
         if(!primaryShortcut.isEmpty())
         {
-        shortcutsListFinal.append(primaryShortcut);
-        shortcutsListFinal.append(updatedShortcut);
-        changedAction->setShortcuts(shortcutsListFinal);
+            QList<QKeySequence>assignedShortcuts = changedAction->shortcuts();
+            if(assignedShortcuts.size()>=indexA.column())
+            {
+                //sufficent number of columns, replacement
+                for(int i=0;i<assignedShortcuts.size();i++)
+                {
+                    if(i==indexA.column()-1) {shortcutsListFinal.append(updatedShortcut);}
+                    else shortcutsListFinal.append(assignedShortcuts[i]);                    
+                }
+
+            }
+            else
+            {
+                //append the new shortcut
+                for(int i=0;i<assignedShortcuts.size();i++)
+                {
+                    shortcutsListFinal.append(assignedShortcuts[i]);                    
+                }
+                shortcutsListFinal.append(updatedShortcut);
+            }
+
+
+            changedAction->setShortcuts(shortcutsListFinal);
         }
 
     }

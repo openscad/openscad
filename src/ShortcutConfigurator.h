@@ -8,6 +8,8 @@
 #include <QStandardItemModel>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QHash>
+
 
 class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 {
@@ -23,6 +25,7 @@ public:
     bool writeToConfigFile(QJsonObject *object);
     QString getData(int row,int col);
     QMap<QString, QAction *> shortcutsMap;
+    QHash<QString, bool> shortcutOccupied;
 private slots:
     void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
 };
