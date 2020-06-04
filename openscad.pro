@@ -248,6 +248,7 @@ BISONSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
+           src/PCSettings.h \
            src/Package.h \
            src/Assignment.h \
            src/expression.h \
@@ -259,6 +260,7 @@ HEADERS += src/AST.h \
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/Assignment.cc \
+           src/PCSettings.cpp \
            src/expr.cc \
            src/function.cc \
            src/module.cc \

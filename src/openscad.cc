@@ -901,6 +901,7 @@ int main(int argc, char **argv)
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+        ("persistent-cache", po::value<vector<string>>(), "=IP address,port number,password")
 		;
 
 	po::options_description hidden("Hidden options");
