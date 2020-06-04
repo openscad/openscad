@@ -105,6 +105,14 @@ bool PCache::getGeometry(const std::string &key, std::string &serializedgeom){
     return get("GEOM-"+key, serializedgeom);
 }
 
+bool PCache::containsCGAL(const std::string &key, bool &ret){
+    return contains("CGAL-"+key, ret);
+}
+
+bool PCache::containsGeom(const std::string &key, bool &ret){
+    return contains("GEOM-"+key, ret);
+}
+
 bool PCache::contains(const std::string &key, bool &ret){
     reply = static_cast<redisReply*>(redisCommand(rct, "KEYS %s", key.c_str()));
     if(checkReply(reply)){

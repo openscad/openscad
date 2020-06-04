@@ -19,6 +19,8 @@ public:
     bool insertGeometry(const std::string& key, const std::string& serializedgeom);
     bool getCGAL(const std::string& key, std::string& serializedgeom);
     bool getGeometry(const std::string& key, std::string& serializedgeom);
+    bool containsCGAL(const std::string& key, bool& ret);
+    bool containsGeom(const std::string& key, bool& ret);
     bool insert(const std::string& key, const std::string& serializedgeom);
     bool get(const std::string& key, std::string& serializedgeom);
     bool contains(const std::string& key, bool& ret);
