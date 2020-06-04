@@ -10,7 +10,7 @@
 #include "qtgettext.h"
 #include <QAbstractItemModel>
 #include <QHeaderView>
-
+#include <QMessageBox>
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
     setupUi(this);
@@ -45,7 +45,6 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         for(auto &shortcutSeq : shortcutsList)
         {
             const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
-            shortcutOccupied.insert(shortcut,true);
             QStandardItem* shortcutItem = new QStandardItem(shortcut);
             if(index>2)
             {
@@ -57,6 +56,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
             model->setItem(row, index, shortcutItem);
             index++;
 
+            shortcutOccupied.insert(shortcut,true);
         }
         this->shortcutsMap.insert(actionName,action);
         row++;
@@ -139,6 +139,13 @@ QString ShortcutConfigurator::getData(int row,int col)
     return shortcutTableView->model()->index(row,col).data().toString();
 }
 
+void ShortcutConfigurator::putData(QModelIndex indexA,QString data)
+{
+    QTableView *shortcutTableView = this->findChild<QTableView *>();
+    shortcutTableView->model()->setData(indexA, data);
+
+}
+
 void ShortcutConfigurator::readConfigFile(QJsonObject* object)
 {
     std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
@@ -187,6 +194,16 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
     QAction* changedAction = itr.value();
 
     QString updatedShortcut = getData(indexA.row(),indexA.column());
+
+    //check if the updated Shortcut is preoccupied or not
+    if(shortcutOccupied[updatedShortcut])
+    {
+        putData(indexA,QString::fromUtf8(""));
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error","Shortcut is already assigned to some other action");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
 
     QList<QKeySequence> shortcutsListFinal;
 
@@ -265,7 +282,5 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
         object.insert(updatedAction,newValue);            
     }
     writeToConfigFile(&object);
-
-    //raise proper errors in every condition [ToDo]
 
 }

@@ -24,6 +24,7 @@ public:
     void readConfigFile(QJsonObject *object);
     bool writeToConfigFile(QJsonObject *object);
     QString getData(int row,int col);
+    void putData(QModelIndex indexA,QString data);
     QMap<QString, QAction *> shortcutsMap;
     QHash<QString, bool> shortcutOccupied;
 private slots:
