@@ -47,7 +47,7 @@
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
-
+#include "PCSettings.h"
 #include"parameter/parameterset.h"
 #include <string>
 #include <vector>
@@ -1054,6 +1054,26 @@ int main(int argc, char **argv)
 	}
 
 	Camera camera = get_camera(vm);
+
+    if(vm.count("persistent-cache")) {
+        vector<string> strs;
+        boost::split(strs, vm["persistent-cache"].as<string>(), is_any_of(","));
+        if(strs.size()==2 ||strs.size()==3){
+            PCSettings::instance()->ipAddress = strs[0];
+            try{
+                PCSettings::instance()->port = lexical_cast<uint16_t>(strs[1]);
+            }catch(bad_lexical_cast &){
+                PRINT("WARNING: Port number must be numerical, using the default Port number 6379");
+                PCSettings::instance()->port = 6379;
+            }
+            if(strs.size()==3){
+                PCSettings::instance()->password = strs[2];
+            }
+        }else{
+            PRINT("Persistent cache requires IP Address, Port Number and Password if any");
+            exit(1);
+        }
+    }
 
 	auto cmdlinemode = false;
 	if (!output_files.empty()) { // cmd-line mode

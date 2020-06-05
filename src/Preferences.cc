@@ -161,6 +161,7 @@ void Preferences::init() {
     this->defaultmap["advanced/ipAddressEdit"] = "127.0.0.1";
     this->defaultmap["advanced/portNumberEdit"] = "6379";
     this->defaultmap["advanced/enablePasswordAuth"] = false;
+    this->defaultmap["advanced/passwordEdit"] = "";
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -530,6 +531,11 @@ void Preferences::on_ipAddressEdit_textChanged(const QString &text){
 void Preferences::on_portNumberEdit_textChanged(const QString &text){
     QSettingsCached settings;
     settings.setValue("advanced/portNumberEdit", text);
+}
+
+void Preferences::on_passwordEdit_textChanged(const QString &text){
+    QSettingsCached settings;
+    settings.setValue("advanced/passwordEdit", text);
 }
 
 void Preferences::on_mouseWheelZoomBox_toggled(bool state)
@@ -940,6 +946,7 @@ void Preferences::updateGUI()
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
     BlockSignals<QLineEdit *>(this->ipAddressEdit)->setText(getValue("advanced/ipAddressEdit").toString());
     BlockSignals<QLineEdit *>(this->portNumberEdit)->setText(getValue("advanced/portNumberEdit").toString());
+    BlockSignals<QLineEdit *>(this->passwordEdit)->setText(getValue("advanced/passwordEdit").toString());
 
 	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());

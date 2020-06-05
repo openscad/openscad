@@ -48,6 +48,7 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #include "RenderStatistic.h"
+#include "PCSettings.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -1161,6 +1162,14 @@ void MainWindow::instantiateRoot()
 void MainWindow::compileCSG()
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+    PCSettings::instance()->enablePersistentCache = Preferences::inst()->getValue("advanced/enable_persistent_cache").toBool();
+    if(PCSettings::instance()->enablePersistentCache){
+        PCSettings::instance()->ipAddress = Preferences::inst()->getValue("advanced/ipAddressEdit").toString().toStdString();
+        PCSettings::instance()->port = Preferences::inst()->getValue("advanced/ipAddressEdit").toInt();
+        if(Preferences::inst()->getValue("advanced/enablePasswordAuth").toBool()){
+            PCSettings::instance()->password = Preferences::inst()->getValue("advanced/passwordEdit").toString().toStdString();
+        }
+    }
 	try{
 		assert(this->root_node);
 		PRINT("Compiling design (CSG Products generation)...");

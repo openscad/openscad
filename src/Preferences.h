@@ -41,6 +41,7 @@ public slots:
     void on_enablePersistentCache_toggled(bool);
     void on_ipAddressEdit_textChanged(const QString &);
     void on_portNumberEdit_textChanged(const QString &);
+    void on_passwordEdit_textChanged(const QString &);
     void on_enablePasswordAuth_toggled(bool);
 //    void on_connectBtn_clicked();
 	void on_mouseWheelZoomBox_toggled(bool);
