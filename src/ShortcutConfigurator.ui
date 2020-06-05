@@ -14,16 +14,6 @@
    <string>Shortcut</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" colspan="4">
-    <widget class="QTableView" name="shortcutsTable"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QPushButton" name="reset">
-     <property name="text">
-      <string>Reset</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <spacer name="horizontalSpacer">
      <property name="orientation">
@@ -37,19 +27,15 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="2">
-    <widget class="QPushButton" name="cancel">
+   <item row="1" column="0">
+    <widget class="QPushButton" name="reset">
      <property name="text">
-      <string>Cancel</string>
+      <string>Reset</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="QPushButton" name="save">
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
+   <item row="0" column="0" colspan="3">
+    <widget class="QTableView" name="shortcutsTable"/>
    </item>
   </layout>
  </widget>
