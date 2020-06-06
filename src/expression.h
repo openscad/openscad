@@ -205,6 +205,30 @@ private:
 	shared_ptr<Expression> expr;
 };
 
+class Error: public Expression
+{
+public:
+	Error(const AssignmentList &args, Expression *expr, const Location &loc);
+	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	ValuePtr evaluate(const std::shared_ptr<Context>& context) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
+class Warning: public Expression
+{
+public:
+	Warning(const AssignmentList &args, Expression *expr, const Location &loc);
+	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	ValuePtr evaluate(const std::shared_ptr<Context>& context) const override;
+	void print(std::ostream &stream, const std::string &indent) const override;
+private:
+	AssignmentList arguments;
+	shared_ptr<Expression> expr;
+};
+
 class Let : public Expression
 {
 public:
@@ -282,6 +306,8 @@ private:
 };
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
+void evaluate_error(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
+void evaluate_warning(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
 
 ValuePtr evaluate_function(const std::string& name,
 		const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,

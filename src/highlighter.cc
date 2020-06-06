@@ -221,7 +221,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil"
                            << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands" << "chr" << "ord"
                            << "is_undef" << "is_list" << "is_num" << "is_bool" << "is_string" << "is_function";
-	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let" << "each" << "assert";
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let" << "each" << "assert" << "error" << "warning";
 	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";

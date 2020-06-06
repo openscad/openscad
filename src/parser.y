@@ -109,6 +109,7 @@ bool fileEnded=false;
 }
 
 %token TOK_ERROR
+%token TOK_WARNING
 
 %token TOK_EOT
 
@@ -317,6 +318,8 @@ module_id
         | TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }
+        | TOK_ERROR { $$ = strdup("error"); }
+        | TOK_WARNING { $$ = strdup("warning"); }
         | TOK_ECHO { $$ = strdup("echo"); }
         | TOK_EACH { $$ = strdup("each"); }
         ;
@@ -346,6 +349,16 @@ expr
         | logic_or '?' expr ':' expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
+            }
+        | TOK_ERROR '(' arguments_call ')' expr_or_empty
+            {
+              $$ = FunctionCall::create("error", *$3, $5, LOCD("error", @$));
+              delete $3;
+            }
+        | TOK_WARNING '(' arguments_call ')' expr_or_empty
+            {
+              $$ = FunctionCall::create("warning", *$3, $5, LOCD("warning", @$));
+              delete $3;
             }
         | TOK_LET '(' arguments_call ')' expr
             {

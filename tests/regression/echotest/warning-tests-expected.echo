@@ -1,0 +1,15 @@
+WARNING: 3 in file warning-tests.scad, line 4
+WARNING: "t1" in file warning-tests.scad, line 7
+WARNING: 18 in file warning-tests.scad, line 10
+WARNING: "False" in file warning-tests.scad, line 13
+WARNING: undef in file warning-tests.scad, line 16
+WARNING: undef in file warning-tests.scad, line 19
+WARNING: undef in file warning-tests.scad, line 22
+ECHO: t0 = undef
+ECHO: t1 = undef
+ECHO: t2 = undef
+ECHO: t3 = undef
+ECHO: t4 = 18
+ECHO: t5 = [3, 6]
+ECHO: t6 = [[1, 6], [2, 6], [3, 6]]
+ECHO: t7 = "value: 17"

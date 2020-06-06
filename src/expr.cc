@@ -625,6 +625,10 @@ Expression * FunctionCall::create(const std::string &funcname, const AssignmentL
 		return new Echo(arglist, expr, loc);
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
+	} else if (funcname == "error") {
+		return new Error(arglist,expr,loc);
+	} else if (funcname == "warning") {
+		return new Warning(arglist,expr,loc);
 	}
 	return nullptr;
 
@@ -683,6 +687,62 @@ ValuePtr Echo::evaluate(const std::shared_ptr<Context>& context) const
 void Echo::print(std::ostream &stream, const std::string &) const
 {
 	stream << "echo(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
+}
+
+Error::Error(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
+{
+
+}
+
+const shared_ptr<Expression>& Error::evaluateStep(const std::shared_ptr<Context>& context) const
+{
+	ContextHandle<EvalContext> error_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	ContextHandle<Context> c{Context::create<Context>(error_context.ctx)};
+	evaluate_error(c.ctx, error_context.ctx);
+	return expr;
+}
+
+ValuePtr Error::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
+	return result;
+}
+
+void Error::print(std::ostream &stream, const std::string &) const
+{
+	stream << "error(" << this->arguments << ")";
+	if (this->expr) stream << " " << *this->expr;
+}
+
+Warning::Warning(const AssignmentList &args, Expression *expr, const Location &loc)
+	: Expression(loc), arguments(args), expr(expr)
+{
+
+}
+
+const shared_ptr<Expression>& Warning::evaluateStep(const std::shared_ptr<Context>& context) const
+{
+	ContextHandle<EvalContext> warning_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	ContextHandle<Context> c{Context::create<Context>(warning_context.ctx)};
+	evaluate_warning(c.ctx, warning_context.ctx);
+	return expr;
+}
+
+ValuePtr Warning::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
+	return result;
+}
+
+void Warning::print(std::ostream &stream, const std::string &) const
+{
+	stream << "warning(" << this->arguments << ")";
 	if (this->expr) stream << " " << *this->expr;
 }
 
@@ -936,6 +996,54 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 	}
 }
 
+void evaluate_error(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> errorctx)
+{
+	ContextHandle<Context> c{Context::create<Context>(context)};
+	const auto locs = errorctx->loc.toRelativeString(context->documentPath());;
+
+	//get args
+	AssignmentList args;
+	args += assignment("errormessage");
+
+
+	//currently defined for one arguement, can extend in future to multiple arguements
+	AssignmentMap assignments = errorctx->resolveArguments(args, {}, false);
+	for (const auto &arg : args) {
+		auto it = assignments.find(arg->name);
+		if (it != assignments.end()) {
+			c->set_variable(arg->name, assignments[arg->name]->evaluate(errorctx));
+		}
+	}
+
+	const ValuePtr message = c->lookup_variable("errormessage", true);
+	PRINTB("ERROR: %s %s",message->toEchoString()%locs);
+
+}
+
+void evaluate_warning(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> warningctx)
+{
+	ContextHandle<Context> c{Context::create<Context>(context)};
+	const auto locs = warningctx->loc.toRelativeString(context->documentPath());;
+
+	//get args
+	AssignmentList args;
+	args += assignment("warningmessage");
+
+
+	//currently defined for one arguement, can extend in future to multiple arguements
+	AssignmentMap assignments = warningctx->resolveArguments(args, {}, false);
+	for (const auto &arg : args) {
+		auto it = assignments.find(arg->name);
+		if (it != assignments.end()) {
+			c->set_variable(arg->name, assignments[arg->name]->evaluate(warningctx));
+		}
+	}
+
+	const ValuePtr message = c->lookup_variable("warningmessage", true);
+	PRINTB("WARNING: %s %s",message->toEchoString()%locs);
+
+}
+
 ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
 		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
 {
@@ -970,6 +1078,14 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 			else if (typeid(*subExpr) == typeid(Assert)) {
 				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
 				subExpr = assertion->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Error)) {
+				const shared_ptr<Error> &error = static_pointer_cast<Error>(subExpr);					
+				subExpr = error->evaluateStep(c_local);
+			}
+			else if (typeid(*subExpr) == typeid(Warning)) {
+				const shared_ptr<Warning> &warning = static_pointer_cast<Warning>(subExpr);					
+				subExpr = warning->evaluateStep(c_local);
 			}
 			else if (typeid(*subExpr) == typeid(Echo)) {
 				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
