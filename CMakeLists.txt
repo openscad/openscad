@@ -509,6 +509,11 @@ set(CORE_SOURCES
   src/libsvg/tspan.cc
   src/libsvg/util.cc
   src/parameter/parameterset.cpp
+  src/clipper-utils.cc
+  src/Assignment.cc
+  src/annotation.cc 
+  src/ext/polyclipping/clipper.cpp
+  src/PCSettings.cpp
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
