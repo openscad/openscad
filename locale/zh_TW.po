@@ -508,7 +508,7 @@ msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:1021
 msgid "Show Previous Tab"
-msgstr "顯示下一個Tab頁"
+msgstr "顯示上一個Tab頁"
 
 #: objects/ui_MainWindow.h:1023
 #, fuzzy
