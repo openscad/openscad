@@ -42,9 +42,7 @@ public:
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
 	std::string getRendererInfo() const override;
-#if QT_VERSION >= 0x050100
 	float getDPI() override { return this->devicePixelRatio(); }
-#endif
 
 	const QImage & grabFrame();
 	bool save(const char *filename) const override;

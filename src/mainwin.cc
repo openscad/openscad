@@ -36,7 +36,6 @@
 #include "printutils.h"
 #include "node.h"
 #include "csgnode.h"
-#include "highlighter.h"
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
@@ -95,16 +94,10 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QTextDocument>
-#define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
-#undef ENABLE_3D_PRINTING
-#else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
-#endif
 
 #include <fstream>
 
