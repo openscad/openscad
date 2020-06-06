@@ -11,6 +11,7 @@
 #include <QAbstractItemModel>
 #include <QHeaderView>
 #include <QMessageBox>
+
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
     setupUi(this);
@@ -19,6 +20,15 @@ ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 ShortcutConfigurator::~ShortcutConfigurator()
 {
     
+}
+
+void ShortcutConfigurator::getAllActions(const QList<QAction *> &actions)
+{
+    this->actionsList = actions;
+    for(auto &action:actions)
+    {
+        if(!action->objectName().isEmpty()) this->actionsName.append(action->objectName());
+    }
 }
 
 
@@ -72,7 +82,16 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
     shortcutTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     initTable(shortcutTableView,allActions);
     connect(shortcutTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),SLOT(updateShortcut(QModelIndex,QModelIndex)));
+    // QList<QString>temp=this->actionsName;
+    QString temp = QString::fromUtf8("hello");
+    // connect(this->searchBox, SIGNAL(textChanged(const QString &)),[this,temp](){this->testFunc(temp);});
+    QSignalMapper* signalMapper = new QSignalMapper (this) ;
+    connect (this->searchBox, SIGNAL(textChanged(const QString &)), signalMapper, SLOT(map())) ;
+    signalMapper -> setMapping (this->searchBox, temp);
+    connect (signalMapper, SIGNAL(mapped(QString)), this, SLOT(testFunc(QString))) ;
 
+
+    this->actionsList = allActions;
 }
 
 void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
@@ -283,4 +302,9 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
     }
     writeToConfigFile(&object);
 
+}
+
+void ShortcutConfigurator::testFunc(QString temp)
+{
+    std::cout<<"I am called"<<temp.toStdString()<<std::endl;
 }

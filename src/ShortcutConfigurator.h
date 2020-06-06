@@ -9,7 +9,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QHash>
-
+#include <QRegularExpression>
+#include <QStringList>
+#include <QSignalMapper>
 
 class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 {
@@ -17,6 +19,7 @@ class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 public:
     ShortcutConfigurator(QWidget *parent = 0);
     virtual ~ShortcutConfigurator();
+    void getAllActions(const QList<QAction *> &actions);
     QStandardItemModel* createModel(QObject* parent,const QList<QAction *> &actions);
     void initGUI(const QList<QAction *> &allActions);
     void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
@@ -27,6 +30,10 @@ public:
     void putData(QModelIndex indexA,QString data);
     QMap<QString, QAction *> shortcutsMap;
     QHash<QString, bool> shortcutOccupied;
+    QList<QAction *>actionsList;
+    QList<QString> actionsName;
+
 private slots:
     void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
+    void testFunc(QString temp);
 };
