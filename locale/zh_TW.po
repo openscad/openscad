@@ -918,8 +918,8 @@ msgid "Ctrl+F2"
 msgstr "Ctrl+F"
 
 #: objects/ui_MainWindow.h:1193
-msgid "下一個書籤"
-msgstr ""
+msgid "Jump to next bookmark"
+msgstr "移到下一個書籤"
 
 #: objects/ui_MainWindow.h:1195
 #, fuzzy
@@ -927,8 +927,8 @@ msgid "F2"
 msgstr "F12"
 
 #: objects/ui_MainWindow.h:1197
-msgid "上一個書籤"
-msgstr ""
+msgid "Jump to previous bookmark"
+msgstr "移到上一個書籤"
 
 #: objects/ui_MainWindow.h:1199
 #, fuzzy
