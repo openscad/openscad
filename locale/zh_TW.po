@@ -363,7 +363,7 @@ msgstr "Lib & Build 資訊"
 
 #: objects/ui_LibraryInfoDialog.h:73
 msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD詳細的函式庫與建置資訊"
+msgstr "OpenSCAD詳細的程式庫與建構資訊"
 
 #: objects/ui_MainWindow.h:955
 #, fuzzy
@@ -376,7 +376,7 @@ msgstr "Ctrl+N"
 
 #: objects/ui_MainWindow.h:959
 msgid "New Window"
-msgstr ""
+msgstr "新視窗"
 
 #: objects/ui_MainWindow.h:960
 #, fuzzy
@@ -389,7 +389,7 @@ msgstr "Ctrl+O"
 
 #: objects/ui_MainWindow.h:964
 msgid "Open in New Window"
-msgstr ""
+msgstr "在新視窗開啟"
 
 #: objects/ui_MainWindow.h:965
 msgid "&Save"
@@ -410,7 +410,7 @@ msgstr "Ctrl+Shift+S"
 #: objects/ui_MainWindow.h:973
 #, fuzzy
 msgid "Save All"
-msgstr "另存為"
+msgstr "全部儲存"
 
 #: objects/ui_MainWindow.h:974
 msgid "&Reload"
@@ -499,7 +499,7 @@ msgstr "Ctrl+Shift+D"
 #: objects/ui_MainWindow.h:1017
 #, fuzzy
 msgid "Show Next Tab"
-msgstr "顯示明細"
+msgstr "顯示下一個Tab頁"
 
 #: objects/ui_MainWindow.h:1019
 #, fuzzy
@@ -508,7 +508,7 @@ msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:1021
 msgid "Show Previous Tab"
-msgstr ""
+msgstr "顯示下一個Tab頁"
 
 #: objects/ui_MainWindow.h:1023
 #, fuzzy
@@ -825,7 +825,7 @@ msgstr "Ctrl+E"
 
 #: objects/ui_MainWindow.h:1160
 msgid "Jump to next error"
-msgstr ""
+msgstr "移至下一個錯誤"
 
 #: objects/ui_MainWindow.h:1162
 #, fuzzy
@@ -854,11 +854,11 @@ msgstr "匯出成CSG...(&C)"
 
 #: objects/ui_MainWindow.h:1169
 msgid "&Library info"
-msgstr "函式庫資訊(&L)"
+msgstr "程式庫資訊(&L)"
 
 #: objects/ui_MainWindow.h:1170
 msgid "Show &Library Folder..."
-msgstr "顯示函式庫目錄..."
+msgstr "顯示程式庫目錄..."
 
 #: objects/ui_MainWindow.h:1171
 msgid "Reset View"
@@ -910,7 +910,7 @@ msgstr "將Tab轉換為空格"
 
 #: objects/ui_MainWindow.h:1189
 msgid "Toggle Bookmark"
-msgstr ""
+msgstr "切換書籤"
 
 #: objects/ui_MainWindow.h:1191
 #, fuzzy
@@ -918,7 +918,7 @@ msgid "Ctrl+F2"
 msgstr "Ctrl+F"
 
 #: objects/ui_MainWindow.h:1193
-msgid "Jump to next bookmark"
+msgid "下一個書籤"
 msgstr ""
 
 #: objects/ui_MainWindow.h:1195
@@ -927,7 +927,7 @@ msgid "F2"
 msgstr "F12"
 
 #: objects/ui_MainWindow.h:1197
-msgid "Jump to previous bookmark"
+msgid "上一個書籤"
 msgstr ""
 
 #: objects/ui_MainWindow.h:1199
@@ -938,7 +938,7 @@ msgstr "Ctrl+Shift+S"
 #: objects/ui_MainWindow.h:1201
 #, fuzzy
 msgid "Hide Editor toolbar"
-msgstr "隱藏工具列"
+msgstr "隱藏編輯器工具列"
 
 #: objects/ui_MainWindow.h:1202
 msgid "U&nindent"
@@ -959,7 +959,7 @@ msgstr "隱藏制定"
 #: objects/ui_MainWindow.h:1208
 #, fuzzy
 msgid "Hide 3D view toolbar"
-msgstr "隱藏工具列"
+msgstr "隱藏3D檢視工具列"
 
 #: objects/ui_MainWindow.h:1209
 msgid "Message"
@@ -1303,11 +1303,11 @@ msgstr "顯示行號"
 
 #: objects/ui_Preferences.h:1504
 msgid "Autocomplete"
-msgstr ""
+msgstr "自動補全"
 
 #: objects/ui_Preferences.h:1505
 msgid "Enable Autocompletion"
-msgstr ""
+msgstr "啟用自動補全"
 
 #: objects/ui_Preferences.h:1506
 msgid "Character Threshold"
@@ -1315,7 +1315,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1507 objects/ui_Preferences.h:1532
 msgid "Line wrap"
-msgstr "自動折行"
+msgstr "自動換行"
 
 #: objects/ui_Preferences.h:1508 objects/ui_Preferences.h:1521
 #: objects/ui_Preferences.h:1527 src/settings.cc:73 src/settings.cc:89
@@ -1325,19 +1325,19 @@ msgstr "沒有"
 
 #: objects/ui_Preferences.h:1509 src/settings.cc:167
 msgid "Wrap at character boundaries"
-msgstr "以字母折行"
+msgstr "以字母換行"
 
 #: objects/ui_Preferences.h:1510 src/settings.cc:167
 msgid "Wrap at word boundaries"
-msgstr "以單字折行"
+msgstr "以單字換行"
 
 #: objects/ui_Preferences.h:1512
 msgid "Line wrap indentation"
-msgstr "縮排折行"
+msgstr "縮排換行"
 
 #: objects/ui_Preferences.h:1513
 msgid "Line wrap visualization"
-msgstr "視覺化折行"
+msgstr "視覺化換行"
 
 #: objects/ui_Preferences.h:1514
 msgid "Style"
