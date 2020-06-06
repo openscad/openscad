@@ -6,10 +6,9 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QClipboard>
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
-
+#include <QClipboard>
 #include "editor.h"
 #include "tabmanager.h"
 #include "tabwidget.h"
@@ -718,4 +717,8 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
 {
     const QString filename = QString::fromStdString(editor->indicatorData[val].path);
     this->open(filename);
+}
+
+void TabManager::cutToEndOfLine(){
+    editor->stringToEndOfTheLine();
 }

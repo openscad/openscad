@@ -21,6 +21,7 @@
 #include "input/InputDriver.h"
 #include "editor.h"
 #include "tabmanager.h"
+#include <QShortcut>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -311,6 +312,7 @@ private:
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 	int last_parser_error_pos; // last highlighted error position
 	int tabCount = 0;
+    QShortcut *CtrlK;
 
 signals:
 	void highlightError(int);

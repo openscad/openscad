@@ -62,6 +62,7 @@ public:
 	void setIndicator(const std::vector<IndicatorData> &indicatorData) override;
 	QMenu *createStandardContextMenu() override;
 	QPoint mapToGlobal(const QPoint &) override;
+    void stringToEndOfTheLine() override;
 
 private:
 	void getRange(int *lineFrom, int *lineTo);
@@ -88,6 +89,7 @@ private:
 	void addTemplate(const fs::path path);
 	void updateSymbolMarginVisibility();
 	void findMarker(int, int, std::function<int(int)>);
+    int getCharCount(int line);
 
 signals:
 	void previewRequest(void);

@@ -86,4 +86,6 @@ public slots:
     void closeCurrentTab();
     void nextTab();
     void prevTab();
+    void cutToEndOfLine();
+
 };

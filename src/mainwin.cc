@@ -309,6 +309,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 	shortcuts = this->fileActionReload->shortcuts();
 	shortcuts.push_back(QKeySequence(Qt::Key_F3));
 	this->fileActionReload->setShortcuts(shortcuts);
+
+    CtrlK = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K),this);
+    connect(CtrlK,SIGNAL(activated()),tabManager,SLOT(cutToEndOfLine()));
+
 #endif
 
 	this->menuOpenRecent->addSeparator();

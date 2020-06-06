@@ -30,6 +30,7 @@ public:
 	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
 	virtual QMenu * createStandardContextMenu() = 0;
 	virtual QPoint mapToGlobal(const QPoint &) = 0;
+    virtual void stringToEndOfTheLine()=0;
 
 signals:
   void contentsChanged();

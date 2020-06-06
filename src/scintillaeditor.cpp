@@ -1207,7 +1207,7 @@ void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::functi
 	}
 	if (line != -1) {
 		// make sure we don't wrap into new line
-		int len = qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+        int len = getCharCount(line);
 		int col = std::min(index, len);
 		qsci->setCursorPosition(line, col);
 	}
@@ -1226,4 +1226,18 @@ void ScintillaEditor::prevBookmark()
 void ScintillaEditor::jumpToNextError()
 {
 	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
+}
+
+void ScintillaEditor::stringToEndOfTheLine(){
+    if(qsci->hasFocus()){
+        int line,index,line_len;
+        qsci->getCursorPosition(&line,&index);
+        line_len = getCharCount(line);
+        qsci->setSelection(line,index,line,line_len);
+        qsci->cut();
+    }
+}
+
+int ScintillaEditor::getCharCount(int line){
+    return qsci->text(line).remove(QRegExp("[\n\r]$")).toStdU32String().length();
 }
