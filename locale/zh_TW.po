@@ -906,7 +906,7 @@ msgstr "Ctrl+Shift+V"
 
 #: objects/ui_MainWindow.h:1188
 msgid "Conv&ert Tabs to Spaces"
-msgstr "將Tab6轉換為空格"
+msgstr "將Tab轉換為空格"
 
 #: objects/ui_MainWindow.h:1189
 msgid "Toggle Bookmark"
