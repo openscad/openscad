@@ -1162,6 +1162,11 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 	}
 }
 
+void ScintillaEditor::setCursorPosition(int line, int col)
+{
+	qsci->setCursorPosition(line, col);
+}
+
 void ScintillaEditor::updateSymbolMarginVisibility()
 {
 	if (qsci->markerFindNext(0, 1 << bmMarkerNumber | 1 << errMarkerNumber) < 0) {

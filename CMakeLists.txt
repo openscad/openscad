@@ -532,7 +532,9 @@ set(COMMON_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/Tree.cc)
+  src/Tree.cc
+  src/initConfig.cc
+  )
 
 #
 # Offscreen OpenGL context source code
@@ -560,6 +562,7 @@ else()
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
     src/render.cc
+    src/mouseselector.cc
     src/OpenCSGRenderer.cc)
 endif()
 
