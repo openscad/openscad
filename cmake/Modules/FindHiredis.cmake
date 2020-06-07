@@ -6,7 +6,7 @@
 #  HIREDIS_DEFINITIONS - Compiler switches required for using Hiredis
 
 find_package(PkgConfig)
-pkg_check_module(PC_HIREDIS QUITE hiredis)
+pkg_check_modules(PC_HIREDIS QUITE hiredis)
 
 find_path(HIREDIS_INCLUDE_DIRS
     NAMES hiredis.h
