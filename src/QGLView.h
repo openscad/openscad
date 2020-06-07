@@ -76,6 +76,7 @@ private:
 	void init();
 
 	bool mouse_drag_active;
+	bool mouse_drag_moved = true;
 	bool mouseCentricZoom=true;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
@@ -100,4 +101,5 @@ private slots:
 
 signals:
 	void doAnimateUpdate();
+	void doSelectObject(QPoint screen_coordinate);
 };

@@ -54,16 +54,20 @@ std::string AbstractNode::toString() const
 	return this->name() + "()";
 }
 
-const AbstractNode *AbstractNode::getNodeByID(int idx) const
+const AbstractNode *AbstractNode::getNodeByID(int idx, std::deque<const AbstractNode *> &path) const
 {
-    if (this->idx == idx) { return this; }
-    for (const auto &node : this->children) {
-        auto res = node->getNodeByID(idx);
-        if (res) {
-            return res;
-        }
+  if (this->idx == idx) {
+    path.push_back(this);
+    return this;
+  }
+  for (const auto &node : this->children) {
+    auto res = node->getNodeByID(idx, path);
+    if (res) {
+      path.push_back(this);
+      return res;
     }
-    return nullptr;
+  }
+  return nullptr;
 }
 
 std::string GroupNode::name() const
