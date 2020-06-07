@@ -253,6 +253,16 @@ if(NOT MSVC)
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 endif()
 
+find_package(Hiredis QUITE)
+if (HIREDIS_FOUND)
+  message(STATUS "Hiredis: Enabled")
+  include_directories(${HIREDIS_INCLUDE_DIR})
+  list(APPEND COMMON_LIBRARIES ${HIREDIS_LIBRARIES})
+  add_definitions(-DENABLE_CARIO)
+else()
+  message(STATUS "Hiredis: Disabled")
+endif()
+
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
