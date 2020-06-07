@@ -762,32 +762,42 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
 	
-	bool splitfirst = sin_degrees(rot1 - rot2) > 0.0;
+	// epsilon used as a small bias for comparing diagonals, 
+	// so that nearly the same lengths don't cause flip-flopping 
+	// (eg an edge starting at origin with twist)
+	constexpr double epsilon = 1e-6; 
+
+	bool any_zero = scale2[0] == 0 || scale2[1] == 0;
+	bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
+	
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
 		for (size_t i=1;i<=o.vertices.size();i++) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
-			ps->append_poly();
-			
-			// Make sure to split negative outlines correctly
-			if (splitfirst xor !o.positive) {
+
+			double d1 = (prev1 - curr2).norm();
+			double d2 = (curr1 - prev2).norm();
+			// Split along shortest diagonal,
+			// unless at top for a 0-scaled axis (which can create 0 thickness "ears")
+			if ((d1 + epsilon < d2) xor any_zero) {
+				ps->append_poly();
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
-				if (scale2[0] > 0 || scale2[1] > 0) {
+				if (any_non_zero) {
 					ps->append_poly();
 					ps->insert_vertex(curr2[0], curr2[1], h2);
 					ps->insert_vertex(prev1[0], prev1[1], h1);
 					ps->insert_vertex(prev2[0], prev2[1], h2);
 				}
-			}
-			else {
+			}	else {
+				ps->append_poly();
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(prev2[0], prev2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
-				if (scale2[0] > 0 || scale2[1] > 0) {
+				if (any_non_zero) {
 					ps->append_poly();
 					ps->insert_vertex(prev2[0], prev2[1], h2);
 					ps->insert_vertex(curr2[0], curr2[1], h2);
