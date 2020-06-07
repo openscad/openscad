@@ -253,7 +253,7 @@ if(NOT MSVC)
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 endif()
 
-find_package(Hiredis QUITE)
+find_package(Hiredis QUIET)
 if (HIREDIS_FOUND)
   message(STATUS "Hiredis: Enabled")
   include_directories(${HIREDIS_INCLUDE_DIR})
