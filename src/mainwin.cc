@@ -629,14 +629,8 @@ void MainWindow::setShortcutsforMenuActions()
 {
 	ShortcutConfigurator scConfig;
 	QList<QAction *>allActions = this->findChildren<QAction *>();
-	scConfig.getAllActions(allActions);
-	scConfig.initGUI(allActions);
 	scConfig.applyConfigFile(allActions);
-	// for(auto act:scConfig.actionsName)
-    // {
-    //     if(!act.isEmpty()) std::cout<<"---->"<<act.toStdString()<<std::endl;
-    // }
-
+	scConfig.initGUI(allActions);
 }
 
 /**

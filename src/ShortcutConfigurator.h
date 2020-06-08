@@ -9,7 +9,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QHash>
-#include <QRegularExpression>
+#include <QRegExp>
 #include <QStringList>
 #include <QSignalMapper>
 
@@ -28,12 +28,11 @@ public:
     bool writeToConfigFile(QJsonObject *object);
     QString getData(int row,int col);
     void putData(QModelIndex indexA,QString data);
-    QMap<QString, QAction *> shortcutsMap;
+    QHash<QString, QAction *> shortcutsMap;
     QHash<QString, bool> shortcutOccupied;
-    QList<QAction *>actionsList;
     QList<QString> actionsName;
 
 private slots:
     void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
-    void testFunc(QString temp);
+    void on_searchBox_textChanged(const QString &arg1);
 };

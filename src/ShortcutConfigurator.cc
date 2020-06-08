@@ -22,16 +22,6 @@ ShortcutConfigurator::~ShortcutConfigurator()
     
 }
 
-void ShortcutConfigurator::getAllActions(const QList<QAction *> &actions)
-{
-    this->actionsList = actions;
-    for(auto &action:actions)
-    {
-        if(!action->objectName().isEmpty()) this->actionsName.append(action->objectName());
-    }
-}
-
-
 QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
 {
     const int numRows = actions.size();
@@ -67,31 +57,28 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
             index++;
 
             shortcutOccupied.insert(shortcut,true);
+
         }
-        this->shortcutsMap.insert(actionName,action);
+
+        if(!this->shortcutsMap.contains(actionName)) {
+            this->actionsName.push_back(actionName);
+            this->shortcutsMap.insert(actionName,action);
+            }
         row++;
         }
     }
     return model;
 }
 
+
+
+
 void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
 {
-    QTableView *shortcutTableView = this->findChild<QTableView *>();
-    shortcutTableView->verticalHeader()->hide();
-    shortcutTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    initTable(shortcutTableView,allActions);
-    connect(shortcutTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),SLOT(updateShortcut(QModelIndex,QModelIndex)));
-    // QList<QString>temp=this->actionsName;
-    QString temp = QString::fromUtf8("hello");
-    // connect(this->searchBox, SIGNAL(textChanged(const QString &)),[this,temp](){this->testFunc(temp);});
-    QSignalMapper* signalMapper = new QSignalMapper (this) ;
-    connect (this->searchBox, SIGNAL(textChanged(const QString &)), signalMapper, SLOT(map())) ;
-    signalMapper -> setMapping (this->searchBox, temp);
-    connect (signalMapper, SIGNAL(mapped(QString)), this, SLOT(testFunc(QString))) ;
-
-
-    this->actionsList = allActions;
+    this->shortcutsTable->verticalHeader()->hide();
+    this->shortcutsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    initTable(this->shortcutsTable,allActions);
+    connect(this->shortcutsTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),SLOT(updateShortcut(QModelIndex,QModelIndex)));
 }
 
 void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
@@ -214,6 +201,8 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
     QString updatedShortcut = getData(indexA.row(),indexA.column());
 
+    // handle when shortcut is unassigned-todo
+
     //check if the updated Shortcut is preoccupied or not
     if(shortcutOccupied[updatedShortcut])
     {
@@ -304,7 +293,19 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
 }
 
-void ShortcutConfigurator::testFunc(QString temp)
+void ShortcutConfigurator::on_searchBox_textChanged(const QString &arg1)
 {
-    std::cout<<"I am called"<<temp.toStdString()<<std::endl;
+    QString filterKey=QString::fromUtf8("");
+    filterKey.append("*");
+    filterKey.append(arg1);
+    filterKey.append("*");
+    QRegExp qr(filterKey,Qt::CaseInsensitive,QRegExp::Wildcard);
+    QList<QString>filteredList = this->actionsName.filter(qr);
+
+    QList<QAction *>newList;
+    for(auto entry:filteredList) newList.push_back(shortcutsMap[entry]);
+
+    //regenerate the UI
+    this->initGUI(newList);
+    
 }
