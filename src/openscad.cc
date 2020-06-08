@@ -519,11 +519,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
-#if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
-#if QT_VERSION < 0x050000
-Q_IMPORT_PLUGIN(qtaccessiblewidgets)
-#endif // QT_VERSION
-#endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
 #include "launchingscreen.h"
@@ -631,12 +626,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#else
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-#endif
 #ifdef OPENSCAD_SNAPSHOT
 	app.setWindowIcon(QIcon(":/icons/openscad-nightly.png"));
 #else

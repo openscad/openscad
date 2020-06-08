@@ -1,4 +1,4 @@
-name: Ubuntu 18.04 CMake
+name: cmake
 
 on:
   push:
@@ -8,21 +8,34 @@ on:
 
 jobs:
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-18.04, ubuntu-20.04 ]
 
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v1
     - name: Submodules
       run: git submodule update --init --recursive
     - name: Install dependencies
       run: ./scripts/travis-ci-before-install-linux.sh bionic
     - name: Dependency fixup
-      run: sudo apt-get install qt5-default gettext
+      run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
       run: ./scripts/github-ci.sh
-    - uses: actions/upload-artifact@v2
-      if: failure()
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
       with:
-        name: Upload test results
+        name: Test Result Report (${{ matrix.os }})
         path: tests/Testing/Temporary/*_report.html
+    - name: Upload Code Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Code Coverage Report (${{ matrix.os }})
+        path: c/coverage*.html

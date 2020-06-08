@@ -100,8 +100,8 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 	return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: label(label), matrix(matrix), color(color)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label, const int index)
+	: label(label), matrix(matrix), color(color), index(index)
 {
 	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
@@ -180,10 +180,10 @@ std::string CSGOperation::dump() const
 			}
 
 			out << '(';
-			
+
 			// mark current node as postfix before (maybe) pushing left child
 			ispostfix = std::get<2>(callstack.top()) = true;
-			
+
 			if(auto opl = dynamic_pointer_cast<CSGOperation>(node->left())) {
 				callstack.emplace(opl.get(), lpostfix, false);
 				continue;
@@ -191,9 +191,9 @@ std::string CSGOperation::dump() const
 				out << node->left()->dump() << lpostfix;
 			}
 		}
-		
+
 		// postfix traversal of node, handle right child
-		if (ispostfix) { 
+		if (ispostfix) {
 			callstack.pop();
 			if(auto opr = dynamic_pointer_cast<CSGOperation>(node->right())) {
 				callstack.emplace(opr.get(), ")", false);
@@ -216,10 +216,10 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 	do {
 		auto args = callstack.top();
 		callstack.pop();
-		csgnode = std::get<0>(args); 
-		type = std::get<1>(args); 
+		csgnode = std::get<0>(args);
+		type = std::get<1>(args);
 		flags = std::get<2>(args);
-			
+
 		auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
 		if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {

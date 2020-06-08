@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "boost-utils.h"
 #include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
@@ -36,7 +37,6 @@
 #include "printutils.h"
 #include "node.h"
 #include "csgnode.h"
-#include "highlighter.h"
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
@@ -57,6 +57,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
+#include "mouseselector.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
@@ -95,16 +96,10 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QTextDocument>
-#define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
-#undef ENABLE_3D_PRINTING
-#else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
-#endif
 
 #include <fstream>
 
@@ -128,6 +123,7 @@
 #include "PrintInitDialog.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
+#include <memory>
 #include <QtNetwork>
 
 // Global application state
@@ -432,6 +428,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	PRINT(copyrighttext);
 
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -591,6 +588,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
+
+  if (Feature::ExperimentalMouseSelection.is_enabled()) {
+  	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+  }
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -1262,7 +1263,7 @@ void MainWindow::compileCSG()
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
-																								this->qglview->shaderinfo);
+																								&this->qglview->shaderinfo);
 		}
 #endif
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
@@ -2115,6 +2116,105 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 }
 
 #endif /* ENABLE_CGAL */
+
+/**
+ * Call the mouseselection to determine the id of the clicked-on object.
+ * Use the generated ID and try to find it within the list of products
+ * And finally move the cursor to the beginning of the selected object in the editor
+ */
+void MainWindow::selectObject(QPoint mouse)
+{
+	if (!Feature::ExperimentalMouseSelection.is_enabled()) {
+		return;
+	}
+
+	// selecting without a renderer?!
+	if (!this->qglview->renderer) {
+		return;
+	}
+
+	// Nothing to select
+	if (!this->root_products) {
+		return;
+	}
+
+	// Update the selector with the right image size
+	this->selector->reset(this->qglview);
+
+	// Select the object at mouse coordinates
+	int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
+	std::deque<const AbstractNode *> path;
+	const AbstractNode *result = this->root_node->getNodeByID(index, path);
+
+	if (result) {
+		// Create context menu with the backtrace
+		QMenu tracemenu(this);
+		std::stringstream ss;
+		for (const auto *step : path) {
+			// Skip certain node types
+			if (step->name() == "root") {
+				continue;
+			}
+
+			auto location = step->location;
+			ss.str("");
+
+			// Check if the path is contained in a library (using parsersettings.h)
+			fs::path libpath = get_library_for_path(location.filePath());
+			if (!libpath.empty()) {
+				// Display the library (without making the window too wide!)
+				ss << step->name() << " (library "
+				   << location.fileName().substr(libpath.string().length() + 1) << ":"
+				   << location.firstLine() << ")";
+			}
+			else if (activeEditor->filepath.toStdString() == location.fileName()) {
+				ss << step->name() << " (" << location.filePath().filename().string() << ":"
+				   << location.firstLine() << ")";
+			}
+			else {
+				auto relname = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+				  .generic_string();
+				// Set the displayed name relative to the active editor window
+				ss << step->name() << " (" << relname << ":" << location.firstLine() << ")";
+			}
+
+			// Prepare the action to be sent
+			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
+			action->setProperty("file", QString::fromStdString(location.fileName()));
+			action->setProperty("line", location.firstLine());
+			action->setProperty("column", location.firstColumn());
+
+			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+		}
+
+		tracemenu.exec(this->qglview->mapToGlobal(mouse));
+	}
+}
+
+/**
+ * Expects the sender to have properties "file", "line" and "column" defined
+ */
+void MainWindow::setCursor()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
+			!action->property("column").isValid()) {
+		return;
+	}
+
+	auto file = action->property("file").toString();
+	auto line = action->property("line").toInt();
+	auto column = action->property("column").toInt();
+
+	// Unsaved files do have the pwd as current path, therefore we will not open a new
+	// tab on click
+	if (!fs::is_directory(fs::path(file.toStdString()))) {
+		this->tabManager->open(file);
+	}
+
+	// move the cursor, the editor is 0 based whereby location is 1 based
+	this->activeEditor->setCursorPosition(line - 1, column - 1);
+}
 
 /**
  * Switch version label and progress widget. When switching to the progress
