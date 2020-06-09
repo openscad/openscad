@@ -26,6 +26,7 @@ public:
     void applyConfigFile(const QList<QAction *> &actions);
     void readConfigFile(QJsonObject *object);
     bool writeToConfigFile(QJsonObject *object);
+    void raiseError(const QString errorMsg);
     QString getData(int row,int col);
     void putData(QModelIndex indexA,QString data);
     QHash<QString, QAction *> shortcutsMap;

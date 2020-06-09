@@ -189,6 +189,14 @@ void ShortcutConfigurator::putData(QModelIndex indexA,QString data)
 
 }
 
+void ShortcutConfigurator::raiseError(const QString errorMsg)
+{
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error",errorMsg);
+        messageBox.setFixedSize(500,200);
+}
+
+
 void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB)
 {
     QString updatedAction = getData(indexA.row(),0);
@@ -202,13 +210,9 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
     if(shortcutOccupied[updatedShortcut]==true)
     {
         putData(indexA,QString::fromUtf8(""));
-        QMessageBox messageBox;
-        messageBox.critical(0,"Error","Shortcut is already assigned to some other action");
-        messageBox.setFixedSize(500,200);
+        raiseError(QString("Shortcut is already assigned to some other action"));
         return;
     }
-
-    if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,true);
 
     QList<QKeySequence> shortcutsListFinal;
 
@@ -271,8 +275,16 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
             }
             changedAction->setShortcuts(shortcutsListFinal);
         }
+        else
+        {
+            putData(indexA,QString::fromUtf8(""));
+            raiseError(QString("Primary is not assigned"));
+            return;
+        }
 
     }
+
+    if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,true);
 
     // write into the file
     QJsonObject object;
@@ -296,10 +308,7 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
 void ShortcutConfigurator::on_searchBox_textChanged(const QString &arg1)
 {
-    QString filterKey=QString::fromUtf8("");
-    filterKey.append("*");
-    filterKey.append(arg1);
-    filterKey.append("*");
+    QString filterKey=QString("*%1*").arg(arg1);
     QRegExp qr(filterKey,Qt::CaseInsensitive,QRegExp::Wildcard);
     QList<QString>filteredList = this->actionsName.filter(qr);
 
