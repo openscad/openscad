@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <deque>
 #include "BaseVisitable.h"
 #include "AST.h"
 
@@ -61,9 +62,9 @@ public:
 
 	int idx; // Node index (unique per tree)
 
-    const Location location;
+	const Location location;
 
-    const AbstractNode *getNodeByID(int idx) const;
+	const AbstractNode *getNodeByID(int idx, std::deque<const AbstractNode *> &path) const;
 };
 
 class AbstractIntersectionNode : public AbstractNode
