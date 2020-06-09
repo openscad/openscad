@@ -18,33 +18,34 @@ void PCache::init(const std::string _host, const uint16_t _port, const std::stri
     pass = _pass;
 }
 
-void PCache::connect(){
+bool PCache::connect(){
     rct = redisConnect(host.c_str(), port);
     if(checkContext(rct)){
-        //do something to communicate the err to user and store cache in an usual way.
+        return false;
     }else{
         if(!ping()){
-            //do something to communicate the err to user and store cache in an usual way.
+            return false;
         }
     }
-
+    return true;
 }
 
-void PCache::connectWithPassword(){
+bool PCache::connectWithPassword(){
     rct = redisConnect(host.c_str(), port);
     if(checkContext(rct)){
-        //do something to communicate the err to user and store cache in an usual way.
+        return false;
     }else{
         if(!Authorize()){
-            //do something to communicate the err to user and store cache in an usual way.
+            return false;
         }
     }
+    return true;
 }
 
 bool PCache::Authorize(){
     reply= static_cast<redisReply*>(redisCommand(rct, "AUTH %s", pass.c_str()));
     if(checkReply(reply)){
-        return false; //problem
+        return false;
     }else return true;
 }
 
@@ -71,7 +72,6 @@ bool PCache::ping(){
 bool PCache::insert(const std::string& key, const std::string& serializedGeom){
     reply = static_cast<redisReply*>(redisCommand(rct, "SET %s %s", key.c_str(), serializedGeom.c_str()));
     if(checkReply(reply)){
-        //do something to communicate this to the user and store cache in an usual way.
         return false;
     }
     freeReplyObject(reply);
@@ -81,7 +81,6 @@ bool PCache::insert(const std::string& key, const std::string& serializedGeom){
 bool PCache::get(const std::string &key, std::string &serializedGeom){
     reply = static_cast<redisReply*>(redisCommand(rct, "GET %s", key.c_str()));
     if(checkReply(reply)){
-        //do something to communicate this to the user and store cache in an usual way.
         return false;
     }
     serializedGeom = reply->str;
@@ -116,7 +115,6 @@ bool PCache::containsGeom(const std::string &key, bool &ret){
 bool PCache::contains(const std::string &key, bool &ret){
     reply = static_cast<redisReply*>(redisCommand(rct, "KEYS %s", key.c_str()));
     if(checkReply(reply)){
-        //do something to communicate this to the user and store cache in an usual way.
         return false;
     }
     if(reply->elements==1){
@@ -131,7 +129,6 @@ bool PCache::contains(const std::string &key, bool &ret){
 bool PCache::clear(){
     reply = static_cast<redisReply*>(redisCommand(rct, "FLUSHALL"));
     if(checkReply(reply)){
-        //do something to communicate this to the user and store cache in an usual way.
         return false;
     }
     freeReplyObject(reply);
@@ -165,6 +162,7 @@ bool PCache::checkContext(redisContext *rct){
             err = "NULL Context";
         }
         cstatus = false;
+        PRINTB("WARNING:(Persistent Cache) Unable to establish connection due to: %s", err);
         return true;
     }
     cstatus=true;
@@ -179,6 +177,7 @@ bool PCache::checkReply(redisReply *reply){
         }else{
             err = "NULL Reply";
         }
+        PRINTB("WARNING:(Persistent Cache) Cannot cache operations due to: %s", err);
         return true;
     }
     return false;

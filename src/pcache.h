@@ -12,8 +12,8 @@ public:
     PCache();
 
     void init(const std::string _host, const uint16_t _port, const std::string _pass);
-    void connect();
-    void connectWithPassword();
+    bool connect();
+    bool connectWithPassword();
     bool Authorize();
     bool insertCGAL(const std::string& key, const std::string& serializedgeom);
     bool insertGeometry(const std::string& key, const std::string& serializedgeom);
