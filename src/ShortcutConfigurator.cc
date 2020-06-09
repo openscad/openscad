@@ -55,9 +55,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
             }
             model->setItem(row, index, shortcutItem);
             index++;
-
-            shortcutOccupied.insert(shortcut,true);
-
+            if(shortcut!=QString::fromUtf8("")) shortcutOccupied.insert(shortcut,true);
         }
 
         if(!this->shortcutsMap.contains(actionName)) {
@@ -139,19 +137,6 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
 
 }
 
-QString ShortcutConfigurator::getData(int row,int col)
-{
-    QTableView *shortcutTableView = this->findChild<QTableView *>();
-    return shortcutTableView->model()->index(row,col).data().toString();
-}
-
-void ShortcutConfigurator::putData(QModelIndex indexA,QString data)
-{
-    QTableView *shortcutTableView = this->findChild<QTableView *>();
-    shortcutTableView->model()->setData(indexA, data);
-
-}
-
 void ShortcutConfigurator::readConfigFile(QJsonObject* object)
 {
     std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
@@ -191,6 +176,18 @@ bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
     return true;
 }
 
+QString ShortcutConfigurator::getData(int row,int col)
+{
+    QTableView *shortcutTableView = this->findChild<QTableView *>();
+    return shortcutTableView->model()->index(row,col).data().toString();
+}
+
+void ShortcutConfigurator::putData(QModelIndex indexA,QString data)
+{
+    QTableView *shortcutTableView = this->findChild<QTableView *>();
+    shortcutTableView->model()->setData(indexA, data);
+
+}
 
 void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB)
 {
@@ -201,10 +198,8 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
     QString updatedShortcut = getData(indexA.row(),indexA.column());
 
-    // handle when shortcut is unassigned-todo
-
     //check if the updated Shortcut is preoccupied or not
-    if(shortcutOccupied[updatedShortcut])
+    if(shortcutOccupied[updatedShortcut]==true)
     {
         putData(indexA,QString::fromUtf8(""));
         QMessageBox messageBox;
@@ -212,6 +207,8 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
         messageBox.setFixedSize(500,200);
         return;
     }
+
+    if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,true);
 
     QList<QKeySequence> shortcutsListFinal;
 
@@ -226,6 +223,9 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
         if(assignedShortcuts.size()!=0)
         {
+            //un-assign the previous primary
+            shortcutOccupied.insert(assignedShortcuts[0].toString(QKeySequence::NativeText),false);
+
             for(int i=1;i<assignedShortcuts.size();i++)
             {
                 shortcutsListFinal.append(assignedShortcuts[i]);                    
@@ -252,7 +252,10 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
                 //sufficent number of columns, replacement
                 for(int i=0;i<assignedShortcuts.size();i++)
                 {
-                    if(i==indexA.column()-1) {shortcutsListFinal.append(updatedShortcut);}
+                    if(i==indexA.column()-1) {
+                        shortcutOccupied.insert(assignedShortcuts[i].toString(QKeySequence::NativeText),false);  
+                        shortcutsListFinal.append(updatedShortcut);
+                        }
                     else shortcutsListFinal.append(assignedShortcuts[i]);                    
                 }
 
@@ -266,8 +269,6 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
                 }
                 shortcutsListFinal.append(updatedShortcut);
             }
-
-
             changedAction->setShortcuts(shortcutsListFinal);
         }
 
