@@ -24,7 +24,7 @@ ShortcutConfigurator::~ShortcutConfigurator()
 
 QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
 {
-    const int numRows = actions.size();
+    const int numRows = 0;
     const int numColumns = 3;
     int row = 0;
     QStandardItemModel* model = new QStandardItemModel(numRows, numColumns);
@@ -36,6 +36,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         if(!actionName.isEmpty())
         {
         QStandardItem* actionNameItem = new QStandardItem(actionName);
+        model->setRowCount(row+1);
         model->setItem(row, 0, actionNameItem);
         actionNameItem->setFlags(actionNameItem->flags() &  ~Qt::ItemIsEditable);
 
@@ -178,15 +179,12 @@ bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
 
 QString ShortcutConfigurator::getData(int row,int col)
 {
-    QTableView *shortcutTableView = this->findChild<QTableView *>();
-    return shortcutTableView->model()->index(row,col).data().toString();
+    return shortcutsTable->model()->index(row,col).data().toString();
 }
 
 void ShortcutConfigurator::putData(QModelIndex indexA,QString data)
 {
-    QTableView *shortcutTableView = this->findChild<QTableView *>();
-    shortcutTableView->model()->setData(indexA, data);
-
+    shortcutsTable->model()->setData(indexA, data);
 }
 
 void ShortcutConfigurator::raiseError(const QString errorMsg)
