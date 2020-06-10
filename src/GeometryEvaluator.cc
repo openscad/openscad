@@ -753,9 +753,9 @@ static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 	}
 }
 
-static void add_slice(PolySet *ps, const Polygon2d &poly, 
-											double rot1, double rot2, 
-											double h1, double h2, 
+static void add_slice(PolySet *ps, const Polygon2d &poly,
+											double rot1, double rot2,
+											double h1, double h2,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
@@ -764,40 +764,72 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	
 	bool any_zero = scale2[0] == 0 || scale2[1] == 0;
 	bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
+	bool back_twist = rot2 <= rot1;
 
-	// epsilon is used as a small bias when comparing diagonals,
-	// In some cases, diagonal lengths with be "equal", 
-	// but without some epsilon the diagonal decision would flip-flop 
-	// across slices due to floatingp point inaccuracies.
-	// Ex: An edge with one vertex at origin.
-	constexpr double epsilon = 1e-12;
-
+	// Iterate over slice faces as quads, and attempt to triangulate them in an ideal way.
+	// Each quad is composed of two adjacent outline vertices: (prev1, curr1)
+	// and their corresponding transformed points one step up: (prev2, curr2).
+	// Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
+	// However, when diagonals are equal length, the decision becomes much more involved...
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
 
-		// Try to choose ideal direction in which to apply epsilon.
+		// For equal length diagonals, flip selected choice depending on direction of twist and
+		// whether the outline is negative (eg circle hole inside a larger circle).
 		// This was tested against circles with a single point touching the origin,
-		// and extruded with twist.  Both the direction of twist and 
-		// whether the circle was negative (a hole in a larger circle) 
-		// determined which direction was ideal.  That is the chosen diagonal direction
-		// macthed the choices of neighboring edges (which did not exhibit "equal" diagonals).
-		const double eps = ((rot2 > rot1) xor (!o.positive)) ? -epsilon : epsilon;
+		// and extruded with twist.  Diagonal choice chosen to
+		// macth those of neighboring edges (which did not exhibit "equal" diagonals).
+		bool flip = (!o.positive) xor back_twist;
 
 		for (size_t i=1;i<=o.vertices.size();i++) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 
-			double d1 = (prev1 - curr2).norm();
-			double d2 = (curr1 - prev2).norm();
+			// Since we only need to know which is larger, squaredNorm() is used,
+			// rather than typical norm() to avoid loss of precision by sqrt operation.
+			double d1 = (prev1 - curr2).squaredNorm();
+			double d2 = (curr1 - prev2).squaredNorm();
+			double diff = d1-d2;
+			// In some cases two diagonals are theoretically equal length,
+			// but not exactly, due to limited floating point precision.
+			// If ratio of diag lengths(squared) / difference is very large, they are considered equal.
+			double diff_ratio = (d1+d2)/fabs(diff);
+			// From testing, diag-to-diff ratios were observed to be on the order of 1e15 to 1e16
+			// for "equal" length diagonals in a variety of tests. 1e10 is used as a conservative threshold,
+			bool eq_diag = diff_ratio > 1e10;
+			bool first_lt = d1 < d2;
+			// Logic Table for splitfirst, determined by analyzing linear_extrude-twist-tests.scad
+			// flip,eq,lt  | splitfirst
+			// ------------+-----------
+			//    F  F  F  |   F
+			//    F  F  T  |   T
+			//    F  T  F  |   T
+			//    F  T  T  |   T
+			//    F  F  F  |   F
+			//    F  F  T  |   T
+			//    F  T  F  |   F
+			//    F  T  T  |   F
+			bool splitfirst = (!eq_diag && first_lt) || (!flip && eq_diag);
+
+			// Debug message used to determine a reasonable ratio threshold,
+			// and to help troubleshoot complex descision logic.
+			// Leaving commented since its spammy unless working directly in this section of code.
+			/*
+			PRINTDB("Diff: %E, Ratio %E\tback_twist %s\t!positive %s\tflip %s\teq_diag %s\tfirst_lt %s\tsplitfirst %s\tscale=[%E,%E]",\
+			        (diff) % (diff_ratio) % (back_twist ?"TRUE":"FALSE") % (!o.positive?"TRUE":"FALSE")%\
+			        (flip?"TRUE":"FALSE") % (eq_diag?"TRUE":"FALSE") % (first_lt?"TRUE":"FALSE") % (splitfirst?"TRUE":"FALSE")%\
+			        (scale2[0])%(scale2[1]));
+			//*/
+
 			// Split along shortest diagonal,
 			// unless at top for a 0-scaled axis (which can create 0 thickness "ears")
-			if ((d1 + eps < d2) xor any_zero) {
+			if (splitfirst xor any_zero) {
 				ps->append_poly();
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
-				if (any_non_zero) {
+				if (!any_zero || (any_non_zero && prev2 != curr2)) {
 					ps->append_poly();
 					ps->insert_vertex(curr2[0], curr2[1], h2);
 					ps->insert_vertex(prev1[0], prev1[1], h1);
@@ -808,7 +840,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(prev2[0], prev2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
-				if (any_non_zero) {
+				if (!any_zero || (any_non_zero && prev2 != curr2)) {
 					ps->append_poly();
 					ps->insert_vertex(prev2[0], prev2[1], h2);
 					ps->insert_vertex(curr2[0], curr2[1], h2);
@@ -854,7 +886,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 
 	ps->append(*ps_bottom);
 	delete ps_bottom;
-	if (node.scale_x > 0 || node.scale_y > 0) {
+  // If either scale components are 0, then top will be zero-area, so skip it.
+	if (node.scale_x > 0 && node.scale_y > 0) {
 		Polygon2d top_poly(poly);
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
 		top_poly.transform(trans); // top
