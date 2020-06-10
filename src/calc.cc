@@ -42,3 +42,18 @@ int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
 	if (fn > 0.0) return static_cast<int>(fn >= 3 ? fn : 3);
 	return static_cast<int>(ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5)));
 }
+
+/*!
+	Returns the number of slices for a linear_extrude with twist.
+	Given height, twist, and the three special variables $fn, $fs and $fa
+*/
+int Calc::get_slices_from_height_twist(double h, double twist, double fn, double fs, double fa)
+{
+	double abs_twist = fabs(twist);
+	// 180 twist per slice is worst case, guaranteed non-manifold.
+	// Make sure we have at least 3 slices per 360 twist
+	double min_slices = fmax(ceil(abs_twist / 120.0), 1.0);
+	if (h < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return min_slices;
+	if (fn > 0.0) return static_cast<int>(fmax(ceil(abs_twist / 360.0 * fn), min_slices));
+	return static_cast<int>(fmax(ceil(fmin(abs_twist / fa, h / fs)), min_slices));
+}

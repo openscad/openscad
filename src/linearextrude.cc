@@ -136,7 +136,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	twist->getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
 		if (node->slices == 0) {
-			node->slices = static_cast<int>(fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360)));
+			node->slices = Calc::get_slices_from_height_twist(node->height, node->twist, node->fn, node->fs, node->fa);
 		}
 		node->has_twist = true;
 	}
