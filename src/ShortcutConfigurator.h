@@ -19,8 +19,8 @@ class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 public:
     ShortcutConfigurator(QWidget *parent = 0);
     virtual ~ShortcutConfigurator();
-    void getAllActions(const QList<QAction *> &actions);
     QStandardItemModel* createModel(QObject* parent,const QList<QAction *> &actions);
+    void collectDefaults(const QList<QAction *> &allActions);
     void initGUI(const QList<QAction *> &allActions);
     void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
     void applyConfigFile(const QList<QAction *> &actions);
@@ -32,8 +32,10 @@ public:
     QHash<QString, QAction *> shortcutsMap;
     QHash<QString, bool> shortcutOccupied;
     QList<QString> actionsName;
-
+    QMap<QAction*,QKeySequence> defaultShortcuts;
+    QList<QAction *> actionsList;
 private slots:
     void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
     void on_searchBox_textChanged(const QString &arg1);
+    void on_reset_clicked();
 };

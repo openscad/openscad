@@ -469,12 +469,13 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
-	setShortcutsforMenuActions();
-
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
+	// init shortcut-config
 	QList<QAction *>allActions = this->findChildren<QAction *>();
+	instance->shortcutconfigurator->collectDefaults(allActions);
+	instance->shortcutconfigurator->applyConfigFile(allActions);
 	instance->shortcutconfigurator->initGUI(allActions);
 
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
@@ -622,15 +623,6 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
 		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
-}
-
-
-void MainWindow::setShortcutsforMenuActions()
-{
-	ShortcutConfigurator scConfig;
-	QList<QAction *>allActions = this->findChildren<QAction *>();
-	scConfig.applyConfigFile(allActions);
-	scConfig.initGUI(allActions);
 }
 
 /**
