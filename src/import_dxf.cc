@@ -1,13 +1,5 @@
-#include "grid.h"
-#include "printutils.h"
-#include "calc.h"
-#include "Polygon2d.h"
-#include "degree_trig.h"
-#include "dxf.h"
-#include "linalg.h"
-#include "import.h"
-#include "boost-utils.h"
-
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <sstream>
@@ -19,6 +11,16 @@
 #include <assert.h>
 #include <unordered_map>
 #include <iostream>
+
+#include "grid.h"
+#include "printutils.h"
+#include "calc.h"
+#include "Polygon2d.h"
+#include "degree_trig.h"
+#include "dxf.h"
+#include "linalg.h"
+#include "import.h"
+#include "boost-utils.h"
 
 #define RT_NURB_MAKE_PT_TYPE(n, t, h) ((n << 5) | (t << 1) | h)
 #define RT_NURB_EXTRACT_COORDS(pt) (pt >> 5)
