@@ -1,17 +1,17 @@
 #pragma once
 #include "qtgettext.h"
 #include "ui_ShortcutConfigurator.h"
+#include "PlatformUtils.h"
+#include "printutils.h"
 #include <QAction>
 #include <QObject>
-#include <QList>
-#include <QJsonValue>
 #include <QStandardItemModel>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonValue>
 #include <QHash>
 #include <QRegExp>
-#include <QStringList>
-#include <QSignalMapper>
 
 class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 {

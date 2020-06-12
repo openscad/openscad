@@ -1,13 +1,6 @@
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
+#include "ShortcutConfigurator.h"
 #include <QFile>
 #include <QVariant>
-#include "ShortcutConfigurator.h"
-#include "PlatformUtils.h"
-#include "printutils.h"
-#include "qtgettext.h"
 #include <QAbstractItemModel>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -105,13 +98,13 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
         {
             QList<QKeySequence> shortcutsListFinal;
 
-            //check if the actions new shortcut exists in the file or not
-            //This would allow users to remove any default shortcut, by just leaving the key's value for an action name as empty.
+            // check if the actions new shortcut exists in the file or not
+            // This would allow users to remove any default shortcut, by just leaving the key's value for an action name as empty.
             QJsonObject::const_iterator i = object.find(actionName);
             if(i != object.end() && i.key() == actionName)
             {
                 QJsonValue val = object.value(actionName);
-                //check if it is an array or not
+                // check if it is an array or not
                 if(!val.isArray())
                 {
                     QString singleShortcut = val.toString().trimmed();
@@ -120,7 +113,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                 else
                 {
 
-                //create a key sequence
+                // create a key sequence
                 QJsonArray array = val.toArray();
                 foreach (const QJsonValue & v, array)
                 {
@@ -153,7 +146,7 @@ void ShortcutConfigurator::readConfigFile(QJsonObject* object)
 
 	QFile jsonFile(finalPath);
 	
-    //check if a User-Defined Shortcuts file exists or not
+    // check if a User-Defined Shortcuts file exists or not
 	if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 	return ;
@@ -211,7 +204,7 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
     QString updatedShortcut = getData(indexA.row(),indexA.column());
 
-    //check if the updated Shortcut is preoccupied or not
+    // check if the updated Shortcut is preoccupied or not
     if(shortcutOccupied[updatedShortcut]==true)
     {
         putData(indexA,QString::fromUtf8(""));
@@ -232,7 +225,7 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
 
         if(assignedShortcuts.size()!=0)
         {
-            //un-assign the previous primary
+            // un-assign the previous primary
             shortcutOccupied.insert(assignedShortcuts[0].toString(QKeySequence::NativeText),false);
 
             for(int i=1;i<assignedShortcuts.size();i++)
@@ -320,7 +313,7 @@ void ShortcutConfigurator::on_searchBox_textChanged(const QString &arg1)
     QList<QAction *>newList;
     for(auto entry:filteredList) newList.push_back(shortcutsMap[entry]);
 
-    //regenerate the UI
+    // regenerate the UI
     initGUI(newList);
     
 }
