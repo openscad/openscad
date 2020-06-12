@@ -17,7 +17,7 @@ ShortcutConfigurator::~ShortcutConfigurator()
 
 void ShortcutConfigurator::collectDefaults(const QList<QAction *> &allActions)
 {
-for(auto &action:allActions) defaultShortcuts.insert(action,action->shortcut());
+for(auto &action:allActions) defaultShortcuts.insert(action,action->shortcuts());
 }
 
 
@@ -161,8 +161,7 @@ bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
 {
 
     std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
-
-	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
+    QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
 
 	QFile jsonFile(finalPath);
 
@@ -208,7 +207,7 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
     if(shortcutOccupied[updatedShortcut]==true)
     {
         putData(indexA,QString::fromUtf8(""));
-        raiseError(QString("Shortcut is already assigned to some other action"));
+        raiseError(QString("Shortcut Already Occupied"));
         return;
     }
 
@@ -276,7 +275,7 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
         else
         {
             putData(indexA,QString::fromUtf8(""));
-            raiseError(QString("Primary is not assigned"));
+            raiseError(QString("Primary Shortcut has not been assigned"));
             return;
         }
 
@@ -320,14 +319,16 @@ void ShortcutConfigurator::on_searchBox_textChanged(const QString &arg1)
 
 void ShortcutConfigurator::on_reset_clicked()
 {   
-    QMap<QAction*,QKeySequence>::iterator i;
+    QMap<QAction*,QList<QKeySequence>>::iterator i;
     for(i = defaultShortcuts.begin(); i != defaultShortcuts.end(); ++i)
     {
         QAction* actionKey = i.key();
-        QList<QKeySequence>list;
-        list.push_back(i.value());
-        actionKey->setShortcuts(list);
+        actionKey->setShortcuts(i.value());
     }
     initGUI(actionsList);
     shortcutOccupied.clear();
+
+    QJsonObject object;
+    writeToConfigFile(&object);
+
 }

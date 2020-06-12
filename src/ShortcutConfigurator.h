@@ -32,7 +32,7 @@ public:
     QHash<QString, QAction *> shortcutsMap;
     QHash<QString, bool> shortcutOccupied;
     QList<QString> actionsName;
-    QMap<QAction*,QKeySequence> defaultShortcuts;
+    QMap<QAction*,QList<QKeySequence>> defaultShortcuts;
     QList<QAction *> actionsList;
 private slots:
     void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
