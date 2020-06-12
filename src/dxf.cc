@@ -2550,7 +2550,7 @@ static int process_text_attrib_entities_code(int code)
 
 static int process_dimension_entities_code(int code)
 {
-	static char *block_name = NULL;
+	static std::string block_name;
 	static struct state_data *new_state = NULL;
 	struct block *blk = NULL;
 
@@ -2566,10 +2566,10 @@ static int process_dimension_entities_code(int code)
 		curr_layer_name = strdup(line);
 		break;
 	case 2: /* block name */
-		block_name = strdup(line);
+		block_name = line;
 		break;
 	case 0:
-		if (block_name != NULL) {
+		if (!block_name.empty()) {
 			/* insert this dimension block */
 			get_layer();
 
@@ -2588,9 +2588,8 @@ static int process_dimension_entities_code(int code)
 			}
 			if (!blk) {
 				// ERROR
-				debug("ERROR: DIMENSION references non-existent block (%s)\n", block_name);
-				std::string temp_str = std::string("ERROR: DIMENSION references non-existent block ") +
-															 std::string(block_name);
+				debug("ERROR: DIMENSION references non-existent block (%s)\n", block_name.c_str());
+				std::string temp_str = std::string("ERROR: DIMENSION references non-existent block ") + std::string(block_name);
 				dd.error_message.emplace_back(temp_str);
 				debug("\tignoring missing block\n");
 				blk = NULL;
@@ -2600,9 +2599,7 @@ static int process_dimension_entities_code(int code)
 				debug("Inserting block %s\n", blk->block_name.c_str());
 			}
 
-			if (block_name) {
-				delete block_name; // "block_name");
-			}
+			block_name.clear();
 
 			if (!block_list.at(new_state->curr_block_indx).empty()) {
 				state_stack.emplace_back(*curr_state);
