@@ -273,7 +273,7 @@ struct dxf_data {
 	std::vector<std::string> return_error_message();
 };
 
-dxf_data read_dxf_file(std::string in_filename, std::string out_filename, double scale);
+dxf_data read_dxf_file(std::string in_filename, double scale);
 
 #endif /* CONV_DXF_DXF_H */
 

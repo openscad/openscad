@@ -363,7 +363,7 @@ Polygon2d *import_dxf(double fn, double fs, double fa, const std::string &filena
 		return poly;
 	}
 
-	dxf_data dd = read_dxf_file(filename, "", scale);
+	dxf_data dd = read_dxf_file(filename, scale);
 
 	std::vector<header_struct> header_vector;
 	std::vector<polyline_vertex_struct> polyline_vertex_vector;
