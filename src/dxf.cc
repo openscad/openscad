@@ -185,9 +185,8 @@ size_t strlcpy(char *__restrict dst, const char *__restrict src, size_t dsize)
 
 /* string to double for error checking */
 
-double to_double(char *line)
+double to_double(const std::string& str)
 {
-	std::string str(line);
 	static auto c_locale = std::locale("C");
 
 	std::istringstream is(str);
@@ -709,12 +708,6 @@ bool NEAR_EQUAL(double a, double b, double local_tol_sql)
 		return true;
 	}
 	return false;
-}
-/* function for C style string to C++ string to avoid initialization */
-std::string Char2String(const char *line)
-{
-	std::string str(line);
-	return str;
 }
 
 static void get_layer()
@@ -2355,10 +2348,10 @@ static int process_mtext_entities_code(int code)
 
 	switch (code) {
 	case 3:
-		vls += Char2String(line);
+		vls += line;
 		break;
 	case 1:
-		vls += Char2String(line);
+		vls += line;
 		break;
 	case 8: /* layer name */
 		if (curr_layer_name) {
@@ -3180,9 +3173,6 @@ dxf_data read_dxf_file(std::string in_filename, double scale)
 		// bu_exit(1, "Cannot open DXF file (%s)\n", dxf_file);
 		exit(1);
 	}
-
-	std::list<block> block_list;
-	std::list<state_data> state_stack;
 
 	process_code[UNKNOWN_SECTION] = process_unknown_code;
 	process_code[HEADER_SECTION] = process_header_code;
