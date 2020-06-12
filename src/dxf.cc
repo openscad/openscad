@@ -297,13 +297,6 @@ struct block {
 	char handle[17];
 	double base[3];
 
-	block(const block &blk)
-	{
-		strlcpy(handle, blk.handle, sizeof(handle));
-		block_name = blk.block_name;
-		VMOVE(base, blk.base);
-		offset = blk.offset;
-	}
 	block() : block_name(std::string()), offset(off_t())
 	{
 		for (int i = 0; i < 3; i++) {
