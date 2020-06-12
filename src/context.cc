@@ -49,8 +49,7 @@ static bool is_config_variable(const std::string &name)
 	external library. Note that if parent is null, a new stack will be
 	created, and all children will share the root parent's stack.
 */
-Context::Context(const Context *parent)
-	: parent(parent)
+Context::Context(const std::shared_ptr<Context> parent) : parent(parent)
 {
 	if (parent) {
 		assert(parent->ctx_stack && "Parent context stack was null!");
@@ -59,27 +58,35 @@ Context::Context(const Context *parent)
 	}
 	else {
 		this->ctx_stack = new Stack;
+		this->document_path = std::make_shared<std::string>();
 	}
-
-	this->ctx_stack->push_back(this);
 }
 
 Context::~Context()
 {
+	if (!parent) delete this->ctx_stack;
+}
+
+void Context::push(std::shared_ptr<Context> ctx)
+{
+	this->ctx_stack->push_back(ctx);
+}
+
+void Context::pop()
+{
 	assert(this->ctx_stack && "Context stack was null at destruction!");
 	this->ctx_stack->pop_back();
-	if (!parent) delete this->ctx_stack;
 }
 
 /*!
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
+void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
 	// Set any default values
 	for (const auto &arg : args) {
-		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
+		set_variable(arg->name, arg->expr ? arg->expr->evaluate(this->parent) : ValuePtr::undefined);
 	}
 	
 	if (evalctx) {
@@ -116,9 +123,27 @@ void Context::set_constant(const std::string &name, const Value &value)
 	set_constant(name, ValuePtr(value));
 }
 
-void Context::apply_variables(const Context &other)
+void Context::apply_variables(const std::shared_ptr<Context> other)
 {
-	for (const auto &var : other.variables) {
+	for (const auto &var : other->variables) {
+		set_variable(var.first, var.second);
+	}
+}
+
+/*!
+  Apply config variables of 'other' to this context, from the full context stack of 'other', bottom-up.
+*/
+void Context::apply_config_variables(const std::shared_ptr<Context> other)
+{
+	if (other.get() == this) {
+		// Anything in 'other' and its ancestors is already part of this context, no need to descend any further.
+		return;
+	}
+	if (other->parent) {
+		// Assign parent's variables first, since they might be overridden by a child
+		apply_config_variables(other->parent);
+	}
+	for (const auto &var : other->config_variables) {
 		set_variable(var.first, var.second);
 	}
 }
@@ -197,14 +222,14 @@ static void NOINLINE print_ignore_warning(const char *what, const char *name, co
 	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
 }
  
-ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath().c_str());
 	return ValuePtr::undefined;
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
+AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
 	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath().c_str());
@@ -217,7 +242,7 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalC
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(this->document_path) / filename).string();
+		return fs::absolute(fs::path(*this->document_path) / filename).string();
 	}
 	else {
 		return filename;
@@ -234,13 +259,13 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	else {
 		s << boost::format("Context: %p (%p)\n") % this % this->parent;
 	}
-	s << boost::format("  document path: %s\n") % this->document_path;
+	s << boost::format("  document path: %s\n") % *this->document_path;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s\n") % arg.name % variables[arg.name];
+				s << boost::format("    %s = %s\n") % arg->name % variables[arg->name];
 			}
 		}
 	}

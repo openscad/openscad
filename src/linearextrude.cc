@@ -48,44 +48,44 @@ class LinearExtrudeModule : public AbstractModule
 {
 public:
 	LinearExtrudeModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new LinearExtrudeNode(inst);
+	auto node = new LinearExtrudeNode(inst, evalctx);
 
-	AssignmentList args{Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices")};
-	AssignmentList optargs{Assignment("convexity")};
+	AssignmentList args{assignment("file"), assignment("layer"), assignment("height"), assignment("origin"), assignment("scale"), assignment("center"), assignment("twist"), assignment("slices")};
+	AssignmentList optargs{assignment("convexity")};
 
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+	inst->scope.apply(evalctx);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn")->toDouble();
+	node->fs = c->lookup_variable("$fs")->toDouble();
+	node->fa = c->lookup_variable("$fa")->toDouble();
 
-	auto file = c.lookup_variable("file");
-	auto layer = c.lookup_variable("layer", true);
-	auto height = c.lookup_variable("height", true);
-	auto convexity = c.lookup_variable("convexity", true);
-	auto origin = c.lookup_variable("origin", true);
-	auto scale = c.lookup_variable("scale", true);
-	auto center = c.lookup_variable("center", true);
-	auto twist = c.lookup_variable("twist", true);
-	auto slices = c.lookup_variable("slices", true);
+	auto file = c->lookup_variable("file");
+	auto layer = c->lookup_variable("layer", true);
+	auto height = c->lookup_variable("height", true);
+	auto convexity = c->lookup_variable("convexity", true);
+	auto origin = c->lookup_variable("origin", true);
+	auto scale = c->lookup_variable("scale", true);
+	auto center = c->lookup_variable("center", true);
+	auto twist = c->lookup_variable("twist", true);
+	auto slices = c->lookup_variable("slices", true);
 
 	if (!file->isUndefined() && file->type() == Value::ValueType::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c.documentPath());
+		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}
 
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
-	if (c.lookup_variable("height")->isUndefined() &&
+	if (c->lookup_variable("height")->isUndefined() &&
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		auto val = evalctx->getArgValue(0);
@@ -95,7 +95,12 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->layername = layer->isUndefined() ? "" : layer->toString();
 	node->height = 100;
 	height->getFiniteDouble(node->height);
-	node->convexity = static_cast<int>(convexity->toDouble());
+	double tmp_convexity;
+	if (convexity->getFiniteDouble(tmp_convexity)) {
+	  node->convexity = static_cast<int>(tmp_convexity);
+	} else {
+	  node->convexity = 0;
+	}
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
@@ -147,7 +152,7 @@ std::string LinearExtrudeNode::toString() const
 	std::ostringstream stream;
 
 	stream << this->name() << "(";
-	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+	if (!this->filename.empty()) { // Ignore deprecated parameters if empty
 		fs::path path((std::string)this->filename);
 		stream <<
 			"file = " << this->filename << ", "
@@ -160,7 +165,7 @@ std::string LinearExtrudeNode::toString() const
 		"height = " << std::dec << this->height << ", "
 		"center = " << (this->center?"true":"false") << ", "
 		"convexity = " << this->convexity;
-	
+
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist;
 	}
@@ -169,12 +174,16 @@ std::string LinearExtrudeNode::toString() const
 	}
 	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-	
+
 	return stream.str();
 }
 
 void register_builtin_dxf_linear_extrude()
 {
 	Builtins::init("dxf_linear_extrude", new LinearExtrudeModule());
-	Builtins::init("linear_extrude", new LinearExtrudeModule());
+
+	Builtins::init("linear_extrude", new LinearExtrudeModule(),
+				{
+					"linear_extrude(number, center = true, convexity = 10, degrees, slices = 20, scale = 1.0 [, $fn])",
+				});
 }

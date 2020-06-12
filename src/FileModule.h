@@ -8,6 +8,7 @@
 #include "module.h"
 #include "value.h"
 #include "localscope.h"
+#include "indicatordata.h"
 
 class FileModule : public AbstractModule, public ASTNode
 {
@@ -15,14 +16,14 @@ public:
 	FileModule(const std::string &path, const std::string &filename);
 	~FileModule();
 
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx = nullptr) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
-	AbstractNode *instantiateWithFileContext(class FileContext *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
+	AbstractNode *instantiateWithFileContext(const std::shared_ptr<class FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-	void registerUse(const std::string path);
-	void registerInclude(const std::string &localpath, const std::string &fullpath);
+	void registerUse(const std::string path, const Location &loc);
+	void registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc);
 	std::time_t includesChanged() const;
 	std::time_t handleDependencies(bool is_root = true);
 	bool hasIncludes() const { return !this->includes.empty(); }
@@ -33,8 +34,10 @@ public:
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;
 	LocalScope scope;
-	typedef std::unordered_set<std::string> ModuleContainer;
+	typedef std::vector<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
+
+	std::vector<IndicatorData> indicatorData;
 
 private:
 	struct IncludeFile {

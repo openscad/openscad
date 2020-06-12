@@ -58,7 +58,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		if (N) {
 			this->root = N;
 		}	
-    else {
+		else {
 			this->traverse(node);
 		}
 
@@ -96,25 +96,30 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 	return GeometryCache::instance()->get(key);
 }
 
+bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem &item, unsigned int &dim) const {
+	if (!item.first->modinst->isBackground() && item.second) {
+		if (!dim) dim = item.second->getDimension();
+		else if (dim != item.second->getDimension() && !item.second->isEmpty()) {
+			std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
+			PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
+			return false;
+		}
+	}
+	return true;
+}
+
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
 	unsigned int dim = 0;
 	for(const auto &item : this->visitedchildren[node.index()]) {
-		if (!item.first->modinst->isBackground() && item.second) {
-			if (!dim) dim = item.second->getDimension();
-			else if (dim != item.second->getDimension()) {
-				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
-				break;
-			}
-		}
+		if (!isValidDim(item, dim)) break;
 	}
-    if (dim == 2) {
-        Polygon2d *p2d = applyToChildren2D(node, op);
-        assert(p2d);
-        return ResultObject(p2d);
-    }
-    else if (dim == 3) return applyToChildren3D(node, op);
+	if (dim == 2) {
+		Polygon2d *p2d = applyToChildren2D(node, op);
+		assert(p2d);
+		return ResultObject(p2d);
+	}
+	else if (dim == 3) return applyToChildren3D(node, op);
 	return ResultObject();
 }
 
@@ -142,20 +147,33 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	if (op == OpenSCADOperator::MINKOWSKI) {
-		Geometry::Geometries actualchildren;
-		for(const auto &item : children) {
-			if (!item.second->isEmpty()) actualchildren.push_back(item);
+	switch(op) {
+		case OpenSCADOperator::MINKOWSKI:
+		{
+			Geometry::Geometries actualchildren;
+			for(const auto &item : children) {
+				if (!item.second->isEmpty()) actualchildren.push_back(item);
+			}
+			if (actualchildren.empty()) return ResultObject();
+			if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
+			return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+			break;
 		}
-		if (actualchildren.empty()) return ResultObject();
-		if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-		return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+		case OpenSCADOperator::UNION:
+		{
+			CGAL_Nef_polyhedron* N = CGALUtils::applyUnion(children.begin(), children.end());
+			return ResultObject(N);
+			break;
+		}
+		default: 
+		{
+			CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
+			// FIXME: Clarify when we can return nullptr and what that means
+			if (!N) N = new CGAL_Nef_polyhedron;
+			return ResultObject(N);
+			break;
+		}
 	}
-
-	CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(children, op);
-	// FIXME: Clarify when we can return nullptr and what that means
-	if (!N) N = new CGAL_Nef_polyhedron;
-	return ResultObject(N);
 }
 
 
@@ -183,14 +201,20 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	if (points.size() > 0) {
 		// Apply hull
 		std::list<CGALPoint2> result;
-		CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
-
-		// Construct Polygon2d
-		Outline2d outline;
-		for(const auto &p : result) {
-			outline.vertices.push_back(Vector2d(p[0], p[1]));
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
+			// Construct Polygon2d
+			Outline2d outline;
+			for(const auto &p : result) {
+				outline.vertices.push_back(Vector2d(p[0], p[1]));
+			}
+			geometry->addOutline(outline);
 		}
-		geometry->addOutline(outline);
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %s", e.what());
+		}
+		CGAL::set_error_behaviour(old_behaviour);
 	}
 	return geometry;
 }
@@ -389,7 +413,7 @@ void GeometryEvaluator::addToParent(const State &state,
 }
 
 /*!
-   Custom nodes are handled here => implicit union
+	Custom nodes are handled here => implicit union
 */
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
@@ -412,16 +436,89 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 }
 
 /*!
+	Pass children to parent without touching them. Used by e.g. for loops
+*/
+Response GeometryEvaluator::visit(State &state, const ListNode &node)
+{
+	if (state.parent()) {
+		if (state.isPrefix() && node.modinst->isBackground()) {
+			if (node.modinst->isBackground()) state.isBackground();
+			return Response::PruneTraversal;
+		}
+		if (state.isPostfix()) {
+				unsigned int dim = 0;
+				for(const auto &item : this->visitedchildren[node.index()]) {
+					if (!isValidDim(item, dim)) break;
+					const AbstractNode *chnode = item.first;
+					const shared_ptr<const Geometry> &chgeom = item.second;
+					addToParent(state, *chnode, chgeom);
+				}
+				this->visitedchildren.erase(node.index());
+		}
+		return Response::ContinueTraversal;
+	} else {
+		// Handle when a ListNode is given root modifier
+		return lazyEvaluateRootNode(state, node);
+	}
+}
+
+/*!
 */
 Response GeometryEvaluator::visit(State &state, const GroupNode &node)
 {
 	return visit(state, (const AbstractNode &)node);
 }
 
+Response GeometryEvaluator::lazyEvaluateRootNode(State &state, const AbstractNode& node) {
+	if (state.isPrefix()) {
+		if (node.modinst->isBackground()) {
+			state.isBackground();
+			return Response::PruneTraversal;
+		}
+ 		if (isSmartCached(node)) {
+			 return Response::PruneTraversal;
+		 }
+	}
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+
+		unsigned int dim = 0;
+		GeometryList::Geometries geometries;
+		for(const auto &item : this->visitedchildren[node.index()]) {
+			if (!isValidDim(item, dim)) break;
+			const AbstractNode *chnode = item.first;
+			const shared_ptr<const Geometry> &chgeom = item.second;
+			if (chnode->modinst->isBackground()) continue;
+			// NB! We insert into the cache here to ensure that all children of
+			// a node is a valid object. If we inserted as we created them, the 
+			// cache could have been modified before we reach this point due to a large
+			// sibling object. 
+			smartCacheInsert(*chnode, chgeom);
+			// Only use valid geometries
+			if (chgeom && !chgeom->isEmpty()) geometries.push_back(item);
+		}
+		if (geometries.size() == 1) geom = geometries.front().second;
+		else if (geometries.size() > 1) geom.reset(new GeometryList(geometries));
+
+		this->root = geom;
+	}
+	return Response::ContinueTraversal;
+}
+
+/*!
+	Root nodes are handled specially; they will flatten any child group
+	nodes to avoid doing an implicit top-level union.
+
+	NB! This is likely a temporary measure until a better implementation of 
+	group nodes is in place.
+*/
 Response GeometryEvaluator::visit(State &state, const RootNode &node)
 {
-	// Just union the top-level objects
-	return visit(state, (const GroupNode &)node);
+	// If we didn't enable lazy unions, just union the top-level objects
+	if (!Feature::ExperimentalLazyUnion.is_enabled()) {
+	 	return visit(state, (const GroupNode &)node);
+	}
+	return lazyEvaluateRootNode(state, node);
 }
 
 Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
@@ -453,7 +550,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 }
 
 /*!
-   RenderNodes just pass on convexity
+	RenderNodes just pass on convexity
 */
 Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 {
@@ -505,7 +602,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 		shared_ptr<const Geometry> geom;
 		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
-            assert(geometry);
+			assert(geometry);
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
 					Polygon2d *p = ClipperUtils::sanitize(*polygon);
@@ -513,7 +610,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 					geometry = p;
 				}
 			}
-            geom.reset(geometry);
+			geom.reset(geometry);
 		}
 		else geom = smartCacheGet(node, state.preferNef());
 		addToParent(state, node, geom);
@@ -548,7 +645,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 	input: List of 2D or 3D objects (not mixed)
 	output: Polygon2d or 3D PolySet
 	operation:
-	  o Perform csg op on children
+		o Perform csg op on children
  */			
 Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 {
@@ -574,8 +671,8 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 	input: List of 2D or 3D objects (not mixed)
 	output: Polygon2d or 3D PolySet
 	operation:
-	  o Union all children
-	  o Perform transform
+		o Union all children
+		o Perform transform
  */			
 Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 {
@@ -745,7 +842,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		ps->append(*ps_top);
 		delete ps_top;
 	}
-    size_t slices = node.slices;
+	size_t slices = node.slices;
 
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
@@ -766,8 +863,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	input: List of 2D objects
 	output: 3D PolySet
 	operation:
-	  o Union all children
-	  o Perform extrude
+		o Union all children
+		o Perform extrude
  */			
 Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
@@ -826,11 +923,11 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 	etc., the input coming from a library like Clipper.
 
 	FIXME: We should handle some common corner cases better:
-  o 2D polygon having an edge being on the Y axis:
-	  In this case, we don't need to generate geometry involving this edge as it
+	o 2D polygon having an edge being on the Y axis:
+		In this case, we don't need to generate geometry involving this edge as it
 		will be an internal edge.
-  o 2D polygon having a vertex touching the Y axis:
-    This is more complex as the resulting geometry will (may?) be nonmanifold.
+	o 2D polygon having a vertex touching the Y axis:
+		This is more complex as the resulting geometry will (may?) be nonmanifold.
 		In any case, the previous case is a specialization of this, so the following
 		should be handled for both cases:
 		Since the ring associated with this vertex will have a radius of zero, it will
@@ -899,7 +996,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		for (unsigned int j = 0; j < fragments; j++) {
 			double a;
 			if (node.angle == 360)
-			    a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
+				a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
 			else
 				a = 90 - (j+1)* node.angle / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
@@ -924,8 +1021,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	input: List of 2D objects
 	output: 3D PolySet
 	operation:
-	  o Union all children
-	  o Perform extrude
+		o Union all children
+		o Perform extrude
  */			
 Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 {
@@ -972,7 +1069,7 @@ Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*
 	input: List of 3D objects
 	output: Polygon2d
 	operation:
-	  o Union all children
+		o Union all children
 		o Perform projection
  */			
 Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
@@ -987,7 +1084,6 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				for(const auto &item : this->visitedchildren[node.index()]) {
 					const AbstractNode *chnode = item.first;
 					const shared_ptr<const Geometry> &chgeom = item.second;
-					// FIXME: Don't use deep access to modinst members
 					if (chnode->modinst->isBackground()) continue;
 
 					const Polygon2d *poly = nullptr;
@@ -1021,9 +1117,9 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
 					if (!chPS) {
 						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-						if (chN) {
+                        if (chN && !chN->isEmpty()) {
 							PolySet *ps = new PolySet(3);
-							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+                            bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
 							if (err) {
 								PRINT("ERROR: Nef->PolySet failed");
 							}
@@ -1084,7 +1180,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 	input: List of 2D or 3D objects (not mixed)
 	output: any Geometry
 	operation:
-	  o Perform cgal operation
+		o Perform cgal operation
  */			
 Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 {
@@ -1119,6 +1215,9 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 					// If we got a const object, make a copy
 					if (res.isConst()) editablegeom.reset(geom->copy());
 					else editablegeom = res.ptr();
+					if (editablegeom->getConvexity() != node.convexity) {
+						editablegeom->setConvexity(node.convexity);
+					}
 					geom = editablegeom;
 
 					shared_ptr<CGAL_Nef_polyhedron> N = dynamic_pointer_cast<CGAL_Nef_polyhedron>(editablegeom);

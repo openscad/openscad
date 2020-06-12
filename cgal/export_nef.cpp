@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
         std::cerr << "Error importing STL " << argv[1] << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      std::cerr << "Imported " << ps->numFacets() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);

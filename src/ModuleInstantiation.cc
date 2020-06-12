@@ -37,10 +37,10 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 	if (!inlined) stream << indent;
 	stream << modname + "(";
 	for (size_t i=0; i < this->arguments.size(); i++) {
-		const Assignment &arg = this->arguments[i];
+		const auto &arg = this->arguments[i];
 		if (i > 0) stream << ", ";
-		if (!arg.name.empty()) stream << arg.name << " = ";
-		stream << *arg.expr;
+		if (!arg->name.empty()) stream << arg->name << " = ";
+		stream << *arg->expr;
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";
@@ -77,20 +77,20 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const Context *ctx){
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
 	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
 }
 
-AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
 {
-	EvalContext c(ctx, this->arguments, this->loc, &this->scope);
+	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 
 #if 0 && DEBUG
 	PRINT("New eval ctx:");
 	c.dump(nullptr, this);
 #endif
 	try{
-		AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
+		AbstractNode *node = ctx->instantiate_module(*this, c.ctx); // Passes c as evalctx
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
@@ -101,12 +101,12 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	}
 }
 
-std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const
+std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const std::shared_ptr<Context> evalctx) const
 {
 	return this->scope.instantiateChildren(evalctx);
 }
 
-std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const Context *evalctx) const
+std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const std::shared_ptr<Context> evalctx) const
 {
 	return this->else_scope.instantiateChildren(evalctx);
 }

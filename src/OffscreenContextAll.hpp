@@ -12,7 +12,7 @@ void bind_offscreen_context(OffscreenContext *ctx)
 /*
    Capture framebuffer from OpenGL and write it to the given filename as PNG.
  */
-bool save_framebuffer(OffscreenContext *ctx, const char *filename)
+bool save_framebuffer(const OffscreenContext *ctx, const char *filename)
 {
 	std::ofstream fstream(filename,std::ios::out|std::ios::binary);
 	if (!fstream.is_open()) {
@@ -29,7 +29,7 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   Capture framebuffer from OpenGL and write it to the given ostream.
   Called by save_framebuffer() from platform-specific code.
  */
-bool save_framebuffer_common(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer_common(const OffscreenContext *ctx, std::ostream &output)
 {
 	if (!ctx) return false;
 	int samplesPerPixel = 4; // R, G, B and A

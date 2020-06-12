@@ -26,6 +26,7 @@ PARALLEL=-j2
 # PARALLEL_CTEST=-j1
 
 travis_start qmake "Building OpenSCAD using qmake"
+export PATH="/usr/local/opt/gettext/bin:$PATH"
 qmake CONFIG+=experimental CONFIG+=nogui && make $PARALLEL
 travis_finish qmake
 

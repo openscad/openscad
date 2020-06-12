@@ -54,10 +54,16 @@ void FileModule::print(std::ostream &stream, const std::string &indent) const
 	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path)
+void FileModule::registerUse(const std::string path, const Location &loc)
 {
+	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			loc.fileName() %
+			path);
+
 	auto ext = fs::path(path).extension().generic_string();
-	
+
 	if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
@@ -65,13 +71,28 @@ void FileModule::registerUse(const std::string path)
 			PRINTB("ERROR: Can't read font with path '%s'", path);
 		}
 	} else {
-		usedlibs.insert(path);
+		auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);
+		if(pos != usedlibs.end())
+			usedlibs.erase(pos);
+		usedlibs.insert(usedlibs.begin(), path);
+		if (!loc.isNone()) {
+			indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), path);
+		}
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath)
+void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
 {
+	PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
+			loc.firstLine() % loc.firstColumn() %
+			loc.lastLine() % loc.lastColumn() %
+			localpath %
+			fullpath);
+
 	this->includes[localpath] = {fullpath};
+	if (!loc.isNone()) {
+		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
+	}
 }
 
 time_t FileModule::includesChanged() const
@@ -91,7 +112,7 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 	if (StatCache::stat(inc.filename.c_str(), st) == 0) {
 		return st.st_mtime;
 	}
-	
+
 	return 0;
 }
 
@@ -149,27 +170,26 @@ time_t FileModule::handleDependencies(bool is_root)
 
 	// Relative filenames which were located are reinserted as absolute filenames
 	for (const auto &files : updates) {
-		this->usedlibs.erase(files.first);
-		this->usedlibs.insert(files.second);
+		auto pos = std::find(usedlibs.begin(), usedlibs.end(), files.first);
+		if(pos != usedlibs.end())
+			*pos = files.second;
 	}
 	return latest;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst,
-																			EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	assert(evalctx == nullptr);
-	
-	FileContext context(ctx);
-	return this->instantiateWithFileContext(&context, inst, evalctx);
+	assert(!evalctx);
+
+	ContextHandle<FileContext> context{Context::create<FileContext>(ctx)};
+	return this->instantiateWithFileContext(context.ctx, inst, evalctx);
 }
 
-AbstractNode *FileModule::instantiateWithFileContext(FileContext *ctx, const ModuleInstantiation *inst,
-																										 EvalContext *evalctx) const
+AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	assert(evalctx == nullptr);
-	
-	auto node = new RootNode(inst);
+	assert(!evalctx);
+
+	auto node = new RootNode(inst, evalctx);
 	try {
 		ctx->initializeModule(*this); // May throw an ExperimentalFeatureException
 		// FIXME: Set document path to the path of the module

@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "feature.h"
 #include "printutils.h"
@@ -20,6 +22,9 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
+const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
+const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalMouseSelection("mouse-selection", "Enable mouse selector");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -72,11 +77,13 @@ Feature::iterator Feature::end()
 	return feature_list.end();
 }
 
-void Feature::dump_features()
+std::string Feature::features()
 {
-	for (map_t::iterator it = feature_map.begin(); it != feature_map.end(); it++) {
-		std::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
-	}
+	const auto seq = boost::make_iterator_range(Feature::begin(), Feature::end());
+	const auto str = [](const Feature * const f) {
+		return (boost::format("%s%s") % f->get_name() % (f->is_enabled() ? "*" : "")).str();
+	};
+	return boost::algorithm::join(boost::adaptors::transform(seq, str), ", ");
 }
 
 ExperimentalFeatureException::ExperimentalFeatureException(const std::string &what_arg)

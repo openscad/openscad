@@ -24,24 +24,30 @@
  *
  */
 
-#include "value.h"
-#include "printutils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
 #include <cmath>
 #include <assert.h>
 #include <sstream>
-#include <boost/numeric/conversion/cast.hpp>
+#include <boost/format.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
-#include <boost/format.hpp>
-#include "boost-utils.h"
-#include <boost/filesystem.hpp>
-
-namespace fs=boost::filesystem;
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+
+#include "value.h"
+#include "expression.h"
+#include "printutils.h"
+#include "boost-utils.h"
+#include "double-conversion/double-conversion.h"
+#include "double-conversion/utils.h"
+#include "double-conversion/ieee.h"
+
+namespace fs=boost::filesystem;
+using boost::adaptors::transformed;
+using boost::algorithm::join;
 
 const Value Value::undefined;
 const ValuePtr ValuePtr::undefined;
@@ -269,6 +275,11 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
+Value::Value(const FunctionType &v) : value(v)
+{
+  //  std::cout << "creating function\n";
+}
+
 Value::ValueType Value::type() const
 {
   return static_cast<ValueType>(this->value.which());
@@ -287,6 +298,33 @@ bool Value::isDefinedAs(const ValueType type) const
 bool Value::isUndefined() const
 {
   return !isDefined();
+}
+
+const FunctionType Value::toFunction() const
+{
+	return boost::get<FunctionType>(this->value);
+}
+
+std::string Value::typeName() const
+{
+	switch (this->type()) {
+	case ValueType::UNDEFINED:
+		return "undefined";
+	case ValueType::BOOL:
+		return "bool";
+	case ValueType::NUMBER:
+		return "number";
+	case ValueType::STRING:
+		return "string";
+	case ValueType::VECTOR:
+		return "vector";
+	case ValueType::RANGE:
+		return "range";
+	case ValueType::FUNCTION:
+		return "function";
+	default:
+		return "<unknown>";
+	}
 }
 
 bool Value::toBool() const
@@ -348,13 +386,13 @@ class tostring_visitor : public boost::static_visitor<std::string>
 public:
   template <typename T> std::string operator()(const T &op1) const {
     //    std::cout << "[generic tostring_visitor]\n";
-    return boost::lexical_cast<std::string>(op1);	
+    return boost::lexical_cast<std::string>(op1);
   }
 
   std::string operator()(const double &op1) const {
     char buffer[DC_BUFFER_SIZE];
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, 
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
       DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
     return DoubleConvert(op1, buffer, builder, dc);
   }
@@ -383,6 +421,9 @@ public:
     return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 
+  std::string operator()(const FunctionType &v) const {
+	return STR(v);
+  }
 };
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
@@ -391,15 +432,14 @@ class tostream_visitor : public boost::static_visitor<>
 {
 public:
   std::ostringstream &stream;
-  
 
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
 
-  tostream_visitor(std::ostringstream& stream) 
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE), 
-      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES) 
+  tostream_visitor(std::ostringstream& stream)
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
     {};
 
   template <typename T> void operator()(const T &op1) const {
@@ -442,8 +482,10 @@ public:
     stream << "]";
   }
 
+  void operator()(const FunctionType &v) const {
+	stream << v;
+  }
 };
-
 
 std::string Value::toString() const
 {
@@ -519,7 +561,7 @@ public:
 	std::string operator()(const RangeType &v) const
 		{
 			const uint32_t steps = v.numValues();
-			if (steps >= 10000) {
+			if (steps >= RangeType::MAX_RANGE_STEPS) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 				return "";
 			}
@@ -607,14 +649,6 @@ RangeType Value::toRange() const
   else return RangeType(0,0,0);
 }
 
-Value &Value::operator=(const Value &v)
-{
-  if (this != &v) {
-    this->value = v.value;
-  }
-  return *this;
-}
-
 class equals_visitor : public boost::static_visitor<bool>
 {
 public:
@@ -623,6 +657,14 @@ public:
   }
 
   template <typename T> bool operator()(const T &op1, const T &op2) const {
+    return op1 == op2;
+  }
+
+  bool operator()(const bool &op1, const double &op2) const {
+    return op1 == op2;
+  }
+
+  bool operator()(const double &op1, const bool &op2) const {
     return op1 == op2;
   }
 };
@@ -645,8 +687,12 @@ bool Value::operator!=(const Value &v) const
 			return false;																											\
 		}																																		\
 																																				\
-		bool operator()(const bool &op1, const bool &op2) const {						\
+		template <typename T> bool operator()(const T &op1, const T &op2) const {	\
 			return op1 op op2;																								\
+		}																																		\
+																																				\
+		bool operator()(const FunctionType &op1, const FunctionType &op2) const {	\
+			return false;																											\
 		}																																		\
 																																				\
 		bool operator()(const bool &op1, const double &op2) const {					\
@@ -654,14 +700,6 @@ bool Value::operator!=(const Value &v) const
 		}																																		\
 																																				\
 		bool operator()(const double &op1, const bool &op2) const {					\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const double &op1, const double &op2) const {				\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const str_utf8_wrapper &op1, const str_utf8_wrapper &op2) const {	\
 			return op1 op op2;																								\
 		}																																		\
 	}
@@ -777,12 +815,21 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 	assert(vectorvec.size() == matrixvec.size());
 // Vector * Matrix
 	VectorType dstv;
-	for (size_t i=0;i<matrixvec[0]->toVector().size();i++) {
+	size_t firstRowSize =  matrixvec[0]->toVector().size();
+	for (size_t i=0;i<firstRowSize;i++) {
 		double r_e = 0.0;
 		for (size_t j=0;j<vectorvec.size();j++) {
 			if (matrixvec[j]->type() != ValueType::VECTOR ||
-					matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER || 
-					vectorvec[j]->type() != ValueType::NUMBER) {
+					matrixvec[j]->toVector().size() != firstRowSize) {
+				PRINTB("WARNING: Matrix must be rectangular. Problem at row %lu", j);
+				return Value::undefined;
+			}
+			if (vectorvec[j]->type() != ValueType::NUMBER) {
+				PRINTB("WARNING: Vector must contain only numbers. Problem at index %lu", j);
+				return Value::undefined;
+			}
+			if (matrixvec[j]->toVector()[i]->type() != ValueType::NUMBER) {
+				PRINTB("WARNING: Matrix must contain only numbers. Problem at row %lu, col %lu", j % i);
 				return Value::undefined;
 			}
 			r_e += vectorvec[j]->toDouble() * matrixvec[j]->toVector()[i]->toDouble();
@@ -953,49 +1000,39 @@ Value Value::operator[](const Value &v) const
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }
 
-void RangeType::normalize()
-{
-  if ((step_val>0) && (end_val < begin_val)) {
-    std::swap(begin_val,end_val);
-    printDeprecation("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
-  }
-}
-
 uint32_t RangeType::numValues() const
 {
-  if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
+
+	if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
 		return 0;
 	}
 
-  if (std::isinf(begin_val) || (std::isinf(end_val))) {
-    return std::numeric_limits<uint32_t>::max();
-  }
+	if (step_val < 0) {
+		if (begin_val < end_val) {
+			return 0;
+		}
+	} else {
+		if (begin_val > end_val) {
+		return 0;
+		}
+	}
 
-  if ((begin_val == end_val) || std::isinf(step_val)) {
-    return 1;
-  }
-  
-  if (step_val == 0) { 
-    return std::numeric_limits<uint32_t>::max();
-  }
+	if ((begin_val == end_val) || std::isinf(step_val)) {
+		return 1;
+	}
 
-  double numvals;
-  if (step_val < 0) {
-    if (begin_val < end_val) {
-      return 0;
-    }
-    numvals = (begin_val - end_val) / (-step_val) + 1;
-  } else {
-    if (begin_val > end_val) {
-      return 0;
-    }
-    numvals = (end_val - begin_val) / step_val + 1;
-  }
-  
-  return numvals;
+	if (std::isinf(begin_val) || std::isinf(end_val) || step_val == 0) {
+		return std::numeric_limits<uint32_t>::max();
+	}
+ 
+	// Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
+	const uint32_t max = std::numeric_limits<uint32_t>::max();
+	uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
+	return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type)
+RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type), 
+		num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
 {
 	update_type();
 }
@@ -1005,16 +1042,19 @@ void RangeType::iterator::update_type()
 	if (range.step_val == 0) {
 		type = type_t::RANGE_TYPE_END;
 	} else if (range.step_val < 0) {
-		if (val < range.end_val) {
+		if (i_step >= num_values) {
 			type = type_t::RANGE_TYPE_END;
 		}
 	} else {
-		if (val > range.end_val) {
+		if (i_step >= num_values) {
 			type = type_t::RANGE_TYPE_END;
 		}
 	}
 
-	if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) type = type_t::RANGE_TYPE_END;
+	if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) {
+		type = type_t::RANGE_TYPE_END;
+		i_step = num_values;
+	}
 }
 
 RangeType::iterator::reference RangeType::iterator::operator*()
@@ -1029,7 +1069,7 @@ RangeType::iterator::pointer RangeType::iterator::operator->()
 
 RangeType::iterator::self_type RangeType::iterator::operator++()
 {
-	val += range.step_val;
+	val = range.begin_val + range.step_val * ++i_step;
 	update_type();
 	return *this;
 }
@@ -1053,6 +1093,20 @@ bool RangeType::iterator::operator==(const self_type &other) const
 bool RangeType::iterator::operator!=(const self_type &other) const
 {
 	return !(*this == other);
+}
+
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
+	stream << "function(";
+	bool first = true;
+	for (const auto& arg : f.args) {
+		stream << (first ? "" : ", ") << arg->name;
+		if (arg->expr) {
+			stream << " = " << *arg->expr;
+		}
+		first = false;
+	}
+	stream << ") " << *f.expr;
+	return stream;
 }
 
 ValuePtr::ValuePtr()
@@ -1101,6 +1155,11 @@ ValuePtr::ValuePtr(const Value::VectorType &v)
 }
 
 ValuePtr::ValuePtr(const RangeType &v)
+{
+	this->reset(new Value(v));
+}
+
+ValuePtr::ValuePtr(const FunctionType &v)
 {
 	this->reset(new Value(v));
 }

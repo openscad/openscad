@@ -290,6 +290,7 @@ case $OS in
         FONTDIR=OpenSCAD.app/Contents/Resources/fonts
         TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/locale
         COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
+        TEMPLATESDIR=OpenSCAD.app/Contents/Resources/templates
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
@@ -298,6 +299,7 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
+        TEMPLATESDIR=$DEPLOYDIR/openscad-$VERSION/templates/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
@@ -307,6 +309,7 @@ case $OS in
         FONTDIR=openscad-$VERSION/fonts/
         TRANSLATIONDIR=openscad-$VERSION/locale/
         COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
+        TEMPLATESDIR=openscad-$VERSION/templates/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -340,6 +343,11 @@ if [ -n $COLORSCHEMESDIR ]; then
   echo $COLORSCHEMESDIR
   mkdir -p $COLORSCHEMESDIR
   cp -a color-schemes/* $COLORSCHEMESDIR
+fi
+if [ -n $TEMPLATESDIR ]; then
+  echo $TEMPLATESDIR
+  mkdir -p $TEMPLATESDIR
+  cp -a templates/* $TEMPLATESDIR
 fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR

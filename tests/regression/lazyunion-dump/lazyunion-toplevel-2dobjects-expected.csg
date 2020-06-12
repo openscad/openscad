@@ -1,0 +1,5 @@
+square(size = [10, 10], center = true);
+multmatrix([[1, 0, 0, 11], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	circle($fn = 0, $fa = 12, $fs = 2, r = 5);
+}
+

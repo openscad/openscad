@@ -40,22 +40,22 @@ class ProjectionModule : public AbstractModule
 {
 public:
 	ProjectionModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new ProjectionNode(inst);
+	auto node = new ProjectionNode(inst, evalctx);
 
-	AssignmentList args{Assignment("cut")};
-	AssignmentList optargs{Assignment("convexity")};
-	
-	Context c(ctx);
-	c.setVariables(evalctx, args, optargs);
-	inst->scope.apply(*evalctx);
+	AssignmentList args{assignment("cut")};
+	AssignmentList optargs{assignment("convexity")};
 
-	auto convexity = c.lookup_variable("convexity", true);
-	auto cut = c.lookup_variable("cut", true);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args, optargs);
+	inst->scope.apply(evalctx);
+
+	auto convexity = c->lookup_variable("convexity", true);
+	auto cut = c->lookup_variable("cut", true);
 
 	node->convexity = static_cast<int>(convexity->toDouble());
 
@@ -77,5 +77,8 @@ std::string ProjectionNode::toString() const
 
 void register_builtin_projection()
 {
-	Builtins::init("projection", new ProjectionModule());
+	Builtins::init("projection", new ProjectionModule(),
+				{
+					"projection(cut = false)",
+				});
 }

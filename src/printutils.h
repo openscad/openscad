@@ -4,6 +4,7 @@
 #include <list>
 #include <iostream>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <libintl.h>
 #undef snprintf
@@ -77,6 +78,7 @@ void PRINTDEBUG(const std::string &filename,const std::string &msg);
 
 std::string two_digit_exp_format( std::string doublestr );
 std::string two_digit_exp_format( double x );
+const std::string& quoted_string(const std::string& str);
 
 // extremely simple logging, eventually replace with something like boost.log
 // usage: logstream out(5); openscad_loglevel=6; out << "hi";

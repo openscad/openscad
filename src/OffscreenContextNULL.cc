@@ -55,7 +55,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return true;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, char const * filename)
+bool save_framebuffer(const OffscreenContext *ctx, char const * filename)
 {
         std::ofstream fstream(filename,std::ios::out|std::ios::binary);
         if (!fstream.is_open()) {
@@ -68,7 +68,7 @@ bool save_framebuffer(OffscreenContext *ctx, char const * filename)
         return true;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
 {
   output << "NULLGL framebuffer";
   return true;

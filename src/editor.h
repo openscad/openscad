@@ -6,6 +6,7 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 #include <QTextEdit>
+#include "indicatordata.h"
 
 class EditorInterface : public QWidget
 {
@@ -25,10 +26,16 @@ public:
 	virtual void replaceAll(const QString &findText, const QString &replaceText) = 0;
 	virtual QStringList colorSchemes() = 0;
 	virtual bool canUndo() = 0;
+	virtual void addTemplate() = 0;
+	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
+	virtual QMenu * createStandardContextMenu() = 0;
+	virtual QPoint mapToGlobal(const QPoint &) = 0;
+	virtual void setCursorPosition(int /*line*/, int /*col*/) {};
 
 signals:
   void contentsChanged();
-  void modificationChanged(bool);												
+  void modificationChanged(bool, EditorInterface *);
+  void showContextMenuEvent(const QPoint& pos);
 
 public slots:
 	virtual void zoomIn() = 0;
@@ -51,7 +58,19 @@ public slots:
 	virtual void copy() = 0;
 	virtual void paste() = 0;
 	virtual void initFont(const QString&, uint) = 0;
+	virtual void displayTemplates() = 0;
+	virtual void toggleBookmark() = 0;
+	virtual void nextBookmark() = 0;
+	virtual void prevBookmark() = 0;
+	virtual void jumpToNextError() = 0;
 
 private:
 	QSize initialSizeHint;
+
+public:
+	bool contentsRendered; // Set if the source code has changes since the last render (F6)
+	int findState;
+	QString filepath;
+	std::string autoReloadId;
+	std::vector<IndicatorData> indicatorData;
 };

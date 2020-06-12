@@ -28,6 +28,15 @@ option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
+option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
+
+if(PROFILE)
+SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
+SET(GCC_COVERAGE_LINK_FLAGS    "--coverage")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+endif()
 
 if (NULLGL)
   set(HEADLESS ON)
@@ -56,7 +65,7 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 # Use same optimization as qmake build
 string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
@@ -68,7 +77,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   endif()
 endif()
 
-set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system thread regex program_options)
+set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
 
 find_package(PkgConfig)
 
@@ -136,18 +145,11 @@ if (MSVC)
   list(APPEND COMMON_LIBRARIES Eigen3::Eigen)
 
   set(Boost_USE_STATIC_LIBS TRUE)
-  find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
+  find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES})
   message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
   message("BOOST DIRS ${Boost_INCLUDE_DIRS}")
   include_directories(${Boost_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${Boost_LIBRARIES})
-
-  # Check if boost dependency libraries have been found too
-  list(LENGTH BOOST_DIRECTLY_REQUIRED_LIBRARIES BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
-  list(LENGTH Boost_LIBRARIES Boost_LIBRARIES_LENGTH)
-  if(Boost_LIBRARIES_LENGTH EQUAL BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
-    message(FATAL_ERROR "No dependent Boost libraries found. Your CMake (${CMAKE_VERSION}) version might be too old for the version of boost you are using (${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}). In that case, you should have received warnings above of the type: 'Imported targets not available for Boost version ${Boost_VERSION}'")
-  endif()
 
   find_package(harfbuzz CONFIG REQUIRED)
   find_path(HARFBUZZ_INCLUDE_DIRS harfbuzz)
@@ -193,17 +195,10 @@ else()
   include_directories(${EIGEN3_INCLUDE_DIR})
   add_definitions(-DEIGEN_DONT_ALIGN)
 
-  find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES} QUIET)
+  find_package(Boost 1.36 REQUIRED COMPONENTS ${BOOST_DIRECTLY_REQUIRED_LIBRARIES})
   message(STATUS "Boost: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
   include_directories(${Boost_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${Boost_LIBRARIES})
-
-  # Check if boost dependency libraries have been found too
-  list(LENGTH BOOST_DIRECTLY_REQUIRED_LIBRARIES BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
-  list(LENGTH Boost_LIBRARIES Boost_LIBRARIES_LENGTH)
-  if(Boost_LIBRARIES_LENGTH EQUAL BOOST_DIRECTLY_REQUIRED_LIBRARIES_LENGTH)
-    message(FATAL_ERROR "No dependent Boost libraries found. Your CMake (${CMAKE_VERSION}) version might be too old for the version of boost you are using (${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}). In that case, you should have received warnings above of the type: 'Imported targets not available for Boost version ${Boost_VERSION}'")
-  endif()
 
   find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
   message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
@@ -456,6 +451,7 @@ set(CORE_SOURCES
   src/FontCache.cc
   src/DrawingCallback.cc
   src/FreetypeRenderer.cc
+  src/RenderStatistic.cc
   src/ext/lodepng/lodepng.cpp
   src/PlatformUtils.cc 
   src/libsvg/circle.cc
@@ -503,7 +499,6 @@ set(NOCGAL_SOURCES
   src/export_svg.cc
   src/LibraryInfo.cc
   src/polyset.cc
-  src/polyset-gl.cc
   src/polyset-utils.cc
   src/GeometryUtils.cc)
 
@@ -539,7 +534,9 @@ set(COMMON_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/Tree.cc)
+  src/Tree.cc
+  src/initConfig.cc
+  )
 
 #
 # Offscreen OpenGL context source code
@@ -567,6 +564,7 @@ else()
     src/ThrownTogetherRenderer.cc
     src/renderer.cc
     src/render.cc
+    src/mouseselector.cc
     src/OpenCSGRenderer.cc)
 endif()
 
@@ -588,6 +586,7 @@ set(GUI_SOURCES
   src/WindowManager.cc
   src/settings.cc
   src/Preferences.cc
+  src/initConfig.cc
   src/SettingsWriter.cc
   src/FontListDialog.cc
   src/FontListTableView.cc
@@ -603,10 +602,8 @@ set(GUI_SOURCES
   src/Console.cc
   src/UIUtils.cc
   src/scadlexer.cpp
-  src/highlighter.cc
   src/cgalworker.cc
   src/editor.cc
-  src/legacyeditor.cc
   src/scintillaeditor.cpp
   src/launchingscreen.cc
   src/QWordSearchField.cc
@@ -623,6 +620,9 @@ set(GUI_SOURCES
   src/parameter/parametertext.cpp
   src/parameter/parametervector.cpp
   src/parameter/parametervirtualwidget.cpp
+  src/scadapi.cc
+  src/tabmanager.cc
+  src/tabwidget.cc
   src/input/AxisConfigWidget.cc
   src/input/ButtonConfigWidget.cc
   src/input/InputDriver.cc

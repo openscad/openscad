@@ -4,14 +4,14 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, const ValuePtr defaultValue)
+ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const ValuePtr defaultValue)
 {
   this->set = false;
-  this->name = assignment.name;
-  const Annotation *param = assignment.annotation("Parameter");
+  this->name = assignment->name;
+  const Annotation *param = assignment->annotation("Parameter");
   const ValuePtr values = param->evaluate(ctx);
   setValue(defaultValue, values);
-  const Annotation *desc = assignment.annotation("Description");
+  const Annotation *desc = assignment->annotation("Description");
 
   if (desc) {
     const ValuePtr v = desc->evaluate(ctx);
@@ -20,7 +20,7 @@ ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, con
     }
   }
   
-  const Annotation *group = assignment.annotation("Group");
+  const Annotation *group = assignment->annotation("Group");
   if (group) {
     const ValuePtr v = group->evaluate(ctx);
     if (v->type() == Value::ValueType::STRING) {
@@ -31,13 +31,13 @@ ParameterObject::ParameterObject(Context *ctx, const Assignment &assignment, con
   }
 }
 
-void ParameterObject::applyParameter(Assignment &assignment)
+void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
 {
-  ModuleContext ctx;
-  const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
+  ContextHandle<Context> ctx{Context::create<Context>()};
+  const ValuePtr defaultValue = assignment->expr->evaluate(ctx.ctx);
   
   if (defaultValue->type() == dvt) {
-    assignment.expr = shared_ptr<Expression>(new Literal(value));
+    assignment->expr = shared_ptr<Expression>(new Literal(value));
   }
 }
 

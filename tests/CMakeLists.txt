@@ -228,7 +228,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION "")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=function-literals")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -259,6 +260,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (TESTCMD_ARGS)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
+
+      # Apply lazy-union to *all* tests for comprehensive testing of this experimental feature.
+      # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
+      # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
+      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
       # debug message
       #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
@@ -350,8 +356,10 @@ file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.sca
 file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
+file(GLOB REDEFINITION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/redefinition/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
+file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_SOURCE_DIR}/../examples/Old/example015.scad
@@ -386,9 +394,10 @@ list(APPEND MISC_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.sca
 list(APPEND FAILING_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-comment.scad
                           ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-include.scad
                           ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-string.scad
-                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad)
+                          ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1890-use.scad
+                          )
 
-list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
+list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate-parameters.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-evaluation-tests.scad
@@ -451,6 +460,11 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/issues/issue3118-recur-limit.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/root-modifiers.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/root-modifier-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/use-order-test/use-order-test.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -459,9 +473,11 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/assert-expression-fail3-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/assert-expression-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/echo-expression-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/expression-precedence-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-test-single.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/let-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/list-comprehensions.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/exponent-operator-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/ifelse-ast-dump.scad
             )
 
@@ -613,8 +629,14 @@ list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES}
 list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 
 
-# No tests related to experimental features currently
-#experimental_tests()
+#
+# Add experimental features tests
+#
+experimental_tests(echotest_allexpressions)
+experimental_tests(astdumptest_allexpressions)
+experimental_tests(echotest_function-literal-tests)
+
+
 
 # Test config handling
 
@@ -679,15 +701,17 @@ list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
 #)
 
-list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
-list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
-foreach(FILE ${BUGS_FILES})
+list(APPEND OPENCSGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
+list(APPEND CGALPNGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
+foreach(FILE ${BUGS_FILES} ${BUGS_2D_FILES})
   get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
+endforeach()
+foreach(FILE ${BUGS_FILES})
   get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(monotonepngtest ${FILE} TEST_FULLNAME)
@@ -736,6 +760,11 @@ endforeach()
 # Workaround Gallium bugs
 if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
   message(STATUS "Workaround PPC bug https://bugs.freedesktop.org/show_bug.cgi?id=42540")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
+endif()
+if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips")
+  message(STATUS "Workaround MIPS bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=868745")
   set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
   set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
 endif()
@@ -824,6 +853,37 @@ foreach(TEST ${SVG_VIEWBOX_TESTS})
 endforeach()
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/box-w-holes.scad)
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/extruded/simple-center.scad)
+
+
+# TODO: use experimental_tests macro?
+
+# lazy-union
+list(APPEND LAZYUNION_3D_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-objects.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-nested-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-children.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-hull-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-root-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-intersection-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-difference-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-minkowski-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-transform-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/2d-3d.scad)
+
+list(APPEND LAZYUNION_2D_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-2dobjects.scad)
+
+list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
+
+add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_FILES})
+add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})
+add_cmdline_test(lazyunion-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_FILES})
+add_cmdline_test(lazyunion-monotonepng EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
+add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 
 #
 # Trivial Export/Import files

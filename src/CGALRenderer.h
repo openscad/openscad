@@ -12,11 +12,13 @@ public:
 	void setColorScheme(const ColorScheme &cs) override;
 	BoundingBox getBoundingBox() const override;
 
-private:
-	shared_ptr<class CGAL_OGL_Polyhedron> getPolyhedron() const;
-	void buildPolyhedron() const;
+public:
+	mutable std::list<shared_ptr<class CGAL_OGL_Polyhedron> > polyhedrons;
+	std::list<shared_ptr<const class PolySet> > polysets;
+	std::list<shared_ptr<const CGAL_Nef_polyhedron> > nefPolyhedrons;
 
-	mutable shared_ptr<class CGAL_OGL_Polyhedron> polyhedron;
-	shared_ptr<const CGAL_Nef_polyhedron> N;
-	shared_ptr<const class PolySet> polyset;
+private:
+	void addGeometry(const shared_ptr<const class Geometry> &geom);
+	const std::list<shared_ptr<class CGAL_OGL_Polyhedron> > &getPolyhedrons() const;
+	void buildPolyhedrons() const;
 };

@@ -63,7 +63,6 @@ primitives, each having a CSG type associated with it.
 	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
 */
 
-
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
 	// In case we're creating a CSG terms from a pruned tree, left/right can be nullptr
@@ -98,11 +97,11 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 		}
 	}
 
-	return shared_ptr<CSGNode>(new CSGOperation(type, left, right));
+	return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: label(label), matrix(matrix), color(color)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label, const int index)
+	: label(label), matrix(matrix), color(color), index(index)
 {
 	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
@@ -113,14 +112,6 @@ CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shar
 {
 	this->children.push_back(left);
 	this->children.push_back(right);
-	initBoundingBox();
-}
-
-CSGOperation::CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right)
-	: type(type)
-{
-	this->children.push_back(shared_ptr<CSGNode>(left));
-	this->children.push_back(shared_ptr<CSGNode>(right));
 	initBoundingBox();
 }
 
@@ -154,24 +145,67 @@ void CSGOperation::initBoundingBox()
 	}
 }
 
-std::string CSGLeaf::dump()
+std::string CSGLeaf::dump() const
 {
 	return this->label;
 }
 
-std::string CSGOperation::dump()
+// Recursive traversal can cause stack overflow with very large loops of child nodes,
+// so tree is traverse iteratively, managing our own stack.
+std::string CSGOperation::dump() const
 {
-	switch (type) {
-	case OpenSCADOperator::UNION:
-		return STR("(" << left()->dump() << " + " << right()->dump() << ")");
-	case OpenSCADOperator::INTERSECTION:
-		return STR("(" << left()->dump() << " * " << right()->dump() << ")");
-	case OpenSCADOperator::DIFFERENCE:
-		return STR("(" << left()->dump() << " - " << right()->dump() << ")");
-	default:
-		assert(false);
-		return "";
-	}
+	// tuple(node pointer, postfix string, ispostfix bool)
+	std::stack<std::tuple<const CSGOperation*, std::string, bool>> callstack;
+	callstack.emplace(this, "", false);
+  std::ostringstream out;
+	const CSGOperation* node;
+	std::string postfixstr;
+	bool ispostfix;
+  do {
+		std::tie(node, postfixstr, ispostfix) = callstack.top();
+		if (!ispostfix) { // handle left child. only right child uses a prefix string
+			std::string lpostfix;
+			switch (node->type) {
+			case OpenSCADOperator::UNION:
+				lpostfix = " + ";
+				break;
+			case OpenSCADOperator::INTERSECTION:
+				lpostfix = " * ";
+				break;
+			case OpenSCADOperator::DIFFERENCE:
+				lpostfix = " - ";
+				break;
+			default:
+				assert(false);
+			}
+
+			out << '(';
+
+			// mark current node as postfix before (maybe) pushing left child
+			ispostfix = std::get<2>(callstack.top()) = true;
+
+			if(auto opl = dynamic_pointer_cast<CSGOperation>(node->left())) {
+				callstack.emplace(opl.get(), lpostfix, false);
+				continue;
+			} else {
+				out << node->left()->dump() << lpostfix;
+			}
+		}
+
+		// postfix traversal of node, handle right child
+		if (ispostfix) {
+			callstack.pop();
+			if(auto opr = dynamic_pointer_cast<CSGOperation>(node->right())) {
+				callstack.emplace(opr.get(), ")", false);
+				continue;
+			} else {
+				out << node->right()->dump() << ")";
+			}
+			out << postfixstr;
+		}
+
+	} while(!callstack.empty());
+	return out.str();
 }
 
 void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
@@ -182,10 +216,10 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 	do {
 		auto args = callstack.top();
 		callstack.pop();
-		csgnode = std::get<0>(args); 
-		type = std::get<1>(args); 
+		csgnode = std::get<0>(args);
+		type = std::get<1>(args);
 		flags = std::get<2>(args);
-			
+
 		auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
 		if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {

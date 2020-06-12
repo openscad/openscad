@@ -15,8 +15,8 @@ public:
 
 	virtual void print(std::ostream &stream, const std::string &indent, const bool inlined) const;
 	void print(std::ostream &stream, const std::string &indent) const override { print(stream, indent, false); };
-	class AbstractNode *evaluate(const class Context *ctx) const;
-	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
+	class AbstractNode *evaluate(const std::shared_ptr<Context> ctx) const;
+	std::vector<AbstractNode*> instantiateChildren(const std::shared_ptr<Context> evalctx) const;
 
 	// This is only needed for import() and the deprecated *_extrude() modules
 	const std::string &path() const { return this->modpath; }
@@ -40,9 +40,9 @@ protected:
 
 class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
-	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{Assignment("", expr)}, source_path, loc) { }
+	IfElseModuleInstantiation(shared_ptr<class Expression> expr, const std::string &source_path, const Location &loc) : ModuleInstantiation("if", AssignmentList{assignment("", expr)}, source_path, loc) { }
 	~IfElseModuleInstantiation();
-	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
+	std::vector<AbstractNode*> instantiateElseChildren(const std::shared_ptr<Context> evalctx) const;
 	void print(std::ostream &stream, const std::string &indent, const bool inlined) const final;
 
 	LocalScope else_scope;

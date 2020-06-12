@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "value.h"
 #include "AST.h"
 #include "memory.h"
 #include "annotation.h"
@@ -30,7 +29,10 @@ public:
 protected:
 	AnnotationMap annotations;
 };
+
+template<class... Args> shared_ptr<Assignment> assignment(Args... args) {
+	return make_shared<Assignment>(args...);
+}
        
-       
-typedef std::vector<Assignment> AssignmentList;
+typedef std::vector<shared_ptr<Assignment>> AssignmentList;
 typedef std::unordered_map<std::string, const Expression*> AssignmentMap;

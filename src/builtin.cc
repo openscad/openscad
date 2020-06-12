@@ -3,6 +3,8 @@
 #include "module.h"
 #include "expression.h"
 
+std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
+
 Builtins *Builtins::instance(bool erase)
 {
 	static Builtins *builtins = new Builtins;
@@ -21,12 +23,22 @@ void Builtins::init(const std::string &name, class AbstractModule *module)
 	Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string &name, class AbstractFunction *function)
+void Builtins::init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList)
+{
+#ifndef ENABLE_EXPERIMENTAL
+	if (module->is_experimental()) return;
+#endif
+	Builtins::instance()->modules.emplace(name, module);
+	Builtins::keywordList.insert({name, calltipList});
+}
+
+void Builtins::init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (function->is_experimental()) return;
 #endif
 	Builtins::instance()->functions.emplace(name, function);
+	Builtins::keywordList.insert({name, calltipList});
 }
 
 extern void register_builtin_functions();
@@ -53,6 +65,8 @@ extern void initialize_builtin_dxf_dim();
 */
 void Builtins::initialize()
 {
+	Builtins::initKeywordList();
+
 	register_builtin_functions();
 	initialize_builtin_dxf_dim();
 
@@ -90,14 +104,27 @@ std::string Builtins::isDeprecated(const std::string &name) const
 
 Builtins::Builtins()
 {
-	this->assignments.emplace_back("$fn", make_shared<Literal>(0.0));
-	this->assignments.emplace_back("$fs", make_shared<Literal>(2.0));
-	this->assignments.emplace_back("$fa", make_shared<Literal>(12.0));
-	this->assignments.emplace_back("$t", make_shared<Literal>(0.0));
-	this->assignments.emplace_back("$preview", make_shared<Literal>(ValuePtr::undefined)); //undef as should always be overwritten.
+	this->assignments.emplace_back(new Assignment("$fn", make_shared<Literal>(0.0)) );
+	this->assignments.emplace_back(new Assignment("$fs", make_shared<Literal>(2.0)) );
+	this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
+	this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
+	this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>(ValuePtr::undefined)) ); //undef as should always be overwritten.
 
 	Value::VectorType zero3{0.0, 0.0, 0.0};
-	this->assignments.emplace_back("$vpt", make_shared<Literal>(zero3));
-	this->assignments.emplace_back("$vpr", make_shared<Literal>(zero3));
-	this->assignments.emplace_back("$vpd", make_shared<Literal>(500));
+	this->assignments.emplace_back(new Assignment("$vpt", make_shared<Literal>(zero3)) );
+	this->assignments.emplace_back(new Assignment("$vpr", make_shared<Literal>(zero3)) );
+	this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500)) );
+}
+
+void Builtins::initKeywordList()
+{
+	Builtins::keywordList.insert({"else", {}});
+	Builtins::keywordList.insert({"each", {}});
+	Builtins::keywordList.insert({"module", {}});
+	Builtins::keywordList.insert({"function", {}});
+	Builtins::keywordList.insert({"true", {}});
+	Builtins::keywordList.insert({"false", {}});
+	Builtins::keywordList.insert({"undef", {}});
+	Builtins::keywordList.insert({"use", {}});
+	Builtins::keywordList.insert({"include", {}});
 }

@@ -32,8 +32,8 @@ WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, lin
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 47
 WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 54
 WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 55
-WARNING: argument center supplied more then once, in file errors-warnings.scad, line 58
-WARNING: argument r supplied more then once, in file errors-warnings.scad, line 59
+WARNING: argument center supplied more than once, in file errors-warnings.scad, line 58
+WARNING: argument r supplied more than once, in file errors-warnings.scad, line 59
 WARNING: rotate_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 61
 WARNING: linear_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 65
 WARNING: linear_extrude(..., scale=inf) could not be converted, in file errors-warnings.scad, line 65
@@ -49,8 +49,10 @@ ECHO: undef
 ECHO: "dim-all.dxf"
 WARNING: module cube() does not support child modules, in file errors-warnings.scad, line 104
 WARNING: module sphere() does not support child modules, in file errors-warnings.scad, line 107
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file ../3D/features/for-tests.scad, line 19
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file ../3D/features/for-tests.scad, line 31
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 35
+WARNING: begin is smaller than the end, but step is negative, in file ../3D/features/for-tests.scad, line 38
 ECHO: "a"
 ECHO: "↑"
 ECHO: "b"
@@ -63,17 +65,35 @@ ECHO: "-INF", 0
 ECHO: "INF", 0
 ECHO: "-INF", 1
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 72
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file ../3D/features/for-tests.scad, line 73
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 73
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file ../3D/features/for-tests.scad, line 74
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 74
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 75
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 77
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 78
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 79
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 80
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 81
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 82
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 83
 WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 84
+ECHO: "[0:1:4294967296] end capped"
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 90
+ECHO: "[0:1:8589934592] end capped"
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 95
+ECHO: "[0:1:4294967295] end capped"
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 100
+ECHO: "[0:1:4294967294] end capped"
+WARNING: Bad range parameter in for statement: too many elements (4294967295), in file ../3D/features/for-tests.scad, line 106
+ECHO: "[0:1:5000] end capped"
+ECHO: 0
+ECHO: 1
+ECHO: 4999
+ECHO: 5000
+ECHO: "[0:1:5000] difference from 1, 5000"
+ECHO: "diff=", 0, ", i==1"
+ECHO: "diff=", 0, ", i==5000"
+ECHO: "[0:1:5000] difference from 1, 5000"
+ECHO: "diff=", 0, ", i==1"
+ECHO: "diff=", 0, ", i==5000"
+ECHO: "[0:1] difference from 1"
+ECHO: "diff=", 0, ", i==1"
 ECHO: "mainfile"
 WARNING: Ignoring unknown variable 'notDefinedVariable', in file errors-warnings-included.scad, line 5.
 ECHO: undef

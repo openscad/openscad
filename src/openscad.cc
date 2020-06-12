@@ -46,6 +46,7 @@
 #include "FontCache.h"
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
+#include "RenderStatistic.h"
 
 #include"parameter/parameterset.h"
 #include <string>
@@ -61,6 +62,7 @@
 #include "CSGTreeEvaluator.h"
 
 #include "Camera.h"
+#include <chrono>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -83,12 +85,12 @@ namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 using std::string;
 using std::vector;
+using std::unique_ptr;
 using boost::lexical_cast;
 using boost::bad_lexical_cast;
 using boost::is_any_of;
 
 std::string commandline_commands;
-std::string currentdir;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
@@ -269,7 +271,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, const char *output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const char *export_format)
+int cmdline(const char *deps_output_file, const std::string &filename, const std::string &output_file, const fs::path &original_path, const std::string &parameterFile, const std::string &setName, const ViewOptions& viewOptions, Camera camera, const std::string &export_format)
 {
 	Tree tree;
 	boost::filesystem::path doc(filename);
@@ -280,40 +282,39 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 	ExportFileFormatOptions exportFileFormatOptions;
 	FileFormat curFormat;
-	std::string extsn;
+	std::string formatName;
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
-	
-	if(export_format) {
-		PRINT("Using extension of --export-format option");
-		extsn = export_format;
+
+	if(!export_format.empty()) {
+		formatName = export_format;
 	}
-	else { 
+	else {
 		auto suffix = fs::path(output_file_str).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
-			extsn = suffix;
+			formatName = suffix;
 		}
 	}
 
-	if(extsn.empty()) {
+	if(formatName.empty()) {
 		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
 		return 1;
 	}
-	
-	curFormat = exportFileFormatOptions.exportFileFormats.at(extsn);
-	std::string filename_str = fs::path(output_file_str).replace_extension(extsn).generic_string();
+
+	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
+	std::string filename_str = fs::path(output_file_str).generic_string();
 	new_output_file = filename_str.c_str();
 
 	set_render_color_scheme(arg_colorscheme, true);
 
 	// Top context - this context only holds builtins
-	BuiltinContext top_ctx;
-	const bool preview = curFormat == FileFormat::PNG ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-	top_ctx.set_variable("$preview", ValuePtr(preview));
+	ContextHandle<BuiltinContext> top_ctx{Context::create<BuiltinContext>()};
+	const bool preview = canPreview(curFormat) ? (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+	top_ctx->set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
-	PRINTDB("BuiltinContext:\n%s", top_ctx.dump(nullptr, nullptr));
+	PRINTDB("BuiltinContext:\n%s", top_ctx->dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (curFormat == FileFormat::ECHO) {
@@ -322,9 +323,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
-	AbstractNode *root_node;
+	const AbstractNode *root_node;
 	AbstractNode *absolute_root_node;
 	shared_ptr<const Geometry> root_geom;
+	unique_ptr<OffscreenView> glview;
 
 	handle_dep(filename);
 
@@ -357,19 +359,23 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	auto fpath = fs::absolute(fs::path(filename));
 	auto fparent = fpath.parent_path();
 	fs::current_path(fparent);
-	top_ctx.setDocumentPath(fparent.string());
+	top_ctx->setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
-	absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, nullptr);
+	absolute_root_node = root_module->instantiate(top_ctx.ctx, &root_inst, nullptr);
 
 	// Do we have an explicit root node (! modifier)?
-	if (!(root_node = find_root_tag(absolute_root_node))) {
+	const Location *nextLocation = nullptr;
+	if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
 		root_node = absolute_root_node;
 	}
 	tree.setRoot(root_node);
+	if (nextLocation) {
+		PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
+	}
+	fs::current_path(original_path);
 
 	if (deps_output_file) {
-		fs::current_path(original_path);
 		std::string deps_out(deps_output_file);
 		std::string geom_out(output_file);
 		int result = write_deps(deps_out, geom_out);
@@ -380,7 +386,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 	}
 
 	if (curFormat == FileFormat::CSG) {
-		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -389,10 +394,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
 			fstream << tree.getString(*root_node, "\t") << "\n";
 			fstream.close();
+			fs::current_path(original_path);
 		}
 	}
 	else if (curFormat == FileFormat::AST) {
-		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -401,13 +406,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
 			fstream << root_module->dump("");
 			fstream.close();
+			fs::current_path(original_path);
 		}
 	}
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
-		fs::current_path(original_path);
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", new_output_file);
@@ -421,25 +426,45 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 			fstream.close();
 		}
 	}
+	else if (curFormat == FileFormat::ECHO) {
+		// echo -> don't need to evaluate any geometry
+	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
-			// echo or OpenCSG png -> don't necessarily need geometry evaluation
+		// start measuring render time
+		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		if ((curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+			// OpenCSG or throwntogether png -> just render a preview
+			glview = prepare_preview(tree, viewOptions, camera);
 		} else {
 			// Force creation of CGAL objects (for testing)
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-			if (!root_geom) root_geom.reset(new CGAL_Nef_polyhedron());
-			if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
-				auto N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
-				if (!N) {
-					N = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
-					root_geom.reset(N);
+			if (root_geom) {
+				if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
+					if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
+						auto flatlist = geomlist->flatten();
+						for (auto &child : flatlist) {
+							if (child.second->getDimension() == 3 && !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(child.second)) {
+								child.second.reset(CGALUtils::createNefPolyhedronFromGeometry(*child.second));
+							}
+						}
+						root_geom.reset(new GeometryList(flatlist));
+					} else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
+						root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+					}
 					PRINT("Converted to Nef polyhedron");
 				}
+			} else {
+				root_geom.reset(new CGAL_Nef_polyhedron());
 			}
 		}
 
-		fs::current_path(original_path);
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		RenderStatistic::printCacheStatistic();
+		RenderStatistic::printRenderingTime( std::chrono::duration_cast<std::chrono::milliseconds>(end-begin) );
+		if (root_geom && !root_geom->isEmpty()) {
+			RenderStatistic().print(*root_geom);
+		}
 
 		if(curFormat == FileFormat::STL ||
 			curFormat == FileFormat::OFF ||
@@ -470,7 +495,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
 					success = export_png(root_geom, viewOptions, camera, fstream);
 				} else {
-					success = export_preview_png(tree, viewOptions, camera, fstream);
+					success = export_png(*glview, fstream);
 				}
 				fstream.close();
 			}
@@ -481,6 +506,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
 #endif
+
 	}
 	delete root_node;
 	return 0;
@@ -488,11 +514,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const cha
 
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
-#if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
-#if QT_VERSION < 0x050000
-Q_IMPORT_PLUGIN(qtaccessiblewidgets)
-#endif // QT_VERSION
-#endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
 #include "launchingscreen.h"
@@ -514,6 +535,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "input/QGamepadInputDriver.h"
 #endif
 #include <QString>
+#include <QStringList>
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
@@ -599,12 +621,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#else
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-#endif
 #ifdef OPENSCAD_SNAPSHOT
 	app.setWindowIcon(QIcon(":/icons/openscad-nightly.png"));
 #else
@@ -682,14 +700,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		}
 	}
 
-	auto isMdi = settings.value("advanced/mdi", true).toBool();
-	if (isMdi) {
-		for(const auto &infile : inputFiles) {
-		   new MainWindow(assemblePath(original_path, infile));
-	    }
-	} else {
-	   new MainWindow(assemblePath(original_path, inputFiles[0]));
+	QStringList inputFilesList;
+	for(const auto &infile: inputFiles) {
+		inputFilesList.append(assemblePath(original_path, infile));
 	}
+	new MainWindow(inputFilesList);
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
@@ -819,15 +834,15 @@ int main(int argc, char **argv)
 
 	auto original_path = fs::current_path();
 
-	const char *output_file = nullptr;
+	vector<string> output_files;
 	const char *deps_output_file = nullptr;
-	const char *export_format = nullptr;
-	
+	std::string export_format;
+
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("export-format", po::value<string>(), "format of exported scad file, arg can be any of file extension in -o option. It overrides the file extension in -o option\n")
-		("o,o", po::value<string>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg\n")
+		("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions\n")
+		("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg. (May be used multiple time for different exports)\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
@@ -950,19 +965,15 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("o")) {
-		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0], desc, true);
-		output_file = vm["o"].as<string>().c_str();
+		output_files = vm["o"].as<vector<string>>();
 	}
 	if (vm.count("s")) {
 		printDeprecation("The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], desc, true);
-		output_file = vm["s"].as<string>().c_str();
+		output_files.push_back(vm["s"].as<string>());
 	}
 	if (vm.count("x")) {
 		printDeprecation("The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0], desc, true);
-		output_file = vm["x"].as<string>().c_str();
+		output_files.push_back(vm["x"].as<string>());
 	}
 	if (vm.count("d")) {
 		if (deps_output_file) help(argv[0], desc, true);
@@ -1011,22 +1022,20 @@ int main(int argc, char **argv)
 	}
 
 	ExportFileFormatOptions exportFileFormatOptions;
-    if(vm.count("export-format")) {
-        auto tmp_format = vm["export-format"].as<string>();
-        if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
-        	export_format = tmp_format.c_str();
-        }
+	if(vm.count("export-format")) {
+		auto tmp_format = vm["export-format"].as<string>();
+		if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
+			export_format = tmp_format;
+		}
 		else {
-	        PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
-	    }
-    }
-
-	currentdir = fs::current_path().generic_string();
+			PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
+		}
+	}
 
 	Camera camera = get_camera(vm);
 
 	auto cmdlinemode = false;
-	if (output_file) { // cmd-line mode
+	if (!output_files.empty()) { // cmd-line mode
 		cmdlinemode = true;
 		if (!inputFiles.size()) help(argv[0], desc, true);
 	}
@@ -1040,7 +1049,9 @@ int main(int argc, char **argv)
 				rc = info();
 			}
 			else {
-				rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+				for(auto output_file : output_files) {
+					rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+				}
 			}
 		} catch (const HardWarningException &) {
 			rc = 1;
