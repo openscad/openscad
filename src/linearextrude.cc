@@ -135,12 +135,8 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	node->twist = 0.0;
 	twist->getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
-		if (node->slices == 0) {
-			node->slices = Calc::get_slices_from_height_twist(node->height, node->twist, node->fn, node->fs, node->fa);
-		}
 		node->has_twist = true;
 	}
-	node->slices = std::max(node->slices, 1);
 
 	if (node->filename.empty()) {
 		auto instantiatednodes = inst->instantiateChildren(evalctx);

@@ -886,7 +886,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 
 	ps->append(*ps_bottom);
 	delete ps_bottom;
-  // If either scale components are 0, then top will be zero-area, so skip it.
+	// If either scale components are 0, then top will be zero-area, so skip it.
 	if (node.scale_x > 0 && node.scale_y > 0) {
 		Polygon2d top_poly(poly);
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
@@ -896,7 +896,36 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		ps->append(*ps_top);
 		delete ps_top;
 	}
-	size_t slices = node.slices;
+
+	size_t slices;
+	if (node.has_slices) {
+		slices = node.slices;
+	} else if (node.has_twist) {
+		double max_r1_sqr = 0; // r1 is before scaling
+		Vector2d scale(node.scale_x, node.scale_y);
+		for(const auto &o : poly.outlines())
+			for(const auto &v : o.vertices)
+				max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
+		// Calculate Helical curve length for Twist with no Scaling
+		// **** Don't know how to handle twist with non-uniform scaling, ****
+		// **** so just use this straight helix calculation anyways.     ****
+		if ((node.scale_x == 1.0 && node.scale_y == 1.0) || node.scale_x != node.scale_y) {
+			slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
+		} else { // uniform scaling with twist, use conical helix calculation
+			slices = (unsigned int)Calc::get_conical_helix_slices(sqrt(max_r1_sqr), node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
+		}
+	} else if (node.scale_x != node.scale_y) {
+		// Non uniform scaling, w/o twist
+		double max_delta_sqr = 0; // delta from before/after scaling
+		Vector2d scale(node.scale_x, node.scale_y);
+		for(const auto &o : poly.outlines())
+			for(const auto &v : o.vertices)
+				max_delta_sqr = fmax(max_delta_sqr, (v-v.cwiseProduct(scale)).squaredNorm());
+		slices = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
+	} else {
+		// uniform or [1,1] scaling w/o twist needs only one slice
+		slices = 1;
+	}
 
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
@@ -1011,8 +1040,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return nullptr;
 			}
 		}
-		fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 	}
+	fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 	
@@ -1171,9 +1200,9 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
 					if (!chPS) {
 						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-                        if (chN && !chN->isEmpty()) {
+						if (chN && !chN->isEmpty()) {
 							PolySet *ps = new PolySet(3);
-                            bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
 							if (err) {
 								PRINT("ERROR: Nef->PolySet failed");
 							}
