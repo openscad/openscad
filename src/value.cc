@@ -691,7 +691,7 @@ bool Value::operator!=(const Value &v) const
 			return op1 op op2;																								\
 		}																																		\
 																																				\
-		bool operator()(const FunctionType &op1, const FunctionType &op2) const {	\
+		bool operator()(const FunctionType &, const FunctionType &) const {	\
 			return false;																											\
 		}																																		\
 																																				\

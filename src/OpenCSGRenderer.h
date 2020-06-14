@@ -15,7 +15,7 @@ public:
 									shared_ptr<CSGProducts> background_products,
 									GLView::shaderinfo_t *shaderinfo);
 	void draw(bool showfaces, bool showedges) const override;
-	void draw_with_shader(const GLView::shaderinfo_t *shaderinfo) const;
+	void draw_with_shader(const GLView::shaderinfo_t *shaderinfo) const override;
 
 	BoundingBox getBoundingBox() const override;
 private:

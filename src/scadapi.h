@@ -73,7 +73,7 @@ public:
 	ScadApi(QsciScintilla *qsci, QsciLexer *lexer);
 	virtual ~ScadApi();
 
-	void updateAutoCompletionList(const QStringList &context, QStringList &list);
-	void autoCompletionSelected(const QString &selection);
-	QStringList callTips(const QStringList &context, int commas, QsciScintilla::CallTipsStyle style, QList< int > &shifts);
+	void updateAutoCompletionList(const QStringList &context, QStringList &list) override;
+	void autoCompletionSelected(const QString &selection) override;
+	QStringList callTips(const QStringList &context, int commas, QsciScintilla::CallTipsStyle style, QList< int > &shifts) override;
 };
