@@ -14,7 +14,7 @@ PCache::PCache(){
     cstatus = false;
 }
 
-void PCache::init(const std::string _host, const uint _port, const std::string _pass){
+void PCache::init(const std::string _host, const unsigned int _port, const std::string _pass){
     host = _host;
     port = _port;
     pass = _pass;

@@ -11,7 +11,7 @@ class PCache
 public:
     PCache();
 
-    void init(const std::string _host, const uint _port, const std::string _pass);
+    void init(const std::string _host, const unsigned int _port, const std::string _pass);
     bool connect();
     bool connectWithPassword();
     bool Authorize();
@@ -42,7 +42,7 @@ private:
     redisReply* reply;
     bool cstatus;
     std::string host, pass;
-    uint port;
+    unsigned int port;
     std::string err;
 
     static PCache* pCache;

@@ -1079,7 +1079,7 @@ int main(int argc, char **argv)
         if(strs.size()==2 ||strs.size()==3){
             PCSettings::instance()->ipAddress = strs[0];
             try{
-                PCSettings::instance()->port = lexical_cast<uint>(strs[1]);
+                PCSettings::instance()->port = lexical_cast<unsigned int>(strs[1]);
             }catch(bad_lexical_cast &){
                 PRINT("WARNING: Port number must be numerical, using the default Port number 6379");
                 PCSettings::instance()->port = 6379;
