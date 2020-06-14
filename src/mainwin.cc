@@ -127,6 +127,10 @@
 #include <memory>
 #include <QtNetwork>
 
+#ifdef ENABLE_HIREDIS
+#include "pcache.h"
+#endif /* ENABLE_HIREDIS */
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -1162,14 +1166,7 @@ void MainWindow::instantiateRoot()
 void MainWindow::compileCSG()
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-    PCSettings::instance()->enablePersistentCache = Preferences::inst()->getValue("advanced/enable_persistent_cache").toBool();
-    if(PCSettings::instance()->enablePersistentCache){
-        PCSettings::instance()->ipAddress = Preferences::inst()->getValue("advanced/ipAddressEdit").toString().toStdString();
-        PCSettings::instance()->port = Preferences::inst()->getValue("advanced/ipAddressEdit").toInt();
-        if(Preferences::inst()->getValue("advanced/enablePasswordAuth").toBool()){
-            PCSettings::instance()->password = Preferences::inst()->getValue("advanced/passwordEdit").toString().toStdString();
-        }
-    }
+
 	try{
 		assert(this->root_node);
 		PRINT("Compiling design (CSG Products generation)...");
@@ -1793,10 +1790,16 @@ void MainWindow::actionReloadRenderPreview()
 
 	// PRINT("Parsing design (AST generation)...");
 	// this->processEvents();
+#ifdef ENABLE_HIREDIS
+    connectPC();
+#endif
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(true));
 	compile(true);
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 }
 
 void MainWindow::csgReloadRender()
@@ -1829,6 +1832,9 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
+#ifdef ENABLE_HIREDIS
+    connectPC();
+#endif
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
@@ -1840,6 +1846,9 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 		// it must be called from the mainloop
 		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
 	}
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 }
 
 void MainWindow::csgRender()
@@ -2045,11 +2054,17 @@ void MainWindow::actionRender()
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
+#ifdef ENABLE_HIREDIS
+    connectPC();
+#endif
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(false));
 	compile(false);
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 }
 
 void MainWindow::cgalRender()
@@ -3107,3 +3122,23 @@ QString MainWindow::exportPath(const char *suffix) {
 	}
 	return path;
 }
+#ifdef ENABLE_HIREDIS
+void MainWindow::connectPC(){
+    PCSettings::instance()->enablePersistentCache = Preferences::inst()->getValue("advanced/enable_persistent_cache").toBool();
+    if(PCSettings::instance()->enablePersistentCache){
+        PCSettings::instance()->ipAddress = Preferences::inst()->getValue("advanced/ipAddressEdit").toString().toStdString();
+        PCSettings::instance()->port = Preferences::inst()->getValue("advanced/portNumberEdit").toUInt();
+        PCSettings::instance()->enableAuth = Preferences::inst()->getValue("advanced/enablePasswordAuth").toBool();
+        if(PCSettings::instance()->enableAuth){
+            PCSettings::instance()->password = Preferences::inst()->getValue("advanced/passwordEdit").toString().toStdString();
+        }
+    }
+
+    PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
+    if(PCSettings::instance()->enableAuth){
+        PCache::getInst()->connectWithPassword();
+    }else{
+        PCache::getInst()->connect();
+    }
+}
+#endif //ENABLE_HIREDIS

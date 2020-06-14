@@ -6,8 +6,8 @@ class PCSettings{
 public:
     static PCSettings* instance();
     std::string ipAddress, password;
-    uint16_t port;
-    bool enablePersistentCache;
+    uint port;
+    bool enablePersistentCache, enableAuth;
 private:
     static PCSettings* inst;
     PCSettings();

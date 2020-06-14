@@ -81,6 +81,10 @@
 #define snprintf _snprintf
 #endif
 
+#ifdef ENABLE_HIREDIS
+#include "pcache.h"
+#endif
+
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 using std::string;
@@ -276,6 +280,16 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	Tree tree;
 	boost::filesystem::path doc(filename);
 	tree.setDocumentPath(doc.remove_filename().string());
+#ifdef ENABLE_HIREDIS
+    if(PCSettings::instance()->enablePersistentCache){
+        PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
+        if(PCSettings::instance()->enableAuth){
+            PCache::getInst()->connectWithPassword();
+        }else{
+            PCache::getInst()->connect();
+        }
+    }
+#endif
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
@@ -526,6 +540,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #endif
 
 	}
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 	delete root_node;
 	return 0;
 }
@@ -1058,15 +1075,17 @@ int main(int argc, char **argv)
     if(vm.count("persistent-cache")) {
         vector<string> strs;
         boost::split(strs, vm["persistent-cache"].as<string>(), is_any_of(","));
+        PCSettings::instance()->enablePersistentCache =  true;
         if(strs.size()==2 ||strs.size()==3){
             PCSettings::instance()->ipAddress = strs[0];
             try{
-                PCSettings::instance()->port = lexical_cast<uint16_t>(strs[1]);
+                PCSettings::instance()->port = lexical_cast<uint>(strs[1]);
             }catch(bad_lexical_cast &){
                 PRINT("WARNING: Port number must be numerical, using the default Port number 6379");
                 PCSettings::instance()->port = 6379;
             }
             if(strs.size()==3){
+                PCSettings::instance()->enableAuth = true;
                 PCSettings::instance()->password = strs[2];
             }
         }else{
