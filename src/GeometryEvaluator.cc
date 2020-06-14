@@ -753,6 +753,30 @@ static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 	}
 }
 
+/*
+	Compare Euclidean length of vectors
+	Return:
+		-1 : if v1  > v2
+		 0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
+		 1 : if v1  < v2
+*/
+int sgn_vdiff(const Vector2d &v1, const Vector2d &v2) {
+	constexpr double ratio_threshold = 1e5; // 10ppm difference
+	double l1 = v1.norm();
+	double l2 = v2.norm();
+	// If ratio of avg vector length / difference is large enough, they are considered equal.
+	// Use ratio so that threshold is basically independent of geometry scale.
+	double diff_ratio = (l1+l2)/(2*fabs(l2-l1));
+	return (diff_ratio > ratio_threshold) ? 0 : (l1 < l2) ? 1 : -1;
+}
+
+/*
+	Attempt to triangulate quads in an ideal way.
+	Each quad is composed of two adjacent outline vertices: (prev1, curr1)
+	and their corresponding transformed points one step up: (prev2, curr2).
+	Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
+	However, when diagonals are equal length, decision may flip depending on other factors.
+*/
 static void add_slice(PolySet *ps, const Polygon2d &poly,
 											double rot1, double rot2,
 											double h1, double h2,
@@ -761,16 +785,15 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 {
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
+	Eigen::Affine2d trans_mid(Eigen::Scaling((scale1+scale2)/2) * Eigen::Affine2d(rotate_degrees(-(rot1+rot2)/2)));
 	
+	bool is_straight = rot1==rot2 && scale1[0]==scale1[1] && scale2[0]==scale2[1];
 	bool any_zero = scale2[0] == 0 || scale2[1] == 0;
 	bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
+	// Not likely to matter, but when no twist (rot2 == rot1),
+	// setting back_twist true helps keep diagonals same as previous builds.
 	bool back_twist = rot2 <= rot1;
 
-	// Iterate over slice faces as quads, and attempt to triangulate them in an ideal way.
-	// Each quad is composed of two adjacent outline vertices: (prev1, curr1)
-	// and their corresponding transformed points one step up: (prev2, curr2).
-	// Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
-	// However, when diagonals are equal length, the decision becomes much more involved...
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
@@ -778,50 +801,45 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 		// For equal length diagonals, flip selected choice depending on direction of twist and
 		// whether the outline is negative (eg circle hole inside a larger circle).
 		// This was tested against circles with a single point touching the origin,
-		// and extruded with twist.  Diagonal choice chosen to
-		// macth those of neighboring edges (which did not exhibit "equal" diagonals).
-		bool flip = (!o.positive) xor back_twist;
-
+		// and extruded with twist.  Diagonal choice determined by whichever option
+		// matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
+		bool flip = ((!o.positive) xor (back_twist));
+	
 		for (size_t i=1;i<=o.vertices.size();i++) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 
-			// Since we only need to know which is larger, squaredNorm() is used,
-			// rather than typical norm() to avoid loss of precision by sqrt operation.
-			double d1 = (prev1 - curr2).squaredNorm();
-			double d2 = (curr1 - prev2).squaredNorm();
-			double diff = d1-d2;
-			// In some cases two diagonals are theoretically equal length,
-			// but not exactly, due to limited floating point precision.
-			// If ratio of diag lengths(squared) / difference is very large, they are considered equal.
-			double diff_ratio = (d1+d2)/fabs(diff);
-			// From testing, diag-to-diff ratios were observed to be on the order of 1e15 to 1e16
-			// for "equal" length diagonals in a variety of tests. 1e10 is used as a conservative threshold,
-			bool eq_diag = diff_ratio > 1e10;
-			bool first_lt = d1 < d2;
-			// Logic Table for splitfirst, determined by analyzing linear_extrude-twist-tests.scad
-			// flip,eq,lt  | splitfirst
-			// ------------+-----------
-			//    F  F  F  |   F
-			//    F  F  T  |   T
-			//    F  T  F  |   T
-			//    F  T  T  |   T
-			//    F  F  F  |   F
-			//    F  F  T  |   T
-			//    F  T  F  |   F
-			//    F  T  T  |   F
-			bool splitfirst = (!eq_diag && first_lt) || (!flip && eq_diag);
+			int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
+			bool splitfirst = diff_sign==1 || (diff_sign == 0 && !flip);
 
-			// Debug message used to determine a reasonable ratio threshold,
-			// and to help troubleshoot complex descision logic.
-			// Leaving commented since its spammy unless working directly in this section of code.
-			/*
-			PRINTDB("Diff: %E, Ratio %E\tback_twist %s\t!positive %s\tflip %s\teq_diag %s\tfirst_lt %s\tsplitfirst %s\tscale=[%E,%E]",\
-			        (diff) % (diff_ratio) % (back_twist ?"TRUE":"FALSE") % (!o.positive?"TRUE":"FALSE")%\
-			        (flip?"TRUE":"FALSE") % (eq_diag?"TRUE":"FALSE") % (first_lt?"TRUE":"FALSE") % (splitfirst?"TRUE":"FALSE")%\
-			        (scale2[0])%(scale2[1]));
-			//*/
-
+// Enable/Disable testing of 4-way split quads, with added midpoint.
+// These look very nice when(and only when) diagonals are near equal.
+// This typically happens when an edge is colinear with the origin.
+#if 0
+			// Diagonals should be equal whenever an edge is co-linear with the origin (edge itself need not touch it)
+			if (!is_straight && diff_sign == 0) {
+				// Split into 4 triangles, with an added midpoint.
+				//Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
+				Vector2d mid = trans_mid * (o.vertices[(i-1) % o.vertices.size()] + o.vertices[i % o.vertices.size()])/2;
+				double h_mid = (h1+h2)/2;
+				ps->append_poly();
+				ps->insert_vertex(prev1[0], prev1[1], h1);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->append_poly();
+				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(curr2[0], curr2[1], h2);
+				ps->append_poly();
+				ps->insert_vertex(curr2[0], curr2[1], h2);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(prev2[0], prev2[1], h2);
+				ps->append_poly();
+				ps->insert_vertex(prev2[0], prev2[1], h2);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(prev1[0], prev1[1], h1);
+			} else
+#endif
 			// Split along shortest diagonal,
 			// unless at top for a 0-scaled axis (which can create 0 thickness "ears")
 			if (splitfirst xor any_zero) {
