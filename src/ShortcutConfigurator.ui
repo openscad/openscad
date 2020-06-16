@@ -42,6 +42,9 @@
      <property name="text">
       <string/>
      </property>
+     <property name="placeholderText">
+      <string>Search</string>
+     </property>
     </widget>
    </item>
   </layout>

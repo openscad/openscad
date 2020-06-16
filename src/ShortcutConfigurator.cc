@@ -21,7 +21,8 @@ void ShortcutConfigurator::collectDefaults(const QList<QAction *> &allActions)
     {
         defaultShortcuts.insert(action,action->shortcuts());
         QString actionName = action->objectName();
-        if(!shortcutsMap.contains(actionName)) {
+        if(!shortcutsMap.contains(actionName)) 
+        {
             actionsName.push_back(actionName);
             actionsList.push_back(action);
             shortcutsMap.insert(actionName,action);
@@ -42,36 +43,33 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
         QString actionName = action->objectName();
         if(!actionName.isEmpty())
         {
-        QStandardItem* actionNameItem = new QStandardItem(actionName);
-        model->setRowCount(row+1);
-        model->setItem(row, 0, actionNameItem);
-        actionNameItem->setFlags(actionNameItem->flags() &  ~Qt::ItemIsEditable);
+            QStandardItem* actionNameItem = new QStandardItem(actionName);
+            model->setRowCount(row+1);
+            model->setItem(row, 0, actionNameItem);
+            actionNameItem->setFlags(actionNameItem->flags() &  ~Qt::ItemIsEditable);
 
 
-        const QList<QKeySequence> shortcutsList = action->shortcuts();
-        int index = 1;
-        for(auto &shortcutSeq : shortcutsList)
-        {
-            const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
-            QStandardItem* shortcutItem = new QStandardItem(shortcut);
-            if(index>2)
+            const QList<QKeySequence> shortcutsList = action->shortcuts();
+            int index = 1;
+            for(auto &shortcutSeq : shortcutsList)
             {
-                model->setColumnCount(index+1);
-                QString label = QStringLiteral("Alternative-%1").arg(index-1);
-                labels.push_back(label);
-                model->setHorizontalHeaderLabels(labels);
+                const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
+                QStandardItem* shortcutItem = new QStandardItem(shortcut);
+                if(index>2)
+                {
+                    model->setColumnCount(index+1);
+                    QString label = QStringLiteral("Alternative-%1").arg(index-1);
+                    labels.push_back(label);
+                    model->setHorizontalHeaderLabels(labels);
+                }
+                model->setItem(row, index, shortcutItem);
+                index++;
             }
-            model->setItem(row, index, shortcutItem);
-            index++;
-        }
-        row++;
+            row++;
         }
     }
     return model;
 }
-
-
-
 
 void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
 {
@@ -122,34 +120,35 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                 }
                 else
                 {
-
-                // create a key sequence
-                QJsonArray array = val.toArray();
-                foreach (const QJsonValue & v, array)
-                {
-                    QString shortcut = v.toString();
-                    if(shortcut.isEmpty()) continue;
-                    const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
-                    if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
+                    // create a key sequence
+                    QJsonArray array = val.toArray();
+                    foreach (const QJsonValue & v, array)
                     {
-                        if(shortCut.isEmpty()) continue;
-                        shortcutsListFinal.append(shortCut);
-                    }
-                    else {
-                        if(shortcutOccupied[shortcut]==true)
+                        QString shortcut = v.toString();
+                        if(shortcut==QString::fromUtf8("")) continue;
+                        const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+                        if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
                         {
-                            raiseError(QString("Shortcut Config-File: Shortcut Already Occupied"));
-                            return;
+                            if(shortCut==QString::fromUtf8("")) continue;
+                            shortcutOccupied.insert(shortCut,true);
+                            shortcutsListFinal.append(shortCut);
                         }
-                        else if(shortcut!=QString::fromUtf8("")) 
+                        else 
                         {
-                            shortcutOccupied.insert(shortcut,true);
+                            if(shortcutOccupied[shortcut]==true)
+                            {
+                                raiseError(QString("Shortcut Config-File: Shortcut Already Occupied"));
+                                return;
+                            }
+                            else if(shortcut!=QString::fromUtf8("")) 
+                            {
+                                shortcutOccupied.insert(shortcut,true);
+                            }
+                            shortcutsListFinal.append(shortcut);
                         }
-                        shortcutsListFinal.append(shortcut);
                     }
-                }
 
-                action->setShortcuts(shortcutsListFinal);
+                    action->setShortcuts(shortcutsListFinal);
                 }   
             }
         }
@@ -160,20 +159,19 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
 void ShortcutConfigurator::readConfigFile(QJsonObject* object)
 {
     std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
+    QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
 
-	QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
+    QFile jsonFile(finalPath);
 
-	QFile jsonFile(finalPath);
-	
     // check if a User-Defined Shortcuts file exists or not
-	if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-	return ;
-	}
+    if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        return ;
+    }
 
-	QByteArray jsonData = jsonFile.readAll();
-	QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-	*object = doc.object();
+    QByteArray jsonData = jsonFile.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    *object = doc.object();
 }
 
 bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
@@ -182,12 +180,12 @@ bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
     std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
     QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
 
-	QFile jsonFile(finalPath);
+    QFile jsonFile(finalPath);
 
-	if (!jsonFile.open(QIODevice::WriteOnly))
-	{
-	return false;
-	}
+    if (!jsonFile.open(QIODevice::WriteOnly))
+    {
+        return false;
+    }
 
     QJsonDocument doc(*object);
     jsonFile.write(doc.toJson());
@@ -264,7 +262,7 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
     {
    
         QString primaryShortcut = getData(indexA.row(),1);
-        if(!primaryShortcut.isEmpty())
+        if(primaryShortcut!=QString::fromUtf8(""))
         {
             QList<QKeySequence>assignedShortcuts = changedAction->shortcuts();
             if(assignedShortcuts.size()>=indexA.column())
@@ -272,10 +270,11 @@ void ShortcutConfigurator::updateShortcut(const QModelIndex & indexA, const QMod
                 //sufficent number of columns, replacement
                 for(int i=0;i<assignedShortcuts.size();i++)
                 {
-                    if(i==indexA.column()-1) {
+                    if(i==indexA.column()-1)
+                    {
                         shortcutOccupied.insert(assignedShortcuts[i].toString(QKeySequence::NativeText),false);  
                         shortcutsListFinal.append(updatedShortcut);
-                        }
+                    }
                     else shortcutsListFinal.append(assignedShortcuts[i]);                    
                 }
 
