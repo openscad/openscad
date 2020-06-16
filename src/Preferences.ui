@@ -2041,6 +2041,9 @@
    </property>
   </action>
   <action name="prefsActionShortcuts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Shortcuts</string>
    </property>
