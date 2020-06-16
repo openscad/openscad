@@ -338,15 +338,30 @@ void ShortcutConfigurator::on_searchBox_textChanged(const QString &arg1)
 void ShortcutConfigurator::on_reset_clicked()
 {   
     QMap<QAction*,QList<QKeySequence>>::iterator i;
-    for(i = defaultShortcuts.begin(); i != defaultShortcuts.end(); ++i)
-    {
-        QAction* actionKey = i.key();
-        actionKey->setShortcuts(i.value());
-    }
-    initGUI(actionsList);
-    shortcutOccupied.clear();
-
     QJsonObject object;
-    writeToConfigFile(&object);
 
+    QMessageBox msgBox;
+    msgBox.setText("Choosing 'Yes' will restore all the shortcuts!");
+    msgBox.setInformativeText("Do you want to continue?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    int ret = msgBox.exec();
+
+    switch (ret)
+    {
+        case QMessageBox::Yes:
+            for(i = defaultShortcuts.begin(); i != defaultShortcuts.end(); ++i)
+            {
+                QAction* actionKey = i.key();
+                actionKey->setShortcuts(i.value());
+            }
+            initGUI(actionsList);
+            shortcutOccupied.clear();
+            writeToConfigFile(&object);
+            break;
+        case QMessageBox::No:
+            break;
+        default:
+            break;
+    }
 }
