@@ -17,9 +17,17 @@ ShortcutConfigurator::~ShortcutConfigurator()
 
 void ShortcutConfigurator::collectDefaults(const QList<QAction *> &allActions)
 {
-for(auto &action:allActions) defaultShortcuts.insert(action,action->shortcuts());
+    for(auto &action:allActions) 
+    {
+        defaultShortcuts.insert(action,action->shortcuts());
+        QString actionName = action->objectName();
+        if(!shortcutsMap.contains(actionName)) {
+            actionsName.push_back(actionName);
+            actionsList.push_back(action);
+            shortcutsMap.insert(actionName,action);
+        }
+    }
 }
-
 
 QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
 {
@@ -55,14 +63,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
             }
             model->setItem(row, index, shortcutItem);
             index++;
-            if(shortcut!=QString::fromUtf8("")) shortcutOccupied.insert(shortcut,true);
         }
-
-        if(!shortcutsMap.contains(actionName)) {
-            actionsName.push_back(actionName);
-            actionsList.push_back(action);
-            shortcutsMap.insert(actionName,action);
-            }
         row++;
         }
     }
@@ -108,6 +109,15 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                 if(!val.isArray())
                 {
                     QString singleShortcut = val.toString().trimmed();
+                    if(shortcutOccupied[singleShortcut]==true)
+                    {
+                        raiseError(QString("Shortcut Config-File: Shortcut Already Occupied"));
+                        return;
+                    }
+                    else if(singleShortcut!=QString::fromUtf8("")) 
+                    {
+                        shortcutOccupied.insert(singleShortcut,true);
+                    }
                     action->setShortcut(QKeySequence(singleShortcut));
                 }
                 else
@@ -126,7 +136,16 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         shortcutsListFinal.append(shortCut);
                     }
                     else {
-                    shortcutsListFinal.append(shortcut);
+                        if(shortcutOccupied[shortcut]==true)
+                        {
+                            raiseError(QString("Shortcut Config-File: Shortcut Already Occupied"));
+                            return;
+                        }
+                        else if(shortcut!=QString::fromUtf8("")) 
+                        {
+                            shortcutOccupied.insert(shortcut,true);
+                        }
+                        shortcutsListFinal.append(shortcut);
                     }
                 }
 
