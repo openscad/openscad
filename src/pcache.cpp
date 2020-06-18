@@ -89,7 +89,9 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
     freeReplyObject(reply);
     return true;
 }
-
+// Insert methods takes in key and unserialized Geometry. need to change the function arguments.
+// Serialize the geometry and insert that into redis using insert method
+// Returns the operation success
 bool PCache::insertCGAL(const std::string &key, const std::string &serializedgeom){
     return insert("CGAL-"+key, serializedgeom);
 }
@@ -185,4 +187,11 @@ bool PCache::checkReply(redisReply *reply){
     return false;
 }
 
+PCache::CGAL_cache_entry::CGAL_cache_entry(const shared_ptr<const CGAL_Nef_polyhedron> &N) : N(N){
+    if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
+}
+
+PCache::Geom_cache_entry::Geom_cache_entry(const shared_ptr<const Geometry> &geom) : geom(geom){
+    if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
+}
 #endif

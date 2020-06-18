@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include "printutils.h"
+#include "memory.h"
+#include "CGAL_Nef_polyhedron.h"
 
 #ifdef ENABLE_HIREDIS
 
@@ -36,6 +38,20 @@ public:
 
     void disconnect();
     virtual ~PCache() {disconnect();}
+
+    struct CGAL_cache_entry{
+        shared_ptr<const CGAL_Nef_polyhedron> N;
+        std::string msg;
+        CGAL_cache_entry(const shared_ptr<const CGAL_Nef_polyhedron> &N);
+        ~CGAL_cache_entry() {}
+    };
+
+    struct Geom_cache_entry{
+        shared_ptr<const class Geometry> geom;
+        std::string msg;
+        Geom_cache_entry(const shared_ptr<const Geometry> &geom);
+        ~Geom_cache_entry() { }
+    };
 
 private:
     redisContext* rct;
