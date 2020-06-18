@@ -12,6 +12,7 @@
 #include <QJsonValue>
 #include <QHash>
 #include <QRegExp>
+#include <QMessageBox>
 
 class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 {
@@ -34,8 +35,14 @@ public:
     QList<QString> actionsName;
     QMap<QAction*,QList<QKeySequence>> defaultShortcuts;
     QList<QAction *> actionsList;
+    QKeySequence pressedKeySequence;
+    QMessageBox *shortcutCatcher;
+
+protected:
+   bool eventFilter(QObject *obj, QEvent *event);
+
 private slots:
-    void updateShortcut(const QModelIndex & indexA, const QModelIndex & indexB);
+    void onTableCellClicked(const QModelIndex & index);
     void on_searchBox_textChanged(const QString &arg1);
     void on_reset_clicked();
 };
