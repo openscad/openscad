@@ -13,9 +13,65 @@ ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
     setupUi(this);
 }
 
+ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
+{
+    // copy constructor
+
+    shortcutsMap=source.shortcutsMap;
+    shortcutsMap.detach();
+
+    shortcutOccupied=source.shortcutOccupied; 
+    shortcutOccupied.detach();
+
+    actionsName=source.actionsName;
+    actionsName.detach();
+
+    defaultShortcuts=source.defaultShortcuts;
+    defaultShortcuts.detach();
+
+    actionsList=source.actionsList;
+    actionsList.detach();
+
+    pressedKeySequence=source.pressedKeySequence;
+
+    shortcutCatcher = new QMessageBox;
+    shortcutCatcher=source.shortcutCatcher;
+
+}
+
+ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator& source)
+{
+    //overloaded assignment
+
+    if(this==&source) return *this;
+
+    shortcutsMap=source.shortcutsMap;
+    shortcutsMap.detach();
+
+    shortcutOccupied=source.shortcutOccupied; 
+    shortcutOccupied.detach();
+
+    actionsName=source.actionsName;
+    actionsName.detach();
+
+    defaultShortcuts=source.defaultShortcuts;
+    defaultShortcuts.detach();
+
+    actionsList=source.actionsList;
+    actionsList.detach();
+
+    pressedKeySequence=source.pressedKeySequence;
+
+    delete shortcutCatcher;
+    shortcutCatcher=source.shortcutCatcher;
+
+    return *this;
+
+}
+
 ShortcutConfigurator::~ShortcutConfigurator()
 {
-    
+    delete shortcutCatcher;
 }
 
 
