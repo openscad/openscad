@@ -20,7 +20,9 @@ class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 public:
     ShortcutConfigurator(QWidget *parent = 0);
     ShortcutConfigurator(const ShortcutConfigurator& source);
+    ShortcutConfigurator(ShortcutConfigurator&& source);
     ShortcutConfigurator& operator=(const ShortcutConfigurator& source);
+    ShortcutConfigurator& operator=(ShortcutConfigurator&& source);
     virtual ~ShortcutConfigurator();
     QStandardItemModel* createModel(QObject* parent,const QList<QAction *> &actions);
     void collectDefaults(const QList<QAction *> &allActions);

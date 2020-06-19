@@ -39,44 +39,34 @@ ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
 
 }
 
+ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
+{
+    // move constructor
+    std::exchange(source.shortcutCatcher, nullptr);
+}
+
 ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator& source)
 {
-    //overloaded assignment
+    //overloaded copy-assignment
+    return *this = ShortcutConfigurator(source);
 
-    if(this==&source) return *this;
+}
 
-    shortcutsMap=source.shortcutsMap;
-    shortcutsMap.detach();
-
-    shortcutOccupied=source.shortcutOccupied; 
-    shortcutOccupied.detach();
-
-    actionsName=source.actionsName;
-    actionsName.detach();
-
-    defaultShortcuts=source.defaultShortcuts;
-    defaultShortcuts.detach();
-
-    actionsList=source.actionsList;
-    actionsList.detach();
-
-    pressedKeySequence=source.pressedKeySequence;
-
-    delete shortcutCatcher;
-    shortcutCatcher=source.shortcutCatcher;
-
+ShortcutConfigurator& ShortcutConfigurator::operator=(ShortcutConfigurator&& source)
+{
+    // overloaded move assignment
+    std::swap(shortcutsMap,source.shortcutsMap);
+    std::swap(shortcutOccupied,source.shortcutOccupied);
+    std::swap(actionsName,source.actionsName);
+    std::swap(defaultShortcuts,source.defaultShortcuts);
+    std::swap(actionsList,source.actionsList);
+    std::swap(pressedKeySequence,source.pressedKeySequence);
+    std::swap(shortcutCatcher,source.shortcutCatcher);
     return *this;
-
 }
 
 ShortcutConfigurator::~ShortcutConfigurator()
 {
-    delete shortcutsMap;
-    delete shortcutOccupied;
-    delete actionsName;
-    delete defaultShortcuts;
-    delete actionsList;
-    delete pressedKeySequence;
     delete shortcutCatcher;
 }
 
