@@ -71,6 +71,12 @@ ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator
 
 ShortcutConfigurator::~ShortcutConfigurator()
 {
+    delete shortcutsMap;
+    delete shortcutOccupied;
+    delete actionsName;
+    delete defaultShortcuts;
+    delete actionsList;
+    delete pressedKeySequence;
     delete shortcutCatcher;
 }
 
