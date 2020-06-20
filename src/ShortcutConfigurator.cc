@@ -16,7 +16,7 @@ ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
 {
     // copy constructor
-
+    // detach is being used for deep-copy
     shortcutsMap=source.shortcutsMap;
     shortcutsMap.detach();
 
@@ -36,12 +36,13 @@ ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
 
     shortcutCatcher = new QMessageBox;
     shortcutCatcher=source.shortcutCatcher;
-
 }
 
 ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
 {
     // move constructor
+    shortcutCatcher = new QMessageBox;
+    shortcutCatcher=source.shortcutCatcher;
     std::exchange(source.shortcutCatcher, nullptr);
 }
 
@@ -49,7 +50,6 @@ ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator
 {
     //overloaded copy-assignment
     return *this = ShortcutConfigurator(source);
-
 }
 
 ShortcutConfigurator& ShortcutConfigurator::operator=(ShortcutConfigurator&& source)
