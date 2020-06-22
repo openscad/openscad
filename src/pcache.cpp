@@ -1,3 +1,9 @@
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#include <sstream>
+
+#include "SCADSerializations.h"
 #include "pcache.h"
 #include "printutils.h"
 
@@ -92,20 +98,41 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
 // Insert methods takes in key and unserialized Geometry. need to change the function arguments.
 // Serialize the geometry and insert that into redis using insert method
 // Returns the operation success
-bool PCache::insertCGAL(const std::string &key, const std::string &serializedgeom){
-    return insert("CGAL-"+key, serializedgeom);
+bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
+    std::stringstream ss;
+    ss << *N->p3;
+    std::string data = ss.str();
+    return insert("CGAL-"+key, data);
 }
 
-bool PCache::insertGeometry(const std::string &key, const std::string &serializedgeom){
-    return insert("GEOM-"+key, serializedgeom);
+bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
+    std::stringstream ss;
+    boost::archive::text_oarchive oa(ss);
+    oa << geom;
+    std::string data = ss.str();
+    return insert("GEOM-"+key, data);
+
 }
 
-bool PCache::getCGAL(const std::string &key, std::string &serializedgeom){
-    return get("CGAL-"+key, serializedgeom);
+shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
+    std::string data;
+    shared_ptr<const CGAL_Nef_polyhedron> N;
+    if(get("CGAL"+key, data)){
+        std::stringstream ss(data);
+        ss >> *N->p3;
+    }
+    return N;
 }
 
-bool PCache::getGeometry(const std::string &key, std::string &serializedgeom){
-    return get("GEOM-"+key, serializedgeom);
+shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
+    std::string data;
+    shared_ptr<const Geometry> geom;
+    if(get("GEOM-"+key, data)){
+        std::stringstream ss(data);
+        boost::archive::text_iarchive io(ss);
+        io >> geom;
+    }
+    return geom;
 }
 
 bool PCache::containsCGAL(const std::string &key, bool &ret){
@@ -187,7 +214,7 @@ bool PCache::checkReply(redisReply *reply){
     return false;
 }
 
-PCache::CGAL_cache_entry::CGAL_cache_entry(const shared_ptr<const CGAL_Nef_polyhedron> &N) : N(N){
+PCache::CGAL_cache_entry::CGAL_cache_entry(std::string &N) : N(N){
     if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
 }
 

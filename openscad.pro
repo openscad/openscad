@@ -251,6 +251,7 @@ HEADERS += src/AST.h \
            src/PCSettings.h \
            src/Package.h \
            src/Assignment.h \
+           src/SCADSerializations.h \
            src/expression.h \
            src/function.h \
            src/module.h \            \

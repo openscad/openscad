@@ -47,7 +47,10 @@ public:
 
 	bool is_convex() const;
 	boost::tribool convexValue() const { return this->convex; }
-
+    void setUnknown() {this->convex = unknown;}
+    void setTrueDirty() {this->dirty=true;}
+    void setDim(unsigned  int d) {dim = d;}
+    void setPolygon(Polygon2d p) {polygon = p;}
 private:
 	Polygon2d polygon;
 	unsigned int dim;

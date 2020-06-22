@@ -43,6 +43,7 @@ public:
 	bool isSanitized() const { return this->sanitized; }
 	void setSanitized(bool s) { this->sanitized = s; }
 	bool is_convex() const;
+    void setOutlines(Outlines2d outlines) {theoutlines = outlines;}
 private:
 	Outlines2d theoutlines;
 	bool sanitized;

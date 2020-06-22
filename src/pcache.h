@@ -17,10 +17,10 @@ public:
     bool connect();
     bool connectWithPassword();
     bool Authorize();
-    bool insertCGAL(const std::string& key, const std::string& serializedgeom);
-    bool insertGeometry(const std::string& key, const std::string& serializedgeom);
-    bool getCGAL(const std::string& key, std::string& serializedgeom);
-    bool getGeometry(const std::string& key, std::string& serializedgeom);
+    bool insertCGAL(const std::string& key, const shared_ptr<const CGAL_Nef_polyhedron> &N);
+    bool insertGeometry(const std::string& key, const shared_ptr<const Geometry> &geom);
+    shared_ptr<const class CGAL_Nef_polyhedron> getCGAL(const std::string& key);
+    shared_ptr<const class Geometry> getGeometry(const std::string& key);
     bool containsCGAL(const std::string& key, bool& ret);
     bool containsGeom(const std::string& key, bool& ret);
     bool insert(const std::string& key, const std::string& serializedgeom);
@@ -40,9 +40,9 @@ public:
     virtual ~PCache() {disconnect();}
 
     struct CGAL_cache_entry{
-        shared_ptr<const CGAL_Nef_polyhedron> N;
+        std::string N;
         std::string msg;
-        CGAL_cache_entry(const shared_ptr<const CGAL_Nef_polyhedron> &N);
+        CGAL_cache_entry(std::string &N);
         ~CGAL_cache_entry() {}
     };
 
