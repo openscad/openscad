@@ -162,13 +162,17 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	const unsigned long modifier = Qt::CTRL;
 #endif
 
-	QShortcut *shortcutCalltip;
-	shortcutCalltip = new QShortcut(modifier | Qt::SHIFT | Qt::Key_Space, this);
-	connect(shortcutCalltip, &QShortcut::activated, [=]() { qsci->callTip(); });
+	QAction *shortcutCalltip = new QAction(this);
+	shortcutCalltip->setObjectName(QString("shortcutCalltip"));
+	shortcutCalltip->setShortcut(modifier | Qt::SHIFT | Qt::Key_Space);
+	connect(shortcutCalltip, SIGNAL(triggered()), qsci, SLOT(callTip()));
+	this->addAction(shortcutCalltip);
 
-	QShortcut *shortcutAutocomplete;
-	shortcutAutocomplete = new QShortcut(modifier | Qt::Key_Space, this);
-	connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAll(); });
+	QAction *shortcutAutocomplete = new QAction(this);
+	shortcutAutocomplete->setObjectName(QString("shortcutAutocomplete"));
+	shortcutAutocomplete->setShortcut(modifier | Qt::Key_Space);
+	connect(shortcutAutocomplete, SIGNAL(triggered()), qsci, SLOT(autoCompleteFromAll()));
+	this->addAction(shortcutAutocomplete);
 
 	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
