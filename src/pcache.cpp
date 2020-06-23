@@ -95,7 +95,7 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
 }
 // Insert methods takes in key and unserialized Geometry. need to change the function arguments.
 // Serialize the geometry and insert that into redis using insert method
-// Returns the operation success
+// Returns on operation success
 bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
     std::stringstream ss;
     ss << *N->p3;
@@ -120,8 +120,13 @@ bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
     std::string data;
     shared_ptr<const CGAL_Nef_polyhedron> N;
+    CGAL_cache_entry ce;
     if(get("CGAL"+key, data)){
         std::stringstream ss(data);
+        boost::archive::text_iarchive io(ss);
+        io >> ce;
+        std::string n =ce.N;
+        std::stringstream ss1(ce.N);
         ss >> *N->p3;
     }
     return N;
@@ -130,10 +135,12 @@ shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
 shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
     std::string data;
     shared_ptr<const Geometry> geom;
+    Geom_cache_entry ce;
     if(get("GEOM-"+key, data)){
         std::stringstream ss(data);
         boost::archive::text_iarchive io(ss);
-        io >> geom;
+        io >> ce;
+        geom = ce.geom;
     }
     return geom;
 }

@@ -45,6 +45,7 @@ public:
         std::string N;
         std::string msg;
         CGAL_cache_entry(std::string &N);
+        CGAL_cache_entry() {}
         ~CGAL_cache_entry() {}
     };
 
@@ -52,6 +53,7 @@ public:
         shared_ptr<const class Geometry> geom;
         std::string msg;
         Geom_cache_entry(const shared_ptr<const Geometry> &geom);
+        Geom_cache_entry() {}
         ~Geom_cache_entry() { }
     };
 
