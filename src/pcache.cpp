@@ -1,11 +1,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 #include <sstream>
-
 #include "SCADSerializations.h"
+
 #include "pcache.h"
-#include "printutils.h"
 
 #ifdef ENABLE_HIREDIS
 
@@ -102,13 +100,18 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
     std::stringstream ss;
     ss << *N->p3;
     std::string data = ss.str();
-    return insert("CGAL-"+key, data);
+    CGAL_cache_entry ce(data);
+    ss.clear();
+    boost::archive::text_oarchive oa(ss);
+    oa << ce;
+    return insert("CGAL-"+key, ss.str());
 }
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
     std::stringstream ss;
+    Geom_cache_entry ce(geom);
     boost::archive::text_oarchive oa(ss);
-    oa << geom;
+    oa << ce;
     std::string data = ss.str();
     return insert("GEOM-"+key, data);
 

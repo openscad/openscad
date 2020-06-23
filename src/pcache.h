@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
+
 #include "printutils.h"
 #include "memory.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "cgalutils.h"
+
 
 #ifdef ENABLE_HIREDIS
 

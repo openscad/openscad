@@ -15,6 +15,7 @@ BOOST_SERIALIZATION_SPLIT_FREE(Polygon2d);
 
 namespace boost{
 namespace serialization{
+#ifdef ENABLE_HIREDIS
 
 template <class Archive>
 void serialize(Archive &ar, PCache::CGAL_cache_entry &ce, const unsigned int ){
@@ -28,6 +29,7 @@ void serialize(Archive &ar, PCache::Geom_cache_entry &ce, const unsigned int){
     ar & ce.msg;
 }
 
+#endif // ENABLE_HIREDIS
 template <class Archive>
 void serialize(Archive &ar, Vector3d &v, const unsigned int){
     ar & v(0);
