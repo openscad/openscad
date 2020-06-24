@@ -30,6 +30,10 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 
+#ifdef ENABLE_HIREDIS
+#include "pcache.h"
+#endif
+
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/convex_hull_2.h>
@@ -285,13 +289,22 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
-		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
+        if (!CGALCache::instance()->contains(key)) {
+            CGALCache::instance()->insert(key, N);
+//            if(!PCache::getInst()->insertCGAL(key, N)){
+//                PRINT("WARNING: Polyhedron is not inserted into redis cache");
+//            }
+        }
 	}
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
+            PCache* pcache = PCache::getInst();
+            if(!pcache->insertGeometry(key, geom)){
+                PRINT("WARNING: Geometry is not inserted into redis cache");
+            }
 		}
 	}
 }

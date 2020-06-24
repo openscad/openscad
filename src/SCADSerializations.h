@@ -4,14 +4,21 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/export.hpp>
 
 #include "pcache.h"
 #include "polyset.h"
+BOOST_CLASS_EXPORT(PolySet);
 #include "Polygon2d.h"
-
+BOOST_CLASS_EXPORT(Polygon2d);
+#include "Geometry.h"
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(Geometry);
 
 BOOST_SERIALIZATION_SPLIT_FREE(PolySet);
 BOOST_SERIALIZATION_SPLIT_FREE(Polygon2d);
+BOOST_SERIALIZATION_SPLIT_FREE(Geometry);
 
 namespace boost{
 namespace serialization{
@@ -49,21 +56,37 @@ void serialize(Archive &ar, Outline2d &o, const unsigned int){
     ar & o.positive;
 }
 
+template<class Archive>
+void save(Archive &ar, const Geometry& g, const unsigned int){
+    unsigned int tmp = g.getConvexity();
+    ar & tmp;
+}
+template<class Archive>
+void load(Archive &ar,  Geometry& g, const unsigned int){
+    unsigned int tmp ;
+    tmp = g.getConvexity();
+    ar & tmp;
+}
 
 template <class Archive>
 void save(Archive &ar, const PolySet& ps, const unsigned int){
-    ar<<ps.polygons;
-    ar<<ps.getPolygon();
-    ar<<ps.getDimension();
+    ar & boost::serialization::base_object<Geometry> (ps);
+
+    ar & ps.polygons;
+    ar & ps.getPolygon();
+    ar & ps.getDimension();
 }
 template<class Archive>
 void load(Archive &ar, PolySet& ps, const unsigned int){
-    ar>>ps.polygons;
+    ar & boost::serialization::base_object<Geometry> (ps);
+
+    ar & ps.polygons;
     Polygon2d polygon;
-    ar>>polygon;
+    ar & polygon;
     ps.setPolygon(polygon);
     unsigned int dim;
-    ar>>dim;
+    ar & dim;
+
     ps.setDim(dim);
     ps.setTrueDirty();
     ps.setUnknown();
@@ -71,16 +94,20 @@ void load(Archive &ar, PolySet& ps, const unsigned int){
 
 template<class Archive>
 void save(Archive &ar, const Polygon2d& p, const unsigned int){
-    ar << p.outlines();
-    ar << p.isSanitized();
+    ar & boost::serialization::base_object<Geometry> (p);
+
+    ar & p.outlines();
+    ar & p.isSanitized();
 }
 template<class Archive>
 void load(Archive &ar, Polygon2d& p,const unsigned int){
+    ar & boost::serialization::base_object<Geometry> (p);
+
     Polygon2d::Outlines2d o;
-    ar >> o;
+    ar & o;
     p.setOutlines(o);
     bool sanitized;
-    ar >> sanitized;
+    ar & sanitized;
     p.setSanitized(sanitized);
 }
 
