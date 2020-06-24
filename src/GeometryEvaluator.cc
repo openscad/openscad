@@ -301,10 +301,12 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 			if (!GeometryCache::instance()->insert(key, geom)) {
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
+#ifdef ENABLE_HIREDIS
             PCache* pcache = PCache::getInst();
             if(!pcache->insertGeometry(key, geom)){
                 PRINT("WARNING: Geometry is not inserted into redis cache");
             }
+#endif
 		}
 	}
 }
