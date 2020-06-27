@@ -5,7 +5,7 @@
 #include "SCADSerializations.h"
 
 #include "pcache.h"
-
+#include "printutils.h"
 #ifdef ENABLE_HIREDIS
 
 PCache *PCache::pCache = nullptr;
@@ -77,6 +77,7 @@ bool PCache::ping(){
 }
 
 bool PCache::insert(const std::string& key, const std::string& serializedGeom){
+    //PRINTDB("PCacheReader R: %s = %s", key.c_str() % serializedGeom.c_str() );
     reply = static_cast<redisReply*>(redisCommand(rct, "SET %s %s", key.c_str(), serializedGeom.c_str()));
     if(checkReply(reply)){
         return false;

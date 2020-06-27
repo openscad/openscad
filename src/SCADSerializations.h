@@ -74,7 +74,8 @@ void save(Archive &ar, const PolySet& ps, const unsigned int){
 
     ar & ps.polygons;
     ar & ps.getPolygon();
-    ar & ps.getDimension();
+    unsigned int tmp = ps.getDimension();
+    ar & tmp;
 }
 template<class Archive>
 void load(Archive &ar, PolySet& ps, const unsigned int){
@@ -97,7 +98,8 @@ void save(Archive &ar, const Polygon2d& p, const unsigned int){
     ar & boost::serialization::base_object<Geometry> (p);
 
     ar & p.outlines();
-    ar & p.isSanitized();
+    bool sanitized = p.isSanitized();
+    ar & sanitized;
 }
 template<class Archive>
 void load(Archive &ar, Polygon2d& p,const unsigned int){

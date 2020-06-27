@@ -291,9 +291,11 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	if (N) {
         if (!CGALCache::instance()->contains(key)) {
             CGALCache::instance()->insert(key, N);
-//            if(!PCache::getInst()->insertCGAL(key, N)){
-//                PRINT("WARNING: Polyhedron is not inserted into redis cache");
-//            }
+#ifdef ENABLE_HIREDIS
+            if(!PCache::getInst()->insertCGAL(key, N)){
+                PRINT("WARNING: Polyhedron is not inserted into redis cache");
+            }
+#endif
         }
 	}
 	else {
@@ -302,8 +304,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 #ifdef ENABLE_HIREDIS
-            PCache* pcache = PCache::getInst();
-            if(!pcache->insertGeometry(key, geom)){
+            if(!PCache::getInst()->insertGeometry(key, geom)){
                 PRINT("WARNING: Geometry is not inserted into redis cache");
             }
 #endif

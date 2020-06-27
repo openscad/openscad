@@ -6,6 +6,8 @@
 #include "progress.h"
 #include "printutils.h"
 #include "exceptions.h"
+#include "pcache.h"
+#include "PCSettings.h"
 
 CGALWorker::CGALWorker()
 {
@@ -29,6 +31,16 @@ void CGALWorker::start(const Tree &tree)
 
 void CGALWorker::work()
 {
+#ifdef ENABLE_HIREDIS
+    if(PCSettings::instance()->enablePersistentCache){
+        PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
+        if(PCSettings::instance()->enableAuth){
+            PCache::getInst()->connectWithPassword();
+        }else{
+            PCache::getInst()->connect();
+        }
+    }
+#endif
 	shared_ptr<const Geometry> root_geom;
 	try {
 		GeometryEvaluator evaluator(*this->tree);
@@ -40,6 +52,9 @@ void CGALWorker::work()
 	catch (const HardWarningException &e) {
 		PRINT("Rendering cancelled on first warning.");
 	}
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 
 	emit done(root_geom);
 	thread->quit();

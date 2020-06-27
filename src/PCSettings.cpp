@@ -5,7 +5,7 @@ PCSettings *PCSettings::inst = nullptr;
 PCSettings *PCSettings::instance()
 {
     if(!inst){
-        inst = new PCSettings;
+        inst = new PCSettings();
     }
     return inst;
 }

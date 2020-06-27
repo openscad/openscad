@@ -1791,6 +1791,7 @@ void MainWindow::actionReloadRenderPreview()
 	// PRINT("Parsing design (AST generation)...");
 	// this->processEvents();
 #ifdef ENABLE_HIREDIS
+    initPC();
     connectPC();
 #endif
 	this->afterCompileSlot = "csgReloadRender";
@@ -1833,6 +1834,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 
 	PRINT("Parsing design (AST generation)...");
 #ifdef ENABLE_HIREDIS
+    initPC();
     connectPC();
 #endif
 	this->processEvents();
@@ -2055,16 +2057,14 @@ void MainWindow::actionRender()
 
 	PRINT("Parsing design (AST generation)...");
 #ifdef ENABLE_HIREDIS
-    connectPC();
+    this->initPC();
 #endif
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(false));
 	compile(false);
-#ifdef ENABLE_HIREDIS
-    PCache::getInst()->disconnect();
-#endif
+
 }
 
 void MainWindow::cgalRender()
@@ -3123,7 +3123,7 @@ QString MainWindow::exportPath(const char *suffix) {
 	return path;
 }
 #ifdef ENABLE_HIREDIS
-void MainWindow::connectPC(){
+void MainWindow::initPC(){
     PCSettings::instance()->enablePersistentCache = Preferences::inst()->getValue("advanced/enable_persistent_cache").toBool();
     if(PCSettings::instance()->enablePersistentCache){
         PCSettings::instance()->ipAddress = Preferences::inst()->getValue("advanced/ipAddressEdit").toString().toStdString();
@@ -3133,12 +3133,18 @@ void MainWindow::connectPC(){
             PCSettings::instance()->password = Preferences::inst()->getValue("advanced/passwordEdit").toString().toStdString();
         }
     }
+}
 
-    PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
-    if(PCSettings::instance()->enableAuth){
-        PCache::getInst()->connectWithPassword();
-    }else{
-        PCache::getInst()->connect();
+void MainWindow::connectPC(){
+
+    if(PCSettings::instance()->enablePersistentCache){
+        PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
+        if(PCSettings::instance()->enableAuth){
+            PCache::getInst()->connectWithPassword();
+        }else{
+            PCache::getInst()->connect();
+        }
     }
+
 }
 #endif //ENABLE_HIREDIS

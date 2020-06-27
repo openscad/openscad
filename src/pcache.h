@@ -39,7 +39,7 @@ public:
     static PCache* getInst(){if(!pCache) pCache = new PCache; return pCache;}
 
     void disconnect();
-    virtual ~PCache() {disconnect();}
+    virtual ~PCache() {}
 
     struct CGAL_cache_entry{
         std::string N;

@@ -128,6 +128,7 @@ private:
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
 #ifdef ENABLE_HIREDIS
+    void initPC();
     void connectPC();
 #endif
   class LibraryInfoDialog* library_info_dialog;
