@@ -3,10 +3,10 @@
 ;; Author:     Len Trigg, Łukasz Stelmach
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   28 Mar 2015
+;; Modified:   28 Jun 2020
 ;; Keywords:   languages
 ;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
-;; Version:    91.0
+;; Version:    92.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -72,6 +72,8 @@
     "dxf_dim" "dxf_cross"                                               ;;dxfdim.cc
     "norm" "cross"                                                      ;;2014.03
     "concat" "chr"                                                      ;;2015.03
+    "assert" "ord"                                                      ;;2019.05
+    "is_undef" "is_list" "is_num" "is_bool" "is_string"                 ;;2019.05 type test
     )
   "SCAD functions."
   :type 'list
