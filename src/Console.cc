@@ -36,6 +36,7 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
+	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(doSomething()));
 }
 
 Console::~Console()
@@ -72,4 +73,10 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	menu->addAction(this->actionSaveAs);
     menu->exec(event->globalPos());
 	delete menu;
+}
+
+
+void Console::doSomething()
+{
+	std::cout<<"blahassssssssssssssssssssssss\n";
 }
