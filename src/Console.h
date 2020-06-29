@@ -65,6 +65,6 @@ signals:
 public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
-	void doSomething();
+	void doSomething(QString temp);
 
 };
