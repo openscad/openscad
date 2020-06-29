@@ -10,6 +10,7 @@
 
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
+    shortcutCatcher = new QMessageBox;
     setupUi(this);
 }
 
@@ -41,7 +42,19 @@ ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
 ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
 {
     // move constructor
-    shortcutCatcher = new QMessageBox;
+    shortcutsMap=std::move(source.shortcutsMap);
+
+    shortcutOccupied=std::move(source.shortcutOccupied); 
+
+    actionsName=std::move(source.actionsName);
+
+    defaultShortcuts=std::move(source.defaultShortcuts);
+
+    actionsList=std::move(source.actionsList);
+
+    pressedKeySequence=source.pressedKeySequence;
+
+    // ownership transfer of ptr
     shortcutCatcher=source.shortcutCatcher;
     std::exchange(source.shortcutCatcher, nullptr);
 }
@@ -49,25 +62,64 @@ ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
 ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator& source)
 {
     //overloaded copy-assignment
-    return *this = ShortcutConfigurator(source);
+    if(this != &source)
+    {
+        shortcutsMap=source.shortcutsMap;
+        shortcutsMap.detach();
+
+        shortcutOccupied=source.shortcutOccupied; 
+        shortcutOccupied.detach();
+
+        actionsName=source.actionsName;
+        actionsName.detach();
+
+        defaultShortcuts=source.defaultShortcuts;
+        defaultShortcuts.detach();
+
+        actionsList=source.actionsList;
+        actionsList.detach();
+
+        pressedKeySequence=source.pressedKeySequence;
+
+        shortcutCatcher=source.shortcutCatcher;
+    }
+    return *this;
 }
 
 ShortcutConfigurator& ShortcutConfigurator::operator=(ShortcutConfigurator&& source)
 {
     // overloaded move assignment
-    std::swap(shortcutsMap,source.shortcutsMap);
-    std::swap(shortcutOccupied,source.shortcutOccupied);
-    std::swap(actionsName,source.actionsName);
-    std::swap(defaultShortcuts,source.defaultShortcuts);
-    std::swap(actionsList,source.actionsList);
-    std::swap(pressedKeySequence,source.pressedKeySequence);
-    std::swap(shortcutCatcher,source.shortcutCatcher);
+    if(this!=&source)
+    {
+        delete shortcutCatcher;
+
+        shortcutsMap=std::move(source.shortcutsMap);
+
+        shortcutOccupied=std::move(source.shortcutOccupied);
+
+        actionsName=std::move(source.actionsName);
+
+        defaultShortcuts=std::move(source.defaultShortcuts);
+
+        actionsList=std::move(source.actionsList);
+
+        pressedKeySequence=source.pressedKeySequence;
+
+        // ownership transfer of ptr
+        shortcutCatcher=source.shortcutCatcher;
+        std::exchange(source.shortcutCatcher, nullptr);
+
+    }
+
     return *this;
 }
 
 ShortcutConfigurator::~ShortcutConfigurator()
 {
-    delete shortcutCatcher;
+    if(!shortcutCatcher)
+    {
+        delete shortcutCatcher;
+    }
 }
 
 
@@ -76,7 +128,13 @@ bool ShortcutConfigurator::eventFilter(QObject *obj, QEvent *event)
 
     if (event->type() == QEvent::KeyPress)
     { 
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event); 
+        QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(event);
+        
+        if(!keyEvent)
+        {
+            //invalid downcast
+            return false;
+        } 
 
         int keyInt = keyEvent->key(); 
         Qt::Key key = static_cast<Qt::Key>(keyInt); 
@@ -113,6 +171,7 @@ bool ShortcutConfigurator::eventFilter(QObject *obj, QEvent *event)
         {
             QString info = QString("You Pressed: %1").arg(pressedKeySequence.toString(QKeySequence::NativeText));
             shortcutCatcher->setInformativeText(info);
+            return true;
         }
 
     }
@@ -321,7 +380,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 {
     if (index.isValid() && index.column()!=0) 
     {
-        shortcutCatcher = new QMessageBox(this);
+        // shortcutCatcher = new QMessageBox(this);
         shortcutCatcher->installEventFilter(this);
         shortcutCatcher->setText("Press the Key Sequence");
         shortcutCatcher->setStandardButtons(QMessageBox::Apply | QMessageBox::Reset | QMessageBox::Close);
