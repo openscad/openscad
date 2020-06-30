@@ -276,7 +276,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                     QString singleShortcut = val.toString().trimmed();
                     if(shortcutOccupied[singleShortcut])
                     {
-                        raiseError(QString("Shortcut Config-File: Shortcut Conflict between : "+shortcutOccupied[singleShortcut]->objectName()+" and "+actionName));
+                        raiseError(QString("~/.config/OpenSCAD/shortcuts.json:\n"+actionName+" shortcut "+singleShortcut+" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
                         return;
                     }
                     else if(singleShortcut!=QString::fromUtf8("")) 
@@ -304,7 +304,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         {
                             if(shortcutOccupied[shortcut])
                             {
-                                raiseError(QString("Shortcut Config-File: Shortcut Conflict between "+shortcutOccupied[shortcut]->objectName()+" and "+actionName));
+                                raiseError(QString("~/.config/OpenSCAD/shortcuts.json:\n"+actionName+" shortcut "+shortcut+" conflicts with "+shortcutOccupied[shortcut]->objectName()));
                                 return;
                             }
                             else if(shortcut!=QString::fromUtf8("")) 
