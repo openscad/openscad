@@ -199,7 +199,7 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
     const int numRows = 0;
     const int numColumns = 3;
     int row = 0;
-    QStandardItemModel* model = new QStandardItemModel(numRows, numColumns);
+    QStandardItemModel* model = new QStandardItemModel(numRows, numColumns, parent);
     QList<QString> labels = QList<QString>() << QString("Action") << QString("Shortcut")<<QString("Alternative-1"); 
     model->setHorizontalHeaderLabels(labels);
     for (auto &action : actions) 
@@ -246,7 +246,9 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
 
 void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
 {
+    QItemSelectionModel *prevModel = shortcutsTable->selectionModel();
     shortcutsTable->setModel(createModel(shortcutsTable,allActions));
+    delete prevModel;
 }
 
 void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
