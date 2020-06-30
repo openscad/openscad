@@ -58,7 +58,7 @@ const Value Value::undefined;
 #define DC_MAX_LEADING_ZEROES 5
 #define DC_MAX_TRAILING_ZEROES 0
 
-/* WARNING: using values > 8 will significantly slow double to string 
+/* WARNING: using values > 8 will significantly slow double to string
  * conversion, defeating the purpose of using double-conversion library */
 #define DC_PRECISION_REQUESTED 6
 
@@ -147,7 +147,7 @@ inline bool HandleSpecialValues(const double &value, double_conversion::StringBu
   return false;
 }
 
-inline char* DoubleConvert(const double &value, char *buffer,
+inline std::string DoubleConvert(const double &value, char *buffer,
     double_conversion::StringBuilder &builder, const double_conversion::DoubleToStringConverter &dc) {
   builder.Reset();
   if (double_conversion::Double(value).IsSpecial()) {
@@ -994,10 +994,9 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
   double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF,
       DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
       DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-  stream << '['
-      << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-      << DoubleConvert(r.step_value() , buffer, builder, dc) << " : "
-      << DoubleConvert(r.end_value()  , buffer, builder, dc) << ']';
+  stream << '[' << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
+                << DoubleConvert(r.step_value() , buffer, builder, dc) << " : "
+                << DoubleConvert(r.end_value()  , buffer, builder, dc) << ']';
   return stream;
 }
 
