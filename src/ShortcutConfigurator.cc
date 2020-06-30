@@ -272,14 +272,14 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                 if(!val.isArray())
                 {
                     QString singleShortcut = val.toString().trimmed();
-                    if(shortcutOccupied[singleShortcut]==true)
+                    if(shortcutOccupied[singleShortcut])
                     {
-                        raiseError(QString("Shortcut Config-File: Shortcut Already Occupied"));
+                        raiseError(QString("Shortcut Config-File: Shortcut Conflict between : "+shortcutOccupied[singleShortcut]->objectName()+" and "+actionName));
                         return;
                     }
                     else if(singleShortcut!=QString::fromUtf8("")) 
                     {
-                        shortcutOccupied.insert(singleShortcut,true);
+                        shortcutOccupied.insert(singleShortcut,action);
                     }
                     action->setShortcut(QKeySequence(singleShortcut));
                 }
@@ -295,19 +295,19 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
                         {
                             if(shortCut==QString::fromUtf8("")) continue;
-                            shortcutOccupied.insert(shortCut,true);
+                            shortcutOccupied.insert(shortCut,action);
                             shortcutsListFinal.append(shortCut);
                         }
                         else 
                         {
-                            if(shortcutOccupied[shortcut]==true)
+                            if(shortcutOccupied[shortcut])
                             {
-                                raiseError(QString("Shortcut Config-File: Shortcut Already Occupied"));
+                                raiseError(QString("Shortcut Config-File: Shortcut Conflict between "+shortcutOccupied[shortcut]->objectName()+" and "+actionName));
                                 return;
                             }
                             else if(shortcut!=QString::fromUtf8("")) 
                             {
-                                shortcutOccupied.insert(shortcut,true);
+                                shortcutOccupied.insert(shortcut,action);
                             }
                             shortcutsListFinal.append(shortcut);
                         }
@@ -381,6 +381,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
     if (index.isValid() && index.column()!=0) 
     {
         // shortcutCatcher = new QMessageBox(this);
+        shortcutCatcher->setInformativeText(QString(""));
         shortcutCatcher->installEventFilter(this);
         shortcutCatcher->setText("Press the Key Sequence");
         shortcutCatcher->setStandardButtons(QMessageBox::Apply | QMessageBox::Reset | QMessageBox::Close);
@@ -406,9 +407,9 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
         QAction* changedAction = itr.value();
 
         // check if the updated Shortcut is preoccupied or not
-        if(shortcutOccupied[updatedShortcut]==true)
+        if(shortcutOccupied[updatedShortcut])
         {
-            raiseError(QString("Shortcut Already Occupied"));
+            raiseError(QString("Shortcut Already Occupied By: "+shortcutOccupied[updatedShortcut]->objectName()));
             return;
         }
 
@@ -426,7 +427,8 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
             if(assignedShortcuts.size()!=0)
             {
                 // un-assign the previous primary
-                shortcutOccupied.insert(assignedShortcuts[0].toString(QKeySequence::NativeText),false);
+                shortcutOccupied.remove(assignedShortcuts[0].toString(QKeySequence::NativeText));
+                // shortcutOccupied.insert(assignedShortcuts[0].toString(QKeySequence::NativeText),false);
 
                 for(int i=1;i<assignedShortcuts.size();i++)
                 {
@@ -456,7 +458,8 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
                     {
                         if(i==index.column()-1)
                         {
-                            shortcutOccupied.insert(assignedShortcuts[i].toString(QKeySequence::NativeText),false);  
+                            shortcutOccupied.remove(assignedShortcuts[i].toString(QKeySequence::NativeText));
+                            // shortcutOccupied.insert(assignedShortcuts[i].toString(QKeySequence::NativeText),false);  
                             shortcutsListFinal.append(updatedShortcut);
                         }
                         else shortcutsListFinal.append(assignedShortcuts[i]);                    
@@ -483,7 +486,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 
         }
 
-        if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,true);
+        if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,changedAction);
         putData(index,updatedShortcut);
         // write into the file
         QJsonObject object;

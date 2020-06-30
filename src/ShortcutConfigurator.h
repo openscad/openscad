@@ -35,7 +35,7 @@ public:
     QString getData(int row,int col);
     void putData(QModelIndex indexA,QString data);
     QHash<QString, QAction *> shortcutsMap;
-    QHash<QString, bool> shortcutOccupied;
+    QHash<QString, QAction *> shortcutOccupied;
     QList<QString> actionsName;
     QMap<QAction*,QList<QKeySequence>> defaultShortcuts;
     QList<QAction *> actionsList;
