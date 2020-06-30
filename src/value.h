@@ -252,9 +252,11 @@ private:
 class FunctionType {
 public:
   FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> args)
-    : ctx(std::move(ctx)), expr(std::move(expr)), args(std::move(args)) { }
-  bool operator==(const FunctionType& other) const { return this == &other; }
-  bool operator!=(const FunctionType& other) const { return this != &other; }
+    : ctx(ctx), expr(expr), args(std::move(args)) { }
+  FunctionType(FunctionType&&) = default;
+  FunctionType& operator=(FunctionType&&) = default;
+  bool operator==(const FunctionType&) const { return false; }
+  bool operator!=(const FunctionType& other) const { return !(*this == other); }
   bool operator< (const FunctionType&) const { return false; }
   bool operator> (const FunctionType&) const { return false; }
   bool operator<=(const FunctionType&) const { return false; }
@@ -303,17 +305,19 @@ public:
     // Copy explicitly only when necessary
     VectorPtr clone() const { VectorPtr c; c.ptr = this->ptr; return c; }
 
-    const VectorType &operator*() const { return *ptr; }
-    VectorType *operator->() const { return ptr.get(); }
-    const Value &operator[](size_t idx) const { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
-    Value &operator[](size_t idx) {
-      static Value undef;
-      return idx < ptr->size() ? (*ptr)[idx] : undef;
-    }
-    bool operator==(const VectorPtr &v) const { return *ptr == *v; }
-    bool operator!=(const VectorPtr &v) const { return *ptr != *v; }
-    operator bool() const { return !ptr->empty(); }
+    const Value::VectorType& operator*() const noexcept { return *ptr; }
+    Value::VectorType *operator->() const noexcept { return ptr.get(); }
+    // const accesses to VectorType require .clone to be move-able
+    const Value &operator[](size_t idx) const noexcept { return idx < ptr->size() ? (*ptr)[idx] : Value::undefined; }
 
+    bool operator==(const VectorPtr &v) const noexcept { return *ptr == *v; }
+    bool operator!=(const VectorPtr &v) const noexcept { return *ptr != *v; }
+    bool operator< (const VectorPtr &v) const noexcept { return *ptr <  *v; }
+    bool operator> (const VectorPtr &v) const noexcept { return *ptr >  *v; }
+    bool operator<=(const VectorPtr &v) const noexcept { return *ptr <= *v; }
+    bool operator>=(const VectorPtr &v) const noexcept { return *ptr >= *v; }
+
+    void append_vector(Value v);
     void flatten();
 
   protected:
@@ -344,11 +348,12 @@ public:
   bool toBool() const;
   double toDouble() const;
   const str_utf8_wrapper& toStrUtf8Wrapper() const;
-  const VectorPtr &toVectorPtr() const;
+  const VectorType &toVector() const;
   const RangeType& toRange() const;
   const FunctionType& toFunction() const;
 protected:
-  VectorPtr &toVectorPtrRef(); // unsafe non-const reference needed by VectorPtr::flatten
+  // unsafe non-const reference needed by VectorPtr::flatten
+  VectorPtr &toVectorPtr() { return boost::get<VectorPtr>(this->value); };
 public:
   bool getDouble(double &v) const;
   bool getFiniteDouble(double &v) const;
@@ -390,7 +395,7 @@ public:
   static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
 
 private:
-  static Value multvecnum(const Value &vecval, const Value &numval);
+  static Value multvecnum(const VectorType &vecval, const Value &numval);
   static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
   static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
 

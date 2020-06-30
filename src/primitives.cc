@@ -551,21 +551,27 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces.toVectorPtr()->size(); i++)	{
+		const auto &pts = this->points.toVector();
+		size_t face_i = 0;
+		for (const auto &face : this->faces.toVector())	{
 			p->append_poly();
-			const auto &vec = this->faces.toVectorPtr()[i].toVectorPtr();
-			for (size_t j=0; j<vec->size(); j++) {
-				size_t pt = (size_t)vec[j].toDouble();
-				if (pt < this->points.toVectorPtr()->size()) {
+			size_t fp_i = 0;
+			for (const auto &pt_i_val : face.toVector()) {
+				size_t pt_i = (size_t)pt_i_val.toDouble();
+				if (pt_i < pts.size()) {
 					double px, py, pz;
-					if (!this->points.toVectorPtr()[pt].getVec3(px, py, pz, 0.0) ||
+					if (!pts[pt_i].getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", pt_i % this->modinst->location().toRelativeString(this->document_path));
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
+				} else {
+					PRINTB("WARNING: Point index %d is out of bounds (from faces[%d][%d]), %s", pt_i % face_i % fp_i % this->modinst->location().toRelativeString(this->document_path));
 				}
+				fp_i++;
 			}
+			face_i++;
 		}
 	}
 		break;
@@ -608,26 +614,25 @@ const Geometry *PrimitiveNode::createGeometry() const
 	case primitive_type_e::POLYGON:	{
 			auto p = new Polygon2d();
 			g = p;
-
 			Outline2d outline;
 			double x,y;
-			const auto &vec = this->points.toVectorPtr();
-			for (unsigned int i=0;i<vec->size();i++) {
-				const auto &val = vec[i];
+			size_t i = 0;
+			for (const auto &val : this->points.toVector()) {
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
+				i++;
 			}
 
-			if (this->paths.toVectorPtr()->size() == 0 && outline.vertices.size() > 2) {
+			if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
-				for (const auto &polygon : *this->paths.toVectorPtr()) {
+				for (const auto &polygon : this->paths.toVector()) {
 					Outline2d curroutline;
-					for (const auto &index : *polygon.toVectorPtr()) {
+					for (const auto &index : polygon.toVector()) {
 						unsigned int idx = (unsigned int)index.toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);

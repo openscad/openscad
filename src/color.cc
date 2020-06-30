@@ -266,8 +266,9 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 
 	const auto &v = c->lookup_variable("c");
 	if (v.type() == Value::Type::VECTOR) {
+		const auto &vec = v.toVector();
 		for (size_t i = 0; i < 4; i++) {
-			node->color[i] = i < v.toVectorPtr()->size() ? (float)v.toVectorPtr()[i].toDouble() : 1.0f;
+			node->color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
 				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toRelativeString(ctx->documentPath()));
 			}

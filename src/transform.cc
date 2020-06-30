@@ -110,26 +110,32 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			double cx = 1, cy = 1, cz = 1;
 			double a = 0.0;
 			bool ok = true;
-			if (val_a.toVectorPtr()->size() > 0) {
-				ok &= val_a.toVectorPtr()[0].getDouble(a);
-				ok &= !std::isinf(a) && !std::isnan(a);
-				sx = sin_degrees(a);
-				cx = cos_degrees(a);
-			}
-			if (val_a.toVectorPtr()->size() > 1) {
-				ok &= val_a.toVectorPtr()[1].getDouble(a);
-				ok &= !std::isinf(a) && !std::isnan(a);
-				sy = sin_degrees(a);
-				cy = cos_degrees(a);
-			}
-			if (val_a.toVectorPtr()->size() > 2) {
-				ok &= val_a.toVectorPtr()[2].getDouble(a);
+			const auto &vec_a = val_a.toVector();
+			switch (vec_a.size())
+			{
+			default:
+				ok &= false;
+				/* fallthrough */
+			case 3:
+				ok &= vec_a[2].getDouble(a);
 				ok &= !std::isinf(a) && !std::isnan(a);
 				sz = sin_degrees(a);
 				cz = cos_degrees(a);
-			}
-			if (val_a.toVectorPtr()->size() > 3) {
-				ok &= false;
+				/* fallthrough */
+			case 2:
+				ok &= vec_a[1].getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
+				sy = sin_degrees(a);
+				cy = cos_degrees(a);
+				/* fallthrough */
+			case 1:
+				ok &= vec_a[0].getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
+				sx = sin_degrees(a);
+				cx = cos_degrees(a);
+				break;
+			case 0:
+				break;
 			}
 
 			bool v_supplied = val_v.isDefined();
@@ -208,11 +214,12 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		const auto &v = c->lookup_variable("m");
 		if (v.type() == Value::Type::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
-			for (int i = 0; i < 16; i++) {
-				size_t x = i / 4, y = i % 4;
-				if (y < v.toVectorPtr()->size() && v.toVectorPtr()[y].type() == 
-						Value::Type::VECTOR && x < v.toVectorPtr()[y].toVectorPtr()->size())
-					v.toVectorPtr()[y].toVectorPtr()[x].getDouble(rawmatrix(y, x));
+			const auto &mat = v.toVector();
+			for (size_t row_i = 0; row_i < std::min(mat.size(), size_t(4)); ++row_i) {
+				const auto &row = mat[row_i].toVector();
+				for (size_t col_i = 0; col_i < std::min(row.size(), size_t(4)); ++col_i) {
+					row[col_i].getDouble(rawmatrix(row_i, col_i));
+				}
 			}
 			double w = rawmatrix(3,3);
 			if (w != 1.0) node->matrix = rawmatrix / w;

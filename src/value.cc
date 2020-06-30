@@ -487,10 +487,21 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
+void Value::VectorPtr::append_vector(Value v) {
+  assert(v.type() == Type::VECTOR);
+  VectorPtr &vec = v.toVectorPtr();
+  if ((*this)->empty()) {
+    ptr = std::move(vec.ptr);
+  } else {
+    ptr->reserve(ptr->size() + vec->size());
+    std::move(std::begin(*vec), std::end(*vec), std::back_inserter(*ptr));
+  }
+}
+
 void Value::VectorPtr::flatten()
 {
   const auto size = std::accumulate(std::begin(**this), std::end(**this), 0, [](int i, const Value &v){
-    return i + (v.type() == Value::Type::VECTOR ? v.toVectorPtr()->size() : 1);
+    return i + (v.type() == Value::Type::VECTOR ? v.toVector().size() : 1);
   });
 
   Value::VectorPtr ret;
@@ -498,8 +509,8 @@ void Value::VectorPtr::flatten()
   for (auto& v : **this) {
     if (v.type() == Value::Type::VECTOR) {
       ret->insert(std::end(*ret),
-        std::make_move_iterator(std::begin(*v.toVectorPtrRef())),
-        std::make_move_iterator(std::end(*v.toVectorPtrRef())));
+          std::make_move_iterator(std::begin(*v.toVectorPtr())),
+          std::make_move_iterator(std::end(*v.toVectorPtr())));
     } else {
       ret->emplace_back(std::move(v));
     }
@@ -507,27 +518,20 @@ void Value::VectorPtr::flatten()
   this->ptr = ret.ptr;
 }
 
-const Value::VectorPtr &Value::toVectorPtr() const
+const Value::VectorType &Value::toVector() const
 {
-  static const VectorPtr empty;
+  static const VectorType empty;
   const Value::VectorPtr *v = boost::get<Value::VectorPtr>(&this->value);
-  return v ? *v : empty;
+  return v ? **v : empty;
 }
-
-// protected non-const reference return only used by VectorPtr::flatten
-Value::VectorPtr &Value::toVectorPtrRef()
-{
-  return boost::get<VectorPtr>(this->value);
-}
-
 
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
   if (this->type() != Type::VECTOR) return false;
 
-  const VectorPtr &v = this->toVectorPtr();
+  const auto &v = this->toVector();
 
-  if (v->size() != 2) return false;
+  if (v.size() != 2) return false;
 
   double rx, ry;
   bool valid = ignoreInfinite
@@ -546,7 +550,7 @@ bool Value::getVec3(double &x, double &y, double &z) const
 {
   if (this->type() != Type::VECTOR) return false;
 
-  const VectorType &v = *toVectorPtr();
+  const VectorType &v = this->toVector();
 
   if (v.size() != 3) return false;
 
@@ -557,7 +561,7 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 {
   if (this->type() != Type::VECTOR) return false;
 
-  const VectorType &v = *toVectorPtr();
+  const VectorType &v = toVector();
 
   if (v.size() == 2) {
     getVec2(x, y);
@@ -707,11 +711,11 @@ Value Value::operator-(const Value &v) const
   return boost::apply_visitor(minus_visitor(), this->value, v.value);
 }
 
-Value Value::multvecnum(const Value &vecval, const Value &numval)
+Value Value::multvecnum(const Value::VectorType &vecval, const Value &numval)
 {
   // Vector * Number
   VectorPtr dstv;
-  for(const auto &val : *vecval.toVectorPtr()) {
+  for(const auto &val : vecval) {
     dstv->emplace_back(val * numval);
   }
   return std::move(dstv);
@@ -719,19 +723,20 @@ Value Value::multvecnum(const Value &vecval, const Value &numval)
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
-  // Matrix * Vector
-  VectorPtr dstv;
+// Matrix * Vector
+  Value::VectorPtr dstv;
   for (size_t i=0;i<matrixvec.size();i++) {
     if (matrixvec[i].type() != Type::VECTOR ||
-        matrixvec[i].toVectorPtr()->size() != vectorvec.size()) {
+        matrixvec[i].toVector().size() != vectorvec.size()) {
       return Value();
     }
     double r_e = 0.0;
-    for (size_t j=0;j<matrixvec[i].toVectorPtr()->size();j++) {
-      if (matrixvec[i].toVectorPtr()[j].type() != Type::NUMBER || vectorvec[j].type() != Type::NUMBER) {
+    for (size_t j=0;j<matrixvec[i].toVector().size();j++) {
+      if (matrixvec[i].toVector()[j].type() != Type::NUMBER ||
+          vectorvec[j].type() != Type::NUMBER) {
         return Value();
       }
-      r_e += matrixvec[i].toVectorPtr()[j].toDouble() * vectorvec[j].toDouble();
+      r_e += matrixvec[i].toVector()[j].toDouble() * vectorvec[j].toDouble();
     }
     dstv->push_back(Value(r_e));
   }
@@ -743,12 +748,12 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
   assert(vectorvec.size() == matrixvec.size());
   // Vector * Matrix
   VectorPtr dstv;
-  size_t firstRowSize =  matrixvec[0].toVectorPtr()->size();
+  size_t firstRowSize =  matrixvec[0].toVector().size();
   for (size_t i = 0; i < firstRowSize; i++) {
     double r_e = 0.0;
     for (size_t j=0;j<vectorvec.size();j++) {
       if (matrixvec[j].type() != Type::VECTOR ||
-          matrixvec[j].toVectorPtr()->size() != firstRowSize) {
+          matrixvec[j].toVector().size() != firstRowSize) {
         PRINTB("WARNING: Matrix must be rectangular. Problem at row %lu", j);
         return Value::undefined.clone();
       }
@@ -756,13 +761,13 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
         PRINTB("WARNING: Vector must contain only numbers. Problem at index %lu", j);
         return Value::undefined.clone();
       }
-      if (matrixvec[j].toVectorPtr()[i].type() != Type::NUMBER) {
+      if (matrixvec[j].toVector()[i].type() != Type::NUMBER) {
         PRINTB("WARNING: Matrix must contain only numbers. Problem at row %lu, col %lu", j % i);
         return Value::undefined.clone();
       }
-      r_e += vectorvec[j].toDouble() * matrixvec[j].toVectorPtr()[i].toDouble();
+      r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
     }
-    dstv->push_back(Value(r_e));
+    dstv->emplace_back(r_e);
   }
   return std::move(dstv);
 }
@@ -773,14 +778,14 @@ Value Value::operator*(const Value &v) const
     return this->toDouble() * v.toDouble();
   }
   else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
-    return multvecnum(*this, v);
+    return multvecnum(this->toVector(), v);
   }
   else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
-    return multvecnum(v, *this);
+    return multvecnum(v.toVector(), *this);
   }
   else if (this->type() == Type::VECTOR && v.type() == Type::VECTOR) {
-    const auto &vec1 = *this->toVectorPtr();
-    const auto &vec2 = *v.toVectorPtr();
+    const auto &vec1 = this->toVector();
+    const auto &vec2 = v.toVector();
     if (vec1.size() == 0 || vec2.size() == 0) return Value::undefined.clone();
 
     if (vec1[0].type() == Type::NUMBER && vec2[0].type() == Type::NUMBER &&
@@ -795,17 +800,17 @@ Value Value::operator*(const Value &v) const
       }
       return Value(r);
     } else if (vec1[0].type() == Type::VECTOR && vec2[0].type() == Type::NUMBER &&
-               vec1[0].toVectorPtr()->size() == vec2.size()) {
+               vec1[0].toVector().size() == vec2.size()) {
       return multmatvec(vec1, vec2);
     } else if (vec1[0].type() == Type::NUMBER && vec2[0].type() == Type::VECTOR &&
                vec1.size() == vec2.size()) {
       return multvecmat(vec1, vec2);
     } else if (vec1[0].type() == Type::VECTOR && vec2[0].type() == Type::VECTOR &&
-               vec1[0].toVectorPtr()->size() == vec2.size()) {
+               vec1[0].toVector().size() == vec2.size()) {
       // Matrix * Matrix
       VectorPtr dstv;
       for (const auto &srcrow : vec1) {
-        const auto &srcrowvec = *srcrow.toVectorPtr();
+        const auto &srcrowvec = srcrow.toVector();
         if (srcrowvec.size() != vec2.size()) return Value::undefined.clone();
         dstv->push_back(multvecmat(srcrowvec, vec2));
       }
@@ -821,17 +826,15 @@ Value Value::operator/(const Value &v) const
     return this->toDouble() / v.toDouble();
   }
   else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
-    const auto &vec = *this->toVectorPtr();
     VectorPtr dstv;
-    for (const auto &vecval : vec) {
+    for (const auto &vecval : this->toVector()) {
       dstv->push_back(vecval / v);
     }
     return std::move(dstv);
   }
   else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
-    const auto &vec = *v.toVectorPtr();
     VectorPtr dstv;
-    for (const auto &vecval : vec) {
+    for (const auto &vecval : v.toVector()) {
       dstv->push_back(*this / vecval);
     }
     return std::move(dstv);
@@ -850,12 +853,11 @@ Value Value::operator%(const Value &v) const
 Value Value::operator-() const
 {
   if (this->type() == Type::NUMBER) {
-    return -this->toDouble();
+    return Value(-this->toDouble());
   }
   else if (this->type() == Type::VECTOR) {
-    const auto &vec = *this->toVectorPtr();
     VectorPtr dstv;
-    for (const auto &vecval : vec) {
+    for (const auto &vecval : this->toVector()) {
       dstv->push_back(-vecval);
     }
     return std::move(dstv);

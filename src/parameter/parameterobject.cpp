@@ -36,7 +36,7 @@ void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
   Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
   
   if (defaultValue.type() == dvt) {
-    assignment->setExpr(make_shared<Literal>(std::move(value)));
+    assignment->setExpr(make_shared<Literal>(value.clone()));
   }
 }
 
@@ -48,11 +48,11 @@ void ParameterObject::setValue(const class Value defaultValue, const class Value
   this->vt = values.type();
   this->dvt = defaultValue.type();
  
-  bool makerBotMax = (vt == Value::Type::VECTOR && values.toVectorPtr()->size() == 1 && values.toVectorPtr()[0].type() == Value::Type::NUMBER); // [max] format from makerbot customizer
+  bool makerBotMax = (vt == Value::Type::VECTOR && values.toVector().size() == 1 && values.toVector()[0].type() == Value::Type::NUMBER); // [max] format from makerbot customizer
 
   if (dvt == Value::Type::BOOL) {
     this->target = CHECKBOX;
-  } else if ((dvt == Value::Type::VECTOR) && (defaultValue.toVectorPtr()->size() <= 4)) {
+  } else if ((dvt == Value::Type::VECTOR) && (defaultValue.toVector().size() <= 4)) {
     this->target = checkVectorWidget();
   } else if ((vt == Value::Type::RANGE || makerBotMax) && (dvt == Value::Type::NUMBER)) {
     this->target = SLIDER;
@@ -75,9 +75,9 @@ bool ParameterObject::operator == (const ParameterObject &second)
 
 ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
 {
-  const Value::VectorPtr &vec = defaultValue.toVectorPtr();
-  if(vec->size()==0) return TEXT;
-  for (unsigned int i = 0;i < vec->size();i++) {
+  const auto &vec = defaultValue.toVector();
+  if (vec.size() == 0) return TEXT;
+  for (unsigned int i = 0;i < vec.size();i++) {
     if (vec[i].type() != Value::Type::NUMBER) {
       return TEXT;
     }

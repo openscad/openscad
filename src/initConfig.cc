@@ -14,7 +14,7 @@ void InitConfigurator::initComboBox(QComboBox *comboBox, const Settings::Setting
 {
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
-	for (const auto &v : *entry.range().toVectorPtr()) {
+	for (const auto &v : entry.range().toVector()) {
 		QString val = QString::fromStdString(v[0].toString());
 		QString qtext = QString::fromStdString(gettext(v[1].toString().c_str()));
 		comboBox->addItem(qtext, val);

@@ -386,12 +386,9 @@ Value Vector::evaluate(const std::shared_ptr<Context>& context) const
 	for(const auto &e : this->children) {
 		Value tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const Value::VectorPtr &result = tmpval.toVectorPtr();
-			for (const auto &el : *result) {
-				vec->emplace_back(el.clone());
-			}
+			vec.append_vector(std::move(tmpval));
 		} else {
-			vec->push_back(std::move(tmpval));
+			vec->emplace_back(std::move(tmpval));
 		}
 	}
 	return std::move(vec);
@@ -740,9 +737,7 @@ Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
             }
         }
     } else if (v.type() == Value::Type::VECTOR) {
-        for (const auto &el : *v.toVectorPtr()) {
-            vec->emplace_back(el.clone());
-        }
+        vec.append_vector(std::move(v));
     } else if (v.type() == Value::Type::STRING) {
         utf8_split(v.toStrUtf8Wrapper(), [&](Value v) {
             vec->emplace_back(std::move(v));
@@ -769,48 +764,48 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 
 Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorPtr vec;
+  Value::VectorPtr vec;
 
-    ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+  ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-    ContextHandle<Context> assign_context{Context::create<Context>(context)};
+  ContextHandle<Context> assign_context{Context::create<Context>(context)};
 
-    // comprehension for statements are by the parser reduced to only contain one single element
-    const std::string &it_name = for_context->getArgName(0);
-    Value it_values = for_context->getArgValue(0, assign_context.ctx);
+  // comprehension for statements are by the parser reduced to only contain one single element
+  const std::string &it_name = for_context->getArgName(0);
+  Value it_values = for_context->getArgValue(0, assign_context.ctx);
 
-    ContextHandle<Context> c{Context::create<Context>(context)};
+  ContextHandle<Context> c{Context::create<Context>(context)};
 
-    if (it_values.type() == Value::Type::RANGE) {
-        const RangeType &range = it_values.toRange();
-        uint32_t steps = range.numValues();
-        if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
-        } else {
-            for (double d : range) {
-                c->set_variable(it_name, d);
-                vec->emplace_back(this->expr->evaluate(c.ctx));
-            }
-        }
-    } else if (it_values.type() == Value::Type::VECTOR) {
-        for (const auto &el : *it_values.toVectorPtr()) {
-            c->set_variable(it_name, el.clone());
-            vec->emplace_back(this->expr->evaluate(c.ctx));
-        }
-    } else if (it_values.type() == Value::Type::STRING) {
-        utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
-            c->set_variable(it_name, std::move(v));
-            vec->emplace_back(this->expr->evaluate(c.ctx));
-        });
-    } else if (it_values.type() != Value::Type::UNDEFINED) {
-        c->set_variable(it_name, std::move(it_values));
+  if (it_values.type() == Value::Type::RANGE) {
+    const RangeType &range = it_values.toRange();
+    uint32_t steps = range.numValues();
+    if (steps >= 1000000) {
+      PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+    } else {
+      for (double d : range) {
+        c->set_variable(it_name, d);
         vec->emplace_back(this->expr->evaluate(c.ctx));
+      }
     }
+  } else if (it_values.type() == Value::Type::VECTOR) {
+    for (const auto &el : it_values.toVector()) {
+      c->set_variable(it_name, el.clone());
+      vec->emplace_back(this->expr->evaluate(c.ctx));
+    }
+  } else if (it_values.type() == Value::Type::STRING) {
+    utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
+      c->set_variable(it_name, std::move(v));
+      vec->emplace_back(this->expr->evaluate(c.ctx));
+    });
+  } else if (it_values.type() != Value::Type::UNDEFINED) {
+    c->set_variable(it_name, std::move(it_values));
+    vec->emplace_back(this->expr->evaluate(c.ctx));
+  }
 
-    if (isListComprehension(this->expr)) {
-        vec.flatten();
-    }
-    return std::move(vec);
+  if (isListComprehension(this->expr)) {
+      vec.flatten();
+  }
+  return std::move(vec);
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const

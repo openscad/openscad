@@ -65,6 +65,8 @@ extern void initialize_builtin_dxf_dim();
 */
 void Builtins::initialize()
 {
+	Builtins::initKeywordList();
+
 	register_builtin_functions();
 	initialize_builtin_dxf_dim();
 
