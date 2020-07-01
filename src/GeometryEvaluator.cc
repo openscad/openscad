@@ -32,6 +32,7 @@
 
 #ifdef ENABLE_HIREDIS
 #include "pcache.h"
+#include "PCSettings.h"
 #endif
 
 #pragma push_macro("NDEBUG")
@@ -292,7 +293,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
         if (!CGALCache::instance()->contains(key)) {
             CGALCache::instance()->insert(key, N);
 #ifdef ENABLE_HIREDIS
-            if(!PCache::getInst()->insertCGAL(key, N)){
+            if(PCSettings::instance()->enablePersistentCache && !PCache::getInst()->insertCGAL(key, N)){
                 PRINT("WARNING: Polyhedron is not inserted into redis cache");
             }
 #endif
@@ -304,7 +305,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 #ifdef ENABLE_HIREDIS
-            if(!PCache::getInst()->insertGeometry(key, geom)){
+            if(PCSettings::instance()->enablePersistentCache && !PCache::getInst()->insertGeometry(key, geom)){
                 PRINT("WARNING: Geometry is not inserted into redis cache");
             }
 #endif

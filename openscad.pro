@@ -35,6 +35,7 @@ exists(local.pri): include(local.pri)
     include(config_$${VARIANT}.pri)
   }
 }
+CONFIG += experimental
 
 debug {
   experimental {
