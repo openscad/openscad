@@ -309,13 +309,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	std::string filename_str = fs::path(output_file_str).generic_string();
 	new_output_file = filename_str.c_str();
 
-	// Do some minimal checking of output before rendering (issue #432)
+	// Do some minimal checking of output directory before rendering (issue #432)
 	fs::path output_directory = fs::path(output_file_str).parent_path();
 	if (!fs::is_directory(output_directory)) {
-		PRINTB("Directory for output file %s does not exist. - Skipping\n", output_file_str.c_str());
+		PRINTB(
+			"%s is not a directory (output file: %s). - Skipping\n",
+			output_directory.c_str() % output_file_str.c_str()
+		);
 		return 1;
 	}
-	auto aa = output_directory.
 
 	set_render_color_scheme(arg_colorscheme, true);
 
