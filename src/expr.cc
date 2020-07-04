@@ -108,10 +108,7 @@ const char *UnaryOp::opString() const
 }
 
 bool UnaryOp::isLiteral() const {
-
-    if(this->expr->isLiteral())
-        return true;
-    return false;
+	return this->expr->isLiteral();
 }
 
 void UnaryOp::print(std::ostream &stream, const std::string &) const
@@ -257,8 +254,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 }
 
 Value ArrayLookup::evaluate(const std::shared_ptr<Context>& context) const {
-	const Value &array = this->array->evaluate(context);
-	return array[this->index->evaluate(context)];
+	return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
@@ -349,30 +345,28 @@ void Range::print(std::ostream &stream, const std::string &) const
 }
 
 bool Range::isLiteral() const {
-  if (!this->step) {
-    if ( begin->isLiteral() && end->isLiteral()) return true;
-  } else {
-    if ( begin->isLiteral() && end->isLiteral() && step->isLiteral()) return true;
-  }
-  return false;
+	return this->step ?
+		begin->isLiteral() && end->isLiteral() && step->isLiteral() :
+		begin->isLiteral() && end->isLiteral();
 }
 
-Vector::Vector(const Location &loc) : Expression(loc)
+Vector::Vector(const Location &loc) : Expression(loc), literal_flag(unknown)
 {
 }
 
 bool Vector::isLiteral() const {
-  if (this->literal_flag.isDefined()) {
-    return literal_flag;
-  }
-  for(const auto &e : this->children) {
-    if (!e->isLiteral()){
-      this->literal_flag = Value(false);
-      return false;
-    }
-  }
-  this->literal_flag = Value(true);
-  return true;
+	if (unknown(literal_flag)) {
+		for(const auto &e : this->children) {
+			if (!e->isLiteral()) {
+				literal_flag = false;
+				return false;
+			}
+		}
+		literal_flag = true;
+		return true;
+	} else {
+		return bool(literal_flag);
+	}
 }
 
 void Vector::emplace_back(Expression *expr)
@@ -382,16 +376,21 @@ void Vector::emplace_back(Expression *expr)
 
 Value Vector::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorPtr vec;
-	for(const auto &e : this->children) {
-		Value tmpval = e->evaluate(context);
-		if (isListComprehension(e)) {
-			vec.append_vector(std::move(tmpval));
+	if (children.size() == 1) {
+		Value val = children.front()->evaluate(context);
+		// If only 1 EmbeddedVectorType, convert to plain VectorType
+		if (val.type() == Value::Type::EMBEDDED_VECTOR) {
+			return VectorType(std::move(val.toEmbeddedVectorNonConst()));
 		} else {
-			vec->emplace_back(std::move(tmpval));
+			VectorType vec;
+			vec.emplace_back(std::move(val));
+			return std::move(vec);
 		}
+	} else {
+		VectorType vec;
+		for(const auto &e : this->children) vec.emplace_back(e->evaluate(context));
+		return std::move(vec);
 	}
-	return std::move(vec);
 }
 
 void Vector::print(std::ostream &stream, const std::string &) const
@@ -430,16 +429,16 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 
 Value MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value v = this->expr->evaluate(context);
+	const Value &v = this->expr->evaluate(context);
 
 	if (v.type() == Value::Type::VECTOR) {
-		if (this->member == "x") return v[0].clone();
-		if (this->member == "y") return v[1].clone();
-		if (this->member == "z") return v[2].clone();
+		if (this->member == "x") return v[0];
+		if (this->member == "y") return v[1];
+		if (this->member == "z") return v[2];
 	} else if (v.type() == Value::Type::RANGE) {
-		if (this->member == "begin") return v[0].clone();
-		if (this->member == "step") return v[1].clone();
-		if (this->member == "end") return v[2].clone();
+		if (this->member == "begin") return v[0];
+		if (this->member == "step") return v[1];
+		if (this->member == "end") return v[2];
 	}
 	return Value::undefined.clone();
 }
@@ -533,10 +532,12 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
 			if (this->resolvedArguments.find(arg->getName()) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : Value::undefined.clone());			}
+				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : Value::undefined.clone());
+			}
 		}
 	}
 
+	// TODO REMOVE CLONES HERE?
 	std::vector<std::pair<std::string, Value>> variables;
 	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
 	// Set default values for unspecified parameters
@@ -544,8 +545,8 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 		variables.emplace_back(arg.first, arg.second.clone());
 	}
 	// Set the given parameters
-	for (const auto &ass : this->resolvedArguments) {
-		variables.emplace_back(ass.first, ass.second->evaluate(context));
+	for (const auto &arg : this->resolvedArguments) {
+		variables.emplace_back(arg.first, arg.second->evaluate(context));
 	}
 	// Apply to tailCallContext
 	for (const auto &var : variables) {
@@ -604,9 +605,8 @@ Expression * FunctionCall::create(const std::string &funcname, const AssignmentL
 		return new Let(arglist, expr, loc);
 	}
 	return nullptr;
-
 	// TODO: Generate error/warning if expr != 0?
-//	return new FunctionCall(funcname, arglist, loc);
+	//return new FunctionCall(funcname, arglist, loc);
 }
 
 Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc)
@@ -694,67 +694,68 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
-    const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
-
-    Value::VectorPtr vec;
-    if (expr) {
-        if (isListComprehension(expr)) {
-            return expr->evaluate(context);
-        } else {
-           vec->emplace_back(expr->evaluate(context));
-        }
-    }
-
-    return std::move(vec);
+	const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+	if (expr) {
+		return expr->evaluate(context);
+	} else {
+		return EmbeddedVectorType::EmptyVector(); // empty embedded vector
+	}
 }
 
 void LcIf::print(std::ostream &stream, const std::string &) const
 {
-    stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
-    if (this->elseexpr) {
-        stream << " else (" << *this->elseexpr << ")";
-    }
+	stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
+	if (this->elseexpr) {
+		stream << " else (" << *this->elseexpr << ")";
+	}
 }
 
 LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), expr(expr)
 {
 }
 
+// Need this for recurring into already embedded vectors, and performing "each" on their elements
+//    Context is only passed along for the possible use in Range warning.
+Value LcEach::evalRecur(Value &&v, const std::shared_ptr<Context>& context) const
+{
+	if (v.type() == Value::Type::RANGE) {
+		const RangeType &range = v.toRange();
+		uint32_t steps = range.numValues();
+		if (steps >= 1000000) {
+			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+		} else {
+			EmbeddedVectorType vec;
+			for (double d : range) vec.emplace_back(d);
+			return Value(std::move(vec));
+		}
+	} else if (v.type() == Value::Type::VECTOR) {
+		// Safe to move the overall vector ptr since we have a temporary value (could be a copy, or constructed just for us, doesn't matter)
+		auto vec = EmbeddedVectorType(std::move(v.toVectorNonConst()));
+		return Value(std::move(vec));
+	} else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
+		EmbeddedVectorType vec;
+		// Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
+		// which should remain constant
+		for(const auto &val : v.toEmbeddedVector()) vec.emplace_back( evalRecur(val.clone(), context) );
+		return Value(std::move(vec));
+	} else if (v.type() == Value::Type::STRING) {
+		EmbeddedVectorType vec;
+		for (auto ch : v.toStrUtf8Wrapper()) vec.emplace_back(std::move(ch));
+		return Value(std::move(vec));
+	} else if (v.type() != Value::Type::UNDEFINED) {
+		return std::move(v);
+	}
+	return EmbeddedVectorType::EmptyVector();
+}
+
 Value LcEach::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorPtr vec;
-
-    Value v = this->expr->evaluate(context);
-
-    if (v.type() == Value::Type::RANGE) {
-        const RangeType &range = v.toRange();
-        uint32_t steps = range.numValues();
-        if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
-        } else {
-            for (double d : range) {
-                vec->emplace_back(d);
-            }
-        }
-    } else if (v.type() == Value::Type::VECTOR) {
-        vec.append_vector(std::move(v));
-    } else if (v.type() == Value::Type::STRING) {
-        utf8_split(v.toStrUtf8Wrapper(), [&](Value v) {
-            vec->emplace_back(std::move(v));
-        });
-    } else if (v.type() != Value::Type::UNDEFINED) {
-        vec->emplace_back(std::move(v));
-    }
-
-    if (isListComprehension(this->expr)) {
-        vec.flatten();
-    }
-    return std::move(vec);
+	return evalRecur(this->expr->evaluate(context), context);
 }
 
 void LcEach::print(std::ostream &stream, const std::string &) const
 {
-    stream << "each (" << *this->expr << ")";
+	stream << "each (" << *this->expr << ")";
 }
 
 LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
@@ -764,48 +765,47 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 
 Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
 {
-  Value::VectorPtr vec;
+	ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	ContextHandle<Context> assign_context{Context::create<Context>(context)};
+	ContextHandle<Context> c{Context::create<Context>(context)};
 
-  ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	// comprehension for statements are reduced by the parser to only contain one single element
+	const std::string &it_name = for_context->getArgName(0);
+	Value it_values = for_context->getArgValue(0, assign_context.ctx);
 
-  ContextHandle<Context> assign_context{Context::create<Context>(context)};
+	if (it_values.type() == Value::Type::RANGE) {
+		const RangeType &range = it_values.toRange();
+		uint32_t steps = range.numValues();
+		if (steps >= 1000000) {
+			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+		} else {
+			EmbeddedVectorType vec;
+			for (double d : range) {
+				c->set_variable(it_name, d);
+				vec.emplace_back(this->expr->evaluate(c.ctx));
+			}
+			return Value(std::move(vec));
+		}
+	} else if (it_values.type() == Value::Type::VECTOR) {
+		EmbeddedVectorType vec;
+		for (const auto &el : it_values.toVector()) {
+			c->set_variable(it_name, el.clone());
+			vec.emplace_back(this->expr->evaluate(c.ctx));
+		}
+		return std::move(vec);
+	} else if (it_values.type() == Value::Type::STRING) {
+		EmbeddedVectorType vec;
+		for (auto ch : it_values.toStrUtf8Wrapper()) {
+			c->set_variable(it_name, std::move(ch));
+			vec.emplace_back(this->expr->evaluate(c.ctx));
+		}
+		return Value(std::move(vec));
+	} else if (it_values.type() != Value::Type::UNDEFINED) {
+		c->set_variable(it_name, std::move(it_values));
+		return this->expr->evaluate(c.ctx);
+	}
 
-  // comprehension for statements are by the parser reduced to only contain one single element
-  const std::string &it_name = for_context->getArgName(0);
-  Value it_values = for_context->getArgValue(0, assign_context.ctx);
-
-  ContextHandle<Context> c{Context::create<Context>(context)};
-
-  if (it_values.type() == Value::Type::RANGE) {
-    const RangeType &range = it_values.toRange();
-    uint32_t steps = range.numValues();
-    if (steps >= 1000000) {
-      PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
-    } else {
-      for (double d : range) {
-        c->set_variable(it_name, d);
-        vec->emplace_back(this->expr->evaluate(c.ctx));
-      }
-    }
-  } else if (it_values.type() == Value::Type::VECTOR) {
-    for (const auto &el : it_values.toVector()) {
-      c->set_variable(it_name, el.clone());
-      vec->emplace_back(this->expr->evaluate(c.ctx));
-    }
-  } else if (it_values.type() == Value::Type::STRING) {
-    utf8_split(it_values.toStrUtf8Wrapper(), [&](Value v) {
-      c->set_variable(it_name, std::move(v));
-      vec->emplace_back(this->expr->evaluate(c.ctx));
-    });
-  } else if (it_values.type() != Value::Type::UNDEFINED) {
-    c->set_variable(it_name, std::move(it_values));
-    vec->emplace_back(this->expr->evaluate(c.ctx));
-  }
-
-  if (isListComprehension(this->expr)) {
-      vec.flatten();
-  }
-  return std::move(vec);
+	return EmbeddedVectorType::EmptyVector();
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const
@@ -820,14 +820,14 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorPtr vec;
+	EmbeddedVectorType vec;
 
     ContextHandle<Context> c{Context::create<Context>(context)};
     evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
 
 	unsigned int counter = 0;
     while (this->cond->evaluate(c.ctx)) {
-        vec->emplace_back(this->expr->evaluate(c.ctx));
+        vec.emplace_back(this->expr->evaluate(c.ctx));
 
         if (counter++ == 1000000) {
             std::string locs = loc.toRelativeString(context->documentPath());
@@ -838,10 +838,6 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
         ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
         evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
         c->apply_variables(tmp.ctx);
-    }
-
-    if (isListComprehension(this->expr)) {
-        vec.flatten();
     }
     return std::move(vec);
 }

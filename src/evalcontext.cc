@@ -132,11 +132,11 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		if (m) {
 			s << boost::format("  module args:");
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg->getName() % variables[arg->getName()];
+				auto result = variables.find(arg->getName());
+				s << boost::format("    %s = %s") % arg->getName() % variables.get(arg->getName());
 			}
 		}
 	}
 	return s.str();
 }
 #endif
-

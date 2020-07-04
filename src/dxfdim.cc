@@ -40,8 +40,8 @@
 #include <cstdint>
 
 #include <boost/filesystem.hpp>
-std::unordered_map<std::string, Value> dxf_dim_cache;
-std::unordered_map<std::string, Value> dxf_cross_cache;
+ValueMap dxf_dim_cache;
+ValueMap dxf_cross_cache;
 namespace fs = boost::filesystem;
 
 Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
@@ -97,8 +97,9 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
 												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
 												<< "|" << filesize);
-	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
-		return dxf_dim_cache.find(key)->second.clone();
+	auto result = dxf_dim_cache.find(key);
+	if (result != dxf_dim_cache.end())
+		return result->second.clone();
 	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
@@ -234,10 +235,12 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			Value::VectorPtr ret;
-			ret->emplace_back(x);
-			ret->emplace_back(y);
-			return dxf_cross_cache.emplace(key, std::move(ret)).first->second.clone();
+			VectorType ret;
+			ret.emplace_back(x);
+			ret.emplace_back(y);
+			Value val(std::move(ret));
+			dxf_cross_cache.insert_or_assign(key, val.clone());
+			return val;
 		}
 	}
 

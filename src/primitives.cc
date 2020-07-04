@@ -67,35 +67,21 @@ class PrimitiveNode : public LeafNode
 {
 public:
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, primitive_type_e type, const std::string &docPath) : LeafNode(mi, ctx), document_path(docPath), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, primitive_type_e type, const std::string &docPath) : LeafNode(mi, ctx),
+			document_path(docPath), type(type), points(Value::undefined.clone()), paths(Value::undefined.clone()), faces(Value::undefined.clone()) { }
 	std::string toString() const override;
 	std::string name() const override {
 		switch (this->type) {
-		case primitive_type_e::CUBE:
-			return "cube";
-			break;
-		case primitive_type_e::SPHERE:
-			return "sphere";
-			break;
-		case primitive_type_e::CYLINDER:
-			return "cylinder";
-			break;
-		case primitive_type_e::POLYHEDRON:
-			return "polyhedron";
-			break;
-		case primitive_type_e::SQUARE:
-			return "square";
-			break;
-		case primitive_type_e::CIRCLE:
-			return "circle";
-			break;
-		case primitive_type_e::POLYGON:
-			return "polygon";
-			break;
-		default:
-			assert(false && "PrimitiveNode::name(): Unknown primitive type");
-			return "unknown";
+		case primitive_type_e::CUBE:       return "cube";
+		case primitive_type_e::SPHERE:     return "sphere";
+		case primitive_type_e::CYLINDER:   return "cylinder";
+		case primitive_type_e::POLYHEDRON: return "polyhedron";
+		case primitive_type_e::SQUARE:     return "square";
+		case primitive_type_e::CIRCLE:     return "circle";
+		case primitive_type_e::POLYGON:    return "polygon";
+		default: assert(false && "PrimitiveNode::name(): Unknown primitive type");
 		}
+		return "unknown";
 	}
 	const std::string document_path;
 
@@ -240,9 +226,9 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			node->h = h.toDouble();
 		}
 
-		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
-		const auto r1 = lookup_radius(c.ctx, inst->location(), "d1", "r1");
-		const auto r2 = lookup_radius(c.ctx, inst->location(), "d2", "r2");
+		auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
+		auto r1 = lookup_radius(c.ctx, inst->location(), "d1", "r1");
+		auto r2 = lookup_radius(c.ctx, inst->location(), "d2", "r2");
 		if(r.type() == Value::Type::NUMBER &&
 			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 			){
@@ -562,7 +548,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					double px, py, pz;
 					if (!pts[pt_i].getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", pt_i % this->modinst->location().toRelativeString(this->document_path));
+						PRINTB("ERROR: Unable to convert points[%d] = %s to a vec3 of numbers, %s", pt_i % pts[pt_i].toEchoString() % this->modinst->location().toRelativeString(this->document_path));
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -619,7 +605,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			size_t i = 0;
 			for (const auto &val : this->points.toVector()) {
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s", val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
+					PRINTB("ERROR: Unable to convert points[%d] = %s to a vec2 of numbers, %s", i % val.toEchoString() % this->modinst->location().toRelativeString(this->document_path));
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);

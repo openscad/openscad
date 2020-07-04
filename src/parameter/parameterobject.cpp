@@ -4,16 +4,17 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const Value defaultValue)
+ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const Value &defaultValue) :
+    value(Value::undefined.clone()), values(Value::undefined.clone()), defaultValue(Value::undefined.clone())
 {
   this->set = false;
   this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
-  setValue(defaultValue.clone(), param->evaluate(ctx));
+  setValue(defaultValue, param->evaluate(ctx));
   const Annotation *desc = assignment->annotation("Description");
 
   if (desc) {
-    const Value v = desc->evaluate(ctx);
+    Value v = desc->evaluate(ctx);
     if (v.type() == Value::Type::STRING) {
       description=QString::fromStdString(v.toString());
     }
@@ -21,12 +22,12 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
   
   const Annotation *group = assignment->annotation("Group");
   if (group) {
-    const Value v = group->evaluate(ctx);
+    Value v = group->evaluate(ctx);
     if (v.type() == Value::Type::STRING) {
-      groupName=v.toString();
+      groupName = v.toString();
     }
   } else {
-    groupName="Parameters";
+    groupName = "Parameters";
   }
 }
 
@@ -40,7 +41,7 @@ void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
   }
 }
 
-void ParameterObject::setValue(const class Value defaultValue, const class Value values)
+void ParameterObject::setValue(const Value &defaultValue, const Value &values)
 {
   this->values = values.clone();
   this->value = defaultValue.clone();

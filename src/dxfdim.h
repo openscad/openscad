@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include "value.h"
+#include "valuemap.h"
 
-extern std::unordered_map<std::string, Value> dxf_dim_cache;
-extern std::unordered_map<std::string, Value> dxf_cross_cache;
+extern ValueMap dxf_dim_cache;
+extern ValueMap dxf_cross_cache;

@@ -24,8 +24,8 @@
  *
  */
 
+#include <cassert>
 #include <cmath>
-#include <assert.h>
 #include <numeric>
 #include <sstream>
 #include <boost/format.hpp>
@@ -46,6 +46,8 @@
 namespace fs=boost::filesystem;
 
 const Value Value::undefined;
+const VectorType VectorType::EMPTY;
+const EmbeddedVectorType EmbeddedVectorType::EMPTY;
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE 128
@@ -74,52 +76,51 @@ const Value Value::undefined;
 //leave parameter zeropos as is.
 inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpos=nullptr, char *exppos=nullptr, char *decimalpos=nullptr, char *zeropos=nullptr) {
 
-    int cont = TRIM_TRAILINGZEROES_CONTINUE;
+  int cont = TRIM_TRAILINGZEROES_CONTINUE;
 
-    //we have exhaused all positions from end to start
-    if(currentpos <= buffer)
-        return TRIM_TRAILINGZEROES_DONE;
-
-    //we do no need to process the terminator of string
-    if(*currentpos == '\0'){
-        currentpos--;
-        cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
-    }
-
-
-    //we have an exponent and jumps to the position before the exponent - no need to process the characters belonging to the exponent
-    if(cont && exppos && currentpos >= exppos)
-    {
-        currentpos = exppos;
-        currentpos--;
-        cont = trimTrailingZeroesHelper(buffer, pos, currentpos , exppos, decimalpos, zeropos);
-    }
-
-    //we are still on the right side of the decimal and still counting zeroes (keep track of) from the back to start
-    if(cont && currentpos && decimalpos < currentpos && *currentpos == '0'){
-        zeropos= currentpos;
-        currentpos--;
-        cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
-    }
-
-    //we have found the first occurrance of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
-    if(cont && zeropos && exppos){
-        int count = &buffer[pos] - exppos + 1;
-        memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
-        return TRIM_TRAILINGZEROES_DONE;
-    }
-
-    //we have found a zero and need to take care of (truncate the string to the position of either the zero or the decimal)
-    if(cont && zeropos){
-       zeropos - 1 == decimalpos ? *decimalpos = '\0' : *zeropos = '\0';
-       return TRIM_TRAILINGZEROES_DONE;
-    }
-
-    //we have just another character (other than a zero) and are done
-    if(cont && !zeropos)
-       return TRIM_TRAILINGZEROES_DONE;
-
+  //we have exhaused all positions from end to start
+  if(currentpos <= buffer)
     return TRIM_TRAILINGZEROES_DONE;
+
+  //we do no need to process the terminator of string
+  if(*currentpos == '\0') {
+    currentpos--;
+    cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
+  }
+
+  //we have an exponent and jumps to the position before the exponent - no need to process the characters belonging to the exponent
+  if(cont && exppos && currentpos >= exppos)
+  {
+    currentpos = exppos;
+    currentpos--;
+    cont = trimTrailingZeroesHelper(buffer, pos, currentpos , exppos, decimalpos, zeropos);
+  }
+
+  //we are still on the right side of the decimal and still counting zeroes (keep track of) from the back to start
+  if(cont && currentpos && decimalpos < currentpos && *currentpos == '0'){
+    zeropos= currentpos;
+    currentpos--;
+    cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
+  }
+
+  //we have found the first occurrance of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
+  if(cont && zeropos && exppos){
+    int count = &buffer[pos] - exppos + 1;
+    memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
+    return TRIM_TRAILINGZEROES_DONE;
+  }
+
+  //we have found a zero and need to take care of (truncate the string to the position of either the zero or the decimal)
+  if(cont && zeropos){
+   zeropos - 1 == decimalpos ? *decimalpos = '\0' : *zeropos = '\0';
+   return TRIM_TRAILINGZEROES_DONE;
+  }
+
+  //we have just another character (other than a zero) and are done
+  if(cont && !zeropos)
+   return TRIM_TRAILINGZEROES_DONE;
+
+  return TRIM_TRAILINGZEROES_DONE;
 }
 
 inline void trimTrailingZeroes(char *buffer, const int pos) {
@@ -162,18 +163,6 @@ inline std::string DoubleConvert(const double &value, char *buffer,
   return buffer;
 }
 
-void utf8_split(const str_utf8_wrapper& str, std::function<void(Value)> f)
-{
-    const char *ptr = str.c_str();
-
-    while (*ptr) {
-        auto next = g_utf8_next_char(ptr);
-        const size_t length = next - ptr;
-        f({ std::string{ptr, length} });
-        ptr = next;
-    }
-}
-
 static uint32_t convert_to_uint32(const double d)
 {
   auto ret = std::numeric_limits<uint32_t>::max();
@@ -211,8 +200,7 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
     default:   stream << c;
     }
   }
-  stream << '"';
-  return stream;
+  return stream << '"';
 }
 
 Value Value::clone() const {
@@ -222,11 +210,10 @@ Value Value::clone() const {
   case Type::NUMBER:    return boost::get<double>(this->value);
   case Type::STRING:    return boost::get<str_utf8_wrapper>(this->value).clone();
   case Type::RANGE:     return boost::get<RangePtr>(this->value).clone();
-  case Type::VECTOR:    return boost::get<VectorPtr>(this->value).clone();
+  case Type::VECTOR:    return boost::get<VectorType>(this->value).clone();
   case Type::FUNCTION:  return boost::get<FunctionPtr>(this->value).clone();
-  default:              assert(false && "unknown Value variant type");
+  default: assert(false && "unknown Value variant type"); return Value();
   }
-  return Value();
 }
 
 const std::string Value::typeName() const
@@ -239,8 +226,8 @@ const std::string Value::typeName() const
   case Type::VECTOR:    return "vector";
   case Type::RANGE:     return "range";
   case Type::FUNCTION:  return "function";
-  default:              return "<unknown>";
- }
+  default: assert(false && "unknown Value variant type"); return "<unknown>";
+  }
 }
 
 bool Value::toBool() const
@@ -250,10 +237,10 @@ bool Value::toBool() const
   case Type::BOOL:      return boost::get<bool>(this->value);
   case Type::NUMBER:    return boost::get<double>(this->value)!= 0;
   case Type::STRING:    return !boost::get<str_utf8_wrapper>(this->value).empty();
-  case Type::VECTOR:    return !boost::get<VectorPtr>(this->value)->empty();
+  case Type::VECTOR:    return !boost::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
   case Type::FUNCTION:  return true;
-  default:              assert(false && "unknown Value variant type");
+  default: assert(false && "unknown Value variant type"); return false;
   }
 }
 
@@ -283,10 +270,10 @@ bool Value::getFiniteDouble(double &v) const
   return false;
 }
 
-Value::VectorPtr::VectorPtr(double x, double y, double z) : ptr(make_shared<Value::VectorType>()) {
-  (*this)->emplace_back(x);
-  (*this)->emplace_back(y);
-  (*this)->emplace_back(z);
+VectorType::VectorType(double x, double y, double z) : ptr(make_shared<VectorObject>()) {
+  this->emplace_back(x);
+  this->emplace_back(y);
+  this->emplace_back(z);
 }
 
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
@@ -321,13 +308,22 @@ public:
     return v ? "true" : "false";
   }
 
-  std::string operator()(const Value::VectorPtr &v) const {
+  std::string operator()(const EmbeddedVectorType &v) const {
+    assert(false && "Error: unexpected visit to EmbeddedVectorType!");
+    return "";
+  }
+
+  std::string operator()(const VectorType &v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
     stream << '[';
-    for (size_t i = 0; i < v->size(); i++) {
-      if (i > 0) stream << ", ";
-      v[i].toStream(stream);
+    if (!v.empty()) {
+      auto it = v.begin();
+      it->toStream(stream);
+      for (++it; it != v.end(); ++it) {
+        stream << ", ";
+        it->toStream(stream);
+      }
     }
     stream << ']';
     return stream.str();
@@ -359,7 +355,7 @@ public:
     {};
 
   template <typename T> void operator()(const T &op1) const {
-    //    std::cout << "[generic tostream_visitor]\n";
+    //std::cout << "[generic tostream_visitor]\n";
     stream << boost::lexical_cast<std::string>(op1);
   }
 
@@ -375,11 +371,19 @@ public:
     stream << (v ? "true" : "false");
   }
 
-  void operator()(const Value::VectorPtr &v) const {
+  void operator()(const EmbeddedVectorType &v) const {
+    assert(false && "Error: unexpected visit to EmbeddedVectorType!");
+  }
+
+  void operator()(const VectorType &v) const {
     stream << '[';
-    for (size_t i = 0; i < v->size(); i++) {
-      if (i > 0) stream << ", ";
-      v[i].toStream(this);
+    if (!v.empty()) {
+      auto it = v.begin();
+      it->toStream(stream);
+      for (++it; it != v.end(); ++it) {
+        stream << ", ";
+        it->toStream(stream);
+      }
     }
     stream << ']';
   }
@@ -459,14 +463,14 @@ public:
     return std::string(buf);
   }
 
-  std::string operator()(const Value::VectorPtr &v) const
-  {
-    std::ostringstream stream;
-    for (size_t i = 0; i < v->size(); i++) {
-      stream << v[i].chrString();
+  std::string operator()(const VectorType &v) const
+    {
+      std::ostringstream stream;
+      for (auto &val : v) {
+        stream << val.chrString();
+      }
+      return stream.str();
     }
-    return stream.str();
-  }
 
   std::string operator()(const RangePtr &v) const
   {
@@ -487,91 +491,145 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
-void Value::VectorPtr::append_vector(Value v) {
-  assert(v.type() == Type::VECTOR);
-  VectorPtr &vec = v.toVectorPtr();
-  if ((*this)->empty()) {
-    ptr = std::move(vec.ptr);
-  } else {
-    ptr->reserve(ptr->size() + vec->size());
-    std::move(std::begin(*vec), std::end(*vec), std::back_inserter(*ptr));
-  }
-}
 
-void Value::VectorPtr::flatten()
+bool VectorType::operator==(const VectorType &v) const
 {
-  const auto size = std::accumulate(std::begin(**this), std::end(**this), 0, [](int i, const Value &v){
-    return i + (v.type() == Value::Type::VECTOR ? v.toVector().size() : 1);
-  });
-
-  Value::VectorPtr ret;
-  ret->reserve(size);
-  for (auto& v : **this) {
-    if (v.type() == Value::Type::VECTOR) {
-      ret->insert(std::end(*ret),
-          std::make_move_iterator(std::begin(*v.toVectorPtr())),
-          std::make_move_iterator(std::end(*v.toVectorPtr())));
-    } else {
-      ret->emplace_back(std::move(v));
-    }
-  }
-  this->ptr = ret.ptr;
+  return this->size()==v.size() && std::equal(this->begin(), this->end(), v.begin());
+}
+bool VectorType::operator< (const VectorType &v) const
+{
+  return std::lexicographical_compare(this->begin(), this->end(), v.begin(), v.end());
+}
+bool VectorType::operator> (const VectorType &v) const
+{
+  return std::lexicographical_compare(v.begin(), v.end(), this->begin(), this->end());
 }
 
-const Value::VectorType &Value::toVector() const
+bool VectorType::operator!=(const VectorType &v) const { return !operator==(v); }
+bool VectorType::operator<=(const VectorType &v) const { return !operator> (v); }
+bool VectorType::operator>=(const VectorType &v) const { return !operator< (v); }
+
+
+void VectorType::emplace_back(Value&& val)
+{
+  if (val.type() == Value::Type::EMBEDDED_VECTOR) {
+    emplace_back(std::move(val.toEmbeddedVectorNonConst()));
+  } else {
+    ptr->vec.push_back(std::move(val));
+  }
+}
+
+void VectorType::emplace_back(EmbeddedVectorType&& mbed)
+{
+  if (mbed.size() > 1) {
+    // embed_excess represents how many to add to vec.size() to get the total elements after flattening,
+    // the embedded vector itself already counts towards an element in the parent's size, so subtract 1 from its size.
+    ptr->embed_excess += mbed.size()-1;
+    ptr->vec.emplace_back(std::move(mbed));
+  } else if (mbed.size() == 1) {
+    // If embedded vector contains only one value, then insert a copy of that element
+    // Due to the above mentioned "-1" count, putting it in directaly as an EmbeddedVector
+    // would not change embed_excess, which is needed to check if flatten is required.
+    emplace_back(mbed.ptr->vec[0].clone());
+  }
+  // else mbed.size() == 0, do nothing
+}
+
+void VectorType::flatten() const
+{
+  vec_t ret;
+  ret.reserve(this->size());
+  // VectorType::iterator already handles the tricky recursive navigation of embedded vectors,
+  // so just build up our new vector from that.
+  for (const auto& el : *this) ret.emplace_back(el.clone());
+  assert(ret.size() == this->size());
+  ptr->embed_excess = 0;
+  ptr->vec = std::move(ret);
+}
+
+void VectorType::VectorObjectDeleter::operator()(VectorObject* v)
+{
+  VectorObject *orig = v;
+  shared_ptr<VectorObject> curr;
+  std::vector<shared_ptr<VectorObject>> purge;
+  while (true) {
+    if (v && v->embed_excess) {
+      for(Value& val : v->vec) {
+        auto type = val.type();
+        if (type == Value::Type::EMBEDDED_VECTOR) {
+          shared_ptr<VectorObject>& temp = boost::get<EmbeddedVectorType>(val.value).ptr;
+          if (temp.use_count() <= 1) purge.emplace_back(std::move(temp));
+        } else if (type == Value::Type::VECTOR) {
+          shared_ptr<VectorObject>& temp = boost::get<VectorType>(val.value).ptr;
+          if (temp.use_count() <= 1) purge.emplace_back(std::move(temp));
+        }
+      }
+    }
+    if (purge.empty()) break;
+    curr = std::move(purge.back()); // this should cause destruction of the *previous value* for curr
+    v = curr.get();
+    purge.pop_back();
+  }
+  delete orig;
+}
+
+const VectorType &Value::toVector() const
 {
   static const VectorType empty;
-  const Value::VectorPtr *v = boost::get<Value::VectorPtr>(&this->value);
-  return v ? **v : empty;
+  const VectorType *v = boost::get<VectorType>(&this->value);
+  return v ? *v : empty;
+}
+
+VectorType &Value::toVectorNonConst()
+{
+  return boost::get<VectorType>(this->value);
+}
+
+EmbeddedVectorType &Value::toEmbeddedVectorNonConst()
+{
+  return boost::get<EmbeddedVectorType>(this->value);
+}
+
+const EmbeddedVectorType& Value::toEmbeddedVector() const
+{
+  return boost::get<EmbeddedVectorType>(this->value);
 }
 
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
   if (this->type() != Type::VECTOR) return false;
-
   const auto &v = this->toVector();
-
   if (v.size() != 2) return false;
-
   double rx, ry;
   bool valid = ignoreInfinite
     ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
     : v[0].getDouble(rx) && v[1].getDouble(ry);
-
   if (valid) {
     x = rx;
     y = ry;
   }
-
   return valid;
 }
 
 bool Value::getVec3(double &x, double &y, double &z) const
 {
   if (this->type() != Type::VECTOR) return false;
-
   const VectorType &v = this->toVector();
-
   if (v.size() != 3) return false;
-
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
 bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 {
   if (this->type() != Type::VECTOR) return false;
-
   const VectorType &v = toVector();
-
   if (v.size() == 2) {
     getVec2(x, y);
     z = defaultval;
     return true;
-  }
-  else {
+  } else {
     if (v.size() != 3) return false;
   }
-
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
@@ -672,10 +730,14 @@ public:
     return op1 + op2;
   }
 
-  Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
-    Value::VectorPtr sum;
-    for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
-      sum->emplace_back(op1[i] + op2[i]);
+  Value operator()(const VectorType &op1, const VectorType &op2) const {
+    VectorType sum;
+    // FIXME: should we really truncate to shortest vector here?
+    //   Maybe better to either "add zeroes" and return longest
+    //   and/or issue an warning/error about length mismatch.
+    // Also would be better to use the new VectorType iterators to avoid auto flattening on "random-access"
+    for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+      sum.emplace_back(op1[i] + op2[i]);
     }
     return std::move(sum);
   }
@@ -697,10 +759,10 @@ public:
     return op1 - op2;
   }
 
-  Value operator()(const Value::VectorPtr &op1, const Value::VectorPtr &op2) const {
-    Value::VectorPtr sum;
-    for (size_t i = 0; i < op1->size() && i < op2->size(); i++) {
-      sum->emplace_back(op1[i] - op2[i]);
+  Value operator()(const VectorType &op1, const VectorType &op2) const {
+    VectorType sum;
+    for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+      sum.emplace_back(op1[i] - op2[i]);
     }
     return std::move(sum);
   }
@@ -711,34 +773,34 @@ Value Value::operator-(const Value &v) const
   return boost::apply_visitor(minus_visitor(), this->value, v.value);
 }
 
-Value Value::multvecnum(const Value::VectorType &vecval, const Value &numval)
+Value Value::multvecnum(const VectorType &vecval, const Value &numval)
 {
   // Vector * Number
-  VectorPtr dstv;
+  VectorType dstv;
   for(const auto &val : vecval) {
-    dstv->emplace_back(val * numval);
+    dstv.emplace_back(val * numval);
   }
   return std::move(dstv);
 }
 
 Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
-// Matrix * Vector
-  Value::VectorPtr dstv;
+  // Matrix * Vector
+  VectorType dstv;
   for (size_t i=0;i<matrixvec.size();i++) {
     if (matrixvec[i].type() != Type::VECTOR ||
         matrixvec[i].toVector().size() != vectorvec.size()) {
-      return Value();
+      return Value::undefined.clone();
     }
     double r_e = 0.0;
     for (size_t j=0;j<matrixvec[i].toVector().size();j++) {
       if (matrixvec[i].toVector()[j].type() != Type::NUMBER ||
           vectorvec[j].type() != Type::NUMBER) {
-        return Value();
+        return Value::undefined.clone();
       }
       r_e += matrixvec[i].toVector()[j].toDouble() * vectorvec[j].toDouble();
     }
-    dstv->push_back(Value(r_e));
+    dstv.emplace_back(Value(r_e));
   }
   return std::move(dstv);
 }
@@ -747,8 +809,8 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 {
   assert(vectorvec.size() == matrixvec.size());
   // Vector * Matrix
-  VectorPtr dstv;
-  size_t firstRowSize =  matrixvec[0].toVector().size();
+  VectorType dstv;
+  size_t firstRowSize = matrixvec[0].toVector().size();
   for (size_t i = 0; i < firstRowSize; i++) {
     double r_e = 0.0;
     for (size_t j=0;j<vectorvec.size();j++) {
@@ -767,54 +829,60 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
       }
       r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
     }
-    dstv->emplace_back(r_e);
+    dstv.emplace_back(r_e);
   }
   return std::move(dstv);
 }
 
+Value Value::multvecvec(const VectorType &vec1, const VectorType &vec2) {
+  // Vector dot product.
+  auto r = 0.0;
+  for (size_t i=0;i<vec1.size();i++) {
+    if (vec1[i].type() != Type::NUMBER || vec2[i].type() != Type::NUMBER) {
+      return Value::undefined.clone();
+    }
+    r += vec1[i].toDouble() * vec2[i].toDouble();
+  }
+  return Value(r);
+}
+
 Value Value::operator*(const Value &v) const
 {
-  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return this->toDouble() * v.toDouble();
-  }
-  else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
-    return multvecnum(this->toVector(), v);
-  }
-  else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
-    return multvecnum(v.toVector(), *this);
-  }
-  else if (this->type() == Type::VECTOR && v.type() == Type::VECTOR) {
-    const auto &vec1 = this->toVector();
-    const auto &vec2 = v.toVector();
-    if (vec1.size() == 0 || vec2.size() == 0) return Value::undefined.clone();
-
-    if (vec1[0].type() == Type::NUMBER && vec2[0].type() == Type::NUMBER &&
-        vec1.size() == vec2.size()) {
-      // Vector dot product.
-      auto r = 0.0;
-      for (size_t i=0;i<vec1.size();i++) {
-        if (vec1[i].type() != Type::NUMBER || vec2[i].type() != Type::NUMBER) {
-          return Value::undefined.clone();
+  if (this->type() == Type::NUMBER) {
+    if (v.type() == Type::NUMBER) {
+      return Value(this->toDouble() * v.toDouble());
+    } else if (v.type() == Type::VECTOR) {
+      return multvecnum(v.toVector(), *this);
+    }
+  } else if (this->type() == Type::VECTOR) {
+    if (v.type() == Type::NUMBER) {
+      return multvecnum(this->toVector(), v);
+    } else if (v.type() == Type::VECTOR) {
+      const auto &vec1 = this->toVector();
+      const auto &vec2 = v.toVector();
+      if (vec1.empty() || vec2.empty()) return Value::undefined.clone();
+      if (vec1[0].type() == Type::NUMBER) {
+        if (vec2[0].type() == Type::NUMBER) {
+          if (vec1.size() == vec2.size()) return multvecvec(vec1, vec2);
+        } else if (vec2[0].type() == Type::VECTOR) {
+          if (vec1.size() == vec2.size()) return multvecmat(vec1, vec2);
         }
-        r += (vec1[i].toDouble() * vec2[i].toDouble());
+      } else if (vec1[0].type() == Type::VECTOR) {
+        if (vec2[0].type() == Type::NUMBER) {
+          if (vec1[0].toVector().size() == vec2.size()) return multmatvec(vec1, vec2);
+        } else if (vec2[0].type() == Type::VECTOR) {
+          if (vec1[0].toVector().size() == vec2.size()) {
+            // Matrix * Matrix
+            VectorType dstv;
+            for (const auto &srcrow : vec1) {
+              const auto &srcrowvec = srcrow.toVector();
+              if (srcrowvec.size() != vec2.size()) return Value::undefined.clone();
+              dstv.emplace_back(multvecmat(srcrowvec, vec2));
+            }
+            return Value(std::move(dstv));
+          }
+        }
       }
-      return Value(r);
-    } else if (vec1[0].type() == Type::VECTOR && vec2[0].type() == Type::NUMBER &&
-               vec1[0].toVector().size() == vec2.size()) {
-      return multmatvec(vec1, vec2);
-    } else if (vec1[0].type() == Type::NUMBER && vec2[0].type() == Type::VECTOR &&
-               vec1.size() == vec2.size()) {
-      return multvecmat(vec1, vec2);
-    } else if (vec1[0].type() == Type::VECTOR && vec2[0].type() == Type::VECTOR &&
-               vec1[0].toVector().size() == vec2.size()) {
-      // Matrix * Matrix
-      VectorPtr dstv;
-      for (const auto &srcrow : vec1) {
-        const auto &srcrowvec = srcrow.toVector();
-        if (srcrowvec.size() != vec2.size()) return Value::undefined.clone();
-        dstv->push_back(multvecmat(srcrowvec, vec2));
-      }
-      return std::move(dstv);
     }
   }
   return Value::undefined.clone();
@@ -826,16 +894,16 @@ Value Value::operator/(const Value &v) const
     return this->toDouble() / v.toDouble();
   }
   else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
-    VectorPtr dstv;
+    VectorType dstv;
     for (const auto &vecval : this->toVector()) {
-      dstv->push_back(vecval / v);
+      dstv.emplace_back(vecval / v);
     }
     return std::move(dstv);
   }
   else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
-    VectorPtr dstv;
+    VectorType dstv;
     for (const auto &vecval : v.toVector()) {
-      dstv->push_back(*this / vecval);
+      dstv.emplace_back(*this / vecval);
     }
     return std::move(dstv);
   }
@@ -856,9 +924,9 @@ Value Value::operator-() const
     return Value(-this->toDouble());
   }
   else if (this->type() == Type::VECTOR) {
-    VectorPtr dstv;
+    VectorType dstv;
     for (const auto &vecval : this->toVector()) {
-      dstv->push_back(-vecval);
+      dstv.emplace_back(-vecval);
     }
     return std::move(dstv);
   }
@@ -874,7 +942,6 @@ class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
   Value operator()(const str_utf8_wrapper &str, const double &idx) const {
-
     const auto i = convert_to_uint32(idx);
     if (i < str.size()) {
       // Ensure character (not byte) index is inside the character/glyph array
@@ -890,9 +957,9 @@ public:
     return Value::undefined.clone();
   }
 
-  Value operator()(const Value::VectorPtr &vec, const double &idx) const {
+  Value operator()(const VectorType &vec, const double &idx) const {
     const auto i = convert_to_uint32(idx);
-    if (i < vec->size()) return vec[i].clone();
+    if (i < vec.size()) return vec[i].clone();
     return Value::undefined.clone();
   }
 
@@ -907,7 +974,7 @@ public:
   }
 
   template <typename T, typename U> Value operator()(const T &, const U &) const {
-    //    std::cout << "generic bracket_visitor\n";
+    //std::cout << "generic bracket_visitor\n";
     return Value::undefined.clone();
   }
 };
@@ -921,6 +988,41 @@ Value Value::operator[](size_t idx) const
 {
   Value v{(double)idx};
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
+}
+
+// Iterators
+VectorType::iterator::iterator(const VectorType& v, bool get_end) noexcept :   it(get_end ? v.ptr->vec.end() : v.ptr->vec.begin()), end(v.ptr->vec.end())
+{
+  check_and_push();
+}
+
+VectorType::iterator& VectorType::iterator::operator++()
+{
+  // recursively increment and pop stack while at the end of EmbeddedVector(s)
+  while (++it == end && !it_stack.empty()) {
+    const auto& up = it_stack.back();
+    it = up.first;
+    end = up.second;
+    it_stack.pop_back();
+  }
+  check_and_push();
+  return *this;
+}
+
+// recursively push stack while current element is an EmbeddedVector
+inline void VectorType::iterator::check_and_push()
+{
+  while (it != end && it->type() == Type::EMBEDDED_VECTOR) {
+    vec_t &cur = it->toEmbeddedVector().ptr->vec;
+    it_stack.emplace_back(it, end);
+    it = cur.begin();
+    end = cur.end();
+  }
+}
+
+size_t str_utf8_wrapper::iterator::char_len()
+{
+  return g_utf8_next_char(ptr) - ptr;
 }
 
 uint32_t RangeType::numValues() const
@@ -978,7 +1080,7 @@ RangeType::iterator& RangeType::iterator::operator++()
   return *this;
 }
 
-bool RangeType::iterator::operator==(const RangeType::iterator &other) const
+bool RangeType::iterator::operator==(const iterator &other) const
 {
   if (type == type_t::RANGE_TYPE_RUNNING) {
     return (type == other.type) && (val == other.val) && (range == other.range);

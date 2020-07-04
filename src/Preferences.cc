@@ -54,7 +54,8 @@ class SettingsReader : public Settings::SettingsVisitor
 {
   QSettingsCached settings;
 
-	Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
+	Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const
+	{
 		std::string trimmed_value(value);
 		boost::trim(trimmed_value);
 
@@ -88,15 +89,17 @@ class SettingsReader : public Settings::SettingsVisitor
 		}
 	}
 
-	void handle(Settings::SettingsEntry& entry) const override {
-	Settings::Settings *s = Settings::Settings::inst();
+	void handle(Settings::SettingsEntry& entry) const override
+	{
+		Settings::Settings *s = Settings::Settings::inst();
 
-	std::string key = entry.category() + "/" + entry.name();
-	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	const Value v = getValue(entry, value);
-	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, v.clone());
-    }
+		std::string key = entry.category() + "/" + entry.name();
+		std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
+		Value v = getValue(entry, value);
+		PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
+		s->set(entry, std::move(v));
+	}
+
 };
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
@@ -896,7 +899,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
 	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
-	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
+	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool());
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
 

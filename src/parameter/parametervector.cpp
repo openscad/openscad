@@ -23,16 +23,16 @@ void ParameterVector::onChanged(double)
 		if (object->target == ParameterObject::NUMBER) {
 			object->value = Value(doubleSpinBox1->value());
 		} else {
-			Value::VectorPtr vt;
-			vt->emplace_back(this->doubleSpinBox1->value());
+			VectorType vt;
+			vt.emplace_back(this->doubleSpinBox1->value());
 			if (!this->doubleSpinBox2->isReadOnly()) {
-				vt->emplace_back(this->doubleSpinBox2->value());
+				vt.emplace_back(this->doubleSpinBox2->value());
 			}
 			if (!this->doubleSpinBox3->isReadOnly()) {
-				vt->emplace_back(this->doubleSpinBox3->value());
+				vt.emplace_back(this->doubleSpinBox3->value());
 			}
 			if (!this->doubleSpinBox4->isReadOnly()) {
-				vt->emplace_back(this->doubleSpinBox4->value());
+				vt.emplace_back(this->doubleSpinBox4->value());
 			}
 			object->value = Value(std::move(vt));
 		}

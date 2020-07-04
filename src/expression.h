@@ -4,6 +4,7 @@
 #include <vector>
 #include "value.h"
 #include "memory.h"
+#include "boost-utils.h"
 #include "Assignment.h"
 
 class Expression : public ASTNode
@@ -125,7 +126,7 @@ public:
 	bool isLiteral() const override;
 private:
 	std::vector<shared_ptr<Expression>> children;
-	mutable Value literal_flag; // cache if already computed
+	mutable boost::tribool literal_flag; // cache if already computed
 };
 
 class Lookup : public Expression
@@ -268,6 +269,7 @@ public:
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
+	Value evalRecur(Value &&v, const std::shared_ptr<Context>& context) const;
 	shared_ptr<Expression> expr;
 };
 

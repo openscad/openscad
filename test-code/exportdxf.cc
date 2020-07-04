@@ -123,8 +123,8 @@ int main(int argc, char **argv)
 	root_ctx.set_variable("$fa", Value(12.0));
 	root_ctx.set_variable("$t",  Value(0.0));
 
-	root_ctx.set_variable("$vpt", Value(Value::VectorPtr(0.0, 0.0, 0.0)));
-	root_ctx.set_variable("$vpr", Value(Value::VectorPtr(0.0, 0.0, 0.0)));
+	root_ctx.set_variable("$vpt", Value(VectorType(0.0, 0.0, 0.0)));
+	root_ctx.set_variable("$vpr", Value(VectorType(0.0, 0.0, 0.0)));
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;

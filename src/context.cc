@@ -82,7 +82,7 @@ void Context::pop()
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
+void Context::setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
 {
 	// Set any default values
 	for (const auto &arg : args) {
@@ -101,32 +101,32 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 // sink for value takes &&
 void Context::set_variable(const std::string &name, Value&& value)
 {
-	if (is_config_variable(name)) this->config_variables[name] = std::move(value);
-	else this->variables[name] = std::move(value);
+	if (is_config_variable(name)) {
+		this->config_variables.insert_or_assign(name, std::move(value));
+	} else {
+		this->variables.insert_or_assign(name, std::move(value));
+	}
 }
 
 // sink for value takes &&
 void Context::set_constant(const std::string &name, Value&& value)
 {
-	if (this->constants.find(name) != this->constants.end()) {
+	if (this->constants.contains(name)) {
 		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
-	}
-	else {
-		this->constants[name] = std::move(value);
+	}	else {
+		this->constants.emplace(name, std::move(value));
 	}
 }
 
-void Context::apply_variables(const std::shared_ptr<Context> other)
+void Context::apply_variables(const std::shared_ptr<Context> &other)
 {
-	for (const auto &var : other->variables) {
-		set_variable(var.first, var.second.clone());
-	}
+	this->variables.applyFrom(other->variables);
 }
 
 /*!
   Apply config variables of 'other' to this context, from the full context stack of 'other', bottom-up.
 */
-void Context::apply_config_variables(const std::shared_ptr<Context> other)
+void Context::apply_config_variables(const std::shared_ptr<Context> &other)
 {
 	if (other.get() == this) {
 		// Anything in 'other' and its ancestors is already part of this context, no need to descend any further.
@@ -136,9 +136,7 @@ void Context::apply_config_variables(const std::shared_ptr<Context> other)
 		// Assign parent's variables first, since they might be overridden by a child
 		apply_config_variables(other->parent);
 	}
-	for (const auto &var : other->config_variables) {
-		set_variable(var.first, var.second.clone());
-	}
+	this->config_variables.applyFrom(other->config_variables);
 }
 
 const Value& Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
@@ -147,11 +145,12 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
 		return Value::undefined;
 	}
+	ValueMap::const_iterator result;
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
 			const auto &confvars = ctx_stack->at(i)->config_variables;
-			if (confvars.find(name) != confvars.end()) {
-				return confvars.find(name)->second;
+			if ((result = confvars.find(name)) != confvars.end()) {
+				return result->second;
 			}
 		}
 		if (!silent) {
@@ -159,11 +158,13 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 		}
 		return Value::undefined;
 	}
-	if (!this->parent && this->constants.find(name) != this->constants.end()) {
-		return this->constants.find(name)->second;
+	if (!this->parent) {
+			if ((result = this->constants.find(name)) != this->constants.end()) {
+				return result->second;
+			}
 	}
-	if (this->variables.find(name) != this->variables.end()) {
-		return this->variables.find(name)->second;
+	if ((result = this->variables.find(name)) != this->variables.end()) {
+		return result->second;
 	}
 	if (this->parent) {
 		return this->parent->lookup_variable(name, silent, loc);
@@ -258,7 +259,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s\n") % arg->getName() % variables[arg->getName()];
+				s << boost::format("    %s = %s\n") % arg->getName() % variables.get(arg->getName());
 			}
 		}
 	}

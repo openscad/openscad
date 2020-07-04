@@ -26,7 +26,7 @@ public:
     virtual bool is_default() const;
 
 protected:
-    SettingsEntry(const std::string category, const std::string name, const Value range, const Value def);
+    SettingsEntry(const std::string category, const std::string name, const Value &range, const Value &def);
     virtual ~SettingsEntry();
 
     friend class Settings;
