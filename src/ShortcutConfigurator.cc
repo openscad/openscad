@@ -10,8 +10,11 @@
 
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 {
-    shortcutCatcher = new QMessageBox;
+    const int numRows = 0;
+    const int numColumns = 3;
+    model = new QStandardItemModel(numRows, numColumns, shortcutsTable);
     setupUi(this);
+    connect(shortcutsTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
 }
 
 ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
@@ -35,8 +38,6 @@ ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
 
     pressedKeySequence=source.pressedKeySequence;
 
-    shortcutCatcher = new QMessageBox;
-    shortcutCatcher=source.shortcutCatcher;
 }
 
 ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
@@ -54,9 +55,6 @@ ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
 
     pressedKeySequence=source.pressedKeySequence;
 
-    // ownership transfer of ptr
-    shortcutCatcher=source.shortcutCatcher;
-    std::exchange(source.shortcutCatcher, nullptr);
 }
 
 ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator& source)
@@ -80,8 +78,6 @@ ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator
         actionsList.detach();
 
         pressedKeySequence=source.pressedKeySequence;
-
-        shortcutCatcher=source.shortcutCatcher;
     }
     return *this;
 }
@@ -104,11 +100,6 @@ ShortcutConfigurator& ShortcutConfigurator::operator=(ShortcutConfigurator&& sou
         actionsList=std::move(source.actionsList);
 
         pressedKeySequence=source.pressedKeySequence;
-
-        // ownership transfer of ptr
-        shortcutCatcher=source.shortcutCatcher;
-        std::exchange(source.shortcutCatcher, nullptr);
-
     }
 
     return *this;
@@ -116,7 +107,7 @@ ShortcutConfigurator& ShortcutConfigurator::operator=(ShortcutConfigurator&& sou
 
 ShortcutConfigurator::~ShortcutConfigurator()
 {
-    if(!shortcutCatcher)
+    if(shortcutCatcher)
     {
         delete shortcutCatcher;
     }
@@ -194,12 +185,10 @@ void ShortcutConfigurator::collectDefaults(const QList<QAction *> &allActions)
     }
 }
 
-QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
+void ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &actions)
 {
-    const int numRows = 0;
-    const int numColumns = 3;
     int row = 0;
-    QStandardItemModel* model = new QStandardItemModel(numRows, numColumns, parent);
+    model->removeRows(0,model->rowCount());
     QList<QString> labels = QList<QString>() << QString("Action") << QString("Shortcut")<<QString("Alternative-1"); 
     model->setHorizontalHeaderLabels(labels);
     for (auto &action : actions) 
@@ -211,7 +200,6 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
             model->setRowCount(row+1);
             model->setItem(row, 0, actionNameItem);
             actionNameItem->setFlags(actionNameItem->flags() &  ~Qt::ItemIsEditable  & ~Qt::ItemIsSelectable);
-
 
             const QList<QKeySequence> shortcutsList = action->shortcuts();
             int index = 1;
@@ -232,23 +220,22 @@ QStandardItemModel* ShortcutConfigurator::createModel(QObject* parent,const QLis
             row++;
         }
     }
-    return model;
 }
 
 void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
 {
     shortcutsTable->verticalHeader()->hide();
     shortcutsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    shortcutsTable->setSelectionBehavior(QAbstractItemView::SelectItems);
+    shortcutsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     initTable(shortcutsTable,allActions);
-    connect(shortcutsTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
 
 }
 
 void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
 {
-    QItemSelectionModel *prevModel = shortcutsTable->selectionModel();
-    shortcutsTable->setModel(createModel(shortcutsTable,allActions));
-    delete prevModel;
+    createModel(shortcutsTable,allActions);
+    shortcutsTable->setModel(model);
 }
 
 void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
@@ -377,17 +364,26 @@ void ShortcutConfigurator::raiseError(const QString errorMsg)
         messageBox.setFixedSize(500,200);
 }
 
-
 void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 {
     if (index.isValid() && index.column()!=0) 
     {
-        // shortcutCatcher = new QMessageBox(this);
+        //just to avoid opening of multiple dialogs on multiple clicks on cell
+        if(shortcutCatcher) delete shortcutCatcher;
+
+        shortcutCatcher = new QMessageBox;
+        QString updatedAction = getData(index.row(),0);
+        auto itr = shortcutsMap.find(updatedAction);
+        QAction* changedAction = itr.value();
+
+        shortcutCatcher->setStyleSheet("QLabel{min-width: 400px;}");
         shortcutCatcher->setInformativeText(QString(""));
+        shortcutCatcher->setWindowTitle(QString("Set Shortcut for: ")+updatedAction);
         shortcutCatcher->installEventFilter(this);
         shortcutCatcher->setText("Press the Key Sequence");
-        shortcutCatcher->setStandardButtons(QMessageBox::Apply | QMessageBox::Reset | QMessageBox::Close);
+        shortcutCatcher->setStandardButtons(QMessageBox::Apply | QMessageBox::Reset | QMessageBox::Cancel);
         shortcutCatcher->setDefaultButton(QMessageBox::Apply);
+        shortcutCatcher->setWindowModality(Qt::WindowModal);
         int ret = shortcutCatcher->exec();
         QString updatedShortcut;
 
@@ -395,20 +391,17 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
         {
             case QMessageBox::Apply:
                 updatedShortcut = pressedKeySequence.toString(QKeySequence::NativeText);
+                shortcutCatcher->close();
                 break;
             case QMessageBox::Reset:
                 updatedShortcut = QString("");
+                shortcutCatcher->close();
                 break;
-            case QMessageBox::Close:
-                return;
+            case QMessageBox::Cancel:
+                shortcutCatcher->close();
+                break;
         }
 
-        QString updatedAction = getData(index.row(),0);
-
-        auto itr = shortcutsMap.find(updatedAction);
-        QAction* changedAction = itr.value();
-
-        // check if the updated Shortcut is preoccupied or not
         if(shortcutOccupied[updatedShortcut])
         {
             raiseError(QString("Shortcut Already Occupied By: "+shortcutOccupied[updatedShortcut]->objectName()));
@@ -430,7 +423,6 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
             {
                 // un-assign the previous primary
                 shortcutOccupied.remove(assignedShortcuts[0].toString(QKeySequence::NativeText));
-                // shortcutOccupied.insert(assignedShortcuts[0].toString(QKeySequence::NativeText),false);
 
                 for(int i=1;i<assignedShortcuts.size();i++)
                 {
@@ -461,7 +453,6 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
                         if(i==index.column()-1)
                         {
                             shortcutOccupied.remove(assignedShortcuts[i].toString(QKeySequence::NativeText));
-                            // shortcutOccupied.insert(assignedShortcuts[i].toString(QKeySequence::NativeText),false);  
                             shortcutsListFinal.append(updatedShortcut);
                         }
                         else shortcutsListFinal.append(assignedShortcuts[i]);                    
@@ -507,7 +498,6 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
             object.insert(updatedAction,newValue);            
         }
         writeToConfigFile(&object);
-
     }
 }
 
@@ -519,7 +509,7 @@ void ShortcutConfigurator::on_searchBox_textChanged(const QString &arg1)
 
     QList<QAction *>newList;
     for(auto entry:filteredList) newList.push_back(shortcutsMap[entry]);
-
+    newList.toSet().toList();
     // regenerate the UI
     initGUI(newList);
     

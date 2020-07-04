@@ -24,7 +24,7 @@ public:
     ShortcutConfigurator& operator=(const ShortcutConfigurator& source);
     ShortcutConfigurator& operator=(ShortcutConfigurator&& source);
     virtual ~ShortcutConfigurator();
-    QStandardItemModel* createModel(QObject* parent,const QList<QAction *> &actions);
+    void createModel(QObject* parent,const QList<QAction *> &actions);
     void collectDefaults(const QList<QAction *> &allActions);
     void initGUI(const QList<QAction *> &allActions);
     void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
@@ -41,6 +41,7 @@ public:
     QList<QAction *> actionsList;
     QKeySequence pressedKeySequence;
     QMessageBox *shortcutCatcher;
+    QStandardItemModel* model;
 
 protected:
    bool eventFilter(QObject *obj, QEvent *event);
