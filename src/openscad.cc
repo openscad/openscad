@@ -287,9 +287,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	const char *new_output_file = nullptr;
 
 	if(!export_format.empty()) {
+		// If command line option --export-format is specified, use that format.
 		formatName = export_format;
 	}
 	else {
+		// else extract format from file extension
 		auto suffix = fs::path(output_file_str).extension().generic_string();
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
@@ -306,6 +308,16 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
 	std::string filename_str = fs::path(output_file_str).generic_string();
 	new_output_file = filename_str.c_str();
+
+	// Do some minimal checking of output directory before rendering (issue #432)
+	fs::path output_directory = fs::path(output_file_str).parent_path();
+	if (!fs::is_directory(output_directory)) {
+		PRINTB(
+			"%s is not a directory (output file: %s). - Skipping\n",
+			output_directory.c_str() % output_file_str.c_str()
+		);
+		return 1;
+	}
 
 	set_render_color_scheme(arg_colorscheme, true);
 
