@@ -147,26 +147,27 @@ shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
     return geom;
 }
 
-bool PCache::containsCGAL(const std::string &key, bool &ret){
-    return contains("CGAL-"+key, ret);
+bool PCache::containsCGAL(const std::string &key){
+    return contains("CGAL-"+key);
 }
 
-bool PCache::containsGeom(const std::string &key, bool &ret){
-    return contains("GEOM-"+key, ret);
+bool PCache::containsGeom(const std::string &key){
+    return contains("GEOM-"+key);
 }
 
-bool PCache::contains(const std::string &key, bool &ret){
+bool PCache::contains(const std::string &key){
     reply = static_cast<redisReply*>(redisCommand(rct, "KEYS %s", key.c_str()));
     if(checkReply(reply)){
+        freeReplyObject(reply);
         return false;
     }
     if(reply->elements==1){
-        ret = true;
+        freeReplyObject(reply);
+        return true;
     }else{
-        ret = false;
+        freeReplyObject(reply);
+        return false;
     }
-    freeReplyObject(reply);
-    return true;
 }
 
 bool PCache::clear(){
