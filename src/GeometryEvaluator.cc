@@ -326,6 +326,7 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
 	shared_ptr<const Geometry> geom;
 	bool hasgeom = GeometryCache::instance()->contains(key);
 	bool hascgal = CGALCache::instance()->contains(key);
+#ifdef ENABLE_HIREDIS
     if(!PCSettings::instance()->enablePersistentCache){
         if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
         else if (hasgeom) geom = GeometryCache::instance()->get(key);
@@ -335,6 +336,10 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
         if (pc_hascgal && (preferNef || !pc_hasgeom)) geom = PCache::getInst()->getCGAL(key);
         else if (pc_hasgeom) geom = PCache::getInst()->getGeometry(key);
    }
+#else
+    if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
+    else if (hasgeom) geom = GeometryCache::instance()->get(key);
+#endif
 
 	return geom;
 }
