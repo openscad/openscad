@@ -316,6 +316,12 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 bool GeometryEvaluator::isSmartCached(const AbstractNode &node)
 {
 	const std::string &key = this->tree.getIdString(node);
+#ifdef ENABLE_HIREDIS
+    if(PCSettings::instance()->enablePersistentCache){
+        return (PCache::getInst()->containsGeom(key) ||
+                PCache::getInst()->containsCGAL(key));
+    }
+#endif
 	return (GeometryCache::instance()->contains(key) ||
 					CGALCache::instance()->contains(key));
 }
