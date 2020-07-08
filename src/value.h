@@ -146,8 +146,8 @@ public:
   /// return number of values, max uint32_t value if step is 0 or range is infinite
   uint32_t numValues() const;
 };
+std::ostream& operator<<(std::ostream& stream, const RangeType& r);
 
-std::ostream& operator<<(std::ostream& stream, const RangeType& f);
 
 template <typename T>
 class ValuePtr {
@@ -329,15 +329,15 @@ public:
   class VectorType {
 
   protected:
-    // The object type which VectorType's shared_ptr points to
+    // The object type which VectorType's shared_ptr points to.
     struct VectorObject {
       using vec_t = std::vector<Value>;
       using size_type = vec_t::size_type;
       vec_t vec;
-      // Keep count of the number of embedded elements *excess of* vec.size()
-      size_type embed_excess = 0;
+      size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
     };
     using vec_t = VectorObject::vec_t;
+    shared_ptr<VectorObject> ptr;
 
     // A Deleter is used on the shared_ptrs to avoid stack overflow in cases
     // of destructing a very large list of nested embedded vectors, such as from a
@@ -346,49 +346,73 @@ public:
     struct VectorObjectDeleter {
       void operator()(VectorObject* vec);
     };
-
-    shared_ptr<VectorObject> ptr;
     void flatten() const; // flatten replaces the VectorObject with a
     explicit VectorType(const shared_ptr<VectorObject> &copy) : ptr(copy) { } // called by clone()
-
   public:
     using size_type = VectorObject::size_type;
     static const VectorType EMPTY;
-
+    // EmbeddedVectorType-aware iterator, manages its own stack of begin/end vec_t::const_iterators
+    // such that calling code will only receive references to "true" elements (i.e. NOT EmbeddedVectorTypes).
     class iterator {
+    private:
+      std::vector<std::pair<vec_t::const_iterator, vec_t::const_iterator> > it_stack;
+      vec_t::const_iterator it, end;
+      // Recursively push stack while current (pseudo)element is an EmbeddedVector
+      //  - Depends on the fact that VectorType::emplace_back(EmbeddedVectorType&& mbed)
+      //    will not embed an empty vector, which ensures iterator will arrive at an actual element,
+      //    unless already at end of parent VectorType.
+      void check_and_push()
+      {
+        if (it != end) {
+          while (it->type() == Type::EMBEDDED_VECTOR) {
+            const vec_t &cur = it->toEmbeddedVector().ptr->vec;
+            it_stack.emplace_back(it, end);
+            it = cur.begin();
+            end = cur.end();
+          }
+        }
+      }
     public:
       using iterator_category = std::forward_iterator_tag ;
       using value_type        = Value;
       using difference_type   = void;
       using reference         = const value_type&;
       using pointer           = const value_type*;
-      iterator() noexcept : it_stack(), it(EMPTY.ptr->vec.begin()), end(EMPTY.ptr->vec.end()) {} // DefaultConstructible
-      iterator(const VectorType& vec, bool get_end=false) noexcept;
-      iterator& operator++();
+      iterator() : it_stack(), it(EMPTY.ptr->vec.begin()), end(EMPTY.ptr->vec.end()) {}
+      iterator(const vec_t& v) : it(v.begin()), end(v.end()) { check_and_push(); }
+      iterator(const vec_t& v, bool /*end*/) : it(v.end()) { }
+      iterator& operator++() {
+        // recursively increment and pop stack while at the end of EmbeddedVector(s)
+        while (++it == end && !it_stack.empty()) {
+          const auto& up = it_stack.back();
+          it = up.first;
+          end = up.second;
+          it_stack.pop_back();
+        }
+        check_and_push();
+        return *this;
+      }
       reference operator*() const { return *it; };
       pointer operator->() const { return &*it; };
       bool operator==(const iterator &other) const { return this->it == other.it && this->it_stack == other.it_stack; }
       bool operator!=(const iterator &other) const { return this->it != other.it || this->it_stack != other.it_stack; }
-    private:
-      inline void check_and_push();
-      std::vector<std::pair<vec_t::const_iterator, vec_t::const_iterator> > it_stack;
-      vec_t::const_iterator it, end;
     };
-
     using const_iterator = const iterator;
-
     VectorType() : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
     VectorType(double x, double y, double z);
-    VectorType(const VectorType &) = delete; // never copy, move instead
+    VectorType(const VectorType &) = delete;            // never copy, move instead
     VectorType& operator=(const VectorType &) = delete; // never copy, move instead
     VectorType(VectorType&&) = default;
     VectorType& operator=(VectorType&&) = default;
+    VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
+    static Value Empty() { return VectorType(); }
 
-    // Copy explicitly only when necessary
-    VectorType clone() const { return VectorType(this->ptr); }
-
+    const_iterator begin() const { return iterator(ptr->vec); }
+    const_iterator   end() const { return iterator(ptr->vec, true);   }
+    size_type size() const { return ptr->vec.size() + ptr->embed_excess;  }
+    bool empty() const { return ptr->vec.empty();  }
     // const accesses to VectorObject require .clone to be move-able
-    const Value &operator[](size_t idx) const noexcept {
+    const Value &operator[](size_t idx) const {
       if (idx < this->size()) {
         if (ptr->embed_excess) flatten();
          return ptr->vec[idx];
@@ -396,37 +420,31 @@ public:
         return Value::undefined;
       }
     }
+    bool operator==(const VectorType &v) const { return size()==v.size() && std::equal(begin(), end(), v.begin()); }
+    bool operator< (const VectorType &v) const { return std::lexicographical_compare(begin(), end(), v.begin(), v.end()); }
+    bool operator> (const VectorType &v) const { return std::lexicographical_compare(v.begin(), v.end(), begin(), end()); }
+    bool operator!=(const VectorType &v) const { return !operator==(v); }
+    bool operator<=(const VectorType &v) const { return !operator> (v); }
+    bool operator>=(const VectorType &v) const { return !operator< (v); }
 
-    const_iterator begin() const noexcept { return iterator(*this); }
-    const_iterator   end() const noexcept { return iterator(*this, true);   }
-    size_type size() const { return ptr->vec.size() + ptr->embed_excess;  }
-    bool empty() const noexcept { return ptr->vec.empty();  }
-    static Value EmptyVector() { return Value(EMPTY.clone()); }
-
-    bool operator==(const VectorType &v) const;
-    bool operator!=(const VectorType &v) const;
-    bool operator< (const VectorType &v) const;
-    bool operator> (const VectorType &v) const;
-    bool operator<=(const VectorType &v) const;
-    bool operator>=(const VectorType &v) const;
-
-    template<typename... Args> void emplace_back(Args&&... args) { ptr->vec.emplace_back(std::forward<Args>(args)...); }
     void emplace_back(Value&& val);
     void emplace_back(EmbeddedVectorType&& mbed);
+    template<typename... Args> void emplace_back(Args&&... args) { ptr->vec.emplace_back(std::forward<Args>(args)...); }
   };
 
   class EmbeddedVectorType : public VectorType {
   private:
-      static const EmbeddedVectorType EMPTY;
       explicit EmbeddedVectorType(const shared_ptr<VectorObject> &copy) : VectorType(copy) { } // called by clone()
   public:
     EmbeddedVectorType() : VectorType() {};
+    EmbeddedVectorType(const EmbeddedVectorType &) = delete;
+    EmbeddedVectorType& operator=(const EmbeddedVectorType &) = delete;
     EmbeddedVectorType(EmbeddedVectorType&&) = default;
+    EmbeddedVectorType& operator=(EmbeddedVectorType&&) = default;
+
     EmbeddedVectorType(VectorType&& v) : VectorType(std::move(v)) {}; // converting constructor
     EmbeddedVectorType clone() const { return EmbeddedVectorType(this->ptr); }
-
-    EmbeddedVectorType& operator=(EmbeddedVectorType&&) = default;
-    static Value EmptyVector() { return Value(EMPTY.clone()); }
+    static Value Empty() { return EmbeddedVectorType(); }
   };
 
 private:
@@ -436,12 +454,13 @@ public:
   Value &operator=(const Value &v) = delete; // never copy, move instead
   Value(Value&&) = default;
   Value& operator=(Value&&) = default;
+  Value clone() const; // Use sparingly to explicitly copy a Value
+
   Value(int v) : value(double(v)) { }
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
   Value(      char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
                                                         // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
   template<class T> Value(T&& val) : value(std::forward<T>(val)) { }
-  Value clone() const; // Use sparingly to explicitly copy a Value
 
   const std::string typeName() const;
   Type type() const { return static_cast<Type>(this->value.which()); }
@@ -475,7 +494,7 @@ public:
   bool getVec3(double &x, double &y, double &z, double defaultval) const;
 
   // Common Operators
-  operator bool() const { return this->toBool(); } // use explicit to avoid accidental conversion in constructors
+  operator bool() const { return this->toBool(); }
   bool operator==(const Value &v) const;
   bool operator!=(const Value &v) const;
   bool operator<(const Value &v) const;

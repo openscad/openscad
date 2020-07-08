@@ -29,7 +29,6 @@
 #include <numeric>
 #include <sstream>
 #include <boost/format.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 /*Unicode support for string lengths and array accesses*/
@@ -47,7 +46,6 @@ namespace fs=boost::filesystem;
 
 const Value Value::undefined;
 const VectorType VectorType::EMPTY;
-const EmbeddedVectorType EmbeddedVectorType::EMPTY;
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE 128
@@ -67,7 +65,6 @@ const EmbeddedVectorType EmbeddedVectorType::EMPTY;
 //private definitions used by trimTrailingZeroesHelper
 #define TRIM_TRAILINGZEROES_DONE 0
 #define TRIM_TRAILINGZEROES_CONTINUE 1
-
 
 //process parameter buffer from the end to start to find out where the zeroes are located (if any).
 //parameter pos shall be the pos in buffer where '\0' is located.
@@ -125,7 +122,6 @@ inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpo
 
 inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
-
   if (decimal) {
       char *exppos = strchr(buffer, DC_EXP);
       trimTrailingZeroesHelper(buffer, pos, &buffer[pos], exppos, decimal, nullptr);
@@ -166,7 +162,6 @@ inline std::string DoubleConvert(const double &value, char *buffer,
 static uint32_t convert_to_uint32(const double d)
 {
   auto ret = std::numeric_limits<uint32_t>::max();
-
   if (std::isfinite(d)) {
     try {
       ret = boost::numeric_cast<uint32_t>(d);
@@ -174,7 +169,6 @@ static uint32_t convert_to_uint32(const double d)
       // ignore, leaving the default max() value
     }
   }
-
   return ret;
 }
 
@@ -491,25 +485,6 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
-
-bool VectorType::operator==(const VectorType &v) const
-{
-  return this->size()==v.size() && std::equal(this->begin(), this->end(), v.begin());
-}
-bool VectorType::operator< (const VectorType &v) const
-{
-  return std::lexicographical_compare(this->begin(), this->end(), v.begin(), v.end());
-}
-bool VectorType::operator> (const VectorType &v) const
-{
-  return std::lexicographical_compare(v.begin(), v.end(), this->begin(), this->end());
-}
-
-bool VectorType::operator!=(const VectorType &v) const { return !operator==(v); }
-bool VectorType::operator<=(const VectorType &v) const { return !operator> (v); }
-bool VectorType::operator>=(const VectorType &v) const { return !operator< (v); }
-
-
 void VectorType::emplace_back(Value&& val)
 {
   if (val.type() == Value::Type::EMBEDDED_VECTOR) {
@@ -519,6 +494,7 @@ void VectorType::emplace_back(Value&& val)
   }
 }
 
+// Specialized handler for EmbeddedVectorTypes
 void VectorType::emplace_back(EmbeddedVectorType&& mbed)
 {
   if (mbed.size() > 1) {
@@ -990,36 +966,6 @@ Value Value::operator[](size_t idx) const
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }
 
-// Iterators
-VectorType::iterator::iterator(const VectorType& v, bool get_end) noexcept :   it(get_end ? v.ptr->vec.end() : v.ptr->vec.begin()), end(v.ptr->vec.end())
-{
-  check_and_push();
-}
-
-VectorType::iterator& VectorType::iterator::operator++()
-{
-  // recursively increment and pop stack while at the end of EmbeddedVector(s)
-  while (++it == end && !it_stack.empty()) {
-    const auto& up = it_stack.back();
-    it = up.first;
-    end = up.second;
-    it_stack.pop_back();
-  }
-  check_and_push();
-  return *this;
-}
-
-// recursively push stack while current element is an EmbeddedVector
-inline void VectorType::iterator::check_and_push()
-{
-  while (it != end && it->type() == Type::EMBEDDED_VECTOR) {
-    vec_t &cur = it->toEmbeddedVector().ptr->vec;
-    it_stack.emplace_back(it, end);
-    it = cur.begin();
-    end = cur.end();
-  }
-}
-
 size_t str_utf8_wrapper::iterator::char_len()
 {
   return g_utf8_next_char(ptr) - ptr;
@@ -1096,10 +1042,10 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
   double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF,
       DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
       DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-  stream << '[' << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value() , buffer, builder, dc) << " : "
-                << DoubleConvert(r.end_value()  , buffer, builder, dc) << ']';
-  return stream;
+  return stream << "["
+    << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
+    << DoubleConvert(r.step_value(),  buffer, builder, dc) << " : "
+    << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
 }
 
 std::ostream& operator<<(std::ostream& stream, const FunctionType& f)

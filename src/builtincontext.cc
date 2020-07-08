@@ -19,7 +19,7 @@ void BuiltinContext::init()
 		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(shared_from_this()));
 	}
 
-	this->set_constant("PI", Value(M_PI));
+	this->set_constant("PI", M_PI);
 }
 
 Value BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const

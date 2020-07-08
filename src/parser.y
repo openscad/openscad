@@ -486,11 +486,11 @@ call
 primary
         : TOK_TRUE
             {
-              $$ = new Literal(Value(true), LOCD("literal", @$));
+              $$ = new Literal(true, LOCD("literal", @$));
             }
         | TOK_FALSE
             {
-              $$ = new Literal(Value(false), LOCD("literal", @$));
+              $$ = new Literal(false, LOCD("literal", @$));
             }
         | TOK_UNDEF
             {
@@ -524,7 +524,7 @@ primary
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(VectorType::EmptyVector(), LOCD("vector", @$));
+              $$ = new Literal(VectorType::Empty(), LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {
