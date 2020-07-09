@@ -79,10 +79,12 @@ private:
 
 	bool eventFilter(QObject *obj, QEvent *event) override;
 	bool handleKeyEventNavigateNumber(QKeyEvent *);
+	bool handleWheelEventNavigateNumber(QWheelEvent *);
 	bool handleKeyEventBlockCopy(QKeyEvent *);
 	bool handleKeyEventBlockMove(QKeyEvent *);
 	void navigateOnNumber(int key);
 	bool modifyNumber(int key);
+	bool modifyNumberByWheel(int key);
 	void noColor();
 
 	void setLexer(ScadLexer *lexer);
