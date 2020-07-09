@@ -1,5 +1,6 @@
 .uuid
 .vs/
+.vscode/
 /*.scad
 **/out*.*
 *.dmg

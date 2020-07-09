@@ -510,8 +510,9 @@ def main():
 
     failed_tests = [test for test in tests if not test.passed]
     if upload and failed_tests:
-        build = os.getenv("TRAVIS_BUILD_NUMBER")
-        if build: filename = 'travis-' + build + '_report.html'
+        build = os.getenv("TRAVIS_JOB_NUMBER")
+        build_os = os.getenv("TRAVIS_OS_NAME")
+        if build: filename = 'travis-' + build + '-' + build_os + '_report.html'
         else: filename = html_basename
         os.system('scp "%s" "%s:%s"' %
                   (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
