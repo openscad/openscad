@@ -978,7 +978,6 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 	if ((wheelEvent->modifiers() && Qt::AltModifier))
 	 {
 		 	std::cout<<wheelEvent->x()<<" These are the positions"<<wheelEvent->y()<<std::endl;
-			// std::cout<<wheelEvent->delta()<<"****\n";
 			if (!wasChanged) qsci->beginUndoAction();
 
 			if (wheelEvent->delta() < 0) {
@@ -988,16 +987,14 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 					previewAfterUndo = true;
 				}
 
-				// std::cout << "Value will be increased\n";
 		}
 		else if (wheelEvent->delta() > 0) {
-			//decrease value
+				//decrease value
 			if (modifyNumberByWheel(-1)) {
 				wasChanged = true;
 				previewAfterUndo = true;
 			}
 
-			// std::cout << "Value will be decreased\n";
 		}
 
 		if (!wasChanged) qsci->endUndoAction();
