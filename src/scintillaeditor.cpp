@@ -808,7 +808,6 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 		if (handleKeyEventNavigateNumber(keyEvent)) {
 			return true;
 		}
-
 		if (handleKeyEventBlockCopy(keyEvent)) {
 			return true;
 		}
@@ -981,23 +980,24 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 
 		if (wheelEvent->delta() < 0)
 		{
-			// increase value
-			if (modifyNumber(Qt::Key_Up)) 
+			if (modifyNumber(Qt::Key_Down)) 
 			{
 				wasChanged = true;
 				previewAfterUndo = true;
 			}
 		}
-		else if (wheelEvent->delta() > 0)
+		else
 		{
-			//decrease value
-			if (modifyNumber(Qt::Key_Down))
+			// wheelEvent->delta() > 0
+			if (modifyNumber(Qt::Key_Up))
 			{
 				wasChanged = true;
 				previewAfterUndo = true;
 			}
 		}
 		if (!wasChanged) qsci->endUndoAction();
+
+		return true;
 	}
 
 	if (previewAfterUndo)
@@ -1008,7 +1008,7 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 		auto *cmd = qsci->standardCommands()->boundTo(k);
 		if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
 			QTimer::singleShot(0, this, SIGNAL(previewRequest()));
-		else if (cmd || !wheelEvent->delta())
+		else if (cmd || wheelEvent->delta())
 		{
 			// any insert or command (but not undo/redo) cancels the preview after undo
 			previewAfterUndo = false;
