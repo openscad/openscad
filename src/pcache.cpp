@@ -104,9 +104,10 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
     std::string data = ss.str();
     CGAL_cache_entry ce(data);
     ss.clear();
-    boost::archive::text_oarchive oa(ss);
+    std::stringstream ss1;
+    boost::archive::text_oarchive oa(ss1);
     oa << ce;
-    return insert("CGAL-"+key, ss.str());
+    return insert("CGAL-"+key, ss1.str());
 }
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
@@ -121,16 +122,19 @@ bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
     std::string data;
-    shared_ptr<const CGAL_Nef_polyhedron> N;
-    CGAL_cache_entry ce;
-    if(get("CGAL"+key, data)){
+    if(get("CGAL-"+key, data)){
+        shared_ptr<CGAL_Nef_polyhedron3> p3(new CGAL_Nef_polyhedron3());
+        CGAL_cache_entry ce;
         std::stringstream ss(data);
         boost::archive::text_iarchive io(ss);
         io >> ce;
         std::string n =ce.N;
-        std::stringstream ss1(ce.N);
-        ss >> *N->p3;
+        std::stringstream ss1(n);
+        ss1 >> *p3;
+        shared_ptr<const CGAL_Nef_polyhedron> N(new CGAL_Nef_polyhedron(p3));
+        return N;
     }
+    shared_ptr<const CGAL_Nef_polyhedron> N(new CGAL_Nef_polyhedron());
     return N;
 }
 
@@ -156,12 +160,12 @@ bool PCache::containsGeom(const std::string &key){
 }
 
 bool PCache::contains(const std::string &key){
-    reply = static_cast<redisReply*>(redisCommand(rct, "KEYS %s", key.c_str()));
+    reply = static_cast<redisReply*>(redisCommand(rct, "EXISTS %s", key.c_str()));
     if(checkReply(reply)){
         freeReplyObject(reply);
         return false;
     }
-    if(reply->elements==1){
+    if(reply->integer==1){
         freeReplyObject(reply);
         return true;
     }else{

@@ -55,9 +55,18 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 	const std::string &key = this->tree.getIdString(node);
 	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
-		if (CGALCache::instance()->contains(key)) {
+#ifdef ENABLE_HIREDIS
+        if(PCSettings::instance()->enablePersistentCache && PCache::getInst()->containsCGAL(key)){
+            N = PCache::getInst()->getCGAL(key);
+        }
+        else if (CGALCache::instance()->contains(key)) {
 			N = CGALCache::instance()->get(key);
 		}
+#else
+        if (CGALCache::instance()->contains(key)) {
+            N = CGALCache::instance()->get(key);
+        }
+#endif
 
 		// If not found in any caches, we need to evaluate the geometry
 		if (N) {
@@ -98,6 +107,11 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		smartCacheInsert(node, this->root);
 		return this->root;
 	}
+#ifdef ENABLE_HIREDIS
+    if(PCSettings::instance()->enablePersistentCache && PCache::getInst()->containsGeom(key)){
+        return PCache::getInst()->getGeometry(key);
+    }
+#endif
 	return GeometryCache::instance()->get(key);
 }
 

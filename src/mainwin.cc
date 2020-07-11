@@ -1790,17 +1790,10 @@ void MainWindow::actionReloadRenderPreview()
 
 	// PRINT("Parsing design (AST generation)...");
 	// this->processEvents();
-#ifdef ENABLE_HIREDIS
-    initPC();
-    connectPC();
-#endif
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(true));
 	compile(true);
-#ifdef ENABLE_HIREDIS
-    PCache::getInst()->disconnect();
-#endif
 }
 
 void MainWindow::csgReloadRender()
