@@ -147,6 +147,7 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
     shortcutsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     shortcutsTable->setSelectionBehavior(QAbstractItemView::SelectItems);
     shortcutsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    shortcutsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     createModel(shortcutsTable,allActions);
     shortcutsTable->setModel(model);
 }
