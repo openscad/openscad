@@ -306,7 +306,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
                 break;
             case QMessageBox::Cancel:
                 shortcutCatcher->close();
-                break;
+                return;
         }
 
         if(shortcutOccupied[updatedShortcut])
