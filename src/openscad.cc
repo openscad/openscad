@@ -311,6 +311,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 	// Do some minimal checking of output directory before rendering (issue #432)
 	fs::path output_directory = fs::path(output_file_str).parent_path();
+	if (output_directory.generic_string() == "") {
+		output_directory = fs::current_path();
+	}
 	if (!fs::is_directory(output_directory)) {
 		PRINTB(
 			"%s is not a directory (output file: %s). - Skipping\n",
@@ -318,6 +321,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		);
 		return 1;
 	}
+	// Create a file in the directory to confirm that its at least writable (issue #432)
+	fs::path temp_file = output_directory / fs::path("_tmp_open_scad.tmp");
+	std::ofstream temp_fstream(temp_file.c_str());
+	if (!temp_fstream.is_open()) {
+		PRINTB("Can't write to directory \"%s\" for export - Skipping\n", output_directory.c_str());
+		return 1;
+	}
+	temp_fstream.close();
+	fs::remove(temp_file);
 
 	set_render_color_scheme(arg_colorscheme, true);
 
