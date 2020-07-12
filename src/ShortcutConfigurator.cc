@@ -13,96 +13,11 @@ ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
     const int numRows = 0;
     const int numColumns = 3;
     model = new QStandardItemModel(numRows, numColumns, shortcutsTable);
+
+    configFileLoc = PlatformUtils::userConfigPath()+"/shortcuts.json";
+
     setupUi(this);
     connect(shortcutsTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
-}
-
-ShortcutConfigurator::ShortcutConfigurator(const ShortcutConfigurator& source)
-{
-    // copy constructor
-    // detach is being used for deep-copy
-    shortcutsMap=source.shortcutsMap;
-    shortcutsMap.detach();
-
-    shortcutOccupied=source.shortcutOccupied; 
-    shortcutOccupied.detach();
-
-    actionsName=source.actionsName;
-    actionsName.detach();
-
-    defaultShortcuts=source.defaultShortcuts;
-    defaultShortcuts.detach();
-
-    actionsList=source.actionsList;
-    actionsList.detach();
-
-    pressedKeySequence=source.pressedKeySequence;
-
-}
-
-ShortcutConfigurator::ShortcutConfigurator(ShortcutConfigurator&& source)
-{
-    // move constructor
-    shortcutsMap=std::move(source.shortcutsMap);
-
-    shortcutOccupied=std::move(source.shortcutOccupied); 
-
-    actionsName=std::move(source.actionsName);
-
-    defaultShortcuts=std::move(source.defaultShortcuts);
-
-    actionsList=std::move(source.actionsList);
-
-    pressedKeySequence=source.pressedKeySequence;
-
-}
-
-ShortcutConfigurator& ShortcutConfigurator::operator=(const ShortcutConfigurator& source)
-{
-    //overloaded copy-assignment
-    if(this != &source)
-    {
-        shortcutsMap=source.shortcutsMap;
-        shortcutsMap.detach();
-
-        shortcutOccupied=source.shortcutOccupied; 
-        shortcutOccupied.detach();
-
-        actionsName=source.actionsName;
-        actionsName.detach();
-
-        defaultShortcuts=source.defaultShortcuts;
-        defaultShortcuts.detach();
-
-        actionsList=source.actionsList;
-        actionsList.detach();
-
-        pressedKeySequence=source.pressedKeySequence;
-    }
-    return *this;
-}
-
-ShortcutConfigurator& ShortcutConfigurator::operator=(ShortcutConfigurator&& source)
-{
-    // overloaded move assignment
-    if(this!=&source)
-    {
-        delete shortcutCatcher;
-
-        shortcutsMap=std::move(source.shortcutsMap);
-
-        shortcutOccupied=std::move(source.shortcutOccupied);
-
-        actionsName=std::move(source.actionsName);
-
-        defaultShortcuts=std::move(source.defaultShortcuts);
-
-        actionsList=std::move(source.actionsList);
-
-        pressedKeySequence=source.pressedKeySequence;
-    }
-
-    return *this;
 }
 
 ShortcutConfigurator::~ShortcutConfigurator()
@@ -110,6 +25,10 @@ ShortcutConfigurator::~ShortcutConfigurator()
     if(shortcutCatcher)
     {
         delete shortcutCatcher;
+    }
+    if(model)
+    {
+        delete model;
     }
 }
 
@@ -228,24 +147,47 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
     shortcutsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     shortcutsTable->setSelectionBehavior(QAbstractItemView::SelectItems);
     shortcutsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    initTable(shortcutsTable,allActions);
-
-}
-
-void ShortcutConfigurator::initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions)
-{
     createModel(shortcutsTable,allActions);
     shortcutsTable->setModel(model);
+}
+
+void ShortcutConfigurator::readConfigFile(QJsonObject* object)
+{
+    QFile jsonFile(QString::fromLocal8Bit(configFileLoc.c_str()));
+
+    // check if a User-Defined Shortcuts file exists or not
+    if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        return ;
+    }
+
+    QByteArray jsonData = jsonFile.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    *object = doc.object();
+}
+
+bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
+{
+    QFile jsonFile(QString::fromLocal8Bit(configFileLoc.c_str()));
+
+    if (!jsonFile.open(QIODevice::WriteOnly))
+    {
+        return false;
+    }
+
+    QJsonDocument doc(*object);
+    jsonFile.write(doc.toJson());
+    jsonFile.close();
+    return true;
 }
 
 void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
 {
     QJsonObject object;
-    readConfigFile(&object);    
+    readConfigFile(&object);
 
     for (auto &action : actions) 
     {
-            
         QString actionName = action->objectName();
         if(!actionName.isEmpty())
         {
@@ -263,7 +205,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                     QString singleShortcut = val.toString().trimmed();
                     if(shortcutOccupied[singleShortcut])
                     {
-                        raiseError(QString("~/.config/OpenSCAD/shortcuts.json:\n"+actionName+" shortcut "+singleShortcut+" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
+                        raiseError(QString::fromLocal8Bit(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
                         return;
                     }
                     else if(singleShortcut!=QString::fromUtf8("")) 
@@ -291,7 +233,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         {
                             if(shortcutOccupied[shortcut])
                             {
-                                raiseError(QString("~/.config/OpenSCAD/shortcuts.json:\n"+actionName+" shortcut "+shortcut+" conflicts with "+shortcutOccupied[shortcut]->objectName()));
+                                raiseError(QString::fromLocal8Bit(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]->objectName()));
                                 return;
                             }
                             else if(shortcut!=QString::fromUtf8("")) 
@@ -308,43 +250,6 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
         }
     }
 
-}
-
-void ShortcutConfigurator::readConfigFile(QJsonObject* object)
-{
-    std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
-    QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
-
-    QFile jsonFile(finalPath);
-
-    // check if a User-Defined Shortcuts file exists or not
-    if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        return ;
-    }
-
-    QByteArray jsonData = jsonFile.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-    *object = doc.object();
-}
-
-bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
-{
-
-    std::string absolutePath = PlatformUtils::userConfigPath()+"/shortcuts.json";
-    QString finalPath = QString::fromLocal8Bit(absolutePath.c_str());
-
-    QFile jsonFile(finalPath);
-
-    if (!jsonFile.open(QIODevice::WriteOnly))
-    {
-        return false;
-    }
-
-    QJsonDocument doc(*object);
-    jsonFile.write(doc.toJson());
-    jsonFile.close();
-    return true;
 }
 
 QString ShortcutConfigurator::getData(int row,int col)
@@ -376,6 +281,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
         auto itr = shortcutsMap.find(updatedAction);
         QAction* changedAction = itr.value();
 
+        shortcutCatcher->raise();
         shortcutCatcher->setStyleSheet("QLabel{min-width: 400px;}");
         shortcutCatcher->setInformativeText(QString(""));
         shortcutCatcher->setWindowTitle(QString("Set Shortcut for: ")+updatedAction);

@@ -19,21 +19,21 @@ class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
  Q_OBJECT 
 public:
     ShortcutConfigurator(QWidget *parent = 0);
-    ShortcutConfigurator(const ShortcutConfigurator& source);
-    ShortcutConfigurator(ShortcutConfigurator&& source);
-    ShortcutConfigurator& operator=(const ShortcutConfigurator& source);
-    ShortcutConfigurator& operator=(ShortcutConfigurator&& source);
+    ShortcutConfigurator(const ShortcutConfigurator& source) = delete;
+    ShortcutConfigurator(ShortcutConfigurator&& source) = delete;
+    ShortcutConfigurator& operator=(const ShortcutConfigurator& source) = delete;
+    ShortcutConfigurator& operator=(ShortcutConfigurator&& source) = delete;
     virtual ~ShortcutConfigurator();
     void createModel(QObject* parent,const QList<QAction *> &actions);
     void collectDefaults(const QList<QAction *> &allActions);
     void initGUI(const QList<QAction *> &allActions);
-    void initTable(QTableView *shortcutsTable,const QList<QAction *> &allActions);
     void applyConfigFile(const QList<QAction *> &actions);
     void readConfigFile(QJsonObject *object);
     bool writeToConfigFile(QJsonObject *object);
     void raiseError(const QString errorMsg);
     QString getData(int row,int col);
     void putData(QModelIndex indexA,QString data);
+    std::string configFileLoc;
     QHash<QString, QAction *> shortcutsMap;
     QHash<QString, QAction *> shortcutOccupied;
     QList<QString> actionsName;
