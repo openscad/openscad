@@ -293,6 +293,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	else {
 		// else extract format from file extension
 		auto suffix = fs::path(output_file_str).extension().generic_string();
+		if (suffix.empty()) {
+			PRINTB("No suffix for output file %s\n", output_file_str);
+			PRINT("Either add a valid suffix or specify one using --export-format\n");
+			return 1;
+		}
 		suffix = suffix.substr(1);
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
@@ -301,31 +306,30 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	}
 
 	if(formatName.empty()) {
-		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
+		PRINTB("Unknown suffix for output file %s\n", output_file_str);
 		return 1;
 	}
 
 	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
-	std::string filename_str = fs::path(output_file_str).generic_string();
-	new_output_file = filename_str.c_str();
+	new_output_file = output_file_str.c_str();
 
 	// Do some minimal checking of output directory before rendering (issue #432)
-	fs::path output_directory = fs::path(output_file_str).parent_path();
-	if (output_directory.generic_string() == "") {
-		output_directory = fs::current_path();
+	auto output_path = fs::path(output_file_str).parent_path();
+	if (output_path.empty()) {
+		output_path = fs::current_path();
 	}
-	if (!fs::is_directory(output_directory)) {
+	if (!fs::is_directory(output_path)) {
 		PRINTB(
 			"%s is not a directory (output file: %s). - Skipping\n",
-			output_directory.c_str() % output_file_str.c_str()
+			output_path.generic_string() % output_file_str
 		);
 		return 1;
 	}
 	// Create a file in the directory to confirm that its at least writable (issue #432)
-	fs::path temp_file = output_directory / fs::path("_tmp_open_scad.tmp");
-	std::ofstream temp_fstream(temp_file.c_str());
+	auto temp_file = output_path / fs::path("_tmp_open_scad.tmp");
+	std::ofstream temp_fstream(temp_file.generic_string());
 	if (!temp_fstream.is_open()) {
-		PRINTB("Can't write to directory \"%s\" for export - Skipping\n", output_directory.c_str());
+		PRINTB("Can't write to directory \"%s\" for export - Skipping\n", output_path.generic_string());
 		return 1;
 	}
 	temp_fstream.close();
