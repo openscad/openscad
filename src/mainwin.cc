@@ -1798,6 +1798,10 @@ void MainWindow::actionReloadRenderPreview()
 
 void MainWindow::csgReloadRender()
 {
+#ifdef ENABLE_HIREDIS
+    initPC();
+    connectPC();
+#endif
 	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
@@ -1812,6 +1816,9 @@ void MainWindow::csgReloadRender()
 #endif
 	}
 	compileEnded();
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 }
 
 void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
@@ -1826,10 +1833,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
-#ifdef ENABLE_HIREDIS
-    initPC();
-    connectPC();
-#endif
+
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
@@ -1841,13 +1845,16 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 		// it must be called from the mainloop
 		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
 	}
-#ifdef ENABLE_HIREDIS
-    PCache::getInst()->disconnect();
-#endif
+
 }
 
 void MainWindow::csgRender()
 {
+#ifdef ENABLE_HIREDIS
+    initPC();
+    connectPC();
+#endif
+
 	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
@@ -1880,6 +1887,10 @@ void MainWindow::csgRender()
 	}
 
 	compileEnded();
+
+#ifdef ENABLE_HIREDIS
+    PCache::getInst()->disconnect();
+#endif
 }
 
 void MainWindow::action3DPrint()
