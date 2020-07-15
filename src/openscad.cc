@@ -325,15 +325,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		);
 		return 1;
 	}
-	// Create a file in the directory to confirm that its at least writable (issue #432)
-	auto temp_file = output_path / fs::path("_tmp_open_scad.tmp");
-	std::ofstream temp_fstream(temp_file.generic_string());
-	if (!temp_fstream.is_open()) {
-		PRINTB("Can't write to directory \"%s\" for export - Skipping\n", output_path.generic_string());
-		return 1;
-	}
-	temp_fstream.close();
-	fs::remove(temp_file);
 
 	set_render_color_scheme(arg_colorscheme, true);
 
