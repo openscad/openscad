@@ -785,16 +785,17 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
 	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
 
-    if(e->type() == QEvent::Wheel)
+	if(e->type() == QEvent::Wheel)
 	{
 		auto *wheelEvent = static_cast <QWheelEvent*> (e);
-        PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->buttons() & Qt::LeftButton?"Left":"Other Button"));
-		if(handleWheelEventNavigateNumber(wheelEvent)){
+		PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->buttons() & Qt::LeftButton?"Left":"Other Button"));
+		if(handleWheelEventNavigateNumber(wheelEvent))
+		{
 			return true;
 		}
 	}
 
-    else if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
+	else if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
 		auto *keyEvent = static_cast<QKeyEvent*> (e);
 
 		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
@@ -977,6 +978,9 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 
     if ((wheelEvent->buttons() & Qt::LeftButton))
 	 {
+		QPoint numDegrees = wheelEvent->angleDelta();
+		PRINTDB("Angle delta: %d",(numDegrees.y()/8));
+
 		if (!wasChanged) qsci->beginUndoAction();
 
 		if (wheelEvent->delta() < 0)
