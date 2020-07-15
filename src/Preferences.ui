@@ -1878,7 +1878,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QScrollArea" name="scrollArea_InputAxis">
+         <widget class="QScrollArea" name="scrollArea_ShortcutConfigurator">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
