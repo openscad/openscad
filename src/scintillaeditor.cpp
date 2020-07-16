@@ -201,6 +201,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+	qsci->viewport()->installEventFilter(this);
 
     qsci->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qsci, SIGNAL(customContextMenuRequested(const QPoint &)), this, SIGNAL(showContextMenuEvent(const QPoint &)));
@@ -783,40 +784,51 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
-
-	if(e->type() == QEvent::Wheel)
+	if(obj == qsci->viewport())
 	{
-		auto *wheelEvent = static_cast <QWheelEvent*> (e);
-		PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->buttons() & Qt::LeftButton?"Left":"Other Button"));
-		if(handleWheelEventNavigateNumber(wheelEvent))
+		if(e->type() == QEvent::Wheel)
 		{
-			return true;
+			auto *wheelEvent = static_cast <QWheelEvent*> (e);
+			PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->buttons() & Qt::LeftButton?"Left":"Other Button"));
+			if(handleWheelEventNavigateNumber(wheelEvent))
+			{
+				return true;
+			}
 		}
+		return false;
 	}
+	else if(obj == qsci)
+	{
+		if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease)
+		{
+			auto *keyEvent = static_cast<QKeyEvent*> (e);
 
-	else if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
-		auto *keyEvent = static_cast<QKeyEvent*> (e);
+			PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
+					(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
+					(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
+					(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
+					(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
+					(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
+					(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
+					(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
 
-		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
-				(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
-				(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
-				(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
-				(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
-				(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
-				(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
-				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
-
-		if (handleKeyEventNavigateNumber(keyEvent)) {
-			return true;
+			if (handleKeyEventNavigateNumber(keyEvent))
+			{
+				return true;
+			}
+			if (handleKeyEventBlockCopy(keyEvent))
+			{
+				return true;
+			}
+			if (handleKeyEventBlockMove(keyEvent))
+			{
+				return true;
+			}
 		}
-		if (handleKeyEventBlockCopy(keyEvent)) {
-			return true;
-		}
-		if (handleKeyEventBlockMove(keyEvent)) {
-			return true;
-		}
+		return false;
 	}
+	else return EditorInterface::eventFilter(obj, e);
+
 	return false;
 }
 
