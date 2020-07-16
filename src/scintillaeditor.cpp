@@ -1093,7 +1093,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	auto number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
 	auto tail=nr.length()-curpos;
 	auto exponent=tail-((dotpos>=curpos)?1:0);
-	long long int step=1;
+	long long int step=Preferences::inst()->getValue("editor/stepSize").toInt();
 	for (int i=exponent; i>0; i--) step*=10;
 
 	switch (key) {
