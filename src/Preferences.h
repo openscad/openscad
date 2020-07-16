@@ -108,6 +108,10 @@ signals:
 	void updateMouseCentricZoom(bool state) const;
 	void autocompleteChanged(bool status) const;
 	void characterThresholdChanged(int val) const;
+	void stepSizeChanged(int val) const;
+
+private slots:
+    void on_lineEditStepSize_textChanged(const QString &arg1);
 
 private:
     Preferences(QWidget *parent = nullptr);

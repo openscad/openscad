@@ -156,6 +156,7 @@ void Preferences::init() {
 
 	this->defaultmap["editor/enableAutocomplete"] = true;
 	this->defaultmap["editor/characterThreshold"] = 1;
+	this->defaultmap["editor/stepSize"] = 1;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -196,6 +197,7 @@ void Preferences::init() {
 	this->opencsgLimitEdit->setValidator(validator);
 	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(validator);
 	this->lineEditCharacterThreshold->setValidator(validator1);
+	this->lineEditStepSize->setValidator(validator1);
 
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
@@ -642,6 +644,13 @@ void Preferences::on_lineEditCharacterThreshold_textChanged(const QString &text)
 	emit characterThresholdChanged(text.toInt());
 }
 
+void Preferences::on_lineEditStepSize_textChanged(const QString &text)
+{
+	QSettingsCached settings;
+	settings.setValue("editor/stepSize", text);
+	emit stepSizeChanged(text.toInt());
+}
+
 void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -891,6 +900,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
+	BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
 
 	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
@@ -898,6 +908,7 @@ void Preferences::updateGUI()
 	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 	this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
+	this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
 
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -973,3 +984,5 @@ Preferences *Preferences::inst() {
     
     return instance;
 }
+
+
