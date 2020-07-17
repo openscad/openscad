@@ -585,6 +585,7 @@ set(GUI_SOURCES
   src/settings.cc
   src/Preferences.cc
   src/initConfig.cc
+  src/shortcuts.cc
   src/SettingsWriter.cc
   src/FontListDialog.cc
   src/FontListTableView.cc

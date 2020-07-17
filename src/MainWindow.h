@@ -126,6 +126,7 @@ private:
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
+	void setShortcutsforMenuActions();
 	void updateStatusBar(class ProgressWidget *progressWidget);
 
   class LibraryInfoDialog* library_info_dialog;
