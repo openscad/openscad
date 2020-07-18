@@ -30,7 +30,7 @@ mkdir "$BUILDDIR"
 	if [[ $? != 0 ]]; then
 		exit 1
 	fi
-	tar -C .gcov -c -f - . | tar -C ../b/ -x -f -
+	tar -C .gcov -c -f - . | tar -C ../ -x -f -
 )
 if [[ $? != 0 ]]; then
 	echo "Test failure"
