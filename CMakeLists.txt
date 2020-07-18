@@ -48,8 +48,8 @@ if(IDPREFIX)
   add_definitions(-DIDPREFIX)
 endif()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/objects")
-set(AUTOGEN_BUILD_DIR "${CMAKE_SOURCE_DIR}/objects")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
+set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
 file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 # Default to Release build
@@ -684,3 +684,5 @@ endif()
 if(INFO)
   include(info)
 endif()
+
+add_subdirectory(tests)

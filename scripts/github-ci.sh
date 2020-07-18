@@ -24,10 +24,7 @@ mkdir "$BUILDDIR"
 (
 	cd "$BUILDDIR"
 	cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON .. && make $PARALLEL_MAKE
-)
-
-ln -s "$BUILDDIR"/openscad
-(
+	# Use TESTDIR within BUILDDIR
 	cd "$TESTDIR"
 	cmake . && make && ctest $PARALLEL_CTEST
 	if [[ $? != 0 ]]; then
