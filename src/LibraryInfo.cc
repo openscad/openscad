@@ -10,6 +10,7 @@
 #include "PlatformUtils.h"
 #include "openscad.h"
 #include "version.h"
+#include "feature.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
