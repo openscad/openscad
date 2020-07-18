@@ -338,6 +338,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../testdata/python/gen_svg_viewbox_te
                ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/python/gen_svg_viewbox_tests.py)
 
 # Find all scad files
+<<<<<<< HEAD
 file(GLOB FEATURES_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/*.scad)
 file(GLOB FEATURES_2D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/features/*.scad)
 file(GLOB DEPRECATED_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/deprecated/*.scad)
@@ -355,6 +356,26 @@ file(GLOB REDEFINITION_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/redefi
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/*.scad)
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
+=======
+file(GLOB FEATURES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/*.scad)
+file(GLOB FEATURES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/*.scad)
+file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated/*.scad)
+file(GLOB ISSUES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
+file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
+file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB SCAD_PERSISTENT_CACHE_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/pcache/*.scad)
+file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad
+  ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/box-w-holes-2d.scad
+  ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/line-cap-line-join.scad
+  ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/simple-center-2d.scad)
+file(GLOB SCAD_AMF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/amf/*.scad)
+file(GLOB SCAD_NEF3_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/nef3/*.scad)
+file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
+file(GLOB REDEFINITION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/redefinition/*.scad)
+file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
+file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
+file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
+>>>>>>> test is not recognizing
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example015.scad
@@ -900,6 +921,12 @@ add_cmdline_test(amfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOUR
 add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=3MF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
+
+#
+# Persistent cache tests
+#
+
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_test.py ARGS --openscad=${OPENSCAD_BINPATH} ARGS --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PERSISTENT_CACHE_FILES})
 
 #
 # Corner-case Export/Import tests
