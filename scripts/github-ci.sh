@@ -26,7 +26,7 @@ mkdir "$BUILDDIR"
 	cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON .. && make $PARALLEL_MAKE
 	# Use TESTDIR within BUILDDIR
 	cd "$TESTDIR"
-	cmake . && make && ctest $PARALLEL_CTEST
+	ctest $PARALLEL_CTEST
 	if [[ $? != 0 ]]; then
 		exit 1
 	fi
