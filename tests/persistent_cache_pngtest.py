@@ -49,13 +49,11 @@ if not os.path.exists(inputfile):
 if not os.path.exists(args.openscad):
     failquit('cant find openscad executable named: ' + args.openscad)
 
-outputdir = os.path.dirname(pngfile)
 inputpath, inputfilename = os.path.split(inputfile)
 inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
 # Running the first render 
-exportfile = os.path.join(outputdir, os.path.splitext(inputfilename)[0] + '.png') 
-export_cmd = [args.openscad, inputfile, '-o', exportfile, '--render'] + remaining_args
+export_cmd = [args.openscad, inputfile, '-o', pngfile, '--render'] + remaining_args
 print('Running OpenSCAD #1:', ' '.join(export_cmd), file=sys.stderr)
 startTime = time.time()
 result = subprocess.call(export_cmd)
@@ -84,7 +82,3 @@ diffRenderTime = renderTime1 - renderTime2
 MIN_THRESHOLD = 0.80
 if MIN_THRESHOLD > (diffRenderTime/renderTime1):
     failquit('Error: Difference render time is less than the expected')
-
-
-try:    os.remove(exportfile)
-except: failquit('failure at os.remove('+exportfile+')')
