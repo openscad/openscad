@@ -926,7 +926,7 @@ add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOUR
 # Persistent cache tests
 #
 
-add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_test.py ARGS --openscad=${OPENSCAD_BINPATH} ARGS --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PERSISTENT_CACHE_FILES})
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PERSISTENT_CACHE_FILES})
 
 #
 # Corner-case Export/Import tests

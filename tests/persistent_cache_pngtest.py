@@ -85,3 +85,6 @@ MIN_THRESHOLD = 0.80
 if MIN_THRESHOLD > (diffRenderTime/renderTime1):
     failquit('Error: Difference render time is less than the expected')
 
+
+try:    os.remove(exportfile)
+except: failquit('failure at os.remove('+exportfile+')')
