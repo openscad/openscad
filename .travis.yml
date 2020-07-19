@@ -9,6 +9,8 @@ matrix:
       env:
         - DIST="Ubuntu 16.04 (Xenial)"
         - PARALLEL_CTEST=-j4
+      services:
+	- redis-server
       before_install:
         # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
         - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
@@ -24,6 +26,8 @@ matrix:
       env:
         - DIST="Ubuntu 18.04 (Bionic)"
         - PARALLEL_CTEST=-j4
+      services:
+	- redis-server
       before_install:
         - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
       cache:
@@ -35,6 +39,8 @@ matrix:
       env:
         - PARALLEL_CTEST=-j4
         - HOMEBREW_NO_AUTO_UPDATE=1
+      services:
+	- redis-server
       before_install:
         - test -d /usr/local/opt/opencsg/lib || { rmdir /usr/local/opt/opencsg; brew install opencsg; }
         - test -d /usr/local/opt/libzip/lib || { rmdir /usr/local/opt/libzip; brew install libzip; }
