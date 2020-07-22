@@ -27,6 +27,7 @@ WARNING: square(size=-inf, ...), in file builtin-invalid-range-test.scad, line 1
 WARNING: square(size=[1, -inf], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[-inf, 1], ...), in file builtin-invalid-range-test.scad, line 14
 WARNING: circle(r=-inf), in file builtin-invalid-range-test.scad, line 15
+ERROR: Unable to convert point [0, 0, -inf] at index 4 to a vec3 of numbers, in file builtin-invalid-range-test.scad, line 16
 ECHO: "i=nan, primitive test"
 WARNING: cube(size=[1, nan, 1], ...), in file builtin-invalid-range-test.scad, line 8
 WARNING: sphere(r=nan), in file builtin-invalid-range-test.scad, line 9
@@ -36,6 +37,7 @@ WARNING: square(size=nan, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, nan], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[nan, 1], ...), in file builtin-invalid-range-test.scad, line 14
 WARNING: circle(r=nan), in file builtin-invalid-range-test.scad, line 15
+ERROR: Unable to convert point [0, 0, nan] at index 4 to a vec3 of numbers, in file builtin-invalid-range-test.scad, line 16
 ECHO: "i=inf, primitive test"
 WARNING: cube(size=[1, inf, 1], ...), in file builtin-invalid-range-test.scad, line 8
 WARNING: sphere(r=inf), in file builtin-invalid-range-test.scad, line 9
@@ -45,11 +47,13 @@ WARNING: square(size=inf, ...), in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, inf], ...), in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[inf, 1], ...), in file builtin-invalid-range-test.scad, line 14
 WARNING: circle(r=inf), in file builtin-invalid-range-test.scad, line 15
+ERROR: Unable to convert point [0, 0, inf] at index 4 to a vec3 of numbers, in file builtin-invalid-range-test.scad, line 16
 ECHO: "i=test, primitive test"
 WARNING: Unable to convert cube(size=[1, "test", 1], ...) parameter to a number or a vec3 of numbers, in file builtin-invalid-range-test.scad, line 8
 WARNING: Unable to convert square(size="test", ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 12
 WARNING: Unable to convert square(size=[1, "test"], ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 13
 WARNING: Unable to convert square(size=["test", 1], ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 14
+ERROR: Unable to convert point [0, 0, "test"] at index 4 to a vec3 of numbers, in file builtin-invalid-range-test.scad, line 16
 ECHO: "Transformations"
 ECHO: "i=1, transformation test"
 ECHO: "i=0, transformation test"

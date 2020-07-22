@@ -18,8 +18,6 @@ static void stdFree(void* userData, void* ptr) {
 	free(ptr);
 }
 
-typedef std::pair<int,int> IndexedEdge;
-
 /*!
 	Helper class for keeping track of edges in a mesh.
 	Can probably be replaced with a proper HalfEdge mesh later on
@@ -164,6 +162,13 @@ public:
 		}
 	}
 
+	std::vector<IndexedEdge> unconnected() {
+		std::vector<IndexedEdge> unconnected;
+		for (const auto &v : this->edges)
+			unconnected.push_back(v.first);
+		return unconnected;
+	}
+
 	IndexedEdgeDict edges;
 	std::unordered_map<int, std::list<int>> v2e;
 	std::unordered_map<int, std::list<int>> v2e_reverse;
@@ -191,7 +196,9 @@ public:
 bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 																							 const std::vector<IndexedFace> &faces, 
 																							 std::vector<IndexedTriangle> &triangles,
-																							 const Vector3f *normal)
+																							 const Vector3f *normal,
+																							 const Location &loc,
+																							 const std::string &docPath)
 {
 	// Algorithm outline:
   // o Remove consecutive equal vertices and null ears (i.e. 23,24,23)
@@ -322,6 +329,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 		
 		IndexedTriangle tri;
 		IndexedTriangle mappedtri;
+		auto self_intersection = false;
 		for (int t=0;t<numelems;t++) {
 			auto err = false;
 			mappedtri.fill(-1);
@@ -329,6 +337,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 				auto vidx = vindices[elements[t*3 + i]];
 				if (vidx == TESS_UNDEF) {
 					err = true;
+					self_intersection=true;
 				}
 				else {
 					tri[i] = vidx; // A)
@@ -372,6 +381,17 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 				edges.remove(mappedtri);
 				triangles.push_back(mappedtri);
 			}
+		}
+		if (self_intersection && !loc.isNone()) {
+			std::ostringstream faceStr;
+			for (const auto &face : cleanfaces) {
+				faceStr << "[";
+				for(size_t j=0; j<face.size()-1; j++)
+					faceStr << face[j] << ", ";
+				faceStr << face[face.size()-1] << "]";
+			}
+			PRINTB("WARNING: Self-intersecting face: %s, %s",
+			       faceStr.str() % loc.toRelativeString(docPath));
 		}
 
 		if (!edges.empty()) {
@@ -475,4 +495,13 @@ int GeometryUtils::findUnconnectedEdges(const std::vector<IndexedTriangle> &tria
 #endif
 
 	return edges.size();
+}
+
+std::vector<IndexedEdge> GeometryUtils::reportUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons)
+{
+	EdgeDict edges;
+	for (const auto &faces : polygons)
+		for (const auto &face : faces)
+			edges.add(face);
+	return edges.unconnected();
 }

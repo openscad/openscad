@@ -1,0 +1,28 @@
+DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.
+WARNING: Non-manifold polyhedron, in file polyhedron-tests.scad, line 7
+3 unconnected edges:
+     (1,3)
+     (4,1)
+     (3,4)
+WARNING: Non-manifold polyhedron, in file polyhedron-tests.scad, line 7
+3 unconnected edges:
+     (1,3)
+     (4,1)
+     (3,4)
+ERROR: Point index 1 is out of bounds, in file polyhedron-tests.scad, line 23
+ERROR: Point index 2 is out of bounds, in file polyhedron-tests.scad, line 23
+ERROR: Point index 3 is out of bounds, in file polyhedron-tests.scad, line 23
+ERROR: Unable to convert point 0 at index 0 to a vec3 of numbers, in file polyhedron-tests.scad, line 27
+ERROR: Point index 4 is out of bounds, in file polyhedron-tests.scad, line 28
+WARNING: Degenerate face of size 0: [], in file polyhedron-tests.scad, line 29
+WARNING: Degenerate face of size 1: [0], in file polyhedron-tests.scad, line 30
+WARNING: Degenerate face of size 2: [0, 1], in file polyhedron-tests.scad, line 31
+WARNING: Consecutive duplicate point of index 1 in face, in file polyhedron-tests.scad, line 32
+WARNING: Consecutive duplicate point of index 0 in face, in file polyhedron-tests.scad, line 33
+WARNING: Self-intersecting face: [0, 1, 3, 2], in file polyhedron-tests.scad, line 34
+WARNING: Non-manifold polyhedron, in file polyhedron-tests.scad, line 34
+4 unconnected edges:
+     (3,2)
+     (0,1)
+     (2,0)
+     (1,3)
