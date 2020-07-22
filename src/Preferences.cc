@@ -205,7 +205,7 @@ void Preferences::init() {
 	initComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
 	initComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
 	initComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
-	initComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	initComboBox(this->comboBoxModifierNumberScrollWheel, Settings::Settings::modifierNumberScrollWheel);
 	initSpinBoxRange(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBoxRange(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
 	initSpinBoxRange(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
@@ -651,6 +651,11 @@ void Preferences::on_lineEditStepSize_textChanged(const QString &text)
 	emit stepSizeChanged(text.toInt());
 }
 
+void Preferences::on_comboBoxModifierNumberScrollWheel_activated(int val)
+{
+	applyComboBox(comboBoxModifierNumberScrollWheel, val, Settings::Settings::modifierNumberScrollWheel);
+}
+
 void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -924,6 +929,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
 	updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	updateComboBox(this->comboBoxModifierNumberScrollWheel, Settings::Settings::modifierNumberScrollWheel);
 	initSpinBoxDouble(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBoxDouble(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 	initSpinBoxDouble(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);

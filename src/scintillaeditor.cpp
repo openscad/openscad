@@ -988,10 +988,25 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 
 bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 {
+	auto modifierNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::modifierNumberScrollWheel).toString();
+	bool modifier;	
 	static bool wasChanged = false;
 	static bool previewAfterUndo = false;
 
-	if ((wheelEvent->buttons() & Qt::LeftButton) | (wheelEvent->modifiers() & Qt::AltModifier))
+	if(modifierNumberScrollWheel=="Alt")
+	{
+		modifier = wheelEvent->modifiers() & Qt::AltModifier;
+	}
+	else if(modifierNumberScrollWheel=="Left Mouse Button")
+	{
+		modifier = wheelEvent->buttons() & Qt::LeftButton;
+	}
+	else
+	{
+		modifier = (wheelEvent->buttons() & Qt::LeftButton) | (wheelEvent->modifiers() & Qt::AltModifier);	
+	}
+
+	if (modifier)
 	 {
 		if (!wasChanged) qsci->beginUndoAction();
 
