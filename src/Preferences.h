@@ -77,6 +77,8 @@ public slots:
 	void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
 	void on_comboBoxLineWrapVisualizationStart_activated(int);
 	void on_comboBoxLineWrapVisualizationEnd_activated(int);
+	void on_comboBoxModifierNumberScrollWheel_activated(int);
+
 
 	// Display
 	void on_checkBoxHighlightCurrentLine_toggled(bool);
