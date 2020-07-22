@@ -788,12 +788,15 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 	{
 		if(e->type() == QEvent::Wheel)
 		{
+			qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 0);
 			auto *wheelEvent = static_cast <QWheelEvent*> (e);
 			PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->modifiers() & Qt::AltModifier?"Alt":"Other Button"));
 			if(handleWheelEventNavigateNumber(wheelEvent))
 			{
+				qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 1);
 				return true;
 			}
+			qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 1);
 		}
 		return false;
 	}
@@ -988,7 +991,7 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 	static bool wasChanged = false;
 	static bool previewAfterUndo = false;
 
-    if ((wheelEvent->modifiers() & Qt::AltModifier))
+	if ((wheelEvent->buttons() & Qt::LeftButton) | (wheelEvent->modifiers() & Qt::AltModifier))
 	 {
 		if (!wasChanged) qsci->beginUndoAction();
 
