@@ -33,7 +33,7 @@ public:
     bool ping();
     bool checkReply(redisReply* reply);
     bool checkContext(redisContext* rct);
-    bool clear();
+    bool flushall();
     void print();
 
     static PCache* getInst(){if(!pCache) pCache = new PCache; return pCache;}

@@ -99,6 +99,7 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
 // Serialize the geometry and insert that into redis using insert method
 // Returns on operation success
 bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
+    PRINTDB("Insert: %s", key.c_str());
     std::stringstream ss;
     ss << *N->p3;
     std::string data = ss.str();
@@ -111,6 +112,9 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
 }
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
+#ifdef DEBUG
+    PRINTD("Insert Geometry");
+#endif
     std::stringstream ss;
     Geom_cache_entry ce(geom);
     boost::archive::text_oarchive oa(ss);
@@ -121,6 +125,9 @@ bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
+#ifdef DEBUG
+    PRINTD("WARNING: get CGAL");
+#endif
     std::string data;
     if(get("CGAL-"+key, data)){
         shared_ptr<CGAL_Nef_polyhedron3> p3(new CGAL_Nef_polyhedron3());
@@ -139,6 +146,7 @@ shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
 }
 
 shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
+    PRINTDB("Get: %s", key.c_str());
     std::string data;
     shared_ptr<const Geometry> geom;
     Geom_cache_entry ce;
@@ -152,10 +160,12 @@ shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
 }
 
 bool PCache::containsCGAL(const std::string &key){
+    PRINTDB("Contains: %s", key.c_str());
     return contains("CGAL-"+key);
 }
 
 bool PCache::containsGeom(const std::string &key){
+    PRINTDB("Contains: %s", key.c_str());
     return contains("GEOM-"+key);
 }
 
@@ -174,7 +184,7 @@ bool PCache::contains(const std::string &key){
     }
 }
 
-bool PCache::clear(){
+bool PCache::flushall(){
     reply = static_cast<redisReply*>(redisCommand(rct, "FLUSHALL"));
     if(checkReply(reply)){
         return false;
