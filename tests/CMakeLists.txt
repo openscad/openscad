@@ -703,6 +703,9 @@ set_test_config(Heavy
   cgalpngtest_issue267-normalization-crash
   csgpngtest_issue267-normalization-crash
   opencsgtest_issue267-normalization-crash
+
+  # before testing install Hiredis ( minimalistic C client library for the Redis database) and run Redis db 
+  pcachepngtest_CSG
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
