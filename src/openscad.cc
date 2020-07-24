@@ -516,6 +516,20 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 			}
 		}
 
+        if(!OpenSCAD::debug_output_filename.empty()){
+            std::string debug_filename_str = fs::path(OpenSCAD::debug_output_filename).generic_string();
+            std::ofstream fstream(debug_filename_str.c_str());
+            if (!fstream.is_open()) {
+                PRINTB("Can't open file \"%s\" for logging debug messages", debug_filename_str);
+            }
+            else {
+                fs::current_path(fparent); // Force exported filenames to be relative to document path
+                fstream << OpenSCAD::debug_output;
+                fstream.close();
+                fs::current_path(original_path);
+            }
+        }
+
 		if (curFormat == FileFormat::PNG) {
 			auto success = true;
 			std::ofstream fstream(new_output_file,std::ios::out|std::ios::binary);
@@ -540,19 +554,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #endif
 
 	}
-    if(!OpenSCAD::debug_output_filename.empty()){
-        std::string debug_filename_str = fs::path(OpenSCAD::debug_output_filename).generic_string();
-        std::ofstream fstream(debug_filename_str.c_str());
-        if (!fstream.is_open()) {
-            PRINTB("Can't open file \"%s\" for logging debug messages", debug_filename_str);
-        }
-        else {
-            fs::current_path(fparent); // Force exported filenames to be relative to document path
-            fstream << OpenSCAD::debug_output;
-            fstream.close();
-            fs::current_path(original_path);
-        }
-    }
+
 #ifdef ENABLE_HIREDIS
     PCache::getInst()->disconnect();
 #endif

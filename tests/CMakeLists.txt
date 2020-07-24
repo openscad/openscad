@@ -363,7 +363,6 @@ file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated
 file(GLOB ISSUES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
-file(GLOB SCAD_PERSISTENT_CACHE_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/pcache/*.scad)
 file(GLOB SCAD_SVG_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad
   ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/box-w-holes-2d.scad
   ${CMAKE_SOURCE_DIR}/../testdata/scad/svg/line-cap-line-join.scad
@@ -376,6 +375,11 @@ file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
 >>>>>>> test is not recognizing
+
+list(APPEND SCAD_PCACHE_TIME_FILES
+                  ${CMAKE_SOURCE_DIR}/../testdata/scad/pcache/CSG.scad)
+list(APPEND SCAD_PCACHE_HITS_FILES
+                  ${CMAKE_SOURCE_DIR}/../testdata/scad/pcache/logo.scad)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example015.scad
@@ -705,7 +709,7 @@ set_test_config(Heavy
   opencsgtest_issue267-normalization-crash
 
   # before testing install Hiredis ( minimalistic C client library for the Redis database) and run Redis db 
-  pcachepngtest_CSG
+  # pcachepngtest_CSG
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -927,9 +931,10 @@ add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOUR
 
 #
 # Persistent cache tests
-#
+# make sure you flush the cache in redis before running these tests
 
-add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PERSISTENT_CACHE_FILES})
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_TIME_FILES})
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/debug_output_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --debug=pcache --log-expected=${CMAKE_SOURCE_DIR}/regression/pcachepngtest/logo-expected.log --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_HITS_FILES})
 
 #
 # Corner-case Export/Import tests
