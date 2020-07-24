@@ -540,6 +540,19 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #endif
 
 	}
+    if(!OpenSCAD::debug_output_filename.empty()){
+        std::string debug_filename_str = fs::path(OpenSCAD::debug_output_filename).generic_string();
+        std::ofstream fstream(debug_filename_str.c_str());
+        if (!fstream.is_open()) {
+            PRINTB("Can't open file \"%s\" for logging debug messages", debug_filename_str);
+        }
+        else {
+            fs::current_path(fparent); // Force exported filenames to be relative to document path
+            fstream << OpenSCAD::debug_output;
+            fstream.close();
+            fs::current_path(original_path);
+        }
+    }
 #ifdef ENABLE_HIREDIS
     PCache::getInst()->disconnect();
 #endif
@@ -916,6 +929,7 @@ int main(int argc, char **argv)
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
 		("debug", po::value<string>(), "special debug info")
+        ("debug-output", po::value<string>(), "output debug messages into a log")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
         ("persistent-cache", po::value<string>(), "=IP address,port number,password")
@@ -944,10 +958,17 @@ int main(int argc, char **argv)
 	}
 
 	OpenSCAD::debug = "";
+    OpenSCAD::debug_output_filename = "";
 	if (vm.count("debug")) {
 		OpenSCAD::debug = vm["debug"].as<string>();
 		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
 	}
+
+    if (vm.count("debug-output") && vm.count("debug")) {
+        OpenSCAD::debug_output_filename = vm["debug-output"].as<string>();
+        PRINTB("Logging debug messages into %s", OpenSCAD::debug_output_filename);
+    }
+
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}

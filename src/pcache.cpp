@@ -99,7 +99,9 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
 // Serialize the geometry and insert that into redis using insert method
 // Returns on operation success
 bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
+#ifdef DEBUG
     PRINTDB("Insert: %s", key.c_str());
+#endif
     std::stringstream ss;
     ss << *N->p3;
     std::string data = ss.str();
@@ -113,7 +115,7 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
 #ifdef DEBUG
-    PRINTD("Insert Geometry");
+    PRINTDB("Insert: %s", key.c_str());
 #endif
     std::stringstream ss;
     Geom_cache_entry ce(geom);
@@ -126,7 +128,7 @@ bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
 #ifdef DEBUG
-    PRINTD("WARNING: get CGAL");
+    PRINTDB("Get: %s", key.c_str());
 #endif
     std::string data;
     if(get("CGAL-"+key, data)){
@@ -146,7 +148,9 @@ shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
 }
 
 shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
+#ifdef DEBUG
     PRINTDB("Get: %s", key.c_str());
+#endif
     std::string data;
     shared_ptr<const Geometry> geom;
     Geom_cache_entry ce;
@@ -160,12 +164,16 @@ shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
 }
 
 bool PCache::containsCGAL(const std::string &key){
+#ifdef DEBUG
     PRINTDB("Contains: %s", key.c_str());
+#endif
     return contains("CGAL-"+key);
 }
 
 bool PCache::containsGeom(const std::string &key){
+#ifdef DEBUG
     PRINTDB("Contains: %s", key.c_str());
+#endif
     return contains("GEOM-"+key);
 }
 
