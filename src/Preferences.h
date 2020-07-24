@@ -66,6 +66,7 @@ public slots:
 	void on_checkBoxBackspaceUnindents_toggled(bool);
 	void on_comboBoxIndentUsing_activated(int);
 	void on_spinBoxIndentationWidth_valueChanged(int);
+	void on_comboBoxDxfUom_activated(int);
 	void on_spinBoxTabWidth_valueChanged(int);
 	void on_comboBoxTabKeyFunction_activated(int);
 	void on_comboBoxShowWhitespace_activated(int);
