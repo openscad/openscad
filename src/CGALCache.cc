@@ -19,10 +19,21 @@ shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) cons
 
 bool CGALCache::insert(const std::string &id, const shared_ptr<const CGAL_Nef_polyhedron> &N)
 {
-	auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
+	size_t size = (N ? N->memsize() : 0);
+	for(const auto& entry : cache) {
+		// leaking the details of cache::Node is a bit ugly
+		// TODO provide an iterator with access to cache<Key, T>
+		if (entry.second.t->N->memsize() == size &&
+			id.find(entry.first) != std::string::npos) {
+				PRINTB("CGAL Cache trivial: %s (%d bytes)", id.substr(0, 40) % size);
+				return false;
+		}
+	}
+
+	auto inserted = this->cache.insert(id, new cache_entry(N), size);
 #ifdef DEBUG
-	if (inserted) PRINTB("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
-	else PRINTB("CGAL Cache insert failed: %s (%d bytes)", id.substr(0, 40) % (N ? N->memsize() : 0));
+	if (inserted) PRINTB("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40) % size);
+	else PRINTB("CGAL Cache insert failed: %s (%d bytes)", id.substr(0, 40) % size);
 #endif
 	return inserted;
 }
