@@ -40,14 +40,12 @@ def createImport(inputfile, scadfile):
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
 parser.add_argument('--debug', required=True, help='Debug filename without any extension i.e --debug=export')
-parser.add_argument('--log-expected', dest='log_expected', required=True, help='Specify debug-output log file path')
+parser.add_argument('--log-expected-dir', dest='log_expected_dir', required=True, help='Specify debug-output log file path')
 args, remaining_args = parser.parse_known_args()
 
 inputfile = remaining_args[0]         # Can be .scad file or a file to be imported
 pngfile = remaining_args[-1]
 remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
-
-expected_existed = os.path.exists(args.log_expected)
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
@@ -59,13 +57,13 @@ inputbasename, inputsuffix = os.path.splitext(inputfilename)
 pngfilepath, pngfilename = os.path.split(pngfile)
 pngfilebasename, pngfilesuffix = os.path.splitext(pngfilename)
 
+# Running OpenSCAD generating png and log file
 debug_output_filename = os.path.join(pngfilepath, pngfilebasename+'.log')
 debug_args = []
 debug_args.append('--debug='+args.debug)
 debug_args.append('--debug-output='+debug_output_filename)
 debug_args.append('--render')
 
-# Running OpenSCAD generating png and log file
 export_cmd = [args.openscad, inputfile, '-o', pngfile] + debug_args + remaining_args
 print('Running OpenSCAD:', ' '.join(export_cmd), file=sys.stderr)
 result = subprocess.call(export_cmd)
@@ -75,8 +73,11 @@ if result != 0:
 
 # If expected file already exist in the path given in args, we will compare the new log file with it
 # otherwise, when the tag TEST_GENERATE was used expected file will be generated
+if pngfilebasename[-7:]=='-actual':
+    expected_filename = os.path.join(args.log_expected_dir,pngfilebasename[:-7]+'-expected.log')
+    if not os.path.exists(expected_filename):
+        failquit('cant find expected log file: ' + expected_filename)
 
-if expected_existed:
-    if not filecmp.cmp(args.log_expected, debug_output_filename):
+    if not filecmp.cmp(expected_filename, debug_output_filename):
         failquit('Logs files are not same')
 

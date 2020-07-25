@@ -709,7 +709,7 @@ set_test_config(Heavy
   opencsgtest_issue267-normalization-crash
 
   # before testing install Hiredis ( minimalistic C client library for the Redis database) and run Redis db 
-  # pcachepngtest_CSG
+  pcachepngtest_CSG
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -933,8 +933,8 @@ add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOUR
 # Persistent cache tests
 # make sure you flush the cache in redis before running these tests
 
-add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_TIME_FILES})
-add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/debug_output_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --debug=pcache --log-expected=${CMAKE_SOURCE_DIR}/regression/pcachepngtest/logo-expected.log --persistent-cache=127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_HITS_FILES})
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/persistent_cache_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --persistent-cache=127.0.0.1,6379 EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_TIME_FILES})
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_SOURCE_DIR}/debug_output_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --debug=pcache --log-expected-dir=${CMAKE_SOURCE_DIR}/regression/pcachepngtest/ --persistent-cache=127.0.0.1,6379 EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_HITS_FILES})
 
 #
 # Corner-case Export/Import tests
