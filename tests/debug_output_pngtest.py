@@ -78,6 +78,6 @@ if pngfilebasename[-7:]=='-actual':
     if not os.path.exists(expected_filename):
         failquit('cant find expected log file: ' + expected_filename)
 
-    if not filecmp.cmp(expected_filename, debug_output_filename):
+    if not filecmp.cmp(expected_filename, debug_output_filename, False):
         failquit('Logs files are not same')
 

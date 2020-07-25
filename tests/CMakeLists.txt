@@ -710,6 +710,7 @@ set_test_config(Heavy
 
   # before testing install Hiredis ( minimalistic C client library for the Redis database) and run Redis db 
   pcachepngtest_CSG
+  pcachepngtest_logo
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
