@@ -13,6 +13,7 @@
 class PolySet;
 
 enum class FileFormat {
+  ASCIISTL,
 	STL,
 	OFF,
 	AMF,
@@ -33,7 +34,8 @@ bool canPreview(const FileFormat format);
 void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
 											const char *name2open, const char *name2display);
 
-void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
+    bool binary=true);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -49,6 +51,7 @@ enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 
 struct ExportFileFormatOptions {
 	const std::map<const std::string, FileFormat> exportFileFormats{
+		{"asciistl", FileFormat::ASCIISTL},
 		{"stl", FileFormat::STL},
 		{"off", FileFormat::OFF},
 		{"amf", FileFormat::AMF},

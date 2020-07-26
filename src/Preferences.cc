@@ -660,6 +660,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
+void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
+{
+	Settings::Settings::inst()->set(Settings::Settings::exportUseAsciiSTL, Value(checked));
+	writeSettings();
+}
+
 void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
 {
 	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPILog, Value(checked));
@@ -888,6 +894,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());

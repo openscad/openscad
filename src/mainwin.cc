@@ -1921,6 +1921,8 @@ void MainWindow::sendToOctoPrint()
 	FileFormat exportFileFormat{FileFormat::STL};
 	if (fileFormat == "OFF") {
 		exportFileFormat = FileFormat::OFF;
+	} else if (fileFormat == "ASCIISTL") {
+		exportFileFormat = FileFormat::ASCIISTL;
 	} else if (fileFormat == "AMF") {
 		exportFileFormat = FileFormat::AMF;
 	} else if (fileFormat == "3MF") {
@@ -2418,7 +2420,13 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportSTL()
 {
-	actionExport(FileFormat::STL, "STL", ".stl", 3);
+  const auto *s = Settings::Settings::inst();
+  if (s->get(Settings::Settings::exportUseAsciiSTL).toBool()) {
+	  actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
+  }
+  else {
+	  actionExport(FileFormat::STL, "STL", ".stl", 3);
+  }
 }
 
 void MainWindow::actionExport3MF()

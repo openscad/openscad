@@ -188,6 +188,8 @@ SettingsEntry Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEn
 SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", Value(""), Value(""));
 SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
 
+SettingsEntry Settings::exportUseAsciiSTL("export", "useAsciiSTL", Value(true), Value(false));
+
 SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
