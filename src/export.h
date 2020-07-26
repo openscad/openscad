@@ -52,7 +52,8 @@ enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 struct ExportFileFormatOptions {
 	const std::map<const std::string, FileFormat> exportFileFormats{
 		{"asciistl", FileFormat::ASCIISTL},
-		{"stl", FileFormat::STL},
+		{"binstl", FileFormat::STL},
+		{"stl", FileFormat::ASCIISTL},  // Deprecated.  Later to FileFormat::STL
 		{"off", FileFormat::OFF},
 		{"amf", FileFormat::AMF},
 		{"3mf", FileFormat::_3MF},
