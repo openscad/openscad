@@ -58,7 +58,7 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr n = evalctx->getArgName(i);
+		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
 			rawFilename = v->toString();
@@ -77,7 +77,7 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 		} else if (n == "name") {
 			name = v->toString();
 		}else{
-			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n->toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 
@@ -168,7 +168,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr n = evalctx->getArgName(i);
+		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (n == "file"){
 			rawFilename = v->toString();
@@ -184,7 +184,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 		}else if (n == "scale"){
 			v->getDouble(scale);
 		}else{
-			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 

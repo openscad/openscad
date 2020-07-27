@@ -934,7 +934,7 @@ ValuePtr builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_
 		}else{
 			v = evalctx->getArgValue(0);
 		}
-		return ValuePtr(v == ValuePtr::undefined);
+		return ValuePtr(v->isUndefined());
 	}else{
 		print_argCnt_warning("is_undef", ctx, evalctx);
 	}

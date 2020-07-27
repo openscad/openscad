@@ -649,82 +649,107 @@ RangeType Value::toRange() const
   else return RangeType(0,0,0);
 }
 
-class equals_visitor : public boost::static_visitor<bool>
+class notequal_visitor : public boost::static_visitor<Value>
 {
 public:
-  template <typename T, typename U> bool operator()(const T &, const U &) const {
-    return false;
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
+    // Warnings not paticularly useful without source file and line #.
+    // We could possibly throw exceptions and catch in expr.cc: BinaryOp::evaluate(), 
+    // but would also want some way to guarantee that other comparison op usages in C++
+    // source are exception safe.
+    //PRINT("WARNING: Comparison of different types is undefined");
+    return Value::undefined; 
   }
+  template <typename T> Value operator()(const T &op1, const T &op2) const { return Value(op1 != op2); }
+  // special handling of undef for backwards compatibility, e.g. (x != undef) instead of !is_undef(x)
+  template <typename T> Value operator()(const boost::blank &, const T &          ) const { return Value(true); }
+  template <typename T> Value operator()(const T &           , const boost::blank&) const { return Value(true); }
+  Value operator()(const boost::blank &, const boost::blank&) const { return Value(false); }
 
-  template <typename T> bool operator()(const T &op1, const T &op2) const {
-    return op1 == op2;
-  }
-
-  bool operator()(const bool &op1, const double &op2) const {
-    return op1 == op2;
-  }
-
-  bool operator()(const double &op1, const bool &op2) const {
-    return op1 == op2;
-  }
+  Value operator()(const FunctionType &op1, const FunctionType &op2) const { return Value::undefined; }
 };
 
-bool Value::operator==(const Value &v) const
+class equals_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
+    //PRINT("WARNING: Comparison of different types is undefined");
+    return Value::undefined; 
+  }
+  template <typename T> Value operator()(const T &op1, const T &op2) const { return Value(op1 == op2); }
+  Value operator()(const FunctionType &op1, const FunctionType &op2) const { return Value::undefined; }
+};
+
+class less_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
+    //PRINT("WARNING: Comparison of different types is undefined");
+    return Value::undefined; 
+  }
+  template <typename T> Value operator()(const T &op1, const T &op2) const { return Value(op1 <  op2); }
+  Value operator()(const FunctionType &op1, const FunctionType &op2) const { return Value::undefined; }
+};
+
+class greater_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
+    //PRINT("WARNING: Comparison of different types is undefined");
+    return Value::undefined; 
+  }
+  template <typename T> Value operator()(const T &op1, const T &op2) const { return Value(op1 >  op2); }
+  Value operator()(const FunctionType &op1, const FunctionType &op2) const { return Value::undefined; }
+};
+
+class lessequal_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
+    //PRINT("WARNING: Comparison of different types is undefined");
+    return Value::undefined; 
+  }
+  template <typename T> Value operator()(const T &op1, const T &op2) const { return Value(op1 <= op2); }
+  Value operator()(const FunctionType &op1, const FunctionType &op2) const { return Value::undefined; }
+};
+
+class greaterequal_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
+    //PRINT("WARNING: Comparison of different types is undefined");
+    return Value::undefined; 
+  }
+  template <typename T> Value operator()(const T &op1, const T &op2) const { return Value(op1 >= op2); }
+  Value operator()(const FunctionType &op1, const FunctionType &op2) const { return Value::undefined; }
+};
+
+Value Value::operator==(const Value &v) const
 {
   return boost::apply_visitor(equals_visitor(), this->value, v.value);
 }
 
-bool Value::operator!=(const Value &v) const
+Value Value::operator!=(const Value &v) const
 {
-  return !(*this == v);
+  return boost::apply_visitor(notequal_visitor(), this->value, v.value);
 }
 
-#define DEFINE_VISITOR(name,op)																					\
-	class name : public boost::static_visitor<bool>												\
-	{																																			\
-	public:																																\
-		template <typename T, typename U> bool operator()(const T &, const U &) const {	\
-			return false;																											\
-		}																																		\
-																																				\
-		template <typename T> bool operator()(const T &op1, const T &op2) const {	\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const FunctionType &, const FunctionType &) const {	\
-			return false;																											\
-		}																																		\
-																																				\
-		bool operator()(const bool &op1, const double &op2) const {					\
-			return op1 op op2;																								\
-		}																																		\
-																																				\
-		bool operator()(const double &op1, const bool &op2) const {					\
-			return op1 op op2;																								\
-		}																																		\
-	}
-
-DEFINE_VISITOR(less_visitor, <);
-DEFINE_VISITOR(greater_visitor, >);
-DEFINE_VISITOR(lessequal_visitor, <=);
-DEFINE_VISITOR(greaterequal_visitor, >=);
-
-bool Value::operator<(const Value &v) const
+Value Value::operator<(const Value &v) const
 {
 	return boost::apply_visitor(less_visitor(), this->value, v.value);
 }
 
-bool Value::operator>=(const Value &v) const
+Value Value::operator>=(const Value &v) const
 {
 	return boost::apply_visitor(greaterequal_visitor(), this->value, v.value);
 }
 
-bool Value::operator>(const Value &v) const
+Value Value::operator>(const Value &v) const
 {
 	return boost::apply_visitor(greater_visitor(), this->value, v.value);
 }
 
-bool Value::operator<=(const Value &v) const
+Value Value::operator<=(const Value &v) const
 {
 	return boost::apply_visitor(lessequal_visitor(), this->value, v.value);
 }
@@ -1164,34 +1189,34 @@ ValuePtr::ValuePtr(const FunctionType &v)
 	this->reset(new Value(v));
 }
 
-bool ValuePtr::operator==(const ValuePtr &v) const
+ValuePtr ValuePtr::operator==(const ValuePtr &v) const
 {
-	return **this == *v;
+	return ValuePtr(**this == *v);
 }
 
-bool ValuePtr::operator!=(const ValuePtr &v) const
+ValuePtr ValuePtr::operator!=(const ValuePtr &v) const
 {
-	return **this != *v;
+	return ValuePtr(**this != *v);
 }
 
-bool ValuePtr::operator<(const ValuePtr &v) const
+ValuePtr ValuePtr::operator<(const ValuePtr &v) const
 {
-	return **this < *v;
+	return ValuePtr(**this < *v);
 }
 
-bool ValuePtr::operator<=(const ValuePtr &v) const
+ValuePtr ValuePtr::operator<=(const ValuePtr &v) const
 {
-	return **this <= *v;
+	return ValuePtr(**this <= *v);
 }
 
-bool ValuePtr::operator>=(const ValuePtr &v) const
+ValuePtr ValuePtr::operator>=(const ValuePtr &v) const
 {
-	return **this >= *v;
+	return ValuePtr(**this >= *v);
 }
 
-bool ValuePtr::operator>(const ValuePtr &v) const
+ValuePtr ValuePtr::operator>(const ValuePtr &v) const
 {
-	return **this > *v;
+	return ValuePtr(**this > *v);
 }
 
 ValuePtr ValuePtr::operator-() const

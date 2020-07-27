@@ -89,6 +89,10 @@ public:
 			 n1 == n2);
 	}
 
+	bool operator!=(const RangeType &other) const {
+		return !(*this==other);
+	}
+
 	bool operator<(const RangeType &other) const {
 		auto n1 = this->numValues();
 		auto n2 = other.numValues();
@@ -168,12 +172,13 @@ public:
 
 	operator bool() const;
 
-  bool operator==(const ValuePtr &v) const;
-  bool operator!=(const ValuePtr &v) const;
-  bool operator<(const ValuePtr &v) const;
-  bool operator<=(const ValuePtr &v) const;
-  bool operator>=(const ValuePtr &v) const;
-  bool operator>(const ValuePtr &v) const;
+  ValuePtr operator==(const ValuePtr &v) const;
+  ValuePtr operator!=(const ValuePtr &v) const;
+  ValuePtr operator< (const ValuePtr &v) const;
+  ValuePtr operator<=(const ValuePtr &v) const;
+  ValuePtr operator>=(const ValuePtr &v) const;
+  ValuePtr operator> (const ValuePtr &v) const;
+
   ValuePtr operator-() const;
   ValuePtr operator!() const;
   ValuePtr operator[](const ValuePtr &v) const;
@@ -192,15 +197,10 @@ class FunctionType {
 public:
 	FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, AssignmentList args)
 		: ctx(ctx), expr(expr), args(args) { }
-	bool operator==(const FunctionType&) const { return false; }
-	bool operator!=(const FunctionType& other) const { return !(*this == other); }
-
 	const std::shared_ptr<Context>& getCtx() { return ctx; }
 	const std::shared_ptr<Expression>& getExpr() { return expr; }
 	const AssignmentList& getArgs() { return args; }
-
 	friend std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
-
 private:
 	std::shared_ptr<Context> ctx;
 	std::shared_ptr<Expression> expr;
@@ -278,12 +278,12 @@ public:
 
 	operator bool() const { return this->toBool(); }
 
-  bool operator==(const Value &v) const;
-  bool operator!=(const Value &v) const;
-  bool operator<(const Value &v) const;
-  bool operator<=(const Value &v) const;
-  bool operator>=(const Value &v) const;
-  bool operator>(const Value &v) const;
+  Value operator==(const Value &v) const;
+  Value operator!=(const Value &v) const;
+  Value operator< (const Value &v) const;
+  Value operator<=(const Value &v) const;
+  Value operator>=(const Value &v) const;
+  Value operator> (const Value &v) const;
   Value operator-() const;
   Value operator[](const Value &v) const;
   Value operator+(const Value &v) const;
