@@ -784,7 +784,9 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	if(obj == qsci->viewport())
+	bool enableNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::enableNumberScrollWheel).toBool();
+	
+	if(obj == qsci->viewport() && enableNumberScrollWheel)
 	{
 		if(e->type() == QEvent::Wheel)
 		{

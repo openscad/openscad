@@ -137,7 +137,7 @@
              <x>0</x>
              <y>-421</y>
              <width>602</width>
-             <height>872</height>
+             <height>901</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -160,14 +160,7 @@
                <string>Number Scroll</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_8">
-               <item row="0" column="0">
-                <widget class="QLabel" name="labelStepSize">
-                 <property name="text">
-                  <string>Step Size</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
+               <item row="1" column="1">
                 <spacer name="horizontalSpacer_7">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -180,36 +173,7 @@
                  </property>
                 </spacer>
                </item>
-               <item row="0" column="3">
-                <spacer name="horizontalSpacer_34">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLineEdit" name="lineEditStepSize"/>
-               </item>
-               <item row="0" column="4">
-                <spacer name="horizontalSpacer_33">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="0" column="5">
+               <item row="1" column="5">
                 <spacer name="horizontalSpacer_28">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -222,7 +186,7 @@
                  </property>
                 </spacer>
                </item>
-               <item row="1" column="2">
+               <item row="3" column="2">
                 <widget class="QComboBox" name="comboBoxModifierNumberScrollWheel">
                  <item>
                   <property name="text">
@@ -241,7 +205,50 @@
                  </item>
                 </widget>
                </item>
+               <item row="1" column="3">
+                <spacer name="horizontalSpacer_34">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLineEdit" name="lineEditStepSize"/>
+               </item>
                <item row="1" column="0">
+                <widget class="QLabel" name="labelStepSize">
+                 <property name="text">
+                  <string>Step Size</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="4">
+                <spacer name="horizontalSpacer_33">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableNumberScrollWheel">
+                 <property name="text">
+                  <string>Number Scroll Via Mouse Wheel</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
                 <widget class="QLabel" name="labelModifierNumberScrollWheel">
                  <property name="text">
                   <string>Modifier For Wheel Scroll </string>
