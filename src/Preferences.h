@@ -115,6 +115,8 @@ signals:
 private slots:
     void on_lineEditStepSize_textChanged(const QString &arg1);
 
+    void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
+
 private:
     Preferences(QWidget *parent = nullptr);
 	void keyPressEvent(QKeyEvent *e) override;

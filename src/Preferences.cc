@@ -613,6 +613,13 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 	writeSettings();
 }
 
+void Preferences::on_checkBoxEnableNumberScrollWheel_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::enableNumberScrollWheel, Value(val));
+	comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
+	writeSettings();
+}
+
 void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -931,6 +938,7 @@ void Preferences::updateGUI()
 	initCheckBox(this->checkBoxBackspaceUnindents, Settings::Settings::backspaceUnindents);
 	initCheckBox(this->checkBoxHighlightCurrentLine, Settings::Settings::highlightCurrentLine);
 	initCheckBox(this->checkBoxEnableBraceMatching, Settings::Settings::enableBraceMatching);
+	initCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
 	initCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
 	initCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
 	initCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
@@ -942,8 +950,7 @@ void Preferences::updateGUI()
 	For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
 	*/
 	this->spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
-
-
+	this->comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintUrl).toString()));
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintApiKey).toString()));
 	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
