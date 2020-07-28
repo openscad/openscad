@@ -80,7 +80,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			if (ps && !ps->isEmpty()) {
 				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-				bool convex{ps->convexValue()};
+				bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
 				if (!convex) {
 					assert(ps->getDimension() == 3);
 					auto ps_tri = new PolySet(3, ps->convexValue());
