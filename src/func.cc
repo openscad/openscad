@@ -139,7 +139,7 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3->toDouble() ));
 			deterministic_rng.seed( seed );
 		}
-		Value::VectorType vec;
+		VectorType vec;
 		if (min>=max) { // uniform_real_distribution doesn't allow min == max
 			for (size_t i=0; i < numresults; i++)
 				vec.push_back(ValuePtr(min));
@@ -536,7 +536,7 @@ ValuePtr builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 
 ValuePtr builtin_concat(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
 {
-	Value::VectorType result;
+	VectorType result;
 
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		ValuePtr val = evalctx->getArgValue(i);
@@ -564,7 +564,7 @@ ValuePtr builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_pt
 	}
 
 	ValuePtr v1 = evalctx->getArgValue(1);
-	const Value::VectorType &vec = v1->toVector();
+	const VectorType &vec = v1->toVector();
 	if (vec.empty()) return ValuePtr::undefined; // Second must be a vector
 	if (vec[0]->toVector().size() < 2) return ValuePtr::undefined; // ..of vectors
 
@@ -641,17 +641,17 @@ ValuePtr builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_pt
 
 */
 
-static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
+static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
 																unsigned int num_returns_per_match,
 																const Location &)
 {
-	Value::VectorType returnvec;
+	VectorType returnvec;
 	//Unicode glyph count for the length
 	size_t findThisSize = find.get_utf8_strlen();
 	size_t searchTableSize = table.get_utf8_strlen();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
-		Value::VectorType resultvec;
+		VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
 			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
@@ -679,22 +679,22 @@ static Value::VectorType search(const str_utf8_wrapper &find, const str_utf8_wra
 	return returnvec;
 }
 
-static Value::VectorType search(const str_utf8_wrapper &find, const Value::VectorType &table,
+static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 																unsigned int num_returns_per_match, unsigned int index_col_num, const Location &loc, const std::shared_ptr<Context> ctx)
 {
-	Value::VectorType returnvec;
+	VectorType returnvec;
 	//Unicode glyph count for the length
 	unsigned int findThisSize =  find.get_utf8_strlen();
 	unsigned int searchTableSize = table.size();
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
-		Value::VectorType resultvec;
+		VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
-			const Value::VectorType &entryVec = table[j]->toVector();
+			const VectorType &entryVec = table[j]->toVector();
 			if (entryVec.size() <= index_col_num) {
 				PRINTB("WARNING: Invalid entry in search vector at index %d, required number of values in the entry: %d. Invalid entry: %s, %s", j % (index_col_num + 1) % table[j]->toEchoString() % loc.toRelativeString(ctx->documentPath()));
-				return Value::VectorType();
+				return VectorType();
 			}
 			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num]->toString().c_str(), 0);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
@@ -734,7 +734,7 @@ ValuePtr builtin_search(const std::shared_ptr<Context> ctx, const std::shared_pt
 	unsigned int num_returns_per_match = (evalctx->numArgs() > 2) ? (unsigned int)evalctx->getArgValue(2)->toDouble() : 1;
 	unsigned int index_col_num = (evalctx->numArgs() > 3) ? (unsigned int)evalctx->getArgValue(3)->toDouble() : 0;
 
-	Value::VectorType returnvec;
+	VectorType returnvec;
 
 	if (findThis->type() == Value::ValueType::NUMBER) {
 		unsigned int matchCount = 0;
@@ -760,7 +760,7 @@ ValuePtr builtin_search(const std::shared_ptr<Context> ctx, const std::shared_pt
 	} else if (findThis->type() == Value::ValueType::VECTOR) {
 		for (size_t i = 0; i < findThis->toVector().size(); i++) {
 		  unsigned int matchCount = 0;
-			Value::VectorType resultvec;
+			VectorType resultvec;
 
 			const ValuePtr &find_value = findThis->toVector()[i];
 
@@ -800,7 +800,7 @@ ValuePtr builtin_search(const std::shared_ptr<Context> ctx, const std::shared_pt
 
 ValuePtr builtin_version(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext>)
 {
-	Value::VectorType val;
+	VectorType val;
 	val.push_back(double(OPENSCAD_YEAR));
 	val.push_back(double(OPENSCAD_MONTH));
 #ifdef OPENSCAD_DAY
@@ -852,7 +852,7 @@ ValuePtr builtin_norm(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 		 ValuePtr val = evalctx->getArgValue(0);
 		if (val->type() == Value::ValueType::VECTOR) {
 			double sum = 0;
-			const Value::VectorType &v = val->toVector();
+			const VectorType &v = val->toVector();
 			size_t n = v.size();
 			for (size_t i = 0; i < n; i++)
 				if (v[i]->type() == Value::ValueType::NUMBER) {
@@ -886,8 +886,8 @@ ValuePtr builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		return ValuePtr::undefined;
 	}
 	
-	const Value::VectorType &v0 = arg0->toVector();
-	const Value::VectorType &v1 = arg1->toVector();
+	const VectorType &v0 = arg0->toVector();
+	const VectorType &v1 = arg1->toVector();
 	if ((v0.size() == 2) && (v1.size() == 2)) {
 		return ValuePtr(v0[0]->toDouble() * v1[1]->toDouble() - v0[1]->toDouble() * v1[0]->toDouble());
 	}
@@ -917,7 +917,7 @@ ValuePtr builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr
 	double y = v0[2]->toDouble() * v1[0]->toDouble() - v0[0]->toDouble() * v1[2]->toDouble();
 	double z = v0[0]->toDouble() * v1[1]->toDouble() - v0[1]->toDouble() * v1[0]->toDouble();
 	
-	Value::VectorType result;
+	VectorType result;
 	result.push_back(ValuePtr(x));
 	result.push_back(ValuePtr(y));
 	result.push_back(ValuePtr(z));

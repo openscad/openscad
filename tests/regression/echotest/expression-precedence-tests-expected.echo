@@ -2,6 +2,7 @@ ECHO: assoc_right_unary = 1
 ECHO: assoc_left_addsub = 3
 ECHO: assoc_left_subadd = 1
 ECHO: assoc_left_muldiv = 1.5
+WARNING: undefined operation (bool > number) in file expression-precedence-tests.scad, line 12
 ECHO: assoc_left_ltgt = undef
 ECHO: assoc_left_eqne = true
 ECHO: assoc_left_and = false

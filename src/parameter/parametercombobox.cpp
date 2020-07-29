@@ -32,7 +32,7 @@ void ParameterComboBox::setValue()
 	this->pageComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 	comboBox->clear();
-	const Value::VectorType& vec = object->values->toVector();
+	const VectorType& vec = object->values->toVector();
 	for (const auto &textData : vec) {
 		QString text, data;
 		if (textData->toVector().size() > 1) {

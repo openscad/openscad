@@ -23,7 +23,7 @@ void ParameterVector::onChanged(double)
 		if (object->target == ParameterObject::NUMBER) {
 			object->value = ValuePtr(doubleSpinBox1->value());
 		} else {
-			Value::VectorType vt;
+			VectorType vt;
 			vt.push_back(this->doubleSpinBox1->value());
 			if (!this->doubleSpinBox2->isReadOnly()) {
 				vt.push_back(this->doubleSpinBox2->value());
@@ -47,7 +47,7 @@ void ParameterVector::setValue()
 	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 
-	Value::VectorType vec = object->value->toVector();
+	VectorType vec = object->value->toVector();
 
 	double minV = object->values->toRange().begin_value();
 	double step = object->values->toRange().step_value();
@@ -66,13 +66,13 @@ void ParameterVector::setValue()
 		boxes[i]->show();
 		boxes[i]->setDecimals(decimalPrecision);
 		if(minV==0 && maxV ==0){
-			boxes[i]->setRange(vec.at(i)->toDouble()-1000,vec.at(i)->toDouble()+1000);
+			boxes[i]->setRange(vec[i]->toDouble()-1000,vec[i]->toDouble()+1000);
 		}else{
 			boxes[i]->setMinimum(minV);
 			boxes[i]->setMaximum(maxV);
 			boxes[i]->setSingleStep(step);
 		}
-		boxes[i]->setValue(vec.at(i)->toDouble());
+		boxes[i]->setValue(vec[i]->toDouble());
 	}
 	for(unsigned int i = vec.size(); i < NR_OF_SPINBOXES; i++) {
 		boxes[i]->hide();
