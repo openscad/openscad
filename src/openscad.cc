@@ -288,21 +288,29 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 	if(!export_format.empty()) {
 		// If command line option --export-format is specified, use that format.
-		formatName = export_format;
+		// Confirm that it is a valid export format
+		if(exportFileFormatOptions.exportFileFormats.find(export_format) != exportFileFormatOptions.exportFileFormats.end()) {
+			formatName = export_format;
+		} else {
+			PRINTB("\nInvalid format '%s' for --export-format\n", export_format);
+			return 1;
+		}
 	}
 	else {
 		// else extract format from file extension
 		auto suffix = fs::path(output_file_str).extension().generic_string();
-		suffix = suffix.substr(1);
+		if (suffix.length() > 1) {
+			// Remove the period
+			suffix = suffix.substr(1);
+		}
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
 			formatName = suffix;
+		} else {
+			PRINTB("\nUnknown suffix '%s' for output file %s", suffix % output_file_str);
+			PRINT("Either add a valid suffix or specify one using --export-format\n");
+			return 1;
 		}
-	}
-
-	if(formatName.empty()) {
-		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
-		return 1;
 	}
 
 	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
@@ -310,11 +318,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	new_output_file = filename_str.c_str();
 
 	// Do some minimal checking of output directory before rendering (issue #432)
-	fs::path output_directory = fs::path(output_file_str).parent_path();
-	if (!fs::is_directory(output_directory)) {
+	auto output_path = fs::path(output_file_str).parent_path();
+	if (output_path.empty()) {
+		// If output_file_str has no directory prefix, set output directory to current directory.
+		output_path = fs::current_path();
+	}
+	if (!fs::is_directory(output_path)) {
 		PRINTB(
-			"%s is not a directory (output file: %s). - Skipping\n",
-			output_directory.c_str() % output_file_str.c_str()
+			"\n'%s' is not a directory for output file %s - Skipping\n",
+			output_path.generic_string() % output_file_str
 		);
 		return 1;
 	}
