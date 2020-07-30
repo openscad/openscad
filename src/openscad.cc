@@ -1077,6 +1077,9 @@ int main(int argc, char **argv)
 		}
 	}
 	else if (QtUseGUI()) {
+		if(vm.count("export-format")) {
+			PRINT("Ignoring --export-format option");
+		}
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
