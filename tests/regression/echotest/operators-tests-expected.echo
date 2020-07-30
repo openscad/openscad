@@ -12,8 +12,7 @@ ECHO: false, " >= ", true, "->", false
 ECHO: false, " <  ", true, "->", true
 ECHO: false, " <= ", true, "->", true
 ECHO: false, " != ", true, "->", true
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: false, " == ", -1, "->", undef
+ECHO: false, " == ", -1, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: false, " >  ", -1, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -22,10 +21,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: false, " <  ", -1, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: false, " <= ", -1, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: false, " != ", -1, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: false, " == ", 0, "->", undef
+ECHO: false, " != ", -1, "->", true
+ECHO: false, " == ", 0, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: false, " >  ", 0, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -34,10 +31,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: false, " <  ", 0, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: false, " <= ", 0, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: false, " != ", 0, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: false, " == ", 1, "->", undef
+ECHO: false, " != ", 0, "->", true
+ECHO: false, " == ", 1, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: false, " >  ", 1, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -46,10 +41,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: false, " <  ", 1, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: false, " <= ", 1, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: false, " != ", 1, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: false, " == ", nan, "->", undef
+ECHO: false, " != ", 1, "->", true
+ECHO: false, " == ", nan, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: false, " >  ", nan, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -58,10 +51,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: false, " <  ", nan, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: false, " <= ", nan, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: false, " != ", nan, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: false, " == ", inf, "->", undef
+ECHO: false, " != ", nan, "->", true
+ECHO: false, " == ", inf, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: false, " >  ", inf, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -70,10 +61,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: false, " <  ", inf, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: false, " <= ", inf, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: false, " != ", inf, "->", undef
-WARNING: undefined operation (bool == string) in file operators-tests.scad, line 6
-ECHO: false, " == ", "alpha", "->", undef
+ECHO: false, " != ", inf, "->", true
+ECHO: false, " == ", "alpha", "->", false
 WARNING: undefined operation (bool > string) in file operators-tests.scad, line 7
 ECHO: false, " >  ", "alpha", "->", undef
 WARNING: undefined operation (bool >= string) in file operators-tests.scad, line 8
@@ -82,10 +71,8 @@ WARNING: undefined operation (bool < string) in file operators-tests.scad, line 
 ECHO: false, " <  ", "alpha", "->", undef
 WARNING: undefined operation (bool <= string) in file operators-tests.scad, line 10
 ECHO: false, " <= ", "alpha", "->", undef
-WARNING: undefined operation (bool != string) in file operators-tests.scad, line 11
-ECHO: false, " != ", "alpha", "->", undef
-WARNING: undefined operation (bool == vector) in file operators-tests.scad, line 6
-ECHO: false, " == ", [1, 2, 3], "->", undef
+ECHO: false, " != ", "alpha", "->", true
+ECHO: false, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (bool > vector) in file operators-tests.scad, line 7
 ECHO: false, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (bool >= vector) in file operators-tests.scad, line 8
@@ -94,10 +81,8 @@ WARNING: undefined operation (bool < vector) in file operators-tests.scad, line 
 ECHO: false, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (bool <= vector) in file operators-tests.scad, line 10
 ECHO: false, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (bool != vector) in file operators-tests.scad, line 11
-ECHO: false, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (bool == range) in file operators-tests.scad, line 6
-ECHO: false, " == ", [0 : 1 : 3], "->", undef
+ECHO: false, " != ", [1, 2, 3], "->", true
+ECHO: false, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (bool > range) in file operators-tests.scad, line 7
 ECHO: false, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (bool >= range) in file operators-tests.scad, line 8
@@ -106,8 +91,7 @@ WARNING: undefined operation (bool < range) in file operators-tests.scad, line 9
 ECHO: false, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (bool <= range) in file operators-tests.scad, line 10
 ECHO: false, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (bool != range) in file operators-tests.scad, line 11
-ECHO: false, " != ", [0 : 1 : 3], "->", undef
+ECHO: false, " != ", [0 : 1 : 3], "->", true
 ECHO: false, " == ", undef, "->", false
 WARNING: undefined operation (bool > undefined) in file operators-tests.scad, line 7
 ECHO: false, " >  ", undef, "->", undef
@@ -130,8 +114,7 @@ ECHO: true, " >= ", true, "->", true
 ECHO: true, " <  ", true, "->", false
 ECHO: true, " <= ", true, "->", true
 ECHO: true, " != ", true, "->", false
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: true, " == ", -1, "->", undef
+ECHO: true, " == ", -1, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: true, " >  ", -1, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -140,10 +123,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: true, " <  ", -1, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: true, " <= ", -1, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: true, " != ", -1, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: true, " == ", 0, "->", undef
+ECHO: true, " != ", -1, "->", true
+ECHO: true, " == ", 0, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: true, " >  ", 0, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -152,10 +133,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: true, " <  ", 0, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: true, " <= ", 0, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: true, " != ", 0, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: true, " == ", 1, "->", undef
+ECHO: true, " != ", 0, "->", true
+ECHO: true, " == ", 1, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: true, " >  ", 1, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -164,10 +143,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: true, " <  ", 1, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: true, " <= ", 1, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: true, " != ", 1, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: true, " == ", nan, "->", undef
+ECHO: true, " != ", 1, "->", true
+ECHO: true, " == ", nan, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: true, " >  ", nan, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -176,10 +153,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: true, " <  ", nan, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: true, " <= ", nan, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: true, " != ", nan, "->", undef
-WARNING: undefined operation (bool == number) in file operators-tests.scad, line 6
-ECHO: true, " == ", inf, "->", undef
+ECHO: true, " != ", nan, "->", true
+ECHO: true, " == ", inf, "->", false
 WARNING: undefined operation (bool > number) in file operators-tests.scad, line 7
 ECHO: true, " >  ", inf, "->", undef
 WARNING: undefined operation (bool >= number) in file operators-tests.scad, line 8
@@ -188,10 +163,8 @@ WARNING: undefined operation (bool < number) in file operators-tests.scad, line 
 ECHO: true, " <  ", inf, "->", undef
 WARNING: undefined operation (bool <= number) in file operators-tests.scad, line 10
 ECHO: true, " <= ", inf, "->", undef
-WARNING: undefined operation (bool != number) in file operators-tests.scad, line 11
-ECHO: true, " != ", inf, "->", undef
-WARNING: undefined operation (bool == string) in file operators-tests.scad, line 6
-ECHO: true, " == ", "alpha", "->", undef
+ECHO: true, " != ", inf, "->", true
+ECHO: true, " == ", "alpha", "->", false
 WARNING: undefined operation (bool > string) in file operators-tests.scad, line 7
 ECHO: true, " >  ", "alpha", "->", undef
 WARNING: undefined operation (bool >= string) in file operators-tests.scad, line 8
@@ -200,10 +173,8 @@ WARNING: undefined operation (bool < string) in file operators-tests.scad, line 
 ECHO: true, " <  ", "alpha", "->", undef
 WARNING: undefined operation (bool <= string) in file operators-tests.scad, line 10
 ECHO: true, " <= ", "alpha", "->", undef
-WARNING: undefined operation (bool != string) in file operators-tests.scad, line 11
-ECHO: true, " != ", "alpha", "->", undef
-WARNING: undefined operation (bool == vector) in file operators-tests.scad, line 6
-ECHO: true, " == ", [1, 2, 3], "->", undef
+ECHO: true, " != ", "alpha", "->", true
+ECHO: true, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (bool > vector) in file operators-tests.scad, line 7
 ECHO: true, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (bool >= vector) in file operators-tests.scad, line 8
@@ -212,10 +183,8 @@ WARNING: undefined operation (bool < vector) in file operators-tests.scad, line 
 ECHO: true, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (bool <= vector) in file operators-tests.scad, line 10
 ECHO: true, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (bool != vector) in file operators-tests.scad, line 11
-ECHO: true, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (bool == range) in file operators-tests.scad, line 6
-ECHO: true, " == ", [0 : 1 : 3], "->", undef
+ECHO: true, " != ", [1, 2, 3], "->", true
+ECHO: true, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (bool > range) in file operators-tests.scad, line 7
 ECHO: true, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (bool >= range) in file operators-tests.scad, line 8
@@ -224,8 +193,7 @@ WARNING: undefined operation (bool < range) in file operators-tests.scad, line 9
 ECHO: true, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (bool <= range) in file operators-tests.scad, line 10
 ECHO: true, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (bool != range) in file operators-tests.scad, line 11
-ECHO: true, " != ", [0 : 1 : 3], "->", undef
+ECHO: true, " != ", [0 : 1 : 3], "->", true
 ECHO: true, " == ", undef, "->", false
 WARNING: undefined operation (bool > undefined) in file operators-tests.scad, line 7
 ECHO: true, " >  ", undef, "->", undef
@@ -236,8 +204,7 @@ ECHO: true, " <  ", undef, "->", undef
 WARNING: undefined operation (bool <= undefined) in file operators-tests.scad, line 10
 ECHO: true, " <= ", undef, "->", undef
 ECHO: true, " != ", undef, "->", true
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: -1, " == ", false, "->", undef
+ECHO: -1, " == ", false, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: -1, " >  ", false, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -246,10 +213,8 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: -1, " <  ", false, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: -1, " <= ", false, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: -1, " != ", false, "->", undef
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: -1, " == ", true, "->", undef
+ECHO: -1, " != ", false, "->", true
+ECHO: -1, " == ", true, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: -1, " >  ", true, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -258,8 +223,7 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: -1, " <  ", true, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: -1, " <= ", true, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: -1, " != ", true, "->", undef
+ECHO: -1, " != ", true, "->", true
 ECHO: -1, " == ", -1, "->", true
 ECHO: -1, " >  ", -1, "->", false
 ECHO: -1, " >= ", -1, "->", true
@@ -290,8 +254,7 @@ ECHO: -1, " >= ", inf, "->", false
 ECHO: -1, " <  ", inf, "->", true
 ECHO: -1, " <= ", inf, "->", true
 ECHO: -1, " != ", inf, "->", true
-WARNING: undefined operation (number == string) in file operators-tests.scad, line 6
-ECHO: -1, " == ", "alpha", "->", undef
+ECHO: -1, " == ", "alpha", "->", false
 WARNING: undefined operation (number > string) in file operators-tests.scad, line 7
 ECHO: -1, " >  ", "alpha", "->", undef
 WARNING: undefined operation (number >= string) in file operators-tests.scad, line 8
@@ -300,10 +263,8 @@ WARNING: undefined operation (number < string) in file operators-tests.scad, lin
 ECHO: -1, " <  ", "alpha", "->", undef
 WARNING: undefined operation (number <= string) in file operators-tests.scad, line 10
 ECHO: -1, " <= ", "alpha", "->", undef
-WARNING: undefined operation (number != string) in file operators-tests.scad, line 11
-ECHO: -1, " != ", "alpha", "->", undef
-WARNING: undefined operation (number == vector) in file operators-tests.scad, line 6
-ECHO: -1, " == ", [1, 2, 3], "->", undef
+ECHO: -1, " != ", "alpha", "->", true
+ECHO: -1, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (number > vector) in file operators-tests.scad, line 7
 ECHO: -1, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number >= vector) in file operators-tests.scad, line 8
@@ -312,10 +273,8 @@ WARNING: undefined operation (number < vector) in file operators-tests.scad, lin
 ECHO: -1, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number <= vector) in file operators-tests.scad, line 10
 ECHO: -1, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number != vector) in file operators-tests.scad, line 11
-ECHO: -1, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number == range) in file operators-tests.scad, line 6
-ECHO: -1, " == ", [0 : 1 : 3], "->", undef
+ECHO: -1, " != ", [1, 2, 3], "->", true
+ECHO: -1, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (number > range) in file operators-tests.scad, line 7
 ECHO: -1, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number >= range) in file operators-tests.scad, line 8
@@ -324,8 +283,7 @@ WARNING: undefined operation (number < range) in file operators-tests.scad, line
 ECHO: -1, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number <= range) in file operators-tests.scad, line 10
 ECHO: -1, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (number != range) in file operators-tests.scad, line 11
-ECHO: -1, " != ", [0 : 1 : 3], "->", undef
+ECHO: -1, " != ", [0 : 1 : 3], "->", true
 ECHO: -1, " == ", undef, "->", false
 WARNING: undefined operation (number > undefined) in file operators-tests.scad, line 7
 ECHO: -1, " >  ", undef, "->", undef
@@ -336,8 +294,7 @@ ECHO: -1, " <  ", undef, "->", undef
 WARNING: undefined operation (number <= undefined) in file operators-tests.scad, line 10
 ECHO: -1, " <= ", undef, "->", undef
 ECHO: -1, " != ", undef, "->", true
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: 0, " == ", false, "->", undef
+ECHO: 0, " == ", false, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: 0, " >  ", false, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -346,10 +303,8 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: 0, " <  ", false, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: 0, " <= ", false, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: 0, " != ", false, "->", undef
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: 0, " == ", true, "->", undef
+ECHO: 0, " != ", false, "->", true
+ECHO: 0, " == ", true, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: 0, " >  ", true, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -358,8 +313,7 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: 0, " <  ", true, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: 0, " <= ", true, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: 0, " != ", true, "->", undef
+ECHO: 0, " != ", true, "->", true
 ECHO: 0, " == ", -1, "->", false
 ECHO: 0, " >  ", -1, "->", true
 ECHO: 0, " >= ", -1, "->", true
@@ -390,8 +344,7 @@ ECHO: 0, " >= ", inf, "->", false
 ECHO: 0, " <  ", inf, "->", true
 ECHO: 0, " <= ", inf, "->", true
 ECHO: 0, " != ", inf, "->", true
-WARNING: undefined operation (number == string) in file operators-tests.scad, line 6
-ECHO: 0, " == ", "alpha", "->", undef
+ECHO: 0, " == ", "alpha", "->", false
 WARNING: undefined operation (number > string) in file operators-tests.scad, line 7
 ECHO: 0, " >  ", "alpha", "->", undef
 WARNING: undefined operation (number >= string) in file operators-tests.scad, line 8
@@ -400,10 +353,8 @@ WARNING: undefined operation (number < string) in file operators-tests.scad, lin
 ECHO: 0, " <  ", "alpha", "->", undef
 WARNING: undefined operation (number <= string) in file operators-tests.scad, line 10
 ECHO: 0, " <= ", "alpha", "->", undef
-WARNING: undefined operation (number != string) in file operators-tests.scad, line 11
-ECHO: 0, " != ", "alpha", "->", undef
-WARNING: undefined operation (number == vector) in file operators-tests.scad, line 6
-ECHO: 0, " == ", [1, 2, 3], "->", undef
+ECHO: 0, " != ", "alpha", "->", true
+ECHO: 0, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (number > vector) in file operators-tests.scad, line 7
 ECHO: 0, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number >= vector) in file operators-tests.scad, line 8
@@ -412,10 +363,8 @@ WARNING: undefined operation (number < vector) in file operators-tests.scad, lin
 ECHO: 0, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number <= vector) in file operators-tests.scad, line 10
 ECHO: 0, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number != vector) in file operators-tests.scad, line 11
-ECHO: 0, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number == range) in file operators-tests.scad, line 6
-ECHO: 0, " == ", [0 : 1 : 3], "->", undef
+ECHO: 0, " != ", [1, 2, 3], "->", true
+ECHO: 0, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (number > range) in file operators-tests.scad, line 7
 ECHO: 0, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number >= range) in file operators-tests.scad, line 8
@@ -424,8 +373,7 @@ WARNING: undefined operation (number < range) in file operators-tests.scad, line
 ECHO: 0, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number <= range) in file operators-tests.scad, line 10
 ECHO: 0, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (number != range) in file operators-tests.scad, line 11
-ECHO: 0, " != ", [0 : 1 : 3], "->", undef
+ECHO: 0, " != ", [0 : 1 : 3], "->", true
 ECHO: 0, " == ", undef, "->", false
 WARNING: undefined operation (number > undefined) in file operators-tests.scad, line 7
 ECHO: 0, " >  ", undef, "->", undef
@@ -436,8 +384,7 @@ ECHO: 0, " <  ", undef, "->", undef
 WARNING: undefined operation (number <= undefined) in file operators-tests.scad, line 10
 ECHO: 0, " <= ", undef, "->", undef
 ECHO: 0, " != ", undef, "->", true
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: 1, " == ", false, "->", undef
+ECHO: 1, " == ", false, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: 1, " >  ", false, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -446,10 +393,8 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: 1, " <  ", false, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: 1, " <= ", false, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: 1, " != ", false, "->", undef
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: 1, " == ", true, "->", undef
+ECHO: 1, " != ", false, "->", true
+ECHO: 1, " == ", true, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: 1, " >  ", true, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -458,8 +403,7 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: 1, " <  ", true, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: 1, " <= ", true, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: 1, " != ", true, "->", undef
+ECHO: 1, " != ", true, "->", true
 ECHO: 1, " == ", -1, "->", false
 ECHO: 1, " >  ", -1, "->", true
 ECHO: 1, " >= ", -1, "->", true
@@ -490,8 +434,7 @@ ECHO: 1, " >= ", inf, "->", false
 ECHO: 1, " <  ", inf, "->", true
 ECHO: 1, " <= ", inf, "->", true
 ECHO: 1, " != ", inf, "->", true
-WARNING: undefined operation (number == string) in file operators-tests.scad, line 6
-ECHO: 1, " == ", "alpha", "->", undef
+ECHO: 1, " == ", "alpha", "->", false
 WARNING: undefined operation (number > string) in file operators-tests.scad, line 7
 ECHO: 1, " >  ", "alpha", "->", undef
 WARNING: undefined operation (number >= string) in file operators-tests.scad, line 8
@@ -500,10 +443,8 @@ WARNING: undefined operation (number < string) in file operators-tests.scad, lin
 ECHO: 1, " <  ", "alpha", "->", undef
 WARNING: undefined operation (number <= string) in file operators-tests.scad, line 10
 ECHO: 1, " <= ", "alpha", "->", undef
-WARNING: undefined operation (number != string) in file operators-tests.scad, line 11
-ECHO: 1, " != ", "alpha", "->", undef
-WARNING: undefined operation (number == vector) in file operators-tests.scad, line 6
-ECHO: 1, " == ", [1, 2, 3], "->", undef
+ECHO: 1, " != ", "alpha", "->", true
+ECHO: 1, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (number > vector) in file operators-tests.scad, line 7
 ECHO: 1, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number >= vector) in file operators-tests.scad, line 8
@@ -512,10 +453,8 @@ WARNING: undefined operation (number < vector) in file operators-tests.scad, lin
 ECHO: 1, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number <= vector) in file operators-tests.scad, line 10
 ECHO: 1, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number != vector) in file operators-tests.scad, line 11
-ECHO: 1, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number == range) in file operators-tests.scad, line 6
-ECHO: 1, " == ", [0 : 1 : 3], "->", undef
+ECHO: 1, " != ", [1, 2, 3], "->", true
+ECHO: 1, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (number > range) in file operators-tests.scad, line 7
 ECHO: 1, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number >= range) in file operators-tests.scad, line 8
@@ -524,8 +463,7 @@ WARNING: undefined operation (number < range) in file operators-tests.scad, line
 ECHO: 1, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number <= range) in file operators-tests.scad, line 10
 ECHO: 1, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (number != range) in file operators-tests.scad, line 11
-ECHO: 1, " != ", [0 : 1 : 3], "->", undef
+ECHO: 1, " != ", [0 : 1 : 3], "->", true
 ECHO: 1, " == ", undef, "->", false
 WARNING: undefined operation (number > undefined) in file operators-tests.scad, line 7
 ECHO: 1, " >  ", undef, "->", undef
@@ -536,8 +474,7 @@ ECHO: 1, " <  ", undef, "->", undef
 WARNING: undefined operation (number <= undefined) in file operators-tests.scad, line 10
 ECHO: 1, " <= ", undef, "->", undef
 ECHO: 1, " != ", undef, "->", true
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: nan, " == ", false, "->", undef
+ECHO: nan, " == ", false, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: nan, " >  ", false, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -546,10 +483,8 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: nan, " <  ", false, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: nan, " <= ", false, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: nan, " != ", false, "->", undef
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: nan, " == ", true, "->", undef
+ECHO: nan, " != ", false, "->", true
+ECHO: nan, " == ", true, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: nan, " >  ", true, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -558,8 +493,7 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: nan, " <  ", true, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: nan, " <= ", true, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: nan, " != ", true, "->", undef
+ECHO: nan, " != ", true, "->", true
 ECHO: nan, " == ", -1, "->", false
 ECHO: nan, " >  ", -1, "->", false
 ECHO: nan, " >= ", -1, "->", false
@@ -590,8 +524,7 @@ ECHO: nan, " >= ", inf, "->", false
 ECHO: nan, " <  ", inf, "->", false
 ECHO: nan, " <= ", inf, "->", false
 ECHO: nan, " != ", inf, "->", true
-WARNING: undefined operation (number == string) in file operators-tests.scad, line 6
-ECHO: nan, " == ", "alpha", "->", undef
+ECHO: nan, " == ", "alpha", "->", false
 WARNING: undefined operation (number > string) in file operators-tests.scad, line 7
 ECHO: nan, " >  ", "alpha", "->", undef
 WARNING: undefined operation (number >= string) in file operators-tests.scad, line 8
@@ -600,10 +533,8 @@ WARNING: undefined operation (number < string) in file operators-tests.scad, lin
 ECHO: nan, " <  ", "alpha", "->", undef
 WARNING: undefined operation (number <= string) in file operators-tests.scad, line 10
 ECHO: nan, " <= ", "alpha", "->", undef
-WARNING: undefined operation (number != string) in file operators-tests.scad, line 11
-ECHO: nan, " != ", "alpha", "->", undef
-WARNING: undefined operation (number == vector) in file operators-tests.scad, line 6
-ECHO: nan, " == ", [1, 2, 3], "->", undef
+ECHO: nan, " != ", "alpha", "->", true
+ECHO: nan, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (number > vector) in file operators-tests.scad, line 7
 ECHO: nan, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number >= vector) in file operators-tests.scad, line 8
@@ -612,10 +543,8 @@ WARNING: undefined operation (number < vector) in file operators-tests.scad, lin
 ECHO: nan, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number <= vector) in file operators-tests.scad, line 10
 ECHO: nan, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number != vector) in file operators-tests.scad, line 11
-ECHO: nan, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number == range) in file operators-tests.scad, line 6
-ECHO: nan, " == ", [0 : 1 : 3], "->", undef
+ECHO: nan, " != ", [1, 2, 3], "->", true
+ECHO: nan, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (number > range) in file operators-tests.scad, line 7
 ECHO: nan, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number >= range) in file operators-tests.scad, line 8
@@ -624,8 +553,7 @@ WARNING: undefined operation (number < range) in file operators-tests.scad, line
 ECHO: nan, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number <= range) in file operators-tests.scad, line 10
 ECHO: nan, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (number != range) in file operators-tests.scad, line 11
-ECHO: nan, " != ", [0 : 1 : 3], "->", undef
+ECHO: nan, " != ", [0 : 1 : 3], "->", true
 ECHO: nan, " == ", undef, "->", false
 WARNING: undefined operation (number > undefined) in file operators-tests.scad, line 7
 ECHO: nan, " >  ", undef, "->", undef
@@ -636,8 +564,7 @@ ECHO: nan, " <  ", undef, "->", undef
 WARNING: undefined operation (number <= undefined) in file operators-tests.scad, line 10
 ECHO: nan, " <= ", undef, "->", undef
 ECHO: nan, " != ", undef, "->", true
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: inf, " == ", false, "->", undef
+ECHO: inf, " == ", false, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: inf, " >  ", false, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -646,10 +573,8 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: inf, " <  ", false, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: inf, " <= ", false, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: inf, " != ", false, "->", undef
-WARNING: undefined operation (number == bool) in file operators-tests.scad, line 6
-ECHO: inf, " == ", true, "->", undef
+ECHO: inf, " != ", false, "->", true
+ECHO: inf, " == ", true, "->", false
 WARNING: undefined operation (number > bool) in file operators-tests.scad, line 7
 ECHO: inf, " >  ", true, "->", undef
 WARNING: undefined operation (number >= bool) in file operators-tests.scad, line 8
@@ -658,8 +583,7 @@ WARNING: undefined operation (number < bool) in file operators-tests.scad, line 
 ECHO: inf, " <  ", true, "->", undef
 WARNING: undefined operation (number <= bool) in file operators-tests.scad, line 10
 ECHO: inf, " <= ", true, "->", undef
-WARNING: undefined operation (number != bool) in file operators-tests.scad, line 11
-ECHO: inf, " != ", true, "->", undef
+ECHO: inf, " != ", true, "->", true
 ECHO: inf, " == ", -1, "->", false
 ECHO: inf, " >  ", -1, "->", true
 ECHO: inf, " >= ", -1, "->", true
@@ -690,8 +614,7 @@ ECHO: inf, " >= ", inf, "->", true
 ECHO: inf, " <  ", inf, "->", false
 ECHO: inf, " <= ", inf, "->", true
 ECHO: inf, " != ", inf, "->", false
-WARNING: undefined operation (number == string) in file operators-tests.scad, line 6
-ECHO: inf, " == ", "alpha", "->", undef
+ECHO: inf, " == ", "alpha", "->", false
 WARNING: undefined operation (number > string) in file operators-tests.scad, line 7
 ECHO: inf, " >  ", "alpha", "->", undef
 WARNING: undefined operation (number >= string) in file operators-tests.scad, line 8
@@ -700,10 +623,8 @@ WARNING: undefined operation (number < string) in file operators-tests.scad, lin
 ECHO: inf, " <  ", "alpha", "->", undef
 WARNING: undefined operation (number <= string) in file operators-tests.scad, line 10
 ECHO: inf, " <= ", "alpha", "->", undef
-WARNING: undefined operation (number != string) in file operators-tests.scad, line 11
-ECHO: inf, " != ", "alpha", "->", undef
-WARNING: undefined operation (number == vector) in file operators-tests.scad, line 6
-ECHO: inf, " == ", [1, 2, 3], "->", undef
+ECHO: inf, " != ", "alpha", "->", true
+ECHO: inf, " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (number > vector) in file operators-tests.scad, line 7
 ECHO: inf, " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number >= vector) in file operators-tests.scad, line 8
@@ -712,10 +633,8 @@ WARNING: undefined operation (number < vector) in file operators-tests.scad, lin
 ECHO: inf, " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (number <= vector) in file operators-tests.scad, line 10
 ECHO: inf, " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number != vector) in file operators-tests.scad, line 11
-ECHO: inf, " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (number == range) in file operators-tests.scad, line 6
-ECHO: inf, " == ", [0 : 1 : 3], "->", undef
+ECHO: inf, " != ", [1, 2, 3], "->", true
+ECHO: inf, " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (number > range) in file operators-tests.scad, line 7
 ECHO: inf, " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number >= range) in file operators-tests.scad, line 8
@@ -724,8 +643,7 @@ WARNING: undefined operation (number < range) in file operators-tests.scad, line
 ECHO: inf, " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (number <= range) in file operators-tests.scad, line 10
 ECHO: inf, " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (number != range) in file operators-tests.scad, line 11
-ECHO: inf, " != ", [0 : 1 : 3], "->", undef
+ECHO: inf, " != ", [0 : 1 : 3], "->", true
 ECHO: inf, " == ", undef, "->", false
 WARNING: undefined operation (number > undefined) in file operators-tests.scad, line 7
 ECHO: inf, " >  ", undef, "->", undef
@@ -736,8 +654,7 @@ ECHO: inf, " <  ", undef, "->", undef
 WARNING: undefined operation (number <= undefined) in file operators-tests.scad, line 10
 ECHO: inf, " <= ", undef, "->", undef
 ECHO: inf, " != ", undef, "->", true
-WARNING: undefined operation (string == bool) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", false, "->", undef
+ECHO: "alpha", " == ", false, "->", false
 WARNING: undefined operation (string > bool) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", false, "->", undef
 WARNING: undefined operation (string >= bool) in file operators-tests.scad, line 8
@@ -746,10 +663,8 @@ WARNING: undefined operation (string < bool) in file operators-tests.scad, line 
 ECHO: "alpha", " <  ", false, "->", undef
 WARNING: undefined operation (string <= bool) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", false, "->", undef
-WARNING: undefined operation (string != bool) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", false, "->", undef
-WARNING: undefined operation (string == bool) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", true, "->", undef
+ECHO: "alpha", " != ", false, "->", true
+ECHO: "alpha", " == ", true, "->", false
 WARNING: undefined operation (string > bool) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", true, "->", undef
 WARNING: undefined operation (string >= bool) in file operators-tests.scad, line 8
@@ -758,10 +673,8 @@ WARNING: undefined operation (string < bool) in file operators-tests.scad, line 
 ECHO: "alpha", " <  ", true, "->", undef
 WARNING: undefined operation (string <= bool) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", true, "->", undef
-WARNING: undefined operation (string != bool) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", true, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", -1, "->", undef
+ECHO: "alpha", " != ", true, "->", true
+ECHO: "alpha", " == ", -1, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", -1, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -770,10 +683,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "alpha", " <  ", -1, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", -1, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", -1, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", 0, "->", undef
+ECHO: "alpha", " != ", -1, "->", true
+ECHO: "alpha", " == ", 0, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", 0, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -782,10 +693,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "alpha", " <  ", 0, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", 0, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", 0, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", 1, "->", undef
+ECHO: "alpha", " != ", 0, "->", true
+ECHO: "alpha", " == ", 1, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", 1, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -794,10 +703,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "alpha", " <  ", 1, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", 1, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", 1, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", nan, "->", undef
+ECHO: "alpha", " != ", 1, "->", true
+ECHO: "alpha", " == ", nan, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", nan, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -806,10 +713,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "alpha", " <  ", nan, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", nan, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", nan, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", inf, "->", undef
+ECHO: "alpha", " != ", nan, "->", true
+ECHO: "alpha", " == ", inf, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", inf, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -818,16 +723,14 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "alpha", " <  ", inf, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", inf, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", inf, "->", undef
+ECHO: "alpha", " != ", inf, "->", true
 ECHO: "alpha", " == ", "alpha", "->", true
 ECHO: "alpha", " >  ", "alpha", "->", false
 ECHO: "alpha", " >= ", "alpha", "->", true
 ECHO: "alpha", " <  ", "alpha", "->", false
 ECHO: "alpha", " <= ", "alpha", "->", true
 ECHO: "alpha", " != ", "alpha", "->", false
-WARNING: undefined operation (string == vector) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", [1, 2, 3], "->", undef
+ECHO: "alpha", " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (string > vector) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (string >= vector) in file operators-tests.scad, line 8
@@ -836,10 +739,8 @@ WARNING: undefined operation (string < vector) in file operators-tests.scad, lin
 ECHO: "alpha", " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (string <= vector) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (string != vector) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (string == range) in file operators-tests.scad, line 6
-ECHO: "alpha", " == ", [0 : 1 : 3], "->", undef
+ECHO: "alpha", " != ", [1, 2, 3], "->", true
+ECHO: "alpha", " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (string > range) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (string >= range) in file operators-tests.scad, line 8
@@ -848,8 +749,7 @@ WARNING: undefined operation (string < range) in file operators-tests.scad, line
 ECHO: "alpha", " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (string <= range) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (string != range) in file operators-tests.scad, line 11
-ECHO: "alpha", " != ", [0 : 1 : 3], "->", undef
+ECHO: "alpha", " != ", [0 : 1 : 3], "->", true
 ECHO: "alpha", " == ", undef, "->", false
 WARNING: undefined operation (string > undefined) in file operators-tests.scad, line 7
 ECHO: "alpha", " >  ", undef, "->", undef
@@ -860,8 +760,7 @@ ECHO: "alpha", " <  ", undef, "->", undef
 WARNING: undefined operation (string <= undefined) in file operators-tests.scad, line 10
 ECHO: "alpha", " <= ", undef, "->", undef
 ECHO: "alpha", " != ", undef, "->", true
-WARNING: undefined operation (string == bool) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", false, "->", undef
+ECHO: "beta", " == ", false, "->", false
 WARNING: undefined operation (string > bool) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", false, "->", undef
 WARNING: undefined operation (string >= bool) in file operators-tests.scad, line 8
@@ -870,10 +769,8 @@ WARNING: undefined operation (string < bool) in file operators-tests.scad, line 
 ECHO: "beta", " <  ", false, "->", undef
 WARNING: undefined operation (string <= bool) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", false, "->", undef
-WARNING: undefined operation (string != bool) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", false, "->", undef
-WARNING: undefined operation (string == bool) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", true, "->", undef
+ECHO: "beta", " != ", false, "->", true
+ECHO: "beta", " == ", true, "->", false
 WARNING: undefined operation (string > bool) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", true, "->", undef
 WARNING: undefined operation (string >= bool) in file operators-tests.scad, line 8
@@ -882,10 +779,8 @@ WARNING: undefined operation (string < bool) in file operators-tests.scad, line 
 ECHO: "beta", " <  ", true, "->", undef
 WARNING: undefined operation (string <= bool) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", true, "->", undef
-WARNING: undefined operation (string != bool) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", true, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", -1, "->", undef
+ECHO: "beta", " != ", true, "->", true
+ECHO: "beta", " == ", -1, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", -1, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -894,10 +789,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "beta", " <  ", -1, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", -1, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", -1, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", 0, "->", undef
+ECHO: "beta", " != ", -1, "->", true
+ECHO: "beta", " == ", 0, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", 0, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -906,10 +799,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "beta", " <  ", 0, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", 0, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", 0, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", 1, "->", undef
+ECHO: "beta", " != ", 0, "->", true
+ECHO: "beta", " == ", 1, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", 1, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -918,10 +809,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "beta", " <  ", 1, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", 1, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", 1, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", nan, "->", undef
+ECHO: "beta", " != ", 1, "->", true
+ECHO: "beta", " == ", nan, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", nan, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -930,10 +819,8 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "beta", " <  ", nan, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", nan, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", nan, "->", undef
-WARNING: undefined operation (string == number) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", inf, "->", undef
+ECHO: "beta", " != ", nan, "->", true
+ECHO: "beta", " == ", inf, "->", false
 WARNING: undefined operation (string > number) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", inf, "->", undef
 WARNING: undefined operation (string >= number) in file operators-tests.scad, line 8
@@ -942,16 +829,14 @@ WARNING: undefined operation (string < number) in file operators-tests.scad, lin
 ECHO: "beta", " <  ", inf, "->", undef
 WARNING: undefined operation (string <= number) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", inf, "->", undef
-WARNING: undefined operation (string != number) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", inf, "->", undef
+ECHO: "beta", " != ", inf, "->", true
 ECHO: "beta", " == ", "alpha", "->", false
 ECHO: "beta", " >  ", "alpha", "->", true
 ECHO: "beta", " >= ", "alpha", "->", true
 ECHO: "beta", " <  ", "alpha", "->", false
 ECHO: "beta", " <= ", "alpha", "->", false
 ECHO: "beta", " != ", "alpha", "->", true
-WARNING: undefined operation (string == vector) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", [1, 2, 3], "->", undef
+ECHO: "beta", " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (string > vector) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (string >= vector) in file operators-tests.scad, line 8
@@ -960,10 +845,8 @@ WARNING: undefined operation (string < vector) in file operators-tests.scad, lin
 ECHO: "beta", " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (string <= vector) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (string != vector) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", [1, 2, 3], "->", undef
-WARNING: undefined operation (string == range) in file operators-tests.scad, line 6
-ECHO: "beta", " == ", [0 : 1 : 3], "->", undef
+ECHO: "beta", " != ", [1, 2, 3], "->", true
+ECHO: "beta", " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (string > range) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (string >= range) in file operators-tests.scad, line 8
@@ -972,8 +855,7 @@ WARNING: undefined operation (string < range) in file operators-tests.scad, line
 ECHO: "beta", " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (string <= range) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (string != range) in file operators-tests.scad, line 11
-ECHO: "beta", " != ", [0 : 1 : 3], "->", undef
+ECHO: "beta", " != ", [0 : 1 : 3], "->", true
 ECHO: "beta", " == ", undef, "->", false
 WARNING: undefined operation (string > undefined) in file operators-tests.scad, line 7
 ECHO: "beta", " >  ", undef, "->", undef
@@ -984,8 +866,7 @@ ECHO: "beta", " <  ", undef, "->", undef
 WARNING: undefined operation (string <= undefined) in file operators-tests.scad, line 10
 ECHO: "beta", " <= ", undef, "->", undef
 ECHO: "beta", " != ", undef, "->", true
-WARNING: undefined operation (vector == bool) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", false, "->", undef
+ECHO: [1, 2, 3], " == ", false, "->", false
 WARNING: undefined operation (vector > bool) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", false, "->", undef
 WARNING: undefined operation (vector >= bool) in file operators-tests.scad, line 8
@@ -994,10 +875,8 @@ WARNING: undefined operation (vector < bool) in file operators-tests.scad, line 
 ECHO: [1, 2, 3], " <  ", false, "->", undef
 WARNING: undefined operation (vector <= bool) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", false, "->", undef
-WARNING: undefined operation (vector != bool) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", false, "->", undef
-WARNING: undefined operation (vector == bool) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", true, "->", undef
+ECHO: [1, 2, 3], " != ", false, "->", true
+ECHO: [1, 2, 3], " == ", true, "->", false
 WARNING: undefined operation (vector > bool) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", true, "->", undef
 WARNING: undefined operation (vector >= bool) in file operators-tests.scad, line 8
@@ -1006,10 +885,8 @@ WARNING: undefined operation (vector < bool) in file operators-tests.scad, line 
 ECHO: [1, 2, 3], " <  ", true, "->", undef
 WARNING: undefined operation (vector <= bool) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", true, "->", undef
-WARNING: undefined operation (vector != bool) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", true, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", -1, "->", undef
+ECHO: [1, 2, 3], " != ", true, "->", true
+ECHO: [1, 2, 3], " == ", -1, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", -1, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1018,10 +895,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 3], " <  ", -1, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", -1, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", -1, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", 0, "->", undef
+ECHO: [1, 2, 3], " != ", -1, "->", true
+ECHO: [1, 2, 3], " == ", 0, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", 0, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1030,10 +905,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 3], " <  ", 0, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", 0, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", 0, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", 1, "->", undef
+ECHO: [1, 2, 3], " != ", 0, "->", true
+ECHO: [1, 2, 3], " == ", 1, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", 1, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1042,10 +915,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 3], " <  ", 1, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", 1, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", 1, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", nan, "->", undef
+ECHO: [1, 2, 3], " != ", 1, "->", true
+ECHO: [1, 2, 3], " == ", nan, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", nan, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1054,10 +925,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 3], " <  ", nan, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", nan, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", nan, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", inf, "->", undef
+ECHO: [1, 2, 3], " != ", nan, "->", true
+ECHO: [1, 2, 3], " == ", inf, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", inf, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1066,10 +935,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 3], " <  ", inf, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", inf, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", inf, "->", undef
-WARNING: undefined operation (vector == string) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", "alpha", "->", undef
+ECHO: [1, 2, 3], " != ", inf, "->", true
+ECHO: [1, 2, 3], " == ", "alpha", "->", false
 WARNING: undefined operation (vector > string) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", "alpha", "->", undef
 WARNING: undefined operation (vector >= string) in file operators-tests.scad, line 8
@@ -1078,16 +945,14 @@ WARNING: undefined operation (vector < string) in file operators-tests.scad, lin
 ECHO: [1, 2, 3], " <  ", "alpha", "->", undef
 WARNING: undefined operation (vector <= string) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", "alpha", "->", undef
-WARNING: undefined operation (vector != string) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", "alpha", "->", undef
+ECHO: [1, 2, 3], " != ", "alpha", "->", true
 ECHO: [1, 2, 3], " == ", [1, 2, 3], "->", true
 ECHO: [1, 2, 3], " >  ", [1, 2, 3], "->", false
 ECHO: [1, 2, 3], " >= ", [1, 2, 3], "->", true
 ECHO: [1, 2, 3], " <  ", [1, 2, 3], "->", false
 ECHO: [1, 2, 3], " <= ", [1, 2, 3], "->", true
 ECHO: [1, 2, 3], " != ", [1, 2, 3], "->", false
-WARNING: undefined operation (vector == range) in file operators-tests.scad, line 6
-ECHO: [1, 2, 3], " == ", [0 : 1 : 3], "->", undef
+ECHO: [1, 2, 3], " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (vector > range) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (vector >= range) in file operators-tests.scad, line 8
@@ -1096,8 +961,7 @@ WARNING: undefined operation (vector < range) in file operators-tests.scad, line
 ECHO: [1, 2, 3], " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (vector <= range) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (vector != range) in file operators-tests.scad, line 11
-ECHO: [1, 2, 3], " != ", [0 : 1 : 3], "->", undef
+ECHO: [1, 2, 3], " != ", [0 : 1 : 3], "->", true
 ECHO: [1, 2, 3], " == ", undef, "->", false
 WARNING: undefined operation (vector > undefined) in file operators-tests.scad, line 7
 ECHO: [1, 2, 3], " >  ", undef, "->", undef
@@ -1108,8 +972,7 @@ ECHO: [1, 2, 3], " <  ", undef, "->", undef
 WARNING: undefined operation (vector <= undefined) in file operators-tests.scad, line 10
 ECHO: [1, 2, 3], " <= ", undef, "->", undef
 ECHO: [1, 2, 3], " != ", undef, "->", true
-WARNING: undefined operation (vector == bool) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", false, "->", undef
+ECHO: [1, 2, 4], " == ", false, "->", false
 WARNING: undefined operation (vector > bool) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", false, "->", undef
 WARNING: undefined operation (vector >= bool) in file operators-tests.scad, line 8
@@ -1118,10 +981,8 @@ WARNING: undefined operation (vector < bool) in file operators-tests.scad, line 
 ECHO: [1, 2, 4], " <  ", false, "->", undef
 WARNING: undefined operation (vector <= bool) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", false, "->", undef
-WARNING: undefined operation (vector != bool) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", false, "->", undef
-WARNING: undefined operation (vector == bool) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", true, "->", undef
+ECHO: [1, 2, 4], " != ", false, "->", true
+ECHO: [1, 2, 4], " == ", true, "->", false
 WARNING: undefined operation (vector > bool) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", true, "->", undef
 WARNING: undefined operation (vector >= bool) in file operators-tests.scad, line 8
@@ -1130,10 +991,8 @@ WARNING: undefined operation (vector < bool) in file operators-tests.scad, line 
 ECHO: [1, 2, 4], " <  ", true, "->", undef
 WARNING: undefined operation (vector <= bool) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", true, "->", undef
-WARNING: undefined operation (vector != bool) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", true, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", -1, "->", undef
+ECHO: [1, 2, 4], " != ", true, "->", true
+ECHO: [1, 2, 4], " == ", -1, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", -1, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1142,10 +1001,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 4], " <  ", -1, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", -1, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", -1, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", 0, "->", undef
+ECHO: [1, 2, 4], " != ", -1, "->", true
+ECHO: [1, 2, 4], " == ", 0, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", 0, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1154,10 +1011,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 4], " <  ", 0, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", 0, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", 0, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", 1, "->", undef
+ECHO: [1, 2, 4], " != ", 0, "->", true
+ECHO: [1, 2, 4], " == ", 1, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", 1, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1166,10 +1021,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 4], " <  ", 1, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", 1, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", 1, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", nan, "->", undef
+ECHO: [1, 2, 4], " != ", 1, "->", true
+ECHO: [1, 2, 4], " == ", nan, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", nan, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1178,10 +1031,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 4], " <  ", nan, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", nan, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", nan, "->", undef
-WARNING: undefined operation (vector == number) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", inf, "->", undef
+ECHO: [1, 2, 4], " != ", nan, "->", true
+ECHO: [1, 2, 4], " == ", inf, "->", false
 WARNING: undefined operation (vector > number) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", inf, "->", undef
 WARNING: undefined operation (vector >= number) in file operators-tests.scad, line 8
@@ -1190,10 +1041,8 @@ WARNING: undefined operation (vector < number) in file operators-tests.scad, lin
 ECHO: [1, 2, 4], " <  ", inf, "->", undef
 WARNING: undefined operation (vector <= number) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", inf, "->", undef
-WARNING: undefined operation (vector != number) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", inf, "->", undef
-WARNING: undefined operation (vector == string) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", "alpha", "->", undef
+ECHO: [1, 2, 4], " != ", inf, "->", true
+ECHO: [1, 2, 4], " == ", "alpha", "->", false
 WARNING: undefined operation (vector > string) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", "alpha", "->", undef
 WARNING: undefined operation (vector >= string) in file operators-tests.scad, line 8
@@ -1202,16 +1051,14 @@ WARNING: undefined operation (vector < string) in file operators-tests.scad, lin
 ECHO: [1, 2, 4], " <  ", "alpha", "->", undef
 WARNING: undefined operation (vector <= string) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", "alpha", "->", undef
-WARNING: undefined operation (vector != string) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", "alpha", "->", undef
+ECHO: [1, 2, 4], " != ", "alpha", "->", true
 ECHO: [1, 2, 4], " == ", [1, 2, 3], "->", false
 ECHO: [1, 2, 4], " >  ", [1, 2, 3], "->", true
 ECHO: [1, 2, 4], " >= ", [1, 2, 3], "->", true
 ECHO: [1, 2, 4], " <  ", [1, 2, 3], "->", false
 ECHO: [1, 2, 4], " <= ", [1, 2, 3], "->", false
 ECHO: [1, 2, 4], " != ", [1, 2, 3], "->", true
-WARNING: undefined operation (vector == range) in file operators-tests.scad, line 6
-ECHO: [1, 2, 4], " == ", [0 : 1 : 3], "->", undef
+ECHO: [1, 2, 4], " == ", [0 : 1 : 3], "->", false
 WARNING: undefined operation (vector > range) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (vector >= range) in file operators-tests.scad, line 8
@@ -1220,8 +1067,7 @@ WARNING: undefined operation (vector < range) in file operators-tests.scad, line
 ECHO: [1, 2, 4], " <  ", [0 : 1 : 3], "->", undef
 WARNING: undefined operation (vector <= range) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", [0 : 1 : 3], "->", undef
-WARNING: undefined operation (vector != range) in file operators-tests.scad, line 11
-ECHO: [1, 2, 4], " != ", [0 : 1 : 3], "->", undef
+ECHO: [1, 2, 4], " != ", [0 : 1 : 3], "->", true
 ECHO: [1, 2, 4], " == ", undef, "->", false
 WARNING: undefined operation (vector > undefined) in file operators-tests.scad, line 7
 ECHO: [1, 2, 4], " >  ", undef, "->", undef
@@ -1232,8 +1078,7 @@ ECHO: [1, 2, 4], " <  ", undef, "->", undef
 WARNING: undefined operation (vector <= undefined) in file operators-tests.scad, line 10
 ECHO: [1, 2, 4], " <= ", undef, "->", undef
 ECHO: [1, 2, 4], " != ", undef, "->", true
-WARNING: undefined operation (range == bool) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", false, "->", undef
+ECHO: [0 : 1 : 3], " == ", false, "->", false
 WARNING: undefined operation (range > bool) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", false, "->", undef
 WARNING: undefined operation (range >= bool) in file operators-tests.scad, line 8
@@ -1242,10 +1087,8 @@ WARNING: undefined operation (range < bool) in file operators-tests.scad, line 9
 ECHO: [0 : 1 : 3], " <  ", false, "->", undef
 WARNING: undefined operation (range <= bool) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", false, "->", undef
-WARNING: undefined operation (range != bool) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", false, "->", undef
-WARNING: undefined operation (range == bool) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", true, "->", undef
+ECHO: [0 : 1 : 3], " != ", false, "->", true
+ECHO: [0 : 1 : 3], " == ", true, "->", false
 WARNING: undefined operation (range > bool) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", true, "->", undef
 WARNING: undefined operation (range >= bool) in file operators-tests.scad, line 8
@@ -1254,10 +1097,8 @@ WARNING: undefined operation (range < bool) in file operators-tests.scad, line 9
 ECHO: [0 : 1 : 3], " <  ", true, "->", undef
 WARNING: undefined operation (range <= bool) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", true, "->", undef
-WARNING: undefined operation (range != bool) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", true, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", -1, "->", undef
+ECHO: [0 : 1 : 3], " != ", true, "->", true
+ECHO: [0 : 1 : 3], " == ", -1, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", -1, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1266,10 +1107,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", -1, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", -1, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", -1, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", 0, "->", undef
+ECHO: [0 : 1 : 3], " != ", -1, "->", true
+ECHO: [0 : 1 : 3], " == ", 0, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", 0, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1278,10 +1117,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", 0, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", 0, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", 0, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", 1, "->", undef
+ECHO: [0 : 1 : 3], " != ", 0, "->", true
+ECHO: [0 : 1 : 3], " == ", 1, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", 1, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1290,10 +1127,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", 1, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", 1, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", 1, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", nan, "->", undef
+ECHO: [0 : 1 : 3], " != ", 1, "->", true
+ECHO: [0 : 1 : 3], " == ", nan, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", nan, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1302,10 +1137,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", nan, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", nan, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", nan, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", inf, "->", undef
+ECHO: [0 : 1 : 3], " != ", nan, "->", true
+ECHO: [0 : 1 : 3], " == ", inf, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", inf, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1314,10 +1147,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", inf, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", inf, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", inf, "->", undef
-WARNING: undefined operation (range == string) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", "alpha", "->", undef
+ECHO: [0 : 1 : 3], " != ", inf, "->", true
+ECHO: [0 : 1 : 3], " == ", "alpha", "->", false
 WARNING: undefined operation (range > string) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", "alpha", "->", undef
 WARNING: undefined operation (range >= string) in file operators-tests.scad, line 8
@@ -1326,10 +1157,8 @@ WARNING: undefined operation (range < string) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", "alpha", "->", undef
 WARNING: undefined operation (range <= string) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", "alpha", "->", undef
-WARNING: undefined operation (range != string) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", "alpha", "->", undef
-WARNING: undefined operation (range == vector) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 3], " == ", [1, 2, 3], "->", undef
+ECHO: [0 : 1 : 3], " != ", "alpha", "->", true
+ECHO: [0 : 1 : 3], " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (range > vector) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 3], " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (range >= vector) in file operators-tests.scad, line 8
@@ -1338,8 +1167,7 @@ WARNING: undefined operation (range < vector) in file operators-tests.scad, line
 ECHO: [0 : 1 : 3], " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (range <= vector) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (range != vector) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 3], " != ", [1, 2, 3], "->", undef
+ECHO: [0 : 1 : 3], " != ", [1, 2, 3], "->", true
 ECHO: [0 : 1 : 3], " == ", [0 : 1 : 3], "->", true
 ECHO: [0 : 1 : 3], " >  ", [0 : 1 : 3], "->", false
 ECHO: [0 : 1 : 3], " >= ", [0 : 1 : 3], "->", true
@@ -1356,8 +1184,7 @@ ECHO: [0 : 1 : 3], " <  ", undef, "->", undef
 WARNING: undefined operation (range <= undefined) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 3], " <= ", undef, "->", undef
 ECHO: [0 : 1 : 3], " != ", undef, "->", true
-WARNING: undefined operation (range == bool) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", false, "->", undef
+ECHO: [0 : 1 : 1], " == ", false, "->", false
 WARNING: undefined operation (range > bool) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", false, "->", undef
 WARNING: undefined operation (range >= bool) in file operators-tests.scad, line 8
@@ -1366,10 +1193,8 @@ WARNING: undefined operation (range < bool) in file operators-tests.scad, line 9
 ECHO: [0 : 1 : 1], " <  ", false, "->", undef
 WARNING: undefined operation (range <= bool) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", false, "->", undef
-WARNING: undefined operation (range != bool) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", false, "->", undef
-WARNING: undefined operation (range == bool) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", true, "->", undef
+ECHO: [0 : 1 : 1], " != ", false, "->", true
+ECHO: [0 : 1 : 1], " == ", true, "->", false
 WARNING: undefined operation (range > bool) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", true, "->", undef
 WARNING: undefined operation (range >= bool) in file operators-tests.scad, line 8
@@ -1378,10 +1203,8 @@ WARNING: undefined operation (range < bool) in file operators-tests.scad, line 9
 ECHO: [0 : 1 : 1], " <  ", true, "->", undef
 WARNING: undefined operation (range <= bool) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", true, "->", undef
-WARNING: undefined operation (range != bool) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", true, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", -1, "->", undef
+ECHO: [0 : 1 : 1], " != ", true, "->", true
+ECHO: [0 : 1 : 1], " == ", -1, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", -1, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1390,10 +1213,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", -1, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", -1, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", -1, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", 0, "->", undef
+ECHO: [0 : 1 : 1], " != ", -1, "->", true
+ECHO: [0 : 1 : 1], " == ", 0, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", 0, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1402,10 +1223,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", 0, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", 0, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", 0, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", 1, "->", undef
+ECHO: [0 : 1 : 1], " != ", 0, "->", true
+ECHO: [0 : 1 : 1], " == ", 1, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", 1, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1414,10 +1233,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", 1, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", 1, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", 1, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", nan, "->", undef
+ECHO: [0 : 1 : 1], " != ", 1, "->", true
+ECHO: [0 : 1 : 1], " == ", nan, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", nan, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1426,10 +1243,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", nan, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", nan, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", nan, "->", undef
-WARNING: undefined operation (range == number) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", inf, "->", undef
+ECHO: [0 : 1 : 1], " != ", nan, "->", true
+ECHO: [0 : 1 : 1], " == ", inf, "->", false
 WARNING: undefined operation (range > number) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", inf, "->", undef
 WARNING: undefined operation (range >= number) in file operators-tests.scad, line 8
@@ -1438,10 +1253,8 @@ WARNING: undefined operation (range < number) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", inf, "->", undef
 WARNING: undefined operation (range <= number) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", inf, "->", undef
-WARNING: undefined operation (range != number) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", inf, "->", undef
-WARNING: undefined operation (range == string) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", "alpha", "->", undef
+ECHO: [0 : 1 : 1], " != ", inf, "->", true
+ECHO: [0 : 1 : 1], " == ", "alpha", "->", false
 WARNING: undefined operation (range > string) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", "alpha", "->", undef
 WARNING: undefined operation (range >= string) in file operators-tests.scad, line 8
@@ -1450,10 +1263,8 @@ WARNING: undefined operation (range < string) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", "alpha", "->", undef
 WARNING: undefined operation (range <= string) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", "alpha", "->", undef
-WARNING: undefined operation (range != string) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", "alpha", "->", undef
-WARNING: undefined operation (range == vector) in file operators-tests.scad, line 6
-ECHO: [0 : 1 : 1], " == ", [1, 2, 3], "->", undef
+ECHO: [0 : 1 : 1], " != ", "alpha", "->", true
+ECHO: [0 : 1 : 1], " == ", [1, 2, 3], "->", false
 WARNING: undefined operation (range > vector) in file operators-tests.scad, line 7
 ECHO: [0 : 1 : 1], " >  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (range >= vector) in file operators-tests.scad, line 8
@@ -1462,8 +1273,7 @@ WARNING: undefined operation (range < vector) in file operators-tests.scad, line
 ECHO: [0 : 1 : 1], " <  ", [1, 2, 3], "->", undef
 WARNING: undefined operation (range <= vector) in file operators-tests.scad, line 10
 ECHO: [0 : 1 : 1], " <= ", [1, 2, 3], "->", undef
-WARNING: undefined operation (range != vector) in file operators-tests.scad, line 11
-ECHO: [0 : 1 : 1], " != ", [1, 2, 3], "->", undef
+ECHO: [0 : 1 : 1], " != ", [1, 2, 3], "->", true
 ECHO: [0 : 1 : 1], " == ", [0 : 1 : 3], "->", false
 ECHO: [0 : 1 : 1], " >  ", [0 : 1 : 3], "->", false
 ECHO: [0 : 1 : 1], " >= ", [0 : 1 : 3], "->", false

@@ -784,26 +784,16 @@ Value VectorType::operator>=(const VectorType &v) const {
 class notequal_visitor : public boost::static_visitor<Value>
 {
 public:
-  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " != " << getTypeName(op2) << ")"));
-  }
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { return true; }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 != op2; }
-  // special handling of undef for backwards compatibility, e.g. (x != undef) instead of !is_undef(x)
-  template <typename T> Value operator()(const UndefType&, const T&        ) const { return true; }
-  template <typename T> Value operator()(const T&        , const UndefType&) const { return true; }
   Value operator()(const UndefType&, const UndefType&) const { return false; }
 };
 
 class equals_visitor : public boost::static_visitor<Value>
 {
 public:
-  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { 
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " == " << getTypeName(op2) << ")"));
-  }
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { return false; }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 == op2; }
-  // special handling of undef for backwards compatibility, e.g. (x == undef) instead of is_undef(x)
-  template <typename T> Value operator()(const UndefType&, const T &       ) const { return false; }
-  template <typename T> Value operator()(const T &       , const UndefType&) const { return false; }
   Value operator()(const UndefType&, const UndefType&) const { return true; }
 };
 
