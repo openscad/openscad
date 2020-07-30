@@ -1098,13 +1098,19 @@ bool ScintillaEditor::modifyNumber(int key)
 	auto hadSelection=qsci->hasSelectedText();
 
 	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+
+	QRegExp rx("[\(=]");
+	auto check = text.mid(begin-1,1);
+	if( !rx.exactMatch(check)) return false;
+	
 	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
 	auto nr=text.mid(begin,end-begin);
-	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d"))) ) return false;
+	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegExp("\\d"))) ) return false;
 	auto sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
 	auto curpos=index-begin;
+	if(curpos==0) return false;
 	auto dotpos=nr.indexOf('.');
 	auto decimals=dotpos<0?0:nr.length()-dotpos-1;
 	auto number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();

@@ -135,7 +135,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-421</y>
+             <y>-450</y>
              <width>602</width>
              <height>901</height>
             </rect>
@@ -200,7 +200,7 @@
                  </item>
                  <item>
                   <property name="text">
-                   <string>Both</string>
+                   <string>Either</string>
                   </property>
                  </item>
                 </widget>

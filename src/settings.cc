@@ -179,7 +179,7 @@ SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", V
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
 SettingsEntry Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", Value(true), Value(true));
-SettingsEntry Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", values("Alt", _("Alt"), "Left Mouse Button", _("Left Mouse Button"), "Both", _("Both")), Value("Alt"));
+SettingsEntry Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", values("Alt", _("Alt"), "Left Mouse Button", _("Left Mouse Button"), "Either", _("Either")), Value("Alt"));
 
 
 SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
