@@ -698,10 +698,10 @@ RangeType Value::toRange() const
 }
 
 Value FunctionType::operator==(const FunctionType &other) const {
-  return Value::undef("operation undefined (function == function)");
+  return this == &other;
 }
 Value FunctionType::operator!=(const FunctionType &other) const {
-  return Value::undef("operation undefined (function != function)");
+  return this != &other;
 }
 Value FunctionType::operator< (const FunctionType &other) const {
   return Value::undef("operation undefined (function < function)");

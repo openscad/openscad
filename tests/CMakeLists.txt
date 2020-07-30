@@ -635,8 +635,7 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 experimental_tests(echotest_allexpressions)
 experimental_tests(astdumptest_allexpressions)
 experimental_tests(echotest_function-literal-tests)
-
-
+experimental_tests(echotest_function-literal-compare)
 
 # Test config handling
 
