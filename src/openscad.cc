@@ -578,8 +578,8 @@ static QString assemblePath(const fs::path& absoluteBaseDir,
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
   auto qsFile = QString::fromLocal8Bit(fileName.c_str());
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo info(qsDir, qsFile);
-  return info.absoluteFilePath();
+  QFileInfo fileInfo(qsDir, qsFile);
+  return fileInfo.absoluteFilePath();
 }
 
 bool QtUseGUI()
@@ -828,6 +828,7 @@ bool flagConvert(std::string str){
 	return false;
 }
 
+// openSCAD
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -1053,6 +1054,7 @@ int main(int argc, char **argv)
 		}
 		else {
 			PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
+			return 1;
 		}
 	}
 
@@ -1089,7 +1091,6 @@ int main(int argc, char **argv)
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0], desc, true);
 	}
 
 	Builtins::instance(true);
