@@ -286,17 +286,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
 
+	// Determine output file format and assign it to formatName
 	if(!export_format.empty()) {
-		// If command line option --export-format is specified, use that format.
-		// Confirm that it is a valid export format
-		if(exportFileFormatOptions.exportFileFormats.find(export_format) != exportFileFormatOptions.exportFileFormats.end()) {
-			formatName = export_format;
-		} else {
-			PRINTB("\nInvalid format '%s' for --export-format\n", export_format);
-			return 1;
-		}
-	}
-	else {
+		formatName = export_format;
+	} else {
 		// else extract format from file extension
 		auto suffix = fs::path(output_file_str).extension().generic_string();
 		if (suffix.length() > 1) {
@@ -1053,7 +1046,7 @@ int main(int argc, char **argv)
 			export_format = tmp_format;
 		}
 		else {
-			PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
+			PRINTB("\nUnknown --export-format option '%s'.  Use -h to list available options.\n", tmp_format.c_str());
 			return 1;
 		}
 	}
@@ -1084,13 +1077,11 @@ int main(int argc, char **argv)
 		}
 	}
 	else if (QtUseGUI()) {
-		if(vm.count("export-format")) {
-			PRINT("Ignoring --export-format option");
-		}
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
+		return 1;
 	}
 
 	Builtins::instance(true);
