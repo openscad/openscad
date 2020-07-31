@@ -1,7 +1,9 @@
 ECHO: v = undef, op = "not v", result = true
 WARNING: undefined operation (-undefined) in file expression-evaluation-tests.scad, line 17
 ECHO: v = undef, op = "-v", result = undef
+WARNING: undefined operation (undefined * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = undef, op = "v *", result = undef
+WARNING: undefined operation (number * undefined) in file expression-evaluation-tests.scad, line 19
 ECHO: v = undef, op = "* v", result = undef
 WARNING: undefined operation (undefined / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = undef, op = "v /", result = undef
@@ -200,7 +202,9 @@ ECHO: v = 242, op = "v[4]", result = undef
 ECHO: v = true, op = "not v", result = false
 WARNING: undefined operation (-bool) in file expression-evaluation-tests.scad, line 17
 ECHO: v = true, op = "-v", result = undef
+WARNING: undefined operation (bool * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = true, op = "v *", result = undef
+WARNING: undefined operation (number * bool) in file expression-evaluation-tests.scad, line 19
 ECHO: v = true, op = "* v", result = undef
 WARNING: undefined operation (bool / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = true, op = "v /", result = undef
@@ -228,7 +232,9 @@ ECHO: v = true, op = "v[4]", result = undef
 ECHO: v = false, op = "not v", result = true
 WARNING: undefined operation (-bool) in file expression-evaluation-tests.scad, line 17
 ECHO: v = false, op = "-v", result = undef
+WARNING: undefined operation (bool * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = false, op = "v *", result = undef
+WARNING: undefined operation (number * bool) in file expression-evaluation-tests.scad, line 19
 ECHO: v = false, op = "* v", result = undef
 WARNING: undefined operation (bool / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = false, op = "v /", result = undef
@@ -256,7 +262,9 @@ ECHO: v = false, op = "v[4]", result = undef
 ECHO: v = "", op = "not v", result = true
 WARNING: undefined operation (-string) in file expression-evaluation-tests.scad, line 17
 ECHO: v = "", op = "-v", result = undef
+WARNING: undefined operation (string * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = "", op = "v *", result = undef
+WARNING: undefined operation (number * string) in file expression-evaluation-tests.scad, line 19
 ECHO: v = "", op = "* v", result = undef
 WARNING: undefined operation (string / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = "", op = "v /", result = undef
@@ -284,7 +292,9 @@ ECHO: v = "", op = "v[4]", result = undef
 ECHO: v = "text", op = "not v", result = false
 WARNING: undefined operation (-string) in file expression-evaluation-tests.scad, line 17
 ECHO: v = "text", op = "-v", result = undef
+WARNING: undefined operation (string * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = "text", op = "v *", result = undef
+WARNING: undefined operation (number * string) in file expression-evaluation-tests.scad, line 19
 ECHO: v = "text", op = "* v", result = undef
 WARNING: undefined operation (string / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = "text", op = "v /", result = undef
@@ -387,7 +397,9 @@ ECHO: v = [1], op = "v[4]", result = undef
 ECHO: v = [0 : 1 : 0], op = "not v", result = false
 WARNING: undefined operation (-range) in file expression-evaluation-tests.scad, line 17
 ECHO: v = [0 : 1 : 0], op = "-v", result = undef
+WARNING: undefined operation (range * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = [0 : 1 : 0], op = "v *", result = undef
+WARNING: undefined operation (number * range) in file expression-evaluation-tests.scad, line 19
 ECHO: v = [0 : 1 : 0], op = "* v", result = undef
 WARNING: undefined operation (range / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = [0 : 1 : 0], op = "v /", result = undef
@@ -415,7 +427,9 @@ ECHO: v = [0 : 1 : 0], op = "v[4]", result = undef
 ECHO: v = [1 : 1 : 2], op = "not v", result = false
 WARNING: undefined operation (-range) in file expression-evaluation-tests.scad, line 17
 ECHO: v = [1 : 1 : 2], op = "-v", result = undef
+WARNING: undefined operation (range * number) in file expression-evaluation-tests.scad, line 18
 ECHO: v = [1 : 1 : 2], op = "v *", result = undef
+WARNING: undefined operation (number * range) in file expression-evaluation-tests.scad, line 19
 ECHO: v = [1 : 1 : 2], op = "* v", result = undef
 WARNING: undefined operation (range / number) in file expression-evaluation-tests.scad, line 20
 ECHO: v = [1 : 1 : 2], op = "v /", result = undef

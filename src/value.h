@@ -246,14 +246,15 @@ class UndefType
 public:
   UndefType() { } // TODO: eventually deprecate undef creation without a reason.
   UndefType(const std::string &why) : reasons{why} { }
+
   // Append another reason in case a chain of undefined operations are made before handling
-  UndefType(const UndefType &from, const std::string &why) : reasons(from.reasons) { reasons.push_back(why); }
-  UndefType(const Value &from, const std::string &why);
+	UndefType &append(const std::string &why) { reasons.push_back(why); return *this; } 
 
   Value operator< (const UndefType &other) const;
   Value operator> (const UndefType &other) const;
   Value operator<=(const UndefType &other) const;
   Value operator>=(const UndefType &other) const;
+
   std::string toString() const;
   bool empty() const { return reasons.empty(); }
 private:
@@ -343,7 +344,7 @@ public:
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
   std::string toEchoString(const tostring_visitor *visitor) const;
-  const UndefType& toUndef() const;
+  UndefType& toUndef();
   std::string toUndefString() const;
   void toStream(std::ostringstream &stream) const;
   void toStream(const tostream_visitor *visitor) const;
@@ -380,10 +381,6 @@ public:
   typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, RangeType, FunctionType> Variant;
 
 private:
-  static Value multvecnum(const Value &vecval, const Value &numval);
-  static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
-  static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
-
   Variant value;
 };
 

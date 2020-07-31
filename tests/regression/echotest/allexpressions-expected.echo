@@ -1,3 +1,4 @@
+WARNING: undefined operation (bool * bool) in file allexpressions.scad, line 14
 WARNING: undefined operation (bool / bool) in file allexpressions.scad, line 15
 WARNING: undefined operation (bool % bool) in file allexpressions.scad, line 16
 WARNING: undefined operation (undefined < bool) in file allexpressions.scad, line 17
