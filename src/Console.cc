@@ -78,6 +78,6 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 
 void Console::doSomething(QString temp)
 {
-	int q = std::stoi(temp);
-	std::cout<<temp.toStdString()<<"ffd\n";
+	// int q = std::stoi(temp);
+	std::cout<<"ffd\n";
 }

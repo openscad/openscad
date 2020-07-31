@@ -2937,25 +2937,12 @@ void MainWindow::consoleOutput(const QString &msg)
 	} else if (msg.startsWith("ERROR:")) {
 		this->compileErrors++;
 		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></a>&nbsp;");
-		// this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></a>&nbsp;");
-		// QStringList list1 = msg.split(QLatin1Char(','));
-		// // QString l = list[1];
-		// QRegularExpression rx("d(\\d+)");
-		// QString t = QString(msg);
-		// std::cout<<t.toStdString()<<std::endl;
-		// QList<int> list;
-		// QRegularExpressionMatchIterator i = rx.globalMatch(t);
-		// while (i.hasNext()) {
-		// 	QRegularExpressionMatch match = i.next();
-		// 	QString word = match.captured(1);
-		// 	list << word.toInt();
-		// }
-		// std::cout<<list.size()<<"**\n";
-		std::string t = msg.toStdString();
-		t.erase(remove_if(t.begin(), t.end(), [](char c) { return !isdigit(c); } ), t.end());
-		QString temp = "<a href=\""+QT_HTML_ESCAPE(QString::fromStdString(t))+"\">"+QT_HTML_ESCAPE(QString(msg)) + "</a>&nbsp;";
+		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></a>&nbsp;");
+		// std::string t = msg.toStdString();
+		// t.erase(remove_if(t.begin(), t.end(), [](char c) { return !isdigit(c); } ), t.end());
+		// QString temp = "<a href=\""+QT_HTML_ESCAPE(QString::fromStdString(t))+"\">"+QT_HTML_ESCAPE(QString(msg)) + "</a>&nbsp;";
 		// std::cout<<msg.toStdString()<<std::endl;
-		this->console->appendHtml(temp);
+		// this->console->appendHtml(temp);
 	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
 	} else if (msg.startsWith("TRACE:")) {
