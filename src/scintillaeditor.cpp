@@ -790,7 +790,6 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 	{
 		if(e->type() == QEvent::Wheel)
 		{
-			qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 0);
 			auto *wheelEvent = static_cast <QWheelEvent*> (e);
 			PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->modifiers() & Qt::AltModifier?"Alt":"Other Button"));
 			if(handleWheelEventNavigateNumber(wheelEvent))
@@ -798,7 +797,6 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 				qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 1);
 				return true;
 			}
-			qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 1);
 		}
 		return false;
 	}
@@ -1092,10 +1090,11 @@ bool ScintillaEditor::modifyNumber(int key)
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
 	auto text=qsci->text(line);
-
 	int lineFrom, indexFrom, lineTo, indexTo;
 	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
 	auto hadSelection=qsci->hasSelectedText();
+	qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
+	qsci->setCursorPosition(line, index);
 
 	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
 
@@ -1110,7 +1109,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	auto sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
 	auto curpos=index-begin;
-	if(curpos==0) return false;
+	if(curpos==0 || (curpos==1 && (nr[0]=='+' || nr[0]=='-'))) return false;
 	auto dotpos=nr.indexOf('.');
 	auto decimals=dotpos<0?0:nr.length()-dotpos-1;
 	auto number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
