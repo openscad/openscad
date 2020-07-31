@@ -63,6 +63,8 @@ public:
 	QMenu *createStandardContextMenu() override;
 	QPoint mapToGlobal(const QPoint &) override;
 
+	void setCursorPosition(int line, int col) override;
+
 private:
 	void getRange(int *lineFrom, int *lineTo);
 	void setColormap(const EditorColorScheme *colorScheme);

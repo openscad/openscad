@@ -56,7 +56,7 @@ public:
 
 AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new TransformNode(inst);
+	auto node = new TransformNode(inst, evalctx);
 
 	AssignmentList args;
 
@@ -131,7 +131,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			if (val_a->toVector().size() > 3) {
 				ok &= false;
 			}
-			
+
 			bool v_supplied = (val_v != ValuePtr::undefined);
 			if(ok){
 				if(v_supplied){
@@ -171,21 +171,24 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	else if (this->type == transform_type_e::MIRROR) {
 		auto val_v = c->lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
-	
-		if (val_v->getVec3(x, y, z, 0.0)) {
-			if (x != 0.0 || y != 0.0 || z != 0.0) {
-				double sn = 1.0 / sqrt(x*x + y*y + z*z);
-				x *= sn, y *= sn, z *= sn;
-			}
-		}else{
+
+		if (!val_v->getVec3(x, y, z, 0.0)) {
 			PRINTB("WARNING: Unable to convert mirror(%s) parameter to a vec3 or vec2 of numbers, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 		}
 
+		// x /= sqrt(x*x + y*y + z*z)
+		// y /= sqrt(x*x + y*y + z*z)
+		// z /= sqrt(x*x + y*y + z*z)
 		if (x != 0.0 || y != 0.0 || z != 0.0)	{
+			// skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
+			// instead just divide directly within each matrix element
+			// simplified calculation leads to less float errors
+			double a = x*x + y*y + z*z;
+
 			Matrix4d m;
-			m << 1-2*x*x, -2*y*x, -2*z*x, 0,
-				-2*x*y, 1-2*y*y, -2*z*y, 0,
-				-2*x*z, -2*y*z, 1-2*z*z, 0,
+			m << 1-2*x*x/a, -2*y*x/a, -2*z*x/a, 0,
+				-2*x*y/a, 1-2*y*y/a, -2*z*y/a, 0,
+				-2*x*z/a, -2*y*z/a, 1-2*z*z/a, 0,
 				0, 0, 0, 1;
 			node->matrix = m;
 		}
@@ -207,7 +210,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v->toVector().size() && v->toVector()[y]->type() == 
+				if (y < v->toVector().size() && v->toVector()[y]->type() ==
 						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
@@ -243,7 +246,7 @@ std::string TransformNode::toString() const
 	return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi), matrix(Transform3d::Identity())
+TransformNode::TransformNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx), matrix(Transform3d::Identity())
 {
 }
 

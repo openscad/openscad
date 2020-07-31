@@ -336,9 +336,7 @@ QString ScintillaEditor::toPlainText()
 void ScintillaEditor::setContentModified(bool modified)
 {
 	// FIXME: Due to an issue with QScintilla, we need to do this on the document itself.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	qsci->SCN_SAVEPOINTLEFT();
-#endif
 	qsci->setModified(modified);
 }
 
@@ -370,15 +368,6 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const s
 {
 	try {
 		const auto val = pt.get<std::string>(name);
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-		if ((val.length() == 9) && (val.at(0) == '#')) {
-			const auto rgb = std::string("#") + val.substr(3);
-			QColor qcol(rgb.c_str());
-			auto alpha = std::strtoul(val.substr(1, 2).c_str(), 0, 16);
-			qcol.setAlpha(alpha);
-			return qcol;
-		}
-#endif
 		return QColor(val.c_str());
 	} catch (const std::exception &e) {
 		return defaultColor;
@@ -1175,6 +1164,11 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 	if(val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset+indicatorData.size())	{
 		emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
 	}
+}
+
+void ScintillaEditor::setCursorPosition(int line, int col)
+{
+	qsci->setCursorPosition(line, col);
 }
 
 void ScintillaEditor::updateSymbolMarginVisibility()

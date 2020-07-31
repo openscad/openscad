@@ -945,7 +945,6 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 
 	// Outer loop: to allow tail calls
 	unsigned int counter = 0;
-	ValuePtr result;
 	while (true) {
 		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
 		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
@@ -955,52 +954,48 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
 
 		// Inner loop: to follow a single execution path
-		// Before a 'break', must either assign result, or set tailCall to true.
+		// Only 'break' inner loop for tail calls after calling prepareTailCallContext.
+		// Otherwise continue looping over sub-expressions, or return subExpr->evaluate(...) directly if not applicable to tail calls.
 		shared_ptr<Expression> subExpr = expr;
-		bool tailCall = false;
 		while (true) {
 			if (!subExpr) {
-				result = ValuePtr::undefined;
-				break;
-			}
-			else if (typeid(*subExpr) == typeid(TernaryOp)) {
-				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
-				subExpr = ternary->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Assert)) {
-				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
-				subExpr = assertion->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Echo)) {
-				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
-				subExpr = echo->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Let)) {
-				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
-				// Start a new, nested context
-				c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
-				c_local = c_local_stack.front().ctx;
-				subExpr = let->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(FunctionCall)) {
-				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
-				if (name == call->get_name()) {
-					// Update c_next with new parameters for tail call
-					call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
-					tailCall = true;
+				return ValuePtr::undefined;
+			} else {
+				const auto& subExprRef = *subExpr;
+				if (typeid(subExprRef) == typeid(TernaryOp)) {
+					const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
+					subExpr = ternary->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Assert)) {
+					const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
+					subExpr = assertion->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Echo)) {
+					const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
+					subExpr = echo->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Let)) {
+					const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
+					// Start a new, nested context
+					c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
+					c_local = c_local_stack.front().ctx;
+					subExpr = let->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(FunctionCall)) {
+					const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
+					if (name == call->get_name()) {
+						// Update c_next with new parameters for tail call
+						call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
+						break;
+					}
+					else {
+						return subExpr->evaluate(c_local);
+					}
 				}
 				else {
-					result = subExpr->evaluate(c_local);
+					return subExpr->evaluate(c_local);
 				}
-				break;
 			}
-			else {
-				result = subExpr->evaluate(c_local);
-				break;
-			}
-		}
-		if (!tailCall) {
-			break;
 		}
 
 		if (counter++ == 1000000){
@@ -1010,5 +1005,5 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 		}
 	}
 
-	return result;
+	return ValuePtr::undefined;
 }

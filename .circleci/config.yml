@@ -226,7 +226,7 @@ workflows:
           filters:
               branches:
                   only:
-                      - circleci-macos
+                      - /.*-macos/
   scheduled:
     triggers:
       - schedule:

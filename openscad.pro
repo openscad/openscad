@@ -314,7 +314,6 @@ HEADERS += src/version_check.h \
            src/exceptions.h \
            src/grid.h \
            src/hash.h \
-           src/highlighter.h \
            src/localscope.h \
            src/feature.h \
            src/node.h \
@@ -361,7 +360,9 @@ HEADERS += src/version_check.h \
            src/system-gl.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
+           src/RenderStatistic.h \
            src/svg.h \
+           src/mouseselector.h \
            \
            src/OffscreenView.h \
            src/OffscreenContext.h \
@@ -375,7 +376,6 @@ HEADERS += src/version_check.h \
            src/Console.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
-           src/legacyeditor.h \
            src/LibraryInfoDialog.h \
            \
            src/comment.h\
@@ -446,7 +446,6 @@ SOURCES += \
            src/polyset-utils.cc \
            src/GeometryUtils.cc \
            src/polyset.cc \
-           src/polyset-gl.cc \
            src/csgops.cc \
            src/transform.cc \
            src/color.cc \
@@ -469,6 +468,7 @@ SOURCES += \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
+           src/RenderStatistic.cc \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
@@ -482,7 +482,6 @@ SOURCES += \
            \
            src/settings.cc \
            src/rendersettings.cc \
-           src/highlighter.cc \
            src/initConfig.cc \
            src/Preferences.cc \
            src/SettingsWriter.cc \
@@ -537,10 +536,10 @@ SOURCES += \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
-           src/legacyeditor.cc \
            src/LibraryInfoDialog.cc\
            \
            src/comment.cpp \
+           src/mouseselector.cc \
            \
            src/parameter/ParameterWidget.cc\
            src/parameter/parameterobject.cpp \

@@ -107,21 +107,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 void Preferences::init() {
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
-#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
-#if defined (Q_OS_WIN)
-	const QString fontfamily{"Console"};
-#elif defined (Q_OS_MAC)
-	const QString fontfamily{"Monaco"};
-#else
-	const QString fontfamily{"Mono"};
-#endif
-
-	QFont font;
-	font.setStyleHint(QFont::TypeWriter);
-	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
-#else
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-#endif
+
 	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
@@ -180,11 +167,7 @@ void Preferences::init() {
 #else
 	this->toolBar->removeAction(prefsActionUpdate);
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 	addPrefPage(group, prefsAction3DPrint, page3DPrint);
-#else
-	this->toolBar->removeAction(prefsAction3DPrint);
-#endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
 #else

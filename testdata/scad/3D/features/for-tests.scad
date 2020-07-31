@@ -75,10 +75,72 @@ for(i = [inf:0]) {}
 for(i = [ninf:0]) {}
 
 for(i = [0:2:inf]) {}
-for(i = [0:2:ninf]) {}
-for(i = [inf:2:0]) {}
+for(i = [0:2:ninf]) {}    // 0 values, begin > end
+for(i = [inf:2:0]) {}     // 0 values, begin > end
 for(i = [ninf:2:0]) {}
-for(i = [inf:2:inf]) {}
-for(i = [ninf:2:ninf]) {}
-for(i = [inf:2:ninf]) {}
+for(i = [inf:2:inf]) {}   // 1 value,  begin == end
+for(i = [ninf:2:ninf]) {} // 1 value,  begin == end
+for(i = [inf:2:ninf]) {}  // 0 values, begin > end
 for(i = [ninf:2:inf]) {}
+
+module PathologicalInputs() {
+  // Expected:  too many elements
+  // Actual:  0
+  echo("[0:1:4294967296] end capped");
+  for (i=[0:1:4294967296]) { if ((i<2) || (i>=4294967295)) {echo(i);} }
+
+  // Expected:  too many elements
+  // Actual:  0
+  echo("[0:1:8589934592] end capped");
+  for (i=[0:1:8589934592]) { if ((i<2) || (i>=8589934592)) {echo(i);} }
+
+  // Expected:  0, 1, 4294967294, 4294967295  or too many inputs
+  // Actual:  no output
+  echo("[0:1:4294967295] end capped");
+  for (i=[0:1:4294967295]) { if ((i<2) || (i>=4294967294)) {echo(i);} }
+
+  // Expected:  0, 1, 4294967293, 4294967294  or too many inputs
+  // Actual:  too many elements (4294967295)
+  // Note:  Oddly inconsistent with the 0:42949679295 case right above.
+  echo("[0:1:4294967294] end capped");
+  for (i=[0:1:4294967294]) { if ((i<2) || (i>=4294967293)) {echo(i);} }
+
+  // Expected:  0, 1, 4999, 5000
+  // Correct
+  echo("[0:1:5000] end capped");
+  for (i=[0:1:5000]) { if ((i<2) || (i>=4999)) {echo(i);} }
+
+  // Expected:  "diff=0, i==1", "diff=0, i=5000"
+  // Correct
+  echo("[0:1:5000] difference from 1, 5000");
+  for (i=[0:1:5000]) {
+    if ((i>0.5)&&(i<1.5)) {
+      echo("diff=", i-1, (i==1)?", i==1":", i!=1");
+    }
+    if (i>4999) {
+      echo("diff=", i-5000, (i==5000)?", i==5000":", i!=5000");
+    }
+  }
+
+  // Expected:  "diff=0, i==1", "diff=0, i=5000"
+  // Correct
+  echo("[0:1:5000] difference from 1, 5000");
+  for (i=[0:1:5000]) {
+    if ((i>0.5)&&(i<1.5)) {
+      echo("diff=", i-1, (i==1)?", i==1":", i!=1");
+    }
+    if (i>4999) {
+      echo("diff=", i-5000, (i==5000)?", i==5000":", i!=5000");
+    }
+  }
+
+  // Expected:  "diff=0, i==1"
+  // Correct
+  echo("[0:1] difference from 1");
+  for (i=[0:1])
+    if (i>0) {
+      echo("diff=", i-1, (i==1)?", i==1":", i!=1");
+    }
+}
+
+PathologicalInputs();

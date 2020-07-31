@@ -33,9 +33,5 @@ extern bool parse(class FileModule *&module, const std::string& text, const std:
 #include <string>
 extern std::string commandline_commands;
 
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
-
 // Custom argument parser
 std::pair<std::string, std::string> customSyntax(const std::string& s);

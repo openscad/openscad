@@ -40,6 +40,9 @@ testdata/svg/viewbox/viewbox_*.svg
 /*.h
 /*.dump
 /*.pl
+/b/
+/c/
+.gcov/
 /lexer_lex.cpp
 /parser_yacc.cpp
 /openscad_adaptor.cpp

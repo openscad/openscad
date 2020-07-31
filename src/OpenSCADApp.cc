@@ -25,9 +25,9 @@ OpenSCADApp::~OpenSCADApp()
 #include <QMessageBox>
 
 // See: https://bugreports.qt.io/browse/QTBUG-65592
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
 void OpenSCADApp::workaround_QTBUG_65592(QObject* o, QEvent* e)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
 	QMainWindow* mw;
 	if (o->isWidgetType() && e->type() == QEvent::MouseButtonPress && (mw = qobject_cast< QMainWindow* >(o))) {
 		for (auto& ch : mw->children()) {
@@ -44,8 +44,10 @@ void OpenSCADApp::workaround_QTBUG_65592(QObject* o, QEvent* e)
 			}
 		}
 	}
-#endif
 }
+#else
+void OpenSCADApp::workaround_QTBUG_65592(QObject*, QEvent*) { }
+#endif
 
 bool OpenSCADApp::notify(QObject *object, QEvent *event)
 {

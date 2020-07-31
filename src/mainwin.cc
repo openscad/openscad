@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "boost-utils.h"
 #include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
@@ -35,9 +36,7 @@
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
-#include "polyset.h"
 #include "csgnode.h"
-#include "highlighter.h"
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
@@ -48,6 +47,7 @@
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
+#include "RenderStatistic.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -57,6 +57,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
+#include "mouseselector.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
@@ -97,16 +98,10 @@
 #include "ShortcutConfigurator.h"
 
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QTextDocument>
-#define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
-#undef ENABLE_3D_PRINTING
-#else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
-#endif
 
 #include <fstream>
 
@@ -130,6 +125,7 @@
 #include "PrintInitDialog.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
+#include <memory>
 #include <QtNetwork>
 
 // Global application state
@@ -433,6 +429,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	PRINT(copyrighttext);
 
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -596,6 +593,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
+
+  if (Feature::ExperimentalMouseSelection.is_enabled()) {
+  	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+  }
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -1192,10 +1193,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
-			GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-			CGALCache::instance()->print();
-#endif
+			RenderStatistic::printCacheStatistic();
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
@@ -1272,15 +1270,15 @@ void MainWindow::compileCSG()
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
-																								this->qglview->shaderinfo);
+																								&this->qglview->shaderinfo);
 		}
 #endif
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
 																														this->highlights_products,
 																														this->background_products);
 		PRINT("Compile and preview finished.");
-		int s = this->renderingTime.elapsed() / 1000;
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
+		RenderStatistic::printRenderingTime(ms);
 		this->processEvents();
 	}catch(const HardWarningException&){
 		exceptionCleanup();
@@ -2075,47 +2073,12 @@ void MainWindow::cgalRender()
 void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
-
-	unsigned int s = this->renderingTime.elapsed() / 1000;
-
+	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
 	if (root_geom) {
-		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-		CGALCache::instance()->print();
-#endif
-
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-
-		if (root_geom && !root_geom->isEmpty()) {
-			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
-				if (N->getDimension() == 3) {
-					bool simple = N->p3->is_simple();
-					PRINT("   Top level object is a 3D object:");
-					PRINTB("   Simple:     %6s", (simple ? "yes" : "no"));
-					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
-					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
-					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
-					PRINTB("   Halffacets: %6d", N->p3->number_of_halffacets());
-					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
-					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
-					if (!simple) {
-						PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair!");
-					}
-				}
-			}
-			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
-				assert(ps->getDimension() == 3);
-				PRINT("   Top level object is a 3D object:");
-				PRINTB("   Facets:     %6d", ps->numFacets());
-			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
-				PRINT("   Top level object is a 2D object:");
-				PRINTB("   Contours:     %6d", poly->outlines().size());
-			} else  if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(root_geom.get())) {
-				PRINT("   Top level object is a list of objects:");
-				PRINTB("   Objects:     %d", geomlist->getChildren().size());
-			} else {
-				assert(false && "Unknown geometry type");
-			}
+		RenderStatistic::printCacheStatistic();
+		RenderStatistic::printRenderingTime(ms);
+		if (!root_geom->isEmpty()) {
+			RenderStatistic().print(*root_geom);
 		}
 		PRINT("Rendering finished.\n");
 
@@ -2133,7 +2096,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	updateStatusBar(nullptr);
 
 	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
-		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
+		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
 	{
 		QSound::play(":sounds/complete.wav");
 	}
@@ -2144,6 +2107,105 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 }
 
 #endif /* ENABLE_CGAL */
+
+/**
+ * Call the mouseselection to determine the id of the clicked-on object.
+ * Use the generated ID and try to find it within the list of products
+ * And finally move the cursor to the beginning of the selected object in the editor
+ */
+void MainWindow::selectObject(QPoint mouse)
+{
+	if (!Feature::ExperimentalMouseSelection.is_enabled()) {
+		return;
+	}
+
+	// selecting without a renderer?!
+	if (!this->qglview->renderer) {
+		return;
+	}
+
+	// Nothing to select
+	if (!this->root_products) {
+		return;
+	}
+
+	// Update the selector with the right image size
+	this->selector->reset(this->qglview);
+
+	// Select the object at mouse coordinates
+	int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
+	std::deque<const AbstractNode *> path;
+	const AbstractNode *result = this->root_node->getNodeByID(index, path);
+
+	if (result) {
+		// Create context menu with the backtrace
+		QMenu tracemenu(this);
+		std::stringstream ss;
+		for (const auto *step : path) {
+			// Skip certain node types
+			if (step->name() == "root") {
+				continue;
+			}
+
+			auto location = step->location;
+			ss.str("");
+
+			// Check if the path is contained in a library (using parsersettings.h)
+			fs::path libpath = get_library_for_path(location.filePath());
+			if (!libpath.empty()) {
+				// Display the library (without making the window too wide!)
+				ss << step->name() << " (library "
+				   << location.fileName().substr(libpath.string().length() + 1) << ":"
+				   << location.firstLine() << ")";
+			}
+			else if (activeEditor->filepath.toStdString() == location.fileName()) {
+				ss << step->name() << " (" << location.filePath().filename().string() << ":"
+				   << location.firstLine() << ")";
+			}
+			else {
+				auto relname = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+				  .generic_string();
+				// Set the displayed name relative to the active editor window
+				ss << step->name() << " (" << relname << ":" << location.firstLine() << ")";
+			}
+
+			// Prepare the action to be sent
+			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
+			action->setProperty("file", QString::fromStdString(location.fileName()));
+			action->setProperty("line", location.firstLine());
+			action->setProperty("column", location.firstColumn());
+
+			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+		}
+
+		tracemenu.exec(this->qglview->mapToGlobal(mouse));
+	}
+}
+
+/**
+ * Expects the sender to have properties "file", "line" and "column" defined
+ */
+void MainWindow::setCursor()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
+			!action->property("column").isValid()) {
+		return;
+	}
+
+	auto file = action->property("file").toString();
+	auto line = action->property("line").toInt();
+	auto column = action->property("column").toInt();
+
+	// Unsaved files do have the pwd as current path, therefore we will not open a new
+	// tab on click
+	if (!fs::is_directory(fs::path(file.toStdString()))) {
+		this->tabManager->open(file);
+	}
+
+	// move the cursor, the editor is 0 based whereby location is 1 based
+	this->activeEditor->setCursorPosition(line - 1, column - 1);
+}
 
 /**
  * Switch version label and progress widget. When switching to the progress

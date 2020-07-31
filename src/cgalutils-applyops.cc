@@ -148,8 +148,6 @@ namespace CGALUtils {
 		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
 		try {
-			int min_progress_mark = std::numeric_limits<int>::max();
-			int max_progress_mark = std::numeric_limits<int>::min();
 			// sort children by fewest faces
 			for (auto it = chbegin; it != chend; ++it) {
 				const shared_ptr<const Geometry> &chgeom = it->second;
