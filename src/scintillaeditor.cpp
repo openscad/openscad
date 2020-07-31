@@ -1098,9 +1098,9 @@ bool ScintillaEditor::modifyNumber(int key)
 
 	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
 
-	QRegExp rx("[\(=]");
+	QRegExp rx("[a-df-zA-DF-Z]");
 	auto check = text.mid(begin-1,1);
-	if( !rx.exactMatch(check)) return false;
+	if(rx.exactMatch(check)) return false;
 	
 	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
