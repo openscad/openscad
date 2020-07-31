@@ -1069,7 +1069,7 @@ int main(int argc, char **argv)
 			}
 			else {
 				for(auto output_file : output_files) {
-					rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+					rc |= cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
 				}
 			}
 		} catch (const HardWarningException &) {
