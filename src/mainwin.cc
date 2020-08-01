@@ -1715,7 +1715,6 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
 
-	if(this->root_module) std::cout<<typeid(this->root_module).name()<<std::endl;
 	if (this->root_module!=nullptr) {
 		//add parameters as annotation in AST
 		CommentParser::collectParameters(fulltext,this->root_module);
@@ -2938,11 +2937,6 @@ void MainWindow::consoleOutput(const QString &msg)
 		this->compileErrors++;
 		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></a>&nbsp;");
 		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span></a>&nbsp;");
-		// std::string t = msg.toStdString();
-		// t.erase(remove_if(t.begin(), t.end(), [](char c) { return !isdigit(c); } ), t.end());
-		// QString temp = "<a href=\""+QT_HTML_ESCAPE(QString::fromStdString(t))+"\">"+QT_HTML_ESCAPE(QString(msg)) + "</a>&nbsp;";
-		// std::cout<<msg.toStdString()<<std::endl;
-		// this->console->appendHtml(temp);
 	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
 	} else if (msg.startsWith("TRACE:")) {
@@ -2953,9 +2947,22 @@ void MainWindow::consoleOutput(const QString &msg)
 	this->processEvents();
 }
 
+void MainWindow::errorLogOutput(const std::string &msg, void *userdata)
+{
+	auto thisp = static_cast<MainWindow*>(userdata);
+	QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(QString, QString::fromStdString(msg)));
+}
+
+void MainWindow::errorLogOutput(const QString &msg)
+{
+	std::cout<<msg.toStdString()<<std::endl;
+}
+
+
 void MainWindow::setCurrentOutput()
 {
 	set_output_handler(&MainWindow::consoleOutput, this);
+	set_output_handler(&MainWindow::errorLogOutput,this);
 }
 
 void MainWindow::hideCurrentOutput()
