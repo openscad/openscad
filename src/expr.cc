@@ -53,7 +53,7 @@ namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			if (vec[i]->type() == Value::ValueType::VECTOR) {
+			if (vec[i]->type() == Value::Type::VECTOR) {
 				n += vec[i]->toVector().size();
 			} else {
 				n++;
@@ -61,7 +61,7 @@ namespace {
 		}
 		Value::VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			if (vec[i]->type() == Value::ValueType::VECTOR) {
+			if (vec[i]->type() == Value::Type::VECTOR) {
 				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
 			} else {
 				ret.push_back(vec[i]);
@@ -329,9 +329,9 @@ static void NOINLINE print_range_err(const std::string &begin, const std::string
 ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr beginValue = this->begin->evaluate(context);
-	if (beginValue->type() == Value::ValueType::NUMBER) {
+	if (beginValue->type() == Value::Type::NUMBER) {
 		ValuePtr endValue = this->end->evaluate(context);
-		if (endValue->type() == Value::ValueType::NUMBER) {
+		if (endValue->type() == Value::Type::NUMBER) {
 			double begin_val = beginValue->toDouble();
 			double end_val   = endValue->toDouble();
 			
@@ -345,7 +345,7 @@ ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 				return ValuePtr(range);
 			} else {
 				ValuePtr stepValue = this->step->evaluate(context);
-				if (stepValue->type() == Value::ValueType::NUMBER) {
+				if (stepValue->type() == Value::Type::NUMBER) {
 					double step_val = stepValue->toDouble();
 					if(this->isLiteral()){
 						if ((step_val>0) && (end_val < begin_val)) {
@@ -456,11 +456,11 @@ ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr v = this->expr->evaluate(context);
 
-	if (v->type() == Value::ValueType::VECTOR) {
+	if (v->type() == Value::Type::VECTOR) {
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v->type() == Value::ValueType::RANGE) {
+	} else if (v->type() == Value::Type::RANGE) {
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
@@ -588,7 +588,7 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
 		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-		if (v->type() == Value::ValueType::FUNCTION) {
+		if (v->type() == Value::Type::FUNCTION) {
 			if (name.size() > 0 && name.at(0) == '$') {
 				print_invalid_function_call("dynamically scoped variable", context, loc);
 				return ValuePtr::undefined;
@@ -751,7 +751,7 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
 
     ValuePtr v = this->expr->evaluate(context);
 
-    if (v->type() == Value::ValueType::RANGE) {
+    if (v->type() == Value::Type::RANGE) {
         RangeType range = v->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
@@ -761,16 +761,16 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
                 vec.push_back(ValuePtr(*it));
             }
         }
-    } else if (v->type() == Value::ValueType::VECTOR) {
+    } else if (v->type() == Value::Type::VECTOR) {
         Value::VectorType vector = v->toVector();
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
-    } else if (v->type() == Value::ValueType::STRING) {
+    } else if (v->type() == Value::Type::STRING) {
         utf8_split(v->toString(), [&](ValuePtr v) {
             vec.push_back(v);
         });
-    } else if (v->type() != Value::ValueType::UNDEFINED) {
+    } else if (v->type() != Value::Type::UNDEFINED) {
         vec.push_back(v);
     }
 
@@ -805,7 +805,7 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
 
     ContextHandle<Context> c{Context::create<Context>(context)};
 
-    if (it_values->type() == Value::ValueType::RANGE) {
+    if (it_values->type() == Value::Type::RANGE) {
         RangeType range = it_values->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
@@ -816,17 +816,17 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
                 vec.push_back(this->expr->evaluate(c.ctx));
             }
         }
-    } else if (it_values->type() == Value::ValueType::VECTOR) {
+    } else if (it_values->type() == Value::Type::VECTOR) {
         for (size_t i = 0; i < it_values->toVector().size(); i++) {
             c->set_variable(it_name, it_values->toVector()[i]);
             vec.push_back(this->expr->evaluate(c.ctx));
         }
-    } else if (it_values->type() == Value::ValueType::STRING) {
+    } else if (it_values->type() == Value::Type::STRING) {
         utf8_split(it_values->toString(), [&](ValuePtr v) {
             c->set_variable(it_name, v);
             vec.push_back(this->expr->evaluate(c.ctx));
         });
-    } else if (it_values->type() != Value::ValueType::UNDEFINED) {
+    } else if (it_values->type() != Value::Type::UNDEFINED) {
         c->set_variable(it_name, it_values);
         vec.push_back(this->expr->evaluate(c.ctx));
     }

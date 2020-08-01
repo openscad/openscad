@@ -63,14 +63,14 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::ValueType::STRING:
+		case Value::Type::STRING:
 			return Value(trimmed_value);
-		case Value::ValueType::NUMBER: 
+		case Value::Type::NUMBER: 
 			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
 				return Value(boost::lexical_cast<double>(trimmed_value));
 			}
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::ValueType::BOOL:
+		case Value::Type::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);

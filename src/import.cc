@@ -132,14 +132,14 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	}
 
 	const auto center = c->lookup_variable("center", true);
-	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
+	node->center = center->type() == Value::Type::BOOL ? center->toBool() : false;
 
 	node->scale = c->lookup_variable("scale", true)->toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	node->dpi = ImportNode::SVG_DEFAULT_DPI;
 	const auto dpi = c->lookup_variable("dpi", true);
-	if (dpi->type() == Value::ValueType::NUMBER) {
+	if (dpi->type() == Value::Type::NUMBER) {
 		double val = dpi->toDouble();
 		if (val < 0.001) {
 			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
@@ -153,8 +153,8 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 
 	auto width = c->lookup_variable("width", true);
 	auto height = c->lookup_variable("height", true);
-	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
+	node->width = (width->type() == Value::Type::NUMBER) ? width->toDouble() : -1;
+	node->height = (height->type() == Value::Type::NUMBER) ? height->toDouble() : -1;
 
 	return node;
 }

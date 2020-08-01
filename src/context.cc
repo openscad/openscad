@@ -185,13 +185,13 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
 {
 	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::ValueType::NUMBER) ? v->toDouble() : def;
+	return (v->type() == Value::Type::NUMBER) ? v->toDouble() : def;
 }
 
 std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
 {
 	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::ValueType::STRING) ? v->toString() : def;
+	return (v->type() == Value::Type::STRING) ? v->toString() : def;
 }
 
 bool Context::has_local_variable(const std::string &name) const

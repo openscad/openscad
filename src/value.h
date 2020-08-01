@@ -230,7 +230,7 @@ class Value
 public:
 	typedef std::vector<ValuePtr> VectorType;
 
-  enum class ValueType {
+  enum class Type {
     UNDEFINED,
     BOOL,
     NUMBER,
@@ -252,9 +252,9 @@ public:
   Value(const RangeType &v);
   Value(const FunctionType &v);
 
-  ValueType type() const;
+  Type type() const;
   bool isDefined() const;
-  bool isDefinedAs(const ValueType type) const;
+  bool isDefinedAs(const Type type) const;
   bool isUndefined() const;
 
   double toDouble() const;
@@ -293,7 +293,7 @@ public:
   Value operator%(const Value &v) const;
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
-    if (value.type() == Value::ValueType::STRING) stream << QuotedString(value.toString());
+    if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
     else stream << value.toString();
     return stream;
   }
