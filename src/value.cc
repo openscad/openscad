@@ -405,7 +405,7 @@ public:
     return v ? "true" : "false";
   }
 
-  std::string operator()(const Value::VectorType &v) const {
+  std::string operator()(const VectorType &v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
     stream << '[';
@@ -459,7 +459,7 @@ public:
     stream << (v ? "true" : "false");
   }
 
-  void operator()(const Value::VectorType &v) const {
+  void operator()(const VectorType &v) const {
     stream << '[';
     for (size_t i = 0; i < v.size(); i++) {
       if (i > 0) stream << ", ";
@@ -549,7 +549,7 @@ public:
 			return std::string(buf);
 		}
 
-	std::string operator()(const Value::VectorType &v) const
+	std::string operator()(const VectorType &v) const
 		{
 			std::ostringstream stream;
 			for (size_t i = 0; i < v.size(); i++) {
@@ -581,7 +581,7 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
-const Value::VectorType &Value::toVector() const
+const VectorType &Value::toVector() const
 {
   static VectorType empty;
   
@@ -740,8 +740,8 @@ public:
 		return {op1 + op2};
 	}
 
-	Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
-		Value::VectorType sum;
+	Value operator()(const VectorType &op1, const VectorType &op2) const {
+		VectorType sum;
 		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
 			sum.push_back(ValuePtr(*op1[i] + *op2[i]));
 		}
@@ -765,8 +765,8 @@ public:
 		return {op1 - op2};
 	}
 
-	Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
-		Value::VectorType sum;
+	Value operator()(const VectorType &op1, const VectorType &op2) const {
+		VectorType sum;
 		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
 			sum.push_back(ValuePtr(*op1[i] - *op2[i]));
 		}
@@ -973,7 +973,7 @@ public:
     return v;
   }
 
-  Value operator()(const Value::VectorType &vec, const double &idx) const {
+  Value operator()(const VectorType &vec, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     if (i < vec.size()) return *vec[i];
     return Value::undefined;
@@ -1149,7 +1149,7 @@ ValuePtr::ValuePtr(const char v)
 	this->reset(new Value(v));
 }
 
-ValuePtr::ValuePtr(const Value::VectorType &v)
+ValuePtr::ValuePtr(const VectorType &v)
 {
 	this->reset(new Value(v));
 }

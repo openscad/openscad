@@ -50,7 +50,7 @@ namespace {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
 
-	Value::VectorType flatten(Value::VectorType const& vec) {
+	VectorType flatten(VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			if (vec[i]->type() == Value::Type::VECTOR) {
@@ -59,7 +59,7 @@ namespace {
 				n++;
 			}
 		}
-		Value::VectorType ret; ret.reserve(n);
+		VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
 			if (vec[i]->type() == Value::Type::VECTOR) {
 				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
@@ -403,11 +403,11 @@ void Vector::emplace_back(Expression *expr)
 
 ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const Value::VectorType result = tmpval->toVector();
+			const VectorType result = tmpval->toVector();
 			for (size_t i = 0;i < result.size();i++) {
 				vec.push_back(result[i]);
 			}
@@ -721,7 +721,7 @@ ValuePtr LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
-    Value::VectorType vec;
+    VectorType vec;
     if (expr) {
         if (isListComprehension(expr)) {
             return expr->evaluate(context);
@@ -747,7 +747,7 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 
 ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
     ValuePtr v = this->expr->evaluate(context);
 
@@ -762,7 +762,7 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
             }
         }
     } else if (v->type() == Value::Type::VECTOR) {
-        Value::VectorType vector = v->toVector();
+        VectorType vector = v->toVector();
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
@@ -793,7 +793,7 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 
 ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
     ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
@@ -850,7 +850,7 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 ValuePtr LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
     ContextHandle<Context> c{Context::create<Context>(context)};
     evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);

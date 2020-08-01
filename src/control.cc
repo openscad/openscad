@@ -235,7 +235,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				AbstractNode* node;
 				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 				else node = new GroupNode(inst, evalctx);
-				const Value::VectorType& vect = value->toVector();
+				const VectorType& vect = value->toVector();
 				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
 					if (childnode==nullptr) continue; // error

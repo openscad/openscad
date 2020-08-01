@@ -70,7 +70,7 @@ void ParameterVirtualWidget::setPrecision(double number){
 }
 
 //functional overloading to handle the case of vectors
-void ParameterVirtualWidget::setPrecision(Value::VectorType vec){
+void ParameterVirtualWidget::setPrecision(VectorType vec){
 	int highestPrecision= 0;
     for(long unsigned int i=0;i<vec.size();i++)
 	{

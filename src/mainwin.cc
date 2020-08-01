@@ -1636,14 +1636,14 @@ void MainWindow::updateTemporalVariables()
 	this->top_ctx->set_variable("$t", ValuePtr(this->anim_tval));
 
 	auto camVpt = qglview->cam.getVpt();
-	Value::VectorType vpt;
+	VectorType vpt;
 	vpt.push_back(ValuePtr(camVpt.x()));
 	vpt.push_back(ValuePtr(camVpt.y()));
 	vpt.push_back(ValuePtr(camVpt.z()));
 	this->top_ctx->set_variable("$vpt", ValuePtr(vpt));
 
 	auto camVpr = qglview->cam.getVpr();
-	Value::VectorType vpr;
+	VectorType vpr;
 	vpr.push_back(ValuePtr(camVpr.x()));
 	vpr.push_back(ValuePtr(camVpr.y()));
 	vpr.push_back(ValuePtr(camVpr.z()));
