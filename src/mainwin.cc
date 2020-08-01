@@ -1676,7 +1676,7 @@ void MainWindow::updateCamera(const std::shared_ptr<FileContext> ctx)
 	}
 
 	const auto vpd = ctx->lookup_variable("$vpd");
-	if (vpd->type() == Value::ValueType::NUMBER){
+	if (vpd->type() == Value::Type::NUMBER){
 		qglview->cam.setVpd(vpd->toDouble());
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());

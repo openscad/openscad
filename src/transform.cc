@@ -105,7 +105,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	else if (this->type == transform_type_e::ROTATE) {
 		auto val_a = c->lookup_variable("a");
 		auto val_v = c->lookup_variable("v");
-		if (val_a->type() == Value::ValueType::VECTOR) {
+		if (val_a->type() == Value::Type::VECTOR) {
 			double sx = 0, sy = 0, sz = 0;
 			double cx = 1, cy = 1, cz = 1;
 			double a = 0.0;
@@ -206,12 +206,12 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
 		auto v = c->lookup_variable("m");
-		if (v->type() == Value::ValueType::VECTOR) {
+		if (v->type() == Value::Type::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v->toVector().size() && v->toVector()[y]->type() ==
-						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
+						Value::Type::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
 			double w = rawmatrix(3,3);

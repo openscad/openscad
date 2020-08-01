@@ -73,11 +73,11 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		if (assignment->expr->isLiteral() && this->variables.find(assignment->name) != this->variables.end()) {
+		if (assignment->getExpr()->isLiteral() && this->variables.find(assignment->getName()) != this->variables.end()) {
 			std::string loc = assignment->location().toRelativeString(this->documentPath());
-			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment->name % loc);
+			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment->getName() % loc);
 		}
-		this->set_variable(assignment->name, assignment->expr->evaluate(get_shared_ptr()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
 
 // Experimental code. See issue #399
@@ -148,7 +148,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg->name % variables[arg->name];
+				s << boost::format("    %s = %s") % arg->getName() % variables[arg->getName()];
 			}
 		}
 	}
@@ -227,6 +227,6 @@ void FileContext::initializeModule(const class FileModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		this->set_variable(assignment->name, assignment->expr->evaluate(get_shared_ptr()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
 }

@@ -286,23 +286,24 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	std::string output_file_str = output_file;
 	const char *new_output_file = nullptr;
 
+	// Determine output file format and assign it to formatName
 	if(!export_format.empty()) {
-		// If command line option --export-format is specified, use that format.
 		formatName = export_format;
-	}
-	else {
+	} else {
 		// else extract format from file extension
 		auto suffix = fs::path(output_file_str).extension().generic_string();
-		suffix = suffix.substr(1);
+		if (suffix.length() > 1) {
+			// Remove the period
+			suffix = suffix.substr(1);
+		}
 		boost::algorithm::to_lower(suffix);
 		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
 			formatName = suffix;
+		} else {
+			PRINTB("\nUnknown suffix '%s' for output file %s", suffix % output_file_str);
+			PRINT("Either add a valid suffix or specify one using --export-format\n");
+			return 1;
 		}
-	}
-
-	if(formatName.empty()) {
-		PRINTB("Unknown suffix for output file %s\n", output_file_str.c_str());
-		return 1;
 	}
 
 	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
@@ -310,11 +311,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	new_output_file = filename_str.c_str();
 
 	// Do some minimal checking of output directory before rendering (issue #432)
-	fs::path output_directory = fs::path(output_file_str).parent_path();
-	if (!fs::is_directory(output_directory)) {
+	auto output_path = fs::path(output_file_str).parent_path();
+	if (output_path.empty()) {
+		// If output_file_str has no directory prefix, set output directory to current directory.
+		output_path = fs::current_path();
+	}
+	if (!fs::is_directory(output_path)) {
 		PRINTB(
-			"%s is not a directory (output file: %s). - Skipping\n",
-			output_directory.c_str() % output_file_str.c_str()
+			"\n'%s' is not a directory for output file %s - Skipping\n",
+			output_path.generic_string() % output_file_str
 		);
 		return 1;
 	}
@@ -566,8 +571,8 @@ static QString assemblePath(const fs::path& absoluteBaseDir,
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
   auto qsFile = QString::fromLocal8Bit(fileName.c_str());
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo info(qsDir, qsFile);
-  return info.absoluteFilePath();
+  QFileInfo fileInfo(qsDir, qsFile);
+  return fileInfo.absoluteFilePath();
 }
 
 bool QtUseGUI()
@@ -816,6 +821,7 @@ bool flagConvert(std::string str){
 	return false;
 }
 
+// openSCAD
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -1040,7 +1046,8 @@ int main(int argc, char **argv)
 			export_format = tmp_format;
 		}
 		else {
-			PRINTB("Unknown --export-format option '%s' ignored. Use -h to list available options.", tmp_format.c_str());
+			PRINTB("\nUnknown --export-format option '%s'.  Use -h to list available options.\n", tmp_format.c_str());
+			return 1;
 		}
 	}
 
@@ -1062,7 +1069,7 @@ int main(int argc, char **argv)
 			}
 			else {
 				for(auto output_file : output_files) {
-					rc = cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
+					rc |= cmdline(deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format);
 				}
 			}
 		} catch (const HardWarningException &) {
@@ -1077,7 +1084,7 @@ int main(int argc, char **argv)
 	}
 	else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0], desc, true);
+		return 1;
 	}
 
 	Builtins::instance(true);

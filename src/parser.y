@@ -707,7 +707,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 {
 	bool found = false;
 	for (auto &assignment : scope_stack.top()->assignments) {
-		if (assignment->name == token) {
+		if (assignment->getName() == token) {
 			auto mainFile = mainFilePath.string();
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
@@ -719,7 +719,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			} else if (prevFile == mainFile && currFile == mainFile) {
 				//both assignments in the mainFile
 				PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
-						assignment->name %
+						assignment->getName() %
 						assignment->location().firstLine() %
 						loc.firstLine());
 			} else if (uncPathCurr == uncPathPrev) {
@@ -727,7 +727,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//the line number being equal happens, when a file is included multiple times
 				if (assignment->location().firstLine() != loc.firstLine()) {
 					PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-							assignment->name %
+							assignment->getName() %
 							assignment->location().firstLine() %
 							uncPathPrev %
 							loc.firstLine());
@@ -735,13 +735,13 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
 				PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
-						assignment->name %
+						assignment->getName() %
 						assignment->location().firstLine() %
 						uncPathPrev %
 						loc.firstLine() %
 						uncPathCurr);
 			}
-			assignment->expr = shared_ptr<Expression>(expr);
+			assignment->setExpr(shared_ptr<Expression>(expr));
 			assignment->setLocation(loc);
 			found = true;
 			break;

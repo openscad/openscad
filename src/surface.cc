@@ -96,17 +96,17 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	handle_dep(fs::path(filename).generic_string());
 
 	auto center = c->lookup_variable("center", true);
-	if (center->type() == Value::ValueType::BOOL) {
+	if (center->type() == Value::Type::BOOL) {
 		node->center = center->toBool();
 	}
 
 	auto convexity = c->lookup_variable("convexity", true);
-	if (convexity->type() == Value::ValueType::NUMBER) {
+	if (convexity->type() == Value::Type::NUMBER) {
 		node->convexity = static_cast<int>(convexity->toDouble());
 	}
 
 	auto invert = c->lookup_variable("invert", true);
-	if (invert->type() == Value::ValueType::BOOL) {
+	if (invert->type() == Value::Type::BOOL) {
 		node->invert = invert->toBool();
 	}
 

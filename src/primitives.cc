@@ -116,16 +116,16 @@ public:
  * @param ctx data context with variable values.
  * @param radius_var name of the variable to lookup for the radius value.
  * @param diameter_var name of the variable to lookup for the diameter value.
- * @return radius value of type Value::ValueType::NUMBER or Value::ValueType::UNDEFINED if both
+ * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
 Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const Location &loc, const std::string &diameter_var, const std::string &radius_var) const
 {
 	auto d = ctx->lookup_variable(diameter_var, true);
 	auto r = ctx->lookup_variable(radius_var, true);
-	const auto r_defined = (r->type() == Value::ValueType::NUMBER);
+	const auto r_defined = (r->type() == Value::Type::NUMBER);
 
-	if (d->type() == Value::ValueType::NUMBER) {
+	if (d->type() == Value::Type::NUMBER) {
 		if (r_defined) {
 			std::string locStr = loc.toRelativeString(ctx->documentPath());
 			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
@@ -218,14 +218,14 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 				}
 			}
 		}
-		if (center->type() == Value::ValueType::BOOL) {
+		if (center->type() == Value::Type::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
 	case primitive_type_e::SPHERE: {
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
-		if (r.type() == Value::ValueType::NUMBER) {
+		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
 				PRINTB("WARNING: sphere(r=%s), %s",
@@ -236,27 +236,27 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	}
 	case primitive_type_e::CYLINDER: {
 		const auto h = c->lookup_variable("h");
-		if (h->type() == Value::ValueType::NUMBER) {
+		if (h->type() == Value::Type::NUMBER) {
 			node->h = h->toDouble();
 		}
 
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
 		const auto r1 = lookup_radius(c.ctx, inst->location(), "d1", "r1");
 		const auto r2 = lookup_radius(c.ctx, inst->location(), "d2", "r2");
-		if(r.type() == Value::ValueType::NUMBER &&
-			(r1.type() == Value::ValueType::NUMBER || r2.type() == Value::ValueType::NUMBER)
+		if(r.type() == Value::Type::NUMBER &&
+			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 			){
 				PRINTB("WARNING: Cylinder parameters ambiguous, %s", inst->location().toRelativeString(ctx->documentPath()));
 		}
 
-		if (r.type() == Value::ValueType::NUMBER) {
+		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();
 		}
-		if (r1.type() == Value::ValueType::NUMBER) {
+		if (r1.type() == Value::Type::NUMBER) {
 			node->r1 = r1.toDouble();
 		}
-		if (r2.type() == Value::ValueType::NUMBER) {
+		if (r2.type() == Value::Type::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
 
@@ -267,14 +267,14 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
 				PRINTB("WARNING: cylinder(r1=%s, r2=%s, ...), %s",
-					(r1.type() == Value::ValueType::NUMBER ? r1.toEchoString() : r.toEchoString()) %
-					(r2.type() == Value::ValueType::NUMBER ? r2.toEchoString() : r.toEchoString()) %
+					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()) %
+					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()) %
 					inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 
 		auto center = c->lookup_variable("center");
-		if (center->type() == Value::ValueType::BOOL) {
+		if (center->type() == Value::Type::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
@@ -282,10 +282,10 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::POLYHEDRON: {
 		node->points = c->lookup_variable("points");
 		node->faces = c->lookup_variable("faces");
-		if (node->faces->type() == Value::ValueType::UNDEFINED) {
+		if (node->faces->type() == Value::Type::UNDEFINED) {
 			// backwards compatible
 			node->faces = c->lookup_variable("triangles", true);
-			if (node->faces->type() != Value::ValueType::UNDEFINED) {
+			if (node->faces->type() != Value::Type::UNDEFINED) {
 				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
@@ -311,14 +311,14 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 				}
 			}
 		}
-		if (center->type() == Value::ValueType::BOOL) {
+		if (center->type() == Value::Type::BOOL) {
 			node->center = center->toBool();
 		}
 		break;
 	}
 	case primitive_type_e::CIRCLE: {
 		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
-		if (r.type() == Value::ValueType::NUMBER) {
+		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
 				PRINTB("WARNING: circle(r=%s), %s",

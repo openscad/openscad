@@ -70,7 +70,7 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		convexity = c->lookup_variable("convexity", true);
 		auto ns = c->lookup_variable("newsize");
 		node->newsize << 0,0,0;
-		if ( ns->type() == Value::ValueType::VECTOR ) {
+		if (ns->type() == Value::Type::VECTOR ) {
 			const VectorType &vs = ns->toVector();
 			if ( vs.size() >= 1 ) node->newsize[0] = vs[0]->toDouble();
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1]->toDouble();
@@ -78,13 +78,13 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		}
 		auto autosize = c->lookup_variable("auto");
 		node->autosize << false, false, false;
-		if ( autosize->type() == Value::ValueType::VECTOR ) {
+		if (autosize->type() == Value::Type::VECTOR ) {
 			const VectorType &va = autosize->toVector();
 			if ( va.size() >= 1 ) node->autosize[0] = va[0]->toBool();
 			if ( va.size() >= 2 ) node->autosize[1] = va[1]->toBool();
 			if ( va.size() >= 3 ) node->autosize[2] = va[2]->toBool();
 		}
-		else if ( autosize->type() == Value::ValueType::BOOL ) {
+		else if (autosize->type() == Value::Type::BOOL ) {
 			node->autosize << autosize->toBool(),autosize->toBool(),autosize->toBool();
 		}
 	}

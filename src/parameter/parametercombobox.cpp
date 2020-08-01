@@ -14,7 +14,7 @@ ParameterComboBox::ParameterComboBox(QWidget *parent, ParameterObject *parameter
 void ParameterComboBox::onChanged(int idx)
 {
 	if(!this->suppressUpdate){
-		if (object->dvt == Value::ValueType::STRING) {
+		if (object->dvt == Value::Type::STRING) {
 			const std::string v = comboBox->itemData(idx).toString().toStdString();
 			object->value = ValuePtr(v);
 		} else {

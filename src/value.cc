@@ -130,7 +130,7 @@ inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpo
 inline void trimTrailingZeroes(char *buffer, const int pos) {
   char *decimal = strchr(buffer, '.');
 
-  if (decimal){
+  if (decimal) {
       char *exppos = strchr(buffer, DC_EXP);
       trimTrailingZeroesHelper(buffer, pos, &buffer[pos], exppos, decimal, nullptr);
   }
@@ -290,17 +290,17 @@ Value Value::undef(const std::string &why)
   return Value(UndefType(why));
 }
 
-Value::ValueType Value::type() const
+Value::Type Value::type() const
 {
-  return static_cast<ValueType>(this->value.which());
+  return static_cast<Type>(this->value.which());
 }
 
 bool Value::isDefined() const
 {
-  return this->type() != ValueType::UNDEFINED;
+  return this->type() != Type::UNDEFINED;
 }
 
-bool Value::isDefinedAs(const ValueType type) const
+bool Value::isDefinedAs(const Type type) const
 {
   return this->type() == type;
 }
@@ -312,7 +312,7 @@ bool Value::isUndefined() const
 
 bool Value::isUncheckedUndef() const
 {
-  return this->type()==ValueType::UNDEFINED && !boost::get<UndefType>(this->value).empty();
+  return this->type()==Type::UNDEFINED && !boost::get<UndefType>(this->value).empty();
 }
 
 const FunctionType Value::toFunction() const
@@ -323,13 +323,13 @@ const FunctionType Value::toFunction() const
 std::string Value::typeName() const
 {
 	switch (this->type()) {
-	case ValueType::UNDEFINED: return "undefined";
-	case ValueType::BOOL:      return "bool";
-	case ValueType::NUMBER:    return "number";
-	case ValueType::STRING:    return "string";
-	case ValueType::VECTOR:    return "vector";
-	case ValueType::RANGE:     return "range";
-	case ValueType::FUNCTION:  return "function";
+	case Type::UNDEFINED: return "undefined";
+	case Type::BOOL:      return "bool";
+	case Type::NUMBER:    return "number";
+	case Type::STRING:    return "string";
+	case Type::VECTOR:    return "vector";
+	case Type::RANGE:     return "range";
+	case Type::FUNCTION:  return "function";
 	default:
     assert(false && "Non-existent value type??");
 		return "<unknown>";
@@ -348,19 +348,19 @@ std::string getTypeName(const FunctionType&) { return "function"; }
 bool Value::toBool() const
 {
   switch (this->type()) {
-  case ValueType::BOOL:
+  case Type::BOOL:
     return boost::get<bool>(this->value);
     break;
-  case ValueType::NUMBER:
+  case Type::NUMBER:
     return boost::get<double>(this->value)!= 0;
     break;
-  case ValueType::STRING:
+  case Type::STRING:
     return !boost::get<str_utf8_wrapper>(this->value).empty();
     break;
-  case ValueType::VECTOR:
+  case Type::VECTOR:
     return !boost::get<VectorType >(this->value).empty();
     break;
-  case ValueType::RANGE:
+  case Type::RANGE:
     return true;
     break;
   default:
@@ -481,18 +481,18 @@ public:
     stream << (v ? "true" : "false");
   }
 
-	void operator()(const VectorType &v) const {
-		stream << '[';
-		if (!v.empty()) {
-			auto it = v.begin();
-			(*it)->toStream(stream);
-			for (++it; it != v.end(); ++it) {
-				stream << ", ";
-				(*it)->toStream(stream);
-			}
-		}
-		stream << ']';
-	}
+  void operator()(const VectorType &v) const {
+    stream << '[';
+    if (!v.empty()) {
+      auto it = v.begin();
+      (*it)->toStream(stream);
+      for (++it; it != v.end(); ++it) {
+        stream << ", ";
+        (*it)->toStream(stream);
+      }
+    }
+    stream << ']';
+  }
 
   void operator()(const str_utf8_wrapper &v) const {
     stream << '"' << v << '"';
@@ -537,7 +537,7 @@ void Value::toStream(const tostream_visitor *visitor) const
 
 std::string Value::toEchoString() const
 {
-	if (type() == Value::ValueType::STRING) {
+	if (type() == Value::Type::STRING) {
 		return std::string("\"") + toString() + '"';
 	} else {
 		return toString();
@@ -547,7 +547,7 @@ std::string Value::toEchoString() const
 // helper called by tostring_visitor methods to avoid extra instantiations
 std::string Value::toEchoString(const tostring_visitor *visitor) const
 {
-	if (type() == Value::ValueType::STRING) {
+	if (type() == Value::Type::STRING) {
 		return std::string("\"") + toString(visitor) + '"';
 	} else {
 		return toString(visitor);
@@ -640,7 +640,7 @@ const VectorType &Value::toVector() const
 
 bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 {
-  if (this->type() != ValueType::VECTOR) return false;
+  if (this->type() != Type::VECTOR) return false;
 
   const VectorType &v = toVector();
 
@@ -661,7 +661,7 @@ bool Value::getVec2(double &x, double &y, bool ignoreInfinite) const
 
 bool Value::getVec3(double &x, double &y, double &z) const
 {
-  if (this->type() != ValueType::VECTOR) return false;
+  if (this->type() != Type::VECTOR) return false;
 
   const VectorType &v = toVector();
 
@@ -672,7 +672,7 @@ bool Value::getVec3(double &x, double &y, double &z) const
 
 bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 {
-  if (this->type() != ValueType::VECTOR) return false;
+  if (this->type() != Type::VECTOR) return false;
 
   const VectorType &v = toVector();
 
@@ -921,7 +921,7 @@ Value multvecvec(const VectorType &vec1, const VectorType &vec2) {
 	// Vector dot product.
 	auto r = 0.0;
 	for (size_t i=0;i<vec1.size();i++) {
-		if (vec1[i]->type() != Value::ValueType::NUMBER || vec2[i]->type() != Value::ValueType::NUMBER) {
+		if (vec1[i]->type() != Value::Type::NUMBER || vec2[i]->type() != Value::Type::NUMBER) {
 			return Value::undef("");
 		}
 		r += vec1[i]->toDouble() * vec2[i]->toDouble();
@@ -934,16 +934,16 @@ Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 // Matrix * Vector
 	VectorType dstv;
 	for (size_t i=0;i<matrixvec.size();i++) {
-		if (matrixvec[i]->type() != Value::ValueType::VECTOR ||
+		if (matrixvec[i]->type() != Value::Type::VECTOR ||
 				matrixvec[i]->toVector().size() != vectorvec.size()) {
 			return Value::undef(STR("Matrix must be rectangular. Problem at row " << i));
 		}
 		double r_e = 0.0;
 		for (size_t j=0;j<matrixvec[i]->toVector().size();j++) {
-			if (matrixvec[i]->toVector()[j]->type() != Value::ValueType::NUMBER) {
+			if (matrixvec[i]->toVector()[j]->type() != Value::Type::NUMBER) {
 				return Value::undef(STR("Matrix must contain only numbers. Problem at row " << i << ", col " << j));
 			}
-			if (vectorvec[j]->type() != Value::ValueType::NUMBER) {
+			if (vectorvec[j]->type() != Value::Type::NUMBER) {
 				return Value::undef(STR("Vector must contain only numbers. Problem at index " << j));
 			}
 			r_e += matrixvec[i]->toVector()[j]->toDouble() * vectorvec[j]->toDouble();
@@ -962,14 +962,14 @@ Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 	for (size_t i=0;i<firstRowSize;i++) {
 		double r_e = 0.0;
 		for (size_t j=0;j<vectorvec.size();j++) {
-			if (matrixvec[j]->type() != Value::ValueType::VECTOR ||
+			if (matrixvec[j]->type() != Value::Type::VECTOR ||
 					matrixvec[j]->toVector().size() != firstRowSize) {
 				return Value::undef(STR("Matrix must be rectangular. Problem at row " << j));
 			}
-			if (vectorvec[j]->type() != Value::ValueType::NUMBER) {
+			if (vectorvec[j]->type() != Value::Type::NUMBER) {
 				return Value::undef(STR("Vector must contain only numbers. Problem at index " << j));
 			}
-			if (matrixvec[j]->toVector()[i]->type() != Value::ValueType::NUMBER) {
+			if (matrixvec[j]->toVector()[i]->type() != Value::Type::NUMBER) {
 				return Value::undef(STR("Matrix must contain only numbers. Problem at row " << j << ", col " << i));
 			}
 			r_e += vectorvec[j]->toDouble() * matrixvec[j]->toVector()[i]->toDouble();
@@ -982,30 +982,30 @@ Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 class multiply_visitor : public boost::static_visitor<Value>
 {
 public:
-	template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
     return Value::undef(STR("undefined operation (" << getTypeName(op1) << " * " << getTypeName(op2) << ")"));
-	}
-	Value operator()(const double &op1, const double &op2) const { return op1 * op2; }
-	Value operator()(const double &op1, const VectorType &op2) const { return multvecnum(op2, op1); }
-	Value operator()(const VectorType &op1, const double &op2) const { return multvecnum(op1, op2); }
+  }
+  Value operator()(const double &op1, const double &op2) const { return op1 * op2; }
+  Value operator()(const double &op1, const VectorType &op2) const { return multvecnum(op2, op1); }
+  Value operator()(const VectorType &op1, const double &op2) const { return multvecnum(op1, op2); }
 
-	Value operator()(const VectorType &op1, const VectorType &op2) const {
-		if (op1.empty() || op2.empty()) return Value::undef("Multiplication is undefined on empty vectors");
+  Value operator()(const VectorType &op1, const VectorType &op2) const {
+    if (op1.empty() || op2.empty()) return Value::undef("Multiplication is undefined on empty vectors");
     auto first1 = op1.begin(), first2 = op2.begin();
     auto eltype1 = (*first1)->type(), eltype2 = (*first2)->type();
-		if (eltype1 == Value::ValueType::NUMBER) {
-      if (eltype2 == Value::ValueType::NUMBER) {
+    if (eltype1 == Value::Type::NUMBER) {
+      if (eltype2 == Value::Type::NUMBER) {
         if (op1.size() == op2.size()) return multvecvec(op1,op2);
         else return Value::undef(STR("vector*vector requires matching lengths (" << op1.size() << " != " << op2.size() << ')'));
-      } else if (eltype2 == Value::ValueType::VECTOR) {
+      } else if (eltype2 == Value::Type::VECTOR) {
         if (op1.size() == op2.size()) return multvecmat(op1, op2);
         else return Value::undef(STR("vector*matrix requires vector length to match matrix row count (" << op1.size() << " != " << op2.size() << ')'));
       }
-		} else if (eltype1 == Value::ValueType::VECTOR) {
-      if (eltype2 == Value::ValueType::NUMBER) {
+    } else if (eltype1 == Value::Type::VECTOR) {
+      if (eltype2 == Value::Type::NUMBER) {
         if ((*first1)->toVector().size() == op2.size()) return multmatvec(op1, op2);
         else return Value::undef(STR("matrix*vector requires matrix column count to match vector length (" << (*first1)->toVector().size() << " != " << op2.size() << ')'));
-      } else if (eltype2 == Value::ValueType::VECTOR) {
+      } else if (eltype2 == Value::Type::VECTOR) {
         if ((*first1)->toVector().size() == op2.size()) {
           // Matrix * Matrix
           VectorType dstv;
@@ -1023,7 +1023,7 @@ public:
           return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (" << (*first1)->toVector().size() << " != " << op2.size() << ')'));
         }
       }
-		}
+    }
     return Value::undef(STR("undefined vector*vector multiplication where first elements are types " << (*first1)->typeName() << " and " << (*first2)->typeName() ));
 	}
 };
@@ -1035,10 +1035,10 @@ Value Value::operator*(const Value &v) const
 
 Value Value::operator/(const Value &v) const
 {
-  if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     return {this->toDouble() / v.toDouble()};
   }
-  else if (this->type() == ValueType::VECTOR && v.type() == ValueType::NUMBER) {
+  else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
     const auto &vec = this->toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
@@ -1046,7 +1046,7 @@ Value Value::operator/(const Value &v) const
     }
     return {dstv};
   }
-  else if (this->type() == ValueType::NUMBER && v.type() == ValueType::VECTOR) {
+  else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
     const auto &vec = v.toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
@@ -1059,7 +1059,7 @@ Value Value::operator/(const Value &v) const
 
 Value Value::operator%(const Value &v) const
 {
-  if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     return {fmod(boost::get<double>(this->value), boost::get<double>(v.value))};
   }
   return Value::undef(STR("undefined operation (" << this->typeName() << " % " << v.typeName() << ")"));
@@ -1067,10 +1067,10 @@ Value Value::operator%(const Value &v) const
 
 Value Value::operator-() const
 {
-  if (this->type() == ValueType::NUMBER) {
+  if (this->type() == Type::NUMBER) {
     return {-this->toDouble()};
   }
-  else if (this->type() == ValueType::VECTOR) {
+  else if (this->type() == Type::VECTOR) {
     const auto &vec = this->toVector();
     VectorType dstv;
     for (const auto &vecval : vec) {
@@ -1083,7 +1083,7 @@ Value Value::operator-() const
 
 Value Value::operator^(const Value &v) const
 {
-  if (this->type() == ValueType::NUMBER && v.type() == ValueType::NUMBER) {
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     return {pow(boost::get<double>(this->value), boost::get<double>(v.value))};
   }
   return Value::undef(STR("undefined operation (" << this->typeName() << " ^ " << v.typeName() << ")"));
@@ -1242,9 +1242,9 @@ std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
 	stream << "function(";
 	bool first = true;
 	for (const auto& arg : f.args) {
-		stream << (first ? "" : ", ") << arg->name;
-		if (arg->expr) {
-			stream << " = " << *arg->expr;
+		stream << (first ? "" : ", ") << arg->getName();
+		if (arg->getExpr()) {
+			stream << " = " << *arg->getExpr();
 		}
 		first = false;
 	}

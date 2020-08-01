@@ -74,7 +74,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		const std::string &it_name = evalctx->getArgName(l);
 		ValuePtr it_values = evalctx->getArgValue(l, ctx);
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
-		if (it_values->type() == Value::ValueType::RANGE) {
+		if (it_values->type() == Value::Type::RANGE) {
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
@@ -86,19 +86,19 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				}
 			}
 		}
-		else if (it_values->type() == Value::ValueType::VECTOR) {
+		else if (it_values->type() == Value::Type::VECTOR) {
 			for (size_t i = 0; i < it_values->toVector().size(); i++) {
 				c->set_variable(it_name, it_values->toVector()[i]);
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			}
 		}
-		else if (it_values->type() == Value::ValueType::STRING) {
+		else if (it_values->type() == Value::Type::STRING) {
 			utf8_split(it_values->toString(), [&](ValuePtr v) {
 				c->set_variable(it_name, v);
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			});
 		}
-		else if (it_values->type() != Value::ValueType::UNDEFINED) {
+		else if (it_values->type() != Value::Type::UNDEFINED) {
 			c->set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, c.ctx, evalctx);
 		}
@@ -107,7 +107,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// the local scope (as they may depend on the for loop variables
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
 		for (const auto &assignment : inst.scope.assignments) {
-			c->set_variable(assignment->name, assignment->expr->evaluate(c.ctx));
+			c->set_variable(assignment->getName(), assignment->getExpr()->evaluate(c.ctx));
 		}
 
 		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(c.ctx);
@@ -138,7 +138,7 @@ const std::shared_ptr<EvalContext> ControlModule::getLastModuleCtx(const std::sh
 // static
 AbstractNode* ControlModule::getChild(const ValuePtr &value, const std::shared_ptr<EvalContext> modulectx)
 {
-	if (value->type()!=Value::ValueType::NUMBER) {
+	if (value->type()!=Value::Type::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
@@ -228,10 +228,10 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		else if (evalctx->numArgs()>0) {
 			// one (or more ignored) parameter
 			ValuePtr value = evalctx->getArgValue(0);
-			if (value->type() == Value::ValueType::NUMBER) {
+			if (value->type() == Value::Type::NUMBER) {
 				return getChild(value, modulectx);
 			}
-			else if (value->type() == Value::ValueType::VECTOR) {
+			else if (value->type() == Value::Type::VECTOR) {
 				AbstractNode* node;
 				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 				else node = new GroupNode(inst, evalctx);
@@ -243,7 +243,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				}
 				return node;
 			}
-			else if (value->type() == Value::ValueType::RANGE) {
+			else if (value->type() == Value::Type::RANGE) {
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= RangeType::MAX_RANGE_STEPS) {

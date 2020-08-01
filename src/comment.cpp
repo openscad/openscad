@@ -266,7 +266,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 	int parseTill=getLineToStop(fulltext);
 	// Extract parameters for all literal assignments
 	for (auto &assignment : root_module->scope.assignments) {
-		if (!assignment->expr.get()->isLiteral()) continue; // Only consider literals
+		if (!assignment->getExpr()->isLiteral()) continue; // Only consider literals
 
 		// get location of assignment node
 		int firstLine = assignment->location().firstLine();
