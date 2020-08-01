@@ -578,10 +578,6 @@ set(GUI_SOURCES
   src/scadlexer.cpp
   src/scintillaeditor.cpp
   src/settings.cc
-  src/Preferences.cc
-  src/initConfig.cc
-  src/ShortcutConfigurator.cc
-  src/SettingsWriter.cc
   src/tabmanager.cc
   src/tabwidget.cc
   src/AutoUpdater.cc
@@ -602,6 +598,7 @@ set(GUI_SOURCES
   src/QSettingsCached.cc
   src/QWordSearchField.cc
   src/SettingsWriter.cc
+  src/ShortcutConfigurator.cc
   src/UIUtils.cc
   src/WindowManager.cc
   src/parameter/groupwidget.cpp
