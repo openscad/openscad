@@ -14,13 +14,6 @@ isEmpty(LIB3MF_LIBPATH) {
   LIB3MF_LIBPATH = $$(LIB3MF_LIBPATH)
 }
 
-exists($$LIB3MF_INCLUDEPATH/Model/COM/NMR_DLLInterfaces.h) {
-  ENABLE_LIB3MF=yes
-} else {
-  LIB3MF_INCLUDEPATH =
-  LIB3MF_LIBPATH =
-}
-
 isEmpty(LIB3MF_INCLUDEPATH) {
   LIB3MF_CFLAGS = $$system("$$PKG_CONFIG --cflags lib3MF")
   !isEmpty(LIB3MF_CFLAGS) {
@@ -37,6 +30,14 @@ isEmpty(LIB3MF_LIBPATH) {
   }
 } else {
   LIB3MF_LIBS = -L$$LIB3MF_LIBPATH -l3MF
+}
+
+exists($$LIB3MF_INCLUDEPATH/Model/COM/NMR_DLLInterfaces.h) {
+  ENABLE_LIB3MF=yes
+} else {
+  ENABLE_LIB3MF=
+  LIB3MF_INCLUDEPATH =
+  LIB3MF_LIBPATH =
 }
 
 !isEmpty(ENABLE_LIB3MF) {
