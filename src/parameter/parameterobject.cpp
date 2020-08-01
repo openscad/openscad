@@ -7,7 +7,7 @@
 ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const ValuePtr defaultValue)
 {
   this->set = false;
-  this->name = assignment->name;
+  this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
   const ValuePtr values = param->evaluate(ctx);
   setValue(defaultValue, values);
@@ -34,10 +34,10 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
 void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
 {
   ContextHandle<Context> ctx{Context::create<Context>()};
-  const ValuePtr defaultValue = assignment->expr->evaluate(ctx.ctx);
+  const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
   
   if (defaultValue->type() == dvt) {
-    assignment->expr = shared_ptr<Expression>(new Literal(value));
+    assignment->setExpr(make_shared<Literal>(value));
   }
 }
 

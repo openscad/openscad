@@ -107,19 +107,19 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		boost::optional<pt::ptree &> set = getParameterSet(setName);
 		for (auto &assignment : fileModule->scope.assignments) {
 			for (auto &v : set.get()) {
-				if (v.first == assignment->name) {
-					const ValuePtr defaultValue = assignment->expr->evaluate(ctx.ctx);
+				if (v.first == assignment->getName()) {
+					const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
 					if (defaultValue->type() == Value::ValueType::STRING) {
-						assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+						assignment->setExpr(make_shared<Literal>(ValuePtr(v.second.data())));
 					}
 					else if (defaultValue->type() == Value::ValueType::BOOL) {
-						assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
+						assignment->setExpr(make_shared<Literal>(ValuePtr(v.second.get_value<bool>())));
 					} else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 						if (!params) continue;
 						ContextHandle<Context> ctx{Context::create<Context>()};
 						if (defaultValue->type() == params->evaluate(ctx.ctx)->type()) {
-							assignment->expr = params;
+							assignment->setExpr(params);
 						}
 					}
 				}
