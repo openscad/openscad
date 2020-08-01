@@ -16,11 +16,13 @@ public:
 		bool is_opencsg_vertex_set;
 		OpenSCADOperator operation;
 		unsigned int convexity;
+		GLenum draw_type;
 		GLsizei draw_size;
 		GLintptr start_offset;
 		bool draw_cull_front;
 		bool draw_cull_back;
 	} VertexSet;
+
 	typedef struct _Vertex
 	{
 		GLfloat position[3];

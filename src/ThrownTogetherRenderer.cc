@@ -225,7 +225,7 @@ void ThrownTogetherRenderer::createChainObject(std::vector<VertexSet *> &vertex_
     if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
     prev = (vertex_sets.empty() ? 0 : vertex_sets.back());
-    vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), 0, 0, false, false});
+    vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false});
     GLintptr prev_start_offset = 0;
     GLsizei prev_draw_size = 0;
     if (prev) {
@@ -254,7 +254,7 @@ void ThrownTogetherRenderer::createChainObject(std::vector<VertexSet *> &vertex_
       vertex_sets.push_back(vertex_set);
 
       prev = (vertex_sets.empty() ? 0 : vertex_sets.back());
-      vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), 0, 0, false, false});
+      vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false});
       if (prev) {
         prev_start_offset = prev->start_offset;
         prev_draw_size = prev->draw_size;
@@ -297,7 +297,6 @@ void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool
 				    glGenBuffers(1, &vbo);
 
 				    product_vertex_sets->push_back(new VertexSets(vbo,vertex_sets));
-
 				    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 				    glBufferData(GL_ARRAY_BUFFER, render_buffer->size()*sizeof(Vertex), render_buffer->data(), GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -446,7 +446,7 @@ void VBORenderer::draw_surface(const VertexSet &vertex_set, bool use_color_array
 		glVertexAttribPointer(vbo_shader_settings[6], 3, GL_BYTE, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, mask)));
 	}
 
-	glDrawArrays(GL_TRIANGLES, 0, vertex_set.draw_size);
+	glDrawArrays(vertex_set.draw_type, 0, vertex_set.draw_size);
 
 	if (use_edge_shader) {
 		glDisableVertexAttribArray(vbo_shader_settings[1]);
