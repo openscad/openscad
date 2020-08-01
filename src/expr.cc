@@ -82,8 +82,8 @@ namespace /* anonymous*/ {
 		for (size_t i=0; i < l.size(); i++) {
 			const auto &arg = l[i];
 			if (i > 0) o << ", ";
-			if (!arg->name.empty()) o << arg->name  << " = ";
-			o << *arg->expr;
+			if (!arg->getName().empty()) o << arg->getName()  << " = ";
+			o << *arg->getExpr();
 		}
 		return o;
 	}
@@ -488,9 +488,9 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
 	stream << indent << "function(";
 	bool first = true;
 	for (const auto& assignment : definition_arguments) {
-		stream << (first ? "" : ", ") << assignment->name;
-		if (assignment->expr) {
-			stream << " = " << *assignment->expr.get();
+		stream << (first ? "" : ", ") << assignment->getName();
+		if (assignment->getExpr()) {
+			stream << " = " << *assignment->getExpr();
 		}
 		first = false;
 	}
@@ -556,9 +556,8 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 	if (this->defaultArguments.empty() && !definition_arguments.empty()) {
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
-			if (this->resolvedArguments.find(arg->name) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg->name, arg->expr ? arg->expr->evaluate(context) : ValuePtr::undefined);
-			}
+			if (this->resolvedArguments.find(arg->getName()) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : ValuePtr::undefined);			}
 		}
 	}
 
@@ -913,9 +912,9 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 
 	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
 	for (const auto &arg : args) {
-		auto it = assignments.find(arg->name);
+		auto it = assignments.find(arg->getName());
 		if (it != assignments.end()) {
-			c->set_variable(arg->name, assignments[arg->name]->evaluate(evalctx));
+			c->set_variable(arg->getName(), assignments[arg->getName()]->evaluate(evalctx));
 		}
 	}
 	

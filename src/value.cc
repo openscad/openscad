@@ -1099,9 +1099,9 @@ std::ostream& operator<<(std::ostream& stream, const FunctionType& f) {
 	stream << "function(";
 	bool first = true;
 	for (const auto& arg : f.args) {
-		stream << (first ? "" : ", ") << arg->name;
-		if (arg->expr) {
-			stream << " = " << *arg->expr;
+		stream << (first ? "" : ", ") << arg->getName();
+		if (arg->getExpr()) {
+			stream << " = " << *arg->getExpr();
 		}
 		first = false;
 	}

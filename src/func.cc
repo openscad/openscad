@@ -929,9 +929,9 @@ ValuePtr builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_
 	if (evalctx->numArgs() == 1) {
 		const auto &arg =evalctx->getArgs()[0];
 		ValuePtr v;
-		if(auto lookup = dynamic_pointer_cast<Lookup> (arg->expr)){
+		if (auto lookup = dynamic_pointer_cast<Lookup>(arg->getExpr())) {
 			v = lookup->evaluateSilently(evalctx);
-		}else{
+		} else {
 			v = evalctx->getArgValue(0);
 		}
 		return ValuePtr(v == ValuePtr::undefined);

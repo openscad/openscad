@@ -16,7 +16,7 @@ BuiltinContext::BuiltinContext() : Context()
 void BuiltinContext::init()
 {
 	for(const auto &assignment : Builtins::instance()->getAssignments()) {
-		this->set_variable(assignment->name, assignment->expr->evaluate(shared_from_this()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(shared_from_this()));
 	}
 
 	this->set_constant("PI", ValuePtr(M_PI));
