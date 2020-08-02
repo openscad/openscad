@@ -24,16 +24,13 @@ mkdir "$BUILDDIR"
 (
 	cd "$BUILDDIR"
 	cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON .. && make $PARALLEL_MAKE
-)
-
-ln -s "$BUILDDIR"/openscad
-(
+	# Use TESTDIR within BUILDDIR
 	cd "$TESTDIR"
-	cmake . && make && ctest $PARALLEL_CTEST
+	ctest $PARALLEL_CTEST
 	if [[ $? != 0 ]]; then
 		exit 1
 	fi
-	tar -C .gcov -c -f - . | tar -C ../b/ -x -f -
+	tar -C .gcov -c -f - . | tar -C ../ -x -f -
 )
 if [[ $? != 0 ]]; then
 	echo "Test failure"
