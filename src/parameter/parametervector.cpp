@@ -62,7 +62,7 @@ void ParameterVector::setValue()
 
 	QDoubleSpinBox* boxes[NR_OF_SPINBOXES] = {this->doubleSpinBox1,this->doubleSpinBox2,this->doubleSpinBox3,this->doubleSpinBox4};
 
-	for(unsigned int i = 0; i < vec.size() && i < NR_OF_SPINBOXES; i++) {
+	for(unsigned int i = 0; i < vec.size() && i < NR_OF_SPINBOXES; ++i) {
 		boxes[i]->show();
 		boxes[i]->setDecimals(decimalPrecision);
 		if(minV==0 && maxV ==0){
@@ -74,7 +74,7 @@ void ParameterVector::setValue()
 		}
 		boxes[i]->setValue(vec[i]->toDouble());
 	}
-	for(unsigned int i = vec.size(); i < NR_OF_SPINBOXES; i++) {
+	for(unsigned int i = vec.size(); i < NR_OF_SPINBOXES; ++i) {
 		boxes[i]->hide();
 		boxes[i]->setReadOnly(true);
 	}

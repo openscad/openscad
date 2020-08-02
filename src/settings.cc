@@ -76,7 +76,7 @@ static Value axisValues() {
 	VectorType v;
 	v.emplace_back(value("None", _("None")));
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		auto userData = (boost::format("+%d") % (i+1)).str();
 		auto text = (boost::format(_("Axis %d")) % i).str();
 		v.emplace_back(value(userData, text));

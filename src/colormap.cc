@@ -172,7 +172,7 @@ const ColorScheme &ColorMap::defaultColorScheme() const
 
 const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
 {
-    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
+    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin(); it != colorSchemeSet.end(); ++it) {
 	RenderColorScheme *scheme = (*it).second.get();
 	if (name == scheme->name()) {
 	    return &scheme->colorScheme();
@@ -188,11 +188,11 @@ void ColorMap::dump() const
     
     std::list<std::string> names = colorSchemeNames();
     unsigned int length = 0;
-    for (std::list<std::string>::const_iterator it = names.begin();it != names.end();it++) {
+    for (std::list<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
 	length = (*it).length() > length ? (*it).length() : length;
     }
 
-    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
+    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin(); it != colorSchemeSet.end(); ++it) {
 	const RenderColorScheme *cs = (*it).second.get();
 	const char gui = cs->showInGui() ? 'G' : '-';
 	if (cs->path().empty()) {
@@ -207,7 +207,7 @@ void ColorMap::dump() const
 std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 {
     std::list<std::string> colorSchemeNames;
-    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
+    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin(); it != colorSchemeSet.end(); ++it) {
 	const RenderColorScheme *scheme = (*it).second.get();
 	if (guiOnly && !scheme->showInGui()) {
 	    continue;

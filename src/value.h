@@ -50,19 +50,17 @@ public:
 
 	class iterator {
 	public:
-		typedef iterator self_type;
-		typedef double value_type;
-		typedef double& reference;
-		typedef double* pointer;
-		typedef std::forward_iterator_tag iterator_category;
-		typedef double difference_type;
+		// iterator_traits required types:
+		using iterator_category = std::forward_iterator_tag ;
+		using value_type        = double;
+		using difference_type   = void;       // type used by operator-(iterator), not implemented for forward interator
+		using reference         = value_type; // type used by operator*(), not actually a reference
+		using pointer           = void;       // type used by operator->(), not implemented
 		iterator(RangeType &range, type_t type);
-		self_type operator++();
-		self_type operator++(int junk);
+		iterator& operator++();
 		reference operator*();
-		pointer operator->();
-		bool operator==(const self_type& other) const;
-		bool operator!=(const self_type& other) const;
+		bool operator==(const iterator& other) const;
+		bool operator!=(const iterator& other) const;
 	private:
 		RangeType &range;
 		double val;

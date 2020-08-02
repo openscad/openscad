@@ -139,7 +139,7 @@ void AxisConfigWidget::init() {
 		comboBox->installEventFilter(wheelIgnorer);
 	}
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		std::string s = std::to_string(i);
 
 		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
@@ -416,7 +416,7 @@ void AxisConfigWidget::on_AxisTrim()
 {
 	InputEventMapper::instance()->onAxisAutoTrim();
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		std::string s = std::to_string(i);
 
 		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
@@ -433,7 +433,7 @@ void AxisConfigWidget::on_AxisTrim()
 void AxisConfigWidget::on_AxisTrimReset()
 {
 	InputEventMapper::instance()->onAxisTrimReset();
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		std::string s = std::to_string(i);
 
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" +s);
@@ -524,7 +524,7 @@ void AxisConfigWidget::updateStates(){
 	if(!initialized) return;
 
 	int cnt = InputDriverManager::instance()->getAxisCount();
-	for (int i=0;i<InputEventMapper::getMaxAxis();i++) {
+	for (int i=0; i<InputEventMapper::getMaxAxis(); ++i) {
 		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
 		if( cnt <= i){
 			progressbar->setEnabled(false);

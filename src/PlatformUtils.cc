@@ -54,7 +54,7 @@ static std::string lookupResourcesPath()
 #endif
 
 	fs::path tmpdir;
-	for (int a = 0;searchpath[a] != nullptr;a++) {
+	for (int a = 0; searchpath[a] != nullptr; ++a) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
 			// The resource folder is the folder which contains "color-schemes" (as well as 

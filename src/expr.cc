@@ -52,7 +52,7 @@ namespace {
 
 	VectorType flatten(VectorType const& vec) {
 		int n = 0;
-		for (unsigned int i = 0; i < vec.size(); i++) {
+		for (unsigned int i = 0; i < vec.size(); ++i) {
 			if (vec[i]->type() == Value::Type::VECTOR) {
 				n += vec[i]->toVector().size();
 			} else {
@@ -60,7 +60,7 @@ namespace {
 			}
 		}
 		VectorType ret; ret.reserve(n);
-		for (unsigned int i = 0; i < vec.size(); i++) {
+		for (unsigned int i = 0; i < vec.size(); ++i) {
 			if (vec[i]->type() == Value::Type::VECTOR) {
 				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
 			} else {
@@ -79,7 +79,7 @@ namespace {
 namespace /* anonymous*/ {
 
 	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
-		for (size_t i=0; i < l.size(); i++) {
+		for (size_t i=0; i < l.size(); ++i) {
 			const auto &arg = l[i];
 			if (i > 0) o << ", ";
 			if (!arg->getName().empty()) o << arg->getName()  << " = ";
@@ -366,7 +366,7 @@ ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 		ValuePtr tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
 			const VectorType result = tmpval->toVector();
-			for (size_t i = 0;i < result.size();i++) {
+			for (size_t i = 0; i < result.size(); ++i) {
 				vec.push_back(result[i]);
 			}
 		} else {
@@ -379,7 +379,7 @@ ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 void Vector::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[";
-	for (size_t i=0; i < this->children.size(); i++) {
+	for (size_t i=0; i < this->children.size(); ++i) {
 		if (i > 0) stream << ", ";
 		stream << *this->children[i];
 	}
@@ -716,13 +716,13 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
-            for (RangeType::iterator it = range.begin();it != range.end();it++) {
+            for (RangeType::iterator it = range.begin(); it != range.end(); ++it) {
                 vec.push_back(ValuePtr(*it));
             }
         }
     } else if (v->type() == Value::Type::VECTOR) {
         VectorType vector = v->toVector();
-        for (size_t i = 0; i < v->toVector().size(); i++) {
+        for (size_t i = 0; i < v->toVector().size(); ++i) {
             vec.push_back(vector[i]);
         }
     } else if (v->type() == Value::Type::STRING) {
@@ -770,13 +770,13 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
-            for (RangeType::iterator it = range.begin();it != range.end();it++) {
+            for (RangeType::iterator it = range.begin(); it != range.end(); ++it) {
                 c->set_variable(it_name, ValuePtr(*it));
                 vec.push_back(this->expr->evaluate(c.ctx));
             }
         }
     } else if (it_values->type() == Value::Type::VECTOR) {
-        for (size_t i = 0; i < it_values->toVector().size(); i++) {
+        for (size_t i = 0; i < it_values->toVector().size(); ++i) {
             c->set_variable(it_name, it_values->toVector()[i]);
             vec.push_back(this->expr->evaluate(c.ctx));
         }

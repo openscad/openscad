@@ -46,7 +46,7 @@ static void export_stl(const IndexedTriangleMesh &trimesh, std::ostream &output)
       output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
       output << "    outer loop\n";
 		
-      for (int i=0;i<3;i++) {
+      for (int i=0; i<3; ++i) {
         output << "      vertex " << p[i][0] << " " << p[i][1] << " " << p[i][2] << "\n";
       }
       output << "    endloop\n";

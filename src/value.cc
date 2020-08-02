@@ -616,10 +616,7 @@ public:
 
 			std::ostringstream stream;
 			RangeType range = v;
-			for (RangeType::iterator it = range.begin();it != range.end();it++) {
-				const Value value(*it);
-				stream << value.chrString();
-			}
+			for (double d : range) stream << this->operator()(d);
 			return stream.str();
 		}
 };
@@ -870,7 +867,7 @@ public:
 
 	Value operator()(const VectorType &op1, const VectorType &op2) const {
 		VectorType sum;
-		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+		for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
 			sum.push_back(ValuePtr(*op1[i] + *op2[i]));
 		}
 		return {sum};
@@ -895,7 +892,7 @@ public:
 
 	Value operator()(const VectorType &op1, const VectorType &op2) const {
 		VectorType sum;
-		for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+		for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
 			sum.push_back(ValuePtr(*op1[i] - *op2[i]));
 		}
 		return {sum};
@@ -920,7 +917,7 @@ Value multvecnum(const VectorType &vecval, const Value &numval)
 Value multvecvec(const VectorType &vec1, const VectorType &vec2) {
 	// Vector dot product.
 	auto r = 0.0;
-	for (size_t i=0;i<vec1.size();i++) {
+	for (size_t i=0; i<vec1.size(); ++i) {
 		if (vec1[i]->type() != Value::Type::NUMBER || vec2[i]->type() != Value::Type::NUMBER) {
 			return Value::undef("");
 		}
@@ -933,13 +930,13 @@ Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
 // Matrix * Vector
 	VectorType dstv;
-	for (size_t i=0;i<matrixvec.size();i++) {
+	for (size_t i=0;i<matrixvec.size();++i) {
 		if (matrixvec[i]->type() != Value::Type::VECTOR ||
 				matrixvec[i]->toVector().size() != vectorvec.size()) {
 			return Value::undef(STR("Matrix must be rectangular. Problem at row " << i));
 		}
 		double r_e = 0.0;
-		for (size_t j=0;j<matrixvec[i]->toVector().size();j++) {
+		for (size_t j=0; j<matrixvec[i]->toVector().size(); ++j) {
 			if (matrixvec[i]->toVector()[j]->type() != Value::Type::NUMBER) {
 				return Value::undef(STR("Matrix must contain only numbers. Problem at row " << i << ", col " << j));
 			}
@@ -959,9 +956,9 @@ Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 // Vector * Matrix
 	VectorType dstv;
 	size_t firstRowSize =  matrixvec[0]->toVector().size();
-	for (size_t i=0;i<firstRowSize;i++) {
+	for (size_t i=0; i<firstRowSize; ++i) {
 		double r_e = 0.0;
-		for (size_t j=0;j<vectorvec.size();j++) {
+		for (size_t j=0; j<vectorvec.size(); ++j) {
 			if (matrixvec[j]->type() != Value::Type::VECTOR ||
 					matrixvec[j]->toVector().size() != firstRowSize) {
 				return Value::undef(STR("Matrix must be rectangular. Problem at row " << j));
@@ -1205,26 +1202,14 @@ RangeType::iterator::reference RangeType::iterator::operator*()
 	return val;
 }
 
-RangeType::iterator::pointer RangeType::iterator::operator->()
-{
-	return &(operator*());
-}
-
-RangeType::iterator::self_type RangeType::iterator::operator++()
+RangeType::iterator& RangeType::iterator::operator++()
 {
 	val = range.begin_val + range.step_val * ++i_step;
 	update_type();
 	return *this;
 }
 
-RangeType::iterator::self_type RangeType::iterator::operator++(int)
-{
-	self_type tmp(*this);
-	operator++();
-	return tmp;
-}
-
-bool RangeType::iterator::operator==(const self_type &other) const
+bool RangeType::iterator::operator==(const iterator &other) const
 {
 	if (type == type_t::RANGE_TYPE_RUNNING) {
 		return (type == other.type) && (val == other.val) && (range == other.range);
@@ -1233,7 +1218,7 @@ bool RangeType::iterator::operator==(const self_type &other) const
 	}
 }
 
-bool RangeType::iterator::operator!=(const self_type &other) const
+bool RangeType::iterator::operator!=(const iterator &other) const
 {
 	return !(*this == other);
 }
