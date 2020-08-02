@@ -45,8 +45,11 @@ bool canPreview(const FileFormat format) {
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
+	case FileFormat::ASCIISTL:
+		export_stl(root_geom, output, false);
+		break;
 	case FileFormat::STL:
-		export_stl(root_geom, output);
+		export_stl(root_geom, output, true);
 		break;
 	case FileFormat::OFF:
 		export_off(root_geom, output);
@@ -78,7 +81,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 	const char *name2open, const char *name2display)
 {
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
-	if (format == FileFormat::_3MF) {
+	if (format == FileFormat::_3MF || format == FileFormat::STL) {
 		mode |= std::ios::binary;
 	}
 	std::ofstream fstream(name2open, mode);

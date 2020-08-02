@@ -63,6 +63,8 @@ public:
 	static SettingsEntry octoPrintSlicerProfile;
 	static SettingsEntry octoPrintSlicerProfileDesc;
 
+    static SettingsEntry exportUseAsciiSTL;
+
     static SettingsEntry inputEnableDriverHIDAPI;
     static SettingsEntry inputEnableDriverHIDAPILog;
     static SettingsEntry inputEnableDriverSPNAV;
