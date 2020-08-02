@@ -77,7 +77,7 @@ bool ShortcutConfigurator::eventFilter(QObject *obj, QEvent *event)
 
         pressedKeySequence = QKeySequence(keyInt);
 
-        if(pressedKeySequence.toString(QKeySequence::NativeText)!=QString(""))
+        if(!pressedKeySequence.isEmpty())
         {
             QString info = QString("You Pressed: %1").arg(pressedKeySequence.toString(QKeySequence::NativeText));
             shortcutCatcher->setInformativeText(info);
@@ -155,7 +155,7 @@ void ShortcutConfigurator::initGUI(const QList<QAction *> &allActions)
 
 void ShortcutConfigurator::readConfigFile(QJsonObject* object)
 {
-    QFile jsonFile(QString::fromLocal8Bit(configFileLoc.c_str()));
+    QFile jsonFile(QString::fromStdString(configFileLoc.c_str()));
 
     // check if a User-Defined Shortcuts file exists or not
     if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -170,7 +170,7 @@ void ShortcutConfigurator::readConfigFile(QJsonObject* object)
 
 bool ShortcutConfigurator::writeToConfigFile(QJsonObject* object)
 {
-    QFile jsonFile(QString::fromLocal8Bit(configFileLoc.c_str()));
+    QFile jsonFile(QString::fromStdString(configFileLoc.c_str()));
 
     if (!jsonFile.open(QIODevice::WriteOnly))
     {
@@ -187,7 +187,6 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
 {
     QJsonObject object;
     readConfigFile(&object);
-
     for (auto &action : actions) 
     {
         QString actionName = action->objectName();
@@ -201,7 +200,6 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
             QJsonObject::const_iterator i = object.find(actionName);
             if(i != object.end() && i.key() == actionName)
             {
-
                 QJsonValue val = object.value(actionName);
                 // check if it is an array or not
                 if(!val.isArray())
@@ -209,10 +207,10 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                     QString singleShortcut = val.toString().trimmed();
                     if(shortcutOccupied.contains(singleShortcut))
                     {
-                        raiseError(QString::fromLocal8Bit(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
+                        raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
                         return;
                     }
-                    else if(singleShortcut!=QString()) 
+                    else if(!singleShortcut.isEmpty()) 
                     {
                         shortcutOccupied.insert(singleShortcut,action);
                     }
@@ -225,11 +223,11 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                     foreach (const QJsonValue & v, array)
                     {
                         QString shortcut = v.toString();
-                        if(shortcut==QString()) continue;
+                        if(shortcut.isEmpty()) continue;
                         const QString defaultShortcut = defaultShortcuts[action][0].toString(QKeySequence::NativeText);
                         if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
                         {
-                            if(defaultShortcut==QString()) continue;
+                            if(defaultShortcut.isEmpty()) continue;
                             shortcutOccupied.insert(defaultShortcut,action);
                             shortcutsListFinal.append(defaultShortcut);
                         }
@@ -237,10 +235,10 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         {
                             if(shortcutOccupied.contains(shortcut))
                             {
-                                raiseError(QString::fromLocal8Bit(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]->objectName()));
+                                raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]->objectName()));
                                 return;
                             }
-                            else if(shortcut!=QString()) 
+                            else if(!shortcut.isEmpty()) 
                             {
                                 shortcutOccupied.insert(shortcut,action);
                             }
@@ -303,7 +301,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
                 updatedShortcut = pressedKeySequence.toString(QKeySequence::NativeText);
                 pressedKeySequence = QKeySequence();
                 shortcutCatcher->close();
-                if(updatedShortcut==QString()) return;
+                if(updatedShortcut.isEmpty()) return;
                 break;
             case QMessageBox::Reset:
                 updatedShortcut = QString();
@@ -335,6 +333,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 
         if(updatedShortcut!=QString()) shortcutOccupied.insert(updatedShortcut,changedAction);
         putData(index,updatedShortcut);
+
         // write into the file
         QJsonObject object;
         readConfigFile(&object);
