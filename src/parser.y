@@ -44,7 +44,6 @@
 #include "value.h"
 #include "function.h"
 #include "printutils.h"
-#include "errorutils.h"
 #include "memory.h"
 #include <sstream>
 #include <stack>

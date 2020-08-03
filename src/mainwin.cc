@@ -34,7 +34,6 @@
 #include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
-#include "errorutils.h"
 #include "node.h"
 #include "polyset.h"
 #include "csgnode.h"
