@@ -50,7 +50,6 @@ namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/detail/endian.hpp>
 #include <cstdint>
 
 extern PolySet * import_amf(std::string, const Location &loc);
@@ -70,7 +69,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
     assignment("file"), assignment("layer"), assignment("convexity"),
 		assignment("origin"), assignment("scale")
 	};
-	
+
 	AssignmentList optargs{
 		assignment("width"), assignment("height"),
 		assignment("filename"), assignment("layername"), assignment("center"), assignment("dpi")
@@ -105,7 +104,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 		else if (ext == ".svg") actualtype = ImportType::SVG;
 	}
 
-	auto node = new ImportNode(inst, actualtype);
+	auto node = new ImportNode(inst, evalctx, actualtype);
 
 	node->fn = c->lookup_variable("$fn")->toDouble();
 	node->fs = c->lookup_variable("$fs")->toDouble();
@@ -133,14 +132,14 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	}
 
 	const auto center = c->lookup_variable("center", true);
-	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
+	node->center = center->type() == Value::Type::BOOL ? center->toBool() : false;
 
 	node->scale = c->lookup_variable("scale", true)->toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	node->dpi = ImportNode::SVG_DEFAULT_DPI;
 	const auto dpi = c->lookup_variable("dpi", true);
-	if (dpi->type() == Value::ValueType::NUMBER) {
+	if (dpi->type() == Value::Type::NUMBER) {
 		double val = dpi->toDouble();
 		if (val < 0.001) {
 			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
@@ -154,9 +153,9 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 
 	auto width = c->lookup_variable("width", true);
 	auto height = c->lookup_variable("height", true);
-	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
-	
+	node->width = (width->type() == Value::Type::NUMBER) ? width->toDouble() : -1;
+	node->height = (height->type() == Value::Type::NUMBER) ? height->toDouble() : -1;
+
 	return node;
 }
 

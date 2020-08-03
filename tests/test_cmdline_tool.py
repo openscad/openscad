@@ -67,7 +67,7 @@ def init_actual_filename():
     global actualdir, actualfilename # fixme - globals are hard to use
 
     cmdname = os.path.split(options.cmd)[1]
-    actualdir = os.path.join(os.getcwd(), options.testname + "-output")
+    actualdir = os.path.join(os.getcwd(), "output", options.testname)
     actualfilename = os.path.join(actualdir, options.filename + "-actual." + options.suffix)
     actualfilename = os.path.normpath(actualfilename)
 

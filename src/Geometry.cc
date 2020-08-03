@@ -75,7 +75,7 @@ void flatten(const GeometryList &geomlist, GeometryList::Geometries &childlist)
 }
 
 /*!
-  Creates a new GeometryList which has a flat hierarchy (all
+	Creates a new GeometryList which has a flat hierarchy (all
 	children directly reachable GeometryLists are collected in a flat
 	list)
 */

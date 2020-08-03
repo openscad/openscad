@@ -63,14 +63,14 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::ValueType::STRING:
+		case Value::Type::STRING:
 			return Value(trimmed_value);
-		case Value::ValueType::NUMBER: 
+		case Value::Type::NUMBER: 
 			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
 				return Value(boost::lexical_cast<double>(trimmed_value));
 			}
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::ValueType::BOOL:
+		case Value::Type::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);
@@ -106,21 +106,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 void Preferences::init() {
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
-#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
-#if defined (Q_OS_WIN)
-	const QString fontfamily{"Console"};
-#elif defined (Q_OS_MAC)
-	const QString fontfamily{"Monaco"};
-#else
-	const QString fontfamily{"Mono"};
-#endif
-
-	QFont font;
-	font.setStyleHint(QFont::TypeWriter);
-	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
-#else
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-#endif
+
 	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
@@ -179,11 +166,7 @@ void Preferences::init() {
 #else
 	this->toolBar->removeAction(prefsActionUpdate);
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 	addPrefPage(group, prefsAction3DPrint, page3DPrint);
-#else
-	this->toolBar->removeAction(prefsAction3DPrint);
-#endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
 #else
@@ -677,6 +660,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
+void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
+{
+	Settings::Settings::inst()->set(Settings::Settings::exportUseAsciiSTL, Value(checked));
+	writeSettings();
+}
+
 void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
 {
 	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPILog, Value(checked));
@@ -905,6 +894,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
@@ -934,7 +924,9 @@ void Preferences::updateGUI()
 	initCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
 	initCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
 	initCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
+
 	
+
 	/* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from LineWrapIndentationStyle Combo-box, just after launching the openscad application.
 	Removing this line will cause misbehaviour, and will not disable the Indent spin-box untill you interact with the LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled.
 	For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
@@ -947,57 +939,6 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
 	updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine);
 	updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile);
-}
-
-void Preferences::initCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntry& entry)
-{
-	const Settings::Settings *s = Settings::Settings::inst();
-	checkBox->setChecked(s->get(entry).toBool());
-}
-
-void Preferences::initComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry)
-{
-	comboBox->clear();
-	// Range is a vector of 2D vectors: [[name, value], ...]
-	for(const auto &v : entry.range().toVector()) {
-		QString val = QString::fromStdString(v[0]->toString());
-		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
-		comboBox->addItem(qtext, val);
-	}
-}
-
-void Preferences::initSpinBoxRange(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry)
-{
-	RangeType range = entry.range().toRange();
-	spinBox->setMinimum(range.begin_value());
-	spinBox->setMaximum(range.end_value());
-}
-
-void Preferences::initSpinBoxDouble(const BlockSignals<QSpinBox *>& spinBox, const Settings::SettingsEntry& entry)
-{
-	const Settings::Settings *s = Settings::Settings::inst();
-	spinBox->setValue(s->get(entry).toDouble());
-}
-
-void Preferences::updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntry& entry)
-{
-	Settings::Settings *s = Settings::Settings::inst();
-
-	const Value &value = s->get(entry);
-	QString text = QString::fromStdString(value.toString());
-	int idx = comboBox->findData(text);
-	if (idx >= 0) {
-		comboBox->setCurrentIndex(idx);
-	} else {
-		const Value &defaultValue = entry.defaultValue();
-		QString defaultText = QString::fromStdString(defaultValue.toString());
-		int defIdx = comboBox->findData(defaultText);
-		if (defIdx >= 0) {
-			comboBox->setCurrentIndex(defIdx);
-		} else {
-			comboBox->setCurrentIndex(0);
-		}
-	}
 }
 
 void Preferences::applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry)

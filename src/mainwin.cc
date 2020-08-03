@@ -24,6 +24,7 @@
  *
  */
 #include <iostream>
+#include "boost-utils.h"
 #include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
@@ -35,9 +36,7 @@
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
-#include "polyset.h"
 #include "csgnode.h"
-#include "highlighter.h"
 #include "builtin.h"
 #include "memory.h"
 #include "expression.h"
@@ -48,6 +47,7 @@
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
+#include "RenderStatistic.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -57,6 +57,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
+#include "mouseselector.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
@@ -95,16 +96,10 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QTextDocument>
-#define QT_HTML_ESCAPE(qstring) Qt::escape(qstring)
-#undef ENABLE_3D_PRINTING
-#else
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
-#endif
 
 #include <fstream>
 
@@ -128,6 +123,7 @@
 #include "PrintInitDialog.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
+#include <memory>
 #include <QtNetwork>
 
 // Global application state
@@ -407,7 +403,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
-	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
+    connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
+    connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -430,6 +427,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	PRINT(copyrighttext);
 
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -516,14 +514,15 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideConsole = settings.value("view/hideConsole").toBool();
 	bool hideEditor = settings.value("view/hideEditor").toBool();
 	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
-	bool hideToolbar = settings.value("view/hideToolbar").toBool();
+    bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
+    bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 	
 	// make sure it looks nice..
 	auto windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
-	updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideToolbar);
+    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideEditorToolbar, hide3DViewToolbar);
 
 	if (windowState.size() == 0) {
 		/*
@@ -582,6 +581,16 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	for(int i = 1; i < filenames.size(); i++)
 		tabManager->createTab(filenames[i]);
+
+	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
+	if (!editorDock->isVisible()) {
+		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
+		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
+	}
+
+  if (Feature::ExperimentalMouseSelection.is_enabled()) {
+  	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+  }
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -614,14 +623,16 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar)
 {
 	viewActionHideConsole->setChecked(console);
 	hideConsole();
 	viewActionHideEditor->setChecked(editor);
 	hideEditor();
-	viewActionHideToolBars->setChecked(toolbar);
-	hideToolbars();
+    viewActionHideEditorToolBar->setChecked(editorToolbar);
+    hideEditorToolbar();
+    viewActionHide3DViewToolBar->setChecked(viewToolbar);
+    hide3DViewToolbar();
 	viewActionHideParameters->setChecked(customizer);
 	hideParameters();
 }
@@ -1119,8 +1130,12 @@ void MainWindow::instantiateRoot()
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
-			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
+			const Location *nextLocation = nullptr;
+			if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
 				this->root_node = this->absolute_root_node;
+			}
+			if (nextLocation) {
+				PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1170,10 +1185,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
-			GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-			CGALCache::instance()->print();
-#endif
+			RenderStatistic::printCacheStatistic();
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
@@ -1250,15 +1262,15 @@ void MainWindow::compileCSG()
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
-																								this->qglview->shaderinfo);
+																								&this->qglview->shaderinfo);
 		}
 #endif
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
 																														this->highlights_products,
 																														this->background_products);
 		PRINT("Compile and preview finished.");
-		int s = this->renderingTime.elapsed() / 1000;
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds\n", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
+		RenderStatistic::printRenderingTime(ms);
 		this->processEvents();
 	}catch(const HardWarningException&){
 		exceptionCleanup();
@@ -1624,14 +1636,14 @@ void MainWindow::updateTemporalVariables()
 	this->top_ctx->set_variable("$t", ValuePtr(this->anim_tval));
 
 	auto camVpt = qglview->cam.getVpt();
-	Value::VectorType vpt;
+	VectorType vpt;
 	vpt.push_back(ValuePtr(camVpt.x()));
 	vpt.push_back(ValuePtr(camVpt.y()));
 	vpt.push_back(ValuePtr(camVpt.z()));
 	this->top_ctx->set_variable("$vpt", ValuePtr(vpt));
 
 	auto camVpr = qglview->cam.getVpr();
-	Value::VectorType vpr;
+	VectorType vpr;
 	vpr.push_back(ValuePtr(camVpr.x()));
 	vpr.push_back(ValuePtr(camVpr.y()));
 	vpr.push_back(ValuePtr(camVpr.z()));
@@ -1664,7 +1676,7 @@ void MainWindow::updateCamera(const std::shared_ptr<FileContext> ctx)
 	}
 
 	const auto vpd = ctx->lookup_variable("$vpd");
-	if (vpd->type() == Value::ValueType::NUMBER){
+	if (vpd->type() == Value::Type::NUMBER){
 		qglview->cam.setVpd(vpd->toDouble());
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
@@ -1910,6 +1922,8 @@ void MainWindow::sendToOctoPrint()
 	FileFormat exportFileFormat{FileFormat::STL};
 	if (fileFormat == "OFF") {
 		exportFileFormat = FileFormat::OFF;
+	} else if (fileFormat == "ASCIISTL") {
+		exportFileFormat = FileFormat::ASCIISTL;
 	} else if (fileFormat == "AMF") {
 		exportFileFormat = FileFormat::AMF;
 	} else if (fileFormat == "3MF") {
@@ -2054,47 +2068,12 @@ void MainWindow::cgalRender()
 void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
-
-	unsigned int s = this->renderingTime.elapsed() / 1000;
-
+	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
 	if (root_geom) {
-		GeometryCache::instance()->print();
-#ifdef ENABLE_CGAL
-		CGALCache::instance()->print();
-#endif
-
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-
-		if (root_geom && !root_geom->isEmpty()) {
-			if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
-				if (N->getDimension() == 3) {
-					bool simple = N->p3->is_simple();
-					PRINT("   Top level object is a 3D object:");
-					PRINTB("   Simple:     %6s", (simple ? "yes" : "no"));
-					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
-					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
-					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
-					PRINTB("   Halffacets: %6d", N->p3->number_of_halffacets());
-					PRINTB("   Facets:     %6d", N->p3->number_of_facets());
-					PRINTB("   Volumes:    %6d", N->p3->number_of_volumes());
-					if (!simple) {
-						PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair!");
-					}
-				}
-			}
-			else if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom.get())) {
-				assert(ps->getDimension() == 3);
-				PRINT("   Top level object is a 3D object:");
-				PRINTB("   Facets:     %6d", ps->numFacets());
-			} else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom.get())) {
-				PRINT("   Top level object is a 2D object:");
-				PRINTB("   Contours:     %6d", poly->outlines().size());
-			} else  if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(root_geom.get())) {
-				PRINT("   Top level object is a list of objects:");
-				PRINTB("   Objects:     %d", geomlist->getChildren().size());
-			} else {
-				assert(false && "Unknown geometry type");
-			}
+		RenderStatistic::printCacheStatistic();
+		RenderStatistic::printRenderingTime(ms);
+		if (!root_geom->isEmpty()) {
+			RenderStatistic().print(*root_geom);
 		}
 		PRINT("Rendering finished.\n");
 
@@ -2112,7 +2091,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	updateStatusBar(nullptr);
 
 	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
-		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= s)
+		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
 	{
 		QSound::play(":sounds/complete.wav");
 	}
@@ -2123,6 +2102,105 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 }
 
 #endif /* ENABLE_CGAL */
+
+/**
+ * Call the mouseselection to determine the id of the clicked-on object.
+ * Use the generated ID and try to find it within the list of products
+ * And finally move the cursor to the beginning of the selected object in the editor
+ */
+void MainWindow::selectObject(QPoint mouse)
+{
+	if (!Feature::ExperimentalMouseSelection.is_enabled()) {
+		return;
+	}
+
+	// selecting without a renderer?!
+	if (!this->qglview->renderer) {
+		return;
+	}
+
+	// Nothing to select
+	if (!this->root_products) {
+		return;
+	}
+
+	// Update the selector with the right image size
+	this->selector->reset(this->qglview);
+
+	// Select the object at mouse coordinates
+	int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
+	std::deque<const AbstractNode *> path;
+	const AbstractNode *result = this->root_node->getNodeByID(index, path);
+
+	if (result) {
+		// Create context menu with the backtrace
+		QMenu tracemenu(this);
+		std::stringstream ss;
+		for (const auto *step : path) {
+			// Skip certain node types
+			if (step->name() == "root") {
+				continue;
+			}
+
+			auto location = step->location;
+			ss.str("");
+
+			// Check if the path is contained in a library (using parsersettings.h)
+			fs::path libpath = get_library_for_path(location.filePath());
+			if (!libpath.empty()) {
+				// Display the library (without making the window too wide!)
+				ss << step->name() << " (library "
+				   << location.fileName().substr(libpath.string().length() + 1) << ":"
+				   << location.firstLine() << ")";
+			}
+			else if (activeEditor->filepath.toStdString() == location.fileName()) {
+				ss << step->name() << " (" << location.filePath().filename().string() << ":"
+				   << location.firstLine() << ")";
+			}
+			else {
+				auto relname = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+				  .generic_string();
+				// Set the displayed name relative to the active editor window
+				ss << step->name() << " (" << relname << ":" << location.firstLine() << ")";
+			}
+
+			// Prepare the action to be sent
+			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
+			action->setProperty("file", QString::fromStdString(location.fileName()));
+			action->setProperty("line", location.firstLine());
+			action->setProperty("column", location.firstColumn());
+
+			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+		}
+
+		tracemenu.exec(this->qglview->mapToGlobal(mouse));
+	}
+}
+
+/**
+ * Expects the sender to have properties "file", "line" and "column" defined
+ */
+void MainWindow::setCursor()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
+			!action->property("column").isValid()) {
+		return;
+	}
+
+	auto file = action->property("file").toString();
+	auto line = action->property("line").toInt();
+	auto column = action->property("column").toInt();
+
+	// Unsaved files do have the pwd as current path, therefore we will not open a new
+	// tab on click
+	if (!fs::is_directory(fs::path(file.toStdString()))) {
+		this->tabManager->open(file);
+	}
+
+	// move the cursor, the editor is 0 based whereby location is 1 based
+	this->activeEditor->setCursorPosition(line - 1, column - 1);
+}
 
 /**
  * Switch version label and progress widget. When switching to the progress
@@ -2343,7 +2421,13 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportSTL()
 {
-	actionExport(FileFormat::STL, "STL", ".stl", 3);
+  const auto *s = Settings::Settings::inst();
+  if (s->get(Settings::Settings::exportUseAsciiSTL).toBool()) {
+	  actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
+  }
+  else {
+	  actionExport(FileFormat::STL, "STL", ".stl", 3);
+  }
 }
 
 void MainWindow::actionExport3MF()
@@ -2667,6 +2751,13 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 {
 	changedTopLevelEditor(editorDock->isFloating());
 	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
+	
+	if (editorDock->isVisible()) viewerToolBar->removeAction(this->fileActionExportSTL);
+	else{
+		 QAction *beforeAction = viewerToolBar->actions().at(2);
+		 viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
+	 }
+	 
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
@@ -2735,26 +2826,37 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
-void MainWindow::hideToolbars()
+void MainWindow::hideEditorToolbar()
 {
 	QSettingsCached settings;
-	bool shouldHide = viewActionHideToolBars->isChecked();
-	settings.setValue("view/hideToolbar", shouldHide);
+    bool shouldHide = viewActionHideEditorToolBar->isChecked();
+    settings.setValue("view/hideEditorToolbar", shouldHide);
 
 	if (shouldHide) {
-		viewerToolBar->hide();
 		editortoolbar->hide();
 	} else {
-		viewerToolBar->show();
 		editortoolbar->show();
 	}
+}
+
+void MainWindow::hide3DViewToolbar()
+{
+    QSettingsCached settings;
+    bool shouldHide = viewActionHide3DViewToolBar->isChecked();
+    settings.setValue("view/hide3DViewToolbar", shouldHide);
+
+    if (shouldHide) {
+        viewerToolBar->hide();
+    } else {
+        viewerToolBar->show();
+    }
 }
 
 void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
-	} else {
+	}else {
 		editorDock->show();
 	}
 }

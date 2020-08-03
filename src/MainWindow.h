@@ -21,6 +21,9 @@
 #include "input/InputDriver.h"
 #include "editor.h"
 #include "tabmanager.h"
+#include <memory>
+
+class MouseSelector;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -57,6 +60,7 @@ public:
 #endif
 #ifdef ENABLE_OPENCSG
 	class OpenCSGRenderer *opencsgRenderer;
+	std::unique_ptr<MouseSelector> selector;
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
@@ -93,6 +97,7 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
+	void setCursor();
 	void errorLogOutput(const Message &log_msg);
 
 public:
@@ -117,7 +122,7 @@ private:
 
 	void loadViewSettings();
 	void loadDesignSettings();
-	void updateWindowSettings(bool console, bool editor, bool customizer, bool toolbar);
+    void updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
 	void show_examples();
@@ -155,7 +160,8 @@ private slots:
 	void copyViewportRotation();
 	void copyViewportDistance();
 	void preferences();
-	void hideToolbars();
+    void hideEditorToolbar();
+    void hide3DViewToolbar();
 	void hideEditor();
 	void hideConsole();
 	void showConsole();
@@ -272,6 +278,7 @@ public slots:
 	void viewAll();
 	void animateUpdateDocChanged();
 	void animateUpdate();
+	void selectObject(QPoint coordinate);
 	void dragEnterEvent(QDragEnterEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
 	void helpAbout();

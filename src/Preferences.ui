@@ -1776,6 +1776,35 @@
              </spacer>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_Export">
+              <property name="title">
+               <string>Export Features</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_16">
+               <item>
+                <widget class="QCheckBox" name="useAsciiSTLCheckBox">
+                 <property name="text">
+                  <string>Default to ASCII STL export</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox_Debug">
               <property name="title">
                <string>Debugging</string>

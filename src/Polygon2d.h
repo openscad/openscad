@@ -18,6 +18,7 @@ struct Outline2d {
 class Polygon2d : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Polygon2d() : sanitized(false) {}
 	size_t memsize() const override;
 	BoundingBox getBoundingBox() const override;

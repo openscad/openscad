@@ -482,9 +482,9 @@ void ParameterWidget::applyParameterSet(std::string setName)
 	for (pt::ptree::value_type &v : set.get()) {
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
-			if (entry->second->dvt == Value::ValueType::STRING) {
+			if (entry->second->dvt == Value::Type::STRING) {
 				entry->second->value=ValuePtr(v.second.data());
-			} else if (entry->second->dvt == Value::ValueType::BOOL) {
+			} else if (entry->second->dvt == Value::Type::BOOL) {
 				entry->second->value = ValuePtr(v.second.get_value<bool>());
 			} else {
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());

@@ -25,6 +25,7 @@
  */
 
 #include "export.h"
+#include "polyset.h"
 #include "printutils.h"
 #include "Geometry.h"
 
@@ -33,11 +34,22 @@
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
+bool canPreview(const FileFormat format) {
+	return (format == FileFormat::AST ||
+					format == FileFormat::CSG ||
+					format == FileFormat::ECHO ||
+					format == FileFormat::TERM ||
+					format == FileFormat::PNG);
+}
+
 void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
+	case FileFormat::ASCIISTL:
+		export_stl(root_geom, output, false);
+		break;
 	case FileFormat::STL:
-		export_stl(root_geom, output);
+		export_stl(root_geom, output, true);
 		break;
 	case FileFormat::OFF:
 		export_off(root_geom, output);
@@ -69,7 +81,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 	const char *name2open, const char *name2display)
 {
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
-	if (format == FileFormat::_3MF) {
+	if (format == FileFormat::_3MF || format == FileFormat::STL) {
 		mode |= std::ios::binary;
 	}
 	std::ofstream fstream(name2open, mode);
@@ -92,4 +104,52 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 			PRINTB(_("ERROR: \"%s\" write error. (Disk full?)"), name2display);
 		}
 	}
+}
+
+namespace Export {
+
+ExportMesh::ExportMesh(const PolySet &ps)
+{
+	std::vector<std::array<int, 3>> triangleIndices;
+	for (const auto &p : ps.polygons) {
+		auto pos1 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
+		auto pos2 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
+		auto pos3 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
+		triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
+	}
+
+	int index = 0;
+	std::map<int, int> indexTranslationMap;
+	for (const auto& e : vertexMap) {
+		indexTranslationMap.emplace(e.second, index++);
+	}
+
+	for (const auto &i : triangleIndices) {
+		triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
+	}
+	std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
+		return t1.key < t2.key;
+	});
+}
+
+bool ExportMesh::foreach_vertex(const std::function<bool(const std::array<double, 3>&)> callback) const
+{
+	for (const auto& e : vertexMap) {
+		if (!callback(e.first)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const
+{
+	for (const auto& t : triangles) {
+		if (!callback(t.key)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 }

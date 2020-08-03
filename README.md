@@ -111,7 +111,7 @@ Follow the instructions for the platform you're compiling on below.
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
 * [cmake (2.8 ->, required by CGAL and the test framework)](https://cmake.org/)
-* [boost (1.35 ->)](https://www.boost.org/)
+* [boost (1.55 ->)](https://www.boost.org/)
 * [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)

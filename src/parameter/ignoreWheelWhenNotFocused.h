@@ -10,6 +10,8 @@
 //https://stackoverflow.com/questions/5821802/qspinbox-inside-a-qscrollarea-how-to-prevent-spin-box-from-stealing-focus-when
 //http://doc.qt.io/archives/qt-4.8/qobject.html#installEventFilter
 
+#pragma once
+
 #include <QWidget>
 #include <QMouseEvent>
 

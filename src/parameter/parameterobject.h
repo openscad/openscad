@@ -14,7 +14,7 @@ public:
 	ValuePtr value;
 	ValuePtr values;
 	ValuePtr defaultValue;
-	Value::ValueType dvt;
+	Value::Type dvt;
 	parameter_type_t target;
 	QString description;
 	std::string name;
@@ -22,7 +22,7 @@ public:
 	std::string groupName;
 
 private:
-	Value::ValueType vt;
+	Value::Type vt;
 	parameter_type_t checkVectorWidget();
 	void setValue(const ValuePtr defaultValue, const ValuePtr values);
 

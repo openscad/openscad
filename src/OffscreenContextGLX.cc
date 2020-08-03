@@ -243,7 +243,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 	return false;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
 {
 	glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
 	return save_framebuffer_common(ctx, output);

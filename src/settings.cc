@@ -45,31 +45,31 @@ bool SettingsEntry::is_default() const
 }
 
 static Value value(std::string s1, std::string s2) {
-	Value::VectorType v;
+	VectorType v;
 	v += ValuePtr(s1), ValuePtr(s2);
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
-	Value::VectorType v;
+	VectorType v;
 	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp));
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
-	Value::VectorType v;
+	VectorType v;
 	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp));
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
-	Value::VectorType v;
+	VectorType v;
 	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp)), ValuePtr(value(s4, s4disp));
 	return v;
 }
 
 static Value axisValues() {
-	Value::VectorType v;
+	VectorType v;
 	v += ValuePtr(value("None", _("None")));
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
@@ -85,7 +85,7 @@ static Value axisValues() {
 }
 
 static Value buttonValues() {
-	Value::VectorType v;
+	VectorType v;
 	v += ValuePtr(value("None", _("None")));
 	v += ValuePtr(value("viewActionTogglePerspective", _("Toggle Perspective")));
 	return v;
@@ -187,6 +187,8 @@ SettingsEntry Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine
 SettingsEntry Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", Value(""), Value(""));
 SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", Value(""), Value(""));
 SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
+
+SettingsEntry Settings::exportUseAsciiSTL("export", "useAsciiSTL", Value(true), Value(false));
 
 SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", Value(true), Value(false));

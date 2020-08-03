@@ -86,7 +86,7 @@ void Context::setVariables(const std::shared_ptr<EvalContext> evalctx, const Ass
 {
 	// Set any default values
 	for (const auto &arg : args) {
-		set_variable(arg->name, arg->expr ? arg->expr->evaluate(this->parent) : ValuePtr::undefined);
+		set_variable(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(this->parent) : ValuePtr::undefined);
 	}
 	
 	if (evalctx) {
@@ -185,13 +185,13 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
 {
 	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::ValueType::NUMBER) ? v->toDouble() : def;
+	return (v->type() == Value::Type::NUMBER) ? v->toDouble() : def;
 }
 
 std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
 {
 	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::ValueType::STRING) ? v->toString() : def;
+	return (v->type() == Value::Type::STRING) ? v->toString() : def;
 }
 
 bool Context::has_local_variable(const std::string &name) const
@@ -265,7 +265,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s\n") % arg->name % variables[arg->name];
+				s << boost::format("    %s = %s\n") % arg->getName() % variables[arg->getName()];
 			}
 		}
 	}

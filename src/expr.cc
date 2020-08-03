@@ -50,18 +50,18 @@ namespace {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
 
-	Value::VectorType flatten(Value::VectorType const& vec) {
+	VectorType flatten(VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			if (vec[i]->type() == Value::ValueType::VECTOR) {
+			if (vec[i]->type() == Value::Type::VECTOR) {
 				n += vec[i]->toVector().size();
 			} else {
 				n++;
 			}
 		}
-		Value::VectorType ret; ret.reserve(n);
+		VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			if (vec[i]->type() == Value::ValueType::VECTOR) {
+			if (vec[i]->type() == Value::Type::VECTOR) {
 				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
 			} else {
 				ret.push_back(vec[i]);
@@ -82,8 +82,8 @@ namespace /* anonymous*/ {
 		for (size_t i=0; i < l.size(); i++) {
 			const auto &arg = l[i];
 			if (i > 0) o << ", ";
-			if (!arg->name.empty()) o << arg->name  << " = ";
-			o << *arg->expr;
+			if (!arg->getName().empty()) o << arg->getName()  << " = ";
+			o << *arg->getExpr();
 		}
 		return o;
 	}
@@ -329,9 +329,9 @@ static void NOINLINE print_range_err(const std::string &begin, const std::string
 ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr beginValue = this->begin->evaluate(context);
-	if (beginValue->type() == Value::ValueType::NUMBER) {
+	if (beginValue->type() == Value::Type::NUMBER) {
 		ValuePtr endValue = this->end->evaluate(context);
-		if (endValue->type() == Value::ValueType::NUMBER) {
+		if (endValue->type() == Value::Type::NUMBER) {
 			double begin_val = beginValue->toDouble();
 			double end_val   = endValue->toDouble();
 			
@@ -345,7 +345,7 @@ ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 				return ValuePtr(range);
 			} else {
 				ValuePtr stepValue = this->step->evaluate(context);
-				if (stepValue->type() == Value::ValueType::NUMBER) {
+				if (stepValue->type() == Value::Type::NUMBER) {
 					double step_val = stepValue->toDouble();
 					if(this->isLiteral()){
 						if ((step_val>0) && (end_val < begin_val)) {
@@ -403,11 +403,11 @@ void Vector::emplace_back(Expression *expr)
 
 ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const Value::VectorType result = tmpval->toVector();
+			const VectorType result = tmpval->toVector();
 			for (size_t i = 0;i < result.size();i++) {
 				vec.push_back(result[i]);
 			}
@@ -456,11 +456,11 @@ ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr v = this->expr->evaluate(context);
 
-	if (v->type() == Value::ValueType::VECTOR) {
+	if (v->type() == Value::Type::VECTOR) {
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v->type() == Value::ValueType::RANGE) {
+	} else if (v->type() == Value::Type::RANGE) {
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
@@ -488,9 +488,9 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
 	stream << indent << "function(";
 	bool first = true;
 	for (const auto& assignment : definition_arguments) {
-		stream << (first ? "" : ", ") << assignment->name;
-		if (assignment->expr) {
-			stream << " = " << *assignment->expr.get();
+		stream << (first ? "" : ", ") << assignment->getName();
+		if (assignment->getExpr()) {
+			stream << " = " << *assignment->getExpr();
 		}
 		first = false;
 	}
@@ -556,9 +556,8 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 	if (this->defaultArguments.empty() && !definition_arguments.empty()) {
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
-			if (this->resolvedArguments.find(arg->name) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg->name, arg->expr ? arg->expr->evaluate(context) : ValuePtr::undefined);
-			}
+			if (this->resolvedArguments.find(arg->getName()) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : ValuePtr::undefined);			}
 		}
 	}
 
@@ -589,7 +588,7 @@ ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
 		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-		if (v->type() == Value::ValueType::FUNCTION) {
+		if (v->type() == Value::Type::FUNCTION) {
 			if (name.size() > 0 && name.at(0) == '$') {
 				print_invalid_function_call("dynamically scoped variable", context, loc);
 				return ValuePtr::undefined;
@@ -722,7 +721,7 @@ ValuePtr LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
-    Value::VectorType vec;
+    VectorType vec;
     if (expr) {
         if (isListComprehension(expr)) {
             return expr->evaluate(context);
@@ -748,11 +747,11 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 
 ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
     ValuePtr v = this->expr->evaluate(context);
 
-    if (v->type() == Value::ValueType::RANGE) {
+    if (v->type() == Value::Type::RANGE) {
         RangeType range = v->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
@@ -762,16 +761,16 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
                 vec.push_back(ValuePtr(*it));
             }
         }
-    } else if (v->type() == Value::ValueType::VECTOR) {
-        Value::VectorType vector = v->toVector();
+    } else if (v->type() == Value::Type::VECTOR) {
+        VectorType vector = v->toVector();
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
-    } else if (v->type() == Value::ValueType::STRING) {
+    } else if (v->type() == Value::Type::STRING) {
         utf8_split(v->toString(), [&](ValuePtr v) {
             vec.push_back(v);
         });
-    } else if (v->type() != Value::ValueType::UNDEFINED) {
+    } else if (v->type() != Value::Type::UNDEFINED) {
         vec.push_back(v);
     }
 
@@ -794,7 +793,7 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 
 ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
     ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
@@ -806,7 +805,7 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
 
     ContextHandle<Context> c{Context::create<Context>(context)};
 
-    if (it_values->type() == Value::ValueType::RANGE) {
+    if (it_values->type() == Value::Type::RANGE) {
         RangeType range = it_values->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
@@ -817,17 +816,17 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
                 vec.push_back(this->expr->evaluate(c.ctx));
             }
         }
-    } else if (it_values->type() == Value::ValueType::VECTOR) {
+    } else if (it_values->type() == Value::Type::VECTOR) {
         for (size_t i = 0; i < it_values->toVector().size(); i++) {
             c->set_variable(it_name, it_values->toVector()[i]);
             vec.push_back(this->expr->evaluate(c.ctx));
         }
-    } else if (it_values->type() == Value::ValueType::STRING) {
+    } else if (it_values->type() == Value::Type::STRING) {
         utf8_split(it_values->toString(), [&](ValuePtr v) {
             c->set_variable(it_name, v);
             vec.push_back(this->expr->evaluate(c.ctx));
         });
-    } else if (it_values->type() != Value::ValueType::UNDEFINED) {
+    } else if (it_values->type() != Value::Type::UNDEFINED) {
         c->set_variable(it_name, it_values);
         vec.push_back(this->expr->evaluate(c.ctx));
     }
@@ -851,7 +850,7 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 ValuePtr LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
     ContextHandle<Context> c{Context::create<Context>(context)};
     evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
@@ -913,9 +912,9 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 
 	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
 	for (const auto &arg : args) {
-		auto it = assignments.find(arg->name);
+		auto it = assignments.find(arg->getName());
 		if (it != assignments.end()) {
-			c->set_variable(arg->name, assignments[arg->name]->evaluate(evalctx));
+			c->set_variable(arg->getName(), assignments[arg->getName()]->evaluate(evalctx));
 		}
 	}
 	
@@ -945,7 +944,6 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 
 	// Outer loop: to allow tail calls
 	unsigned int counter = 0;
-	ValuePtr result;
 	while (true) {
 		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
 		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
@@ -955,52 +953,48 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
 
 		// Inner loop: to follow a single execution path
-		// Before a 'break', must either assign result, or set tailCall to true.
+		// Only 'break' inner loop for tail calls after calling prepareTailCallContext.
+		// Otherwise continue looping over sub-expressions, or return subExpr->evaluate(...) directly if not applicable to tail calls.
 		shared_ptr<Expression> subExpr = expr;
-		bool tailCall = false;
 		while (true) {
 			if (!subExpr) {
-				result = ValuePtr::undefined;
-				break;
-			}
-			else if (typeid(*subExpr) == typeid(TernaryOp)) {
-				const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
-				subExpr = ternary->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Assert)) {
-				const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
-				subExpr = assertion->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Echo)) {
-				const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
-				subExpr = echo->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(Let)) {
-				const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
-				// Start a new, nested context
-				c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
-				c_local = c_local_stack.front().ctx;
-				subExpr = let->evaluateStep(c_local);
-			}
-			else if (typeid(*subExpr) == typeid(FunctionCall)) {
-				const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
-				if (name == call->get_name()) {
-					// Update c_next with new parameters for tail call
-					call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
-					tailCall = true;
+				return ValuePtr::undefined;
+			} else {
+				const auto& subExprRef = *subExpr;
+				if (typeid(subExprRef) == typeid(TernaryOp)) {
+					const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
+					subExpr = ternary->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Assert)) {
+					const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
+					subExpr = assertion->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Echo)) {
+					const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
+					subExpr = echo->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Let)) {
+					const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
+					// Start a new, nested context
+					c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
+					c_local = c_local_stack.front().ctx;
+					subExpr = let->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(FunctionCall)) {
+					const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
+					if (name == call->get_name()) {
+						// Update c_next with new parameters for tail call
+						call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
+						break;
+					}
+					else {
+						return subExpr->evaluate(c_local);
+					}
 				}
 				else {
-					result = subExpr->evaluate(c_local);
+					return subExpr->evaluate(c_local);
 				}
-				break;
 			}
-			else {
-				result = subExpr->evaluate(c_local);
-				break;
-			}
-		}
-		if (!tailCall) {
-			break;
 		}
 
 		if (counter++ == 1000000){
@@ -1010,5 +1004,5 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 		}
 	}
 
-	return result;
+	return ValuePtr::undefined;
 }

@@ -39,8 +39,8 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 	for (size_t i=0; i < this->arguments.size(); i++) {
 		const auto &arg = this->arguments[i];
 		if (i > 0) stream << ", ";
-		if (!arg->name.empty()) stream << arg->name << " = ";
-		stream << *arg->expr;
+		if (!arg->getName().empty()) stream << arg->getName() << " = ";
+		stream << *arg->getExpr();
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";

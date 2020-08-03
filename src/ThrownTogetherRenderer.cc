@@ -39,23 +39,32 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_prod
 
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
+	this->draw_with_shader(nullptr, showedges);
+}
+
+void ThrownTogetherRenderer::draw_with_shader(const GLView::shaderinfo_t *shaderinfo, bool showedges) const {
+
+	if (shaderinfo) glUseProgram(shaderinfo->progid);
+
 	PRINTD("Thrown draw");
  	if (this->root_products) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		renderCSGProducts(*this->root_products, false, false, showedges, false);
+		renderCSGProducts(*this->root_products, shaderinfo, false, false, showedges, false);
 		glCullFace(GL_FRONT);
 		glColor3ub(255, 0, 255);
-		renderCSGProducts(*this->root_products, false, false, showedges, true);
+		renderCSGProducts(*this->root_products, shaderinfo, false, false, showedges, true);
 		glDisable(GL_CULL_FACE);
 	}
 	if (this->background_products)
-	 	renderCSGProducts(*this->background_products, false, true, showedges, false);
+	 	renderCSGProducts(*this->background_products, shaderinfo, false, true, showedges, false);
 	if (this->highlight_products)
-	 	renderCSGProducts(*this->highlight_products, true, false, showedges, false);
+	 	renderCSGProducts(*this->highlight_products, shaderinfo, true, false, showedges, false);
+
 }
 
-void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, bool highlight_mode,
+
+void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, const GLView::shaderinfo_t *shaderinfo, bool highlight_mode,
 																							 bool background_mode, bool showedges, bool fberror, OpenSCADOperator type) const
 {
 	if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
@@ -63,7 +72,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 	csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 	ColorMode colormode = ColorMode::NONE;
 	ColorMode edge_colormode = ColorMode::NONE;
-	
+
 	if (highlight_mode) {
 		colormode = ColorMode::HIGHLIGHT;
 		edge_colormode = ColorMode::HIGHLIGHT_EDGES;
@@ -93,23 +102,31 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, boo
 		}
 		edge_colormode = ColorMode::MATERIAL_EDGES;
 	}
-	
+
 	const Transform3d &m = csgobj.leaf->matrix;
-	setColor(colormode, c.data());
+
+	if (shaderinfo && shaderinfo->type == GLView::shaderinfo_t::SELECT_RENDERING) {
+		int identifier = csgobj.leaf->index;
+		glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
+								((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
+	}
+	else {
+		setColor(colormode, c.data());
+	}
 	glPushMatrix();
 	glMultMatrixd(m.data());
-	render_surface(csgobj.leaf->geom, csgmode, m);
+	render_surface(csgobj.leaf->geom, csgmode, m, shaderinfo);
 	if (showedges) {
 		// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 		setColor(edge_colormode);
 		render_edges(csgobj.leaf->geom, csgmode);
 	}
 	glPopMatrix();
-	
+
 }
 
-void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool highlight_mode,
-																							 bool background_mode, bool showedges, 
+void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, const GLView::shaderinfo_t *shaderinfo,
+																							 bool highlight_mode, bool background_mode, bool showedges,
 																							 bool fberror) const
 {
 	PRINTD("Thrown renderCSGProducts");
@@ -118,10 +135,10 @@ void ThrownTogetherRenderer::renderCSGProducts(const CSGProducts &products, bool
 
 	for(const auto &product : products.products) {
 		for(const auto &csgobj : product.intersections) {
-			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::INTERSECTION);
+			renderChainObject(csgobj, shaderinfo, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::INTERSECTION);
 		}
 		for(const auto &csgobj : product.subtractions) {
-			renderChainObject(csgobj, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::DIFFERENCE);
+			renderChainObject(csgobj, shaderinfo, highlight_mode, background_mode, showedges, fberror, OpenSCADOperator::DIFFERENCE);
 		}
 	}
 }

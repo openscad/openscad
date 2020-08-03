@@ -21,6 +21,10 @@ $ git submodule update --init
 
 A) Building test environment
 
+NOTE: If cmake was used to build openscad itself (as opposed to the qmake build),
+      then the "cmake" and "make" commands are already automatically run for tests.
+      Only "cd tests" is needed to begin running ctest in that case.
+
 Linux, Mac:
 
     $ cd tests

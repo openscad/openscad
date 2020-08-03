@@ -50,7 +50,7 @@ public:
 
 AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new RotateExtrudeNode(inst);
+	auto node = new RotateExtrudeNode(inst, evalctx);
 
 	AssignmentList args{assignment("file"), assignment("layer"), assignment("origin"), assignment("scale")};
 	AssignmentList optargs{assignment("convexity"), assignment("angle")};
@@ -62,7 +62,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	node->fn = c->lookup_variable("$fn")->toDouble();
 	node->fs = c->lookup_variable("$fs")->toDouble();
 	node->fa = c->lookup_variable("$fa")->toDouble();
-    
+
 
 	auto file = c->lookup_variable("file");
 	auto layer = c->lookup_variable("layer", true);
@@ -70,7 +70,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	auto origin = c->lookup_variable("origin", true);
 	auto scale = c->lookup_variable("scale", true);
 	auto angle = c->lookup_variable("angle", true);
-    
+
 	if (!file->isUndefined()) {
 		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
@@ -111,7 +111,7 @@ std::string RotateExtrudeNode::toString() const
 	std::ostringstream stream;
 
 	stream << this->name() << "(";
-	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+	if (!this->filename.empty()) { // Ignore deprecated parameters if empty
 		fs::path path((std::string)this->filename);
 		stream <<
 			"file = " << this->filename << ", "
