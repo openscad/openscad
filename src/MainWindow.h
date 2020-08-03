@@ -93,11 +93,11 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const QString &msg);
-	void errorLogOutput(const QString &msg);
+	void errorLogOutput(const Message &log_msg);
 
 public:
 	static void consoleOutput(const std::string &msg, void *userdata);
-	static void errorLogOutput(const std::string &msg, void *userdata);
+	static void errorLogOutput(const Message &log_msg, void *userdata2);
 	static void noOutput(const std::string &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();

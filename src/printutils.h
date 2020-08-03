@@ -24,10 +24,22 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 		return translation;
 	}
 }
+enum message_group { ERROR, WARNING,UI_WARNING,FONT_WARNING,EXPORT_WARNING,EXPORT_ERROR,PARSER_ERROR };
+
+struct Message{
+std::string file;
+int line;
+std::string msg;
+enum message_group group;
+};
+
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
+typedef void (OutputHandlerFunc2)(const Message &msg, void *userdata);
+
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
+
 namespace OpenSCAD {
 	extern std::string debug;
 	extern bool quiet;
@@ -37,6 +49,7 @@ namespace OpenSCAD {
 }
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
+void set_output_handler2(OutputHandlerFunc2 *newhandler, void *userdata);
 void no_exceptions_for_warnings();
 bool would_have_thrown();
 
@@ -52,6 +65,8 @@ void resetSuppressedMessages();
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
 void PRINT(const std::string &msg);
 #define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
+
+void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
 
 void PRINT_NOCACHE(const std::string &msg);
 #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)

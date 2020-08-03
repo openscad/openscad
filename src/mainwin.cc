@@ -34,6 +34,7 @@
 #include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
+#include "errorutils.h"
 #include "node.h"
 #include "polyset.h"
 #include "csgnode.h"
@@ -2947,22 +2948,21 @@ void MainWindow::consoleOutput(const QString &msg)
 	this->processEvents();
 }
 
-void MainWindow::errorLogOutput(const std::string &msg, void *userdata)
+void MainWindow::errorLogOutput(const Message &log_msg, void *userdata)
 {
 	auto thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(QString, QString::fromStdString(msg)));
+	QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(Message, log_msg));
 }
 
-void MainWindow::errorLogOutput(const QString &msg)
+void MainWindow::errorLogOutput(const Message &log_msg)
 {
-	std::cout<<msg.toStdString()<<std::endl;
+	std::cout<<log_msg.line<<std::endl;
 }
-
 
 void MainWindow::setCurrentOutput()
 {
 	set_output_handler(&MainWindow::consoleOutput, this);
-	set_output_handler(&MainWindow::errorLogOutput,this);
+	set_output_handler2(&MainWindow::errorLogOutput,this);
 }
 
 void MainWindow::hideCurrentOutput()

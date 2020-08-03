@@ -10,8 +10,11 @@
 namespace fs = boost::filesystem;
 
 std::list<std::string> print_messages_stack;
+std::list<struct Message> log_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
+OutputHandlerFunc2 *outputhandler2 = nullptr;
+void *outputhandler_data2 = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
@@ -19,6 +22,8 @@ bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
+boost::circular_buffer<struct Message> lastlogmessages(5);
+
 
 namespace {
 	bool no_throw;
@@ -31,6 +36,11 @@ void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 	outputhandler_data = userdata;
 }
 
+void set_output_handler2(OutputHandlerFunc2 *newhandler, void *userdata)
+{
+	outputhandler2 = newhandler;
+	outputhandler_data2 = userdata;
+}
 
 void no_exceptions_for_warnings()
 {
@@ -103,6 +113,16 @@ void PRINT_NOCACHE(const std::string &msg)
 				throw HardWarningException(msg);
 		}
 	}
+}
+
+void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
+{
+	Message log_msg = {file,line,msg,msg_group};
+	if (!outputhandler2) {
+		fprintf(stderr, "%s\n", msg.c_str());
+		} else {
+			outputhandler2(log_msg, outputhandler_data2);
+		}
 }
 
 void PRINTDEBUG(const std::string &filename, const std::string &msg)

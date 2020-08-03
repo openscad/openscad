@@ -44,6 +44,7 @@
 #include "value.h"
 #include "function.h"
 #include "printutils.h"
+#include "errorutils.h"
 #include "memory.h"
 #include <sstream>
 #include <stack>
@@ -690,6 +691,7 @@ void yyerror (char const *s)
   // FIXME: We leak memory on parser errors...
   PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
          (*sourcefile()) % lexerget_lineno() % s);
+  LOG(std::string(),lexerget_lineno(),s,ERROR);
 }
 
 #ifdef DEBUG
