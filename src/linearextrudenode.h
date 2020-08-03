@@ -7,7 +7,7 @@ class LinearExtrudeNode : public AbstractPolyNode
 {
 public:
 	VISITABLE();
-	LinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+	LinearExtrudeNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx) {
 		convexity = slices = 0;
 		fn = fs = fa = height = twist = 0;
 		origin_x = origin_y = 0;

@@ -18,15 +18,18 @@ public:
 		: ASTNode(loc), name(name), expr(expr) { }
 	
 	void print(std::ostream &stream, const std::string &indent) const override;
+	const std::string& getName() const { return name; };
+	const shared_ptr<Expression>& getExpr() const { return expr; };
+	// setExpr used by customizer parameterobject etc.
+	void setExpr(shared_ptr<Expression> e) { expr = std::move(e); };
 
 	virtual void addAnnotations(AnnotationList *annotations);
 	virtual bool hasAnnotations() const;
 	virtual const Annotation *annotation(const std::string &name) const;
 
-	// FIXME: Make protected
-	std::string name;
-	shared_ptr<class Expression> expr;
 protected:
+	const std::string name;
+	shared_ptr<class Expression> expr;
 	AnnotationMap annotations;
 };
 

@@ -21,7 +21,10 @@
 // Rewritten by Oskar Linde <oskar.linde@gmail.com>
 // Now marks volumes recursively with alternating marks
 
-#ifndef CGAL_NEF3_MARK_BOUNDED_VOLUMES_H
+#ifndef OPENSCAD_CGAL_NEF3_MARK_BOUNDED_VOLUMES_H
+#define OPENSCAD_CGAL_NEF3_MARK_BOUNDED_VOLUMES_H
+
+// also prevent inclusion of original file
 #define CGAL_NEF3_MARK_BOUNDED_VOLUMES_H
 
 #include <set>
@@ -117,4 +120,4 @@ public:
 };
 
 } //namespace CGAL
-#endif // CGAL_NEF3_MARK_BOUNDED_VOLUMES_H
+#endif // OPENSCAD_CGAL_NEF3_MARK_BOUNDED_VOLUMES_H

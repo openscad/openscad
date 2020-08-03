@@ -13,18 +13,20 @@ public:
 	OpenCSGRenderer(shared_ptr<class CSGProducts> root_products,
 									shared_ptr<CSGProducts> highlights_products,
 									shared_ptr<CSGProducts> background_products,
-									GLint *shaderinfo);
+									GLView::shaderinfo_t *shaderinfo);
 	void draw(bool showfaces, bool showedges) const override;
+	void draw_with_shader(const GLView::shaderinfo_t *shaderinfo) const override;
+
 	BoundingBox getBoundingBox() const override;
 private:
 #ifdef ENABLE_OPENCSG
 	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
 #endif
-	void renderCSGProducts(const class CSGProducts &products, GLint *shaderinfo, 
+	void renderCSGProducts(const class CSGProducts &products, const GLView::shaderinfo_t *shaderinfo,
 											bool highlight_mode, bool background_mode) const;
 
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlights_products;
 	shared_ptr<CSGProducts> background_products;
-	GLint *shaderinfo;
+	GLView::shaderinfo_t *shaderinfo;
 };

@@ -19,6 +19,7 @@
 # build was successful.
 #
 
+import re
 import json
 import urllib3
 
@@ -48,10 +49,11 @@ def latest_builds():
 
 def latest_artifacts(builds):
 	result = []
+	pattern = re.compile('/OpenSCAD-')
 	for build in builds:
 		response = http.request('GET', circleci_base_url + '/{0}/artifacts'.format(build), headers={ 'Accept': 'application/json' })
 		data = json.loads(response.data.decode('UTF-8'))
-		urls = [ x["url"] for x in data ]
+		urls = [ x["url"] for x in data if re.search(pattern, x["url"]) ]
 		result.extend(urls)
 	return result
 
@@ -59,7 +61,7 @@ def new_builds():
 	try:
 		with open(cache_file) as infile:
 			last_builds = json.load(infile)
-	except:
+	except Exception:
 		last_builds = {}
 
 	builds = latest_builds()
@@ -68,7 +70,7 @@ def new_builds():
 
 	new_builds = []
 	for key in ['32bit', '64bit', 'appimage-64bit', 'macos']:
-		if key not in last_builds or last_builds[key] != builds[key]:
+		if key not in last_builds or (key in builds and last_builds[key] != builds[key]):
 			if key in builds:
 				new_builds.append(builds[key])
 	return new_builds

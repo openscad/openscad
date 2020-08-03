@@ -41,16 +41,6 @@ using namespace NMR;
 #include "cgal.h"
 #include "cgalutils.h"
 
-bool triangle_sort_predicate (const CGAL_Triangle_3 t1, const CGAL_Triangle_3 t2) {
-	if (t1.vertex(0) == t2.vertex(0)) {
-		if (t1.vertex(1) == t2.vertex(1)) {
-			return t1.vertex(2) < t2.vertex(2);
-		}
-		return t1.vertex(1) < t2.vertex(1);
-	}
-	return t1.vertex(0) < t2.vertex(0);
-}
-
 static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
 	stream->write(data, bytes);
@@ -72,17 +62,11 @@ static void export_3mf_error(const std::string msg, PLib3MFModel *&model)
 	}
 }
 
-/*!
-    Saves the current 3D CGAL Nef polyhedron as 3MF to the given file.
-    The file must be open.
+/*
+ * PolySet must be triangulated.
  */
-static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject *&model)
+static bool append_polyset(const PolySet &ps, PLib3MFModelMeshObject *&model)
 {
-	if (!root_N.p3 || !root_N.p3->is_simple()) {
-		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
-		return false;
-	}
-
 	PLib3MFModelMeshObject *mesh;
 	if (lib3mf_model_addmeshobject(model, &mesh) != LIB3MF_OK) {
 		export_3mf_error("EXPORT-ERROR: Can't add mesh to 3MF model.", model);
@@ -93,78 +77,56 @@ static bool append_3mf(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 		return false;
 	}
 
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-		CGAL_Polyhedron P;
-		root_N.p3->convert_to_polyhedron(P);
+	auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
+		MODELMESHVERTEX v{(FLOAT)coords[0], (FLOAT)coords[1], (FLOAT)coords[2]};
+		return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
+	};
 
-		typedef CGAL_Polyhedron::Vertex Vertex;
-		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
-		typedef CGAL_Polyhedron::Facet_const_iterator FCI;
-		typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+	auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
+		MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
+		return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
+	};
 
-		// use sorted sets to get a stable sort order in the exported file
-		typedef std::set<CGAL_Polyhedron::Point_3> vertex_set_t;
-		typedef std::vector<CGAL_Triangle_3> triangle_list_t;
+	Export::ExportMesh exportMesh{ps};
 
-		vertex_set_t vertices;
-		triangle_list_t triangles;
-
-		for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
-			HFCC hc = fi->facet_begin();
-			HFCC hc_end = hc;
-			Vertex v1, v2, v3;
-			v1 = *VCI((hc++)->vertex());
-			vertices.insert(v1.point());
-			v3 = *VCI((hc++)->vertex());
-			vertices.insert(v3.point());
-			do {
-				v2 = v3;
-				v3 = *VCI((hc++)->vertex());
-
-				CGAL_Polyhedron::Point_3 p1, p2, p3;
-				p1 = v1.point();
-				p2 = v2.point();
-				p3 = v3.point();
-				vertices.insert(p3);
-
-				triangles.push_back(CGAL_Triangle_3(p1, p2, p3));
-			} while (hc != hc_end);
-		}
-
-		for (const auto &vertex : vertices) {
-			MODELMESHVERTEX v;
-			v.m_fPosition[0] = CGAL::to_double(vertex.x());
-			v.m_fPosition[1] = CGAL::to_double(vertex.y());
-			v.m_fPosition[2] = CGAL::to_double(vertex.z());
-			if (lib3mf_meshobject_addvertex(mesh, &v, nullptr) != LIB3MF_OK) {
-				export_3mf_error("EXPORT-ERROR: Can't add vertex to 3MF model.", model);
-				return false;
-			}
-		}
-
-		std::sort(triangles.begin(), triangles.end(), triangle_sort_predicate);
-		for (const auto &triangle : triangles) {
-			MODELMESHTRIANGLE t;
-			t.m_nIndices[0] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(0)));
-			t.m_nIndices[1] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(1)));
-			t.m_nIndices[2] = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), triangle.vertex(2)));
-			if (lib3mf_meshobject_addtriangle(mesh, &t, nullptr) != LIB3MF_OK) {
-				export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
-				return false;
-			}
-		}
-
-		PLib3MFModelBuildItem *builditem;
-		if (lib3mf_model_addbuilditem(model, mesh, nullptr, &builditem) != LIB3MF_OK) {
-			export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
-			return false;
-		}
-	} catch (CGAL::Assertion_exception& e) {
-		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %s", e.what());
+	if (!exportMesh.foreach_vertex(vertexFunc)) {
+		export_3mf_error("EXPORT-ERROR: Can't add vertex to 3MF model.", model);
+		return false;
 	}
-	CGAL::set_error_behaviour(old_behaviour);
+
+	if (!exportMesh.foreach_triangle(triangleFunc)) {
+		export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
+		return false;
+	}
+
+	PLib3MFModelBuildItem *builditem;
+	if (lib3mf_model_addbuilditem(model, mesh, nullptr, &builditem) != LIB3MF_OK) {
+		export_3mf_error("EXPORT-ERROR: Can't add build item to 3MF model.", model);
+		return false;
+	}
+
 	return true;
+}
+
+static bool append_nef(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject *&model)
+{
+	if (!root_N.p3) {
+		PRINT("EXPORT-ERROR: Export failed, empty geometry.");
+		return false;
+	}
+
+	if (!root_N.p3->is_simple()) {
+		PRINT("EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair");
+	}
+
+	PolySet ps{3};
+	const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3, ps);
+	if (err) {
+		export_3mf_error("EXPORT-ERROR: Error converting NEF Polyhedron.", model);
+		return false;
+	}
+
+	return append_polyset(ps, model);
 }
 
 static bool append_3mf(const shared_ptr<const Geometry> &geom, PLib3MFModelMeshObject *&model)
@@ -175,22 +137,26 @@ static bool append_3mf(const shared_ptr<const Geometry> &geom, PLib3MFModelMeshO
 		}
 	}
 	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-		return append_3mf(*N, model);
+		return append_nef(*N, model);
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-		// FIXME: Implement this without creating a Nef polyhedron
-		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
-		return append_3mf(*N, model);
-		delete N;
+		PolySet triangulated(3);
+		PolysetUtils::tessellate_faces(*ps, triangulated);
+		return append_polyset(triangulated, model);
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
 	}
+
 	return true;
 }
 
+/*!
+    Saves the current 3D Geometry as 3MF to the given file.
+    The file must be open.
+ */
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;

@@ -1,6 +1,6 @@
 color("Blue") {
         translate([-30,-10,-10]) cube([70,50,2]);
-        translate([40,-10,-10]) cube([2,50,30]);
+        translate([40,-10,-10]) cube([2,52,30]);
         translate([-30,40,-10]) cube([70,2,30]);
 }
 

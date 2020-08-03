@@ -3,8 +3,9 @@
 #include "qtgettext.h"
 #include "settings.h"
 #include "ui_AxisConfigWidget.h"
+#include "initConfig.h"
 
-class AxisConfigWidget : public QWidget, public Ui::Axis
+class AxisConfigWidget : public QWidget, public Ui::Axis,public InitConfigurator
 {
 	Q_OBJECT
 
@@ -74,16 +75,6 @@ signals:
         void inputGainChanged() const;
 
 private:
-	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize double spinbox min/max/step values from the settings range values */
-	void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize checkbox from the settings */
-	void initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry);
-	/** Update combobox from current settings */
-	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
 	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
 	void writeSettings();

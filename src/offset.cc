@@ -51,7 +51,7 @@ public:
 
 AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new OffsetNode(inst);
+	auto node = new OffsetNode(inst, evalctx);
 
 	AssignmentList args{assignment("r")};
 	AssignmentList optargs{assignment("delta"),assignment("chamfer")};
@@ -72,18 +72,18 @@ AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	const auto r = c->lookup_variable("r", true);
 	const auto delta = c->lookup_variable("delta", true);
 	const auto chamfer = c->lookup_variable("chamfer", true);
-	
-	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
+
+	if (r->isDefinedAs(Value::Type::NUMBER)) {
 		r->getDouble(node->delta);
-	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
+	} else if (delta->isDefinedAs(Value::Type::NUMBER)) {
 		delta->getDouble(node->delta);
 		node->join_type = ClipperLib::jtMiter;
-		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+		if (chamfer->isDefinedAs(Value::Type::BOOL) && chamfer->toBool()) {
 			node->chamfer = true;
 			node->join_type = ClipperLib::jtSquare;
 		}
 	}
-	
+
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 

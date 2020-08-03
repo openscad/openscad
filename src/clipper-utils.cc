@@ -144,7 +144,7 @@ namespace ClipperUtils {
 			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
 			pathsvector.push_back(polypaths);
 		}
-		auto res = apply(pathsvector, clipType);
+		auto res = ClipperUtils::apply(pathsvector, clipType);
 		assert(res);
 		return res;
 	}

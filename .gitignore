@@ -40,6 +40,9 @@ testdata/svg/viewbox/viewbox_*.svg
 /*.h
 /*.dump
 /*.pl
+/b/
+/c/
+.gcov/
 /lexer_lex.cpp
 /parser_yacc.cpp
 /openscad_adaptor.cpp
@@ -61,9 +64,6 @@ src/*.debug
 /Testing
 .DS_Store
 /build
-tests/lexer.cxx
-tests/parser.cxx
-tests/parser.hxx
 tests/DartConfiguration.tcl
 tests/__pycache__/
 CMakeCache.txt

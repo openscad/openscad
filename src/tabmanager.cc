@@ -23,9 +23,7 @@ TabManager::TabManager(MainWindow *o, const QString &filename)
     par = o;
 
     tabWidget = new TabWidget();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
     tabWidget->setAutoHide(true);
-#endif
     tabWidget->setExpanding(false);
     tabWidget->setTabsClosable(true);
     tabWidget->setMovable(true);

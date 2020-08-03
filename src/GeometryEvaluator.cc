@@ -80,7 +80,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			if (ps && !ps->isEmpty()) {
 				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-				bool convex{ps->convexValue()};
+				bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
 				if (!convex) {
 					assert(ps->getDimension() == 3);
 					auto ps_tri = new PolySet(3, ps->convexValue());
@@ -201,14 +201,20 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	if (points.size() > 0) {
 		// Apply hull
 		std::list<CGALPoint2> result;
-		CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
-
-		// Construct Polygon2d
-		Outline2d outline;
-		for(const auto &p : result) {
-			outline.vertices.push_back(Vector2d(p[0], p[1]));
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
+			// Construct Polygon2d
+			Outline2d outline;
+			for(const auto &p : result) {
+				outline.vertices.push_back(Vector2d(p[0], p[1]));
+			}
+			geometry->addOutline(outline);
 		}
-		geometry->addOutline(outline);
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %s", e.what());
+		}
+		CGAL::set_error_behaviour(old_behaviour);
 	}
 	return geometry;
 }
@@ -1111,9 +1117,9 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
 					if (!chPS) {
 						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-						if (chN) {
+                        if (chN && !chN->isEmpty()) {
 							PolySet *ps = new PolySet(3);
-							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+                            bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
 							if (err) {
 								PRINT("ERROR: Nef->PolySet failed");
 							}

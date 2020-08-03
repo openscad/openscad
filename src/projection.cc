@@ -45,11 +45,11 @@ public:
 
 AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new ProjectionNode(inst);
+	auto node = new ProjectionNode(inst, evalctx);
 
 	AssignmentList args{assignment("cut")};
 	AssignmentList optargs{assignment("convexity")};
-	
+
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);
 	inst->scope.apply(evalctx);
@@ -59,7 +59,7 @@ AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx,
 
 	node->convexity = static_cast<int>(convexity->toDouble());
 
-	if (cut->type() == Value::ValueType::BOOL) {
+	if (cut->type() == Value::Type::BOOL) {
 		node->cut_mode = cut->toBool();
 	}
 
