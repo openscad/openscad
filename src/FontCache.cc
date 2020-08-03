@@ -274,8 +274,8 @@ void FontCache::clear()
 void FontCache::dump_cache(const std::string &info)
 {
 	std::cout << info << ":";
-	for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); ++it) {
-		std::cout << " " << (*it).first << " (" << (*it).second.second << ")";
+	for (const auto &item : this->cache) {
+		std::cout << " " <<  item.first << " (" << item.second.second << ")";
 	}
 	std::cout << std::endl;
 }

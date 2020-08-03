@@ -716,8 +716,8 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
-            for (RangeType::iterator it = range.begin(); it != range.end(); ++it) {
-                vec.push_back(ValuePtr(*it));
+            for (double val : range) {
+                vec.push_back(ValuePtr(val));
             }
         }
     } else if (v->type() == Value::Type::VECTOR) {
@@ -770,8 +770,8 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
         if (steps >= 1000000) {
             PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
-            for (RangeType::iterator it = range.begin(); it != range.end(); ++it) {
-                c->set_variable(it_name, ValuePtr(*it));
+            for (double val : range) {
+                c->set_variable(it_name, ValuePtr(val));
                 vec.push_back(this->expr->evaluate(c.ctx));
             }
         }

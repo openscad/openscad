@@ -345,7 +345,6 @@ namespace CGALUtils {
 							continue;
 						}
 
-
 						CGAL::Polyhedron_3<Hull_kernel> result;
 						t.stop();
 						PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points[0].size() % points[1].size() % minkowski_points.size() % (t.time()*1000));
@@ -416,9 +415,9 @@ namespace CGALUtils {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
 					Geometry::Geometries fake_children;
-					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+					for (const auto &part : result_parts) {
 						PolySet ps(3,true);
-						createPolySetFromPolyhedron(*i, ps);
+						createPolySetFromPolyhedron(part, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
@@ -431,7 +430,7 @@ namespace CGALUtils {
 					t.reset();
 					operands[0] = N;
 				} else {
-                    operands[0] = new CGAL_Nef_polyhedron();
+					operands[0] = new CGAL_Nef_polyhedron();
 				}
 			}
 

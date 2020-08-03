@@ -56,13 +56,13 @@ public:
 		using difference_type   = void;       // type used by operator-(iterator), not implemented for forward interator
 		using reference         = value_type; // type used by operator*(), not actually a reference
 		using pointer           = void;       // type used by operator->(), not implemented
-		iterator(RangeType &range, type_t type);
+		iterator(const RangeType &range, type_t type);
 		iterator& operator++();
 		reference operator*();
 		bool operator==(const iterator& other) const;
 		bool operator!=(const iterator& other) const;
 	private:
-		RangeType &range;
+		const RangeType &range;
 		double val;
 		type_t type;
 		const uint32_t num_values;
@@ -135,12 +135,12 @@ public:
 			);
 	}
 
-	double begin_value() { return begin_val; }
-	double step_value() { return step_val; }
-	double end_value() { return end_val; }
+	double begin_value() const { return begin_val; }
+	double step_value() const { return step_val; }
+	double end_value() const { return end_val; }
 
-	iterator begin() { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
-	iterator end() { return iterator(*this, type_t::RANGE_TYPE_END); }
+	iterator begin() const { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
+	iterator end() const { return iterator(*this, type_t::RANGE_TYPE_END); }
 
 	/// return number of values, max uint32_t value if step is 0 or range is infinite
 	uint32_t numValues() const;

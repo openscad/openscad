@@ -276,9 +276,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	}
 
 	double width = 0, ascend = 0, descend = 0;
-	for (GlyphArray::iterator it = glyph_array.begin(); it != glyph_array.end(); ++it) {
-		const GlyphData *glyph = (*it);
-		
+	for (const auto glyph : glyph_array) {
 		FT_BBox bbox;
 		FT_Glyph_Get_CBox(glyph->get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
 		
@@ -298,9 +296,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	double x_offset = calc_x_offset(params.halign, width);
 	double y_offset = calc_y_offset(params.valign, ascend, descend);
 
-	for (GlyphArray::iterator it = glyph_array.begin(); it != glyph_array.end(); ++it) {
-		const GlyphData *glyph = (*it);
-		
+	for (const auto glyph : glyph_array) {
 		callback.start_glyph();
 		callback.set_glyph_offset(x_offset + glyph->get_x_offset(), y_offset + glyph->get_y_offset());
 		FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph->get_glyph())->outline;

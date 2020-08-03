@@ -615,8 +615,7 @@ public:
 			}
 
 			std::ostringstream stream;
-			RangeType range = v;
-			for (double d : range) stream << this->operator()(d);
+			for (double d : v) stream << this->operator()(d);
 			return stream.str();
 		}
 };
@@ -1171,7 +1170,7 @@ uint32_t RangeType::numValues() const
 	return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(RangeType &range, type_t type) : range(range), val(range.begin_val), type(type),
+RangeType::iterator::iterator(const RangeType &range, type_t type) : range(range), val(range.begin_val), type(type),
 		num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
 {
 	update_type();
