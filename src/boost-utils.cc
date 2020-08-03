@@ -1,4 +1,3 @@
-#include "boosty.h"
 #include "boost-utils.h"
 #include <stdio.h>
 #include <iostream>
@@ -17,7 +16,7 @@ fs::path boostfs_normalize(const fs::path &path)
 	for (;exists(result) && it != absPath.end(); ++it) {
 		result /= *it;
 	}
-	result = boosty::canonical(result.parent_path());
+	result = fs::canonical(result.parent_path());
 	if (it!=absPath.begin()) it--;
 
 	// For the rest remove ".." and "." in a path with no symlinks

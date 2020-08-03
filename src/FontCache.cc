@@ -29,10 +29,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "boosty.h"
 #include "FontCache.h"
 #include "PlatformUtils.h"
 #include "parsersettings.h"
+#include "printutils.h"
 
 extern std::vector<std::string> librarypath;
 
@@ -137,7 +137,7 @@ FontCache::FontCache()
 	fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_directory(builtinfontpath)) {
 		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
-		add_font_dir(boosty::canonical(builtinfontpath).generic_string());
+		add_font_dir(fs::canonical(builtinfontpath).generic_string());
 	}
 
 	const char *home = getenv("HOME");
