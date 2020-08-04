@@ -172,6 +172,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
 	errorLogDockTitleWidget = new QWidget();
+	// errorLogDockTitleWidget = new QWidget();
 	
 
 	this->editorDock->setConfigKey("view/hideEditor");

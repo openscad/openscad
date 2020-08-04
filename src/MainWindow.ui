@@ -696,7 +696,9 @@
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
-   <widget class="QWidget" name="errorLogDockContents"/>
+   <widget class="QWidget" name="errorLogDockContents">
+   <widget class="QWidget" name="errorLogWidget" native="true"/>
+   </widget>
   </widget>
   <action name="fileActionNew">
    <property name="icon">
