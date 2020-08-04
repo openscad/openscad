@@ -24,7 +24,9 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 		return translation;
 	}
 }
-enum message_group { ERROR, WARNING,UI_WARNING,FONT_WARNING,EXPORT_WARNING,EXPORT_ERROR,PARSER_ERROR };
+enum class message_group {
+	ERROR, WARNING,UI_WARNING,FONT_WARNING,EXPORT_WARNING,EXPORT_ERROR,PARSER_ERROR
+	};
 
 struct Message{
 std::string file;
