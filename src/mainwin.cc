@@ -171,6 +171,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
+	errorLogDockTitleWidget = new QWidget();
+	
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -178,6 +180,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->consoleDock->setAction(this->viewActionHideConsole);
 	this->parameterDock->setConfigKey("view/hideCustomizer");
 	this->parameterDock->setAction(this->viewActionHideParameters);
+	this->errorLogDock->setConfigKey("view/hideErrorLog");
+	this->errorLogDock->setAction(this->viewActionHideErrorLog);
 
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
@@ -408,6 +412,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
+    connect(this->viewActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -514,6 +519,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideConsole = settings.value("view/hideConsole").toBool();
 	bool hideEditor = settings.value("view/hideEditor").toBool();
 	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
+	bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
     bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
     bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 	
@@ -522,7 +528,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
-    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideEditorToolbar, hide3DViewToolbar);
+    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar);
 
 	if (windowState.size() == 0) {
 		/*
@@ -561,6 +567,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
+	connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
@@ -623,7 +630,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer,bool errorLog, bool editorToolbar, bool viewToolbar)
 {
 	viewActionHideConsole->setChecked(console);
 	hideConsole();
@@ -635,6 +642,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
     hide3DViewToolbar();
 	viewActionHideParameters->setChecked(customizer);
 	hideParameters();
+	viewActionHideErrorLog->setChecked(errorLog);
+	hideErrorLog();
 }
 
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
@@ -734,6 +743,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
 		parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
+		errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
 	} else {
 		if (editorDock->isFloating()) {
 			editorDock->setFloating(false);
@@ -747,6 +757,10 @@ void MainWindow::updateUndockMode(bool undockMode)
 			parameterDock->setFloating(false);
 		}
 		parameterDock->setFeatures(parameterDock->features() & ~QDockWidget::DockWidgetFloatable);
+		if (errorLogDock->isFloating()) {
+			errorLogDock->setFloating(false);
+		}
+		errorLogDock->setFeatures(errorLogDock->features() & ~QDockWidget::DockWidgetFloatable);
 	}
 }
 
@@ -756,6 +770,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 	editorDock->setTitleBarWidget(reorderMode ? nullptr : editorDockTitleWidget);
 	consoleDock->setTitleBarWidget(reorderMode ? nullptr : consoleDockTitleWidget);
 	parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
+	errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
@@ -2770,6 +2785,11 @@ void MainWindow::on_parameterDock_visibilityChanged(bool)
     parameterTopLevelChanged(parameterDock->isFloating());
 }
 
+void MainWindow::on_errorLogDock_visibilityChanged(bool)
+{
+    errorLogTopLevelChanged(parameterDock->isFloating());
+}
+
 void MainWindow::changedTopLevelEditor(bool topLevel)
 {
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
@@ -2811,6 +2831,23 @@ void MainWindow::consoleTopLevelChanged(bool topLevel)
 void MainWindow::parameterTopLevelChanged(bool topLevel)
 {
     setDockWidgetTitle(parameterDock, QString(_("Customizer")), topLevel);
+}
+
+void MainWindow::changedTopLevelErrorLog(bool topLevel)
+{
+	setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
+}
+
+void MainWindow::errorLogTopLevelChanged(bool topLevel)
+{
+	setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
+
+    Qt::WindowFlags flags = (errorLogDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+	if(topLevel)
+	{
+		errorLogDock->setWindowFlags(flags);
+		errorLogDock->show();
+	}
 }
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
@@ -2883,6 +2920,15 @@ void MainWindow::hideParameters()
 		parameterDock->hide();
 	} else {
 		parameterDock->show();
+	}
+}
+
+void MainWindow::hideErrorLog()
+{
+	if (viewActionHideErrorLog->isChecked()) {
+		errorLogDock->hide();
+	} else {
+		errorLogDock->show();
 	}
 }
 
@@ -2973,6 +3019,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		this->editorDock->disableSettingsUpdate();
 		this->consoleDock->disableSettingsUpdate();
 		this->parameterDock->disableSettingsUpdate();
+		this->errorLogDock->disableSettingsUpdate();
 
 		event->accept();
 	} else {

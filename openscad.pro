@@ -228,6 +228,7 @@ load(uic)
 uic.commands += -tr q_
 
 FORMS   += src/MainWindow.ui \
+           src/ErrorLog.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \

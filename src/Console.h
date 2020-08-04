@@ -45,7 +45,6 @@ public:
 	void mousePressEvent(QMouseEvent *e)
 	{
 		clickedAnchor = (e->button() & Qt::LeftButton) ? anchorAt(e->pos()) : QString();
-		// std::cout<<"clicked "<<clickedAnchor.toStdString()<<std::endl;
 		QPlainTextEdit::mousePressEvent(e);
 	}
 
