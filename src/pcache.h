@@ -7,8 +7,26 @@
 
 
 #ifdef ENABLE_HIREDIS
-
 #include <hiredis/hiredis.h>
+#endif
+
+struct CGAL_cache_entry{
+    std::string N;
+    std::string msg;
+    CGAL_cache_entry(std::string &N);
+    CGAL_cache_entry() {}
+    ~CGAL_cache_entry() {}
+};
+
+struct Geom_cache_entry{
+    shared_ptr<const class Geometry> geom;
+    std::string msg;
+    Geom_cache_entry(const shared_ptr<const Geometry> &geom);
+    Geom_cache_entry() {}
+    ~Geom_cache_entry() { }
+};
+
+#ifdef ENABLE_HIREDIS
 
 class PCache
 {
@@ -40,22 +58,6 @@ public:
 
     void disconnect();
     virtual ~PCache() {}
-
-    struct CGAL_cache_entry{
-        std::string N;
-        std::string msg;
-        CGAL_cache_entry(std::string &N);
-        CGAL_cache_entry() {}
-        ~CGAL_cache_entry() {}
-    };
-
-    struct Geom_cache_entry{
-        shared_ptr<const class Geometry> geom;
-        std::string msg;
-        Geom_cache_entry(const shared_ptr<const Geometry> &geom);
-        Geom_cache_entry() {}
-        ~Geom_cache_entry() { }
-    };
 
 private:
     redisContext* rct;

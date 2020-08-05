@@ -255,6 +255,7 @@ HEADERS += src/AST.h \
            src/SCADSerializations.h \
            src/expression.h \
            src/function.h \
+           src/lcache.h \
            src/module.h \            \
            src/pcache.h
            src/UserModule.h \
@@ -265,6 +266,7 @@ SOURCES += src/AST.cc \
            src/PCSettings.cpp \
            src/expr.cc \
            src/function.cc \
+           src/lcache.cpp \
            src/module.cc \
            src/UserModule.cc \
            src/annotation.cc \

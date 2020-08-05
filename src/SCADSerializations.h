@@ -7,12 +7,9 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/export.hpp>
-
 #include "pcache.h"
 #include "polyset.h"
-BOOST_CLASS_EXPORT(PolySet);
 #include "Polygon2d.h"
-BOOST_CLASS_EXPORT(Polygon2d);
 #include "Geometry.h"
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(Geometry);
 
@@ -22,21 +19,20 @@ BOOST_SERIALIZATION_SPLIT_FREE(Geometry);
 
 namespace boost{
 namespace serialization{
-#ifdef ENABLE_HIREDIS
 
 template <class Archive>
-void serialize(Archive &ar, PCache::CGAL_cache_entry &ce, const unsigned int ){
+void serialize(Archive &ar, CGAL_cache_entry &ce, const unsigned int ){
     ar & ce.N;
     ar & ce.msg;
 }
 
 template <class Archive>
-void serialize(Archive &ar, PCache::Geom_cache_entry &ce, const unsigned int){
+void serialize(Archive &ar, Geom_cache_entry &ce, const unsigned int){
     ar & ce.geom;
     ar & ce.msg;
 }
 
-#endif // ENABLE_HIREDIS
+
 template <class Archive>
 void serialize(Archive &ar, Vector3d &v, const unsigned int){
     ar & v(0);

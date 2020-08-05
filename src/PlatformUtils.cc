@@ -166,6 +166,39 @@ bool PlatformUtils::createBackupPath()
 	return OK;
 }
 
+std::string PlatformUtils::localCachePath() {
+    fs::path path;
+    try {
+        std::string pathstr = PlatformUtils::documentsPath();
+        if (pathstr=="") return "";
+        path = fs::path( pathstr );
+        if (!fs::exists(path)) return "";
+        path = boosty::canonical( path );
+        if (path.empty()) return "";
+        path /= OPENSCAD_FOLDER_NAME;
+        path /= "cache";
+    } catch (const fs::filesystem_error& ex) {
+        PRINTB("ERROR: %s",ex.what());
+    }
+    return path.generic_string();
+}
+
+bool PlatformUtils::createLocalCachePath() {
+    std::string path = PlatformUtils::localCachePath();
+    bool OK = false;
+    try {
+        if (!fs::exists(fs::path(path))) {
+            OK = fs::create_directories( path );
+        }
+        if (!OK) {
+            PRINTB("ERROR: Cannot create %s", path );
+        }
+    } catch (const fs::filesystem_error& ex) {
+        PRINTB("ERROR: %s",ex.what());
+    }
+    return OK;
+}
+
 // This is the built-in read-only resources path
 std::string PlatformUtils::resourceBasePath()
 {

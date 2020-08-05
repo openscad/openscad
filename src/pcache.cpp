@@ -6,6 +6,10 @@
 
 #include "pcache.h"
 #include "printutils.h"
+
+BOOST_CLASS_EXPORT(PolySet);
+BOOST_CLASS_EXPORT(Polygon2d);
+
 #ifdef ENABLE_HIREDIS
 
 PCache *PCache::pCache = nullptr;
@@ -99,9 +103,7 @@ bool PCache::get(const std::string &key, std::string &serializedGeom){
 // Serialize the geometry and insert that into redis using insert method
 // Returns on operation success
 bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
-#ifdef DEBUG
     PRINTDB("Insert: %s", key.c_str());
-#endif
     std::stringstream ss;
     ss << *N->p3;
     std::string data = ss.str();
@@ -114,9 +116,7 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
 }
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
-#ifdef DEBUG
     PRINTDB("Insert: %s", key.c_str());
-#endif
     std::stringstream ss;
     Geom_cache_entry ce(geom);
     boost::archive::text_oarchive oa(ss);
@@ -127,9 +127,7 @@ bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
-#ifdef DEBUG
     PRINTDB("Get: %s", key.c_str());
-#endif
     std::string data;
     if(get("CGAL-"+key, data)){
         shared_ptr<CGAL_Nef_polyhedron3> p3(new CGAL_Nef_polyhedron3());
@@ -148,9 +146,7 @@ shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
 }
 
 shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
-#ifdef DEBUG
     PRINTDB("Get: %s", key.c_str());
-#endif
     std::string data;
     shared_ptr<const Geometry> geom;
     Geom_cache_entry ce;
@@ -164,16 +160,12 @@ shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
 }
 
 bool PCache::containsCGAL(const std::string &key){
-#ifdef DEBUG
     PRINTDB("Contains: %s", key.c_str());
-#endif
     return contains("CGAL-"+key);
 }
 
 bool PCache::containsGeom(const std::string &key){
-#ifdef DEBUG
     PRINTDB("Contains: %s", key.c_str());
-#endif
     return contains("GEOM-"+key);
 }
 
@@ -249,11 +241,11 @@ bool PCache::checkReply(redisReply *reply){
     return false;
 }
 
-PCache::CGAL_cache_entry::CGAL_cache_entry(std::string &N) : N(N){
+CGAL_cache_entry::CGAL_cache_entry(std::string &N) : N(N){
     if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
 }
 
-PCache::Geom_cache_entry::Geom_cache_entry(const shared_ptr<const Geometry> &geom) : geom(geom){
+Geom_cache_entry::Geom_cache_entry(const shared_ptr<const Geometry> &geom) : geom(geom){
     if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
 }
 #endif

@@ -34,6 +34,7 @@
 #include "pcache.h"
 #include "PCSettings.h"
 #endif
+#include "lcache.h"
 
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
@@ -53,6 +54,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 																															 bool allownef)
 {
 	const std::string &key = this->tree.getIdString(node);
+    LCache lCache;
 	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
 #ifdef ENABLE_HIREDIS
@@ -301,11 +303,12 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 																				 const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
-
+    LCache lCache;
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
         if (!CGALCache::instance()->contains(key)) {
             CGALCache::instance()->insert(key, N);
+            lCache.insertCGAL(key, N);
 #ifdef ENABLE_HIREDIS
             if(PCSettings::instance()->enablePersistentCache && !PCache::getInst()->insertCGAL(key, N)){
                 PRINT("WARNING: Polyhedron is not inserted into redis cache");
@@ -318,6 +321,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 			if (!GeometryCache::instance()->insert(key, geom)) {
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
+            lCache.insertGeometry(key, geom);
 #ifdef ENABLE_HIREDIS
             if(PCSettings::instance()->enablePersistentCache && !PCache::getInst()->insertGeometry(key, geom)){
                 PRINT("WARNING: Geometry is not inserted into redis cache");

@@ -52,6 +52,8 @@ namespace PlatformUtils {
 	bool createUserLibraryPath();
 	std::string backupPath();
 	bool createBackupPath();
+        std::string localCachePath();
+        bool createLocalCachePath();
 
         /**
          * Return a human readable text describing the operating system
