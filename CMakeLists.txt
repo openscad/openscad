@@ -542,7 +542,9 @@ set(CGAL_SOURCES
   src/CGALCache.cc
   src/CSGTreeEvaluator.cc
   src/Polygon2d-CGAL.cc
-  src/GeometryEvaluator.cc)
+  src/GeometryEvaluator.cc
+  src/pcache.cpp
+  src/lcache.cpp)
 
 #
 # Offscreen OpenGL context source code
