@@ -33,6 +33,7 @@ struct Message{
 std::string file;
 int line;
 std::string msg;
+int msg_id;
 enum message_group group;
 };
 

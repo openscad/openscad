@@ -3105,7 +3105,7 @@ void MainWindow::errorLogOutput(const Message &log_msg, void *userdata)
 
 void MainWindow::errorLogOutput(const Message &log_msg)
 {
-	std::cout<<log_msg.line<<std::endl;
+	this->errorLogWidget->toErrorLog(log_msg);
 }
 
 void MainWindow::setCurrentOutput()

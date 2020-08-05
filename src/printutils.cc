@@ -24,6 +24,7 @@ bool OpenSCAD::rangeCheck = false;
 boost::circular_buffer<std::string> lastmessages(5);
 boost::circular_buffer<struct Message> lastlogmessages(5);
 
+int count=0;
 
 namespace {
 	bool no_throw;
@@ -117,7 +118,8 @@ void PRINT_NOCACHE(const std::string &msg)
 
 void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
 {
-	Message log_msg = {file,line,msg,msg_group};
+	Message log_msg = {file,line,msg,count,msg_group};
+	count++;
 	if (!outputhandler2) {
 		fprintf(stderr, "%s\n", msg.c_str());
 		} else {

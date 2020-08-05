@@ -692,7 +692,7 @@ void yyerror (char const *s)
   // FIXME: We leak memory on parser errors...
   PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
          (*sourcefile()) % lexerget_lineno() % s);
-  LOG(std::string(),lexerget_lineno(),s,message_group::Error);
+  LOG(sourcefile()->string(),lexerget_lineno(),s,message_group::Error);
 }
 
 #ifdef DEBUG
@@ -723,6 +723,8 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 						assignment->getName() %
 						assignment->location().firstLine() %
 						loc.firstLine());
+        std::string msg = "Double Assignment of "+ assignment->getName();
+        LOG("",loc.firstLine(),msg,message_group::Warning);
 			} else if (uncPathCurr == uncPathPrev) {
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times

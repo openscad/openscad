@@ -452,7 +452,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-    <widget class="QWidget" name="tabToolBarContents">
+       <widget class="QWidget" name="tabToolBarContents">
     <property name="sizePolicy">
      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
       <horstretch>0</horstretch>
@@ -697,7 +697,30 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="errorLogDockContents">
-   <widget class="QWidget" name="errorLogWidget" native="true"/>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="ErrorLog" name="errorLogWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <action name="fileActionNew">
@@ -1591,6 +1614,12 @@
    <class>Console</class>
    <extends>QPlainTextEdit</extends>
    <header>Console.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ErrorLog</class>
+   <extends>QWidget</extends>
+   <header>ErrorLog.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
