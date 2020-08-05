@@ -241,6 +241,8 @@ bool PCache::checkReply(redisReply *reply){
     return false;
 }
 
+#endif
+
 CGAL_cache_entry::CGAL_cache_entry(std::string &N) : N(N){
     if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
 }
@@ -248,4 +250,4 @@ CGAL_cache_entry::CGAL_cache_entry(std::string &N) : N(N){
 Geom_cache_entry::Geom_cache_entry(const shared_ptr<const Geometry> &geom) : geom(geom){
     if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
 }
-#endif
+
