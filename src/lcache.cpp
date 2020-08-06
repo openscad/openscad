@@ -67,6 +67,9 @@ std::string LCache::getHash(const std::string key) {
 bool LCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
     PRINTDB("Insert: %s", key.c_str());
     std::stringstream ss;
+    if(N->p3 == nullptr){
+        return insert("CGAL-"+key, "");
+    }
     ss << *N->p3;
     std::string data = ss.str();
     CGAL_cache_entry ce(data);
@@ -91,7 +94,7 @@ bool LCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 shared_ptr<const CGAL_Nef_polyhedron> LCache::getCGAL(const std::string &key){
     PRINTDB("Get: %s", key.c_str());
     std::string data;
-    if(get("CGAL-"+key, data)){
+    if(get("CGAL-"+key, data) && !data.empty()){
         shared_ptr<CGAL_Nef_polyhedron3> p3(new CGAL_Nef_polyhedron3());
         CGAL_cache_entry ce;
         std::stringstream ss(data);
