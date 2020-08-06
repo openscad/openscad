@@ -80,7 +80,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   endif()
 endif()
 
-set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options serialization functional)
+set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options serialization)
 
 find_package(PkgConfig)
 
