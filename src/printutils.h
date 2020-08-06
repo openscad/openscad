@@ -26,7 +26,7 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 }
 
 enum class message_group {
-	Error, Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,Parser_Error 
+	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,Parser_Error 
 };
 
 struct Message{
