@@ -2548,11 +2548,13 @@ void MainWindow::actionFlushCaches()
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
 #ifdef ENABLE_HIREDIS
-    initPC();
-    connectPC();
-    if(!PCache::getInst()->flushall())
-        PRINT("WARNING: Unable to clear persistent cache");
-    PCache::getInst()->disconnect();
+    if(PCSettings::instance()->enablePersistentCache){
+        initPC();
+        connectPC();
+        if(!PCache::getInst()->flushall())
+            PRINT("WARNING: Unable to clear persistent cache");
+        PCache::getInst()->disconnect();
+    }
 #endif
 }
 
