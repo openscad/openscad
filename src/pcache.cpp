@@ -1,9 +1,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-
 #include <sstream>
 #include "SCADSerializations.h"
-
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 #include "pcache.h"
 #include "printutils.h"
 

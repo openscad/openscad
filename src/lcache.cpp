@@ -1,6 +1,5 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-
 #include <sstream>
 #include "PlatformUtils.h"
 #include "printutils.h"
@@ -11,6 +10,7 @@
 #include "lcache.h"
 #include "pcache.h"
 #include "SCADSerializations.h"
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 namespace fs = boost::filesystem;
 
