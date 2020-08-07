@@ -125,7 +125,6 @@ bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
     oa << ce;
     std::string data = ss.str();
     return insert("GEOM-"+key, data);
-
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){

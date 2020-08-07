@@ -157,6 +157,7 @@ void Preferences::init() {
 	this->defaultmap["editor/enableAutocomplete"] = true;
 	this->defaultmap["editor/characterThreshold"] = 1;
 
+    this->defaultmap["advanced/enable_local_cache"] = false;
     this->defaultmap["advanced/enable_persistent_cache"] = false;
     this->defaultmap["advanced/ipAddressEdit"] = "127.0.0.1";
     this->defaultmap["advanced/portNumberEdit"] = "6379";
@@ -500,6 +501,16 @@ void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 	emit openCSGSettingsChanged();
 }
 
+void Preferences::on_enableLocalCache_toggled(bool state)
+{
+    QSettingsCached settings;
+    settings.setValue("advanced/enable_local_cache", state);
+    if(state){
+        this->enablePersistentCache->setChecked(!state);
+        on_enablePersistentCache_toggled(!state);
+    }
+}
+
 void Preferences::on_enablePersistentCache_toggled(bool state)
 {
     QSettingsCached settings;
@@ -515,6 +526,10 @@ void Preferences::on_enablePersistentCache_toggled(bool state)
     this->label_pc1->setDisabled(!state);
     this->label_pc2->setDisabled(!state);
     this->label_pc3->setDisabled(!state);
+    if(state) {
+        this->enableLocalCache->setChecked(!state);
+        on_enableLocalCache_toggled(!state);
+    }
 }
 
 void Preferences::on_enablePasswordAuth_toggled(bool state){
@@ -941,6 +956,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
+    BlockSignals<QCheckBox *>(this->enableLocalCache)->setChecked(getValue("advanced/enable_local_cache").toBool());
     BlockSignals<QCheckBox *>(this->enablePersistentCache)->setChecked(getValue("advanced/enable_persistent_cache").toBool());
     BlockSignals<QCheckBox *>(this->enablePasswordAuth)->setChecked(getValue("advanced/enablePasswordAuth").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());

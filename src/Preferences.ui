@@ -1639,6 +1639,16 @@
                <string>Persistent Cache</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_pc1">
+                <item>
+                <widget class="QCheckBox" name="enableLocalCache">
+                <property name="text">
+                  <string>Enable Local Cache</string>
+                </property>
+                <property name="checked">
+                  <bool>false</bool>
+                </property>
+                </widget>
+               </item>
                <item>
                 <widget class="QCheckBox" name="enablePersistentCache">
                  <property name="text">

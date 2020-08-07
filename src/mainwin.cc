@@ -1802,6 +1802,8 @@ void MainWindow::csgReloadRender()
     initPC();
     connectPC();
 #endif
+    PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
+
 	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
@@ -1854,6 +1856,7 @@ void MainWindow::csgRender()
     initPC();
     connectPC();
 #endif
+    PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
 
 	if (this->root_node) compileCSG();
 
@@ -2063,6 +2066,8 @@ void MainWindow::actionRender()
 #ifdef ENABLE_HIREDIS
     this->initPC();
 #endif
+    PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
+
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;

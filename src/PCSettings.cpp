@@ -16,4 +16,5 @@ PCSettings::PCSettings()
     port = 6379;
     enablePersistentCache = false;
     enableAuth = false;
+    enableLocalCache = false;
 }

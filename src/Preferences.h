@@ -43,7 +43,7 @@ public slots:
     void on_portNumberEdit_textChanged(const QString &);
     void on_passwordEdit_textChanged(const QString &);
     void on_enablePasswordAuth_toggled(bool);
-//    void on_connectBtn_clicked();
+    void on_enableLocalCache_toggled(bool);
 	void on_mouseWheelZoomBox_toggled(bool);
 	void on_localizationCheckBox_toggled(bool);
 	void on_autoReloadRaiseCheckBox_toggled(bool);
