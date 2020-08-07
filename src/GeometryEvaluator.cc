@@ -29,10 +29,10 @@
 #include "degree_trig.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
+#include "PCSettings.h"
 
 #ifdef ENABLE_HIREDIS
 #include "pcache.h"
-#include "PCSettings.h"
 #endif
 #include "lcache.h"
 

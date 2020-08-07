@@ -523,8 +523,14 @@ set(CORE_SOURCES
   src/Assignment.cc
   src/annotation.cc 
   src/ext/polyclipping/clipper.cpp
+<<<<<<< HEAD
   src/PCSettings.cpp
   ${PLATFORM_SOURCES}
+=======
+  src/parameter/parameterset.cpp
+
+${PLATFORM_SOURCES}
+>>>>>>> resolved issue with PCSettings.h in GeometryEvaluator
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
@@ -544,7 +550,9 @@ set(CGAL_SOURCES
   src/Polygon2d-CGAL.cc
   src/GeometryEvaluator.cc
   src/pcache.cpp
-  src/lcache.cpp)
+  src/lcache.cpp
+  src/PCSettings.cpp)
+
 
 #
 # Offscreen OpenGL context source code
