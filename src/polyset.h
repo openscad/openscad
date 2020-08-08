@@ -52,6 +52,7 @@ public:
     void setTrueDirty() {this->dirty=true;}
     void setDim(unsigned  int d) {dim = d;}
     void setPolygon(Polygon2d p) {polygon = p;}
+    bool serializable() const override {return true; }
 private:
 	Polygon2d polygon;
 	unsigned int dim;

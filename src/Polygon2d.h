@@ -44,6 +44,7 @@ public:
 	void setSanitized(bool s) { this->sanitized = s; }
 	bool is_convex() const;
     void setOutlines(Outlines2d outlines) {theoutlines = outlines;}
+    bool serializable() const override {return true; }
 private:
 	Outlines2d theoutlines;
 	bool sanitized;

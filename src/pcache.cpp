@@ -118,13 +118,15 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
 }
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
-    PRINTDB("Insert: %s", key.c_str());
-    std::stringstream ss;
-    Geom_cache_entry ce(geom);
-    boost::archive::text_oarchive oa(ss);
-    oa << ce;
-    std::string data = ss.str();
-    return insert("GEOM-"+key, data);
+    if(geom->serializable()){
+        PRINTDB("Insert: %s", key.c_str());
+        std::stringstream ss;
+        Geom_cache_entry ce(geom);
+        boost::archive::text_oarchive oa(ss);
+        oa << ce;
+        std::string data = ss.str();
+        return insert("GEOM-"+key, data);
+    } else return true;
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> PCache::getCGAL(const std::string &key){
