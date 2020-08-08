@@ -860,7 +860,7 @@ Value Value::operator<=(const Value &v) const
 class plus_visitor : public boost::static_visitor<Value>
 {
 public:
-	template <typename T, typename U> Value operator()(const T op1, const U &op2) const {
+	template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
     return Value::undef(STR("undefined operation (" << getTypeName(op1) << " + " << getTypeName(op2) << ")"));
 	}
 
