@@ -1,15 +1,22 @@
 #include "ErrorLog.h"
 #include "printutils.h"
+#include "MainWindow.h"
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
 	initGUI();
+	connect(logTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
 }
 
 ErrorLog::~ErrorLog()
 {
 	if(errorLogModel) delete errorLogModel;
+}
+
+void ErrorLog::refEditor(EditorInterface *o)
+{
+	activeEditor=o;
 }
 
 void ErrorLog::initGUI()
@@ -88,4 +95,20 @@ void ErrorLog::clearModel()
 	initGUI();
 	logsMap.clear();
 
+}
+
+int ErrorLog::getLine(int row,int col)
+{
+	return logTable->model()->index(row,col).data().toInt();
+}
+
+void ErrorLog::onTableCellClicked(const QModelIndex & index)
+{
+    if (index.isValid() && index.column()!=0) 
+    {
+		int r= index.row();
+		int line = getLine(r,2);
+		activeEditor->setCursorPosition(line,0); // not working, focus problem
+		activeEditor->setFocus();
+	}
 }

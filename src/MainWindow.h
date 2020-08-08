@@ -254,6 +254,7 @@ public slots:
 	void parameterTopLevelChanged(bool);
 	void errorLogTopLevelChanged(bool);
 	void processEvents();
+	void jumpToLine(int,int);
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();

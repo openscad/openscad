@@ -219,6 +219,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
+	this->errorLogWidget->refEditor(this->activeEditor);
+
 	connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 	connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 	connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
@@ -3158,4 +3160,9 @@ QString MainWindow::exportPath(const char *suffix) {
 		}
 	}
 	return path;
+}
+
+void MainWindow::jumpToLine(int line,int col)
+{
+	this->activeEditor->setCursorPosition(line, col);
 }
