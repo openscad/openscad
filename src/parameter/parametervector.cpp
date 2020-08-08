@@ -66,13 +66,13 @@ void ParameterVector::setValue()
 		boxes[i]->show();
 		boxes[i]->setDecimals(decimalPrecision);
 		if(minV==0 && maxV ==0){
-			boxes[i]->setRange(vec.at(i)->toDouble()-1000,vec.at(i)->toDouble()+1000);
+			boxes[i]->setRange(vec[i]->toDouble()-1000,vec[i]->toDouble()+1000);
 		}else{
 			boxes[i]->setMinimum(minV);
 			boxes[i]->setMaximum(maxV);
 			boxes[i]->setSingleStep(step);
 		}
-		boxes[i]->setValue(vec.at(i)->toDouble());
+		boxes[i]->setValue(vec[i]->toDouble());
 	}
 	for(unsigned int i = vec.size(); i < NR_OF_SPINBOXES; i++) {
 		boxes[i]->hide();

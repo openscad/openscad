@@ -201,7 +201,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::CUBE: {
 		auto size = c->lookup_variable("size");
 		auto center = c->lookup_variable("center");
-		if(size != ValuePtr::undefined){
+		if(size->isDefined()){
 			bool converted=false;
 			converted |= size->getDouble(node->x);
 			converted |= size->getDouble(node->y);
@@ -294,7 +294,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	case primitive_type_e::SQUARE: {
 		auto size = c->lookup_variable("size");
 		auto center = c->lookup_variable("center");
-		if(size != ValuePtr::undefined){
+		if(size->isDefined()){
 			bool converted=false;
 			converted |= size->getDouble(node->x);
 			converted |= size->getDouble(node->y);

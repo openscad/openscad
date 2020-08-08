@@ -90,6 +90,12 @@ namespace /* anonymous*/ {
 
 }
 
+ValuePtr Expression::checkUndef(ValuePtr&& val, const std::shared_ptr<Context>& context) const {
+	if (val->isUncheckedUndef())
+		PRINTB("WARNING: %s %s", val->toUndefString() % loc.toRelativeString(context->documentPath()));
+	return val;
+}
+
 bool Expression::isLiteral() const
 {
     return false;
@@ -102,34 +108,28 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expres
 ValuePtr UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
-	case (Op::Not):
-		return !this->expr->evaluate(context);
-	case (Op::Negate):
-		return -this->expr->evaluate(context);
+	case (Op::Not):    return !this->expr->evaluate(context);
+	case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
 	default:
-		return ValuePtr::undefined;
-		// FIXME: error:
+			assert(false && "Non-existent unary operator!");
+			throw EvaluationException("Non-existent unary operator!");
 	}
 }
 
 const char *UnaryOp::opString() const
 {
 	switch (this->op) {
-	case Op::Not:
-		return "!";
-		break;
-	case Op::Negate:
-		return "-";
-		break;
+	case Op::Not:    return "!";
+	case Op::Negate: return "-";
 	default:
-		return "";
-		// FIXME: Error: unknown op
+			assert(false && "Non-existent unary operator!");
+			throw EvaluationException("Non-existent unary operator!");
 	}
 }
 
-bool UnaryOp::isLiteral() const { 
+bool UnaryOp::isLiteral() const {
 
-    if(this->expr->isLiteral()) 
+    if(this->expr->isLiteral())
         return true;
     return false;
 }
@@ -149,100 +149,58 @@ ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 	switch (this->op) {
 	case Op::LogicalAnd:
 		return this->left->evaluate(context) && this->right->evaluate(context);
-		break;
 	case Op::LogicalOr:
 		return this->left->evaluate(context) || this->right->evaluate(context);
-		break;
 	case Op::Exponent:
-        return ValuePtr(pow(this->left->evaluate(context)->toDouble(), this->right->evaluate(context)->toDouble()));
-		break;
+		return checkUndef(this->left->evaluate(context) ^  this->right->evaluate(context), context);
 	case Op::Multiply:
-		return this->left->evaluate(context) * this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) *  this->right->evaluate(context), context);
 	case Op::Divide:
-		return this->left->evaluate(context) / this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) /  this->right->evaluate(context), context);
 	case Op::Modulo:
-		return this->left->evaluate(context) % this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) %  this->right->evaluate(context), context);
 	case Op::Plus:
-		return this->left->evaluate(context) + this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) +  this->right->evaluate(context), context);
 	case Op::Minus:
-		return this->left->evaluate(context) - this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) -  this->right->evaluate(context), context);
 	case Op::Less:
-		return this->left->evaluate(context) < this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) <  this->right->evaluate(context), context);
 	case Op::LessEqual:
-		return this->left->evaluate(context) <= this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) <= this->right->evaluate(context), context);
 	case Op::Greater:
-		return this->left->evaluate(context) > this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) >  this->right->evaluate(context), context);
 	case Op::GreaterEqual:
-		return this->left->evaluate(context) >= this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) >= this->right->evaluate(context), context);
 	case Op::Equal:
-		return this->left->evaluate(context) == this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) == this->right->evaluate(context), context);
 	case Op::NotEqual:
-		return this->left->evaluate(context) != this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) != this->right->evaluate(context), context);
 	default:
-		return ValuePtr::undefined;
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent binary operator!");
+		throw EvaluationException("Non-existent binary operator!");
 	}
 }
 
 const char *BinaryOp::opString() const
 {
 	switch (this->op) {
-	case Op::LogicalAnd:
-		return "&&";
-		break;
-	case Op::LogicalOr:
-		return "||";
-		break;
-	case Op::Exponent:
-		return "^";
-		break;
-	case Op::Multiply:
-		return "*";
-		break;
-	case Op::Divide:
-		return "/";
-		break;
-	case Op::Modulo:
-		return "%";
-		break;
-	case Op::Plus:
-		return "+";
-		break;
-	case Op::Minus:
-		return "-";
-		break;
-	case Op::Less:
-		return "<";
-		break;
-	case Op::LessEqual:
-		return "<=";
-		break;
-	case Op::Greater:
-		return ">";
-		break;
-	case Op::GreaterEqual:
-		return ">=";
-		break;
-	case Op::Equal:
-		return "==";
-		break;
-	case Op::NotEqual:
-		return "!=";
-		break;
+	case Op::LogicalAnd:   return "&&";
+	case Op::LogicalOr:    return "||";
+	case Op::Exponent:     return "^";
+	case Op::Multiply:     return "*";
+	case Op::Divide:       return "/";
+	case Op::Modulo:       return "%";
+	case Op::Plus:         return "+";
+	case Op::Minus:        return "-";
+	case Op::Less:         return "<";
+	case Op::LessEqual:    return "<=";
+	case Op::Greater:      return ">";
+	case Op::GreaterEqual: return ">=";
+	case Op::Equal:        return "==";
+	case Op::NotEqual:     return "!=";
 	default:
-		return "";
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent binary operator!");
+		throw EvaluationException("Non-existent binary operator!");
 	}
 }
 
@@ -557,7 +515,8 @@ void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context
 		// Assign default values for unspecified parameters
 		for (const auto &arg : definition_arguments) {
 			if (this->resolvedArguments.find(arg->getName()) == this->resolvedArguments.end()) {
-				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : ValuePtr::undefined);			}
+				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : ValuePtr::undefined);
+			}
 		}
 	}
 
