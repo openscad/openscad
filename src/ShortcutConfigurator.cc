@@ -205,7 +205,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                 if(!val.isArray())
                 {
                     QString singleShortcut = val.toString().trimmed();
-                    if(shortcutOccupied.contains(singleShortcut))
+                    if(shortcutOccupied.contains(singleShortcut) && shortcutOccupied[singleShortcut]->objectName()!=actionName)
                     {
                         raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
                         return;
@@ -233,7 +233,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         }
                         else 
                         {
-                            if(shortcutOccupied.contains(shortcut))
+                            if(shortcutOccupied.contains(shortcut) && shortcutOccupied[shortcut]->objectName()!=actionName)
                             {
                                 raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]->objectName()));
                                 return;
