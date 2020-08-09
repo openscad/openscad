@@ -38,10 +38,10 @@ msgstr ""
 "<html><head/><body>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
-"style=\"color: green;\">開啟</span>SCAD</p>\n"
+"style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">此程式用於3D實體建模</p>\n"
+"2em;\">程式設計師的3D實體建模器</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -61,11 +61,11 @@ msgstr "偏好設定"
 #: objects/ui_AxisConfigWidget.h:869 objects/ui_AxisConfigWidget.h:871
 #: objects/ui_AxisConfigWidget.h:882
 msgid "Trim"
-msgstr "修剪"
+msgstr "歸零點"
 
 #: objects/ui_AxisConfigWidget.h:856
 msgid "Reset Trim"
-msgstr "重置修剪"
+msgstr "重置歸零點"
 
 #: objects/ui_AxisConfigWidget.h:857 objects/ui_AxisConfigWidget.h:860
 #: objects/ui_AxisConfigWidget.h:861 objects/ui_AxisConfigWidget.h:862
@@ -77,7 +77,7 @@ msgstr "盲區"
 
 #: objects/ui_AxisConfigWidget.h:858
 msgid "Auto Trim Axes"
-msgstr "自動修剪軸"
+msgstr "自動歸零軸"
 
 #: objects/ui_AxisConfigWidget.h:872
 msgid "Axis 2"
@@ -129,7 +129,7 @@ msgstr "X"
 
 #: objects/ui_AxisConfigWidget.h:886
 msgid "Gain"
-msgstr "增益"
+msgstr "倍率"
 
 #: objects/ui_AxisConfigWidget.h:887
 msgid "Y"
@@ -145,16 +145,16 @@ msgstr "平移"
 
 #: objects/ui_AxisConfigWidget.h:890
 msgid "ViewPort rel.<br/>Translation"
-msgstr "視點相關<br/>平移"
+msgstr "視圖相關<br/>平移"
 
 #: objects/ui_AxisConfigWidget.h:891
 msgid "ViewPort rel.<br />Rotation"
-msgstr "視點相關<br/>旋轉"
+msgstr "視圖相關<br/>旋轉"
 
 #: objects/ui_AxisConfigWidget.h:892
 #, fuzzy
 msgid "Axis Setup:"
-msgstr "軸設置: "
+msgstr "座標軸設置: "
 
 #: objects/ui_AxisConfigWidget.h:893
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
@@ -182,16 +182,16 @@ msgstr "DBus"
 
 #: objects/ui_AxisConfigWidget.h:899
 msgid "Axes Mapping:"
-msgstr "CAT軸映射:"
+msgstr "座標軸映射:"
 
 #: objects/ui_AxisConfigWidget.h:900
 msgid "Status:"
-msgstr ""
+msgstr "狀態："
 
 #: objects/ui_AxisConfigWidget.h:901
 #, fuzzy
 msgid "TextLabel"
-msgstr "文字"
+msgstr "文字標籤"
 
 #: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1461
 msgid "Update"
@@ -359,11 +359,11 @@ msgstr "版本"
 
 #: objects/ui_LibraryInfoDialog.h:72
 msgid "Lib & Build Info"
-msgstr "Lib & Build 資訊"
+msgstr "函式庫與建置資訊"
 
 #: objects/ui_LibraryInfoDialog.h:73
 msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD詳細的程式庫與建構資訊"
+msgstr "OpenSCAD詳細的程式庫與建置資訊"
 
 #: objects/ui_MainWindow.h:955
 #, fuzzy
@@ -482,7 +482,7 @@ msgstr "Ctrl+I"
 
 #: objects/ui_MainWindow.h:1009
 msgid "C&omment"
-msgstr "確認(&O)"
+msgstr "註解(&O)"
 
 #: objects/ui_MainWindow.h:1011
 msgid "Ctrl+D"
@@ -490,7 +490,7 @@ msgstr "Ctrl+D"
 
 #: objects/ui_MainWindow.h:1013
 msgid "Unco&mment"
-msgstr "取消確認(&M)"
+msgstr "取消註解(&M)"
 
 #: objects/ui_MainWindow.h:1015
 msgid "Ctrl+Shift+D"
@@ -499,7 +499,7 @@ msgstr "Ctrl+Shift+D"
 #: objects/ui_MainWindow.h:1017
 #, fuzzy
 msgid "Show Next Tab"
-msgstr "顯示下一個Tab頁"
+msgstr "顯示下一個分頁"
 
 #: objects/ui_MainWindow.h:1019
 #, fuzzy
@@ -508,7 +508,7 @@ msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:1021
 msgid "Show Previous Tab"
-msgstr "顯示上一個Tab頁"
+msgstr "顯示上一個分頁"
 
 #: objects/ui_MainWindow.h:1023
 #, fuzzy
@@ -517,7 +517,7 @@ msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:1025
 msgid "Copy viewport ima&ge"
-msgstr "複製視點圖片(&G)"
+msgstr "複製視圖影像(&G)"
 
 #: objects/ui_MainWindow.h:1027
 msgid "Ctrl+Shift+C"
@@ -525,7 +525,7 @@ msgstr "Ctrl+Shift+C"
 
 #: objects/ui_MainWindow.h:1029
 msgid "Copy viewport transl&ation"
-msgstr "複製視點平移(&A)"
+msgstr "複製視圖平移(&A)"
 
 #: objects/ui_MainWindow.h:1031
 msgid "Ctrl+T"
@@ -533,15 +533,15 @@ msgstr "Ctrl+T"
 
 #: objects/ui_MainWindow.h:1033
 msgid "Cop&y viewport rotation"
-msgstr "複製視點旋轉"
+msgstr "複製視圖旋轉"
 
 #: objects/ui_MainWindow.h:1034
 msgid "Copy vie&wport distance"
-msgstr "複製視點距離"
+msgstr "複製視圖距離"
 
 #: objects/ui_MainWindow.h:1035
 msgid "Increase Font &Size"
-msgstr "文字放大(&S)"
+msgstr "放大文字(&S)"
 
 #: objects/ui_MainWindow.h:1037
 msgid "Ctrl++"
@@ -549,7 +549,7 @@ msgstr "Ctrl++"
 
 #: objects/ui_MainWindow.h:1039
 msgid "Decrease Font Si&ze"
-msgstr "文字縮小"
+msgstr "縮小文字"
 
 #: objects/ui_MainWindow.h:1041
 msgid "Ctrl+-"
@@ -605,7 +605,7 @@ msgstr "顯示CSG樹(&)..."
 
 #: objects/ui_MainWindow.h:1063
 msgid "Display CSG Pr&oducts..."
-msgstr "顯示CSG產品(&O)..."
+msgstr "顯示CSG輸出(&O)..."
 
 #: objects/ui_MainWindow.h:1064
 msgid "Export as &STL..."
@@ -661,7 +661,7 @@ msgstr "Ctrl+1"
 
 #: objects/ui_MainWindow.h:1089
 msgid "Show Axes"
-msgstr "顯示軸"
+msgstr "顯示座標軸"
 
 #: objects/ui_MainWindow.h:1091
 msgid "Ctrl+2"
@@ -681,7 +681,7 @@ msgstr "顯示刻度標記"
 
 #: objects/ui_MainWindow.h:1098
 msgid "Animate"
-msgstr "繪製"
+msgstr "動畫"
 
 #: objects/ui_MainWindow.h:1099
 msgid "&Top"
@@ -817,7 +817,7 @@ msgstr "Ctrl+Shift+G"
 
 #: objects/ui_MainWindow.h:1156
 msgid "Use Se&lection for Find"
-msgstr "用已選取文字查尋(&L)"
+msgstr "以選取文字尋找(&L)"
 
 #: objects/ui_MainWindow.h:1158
 msgid "Ctrl+E"
@@ -846,7 +846,7 @@ msgstr "自動重新載入和預覽(&A)"
 
 #: objects/ui_MainWindow.h:1167
 msgid "Export as &Image..."
-msgstr "匯出成圖片...(&I)"
+msgstr "匯出成圖檔...(&I)"
 
 #: objects/ui_MainWindow.h:1168
 msgid "Export as &CSG..."
@@ -854,11 +854,11 @@ msgstr "匯出成CSG...(&C)"
 
 #: objects/ui_MainWindow.h:1169
 msgid "&Library info"
-msgstr "程式庫資訊(&L)"
+msgstr "函式庫資訊(&L)"
 
 #: objects/ui_MainWindow.h:1170
 msgid "Show &Library Folder..."
-msgstr "顯示程式庫目錄..."
+msgstr "顯示函式庫目錄..."
 
 #: objects/ui_MainWindow.h:1171
 msgid "Reset View"
@@ -950,7 +950,7 @@ msgstr "Ctrl+Shift+I"
 
 #: objects/ui_MainWindow.h:1206
 msgid "&Cheat Sheet"
-msgstr "備忘錄"
+msgstr "速查表"
 
 #: objects/ui_MainWindow.h:1207
 msgid "Hide Customizer"
@@ -1016,7 +1016,7 @@ msgstr "說明(&H)"
 #: objects/ui_MainWindow.h:1224 objects/ui_Preferences.h:1486
 #: src/settings.cc:176
 msgid "Tabs"
-msgstr "Tab鍵"
+msgstr "Tabs"
 
 #: objects/ui_MainWindow.h:1225 src/tabmanager.cc:375
 msgid "Find"
@@ -1033,7 +1033,7 @@ msgstr "搜尋字串"
 #: objects/ui_MainWindow.h:1229
 #, fuzzy
 msgid "Previous"
-msgstr "找上一個(&V)"
+msgstr "上一個(&V)"
 
 #: objects/ui_MainWindow.h:1230
 msgid "Next"
@@ -1182,11 +1182,11 @@ msgstr "啟用/禁用實驗功能"
 
 #: objects/ui_Preferences.h:1466
 msgid "Axes"
-msgstr "軸"
+msgstr "座標軸"
 
 #: objects/ui_Preferences.h:1468
 msgid "Input driver configuration and Axis mapping"
-msgstr "輸入裝置設定與軸映射"
+msgstr "輸入裝置設定與座標軸映射"
 
 #: objects/ui_Preferences.h:1470
 msgid "Buttons"
@@ -1210,7 +1210,7 @@ msgstr "在3D檢視中顯示警告與錯誤"
 
 #: objects/ui_Preferences.h:1477
 msgid "mouse centric zoom"
-msgstr "以滑鼠中心縮放"
+msgstr "以滑鼠為中心縮放"
 
 #: objects/ui_Preferences.h:1478
 msgid "Font"
@@ -1218,7 +1218,7 @@ msgstr "字型"
 
 #: objects/ui_Preferences.h:1479
 msgid "Color syntax highlighting"
-msgstr "色彩強調語法"
+msgstr "彩色語法標記"
 
 #: objects/ui_Preferences.h:1480
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
@@ -1234,7 +1234,7 @@ msgstr "自動縮排"
 
 #: objects/ui_Preferences.h:1483
 msgid "Backspace unindents"
-msgstr "退格鑑不縮排"
+msgstr "退格鍵取消縮排"
 
 #: objects/ui_Preferences.h:1484
 msgid "Indent using"
@@ -1242,7 +1242,7 @@ msgstr "縮排使用"
 
 #: objects/ui_Preferences.h:1485 src/settings.cc:176
 msgid "Spaces"
-msgstr "空白鍵"
+msgstr "空白"
 
 #: objects/ui_Preferences.h:1488
 msgid "Indentation width"
@@ -1263,7 +1263,7 @@ msgstr "縮排"
 
 #: objects/ui_Preferences.h:1492 src/settings.cc:177
 msgid "Insert Tab"
-msgstr "Tab縮排"
+msgstr "插入Tab"
 
 #: objects/ui_Preferences.h:1494
 msgid "Show whitespace"
@@ -1416,7 +1416,7 @@ msgstr "檢查"
 
 #: objects/ui_Preferences.h:1545
 msgid "Slicing Profile"
-msgstr "切片輪廓"
+msgstr "切片參數"
 
 #: objects/ui_Preferences.h:1546
 msgid "Slicing Engine"
@@ -1428,7 +1428,7 @@ msgstr "檔案格式"
 
 #: objects/ui_Preferences.h:1548
 msgid "Action"
-msgstr "行動"
+msgstr "動作"
 
 #: objects/ui_Preferences.h:1549
 msgid "Show"
@@ -1504,20 +1504,20 @@ msgstr "自動重整後將視窗浮到前景"
 
 #: objects/ui_Preferences.h:1568
 msgid "Play sound notification on render complete"
-msgstr "選染完成後播放音效通知"
+msgstr "渲染完成後播放音效通知"
 
 #: objects/ui_Preferences.h:1569
 #, fuzzy
 msgid "Play sound when render completion time is at least"
-msgstr "選染完成後播放音效通知"
+msgstr "渲染完成後播放音效通知，當渲染時間大於"
 
 #: objects/ui_Preferences.h:1570
 msgid "sec"
-msgstr ""
+msgstr "秒"
 
 #: objects/ui_Preferences.h:1571
 msgid "OpenSCAD Language Features"
-msgstr "OpenSCAD語言特徵"
+msgstr "OpenSCAD語言特色"
 
 #: objects/ui_Preferences.h:1572
 msgid "Warn when there is a parameter mismatch in user module calls"
@@ -1611,7 +1611,7 @@ msgstr ""
 
 #: src/mainwin.cc:2003
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr "匯出的設計超過服務上船上限(%1 MB)"
+msgstr "匯出的設計超過服務上傳上限(%1 MB)"
 
 #: src/mainwin.cc:2004
 msgid "Upload Error"
@@ -1672,7 +1672,7 @@ msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
-"發生嚴重錯誤. 可能程式造成不穩定:\n"
+"發生嚴重錯誤，程式可能不穩定:\n"
 "%1"
 
 #: src/OpenSCADApp.cc:88
@@ -1680,8 +1680,8 @@ msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
-"字型設定呿要更新字型快取.\n"
-"這可能要花上幾分鐘."
+"字型設定需要更新字型快取。\n"
+"這可能要花上幾分鐘。"
 
 #: src/Preferences.cc:241 src/Preferences.cc:246 src/Preferences.cc:737
 #: src/Preferences.cc:773
@@ -1704,14 +1704,14 @@ msgstr "列印服務不可用"
 msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
-msgstr "警告: 你可能會遭受OpenCSG渲染錯誤.\n"
+msgstr "警告: 你可能會遇到OpenCSG渲染錯誤。\n"
 
 #: src/QGLView.cc:153
 msgid ""
 "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
 "disabled.\n"
 "\n"
-msgstr "警告: 失去OpenGL OpenCSG功能 - OpenCSG已停用.\n"
+msgstr "警告: 失去OpenGL OpenCSG功能 - OpenCSG已停用。\n"
 
 #: src/QGLView.cc:156
 msgid ""
@@ -1719,8 +1719,8 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"強烈建議在OpenGL 2.0以後版本使用OpenSCAD.\n"
-"你的渲染訊息如下:\n"
+"強烈建議在OpenGL 2.0以後版本使用OpenSCAD。\n"
+"你的渲染訊息如下：\n"
 
 #: src/QGLView.cc:159
 msgid ""
@@ -1759,11 +1759,11 @@ msgstr "更新與切片"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Select for printing"
-msgstr "已更新, 切片且選取項目來列印"
+msgstr "已更新，切片並選取列印項目"
 
 #: src/settings.cc:185
 msgid "Upload, Slice & Start printing"
-msgstr "已更新, 切片且開始列印"
+msgstr "已更新，切片並開始列印"
 
 #: src/tabmanager.cc:380
 #, fuzzy
@@ -1786,20 +1786,20 @@ msgstr ""
 #: src/tabmanager.cc:421
 #, fuzzy
 msgid "Close Tab"
-msgstr "關閉"
+msgstr "關閉分頁"
 
 #: src/tabmanager.cc:567
 msgid "The document has been modified."
-msgstr "此檔案已被變更."
+msgstr "此檔案已被變更"
 
 #: src/tabmanager.cc:568
 msgid "Do you want to save your changes?"
-msgstr "是否要儲存你的變更?"
+msgstr "是否要儲存你的變更？"
 
 #: src/tabmanager.cc:600
 #, fuzzy
 msgid "Some of the tabs are modified."
-msgstr "此檔案已被變更."
+msgstr "有些分頁已被變更"
 
 #: src/tabmanager.cc:601
 msgid "All unsaved changes will be lost."
@@ -1812,7 +1812,7 @@ msgstr "寫入時開啟檔案錯誤"
 #: src/tabmanager.cc:672
 #, c-format
 msgid "Saved design '%s'."
-msgstr "設計 '%s' 已儲存."
+msgstr "設計 '%s' 已儲存"
 
 #: src/tabmanager.cc:675
 msgid "Error saving design"
@@ -1831,8 +1831,8 @@ msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
-"%1 已存在.\n"
-"是否要覆寫?"
+"%1 已存在。\n"
+"是否要覆寫？"
 
 #: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:231
 msgid "changes on current preset not saved"
@@ -1842,7 +1842,7 @@ msgstr "當前預設變更未儲存"
 msgid ""
 "The changes on the current preset %1 are not saved yet. Do you really want "
 "to reset this preset and lose your changes?"
-msgstr "當前預設 %1 的變更尚未儲存. 你確定要重設這個預設且捨棄你的改變嗎?"
+msgstr "當前預設 %1 的變更尚未儲存。你確定要重設這個預設且捨棄你的改變嗎？"
 
 #: src/parameter/ParameterWidget.cc:156
 msgid "remove current preset"
@@ -1865,15 +1865,15 @@ msgstr "設計預設值"
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
-msgstr "當前預設 %1 含有變更且尚未儲存. 你確定要改變這個預設且捨棄你的改變嗎?"
+msgstr "當前預設 %1 含有變更且尚未儲存。你確定要改變這個預設且捨棄你的改變嗎？"
 
 #: src/parameter/ParameterWidget.cc:273
 msgid "Do you want to delete the current preset?"
-msgstr "你要刪除當前預設嗎?"
+msgstr "你要刪除當前預設嗎？"
 
 #: src/parameter/ParameterWidget.cc:275
 msgid "Do you want to delete the current preset '%1'?"
-msgstr "你要刪除當前預設 '%1' 嗎?"
+msgstr "你要刪除當前預設 '%1' 嗎？"
 
 #: src/parameter/ParameterWidget.cc:515
 msgid "Create new set of parameter"
@@ -1889,7 +1889,7 @@ msgstr "設定名稱 %1 已存在"
 
 #: src/parameter/ParameterWidget.cc:527
 msgid "The set name  %1 already exists. Do you want overwrite it?"
-msgstr "設定名稱 %1 已存在. 是否要覆蓋?"
+msgstr "設定名稱 %1 已存在。是否要覆蓋？"
 
 #: src/parameter/ParameterWidget.cc:571
 msgid "Saving presets"
@@ -1897,42 +1897,42 @@ msgstr "儲存預設中"
 
 #: src/parameter/ParameterWidget.cc:572
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr "%1已找到但無法讀取.是否要覆蓋它?"
+msgstr "%1已找到但無法讀取。是否要覆蓋它？"
 
 #: src/input/AxisConfigWidget.h:84
 msgid ""
 "This driver was not enabled during build time and is thus not available."
-msgstr "由於此驅動程式於建構期間沒有啟用因此不可用."
+msgstr "由於此驅動程式於建置期間沒有啟用因此不可用？"
 
 #: src/input/AxisConfigWidget.h:86
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
-msgstr "DBUS驅動程序不是用於實際設備,而是用於遠程控制(限Linux)."
+msgstr "DBUS驅動程序不是用於實際設備，而是用於遠程控制（限Linux）。"
 
 #: src/input/AxisConfigWidget.h:87
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
-msgstr "HIDAPI驅動程式直接通訊於3D滑鼠,Windows與macOS."
+msgstr "HIDAPI驅動程式直接與3D滑鼠通訊（Windows、macOS）。"
 
 #: src/input/AxisConfigWidget.h:88
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
-msgstr "SpaceNav驅動程式靠spacenavd daemon啟用3D輸入裝置.(限Linux)"
+msgstr "SpaceNav驅動程式靠spacenavd daemon啟用3D輸入裝置（限Linux）。"
 
 #: src/input/AxisConfigWidget.h:89
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
-msgstr "Joystick驅動程式使用Linux搖桿裝置(fixed to /dev/input/js0).(限Linux)"
+msgstr "Joystick驅動程式使用Linux搖桿裝置（固定使用 /dev/input/js0）（限Linux）。"
 
 #: src/input/AxisConfigWidget.h:90
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr "QGAMEPAD驅動程式用於多平台手把支援."
+msgstr "QGAMEPAD驅動程式用於多平台手把支援。"
 
 #: src/input/ButtonConfigWidget.cc:185
 msgid "(not supported)"
-msgstr "(不支援)"
+msgstr "（不支援）"
 
 #: examples/examples.json:2
 msgid "Basics"
@@ -1940,7 +1940,7 @@ msgstr "基礎"
 
 #: examples/examples.json:13
 msgid "Functions"
-msgstr "方法"
+msgstr "功能"
 
 #: examples/examples.json:20
 msgid "Advanced"
@@ -1952,7 +1952,7 @@ msgstr "參數"
 
 #: examples/examples.json:34
 msgid "Old"
-msgstr "舊"
+msgstr "舊範例"
 
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in:6
@@ -1969,9 +1969,9 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD是一個用於建立Solid 3D CAD模組的軟體. 不同於大多數免費3D建模軟體(如"
-"Blender), 它不關注3D藝術方面而是關注於CAD方面. 因此當你計畫用於3D建模時此程式"
-"可能是你要的, 但當你更注重於電腦動畫時這肯定不是你要的."
+"OpenSCAD是一個用於建立Solid 3D CAD模組的軟體。不同於大多數免費3D建模軟體（如"
+"Blender），它不著重於3D藝術方面而是CAD方面。因此當你計畫用於3D建模時此程式"
+"可能是你要的，但如果要做電腦動畫這肯定不是你要的。"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:21
@@ -1984,8 +1984,8 @@ msgid ""
 "parameters."
 msgstr ""
 "OpenSCAD並非互動式建模器, 相反的它就像3D編譯器讀取描繪物件的腳本檔案然後從中"
-"渲染3D模型. 這使您(設計師)可以完全掌控建模過程且讓你可以簡單的改變建模過程的"
-"任何步驟,或由可調參數所定義的設計."
+"渲染3D模型. 這使您（設計師）可以完全掌控建模過程且讓你可以簡單的改變建模過程的"
+"任何步驟，或用於參數可調的設計。"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:22
@@ -1997,10 +1997,10 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenSCAD提供了兩種主要的建模技術: 首先是構造實體幾何(CSG), 然後是2D輪廓的拉"
-"伸. 以 Autocad DXF檔案作為2D輪廓的資料交換格式. 除了用於拉伸的2D路徑外, 還可"
-"以從DXF文件中讀取設計參數. 除DXF文件外OpenSCAD還可以讀取和創建STL和OFF文件格"
-"式的3D模型."
+"OpenSCAD提供了兩種主要的建模技術：首先是構造實體幾何（CSG）, 然後是2D輪廓的擠出。"
+"以Autocad DXF檔案作為2D輪廓的資料交換格式。"
+"除了用於擠出的2D路徑外，還可以從DXF文件中讀取設計參數。"
+"除了DXF文件外OpenSCAD還可以讀取和創建STL和OFF文件格式的3D模型。"
 
 #~ msgid "&New"
 #~ msgstr "新增(&N)"
@@ -2015,7 +2015,7 @@ msgstr ""
 #~ msgstr "編輯器類型"
 
 #~ msgid "Simple Editor"
-#~ msgstr "簡單編輯器"
+#~ msgstr "簡易編輯器"
 
 #~ msgid "QScintilla Editor"
 #~ msgstr "QScintilla編輯器"
@@ -2024,7 +2024,7 @@ msgstr ""
 #~ msgstr "(必須重新啟動)"
 
 #~ msgid "Allow opening multiple documents"
-#~ msgstr "允許開啟複數檔案"
+#~ msgstr "允許開啟多個檔案"
 
 #~ msgid "/"
 #~ msgstr "/"
