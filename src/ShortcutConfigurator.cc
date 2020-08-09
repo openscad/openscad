@@ -208,7 +208,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                     if(shortcutOccupied.contains(singleShortcut) && shortcutOccupied[singleShortcut]->objectName()!=actionName)
                     {
                         raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
-                        return;
+                        continue;
                     }
                     else if(!singleShortcut.isEmpty()) 
                     {
@@ -236,7 +236,7 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                             if(shortcutOccupied.contains(shortcut) && shortcutOccupied[shortcut]->objectName()!=actionName)
                             {
                                 raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]->objectName()));
-                                return;
+                                continue;
                             }
                             else if(!shortcut.isEmpty()) 
                             {
