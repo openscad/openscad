@@ -18,6 +18,7 @@ ShortcutConfigurator::ShortcutConfigurator(QWidget *parent): QWidget(parent)
 
     setupUi(this);
     connect(shortcutsTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
+    shortcutCatcher = NULL;
 }
 
 ShortcutConfigurator::~ShortcutConfigurator()
