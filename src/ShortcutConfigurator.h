@@ -24,10 +24,12 @@ public:
     ShortcutConfigurator& operator=(const ShortcutConfigurator& source) = delete;
     ShortcutConfigurator& operator=(ShortcutConfigurator&& source) = delete;
     virtual ~ShortcutConfigurator();
-    void createModel(QObject* parent,const QList<QAction *> &actions);
     void collectDefaults(const QList<QAction *> &allActions);
     void initGUI(const QList<QAction *> &allActions);
     void applyConfigFile(const QList<QAction *> &actions);
+
+private:
+    void createModel(QObject* parent,const QList<QAction *> &actions);
     void readConfigFile(QJsonObject *object);
     bool writeToConfigFile(QJsonObject *object);
     void raiseError(const QString errorMsg);

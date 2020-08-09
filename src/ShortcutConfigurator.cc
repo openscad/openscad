@@ -224,9 +224,9 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                     {
                         QString shortcut = v.toString();
                         if(shortcut.isEmpty()) continue;
-                        const QString defaultShortcut = defaultShortcuts[action][0].toString(QKeySequence::NativeText);
-                        if (!QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
+                        if(defaultShortcuts[action].size()!=0 && !QString::compare(shortcut, "DEFAULT", Qt::CaseInsensitive))
                         {
+                            const QString defaultShortcut = defaultShortcuts[action][0].toString(QKeySequence::NativeText);
                             if(defaultShortcut.isEmpty()) continue;
                             shortcutOccupied.insert(defaultShortcut,action);
                             shortcutsListFinal.append(defaultShortcut);
@@ -285,7 +285,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 
         shortcutCatcher->raise();
         shortcutCatcher->setStyleSheet("QLabel{min-width: 400px;}");
-        shortcutCatcher->setInformativeText(QString());
+        shortcutCatcher->setInformativeText(QString(""));
         shortcutCatcher->setWindowTitle(QString("Set Shortcut for: ")+updatedAction);
         shortcutCatcher->installEventFilter(this);
         shortcutCatcher->setText("Press the Key Sequence");
@@ -299,12 +299,10 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
         {
             case QMessageBox::Apply:
                 updatedShortcut = pressedKeySequence.toString(QKeySequence::NativeText);
-                pressedKeySequence = QKeySequence();
                 shortcutCatcher->close();
-                if(updatedShortcut.isEmpty()) return;
                 break;
             case QMessageBox::Reset:
-                updatedShortcut = QString();
+                updatedShortcut = QString("");
                 shortcutCatcher->close();
                 break;
             case QMessageBox::Cancel:
@@ -312,40 +310,85 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
                 return;
         }
 
-        if(shortcutOccupied.contains(updatedShortcut))
+        if(shortcutOccupied[updatedShortcut])
         {
             raiseError(QString("Shortcut Already Occupied By: "+shortcutOccupied[updatedShortcut]->objectName()));
             return;
         }
 
-        QList<QKeySequence>assignedShortcuts = changedAction->shortcuts();
-        if (index.column() <= assignedShortcuts.size())
+        QList<QKeySequence> shortcutsListFinal;
+        bool singleShortcutUpdate = false;
+        if(index.column()==1)
         {
-            // un-assign the previous primary  
-            shortcutOccupied.remove(assignedShortcuts[index.column()-1].toString(QKeySequence::NativeText));
-            assignedShortcuts[index.column()-1] = updatedShortcut;
-        } else
-        {
-            // this inserts to the first unused slot, not necessarily corresponding to the clicked column index...
-            assignedShortcuts.append(updatedShortcut); 
+            // get the primary (updatedShortcut)
+            shortcutsListFinal.append(updatedShortcut);
+
+            QList<QKeySequence>assignedShortcuts = changedAction->shortcuts();
+
+            if(assignedShortcuts.size()!=0)
+            {
+                // un-assign the previous primary
+                shortcutOccupied.remove(assignedShortcuts[0].toString(QKeySequence::NativeText));
+
+                for(int i=1;i<assignedShortcuts.size();i++)
+                {
+                    shortcutsListFinal.append(assignedShortcuts[i]);                    
+                }
+                changedAction->setShortcuts(shortcutsListFinal);
+            }
+            else
+            {
+                changedAction->setShortcut(QKeySequence(updatedShortcut));
+                singleShortcutUpdate = true;
+            }
+
+
         }
-        changedAction->setShortcuts(assignedShortcuts);
+        else if(index.column()>=1)
+        {
+    
+            QString primaryShortcut = getData(index.row(),1);
+            QList<QKeySequence>assignedShortcuts = changedAction->shortcuts();
+            if(assignedShortcuts.size()>=index.column())
+            {
+                //sufficent number of columns, replacement
+                for(int i=0;i<assignedShortcuts.size();i++)
+                {
+                    if(i==index.column()-1)
+                    {
+                        shortcutOccupied.remove(assignedShortcuts[i].toString(QKeySequence::NativeText));
+                        shortcutsListFinal.append(updatedShortcut);
+                    }
+                    else shortcutsListFinal.append(assignedShortcuts[i]);                    
+                }
 
-        if(updatedShortcut!=QString()) shortcutOccupied.insert(updatedShortcut,changedAction);
+            }
+            else
+            {
+                //append the new shortcut
+                for(int i=0;i<assignedShortcuts.size();i++)
+                {
+                    shortcutsListFinal.append(assignedShortcuts[i]);                    
+                }
+                shortcutsListFinal.append(updatedShortcut);
+            }
+            changedAction->setShortcuts(shortcutsListFinal);
+        }
+
+        if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,changedAction);
         putData(index,updatedShortcut);
-
         // write into the file
         QJsonObject object;
         readConfigFile(&object);
 
-        if(assignedShortcuts.size()==1)
+        if(singleShortcutUpdate)
         {
             object.insert(updatedAction,updatedShortcut);
         }
         else
         {
             QJsonArray array;
-            for (auto & shortcut : assignedShortcuts) array.append(shortcut.toString());
+            for (auto & shortcut : shortcutsListFinal) array.append(shortcut.toString());
 
             QJsonValue newValue = QJsonValue(array);
             object.insert(updatedAction,newValue);            
