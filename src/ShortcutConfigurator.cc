@@ -108,6 +108,7 @@ void ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &a
 {
     int row = 0;
     model->removeRows(0,model->rowCount());
+    model->removeColumns(0,3);
     QList<QString> labels = QList<QString>() << QString("Action") << QString("Shortcut")<<QString("Alternative-1"); 
     model->setHorizontalHeaderLabels(labels);
     for (auto &action : actions) 
@@ -285,7 +286,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 
         shortcutCatcher->raise();
         shortcutCatcher->setStyleSheet("QLabel{min-width: 400px;}");
-        shortcutCatcher->setInformativeText(QString(""));
+        shortcutCatcher->setInformativeText(QString());
         shortcutCatcher->setWindowTitle(QString("Set Shortcut for: ")+updatedAction);
         shortcutCatcher->installEventFilter(this);
         shortcutCatcher->setText("Press the Key Sequence");
@@ -299,10 +300,12 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
         {
             case QMessageBox::Apply:
                 updatedShortcut = pressedKeySequence.toString(QKeySequence::NativeText);
+                pressedKeySequence = QKeySequence();
                 shortcutCatcher->close();
+                if(updatedShortcut.isEmpty()) return;
                 break;
             case QMessageBox::Reset:
-                updatedShortcut = QString("");
+                updatedShortcut = QString();
                 shortcutCatcher->close();
                 break;
             case QMessageBox::Cancel:
