@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Geometry.h"
-#include "system-gl.h"
 #include "linalg.h"
 #include "GeometryUtils.h"
-#include "renderer.h"
 #include "Polygon2d.h"
+#include "GLView.h"
 #include <vector>
 #include <string>
 
@@ -15,11 +14,14 @@ BOOST_TRIBOOL_THIRD_STATE(unknown)
 class PolySet : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Polygons polygons;
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);
 	PolySet(const Polygon2d &origin);
 	~PolySet();
+
+	const Polygon2d &getPolygon() const { return polygon; }
 
 	size_t memsize() const override;
 	BoundingBox getBoundingBox() const override;
@@ -29,7 +31,7 @@ public:
 	Geometry *copy() const override { return new PolySet(*this); }
 
 	void quantizeVertices();
-	size_t numPolygons() const { return polygons.size(); }
+	size_t numFacets() const override { return polygons.size(); }
 	void append_poly();
 	void append_poly(const Polygon &poly);
 	void append_vertex(double x, double y, double z = 0.0);
@@ -39,9 +41,6 @@ public:
 	void insert_vertex(const Vector3d &v);
 	void insert_vertex(const Vector3f &v);
 	void append(const PolySet &ps);
-
-	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = nullptr) const;
-	void render_edges(Renderer::csgmode_e csgmode) const;
 
 	void transform(const Transform3d &mat);
 	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);

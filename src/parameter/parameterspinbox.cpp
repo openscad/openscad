@@ -1,40 +1,32 @@
 #include "parameterspinbox.h"
+#include "ignoreWheelWhenNotFocused.h"
 
-ParameterSpinBox::ParameterSpinBox(ParameterObject *parameterobject, int showDescription)
+ParameterSpinBox::ParameterSpinBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
-	if (showDescription == 0) {
-		setDescription(object->description);
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		doubleSpinBox->setToolTip(object->description);
-	}
+	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 }
 
 void ParameterSpinBox::onChanged(double)
 {
-	if(!suppressUpdate){
-		object->focus = true;
+	if(!this->suppressUpdate){
 		object->value = ValuePtr(doubleSpinBox->value());
-		emit changed();
 	}
 }
 
-void ParameterSpinBox::setParameterFocus()
+void ParameterSpinBox::onEditingFinished()
 {
-	this->doubleSpinBox->setFocus();
-	object->focus = false;
+	emit changed();
 }
 
 void ParameterSpinBox::setValue()
 {
-	if(hasFocus())return; //refuse programmatic updates, when the widget is in the focus of the user
-
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	if (object->values->toDouble() > 0) {
 		setPrecision(object->values->toDouble());
 		this->doubleSpinBox->setSingleStep(object->values->toDouble());
@@ -49,5 +41,5 @@ void ParameterSpinBox::setValue()
 	this->stackedWidgetBelow->hide();
 	this->doubleSpinBox->setRange(object->value->toDouble()-1000, object->value->toDouble()+1000);
 	this->doubleSpinBox->setValue(object->value->toDouble());
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

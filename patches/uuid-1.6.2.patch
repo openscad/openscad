@@ -1,0 +1,12 @@
+diff -u uuid-1.6.2/Makefile.in uuid-1.6.2.new/Makefile.in
+--- uuid-1.6.2/Makefile.in	2008-03-08 13:31:40.000000000 -0500
++++ uuid-1.6.2.new/Makefile.in	2019-02-17 18:35:51.000000000 -0500
+@@ -112,7 +112,7 @@
+ 	@$(LIBTOOL) --mode=compile $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
+ 
+ $(LIB_NAME): $(LIB_OBJS)
+-	@$(LIBTOOL) --mode=link $(CC) -o $(LIB_NAME) $(LIB_OBJS) -rpath $(libdir) \
++	@$(LIBTOOL) --mode=link $(CC) -o $(LIB_NAME) $(LIB_OBJS) $(LDFLAGS) -rpath $(libdir) \
+ 	    -version-info `$(SHTOOL) version -l c -d libtool $(S)/uuid_vers.h`
+ 
+ $(DCE_NAME): $(DCE_OBJS)

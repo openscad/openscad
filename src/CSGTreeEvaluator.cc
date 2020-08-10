@@ -16,8 +16,6 @@
 #include <string>
 #include <map>
 #include <list>
-#include <sstream>
-#include <iostream>
 #include <assert.h>
 #include <cstddef>
 
@@ -31,7 +29,7 @@
 shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 {
 	this->traverse(node);
-	
+
 	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
 	if (t) {
 		if (t->isHighlight()) this->highlightNodes.push_back(t);
@@ -56,7 +54,7 @@ void CSGTreeEvaluator::applyBackgroundAndHighlight(State & /*state*/, const Abst
 	}
 }
 
-void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &node, OpenSCADOperator op)
+void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
 {
 	shared_ptr<CSGNode> t1;
 	for(const auto &chnode : this->visitedchildren[node.index()]) {
@@ -68,14 +66,8 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 
 			shared_ptr<CSGNode> t;
 			// Handle background
-			if (t1->isBackground() && 
-					// For difference, we inherit the flag from the positive object
-					(t2->isBackground() || op == OpenSCADOperator::DIFFERENCE)) {
-				t = CSGOperation::createCSGNode(op, t1, t2);
-				t->setBackground(true);
-			}
 			// Background objects are simply moved to backgroundNodes
-			else if (t2->isBackground()) {
+			if (t2->isBackground()) {
 				t = t1;
 				this->backgroundNodes.push_back(t2);
 			}
@@ -133,8 +125,8 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 		}
 	}
 	if (t1) {
-		if (node.modinst->isBackground()) t1->setBackground(true);
-		if (node.modinst->isHighlight()) t1->setHighlight(true);
+		if (node.modinst->isBackground() || state.isBackground()) t1->setBackground(true);
+		if (node.modinst->isHighlight() || state.isHighlight()) t1->setHighlight(true);
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -157,13 +149,30 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractIntersectionNode &n
 	return Response::ContinueTraversal;
 }
 
+Response CSGTreeEvaluator::visit(State &state, const class ListNode &node)
+{
+	if (state.parent()) {
+		if (state.isPrefix()) {
+			if (node.modinst->isHighlight()) state.setHighlight(true);
+			if (node.modinst->isBackground()) state.setBackground(true);
+		}
+		if (state.isPostfix()) {
+			for(const AbstractNode *chnode : this->visitedchildren[node.index()]) {
+					addToParent(state, *chnode);
+			}
+		}
+		return Response::ContinueTraversal;
+	} else {
+		// Handle root modifier on ListNode just like a group
+		return visit(state, (const AbstractNode &)node);
+	}
+
+}
+
 shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	State &state, const shared_ptr<const Geometry> &geom,
 	const ModuleInstantiation *modinst, const AbstractNode &node)
 {
-	std::stringstream stream;
-	stream << node.name() << node.index();
-
 	// We cannot render Polygon2d directly, so we preprocess (tessellate) it here
 	auto g = geom;
 	if (!g->isEmpty()) {
@@ -171,25 +180,12 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 		if (p2d) {
 			g.reset(p2d->tessellate());
 		}
-		else {
-			// We cannot render concave polygons, so tessellate any 3D PolySets
-			auto ps = dynamic_pointer_cast<const PolySet>(geom);
-			// Since is_convex() doesn't handle non-planar faces, we need to tessellate
-			// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-			bool convex = ps->convexValue();
-			if (ps && !convex) {
-				assert(ps->getDimension() == 3);
-				auto ps_tri = new PolySet(3, ps->convexValue());
-				ps_tri->setConvexity(ps->getConvexity());
-				PolysetUtils::tessellate_faces(*ps, *ps_tri);
-				g.reset(ps_tri);
-			}
-		}
+		// 3D Polysets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
 	}
 
-	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), stream.str()));
-	if (modinst->isHighlight()) t->setHighlight(true);
-	else if (modinst->isBackground()) t->setBackground(true);
+	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index()), node.index()));
+	if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
+	if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
 	return t;
 }
 

@@ -52,13 +52,13 @@ static int objectid;
 static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("WARNING: Export failed, the object isn't a valid 2-manifold.");
+		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N.p3->convert_to_Polyhedron(P);
+		root_N.p3->convert_to_polyhedron(P);
 
 		typedef CGAL_Polyhedron::Vertex Vertex;
 		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
@@ -86,15 +86,9 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 				double x3 = CGAL::to_double(v3.point().x());
 				double y3 = CGAL::to_double(v3.point().y());
 				double z3 = CGAL::to_double(v3.point().z());
-				std::stringstream stream;
-				stream << x1 << " " << y1 << " " << z1;
-				std::string vs1 = stream.str();
-				stream.str("");
-				stream << x2 << " " << y2 << " " << z2;
-				std::string vs2 = stream.str();
-				stream.str("");
-				stream << x3 << " " << y3 << " " << z3;
-				std::string vs3 = stream.str();
+				std::string vs1{STR(x1 << " " << y1 << " " << z1)};
+				std::string vs2{STR(x2 << " " << y2 << " " << z2)};
+				std::string vs3{STR(x3 << " " << y3 << " " << z3)};
 				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
 					vertices.push_back(vs1);
 				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
@@ -148,24 +142,29 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		output << "   </volume>\r\n";
 		output << "  </mesh>\r\n"
 					 << " </object>\r\n";
-	} catch (CGAL::Assertion_exception e) {
-		PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+	} catch (CGAL::Assertion_exception& e) {
+		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
 
 static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for(const auto &item : geomlist->getChildren()) {
+			append_amf(item.second, output);
+		}
+	}
+	if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		if (!N->isEmpty()) append_amf(*N, output);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
 		if (!N->isEmpty()) append_amf(*N, output);
 		delete N;
 	}
-	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

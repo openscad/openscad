@@ -7,7 +7,12 @@
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
 
-cd "$TOPDIR" || exit 1
+SCRIPT=./scripts/translation-update.sh
 
-echo "Compiling language files..."
-./scripts/translation-update.sh updatemo
+if [ ! -f "$SCRIPT" ]
+then
+	cd "$TOPDIR" || exit 1
+fi
+
+echo "Compiling language files (CWD = `pwd`)..."
+"$SCRIPT" updatemo

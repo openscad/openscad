@@ -155,11 +155,10 @@ o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
   - rotate_extrude(): Allow for specification of start/stop/sweep angle?
 o Advanced Transformations
-  - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
 o Function-Module-Interface
-  - Pass a module instanciation to a function (e.g. for a volume() function)
-  - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
+  - Pass a module instantiation to a function (e.g. for a volume() function)
+  - Pass a function to a module instantiation (e.g. for dynamic extrusion paths)
 o Language Frontend
   - Allow local variables and functions everywhere (not only on module level)
   - Rethink for vs. intersection_for vs. group. Should for loops

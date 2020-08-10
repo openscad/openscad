@@ -40,79 +40,57 @@ class CgaladvModule : public AbstractModule
 public:
 	CgaladvType type;
 	CgaladvModule(CgaladvType type) : type(type) { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new CgaladvNode(inst, type);
+	auto node = new CgaladvNode(inst, evalctx, type);
 
 	AssignmentList args;
 
-	if (type == CgaladvType::MINKOWSKI)
-		args += Assignment("convexity");
-
-	if (type == CgaladvType::GLIDE)
-		args += Assignment("path"), Assignment("convexity");
-
-	if (type == CgaladvType::SUBDIV)
-		args += Assignment("type"), Assignment("level"), Assignment("convexity");
-
-	if (type == CgaladvType::RESIZE)
-		args += Assignment("newsize"), Assignment("auto");
-
-	Context c(ctx);
-	c.setVariables(args, evalctx);
-	inst->scope.apply(*evalctx);
-
-	auto convexity = ValuePtr::undefined;
-	auto path = ValuePtr::undefined;
-	auto subdiv_type = ValuePtr::undefined;
-	auto level = ValuePtr::undefined;
-	
 	if (type == CgaladvType::MINKOWSKI) {
-		convexity = c.lookup_variable("convexity", true);
-	}
-
-	if (type == CgaladvType::GLIDE) {
-		convexity = c.lookup_variable("convexity", true);
-		path = c.lookup_variable("path", false);
-	}
-
-	if (type == CgaladvType::SUBDIV) {
-		convexity = c.lookup_variable("convexity", true);
-		subdiv_type = c.lookup_variable("type", false);
-		level = c.lookup_variable("level", true);
+		args += assignment("convexity");
 	}
 
 	if (type == CgaladvType::RESIZE) {
-		auto ns = c.lookup_variable("newsize");
+		args += assignment("newsize"), assignment("auto"), assignment("convexity");
+	}
+
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
+
+	auto convexity = ValuePtr::undefined;
+	auto path = ValuePtr::undefined;
+
+	if (type == CgaladvType::MINKOWSKI) {
+		convexity = c->lookup_variable("convexity", true);
+	} else if (type == CgaladvType::RESIZE) {
+		convexity = c->lookup_variable("convexity", true);
+		auto ns = c->lookup_variable("newsize");
 		node->newsize << 0,0,0;
-		if ( ns->type() == Value::ValueType::VECTOR ) {
-			const Value::VectorType &vs = ns->toVector();
+		if (ns->type() == Value::Type::VECTOR ) {
+			const VectorType &vs = ns->toVector();
 			if ( vs.size() >= 1 ) node->newsize[0] = vs[0]->toDouble();
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1]->toDouble();
 			if ( vs.size() >= 3 ) node->newsize[2] = vs[2]->toDouble();
 		}
-		auto autosize = c.lookup_variable("auto");
+		auto autosize = c->lookup_variable("auto");
 		node->autosize << false, false, false;
-		if ( autosize->type() == Value::ValueType::VECTOR ) {
-			const Value::VectorType &va = autosize->toVector();
+		if (autosize->type() == Value::Type::VECTOR ) {
+			const VectorType &va = autosize->toVector();
 			if ( va.size() >= 1 ) node->autosize[0] = va[0]->toBool();
 			if ( va.size() >= 2 ) node->autosize[1] = va[1]->toBool();
 			if ( va.size() >= 3 ) node->autosize[2] = va[2]->toBool();
 		}
-		else if ( autosize->type() == Value::ValueType::BOOL ) {
+		else if (autosize->type() == Value::Type::BOOL ) {
 			node->autosize << autosize->toBool(),autosize->toBool(),autosize->toBool();
 		}
 	}
 
 	node->convexity = static_cast<int>(convexity->toDouble());
 	node->path = path;
-	node->subdiv_type = subdiv_type->toString();
-	node->level = static_cast<int>(level->toDouble());
-
-	if (node->level <= 1) node->level = 1;
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
@@ -125,12 +103,6 @@ std::string CgaladvNode::name() const
 	switch (this->type) {
 	case CgaladvType::MINKOWSKI:
 		return "minkowski";
-		break;
-	case CgaladvType::GLIDE:
-		return "glide";
-		break;
-	case CgaladvType::SUBDIV:
-		return "subdiv";
 		break;
 	case CgaladvType::HULL:
 		return "hull";
@@ -146,18 +118,12 @@ std::string CgaladvNode::name() const
 
 std::string CgaladvNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << this->name();
 	switch (type) {
 	case CgaladvType::MINKOWSKI:
 		stream << "(convexity = " << this->convexity << ")";
-		break;
-	case CgaladvType::GLIDE:
-		stream << "(path = " << *this->path << ", convexity = " << this->convexity << ")";
-		break;
-	case CgaladvType::SUBDIV:
-		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";
 		break;
 	case CgaladvType::HULL:
 		stream << "()";
@@ -167,6 +133,7 @@ std::string CgaladvNode::toString() const
 		  << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
 		  << ", auto = ["
 		  << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
+		  << ", convexity = " << this->convexity
 		  << ")";
 		break;
 	default:
@@ -178,9 +145,21 @@ std::string CgaladvNode::toString() const
 
 void register_builtin_cgaladv()
 {
-	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI));
-	Builtins::init("glide", new CgaladvModule(CgaladvType::GLIDE));
-	Builtins::init("subdiv", new CgaladvModule(CgaladvType::SUBDIV));
-	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL));
-	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE));
+	Builtins::init("minkowski", new CgaladvModule(CgaladvType::MINKOWSKI),
+				{
+					"minkowski(convexity = number)",
+				});
+
+	Builtins::init("hull", new CgaladvModule(CgaladvType::HULL),
+				{
+					"hull()",
+				});
+
+	Builtins::init("resize", new CgaladvModule(CgaladvType::RESIZE),
+				{
+					"resize([x, y, z])",
+					"resize([x, y, z], boolean)",
+					"resize([x, y, z], [boolean, boolean, boolean])",
+					"resize([x, y, z], [boolean, boolean, boolean], convexity = number)",
+				});
 }

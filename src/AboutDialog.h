@@ -1,6 +1,6 @@
 #pragma once
 
-#include "openscad.h"
+#include "version.h"
 #include "qtgettext.h"
 #include "ui_AboutDialog.h"
 

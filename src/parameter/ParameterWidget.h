@@ -32,7 +32,7 @@
 #include "groupwidget.h"
 #include "parameterset.h"
 
-class ParameterWidget : public QWidget, public Ui::ParameterWidget, public ParameterExtractor, public ParameterSet
+class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
 	Q_OBJECT
 private:
@@ -45,40 +45,55 @@ private:
 	typedef std::map<std::string,groupInst > group_map;
 	group_map groupMap;
 	QTimer autoPreviewTimer;
-	int descriptionShow;
+	DescLoD descriptionLoD; //configuration if and how much of the description is shown
 	std::string jsonFile;
-	bool anyfocused;
-	ParameterVirtualWidget *entryToFocus;
+	bool valueChanged;
+	int lastComboboxIndex = 0;
 
-	void connectWidget() override;
-	void updateWidget() override;
+	void connectWidget();
+	void updateWidget();
 	void cleanScrollArea();
-	void addEntry(QVBoxLayout* anylayout, ParameterVirtualWidget *entry);
-	void clear();
+	void rebuildGroupMap();
 	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
 	void setComboBoxPresetForSet();
+	void removeChangeIndicator();
+
+	void setFile(QString File);
+
+	bool unreadableFileExists=false;
+	entry_map_t entries;
+	std::vector<std::string> ParameterPos;
+	ParameterExtractor *extractor;
+	ParameterSet *setMgr;
 
 public:
 	ParameterWidget(QWidget *parent = nullptr);
 	~ParameterWidget();
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
+	void writeBackupFile(QString scadFile);
+	void setParameters(const FileModule* module,bool);
+	void applyParameters(FileModule *fileModule);
+	bool childHasFocus();
 
 protected slots:
 	void onValueChanged();
 	void onPreviewTimerElapsed();
-	void onDescriptionShow();
+	void onDescriptionLoDChanged();
 	void onSetChanged(int idx);
+	void onSetNameChanged();
 	void onSetAdd();
 	void onSetSaveButton();
 	void onSetDelete();
 	void resetParameter();
+	void defaultParameter();
 
 signals:
 	void previewRequested(bool rebuildParameterUI=true);
 
 protected:
 	void applyParameterSet(std::string setName);
-	void updateParameterSet(std::string setName);
+	void updateParameterSet(std::string setName, bool newSet=false);
+	void writeParameterSets();
 };
 

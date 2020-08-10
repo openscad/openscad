@@ -10,7 +10,10 @@
 #include "export.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#pragma pop_macro("NDEBUG")
 
 using namespace CGALUtils;
 namespace fs = boost::filesystem;
@@ -175,7 +178,11 @@ std::vector<Color4f> colors = boost::assign::list_of
   (Color4f(154, 205, 50));
 
 #include <boost/unordered_set.hpp>
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/convex_hull_3.h>
+#pragma pop_macro("NDEBUG")
+
 template<typename Polyhedron>
 bool is_weakly_convex(Polyhedron const& p) {
   for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
@@ -237,7 +244,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
   assert(N);
   CGAL_Polyhedron poly;
   if (N->is_simple()) {
-    nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*N, poly);
+    N->convert_to_polyhedron(poly);
   }
   if (is_weakly_convex(poly)) {
     PRINTD("Minkowski: Object is convex and Nef");
@@ -311,7 +318,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         else if (const CGAL_Nef_polyhedron *n = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i])) {
           CGAL_Polyhedron poly;
           if (n->p3->is_simple()) {
-            nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*n->p3, poly);
+            n->p3->convert_to_polyhedron(poly);
             // FIXME: Can we calculate weakly_convex on a PolyhedronK instead?
             if (is_weakly_convex(poly)) {
               PRINTDB("Minkowski: child %d is convex and Nef", i);
@@ -338,15 +345,15 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         std::vector<K::Point_3> minkowski_points;
         
         // For each permutation of convex operands..
-        BOOST_FOREACH(const PolyhedronK &p0, convexP[0]) {
-          BOOST_FOREACH(const PolyhedronK &p1, convexP[1]) {
+        for(const PolyhedronK &p0 : convexP[0]) {
+          for(const PolyhedronK &p1 : convexP[1]) {
             t.start();
             
             // Create minkowski pointcloud
             minkowski_points.clear();
             minkowski_points.reserve(p0.size_of_vertices() * p0.size_of_vertices());
-            BOOST_FOREACH(const K::Point_3 &p0p, std::make_pair(p0.points_begin(), p0.points_end())) {
-              BOOST_FOREACH(const K::Point_3 &p1p, std::make_pair(p1.points_begin(), p1.points_end())) {
+            for(const K::Point_3 &p0p : std::make_pair(p0.points_begin(), p0.points_end())) {
+              for(const K::Point_3 &p1p : std::make_pair(p1.points_begin(), p1.points_end())) {
                 minkowski_points.push_back(p0p+(p1p-CGAL::ORIGIN));
               }
             }
@@ -413,7 +420,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         }
       }
       
-      if (minkowski_ch_it != boost::next(children.begin())) delete operands[0];
+      if (minkowski_ch_it != std::next(children.begin())) delete operands[0];
       
       if (result_parts.size() == 1) {
         PolySet *ps = new PolySet(3,true);
@@ -429,7 +436,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
-        CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OPENSCAD_UNION);
+        CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(fake_children.begin(), fake_children.end());
         t.stop();
         if (N) PRINTDB("Minkowski: Union done: %f s",t.time());
         else PRINTDB("Minkowski: Union failed: %f s",t.time());
@@ -643,7 +650,7 @@ int main(int argc, char *argv[])
         std::cerr << "Error importing STL " << filename << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      std::cerr << "Imported " << ps->numFacets() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);
@@ -665,7 +672,7 @@ int main(int argc, char *argv[])
   std::cerr << "Decomposed into " << result.size() << " convex parts" << std::endl;
 
   int idx = 0;
-  BOOST_FOREACH(const PolyhedronK &P, result) {
+  for(const PolyhedronK &P : result) {
     PolySet *result_ps = new PolySet(3);
     if (CGALUtils::createPolySetFromPolyhedron(P, *result_ps)) {
       std::cerr << "Error converting to PolySet\n";

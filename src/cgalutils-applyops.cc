@@ -6,12 +6,15 @@
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
+#include "progress.h"
 #include "Polygon2d.h"
 #include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
 
 #include "cgal.h"
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -19,13 +22,10 @@
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
 
-// Apply CGAL bugfix for CGAL-4.5.x
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,5,1) || CGAL_VERSION_NR < CGAL_VERSION_NUMBER(4,5,0) 
 #include <CGAL/convex_hull_3.h>
-#else
-#include "ext/CGAL/convex_hull_3_bugfix.h"
-#endif
+#pragma pop_macro("NDEBUG")
 
+#include "memory.h"
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
@@ -80,11 +80,10 @@ namespace CGALUtils {
 	{
 		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+
+		assert(op != OpenSCADOperator::UNION && "use applyUnion() instead of applyOperator()");
+
 		try {
-			// Speeds up n-ary union operations significantly
-			CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
-			int nary_union_num_inserted = 0;
-			
 			for(const auto &item : children) {
 				const shared_ptr<const Geometry> &chgeom = item.second;
 				shared_ptr<const CGAL_Nef_polyhedron> chN = 
@@ -92,16 +91,6 @@ namespace CGALUtils {
 				if (!chN) {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
 					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-				}
-				
-				if (op == OpenSCADOperator::UNION) {
-					if (!chN->isEmpty()) {
-						// nary_union.add_polyhedron() can issue assertion errors:
-						// https://github.com/openscad/openscad/issues/802
-						nary_union.add_polyhedron(*chN->p3);
-						nary_union_num_inserted++;
-					}
-					continue;
 				}
 				// Initialize N with first expected geometric object
 				if (!N) {
@@ -131,20 +120,71 @@ namespace CGALUtils {
 				default:
 					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
 				}
-				item.first->progress_report();
-			}
-
-			if (op == OpenSCADOperator::UNION && nary_union_num_inserted > 0) {
-				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+				if (item.first) item.first->progress_report();
 			}
 		}
-	// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return N;
+	}
+
+
+	CGAL_Nef_polyhedron *applyUnion(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+	{
+		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
+		struct QueueItemGreater {
+			// stable sort for priority_queue by facets, then progress mark
+			bool operator()(const QueueConstItem &lhs, const QueueConstItem& rhs) const
+			{
+				size_t l = lhs.first->p3->number_of_facets();
+				size_t r = rhs.first->p3->number_of_facets();
+				return (l > r) || (l == r && lhs.second > rhs.second);
+			}
+		};
+		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
+
+		try {
+			// sort children by fewest faces
+			for (auto it = chbegin; it != chend; ++it) {
+				const shared_ptr<const Geometry> &chgeom = it->second;
+				shared_ptr<const CGAL_Nef_polyhedron> curChild = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				if (!curChild) {
+					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					if (chps) curChild.reset(createNefPolyhedronFromGeometry(*chps));
+				}
+				if (curChild && !curChild->isEmpty()) {
+					int node_mark = -1;
+					if (it->first) {
+						node_mark = it->first->progress_mark;
+					}
+					q.emplace(curChild, node_mark);
+				}
+			}
+
+			progress_tick();
+			while (q.size() > 1) {
+				auto p1 = q.top();
+				q.pop();
+				auto p2 = q.top();
+				q.pop();
+				q.emplace(make_shared<const CGAL_Nef_polyhedron>(*p1.first + *p2.first), -1);
+				progress_tick();
+			}
+
+			if (q.size() == 1) {
+				return new CGAL_Nef_polyhedron(q.top().first->p3);
+			} else {
+				return nullptr;
+			}
+		}
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+		}
+		return nullptr;
 	}
 
 
@@ -230,7 +270,7 @@ namespace CGALUtils {
 					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
-					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
+					else if (nef && nef->p3->is_simple()) nef->p3->convert_to_polyhedron(poly);
 					else throw 0;
 
 					if ((ps && ps->is_convex()) ||
@@ -365,7 +405,7 @@ namespace CGALUtils {
 					}
 				}
 
-				if (it != boost::next(children.begin()))
+				if (it != std::next(children.begin()))
 					delete operands[0];
 
 				if (result_parts.size() == 1) {
@@ -382,8 +422,8 @@ namespace CGALUtils {
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
-					// FIXME: This hould really never throw.
+					CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(fake_children.begin(), fake_children.end());
+					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
 					t.stop();

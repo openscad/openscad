@@ -1,19 +1,30 @@
 #pragma once
 
+#include <cstdlib>
+#include "PlatformUtils.h"
+
 class StackCheck
 {
 public:
-	StackCheck();
-	virtual ~StackCheck();
-	
-	static StackCheck * inst();
-	
-	void init();
-	bool check();
-	unsigned long size();
-  
+	static StackCheck &inst()
+	{
+		static StackCheck instance;
+		return instance;
+	}
+
+	~StackCheck() {}
+	inline bool check() { return size() >= limit; }
+
 private:
+	StackCheck() : limit(PlatformUtils::stackLimit()) {
+		unsigned char c;
+		ptr = &c;
+	}
+	inline unsigned long size() { 
+		unsigned char c; 
+		return std::labs(ptr - &c); 
+	}
+
+	unsigned long limit;
 	unsigned char * ptr;
-  
-	static StackCheck *self;
 };

@@ -8,69 +8,92 @@
 #include "localscope.h"
 #include "exceptions.h"
 
-EvalContext::EvalContext(const Context *parent, 
-												 const AssignmentList &args, const class LocalScope *const scope)
-	: Context(parent), eval_arguments(args), scope(scope)
+EvalContext::EvalContext(const std::shared_ptr<Context> parent, const AssignmentList &args, const Location &loc, const class LocalScope *const scope)
+	: Context(parent), loc(loc), eval_arguments(args), scope(scope)
 {
 }
 
 const std::string &EvalContext::getArgName(size_t i) const
 {
 	assert(i < this->eval_arguments.size());
-	return this->eval_arguments[i].name;
+	return this->eval_arguments[i]->getName();
 }
 
-ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
+ValuePtr EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
 	ValuePtr v;
-	if (arg.expr) {
-		v = arg.expr->evaluate(ctx ? ctx : this);
+	if (arg->getExpr()) {
+		v = arg->getExpr()->evaluate(ctx ? ctx : (const_cast<EvalContext *>(this))->get_shared_ptr());
 	}
 	return v;
 }
 
 /*!
   Resolves arguments specified by evalctx, using args to lookup positional arguments.
+  optargs is for optional arguments that are not positional arguments.
   Returns an AssignmentMap (string -> Expression*)
 */
-AssignmentMap EvalContext::resolveArguments(const AssignmentList &args) const
+AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
 {
   AssignmentMap resolvedArgs;
   size_t posarg = 0;
+  bool tooManyWarned=false;
   // Iterate over positional args
   for (size_t i=0; i<this->numArgs(); i++) {
     const auto &name = this->getArgName(i); // name is optional
-    const auto expr = this->getArgs()[i].expr.get();
+    const auto expr = this->getArgs()[i]->getExpr().get();
     if (!name.empty()) {
+      if (name.at(0)!='$' && !silent) {
+        bool found=false;
+        for (auto const& arg: args) {
+          if (arg->getName() == name) found = true;
+        }
+        for (auto const& arg: optargs) {
+          if (arg->getName() == name) found = true;
+        }
+        if (!found) {
+          PRINTB("WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
+        }
+      }
+      if (resolvedArgs.find(name) != resolvedArgs.end()) {
+          PRINTB("WARNING: argument %s supplied more than once, %s", name % this->loc.toRelativeString(this->documentPath()));
+      }
       resolvedArgs[name] = expr;
     }
     // If positional, find name of arg with this position
-    else if (posarg < args.size()) resolvedArgs[args[posarg++].name] = expr;
+    else if (posarg < args.size()) resolvedArgs[args[posarg++]->getName()] = expr;
+    else if (!silent && !tooManyWarned){
+      PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
+      tooManyWarned=true;
+    }
   }
   return resolvedArgs;
 }
 
 size_t EvalContext::numChildren() const
 {
-	return this->scope ? this->scope->children.size() : 0;
+	return this->scope ? this->scope->children_inst.size() : 0;
 }
 
-ModuleInstantiation *EvalContext::getChild(size_t i) const
+shared_ptr<ModuleInstantiation> EvalContext::getChild(size_t i) const
 {
-	return this->scope ? this->scope->children[i] : nullptr; 
+	return this->scope ? this->scope->children_inst[i] : nullptr;
 }
 
-void EvalContext::assignTo(Context &target) const
+void EvalContext::assignTo(std::shared_ptr<Context> target) const
 {
 	for (const auto &assignment : this->eval_arguments) {
 		ValuePtr v;
-		if (assignment.expr) v = assignment.expr->evaluate(&target);
-		if (target.has_local_variable(assignment.name)) {
-			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", assignment.name % v->toString());
+		if (assignment->getExpr()) v = assignment->getExpr()->evaluate(target);
+		
+		if (assignment->getName().empty()){
+			PRINTB("WARNING: Assignment without variable name %s, %s", v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
+		} else if (target->has_local_variable(assignment->getName())) {
+			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment->getName() % v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
 		} else {
-			target.set_variable(assignment.name, v);
+			target->set_variable(assignment->getName(), v);
 		}
 	}
 }
@@ -89,20 +112,20 @@ std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 #ifdef DEBUG
 std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	std::stringstream s;
+	std::ostringstream s;
 	if (inst)
 		s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
 	else
 		s << boost::format("Context: %p (%p)") % this % this->parent;
-	s << boost::format("  document path: %s") % this->document_path;
+	s << boost::format("  document path: %s") % *this->document_path;
 
 	s << boost::format("  eval args:");
 	for (size_t i=0;i<this->eval_arguments.size();i++) {
-		s << boost::format("    %s = %s") % this->eval_arguments[i].name % this->eval_arguments[i].expr;
+		s << boost::format("    %s = %s") % this->eval_arguments[i]->getName() % this->eval_arguments[i]->getExpr();
 	}
-	if (this->scope && this->scope->children.size() > 0) {
+	if (this->scope && this->scope->children_inst.size() > 0) {
 		s << boost::format("    children:");
-		for(const auto &ch : this->scope->children) {
+		for(const auto &ch : this->scope->children_inst) {
 			s << boost::format("      %s") % ch->name();
 		}
 	}
@@ -111,7 +134,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		if (m) {
 			s << boost::format("  module args:");
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg.name % *(variables[arg.name]);
+				s << boost::format("    %s = %s") % arg->getName() % *(variables[arg->getName()]);
 			}
 		}
 	}

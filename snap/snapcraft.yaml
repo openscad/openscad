@@ -1,0 +1,175 @@
+name: openscad-nightly
+title: OpenSCAD-Nightly
+base: core
+version: "git"
+summary: OpenSCAD - Design. Code. Create.
+description: >
+    OpenSCAD is a software for creating solid 3D CAD models. It is free software and
+    available for Mac, Windows, Linux and other UNIX-like OS’es. Unlike most 3D design
+    software, the focus is not on the artistic aspects of 3D design but instead on the
+    CAD aspects. This might be the application you are looking for when you are planning
+    to create 3D designs for machine parts but is probably not what you are looking for
+    when you are more interested in creating computer-animated movies. OpenSCAD is not
+    an interactive modeller. Instead it is something like a 3D-compiler that reads in
+    a script file that describes your object and renders the 3D model from this script
+    file. This gives you, the designer, full control over the modelling process and
+    enables you to easily change any step in your process or make designs that are
+    defined by configurable parameters.
+
+    OpenSCAD provides two primary modelling techniques: Constructive solid geometry
+    (aka CSG) as well as extrusion of 2D outlines. We support reading, both 2D outlines
+    and 3D object from external design files, in a variety of file formats.
+
+    NOTE: This is the development snapshot, automatically built from the source
+    repository.
+confinement: strict
+icon: icons/openscad-nightly-256.png
+license: GPL-3.0
+grade: stable
+architectures:
+  - build-on: amd64
+    run-on: amd64
+  - build-on: i386
+    run-on: i386
+  - build-on: arm64
+    run-on: arm64
+  - build-on: s390x
+    run-on: s390x
+  - build-on: ppc64el
+    run-on: ppc64el
+
+apps:
+  openscad-nightly:
+    command: desktop-launch openscad-nightly
+    plugs: [desktop, x11, wayland, opengl, home, audio-playback, pulseaudio, network, removable-media, joystick]
+    desktop: usr/share/applications/openscad-nightly.desktop
+    environment:
+      DISABLE_WAYLAND: 1
+
+parts:
+  opencsg:
+    disable-parallel: true
+    source: http://www.opencsg.org/OpenCSG-1.4.2.tar.gz
+    plugin: qmake
+    override-build: |
+      ( cd src && qmake INSTALLDIR=/usr && sed -i 's,-isystem /usr/include,,' Makefile )
+      make -C src
+      make -C src INSTALL_ROOT="${SNAPCRAFT_PART_INSTALL}" install
+    qt-version: qt5
+    build-packages:
+    - freeglut3-dev
+    stage-packages:
+    - libglew1.13
+
+  cgal:
+    disable-parallel: true
+    source: https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.14.3/CGAL-4.14.3.tar.xz
+    plugin: cmake
+    configflags: [ "-DCMAKE_BUILD_TYPE=Release" ]
+    build-packages:
+    - cmake
+    - libboost-dev
+    - libboost-thread-dev
+    stage-packages:
+    - libboost-system1.58.0
+    - libboost-thread1.58.0
+
+  lib3mf:
+    source: https://github.com/3MFConsortium/lib3mf/archive/v1.8.1.tar.gz
+    plugin: cmake
+    configflags: [ "-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DLIB3MF_TESTS=OFF" ]
+    override-pull: |
+        snapcraftctl pull
+        sed -i -e 's/\<DESCRIPTION.*/LANGUAGES CXX)/' CMakeLists.txt
+        cat -n CMakeLists.txt
+    build-packages:
+    - uuid-dev
+
+  openscad-nightly:
+    disable-parallel: true
+    source: .
+    plugin: qmake
+    qt-version: qt5
+    after: [ desktop-qt5, opencsg, cgal, lib3mf ]
+    project-files: [ "openscad.pro" ]
+    options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
+    build-packages:
+    - git
+    - qt5-default
+    - qtbase5-dev
+    - qtmultimedia5-dev
+    - libqt5opengl5-dev
+    - qt5-qmake
+    - libeigen3-dev
+    - libglib2.0-dev
+    - bison
+    - flex
+    - libglew-dev
+    - libgmp-dev
+    - libmpfr-dev
+    - python
+    - cmake
+    - libboost-dev
+    - libboost-regex-dev
+    - libboost-system-dev
+    - libboost-filesystem-dev
+    - libboost-program-options-dev
+    - libdouble-conversion-dev
+    - chrpath
+    - gettext
+    - pkg-config
+    - imagemagick
+    - libzip-dev
+    - libgl-dev
+    - libxml2-dev
+    - libharfbuzz-dev
+    - libfreetype6-dev
+    - libfontconfig1-dev
+    - libqt5scintilla2-dev
+    stage-packages:
+    - qtwayland5
+    - libasyncns0
+    - libboost-filesystem1.58.0
+    - libboost-regex1.58.0
+    - libboost-system1.58.0
+    - libboost-program-options1.58.0
+    - libdouble-conversion1v5
+    - libflac8
+    - libglew1.13
+    - libglu1-mesa
+    - libmpfr4
+    - libogg0
+    - libpulse0
+    - libqt5scintilla2-12v5
+    - libqt5multimedia5
+    - libqt5printsupport5
+    - libsndfile1
+    - libvorbis0a
+    - libvorbisenc2
+    - libzip4
+
+  # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
+  desktop-qt5:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: qt
+    plugin: make
+    make-parameters: ["FLAVOR=qt5"]
+    build-packages:
+      - build-essential
+      - qtbase5-dev
+      - dpkg-dev
+    stage-packages:
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5 # for loading icon themes which are svg
+      - try: [appmenu-qt5] # not available on core18
+      - locales-all
+      - xdg-user-dirs
+      - fcitx-frontend-qt5

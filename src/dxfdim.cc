@@ -33,6 +33,7 @@
 #include "fileutils.h"
 #include "evalcontext.h"
 #include "handle_dep.h"
+#include "degree_trig.h"
 
 #include <cmath>
 #include <sstream>
@@ -43,8 +44,9 @@ std::unordered_map<std::string, ValuePtr> dxf_dim_cache;
 std::unordered_map<std::string, ValuePtr> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
+	std::string rawFilename;
 	std::string filename;
 	std::string layername;
 	std::string name;
@@ -52,34 +54,49 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr n = evalctx->getArgName(i);
+		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
-			filename = lookup_file(v->toString(), 
+			rawFilename = v->toString();
+			filename = lookup_file(rawFilename, 
 			evalctx->documentPath(), ctx->documentPath());
+		}else if (n == "layer") {
+			layername = v->toString();
+		}else if (n == "origin"){
+			bool originOk = v->getVec2(xorigin, yorigin);
+			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+			if(!originOk){
+				PRINTB("WARNING: dxf_dim(..., origin=%s) could not be converted, %s", v->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			}
+		}else if (n == "scale"){
+			v->getDouble(scale);
+		} else if (n == "name") {
+			name = v->toString();
+		}else{
+			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
-		if (n == "layer") layername = v->toString();
-		if (n == "origin") v->getVec2(xorigin, yorigin);
-		if (n == "scale") v->getDouble(scale);
-		if (n == "name") name = v->toString();
 	}
 
-	std::stringstream keystream;
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
-	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		filesize = fs::file_size(filepath);
-		lastwritetime = fs::last_write_time(filepath);
+	if (fs::exists(filepath)) {
+		if(fs::is_regular_file(filepath)){
+			filesize = fs::file_size(filepath);
+			lastwritetime = fs::last_write_time(filepath);
+		}
+	}else{
+		PRINTB("WARNING: Can't open DXF file '%s'! %s",
+					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
 	}
-	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
-						<< "|" << filesize;
-	std::string key = keystream.str();
+	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
+												<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
+												<< "|" << filesize);
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
 	handle_dep(filepath.string());
@@ -98,7 +115,7 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			double x = d->coords[4][0] - d->coords[3][0];
 			double y = d->coords[4][1] - d->coords[3][1];
 			double angle = d->angle;
-			double distance_projected_on_line = std::fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
+			double distance_projected_on_line = std::fabs(x * cos_degrees(angle) + y * sin_degrees(angle));
 			return dxf_dim_cache[key] = ValuePtr(distance_projected_on_line);
 		}
 		else if (type == 1) {
@@ -109,9 +126,9 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 		}
 		else if (type == 2) {
 			// Angular
-			double a1 = atan2(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
-			double a2 = atan2(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
-			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2) * 180 / M_PI);
+			double a1 = atan2_degrees(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
+			double a2 = atan2_degrees(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
+			return dxf_dim_cache[key] = ValuePtr(std::fabs(a1 - a2));
 		}
 		else if (type == 3 || type == 4) {
 			// Diameter or Radius
@@ -127,49 +144,67 @@ ValuePtr builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 			return dxf_dim_cache[key] = ValuePtr((d->type & 64) ? d->coords[3][0] : d->coords[3][1]);
 		}
 
-		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!", 
-					 name % filename % layername);
+		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type! %s", 
+					 name % rawFilename  % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 		return ValuePtr::undefined;
 	}
 
-	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'!",
-				 name % filename % layername);
+	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'! %s",
+				 name % rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
 	return ValuePtr::undefined;
 }
 
-ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
+ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string filename;
+	std::string rawFilename;
 	std::string layername;
 	double xorigin = 0;
 	double yorigin = 0;
 	double scale = 1;
 
-  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See isse #217
+	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr n = evalctx->getArgName(i);
+		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
-		if (n == "file") filename = ctx->getAbsolutePath(v->toString());
-		if (n == "layer") layername = v->toString();
-		if (n == "origin") v->getVec2(xorigin, yorigin);
-		if (n == "scale") v->getDouble(scale);
+		if (n == "file"){
+			rawFilename = v->toString();
+			filename = ctx->getAbsolutePath(rawFilename);
+		}else if (n == "layer"){
+			layername = v->toString();
+		}else if (n == "origin"){
+			bool originOk = v->getVec2(xorigin, yorigin);
+			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+			if(!originOk){
+				PRINTB("WARNING: dxf_cross(..., origin=%s) could not be converted, %s", v->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			}
+		}else if (n == "scale"){
+			v->getDouble(scale);
+		}else{
+			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
+		}
 	}
 
-	std::stringstream keystream;
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
 	time_t lastwritetime = -1;
-	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		filesize = fs::file_size(filepath);
-		lastwritetime = fs::last_write_time(filepath);
+	if (fs::exists(filepath)) {
+		if(fs::is_regular_file(filepath)){
+			filesize = fs::file_size(filepath);
+			lastwritetime = fs::last_write_time(filepath);
+		}
+	}else{
+		PRINTB("WARNING: Can't open DXF file '%s'! %s",
+					 rawFilename % evalctx->loc.toRelativeString(ctx->documentPath()));
+		return ValuePtr::undefined;
 	}
-	keystream << filename << "|" << layername << "|" << xorigin << "|" << yorigin
-						<< "|" << scale << "|" << lastwritetime
-						<< "|" << filesize;
-	std::string key = keystream.str();
+
+	std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
+												<< "|" << scale << "|" << lastwritetime
+												<< "|" << filesize);
 
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end()) {
 		return dxf_cross_cache.find(key)->second;
@@ -199,20 +234,27 @@ ValuePtr builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			Value::VectorType ret;
+			VectorType ret;
 			ret.push_back(ValuePtr(x));
 			ret.push_back(ValuePtr(y));
 			return dxf_cross_cache[key] = ValuePtr(ret);
 		}
 	}
 
-	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
+	PRINTB("WARNING: Can't find cross in '%s', layer '%s'! %s", rawFilename % layername % evalctx->loc.toRelativeString(ctx->documentPath()));
 
 	return ValuePtr::undefined;
 }
 
 void initialize_builtin_dxf_dim()
 {
-	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim));
-	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross));
+	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim),
+				{
+					"dxf_dim()",
+				});
+
+	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross),
+				{
+					"dxf_cross()",
+				});
 }

@@ -1,4 +1,5 @@
 #include "handle_dep.h"
+#include "printutils.h"
 #include <string>
 #include <sstream>
 #include <stdlib.h> // for system()
@@ -20,9 +21,7 @@ void handle_dep(const std::string &filename)
 	dependencies.insert(dep);
 
 	if (make_command && !fs::exists(filepath)) {
-		std::stringstream buf;
-		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
-		system(buf.str().c_str()); // FIXME: Handle error
+		system(STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'").c_str()); // FIXME: Handle error
 	}
 }
 

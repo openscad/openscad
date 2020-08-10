@@ -5,6 +5,7 @@
 #include "rendersettings.h"
 #include "printutils.h"
 #include "renderer.h"
+#include "degree_trig.h"
 #include <cmath>
 
 #ifdef _WIN32
@@ -17,10 +18,9 @@
 #include <opencsg.h>
 #endif
 
-#include <boost/lexical_cast.hpp>
-
 GLView::GLView()
 {
+  aspectratio = 1;
   showedges = false;
   showfaces = true;
   showaxes = false;
@@ -36,7 +36,6 @@ GLView::GLView()
   opencsg_support = true;
   static int sId = 0;
   this->opencsg_id = sId++;
-  for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 #endif
 }
 
@@ -67,15 +66,15 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
+    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
   }
 }
 
 void GLView::resizeGL(int w, int h)
 {
 #ifdef ENABLE_OPENCSG
-  shaderinfo[9] = w;
-  shaderinfo[10] = h;
+  shaderinfo.vp_size_x = w;
+  shaderinfo.vp_size_y = h;
 #endif
   cam.pixel_width = w;
   cam.pixel_height = h;
@@ -88,91 +87,53 @@ void GLView::setCamera(const Camera &cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera()
+void GLView::setupCamera() const
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-
-	switch (this->cam.type) {
-	case Camera::CameraType::GIMBAL: {
-		auto dist = cam.zoomValue();
-		switch (this->cam.projection) {
-		case Camera::ProjectionType::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			break;
-		}
-		case Camera::ProjectionType::ORTHOGONAL: {
-			auto height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
-							-height, height,
-							-100*dist, +100*dist);
-			break;
-		}
-		}
-		gluLookAt(0.0, -dist, 0.0,
-							0.0, 0.0, 0.0,
-							0.0, 0.0, 1.0);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
-		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
-		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-		break;
-	}
-	case Camera::CameraType::VECTOR: {
-		auto dist = (cam.center - cam.eye).norm();
-		switch (this->cam.projection) {
-		case Camera::ProjectionType::PERSPECTIVE: {
-			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			break;
-		}
-		case Camera::ProjectionType::ORTHOGONAL: {
-			auto height = dist * tan(cam.fov/2*M_PI/180);
-			glOrtho(-height*aspectratio, height*aspectratio,
-							-height, height,
-							-100*dist, +100*dist);
-			break;
-		}
-		}
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		Vector3d dir(cam.eye - cam.center);
-		Vector3d up(0.0,0.0,1.0);
-		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
-			up << 0.0,1.0,0.0;
-		}
-
-		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
-							cam.center[0], cam.center[1], cam.center[2],
-							up[0], up[1], up[2]);
+  auto dist = cam.zoomValue();
+  switch (this->cam.projection) {
+	case Camera::ProjectionType::PERSPECTIVE: {
+		gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
 		break;
 	}
 	default:
+	case Camera::ProjectionType::ORTHOGONAL: {
+		auto height = dist * tan_degrees(cam.fov / 2);
+		glOrtho(-height * aspectratio, height * aspectratio,
+		        -height, height,
+		        -100 * dist, +100 * dist);
 		break;
 	}
+  }
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  gluLookAt(0.0, -dist, 0.0,      // eye
+            0.0, 0.0,   0.0,      // center
+            0.0, 0.0,   1.0);     // up
+
+  glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 }
 
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
-
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
+  auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   setupCamera();
-  if (this->cam.type == Camera::CameraType::GIMBAL) {
-    // Only for GIMBAL cam
-    // The crosshair should be fixed at the center of the viewport...
-    if (showcrosshairs) GLView::showCrosshairs();
-    glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
-    // ...the axis lines need to follow the object translation.
-    if (showaxes) GLView::showAxes(axescolor);
-    // mark the scale along the axis lines
-    if (showaxes && showscale) GLView::showScalemarkers(axescolor);
-  }
+  // The crosshair should be fixed at the center of the viewport...
+  if (showcrosshairs) GLView::showCrosshairs(crosshaircol);
+  glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
+  // ...the axis lines need to follow the object translation.
+  if (showaxes) GLView::showAxes(axescolor);
+  // mark the scale along the axis lines
+  if (showaxes && showscale) GLView::showScalemarkers(axescolor);
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -189,7 +150,6 @@ void GLView::paintGL()
     this->renderer->draw(showfaces, showedges);
   }
 
-  // Only for GIMBAL
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 }
@@ -251,35 +211,43 @@ void GLView::enable_opencsg_shaders()
       shading
    */
     const char *vs_source =
-      "uniform float xscale, yscale;\n"
-      "attribute vec3 pos_b, pos_c;\n"
-      "attribute vec3 trig, mask;\n"
-      "varying vec3 tp, tr;\n"
-      "varying float shading;\n"
-      "void main() {\n"
-      "  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-      "  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n"
-      "  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n"
-      "  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-      "  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
-      "  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-      "  float s = (a + b + c) / 2.0;\n"
-      "  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
-      "  float ha = 2.0*A/a;\n"
-      "  gl_Position = p0;\n"
-      "  tp = mask * ha;\n"
-      "  tr = trig;\n"
-      "  vec3 normal, lightDir;\n"
-      "  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
-      "  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-      "  shading = 0.2 + abs(dot(normal, lightDir));\n"
-      "}\n";
+			// Updated in this->resizeGL
+			"uniform float xscale, yscale;\n"
+	  	// The other two vectors of the triangle
+			"attribute vec3 pos_b, pos_c;\n"
+			// Trig: line width of edge: -1 dont draw
+			// mask: what is the current edge
+			// .x p0->p1, .y: p1->p2, .z p0->p2
+			"attribute vec3 trig, mask;\n"
+			// tp, tr infos for fragment shader edge highlighting
+			"varying vec3 tp, tr;\n"
+			// "darkdness" for fragment shader
+			"varying float shading;\n"
+			"void main() {\n"
+			"  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"  // projected vector
+			"  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n" // ?? pos_b = argument
+			"  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n" // ?? pos_b = argument
+			// Lengths of the sides of the rendered triangle
+			"  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
+			"  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
+			"  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
+			"  float s = (a + b + c) / 2.0;\n"
+			"  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
+			"  float ha = 2.0*A/a;\n"
+			"  gl_Position = p0;\n"
+			"  tp = mask * ha;\n"
+			"  tr = trig;\n"
+			"  vec3 normal, lightDir;\n"
+			"  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
+			"  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
+			"  shading = 0.2 + abs(dot(normal, lightDir));\n"
+			"}\n";
 
     /*
       Inputs:
         tp && tr - if any components of tp < tr, use color2 (edge color)
         shading  - multiplied by color1. color2 is is without lighting
-		*/
+    */
     const char *fs_source =
       "uniform vec4 color1, color2;\n"
       "varying vec3 tp, tr, tmp;\n"
@@ -303,15 +271,16 @@ void GLView::enable_opencsg_shaders()
     glAttachShader(edgeshader_prog, fs);
     glLinkProgram(edgeshader_prog);
 
-    shaderinfo[0] = edgeshader_prog;
-    shaderinfo[1] = glGetUniformLocation(edgeshader_prog, "color1");
-    shaderinfo[2] = glGetUniformLocation(edgeshader_prog, "color2");
-    shaderinfo[3] = glGetAttribLocation(edgeshader_prog, "trig");
-    shaderinfo[4] = glGetAttribLocation(edgeshader_prog, "pos_b");
-    shaderinfo[5] = glGetAttribLocation(edgeshader_prog, "pos_c");
-    shaderinfo[6] = glGetAttribLocation(edgeshader_prog, "mask");
-    shaderinfo[7] = glGetUniformLocation(edgeshader_prog, "xscale");
-    shaderinfo[8] = glGetUniformLocation(edgeshader_prog, "yscale");
+    shaderinfo.progid = edgeshader_prog; // 0
+    shaderinfo.type = GLView::shaderinfo_t::CSG_RENDERING;
+    shaderinfo.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
+    shaderinfo.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
+    shaderinfo.data.csg_rendering.trig = glGetAttribLocation(edgeshader_prog, "trig"); // 3
+    shaderinfo.data.csg_rendering.point_b = glGetAttribLocation(edgeshader_prog, "pos_b"); // 4
+    shaderinfo.data.csg_rendering.point_c = glGetAttribLocation(edgeshader_prog, "pos_c"); // 5
+    shaderinfo.data.csg_rendering.mask = glGetAttribLocation(edgeshader_prog, "mask"); // 6
+    shaderinfo.data.csg_rendering.xscale = glGetUniformLocation(edgeshader_prog, "xscale"); // 7
+    shaderinfo.data.csg_rendering.yscale = glGetUniformLocation(edgeshader_prog, "yscale"); // 8
 
     auto err = glGetError();
     if (err != GL_NO_ERROR) {
@@ -351,9 +320,11 @@ void GLView::initializeGL()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-  GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
-  GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
+  GLfloat light_position0[] = {-1.0, +1.0, +1.0, 0.0};
+  GLfloat light_position1[] = {+1.0, -1.0, -1.0, 0.0};
 
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
   glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
   glEnable(GL_LIGHT0);
@@ -374,24 +345,22 @@ void GLView::initializeGL()
 
 void GLView::showSmallaxes(const Color4f &col)
 {
-  // Fixme - this doesnt work in Vector Camera mode
-
-	auto dpi = this->getDPI();
+  auto dpi = this->getDPI();
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
 	// Set up an orthographic projection of the axis cross in the corner
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-	glTranslatef(-0.8f, -0.8f, 0.0f);
-	auto scale = 90;
-	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
+  glTranslatef(-0.8f, -0.8f, 0.0f);
+  auto scale = 90;
+  glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
   gluLookAt(0.0, -1.0, 0.0,
 						0.0, 0.0, 0.0,
 						0.0, 0.0, 1.0);
-	 
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -451,16 +420,13 @@ void GLView::showSmallaxes(const Color4f &col)
   glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y-d, 0);
   glVertex3d(zlabel_x-d, zlabel_y+d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
   glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
-  // FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
-  //         for VectorCamera?
   glEnd();
 }
 
 void GLView::showAxes(const Color4f &col)
 {
   auto l = cam.zoomValue();
-  
-  // FIXME: doesn't work under Vector Camera
+
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
@@ -488,11 +454,9 @@ void GLView::showAxes(const Color4f &col)
   glPopAttrib();
 }
 
-void GLView::showCrosshairs()
+void GLView::showCrosshairs(const Color4f &col)
 {
-  // FIXME: this might not work with Vector camera
   glLineWidth(this->getDPI());
-  auto col = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
@@ -601,10 +565,7 @@ void GLView::showScalemarkers(const Color4f &col)
 
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 {
-	// convert the axis position to a string
-	std::ostringstream oss;
-	oss << i;
-	const auto unsigned_digit = oss.str();
+	const auto unsigned_digit = STR(i);
 
 	// setup how far above the axis (or tick TBD) to draw the number
 	double dig_buf = (l/size_div_sm)/4;
@@ -624,7 +585,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2},
 		{1,2,0}};
 
-	// set up character vertex seqeunces for different axes
+	// set up character vertex sequences for different axes
 	int or_2[6][6]={
 		{0,1,3,2,4,5},
 		{1,0,2,3,5,4},
@@ -717,7 +678,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 				{polarity*((i+((char_num)*dig_wk))+(dig_w/2)),dig_buf,0}};
 
 			// convert the char into lines appropriate for the axis being used
-			// psuedo 7 segment vertices are:
+			// pseudo 7 segment vertices are:
 			// A--B
 			// |  |
 			// C--D

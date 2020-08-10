@@ -7,7 +7,8 @@ class TransformNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	TransformNode(const ModuleInstantiation *mi);
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	TransformNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx);
 	std::string toString() const override;
 	std::string name() const override;
 

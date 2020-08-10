@@ -1,7 +1,7 @@
 #include <QFileInfo>
 #include <QListWidgetItem>
 
-#include "openscad.h"
+#include "version.h"
 #include "launchingscreen.h"
 #include "ui_launchingscreen.h"
 #include "QSettingsCached.h"

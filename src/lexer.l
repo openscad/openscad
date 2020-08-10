@@ -47,6 +47,8 @@ namespace fs = boost::filesystem;
 #if defined __WIN32__ || defined _MSC_VER
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
+#define strdup _strdup
+#define fileno _fileno
 #endif
 
 std::string stringcontents;
@@ -55,7 +57,6 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
-extern fs::path parser_sourcefile;
 extern FileModule *rootmodule;
 
 #define YY_INPUT(buf,result,max_size) {   \
@@ -80,31 +81,38 @@ extern FileModule *rootmodule;
 
 /*
   Handle locations.
-  Note: Since flex doesn't handle column numbers, we deal with those manually.
-  The yycolumn is manually reset for each encountered newline.
+  Since flex doesn't handle column numbers, we deal with those manually.
+  See "Advanced Use of Flex" / "Advanced Use of Bison"
 */
 extern YYLTYPE parserlloc;
-int yycolumn = 1;
-#define YY_USER_ACTION {              \
-  parserlloc.first_line = yylineno;   \
-  parserlloc.first_column = yycolumn; \
-  yycolumn = yycolumn + yyleng;       \
-  parserlloc.last_column = yycolumn;  \
-  parserlloc.last_line = yylineno;    \
-}
+
+#define LOCATION(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
+#define LOCATION_INIT(loc) do { (loc).first_line = (loc).first_column = (loc).last_line = (loc).last_column = yylineno = 1; } while (0)
+#define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = (loc).last_line; } while (0)
+#define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
+
+#ifdef DEBUG
+#define YY_USER_ACTION parserlloc.last_column += yyleng; \
+        PRINTDB("YY_USER_ACTION(): %3d, %3d - %3d, %3d | %3d: %s", \
+                parserlloc.first_line % parserlloc.first_column % \
+				parserlloc.last_line % parserlloc.last_column % \
+				yyleng % quoted_string(yytext));
+#else
+#define YY_USER_ACTION parserlloc.last_column += yyleng;
+#endif
 
 extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
-void includefile();
-fs::path sourcefile();
-std::vector<fs::path> filename_stack;
-std::vector<int> lineno_stack;
+void includefile(const Location& loc);
+std::shared_ptr<fs::path> sourcefile();
+std::shared_ptr<fs::path> parser_sourcefile;
+std::vector<std::shared_ptr<fs::path>> filename_stack;
+std::vector<YYLTYPE> loc_stack;
 std::vector<FILE*> openfiles;
 std::vector<std::string> openfilenames;
 
 std::string filename;
 std::string filepath;
-
 %}
 
 %option yylineno
@@ -126,57 +134,59 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
 %%
 
+%{
+LOCATION_NEXT(parserlloc);
+%}
+
 include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 <cond_include>{
-[^\t\r\n>]*"/"	{ filepath = yytext; }
-[^\t\r\n>/]+	{ filename = yytext; }
-">"		{ BEGIN(INITIAL); includefile(); }
-<<EOF>>         { parsererror("Unterminated include statement"); return TOK_ERROR; }
+[^\t\r\n>]*"/"			{ filepath = yytext; }
+[^\t\r\n>/]+			{ filename = yytext; }
+">"						{ BEGIN(INITIAL); includefile(LOCATION(parserlloc));  }
+<<EOF>>					{ parsererror("Unterminated include statement"); return TOK_ERROR; }
 }
 
 
-use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
+use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 <cond_use>{
-[^\t\r\n>]+	{ filename = yytext; }
- ">"		{
-	BEGIN(INITIAL);
-        fs::path fullpath = find_valid_path(sourcefile().parent_path(), fs::path(filename), &openfilenames);
-	if (fullpath.empty()) {
-          PRINTB("WARNING: Can't open library '%s'.", filename);
-          parserlval.text = strdup(filename.c_str());
-	} else {
-          handle_dep(fullpath.generic_string());
-          parserlval.text = strdup(fullpath.string().c_str());
-	}
-        return TOK_USE;
-    }
-<<EOF>>         { parsererror("Unterminated use statement"); return TOK_ERROR; }
+[^\t\r\n>]+				{ filename = yytext; }
+ ">"					{
+							BEGIN(INITIAL);
+							fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
+							if (fullpath.empty()) {
+								PRINTB("WARNING: Can't open library '%s'.", filename);
+								parserlval.text = strdup(filename.c_str());
+							} else {
+								handle_dep(fullpath.generic_string());
+								parserlval.text = strdup(fullpath.string().c_str());
+							}
+							return TOK_USE;
+						}
+<<EOF>>					{ parsererror("Unterminated use statement"); return TOK_ERROR; }
 }
 
-\"			{ BEGIN(cond_string); stringcontents.clear(); }
+\"						{ BEGIN(cond_string); stringcontents.clear(); }
 <cond_string>{
-\\n			{ stringcontents += '\n'; }
-\\t			{ stringcontents += '\t'; }
-\\r			{ stringcontents += '\r'; }
-\\\\			{ stringcontents += '\\'; }
-\\\"			{ stringcontents += '"'; }
+\\n						{ stringcontents += '\n'; }
+\\t						{ stringcontents += '\t'; }
+\\r						{ stringcontents += '\r'; }
+\\\\					{ stringcontents += '\\'; }
+\\\"					{ stringcontents += '"'; }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
-[^\\\n\"]		{ stringcontents += lexertext; }
-[\n\r]		        { yycolumn = 1; }
-\"			{ BEGIN(INITIAL);
-			parserlval.text = strdup(stringcontents.c_str());
-			return TOK_STRING; }
+[^\\\n\"]				{ stringcontents += lexertext; }
+[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
+\"						{ BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
 
-[\t ]                   /* whitespace */
-[\n\r]
+[\t ]                   { LOCATION_NEXT(parserlloc); }
+[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 
-\/\/ BEGIN(cond_lcomment);
+\/\/					{ BEGIN(cond_lcomment); }
 <cond_lcomment>{
-\n                      { BEGIN(INITIAL); yycolumn = 1; }
+\n                      { BEGIN(INITIAL); LOCATION_ADD_LINES(parserlloc, yyleng); }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
 [^\n]
 }
@@ -185,15 +195,17 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-.|\n
+.
+[\n]                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
 <<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
 }
 
 <<EOF>> {
 	if (!filename_stack.empty()) filename_stack.pop_back();
-	if (!lineno_stack.empty()) {
-		yylineno = lineno_stack.back();
-		lineno_stack.pop_back();
+	if (!loc_stack.empty()) {
+		parserlloc = loc_stack.back();
+		yylineno = parserlloc.first_line;
+		loc_stack.pop_back();
 	}
 	if (yyin && yyin != stdin) {
 		assert(!openfiles.empty());
@@ -205,6 +217,8 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
 	if (!YY_CURRENT_BUFFER)
 		yyterminate();
 }
+
+"\x03"		return TOK_EOT;
 
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
@@ -236,7 +250,7 @@ use[ \t\r\n]*"<"	{ BEGIN(cond_use); }
                             try {
                                 parserlval.number = boost::lexical_cast<double>(yytext);
                                 return TOK_NUMBER;
-                            } catch (boost::bad_lexical_cast) {}
+                            } catch (boost::bad_lexical_cast&) {}
                         }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 
@@ -267,12 +281,22 @@ void to_utf8(const char *str, char *out)
     }
 }
 
+void lexer_set_parser_sourcefile(const fs::path& path)
+{
+    parser_sourcefile = std::make_shared<fs::path>(path);
+}
+
 // Filename of the source file currently being lexed.
-fs::path sourcefile()
+std::shared_ptr<fs::path>  sourcefile()
 {
   if (!filename_stack.empty()) return filename_stack.back();
 
   return parser_sourcefile;
+}
+
+bool lexer_is_main_file()
+{
+  return loc_stack.empty();
 }
 
 /*
@@ -282,15 +306,15 @@ fs::path sourcefile()
 
   Globals used: filepath, sourcefile, filename
  */
-void includefile()
+void includefile(const Location& loc)
 {
   fs::path localpath = fs::path(filepath) / filename;
-  fs::path fullpath = find_valid_path(sourcefile().parent_path(), localpath, &openfilenames);
+  fs::path fullpath = find_valid_path(sourcefile()->parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootmodule->registerInclude(localpath.generic_string(), fullpath.generic_string());
+    rootmodule->registerInclude(localpath.generic_string(), fullpath.generic_string(), lexer_is_main_file() ? loc : Location::NONE);
   }
   else {
-    rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string());
+    rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
     PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
     return;
   };
@@ -298,7 +322,7 @@ void includefile()
   std::string fullname = fullpath.generic_string();
 
   filepath.clear();
-  filename_stack.push_back(fullpath);
+  filename_stack.push_back(std::make_shared<fs::path>(fullpath));
 
   handle_dep(fullname);
 
@@ -309,8 +333,8 @@ void includefile()
     return;
   }
 
-  lineno_stack.push_back(yylineno);
-  yylineno = 1;
+  loc_stack.push_back(parserlloc);
+  LOCATION_INIT(parserlloc);  
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
   filename.clear();
@@ -328,5 +352,5 @@ void lexerdestroy()
 	openfiles.clear();
 	openfilenames.clear();
 	filename_stack.clear();
-	lineno_stack.clear();
+	loc_stack.clear();
 }

@@ -37,24 +37,34 @@ public:
 	virtual void paintGL();
 
 	void setCamera(const Camera &cam);
-	void setupCamera();
+	void setupCamera() const;
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
 
-	virtual bool save(const char *filename) = 0;
+	bool showAxes() const { return this->showaxes; }
+	void setShowAxes(bool enabled) { this->showaxes = enabled; }
+	bool showScaleProportional() const { return this->showscale; }
+	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
+	bool showEdges() const { return this->showedges; }
+	void setShowEdges(bool enabled) { this->showedges = enabled; }
+	bool showFaces() const { return this->showfaces; }
+	void setShowFaces(bool enabled) { this->showfaces = enabled; }
+	bool showCrosshairs() const { return this->showcrosshairs; }
+	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
+
+	virtual bool save(const char *filename) const = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
+
+	virtual ~GLView(){};
 
 	Renderer *renderer;
 	const ColorScheme *colorscheme;
 	Camera cam;
 	double far_far_away;
-	size_t width;
-	size_t height;
 	double aspectratio;
-	bool orthomode;
 	bool showaxes;
 	bool showfaces;
 	bool showedges;
@@ -62,16 +72,50 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	GLint shaderinfo[11];
+	/// Shader attribute identifiers
+	struct shaderinfo_t {
+		enum shader_type_t {
+			NONE,
+			CSG_RENDERING,
+			SELECT_RENDERING,
+		};
+		int progid = 0;
+		shader_type_t type;
+		union {
+			struct {
+				int color_area;
+				int color_edge;
+				int trig;
+
+				// the other two points of the triangle while rendering
+				int point_b;
+				int point_c;
+
+				int mask;
+				int xscale;
+				int yscale;
+			} csg_rendering;
+			struct {
+				int identifier;
+			} select_rendering;
+		} data;
+
+		// values: Viewport size
+		GLint vp_size_x;
+		GLint vp_size_y;
+	};
+
+	shaderinfo_t shaderinfo;
 	bool is_opencsg_capable;
 	bool has_shaders;
 	void enable_opencsg_shaders();
 	virtual void display_opencsg_warning() = 0;
 	bool opencsg_support;
 	int opencsg_id;
+
 #endif
 private:
-	void showCrosshairs();
+	void showCrosshairs(const Color4f &col);
 	void showAxes(const Color4f &col);
 	void showSmallaxes(const Color4f &col);
 	void showScalemarkers(const Color4f &col);

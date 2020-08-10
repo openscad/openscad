@@ -27,7 +27,12 @@
 #include "csgnode.h"
 #include "Geometry.h"
 #include "linalg.h"
+#include "printutils.h"
+
 #include <sstream>
+#include <stack>
+#include <tuple>
+
 #include <boost/range/iterator_range.hpp>
 
 /*!
@@ -57,7 +62,6 @@ primitives, each having a CSG type associated with it.
 
 	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
 */
-
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
@@ -93,11 +97,11 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 		}
 	}
 
-	return shared_ptr<CSGNode>(new CSGOperation(type, left, right));
+	return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: label(label), matrix(matrix), color(color)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label, const int index)
+	: label(label), matrix(matrix), color(color), index(index)
 {
 	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
@@ -108,14 +112,6 @@ CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shar
 {
 	this->children.push_back(left);
 	this->children.push_back(right);
-	initBoundingBox();
-}
-
-CSGOperation::CSGOperation(OpenSCADOperator type, CSGNode *left, CSGNode *right)
-	: type(type)
-{
-	this->children.push_back(shared_ptr<CSGNode>(left));
-	this->children.push_back(shared_ptr<CSGNode>(right));
 	initBoundingBox();
 }
 
@@ -149,52 +145,105 @@ void CSGOperation::initBoundingBox()
 	}
 }
 
-std::string CSGLeaf::dump()
+std::string CSGLeaf::dump() const
 {
 	return this->label;
 }
 
-std::string CSGOperation::dump()
+// Recursive traversal can cause stack overflow with very large loops of child nodes,
+// so tree is traverse iteratively, managing our own stack.
+std::string CSGOperation::dump() const
 {
-	std::stringstream dump;
+	// tuple(node pointer, postfix string, ispostfix bool)
+	std::stack<std::tuple<const CSGOperation*, std::string, bool>> callstack;
+	callstack.emplace(this, "", false);
+  std::ostringstream out;
+	const CSGOperation* node;
+	std::string postfixstr;
+	bool ispostfix;
+  do {
+		std::tie(node, postfixstr, ispostfix) = callstack.top();
+		if (!ispostfix) { // handle left child. only right child uses a prefix string
+			std::string lpostfix;
+			switch (node->type) {
+			case OpenSCADOperator::UNION:
+				lpostfix = " + ";
+				break;
+			case OpenSCADOperator::INTERSECTION:
+				lpostfix = " * ";
+				break;
+			case OpenSCADOperator::DIFFERENCE:
+				lpostfix = " - ";
+				break;
+			default:
+				assert(false);
+			}
 
-	if (type == OpenSCADOperator::UNION)
-		dump << "(" << left()->dump() << " + " << right()->dump() << ")";
-	else if (type == OpenSCADOperator::INTERSECTION)
-		dump << "(" << left()->dump() << " * " << right()->dump() << ")";
-	else if (type == OpenSCADOperator::DIFFERENCE)
-		dump << "(" << left()->dump() << " - " << right()->dump() << ")";
-	else 
-		assert(false);
+			out << '(';
 
-	return dump.str();
+			// mark current node as postfix before (maybe) pushing left child
+			ispostfix = std::get<2>(callstack.top()) = true;
+
+			if(auto opl = dynamic_pointer_cast<CSGOperation>(node->left())) {
+				callstack.emplace(opl.get(), lpostfix, false);
+				continue;
+			} else {
+				out << node->left()->dump() << lpostfix;
+			}
+		}
+
+		// postfix traversal of node, handle right child
+		if (ispostfix) {
+			callstack.pop();
+			if(auto opr = dynamic_pointer_cast<CSGOperation>(node->right())) {
+				callstack.emplace(opr.get(), ")", false);
+				continue;
+			} else {
+				out << node->right()->dump() << ")";
+			}
+			out << postfixstr;
+		}
+
+	} while(!callstack.empty());
+	return out.str();
 }
 
 void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
 {
-	auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
+	std::stack<std::tuple<shared_ptr<CSGNode>, OpenSCADOperator, CSGNode::Flag>> callstack;
+	callstack.push(std::make_tuple(csgnode, type, flags));
 
-	if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
-		if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
-			this->createProduct();
+	do {
+		auto args = callstack.top();
+		callstack.pop();
+		csgnode = std::get<0>(args);
+		type = std::get<1>(args);
+		flags = std::get<2>(args);
+
+		auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
+
+		if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
+			if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
+				this->createProduct();
+			}
+			else if (type == OpenSCADOperator::DIFFERENCE) {
+				this->currentlist = &this->currentproduct->subtractions;
+			}
+			else if (type == OpenSCADOperator::INTERSECTION) {
+				this->currentlist = &this->currentproduct->intersections;
+			}
+			this->currentlist->push_back(CSGChainObject(leaf, newflags));
+		} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
+			assert(op->left() && op->right());
+			callstack.emplace(op->right(), op->getType(), newflags);
+			callstack.emplace(op->left(), type, newflags);
 		}
-		else if (type == OpenSCADOperator::DIFFERENCE) {
-			this->currentlist = &this->currentproduct->subtractions;
-		}
-		else if (type == OpenSCADOperator::INTERSECTION) {
-			this->currentlist = &this->currentproduct->intersections;
-		}
-		this->currentlist->push_back(CSGChainObject(leaf, newflags));
-	} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
-		assert(op->left() && op->right());
-		import(op->left(), type, newflags);
-		import(op->right(), op->getType(), newflags);
-	}
+	} while(!callstack.empty());
 }
 
 std::string CSGProduct::dump() const
 {
-	std::stringstream dump;
+	std::ostringstream dump;
 	dump << this->intersections.front().leaf->label;
 	for(const auto &csgobj :
 								boost::make_iterator_range(this->intersections.begin() + 1,
@@ -222,7 +271,7 @@ BoundingBox CSGProduct::getBoundingBox() const
 
 std::string CSGProducts::dump() const
 {
-	std::stringstream dump;
+	std::ostringstream dump;
 
 	for(const auto &product : this->products) {
 		dump << "+" << product.dump() << "\n";

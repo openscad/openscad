@@ -25,11 +25,12 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
+log "Updating homebrew"
+time brew update
+
 log "Listing homebrew configuration"
 time brew config
 
-log "Updating homebrew"
-time brew update
 # Install special packages not yet in upstream homebrew repo.
 # Check if there's already an active openscad tap and skip
 # tap/untap in that case.
@@ -44,10 +45,29 @@ $TAP tap openscad/homebrew-tap
 # FIXME: We used to require unlinking boost, but doing so also causes us to lose boost.
 # Disabling until we can figure out why we unlinked in the first place
 # brew unlink boost
-for formula in eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 imagemagick ccache; do
+
+# Python 2 conflicts with Python 3 links
+brew unlink python@2
+
+for formula in boost; do
+  log "Installing or updating formula $formula"
+  if brew ls --versions $formula; then
+    time brew upgrade $formula
+  else
+    time brew install $formula
+  fi
+done
+
+for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
+done
+
+# Link for formulas that are cached on Travis.
+for formula in libzip opencsg; do
+  log "Linking formula $formula"
+  time brew link $formula
 done
 
 for formula in gettext qt5 qscintilla2; do

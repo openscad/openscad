@@ -43,7 +43,7 @@ start()
 
   if [ "`command -v Xvfb`" ]; then
     VFB_BINARY=Xvfb
-    VFB_OPTIONS='-screen 0 800x600x24'
+    VFB_OPTIONS='-screen 0 800x600x24 -noreset'
   fi
 
   if [ ! $VFB_BINARY ]; then

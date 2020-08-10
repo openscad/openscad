@@ -1,0 +1,15 @@
+//Parameter("")
+before = false;
+//Parameter("")
+overwritten = true;
+//Parameter("")
+main = true;
+after = true;
+//Parameter("")
+later = true;
+echo(str("Can a variable be used when it assigned later? ", later));
+echo(str("Is overwriting possible? ", overwritten));
+echo(str("Does an include before the assignment take priority? ", before));
+echo(str("Does an include after the assignment take priority? ", after));
+echo("before");
+echo("after");

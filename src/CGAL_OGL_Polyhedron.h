@@ -60,7 +60,7 @@ public:
 		PRINTD("CGAL_OGL_Polyhedron() end");
 	}
 
-	void draw(bool showedges) const {
+	void draw(bool showedges) const override {
 		PRINTD("draw()");
 		if(this->style == SNC_BOUNDARY) {
 			glCallList(this->object_list_+2);
@@ -110,7 +110,7 @@ public:
 	}
 
 	// set this->colors based on the given colorscheme. vertex colors
-	// are not set here as colorscheme doesnt yet hold vertex colors.
+	// are not set here as colorscheme doesn't yet hold vertex colors.
 	void setColorScheme(const ColorScheme &cs) {
 		PRINTD("setColorScheme");
 		setColor(CGALColorIndex::MARKED_FACET_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_FACE_BACK_COLOR));
@@ -129,7 +129,10 @@ private:
 
 #else // NULLGL
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Bbox_3.h>
+#pragma pop_macro("NDEBUG")
 
 class CGAL_OGL_Polyhedron
 {

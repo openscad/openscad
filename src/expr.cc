@@ -23,17 +23,22 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "compiler_specific.h"
 #include "expression.h"
 #include "value.h"
 #include "evalcontext.h"
 #include <cstdint>
+#include <cmath>
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
+#include <typeinfo>
+#include <forward_list>
 #include "printutils.h"
 #include "stackcheck.h"
 #include "exceptions.h"
 #include "feature.h"
+#include "printutils.h"
 #include <boost/bind.hpp>
 
 #include <boost/assign/std/vector.hpp>
@@ -45,22 +50,29 @@ namespace {
 		return dynamic_cast<const ListComprehension *>(e.get());
 	}
 
-	Value::VectorType flatten(Value::VectorType const& vec) {
+	VectorType flatten(VectorType const& vec) {
 		int n = 0;
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			assert(vec[i]->type() == Value::ValueType::VECTOR);
-			n += vec[i]->toVector().size();
+			if (vec[i]->type() == Value::Type::VECTOR) {
+				n += vec[i]->toVector().size();
+			} else {
+				n++;
+			}
 		}
-		Value::VectorType ret; ret.reserve(n);
+		VectorType ret; ret.reserve(n);
 		for (unsigned int i = 0; i < vec.size(); i++) {
-			std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			if (vec[i]->type() == Value::Type::VECTOR) {
+				std::copy(vec[i]->toVector().begin(),vec[i]->toVector().end(),std::back_inserter(ret));
+			} else {
+				ret.push_back(vec[i]);
+			}
 		}
 		return ret;
 	}
 
-	void evaluate_sequential_assignment(const AssignmentList &assignment_list, Context *context) {
-		EvalContext ctx(context, assignment_list);
-		ctx.assignTo(*context);
+	void evaluate_sequential_assignment(const AssignmentList &assignment_list, std::shared_ptr<Context> context, const Location &loc) {
+		ContextHandle<EvalContext> ctx{Context::create<EvalContext>(context, assignment_list, loc)};
+		ctx->assignTo(context);
 	}
 }
 
@@ -68,14 +80,20 @@ namespace /* anonymous*/ {
 
 	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
 		for (size_t i=0; i < l.size(); i++) {
-			const Assignment &arg = l[i];
+			const auto &arg = l[i];
 			if (i > 0) o << ", ";
-			if (!arg.name.empty()) o << arg.name  << " = ";
-			o << *arg.expr;
+			if (!arg->getName().empty()) o << arg->getName()  << " = ";
+			o << *arg->getExpr();
 		}
 		return o;
 	}
 
+}
+
+ValuePtr Expression::checkUndef(ValuePtr&& val, const std::shared_ptr<Context>& context) const {
+	if (val->isUncheckedUndef())
+		PRINTB("WARNING: %s %s", val->toUndefString() % loc.toRelativeString(context->documentPath()));
+	return val;
 }
 
 bool Expression::isLiteral() const
@@ -87,42 +105,36 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expres
 {
 }
 
-ValuePtr UnaryOp::evaluate(const Context *context) const
+ValuePtr UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
-	case (Op::Not):
-		return !this->expr->evaluate(context);
-	case (Op::Negate):
-		return -this->expr->evaluate(context);
+	case (Op::Not):    return !this->expr->evaluate(context);
+	case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
 	default:
-		return ValuePtr::undefined;
-		// FIXME: error:
+			assert(false && "Non-existent unary operator!");
+			throw EvaluationException("Non-existent unary operator!");
 	}
 }
 
 const char *UnaryOp::opString() const
 {
 	switch (this->op) {
-	case Op::Not:
-		return "!";
-		break;
-	case Op::Negate:
-		return "-";
-		break;
+	case Op::Not:    return "!";
+	case Op::Negate: return "-";
 	default:
-		return "";
-		// FIXME: Error: unknown op
+			assert(false && "Non-existent unary operator!");
+			throw EvaluationException("Non-existent unary operator!");
 	}
 }
 
-bool UnaryOp::isLiteral() const { 
+bool UnaryOp::isLiteral() const {
 
-    if(this->expr->isLiteral()) 
+    if(this->expr->isLiteral())
         return true;
     return false;
 }
 
-void UnaryOp::print(std::ostream &stream) const
+void UnaryOp::print(std::ostream &stream, const std::string &) const
 {
 	stream << opString() << *this->expr;
 }
@@ -132,103 +144,67 @@ BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const L
 {
 }
 
-ValuePtr BinaryOp::evaluate(const Context *context) const
+ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
 		return this->left->evaluate(context) && this->right->evaluate(context);
-		break;
 	case Op::LogicalOr:
 		return this->left->evaluate(context) || this->right->evaluate(context);
-		break;
+	case Op::Exponent:
+		return checkUndef(this->left->evaluate(context) ^  this->right->evaluate(context), context);
 	case Op::Multiply:
-		return this->left->evaluate(context) * this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) *  this->right->evaluate(context), context);
 	case Op::Divide:
-		return this->left->evaluate(context) / this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) /  this->right->evaluate(context), context);
 	case Op::Modulo:
-		return this->left->evaluate(context) % this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) %  this->right->evaluate(context), context);
 	case Op::Plus:
-		return this->left->evaluate(context) + this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) +  this->right->evaluate(context), context);
 	case Op::Minus:
-		return this->left->evaluate(context) - this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) -  this->right->evaluate(context), context);
 	case Op::Less:
-		return this->left->evaluate(context) < this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) <  this->right->evaluate(context), context);
 	case Op::LessEqual:
-		return this->left->evaluate(context) <= this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) <= this->right->evaluate(context), context);
 	case Op::Greater:
-		return this->left->evaluate(context) > this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) >  this->right->evaluate(context), context);
 	case Op::GreaterEqual:
-		return this->left->evaluate(context) >= this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) >= this->right->evaluate(context), context);
 	case Op::Equal:
-		return this->left->evaluate(context) == this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) == this->right->evaluate(context), context);
 	case Op::NotEqual:
-		return this->left->evaluate(context) != this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) != this->right->evaluate(context), context);
 	default:
-		return ValuePtr::undefined;
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent binary operator!");
+		throw EvaluationException("Non-existent binary operator!");
 	}
 }
 
 const char *BinaryOp::opString() const
 {
 	switch (this->op) {
-	case Op::LogicalAnd:
-		return "&&";
-		break;
-	case Op::LogicalOr:
-		return "||";
-		break;
-	case Op::Multiply:
-		return "*";
-		break;
-	case Op::Divide:
-		return "/";
-		break;
-	case Op::Modulo:
-		return "%";
-		break;
-	case Op::Plus:
-		return "+";
-		break;
-	case Op::Minus:
-		return "-";
-		break;
-	case Op::Less:
-		return "<";
-		break;
-	case Op::LessEqual:
-		return "<=";
-		break;
-	case Op::Greater:
-		return ">";
-		break;
-	case Op::GreaterEqual:
-		return ">=";
-		break;
-	case Op::Equal:
-		return "==";
-		break;
-	case Op::NotEqual:
-		return "!=";
-		break;
+	case Op::LogicalAnd:   return "&&";
+	case Op::LogicalOr:    return "||";
+	case Op::Exponent:     return "^";
+	case Op::Multiply:     return "*";
+	case Op::Divide:       return "/";
+	case Op::Modulo:       return "%";
+	case Op::Plus:         return "+";
+	case Op::Minus:        return "-";
+	case Op::Less:         return "<";
+	case Op::LessEqual:    return "<=";
+	case Op::Greater:      return ">";
+	case Op::GreaterEqual: return ">=";
+	case Op::Equal:        return "==";
+	case Op::NotEqual:     return "!=";
 	default:
-		return "";
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent binary operator!");
+		throw EvaluationException("Non-existent binary operator!");
 	}
 }
 
-void BinaryOp::print(std::ostream &stream) const
+void BinaryOp::print(std::ostream &stream, const std::string &) const
 {
 	stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
@@ -238,12 +214,18 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 {
 }
 
-ValuePtr TernaryOp::evaluate(const Context *context) const
+const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	return (this->cond->evaluate(context) ? this->ifexpr : this->elseexpr)->evaluate(context);
+	return this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 }
 
-void TernaryOp::print(std::ostream &stream) const
+ValuePtr TernaryOp::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<const Expression>& nextexpr = evaluateStep(context);
+	return nextexpr->evaluate(context);
+}
+
+void TernaryOp::print(std::ostream &stream, const std::string &) const
 {
 	stream << "(" << *this->cond << " ? " << *this->ifexpr << " : " << *this->elseexpr << ")";
 }
@@ -253,11 +235,11 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 {
 }
 
-ValuePtr ArrayLookup::evaluate(const Context *context) const {
+ValuePtr ArrayLookup::evaluate(const std::shared_ptr<Context>& context) const {
 	return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
-void ArrayLookup::print(std::ostream &stream) const
+void ArrayLookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << *array << "[" << *index << "]";
 }
@@ -266,12 +248,12 @@ Literal::Literal(const ValuePtr &val, const Location &loc) : Expression(loc), va
 {
 }
 
-ValuePtr Literal::evaluate(const class Context *) const
+ValuePtr Literal::evaluate(const std::shared_ptr<Context>&) const
 {
 	return this->value;
 }
 
-void Literal::print(std::ostream &stream) const
+void Literal::print(std::ostream &stream, const std::string &) const
 {
     stream << *this->value;
 }
@@ -286,18 +268,51 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 {
 }
 
-ValuePtr Range::evaluate(const Context *context) const
+/**
+ * This is separated because both PRINT_DEPRECATION and PRINT use
+ * quite a lot of stack space and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
+}
+static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
+}
+
+ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr beginValue = this->begin->evaluate(context);
-	if (beginValue->type() == Value::ValueType::NUMBER) {
+	if (beginValue->type() == Value::Type::NUMBER) {
 		ValuePtr endValue = this->end->evaluate(context);
-		if (endValue->type() == Value::ValueType::NUMBER) {
+		if (endValue->type() == Value::Type::NUMBER) {
+			double begin_val = beginValue->toDouble();
+			double end_val   = endValue->toDouble();
+			
 			if (!this->step) {
-				RangeType range(beginValue->toDouble(), endValue->toDouble());
+				if(end_val < begin_val){
+					std::swap(begin_val,end_val);
+					print_range_depr(loc, context);
+				}
+				
+				RangeType range(begin_val, end_val);
 				return ValuePtr(range);
 			} else {
 				ValuePtr stepValue = this->step->evaluate(context);
-				if (stepValue->type() == Value::ValueType::NUMBER) {
+				if (stepValue->type() == Value::Type::NUMBER) {
+					double step_val = stepValue->toDouble();
+					if(this->isLiteral()){
+						if ((step_val>0) && (end_val < begin_val)) {
+							print_range_err("is greater", "is positive", loc, context);
+						}else if ((step_val<0) && (end_val > begin_val)) {
+							print_range_err("is smaller", "is negative", loc, context);
+						}
+					}
+
 					RangeType range(beginValue->toDouble(), stepValue->toDouble(), endValue->toDouble());
 					return ValuePtr(range);
 				}
@@ -307,7 +322,7 @@ ValuePtr Range::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
-void Range::print(std::ostream &stream) const
+void Range::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[" << *this->begin;
 	if (this->step) stream << " : " << *this->step;
@@ -339,18 +354,18 @@ bool Vector::isLiteral() const {
     return true;
 }
 
-void Vector::push_back(Expression *expr)
+void Vector::emplace_back(Expression *expr)
 {
-	this->children.push_back(shared_ptr<Expression>(expr));
+	this->children.emplace_back(expr);
 }
 
-ValuePtr Vector::evaluate(const Context *context) const
+ValuePtr Vector::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 	for(const auto &e : this->children) {
 		ValuePtr tmpval = e->evaluate(context);
 		if (isListComprehension(e)) {
-			const Value::VectorType result = tmpval->toVector();
+			const VectorType result = tmpval->toVector();
 			for (size_t i = 0;i < result.size();i++) {
 				vec.push_back(result[i]);
 			}
@@ -361,7 +376,7 @@ ValuePtr Vector::evaluate(const Context *context) const
 	return ValuePtr(vec);
 }
 
-void Vector::print(std::ostream &stream) const
+void Vector::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[";
 	for (size_t i=0; i < this->children.size(); i++) {
@@ -375,12 +390,17 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 {
 }
 
-ValuePtr Lookup::evaluate(const Context *context) const
+ValuePtr Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->name);
+	return context->lookup_variable(this->name,false,loc);
 }
 
-void Lookup::print(std::ostream &stream) const
+ValuePtr Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
+{
+	return context->lookup_variable(this->name,true);
+}
+
+void Lookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << this->name;
 }
@@ -390,15 +410,15 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 {
 }
 
-ValuePtr MemberLookup::evaluate(const Context *context) const
+ValuePtr MemberLookup::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ValuePtr v = this->expr->evaluate(context);
 
-	if (v->type() == Value::ValueType::VECTOR) {
+	if (v->type() == Value::Type::VECTOR) {
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v->type() == Value::ValueType::RANGE) {
+	} else if (v->type() == Value::Type::RANGE) {
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
@@ -406,46 +426,168 @@ ValuePtr MemberLookup::evaluate(const Context *context) const
 	return ValuePtr::undefined;
 }
 
-void MemberLookup::print(std::ostream &stream) const
+void MemberLookup::print(std::ostream &stream, const std::string &) const
 {
 	stream << *this->expr << "." << this->member;
 }
 
-FunctionCall::FunctionCall(const std::string &name, 
-													 const AssignmentList &args, const Location &loc)
-	: Expression(loc), name(name), arguments(args)
+FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc)
+	: Expression(loc), ctx(nullptr), definition_arguments(definition_arguments), expr(expr)
 {
 }
 
-ValuePtr FunctionCall::evaluate(const Context *context) const
+ValuePtr FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	if (StackCheck::inst()->check()) {
-		throw RecursionException::create("function", this->name);
+	return ValuePtr{FunctionType{context, expr, definition_arguments}};
+}
+
+void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
+{
+	stream << indent << "function(";
+	bool first = true;
+	for (const auto& assignment : definition_arguments) {
+		stream << (first ? "" : ", ") << assignment->getName();
+		if (assignment->getExpr()) {
+			stream << " = " << *assignment->getExpr();
+		}
+		first = false;
 	}
-    
-	EvalContext c(context, this->arguments);
-	ValuePtr result = context->evaluate_function(this->name, &c);
-
-	return result;
+	stream << ") " << *this->expr;
 }
 
-void FunctionCall::print(std::ostream &stream) const
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
+	std::string locs = loc.toRelativeString(ctx->documentPath());
+	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+}
+
+/**
+ * This is separated because PRINTB uses quite a lot of stack space
+ * and the method using it evaluate()
+ * is called often when recursive functions are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+*/
+static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
+	PRINTB("TRACE: called by '%s', %s.", val->get_name() % val->location().toRelativeString(ctx->documentPath()));
+}
+static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
+	PRINTB("WARNING: Can't call function on %s %s", name % loc.toRelativeString(ctx->documentPath()));
+}
+
+FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
+	: Expression(loc), expr(expr), arguments(args)
 {
-	stream << this->name << "(" << this->arguments << ")";
+	if (typeid(*expr) == typeid(Lookup)) {
+		isLookup = true;
+		const Lookup *lookup = static_cast<Lookup *>(expr);
+		name = lookup->get_name();
+	} else {
+		isLookup = false;
+		std::ostringstream s;
+		s << "(";
+		expr->print(s, "");
+		s << ")";
+		name = s.str();
+	}
+}
+
+/**
+ * Evaluates call parameters using context, and assigns the resulting values to tailCallContext.
+ * As the name suggests, it's meant for basic tail recursion, where the function calls itself.
+*/
+void FunctionCall::prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments)
+{
+	if (this->resolvedArguments.empty() && !this->arguments.empty()) {
+		// Figure out parameter names
+		ContextHandle<EvalContext> ec{Context::create<EvalContext>(context, this->arguments, this->loc)};
+		this->resolvedArguments = ec->resolveArguments(definition_arguments, {}, false);
+	}
+
+	// FIXME: evaluate defaultArguments in FunctionDefinition / UserFunction and pass to FunctionCall instead of definition_arguments ?
+	if (this->defaultArguments.empty() && !definition_arguments.empty()) {
+		// Assign default values for unspecified parameters
+		for (const auto &arg : definition_arguments) {
+			if (this->resolvedArguments.find(arg->getName()) == this->resolvedArguments.end()) {
+				this->defaultArguments.emplace_back(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(context) : ValuePtr::undefined);
+			}
+		}
+	}
+
+	std::vector<std::pair<std::string, ValuePtr>> variables;
+	variables.reserve(this->defaultArguments.size() + this->resolvedArguments.size());
+	// Set default values for unspecified parameters
+	variables.insert(variables.begin(), this->defaultArguments.begin(), this->defaultArguments.end());
+	// Set the given parameters
+	for (const auto &ass : this->resolvedArguments) {
+		variables.emplace_back(ass.first, ass.second->evaluate(context));
+	}
+	// Apply to tailCallContext
+	for (const auto &var : variables) {
+		tailCallContext->set_variable(var.first, var.second);
+	}
+	// Apply config variables ($...)
+	tailCallContext->apply_config_variables(context);
+}
+
+ValuePtr FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const auto& name = get_name();
+	if (StackCheck::inst().check()) {
+		print_err(name.c_str(), loc, context);
+		throw RecursionException::create("function", name, this->loc);
+	}
+	try {
+		const auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context) : expr->evaluate(context);
+		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
+
+		if (v->type() == Value::Type::FUNCTION) {
+			if (name.size() > 0 && name.at(0) == '$') {
+				print_invalid_function_call("dynamically scoped variable", context, loc);
+				return ValuePtr::undefined;
+			} else {
+				auto func = v->toFunction();
+				return evaluate_function(name, func.getExpr(), func.getArgs(), func.getCtx(), evalCtx.ctx, this->loc);
+			}
+		} else if (isLookup) {
+			return context->evaluate_function(name, evalCtx.ctx);
+		} else {
+			print_invalid_function_call(v->typeName(), context, loc);
+			return ValuePtr::undefined;
+		}
+	} catch (EvaluationException &e) {
+		if (e.traceDepth > 0) {
+			print_trace(this, context);
+			e.traceDepth--;
+		}
+		throw;
+	}
+}
+
+void FunctionCall::print(std::ostream &stream, const std::string &) const
+{
+	stream << this->get_name() << "(" << this->arguments << ")";
 }
 
 Expression * FunctionCall::create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc)
 {
-	if (funcname == "assert" && Feature::ExperimentalAssertExpression.is_enabled()) {
+	if (funcname == "assert") {
 		return new Assert(arglist, expr, loc);
-	} else if (funcname == "echo" && Feature::ExperimentalEchoExpression.is_enabled()) {
+	} else if (funcname == "echo") {
 		return new Echo(arglist, expr, loc);
 	} else if (funcname == "let") {
 		return new Let(arglist, expr, loc);
 	}
+	return nullptr;
 
 	// TODO: Generate error/warning if expr != 0?
-	return new FunctionCall(funcname, arglist, loc);
+//	return new FunctionCall(funcname, arglist, loc);
 }
 
 Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc)
@@ -454,18 +596,22 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
-ValuePtr Assert::evaluate(const Context *context) const
+const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	EvalContext assert_context(context, this->arguments);
+	ContextHandle<EvalContext> assert_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	ContextHandle<Context> c{Context::create<Context>(assert_context.ctx)};
+	evaluate_assert(c.ctx, assert_context.ctx);
+	return expr;
+}
 
-	Context c(&assert_context);
-	evaluate_assert(c, &assert_context, loc);
-
-	ValuePtr result = expr ? expr->evaluate(&c) : ValuePtr::undefined;
+ValuePtr Assert::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
-void Assert::print(std::ostream &stream) const
+void Assert::print(std::ostream &stream, const std::string &) const
 {
 	stream << "assert(" << this->arguments << ")";
 	if (this->expr) stream << " " << *this->expr;
@@ -477,20 +623,22 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 }
 
-ValuePtr Echo::evaluate(const Context *context) const
+const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalEchoExpression);
+	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
+	PRINTB("%s", STR("ECHO: " << *echo_context.ctx));
+	return expr;
+}
 
-	std::stringstream msg;
-	EvalContext echo_context(context, this->arguments);
-	msg << "ECHO: " << echo_context;
-	PRINTB("%s", msg.str());
+ValuePtr Echo::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
 
-	ValuePtr result = expr ? expr->evaluate(context) : ValuePtr::undefined;
+	ValuePtr result = nextexpr ? nextexpr->evaluate(context) : ValuePtr::undefined;
 	return result;
 }
 
-void Echo::print(std::ostream &stream) const
+void Echo::print(std::ostream &stream, const std::string &) const
 {
 	stream << "echo(" << this->arguments << ")";
 	if (this->expr) stream << " " << *this->expr;
@@ -501,15 +649,20 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr Let::evaluate(const Context *context) const
+const shared_ptr<Expression>& Let::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	Context c(context);
-	evaluate_sequential_assignment(this->arguments, &c);
-
-	return this->expr->evaluate(&c);
+	evaluate_sequential_assignment(this->arguments, context, this->loc);
+	return this->expr;
 }
 
-void Let::print(std::ostream &stream) const
+ValuePtr Let::evaluate(const std::shared_ptr<Context>& context) const
+{
+	ContextHandle<Context> c{Context::create<Context>(context)};
+	const shared_ptr<Expression>& nextexpr = evaluateStep(c.ctx);
+	return nextexpr->evaluate(c.ctx);
+}
+
+void Let::print(std::ostream &stream, const std::string &) const
 {
 	stream << "let(" << this->arguments << ") " << *expr;
 }
@@ -523,15 +676,11 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 {
 }
 
-ValuePtr LcIf::evaluate(const Context *context) const
+ValuePtr LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
-    if (this->elseexpr) {
-    	ExperimentalFeatureException::check(Feature::ExperimentalElseExpression);
-    }
-
     const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
 	
-    Value::VectorType vec;
+    VectorType vec;
     if (expr) {
         if (isListComprehension(expr)) {
             return expr->evaluate(context);
@@ -543,7 +692,7 @@ ValuePtr LcIf::evaluate(const Context *context) const
     return ValuePtr(vec);
 }
 
-void LcIf::print(std::ostream &stream) const
+void LcIf::print(std::ostream &stream, const std::string &) const
 {
     stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
     if (this->elseexpr) {
@@ -555,30 +704,32 @@ LcEach::LcEach(Expression *expr, const Location &loc) : ListComprehension(loc), 
 {
 }
 
-ValuePtr LcEach::evaluate(const Context *context) const
+ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalEachExpression);
-
-	Value::VectorType vec;
+	VectorType vec;
 
     ValuePtr v = this->expr->evaluate(context);
 
-    if (v->type() == Value::ValueType::RANGE) {
+    if (v->type() == Value::Type::RANGE) {
         RangeType range = v->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
                 vec.push_back(ValuePtr(*it));
             }
         }
-    } else if (v->type() == Value::ValueType::VECTOR) {
-        Value::VectorType vector = v->toVector();
+    } else if (v->type() == Value::Type::VECTOR) {
+        VectorType vector = v->toVector();
         for (size_t i = 0; i < v->toVector().size(); i++) {
             vec.push_back(vector[i]);
         }
-    } else if (v->type() != Value::ValueType::UNDEFINED) {
+    } else if (v->type() == Value::Type::STRING) {
+        utf8_split(v->toString(), [&](ValuePtr v) {
+            vec.push_back(v);
+        });
+    } else if (v->type() != Value::Type::UNDEFINED) {
         vec.push_back(v);
     }
 
@@ -589,7 +740,7 @@ ValuePtr LcEach::evaluate(const Context *context) const
     }
 }
 
-void LcEach::print(std::ostream &stream) const
+void LcEach::print(std::ostream &stream, const std::string &) const
 {
     stream << "each (" << *this->expr << ")";
 }
@@ -599,39 +750,44 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr LcFor::evaluate(const Context *context) const
+ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
 {
-	Value::VectorType vec;
+	VectorType vec;
 
-    EvalContext for_context(context, this->arguments);
+    ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-    Context assign_context(context);
+    ContextHandle<Context> assign_context{Context::create<Context>(context)};
 
     // comprehension for statements are by the parser reduced to only contain one single element
-    const std::string &it_name = for_context.getArgName(0);
-    ValuePtr it_values = for_context.getArgValue(0, &assign_context);
+    const std::string &it_name = for_context->getArgName(0);
+    ValuePtr it_values = for_context->getArgValue(0, assign_context.ctx);
 
-    Context c(context);
+    ContextHandle<Context> c{Context::create<Context>(context)};
 
-    if (it_values->type() == Value::ValueType::RANGE) {
+    if (it_values->type() == Value::Type::RANGE) {
         RangeType range = it_values->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+            PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
         } else {
             for (RangeType::iterator it = range.begin();it != range.end();it++) {
-                c.set_variable(it_name, ValuePtr(*it));
-                vec.push_back(this->expr->evaluate(&c));
+                c->set_variable(it_name, ValuePtr(*it));
+                vec.push_back(this->expr->evaluate(c.ctx));
             }
         }
-    } else if (it_values->type() == Value::ValueType::VECTOR) {
+    } else if (it_values->type() == Value::Type::VECTOR) {
         for (size_t i = 0; i < it_values->toVector().size(); i++) {
-            c.set_variable(it_name, it_values->toVector()[i]);
-            vec.push_back(this->expr->evaluate(&c));
+            c->set_variable(it_name, it_values->toVector()[i]);
+            vec.push_back(this->expr->evaluate(c.ctx));
         }
-    } else if (it_values->type() != Value::ValueType::UNDEFINED) {
-        c.set_variable(it_name, it_values);
-        vec.push_back(this->expr->evaluate(&c));
+    } else if (it_values->type() == Value::Type::STRING) {
+        utf8_split(it_values->toString(), [&](ValuePtr v) {
+            c->set_variable(it_name, v);
+            vec.push_back(this->expr->evaluate(c.ctx));
+        });
+    } else if (it_values->type() != Value::Type::UNDEFINED) {
+        c->set_variable(it_name, it_values);
+        vec.push_back(this->expr->evaluate(c.ctx));
     }
 
     if (isListComprehension(this->expr)) {
@@ -641,7 +797,7 @@ ValuePtr LcFor::evaluate(const Context *context) const
     }
 }
 
-void LcFor::print(std::ostream &stream) const
+void LcFor::print(std::ostream &stream, const std::string &) const
 {
     stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
@@ -651,24 +807,26 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 {
 }
 
-ValuePtr LcForC::evaluate(const Context *context) const
+ValuePtr LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
-	ExperimentalFeatureException::check(Feature::ExperimentalForCExpression);
+	VectorType vec;
 
-	Value::VectorType vec;
-
-    Context c(context);
-    evaluate_sequential_assignment(this->arguments, &c);
+    ContextHandle<Context> c{Context::create<Context>(context)};
+    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
 
 	unsigned int counter = 0;
-    while (this->cond->evaluate(&c)) {
-        vec.push_back(this->expr->evaluate(&c));
+    while (this->cond->evaluate(c.ctx)) {
+        vec.push_back(this->expr->evaluate(c.ctx));
 
-		if (counter++ == 1000000) throw RecursionException::create("for loop", "");
+        if (counter++ == 1000000) {
+            std::string locs = loc.toRelativeString(context->documentPath());
+            PRINTB("ERROR: for loop counter exceeded limit, %s", locs);
+            throw LoopCntException::create("for", loc);
+        }
 
-        Context tmp(&c);
-        evaluate_sequential_assignment(this->incr_arguments, &tmp);
-        c.apply_variables(tmp);
+        ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
+        evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
+        c->apply_variables(tmp.ctx);
     }    
 
     if (isListComprehension(this->expr)) {
@@ -678,7 +836,7 @@ ValuePtr LcForC::evaluate(const Context *context) const
     }
 }
 
-void LcForC::print(std::ostream &stream) const
+void LcForC::print(std::ostream &stream, const std::string &) const
 {
     stream
         << "for(" << this->arguments
@@ -692,53 +850,118 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-ValuePtr LcLet::evaluate(const Context *context) const
+ValuePtr LcLet::evaluate(const std::shared_ptr<Context>& context) const
 {
-    Context c(context);
-    evaluate_sequential_assignment(this->arguments, &c);
-    return this->expr->evaluate(&c);
+    ContextHandle<Context> c{Context::create<Context>(context)};
+    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
+    return this->expr->evaluate(c.ctx);
 }
 
-void LcLet::print(std::ostream &stream) const
+void LcLet::print(std::ostream &stream, const std::string &) const
 {
     stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-std::ostream &operator<<(std::ostream &stream, const Expression &expr)
+void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
 {
-	expr.print(stream);
-	return stream;
-}
-
-void evaluate_assert(const Context &context, const class EvalContext *evalctx, const Location &loc)
-{
-	ExperimentalFeatureException::check(Feature::ExperimentalAssertExpression);
-
 	AssignmentList args;
-	args += Assignment("condition"), Assignment("message");
+	args += assignment("condition"), assignment("message");
 
-	Context c(&context);
+	ContextHandle<Context> c{Context::create<Context>(context)};
 
-	AssignmentMap assignments = evalctx->resolveArguments(args);
+	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
 	for (const auto &arg : args) {
-		auto it = assignments.find(arg.name);
+		auto it = assignments.find(arg->getName());
 		if (it != assignments.end()) {
-			c.set_variable(arg.name, assignments[arg.name]->evaluate(evalctx));
+			c->set_variable(arg->getName(), assignments[arg->getName()]->evaluate(evalctx));
 		}
 	}
 	
-	const ValuePtr condition = c.lookup_variable("condition");
+	const ValuePtr condition = c->lookup_variable("condition", false, evalctx->loc);
 
 	if (!condition->toBool()) {
-		std::stringstream msg;
-		msg << "ERROR: Assertion";
 		const Expression *expr = assignments["condition"];
-		if (expr) msg << " '" << *expr << "'";
-		msg << " failed, line " << loc.firstLine();
-		const ValuePtr message = c.lookup_variable("message", true);
+		const ValuePtr message = c->lookup_variable("message", true);
+		
+		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
+		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
 		if (message->isDefined()) {
-			msg << ": " << message->toEchoString();
+			PRINTB("ERROR: Assertion%s failed: %s %s", exprText % message->toEchoString() % locs);
+		} else {
+			PRINTB("ERROR: Assertion%s failed %s", exprText % locs);
 		}
-		throw AssertionFailedException(msg.str());
+		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
+}
+
+ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
+		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
+{
+	if (!expr) return ValuePtr::undefined;
+	ContextHandle<Context> c_next{Context::create<Context>(ctx)}; // Context for next tail call
+	c_next->setVariables(evalctx, definition_arguments);
+
+	// Outer loop: to allow tail calls
+	unsigned int counter = 0;
+	while (true) {
+		// Local contexts for a call. Nested contexts must be supported, to allow variable reassignment in an inner context.
+		// I.e. "let(x=33) let(x=42) x" should evaluate to 42.
+		// Cannot use std::vector, as it invalidates raw pointers.
+		std::forward_list<ContextHandle<Context>> c_local_stack;
+		c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_next.ctx)));
+		std::shared_ptr<Context> c_local = c_local_stack.front().ctx;
+
+		// Inner loop: to follow a single execution path
+		// Only 'break' inner loop for tail calls after calling prepareTailCallContext.
+		// Otherwise continue looping over sub-expressions, or return subExpr->evaluate(...) directly if not applicable to tail calls.
+		shared_ptr<Expression> subExpr = expr;
+		while (true) {
+			if (!subExpr) {
+				return ValuePtr::undefined;
+			} else {
+				const auto& subExprRef = *subExpr;
+				if (typeid(subExprRef) == typeid(TernaryOp)) {
+					const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
+					subExpr = ternary->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Assert)) {
+					const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
+					subExpr = assertion->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Echo)) {
+					const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
+					subExpr = echo->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(Let)) {
+					const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
+					// Start a new, nested context
+					c_local_stack.emplace_front(std::shared_ptr<Context>(new Context(c_local)));
+					c_local = c_local_stack.front().ctx;
+					subExpr = let->evaluateStep(c_local);
+				}
+				else if (typeid(subExprRef) == typeid(FunctionCall)) {
+					const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
+					if (name == call->get_name()) {
+						// Update c_next with new parameters for tail call
+						call->prepareTailCallContext(c_local, c_next.ctx, definition_arguments);
+						break;
+					}
+					else {
+						return subExpr->evaluate(c_local);
+					}
+				}
+				else {
+					return subExpr->evaluate(c_local);
+				}
+			}
+		}
+
+		if (counter++ == 1000000){
+			const std::string locs = loc.toRelativeString(ctx->documentPath());
+			PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+			throw RecursionException::create("function", name,loc);
+		}
+	}
+
+	return ValuePtr::undefined;
 }

@@ -4,50 +4,10 @@
 #include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject() : focus(false)
+ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const ValuePtr defaultValue)
 {
-}
-
-void ParameterObject::applyParameter(Assignment &assignment)
-{
-  ModuleContext ctx;
-  const ValuePtr defaultValue = assignment.expr->evaluate(&ctx);
-  
-  if (defaultValue->type() == dvt) {
-    assignment.expr = shared_ptr<Expression>(new Literal(value));
-  }
-}
-
-int ParameterObject::setValue(const class ValuePtr defaultValue, const class ValuePtr values)
-{
-  this->values = values;
-  this->value = defaultValue;
-  this->defaultValue = defaultValue;
-  this->vt = values->type();
-  this->dvt = defaultValue->type();
- 
-  bool makerBotMax = (vt == Value::ValueType::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->toVector().size() ==0); // [max] format from makerbot customizer
-
-  if (dvt == Value::ValueType::BOOL) {
-    target = CHECKBOX;
-  } else if ((dvt == Value::ValueType::VECTOR) && (defaultValue->toVector().size() <= 4)) {
-    target = checkVectorWidget();
-  } else if ((vt == Value::ValueType::RANGE || makerBotMax) && (dvt == Value::ValueType::NUMBER)) {
-    target = SLIDER;
-  } else if ((vt == Value::ValueType::VECTOR) && ((dvt == Value::ValueType::NUMBER) || (dvt == Value::ValueType::STRING))) {
-    target = COMBOBOX;
-  } else if (dvt == Value::ValueType::NUMBER) {
-    target = NUMBER;
-  } else {
-    target = TEXT;
-  }
-  
-  return target;
-}
-
-void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, const ValuePtr defaultValue)
-{
-  name = assignment->name;
+  this->set = false;
+  this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
   const ValuePtr values = param->evaluate(ctx);
   setValue(defaultValue, values);
@@ -55,7 +15,7 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
 
   if (desc) {
     const ValuePtr v = desc->evaluate(ctx);
-    if (v->type() == Value::ValueType::STRING) {
+    if (v->type() == Value::Type::STRING) {
       description=QString::fromStdString(v->toString());
     }
   }
@@ -63,11 +23,48 @@ void ParameterObject::setAssignment(Context *ctx, const Assignment *assignment, 
   const Annotation *group = assignment->annotation("Group");
   if (group) {
     const ValuePtr v = group->evaluate(ctx);
-    if (v->type() == Value::ValueType::STRING) {
+    if (v->type() == Value::Type::STRING) {
       groupName=v->toString();
     }
   } else {
     groupName="Parameters";
+  }
+}
+
+void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
+{
+  ContextHandle<Context> ctx{Context::create<Context>()};
+  const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+  
+  if (defaultValue->type() == dvt) {
+    assignment->setExpr(make_shared<Literal>(value));
+  }
+}
+
+void ParameterObject::setValue(const class ValuePtr defaultValue, const class ValuePtr values)
+{
+  this->values = values;
+  this->value = defaultValue;
+  this->defaultValue = defaultValue;
+  this->vt = values->type();
+  this->dvt = defaultValue->type();
+ 
+  bool makerBotMax = (vt == Value::Type::VECTOR && values->toVector().size() == 1 && values->toVector()[0]->type() == Value::Type::NUMBER); // [max] format from makerbot customizer
+
+  if (dvt == Value::Type::BOOL) {
+    this->target = CHECKBOX;
+  } else if ((dvt == Value::Type::VECTOR) && (defaultValue->toVector().size() <= 4)) {
+    this->target = checkVectorWidget();
+  } else if ((vt == Value::Type::RANGE || makerBotMax) && (dvt == Value::Type::NUMBER)) {
+    this->target = SLIDER;
+  } else if ((makerBotMax) && (dvt == Value::Type::STRING)){
+    this->target = TEXT;
+  } else if ((vt == Value::Type::VECTOR) && ((dvt == Value::Type::NUMBER) || (dvt == Value::Type::STRING))) {
+    this->target = COMBOBOX;
+  } else if (dvt == Value::Type::NUMBER) {
+    this->target = NUMBER;
+  } else {
+    this->target = TEXT;
   }
 }
 
@@ -79,10 +76,10 @@ bool ParameterObject::operator == (const ParameterObject &second)
 
 ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
 {
-  Value::VectorType vec = defaultValue->toVector();
+  VectorType vec = defaultValue->toVector();
   if(vec.size()==0) return TEXT;
   for (unsigned int i = 0;i < vec.size();i++) {
-    if (vec[i]->type() != Value::ValueType::NUMBER) {
+    if (vec[i]->type() != Value::Type::NUMBER) {
       return TEXT;
     }
   }

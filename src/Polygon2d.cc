@@ -7,7 +7,7 @@
 	This class will hold 2D geometry consisting of a number of closed
 	polygons. Each polygon can contain holes and islands. Both polygons,
 	holes and island contours may intersect each other.
- 
+
 	We can store sanitized vs. unsanitized polygons. Sanitized polygons
 	will have opposite winding order for holes and is guaranteed to not
 	have intersecting geometry. The winding order will be counter-clockwise 
@@ -39,7 +39,7 @@ BoundingBox Polygon2d::getBoundingBox() const
 
 std::string Polygon2d::dump() const
 {
-	std::stringstream out;
+	std::ostringstream out;
 	for (const auto &o : this->theoutlines) {
 		out << "contour:\n";
 		for (const auto &v : o.vertices) {

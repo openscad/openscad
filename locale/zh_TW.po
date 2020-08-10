@@ -1,0 +1,2030 @@
+# Chinese (Traditional) translations for OpenSCAD package.
+# Copyright (C) 2020 THE OpenSCAD'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the OpenSCAD package.
+# Michael Tsao <cwtsao@sce.pccu.edu.tw>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenSCAD 2020.02.17\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-28 14:42+0200\n"
+"PO-Revision-Date: 2020-05-28 14:42+0200\n"
+"Last-Translator: Michael Tsao <cwtsao@sce.pccu.edu.tw>\n"
+"Language-Team: Distance Learning Center at the Chinese Culture University (Open Source Software for School project)\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.3.1\n"
+
+#: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
+msgid "About OpenSCAD"
+msgstr "關於 OpenSCAD"
+
+#: objects/ui_AboutDialog.h:102 objects/ui_launchingscreen.h:306
+msgid ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
+"style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+msgstr ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
+"style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">程式設計師的3D實體建模器</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+
+#: objects/ui_AboutDialog.h:109
+msgid "OK"
+msgstr "OK"
+
+#: objects/ui_AxisConfigWidget.h:853 objects/ui_ButtonConfigWidget.h:266
+#: objects/ui_Preferences.h:1457
+msgid "Preferences"
+msgstr "偏好設定"
+
+#: objects/ui_AxisConfigWidget.h:854 objects/ui_AxisConfigWidget.h:855
+#: objects/ui_AxisConfigWidget.h:859 objects/ui_AxisConfigWidget.h:863
+#: objects/ui_AxisConfigWidget.h:865 objects/ui_AxisConfigWidget.h:867
+#: objects/ui_AxisConfigWidget.h:869 objects/ui_AxisConfigWidget.h:871
+#: objects/ui_AxisConfigWidget.h:882
+msgid "Trim"
+msgstr "歸零點"
+
+#: objects/ui_AxisConfigWidget.h:856
+msgid "Reset Trim"
+msgstr "重置歸零點"
+
+#: objects/ui_AxisConfigWidget.h:857 objects/ui_AxisConfigWidget.h:860
+#: objects/ui_AxisConfigWidget.h:861 objects/ui_AxisConfigWidget.h:862
+#: objects/ui_AxisConfigWidget.h:864 objects/ui_AxisConfigWidget.h:866
+#: objects/ui_AxisConfigWidget.h:868 objects/ui_AxisConfigWidget.h:870
+#: objects/ui_AxisConfigWidget.h:881
+msgid "DeadZone"
+msgstr "盲區"
+
+#: objects/ui_AxisConfigWidget.h:858
+msgid "Auto Trim Axes"
+msgstr "自動歸零軸"
+
+#: objects/ui_AxisConfigWidget.h:872
+msgid "Axis 2"
+msgstr "軸 2"
+
+#: objects/ui_AxisConfigWidget.h:873
+msgid "Axis 0"
+msgstr "軸 0"
+
+#: objects/ui_AxisConfigWidget.h:874
+msgid "Axis 3"
+msgstr "軸 3"
+
+#: objects/ui_AxisConfigWidget.h:875
+msgid "Axis 6"
+msgstr "軸 6"
+
+#: objects/ui_AxisConfigWidget.h:876
+msgid "Axis 8"
+msgstr "軸 8"
+
+#: objects/ui_AxisConfigWidget.h:877
+msgid "Axis 7"
+msgstr "軸 7"
+
+#: objects/ui_AxisConfigWidget.h:878
+msgid "Axis 5"
+msgstr "軸 5"
+
+#: objects/ui_AxisConfigWidget.h:879
+msgid "Axis 1"
+msgstr "軸 1"
+
+#: objects/ui_AxisConfigWidget.h:880
+msgid "Axis 4"
+msgstr "軸 4"
+
+#: objects/ui_AxisConfigWidget.h:883
+msgid "Rotation"
+msgstr "旋轉"
+
+#: objects/ui_AxisConfigWidget.h:884
+msgid "Zoom"
+msgstr "縮放"
+
+#: objects/ui_AxisConfigWidget.h:885
+msgid "X"
+msgstr "X"
+
+#: objects/ui_AxisConfigWidget.h:886
+msgid "Gain"
+msgstr "倍率"
+
+#: objects/ui_AxisConfigWidget.h:887
+msgid "Y"
+msgstr "Y"
+
+#: objects/ui_AxisConfigWidget.h:888
+msgid "Z"
+msgstr "Z"
+
+#: objects/ui_AxisConfigWidget.h:889
+msgid "Translation"
+msgstr "平移"
+
+#: objects/ui_AxisConfigWidget.h:890
+msgid "ViewPort rel.<br/>Translation"
+msgstr "視圖相關<br/>平移"
+
+#: objects/ui_AxisConfigWidget.h:891
+msgid "ViewPort rel.<br />Rotation"
+msgstr "視圖相關<br/>旋轉"
+
+#: objects/ui_AxisConfigWidget.h:892
+#, fuzzy
+msgid "Axis Setup:"
+msgstr "座標軸設置: "
+
+#: objects/ui_AxisConfigWidget.h:893
+msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
+msgstr "<b>驅動程式選擇:</b> <i>(套用後需重新啟OpenSCAD)</i>"
+
+#: objects/ui_AxisConfigWidget.h:894
+msgid "SpaceNav"
+msgstr "SpaceNav"
+
+#: objects/ui_AxisConfigWidget.h:895
+msgid "HIDAPI"
+msgstr "HIDAPI"
+
+#: objects/ui_AxisConfigWidget.h:896
+msgid "QGamepad"
+msgstr "QGamepad"
+
+#: objects/ui_AxisConfigWidget.h:897
+msgid "Joystick"
+msgstr "操縱桿"
+
+#: objects/ui_AxisConfigWidget.h:898
+msgid "DBus"
+msgstr "DBus"
+
+#: objects/ui_AxisConfigWidget.h:899
+msgid "Axes Mapping:"
+msgstr "座標軸映射:"
+
+#: objects/ui_AxisConfigWidget.h:900
+msgid "Status:"
+msgstr "狀態："
+
+#: objects/ui_AxisConfigWidget.h:901
+#, fuzzy
+msgid "TextLabel"
+msgstr "文字標籤"
+
+#: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1461
+msgid "Update"
+msgstr "更新"
+
+#: objects/ui_ButtonConfigWidget.h:267
+msgid "Button 2"
+msgstr "按鈕 2"
+
+#: objects/ui_ButtonConfigWidget.h:268
+msgid "Button 3"
+msgstr "按鈕 3"
+
+#: objects/ui_ButtonConfigWidget.h:269
+msgid "Button 5"
+msgstr "按鈕 5"
+
+#: objects/ui_ButtonConfigWidget.h:270
+msgid "Button 6"
+msgstr "按鈕 6"
+
+#: objects/ui_ButtonConfigWidget.h:271
+msgid "Button 4"
+msgstr "按鈕 4"
+
+#: objects/ui_ButtonConfigWidget.h:272
+msgid "Button 9"
+msgstr "按鈕 9"
+
+#: objects/ui_ButtonConfigWidget.h:273
+msgid "Button 8"
+msgstr "按鈕 8"
+
+#: objects/ui_ButtonConfigWidget.h:274
+msgid "Button 7"
+msgstr "按鈕 7"
+
+#: objects/ui_ButtonConfigWidget.h:275
+msgid "Button 0"
+msgstr "按鈕 0"
+
+#: objects/ui_ButtonConfigWidget.h:276
+msgid "Button 1"
+msgstr "按鈕 1"
+
+#: objects/ui_ButtonConfigWidget.h:277
+msgid "Button 12"
+msgstr "按鈕 12"
+
+#: objects/ui_ButtonConfigWidget.h:278
+msgid "Button 10"
+msgstr "按鈕 10"
+
+#: objects/ui_ButtonConfigWidget.h:279
+msgid "Button 11"
+msgstr "按鈕 11"
+
+#: objects/ui_ButtonConfigWidget.h:280
+msgid "Button 13"
+msgstr "按鈕 13"
+
+#: objects/ui_ButtonConfigWidget.h:281
+msgid "Button 14"
+msgstr "按鈕 14"
+
+#: objects/ui_ButtonConfigWidget.h:282
+msgid "Button 15"
+msgstr "按鈕 15"
+
+#: objects/ui_Console.h:42
+msgid "Clear"
+msgstr "清除"
+
+#: objects/ui_Console.h:44
+msgid "Clear console"
+msgstr "清除控制台"
+
+#: objects/ui_Console.h:46
+#, fuzzy
+msgid "Save As..."
+msgstr "另存為(&A)"
+
+#: objects/ui_Console.h:48
+msgid "Save console content to file"
+msgstr "將控制台內容存到檔案"
+
+#: objects/ui_FontListDialog.h:103
+msgid "OpenSCAD Font List"
+msgstr "OpenSCAD 字型清單"
+
+#: objects/ui_FontListDialog.h:104 objects/ui_LibraryInfoDialog.h:74
+#: objects/ui_PrintInitDialog.h:110
+msgid "&OK"
+msgstr "&OK"
+
+#: objects/ui_FontListDialog.h:105
+msgid "Copy to Clipboard"
+msgstr "複製到剪貼簿"
+
+#: objects/ui_FontListDialog.h:106
+msgid "Filter:"
+msgstr "過濾器："
+
+#: objects/ui_FontListDialog.h:107
+msgid ""
+"<html><head/><body><p>This list shows the fonts currently registered with "
+"OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+msgstr ""
+"<html><head/><body><p>此清單顯示當前已註冊的字體 OpenSCAD.</p><p>例:</p><pre "
+"style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
+"family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
+"DejaVu Sans&quot;);</span></pre><pre style=\" margin-top:0px; margin-"
+"bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
+"text(&quot;OpenSCAD&quot;, font = &quot;Liberation Sans:style=Italic&quot;);"
+"</span></pre></body></html>"
+
+#: objects/ui_launchingscreen.h:295
+msgid "Welcome to OpenSCAD"
+msgstr "歡迎使用OpenSCAD"
+
+#: objects/ui_launchingscreen.h:296
+msgid "New"
+msgstr "新增"
+
+#: objects/ui_launchingscreen.h:297
+msgid "Open"
+msgstr "開啟"
+
+#: objects/ui_launchingscreen.h:298
+msgid "Help"
+msgstr "說明"
+
+#: objects/ui_launchingscreen.h:299
+msgid "Recents"
+msgstr "最近使用"
+
+#: objects/ui_launchingscreen.h:300
+msgid "Open Recent"
+msgstr "開啟最近使用"
+
+#: objects/ui_launchingscreen.h:301 objects/ui_launchingscreen.h:303
+msgid "Examples"
+msgstr "範例"
+
+#: objects/ui_launchingscreen.h:304
+msgid "Open Example"
+msgstr "開啟範例"
+
+#: objects/ui_launchingscreen.h:313
+msgid "Don't show again"
+msgstr "不再顯示"
+
+#: objects/ui_launchingscreen.h:314
+msgid "Version"
+msgstr "版本"
+
+#: objects/ui_LibraryInfoDialog.h:72
+msgid "Lib & Build Info"
+msgstr "函式庫與建置資訊"
+
+#: objects/ui_LibraryInfoDialog.h:73
+msgid "OpenSCAD Detailed Library and Build Information"
+msgstr "OpenSCAD詳細的程式庫與建置資訊"
+
+#: objects/ui_MainWindow.h:955
+#, fuzzy
+msgid "&New File"
+msgstr "檔案(&F)"
+
+#: objects/ui_MainWindow.h:957
+msgid "Ctrl+N"
+msgstr "Ctrl+N"
+
+#: objects/ui_MainWindow.h:959
+msgid "New Window"
+msgstr "新視窗"
+
+#: objects/ui_MainWindow.h:960
+#, fuzzy
+msgid "&Open File"
+msgstr "檔案(&F)"
+
+#: objects/ui_MainWindow.h:962
+msgid "Ctrl+O"
+msgstr "Ctrl+O"
+
+#: objects/ui_MainWindow.h:964
+msgid "Open in New Window"
+msgstr "在新視窗開啟"
+
+#: objects/ui_MainWindow.h:965
+msgid "&Save"
+msgstr "儲存(&S)"
+
+#: objects/ui_MainWindow.h:967
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+#: objects/ui_MainWindow.h:969
+msgid "Save &As..."
+msgstr "另存為(&A)"
+
+#: objects/ui_MainWindow.h:971
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:973
+#, fuzzy
+msgid "Save All"
+msgstr "全部儲存"
+
+#: objects/ui_MainWindow.h:974
+msgid "&Reload"
+msgstr "重新載入(&R)"
+
+#: objects/ui_MainWindow.h:976
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+#: objects/ui_MainWindow.h:978
+msgid "&Quit"
+msgstr "結束(&Q)"
+
+#: objects/ui_MainWindow.h:980
+msgid "Ctrl+Q"
+msgstr "Ctrl+Q"
+
+#: objects/ui_MainWindow.h:982
+msgid "&Undo"
+msgstr "還原(&U)"
+
+#: objects/ui_MainWindow.h:984
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+#: objects/ui_MainWindow.h:986
+msgid "&Redo"
+msgstr "重做(&)"
+
+#: objects/ui_MainWindow.h:988
+msgid "Ctrl+Shift+Z"
+msgstr "Ctrl+Shift+Z"
+
+#: objects/ui_MainWindow.h:991
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+#: objects/ui_MainWindow.h:993
+msgid "Cu&t"
+msgstr "剪下(&T)"
+
+#: objects/ui_MainWindow.h:995
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+#: objects/ui_MainWindow.h:997
+msgid "&Copy"
+msgstr "複製(&C)"
+
+#: objects/ui_MainWindow.h:999
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+#: objects/ui_MainWindow.h:1001
+msgid "&Paste"
+msgstr "貼上(&P)"
+
+#: objects/ui_MainWindow.h:1003
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+#: objects/ui_MainWindow.h:1005
+msgid "&Indent"
+msgstr "縮排(&I)"
+
+#: objects/ui_MainWindow.h:1007
+msgid "Ctrl+I"
+msgstr "Ctrl+I"
+
+#: objects/ui_MainWindow.h:1009
+msgid "C&omment"
+msgstr "註解(&O)"
+
+#: objects/ui_MainWindow.h:1011
+msgid "Ctrl+D"
+msgstr "Ctrl+D"
+
+#: objects/ui_MainWindow.h:1013
+msgid "Unco&mment"
+msgstr "取消註解(&M)"
+
+#: objects/ui_MainWindow.h:1015
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+#: objects/ui_MainWindow.h:1017
+#, fuzzy
+msgid "Show Next Tab"
+msgstr "顯示下一個分頁"
+
+#: objects/ui_MainWindow.h:1019
+#, fuzzy
+msgid "Ctrl+Tab"
+msgstr "Ctrl+T"
+
+#: objects/ui_MainWindow.h:1021
+msgid "Show Previous Tab"
+msgstr "顯示上一個分頁"
+
+#: objects/ui_MainWindow.h:1023
+#, fuzzy
+msgid "Ctrl+Shift+Tab"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1025
+msgid "Copy viewport ima&ge"
+msgstr "複製視圖影像(&G)"
+
+#: objects/ui_MainWindow.h:1027
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+#: objects/ui_MainWindow.h:1029
+msgid "Copy viewport transl&ation"
+msgstr "複製視圖平移(&A)"
+
+#: objects/ui_MainWindow.h:1031
+msgid "Ctrl+T"
+msgstr "Ctrl+T"
+
+#: objects/ui_MainWindow.h:1033
+msgid "Cop&y viewport rotation"
+msgstr "複製視圖旋轉"
+
+#: objects/ui_MainWindow.h:1034
+msgid "Copy vie&wport distance"
+msgstr "複製視圖距離"
+
+#: objects/ui_MainWindow.h:1035
+msgid "Increase Font &Size"
+msgstr "放大文字(&S)"
+
+#: objects/ui_MainWindow.h:1037
+msgid "Ctrl++"
+msgstr "Ctrl++"
+
+#: objects/ui_MainWindow.h:1039
+msgid "Decrease Font Si&ze"
+msgstr "縮小文字"
+
+#: objects/ui_MainWindow.h:1041
+msgid "Ctrl+-"
+msgstr "Ctrl+-"
+
+#: objects/ui_MainWindow.h:1043
+msgid "H&ide editor"
+msgstr "隱藏編輯器(&I)"
+
+#: objects/ui_MainWindow.h:1044
+msgid "&Reload and Preview"
+msgstr "重新載入和預覽(&R)"
+
+#: objects/ui_MainWindow.h:1046
+msgid "F4"
+msgstr "F4"
+
+#: objects/ui_MainWindow.h:1048
+msgid "&Preview"
+msgstr "預覽(&P)"
+
+#: objects/ui_MainWindow.h:1050
+msgid "F5"
+msgstr "F5"
+
+#: objects/ui_MainWindow.h:1052
+msgid "R&ender"
+msgstr "渲染(&E)"
+
+#: objects/ui_MainWindow.h:1054
+msgid "F6"
+msgstr "F6"
+
+#: objects/ui_MainWindow.h:1056
+msgid "&3D Print"
+msgstr "3D列印(&3)"
+
+#: objects/ui_MainWindow.h:1058
+msgid "F8"
+msgstr "F8"
+
+#: objects/ui_MainWindow.h:1060
+msgid "&Check Validity"
+msgstr "檢查有效性(&C)"
+
+#: objects/ui_MainWindow.h:1061
+msgid "Display A&ST..."
+msgstr "顯示A&ST..."
+
+#: objects/ui_MainWindow.h:1062
+msgid "Display CSG &Tree..."
+msgstr "顯示CSG樹(&)..."
+
+#: objects/ui_MainWindow.h:1063
+msgid "Display CSG Pr&oducts..."
+msgstr "顯示CSG輸出(&O)..."
+
+#: objects/ui_MainWindow.h:1064
+msgid "Export as &STL..."
+msgstr "匯出成&STL..."
+
+#: objects/ui_MainWindow.h:1066
+msgid "F7"
+msgstr "F7"
+
+#: objects/ui_MainWindow.h:1068
+msgid "Export as &OFF..."
+msgstr "匯出成&OFF..."
+
+#: objects/ui_MainWindow.h:1069
+msgid "Preview"
+msgstr "預覽"
+
+#: objects/ui_MainWindow.h:1071
+msgid "F9"
+msgstr "F9"
+
+#: objects/ui_MainWindow.h:1073
+msgid "Surfaces"
+msgstr "表面"
+
+#: objects/ui_MainWindow.h:1075
+msgid "F10"
+msgstr "F10"
+
+#: objects/ui_MainWindow.h:1077
+msgid "Wireframe"
+msgstr "線框"
+
+#: objects/ui_MainWindow.h:1079
+msgid "F11"
+msgstr "F11"
+
+#: objects/ui_MainWindow.h:1081
+msgid "Thrown Together"
+msgstr "拋出所有視圖"
+
+#: objects/ui_MainWindow.h:1083
+msgid "F12"
+msgstr "F12"
+
+#: objects/ui_MainWindow.h:1085
+msgid "Show Edges"
+msgstr "顯示邊緣"
+
+#: objects/ui_MainWindow.h:1087
+msgid "Ctrl+1"
+msgstr "Ctrl+1"
+
+#: objects/ui_MainWindow.h:1089
+msgid "Show Axes"
+msgstr "顯示座標軸"
+
+#: objects/ui_MainWindow.h:1091
+msgid "Ctrl+2"
+msgstr "Ctrl+2"
+
+#: objects/ui_MainWindow.h:1093
+msgid "Show Crosshairs"
+msgstr "顯示十字準線"
+
+#: objects/ui_MainWindow.h:1095
+msgid "Ctrl+3"
+msgstr "Ctrl+3"
+
+#: objects/ui_MainWindow.h:1097
+msgid "Show Scale Markers"
+msgstr "顯示刻度標記"
+
+#: objects/ui_MainWindow.h:1098
+msgid "Animate"
+msgstr "動畫"
+
+#: objects/ui_MainWindow.h:1099
+msgid "&Top"
+msgstr "上(&T)"
+
+#: objects/ui_MainWindow.h:1101
+msgid "Ctrl+4"
+msgstr "Ctrl+4"
+
+#: objects/ui_MainWindow.h:1103
+msgid "&Bottom"
+msgstr "下(&B)"
+
+#: objects/ui_MainWindow.h:1105
+msgid "Ctrl+5"
+msgstr "Ctrl+5"
+
+#: objects/ui_MainWindow.h:1107
+msgid "&Left"
+msgstr "左(&L)"
+
+#: objects/ui_MainWindow.h:1109
+msgid "Ctrl+6"
+msgstr "Ctrl+6"
+
+#: objects/ui_MainWindow.h:1111
+msgid "&Right"
+msgstr "右(&R)"
+
+#: objects/ui_MainWindow.h:1113
+msgid "Ctrl+7"
+msgstr "Ctrl+7"
+
+#: objects/ui_MainWindow.h:1115
+msgid "&Front"
+msgstr "前(&F)"
+
+#: objects/ui_MainWindow.h:1117
+msgid "Ctrl+8"
+msgstr "Ctrl+8"
+
+#: objects/ui_MainWindow.h:1119
+msgid "Bac&k"
+msgstr "後(&K)"
+
+#: objects/ui_MainWindow.h:1121
+msgid "Ctrl+9"
+msgstr "Ctrl+9"
+
+#: objects/ui_MainWindow.h:1123
+msgid "&Diagonal"
+msgstr "對角線(&D)"
+
+#: objects/ui_MainWindow.h:1125
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+#: objects/ui_MainWindow.h:1127
+msgid "Ce&nter"
+msgstr "中心(&N)"
+
+#: objects/ui_MainWindow.h:1128
+msgid "&Perspective"
+msgstr "透視(&P)"
+
+#: objects/ui_MainWindow.h:1129
+msgid "&Orthogonal"
+msgstr "正交(&O)"
+
+#: objects/ui_MainWindow.h:1130
+msgid "H&ide console"
+msgstr "隱藏控制台(&H)"
+
+#: objects/ui_MainWindow.h:1131
+msgid "&About"
+msgstr "關於(&A)"
+
+#: objects/ui_MainWindow.h:1132
+msgid "&Documentation"
+msgstr "文件(&D)"
+
+#: objects/ui_MainWindow.h:1133
+msgid "Clear Recent"
+msgstr "清除紀錄"
+
+#: objects/ui_MainWindow.h:1134
+msgid "Export as &DXF..."
+msgstr "匯出成&DXF..."
+
+#: objects/ui_MainWindow.h:1135
+msgid "&Close"
+msgstr "關閉(&C)"
+
+#: objects/ui_MainWindow.h:1137
+msgid "Ctrl+W"
+msgstr "Ctrl+W"
+
+#: objects/ui_MainWindow.h:1139
+msgid "&Preferences"
+msgstr "偏好(&P)"
+
+#: objects/ui_MainWindow.h:1140
+msgid "&Find..."
+msgstr "尋找(&F)"
+
+#: objects/ui_MainWindow.h:1142
+msgid "Ctrl+F"
+msgstr "Ctrl+F"
+
+#: objects/ui_MainWindow.h:1144
+msgid "Fin&d and Replace..."
+msgstr "尋找和取代...(&D)"
+
+#: objects/ui_MainWindow.h:1146
+msgid "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+F"
+
+#: objects/ui_MainWindow.h:1148
+msgid "Find Ne&xt"
+msgstr "找下一個(&X)"
+
+#: objects/ui_MainWindow.h:1150
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+#: objects/ui_MainWindow.h:1152
+msgid "Find Pre&vious"
+msgstr "找上一個(&V)"
+
+#: objects/ui_MainWindow.h:1154
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+#: objects/ui_MainWindow.h:1156
+msgid "Use Se&lection for Find"
+msgstr "以選取文字尋找(&L)"
+
+#: objects/ui_MainWindow.h:1158
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+#: objects/ui_MainWindow.h:1160
+msgid "Jump to next error"
+msgstr "移至下一個錯誤"
+
+#: objects/ui_MainWindow.h:1162
+#, fuzzy
+msgid "Ctrl+Alt+E"
+msgstr "Ctrl+Alt+F"
+
+#: objects/ui_MainWindow.h:1164
+msgid "&Flush Caches"
+msgstr "刷新快取(&F)"
+
+#: objects/ui_MainWindow.h:1165
+msgid "&OpenSCAD Homepage"
+msgstr "OpenSCAD首頁(&O)"
+
+#: objects/ui_MainWindow.h:1166
+msgid "&Automatic Reload and Preview"
+msgstr "自動重新載入和預覽(&A)"
+
+#: objects/ui_MainWindow.h:1167
+msgid "Export as &Image..."
+msgstr "匯出成圖檔...(&I)"
+
+#: objects/ui_MainWindow.h:1168
+msgid "Export as &CSG..."
+msgstr "匯出成CSG...(&C)"
+
+#: objects/ui_MainWindow.h:1169
+msgid "&Library info"
+msgstr "函式庫資訊(&L)"
+
+#: objects/ui_MainWindow.h:1170
+msgid "Show &Library Folder..."
+msgstr "顯示函式庫目錄..."
+
+#: objects/ui_MainWindow.h:1171
+msgid "Reset View"
+msgstr "重置視圖"
+
+#: objects/ui_MainWindow.h:1172
+msgid "&Font List"
+msgstr "字型清單(&F)"
+
+#: objects/ui_MainWindow.h:1173
+msgid "Export as S&VG..."
+msgstr "匯出成S&VG..."
+
+#: objects/ui_MainWindow.h:1174
+msgid "Export as &AMF..."
+msgstr "匯出成&AMF..."
+
+#: objects/ui_MainWindow.h:1175
+msgid "Export as &3MF..."
+msgstr "匯出成&3MF..."
+
+#: objects/ui_MainWindow.h:1176
+msgid "Zoom In"
+msgstr "放大"
+
+#: objects/ui_MainWindow.h:1178
+msgid "Ctrl+]"
+msgstr "Ctrl+]"
+
+#: objects/ui_MainWindow.h:1180
+msgid "Zoom Out"
+msgstr "縮小"
+
+#: objects/ui_MainWindow.h:1182
+msgid "Ctrl+["
+msgstr "Ctrl+["
+
+#: objects/ui_MainWindow.h:1184
+msgid "View All"
+msgstr "檢視全部"
+
+#: objects/ui_MainWindow.h:1186
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+#: objects/ui_MainWindow.h:1188
+msgid "Conv&ert Tabs to Spaces"
+msgstr "將Tab轉換為空格"
+
+#: objects/ui_MainWindow.h:1189
+msgid "Toggle Bookmark"
+msgstr "切換書籤"
+
+#: objects/ui_MainWindow.h:1191
+#, fuzzy
+msgid "Ctrl+F2"
+msgstr "Ctrl+F"
+
+#: objects/ui_MainWindow.h:1193
+msgid "Jump to next bookmark"
+msgstr "移到下一個書籤"
+
+#: objects/ui_MainWindow.h:1195
+#, fuzzy
+msgid "F2"
+msgstr "F12"
+
+#: objects/ui_MainWindow.h:1197
+msgid "Jump to previous bookmark"
+msgstr "移到上一個書籤"
+
+#: objects/ui_MainWindow.h:1199
+#, fuzzy
+msgid "Shift+F2"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1201
+#, fuzzy
+msgid "Hide Editor toolbar"
+msgstr "隱藏編輯器工具列"
+
+#: objects/ui_MainWindow.h:1202
+msgid "U&nindent"
+msgstr "減少縮排"
+
+#: objects/ui_MainWindow.h:1204
+msgid "Ctrl+Shift+I"
+msgstr "Ctrl+Shift+I"
+
+#: objects/ui_MainWindow.h:1206
+msgid "&Cheat Sheet"
+msgstr "速查表"
+
+#: objects/ui_MainWindow.h:1207
+msgid "Hide Customizer"
+msgstr "隱藏制定"
+
+#: objects/ui_MainWindow.h:1208
+#, fuzzy
+msgid "Hide 3D view toolbar"
+msgstr "隱藏3D檢視工具列"
+
+#: objects/ui_MainWindow.h:1209
+msgid "Message"
+msgstr "訊息"
+
+#: objects/ui_MainWindow.h:1212
+msgid "Time:"
+msgstr "時間:"
+
+#: objects/ui_MainWindow.h:1213
+msgid "FPS:"
+msgstr "FPS:"
+
+#: objects/ui_MainWindow.h:1214
+msgid "Steps:"
+msgstr "步驟："
+
+#: objects/ui_MainWindow.h:1215
+msgid "Dump Pictures"
+msgstr "轉儲圖片"
+
+#: objects/ui_MainWindow.h:1216
+msgid "&File"
+msgstr "檔案(&F)"
+
+#: objects/ui_MainWindow.h:1217
+msgid "Recen&t Files"
+msgstr "最近檔案(&F)"
+
+#: objects/ui_MainWindow.h:1218
+msgid "&Examples"
+msgstr "範例(&F)"
+
+#: objects/ui_MainWindow.h:1219
+msgid "E&xport"
+msgstr "匯出(&E)"
+
+#: objects/ui_MainWindow.h:1220
+msgid "&Edit"
+msgstr "編輯(&E)"
+
+#: objects/ui_MainWindow.h:1221
+msgid "&Design"
+msgstr "設計(&D)"
+
+#: objects/ui_MainWindow.h:1222
+msgid "&View"
+msgstr "檢視(&V)"
+
+#: objects/ui_MainWindow.h:1223
+msgid "&Help"
+msgstr "說明(&H)"
+
+#: objects/ui_MainWindow.h:1224 objects/ui_Preferences.h:1486
+#: src/settings.cc:176
+msgid "Tabs"
+msgstr "Tabs"
+
+#: objects/ui_MainWindow.h:1225 src/tabmanager.cc:375
+msgid "Find"
+msgstr "尋找"
+
+#: objects/ui_MainWindow.h:1226 objects/ui_MainWindow.h:1233
+msgid "Replace"
+msgstr "取代"
+
+#: objects/ui_MainWindow.h:1228
+msgid "Search string"
+msgstr "搜尋字串"
+
+#: objects/ui_MainWindow.h:1229
+#, fuzzy
+msgid "Previous"
+msgstr "上一個(&V)"
+
+#: objects/ui_MainWindow.h:1230
+msgid "Next"
+msgstr "下一個"
+
+#: objects/ui_MainWindow.h:1231
+msgid "Done"
+msgstr "完成"
+
+#: objects/ui_MainWindow.h:1232
+msgid "Replacement string"
+msgstr "取代字串"
+
+#: objects/ui_MainWindow.h:1234
+msgid "All"
+msgstr "全部取代"
+
+#: objects/ui_MainWindow.h:1235
+msgid "Customizer Widget"
+msgstr "自訂"
+
+#: objects/ui_OpenCSGWarningDialog.h:83
+msgid "OpenGL Warning"
+msgstr "OpenGL警告"
+
+#: objects/ui_OpenCSGWarningDialog.h:84
+msgid ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
+"REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
+"\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
+"font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
+"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
+"p></body></html>"
+msgstr ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
+"REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
+"\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
+"font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
+"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
+"p></body></html>"
+
+#: objects/ui_OpenCSGWarningDialog.h:89
+msgid "Enable OpenCSG"
+msgstr "啟用OpenCSG"
+
+#: objects/ui_OpenCSGWarningDialog.h:90
+msgid "Show this message again"
+msgstr "再次顯示訊息"
+
+#: objects/ui_OpenCSGWarningDialog.h:91
+msgid "Close"
+msgstr "關閉"
+
+#: objects/ui_ParameterEntryWidget.h:339 objects/ui_ParameterWidget.h:160
+msgid "Form"
+msgstr "表格"
+
+#: objects/ui_ParameterEntryWidget.h:341
+msgid "Parameter"
+msgstr "參數"
+
+#: objects/ui_ParameterEntryWidget.h:342 objects/ui_ParameterEntryWidget.h:343
+msgid "Description"
+msgstr "說明"
+
+#: objects/ui_ParameterWidget.h:161
+msgid "save preset"
+msgstr "儲存預設"
+
+#: objects/ui_ParameterWidget.h:163
+msgid "delete current preset"
+msgstr "刪除當前預設"
+
+#: objects/ui_ParameterWidget.h:165
+msgid "-"
+msgstr "-"
+
+#: objects/ui_ParameterWidget.h:167
+msgid "preset selection"
+msgstr "設為預設"
+
+#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:154
+msgid "add new preset"
+msgstr "新增預設"
+
+#: objects/ui_ParameterWidget.h:172
+msgid "+"
+msgstr "+"
+
+#: objects/ui_ParameterWidget.h:174
+msgid "Automatic Preview"
+msgstr "自動預覽"
+
+#: objects/ui_ParameterWidget.h:175
+msgid "Show Details"
+msgstr "顯示明細"
+
+#: objects/ui_ParameterWidget.h:176
+msgid "Inline Details"
+msgstr "行內明細"
+
+#: objects/ui_ParameterWidget.h:177
+msgid "Hide Details"
+msgstr "隱藏明細"
+
+#: objects/ui_ParameterWidget.h:178
+msgid "Description Only"
+msgstr "僅限說明"
+
+#: objects/ui_ParameterWidget.h:181
+msgid "reset all parameters to the currently selected preset"
+msgstr "將所有參數重設為當前選擇預設"
+
+#: objects/ui_ParameterWidget.h:183
+msgid "Reset"
+msgstr "重設"
+
+#: objects/ui_Preferences.h:1458
+msgid "3D View"
+msgstr "3D檢視"
+
+#: objects/ui_Preferences.h:1459
+msgctxt "preferences"
+msgid "Advanced"
+msgstr "進階"
+
+#: objects/ui_Preferences.h:1460 src/mainwin.cc:2666 src/mainwin.cc:2671
+msgid "Editor"
+msgstr "編輯器"
+
+#: objects/ui_Preferences.h:1462 objects/ui_Preferences.h:1537
+msgid "Features"
+msgstr "特徵"
+
+#: objects/ui_Preferences.h:1464
+msgid "Enable/Disable experimental features"
+msgstr "啟用/禁用實驗功能"
+
+#: objects/ui_Preferences.h:1466
+msgid "Axes"
+msgstr "座標軸"
+
+#: objects/ui_Preferences.h:1468
+msgid "Input driver configuration and Axis mapping"
+msgstr "輸入裝置設定與座標軸映射"
+
+#: objects/ui_Preferences.h:1470
+msgid "Buttons"
+msgstr "按鈕"
+
+#: objects/ui_Preferences.h:1471 objects/ui_PrintInitDialog.h:109
+msgid "3D Print"
+msgstr "3D列印"
+
+#: objects/ui_Preferences.h:1473
+msgid "3D Printing Services"
+msgstr "3D列印服務"
+
+#: objects/ui_Preferences.h:1475
+msgid "Color scheme:"
+msgstr "色彩方案:"
+
+#: objects/ui_Preferences.h:1476
+msgid "Show Warnings and Errors in 3D View"
+msgstr "在3D檢視中顯示警告與錯誤"
+
+#: objects/ui_Preferences.h:1477
+msgid "mouse centric zoom"
+msgstr "以滑鼠為中心縮放"
+
+#: objects/ui_Preferences.h:1478
+msgid "Font"
+msgstr "字型"
+
+#: objects/ui_Preferences.h:1479
+msgid "Color syntax highlighting"
+msgstr "彩色語法標記"
+
+#: objects/ui_Preferences.h:1480
+msgid "Ctrl/Cmd-Mouse-wheel zooms text"
+msgstr "Ctrl/Cmd滑鼠滾輪文字縮放"
+
+#: objects/ui_Preferences.h:1481
+msgid "Indentation"
+msgstr "縮排"
+
+#: objects/ui_Preferences.h:1482
+msgid "Auto Indent"
+msgstr "自動縮排"
+
+#: objects/ui_Preferences.h:1483
+msgid "Backspace unindents"
+msgstr "退格鍵取消縮排"
+
+#: objects/ui_Preferences.h:1484
+msgid "Indent using"
+msgstr "縮排使用"
+
+#: objects/ui_Preferences.h:1485 src/settings.cc:176
+msgid "Spaces"
+msgstr "空白"
+
+#: objects/ui_Preferences.h:1488
+msgid "Indentation width"
+msgstr "縮排寬度"
+
+#: objects/ui_Preferences.h:1489
+msgid "Tab width"
+msgstr "Tab寬度"
+
+#: objects/ui_Preferences.h:1490
+msgid "Tab key function"
+msgstr "Tab鍵功能"
+
+#: objects/ui_Preferences.h:1491 objects/ui_Preferences.h:1519
+#: src/settings.cc:177
+msgid "Indent"
+msgstr "縮排"
+
+#: objects/ui_Preferences.h:1492 src/settings.cc:177
+msgid "Insert Tab"
+msgstr "插入Tab"
+
+#: objects/ui_Preferences.h:1494
+msgid "Show whitespace"
+msgstr "顯示空白字元"
+
+#: objects/ui_Preferences.h:1495 src/settings.cc:172
+msgid "Never"
+msgstr "從不"
+
+#: objects/ui_Preferences.h:1496 src/settings.cc:172
+msgid "Always"
+msgstr "永遠"
+
+#: objects/ui_Preferences.h:1497
+msgid "Only after indentation"
+msgstr "僅在縮排後"
+
+#: objects/ui_Preferences.h:1499
+msgid "Size"
+msgstr "大小"
+
+#: objects/ui_Preferences.h:1500
+msgid "Display"
+msgstr "顯示"
+
+#: objects/ui_Preferences.h:1501
+msgid "Enable brace matching"
+msgstr "啟用括弧配對"
+
+#: objects/ui_Preferences.h:1502
+msgid "Highlight current line"
+msgstr "高亮游標所在行"
+
+#: objects/ui_Preferences.h:1503
+msgid "Display Line Numbers"
+msgstr "顯示行號"
+
+#: objects/ui_Preferences.h:1504
+msgid "Autocomplete"
+msgstr "自動補全"
+
+#: objects/ui_Preferences.h:1505
+msgid "Enable Autocompletion"
+msgstr "啟用自動補全"
+
+#: objects/ui_Preferences.h:1506
+msgid "Character Threshold"
+msgstr ""
+
+#: objects/ui_Preferences.h:1507 objects/ui_Preferences.h:1532
+msgid "Line wrap"
+msgstr "自動換行"
+
+#: objects/ui_Preferences.h:1508 objects/ui_Preferences.h:1521
+#: objects/ui_Preferences.h:1527 src/settings.cc:73 src/settings.cc:89
+#: src/settings.cc:167 src/settings.cc:170 src/settings.cc:171
+msgid "None"
+msgstr "沒有"
+
+#: objects/ui_Preferences.h:1509 src/settings.cc:167
+msgid "Wrap at character boundaries"
+msgstr "以字母換行"
+
+#: objects/ui_Preferences.h:1510 src/settings.cc:167
+msgid "Wrap at word boundaries"
+msgstr "以單字換行"
+
+#: objects/ui_Preferences.h:1512
+msgid "Line wrap indentation"
+msgstr "縮排換行"
+
+#: objects/ui_Preferences.h:1513
+msgid "Line wrap visualization"
+msgstr "視覺化換行"
+
+#: objects/ui_Preferences.h:1514
+msgid "Style"
+msgstr "樣式"
+
+#: objects/ui_Preferences.h:1515 src/settings.cc:168
+msgid "Fixed"
+msgstr "固定"
+
+#: objects/ui_Preferences.h:1516 src/settings.cc:168
+msgid "Same"
+msgstr "相同"
+
+#: objects/ui_Preferences.h:1517 src/settings.cc:168
+msgid "Indented"
+msgstr "縮排"
+
+#: objects/ui_Preferences.h:1520
+msgid "Start"
+msgstr "開始"
+
+#: objects/ui_Preferences.h:1522 objects/ui_Preferences.h:1528
+#: src/settings.cc:170 src/settings.cc:171
+msgid "Text"
+msgstr "文字"
+
+#: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1529
+#: src/settings.cc:170 src/settings.cc:171
+msgid "Border"
+msgstr "邊框"
+
+#: objects/ui_Preferences.h:1524 objects/ui_Preferences.h:1530
+#: src/settings.cc:170 src/settings.cc:171
+msgid "Margin"
+msgstr "邊緣間隔"
+
+#: objects/ui_Preferences.h:1526
+msgid "End"
+msgstr "結束"
+
+#: objects/ui_Preferences.h:1533
+msgid "Automatically check for updates"
+msgstr "自動檢查更新"
+
+#: objects/ui_Preferences.h:1534
+msgid "Include development snapshots"
+msgstr "包含開發版本"
+
+#: objects/ui_Preferences.h:1535
+msgid "Check Now"
+msgstr "立刻檢查"
+
+#: objects/ui_Preferences.h:1536
+msgid "Last checked: "
+msgstr "最後檢查： "
+
+#: objects/ui_Preferences.h:1538 objects/ui_PrintInitDialog.h:114
+msgid "OctoPrint"
+msgstr "OctoPrint"
+
+#: objects/ui_Preferences.h:1539
+msgid "URL"
+msgstr "網址"
+
+#: objects/ui_Preferences.h:1540
+msgid "API Key"
+msgstr "API Key"
+
+#: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1542
+msgid "Load"
+msgstr "讀取"
+
+#: objects/ui_Preferences.h:1544
+msgid "Check"
+msgstr "檢查"
+
+#: objects/ui_Preferences.h:1545
+msgid "Slicing Profile"
+msgstr "切片參數"
+
+#: objects/ui_Preferences.h:1546
+msgid "Slicing Engine"
+msgstr "切片引擎"
+
+#: objects/ui_Preferences.h:1547
+msgid "File Format"
+msgstr "檔案格式"
+
+#: objects/ui_Preferences.h:1548
+msgid "Action"
+msgstr "動作"
+
+#: objects/ui_Preferences.h:1549
+msgid "Show"
+msgstr "顯示"
+
+#: objects/ui_Preferences.h:1550
+msgid "Note: The API key is stored unencrypted in the application settings."
+msgstr "備註: 此API key以非加密儲存於軟體設定中."
+
+#: objects/ui_Preferences.h:1551
+msgid "OpenCSG"
+msgstr "OpenCSG"
+
+#: objects/ui_Preferences.h:1552
+msgid "Show capability warning"
+msgstr "顯示性能警告"
+
+#: objects/ui_Preferences.h:1553
+msgid "Enable for OpenGL 1.x"
+msgstr "啟用OpenGL 1.x"
+
+#: objects/ui_Preferences.h:1554
+msgid "Turn off rendering at "
+msgstr "關閉渲染於 "
+
+#: objects/ui_Preferences.h:1555
+msgid "elements"
+msgstr "元素"
+
+#: objects/ui_Preferences.h:1556
+msgid "Force Goldfeather"
+msgstr "強制Goldfeather"
+
+#: objects/ui_Preferences.h:1557
+msgid "CGAL"
+msgstr "CGAL"
+
+#: objects/ui_Preferences.h:1558
+msgid "CGAL Cache size"
+msgstr "CGAL快取大小"
+
+#: objects/ui_Preferences.h:1559 objects/ui_Preferences.h:1561
+msgid "MB"
+msgstr "MB"
+
+#: objects/ui_Preferences.h:1560
+msgid "PolySet Cache size"
+msgstr "PolySet快取大小"
+
+#: objects/ui_Preferences.h:1562
+msgid "User Interface"
+msgstr "使用者介面"
+
+#: objects/ui_Preferences.h:1563
+msgid "Enable docking of Editor and Console in different places"
+msgstr "在不同位置啟用嵌合的編輯器與控制台"
+
+#: objects/ui_Preferences.h:1564
+msgid "Enable undocking of Editor and Console to separate windows"
+msgstr "在個別視窗啟用分離的編輯器與控制台"
+
+#: objects/ui_Preferences.h:1565
+msgid "Show Welcome Screen"
+msgstr "顯示歡迎視窗"
+
+#: objects/ui_Preferences.h:1566
+msgid "Enable user interface localization (requires restart of OpenSCAD)"
+msgstr "啟用本地化使用者介面(需要重新啟動OpenSCAD)"
+
+#: objects/ui_Preferences.h:1567
+msgid "Bring window to front after automatic reload"
+msgstr "自動重整後將視窗浮到前景"
+
+#: objects/ui_Preferences.h:1568
+msgid "Play sound notification on render complete"
+msgstr "渲染完成後播放音效通知"
+
+#: objects/ui_Preferences.h:1569
+#, fuzzy
+msgid "Play sound when render completion time is at least"
+msgstr "渲染完成後播放音效通知，當渲染時間大於"
+
+#: objects/ui_Preferences.h:1570
+msgid "sec"
+msgstr "秒"
+
+#: objects/ui_Preferences.h:1571
+msgid "OpenSCAD Language Features"
+msgstr "OpenSCAD語言特色"
+
+#: objects/ui_Preferences.h:1572
+msgid "Warn when there is a parameter mismatch in user module calls"
+msgstr "當呼叫使用者模組中有參數錯誤時發出警告"
+
+#: objects/ui_Preferences.h:1573
+msgid "Stop on the first warning"
+msgstr "在第一個警告時停止"
+
+#: objects/ui_Preferences.h:1574
+#, fuzzy
+msgid "Check the parameter range for builtin modules"
+msgstr "檢查內建模組的參數範圍"
+
+#: objects/ui_Preferences.h:1575
+msgid "Debugging"
+msgstr ""
+
+#: objects/ui_Preferences.h:1576
+#, fuzzy
+msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
+msgstr "啟用本地化使用者介面(需要重新啟動OpenSCAD)"
+
+#: objects/ui_PrintInitDialog.h:111
+msgid "Cancel"
+msgstr "取消"
+
+#: objects/ui_PrintInitDialog.h:113
+msgid "%1"
+msgstr "%1"
+
+#: objects/ui_ProgressWidget.h:70
+msgid "%v / %m"
+msgstr "%v / %m"
+
+#: src/Network.h:116
+msgid "Timeout error"
+msgstr "逾時錯誤"
+
+#: src/Camera.cc:125
+#, c-format
+msgid ""
+"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+"distance = %.2f"
+msgstr ""
+"視角: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance "
+"= %.2f"
+
+#: src/Console.cc:53
+msgid "Save console content"
+msgstr "儲存控制台內容"
+
+#: src/export.cc:86
+#, c-format
+msgid "Can't open file \"%s\" for export"
+msgstr "無法開啟檔案 \"%s\" 用以匯出"
+
+#: src/export.cc:101
+#, c-format
+msgid "ERROR: \"%s\" write error. (Disk full?)"
+msgstr "錯誤: \"%s\" 寫入錯誤. (磁碟滿載?)"
+
+#: src/mainwin.cc:1037
+msgid "Compile error."
+msgstr "編譯錯誤."
+
+#: src/mainwin.cc:1040
+msgid "Error while compiling '%1'."
+msgstr "編譯 '%1' 時錯誤."
+
+#: src/mainwin.cc:1044
+msgid "Compilation generated %1 warning."
+msgid_plural "Compilation generated %1 warnings."
+msgstr[0] "編譯產生 %1 警告."
+
+#: src/mainwin.cc:1054
+msgid " For details see <a href=\"#console\">console window</a>."
+msgstr "詳見<a href=\"#console\">控制台視窗</a>."
+
+#: src/mainwin.cc:1765
+msgid "Application"
+msgstr "套用"
+
+#: src/mainwin.cc:1766
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+"此文件已被變更.\n"
+"是否要重新載入檔案?"
+
+#: src/mainwin.cc:2003
+msgid "Exported design exceeds the service upload limit of (%1 MB)."
+msgstr "匯出的設計超過服務上傳上限(%1 MB)"
+
+#: src/mainwin.cc:2004
+msgid "Upload Error"
+msgstr "上傳錯誤"
+
+#: src/mainwin.cc:2303
+msgid "Export %1 File"
+msgstr "匯出 %1 檔案"
+
+#: src/mainwin.cc:2304
+msgid "%1 Files (*%2)"
+msgstr "%1 個檔案 (*%2)"
+
+#: src/mainwin.cc:2360
+msgid "Export CSG File"
+msgstr "會出CSG檔案"
+
+#: src/mainwin.cc:2360
+msgid "CSG Files (*.csg)"
+msgstr "CSG檔案 (*.csg)"
+
+#: src/mainwin.cc:2387
+msgid "Export Image"
+msgstr "匯出圖片"
+
+#: src/mainwin.cc:2387
+msgid "PNG Files (*.png)"
+msgstr "PNG檔 (*.png)"
+
+#: src/mainwin.cc:2687 src/mainwin.cc:2692
+msgid "Console"
+msgstr "控制台"
+
+#: src/mainwin.cc:2704
+msgid "Customizer"
+msgstr "自訂"
+
+#: src/mainwin.cc:2712 src/tabmanager.cc:225 src/tabmanager.cc:463
+#: src/tabmanager.cc:521 src/tabmanager.cc:684
+msgid "Untitled.scad"
+msgstr "無標題.SCAD"
+
+#: src/mainwin.cc:2977 src/mainwin.cc:2984
+#, fuzzy
+msgid "Untitled"
+msgstr "無標題"
+
+#: src/OpenSCADApp.cc:61
+msgid "Unknown error"
+msgstr "未知錯誤"
+
+#: src/OpenSCADApp.cc:64
+msgid "Critical Error"
+msgstr "嚴重錯誤"
+
+#: src/OpenSCADApp.cc:64
+msgid ""
+"A critical error was caught. The application may have become unstable:\n"
+"%1"
+msgstr ""
+"發生嚴重錯誤，程式可能不穩定:\n"
+"%1"
+
+#: src/OpenSCADApp.cc:88
+msgid ""
+"Fontconfig needs to update its font cache.\n"
+"This can take up to a couple of minutes."
+msgstr ""
+"字型設定需要更新字型快取。\n"
+"這可能要花上幾分鐘。"
+
+#: src/Preferences.cc:241 src/Preferences.cc:246 src/Preferences.cc:737
+#: src/Preferences.cc:773
+msgid "<Default>"
+msgstr "<預設>"
+
+#: src/Preferences.cc:721
+msgid "Success: Server Version = %2, API Version = %1"
+msgstr "成功: 伺服器版本 = %2, API版本 = %1"
+
+#: src/Preferences.cc:723 src/Preferences.cc:747 src/Preferences.cc:783
+msgid "Error"
+msgstr "錯誤"
+
+#: src/PrintInitDialog.cc:44
+msgid "Print Service not available"
+msgstr "列印服務不可用"
+
+#: src/QGLView.cc:150
+msgid ""
+"Warning: You may experience OpenCSG rendering errors.\n"
+"\n"
+msgstr "警告: 你可能會遇到OpenCSG渲染錯誤。\n"
+
+#: src/QGLView.cc:153
+msgid ""
+"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
+"disabled.\n"
+"\n"
+msgstr "警告: 失去OpenGL OpenCSG功能 - OpenCSG已停用。\n"
+
+#: src/QGLView.cc:156
+msgid ""
+"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+"later.\n"
+"Your renderer information is as follows:\n"
+msgstr ""
+"強烈建議在OpenGL 2.0以後版本使用OpenSCAD。\n"
+"你的渲染訊息如下：\n"
+
+#: src/QGLView.cc:159
+msgid ""
+"GLEW version %1\n"
+"%2 (%3)\n"
+"OpenGL version %4\n"
+msgstr ""
+"GLEW 版本 %1 \n"
+" OpenGL 版本 %4\n"
+
+#: src/settings.cc:77
+#, c-format
+msgid "Axis %d"
+msgstr "軸 %d"
+
+#: src/settings.cc:81
+#, c-format
+msgid "Axis %d (inverted)"
+msgstr "軸 %d (顛倒)"
+
+#: src/settings.cc:90
+msgid "Toggle Perspective"
+msgstr "切換視角"
+
+#: src/settings.cc:172
+msgid "After indentation"
+msgstr "縮排後"
+
+#: src/settings.cc:185
+msgid "Upload only"
+msgstr "僅限更新"
+
+#: src/settings.cc:185
+msgid "Upload & Slice"
+msgstr "更新與切片"
+
+#: src/settings.cc:185
+msgid "Upload, Slice & Select for printing"
+msgstr "已更新，切片並選取列印項目"
+
+#: src/settings.cc:185
+msgid "Upload, Slice & Start printing"
+msgstr "已更新，切片並開始列印"
+
+#: src/tabmanager.cc:380
+#, fuzzy
+msgid "Find Next"
+msgstr "找下一個(&X)"
+
+#: src/tabmanager.cc:385
+#, fuzzy
+msgid "Find Previous"
+msgstr "找上一個(&V)"
+
+#: src/tabmanager.cc:410
+msgid "Copy file name"
+msgstr ""
+
+#: src/tabmanager.cc:416
+msgid "Copy full path"
+msgstr ""
+
+#: src/tabmanager.cc:421
+#, fuzzy
+msgid "Close Tab"
+msgstr "關閉分頁"
+
+#: src/tabmanager.cc:567
+msgid "The document has been modified."
+msgstr "此檔案已被變更"
+
+#: src/tabmanager.cc:568
+msgid "Do you want to save your changes?"
+msgstr "是否要儲存你的變更？"
+
+#: src/tabmanager.cc:600
+#, fuzzy
+msgid "Some of the tabs are modified."
+msgstr "有些分頁已被變更"
+
+#: src/tabmanager.cc:601
+msgid "All unsaved changes will be lost."
+msgstr ""
+
+#: src/tabmanager.cc:662
+msgid "Failed to open file for writing"
+msgstr "寫入時開啟檔案錯誤"
+
+#: src/tabmanager.cc:672
+#, c-format
+msgid "Saved design '%s'."
+msgstr "設計 '%s' 已儲存"
+
+#: src/tabmanager.cc:675
+msgid "Error saving design"
+msgstr "儲存設計錯誤"
+
+#: src/tabmanager.cc:683
+msgid "Save File"
+msgstr "儲存檔案"
+
+#: src/tabmanager.cc:685
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "OpenSCAD設計 (*.scad)"
+
+#: src/tabmanager.cc:695
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 已存在。\n"
+"是否要覆寫？"
+
+#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:231
+msgid "changes on current preset not saved"
+msgstr "當前預設變更未儲存"
+
+#: src/parameter/ParameterWidget.cc:81
+msgid ""
+"The changes on the current preset %1 are not saved yet. Do you really want "
+"to reset this preset and lose your changes?"
+msgstr "當前預設 %1 的變更尚未儲存。你確定要重設這個預設且捨棄你的改變嗎？"
+
+#: src/parameter/ParameterWidget.cc:156
+msgid "remove current preset"
+msgstr "移除當前預設"
+
+#: src/parameter/ParameterWidget.cc:158
+msgid "save current preset"
+msgstr "儲存當前預設"
+
+#: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
+#: src/parameter/ParameterWidget.cc:162
+msgid "JSON file read only"
+msgstr "JSON檔只能唯獨"
+
+#: src/parameter/ParameterWidget.cc:215
+msgid "design default values"
+msgstr "設計預設值"
+
+#: src/parameter/ParameterWidget.cc:233
+msgid ""
+"The current preset %1 contains changes, but is not saved yet. Do you really "
+"want to change the preset and lose your changes?"
+msgstr "當前預設 %1 含有變更且尚未儲存。你確定要改變這個預設且捨棄你的改變嗎？"
+
+#: src/parameter/ParameterWidget.cc:273
+msgid "Do you want to delete the current preset?"
+msgstr "你要刪除當前預設嗎？"
+
+#: src/parameter/ParameterWidget.cc:275
+msgid "Do you want to delete the current preset '%1'?"
+msgstr "你要刪除當前預設 '%1' 嗎？"
+
+#: src/parameter/ParameterWidget.cc:515
+msgid "Create new set of parameter"
+msgstr "建立新的參數設定"
+
+#: src/parameter/ParameterWidget.cc:515
+msgid "Enter name of the parameter set"
+msgstr "輸入參數設定的名稱"
+
+#: src/parameter/ParameterWidget.cc:526
+msgid "Set Name %1 already exists"
+msgstr "設定名稱 %1 已存在"
+
+#: src/parameter/ParameterWidget.cc:527
+msgid "The set name  %1 already exists. Do you want overwrite it?"
+msgstr "設定名稱 %1 已存在。是否要覆蓋？"
+
+#: src/parameter/ParameterWidget.cc:571
+msgid "Saving presets"
+msgstr "儲存預設中"
+
+#: src/parameter/ParameterWidget.cc:572
+msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
+msgstr "%1已找到但無法讀取。是否要覆蓋它？"
+
+#: src/input/AxisConfigWidget.h:84
+msgid ""
+"This driver was not enabled during build time and is thus not available."
+msgstr "由於此驅動程式於建置期間沒有啟用因此不可用？"
+
+#: src/input/AxisConfigWidget.h:86
+msgid ""
+"The DBUS driver is not for actual devices but for remote control, Linux only."
+msgstr "DBUS驅動程序不是用於實際設備，而是用於遠程控制（限Linux）。"
+
+#: src/input/AxisConfigWidget.h:87
+msgid ""
+"The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
+msgstr "HIDAPI驅動程式直接與3D滑鼠通訊（Windows、macOS）。"
+
+#: src/input/AxisConfigWidget.h:88
+msgid ""
+"The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
+"Linux only."
+msgstr "SpaceNav驅動程式靠spacenavd daemon啟用3D輸入裝置（限Linux）。"
+
+#: src/input/AxisConfigWidget.h:89
+msgid ""
+"The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
+"js0), Linux only."
+msgstr "Joystick驅動程式使用Linux搖桿裝置（固定使用 /dev/input/js0）（限Linux）。"
+
+#: src/input/AxisConfigWidget.h:90
+msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
+msgstr "QGAMEPAD驅動程式用於多平台手把支援。"
+
+#: src/input/ButtonConfigWidget.cc:185
+msgid "(not supported)"
+msgstr "（不支援）"
+
+#: examples/examples.json:2
+msgid "Basics"
+msgstr "基礎"
+
+#: examples/examples.json:13
+msgid "Functions"
+msgstr "功能"
+
+#: examples/examples.json:20
+msgid "Advanced"
+msgstr "進階"
+
+#: examples/examples.json:30
+msgid "Parametric"
+msgstr "參數"
+
+#: examples/examples.json:34
+msgid "Old"
+msgstr "舊範例"
+
+#. (itstool) path: component/summary
+#: openscad.appdata.xml.in:6
+msgid "The Programmers Solid 3D CAD Modeller"
+msgstr "程式設計Solid 3D CAD模組"
+
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in:20
+msgid ""
+"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"software for creating 3D models (such as Blender) it does not focus on the "
+"artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
+"might be the application you are looking for when you are planning to create "
+"3D models of machine parts but pretty sure is not what you are looking for "
+"when you are more interested in creating computer-animated movies."
+msgstr ""
+"OpenSCAD是一個用於建立Solid 3D CAD模組的軟體。不同於大多數免費3D建模軟體（如"
+"Blender），它不著重於3D藝術方面而是CAD方面。因此當你計畫用於3D建模時此程式"
+"可能是你要的，但如果要做電腦動畫這肯定不是你要的。"
+
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in:21
+msgid ""
+"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
+"compiler that reads in a script file that describes the object and renders "
+"the 3D model from this script file. This gives you (the designer) full "
+"control over the modelling process and enables you to easily change any step "
+"in the modelling process or make designs that are defined by configurable "
+"parameters."
+msgstr ""
+"OpenSCAD並非互動式建模器, 相反的它就像3D編譯器讀取描繪物件的腳本檔案然後從中"
+"渲染3D模型. 這使您（設計師）可以完全掌控建模過程且讓你可以簡單的改變建模過程的"
+"任何步驟，或用於參數可調的設計。"
+
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in:22
+msgid ""
+"OpenSCAD provides two main modelling techniques: First there is constructive "
+"solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
+"data exchange format for this 2D outlines Autocad DXF files are used. In "
+"addition to 2D paths for extrusion it is also possible to read design "
+"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
+"models in the STL and OFF file formats."
+msgstr ""
+"OpenSCAD提供了兩種主要的建模技術：首先是構造實體幾何（CSG）, 然後是2D輪廓的擠出。"
+"以Autocad DXF檔案作為2D輪廓的資料交換格式。"
+"除了用於擠出的2D路徑外，還可以從DXF文件中讀取設計參數。"
+"除了DXF文件外OpenSCAD還可以讀取和創建STL和OFF文件格式的3D模型。"
+
+#~ msgid "&New"
+#~ msgstr "新增(&N)"
+
+#~ msgid "&Open..."
+#~ msgstr "開啟(&O)"
+
+#~ msgid "Prev."
+#~ msgstr "上一個"
+
+#~ msgid "Editor Type"
+#~ msgstr "編輯器類型"
+
+#~ msgid "Simple Editor"
+#~ msgstr "簡易編輯器"
+
+#~ msgid "QScintilla Editor"
+#~ msgstr "QScintilla編輯器"
+
+#~ msgid "(requires restart)"
+#~ msgstr "(必須重新啟動)"
+
+#~ msgid "Allow opening multiple documents"
+#~ msgstr "允許開啟多個檔案"
+
+#~ msgid "/"
+#~ msgstr "/"

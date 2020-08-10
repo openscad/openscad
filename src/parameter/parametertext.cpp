@@ -2,49 +2,49 @@
 #include "modcontext.h"
 #include "comment.h"
 
-ParameterText::ParameterText(ParameterObject *parameterobject, int showDescription)
+ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
 {
-	object = parameterobject;
-	setName(QString::fromStdString(object->name));
 	setValue();
-	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	if (showDescription == 0) {
-		setDescription(object->description);
-	}else if(showDescription == 1){
-		addInline(object->description);
-	}else {
-		lineEdit->setToolTip(object->description);
+
+	double max=32767;
+	if(object->values->toVector().size() == 1) { // [max] format from makerbot customizer
+        try {
+            max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+        }
+        catch(...) { } // If not a valid value, fall back to the default.
 	}
+	this->lineEdit->setMaxLength(max);
+
+	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
+	connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 }
 
 void ParameterText::onChanged(QString)
 {
-	if(!suppressUpdate){
-		if (object->dvt == Value::ValueType::STRING) {
+	if(!this->suppressUpdate){
+		if (object->dvt == Value::Type::STRING) {
 			object->value = ValuePtr(lineEdit->text().toStdString());
 		}else{
-			ModuleContext ctx;
+			ContextHandle<Context> ctx{Context::create<Context>()};
 			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
 			if (!params) return;
-			ValuePtr newValue = params->evaluate(&ctx);
+			ValuePtr newValue = params->evaluate(ctx.ctx);
 			if (object->dvt == newValue->type()) {
 				object->value = newValue;
 			}
 		}
-		object->focus = true;
-		emit changed();
 	}
 }
 
-void ParameterText::setParameterFocus()
+void ParameterText::onEditingFinished()
 {
-	this->lineEdit->setFocus();
-	object->focus = false;
+	emit changed();
 }
 
 void ParameterText::setValue()
 {
-	suppressUpdate=true;
+	this->suppressUpdate=true;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
 	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
@@ -52,5 +52,5 @@ void ParameterText::setValue()
 	if (object->values->toDouble() > 0) {
 		this->lineEdit->setMaxLength(object->values->toDouble());
 	}
-	suppressUpdate=false;
+	this->suppressUpdate=false;
 }

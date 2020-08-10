@@ -17,7 +17,7 @@ static void export_stl(const IndexedTriangleMesh &trimesh, std::ostream &output)
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
   output << "solid OpenSCAD_Model\n";
   const Vector3f *verts = &trimesh.vertices.front();
-  BOOST_FOREACH(const IndexedTriangle &t, trimesh.triangles) {
+  for(const IndexedTriangle &t : trimesh.triangles) {
     assert(t[0] < trimesh.vertices.size());
     assert(t[1] < trimesh.vertices.size());
     assert(t[2] < trimesh.vertices.size());
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
       std::string arg(argv[2]);
       boost::split(strs, arg, boost::is_any_of(","));
       assert(strs.size() == 3);
-      BOOST_FOREACH(const std::string &s, strs) normalvec.push_back(boost::lexical_cast<double>(s));
+      for(const std::string &s : strs) normalvec.push_back(boost::lexical_cast<double>(s));
       normal = new Vector3f(normalvec[0], normalvec[1], normalvec[2]);
       
    }

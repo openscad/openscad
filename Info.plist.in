@@ -20,8 +20,8 @@
 	<string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>
 	<key>LSEnvironment</key>
 	<dict>
-	  <key>GUI_LAUNCHED</key>
-	  <string></string>
+		<key>GUI_LAUNCHED</key>
+		<string></string>
 	</dict>
 	<key>CFBundleDocumentTypes</key>
 	<array>
@@ -103,14 +103,6 @@
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
 	<key>SUFeedURL</key>
-	<string>http://files.openscad.org/appcast.xml</string>
-        <key>NSExceptionDomains</key>  
-        <dict>  
-          <key>files.openscad.org</key>
-          <dict>  
-            <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>  
-            <key>NSExceptionRequiresForwardSecrecy</key><false/>  
-          </dict>  
-        </dict>
+	<string>https://files.openscad.org/appcast.xml</string>
 </dict>
 </plist>

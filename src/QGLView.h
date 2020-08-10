@@ -37,25 +37,15 @@ public:
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
 	// Properties
-	bool showFaces() const { return this->showfaces; }
-	void setShowFaces(bool enabled) { this->showfaces = enabled; }
-	bool showEdges() const { return this->showedges; }
-	void setShowEdges(bool enabled) { this->showedges = enabled; }
-	bool showAxes() const { return this->showaxes; }
-	void setShowAxes(bool enabled) { this->showaxes = enabled; }
-	bool showCrosshairs() const { return this->showcrosshairs; }
-	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
 	void setOrthoMode(bool enabled);
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
 	std::string getRendererInfo() const override;
-#if QT_VERSION >= 0x050100
 	float getDPI() override { return this->devicePixelRatio(); }
-#endif
-	
+
 	const QImage & grabFrame();
-	bool save(const char *filename) override;
+	bool save(const char *filename) const override;
 	void resetView();
 	void viewAll();
 
@@ -65,16 +55,29 @@ public slots:
 #ifdef USE_QOPENGLWIDGET
 	inline void updateGL() { update(); }
 #endif
+	void setMouseCentricZoom(bool var){
+		this->mouseCentricZoom=var;
+	}
 
 public:
 	QLabel *statusLabel;
+
 #ifdef USE_QOPENGLWIDGET
 	inline QImage grabFrameBuffer() { return grabFramebuffer(); }
 #endif
+
+	void zoom(double v, bool relative);
+	void zoomCursor(int x, int y, int zoom);
+	void rotate(double x, double y, double z, bool relative);
+	void rotate2(double x, double y, double z);
+	void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);
+
 private:
 	void init();
 
 	bool mouse_drag_active;
+	bool mouse_drag_moved = true;
+	bool mouseCentricZoom=true;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
 
@@ -98,4 +101,5 @@ private slots:
 
 signals:
 	void doAnimateUpdate();
+	void doSelectObject(QPoint screen_coordinate);
 };

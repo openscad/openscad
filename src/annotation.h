@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <unordered_map>
 #include "memory.h"
-#include "value.h"
 
 class Annotation
 {
@@ -11,9 +11,9 @@ public:
 	Annotation(const std::string &name, shared_ptr<class Expression> expr);
 	virtual ~Annotation();
 	
-	std::string dump() const;
+	virtual void print(std::ostream &stream, const std::string &indent) const;
 	const std::string &getName() const;
-	virtual ValuePtr evaluate(class Context *ctx) const;
+	virtual class ValuePtr evaluate(std::shared_ptr<class Context> ctx) const;
 	
 private:
 	std::string name;

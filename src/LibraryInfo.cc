@@ -3,11 +3,15 @@
 #include <vector>
 #ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
+#include "input/InputDriverManager.h"
 #endif
 
 #include "version_check.h"
 #include "PlatformUtils.h"
 #include "openscad.h"
+#include "version.h"
+#include "feature.h"
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
@@ -31,10 +35,15 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern const std::string get_lib3mf_version();
+extern const std::string get_fontconfig_version();
+extern const std::string get_harfbuzz_version();
+extern const std::string get_freetype_version();
+extern const char * LODEPNG_VERSION_STRING;
 
 std::string LibraryInfo::info()
 {
-	std::stringstream s;
+	std::ostringstream s;
 
 #if defined(__x86_64__) || defined(_M_X64)
 	std::string bits(" 64bit");
@@ -60,6 +69,12 @@ std::string LibraryInfo::info()
 	std::string mingwstatus("MingW32");
 #else
 	std::string mingwstatus("No");
+#endif
+
+#ifdef DEBUG
+	std::string debugstatus("Yes");
+#else
+	std::string debugstatus("No");
 #endif
 
 #ifndef OPENCSG_VERSION_STRING
@@ -96,7 +111,10 @@ std::string LibraryInfo::info()
 	
 	s << "OpenSCAD Version: " << openscad_detailedversionnumber
 	  << "\nSystem information: " << PlatformUtils::sysinfo()
-		<< "\nCompiler: " << compiler_info
+	  << "\nUser Agent: " << PlatformUtils::user_agent()
+	  << "\nCompiler: " << compiler_info
+	  << "\nMinGW build: " << mingwstatus
+	  << "\nDebug build: " << debugstatus
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
@@ -104,12 +122,19 @@ std::string LibraryInfo::info()
 	  << "\nQt version: " << qtVersion
 #ifdef USE_SCINTILLA_EDITOR
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
+          << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
-	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+	  << "\nlodepng version: " << LODEPNG_VERSION_STRING
 	  << "\nlibzip version: " << LIBZIP_VERSION
+	  << "\nfontconfig version: " << get_fontconfig_version()
+	  << "\nfreetype version: " << get_freetype_version()
+	  << "\nharfbuzz version: " << get_harfbuzz_version()
+	  << "\nlib3mf version: " << get_lib3mf_version()
+	  << "\nFeatures: " << Feature::features()
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
+	  << "\nUser Documents Path: " << PlatformUtils::userDocumentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()
 	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
 	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()

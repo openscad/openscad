@@ -1,0 +1,33 @@
+ECHO: assoc_right_unary = 1
+ECHO: assoc_left_addsub = 3
+ECHO: assoc_left_subadd = 1
+ECHO: assoc_left_muldiv = 1.5
+WARNING: undefined operation (bool > number) in file expression-precedence-tests.scad, line 12
+ECHO: assoc_left_ltgt = undef
+ECHO: assoc_left_eqne = true
+ECHO: assoc_left_and = false
+ECHO: assoc_left_or = true
+ECHO: prec_andor = true
+ECHO: prec_orand = true
+ECHO: prec_gtadd = true
+ECHO: prec_addgt = false
+ECHO: prec_addmul = 14
+ECHO: prec_muladd = 10
+ECHO: prec_submul = -10
+ECHO: prec_mulsub = 2
+ECHO: prec_addmod = 5
+ECHO: prec_modadd = 6
+ECHO: prec_unarysub = -0.5
+ECHO: prec_unaryadd = 0.5
+ECHO: "-"
+ECHO: "-"
+ECHO: sc_or = true
+ECHO: "-"
+ECHO: "-"
+ECHO: sc_and = false
+ECHO: "-"
+ECHO: "-"
+ECHO: sc_ternary_false = "no"
+ECHO: "-"
+ECHO: "-"
+ECHO: sc_ternary_true = "yes"

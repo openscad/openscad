@@ -46,4 +46,7 @@ String2="hello"; //comment with "
 //Text box for vector with less than or equal to 4 elements
 Vector3=[12,34,45,23]; //any thing
 
+/* [ multiple ] [ group ] [ names ] */
+Vector4=[]; //empty vector (see #2105 and #2183)
+
 echo(String);

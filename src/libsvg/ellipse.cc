@@ -1,3 +1,27 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2016-2018, Torsten Paul <torsten.paul@gmx.de>,
+ *                          Marius Kintel <marius@kintel.net>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include <stdlib.h>
 #include <iostream>
 
@@ -7,14 +31,8 @@ namespace libsvg {
 
 const std::string ellipse::name("ellipse"); 
 
-ellipse::ellipse()
+ellipse::ellipse() : rx(0), ry(0)
 {
-}
-
-ellipse::ellipse(const ellipse& orig) : shape(orig)
-{
-	rx = orig.rx;
-	ry = orig.ry;
 }
 
 ellipse::~ellipse()
@@ -35,15 +53,16 @@ ellipse::set_attrs(attr_map_t& attrs)
 	path_list.push_back(path);
 }
 
-void
-ellipse::dump()
+const std::string
+ellipse::dump() const
 {
-	std::cout << get_name()
+	std::stringstream s;
+	s << get_name()
 		<< ": x = " << this->x
 		<< ": y = " << this->y
 		<< ": rx = " << this->rx
-		<< ": ry = " << this->ry
-		<< std::endl;
+		<< ": ry = " << this->ry;
+	return s.str();
 }
 
 }

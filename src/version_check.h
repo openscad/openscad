@@ -37,64 +37,53 @@ a time, to avoid confusion.
 
 
 #include <Eigen/Core>
-#if not EIGEN_VERSION_AT_LEAST( 3,0,0 )
+#if !EIGEN_VERSION_AT_LEAST( 3,0,0 )
 #error eigen library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <boost/version.hpp>
-// boost 1.3.5 = 103500
-#if BOOST_VERSION < 103500
+// boost 1.55 = 105500
+#if BOOST_VERSION < 105500
 #error boost library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #ifdef ENABLE_CGAL
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/version.h>
+#pragma pop_macro("NDEBUG")
 
-#if CGAL_VERSION_NR < 1030601000
+#if CGAL_VERSION_NR < 1040900000
 #error CGAL library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
+#endif //ENABLE_CGAL
 #else
 
-#if CGAL_VERSION_NR < 1040021000
-#warning "======================="
-#warning "."
-#warning "."
-#warning "."
-#warning "."
-#warning CGAL library version is old, risking buggy behavior. Please see README.md. Continuing anyway.
-#warning "."
-#warning "."
-#warning "."
-#warning "."
-#warning "======================="
-#ifdef __clang__
-#error For Clang to work, CGAL must be >= 4.0.2
-#endif
-#endif // CGAL_VERSION_NR < 10400010000
-#endif //ENABLE_CGAL
 
 #ifdef ENABLE_OPENCSG
 #include <GL/glew.h>
-// kludge - GLEW doesnt have compiler-accessible version numbering
+// kludge - GLEW doesn't have compiler-accessible version numbering
 #ifndef GLEW_ARB_occlusion_query2
 #error GLEW library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <opencsg.h>
-// 1.3.2 -> 0x0132
-#if OPENCSG_VERSION < 0x0132
+// 1.4.2 -> 0x0142
+#if OPENCSG_VERSION < 0x0142
 #error OPENCSG library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 #endif // ENABLE_OPENCSG
 
+
 #ifndef OPENSCAD_NOGUI
 #include <QtCore/qglobal.h>
-#if QT_VERSION < 0x040400
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 #error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #endif // QT
 #endif
+
 
 #ifdef ENABLE_OPENCSG
 #endif // OpenCSG
@@ -119,4 +108,3 @@ a time, to avoid confusion.
 #endif
 
 #endif // OPENSCAD_SKIP_VERSION_CHECK
-

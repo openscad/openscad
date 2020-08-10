@@ -1,1 +1,2 @@
-ERROR: Assertion 'false' failed, line 1
+ERROR: Assertion 'false' failed in file assert-fail1-test.scad, line 1
+TRACE: called by 'assert', in file assert-fail1-test.scad, line 1.

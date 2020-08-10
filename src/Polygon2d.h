@@ -1,8 +1,9 @@
 #pragma once
 
+#include <vector>
 #include "Geometry.h"
 #include "linalg.h"
-#include <vector>
+#include <numeric>
 
 /*!
 	A single contour.
@@ -10,13 +11,14 @@
 */
 struct Outline2d {
 	Outline2d() : positive(true) {}
-	std::vector<Vector2d> vertices;
+	VectorOfVector2d vertices;
 	bool positive;
 };
 
 class Polygon2d : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Polygon2d() : sanitized(false) {}
 	size_t memsize() const override;
 	BoundingBox getBoundingBox() const override;
@@ -24,7 +26,11 @@ public:
 	unsigned int getDimension() const override { return 2; }
 	bool isEmpty() const override;
 	Geometry *copy() const override { return new Polygon2d(*this); }
-
+	size_t numFacets() const override {
+		return std::accumulate(theoutlines.begin(), theoutlines.end(), 0,
+			[](size_t a, const Outline2d& b) { return a + b.vertices.size(); }
+		);
+	};
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
 	class PolySet *tessellate() const;
 

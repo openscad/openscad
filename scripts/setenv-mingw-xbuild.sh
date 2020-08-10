@@ -24,20 +24,16 @@ if [ ! $BASEDIR ]; then
 	BASEDIR=$HOME/openscad_deps
 fi
 
-MXELIBTYPE=static
+MXELIBTYPE=static.posix
 if [ "`echo $* | grep shared `" ]; then
-	MXELIBTYPE=shared
+	MXELIBTYPE=shared.posix
 fi
-
-
-DEPLOYDIR64=$OPENSCADDIR/mingw64.$MXELIBTYPE
-DEPLOYDIR32=$OPENSCADDIR/mingw32.$MXELIBTYPE
 
 if [ ! $DEPLOYDIR ]; then
 	if [ "`echo $* | grep 64 `" ]; then
-		DEPLOYDIR=$DEPLOYDIR64
+		DEPLOYDIR=$OPENSCADDIR/mingw64.$MXELIBTYPE
 	else
-		DEPLOYDIR=$DEPLOYDIR32
+		DEPLOYDIR=$OPENSCADDIR/mingw32.$MXELIBTYPE
 	fi
 fi
 
@@ -69,10 +65,11 @@ if [ ! -e $DEPLOYDIR ]; then
 fi
 
 if [ "`echo $* | grep 64 `" ]; then
-	MXETARGETDIR=$MXEDIR/usr/x86_64-w64-mingw32.$MXELIBTYPE
+  MXE_TARGETS=x86_64-w64-mingw32.$MXELIBTYPE
 else
-	MXETARGETDIR=$MXEDIR/usr/i686-w64-mingw32.$MXELIBTYPE
+  MXE_TARGETS=i686-w64-mingw32.$MXELIBTYPE
 fi
+MXETARGETDIR=$MXEDIR/usr/$MXE_TARGETS
 
 if [ ! $MINGWX_SAVED_ORIGINAL_PATH ]; then
   MINGWX_SAVED_ORIGINAL_PATH=$PATH
@@ -82,10 +79,7 @@ fi
 PATH=$MXEDIR/usr/bin:$PATH
 PATH=$MXETARGETDIR/$MXEQTSUBDIR/bin:$PATH
 
-OPENSCAD_LIBRARIES=$MXETARGETDIR
-
 if [ "`echo $* | grep clean`" ]; then
-  OPENSCAD_LIBRARIES=
   BASEDIR=
   MXEDIR=
   MXETARGETDIR=
@@ -103,6 +97,7 @@ fi
 export OPENSCAD_LIBRARIES
 export BASEDIR
 export MXEDIR
+export MXE_TARGETS
 export MXETARGETDIR
 export MXELIBTYPE
 export DEPLOYDIR
@@ -122,5 +117,9 @@ if [ "`echo $* | grep clean`" ]; then
 else
   echo PATH modified: $MXEDIR/usr/bin
   echo PATH modified: $MXETARGETDIR/$MXEQTSUBDIR/bin
+fi
+
+if [ "`echo $PATH | grep anaconda.*bin`" ]; then
+  echo please remove pytho anaconda/bin from your PATH, exit, and rerun this
 fi
 

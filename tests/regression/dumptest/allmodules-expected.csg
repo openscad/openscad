@@ -1,8 +1,6 @@
 minkowski(convexity = 0);
-glide(path = undef, convexity = 0);
-subdiv(level = 1, convexity = 0);
 hull();
-resize(newsize = [0,0,0], auto = [0,0,0]);
+resize(newsize = [0,0,0], auto = [0,0,0], convexity = 0);
 group();
 group();
 group();
@@ -40,3 +38,4 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 color([-1, -1, -1, 1]);
 offset(r = 1, $fn = 0, $fa = 12, $fs = 2);
 text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+

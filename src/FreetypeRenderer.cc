@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 
 #include <iostream>
@@ -46,7 +46,10 @@ static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scal
     return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
 }
 
-const double FreetypeRenderer::scale = 1000;
+const double FreetypeRenderer::scale = 1e5;
+// Not sure if overall scale factor of 1000/1024 is mistake,
+// but keeping ratio for compatibility (only 2.4% difference)
+const double FreetypeRenderer::unscale = 1.0/1.024e5;
 
 FreetypeRenderer::FreetypeRenderer()
 {
@@ -197,7 +200,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 {
 	FT_Face face;
 	FT_Error error;
-	DrawingCallback callback(params.segments);
+	DrawingCallback callback(params.segments, params.size);
 	
 	FontCache *cache = FontCache::instance();
 	if (!cache->is_init_ok()) {
@@ -209,7 +212,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		return std::vector<const Geometry *>();
 	}
 	
-	error = FT_Set_Char_Size(face, 0, params.size * scale, 100, 100);
+	error = FT_Set_Char_Size(face, 0, scale, 100, 100);
 	if (error) {
 		PRINTB("Can't set font size for font %s", params.font);
 		return std::vector<const Geometry *>();
@@ -280,13 +283,13 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		FT_Glyph_Get_CBox(glyph->get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
 		
 		if (HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(hb_buf))) {
-			double asc = std::max(0.0, bbox.yMax / 64.0 / 16.0);
-			double desc = std::max(0.0, -bbox.yMin / 64.0 / 16.0);
+			double asc = std::max(0.0, bbox.yMax * unscale);
+			double desc = std::max(0.0, -bbox.yMin * unscale);
 			width += glyph->get_x_advance() * params.spacing;
 			ascend = std::max(ascend, asc);
 			descend = std::max(descend, desc);
 		} else {
-			double w_bbox = (bbox.xMax - bbox.xMin) / 64.0 / 16.0;
+			double w_bbox = (bbox.xMax - bbox.xMin) * unscale;
 			width = std::max(width, w_bbox);
 			ascend += glyph->get_y_advance() * params.spacing;
 		}

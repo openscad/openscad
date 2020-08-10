@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "feature.h"
 #include "printutils.h"
@@ -19,15 +21,10 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
-const Feature Feature::ExperimentalAssertExpression("assert", "Enable <code>assert</code>.");
-const Feature Feature::ExperimentalEchoExpression("echo", "Enable <code>echo</code> expression.");
-const Feature Feature::ExperimentalEachExpression("lc-each", "Enable <code>each</code> expression in list comprehensions.");
-const Feature Feature::ExperimentalElseExpression("lc-else", "Enable <code>else</code> expression in list comprehensions.");
-const Feature Feature::ExperimentalForCExpression("lc-for-c", "Enable C-style <code>for</code> expression in list comprehensions.");
-const Feature Feature::ExperimentalAmfImport("amf-import", "Enable AMF import.");
-const Feature Feature::ExperimentalSvgImport("svg-import", "Enable SVG import.");
-const Feature Feature::ExperimentalCustomizer("customizer", "Enable Customizer");
-
+const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
+const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
+const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalMouseSelection("mouse-selection", "Enable mouse selector");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -80,11 +77,13 @@ Feature::iterator Feature::end()
 	return feature_list.end();
 }
 
-void Feature::dump_features()
+std::string Feature::features()
 {
-	for (map_t::iterator it = feature_map.begin(); it != feature_map.end(); it++) {
-		std::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
-	}
+	const auto seq = boost::make_iterator_range(Feature::begin(), Feature::end());
+	const auto str = [](const Feature * const f) {
+		return (boost::format("%s%s") % f->get_name() % (f->is_enabled() ? "*" : "")).str();
+	};
+	return boost::algorithm::join(boost::adaptors::transform(seq, str), ", ");
 }
 
 ExperimentalFeatureException::ExperimentalFeatureException(const std::string &what_arg)
@@ -101,8 +100,6 @@ ExperimentalFeatureException::~ExperimentalFeatureException() throw()
 void ExperimentalFeatureException::check(const Feature &feature)
 {
 	if (!feature.is_enabled()) {
-		std::stringstream out;
-		out << "ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences.";
-		throw ExperimentalFeatureException(out.str());
+		throw ExperimentalFeatureException(STR("ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences."));
 	}
 }

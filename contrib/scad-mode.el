@@ -3,10 +3,10 @@
 ;; Author:     Len Trigg, Łukasz Stelmach
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   28 Mar 2015
+;; Modified:   28 Jun 2020
 ;; Keywords:   languages
 ;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
-;; Version:    91.0
+;; Version:    92.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -72,6 +72,8 @@
     "dxf_dim" "dxf_cross"                                               ;;dxfdim.cc
     "norm" "cross"                                                      ;;2014.03
     "concat" "chr"                                                      ;;2015.03
+    "assert" "ord"                                                      ;;2019.05
+    "is_undef" "is_list" "is_num" "is_bool" "is_string"                 ;;2019.05 type test
     )
   "SCAD functions."
   :type 'list
@@ -90,7 +92,7 @@
     "import"                                                            ;;import.cc
     "group"                                                             ;;builtin.cc
     "projection"                                                        ;;projection.cc
-    "minkowski" "glide" "subdiv" "hull" "resize"                        ;;cgaladv.cc
+    "minkowski" "hull" "resize"                                         ;;cgaladv.cc
     "parent_module"                                                     ;;2014.03
     "let" "offset" "text"                                               ;;2015.03
     )
@@ -174,6 +176,11 @@
   nil. If you want to set the style with file local variables use
   the `c-file-style' variable")
 
+(defvar scad-completions
+  (append '("module" "function" "use" "include")
+          scad-keywords scad-functions scad-modules)
+  "List of known words for completion.")
+
 (put 'scad-mode 'c-mode-prefix "scad-")
 ;;;###autoload
 (define-derived-mode scad-mode prog-mode "SCAD"
@@ -186,6 +193,8 @@ initialization, then `scad-mode-hook'.
 
 Key bindings:
 \\{scad-mode-map}"
+  (add-hook 'completion-at-point-functions
+            'scad-completion-at-point nil 'local)
   (c-initialize-cc-mode)
   ;; (setq local-abbrev-table scad-mode-abbrev-table
   ;; 	abbrev-mode t)
@@ -195,6 +204,14 @@ Key bindings:
   (c-font-lock-init)
   (c-run-mode-hooks 'c-mode-common-hook 'scad-mode-hook)
   (c-update-modeline))
+
+(defun scad-completion-at-point ()
+  "Completion at point function."
+  (let ((bounds (bounds-of-thing-at-point 'word)))
+    (when bounds
+      (list (car bounds) (cdr bounds)
+            scad-completions
+            :exclusive "no"))))
 
 ;; From: http://stackoverflow.com/questions/14520073/add-words-for-dynamic-expansion-to-emacs-mode
 (defun scad-prime-dabbrev ()

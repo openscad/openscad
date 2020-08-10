@@ -31,6 +31,7 @@
 #include "builtin.h"
 #include "value.h"
 #include "printutils.h"
+#include "degree_trig.h"
 #include <sstream>
 #include <vector>
 #include <assert.h>
@@ -50,119 +51,167 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
-AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new TransformNode(inst);
+	auto node = new TransformNode(inst, evalctx);
 
 	AssignmentList args;
 
 	switch (this->type) {
 	case transform_type_e::SCALE:
-		args += Assignment("v");
+		args += assignment("v");
 		break;
 	case transform_type_e::ROTATE:
-		args += Assignment("a"), Assignment("v");
+		args += assignment("a"), assignment("v");
 		break;
 	case transform_type_e::MIRROR:
-		args += Assignment("v");
+		args += assignment("v");
 		break;
 	case transform_type_e::TRANSLATE:
-		args += Assignment("v");
+		args += assignment("v");
 		break;
 	case transform_type_e::MULTMATRIX:
-		args += Assignment("m");
+		args += assignment("m");
 		break;
 	default:
 		assert(false);
 	}
 
-	Context c(ctx);
-	c.setVariables(args, evalctx);
-	inst->scope.apply(*evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
 
 	if (this->type == transform_type_e::SCALE) {
 		Vector3d scalevec(1, 1, 1);
-		auto v = c.lookup_variable("v");
+		auto v = c->lookup_variable("v");
 		if (!v->getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
 			double num;
-			if (v->getDouble(num)) scalevec.setConstant(num);
+			if (v->getDouble(num)){
+				scalevec.setConstant(num);
+			}else{
+				PRINTB("WARNING: Unable to convert scale(%s) parameter to a number, a vec3 or vec2 of numbers or a number, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}
+		}
+		if(OpenSCAD::rangeCheck){
+			if(scalevec[0]==0 || scalevec[1]==0 || scalevec[2]==0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])){
+				PRINTB("WARNING: scale(%s), %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+			}
 		}
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == transform_type_e::ROTATE) {
-		auto val_a = c.lookup_variable("a");
-		if (val_a->type() == Value::ValueType::VECTOR) {
-			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
-			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
-			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
-			double a;
+		auto val_a = c->lookup_variable("a");
+		auto val_v = c->lookup_variable("v");
+		if (val_a->type() == Value::Type::VECTOR) {
+			double sx = 0, sy = 0, sz = 0;
+			double cx = 1, cy = 1, cz = 1;
+			double a = 0.0;
+			bool ok = true;
 			if (val_a->toVector().size() > 0) {
-				val_a->toVector()[0]->getDouble(a);
-				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
+				ok &= val_a->toVector()[0]->getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
+				sx = sin_degrees(a);
+				cx = cos_degrees(a);
 			}
 			if (val_a->toVector().size() > 1) {
-				val_a->toVector()[1]->getDouble(a);
-				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
+				ok &= val_a->toVector()[1]->getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
+				sy = sin_degrees(a);
+				cy = cos_degrees(a);
 			}
 			if (val_a->toVector().size() > 2) {
-				val_a->toVector()[2]->getDouble(a);
-				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
+				ok &= val_a->toVector()[2]->getDouble(a);
+				ok &= !std::isinf(a) && !std::isnan(a);
+				sz = sin_degrees(a);
+				cz = cos_degrees(a);
 			}
-			node->matrix.rotate(rotz * roty * rotx);
-		}
-		else {
-			auto val_v = c.lookup_variable("v");
+			if (val_a->toVector().size() > 3) {
+				ok &= false;
+			}
+
+			bool v_supplied = (val_v->isDefined());
+			if(ok){
+				if(v_supplied){
+					PRINTB("WARNING: When parameter a is supplied as vector, v is ignored rotate(a=%s, v=%s), %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}else{
+				if(v_supplied){
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else{
+					PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}
+			Matrix3d M;
+			M <<  cy * cz,  cz * sx * sy - cx * sz,   cx * cz * sy + sx * sz,
+			      cy * sz,  cx * cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
+			     -sy,       cy * sx,                  cx * cy;
+			node->matrix.rotate(M);
+		} else {
 			double a = 0.0;
+			bool aConverted = val_a->getDouble(a);
+			aConverted &= !std::isinf(a) && !std::isnan(a);
 
-			val_a->getDouble(a);
-
-			Vector3d axis(0, 0, 1);
-			if (val_v->getVec3(axis[0], axis[1], axis[2])) {
-				if (axis.squaredNorm() > 0) axis.normalize();
-			}
-
-			if (axis.squaredNorm() > 0) {
-				node->matrix = Eigen::AngleAxisd(a*M_PI/180, axis);
+			Vector3d v(0, 0, 1);
+			bool vConverted = val_v->getVec3(v[0], v[1], v[2], 0.0);
+			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
+			if(val_v->isDefined() && ! vConverted){
+				if(aConverted){
+					PRINTB("WARNING: Problem converting rotate(..., v=%s) parameter, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}else{
+					PRINTB("WARNING: Problem converting rotate(a=%s, v=%s) parameter, %s", val_a->toEchoString() % val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				}
+			}else if(!aConverted){
+				PRINTB("WARNING: Problem converting rotate(a=%s) parameter, %s", val_a->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 			}
 		}
 	}
 	else if (this->type == transform_type_e::MIRROR) {
-		auto val_v = c.lookup_variable("v");
+		auto val_v = c->lookup_variable("v");
 		double x = 1.0, y = 0.0, z = 0.0;
-	
-		if (val_v->getVec3(x, y, z)) {
-			if (x != 0.0 || y != 0.0 || z != 0.0) {
-				double sn = 1.0 / sqrt(x*x + y*y + z*z);
-				x *= sn, y *= sn, z *= sn;
-			}
+
+		if (!val_v->getVec3(x, y, z, 0.0)) {
+			PRINTB("WARNING: Unable to convert mirror(%s) parameter to a vec3 or vec2 of numbers, %s", val_v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
 		}
 
+		// x /= sqrt(x*x + y*y + z*z)
+		// y /= sqrt(x*x + y*y + z*z)
+		// z /= sqrt(x*x + y*y + z*z)
 		if (x != 0.0 || y != 0.0 || z != 0.0)	{
+			// skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
+			// instead just divide directly within each matrix element
+			// simplified calculation leads to less float errors
+			double a = x*x + y*y + z*z;
+
 			Matrix4d m;
-			m << 1-2*x*x, -2*y*x, -2*z*x, 0,
-				-2*x*y, 1-2*y*y, -2*z*y, 0,
-				-2*x*z, -2*y*z, 1-2*z*z, 0,
+			m << 1-2*x*x/a, -2*y*x/a, -2*z*x/a, 0,
+				-2*x*y/a, 1-2*y*y/a, -2*z*y/a, 0,
+				-2*x*z/a, -2*y*z/a, 1-2*z*z/a, 0,
 				0, 0, 0, 1;
 			node->matrix = m;
 		}
 	}
 	else if (this->type == transform_type_e::TRANSLATE)	{
-		auto v = c.lookup_variable("v");
+		auto v = c->lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		v->getVec3(translatevec[0], translatevec[1], translatevec[2]);
-		node->matrix.translate(translatevec);
+		bool ok = v->getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
+		ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]) ;
+		if (ok) {
+			node->matrix.translate(translatevec);
+		}else{
+			PRINTB("WARNING: Unable to convert translate(%s) parameter to a vec3 or vec2 of numbers, %s", v->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
-		auto v = c.lookup_variable("m");
-		if (v->type() == Value::ValueType::VECTOR) {
+		auto v = c->lookup_variable("m");
+		if (v->type() == Value::Type::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v->toVector().size() && v->toVector()[y]->type() == 
-						Value::ValueType::VECTOR && x < v->toVector()[y]->toVector().size())
+				if (y < v->toVector().size() && v->toVector()[y]->type() ==
+						Value::Type::VECTOR && x < v->toVector()[y]->toVector().size())
 					v->toVector()[y]->toVector()[x]->getDouble(rawmatrix(y, x));
 			}
 			double w = rawmatrix(3,3);
@@ -179,7 +228,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 std::string TransformNode::toString() const
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 
 	stream << "multmatrix([";
 	for (int j=0;j<4;j++) {
@@ -197,7 +246,7 @@ std::string TransformNode::toString() const
 	return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi), matrix(Transform3d::Identity())
+TransformNode::TransformNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx), matrix(Transform3d::Identity())
 {
 }
 
@@ -208,9 +257,28 @@ std::string TransformNode::name() const
 
 void register_builtin_transform()
 {
-	Builtins::init("scale", new TransformModule(transform_type_e::SCALE));
-	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE));
-	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR));
-	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE));
-	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX));
+	Builtins::init("scale", new TransformModule(transform_type_e::SCALE),
+				{
+					"scale([x, y, z])",
+				});
+
+	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE),
+				{
+					"rotate([x, y, z])",
+				});
+
+	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR),
+				{
+					"mirror([x, y, z])",
+				});
+
+	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE),
+				{
+					"translate([x, y, z])",
+				});
+
+	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX),
+				{
+					"multmatrix(matrix_4_by_4)",
+				});
 }

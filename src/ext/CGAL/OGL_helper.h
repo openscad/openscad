@@ -21,9 +21,13 @@
 
 #pragma once
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/Nef_S2/OGL_base_object.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Nef_3/SNC_decorator.h>
+#pragma pop_macro("NDEBUG")
+
 #include "system-gl.h"
 #include <cstdlib>
 
@@ -379,6 +383,8 @@ namespace OGL {
 	return c;
     }
 
+    virtual void draw(bool) const = 0;
+
     void draw(Vertex_iterator v) const { 
       PRINTD("draw( Vertex_iterator )");
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
@@ -616,8 +622,9 @@ namespace OGL {
 	os << "  "<<*e<<", mark="<<e->mark()<<std::endl;
       os << "Facets:" << std::endl;
       Halffacet_iterator f;
-      for(f=halffacets_.begin();f!=halffacets_.end();++f)
+      for(f=halffacets_.begin();f!=halffacets_.end();++f) {
 	f->debug(); os << std::endl;
+      }
       os << std::endl;
     }
 

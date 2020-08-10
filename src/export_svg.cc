@@ -53,10 +53,15 @@ static void append_svg(const Polygon2d &poly, std::ostream &output)
 
 static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (dynamic_cast<const PolySet *>(geom.get())) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const auto &item : geomlist->getChildren()) {
+			append_svg(item.second, output);
+		}
+	}
+	else if (dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(false && "Unsupported file format");
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		append_svg(*poly, output);
 	} else {
 		assert(false && "Export as SVG for this geometry type is not supported");
@@ -68,10 +73,10 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	
 	BoundingBox bbox = geom->getBoundingBox();
-	int minx = floor(bbox.min().x());
-	int miny = floor(-bbox.max().y());
-	int maxx = ceil(bbox.max().x());
-	int maxy = ceil(-bbox.min().y());
+	int minx = (int)floor(bbox.min().x());
+	int miny = (int)floor(-bbox.max().y());
+	int maxx = (int)ceil(bbox.max().x());
+	int maxy = (int)ceil(-bbox.min().y());
 	int width = maxx - minx;
 	int height = maxy - miny;
 

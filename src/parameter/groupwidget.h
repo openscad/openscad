@@ -2,11 +2,9 @@
 
 #include <QFrame>
 #include <QGridLayout>
-#include <QParallelAnimationGroup>
 #include <QScrollArea>
 #include <QToolButton>
 #include <QWidget>
-#include <vector>
 
 class GroupWidget : public QWidget {
 	Q_OBJECT
@@ -14,7 +12,7 @@ private:
 	QGridLayout mainLayout;
 	QToolButton toggleButton;
 	QWidget contentArea;
-	bool *show;
+	bool *show; //pointer to the show flag in the group map
 
 public:
 	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = nullptr);

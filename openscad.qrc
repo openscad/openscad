@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/prefs3DPrint.png</file>
+    <file>src/PrintInitDialog.html</file>
+    <file>src/OctoPrintInfo.html</file>
+    <file>icons/prefsInput.png</file>
+    <file>icons/prefsInputAxis.png</file>
+    <file>icons/prefsInputButtons.png</file>
     <file>images/zoom-text-in-white.png</file>
     <file>images/zoom-text-in.png</file>
     <file>images/zoom-text-out-white.png</file>
@@ -51,8 +57,8 @@
     <file>images/Open-32.png</file>
     <file>images/Save-32.png</file>
     <file>images/blackbottom.png</file>
-    <file>images/blackleft (copy).png</file>
     <file>images/rightright.png</file>
+    <file>images/blackleft.png</file>
     <file>images/blackfront.png</file>
     <file>images/blackback.png</file>
     <file>images/blackaxes.png</file>
@@ -73,6 +79,8 @@
     <file>images/preview-32-white.png</file>
     <file>images/render-32.png</file>
     <file>images/render-32-white.png</file>
+    <file>images/3dprint-32.png</file>
+    <file>images/3dprint-32-white.png</file>
     <file>images/animate.png</file>
     <file>images/orthogonalwhite.png</file>
     <file>images/perspective1white.png</file>
@@ -82,6 +90,8 @@
     <file>images/scalemarkers-white.png</file>
     <file>images/AMF.png</file>
     <file>images/AMF-white.png</file>
+    <file>images/3MF.png</file>
+    <file>images/3MF-white.png</file>
     <file>images/CSG.png</file>
     <file>images/CSG-white.png</file>
     <file>images/DXF.png</file>
@@ -94,5 +104,6 @@
     <file>images/STL-white.png</file>
     <file>images/SVG.png</file>
     <file>images/SVG-white.png</file>
+    <file>sounds/complete.wav</file>
   </qresource>
 </RCC>

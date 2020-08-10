@@ -1,7 +1,7 @@
 //Test blank
 use <>
 
-//Test that the entire path is pushed onto the stack upto the last '/' 
+//Test that the entire path is pushed onto the stack up to the last '/' 
 use <sub1/sub2/sub3/sub4/use-test2.scad>
 
 //Test that a non existent path/file doesn't screw things up
@@ -23,7 +23,7 @@ use<test/>
 use </>
 
 //Test with absolute path
-use <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
+use <@CMAKE_CURRENT_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
 
 // Test simple MCAD library
 use <MCAD/teardrop.scad>

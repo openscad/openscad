@@ -9,7 +9,7 @@
  versions of boost found on popular versions of linux, circa early 2012.
 
  design
-  the boost filsystem changed around 1.46-1.48. we do a large #ifdef
+  the boost filesystem changed around 1.46-1.48. we do a large #ifdef
   based on boost version that wraps various functions appropriately.
   in a few years, this file should be deleted as unnecessary.
 

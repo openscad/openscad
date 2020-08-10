@@ -7,7 +7,7 @@
 #
 #
 # step 1. If the input file is _not_ an .scad file, create a temporary .scad file importing the input file.
-# step 2. Run OpenSCAD on the .scad file, output an export format (csg, stl, off, dxf, svg, amf)
+# step 2. Run OpenSCAD on the .scad file, output an export format (csg, stl, off, dxf, svg, amf, 3mf)
 # step 3. If the export format is _not_ .csg, create a temporary new .scad file importing the exported file
 # step 4. Run OpenSCAD on the .csg or .scad file, export to the given .png file
 # step 5. (done in CTest) - compare the generated .png file to expected output
@@ -26,6 +26,8 @@
 #
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
+from __future__ import print_function
+
 import sys, os, re, subprocess, argparse
 from validatestl import validateSTL
 
@@ -36,12 +38,13 @@ def failquit(*args):
     sys.exit(1)
 
 def createImport(inputfile, scadfile):
+        inputfilename = os.path.split(inputfile)[1]
         print ('createImport: ' + inputfile + " " + scadfile)
         outputdir = os.path.dirname(scadfile)
         try:
                 if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
                 f = open(scadfile,'w')
-                f.write('import("'+inputfile+'");'+os.linesep)
+                f.write('import("'+inputfilename+'");'+os.linesep)
                 f.close()
         except:
                 failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
@@ -50,7 +53,7 @@ def createImport(inputfile, scadfile):
 #
 # Parse arguments
 #
-formats = ['csg', 'stl','off', 'amf', 'dxf', 'svg']
+formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
 parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify 3d export format')
@@ -59,6 +62,15 @@ parser.set_defaults(requiremanifold=False)
 args,remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
+
+export_format = None
+if args.format == 'asciistl':
+    export_format = 'asciistl'
+    args.format = 'stl'
+elif args.format == 'binstl':
+    export_format = 'binstl'
+    args.format = 'stl'
+
 inputfile = remaining_args[0]         # Can be .scad file or a file to be imported
 pngfile = remaining_args[-1]
 remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
@@ -92,9 +104,12 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 #
 tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in remaining_args]
 
+if export_format is not None:
+    tmpargs.extend(['--export-format', export_format])
+
 export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
-print >> sys.stderr, 'Running OpenSCAD #1:'
-print >> sys.stderr, ' '.join(export_cmd)
+print('Running OpenSCAD #1:', file=sys.stderr)
+print(' '.join(export_cmd), file=sys.stderr)
 result = subprocess.call(export_cmd)
 if result != 0:
     failquit('OpenSCAD #1 failed with return code ' + str(result))
@@ -114,9 +129,9 @@ if args.format != 'csg':
     createImport(exportfile, newscadfile)
 
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
-print >> sys.stderr, 'Running OpenSCAD #2:'
-print >> sys.stderr, ' '.join(create_png_cmd)
-fontdir =  os.path.join(os.path.dirname(__file__), "..", "testdata");
+print('Running OpenSCAD #2:', file=sys.stderr)
+print(' '.join(create_png_cmd), file=sys.stderr)
+fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "testdata/ttf"))
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 result = subprocess.call(create_png_cmd, env = fontenv);

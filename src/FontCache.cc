@@ -40,6 +40,30 @@ std::vector<std::string> fontpath;
 
 namespace fs = boost::filesystem;
 
+const std::string get_fontconfig_version()
+{
+	const unsigned int version = FcGetVersion();
+
+	const OpenSCAD::library_version_number header_version{FC_MAJOR, FC_MINOR, FC_REVISION};
+	const OpenSCAD::library_version_number runtime_version{version / 10000, (version / 100) % 100, version % 100};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
+}
+
+const std::string get_harfbuzz_version()
+{
+	unsigned int major, minor, micro;
+	hb_version(&major, &minor, &micro);
+
+	const OpenSCAD::library_version_number header_version{HB_VERSION_MAJOR, HB_VERSION_MINOR, HB_VERSION_MICRO};
+	const OpenSCAD::library_version_number runtime_version{major, minor, micro};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
+}
+
+const std::string get_freetype_version()
+{
+	return FontCache::instance()->get_freetype_version();
+}
+
 FontInfo::FontInfo(const std::string &family, const std::string &style, const std::string &file) : family(family), style(style), file(file)
 {
 }
@@ -92,6 +116,7 @@ void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
 FontCache::FontCache()
 {
 	this->init_ok = false;
+	this->library = nullptr;
 
 	// If we've got a bundled fonts.conf, initialize fontconfig with our own config
 	// by overriding the built-in fontconfig path.
@@ -104,7 +129,7 @@ FontCache::FontCache()
 	// Just load the configs. We'll build the fonts once all configs are loaded
 	this->config = FcInitLoadConfig();
 	if (!this->config) {
-		PRINT("WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
+		PRINT("FONT-WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
 		return;
 	}
 
@@ -149,7 +174,7 @@ FontCache::FontCache()
 
 	const FT_Error error = FT_Init_FreeType(&this->library);
 	if (error) {
-		PRINT("WARNING: Can't initialize freetype library, text() objects will not be rendered");
+		PRINT("FONT-WARNING: Can't initialize freetype library, text() objects will not be rendered");
 		return;
 	}
 
@@ -166,6 +191,20 @@ FontCache * FontCache::instance()
 		self = new FontCache();
 	}
 	return self;
+}
+
+const std::string FontCache::get_freetype_version() const
+{
+	if (!this->is_init_ok()) {
+		return "(not initialized)";
+	}
+
+	FT_Int major, minor, micro;
+	FT_Library_Version(this->library, &major, &minor, &micro);
+
+	const OpenSCAD::library_version_number header_version{FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH};
+	const OpenSCAD::library_version_number runtime_version{static_cast<unsigned>(major), static_cast<unsigned>(minor), static_cast<unsigned>(micro)};
+	return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata)
@@ -282,7 +321,12 @@ FT_Face FontCache::find_face(const std::string &font) const
 	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
 	PRINTDB("font = \"%s\", lookup = \"%s\"", font % lookup);
 	FT_Face face = find_face_fontconfig(lookup);
-	PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+	if (face) {
+		PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+	}
+	else {
+		PRINTD("font not found");
+	}
 	return face;
 }
 
@@ -348,7 +392,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 		if (!charmap_set)
 			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
 		if (!charmap_set)
-			PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
+			PRINTB("Font-Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
 	}
 	
 	return error ? nullptr : face;

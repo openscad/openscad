@@ -11,10 +11,13 @@
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
 
+#pragma push_macro("NDEBUG")
+#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+#pragma pop_macro("NDEBUG")
 
 using namespace CGALUtils;
-namespace fs=boost::fileystem;
+namespace fs=boost::filesystem;
 
 #define STL_FACET_NUMBYTES 4*3*4+2
 // as there is no 'float32_t' standard, we assume the systems 'float'
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
         std::cerr << "Error importing STL " << argv[1] << std::endl;
         exit(1);
       }
-      std::cerr << "Imported " << ps->numPolygons() << " polygons" << std::endl;
+      std::cerr << "Imported " << ps->numFacets() << " polygons" << std::endl;
     }
     else if (suffix == ".nef3") {
       N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3);

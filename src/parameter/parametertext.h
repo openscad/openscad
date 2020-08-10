@@ -6,12 +6,12 @@ class ParameterText : public ParameterVirtualWidget
 {
 	Q_OBJECT
 public:
-	ParameterText(ParameterObject *parameterobject, int showDescription);
+	ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
 	void setValue() override;
-	void setParameterFocus() override;
 
 protected slots:
 	void onChanged(QString);
+	void onEditingFinished();
 
 private:
 	bool volatile suppressUpdate; 

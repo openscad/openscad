@@ -27,14 +27,14 @@ bool CGALCache::insert(const std::string &id, const shared_ptr<const CGAL_Nef_po
 	return inserted;
 }
 
-size_t CGALCache::maxSize() const
+size_t CGALCache::maxSizeMB() const
 {
-	return this->cache.maxCost();
+	return this->cache.maxCost()/(1024*1024);
 }
 
-void CGALCache::setMaxSize(size_t limit)
+void CGALCache::setMaxSizeMB(size_t limit)
 {
-	this->cache.setMaxCost(limit);
+	this->cache.setMaxCost(limit*1024*1024);
 }
 
 void CGALCache::clear()

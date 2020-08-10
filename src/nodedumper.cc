@@ -2,10 +2,49 @@
 #include "state.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-
 #include <string>
 #include <sstream>
-#include <assert.h>
+#include <boost/regex.hpp>
+
+
+void GroupNodeChecker::incChildCount(int groupNodeIndex) {
+	auto search = this->groupChildCounts.find(groupNodeIndex);
+	// if no entry then given node wasn't a group node
+	if (search != this->groupChildCounts.end()) {
+		++(search->second);
+	}
+}
+
+int GroupNodeChecker::getChildCount(int groupNodeIndex) const {
+	auto search = this->groupChildCounts.find(groupNodeIndex);
+	if (search != this->groupChildCounts.end()) {
+		return search->second;
+	} else {
+		return -1;
+	}
+}
+
+Response GroupNodeChecker::visit(State &state, const GroupNode &node)
+{
+	if (state.isPrefix()) {
+		// create entry for group node, which children may increment
+		this->groupChildCounts.emplace(node.index(),0);
+	} else if (state.isPostfix()) {
+		if ((this->getChildCount(node.index()) > 0) && state.parent()) {
+		    this->incChildCount(state.parent()->index());
+		}
+	}
+	return Response::ContinueTraversal;
+}
+
+Response GroupNodeChecker::visit(State &state, const AbstractNode &)
+{
+	if (state.isPostfix() && state.parent()) {
+		this->incChildCount(state.parent()->index());
+	}
+	return Response::ContinueTraversal;
+}
+
 
 /*!
 	\class NodeDumper
@@ -15,80 +54,179 @@
 	any node or subtree.
 */
 
+void NodeDumper::initCache() 
+{
+	this->dumpstream.str("");
+	this->dumpstream.clear();
+	this->cache.clear();
+}
+
+void NodeDumper::finalizeCache()
+{
+	this->cache.setRootString(this->dumpstream.str());
+}
+
 bool NodeDumper::isCached(const AbstractNode &node) const
 {
 	return this->cache.contains(node);
 }
 
-/*!
-	Indent or deindent. Must be called before we output any children.
-*/
-void NodeDumper::handleIndent(const State &state)
+Response NodeDumper::visit(State &state, const GroupNode &node)
 {
+	if (!this->idString) {
+		return NodeDumper::visit(state, (const AbstractNode &)node);
+	}
 	if (state.isPrefix()) {
-		this->currindent += "\t";
-	}
-	else if (state.isPostfix()) {
-		this->currindent.erase((this->currindent.length() >= 1) ? 
-													 this->currindent.length() - 1 : 0);
-	}
-}
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and init cache
+		if (this->root == &node) {
+			this->initCache();
+		}
 
-/*!
-	Dumps the block of children contained in this->visitedchildren,
-	including braces and indentation.
-	All children are assumed to be cached already.
- */
-std::string NodeDumper::dumpChildBlock(const AbstractNode &node)
-{
-	std::stringstream dump;
-	if (!this->visitedchildren[node.index()].empty()) {
-		dump << " {\n";
-		const auto &chstr = dumpChildren(node);
-		if (!chstr.empty()) dump << chstr << "\n";
-		dump << this->currindent << "}";
-	}
-	else {
-		dump << ";";
-	}
-	return dump.str();
-}
+		// ListNodes can pass down modifiers to children via state, so check both modinst and state
+		if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
 
-std::string NodeDumper::dumpChildren(const AbstractNode &node)
-{
-	std::stringstream dump;
-	for (auto child : this->visitedchildren[node.index()]) {
-		assert(isCached(*child));
-		const auto &str = this->cache[*child];
-		if (!str.empty()) {
-			if (child != this->visitedchildren[node.index()].front()) dump << "\n";
-			if (child->modinst->isBackground()) dump << "%";
-			if (child->modinst->isHighlight()) dump << "#";
-			dump << str;
+// If IDPREFIX is set, we will output "/*id*/" in front of each node
+// which is useful for debugging.
+#ifdef IDPREFIX
+		if (this->idString) this->dumpstream << "\n";	
+		this->dumpstream << "/*" << node.index() << "*/";
+#endif
+
+		// insert start index
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
+		
+		if(this->groupChecker.getChildCount(node.index()) > 1) {
+			this->dumpstream << node << "{";
+		}
+		this->currindent++;
+	} else if (state.isPostfix()) {
+		this->currindent--;
+		if (this->groupChecker.getChildCount(node.index()) > 1) {
+			this->dumpstream << "}";
+		}
+		// insert end index
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and finalize cache
+		if (this->root == &node) {
+			this->finalizeCache();
 		}
 	}
-	return dump.str();
+
+	return Response::ContinueTraversal;
 }
+
 
 /*!
 	Called for each node in the tree.
-	Will abort traversal if we're cached
 */
 Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
-	if (isCached(node)) return Response::PruneTraversal;
+	if (state.isPrefix()) {
 
-	handleIndent(state);
-	if (state.isPostfix()) {
-		std::stringstream dump;
-		dump << this->currindent;
-		if (this->idprefix) dump << "n" << node.index() << ":";
-		dump << node;
-		dump << dumpChildBlock(node);
-		this->cache.insert(node, dump.str());
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and init cache
+		if (this->root == &node) {
+			this->initCache();
+		}
+
+		// ListNodes can pass down modifiers to children via state, so check both modinst and state
+		if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
+		if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
+
+// If IDPREFIX is set, we will output "/*id*/" in front of each node
+// which is useful for debugging.
+#ifdef IDPREFIX
+		if (this->idString) this->dumpstream << "\n";	
+		this->dumpstream << "/*" << node.index() << "*/";
+#endif
+
+		// insert start index
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
+		
+		if (this->idString) {
+			
+			static const boost::regex re("[^\\s\\\"]+|\\\"(?:[^\\\"\\\\]|\\\\.)*\\\"");
+			const auto name = STR(node);
+			boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
+			std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
+		
+			if (node.getChildren().size() > 0) {
+				this->dumpstream << "{";
+			}
+
+		} else {
+
+			for(int i = 0; i < this->currindent; ++i) {
+				this->dumpstream << this->indent;
+			}
+			this->dumpstream << node;
+			if (node.getChildren().size() > 0) {
+				this->dumpstream << " {\n";
+			}
+		}
+
+		this->currindent++;
+
+	} else if (state.isPostfix()) {
+
+		this->currindent--;
+		
+		if (this->idString) {
+			if (node.getChildren().size() > 0) {
+				this->dumpstream << "}";
+			} else {
+				this->dumpstream << ";";
+			}
+		} else {
+			if (node.getChildren().size() > 0) {
+				for(int i = 0; i < this->currindent; ++i) {
+					this->dumpstream << this->indent;
+				}
+				this->dumpstream << "}\n";
+			} else {
+				this->dumpstream << ";\n";
+			}
+		}
+	
+		// insert end index
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+
+		// For handling root modifier '!'
+		// Check if we are processing the root of the current Tree and finalize cache
+		if (this->root == &node) {
+			this->finalizeCache();
+		}
 	}
 
-	handleVisitedChildren(state, node);
+	return Response::ContinueTraversal;
+}
+
+/*!
+	Handle list nodes specially: Only list children
+*/
+Response NodeDumper::visit(State &state, const ListNode &node)
+{
+	if (state.isPrefix()) {
+		// For handling root modifier '!'
+		if (this->root == &node) {
+			this->initCache();
+		}
+		// pass modifiers down to children via state
+		if (node.modinst->isHighlight()) state.setHighlight(true);
+		if (node.modinst->isBackground()) state.setBackground(true);
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
+	} else if (state.isPostfix()) {
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+		// For handling root modifier '!'
+		if (this->root == &node) {
+			this->finalizeCache();
+		}
+	}
+
 	return Response::ContinueTraversal;
 }
 
@@ -99,29 +237,13 @@ Response NodeDumper::visit(State &state, const RootNode &node)
 {
 	if (isCached(node)) return Response::PruneTraversal;
 
-	if (state.isPostfix()) {
-		std::stringstream dump;
-		dump << dumpChildren(node);
-		this->cache.insert(node, dump.str());
+	if (state.isPrefix()) {
+		this->initCache();
+		this->cache.insertStart(node.index(), this->dumpstream.tellp());
+	} else if (state.isPostfix()) {
+		this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+		this->finalizeCache();
 	}
 
-	handleVisitedChildren(state, node);
 	return Response::ContinueTraversal;
-}
-
-/*!
-	Adds this given node to its parent's child list.
-	Should be called for all nodes, including leaf nodes.
-*/
-void NodeDumper::handleVisitedChildren(const State &state, const AbstractNode &node)
-{
-	if (state.isPostfix()) {
-		this->visitedchildren.erase(node.index());
-		if (!state.parent()) {
-			this->root = &node;
-		}
-		else {
-			this->visitedchildren[state.parent()->index()].push_back(&node);
-		}
-	}
 }
