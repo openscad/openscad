@@ -81,6 +81,7 @@
 #define snprintf _snprintf
 #endif
 
+#include "lcache.h"
 #ifdef ENABLE_HIREDIS
 #include "pcache.h"
 #endif
@@ -469,7 +470,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 			glview = prepare_preview(tree, viewOptions, camera);
 		} else {
 			// Force creation of CGAL objects (for testing)
-			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+            root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (root_geom) {
 				if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 					if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
@@ -934,7 +935,7 @@ int main(int argc, char **argv)
         ("debug-output", po::value<string>(), "output debug messages into a log")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
-        ("persistent-cache", po::value<string>(), "=IP address,port number,password")
+        ("cache", po::value<string>(), "=file (local cache) or Redis, IP Address, Port Number, Password if any")
 		;
 
 	po::options_description hidden("Hidden options");
@@ -1095,25 +1096,30 @@ int main(int argc, char **argv)
 
 	Camera camera = get_camera(vm);
 
-    if(vm.count("persistent-cache")) {
+    if(vm.count("cache")) {
         vector<string> strs;
-        boost::split(strs, vm["persistent-cache"].as<string>(), is_any_of(","));
-        PCSettings::instance()->enablePersistentCache =  true;
-        if(strs.size()==2 ||strs.size()==3){
-            PCSettings::instance()->ipAddress = strs[0];
-            try{
-                PCSettings::instance()->port = lexical_cast<unsigned int>(strs[1]);
-            }catch(bad_lexical_cast &){
-                PRINT("WARNING: Port number must be numerical, using the default Port number 6379");
-                PCSettings::instance()->port = 6379;
+        boost::split(strs, vm["cache"].as<string>(), is_any_of(","));
+        if(strs[0].compare("file")==0) {
+            PCSettings::instance()->enableLocalCache = true;
+        }
+        else if (strs[0].compare("redis")==0){
+            PCSettings::instance()->enablePersistentCache =  true;
+            if(strs.size()==3 ||strs.size()==4){
+                PCSettings::instance()->ipAddress = strs[1];
+                try{
+                    PCSettings::instance()->port = lexical_cast<unsigned int>(strs[2]);
+                }catch(bad_lexical_cast &){
+                    PRINT("WARNING: Port number must be numerical, using the default Port number 6379");
+                    PCSettings::instance()->port = 6379;
+                }
+                if(strs.size()==4){
+                    PCSettings::instance()->enableAuth = true;
+                    PCSettings::instance()->password = strs[3];
+                }
+            }else{
+                PRINT("Persistent cache requires IP Address, Port Number and Password if any");
+                exit(1);
             }
-            if(strs.size()==3){
-                PCSettings::instance()->enableAuth = true;
-                PCSettings::instance()->password = strs[2];
-            }
-        }else{
-            PRINT("Persistent cache requires IP Address, Port Number and Password if any");
-            exit(1);
         }
     }
 

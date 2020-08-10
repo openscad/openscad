@@ -118,6 +118,9 @@ bool PCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
 }
 
 bool PCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
+    if(geom==nullptr){
+        return insert("GEOM-"+key, "");
+    }
     if(geom->serializable()){
         PRINTDB("Insert: %s", key.c_str());
         std::stringstream ss;
