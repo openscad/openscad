@@ -116,14 +116,12 @@ void PRINT_NOCACHE(const std::string &msg)
 	}
 }
 
-void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
+void LOG(const Message &msg)
 {
-	Message log_msg = {file,line,msg,count,msg_group};
-	count++;
 	if (!outputhandler2) {
-		fprintf(stderr, "%s\n", msg.c_str());
+		// fprintf(stderr, "%s\n", msg.c_str());
 		} else {
-			outputhandler2(log_msg, outputhandler_data2);
+			outputhandler2(msg, outputhandler_data2);
 		}
 }
 

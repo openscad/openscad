@@ -5,7 +5,7 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include <utility>
 #include <libintl.h>
 #undef snprintf
 #include <locale.h>
@@ -36,7 +36,6 @@ std::string msg;
 int msg_id;
 enum message_group group;
 };
-
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 typedef void (OutputHandlerFunc2)(const Message &msg, void *userdata);
@@ -70,7 +69,8 @@ void resetSuppressedMessages();
 void PRINT(const std::string &msg);
 #define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
 
-void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
+// void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
+void LOG(const Message &msg);
 
 void PRINT_NOCACHE(const std::string &msg);
 #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
@@ -121,3 +121,42 @@ public:
 };
 
 #define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()
+
+template <typename... Ts>
+class MessageClass
+{
+private:
+	std::string fmt;
+	std::tuple<Ts...> args;
+	template <std::size_t... Is>
+	std::string format(const std::index_sequence<Is...>) const
+	{
+		boost::format f(fmt);
+		f.exceptions(boost::io::bad_format_string_bit);
+		std::initializer_list<char> {(static_cast<void>(f % std::get<Is>(args)), char{}) ...};
+		return boost::str(f);
+	}
+
+public:
+	template <typename... Args>
+	MessageClass(std::string&& fmt, Args&&... args) : fmt(std::forward<std::string>(fmt)), args(std::forward<Args>(args)...)
+	{
+	}
+
+	std::string format() const
+	{
+	return format(std::index_sequence_for<Ts...>{});
+	}
+};
+
+template <typename F, typename... Args>
+void LOGWIDGET(std::string file,int line,message_group grp,std::string info,F&& f, Args&&... args)
+{
+	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
+	const auto formatted = msg.format();
+	//toConsole
+	PRINT(formatted);
+	const Message msg2 = {file,line,info,0,grp};
+	//toErrorLog
+	LOG(msg2);
+}
