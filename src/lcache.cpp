@@ -4,7 +4,7 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-#include <boost/functional/hash.hpp>
+#include <functional>
 #include <fstream>
 #include <streambuf>
 #include "lcache.h"
@@ -57,7 +57,7 @@ bool LCache::contains(const std::string &key) {
 }
 
 std::string LCache::getHash(const std::string key) {
-        boost::hash<std::string> string_hash;
+        std::hash<std::string> string_hash;
         size_t i = string_hash(key);
         std::stringstream ss;
         ss << i;

@@ -11,8 +11,7 @@
 #endif
 
 struct CGAL_cache_entry{
-    std::string N;
-    std::string msg;
+    std::string N, msg;
     CGAL_cache_entry(std::string &N);
     CGAL_cache_entry() {}
     ~CGAL_cache_entry() {}
