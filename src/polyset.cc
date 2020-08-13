@@ -206,6 +206,98 @@ void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &aut
 	neighboring grids.
 	May reduce the number of polygons if polygons collapse into < 3 vertices.
 */
+namespace /* anonymous */ {
+bool is_degenerate(const Polygon &p, double &x)
+{
+	if(p.size() == 3) {
+		double a = (p[0] - p[1]).norm();
+		double b = (p[1] - p[2]).norm();
+		double c = (p[2] - p[0]).norm();
+		double s = (a + b + c) / 2;         // semiperimeter
+		x = (s - a) * (s - b) * (s - c);    // measure of degeneracy related to Heron's formula for area.
+		return x < 1E-10;
+	}
+	return false;
+}
+
+inline unsigned nextv(unsigned i) {
+	return (i + 1) % 3;
+}
+inline unsigned lastv(unsigned i) {
+	return nextv(i + 1);
+}
+
+unsigned longest_edge(const Polygon &p)
+{
+	unsigned best_edge = 0;
+	double longest = 0;
+	for(unsigned i = 0; i < 3; ++i) {
+		auto l = (p[i] - p[nextv(i)]).squaredNorm();
+		if(l > longest) {
+			longest = l;
+			best_edge = i;
+		}
+	}
+	return best_edge;
+}
+
+bool  matching_edge(const Polygon &p, Vector3d v1, Vector3d v2, unsigned &edge)
+{
+	for(unsigned i = 0; i < 3; ++i)
+		if(p[i] == v1 && p[nextv(i)] == v2) {
+			edge = i;
+			return true;
+		}
+	return false;
+}
+
+bool flip_edge(Polygon &p, Polygon &q, unsigned edge1, unsigned edge2)
+{
+	double x;
+	if(is_degenerate(q, x)) {
+		PRINTDB("also degenerate: %g", x);
+		return false;
+	}
+	p[nextv(edge1)] = q[lastv(edge2)];
+	q[nextv(edge2)] = p[lastv(edge1)];
+	return true;
+}
+unsigned flip_denerate_triangles(PolySet &ps)
+{
+	unsigned flipped, skipped, total = 0;
+	do {
+		flipped = 0;
+		skipped = 0;
+		for(size_t i = 0; i < ps.polygons.size(); ++i) {
+			Polygon &p = ps.polygons[i];
+			double x;
+			if(is_degenerate(p, x)) {
+				auto e1 = longest_edge(p);
+				PRINTDB("%d is %s %g, long_edge: %d", i % (x ? "thin" : "degenerate") % x % e1);
+				Vector3d v1 = p[e1];
+				Vector3d v2 = p[nextv(e1)];
+				for(size_t j = 0; j < ps.polygons.size(); ++j) {
+					Polygon &q = ps.polygons[j];
+					unsigned e2;
+					if(matching_edge(q, v2, v1, e2)) {
+						PRINTDB("matching edge is polygon: %d, edge: %d", j % e2);
+						if(flip_edge(p, q, e1, e2))
+							++flipped;
+						else
+							++skipped;
+						break;
+					}
+				}
+			}
+        }
+		if(flipped || skipped)
+			PRINTDB("flipped %d, skipped %d", flipped % skipped);
+		total += flipped;
+	} while(skipped && flipped); // while more to do and still progressing
+	return total;
+}
+} // namespace
+
 void PolySet::quantizeVertices()
 {
 	Grid3d<int> grid(GRID_FINE);
@@ -225,11 +317,12 @@ void PolySet::quantizeVertices()
 		p.erase(currp, p.end());
 		if (p.size() < 3) {
 			PRINTD("Removing collapsed polygon due to quantizing");
-			this->polygons.erase(iter);
+			iter = this->polygons.erase(iter);
 		}
 		else {
 			iter++;
 		}
 	}
+	flip_denerate_triangles(*this);
 }
 
