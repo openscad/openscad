@@ -5,6 +5,8 @@
 #include "memory.h"
 #include "cgalutils.h"
 
+#if BOOST_VERSION > 105800
+
 class LCache
 {
 public:
@@ -25,3 +27,9 @@ public:
 private:
     std::string path;
 };
+#else
+class LCache {
+public:
+    LCache() {}
+}
+#endif

@@ -127,9 +127,12 @@
 #include <memory>
 #include <QtNetwork>
 
+#if BOOST_VERSION > 105800
+#include "lcache.h"
 #ifdef ENABLE_HIREDIS
 #include "pcache.h"
-#endif /* ENABLE_HIREDIS */
+#endif
+#endif
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -1799,8 +1802,10 @@ void MainWindow::actionReloadRenderPreview()
 void MainWindow::csgReloadRender()
 {
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     initPC();
     connectPC();
+#endif
 #endif
     PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
 
@@ -1819,7 +1824,9 @@ void MainWindow::csgReloadRender()
 	}
 	compileEnded();
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     PCache::getInst()->disconnect();
+#endif
 #endif
 }
 
@@ -1853,8 +1860,10 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 void MainWindow::csgRender()
 {
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     initPC();
     connectPC();
+#endif
 #endif
     PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
 
@@ -1892,7 +1901,9 @@ void MainWindow::csgRender()
 	compileEnded();
 
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     PCache::getInst()->disconnect();
+#endif
 #endif
 }
 
@@ -2064,7 +2075,9 @@ void MainWindow::actionRender()
 
 	PRINT("Parsing design (AST generation)...");
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     this->initPC();
+#endif
 #endif
     PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
 
@@ -2553,6 +2566,7 @@ void MainWindow::actionFlushCaches()
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     if(PCSettings::instance()->enablePersistentCache){
         initPC();
         connectPC();
@@ -2560,6 +2574,7 @@ void MainWindow::actionFlushCaches()
             PRINT("WARNING: Unable to clear persistent cache");
         PCache::getInst()->disconnect();
     }
+#endif
 #endif
 }
 
@@ -3141,6 +3156,7 @@ QString MainWindow::exportPath(const char *suffix) {
 	return path;
 }
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
 void MainWindow::initPC(){
     PCSettings::instance()->enablePersistentCache = Preferences::inst()->getValue("advanced/enable_persistent_cache").toBool();
     if(PCSettings::instance()->enablePersistentCache){
@@ -3166,3 +3182,4 @@ void MainWindow::connectPC(){
 
 }
 #endif //ENABLE_HIREDIS
+#endif

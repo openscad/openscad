@@ -32,6 +32,7 @@ void CGALWorker::start(const Tree &tree)
 void CGALWorker::work()
 {
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     if(PCSettings::instance()->enablePersistentCache){
         PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
         if(PCSettings::instance()->enableAuth){
@@ -40,6 +41,7 @@ void CGALWorker::work()
             PCache::getInst()->connect();
         }
     }
+#endif
 #endif
 	shared_ptr<const Geometry> root_geom;
 	try {
@@ -53,7 +55,9 @@ void CGALWorker::work()
 		PRINT("Rendering cancelled on first warning.");
 	}
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     PCache::getInst()->disconnect();
+#endif
 #endif
 
 	emit done(root_geom);

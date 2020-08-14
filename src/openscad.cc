@@ -81,9 +81,11 @@
 #define snprintf _snprintf
 #endif
 
+#if BOOST_VERSION > 105800
 #include "lcache.h"
 #ifdef ENABLE_HIREDIS
 #include "pcache.h"
+#endif
 #endif
 
 namespace po = boost::program_options;
@@ -282,6 +284,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	boost::filesystem::path doc(filename);
 	tree.setDocumentPath(doc.remove_filename().string());
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     if(PCSettings::instance()->enablePersistentCache){
         PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
         if(PCSettings::instance()->enableAuth){
@@ -290,6 +293,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
             PCache::getInst()->connect();
         }
     }
+#endif
 #endif
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -557,7 +561,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	}
 
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
     PCache::getInst()->disconnect();
+#endif
 #endif
 	delete root_node;
 	return 0;

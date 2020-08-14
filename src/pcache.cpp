@@ -10,6 +10,7 @@ BOOST_CLASS_EXPORT(PolySet);
 BOOST_CLASS_EXPORT(Polygon2d);
 
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
 
 PCache *PCache::pCache = nullptr;
 
@@ -248,7 +249,7 @@ bool PCache::checkReply(redisReply *reply){
 }
 
 #endif
-
+#endif
 CGAL_cache_entry::CGAL_cache_entry(std::string &N) : N(N){
     if (print_messages_stack.size() > 0) msg = print_messages_stack.back();
 }

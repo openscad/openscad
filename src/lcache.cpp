@@ -14,6 +14,8 @@
 
 namespace fs = boost::filesystem;
 
+#if BOOST_VERSION > 105800
+
 LCache::LCache() {
     path = PlatformUtils::localCachePath();
 }
@@ -138,4 +140,4 @@ bool LCache::containsGeom(const std::string &key){
     return contains("GEOM-"+key);
 }
 
-
+#endif

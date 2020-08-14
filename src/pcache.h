@@ -4,6 +4,7 @@
 #include "printutils.h"
 #include "memory.h"
 #include "cgalutils.h"
+#include "version_check.h"
 
 
 #ifdef ENABLE_HIREDIS
@@ -26,6 +27,7 @@ struct Geom_cache_entry{
 };
 
 #ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
 
 class PCache
 {
@@ -69,6 +71,7 @@ private:
     static PCache* pCache;
 
 };
+#endif
 #else
 class PCache
 {
