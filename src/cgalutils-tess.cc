@@ -41,7 +41,7 @@ static void  mark_domains(CDT &ct,
     queue.pop_front();
     if (fh->info().nesting_level == -1) {
       fh->info().nesting_level = index;
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 3; ++i) {
         CDT::Edge e(fh,i);
         CDT::Face_handle n = fh->neighbor(i);
         if (n->info().nesting_level == -1) {
@@ -117,7 +117,7 @@ namespace CGALUtils {
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
 		for(const auto &poly : polygons) {
-			for (size_t i=0;i<poly.size(); i++) {
+			for (size_t i=0; i<poly.size(); ++i) {
 				cdt.insert_constraint(poly[i], poly[(i+1)%poly.size()]);
 			}
 		}
@@ -130,7 +130,7 @@ namespace CGALUtils {
 				 fit != cdt.finite_faces_end(); fit++) {
 			if (fit->info().in_domain()) {
 				Polygon tri;
-				for (int i=0;i<3;i++) {
+				for (int i=0; i<3; ++i) {
 					Vertex3K v = cdt.triangle(fit)[i];
 					tri.push_back(Vector3d(v.x(), v.y(), v.z()));
 				}
@@ -173,7 +173,7 @@ namespace CGALUtils {
 		// the Constrained Delaunay Triangulator.
 		Projection actualProjection(normalvec);
 		CDT cdt(actualProjection);
-		for (size_t i=0;i<polygon.size(); i++) {
+		for (size_t i=0; i<polygon.size(); ++i) {
 			cdt.insert_constraint(polygon[i], polygon[(i+1)%polygon.size()]);
 		}
 		
@@ -182,10 +182,10 @@ namespace CGALUtils {
 
 		// Iterate over the resulting faces
 		CDT::Finite_faces_iterator fit;
-		for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++) {
+		for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); ++fit) {
 			if (fit->info().in_domain()) {
 				Polygon tri;
-				for (int i=0;i<3;i++) {
+				for (int i=0; i<3; ++i) {
 					K::Point_3 v = cdt.triangle(fit)[i];
 					tri.push_back(Vector3d(v.x(), v.y(), v.z()));
 				}

@@ -1,6 +1,5 @@
 #include "parsersettings.h"
 #include <boost/filesystem.hpp>
-#include "boosty.h"
 #include <boost/algorithm/string.hpp>
 #include "PlatformUtils.h"
 
@@ -76,11 +75,11 @@ fs::path _find_valid_path(const fs::path &sourcepath,
                           const std::vector<std::string> *openfilenames)
 {
 	if (localpath.is_absolute()) {
-		if (check_valid(localpath, openfilenames)) return boosty::canonical(localpath);
+		if (check_valid(localpath, openfilenames)) return fs::canonical(localpath);
 	}
 	else {
 		fs::path fpath = sourcepath / localpath;
-		if (fs::exists(fpath)) fpath = boosty::canonical(fpath);
+		if (fs::exists(fpath)) fpath = fs::canonical(fpath);
 		if (check_valid(fpath, openfilenames)) return fpath;
 		fpath = search_libs(localpath);
 		if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;

@@ -208,7 +208,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		auto v = c->lookup_variable("m");
 		if (v->type() == Value::Type::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
-			for (int i = 0; i < 16; i++) {
+			for (int i = 0; i < 16; ++i) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v->toVector().size() && v->toVector()[y]->type() ==
 						Value::Type::VECTOR && x < v->toVector()[y]->toVector().size())
@@ -231,9 +231,9 @@ std::string TransformNode::toString() const
 	std::ostringstream stream;
 
 	stream << "multmatrix([";
-	for (int j=0;j<4;j++) {
+	for (int j=0; j<4; ++j) {
 		stream << "[";
-		for (int i=0;i<4;i++) {
+		for (int i=0; i<4; ++i) {
 			Value v(this->matrix(j, i));
 			stream << v;
 			if (i != 3) stream << ", ";

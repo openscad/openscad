@@ -78,7 +78,7 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 	std::string tab;
 	if (!this->name.empty()) {
 		stream << indent << "module " << this->name << "(";
-		for (size_t i=0; i < this->definition_arguments.size(); i++) {
+		for (size_t i=0; i < this->definition_arguments.size(); ++i) {
 			const auto &arg = this->definition_arguments[i];
 			if (i > 0) stream << ", ";
 			stream << arg->getName();

@@ -346,7 +346,7 @@ struct point2d {
 
 static void generate_circle(point2d *circle, double r, int fragments)
 {
-	for (int i=0; i<fragments; i++) {
+	for (int i=0; i<fragments; ++i) {
 		double phi = (360.0 * i) / fragments;
 		circle[i].x = r * cos_degrees(phi);
 		circle[i].y = r * sin_degrees(phi);
@@ -437,7 +437,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			auto ring = std::vector<ring_s>(rings);
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
-			for (int i = 0; i < rings; i++) {
+			for (int i = 0; i < rings; ++i) {
 //			double phi = (180.0 * (i + offset)) / (fragments/2);
 				double phi = (180.0 * (i + 0.5)) / rings;
 				double r = r1 * sin_degrees(phi);
@@ -447,10 +447,10 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			p->append_poly();
-			for (int i = 0; i < fragments; i++)
+			for (int i = 0; i < fragments; ++i)
 				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
-			for (int i = 0; i < rings-1; i++) {
+			for (int i = 0; i < rings-1; ++i) {
 				auto r1 = &ring[i];
 				auto  r2 = &ring[i+1];
 				int r1i = 0, r2i = 0;
@@ -478,7 +478,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			p->append_poly();
-			for (int i = 0; i < fragments; i++) {
+			for (int i = 0; i < fragments; ++i) {
 				p->insert_vertex(ring[rings-1].points[i].x,
 												 ring[rings-1].points[i].y,
 												 ring[rings-1].z);
@@ -509,7 +509,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			generate_circle(circle1.data(), r1, fragments);
 			generate_circle(circle2.data(), r2, fragments);
 
-			for (int i=0; i<fragments; i++) {
+			for (int i=0; i<fragments; ++i) {
 				int j = (i+1) % fragments;
 				if (r1 == r2) {
 					p->append_poly();
@@ -535,13 +535,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			if (this->r1 > 0) {
 				p->append_poly();
-				for (int i=0; i<fragments; i++)
+				for (int i=0; i<fragments; ++i)
 					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 			}
 
 			if (this->r2 > 0) {
 				p->append_poly();
-				for (int i=0; i<fragments; i++)
+				for (int i=0; i<fragments; ++i)
 					p->append_vertex(circle2[i].x, circle2[i].y, z2);
 			}
 		}
@@ -551,10 +551,10 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces->toVector().size(); i++)	{
+		for (size_t i=0; i<this->faces->toVector().size(); ++i)	{
 			p->append_poly();
 			const auto &vec = this->faces->toVector()[i]->toVector();
-			for (size_t j=0; j<vec.size(); j++) {
+			for (size_t j=0; j<vec.size(); ++j) {
 				size_t pt = (size_t)vec[j]->toDouble();
 				if (pt < this->points->toVector().size()) {
 					double px, py, pz;
@@ -596,7 +596,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			Outline2d o;
 			o.vertices.resize(fragments);
-			for (int i=0; i < fragments; i++) {
+			for (int i=0; i < fragments; ++i) {
 				double phi = (360.0 * i) / fragments;
 				o.vertices[i] = {this->r1 * cos_degrees(phi), this->r1 * sin_degrees(phi)};
 			}
@@ -612,7 +612,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			Outline2d outline;
 			double x,y;
 			const auto &vec = this->points->toVector();
-			for (unsigned int i=0;i<vec.size();i++) {
+			for (unsigned int i=0; i<vec.size(); ++i) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s",

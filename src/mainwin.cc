@@ -200,7 +200,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	absolute_root_node = nullptr;
 
 	// Open Recent
-	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
+	for (int i = 0; i<UIUtils::maxRecentFiles; ++i) {
 		this->actionRecentFile[i] = new QAction(this);
 		this->actionRecentFile[i]->setVisible(false);
 		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
@@ -579,7 +579,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	this->console->setMaximumBlockCount(5000);
 
-	for(int i = 1; i < filenames.size(); i++)
+	for(int i = 1; i < filenames.size(); ++i)
 		tabManager->createTab(filenames[i]);
 
 	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
@@ -1221,7 +1221,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 		
 			this->highlights_products.reset(new CSGProducts());
-			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
+			for (unsigned int i = 0; i < highlight_terms.size(); ++i) {
 				auto nterm = normalizer.normalize(highlight_terms[i]);
 				if (nterm) {
 					this->highlights_products->import(nterm);
@@ -1238,7 +1238,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 		
 			this->background_products.reset(new CSGProducts());
-			for (unsigned int i = 0; i < background_terms.size(); i++) {
+			for (unsigned int i = 0; i < background_terms.size(); ++i) {
 				auto nterm = normalizer.normalize(background_terms[i]);
 				if (nterm) {
 					this->background_products->import(nterm);
@@ -1280,7 +1280,7 @@ void MainWindow::compileCSG()
 void MainWindow::actionOpen()
 {
 	auto fileInfoList = UIUtils::openFiles(this);
-	for(int i = 0; i < fileInfoList.size(); i++)
+	for(int i = 0; i < fileInfoList.size(); ++i)
 	{
 		if (!fileInfoList[i].exists()) {
 			return;
@@ -1297,7 +1297,7 @@ void MainWindow::actionNewWindow()
 void MainWindow::actionOpenWindow()
 {
 	auto fileInfoList = UIUtils::openFiles(this);
-	for(int i = 0; i < fileInfoList.size(); i++)
+	for(int i = 0; i < fileInfoList.size(); ++i)
 	{
 		if (!fileInfoList[i].exists()) {
 			return;
@@ -1558,7 +1558,7 @@ void MainWindow::convertTabsToSpaces()
 	QString converted;
   
 	int cnt = 4;
-	for (int idx = 0;idx < text.length();idx++) {
+	for (int idx = 0; idx < text.length(); ++idx) {
 		auto c = text.at(idx);
 		if (c == '\t') {
 	    for (; cnt > 0; cnt--) {
@@ -2896,7 +2896,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
 	setCurrentOutput();
 	const QList<QUrl> urls = event->mimeData()->urls();
-	for (int i = 0; i < urls.size(); i++) {
+	for (int i = 0; i < urls.size(); ++i) {
 		if (urls[i].scheme() != "file") continue;
 		handleFileDrop(urls[i].toLocalFile());
 	}

@@ -93,7 +93,7 @@ void TabManager::tabSwitched(int x)
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
     par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
 
-	for (int idx = 0;idx < tabWidget->count();idx++) {
+	for (int idx = 0; idx < tabWidget->count(); ++idx) {
 		QWidget * button = tabWidget->tabButton(idx, QTabBar::RightSide);
 		if (button) {
 			button->setVisible(idx == x);

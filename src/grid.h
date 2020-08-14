@@ -39,8 +39,8 @@ public:
 		int64_t iy = (int64_t)std::round(y / res);
 		if (db.find(std::make_pair(ix, iy)) == db.end()) {
 			int dist = 10;
-			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
-				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
+			for (int64_t jx = ix - 1; jx <= ix + 1; ++jx) {
+				for (int64_t jy = iy - 1; jy <= iy + 1; ++jy) {
 					if (db.find(std::make_pair(jx, jy)) == db.end())
 						continue;
 					int d = abs(int(ix-jx)) + abs(int(iy-jy));
@@ -61,8 +61,8 @@ public:
 		int64_t iy = (int64_t)std::round(y / res);
 		if (db.find(std::make_pair(ix, iy)) != db.end())
 			return true;
-		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
-		for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
+		for (int64_t jx = ix - 1; jx <= ix + 1; ++jx)
+		for (int64_t jy = iy - 1; jy <= iy + 1; ++jy) {
 			if (db.find(std::make_pair(jx, jy)) != db.end())
 				return true;
 		}
@@ -111,9 +111,9 @@ public:
 		typename GridContainer::iterator iter = db.find(key);
 		if (iter == db.end()) {
 			float dist = 10.0f; // > max possible distance
-			for (int64_t jx = key[0] - 1; jx <= key[0] + 1; jx++) {
-				for (int64_t jy = key[1] - 1; jy <= key[1] + 1; jy++) {
-					for (int64_t jz = key[2] - 1; jz <= key[2] + 1; jz++) {
+			for (int64_t jx = key[0] - 1; jx <= key[0] + 1; ++jx) {
+				for (int64_t jy = key[1] - 1; jy <= key[1] + 1; ++jy) {
+					for (int64_t jz = key[2] - 1; jz <= key[2] + 1; ++jz) {
 						Vector3l k(jx, jy, jz);
 						typename GridContainer::iterator tmpiter = db.find(k);
 						if (tmpiter == db.end()) continue;
@@ -153,9 +153,9 @@ public:
 			if (data) *data = pos->second;
 			return true;
 		}
-		for (int64_t jx = key[0] - 1; jx <= key[0] + 1; jx++)
-			for (int64_t jy = key[1] - 1; jy <= key[1] + 1; jy++)
-				for (int64_t jz = key[2] - 1; jz <= key[2] + 1; jz++) {
+		for (int64_t jx = key[0] - 1; jx <= key[0] + 1; ++jx)
+			for (int64_t jy = key[1] - 1; jy <= key[1] + 1; ++jy)
+				for (int64_t jz = key[2] - 1; jz <= key[2] + 1; ++jz) {
 					pos = db.find(Vector3l(jx, jy, jz));
 					if (pos != db.end()) {
 						if (data) *data = pos->second;

@@ -50,7 +50,7 @@ transformation::add_arg(const std::string arg)
 const std::string
 transformation::get_args() const {
 	std::ostringstream str;
-	for (unsigned int a = 0;a < args.size();a++) {
+	for (unsigned int a = 0; a < args.size(); ++a) {
 		str << ((a == 0) ? "(" : ", ") << args[a];
 	}
 	str << ")";

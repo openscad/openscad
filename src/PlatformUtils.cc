@@ -2,7 +2,7 @@
 #include <iomanip>
 
 #include "PlatformUtils.h"
-#include "boosty.h"
+#include "printutils.h"
 
 #ifdef INSTALL_SUFFIX
 #define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
@@ -54,7 +54,7 @@ static std::string lookupResourcesPath()
 #endif
 
 	fs::path tmpdir;
-	for (int a = 0;searchpath[a] != nullptr;a++) {
+	for (int a = 0; searchpath[a] != nullptr; ++a) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
 			// The resource folder is the folder which contains "color-schemes" (as well as 
@@ -70,7 +70,7 @@ static std::string lookupResourcesPath()
 	}
 
 	// resourcedir defaults to applicationPath
-	std::string result = boosty::canonical(resourcedir).generic_string();
+	std::string result = fs::canonical(resourcedir).generic_string();
 	PRINTDB("Using resource folder '%s'", result);
 	return result;
 }
@@ -116,8 +116,8 @@ std::string PlatformUtils::userLibraryPath()
 		if (pathstr=="") return "";
 		path = fs::path( pathstr );
 		if (!fs::exists(path)) return "";
-		path = boosty::canonical( path );
-		//PRINTB("path size %i",boosty::stringy(path).size());
+		path = fs::canonical( path );
+		//PRINTB("path size %i",fs::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
@@ -139,7 +139,7 @@ std::string PlatformUtils::backupPath()
 		if (pathstr=="") return "";
 		path = fs::path( pathstr );
 		if (!fs::exists(path)) return "";
-		path = boosty::canonical( path );
+		path = fs::canonical( path );
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";

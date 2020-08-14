@@ -81,7 +81,7 @@ void PRINT_NOCACHE(const std::string &msg)
 
 	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR") || boost::starts_with(msg, "TRACE")) {
 		size_t i;
-		for (i=0;i<lastmessages.size();i++) {
+		for (i=0; i<lastmessages.size(); ++i) {
 			if (lastmessages[i] != msg) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.

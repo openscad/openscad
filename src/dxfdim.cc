@@ -57,7 +57,7 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
@@ -102,7 +102,7 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
-	for (size_t i = 0; i < dxf.dims.size(); i++)
+	for (size_t i = 0; i < dxf.dims.size(); ++i)
 	{
 		if (!name.empty() && dxf.dims[i].name != name)
 			continue;
@@ -167,7 +167,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (n == "file"){
@@ -214,7 +214,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 
 	double coords[4][2];
 
-	for (size_t i = 0, j = 0; i < dxf.paths.size(); i++) {
+	for (size_t i = 0, j = 0; i < dxf.paths.size(); ++i) {
 		if (dxf.paths[i].indices.size() != 2)
 			continue;
 		coords[j][0] = dxf.points[dxf.paths[i].indices[0]][0];

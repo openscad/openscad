@@ -160,7 +160,7 @@ hb_script_t FreetypeRenderer::get_script(const FreetypeRenderer::Params &params,
 	}
 
 	hb_script_t script = HB_SCRIPT_INVALID;
-	for (unsigned int idx = 0;idx < glyph_count;idx++) {
+	for (unsigned int idx = 0; idx < glyph_count; ++idx) {
 		hb_codepoint_t cp = glyph_info[idx].codepoint;
 		hb_script_t s = hb_unicode_script(hb_unicode_funcs_get_default(), cp);
 		if (!is_ignored_script(s)) {
@@ -257,7 +257,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
         hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);
 
 	GlyphArray glyph_array;
-	for (unsigned int idx = 0;idx < glyph_count;idx++) {
+	for (unsigned int idx = 0; idx < glyph_count; ++idx) {
 		FT_UInt glyph_index = glyph_info[idx].codepoint;
 		error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
 		if (error) {
@@ -276,9 +276,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	}
 
 	double width = 0, ascend = 0, descend = 0;
-	for (GlyphArray::iterator it = glyph_array.begin();it != glyph_array.end();it++) {
-		const GlyphData *glyph = (*it);
-		
+	for (const auto glyph : glyph_array) {
 		FT_BBox bbox;
 		FT_Glyph_Get_CBox(glyph->get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
 		
@@ -298,9 +296,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	double x_offset = calc_x_offset(params.halign, width);
 	double y_offset = calc_y_offset(params.valign, ascend, descend);
 
-	for (GlyphArray::iterator it = glyph_array.begin();it != glyph_array.end();it++) {
-		const GlyphData *glyph = (*it);
-		
+	for (const auto glyph : glyph_array) {
 		callback.start_glyph();
 		callback.set_glyph_offset(x_offset + glyph->get_x_offset(), y_offset + glyph->get_y_offset());
 		FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph->get_glyph())->outline;
