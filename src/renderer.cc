@@ -218,7 +218,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 
 		// Render top+bottom
 		for (double z = -zbase/2; z < zbase; z += zbase) {
-			for (size_t i = 0; i < ps->polygons.size(); i++) {
+			for (size_t i = 0; i < ps->polygons.size(); ++i) {
 				const Polygon *poly = &ps->polygons[i];
 				if (poly->size() == 3) {
 					if (z < 0) {
@@ -238,13 +238,13 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 				}
 				else {
 					Vector3d center = Vector3d::Zero();
-					for (size_t j = 0; j < poly->size(); j++) {
+					for (size_t j = 0; j < poly->size(); ++j) {
 						center[0] += poly->at(j)[0];
 						center[1] += poly->at(j)[1];
 					}
 					center[0] /= poly->size();
 					center[1] /= poly->size();
-					for (size_t j = 1; j <= poly->size(); j++) {
+					for (size_t j = 1; j <= poly->size(); ++j) {
 						if (z < 0) {
 							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
 									false, true, false, z, mirrored);
@@ -260,7 +260,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 		// Render sides
 		if (ps->getPolygon().outlines().size() > 0) {
 			for (const Outline2d &o : ps->getPolygon().outlines()) {
-				for (size_t j = 1; j <= o.vertices.size(); j++) {
+				for (size_t j = 1; j <= o.vertices.size(); ++j) {
 					Vector3d p1(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
 					Vector3d p2(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
 					Vector3d p3(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase/2);
@@ -274,9 +274,9 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 			// If we don't have borders, use the polygons as borders.
 			// FIXME: When is this used?
 			const Polygons *borders_p = &ps->polygons;
-			for (size_t i = 0; i < borders_p->size(); i++) {
+			for (size_t i = 0; i < borders_p->size(); ++i) {
 				const Polygon *poly = &borders_p->at(i);
-				for (size_t j = 1; j <= poly->size(); j++) {
+				for (size_t j = 1; j <= poly->size(); ++j) {
 					Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
 					Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
 					p1[2] -= zbase/2, p2[2] += zbase/2;
@@ -288,7 +288,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 		}
 		glEnd();
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
 			const Polygon *poly = &ps->polygons[i];
 			glBegin(GL_TRIANGLES);
 			if (poly->size() == 3) {
@@ -300,7 +300,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 			}
 			else {
 				Vector3d center = Vector3d::Zero();
-				for (size_t j = 0; j < poly->size(); j++) {
+				for (size_t j = 0; j < poly->size(); ++j) {
 					center[0] += poly->at(j)[0];
 					center[1] += poly->at(j)[1];
 					center[2] += poly->at(j)[2];
@@ -308,7 +308,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 				center[0] /= poly->size();
 				center[1] /= poly->size();
 				center[2] /= poly->size();
-				for (size_t j = 1; j <= poly->size(); j++) {
+				for (size_t j = 1; j <= poly->size(); ++j) {
 					gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()), false, true, false, 0, mirrored);
 				}
 			}
@@ -367,10 +367,10 @@ void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) 
 			}
 		}
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
 			const Polygon *poly = &ps->polygons[i];
 			glBegin(GL_LINE_LOOP);
-			for (size_t j = 0; j < poly->size(); j++) {
+			for (size_t j = 0; j < poly->size(); ++j) {
 				const Vector3d &p = poly->at(j);
 				glVertex3d(p[0], p[1], p[2]);
 			}

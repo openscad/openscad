@@ -16,13 +16,13 @@ if(APPLE)
 endif()
 cmake_minimum_required(VERSION 3.3)
 
-# CMP0071 introduced in 3.10.2
-if (CMAKE_VERSION VERSION_GREATER "3.10.1") 
+if(POLICY CMP0071)
   cmake_policy(SET CMP0071 OLD)
 endif()
 
 project(openscad)
 
+option(INFO "Display build configuration info at end of cmake config" ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
@@ -31,11 +31,16 @@ option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will br
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 
 if(PROFILE)
-SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
-SET(GCC_COVERAGE_LINK_FLAGS    "--coverage")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+  SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
+  SET(GCC_COVERAGE_LINK_FLAGS    "--coverage")
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+  # Make sure to override default optimization for Release type
+  string(REPLACE "-O3" "-O0" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+else()
+  # Use same optimization as qmake build for Release
+  string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 endif()
 
 if (NULLGL)
@@ -48,8 +53,8 @@ if(IDPREFIX)
   add_definitions(-DIDPREFIX)
 endif()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/objects")
-set(AUTOGEN_BUILD_DIR "${CMAKE_SOURCE_DIR}/objects")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
+set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
 file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 # Default to Release build
@@ -62,8 +67,6 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 #endif()
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
-# Use same optimization as qmake build
-string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 
 set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
@@ -87,10 +90,11 @@ macro(find_graphics)
   if(NULLGL)
     add_definitions(-DNULLGL)
   else()
+    set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED QUIET)
     list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
 
-    if(MSVC) 
+    if(MSVC)
       find_package(GLEW CONFIG REQUIRED QUIET)
       message(STATUS "GLEW: Using target GLEW::GLEW")
       list(APPEND COMMON_LIBRARIES GLEW::GLEW)
@@ -118,6 +122,7 @@ endmacro(find_graphics)
 # NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
 #   because it looks for Boost itself, so it has to be called
 #   before we look for our own required boost libraries.
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL REQUIRED)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
@@ -158,7 +163,7 @@ if (MSVC)
 
   find_package(unofficial-fontconfig CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
-  
+
   find_package(unofficial-glib CONFIG REQUIRED)
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
@@ -305,7 +310,7 @@ if(NOT HEADLESS)
   else()
     message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
   endif()
-  
+
   find_package(Qt5Gamepad QUIET)
   if (Qt5Gamepad_FOUND)
     message(STATUS "Gamepad input driver enabled")
@@ -314,11 +319,6 @@ if(NOT HEADLESS)
   else()
     message(STATUS "Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
   endif()
-
-#  add_definitions(${Qt5Widgets_DEFINITIONS})
-#  add_definitions(${Qt5OpenGL_DEFINITIONS})
-#  add_definitions(${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS})
-#  add_definitions(${Qt5OpenGL_EXECUTABLE_COMPILE_FLAGS})
 
 endif()
 
@@ -393,137 +393,97 @@ elseif(WIN32)
   endif()
 endif()
 
-set(CORE_SOURCES
-  src/parsersettings.cc
-  src/linalg.cc
-  src/colormap.cc
-  src/Camera.cc
-  src/handle_dep.cc 
-  src/value.cc 
-  src/calc.cc 
-  src/hash.cc 
-  src/expr.cc
-  src/degree_trig.cc
-  src/func.cc 
-  src/function.cc 
-  src/stackcheck.h
-  src/localscope.cc 
-  src/module.cc 
-  src/FileModule.cc 
-  src/UserModule.cc 
-  src/GroupModule.cc 
-  src/AST.cc 
-  src/ModuleInstantiation.cc 
-  src/ModuleCache.cc 
-  src/StatCache.cc
-  src/node.cc 
-  src/NodeVisitor.cc 
-  src/context.cc 
-  src/builtincontext.cc
-  src/modcontext.cc 
-  src/evalcontext.cc 
-  src/version.cc
-  src/feature.cc
-  src/csgnode.cc 
-  src/CSGTreeNormalizer.cc 
-  src/Geometry.cc 
-  src/Polygon2d.cc 
-  src/csgops.cc 
-  src/transform.cc 
-  src/color.cc 
-  src/primitives.cc 
-  src/projection.cc 
-  src/cgaladv.cc 
-  src/surface.cc 
-  src/control.cc 
-  src/render.cc 
-  src/rendersettings.cc 
-  src/dxfdata.cc 
-  src/dxfdim.cc 
-  src/offset.cc 
-  src/linearextrude.cc 
-  src/rotateextrude.cc 
-  src/text.cc 
-  src/printutils.cc 
-  src/fileutils.cc 
-  src/progress.cc 
-  src/boost-utils.cc 
-  src/FontCache.cc
-  src/DrawingCallback.cc
-  src/FreetypeRenderer.cc
-  src/RenderStatistic.cc
-  src/ext/lodepng/lodepng.cpp
-  src/PlatformUtils.cc 
-  src/libsvg/circle.cc
-  src/libsvg/ellipse.cc
-  src/libsvg/group.cc
-  src/libsvg/libsvg.cc
-  src/libsvg/line.cc
-  src/libsvg/text.cc
-  src/libsvg/tspan.cc
-  src/libsvg/data.cc
-  src/libsvg/path.cc
-  src/libsvg/polygon.cc
-  src/libsvg/polyline.cc
-  src/libsvg/rect.cc
-  src/libsvg/shape.cc
-  src/libsvg/svgpage.cc
-  src/libsvg/transformation.cc
-  src/libsvg/util.cc
-  src/clipper-utils.cc
-  src/Assignment.cc
-  src/annotation.cc 
-  src/ext/polyclipping/clipper.cpp
-  ${PLATFORM_SOURCES}
-  ${FLEX_openscad_lexer_OUTPUTS}
-  ${BISON_openscad_parser_OUTPUTS}
-  ${FLEX_comment_lexer_OUTPUTS}
-  ${BISON_comment_parser_OUTPUTS})
+include_directories("src/ext/libtess2/Include")
 
-set(NOCGAL_SOURCES
-  src/builtin.cc 
-  src/import.cc
-  src/import_3mf.cc
-  src/import_stl.cc
-  src/import_amf.cc
-  src/import_off.cc
-  src/import_svg.cc
+# NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
+#       see GUI_SOURCES list below for that.
+set(CORE_SOURCES
+  src/annotation.cc
+  src/boost-utils.cc
+  src/builtin.cc
+  src/builtincontext.cc
+  src/calc.cc
+  src/cgaladv.cc
+  src/clipper-utils.cc
+  src/color.cc
+  src/colormap.cc
+  src/context.cc
+  src/control.cc
+  src/comment.cpp
+  src/csgnode.cc
+  src/csgops.cc
+  src/degree_trig.cc
+  src/dxfdata.cc
+  src/dxfdim.cc
+  src/evalcontext.cc
   src/export.cc
   src/export_3mf.cc
-  src/export_stl.cc
   src/export_amf.cc
-  src/export_off.cc
   src/export_dxf.cc
+  src/export_off.cc
+  src/export_stl.cc
   src/export_svg.cc
-  src/LibraryInfo.cc
+  src/expr.cc
+  src/feature.cc
+  src/fileutils.cc
+  src/func.cc
+  src/function.cc
+  src/handle_dep.cc
+  src/hash.cc
+  src/import.cc
+  src/import_3mf.cc
+  src/import_amf.cc
+  src/import_stl.cc
+  src/import_off.cc
+  src/import_svg.cc
+  src/linalg.cc
+  src/linearextrude.cc
+  src/localscope.cc
+  src/modcontext.cc
+  src/module.cc
+  src/node.cc
+  src/nodedumper.cc
+  src/offset.cc
+  src/parsersettings.cc
   src/polyset.cc
   src/polyset-utils.cc
-  src/GeometryUtils.cc)
-
-set(CGAL_SOURCES
-  ${NOCGAL_SOURCES}
-  src/CSGTreeEvaluator.cc 
-  src/CGAL_Nef_polyhedron.cc 
-  src/export_nef.cc
-  src/import_nef.cc
-  src/cgalutils.cc 
-  src/cgalutils-applyops.cc 
-  src/cgalutils-project.cc 
-  src/cgalutils-tess.cc 
-  src/cgalutils-polyhedron.cc 
-  src/CGALCache.cc
-  src/Polygon2d-CGAL.cc
+  src/primitives.cc
+  src/printutils.cc
+  src/progress.cc
+  src/projection.cc
+  src/render.cc
+  src/rendersettings.cc
+  src/rotateextrude.cc
+  src/stackcheck.h
+  src/surface.cc
   src/svg.cc
-  src/GeometryEvaluator.cc)
-
-include_directories("src/ext/libtess2/Include")
-set(COMMON_SOURCES
-  src/nodedumper.cc 
-  src/GeometryCache.cc 
-  src/clipper-utils.cc 
+  src/text.cc
+  src/transform.cc
+  src/value.cc
+  src/version.cc
+  src/Assignment.cc
+  src/AST.cc
+  src/Camera.cc
+  src/CSGTreeNormalizer.cc
+  src/DrawingCallback.cc
+  src/FileModule.cc
+  src/FontCache.cc
+  src/FreetypeRenderer.cc
+  src/Geometry.cc
+  src/GeometryCache.cc
+  src/GeometryUtils.cc
+  src/GroupModule.cc
+  src/LibraryInfo.cc
+  src/ModuleInstantiation.cc
+  src/ModuleCache.cc
+  src/NodeVisitor.cc
+  src/PlatformUtils.cc
+  src/Polygon2d.cc
+  src/RenderStatistic.cc
+  src/StatCache.cc
+  src/UserModule.cc
   src/Tree.cc
-  src/comment.cpp
-  src/parameter/parameterset.cpp
+  src/ext/lodepng/lodepng.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c
   src/ext/libtess2/Source/dict.c
@@ -532,9 +492,42 @@ set(COMMON_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/Tree.cc
-  src/initConfig.cc
-  )
+  src/libsvg/circle.cc
+  src/libsvg/data.cc
+  src/libsvg/ellipse.cc
+  src/libsvg/group.cc
+  src/libsvg/libsvg.cc
+  src/libsvg/line.cc
+  src/libsvg/path.cc
+  src/libsvg/polygon.cc
+  src/libsvg/polyline.cc
+  src/libsvg/rect.cc
+  src/libsvg/shape.cc
+  src/libsvg/svgpage.cc
+  src/libsvg/text.cc
+  src/libsvg/transformation.cc
+  src/libsvg/tspan.cc
+  src/libsvg/util.cc
+  src/parameter/parameterset.cpp
+  ${PLATFORM_SOURCES}
+  ${FLEX_openscad_lexer_OUTPUTS}
+  ${BISON_openscad_parser_OUTPUTS}
+  ${FLEX_comment_lexer_OUTPUTS}
+  ${BISON_comment_parser_OUTPUTS})
+
+set(CGAL_SOURCES
+  src/cgalutils.cc
+  src/cgalutils-applyops.cc
+  src/cgalutils-polyhedron.cc
+  src/cgalutils-project.cc
+  src/cgalutils-tess.cc
+  src/export_nef.cc
+  src/import_nef.cc
+  src/CGAL_Nef_polyhedron.cc
+  src/CGALCache.cc
+  src/CSGTreeEvaluator.cc
+  src/Polygon2d-CGAL.cc
+  src/GeometryEvaluator.cc)
 
 #
 # Offscreen OpenGL context source code
@@ -542,28 +535,27 @@ set(COMMON_SOURCES
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding OpenGL(TM) settings")
   set(OFFSCREEN_SOURCES
+    src/export_png.cc
+    src/imageutils.cc
+    src/renderer.cc
+    src/render.cc
     src/NULLGL.cc # contains several 'nullified' versions of above .cc files
     src/OffscreenView.cc
     src/OffscreenContextNULL.cc
-    src/export_png.cc
-    src/${OFFSCREEN_IMGUTILS_SOURCE}
-    src/imageutils.cc
-    src/renderer.cc
-    src/render.cc)
+    src/${OFFSCREEN_IMGUTILS_SOURCE})
 else()
   set(OFFSCREEN_SOURCES
+    src/export_png.cc
+    src/fbo.cc
+    src/imageutils.cc
+    src/render.cc
+    src/renderer.cc
+    src/system-gl.cc
+    src/CGALRenderer.cc
     src/GLView.cc
     src/OffscreenView.cc
-    src/imageutils.cc
-    src/fbo.cc
-    src/system-gl.cc
-    src/export_png.cc
-    src/CGALRenderer.cc
-    src/ThrownTogetherRenderer.cc
-    src/renderer.cc
-    src/render.cc
-    src/mouseselector.cc
-    src/OpenCSGRenderer.cc)
+    src/OpenCSGRenderer.cc
+    src/ThrownTogetherRenderer.cc)
 endif()
 
 
@@ -578,35 +570,38 @@ set(INPUT_DRIVER_SOURCES
 
 set(GUI_SOURCES
   ${GUI_SOURCES}
-  src/mainwin.cc
-  src/OpenSCADApp.cc
-  src/EventFilter.h
-  src/WindowManager.cc
-  src/settings.cc
-  src/Preferences.cc
-  src/initConfig.cc
-  src/SettingsWriter.cc
-  src/FontListDialog.cc
-  src/FontListTableView.cc
-  src/OctoPrint.cc
-  src/PrintInitDialog.cc
-  src/PrintService.cc
-  src/LibraryInfoDialog.cc
-  src/OpenCSGWarningDialog.cc
-  src/ProgressWidget.cc
-  src/AutoUpdater.cc
-  src/QGLView.cc
-  src/Dock.cc
-  src/Console.cc
-  src/UIUtils.cc
-  src/scadlexer.cpp
   src/cgalworker.cc
   src/editor.cc
-  src/scintillaeditor.cpp
+  src/initConfig.cc
   src/launchingscreen.cc
-  src/QWordSearchField.cc
+  src/mainwin.cc
+  src/mouseselector.cc
+  src/scadapi.cc
+  src/scadlexer.cpp
+  src/scintillaeditor.cpp
+  src/settings.cc
+  src/tabmanager.cc
+  src/tabwidget.cc
+  src/AutoUpdater.cc
+  src/Console.cc
+  src/Dock.cc
+  src/EventFilter.h
+  src/FontListDialog.cc
+  src/FontListTableView.cc
+  src/LibraryInfoDialog.cc
+  src/OctoPrint.cc
+  src/OpenCSGWarningDialog.cc
+  src/OpenSCADApp.cc
+  src/Preferences.cc
+  src/PrintInitDialog.cc
+  src/PrintService.cc
+  src/ProgressWidget.cc
+  src/QGLView.cc
   src/QSettingsCached.cc
-  src/parameter/ParameterWidget.cc
+  src/QWordSearchField.cc
+  src/SettingsWriter.cc
+  src/UIUtils.cc
+  src/WindowManager.cc
   src/parameter/groupwidget.cpp
   src/parameter/ignoreWheelWhenNotFocused.cpp
   src/parameter/parametercheckbox.cpp
@@ -618,9 +613,7 @@ set(GUI_SOURCES
   src/parameter/parametertext.cpp
   src/parameter/parametervector.cpp
   src/parameter/parametervirtualwidget.cpp
-  src/scadapi.cc
-  src/tabmanager.cc
-  src/tabwidget.cc
+  src/parameter/ParameterWidget.cc
   src/input/AxisConfigWidget.cc
   src/input/ButtonConfigWidget.cc
   src/input/InputDriver.cc
@@ -638,13 +631,10 @@ set(GUI_HEADERS
   src/NetworkSignal.h
   )
 
-#file(GLOB Headers src/*.h src/*.hpp src/polyclipping/*.hpp)
-#list(REMOVE_ITEM Headers ${CMAKE_SOURCE_DIR}/src/SparkleAutoUpdater.h)
-
 file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
-set(Sources src/openscad.cc ${CORE_SOURCES} ${COMMON_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
+set(Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
 if(HEADLESS)
   add_definitions(-DOPENSCAD_NOGUI)
 else()
@@ -696,3 +686,5 @@ endif()
 if(INFO)
   include(info)
 endif()
+
+add_subdirectory(tests)

@@ -80,7 +80,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			if (ps && !ps->isEmpty()) {
 				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-				bool convex{ps->convexValue()};
+				bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
 				if (!convex) {
 					assert(ps->getDimension() == 3);
 					auto ps_tri = new PolySet(3, ps->convexValue());
@@ -805,7 +805,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 		// matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
 		bool flip = ((!o.positive) xor (back_twist));
 	
-		for (size_t i=1;i<=o.vertices.size();i++) {
+		for (size_t i=1;i<=o.vertices.size();++i) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 
@@ -1005,13 +1005,13 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 {
 	if (flip) {
 		unsigned int l = o.vertices.size()-1;
-		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+		for (unsigned int i=0 ; i<o.vertices.size(); ++i) {
 			ring[i][0] = o.vertices[l-i][0] * sin_degrees(a);
 			ring[i][1] = o.vertices[l-i][0] * cos_degrees(a);
 			ring[i][2] = o.vertices[l-i][1];
 		}
 	} else {
-		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+		for (unsigned int i=0 ; i<o.vertices.size(); ++i) {
 			ring[i][0] = o.vertices[i][0] * sin_degrees(a);
 			ring[i][1] = o.vertices[i][0] * cos_degrees(a);
 			ring[i][2] = o.vertices[i][1];
@@ -1094,7 +1094,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[1].resize(o.vertices.size());
 
 		fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
-		for (unsigned int j = 0; j < fragments; j++) {
+		for (unsigned int j = 0; j < fragments; ++j) {
 			double a;
 			if (node.angle == 360)
 				a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
@@ -1102,7 +1102,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				a = 90 - (j+1)* node.angle / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
 
-			for (size_t i=0;i<o.vertices.size();i++) {
+			for (size_t i=0; i<o.vertices.size(); ++i) {
 				ps->append_poly();
 				ps->insert_vertex(rings[j%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);

@@ -13,6 +13,7 @@ public:
 	~Expression() {}
 	virtual bool isLiteral() const;
 	virtual ValuePtr evaluate(const std::shared_ptr<Context>& context) const = 0;
+	ValuePtr checkUndef(ValuePtr&& val, const std::shared_ptr<Context>& context) const;
 };
 
 class UnaryOp : public Expression

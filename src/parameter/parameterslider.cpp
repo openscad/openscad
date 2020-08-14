@@ -63,7 +63,7 @@ void ParameterSlider::setValue()
 	double max = 0;
 	int maxSlider = 0;
 	int curSlider = 0;
-	if (object->values->type() == Value::ValueType::RANGE) {
+	if (object->values->type() == Value::Type::RANGE) {
 		// [min:max] and [min:step:max] format
 		const double b = object->values->toRange().begin_value();
 		const double e = object->values->toRange().end_value();

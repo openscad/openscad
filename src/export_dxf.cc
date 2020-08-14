@@ -48,7 +48,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENTITIES\n";
 
 	for(const auto &o : poly.outlines()) {
-		for (unsigned int i=0;i<o.vertices.size();i++) {
+		for (unsigned int i=0; i<o.vertices.size(); ++i) {
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
 			double x1 = p1[0];

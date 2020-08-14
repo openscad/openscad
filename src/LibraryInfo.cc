@@ -10,6 +10,7 @@
 #include "PlatformUtils.h"
 #include "openscad.h"
 #include "version.h"
+#include "feature.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -141,15 +142,15 @@ std::string LibraryInfo::info()
 	  << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
 	  << "\nOpenSCAD library path:\n";
 
-	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
-		s << "  " << *it << "\n";
+	for (const auto &path : librarypath) {
+		s << "  " << path << "\n";
 	}
 
 	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == nullptr ? "<not set>" : env_font_path)
 	  << "\nOpenSCAD font path:\n";
 	
-	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {
-		s << "  " << *it << "\n";
+	for (const auto &path : fontpath) {
+		s << "  " << path << "\n";
 	}
 
 	return s.str();

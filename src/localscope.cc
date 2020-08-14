@@ -100,6 +100,6 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr
 void LocalScope::apply(const std::shared_ptr<Context> &ctx) const
 {
 	for(const auto &assignment : this->assignments) {
-		ctx->set_variable(assignment->name, assignment->expr->evaluate(ctx));
+		ctx->set_variable(assignment->getName(), assignment->getExpr()->evaluate(ctx));
 	}
 }

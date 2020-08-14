@@ -133,7 +133,7 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	}
 	
 	int steps = std::fabs(delta) * 10.0 / 180 + 4;
-	for (int a = 0;a <= steps;a++) {
+	for (int a = 0; a <= steps; ++a) {
 		double phi = theta + delta * a / steps;
 
 		double xx = cos_rad * cos_degrees(phi) * rx - sin_rad * sin_degrees(phi) * ry;
@@ -147,7 +147,7 @@ void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2)
 {
 	unsigned long fn = 20;
-	for (unsigned long idx = 1;idx <= fn;idx++) {
+	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
 		const double yy = y * t(a, 2) + cy1 * 2 * t(a, 1) * a + y2 * a * a;
@@ -159,7 +159,7 @@ void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2)
 {
 	unsigned long fn = 20;
-	for (unsigned long idx = 1;idx <= fn;idx++) {
+	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;
 		const double yy = y * t(a, 3) + cy1 * 3 * t(a, 2) * a + cy2 * 3 * t(a, 1) * a * a + y2 * a * a * a;

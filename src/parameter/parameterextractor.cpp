@@ -15,7 +15,7 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
   if (!fileModule) return;
 
   for (auto &assignment : fileModule->scope.assignments) {
-    auto entry = entries.find(assignment->name);
+    auto entry = entries.find(assignment->getName());
     if (entry != entries.end()) {
       if (entry->second->groupName != "Hidden") {
         entry->second->applyParameter(assignment);
@@ -36,30 +36,30 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
     const Annotation *param = assignment->annotation("Parameter");
     if (!param) continue;
 
-    const ValuePtr defaultValue = assignment->expr->evaluate(ctx.ctx);
-    if (defaultValue->type() == Value::ValueType::UNDEFINED) continue;
+    const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+    if (defaultValue->type() == Value::Type::UNDEFINED) continue;
 
     ParameterObject *entryObject = new ParameterObject(ctx.ctx, assignment, defaultValue);
 
     //check whether object exist or not previously
-    if (entries.find(assignment->name) == entries.end()) {
+    if (entries.find(assignment->getName()) == entries.end()) {
       //if object doesn't exist, add new entry
-      entries[assignment->name] = entryObject;
+      entries[assignment->getName()] = entryObject;
       rebuildParameterWidget = true;
     } else {
       //if entry object already exists, we check if its modified
       //or not
-      if (*entryObject == *entries[assignment->name]) {
+      if (*entryObject == *entries[assignment->getName()]) {
         delete entryObject;
         //if entry is not modified, then we don't add new entry
-        entryObject = entries[assignment->name];
+        entryObject = entries[assignment->getName()];
       } else {
-        delete entries[assignment->name];
+        delete entries[assignment->getName()];
         //if entry is modified, then we add new entry
-        entries[assignment->name] = entryObject;
+        entries[assignment->getName()] = entryObject;
       }
     }
     entryObject->set = true;
-    ParameterPos.push_back(assignment->name);
+    ParameterPos.push_back(assignment->getName());
   }
 }

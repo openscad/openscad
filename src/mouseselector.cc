@@ -59,7 +59,6 @@ void MouseSelector::init_shader() {
     "  gl_FragColor = vec4(frag_idcolor, 1.0);\n"
     "}\n";
 
-  GLenum err;
   int shaderstatus;
 
   // Compile the shaders

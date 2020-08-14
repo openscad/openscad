@@ -373,7 +373,7 @@ void ParameterWidget::connectWidget()
 
 			std::vector<std::string> gr;
 			gr = groupMap[groupName].parameterVector;
-			for(unsigned int i=0;i < gr.size();i++) {
+			for(unsigned int i=0; i < gr.size(); ++i) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
 				if(entry){
 					anyLayout->addWidget(entry);
@@ -408,7 +408,7 @@ void ParameterWidget::rebuildGroupMap(){
 	}
 
 	groupPos.clear();
-	for (unsigned int it=0; it<ParameterPos.size(); it++) {
+	for (unsigned int it=0; it<ParameterPos.size(); ++it) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupPos.push_back(groupName);
@@ -482,9 +482,9 @@ void ParameterWidget::applyParameterSet(std::string setName)
 	for (pt::ptree::value_type &v : set.get()) {
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
-			if (entry->second->dvt == Value::ValueType::STRING) {
+			if (entry->second->dvt == Value::Type::STRING) {
 				entry->second->value=ValuePtr(v.second.data());
-			} else if (entry->second->dvt == Value::ValueType::BOOL) {
+			} else if (entry->second->dvt == Value::Type::BOOL) {
 				entry->second->value = ValuePtr(v.second.get_value<bool>());
 			} else {
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());

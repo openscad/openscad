@@ -76,7 +76,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	auto twist = c->lookup_variable("twist", true);
 	auto slices = c->lookup_variable("slices", true);
 
-	if (!file->isUndefined() && file->type() == Value::ValueType::STRING) {
+	if (!file->isUndefined() && file->type() == Value::Type::STRING) {
 		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
 		node->filename = filename;
@@ -89,7 +89,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "") {
 		auto val = evalctx->getArgValue(0);
-		if (val->type() == Value::ValueType::NUMBER) height = val;
+		if (val->type() == Value::Type::NUMBER) height = val;
 	}
 
 	node->layername = layer->isUndefined() ? "" : layer->toString();
@@ -103,18 +103,18 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	}
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
+	if(origin->isDefined() && !originOk){
 		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 	node->scale_x = node->scale_y = 1;
 	bool scaleOK = scale->getFiniteDouble(node->scale_x);
 	scaleOK &= scale->getFiniteDouble(node->scale_y);
 	scaleOK |= scale->getVec2(node->scale_x, node->scale_y, true);
-	if((origin!=ValuePtr::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
+	if(origin->isDefined() && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
 		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
 	}
 
-	if (center->type() == Value::ValueType::BOOL)
+	if (center->type() == Value::Type::BOOL)
 		node->center = center->toBool();
 
 	if (node->height <= 0) node->height = 0;
