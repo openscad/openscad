@@ -31,5 +31,5 @@ private:
 class LCache {
 public:
     LCache() {}
-}
+};
 #endif
