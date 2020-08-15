@@ -1257,8 +1257,7 @@ void MainWindow::compileCSG()
 						(this->root_products ? this->root_products->size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
-																								this->background_products,
-																								&this->qglview->shaderinfo);
+																								this->background_products);
 		}
 #endif
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,

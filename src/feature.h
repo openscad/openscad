@@ -18,6 +18,7 @@ public:
 	static const Feature ExperimentalFunctionLiterals;
 	static const Feature ExperimentalLazyUnion;
 	static const Feature ExperimentalMouseSelection;
+	static const Feature ExperimentalVxORenderers;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

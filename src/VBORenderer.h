@@ -11,7 +11,7 @@
 class VBORenderer : public Renderer
 {
 public:
-	typedef struct _VertexSet
+	struct VertexSet
 	{
 		bool is_opencsg_vertex_set;
 		OpenSCADOperator operation;
@@ -21,9 +21,10 @@ public:
 		GLintptr start_offset;
 		bool draw_cull_front;
 		bool draw_cull_back;
-	} VertexSet;
+		int identifier;
+	};
 
-	typedef struct _Vertex
+	struct Vertex
 	{
 		GLfloat position[3];
 		GLfloat normal[3];
@@ -33,7 +34,7 @@ public:
 		GLfloat pos_b[3];
 		GLfloat pos_c[3];
 		GLbyte mask[3];
-	} Vertex;
+	};
 
 	typedef std::pair<GLuint, std::vector<VertexSet *> *> VertexSets;
 
@@ -41,13 +42,13 @@ public:
 	VBORenderer();
 	virtual ~VBORenderer() {};
 	virtual void resize(int w, int h);
+	virtual const Renderer::shaderinfo_t &getShader() const;
 	virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f &col, Color4f &outcolor) const;
-	inline const GLint (&getVBOShaderSettings() const)[11] { return vbo_shader_settings; }
 
 	virtual void create_surface(shared_ptr<const Geometry> geom, std::vector<Vertex> &render_buffer,
 				    VertexSet &vertex_set, GLintptr prev_start_offset, GLsizei prev_draw_size,
-				    csgmode_e csgmode, const Transform3d &m, const Color4f &color);
-	virtual void draw_surface(const VertexSet &vertex_set, bool use_color_array = false, bool use_edge_shader = false) const;
+				    csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
+	virtual void draw_surface(const VertexSet &vertex_set, const Renderer::shaderinfo_t *shaderinfo = nullptr, bool use_color_array = false) const;
 	virtual inline void create_edges(shared_ptr<const Geometry> /* geom */, csgmode_e /* csgmode */) {}
 	virtual inline void draw_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const { render_edges(geom, csgmode); }
 
@@ -56,7 +57,7 @@ private:
 			const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
 			bool e0, bool e1, bool e2, bool mirrored) const;
 
-	GLint vbo_shader_settings[11];
+	shaderinfo_t vbo_renderer_shader;
 };
 
 #endif // __VBORENDERER_H__

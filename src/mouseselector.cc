@@ -115,7 +115,7 @@ void MouseSelector::init_shader() {
   }
 
   this->shaderinfo.progid = selecthader_prog;
-  this->shaderinfo.type = GLView::shaderinfo_t::SELECT_RENDERING;
+  this->shaderinfo.type = Renderer::SELECT_RENDERING;
   GLint identifier = glGetUniformLocation(selecthader_prog, "frag_idcolor");
   if (identifier < 0) {
     fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);

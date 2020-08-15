@@ -73,10 +73,6 @@ void GLView::setColorScheme(const std::string &cs)
 
 void GLView::resizeGL(int w, int h)
 {
-#ifdef ENABLE_OPENCSG
-  shaderinfo.vp_size_x = w;
-  shaderinfo.vp_size_y = h;
-#endif
   cam.pixel_width = w;
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
@@ -187,128 +183,6 @@ void GLView::enable_opencsg_shaders()
 
   if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
     display_opencsg_warning();
-  }
-
-  if (opencsg_support && this->has_shaders) {
-  /*
-    Uniforms:
-      1 color1 - face color
-      2 color2 - edge color
-      7 xscale
-      8 yscale
-
-    Attributes:
-      3 trig
-      4 pos_b
-      5 pos_c
-      6 mask
-
-    Other:
-      9 width
-      10 height
-
-    Outputs:
-      tp
-      tr
-      shading
-   */
-    const char *vs_source =
-			// Updated in this->resizeGL
-			"uniform float xscale, yscale;\n"
-	  	// The other two vectors of the triangle
-			"attribute vec3 pos_b, pos_c;\n"
-			// Trig: line width of edge: -1 dont draw
-			// mask: what is the current edge
-			// .x p0->p1, .y: p1->p2, .z p0->p2
-			"attribute vec3 trig, mask;\n"
-			// tp, tr infos for fragment shader edge highlighting
-			"varying vec3 tp, tr;\n"
-			// "darkdness" for fragment shader
-			"varying float shading;\n"
-			"void main() {\n"
-			"  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"  // projected vector
-			"  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n" // ?? pos_b = argument
-			"  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n" // ?? pos_b = argument
-			// Lengths of the sides of the rendered triangle
-			"  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-			"  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
-			"  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-			"  float s = (a + b + c) / 2.0;\n"
-			"  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
-			"  float ha = 2.0*A/a;\n"
-			"  gl_Position = p0;\n"
-			"  tp = mask * ha;\n"
-			"  tr = trig;\n"
-			"  vec3 normal, lightDir;\n"
-			"  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
-			"  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-			"  shading = 0.2 + abs(dot(normal, lightDir));\n"
-			"}\n";
-
-    /*
-      Inputs:
-        tp && tr - if any components of tp < tr, use color2 (edge color)
-        shading  - multiplied by color1. color2 is is without lighting
-    */
-    const char *fs_source =
-      "uniform vec4 color1, color2;\n"
-      "varying vec3 tp, tr, tmp;\n"
-      "varying float shading;\n"
-      "void main() {\n"
-      "  gl_FragColor = vec4(color1.r * shading, color1.g * shading, color1.b * shading, color1.a);\n"
-      "  if (tp.x < tr.x || tp.y < tr.y || tp.z < tr.z)\n"
-      "    gl_FragColor = color2;\n"
-      "}\n";
-
-    auto vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
-    glCompileShader(vs);
-
-    auto fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
-    glCompileShader(fs);
-
-    auto edgeshader_prog = glCreateProgram();
-    glAttachShader(edgeshader_prog, vs);
-    glAttachShader(edgeshader_prog, fs);
-    glLinkProgram(edgeshader_prog);
-
-    shaderinfo.progid = edgeshader_prog; // 0
-    shaderinfo.type = GLView::shaderinfo_t::CSG_RENDERING;
-    shaderinfo.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
-    shaderinfo.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-    shaderinfo.data.csg_rendering.trig = glGetAttribLocation(edgeshader_prog, "trig"); // 3
-    shaderinfo.data.csg_rendering.point_b = glGetAttribLocation(edgeshader_prog, "pos_b"); // 4
-    shaderinfo.data.csg_rendering.point_c = glGetAttribLocation(edgeshader_prog, "pos_c"); // 5
-    shaderinfo.data.csg_rendering.mask = glGetAttribLocation(edgeshader_prog, "mask"); // 6
-    shaderinfo.data.csg_rendering.xscale = glGetUniformLocation(edgeshader_prog, "xscale"); // 7
-    shaderinfo.data.csg_rendering.yscale = glGetUniformLocation(edgeshader_prog, "yscale"); // 8
-
-    auto err = glGetError();
-    if (err != GL_NO_ERROR) {
-      fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-    }
-
-    GLint status;
-    glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE) {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
-    } else {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      if (loglen > 0) {
-        fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
-      }
-      glValidateProgram(edgeshader_prog);
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      if (loglen > 0) {
-        fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
-      }
-    }
   }
 }
 #endif
