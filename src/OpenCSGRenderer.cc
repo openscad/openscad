@@ -29,6 +29,14 @@
 #include "polyset.h"
 #include "csgnode.h"
 
+#define OPENGL_TEST(place) \
+do { \
+	auto err = glGetError(); \
+	if (err != GL_NO_ERROR) { \
+		fprintf(stderr, "OpenGL error " place ":\n %s\n\n", gluErrorString(err)); \
+	} \
+} while (false)
+
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 
@@ -77,9 +85,9 @@ private:
 //
 #ifndef ENABLE_EXPERIMENTAL
 OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
-																 shared_ptr<CSGProducts> highlights_products,
-																 shared_ptr<CSGProducts> background_products,
-																 GLint *shaderinfo)
+				 shared_ptr<CSGProducts> highlights_products,
+				 shared_ptr<CSGProducts> background_products,
+				 GLView::shaderinfo_t *shaderinfo)
 	: root_products(root_products),
 		highlights_products(highlights_products),
 		background_products(background_products), shaderinfo(shaderinfo)
@@ -88,16 +96,23 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
-	GLint *shaderinfo = this->shaderinfo;
-	if (!shaderinfo[0]) shaderinfo = nullptr;
+	GLView::shaderinfo_t *shaderinfo = this->shaderinfo;
+	if (!shaderinfo->progid) shaderinfo = nullptr;
+	if (!showedges) shaderinfo = nullptr;
+
+	this->draw_with_shader(shaderinfo);
+}
+
+void OpenCSGRenderer::draw_with_shader(const GLView::shaderinfo_t *shaderinfo) const
+{
 	if (this->root_products) {
-		renderCSGProducts(*this->root_products, showedges ? shaderinfo : nullptr, false, false);
+		renderCSGProducts(*this->root_products, shaderinfo, false, false);
 	}
 	if (this->background_products) {
-		renderCSGProducts(*this->background_products, showedges ? shaderinfo : nullptr, false, true);
+		renderCSGProducts(*this->background_products, shaderinfo, false, true);
 	}
 	if (this->highlights_products) {
-		renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : nullptr, true, false);
+		renderCSGProducts(*this->highlights_products, shaderinfo, true, false);
 	}
 }
 
@@ -115,8 +130,8 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 	return prim;
 }
 
-void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shaderinfo,
-										bool highlight_mode, bool background_mode) const
+void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, const GLView::shaderinfo_t *shaderinfo,
+					bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
 	for(const auto &product : products.products) {
@@ -131,11 +146,21 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 			OpenCSG::render(primitives);
 			glDepthFunc(GL_EQUAL);
 		}
-		if (shaderinfo) glUseProgram(shaderinfo[0]);
+		OPENGL_TEST("start");
+		if (shaderinfo) glUseProgram(shaderinfo->progid);
+		OPENGL_TEST("load shader");
 
-		for(const auto &csgobj : product.intersections) {
+		for (const auto &csgobj : product.intersections) {
+			if (shaderinfo && shaderinfo->type == GLView::shaderinfo_t::SELECT_RENDERING) {
+				int identifier = csgobj.leaf->index;
+				glUniform3f(shaderinfo->data.select_rendering.identifier,
+										((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
+										((identifier >> 16) & 0xff) / 255.0f);
+				OPENGL_TEST("setup shader");
+			}
+
 			const Color4f &c = csgobj.leaf->color;
-				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
+			csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 
 			ColorMode colormode = ColorMode::NONE;
 			if (highlight_mode) {
@@ -162,6 +187,7 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
 				glDisable(GL_CULL_FACE);
 			}
+			OPENGL_TEST("render");
 
 			glPopMatrix();
 		}
@@ -204,9 +230,9 @@ void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint *shad
 //
 #ifdef ENABLE_EXPERIMENTAL
 OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
-																 shared_ptr<CSGProducts> highlights_products,
-																 shared_ptr<CSGProducts> background_products,
-																 GLint *shaderinfo)
+				 shared_ptr<CSGProducts> highlights_products,
+				 shared_ptr<CSGProducts> background_products,
+				 GLView::shaderinfo_t *shaderinfo)
 	: VBORenderer(),
 		product_vertex_sets(new std::vector<VertexSets *>()),
 		root_products(root_products),
@@ -217,54 +243,61 @@ OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 
 OpenCSGRenderer::~OpenCSGRenderer()
 {
-  if (product_vertex_sets) {
-	for (auto &vertex_sets : *product_vertex_sets) {
+	if (product_vertex_sets) {
+		for (auto &vertex_sets : *product_vertex_sets) {
 			glDeleteBuffers(1,&vertex_sets->first);
 			for (auto &vertex_set : *vertex_sets->second) {
 					delete vertex_set;
 			}
 			vertex_sets->second->clear();
 			delete vertex_sets;
+		}
+		product_vertex_sets->clear();
+		delete product_vertex_sets;
 	}
-	product_vertex_sets->clear();
-	delete product_vertex_sets;
-}
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
-	if (!getProductVertexSets().size()) {
-		GLint *shaderinfo = this->shaderinfo;
-		if (!shaderinfo[0]) shaderinfo = nullptr;
+	GLView::shaderinfo_t *shaderinfo = this->shaderinfo;
+	if (!shaderinfo->progid) shaderinfo = nullptr;
+	if (!showedges) shaderinfo = nullptr;
 
+	this->draw_with_shader(shaderinfo);
+}
+
+void OpenCSGRenderer::draw_with_shader(const GLView::shaderinfo_t *shaderinfo) const
+{
+	if (!getProductVertexSets().size()) {
 		if (this->root_products) {
-				renderCSGProducts(*this->root_products, showedges ? shaderinfo : nullptr, false, false);
+			renderCSGProducts(*this->root_products, shaderinfo, false, false);
 		}
 		if (this->background_products) {
-				renderCSGProducts(*this->background_products, showedges ? shaderinfo : nullptr, false, true);
+			renderCSGProducts(*this->background_products, shaderinfo, false, true);
 		}
 		if (this->highlights_products) {
-				renderCSGProducts(*this->highlights_products, showedges ? shaderinfo : nullptr, true, false);
+			renderCSGProducts(*this->highlights_products, shaderinfo, true, false);
 		}
 	}
 
-	drawCSGProducts(showedges);
+	drawCSGProducts(shaderinfo != nullptr);
 }
+
 
 // Primitive for drawing using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const VertexSet &vertex_set, const GLuint vbo) const
 {
-  if (vertex_set.operation == OpenSCADOperator::INTERSECTION)
-    return new OpenCSGPrim(OpenCSG::Intersection, vertex_set.convexity, *this, vertex_set, vbo);
+	if (vertex_set.operation == OpenSCADOperator::INTERSECTION)
+		return new OpenCSGPrim(OpenCSG::Intersection, vertex_set.convexity, *this, vertex_set, vbo);
 
-  if (vertex_set.operation == OpenSCADOperator::DIFFERENCE)
-    return new OpenCSGPrim(OpenCSG::Subtraction, vertex_set.convexity, *this, vertex_set, vbo);
+	if (vertex_set.operation == OpenSCADOperator::DIFFERENCE)
+		return new OpenCSGPrim(OpenCSG::Subtraction, vertex_set.convexity, *this, vertex_set, vbo);
 
-  return nullptr;
+	return nullptr;
 }
 
-void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, GLint * /*shaderinfo*/,
-										bool highlight_mode, bool background_mode) const
+void OpenCSGRenderer::renderCSGProducts(const CSGProducts &products, const GLView::shaderinfo_t */*shaderinfo*/,
+					bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
 	std::vector<Vertex> *render_buffer = new std::vector<Vertex>();
@@ -389,10 +422,10 @@ void OpenCSGRenderer::drawCSGProducts(bool use_edge_shader) const
 		if (vertex_sets) {
 			for(const auto &vertex_set : *vertex_sets->second) {
 				if (vertex_set->is_opencsg_vertex_set) {
-          OpenCSG::Primitive *primative = nullptr;
-          if ((primative = createCSGPrimitive(*vertex_set, vertex_sets->first)) != nullptr) {
-					  primitives.push_back(primative);
-          }
+					OpenCSG::Primitive *primative = nullptr;
+					if ((primative = createCSGPrimitive(*vertex_set, vertex_sets->first)) != nullptr) {
+						primitives.push_back(primative);
+					}
 				}
 			}
 

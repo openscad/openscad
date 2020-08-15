@@ -36,7 +36,6 @@ GLView::GLView()
   opencsg_support = true;
   static int sId = 0;
   this->opencsg_id = sId++;
-  for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 #endif
 }
 
@@ -75,8 +74,8 @@ void GLView::setColorScheme(const std::string &cs)
 void GLView::resizeGL(int w, int h)
 {
 #ifdef ENABLE_OPENCSG
-  shaderinfo[9] = w;
-  shaderinfo[10] = h;
+  shaderinfo.vp_size_x = w;
+  shaderinfo.vp_size_y = h;
 #endif
   cam.pixel_width = w;
   cam.pixel_height = h;
@@ -90,7 +89,7 @@ void GLView::setCamera(const Camera &cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera()
+void GLView::setupCamera() const
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -123,7 +122,6 @@ void GLView::setupCamera()
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
-
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
@@ -215,35 +213,43 @@ void GLView::enable_opencsg_shaders()
       shading
    */
     const char *vs_source =
-      "uniform float xscale, yscale;\n"
-      "attribute vec3 pos_b, pos_c;\n"
-      "attribute vec3 trig, mask;\n"
-      "varying vec3 tp, tr;\n"
-      "varying float shading;\n"
-      "void main() {\n"
-      "  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-      "  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n"
-      "  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n"
-      "  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-      "  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
-      "  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-      "  float s = (a + b + c) / 2.0;\n"
-      "  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
-      "  float ha = 2.0*A/a;\n"
-      "  gl_Position = p0;\n"
-      "  tp = mask * ha;\n"
-      "  tr = trig;\n"
-      "  vec3 normal, lightDir;\n"
-      "  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
-      "  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-      "  shading = 0.2 + abs(dot(normal, lightDir));\n"
-      "}\n";
+			// Updated in this->resizeGL
+			"uniform float xscale, yscale;\n"
+	  	// The other two vectors of the triangle
+			"attribute vec3 pos_b, pos_c;\n"
+			// Trig: line width of edge: -1 dont draw
+			// mask: what is the current edge
+			// .x p0->p1, .y: p1->p2, .z p0->p2
+			"attribute vec3 trig, mask;\n"
+			// tp, tr infos for fragment shader edge highlighting
+			"varying vec3 tp, tr;\n"
+			// "darkdness" for fragment shader
+			"varying float shading;\n"
+			"void main() {\n"
+			"  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"  // projected vector
+			"  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n" // ?? pos_b = argument
+			"  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n" // ?? pos_b = argument
+			// Lengths of the sides of the rendered triangle
+			"  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
+			"  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
+			"  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
+			"  float s = (a + b + c) / 2.0;\n"
+			"  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
+			"  float ha = 2.0*A/a;\n"
+			"  gl_Position = p0;\n"
+			"  tp = mask * ha;\n"
+			"  tr = trig;\n"
+			"  vec3 normal, lightDir;\n"
+			"  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
+			"  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
+			"  shading = 0.2 + abs(dot(normal, lightDir));\n"
+			"}\n";
 
     /*
       Inputs:
         tp && tr - if any components of tp < tr, use color2 (edge color)
         shading  - multiplied by color1. color2 is is without lighting
-		*/
+    */
     const char *fs_source =
       "uniform vec4 color1, color2;\n"
       "varying vec3 tp, tr, tmp;\n"
@@ -267,15 +273,16 @@ void GLView::enable_opencsg_shaders()
     glAttachShader(edgeshader_prog, fs);
     glLinkProgram(edgeshader_prog);
 
-    shaderinfo[0] = edgeshader_prog;
-    shaderinfo[1] = glGetUniformLocation(edgeshader_prog, "color1");
-    shaderinfo[2] = glGetUniformLocation(edgeshader_prog, "color2");
-    shaderinfo[3] = glGetAttribLocation(edgeshader_prog, "trig");
-    shaderinfo[4] = glGetAttribLocation(edgeshader_prog, "pos_b");
-    shaderinfo[5] = glGetAttribLocation(edgeshader_prog, "pos_c");
-    shaderinfo[6] = glGetAttribLocation(edgeshader_prog, "mask");
-    shaderinfo[7] = glGetUniformLocation(edgeshader_prog, "xscale");
-    shaderinfo[8] = glGetUniformLocation(edgeshader_prog, "yscale");
+    shaderinfo.progid = edgeshader_prog; // 0
+    shaderinfo.type = GLView::shaderinfo_t::CSG_RENDERING;
+    shaderinfo.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
+    shaderinfo.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
+    shaderinfo.data.csg_rendering.trig = glGetAttribLocation(edgeshader_prog, "trig"); // 3
+    shaderinfo.data.csg_rendering.point_b = glGetAttribLocation(edgeshader_prog, "pos_b"); // 4
+    shaderinfo.data.csg_rendering.point_c = glGetAttribLocation(edgeshader_prog, "pos_c"); // 5
+    shaderinfo.data.csg_rendering.mask = glGetAttribLocation(edgeshader_prog, "mask"); // 6
+    shaderinfo.data.csg_rendering.xscale = glGetUniformLocation(edgeshader_prog, "xscale"); // 7
+    shaderinfo.data.csg_rendering.yscale = glGetUniformLocation(edgeshader_prog, "yscale"); // 8
 
     auto err = glGetError();
     if (err != GL_NO_ERROR) {
@@ -355,7 +362,7 @@ void GLView::showSmallaxes(const Color4f &col)
   gluLookAt(0.0, -1.0, 0.0,
 						0.0, 0.0, 0.0,
 						0.0, 0.0, 1.0);
-	 
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -421,7 +428,7 @@ void GLView::showSmallaxes(const Color4f &col)
 void GLView::showAxes(const Color4f &col)
 {
   auto l = cam.zoomValue();
-  
+
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
