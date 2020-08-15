@@ -766,7 +766,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
-		for (size_t i=1;i<=o.vertices.size();i++) {
+		for (size_t i=1; i<=o.vertices.size(); ++i) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 			ps->append_poly();
@@ -844,7 +844,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	}
 	size_t slices = node.slices;
 
-	for (unsigned int j = 0; j < slices; j++) {
+	for (unsigned int j = 0; j < slices; ++j) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*(j+1) / slices;
 		double height1 = h1 + (h2-h1)*j / slices;
@@ -904,13 +904,13 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 {
 	if (flip) {
 		unsigned int l = o.vertices.size()-1;
-		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+		for (unsigned int i=0 ; i<o.vertices.size(); ++i) {
 			ring[i][0] = o.vertices[l-i][0] * sin_degrees(a);
 			ring[i][1] = o.vertices[l-i][0] * cos_degrees(a);
 			ring[i][2] = o.vertices[l-i][1];
 		}
 	} else {
-		for (unsigned int i=0 ;i<o.vertices.size();i++) {
+		for (unsigned int i=0 ; i<o.vertices.size(); ++i) {
 			ring[i][0] = o.vertices[i][0] * sin_degrees(a);
 			ring[i][1] = o.vertices[i][0] * cos_degrees(a);
 			ring[i][2] = o.vertices[i][1];
@@ -993,7 +993,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[1].resize(o.vertices.size());
 
 		fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
-		for (unsigned int j = 0; j < fragments; j++) {
+		for (unsigned int j = 0; j < fragments; ++j) {
 			double a;
 			if (node.angle == 360)
 				a = -90 + ((j+1)%fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
@@ -1001,7 +1001,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				a = 90 - (j+1)* node.angle / fragments; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a, flip_faces);
 
-			for (size_t i=0;i<o.vertices.size();i++) {
+			for (size_t i=0; i<o.vertices.size(); ++i) {
 				ps->append_poly();
 				ps->insert_vertex(rings[j%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);

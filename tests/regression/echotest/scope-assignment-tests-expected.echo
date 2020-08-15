@@ -3,6 +3,7 @@ WARNING: f was assigned on line 58 but was overwritten on line 61
 WARNING: g was assigned on line 67 but was overwritten on line 69
 WARNING: h was assigned on line 73 but was overwritten on line 75
 WARNING: Ignoring unknown variable 'h', in file scope-assignment-tests.scad, line 75.
+WARNING: undefined operation (undefined * number) in file scope-assignment-tests.scad, line 75
 ECHO: "union scope"
 ECHO: "local a (5):", 5
 ECHO: "global a (4):", 4

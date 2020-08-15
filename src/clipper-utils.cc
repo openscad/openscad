@@ -105,7 +105,7 @@ namespace ClipperUtils {
 			// intersection operations must be split into a sequence of binary operations
 			auto source = pathsvector[0];
 			ClipperLib::PolyTree result;
-			for (unsigned int i = 1; i < pathsvector.size(); i++) {
+			for (unsigned int i = 1; i < pathsvector.size(); ++i) {
 				clipper.AddPaths(source, ClipperLib::ptSubject, true);
 				clipper.AddPaths(pathsvector[i], ClipperLib::ptClip, true);
 				clipper.Execute(clipType, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
@@ -144,7 +144,7 @@ namespace ClipperUtils {
 			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
 			pathsvector.push_back(polypaths);
 		}
-		auto res = apply(pathsvector, clipType);
+		auto res = ClipperUtils::apply(pathsvector, clipType);
 		assert(res);
 		return res;
 	}
@@ -225,7 +225,7 @@ namespace ClipperUtils {
 		ClipperLib::Clipper c;
 		auto lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
 
-		for (size_t i=1; i<polygons.size(); i++) {
+		for (size_t i=1; i<polygons.size(); ++i) {
 			ClipperLib::Paths minkowski_terms;
 			auto rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 

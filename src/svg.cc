@@ -231,7 +231,7 @@ std::string sphere_map_dump( const CGAL_Nef_polyhedron3& N)
   Vertex_const_iterator v;
   out << "<!-- sphere map begin -->\n";
   int counter = 0;
-  for (v = N.vertices_begin(); v!= N.vertices_end(); v++ ) {
+  for (v = N.vertices_begin(); v!= N.vertices_end(); ++v ) {
   counter++;
   out << "<!-- vertex sphere map begin. vertex counter is " << counter << "\n";
   out << "     vertex coordinates: " << vert_dump( v ) << "-->\n";
@@ -249,10 +249,10 @@ std::string sphere_map_dump( const CGAL_Nef_polyhedron3& N)
 // S.print_statistics( out );
   int i=0;
   SFace_const_iterator sf;
-  for(sf = S.sfaces_begin(); sf != S.sfaces_end(); sf++) {
+  for(sf = S.sfaces_begin(); sf != S.sfaces_end(); ++sf) {
     SFace_cycle_const_iterator it;
     out << " the sface cycles of sface " << i++ << " start with an\n";
-    for(it = sf->sface_cycles_begin(); it != sf->sface_cycles_end(); it++) {
+    for(it = sf->sface_cycles_begin(); it != sf->sface_cycles_end(); ++it) {
       if (it.is_svertex())
         out << "  svertex at position "
                   << vert_dump( SVertex_const_handle(it) ) << "\n";

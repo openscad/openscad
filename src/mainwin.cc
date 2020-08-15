@@ -200,7 +200,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	absolute_root_node = nullptr;
 
 	// Open Recent
-	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
+	for (int i = 0; i<UIUtils::maxRecentFiles; ++i) {
 		this->actionRecentFile[i] = new QAction(this);
 		this->actionRecentFile[i]->setVisible(false);
 		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
@@ -579,7 +579,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	this->console->setMaximumBlockCount(5000);
 
-	for(int i = 1; i < filenames.size(); i++)
+	for(int i = 1; i < filenames.size(); ++i)
 		tabManager->createTab(filenames[i]);
 
 	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
@@ -1217,7 +1217,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 
 			this->highlights_products.reset(new CSGProducts());
-			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
+			for (unsigned int i = 0; i < highlight_terms.size(); ++i) {
 				auto nterm = normalizer.normalize(highlight_terms[i]);
 				if (nterm) {
 					this->highlights_products->import(nterm);
@@ -1234,7 +1234,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 
 			this->background_products.reset(new CSGProducts());
-			for (unsigned int i = 0; i < background_terms.size(); i++) {
+			for (unsigned int i = 0; i < background_terms.size(); ++i) {
 				auto nterm = normalizer.normalize(background_terms[i]);
 				if (nterm) {
 					this->background_products->import(nterm);
@@ -1275,7 +1275,7 @@ void MainWindow::compileCSG()
 void MainWindow::actionOpen()
 {
 	auto fileInfoList = UIUtils::openFiles(this);
-	for(int i = 0; i < fileInfoList.size(); i++)
+	for(int i = 0; i < fileInfoList.size(); ++i)
 	{
 		if (!fileInfoList[i].exists()) {
 			return;
@@ -1292,7 +1292,7 @@ void MainWindow::actionNewWindow()
 void MainWindow::actionOpenWindow()
 {
 	auto fileInfoList = UIUtils::openFiles(this);
-	for(int i = 0; i < fileInfoList.size(); i++)
+	for(int i = 0; i < fileInfoList.size(); ++i)
 	{
 		if (!fileInfoList[i].exists()) {
 			return;
@@ -1553,7 +1553,7 @@ void MainWindow::convertTabsToSpaces()
 	QString converted;
 
 	int cnt = 4;
-	for (int idx = 0;idx < text.length();idx++) {
+	for (int idx = 0; idx < text.length(); ++idx) {
 		auto c = text.at(idx);
 		if (c == '\t') {
 	    for (; cnt > 0; cnt--) {
@@ -1631,14 +1631,14 @@ void MainWindow::updateTemporalVariables()
 	this->top_ctx->set_variable("$t", ValuePtr(this->anim_tval));
 
 	auto camVpt = qglview->cam.getVpt();
-	Value::VectorType vpt;
+	VectorType vpt;
 	vpt.push_back(ValuePtr(camVpt.x()));
 	vpt.push_back(ValuePtr(camVpt.y()));
 	vpt.push_back(ValuePtr(camVpt.z()));
 	this->top_ctx->set_variable("$vpt", ValuePtr(vpt));
 
 	auto camVpr = qglview->cam.getVpr();
-	Value::VectorType vpr;
+	VectorType vpr;
 	vpr.push_back(ValuePtr(camVpr.x()));
 	vpr.push_back(ValuePtr(camVpr.y()));
 	vpr.push_back(ValuePtr(camVpr.z()));
@@ -1671,7 +1671,7 @@ void MainWindow::updateCamera(const std::shared_ptr<FileContext> ctx)
 	}
 
 	const auto vpd = ctx->lookup_variable("$vpd");
-	if (vpd->type() == Value::ValueType::NUMBER){
+	if (vpd->type() == Value::Type::NUMBER){
 		qglview->cam.setVpd(vpd->toDouble());
 	}else{
 		PRINTB("UI-WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
@@ -1916,6 +1916,8 @@ void MainWindow::sendToOctoPrint()
 	FileFormat exportFileFormat{FileFormat::STL};
 	if (fileFormat == "OFF") {
 		exportFileFormat = FileFormat::OFF;
+	} else if (fileFormat == "ASCIISTL") {
+		exportFileFormat = FileFormat::ASCIISTL;
 	} else if (fileFormat == "AMF") {
 		exportFileFormat = FileFormat::AMF;
 	} else if (fileFormat == "3MF") {
@@ -2413,7 +2415,13 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportSTL()
 {
-	actionExport(FileFormat::STL, "STL", ".stl", 3);
+  const auto *s = Settings::Settings::inst();
+  if (s->get(Settings::Settings::exportUseAsciiSTL).toBool()) {
+	  actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
+  }
+  else {
+	  actionExport(FileFormat::STL, "STL", ".stl", 3);
+  }
 }
 
 void MainWindow::actionExport3MF()
@@ -2883,7 +2891,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
 	setCurrentOutput();
 	const QList<QUrl> urls = event->mimeData()->urls();
-	for (int i = 0; i < urls.size(); i++) {
+	for (int i = 0; i < urls.size(); ++i) {
 		if (urls[i].scheme() != "file") continue;
 		handleFileDrop(urls[i].toLocalFile());
 	}

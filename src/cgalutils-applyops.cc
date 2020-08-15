@@ -262,7 +262,7 @@ namespace CGALUtils {
 				std::list<CGAL_Polyhedron> P[2];
 				std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;
 
-				for (size_t i = 0; i < 2; i++) {
+				for (size_t i = 0; i < 2; ++i) {
 					CGAL_Polyhedron poly;
 
 					const PolySet * ps = dynamic_cast<const PolySet *>(operands[i]);
@@ -313,13 +313,13 @@ namespace CGALUtils {
 				std::vector<Hull_kernel::Point_3> points[2];
 				std::vector<Hull_kernel::Point_3> minkowski_points;
 
-				for (size_t i = 0; i < P[0].size(); i++) {
-					for (size_t j = 0; j < P[1].size(); j++) {
+				for (size_t i = 0; i < P[0].size(); ++i) {
+					for (size_t j = 0; j < P[1].size(); ++j) {
 						t.start();
 						points[0].clear();
 						points[1].clear();
 
-						for (int k = 0; k < 2; k++) {
+						for (int k = 0; k < 2; ++k) {
 							std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
 							std::advance(it, k==0?i:j);
 
@@ -334,8 +334,8 @@ namespace CGALUtils {
 
 						minkowski_points.clear();
 						minkowski_points.reserve(points[0].size() * points[1].size());
-						for (size_t i = 0; i < points[0].size(); i++) {
-							for (size_t j = 0; j < points[1].size(); j++) {
+						for (size_t i = 0; i < points[0].size(); ++i) {
+							for (size_t j = 0; j < points[1].size(); ++j) {
 								minkowski_points.push_back(points[0][i]+(points[1][j]-CGAL::ORIGIN));
 							}
 						}
@@ -344,7 +344,6 @@ namespace CGALUtils {
 							t.stop();
 							continue;
 						}
-
 
 						CGAL::Polyhedron_3<Hull_kernel> result;
 						t.stop();
@@ -416,9 +415,9 @@ namespace CGALUtils {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
 					Geometry::Geometries fake_children;
-					for (std::list<CGAL::Polyhedron_3<Hull_kernel>>::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+					for (const auto &part : result_parts) {
 						PolySet ps(3,true);
-						createPolySetFromPolyhedron(*i, ps);
+						createPolySetFromPolyhedron(part, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
@@ -431,7 +430,7 @@ namespace CGALUtils {
 					t.reset();
 					operands[0] = N;
 				} else {
-                    operands[0] = new CGAL_Nef_polyhedron();
+					operands[0] = new CGAL_Nef_polyhedron();
 				}
 			}
 

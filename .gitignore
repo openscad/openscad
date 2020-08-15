@@ -64,9 +64,6 @@ src/*.debug
 /Testing
 .DS_Store
 /build
-tests/lexer.cxx
-tests/parser.cxx
-tests/parser.hxx
 tests/DartConfiguration.tcl
 tests/__pycache__/
 CMakeCache.txt

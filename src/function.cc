@@ -50,11 +50,11 @@ ValuePtr UserFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::
 void UserFunction::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function " << name << "(";
-	for (size_t i=0; i < definition_arguments.size(); i++) {
+	for (size_t i=0; i < definition_arguments.size(); ++i) {
 		const auto &arg = definition_arguments[i];
 		if (i > 0) stream << ", ";
-		stream << arg->name;
-		if (arg->expr) stream << " = " << *arg->expr;
+		stream << arg->getName();
+		if (arg->getExpr()) stream << " = " << *arg->getExpr();
 	}
 	stream << ") = " << *expr << ";\n";
 }
