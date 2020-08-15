@@ -7,7 +7,7 @@ void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, 
 {
   assert(src && dst);
   auto rowBytes = pixelsize * width;
-  for (auto i = 0ul;i < height;i++) {
+  for (auto i = 0ul; i < height; ++i) {
     memmove(dst + (height - i - 1) * rowBytes, src + i * rowBytes, rowBytes);
   }
 }

@@ -527,7 +527,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5}};
 
 	// walk through axes
-	for (int di=0;di<6;di++){
+	for (int di=0; di<6; ++di){
 
 		// setup negative axes
 		double polarity = 1;

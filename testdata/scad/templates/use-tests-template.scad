@@ -23,7 +23,7 @@ use<test/>
 use </>
 
 //Test with absolute path
-use <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
+use <@CMAKE_CURRENT_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
 
 // Test simple MCAD library
 use <MCAD/teardrop.scad>

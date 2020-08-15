@@ -8,8 +8,11 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 	setValue();
 
 	double max=32767;
-	if(object->values->toVector().size() == 1){ // [max] format from makerbot customizer
-		max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+	if(object->values->toVector().size() == 1) { // [max] format from makerbot customizer
+        try {
+            max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
+        }
+        catch(...) { } // If not a valid value, fall back to the default.
 	}
 	this->lineEdit->setMaxLength(max);
 
@@ -20,7 +23,7 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 void ParameterText::onChanged(QString)
 {
 	if(!this->suppressUpdate){
-		if (object->dvt == Value::ValueType::STRING) {
+		if (object->dvt == Value::Type::STRING) {
 			object->value = ValuePtr(lineEdit->text().toStdString());
 		}else{
 			ContextHandle<Context> ctx{Context::create<Context>()};

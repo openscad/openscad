@@ -192,7 +192,7 @@ def process_templates():
                 fout = open(scadpath, 'w')
                 fin = open(templatepath + '\\' + filename, 'r')
                 for line in fin.readlines():
-                    line = line.replace("@CMAKE_SOURCE_DIR@", cmakebase)
+                    line = line.replace("@CMAKE_CURRENT_SOURCE_DIR@", cmakebase)
                     fout.write(line)
                 fin.close()
                 fout.close()

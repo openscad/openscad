@@ -57,8 +57,8 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr n = evalctx->getArgName(i);
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
+		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (evalctx->getArgName(i) == "file") {
 			rawFilename = v->toString();
@@ -77,7 +77,7 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 		} else if (n == "name") {
 			name = v->toString();
 		}else{
-			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n->toString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: dxf_dim(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 
@@ -102,7 +102,7 @@ ValuePtr builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_p
 	handle_dep(filepath.string());
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
-	for (size_t i = 0; i < dxf.dims.size(); i++)
+	for (size_t i = 0; i < dxf.dims.size(); ++i)
 	{
 		if (!name.empty() && dxf.dims[i].name != name)
 			continue;
@@ -167,8 +167,8 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 	// FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		ValuePtr n = evalctx->getArgName(i);
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
+		auto n = evalctx->getArgName(i);
 		ValuePtr v = evalctx->getArgValue(i);
 		if (n == "file"){
 			rawFilename = v->toString();
@@ -184,7 +184,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 		}else if (n == "scale"){
 			v->getDouble(scale);
 		}else{
-			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			PRINTB("WARNING: dxf_cross(..., %s=...) is not supported, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
 		}
 	}
 
@@ -214,7 +214,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 
 	double coords[4][2];
 
-	for (size_t i = 0, j = 0; i < dxf.paths.size(); i++) {
+	for (size_t i = 0, j = 0; i < dxf.paths.size(); ++i) {
 		if (dxf.paths[i].indices.size() != 2)
 			continue;
 		coords[j][0] = dxf.points[dxf.paths[i].indices[0]][0];
@@ -234,7 +234,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			Value::VectorType ret;
+			VectorType ret;
 			ret.push_back(ValuePtr(x));
 			ret.push_back(ValuePtr(y));
 			return dxf_cross_cache[key] = ValuePtr(ret);

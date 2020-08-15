@@ -39,12 +39,12 @@ InputEventMapper::InputEventMapper()
 {
     stopRequest=false;
 
-    for (int a = 0;a < max_axis;a++) {
+    for (int a = 0; a < max_axis; ++a) {
         axisRawValue[a] = 0.0;
         axisTrimValue[a] = 0.0;
         axisDeadzone[a] = 0.1;
     }
-    for (int a = 0;a < max_buttons;a++) {
+    for (int a = 0; a < max_buttons; ++a) {
         button_state[a]=false;
         button_state_last[a]=false;
     }
@@ -169,13 +169,13 @@ void InputEventMapper::onTimer()
     bool generated_any_events = generateDeferredEvents();
 
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
-    for (int i = 0; i < max_buttons; i++ ){
+    for (int i = 0; i < max_buttons; ++i ){
         if(button_state[i] != button_state_last[i]){
             button_state_last[i] = button_state[i];
             Preferences::inst()->ButtonConfig->updateButtonState(i,button_state[i]);
         }
     }
-    for (int i = 0; i < max_axis; i++ ){ 
+    for (int i = 0; i < max_axis; ++i ){ 
        Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
 
@@ -252,7 +252,7 @@ int InputEventMapper::parseSettingValue(const std::string val)
 void InputEventMapper::onInputMappingUpdated()
 {
     Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < max_buttons; i++ ){
+    for (int i = 0; i < max_buttons; ++i ){
 		std::string is = std::to_string(i);
 		Settings::SettingsEntry* ent =s->getSettingEntryByName("button" +is);
 		actions[i] =QString::fromStdString(s->get(*ent).toString());
@@ -294,7 +294,7 @@ void InputEventMapper::onInputGainUpdated()
 
 void InputEventMapper::onInputCalibrationUpdated()
 {
-    for (int a = 0;a < max_axis;a++) {
+    for (int a = 0; a < max_axis; ++a) {
         std::string s = std::to_string(a);
         Settings::Settings *setting = Settings::Settings::inst();
         Settings::SettingsEntry* ent;
@@ -314,7 +314,7 @@ void InputEventMapper::onInputCalibrationUpdated()
 void InputEventMapper::onAxisAutoTrim()
 {
     Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < max_axis; i++ ){ 
+    for (int i = 0; i < max_axis; ++i ){ 
         std::string is = std::to_string(i);
         axisTrimValue[i] = -axisRawValue[i];
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
@@ -326,7 +326,7 @@ void InputEventMapper::onAxisAutoTrim()
 void InputEventMapper::onAxisTrimReset()
 {
     Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < max_axis; i++ ){ 
+    for (int i = 0; i < max_axis; ++i ){ 
         std::string is = std::to_string(i);
         axisTrimValue[i] = 0.00;
         Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);

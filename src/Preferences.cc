@@ -63,14 +63,14 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::ValueType::STRING:
+		case Value::Type::STRING:
 			return Value(trimmed_value);
-		case Value::ValueType::NUMBER: 
+		case Value::Type::NUMBER: 
 			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
 				return Value(boost::lexical_cast<double>(trimmed_value));
 			}
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::ValueType::BOOL:
+		case Value::Type::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);
@@ -319,7 +319,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 void Preferences::setupFeaturesPage()
 {
 	int row = 0;
-	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
+	for (Feature::iterator it = Feature::begin(); it != Feature::end(); ++it) {
 		Feature *feature = *it;
 		
 		QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
@@ -660,6 +660,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 	settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
+void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
+{
+	Settings::Settings::inst()->set(Settings::Settings::exportUseAsciiSTL, Value(checked));
+	writeSettings();
+}
+
 void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
 {
 	Settings::Settings::inst()->set(Settings::Settings::inputEnableDriverHIDAPILog, Value(checked));
@@ -888,6 +894,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
