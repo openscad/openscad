@@ -374,12 +374,20 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 	handle_dep(filename);
 
-	std::ifstream ifs(filename.c_str());
-	if (!ifs.is_open()) {
-		PRINTB("Can't open input file '%s'!\n", filename.c_str());
-		return 1;
+	std::string text;
+	if (filename == "-") {
+		text =
+				std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
 	}
-	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	else {
+		std::ifstream ifs(filename.c_str());
+		if (!ifs.is_open()) {
+			PRINTB("Can't open input file '%s'!\n", filename.c_str());
+			return 1;
+		}
+		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	}
+
 	text += "\n\x03\n" + commandline_commands;
 	if (!parse(root_module, text, filename, filename, false)) {
 		delete root_module;  // parse failed
