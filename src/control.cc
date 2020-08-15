@@ -82,14 +82,14 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 				LOG(boostfs_uncomplete(inst.location().filePath(),ctx->documentPath()).generic_string(),inst.location().firstLine(),
 					getFormatted("Bad range parameter in for statement: too many elements (%1$lu)",steps),message_group::Warning);
 			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c->set_variable(it_name, ValuePtr(*it));
+				for (double val : range) {
+					c->set_variable(it_name, ValuePtr(val));
 					for_eval(node, inst, l+1, c.ctx, evalctx);
 				}
 			}
 		}
 		else if (it_values->type() == Value::Type::VECTOR) {
-			for (size_t i = 0; i < it_values->toVector().size(); i++) {
+			for (size_t i = 0; i < it_values->toVector().size(); ++i) {
 				c->set_variable(it_name, it_values->toVector()[i]);
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			}
@@ -256,8 +256,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				AbstractNode* node;
 				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 				else node = new GroupNode(inst, evalctx);
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
+				for (double val : range) {
+					AbstractNode* childnode = getChild(ValuePtr(val),modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
@@ -313,7 +313,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		// We create a new context to avoid parameters from influencing each other
 		// -> parallel evaluation. This is to be backwards compatible.
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
-		for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 			if (!evalctx->getArgName(i).empty())
 				c->set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}

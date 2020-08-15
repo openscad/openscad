@@ -373,7 +373,7 @@ void ParameterWidget::connectWidget()
 
 			std::vector<std::string> gr;
 			gr = groupMap[groupName].parameterVector;
-			for(unsigned int i=0;i < gr.size();i++) {
+			for(unsigned int i=0; i < gr.size(); ++i) {
 				ParameterVirtualWidget * entry = CreateParameterWidget(gr[i]);
 				if(entry){
 					anyLayout->addWidget(entry);
@@ -408,7 +408,7 @@ void ParameterWidget::rebuildGroupMap(){
 	}
 
 	groupPos.clear();
-	for (unsigned int it=0; it<ParameterPos.size(); it++) {
+	for (unsigned int it=0; it<ParameterPos.size(); ++it) {
 		std::string groupName=entries[ParameterPos[it]]->groupName;
 		if (groupMap.find(groupName) == groupMap.end()) {
 			groupPos.push_back(groupName);

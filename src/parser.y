@@ -337,7 +337,7 @@ expr
               if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
                 $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               } else {
-                LOG(boostfs_uncomplete(LOCD("literal", @$).filePath(),mainFilePath.parent_path().generic_string()),
+                LOG(boostfs_uncomplete(LOCD("literal", @$).filePath(),mainFilePath.parent_path()).generic_string(),
                 LOCD("literal", @$).firstLine(),
                 getFormatted("Support for function literals is disabled"),
                 message_group::Warning);
@@ -735,7 +735,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				}
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
-				LOG(uncPathCurr,
+				LOG(uncPathCurr.generic_string(),
 					loc.firstLine(),
 					getFormatted("%1$s was assigned on line %2$i of %3$s but was overwritten",
           assignment->getName(),assignment->location().firstLine(),uncPathPrev),

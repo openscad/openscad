@@ -68,12 +68,12 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	auto bb = CGALUtils::boundingBox(*this->p3);
 
 	std::vector<NT3> scale, bbox_size;
-	for (unsigned int i=0;i<3;i++) {
+	for (unsigned int i=0; i<3; ++i) {
 		scale.push_back(NT3(1));
 		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
 	}
 	int newsizemax_index = 0;
-	for (unsigned int i=0;i<this->getDimension();i++) {
+	for (unsigned int i=0; i<this->getDimension(); ++i) {
 		if (newsize[i]) {
 			if (bbox_size[i] == NT3(0)) {
 				//PRINT("WARNING: Resize in direction normal to flat object is not implemented");
@@ -90,7 +90,7 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	if (newsize[newsizemax_index] != 0) {
 		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
 	}
-	for (unsigned int i=0;i<this->getDimension();i++) {
+	for (unsigned int i=0; i<this->getDimension(); ++i) {
 		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
 	}
 

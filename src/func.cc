@@ -141,11 +141,11 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		}
 		VectorType vec;
 		if (min>=max) { // uniform_real_distribution doesn't allow min == max
-			for (size_t i=0; i < numresults; i++)
+			for (size_t i=0; i < numresults; ++i)
 				vec.push_back(ValuePtr(min));
 		} else {
 			std::uniform_real_distribution<> distributor( min, max );
-			for (size_t i=0; i < numresults; i++) {
+			for (size_t i=0; i < numresults; ++i) {
 				vec.push_back(ValuePtr(distributor(deterministic_rng)));
 			}
 		}
@@ -167,7 +167,7 @@ ValuePtr builtin_min(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 
 		if (n == 1 && v0->type() == Value::Type::VECTOR && !v0->toVector().empty()) {
 			ValuePtr min = v0->toVector()[0];
-			for (size_t i = 1; i < v0->toVector().size(); i++) {
+			for (size_t i = 1; i < v0->toVector().size(); ++i) {
 				if (v0->toVector()[i] < min) min = v0->toVector()[i];
 			}
 			return min;
@@ -204,7 +204,7 @@ ValuePtr builtin_max(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 
 		if (n == 1 && v0->type() == Value::Type::VECTOR && !v0->toVector().empty()) {
 			ValuePtr max = v0->toVector()[0];
-			for (size_t i = 1; i < v0->toVector().size(); i++) {
+			for (size_t i = 1; i < v0->toVector().size(); ++i) {
 				if (v0->toVector()[i] > max) max = v0->toVector()[i];
 			}
 			return max;
@@ -485,7 +485,7 @@ ValuePtr builtin_str(const std::shared_ptr<Context>, const std::shared_ptr<EvalC
 {
 	std::ostringstream stream;
 
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		stream << evalctx->getArgValue(i)->toString();
 	}
 	return ValuePtr(stream.str());
@@ -495,7 +495,7 @@ ValuePtr builtin_chr(const std::shared_ptr<Context>, const std::shared_ptr<EvalC
 {
 	std::ostringstream stream;
 	
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		ValuePtr v = evalctx->getArgValue(i);
 		stream << v->chrString();
 	}
@@ -538,7 +538,7 @@ ValuePtr builtin_concat(const std::shared_ptr<Context>, const std::shared_ptr<Ev
 {
 	VectorType result;
 
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		ValuePtr val = evalctx->getArgValue(i);
 		if (val->type() == Value::Type::VECTOR) {
 			for(const auto &v : val->toVector()) { 
@@ -570,7 +570,7 @@ ValuePtr builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_pt
 
 	if (!vec[0]->getVec2(low_p, low_v) || !vec[0]->getVec2(high_p, high_v))
 		return ValuePtr::undefined;
-	for (size_t i = 1; i < vec.size(); i++) {
+	for (size_t i = 1; i < vec.size(); ++i) {
 		double this_p, this_v;
 		if (vec[i]->getVec2(this_p, this_v)) {
 			if (this_p <= p && (this_p > low_p || low_p > p)) {
@@ -649,11 +649,11 @@ static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &t
 	//Unicode glyph count for the length
 	size_t findThisSize = find.get_utf8_strlen();
 	size_t searchTableSize = table.get_utf8_strlen();
-	for (size_t i = 0; i < findThisSize; i++) {
+	for (size_t i = 0; i < findThisSize; ++i) {
 		unsigned int matchCount = 0;
 		VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
-		for (size_t j = 0; j < searchTableSize; j++) {
+		for (size_t j = 0; j < searchTableSize; ++j) {
 			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 				matchCount++;
@@ -686,11 +686,11 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 	//Unicode glyph count for the length
 	unsigned int findThisSize =  find.get_utf8_strlen();
 	unsigned int searchTableSize = table.size();
-	for (size_t i = 0; i < findThisSize; i++) {
+	for (size_t i = 0; i < findThisSize; ++i) {
 		unsigned int matchCount = 0;
 		VectorType resultvec;
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
-		for (size_t j = 0; j < searchTableSize; j++) {
+		for (size_t j = 0; j < searchTableSize; ++j) {
 			const VectorType &entryVec = table[j]->toVector();
 			if (entryVec.size() <= index_col_num) {
 				LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),getFormatted("Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3s",j,(index_col_num + 1),table[j]->toEchoString()),message_group::Warning);
@@ -739,7 +739,7 @@ ValuePtr builtin_search(const std::shared_ptr<Context> ctx, const std::shared_pt
 	if (findThis->type() == Value::Type::NUMBER) {
 		unsigned int matchCount = 0;
 
-		for (size_t j = 0; j < searchTable->toVector().size(); j++) {
+		for (size_t j = 0; j < searchTable->toVector().size(); ++j) {
 			const ValuePtr &search_element = searchTable->toVector()[j];
 
 			if ((index_col_num == 0 && findThis == search_element) ||
@@ -758,13 +758,13 @@ ValuePtr builtin_search(const std::shared_ptr<Context> ctx, const std::shared_pt
 			returnvec = search(findThis->toString(), searchTable->toVector(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
 		}
 	} else if (findThis->type() == Value::Type::VECTOR) {
-		for (size_t i = 0; i < findThis->toVector().size(); i++) {
+		for (size_t i = 0; i < findThis->toVector().size(); ++i) {
 		  unsigned int matchCount = 0;
 			VectorType resultvec;
 
 			const ValuePtr &find_value = findThis->toVector()[i];
 
-			for (size_t j = 0; j < searchTable->toVector().size(); j++) {
+			for (size_t j = 0; j < searchTable->toVector().size(); ++j) {
 
 				const ValuePtr &search_element = searchTable->toVector()[j];
 
@@ -854,7 +854,7 @@ ValuePtr builtin_norm(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 			double sum = 0;
 			const VectorType &v = val->toVector();
 			size_t n = v.size();
-			for (size_t i = 0; i < n; i++)
+			for (size_t i = 0; i < n; ++i)
 				if (v[i]->type() == Value::Type::NUMBER) {
 					// sum += pow(v[i].toDouble(),2);
 					double x = v[i]->toDouble();
@@ -896,7 +896,7 @@ ValuePtr builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),getFormatted("Invalid vector size of parameter for cross()"),message_group::Warning);
 		return ValuePtr::undefined;
 	}
-	for (unsigned int a = 0;a < 3;a++) {
+	for (unsigned int a = 0; a < 3; ++a) {
 		if ((v0[a]->type() != Value::Type::NUMBER) || (v1[a]->type() != Value::Type::NUMBER)) {
 			LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),getFormatted("Invalid value in parameter vector for cross()"),message_group::Warning);
 			return ValuePtr::undefined;
@@ -934,7 +934,7 @@ ValuePtr builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_
 		} else {
 			v = evalctx->getArgValue(0);
 		}
-		return ValuePtr(v == ValuePtr::undefined);
+		return ValuePtr(v->isUndefined());
 	}else{
 		print_argCnt_warning("is_undef", ctx, evalctx);
 	}

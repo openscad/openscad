@@ -726,7 +726,7 @@ void ScintillaEditor::indentSelection()
 {
 	int lineFrom, lineTo;
 	getRange(&lineFrom, &lineTo);
-	for (int line = lineFrom; line <= lineTo; line++) {
+	for (int line = lineFrom; line <= lineTo; ++line) {
 		qsci->indent(line);
 	}
 }
@@ -735,7 +735,7 @@ void ScintillaEditor::unindentSelection()
 {
 	int lineFrom, lineTo;
 	getRange(&lineFrom, &lineTo);
-	for (int line = lineFrom; line <= lineTo; line++) {
+	for (int line = lineFrom; line <= lineTo; ++line) {
 		qsci->unindent(line);
 	}
 }
@@ -746,7 +746,7 @@ void ScintillaEditor::commentSelection()
 
 	int lineFrom, lineTo;
 	getRange(&lineFrom, &lineTo);
-	for (int line = lineFrom; line <= lineTo; line++) {
+	for (int line = lineFrom; line <= lineTo; ++line) {
 		qsci->insertAt("//", line, 0);
 	}
 
@@ -761,7 +761,7 @@ void ScintillaEditor::uncommentSelection()
 
 	int lineFrom, lineTo;
 	getRange(&lineFrom, &lineTo);
-	for (int line = lineFrom; line <= lineTo; line++) {
+	for (int line = lineFrom; line <= lineTo; ++line) {
 		QString lineText = qsci->text(line);
 		if (lineText.startsWith("//")) {
 			qsci->setSelection(line, 0, line, 2);
@@ -846,7 +846,7 @@ bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
 	qsci->beginUndoAction();
 	QString textToMove = qsci->text(lineToMove);
 	QString text;
-	for (int idx = lineFrom;idx <= lineTo;idx++) {
+	for (int idx = lineFrom; idx <= lineTo; ++idx) {
 		text.append(qsci->text(idx));
 	}
 	if (lineToMove >= qsci->lines() - 1) {
@@ -898,7 +898,7 @@ bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
 
 	qsci->beginUndoAction();
 	QString text;
-	for (int line = lineFrom;line <= lineTo;line++) {
+	for (int line = lineFrom; line <= lineTo; ++line) {
 		text += qsci->text(line);
 	}
 	if (lineTo + 1 >= qsci->lines()) {
@@ -1104,7 +1104,7 @@ void ScintillaEditor::onUserListSelected(const int, const QString &text)
 	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Tabs")
 		indent_char = "\t";
 
-	for (int a = 0;a < lines;a++) {
+	for (int a = 0; a < lines; ++a) {
 		qsci->insertAt(indent_char.repeated(indent_width), indent_line + a + 1, 0);
 	}
 }

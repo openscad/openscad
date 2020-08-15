@@ -82,7 +82,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	node->convexity = static_cast<int>(convexity->toDouble());
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
+	if(origin->isDefined() && !originOk){
 		LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("Rotate_extrude(..., origin=%1$s) could not be converted",origin->toEchoString()),message_group::Warning);
 	}
 	node->scale = scale->toDouble();

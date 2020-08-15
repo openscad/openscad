@@ -301,7 +301,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
       std::vector<PolyhedronK> convexP[2]; // Stores decomposed operands 
       std::list<PolyhedronK> result_parts;
 
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < 2; ++i) {
         shared_ptr<const CGAL_Nef_polyhedron> N;
         if (const PolySet *ps = dynamic_cast<const PolySet *>(operands[i])) {
           if (ps->is_convex()) {
@@ -497,7 +497,7 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
-	for ( int i = 0; i < 12; i++ ) {
+	for ( int i = 0; i < 12; ++i ) {
 		uint32_byte_swap( facet.data32[ i ] );
 	}
 	// we ignore attribute byte count
@@ -555,7 +555,7 @@ PolySet *import_stl(const std::string &filename)
       boost::smatch results;
       if (boost::regex_search(line, results, ex_vertices)) {
         try {
-          for (int v=0;v<3;v++) {
+          for (int v=0; v<3; ++v) {
             vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
           }
         }

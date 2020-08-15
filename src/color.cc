@@ -244,7 +244,7 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	Color4f rgba;
 	rgba[3] = 1.0; // default alpha to 100%
 
-	for (unsigned i = 0; i < (hex.size() - 1) / stride; i++) {
+	for (unsigned i = 0; i < (hex.size() - 1) / stride; ++i) {
 		const std::string chunk = hex.substr(1 + i*stride, stride);
 
 		// convert the hex character(s) from base 16 to base 10
@@ -266,7 +266,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 
 	auto v = c->lookup_variable("c");
 	if (v->type() == Value::Type::VECTOR) {
-		for (size_t i = 0; i < 4; i++) {
+		for (size_t i = 0; i < 4; ++i) {
 			node->color[i] = i < v->toVector().size() ? (float)v->toVector()[i]->toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
 				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is out of range, %s", node->color[i] % inst->location().toRelativeString(ctx->documentPath()));

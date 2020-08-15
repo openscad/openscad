@@ -1,0 +1,19 @@
+ECHO: a = function() x
+ECHO: b = function() x
+ECHO: c = function() x
+ECHO: d = function() x
+ECHO: 0, 0, 0, 1
+ECHO: "a==b", true
+ECHO: "a!=b", false
+ECHO: "a==c", false
+ECHO: "a!=c", true
+ECHO: "a==d", false
+ECHO: "a!=d", true
+WARNING: operation undefined (function < function) in file function-literal-compare.scad, line 29
+ECHO: "a <b", undef
+WARNING: operation undefined (function > function) in file function-literal-compare.scad, line 30
+ECHO: "a >b", undef
+WARNING: operation undefined (function <= function) in file function-literal-compare.scad, line 31
+ECHO: "a<=b", undef
+WARNING: operation undefined (function >= function) in file function-literal-compare.scad, line 32
+ECHO: "a>=b", undef

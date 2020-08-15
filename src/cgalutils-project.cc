@@ -201,7 +201,7 @@ namespace CGALUtils {
 					CGAL_Point_3 minpt(-inf, -inf, -eps);
 					CGAL_Point_3 maxpt( inf,  inf,  eps);
 					CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-					for (int i=0;i<8;i++) pts.push_back(bigcuboid.vertex(i));
+					for (int i=0; i<8; ++i) pts.push_back(bigcuboid.vertex(i));
 					CGAL_Polyhedron bigbox;
 					CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
 					CGAL_Nef_polyhedron3 nef_bigbox(bigbox);

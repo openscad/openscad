@@ -127,7 +127,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	node->origin_x = node->origin_y = 0;
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
+	if(origin->isDefined() && !originOk){
 		LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString()),message_group::Warning);
 	}
 

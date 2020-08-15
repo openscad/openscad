@@ -273,7 +273,7 @@ bool inside(CGAL_Point_2 &p1,std::vector<CGAL_Point_2> &pgon, winding_rule_t win
 	NT3 winding_sum = NT3(0);
 	CGAL_Point_2 p2;
 	CGAL_Ray_2 eastray(p1,CGAL_Direction_2(1,0));
-	for (size_t i=0;i<pgon.size();i++) {
+	for (size_t i=0; i<pgon.size(); ++i) {
 		CGAL_Point_2 tail = pgon[i];
 		CGAL_Point_2 head = pgon[(i+1)%pgon.size()];
 		CGAL_Segment_2 seg( tail, head );
@@ -344,10 +344,10 @@ namespace CGALUtils {
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
 		std::vector< std::vector<CGAL_Point_2>> polygons2d;
-		for (size_t i=0;i<polygons.size();i++) {
+		for (size_t i=0; i<polygons.size(); ++i) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;
-			for (size_t j=0;j<polygons[i].size();j++) {
+			for (size_t j=0; j<polygons[i].size(); ++j) {
 				CGAL_Point_3 p3 = polygons[i][j];
 				CGAL_Point_2 p2 = get_projected_point( p3, goodproj );
 				CDTPoint cdtpoint = CDTPoint( p2.x(), p2.y() );
@@ -357,7 +357,7 @@ namespace CGALUtils {
 				polygon2d.push_back( p2 );
 			}
 			polygons2d.push_back( polygon2d );
-			for (size_t k=0;k<vhandles.size();k++) {
+			for (size_t k=0; k<vhandles.size(); ++k) {
 				int vindex1 = (k+0);
 				int vindex2 = (k+1)%vhandles.size();
 				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -373,9 +373,9 @@ namespace CGALUtils {
 		size_t numholes = polygons2d.size()-1;
 		PRINTDB("seeding %i holes",numholes);
 		std::list<CDTPoint> list_of_seeds;
-		for (size_t i=1;i<polygons2d.size();i++) {
+		for (size_t i=1; i<polygons2d.size(); ++i) {
 			std::vector<CGAL_Point_2> &pgon = polygons2d[i];
-			for (size_t j=0;j<pgon.size();j++) {
+			for (size_t j=0; j<pgon.size(); ++j) {
 				CGAL_Point_2 p1 = pgon[(j+0)];
 				CGAL_Point_2 p2 = pgon[(j+1)%pgon.size()];
 				CGAL_Point_2 p3 = pgon[(j+2)%pgon.size()];
@@ -408,7 +408,7 @@ namespace CGALUtils {
 		//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
 
 		CDT::Finite_faces_iterator fit;
-		for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++ )
+		for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); ++fit )
 		{
 			if(fit->is_in_domain()) {
 				CDTPoint p1 = cdt.triangle( fit )[0];
@@ -463,10 +463,10 @@ namespace CGALUtils {
 		PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
 		PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
 		std::vector< std::vector<CGAL_Point_2>> polygons2d;
-		for (size_t i=0;i<polygons.size();i++) {
+		for (size_t i=0; i<polygons.size(); ++i) {
 			std::vector<Vertex_handle> vhandles;
 			std::vector<CGAL_Point_2> polygon2d;
-			for (size_t j=0;j<polygons[i].size();j++) {
+			for (size_t j=0; j<polygons[i].size(); ++j) {
 				CGAL_Point_3 p3 = polygons[i][j];
 				CGAL_Point_2 p2 = get_projected_point( p3, goodproj );
 				CDTPoint cdtpoint = CDTPoint( p2.x(), p2.y() );
@@ -476,7 +476,7 @@ namespace CGALUtils {
 				polygon2d.push_back( p2 );
 			}
 			polygons2d.push_back( polygon2d );
-			for (size_t k=0;k<vhandles.size();k++) {
+			for (size_t k=0; k<vhandles.size(); ++k) {
 				int vindex1 = (k+0);
 				int vindex2 = (k+1)%vhandles.size();
 				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -492,9 +492,9 @@ namespace CGALUtils {
 		size_t numholes = polygons2d.size()-1;
 		PRINTDB("seeding %i holes",numholes);
 		std::list<CDTPoint> list_of_seeds;
-		for (size_t i=1;i<polygons2d.size();i++) {
+		for (size_t i=1; i<polygons2d.size(); ++i) {
 			std::vector<CGAL_Point_2> &pgon = polygons2d[i];
-			for (size_t j=0;j<pgon.size();j++) {
+			for (size_t j=0; j<pgon.size(); ++j) {
 				CGAL_Point_2 p1 = pgon[(j+0)];
 				CGAL_Point_2 p2 = pgon[(j+1)%pgon.size()];
 				CGAL_Point_2 p3 = pgon[(j+2)%pgon.size()];
@@ -527,7 +527,7 @@ namespace CGALUtils {
 		//	CGAL::orientation_2( orienpgon.begin(), orienpgon.end() );
 
 		CDT::Finite_faces_iterator fit;
-		for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++ )
+		for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); ++fit )
 		{
 			if(fit->is_in_domain()) {
 				CDTPoint p1 = cdt.triangle( fit )[0];

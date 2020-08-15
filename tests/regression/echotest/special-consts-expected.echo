@@ -18,8 +18,11 @@ ECHO: undef
 WARNING: Ignoring unknown variable 'c', in file special-consts.scad, line 44.
 ECHO: undef
 ECHO: "-- calculating with undef --"
+WARNING: undefined operation (undefined / number) in file special-consts.scad, line 47
 ECHO: undef
+WARNING: undefined operation (undefined / number) in file special-consts.scad, line 48
 ECHO: undef
+WARNING: undefined operation (number / undefined) in file special-consts.scad, line 49
 ECHO: undef
 ECHO: "-- calculating resulting in +inf --"
 ECHO: inf

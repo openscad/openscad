@@ -268,7 +268,7 @@ PolySet * AmfImporter::read(const std::string filename)
 		p = polySets[0];
 	} if (polySets.size() > 1) {
 		Geometry::Geometries children;
-		for (std::vector<PolySet *>::iterator it = polySets.begin();it != polySets.end();it++) {
+		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
 		CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(children.begin(), children.end());

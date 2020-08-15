@@ -42,7 +42,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
   size_t posarg = 0;
   bool tooManyWarned=false;
   // Iterate over positional args
-  for (size_t i=0; i<this->numArgs(); i++) {
+  for (size_t i=0; i<this->numArgs(); ++i) {
     const auto &name = this->getArgName(i); // name is optional
     const auto expr = this->getArgs()[i]->getExpr().get();
     if (!name.empty()) {
@@ -101,7 +101,7 @@ void EvalContext::assignTo(std::shared_ptr<Context> target) const
 
 std::ostream &operator<<(std::ostream &stream, const EvalContext &ec)
 {
-	for (size_t i = 0; i < ec.numArgs(); i++) {
+	for (size_t i = 0; i < ec.numArgs(); ++i) {
 		if (i > 0) stream << ", ";
 		if (!ec.getArgName(i).empty()) stream << ec.getArgName(i) << " = ";
 		auto val = ec.getArgValue(i);
@@ -121,7 +121,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 	s << boost::format("  document path: %s") % *this->document_path;
 
 	s << boost::format("  eval args:");
-	for (size_t i=0;i<this->eval_arguments.size();i++) {
+	for (size_t i=0; i<this->eval_arguments.size(); ++i) {
 		s << boost::format("    %s = %s") % this->eval_arguments[i]->getName() % this->eval_arguments[i]->getExpr();
 	}
 	if (this->scope && this->scope->children_inst.size() > 0) {

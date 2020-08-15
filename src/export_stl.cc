@@ -50,7 +50,7 @@ Vector3d fromString(const std::string &vertexString)
 }
 
 void write_vector(std::ostream &output, const Vector3f& v) {
-    for (int i=0; i<3; i++) {
+    for (int i=0; i<3; ++i) {
         static_assert(sizeof(float)==4, "Need 32 bit float");
         float f = v[i];
         char *fbeg = reinterpret_cast<char *>(&f);

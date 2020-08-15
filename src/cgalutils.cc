@@ -132,7 +132,7 @@ namespace CGALUtils {
 
 		// lexicographic comparison
 		bool operator < (Vector3d const& a, Vector3d const& b) {
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 3; ++i) {
 				if (a[i] < b[i]) return true;
 				else if (a[i] == b[i]) continue;
 				return false;
@@ -172,12 +172,12 @@ namespace CGALUtils {
 		std::vector<Plane> facet_planes;
 		facet_planes.reserve(ps.polygons.size());
 
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
+		for (size_t i = 0; i < ps.polygons.size(); ++i) {
 			Plane plane;
 			auto N = ps.polygons[i].size();
 			if (N >= 3) {
 				std::vector<Point> v(N);
-				for (size_t j = 0; j < N; j++) {
+				for (size_t j = 0; j < N; ++j) {
 					v[j] = vector_convert<Point>(ps.polygons[i][j]);
 					Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
 					if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
@@ -190,10 +190,10 @@ namespace CGALUtils {
 			facet_planes.push_back(plane);
 		}
 
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
+		for (size_t i = 0; i < ps.polygons.size(); ++i) {
 			auto N = ps.polygons[i].size();
 			if (N < 3) continue;
-			for (size_t j = 0; j < N; j++) {
+			for (size_t j = 0; j < N; ++j) {
 				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
 				if (edge_to_facet_map.count(other_edge) == 0) return false;//
 				//Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
@@ -224,7 +224,7 @@ namespace CGALUtils {
 		while(!facets_to_visit.empty()) {
 			int f = facets_to_visit.front(); facets_to_visit.pop();
 
-			for (size_t i = 0; i < ps.polygons[f].size(); i++) {
+			for (size_t i = 0; i < ps.polygons[f].size(); ++i) {
 				int j = (i+1) % ps.polygons[f].size();
 				auto it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
 				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
@@ -333,7 +333,7 @@ namespace CGALUtils {
 #endif // debug
 #if 0 // For debugging
 		std::cerr.precision(20);
-		for (size_t i=0;i<allVertices.size();i++) {
+		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}		
 #endif // debug
@@ -382,7 +382,7 @@ namespace CGALUtils {
 
 #if 0 // For debugging
 		std::cerr.precision(20);
-		for (size_t i=0;i<allVertices.size();i++) {
+		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}		
 #endif // debug

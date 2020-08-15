@@ -98,7 +98,7 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg)
 
 	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace) {
 		size_t i;
-		for (i=0;i<lastmessages.size();i++) {
+		for (i=0; i<lastmessages.size(); ++i) {
 			if (lastmessages[i] != msg) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.

@@ -111,11 +111,11 @@ namespace PolysetUtils {
 		if (pgon.size()<3) return NONE;
 		Vector3d v1,v2,v3;
 		v1 = v2 = v3 = pgon[0];
-		for (size_t i=0;i<pgon.size();i++) {
+		for (size_t i=0; i<pgon.size(); ++i) {
 			if (pgon[i]!=v1) { v2=pgon[i]; break; }
 		}
 		if (v1==v2) return NONE;
-		for (size_t i=0;i<pgon.size();i++) {
+		for (size_t i=0; i<pgon.size(); ++i) {
 			if (!CGAL::collinear( cgp(v1), cgp(v2), cgp(pgon[i]) )) {
 				v3=pgon[i]; break;
 			}
@@ -151,7 +151,7 @@ namespace PolysetUtils {
 			std::map<CDTPoint,Vector3d> vertmap;
 			CGAL::Orientation original_orientation;
 			std::vector<CDTPoint> orienpgon;
-			for (size_t i = 0; i < pgon.size(); i++) {
+			for (size_t i = 0; i < pgon.size(); ++i) {
 				Vector3d v3 = pgon.at(i);
 				Vector2d v2 = get_projected_point( v3, projection );
 				CDTPoint cdtpoint = CDTPoint(v2.x(),v2.y());
@@ -161,7 +161,7 @@ namespace PolysetUtils {
 				orienpgon.push_back( cdtpoint );
 			}
 			original_orientation = CGAL::orientation_2( orienpgon.begin(),orienpgon.end() );
-			for (size_t i = 0; i < vhandles.size(); i++ ) {
+			for (size_t i = 0; i < vhandles.size(); ++i ) {
 				int vindex1 = (i+0);
 				int vindex2 = (i+1)%vhandles.size();
 				cdt.insert_constraint( vhandles[vindex1], vhandles[vindex2] );
@@ -171,7 +171,7 @@ namespace PolysetUtils {
 																													 list_of_seeds.begin(), list_of_seeds.end(), DummyCriteria<CDT>());
 
 			CDT::Finite_faces_iterator fit;
-			for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++ )
+			for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); ++fit )
 			{
 				if(fit->is_in_domain()) {
 					CDTPoint p1 = cdt.triangle( fit )[0];
@@ -210,7 +210,7 @@ namespace PolysetUtils {
 	 duplicate points, and proper orientation. */
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
 		int degeneratePolygons = 0;
-		for (size_t i = 0; i < inps.polygons.size(); i++) {
+		for (size_t i = 0; i < inps.polygons.size(); ++i) {
 			const PolySet::Polygon pgon = inps.polygons[i];
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
@@ -229,7 +229,7 @@ namespace PolysetUtils {
 				bool err = triangulate_polygon(pgon, triangles, goodproj);
 				if (err) continue;
 			}
-			for (size_t j=0;j<triangles.size();j++) {
+			for (size_t j=0; j<triangles.size(); ++j) {
 					PolySet::Polygon t = triangles[j];
 					outps.append_poly();
 					outps.append_vertex(t[0].x(),t[0].y(),t[0].z());

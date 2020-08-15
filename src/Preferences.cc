@@ -319,7 +319,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 void Preferences::setupFeaturesPage()
 {
 	int row = 0;
-	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
+	for (Feature::iterator it = Feature::begin(); it != Feature::end(); ++it) {
 		Feature *feature = *it;
 		
 		QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));

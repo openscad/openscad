@@ -151,10 +151,7 @@ void Context::apply_config_variables(const std::shared_ptr<Context> other)
 
 ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
-	if (!this->ctx_stack) {
-		//PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return ValuePtr::undefined;
-	}
+	assert(this->ctx_stack && "Context had null stack in lookup_variable()!!");
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
 			const auto &confvars = ctx_stack->at(i)->config_variables;

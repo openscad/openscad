@@ -133,7 +133,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 				ok &= false;
 			}
 
-			bool v_supplied = (val_v != ValuePtr::undefined);
+			bool v_supplied = (val_v->isDefined());
 			if(ok){
 				if(v_supplied){
 					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),getFormatted("When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)",val_a->toEchoString(),val_v->toEchoString()),message_group::Warning);
@@ -158,7 +158,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			Vector3d v(0, 0, 1);
 			bool vConverted = val_v->getVec3(v[0], v[1], v[2], 0.0);
 			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-			if(val_v != ValuePtr::undefined && ! vConverted){
+			if(val_v->isDefined() && ! vConverted){
 				if(aConverted){
 					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
 						getFormatted("Problem converting rotate(..., v=%1$s) parameter",val_v->toEchoString()),message_group::Warning);
@@ -214,7 +214,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		auto v = c->lookup_variable("m");
 		if (v->type() == Value::Type::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
-			for (int i = 0; i < 16; i++) {
+			for (int i = 0; i < 16; ++i) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v->toVector().size() && v->toVector()[y]->type() ==
 						Value::Type::VECTOR && x < v->toVector()[y]->toVector().size())
@@ -237,9 +237,9 @@ std::string TransformNode::toString() const
 	std::ostringstream stream;
 
 	stream << "multmatrix([";
-	for (int j=0;j<4;j++) {
+	for (int j=0; j<4; ++j) {
 		stream << "[";
-		for (int i=0;i<4;i++) {
+		for (int i=0; i<4; ++i) {
 			Value v(this->matrix(j, i));
 			stream << v;
 			if (i != 3) stream << ", ";

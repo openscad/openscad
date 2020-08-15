@@ -152,7 +152,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 		PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
 		PolySet *p = new PolySet(3);
-		for (DWORD idx = 0;idx < triangle_count;idx++) {
+		for (DWORD idx = 0; idx < triangle_count; ++idx) {
 			MODELMESHTRIANGLE triangle;
 			if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
 				return import_3mf_error(model, object_it, first_mesh, p);
@@ -195,7 +195,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 #ifdef ENABLE_CGAL
 		Geometry::Geometries children;
 		children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(first_mesh)));
-		for (polysets_t::iterator it = meshes.begin();it != meshes.end();it++) {
+		for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
 		}
 		CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(children.begin(), children.end());
