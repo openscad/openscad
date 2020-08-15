@@ -94,20 +94,29 @@ std::string commandline_commands;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
-
-class Echostream : public std::ofstream
+class Echostream
 {
 public:
-	Echostream(const char * filename) : std::ofstream(filename) {
-		set_output_handler( &Echostream::output, this );
+	Echostream(const char *filename)
+	{
+		set_output_handler(&Echostream::output, this);
+		if (strcmp(filename, "-") == 0) {
+			file = false;
+		}
+		else {
+			fstream.open(filename);
+			file = true;
+		}
 	}
-	static void output(const std::string &msg, void *userdata) {
-		auto thisp = static_cast<Echostream*>(userdata);
-		*thisp << msg << "\n";
+	static void output(const std::string &msg, void *userdata)
+	{
+		auto thisp = static_cast<Echostream *>(userdata);
+		(thisp->file ? thisp->fstream : std::cout) << msg << "\n";
 	}
-	~Echostream() {
-		this->close();
-	}
+
+private:
+	std::ofstream fstream;
+	bool file;
 };
 
 static void help(const char *arg0, const po::options_description &desc, bool failure = false)
@@ -138,6 +147,24 @@ static int info()
 	}
 
 	return 0;
+}
+
+template <typename F>
+static bool with_output(const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
+{
+	if (filename == "-") {
+		f(std::cout);
+		return true;
+	}
+	std::ofstream fstream(filename);
+	if (!fstream.is_open()) {
+		PRINTB("Can't open file \"%s\" for export", filename.c_str());
+		return false;
+	}
+	else {
+		f(fstream);
+		return true;
+	}
 }
 
 /**
@@ -403,45 +430,29 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	}
 
 	if (curFormat == FileFormat::CSG) {
-		std::ofstream fstream(new_output_file);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", new_output_file);
-		}
-		else {
-			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node, "\t") << "\n";
-			fstream.close();
-			fs::current_path(original_path);
-		}
+		fs::current_path(fparent); // Force exported filenames to be relative to document path
+		with_output(filename_str, [&tree, root_node](std::ostream &stream) {
+			stream << tree.getString(*root_node, "\t") << "\n";
+		});
+		fs::current_path(original_path);
 	}
 	else if (curFormat == FileFormat::AST) {
-		std::ofstream fstream(new_output_file);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", new_output_file);
-		}
-		else {
-			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << root_module->dump("");
-			fstream.close();
-			fs::current_path(original_path);
-		}
+		fs::current_path(fparent); // Force exported filenames to be relative to document path
+		with_output(filename_str,
+								[root_module](std::ostream &stream) { stream << root_module->dump(""); });
+		fs::current_path(original_path);
 	}
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
 
-		std::ofstream fstream(new_output_file);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", new_output_file);
-		}
-		else {
+		with_output(filename_str, [root_raw_term](std::ostream &stream) {
 			if (!root_raw_term)
-				fstream << "No top-level CSG object\n";
+				stream << "No top-level CSG object\n";
 			else {
-				fstream << root_raw_term->dump() << "\n";
+				stream << root_raw_term->dump() << "\n";
 			}
-			fstream.close();
-		}
+		});
 	}
 	else if (curFormat == FileFormat::ECHO) {
 		// echo -> don't need to evaluate any geometry
@@ -503,21 +514,20 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		}
 
 		if (curFormat == FileFormat::PNG) {
-			auto success = true;
-			std::ofstream fstream(new_output_file,std::ios::out|std::ios::binary);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", new_output_file);
-				success = false;
-			}
-			else {
-				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, viewOptions, camera, fstream);
-				} else {
-					success = export_png(*glview, fstream);
-				}
-				fstream.close();
-			}
-			return success ? 0 : 1;
+			bool success = true;
+			bool wrote = with_output(
+					filename_str,
+					[&success, root_geom, &viewOptions, &camera, &glview](std::ostream &stream) {
+						if (viewOptions.renderer == RenderType::CGAL ||
+								viewOptions.renderer == RenderType::GEOMETRY) {
+							success = export_png(root_geom, viewOptions, camera, stream);
+						}
+						else {
+							success = export_png(*glview, stream);
+						}
+					},
+					std::ios::out | std::ios::binary);
+			return (success && wrote) ? 0 : 1;
 		}
 
 #else
