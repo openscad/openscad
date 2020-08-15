@@ -74,7 +74,13 @@ void print_messages_pop()
 	}
 }
 
-void PRINT(const std::string &msg)
+
+void PRINTTMP(const std::string &msg)
+{
+
+}
+
+void PRINT(const enum message_group &msg_group,const std::string &msg)
 {
 	if (msg.empty()) return;
 	if (print_messages_stack.size() > 0) {
@@ -83,14 +89,14 @@ void PRINT(const std::string &msg)
 		}
 		print_messages_stack.back() += msg;
 	}
-	PRINT_NOCACHE(msg);
+	PRINT_NOCACHE(msg_group,msg);
 }
 
-void PRINT_NOCACHE(const std::string &msg)
+void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg)
 {
 	if (msg.empty()) return;
 
-	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR") || boost::starts_with(msg, "TRACE")) {
+	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace) {
 		size_t i;
 		for (i=0;i<lastmessages.size();i++) {
 			if (lastmessages[i] != msg) break;
@@ -99,15 +105,15 @@ void PRINT_NOCACHE(const std::string &msg)
 		else lastmessages.push_back(msg);
 	}
 	if(!deferred)
-		if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
+		if (!OpenSCAD::quiet || msg_group==message_group::Error) {
 			if (!outputhandler) {
 				fprintf(stderr, "%s\n", msg.c_str());
 			} else {
-				outputhandler(msg, outputhandler_data);
+				outputhandler(msg_group,msg,outputhandler_data);
 			}
 		}
 	if(!std::current_exception()) {
-		if((OpenSCAD::hardwarnings && boost::starts_with(msg, "WARNING")) || (no_throw && boost::starts_with(msg, "ERROR"))){
+		if((OpenSCAD::hardwarnings && msg_group==message_group::Warning) || (no_throw && msg_group==message_group::Error)){
 			if(no_throw)
 				deferred = true;
 			else
@@ -116,12 +122,17 @@ void PRINT_NOCACHE(const std::string &msg)
 	}
 }
 
-void LOG(const Message &msg)
+void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
 {
-	if (!outputhandler2) {
-		// fprintf(stderr, "%s\n", msg.c_str());
+		//to console
+		PRINT(msg_group,msg);
+
+		//to error log
+		if (!outputhandler2) {
+		fprintf(stderr, "%s\n", msg.c_str());
 		} else {
-			outputhandler2(msg, outputhandler_data2);
+			Message msgObj = {file,line,msg,0,msg_group};
+			outputhandler2(msgObj, outputhandler_data2);
 		}
 }
 
@@ -136,7 +147,7 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower(lowdebug);
 	if (OpenSCAD::debug=="all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
-		PRINT_NOCACHE( shortfname+": "+ msg );
+		//PRINT_NOCACHE( shortfname+": "+ msg );
 	}
 }
 
@@ -174,7 +185,7 @@ void printDeprecation(const std::string &str)
 	if (printedDeprecations.find(str) == printedDeprecations.end()) {
 		printedDeprecations.insert(str);
 		std::string msg = "DEPRECATED: " + str;
-		PRINT(msg);
+		//PRINT(msg);
 	}
 }
 

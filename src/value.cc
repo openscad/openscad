@@ -44,6 +44,7 @@
 #include "double-conversion/double-conversion.h"
 #include "double-conversion/utils.h"
 #include "double-conversion/ieee.h"
+#include "boost-utils.h"
 
 namespace fs=boost::filesystem;
 using boost::adaptors::transformed;
@@ -562,7 +563,7 @@ public:
 		{
 			const uint32_t steps = v.numValues();
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+				LOG("",-1,getFormatted("Bad range parameter in for statement: too many elements (%1$lu).",steps),message_group::Warning);
 				return "";
 			}
 
@@ -821,15 +822,15 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
 		for (size_t j=0;j<vectorvec.size();j++) {
 			if (matrixvec[j]->type() != Type::VECTOR ||
 					matrixvec[j]->toVector().size() != firstRowSize) {
-				PRINTB("WARNING: Matrix must be rectangular. Problem at row %lu", j);
+				LOG("",-1,getFormatted("Matrix must be rectangular. Problem at row %1$lu",j),message_group::Warning);
 				return Value::undefined;
 			}
 			if (vectorvec[j]->type() != Type::NUMBER) {
-				PRINTB("WARNING: Vector must contain only numbers. Problem at index %lu", j);
+				LOG("",-1,getFormatted("Vector must contain only numbers. Problem at index %1$lu",j),message_group::Warning);
 				return Value::undefined;
 			}
 			if (matrixvec[j]->toVector()[i]->type() != Type::NUMBER) {
-				PRINTB("WARNING: Matrix must contain only numbers. Problem at row %lu, col %lu", j % i);
+				LOG("",-1,getFormatted("Matrix must contain only numbers. Problem at row %1$lu, col %2$lu",j,i),message_group::Warning);
 				return Value::undefined;
 			}
 			r_e += vectorvec[j]->toDouble() * matrixvec[j]->toVector()[i]->toDouble();

@@ -87,7 +87,7 @@ entrypoint:
 		while (node && match_and_replace(node)) {	}
 		this->nodecount++;
 		if (nodecount > this->limit) {
-			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+			LOG("",-1,getFormatted("Normalized tree is growing past %1$d elements. Aborting normalization.\n",this->limit),message_group::Warning);
 			this->aborted = true;
 			return shared_ptr<CSGNode>();
 		}

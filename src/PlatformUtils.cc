@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <iomanip>
-
+#include "boost-utils.h"
 #include "PlatformUtils.h"
 #include "boosty.h"
 
@@ -100,10 +100,10 @@ bool PlatformUtils::createUserLibraryPath()
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
-			PRINTB("ERROR: Cannot create %s", path );
+			LOG("",-1,getFormatted("Cannot create %1$s",path),message_group::Error);
 		}
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
 	}
 	return OK;
 }
@@ -125,7 +125,7 @@ std::string PlatformUtils::userLibraryPath()
 		//PRINTB("Appended path %s", path );
 		//PRINTB("Exists: %i", fs::exists(path) );
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
 	}
 	return path.generic_string();
 }
@@ -144,7 +144,7 @@ std::string PlatformUtils::backupPath()
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
 	}
 	return path.generic_string();
 }
@@ -158,10 +158,10 @@ bool PlatformUtils::createBackupPath()
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
-			PRINTB("ERROR: Cannot create %s", path );
+			LOG("",-1,getFormatted("Cannot create %1$s",path),message_group::Error);
 		}
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
 	}
 	return OK;
 }

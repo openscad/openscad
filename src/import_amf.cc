@@ -40,6 +40,7 @@
 #include <assert.h>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");
@@ -225,7 +226,7 @@ int AmfImporter::streamFile(const char *filename)
 	xmlTextReaderPtr reader = createXmlReader(filename);
 	
 	if (reader == nullptr) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % this->loc.firstLine());
+		LOG("",this->loc.firstLine(),getFormatted("Can't open import file '%1$s', import()",filename),message_group::Warning);
 		return 1;
 	}
 
@@ -241,7 +242,7 @@ int AmfImporter::streamFile(const char *filename)
 		ret = -1;
 	}
 	if (ret != 0) {
-		PRINTB("WARNING: Failed to parse file '%s', import() at line %d", filename % this->loc.firstLine());
+		LOG("",this->loc.firstLine(),getFormatted("Failed to parse file '%1$s', import()",filename),message_group::Warning);
 	}
 	return ret;
 }
@@ -275,7 +276,7 @@ PolySet * AmfImporter::read(const std::string filename)
 		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
 			delete result;
 			p = new PolySet(3);
-			PRINTB("ERROR: Error importing multi-object AMF file '%s', import() at line %d", filename % this->loc.firstLine());
+			LOG("",this->loc.firstLine(),getFormatted("Error importing multi-object AMF file '%1$s', import()",filename),message_group::Error);
 		} else {
 			p = result;
 		}
@@ -341,10 +342,10 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 		const char *filename = last_slash ? last_slash + 1 : filepath;
 		zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
 		if (zipfile == nullptr) {
-			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s', import() at line %d", filename % filepath % this->loc.firstLine());
+			LOG("",this->loc.firstLine(),getFormatted("Can't read file '%1$s' from zipped AMF '%2$s', import()",filename,filepath),message_group::Warning);
 		}
 		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
-			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
+			LOG("",-1,getFormatted("Trying to read single entry '%1$s'",zip_get_name(archive, 0, 0)),message_group::Warning);
 			zipfile = zip_fopen_index(archive, 0, 0);
 		}
 		if (zipfile) {

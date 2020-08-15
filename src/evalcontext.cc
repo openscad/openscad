@@ -7,6 +7,7 @@
 #include "builtin.h"
 #include "localscope.h"
 #include "exceptions.h"
+#include "boost-utils.h"
 
 EvalContext::EvalContext(const std::shared_ptr<Context> parent, const AssignmentList &args, const Location &loc, const class LocalScope *const scope)
 	: Context(parent), loc(loc), eval_arguments(args), scope(scope)
@@ -54,18 +55,18 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
           if (arg->getName() == name) found = true;
         }
         if (!found) {
-          PRINTB("WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
+          //"WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
         }
       }
       if (resolvedArgs.find(name) != resolvedArgs.end()) {
-          PRINTB("WARNING: argument %s supplied more than once, %s", name % this->loc.toRelativeString(this->documentPath()));
+          LOG(boostfs_uncomplete(this->loc.filePath(),this->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("argument %1$s supplied more than once",name),message_group::Warning);
       }
       resolvedArgs[name] = expr;
     }
     // If positional, find name of arg with this position
     else if (posarg < args.size()) resolvedArgs[args[posarg++]->getName()] = expr;
     else if (!silent && !tooManyWarned){
-      PRINTB("WARNING: Too many unnamed arguments supplied, %s", this->loc.toRelativeString(this->documentPath()));
+      LOG(boostfs_uncomplete(this->loc.filePath(),this->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("Too many unnamed arguments supplied"),message_group::Warning);
       tooManyWarned=true;
     }
   }
@@ -89,9 +90,9 @@ void EvalContext::assignTo(std::shared_ptr<Context> target) const
 		if (assignment->getExpr()) v = assignment->getExpr()->evaluate(target);
 		
 		if (assignment->getName().empty()){
-			PRINTB("WARNING: Assignment without variable name %s, %s", v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
+			LOG(boostfs_uncomplete(this->loc.filePath(),target->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("Assignment without variable name %1$s",v->toEchoString()),message_group::Warning);
 		} else if (target->has_local_variable(assignment->getName())) {
-			PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s, %s", assignment->getName() % v->toEchoString() % this->loc.toRelativeString(target->documentPath()));
+			LOG(boostfs_uncomplete(this->loc.filePath(),target->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),v->toEchoString()),message_group::Warning);
 		} else {
 			target->set_variable(assignment->getName(), v);
 		}

@@ -118,7 +118,7 @@ namespace CGALUtils {
 					N->minkowski(*chN);
 					break;
 				default:
-					PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
+					LOG("",-1,getFormatted("Unsupported CGAL operator: %1$d",static_cast<int>(op)),message_group::Error);
 				}
 				if (item.first) item.first->progress_report();
 			}
@@ -126,7 +126,8 @@ namespace CGALUtils {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-			PRINTB("ERROR: CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
+			LOG("",-1,getFormatted("CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s",opstr,e.what()),message_group::Error);
+
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return N;
@@ -182,7 +183,8 @@ namespace CGALUtils {
 			}
 		}
 		catch (const CGAL::Failure_exception &e) {
-			PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+			LOG("",-1,getFormatted("CGAL error in CGALUtils::applyUnion: %1$s",e.what()),message_group::Error);
+
 		}
 		return nullptr;
 	}
@@ -234,7 +236,7 @@ namespace CGALUtils {
 				success = !createPolySetFromPolyhedron(r, result);
 			}
 			catch (const CGAL::Failure_exception &e) {
-				PRINTB("ERROR: CGAL error in applyHull(): %s", e.what());
+				LOG("",-1,getFormatted("CGAL error in applyHull(): %1$s",e.what()),message_group::Error);
 			}
 			CGAL::set_error_behaviour(old_behaviour);
 		}

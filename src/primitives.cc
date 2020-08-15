@@ -39,6 +39,7 @@
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include "ModuleInstantiation.h"
+#include "boost-utils.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -127,8 +128,8 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 
 	if (d->type() == Value::Type::NUMBER) {
 		if (r_defined) {
-			std::string locStr = loc.toRelativeString(ctx->documentPath());
-			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
+			LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),
+				getFormatted("Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.",radius_var,diameter_var),message_group::Warning);
 		}
 		return {d->toDouble() / 2.0};
 	} else if (r_defined) {
@@ -148,7 +149,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	AssignmentList args;
 	AssignmentList optargs;
 	if(inst->scope.hasChildren()){
-		PRINTB("WARNING: module %s() does not support child modules, %s", node->name() % inst->location().toRelativeString(ctx->documentPath()));
+		LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+			getFormatted("module %1$s() does not support child modules",node->name()),message_group::Warning);
 	}
 
 	switch (this->type) {
@@ -189,11 +191,13 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	node->fa = c->lookup_variable("$fa")->toDouble();
 
 	if (node->fs < F_MINIMUM) {
-		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
+		LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+			getFormatted("$fs too small - clamping to %1$f",F_MINIMUM),message_group::Warning);
 		node->fs = F_MINIMUM;
 	}
 	if (node->fa < F_MINIMUM) {
-		PRINTB("WARNING: $fa too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
+		LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+			getFormatted("$fa too small - clamping to %1$f",F_MINIMUM),message_group::Warning);
 		node->fa = F_MINIMUM;
 	}
 
@@ -208,13 +212,14 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			converted |= size->getDouble(node->z);
 			converted |= size->getVec3(node->x, node->y, node->z);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size->toEchoString()),message_group::Warning);
 			}else if(OpenSCAD::rangeCheck){
 				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
-					PRINTB("WARNING: cube(size=%s, ...), %s",
-						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+						getFormatted("cube(size=%1$s, ...)",size->toEchoString()),message_group::Warning	);
 				}
 			}
 		}
@@ -228,8 +233,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-				PRINTB("WARNING: sphere(r=%s), %s",
-					r.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("sphere(r=%1$s)",r.toEchoString()),message_group::Warning);
 			}
 		}
 		break;
@@ -246,7 +251,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if(r.type() == Value::Type::NUMBER &&
 			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 			){
-				PRINTB("WARNING: Cylinder parameters ambiguous, %s", inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("Cylinder parameters ambiguous"),message_group::Warning);
 		}
 
 		if (r.type() == Value::Type::NUMBER) {
@@ -262,14 +268,16 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 		if(OpenSCAD::rangeCheck){
 			if (node->h <= 0 || !std::isfinite(node->h)){
-				PRINTB("WARNING: cylinder(h=%s, ...), %s",
-					h->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("cylinder(h=%1$s, ...)",h->toEchoString()),
+					message_group::Warning);
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
-				PRINTB("WARNING: cylinder(r1=%s, r2=%s, ...), %s",
-					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()) %
-					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()) %
-					inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("cylinder(r1=%1$s, r2=%2$s, ...)",
+					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()),
+					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString())),
+					message_group::Warning);
 			}
 		}
 
@@ -300,14 +308,17 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			converted |= size->getDouble(node->y);
 			converted |= size->getVec2(node->x, node->y);
 			if(!converted){
-				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",
+					size->toEchoString()),message_group::Warning);
 			}else if(OpenSCAD::rangeCheck){
 				bool ok = true;
 				ok &= (node->x > 0) && (node->y > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y);
 				if(!ok){
-					PRINTB("WARNING: square(size=%s, ...), %s",
-						size->toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("square(size=%1$s, ...)",
+					size->toEchoString()),message_group::Warning);
 				}
 			}
 		}
@@ -321,8 +332,9 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
-				PRINTB("WARNING: circle(r=%s), %s",
-					r.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
+					getFormatted("circle(r=%1$s)",r.toEchoString()),
+					message_group::Warning);
 			}
 		}
 		break;
@@ -560,7 +572,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 					double px, py, pz;
 					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
-						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers, %s", j % this->modinst->location().toRelativeString(this->document_path));
+						LOG(boostfs_uncomplete(this->modinst->location().filePath(),this->document_path).generic_string(),this->modinst->location().firstLine(),
+							getFormatted("Unable to convert point at index %1$d to a vec3 of numbers",j),message_group::Error);
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
@@ -615,8 +628,8 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (unsigned int i=0;i<vec.size();i++) {
 				const auto &val = *vec[i];
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers, %s",
-								 val.toEchoString() % i % this->modinst->location().toRelativeString(this->document_path));
+					LOG(boostfs_uncomplete(this->modinst->location().filePath(),this->document_path).generic_string(),this->modinst->location().firstLine(),
+						getFormatted("Unable to convert point %1$s at index %2$d to a vec2 of numbers",val.toEchoString(),i),message_group::Error);
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);

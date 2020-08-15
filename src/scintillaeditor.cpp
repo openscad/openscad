@@ -4,7 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
+#include "boost-utils.h"
 #include <QString>
 #include <QChar>
 #include <QShortcut>
@@ -87,7 +87,7 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 		_name = QString::fromStdString(pt.get<std::string>("name"));
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", path.generic_string() % e.what());
+		LOG("",-1,getFormatted("Error reading color scheme file '%1$s': %2$s",path.generic_string(),e.what()),message_group::None);
 		_name = "";
 		_index = 0;
 	}
@@ -247,7 +247,7 @@ void ScintillaEditor::addTemplate(const fs::path path)
 
 				templateMap.insert(key, ScadTemplate(content, cursor_offset));
 			} catch (const std::exception & e) {
-				PRINTB("Error reading template file '%s': %s", path.generic_string().c_str() % e.what());
+				LOG("",-1,getFormatted("Error reading template file '%1$s': %2$s",path.generic_string(),e.what()),message_group::None);
 			}
 		}
 	}

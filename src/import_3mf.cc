@@ -31,6 +31,7 @@
 #include "printutils.h"
 #include "version_helper.h"
 #include "AST.h"
+#include "boost-utils.h"
 
 #ifdef ENABLE_LIB3MF
 #include <Model/COM/NMR_DLLInterfaces.h>
@@ -80,35 +81,35 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
 	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
 	if (result != LIB3MF_OK) {
-		PRINT("ERROR: Error reading 3MF library version");
+		//PRINT("ERROR: Error reading 3MF library version");
 		return new PolySet(3);
 	}
 
 	if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-		PRINTB("ERROR: Invalid 3MF library major version %d.%d.%d, expected %d.%d.%d",
-                        interfaceVersionMajor % interfaceVersionMinor % interfaceVersionMicro %
-                        NMR_APIVERSION_INTERFACE_MAJOR % NMR_APIVERSION_INTERFACE_MINOR % NMR_APIVERSION_INTERFACE_MICRO);
+		LOG("",-1,getFormatted("Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+                        interfaceVersionMajor,interfaceVersionMinor,interfaceVersionMicro,
+                        NMR_APIVERSION_INTERFACE_MAJOR,NMR_APIVERSION_INTERFACE_MINOR,NMR_APIVERSION_INTERFACE_MICRO),message_group::Error);
 		return new PolySet(3);
 	}
 
 	PLib3MFModel *model;
 	result = lib3mf_createmodel(&model);
 	if (result != LIB3MF_OK) {
-		PRINTB("ERROR: Could not create model: %08lx", result);
+		LOG("",-1,getFormatted("Could not create model: %1$08lx",result),message_group::Error);
 		return import_3mf_error();
 	}
 
 	PLib3MFModelReader *reader;
 	result = lib3mf_model_queryreader(model, "3mf", &reader);
 	if (result != LIB3MF_OK) {
-		PRINTB("ERROR: Could not create 3MF reader: %08lx", result);
+		LOG("",-1,getFormatted("Could not create 3MF reader: %1$08lx",result),message_group::Error);
 		return import_3mf_error(model);
 	}
 
 	result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
 	lib3mf_release(reader);
 	if (result != LIB3MF_OK) {
-		PRINTB("WARNING: Could not read file '%s', import() at line %d", filename.c_str() % loc.firstLine());
+		LOG("",loc.firstLine(),getFormatted("Could not read file '%1$s', import()",filename.c_str()),message_group::Warning);
 		return import_3mf_error(model);
 	}
 
@@ -215,7 +216,7 @@ const std::string get_lib3mf_version() {
 
 Geometry * import_3mf(const std::string &, const Location &loc)
 {
-	PRINTB("WARNING: Import from 3MF format was not enabled when building the application, import() at line %d", loc.firstLine());
+	LOG("",loc.firstLine(),getFormatted("Import from 3MF format was not enabled when building the application, import()"),message_group::Warning);
 	return new PolySet(3);
 }
 

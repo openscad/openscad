@@ -8,6 +8,7 @@
 #include "ModuleInstantiation.h"
 #include "printutils.h"
 #include "evalcontext.h"
+#include "boost-utils.h"
 
 BuiltinContext::BuiltinContext() : Context()
 {
@@ -28,7 +29,7 @@ ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::s
 	if (search != Builtins::instance()->getFunctions().end()) {
 		AbstractFunction *f = search->second;
 		if (f->is_enabled()) return f->evaluate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), evalctx);
-		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
+		else LOG(boostfs_uncomplete(evalctx->loc.filePath(),this->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("Experimental builtin function '%1$s' is not enabled",name),message_group::Warning);
 	}
 	return Context::evaluate_function(name, evalctx);
 }
@@ -40,7 +41,7 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
+			LOG(boostfs_uncomplete(evalctx->loc.filePath(),this->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("Experimental builtin module '%1$s' is not enabled",name),message_group::Warning);
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {

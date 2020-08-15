@@ -76,7 +76,7 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	for (unsigned int i=0;i<this->getDimension();i++) {
 		if (newsize[i]) {
 			if (bbox_size[i] == NT3(0)) {
-				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
+				//PRINT("WARNING: Resize in direction normal to flat object is not implemented");
 				return;
 			}
 			else {
@@ -113,7 +113,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
 	if (!this->isEmpty()) {
 		if (matrix.matrix().determinant() == 0) {
-			PRINT("WARNING: Scaling a 3D object with 0 - removing object");
+			//PRINT("WARNING: Scaling a 3D object with 0 - removing object");
 			this->reset();
 		}
 		else {

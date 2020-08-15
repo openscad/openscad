@@ -1,6 +1,8 @@
 #include "GeometryCache.h"
 #include "printutils.h"
 #include "Geometry.h"
+#include "boost-utils.h"
+
 #ifdef DEBUG
   #ifndef ENABLE_CGAL
   #define ENABLE_CGAL
@@ -44,8 +46,8 @@ void GeometryCache::setMaxSizeMB(size_t limit)
 
 void GeometryCache::print()
 {
-	PRINTB("Geometries in cache: %d", this->cache.size());
-	PRINTB("Geometry cache size in bytes: %d", this->cache.totalCost());
+	LOG("",-1,getFormatted("Geometries in cache: %1$d",this->cache.size()),message_group::None);
+	LOG("",-1,getFormatted("Geometry cache size in bytes: %1$d",this->cache.totalCost()),message_group::None);
 }
 
 GeometryCache::cache_entry::cache_entry(const shared_ptr<const Geometry> &geom)

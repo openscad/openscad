@@ -49,8 +49,8 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 
 	if (result != numbytes) {
 		DWORD errcode = GetLastError();
-		PRINT("ERROR: error converting w_char str to utf8 string");
-		PRINTB("ERROR: error code %i",errcode);
+		// PRINT("ERROR: error converting w_char str to utf8 string");
+		LOG("",-1,getFormatted("error code %1$i",errcode),message_group::Error);
 	}
 
 	return utf8_str;
@@ -93,7 +93,7 @@ std::string PlatformUtils::documentsPath()
 {
 	const std::string retval = getFolderPath(CSIDL_PERSONAL);
 	if (retval.empty()) {
-	    PRINT("ERROR: Could not find My Documents location");
+	   // PRINT("ERROR: Could not find My Documents location");
 	}
 	return retval;
 }
@@ -102,7 +102,7 @@ std::string PlatformUtils::userConfigPath()
 {
 	const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
 	if (retval.empty()) {
-	    PRINT("ERROR: Could not find Local AppData location");
+	    //PRINT("ERROR: Could not find Local AppData location");
 	}
 	return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }

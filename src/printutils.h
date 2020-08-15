@@ -26,7 +26,7 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 }
 
 enum class message_group {
-	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,Parser_Error 
+	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo
 };
 
 struct Message{
@@ -37,7 +37,7 @@ int msg_id;
 enum message_group group;
 };
 
-typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
+typedef void (OutputHandlerFunc)(const enum message_group &msg_group,const std::string &msg, void *userdata);
 typedef void (OutputHandlerFunc2)(const Message &msg, void *userdata);
 
 extern OutputHandlerFunc *outputhandler;
@@ -66,14 +66,16 @@ void resetSuppressedMessages();
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINT(const std::string &msg);
-#define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
+void PRINTTMP(const std::string &msg);
+void PRINT(const enum message_group &msg_group,const std::string &msg);
+#define PRINTB(_fmt, _arg) do { PRINTTMP(str(boost::format(_fmt) % _arg)); } while (0)
 
-// void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
-void LOG(const Message &msg);
+void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
+// void LOG(const Message &msg);
 
-void PRINT_NOCACHE(const std::string &msg);
-#define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
+void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg);
+#define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
+// #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
 void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const class ModuleInstantiation *inst);
 
@@ -150,13 +152,8 @@ public:
 };
 
 template <typename F, typename... Args>
-void LOGWIDGET(std::string file,int line,message_group grp,std::string info,F&& f, Args&&... args)
+std::string getFormatted(F&& f, Args&&... args)
 {
 	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
-	const auto formatted = msg.format();
-	//toConsole
-	PRINT(formatted);
-	const Message msg2 = {file,line,info,0,grp};
-	//toErrorLog
-	LOG(msg2);
+	return msg.format();
 }

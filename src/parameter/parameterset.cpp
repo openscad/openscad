@@ -4,6 +4,7 @@
 #include "expression.h"
 #include "printutils.h"
 #include <boost/property_tree/json_parser.hpp>
+#include "boost-utils.h"
 
 std::string ParameterSet::parameterSetsKey("parameterSets");
 std::string ParameterSet::fileFormatVersionKey("fileFormatVersion");
@@ -82,7 +83,7 @@ bool ParameterSet::readParameterSet(const std::string &filename)
 		return true;
 	}
 	catch (const pt::json_parser_error &e) {
-		PRINTB("ERROR: Cannot open Parameter Set '%s': %s", filename % e.what());
+		LOG("",-1,getFormatted("Cannot open Parameter Set '%1$s': %2$s",filename,e.what()),message_group::Error);
 	}
 	return false;
 }
@@ -95,7 +96,7 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 		pt::write_json(filename, this->root);
 	}
 	catch (const pt::json_parser_error &e) {
-		PRINTB("ERROR: Cannot write Parameter Set '%s': %s", filename % e.what());
+		LOG("",-1,getFormatted("Cannot write Parameter Set '%1$s': %2$s",filename,e.what()),message_group::Error);
 	}
 }
 
@@ -127,7 +128,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		}
 	}
 	catch (std::exception const& e) {
-		PRINTB("ERROR: Cannot apply parameter Set: %s", e.what());
+		LOG("",-1,getFormatted("Cannot apply Parameter Set '%1$s'",e.what()),message_group::Error);
 	}
 }
 

@@ -84,7 +84,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
-		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
+		LOG("",-1,getFormatted("Can't open DXF file '%1$s'.",filename),message_group::Warning);
 		return;
 	}
 
@@ -149,7 +149,7 @@ DxfData::DxfData(double fn, double fs, double fa,
     }
     catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				PRINTB("WARNING: Illegal ID '%s' in `%s'", id_str % filename);
+				LOG(filename,-1,getFormatted("Illegal ID '%1$s'",id_str),message_group::Warning);
 			}
 			break;
   	}
@@ -406,20 +406,20 @@ DxfData::DxfData(double fn, double fs, double fa,
 		}
     }
     catch (boost::bad_lexical_cast &blc) {
-	  	PRINTB("WARNING: Illegal value %s in '%s'", data % filename);
+		LOG(filename,-1,getFormatted("Illegal value '%1$s'",data),message_group::Warning);
   	}
     catch (const std::out_of_range& oor) {
-	  	PRINTB("WARNING: not enough input values for %s in '%s'", data % filename);
+		LOG(filename,-1,getFormatted("Not enough input values for %1$s.",data),message_group::Warning);
   	}
 	}
 
 	for (const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
-			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
-						 i.first % i.second % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+			LOG(QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()),-1,
+				getFormatted("Unsupported DXF Entity '%1$s' (%2$x).",i.first,i.second),message_group::Warning);
 		} else {
-			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s.",
-						 i.first % i.second % layername % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+			LOG(QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()),-1,
+				getFormatted("Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s'",i.first,i.second,layername),message_group::Warning);
 		}
 	}
 

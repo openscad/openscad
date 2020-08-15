@@ -105,7 +105,7 @@ double FreetypeRenderer::calc_x_offset(std::string halign, double width) const
 		return -width / 2.0;
 	} else {
 		if (halign != "left") {
-			PRINTB("Unknown value for the halign parameter (use \"left\", \"right\" or \"center\"): '%s'", halign);
+			LOG("",-1,getFormatted("Unknown value for the halign parameter (use \"left\", \"right\" or \"center\"): '%1$s'",halign),message_group::None);
 		}
 		return 0;
 	}
@@ -121,7 +121,7 @@ double FreetypeRenderer::calc_y_offset(std::string valign, double ascend, double
 		return descend;
 	} else {
 		if (valign != "baseline") {
-			PRINTB("Unknown value for the valign parameter (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%s'", valign);
+			LOG("",-1,getFormatted("Unknown value for the valign parameter (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%1$s'",valign),message_group::None);
 		}
 		return 0;
 	}
@@ -214,7 +214,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	
 	error = FT_Set_Char_Size(face, 0, scale, 100, 100);
 	if (error) {
-		PRINTB("Can't set font size for font %s", params.font);
+		LOG("",-1,getFormatted("Can't set font size for font %1$s",params.font),message_group::None);
 		return std::vector<const Geometry *>();
 	}
 	
@@ -245,7 +245,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 				p = g_utf8_next_char(p);
 			}
 		} else {
-			PRINTB("Warning: Ignoring text with invalid UTF-8 encoding: \"%s\"", params.text.c_str());
+			LOG("",-1,getFormatted("Ignoring text with invalid UTF-8 encoding: \"%1$s\"", params.text.c_str()),message_group::Warning);
 		}
 	} else {
 		hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
@@ -261,14 +261,14 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 		FT_UInt glyph_index = glyph_info[idx].codepoint;
 		error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
 		if (error) {
-			PRINTB("Could not load glyph %u for char at index %u in text '%s'", glyph_index % idx % params.text);
+			LOG("",-1,getFormatted("Could not load glyph %1$u for char at index %2$u in text '%3$s'",glyph_index,idx,params.text),message_group::None);
 			continue;
 		}
 
 		FT_Glyph glyph;
 		error = FT_Get_Glyph(face->glyph, &glyph);
 		if (error) {
-			PRINTB("Could not get glyph %u for char at index %u in text '%s'", glyph_index % idx % params.text);
+			LOG("",-1,getFormatted("Could not get glyph %1$u for char at index %2$u in text '%3$s'",glyph_index,idx,params.text),message_group::None);
 			continue;
 		}
 		const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_pos[idx]);

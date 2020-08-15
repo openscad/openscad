@@ -225,7 +225,7 @@ bool deproject( CGAL_Point_2 &p2, projection_t &projection, CGAL_Plane_3 &plane,
 		p3 = *point_test;
 		return false;
 	}
-	PRINT("ERROR: deproject failure");
+	//PRINT("ERROR: deproject failure");
 	return true;
 }
 
@@ -311,7 +311,7 @@ projection_t find_good_projection( CGAL_Plane_3 &plane )
 	} else if (min==qxz) {
 		goodproj.plane = XZPLANE;
 		if (sign(plane.b())<0) goodproj.flip = true;
-	} else PRINT("ERROR: failed to find projection");
+	} else //"ERROR: failed to find projection");
 	return goodproj;
 }
 
@@ -364,7 +364,7 @@ namespace CGALUtils {
 				try {
 					cdt.insert_constraint( vhandles[vindex1], vhandles[vindex2] );
 				} catch (const CGAL::Failure_exception &e) {
-					PRINTB("WARNING: Constraint insertion failure %s", e.what());
+					LOG("",-1,getFormatted(" Constraint insertion failure %1$s",e.what()),message_group::Warning);
 				}
 				CGAL::set_error_behaviour(old_behaviour);
 			}
@@ -389,7 +389,7 @@ namespace CGALUtils {
 		}
 		std::list<CDTPoint>::iterator li = list_of_seeds.begin();
 		for (;li!=list_of_seeds.end();li++) {
-			//PRINTB("seed %s",*li);
+				// LOG("",-1,getFormatted("Seed %1$s",*li),message_group:None);
 			double x = CGAL::to_double( li->x() );
 			double y = CGAL::to_double( li->y() );
 			PRINTDB("seed %f,%f",x%y);
@@ -421,7 +421,7 @@ namespace CGALUtils {
 				else err = deproject( p2, goodproj, plane, cp2 );
 				if (vertmap.count(p3)) cp3 = vertmap[p3];
 				else err = deproject( p3, goodproj, plane, cp3 );
-				if (err) PRINT("WARNING: 2d->3d deprojection failure");
+				if (err) //PRINT("WARNING: 2d->3d deprojection failure");
 				Polygon tri;
 				tri.push_back(Vector3d(CGAL::to_double(cp1.x()), CGAL::to_double(cp1.y()), CGAL::to_double(cp1.z())));
 				tri.push_back(Vector3d(CGAL::to_double(cp2.x()), CGAL::to_double(cp2.y()), CGAL::to_double(cp2.z())));
@@ -483,7 +483,7 @@ namespace CGALUtils {
 				try {
 					cdt.insert_constraint( vhandles[vindex1], vhandles[vindex2] );
 				} catch (const CGAL::Failure_exception &e) {
-					PRINTB("WARNING: Constraint insertion failure %s", e.what());
+					LOG("",-1,getFormatted("Constraint insertion failure %1$s",e.what()),message_group::Warning);
 				}
 				CGAL::set_error_behaviour(old_behaviour);
 			}
@@ -508,7 +508,7 @@ namespace CGALUtils {
 		}
 		std::list<CDTPoint>::iterator li = list_of_seeds.begin();
 		for (;li!=list_of_seeds.end();li++) {
-			//PRINTB("seed %s",*li);
+			// LOG("",-1,getFormatted("seed %1$s",*li),message_group:None);
 			double x = CGAL::to_double( li->x() );
 			double y = CGAL::to_double( li->y() );
 			PRINTDB("seed %f,%f",x%y);
@@ -541,7 +541,7 @@ namespace CGALUtils {
 				else err = deproject( p2, goodproj, plane, cp2 );
 				if (vertmap.count(p3)) cp3 = vertmap[p3];
 				else err = deproject( p3, goodproj, plane, cp3 );
-				if (err) PRINT("WARNING: 2d->3d deprojection failure");
+				if (err) //PRINT("WARNING: 2d->3d deprojection failure");
 				pgon.push_back( cp1 );
 				pgon.push_back( cp2 );
 				pgon.push_back( cp3 );

@@ -41,7 +41,7 @@
 #include "fileutils.h"
 #include "feature.h"
 #include "handle_dep.h"
-
+#include "boost-utils.h"
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -128,7 +128,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString()),message_group::Warning);
 	}
 
 	const auto center = c->lookup_variable("center", true);
@@ -142,10 +142,11 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (dpi->type() == Value::Type::NUMBER) {
 		double val = dpi->toDouble();
 		if (val < 0.001) {
-			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
-					node->dpi %
-					inst->location().toRelativeString(ctx->documentPath()) %
-					inst->location().firstLine());
+		std::string filePath = boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string();
+		LOG(filePath,inst->location().firstLine(),
+			getFormatted("Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import()",
+			origin->toEchoString(),filePath),
+			message_group::Warning);
 		} else {
 			node->dpi = val;
 		}
@@ -200,7 +201,7 @@ const Geometry *ImportNode::createGeometry() const
 	}
 #endif
 	default:
-		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
+		LOG("",loc.firstLine(),getFormatted("Unsupported file format while trying to import file '%1$s', import()",this->filename),message_group::Error);
 		g = new PolySet(3);
 	}
 

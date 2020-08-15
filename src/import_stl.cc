@@ -2,6 +2,7 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "AST.h"
+#include "boost-utils.h"
 
 #include <fstream>
 #include <boost/predef.h>
@@ -65,7 +66,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
+		LOG("",loc.firstLine(),getFormatted("Can't open import file '%1$s', import()",filename),message_group::Warning);
 		return p;
 	}
 	
@@ -114,7 +115,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 					}
 				}
 				catch (const boost::bad_lexical_cast &blc) {
-					PRINTB("WARNING: Can't parse vertex line '%s', import() at line %d", line % loc.firstLine());
+					LOG("",loc.firstLine(),getFormatted("Can't parse vertex line '%1$s', import()",line),message_group::Warning);
 					i = 10;
 					continue;
 				}

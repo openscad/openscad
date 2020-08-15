@@ -68,7 +68,7 @@ void FileModule::registerUse(const std::string path, const Location &loc)
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
 		} else {
-			PRINTB("ERROR: Can't read font with path '%s'", path);
+			LOG("",-1,getFormatted("Can't read font with path '%1$s'",path),message_group::Error);
 		}
 	} else {
 		auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);

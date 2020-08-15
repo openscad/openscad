@@ -35,6 +35,7 @@
 #include "qtgettext.h"
 #include "PlatformUtils.h"
 #include "QSettingsCached.h"
+#include "boost-utils.h"
 
 
 #include <boost/property_tree/ptree.hpp>
@@ -118,7 +119,7 @@ static ptree *examplesTree()
 			examples_tree = new ptree;
 			read_json(path, *examples_tree);
 		} catch (const std::exception & e) {
-			PRINTB("Error reading examples.json: %s", e.what());
+			LOG("",-1,getFormatted("Error reading examples.json: %1$s",e.what()),message_group::None);
 			delete examples_tree;
 			examples_tree = nullptr;
 		}

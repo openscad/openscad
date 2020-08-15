@@ -5,7 +5,7 @@
 #include "exceptions.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -78,7 +78,7 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
-	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
+	LOG(boostfs_uncomplete(mod->location().filePath(),ctx->documentPath()).generic_string(),mod->location().firstLine(),getFormatted("Called by '%1$s'",mod->name()),message_group::Trace);
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
@@ -86,7 +86,7 @@ AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) 
 	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 
 #if 0 && DEBUG
-	PRINT("New eval ctx:");
+	//PRINT("New eval ctx:");
 	c.dump(nullptr, this);
 #endif
 	try{

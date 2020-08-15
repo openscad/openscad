@@ -27,23 +27,23 @@ public:
 		std::vector<shared_ptr<CSGNode> > highlightNodes = evaluator.getHighlightNodes();
 		std::vector<shared_ptr<CSGNode> > backgroundNodes = evaluator.getBackgroundNodes();
 
-		PRINT("Compiling design (CSG Products normalization)...");
+		//PRINT("Compiling design (CSG Products normalization)...");
 		CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
 		if (csgRoot) {
 			shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
 			if (normalizedRoot) {
 				this->root_products.reset(new CSGProducts());
 				this->root_products->import(normalizedRoot);
-				PRINTB("Normalized CSG tree has %d elements", int(this->root_products->size()));
+				LOG("",-1,getFormatted("Normalized CSG tree has %1$d elements",int(this->root_products->size())),message_group::None);
 			}
 			else {
 				this->root_products.reset();
-				PRINT("WARNING: CSG normalization resulted in an empty tree");
+				//PRINT("WARNING: CSG normalization resulted in an empty tree");
 			}
 		}
 
 		if (highlightNodes.size() > 0) {
-			PRINTB("Compiling highlights (%i CSG Trees)...", highlightNodes.size() );
+			LOG("",-1,getFormatted("Compiling highlights (%1$i CSG Trees)...",highlightNodes.size()),message_group::None);
 			this->highlights_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < highlightNodes.size(); i++) {
 				highlightNodes[i] = normalizer.normalize(highlightNodes[i]);
@@ -52,7 +52,7 @@ public:
 		}
 
 		if (backgroundNodes.size() > 0) {
-			PRINTB("Compiling background (%i CSG Trees)...", backgroundNodes.size());
+			LOG("",-1,getFormatted("Compiling background (%1$i CSG Trees)...",backgroundNodes.size()),message_group::None);
 			this->background_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < backgroundNodes.size(); i++) {
 				backgroundNodes[i] = normalizer.normalize(backgroundNodes[i]);

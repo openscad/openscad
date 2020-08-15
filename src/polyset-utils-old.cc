@@ -196,7 +196,7 @@ namespace PolysetUtils {
 		} catch (const CGAL::Failure_exception &e) {
             // Using failure exception to catch precondition errors for malformed polygons
             // in e.g. CGAL::orientation_2().
-			PRINTB("CGAL error in triangulate_polygon(): %s", e.what());
+			LOG("",-1,getFormatted("CGAL error in triangulate_polygon(): %1$s",e.what()),message_group::None);
 			err = true;
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -237,6 +237,6 @@ namespace PolysetUtils {
 					outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
 			}
 		}
-		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
+		if (degeneratePolygons > 0) //PRINT("WARNING: PolySet has degenerate polygons");
 	}
 }

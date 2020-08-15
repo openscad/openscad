@@ -38,6 +38,7 @@
 
 #include <cmath>
 #include <sstream>
+#include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -104,14 +105,14 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString()),message_group::Warning);
 	}
 	node->scale_x = node->scale_y = 1;
 	bool scaleOK = scale->getFiniteDouble(node->scale_x);
 	scaleOK &= scale->getFiniteDouble(node->scale_y);
 	scaleOK |= scale->getVec2(node->scale_x, node->scale_y, true);
 	if((origin!=ValuePtr::undefined) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
-		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("linear_extrude(..., scale=%1$s) could not be converted",scale->toEchoString()),message_group::Warning);
 	}
 
 	if (center->type() == Value::Type::BOOL)

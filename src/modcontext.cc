@@ -8,6 +8,7 @@
 #include "ModuleCache.h"
 #include <cmath>
 #include <memory>
+#include "boost-utils.h"
 #ifdef DEBUG
 #include <boost/format.hpp>
 #endif
@@ -74,8 +75,9 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
 		if (assignment->getExpr()->isLiteral() && this->variables.find(assignment->getName()) != this->variables.end()) {
-			std::string loc = assignment->location().toRelativeString(this->documentPath());
-			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment->getName() % loc);
+			LOG(boostfs_uncomplete(assignment->location().filePath(),this->documentPath()).generic_string(),assignment->location().firstLine(),
+				getFormatted("Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName()),
+				message_group::Warning);
 		}
 		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
@@ -89,7 +91,7 @@ shared_ptr<const UserFunction> ModuleContext::findLocalFunction(const std::strin
  	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
 		auto f = this->functions_p->find(name)->second;
 		if (!f->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
+			LOG("",-1,getFormatted("Experimental builtin function '%1$s' is not enabled.",name),message_group::Warning);
 			return nullptr;
 		}
 		return f;
@@ -102,7 +104,7 @@ shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &n
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		auto m = this->modules_p->find(name)->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
+			LOG("",-1,getFormatted("Experimental builtin module '%1$s' is not enabled.",name),message_group::Warning);
 			return nullptr;
 		}
 		auto replacement = Builtins::instance()->isDeprecated(name);

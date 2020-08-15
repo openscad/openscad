@@ -1,6 +1,7 @@
 #include "import.h"
 #include "printutils.h"
 #include "AST.h"
+#include "boost-utils.h"
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -17,7 +18,7 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
 	if (!f.good()) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
+		LOG("",loc.firstLine(),getFormatted("Can't open import file '%1$s', import()",filename),message_group::Warning);
 		return N;
 	}
 	
@@ -27,8 +28,8 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 		N->p3.reset(new CGAL_Nef_polyhedron3);
 		f >> *(N->p3);
 	} catch (const CGAL::Failure_exception &e) {
-		PRINTB("WARNING: Failure trying to import '%s', import() at line %d", filename % loc.firstLine());
-		PRINT(e.what());
+		LOG("",loc.firstLine(),getFormatted("Failure trying to import '%1$s', import()",filename),message_group::Warning);
+		//PRINT(e.what());
 		N = new CGAL_Nef_polyhedron;
 	}
 	CGAL::set_error_behaviour(old_behaviour);

@@ -33,7 +33,7 @@
 #include "builtin.h"
 #include "polyset.h"
 #include "handle_dep.h"
-
+#include "boost-utils.h"
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -83,7 +83,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("Rotate_extrude(..., origin=%1$s) could not be converted",origin->toEchoString()),message_group::Warning);
 	}
 	node->scale = scale->toDouble();
 	node->angle = 360;

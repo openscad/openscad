@@ -511,7 +511,7 @@ PolySet *import_stl(const std::string &filename)
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    PRINTB("WARNING: Can't open import file '%s'.", filename);
+    LOG("",-1,getFormatted("Can't open import file: %1$s",filename),message_group::Warning);
     return NULL;
   }
 
@@ -560,7 +560,7 @@ PolySet *import_stl(const std::string &filename)
           }
         }
         catch (const boost::bad_lexical_cast &blc) {
-          PRINTB("WARNING: Can't parse vertex line '%s'.", line);
+          LOG("",line,getFormatted("Can't parse vertex line: %1$s",line),message_group::Warning);
           i = 10;
           continue;
         }

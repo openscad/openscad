@@ -283,8 +283,8 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 			if (hexColor) {
 				node->color = *hexColor;
 			} else {
-				PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. ", colorname % inst->location().toRelativeString(ctx->documentPath()));
-				PRINT_NOCACHE("WARNING: Please see https://en.wikipedia.org/wiki/Web_colors");
+				//PRINTB_NOCACHE("WARNING: Unable to parse color \"%s\", %s. ", colorname % inst->location().toRelativeString(ctx->documentPath()));
+				//PRINT_NOCACHE("WARNING: Please see https://en.wikipedia.org/wiki/Web_colors");
 			}
 		}
 	}
