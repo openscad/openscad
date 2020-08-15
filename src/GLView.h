@@ -37,7 +37,7 @@ public:
 	virtual void paintGL();
 
 	void setCamera(const Camera &cam);
-	void setupCamera();
+	void setupCamera() const;
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
@@ -72,7 +72,6 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	GLint shaderinfo[11];
 	bool is_opencsg_capable;
 	bool has_shaders;
 	void enable_opencsg_shaders();

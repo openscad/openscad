@@ -31,11 +31,11 @@ void ScadApi::updateAutoCompletionList(const QStringList &context, QStringList &
 	}
 }
 
-void ScadApi::autoCompletionSelected (const QString &selection)
+void ScadApi::autoCompletionSelected (const QString & /*selection*/)
 {
 }
 
-QStringList ScadApi::callTips (const QStringList &context, int commas, QsciScintilla::CallTipsStyle style, QList< int > &shifts)
+QStringList ScadApi::callTips (const QStringList &context, int /*commas*/, QsciScintilla::CallTipsStyle /*style*/, QList< int > & /*shifts*/)
 {
 	QStringList callTips;
 	for (int a = 0;a < funcs.size();a++) {

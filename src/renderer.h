@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GLView.h"
 #include "system-gl.h"
 #include "linalg.h"
 #include "memory.h"
@@ -14,12 +15,50 @@
 class Renderer
 {
 public:
+	enum shader_type_t {
+		NONE,
+		CSG_RENDERING,
+		SELECT_RENDERING,
+	};
+
+	/// Shader attribute identifiers
+	struct shaderinfo_t {
+		int progid = 0;
+		shader_type_t type;
+		union {
+			struct {
+				int color_area;
+				int color_edge;
+				int trig;
+
+				// the other two points of the triangle while rendering
+				int point_b;
+				int point_c;
+
+				int mask;
+				int xscale;
+				int yscale;
+			} csg_rendering;
+			struct {
+				int identifier;
+			} select_rendering;
+		} data;
+
+		// values: Viewport size
+		GLint vp_size_x;
+		GLint vp_size_y;
+	};
+
+
 	Renderer();
 	virtual ~Renderer() {}
-	virtual void resize(int /* w */, int /* h */) {};
+	virtual void resize(int w, int h);
+	virtual inline const Renderer::shaderinfo_t &getShader() const { return renderer_shader; }
+
 	virtual void draw(bool showfaces, bool showedges) const = 0;
+	virtual void draw_with_shader(const shaderinfo_t *) const  { this->draw(true, true); }
 	virtual BoundingBox getBoundingBox() const = 0;
-	
+
 #define CSGMODE_DIFFERENCE_FLAG 0x10
 	enum csgmode_e {
 		CSGMODE_NONE                  = 0x00,
@@ -47,16 +86,19 @@ public:
 	};
 
 	virtual bool getColor(ColorMode colormode, Color4f &col) const;
-	virtual void setColor(const float color[4], GLint *shaderinfo = nullptr) const;
-	virtual void setColor(ColorMode colormode, GLint *shaderinfo = nullptr) const;
-	virtual Color4f setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = nullptr) const;
+	virtual void setColor(const float color[4], const shaderinfo_t *shaderinfo = nullptr) const;
+	virtual void setColor(ColorMode colormode, const shaderinfo_t *shaderinfo = nullptr) const;
+	virtual Color4f setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo = nullptr) const;
 	virtual void setColorScheme(const ColorScheme &cs);
 
 	virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type=OpenSCADOperator::UNION) const;
-	virtual void render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = nullptr) const;
+	virtual void render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo = nullptr) const;
 	virtual void render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const;
 
 protected:
 	std::map<ColorMode,Color4f> colormap;
 	const ColorScheme *colorscheme;
+
+private:
+	shaderinfo_t renderer_shader;
 };
