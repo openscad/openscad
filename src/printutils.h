@@ -29,6 +29,9 @@ enum class message_group {
 	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo
 };
 
+
+std::string getGroupName(const enum message_group &groupName);
+
 struct Message{
 std::string file;
 int line;

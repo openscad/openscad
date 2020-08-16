@@ -278,7 +278,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	case Type::ECHO: {
 		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 		else node = new GroupNode(inst, evalctx);
-		LOG("",-1,getFormatted("%1$s",*evalctx),message_group::None);
+		LOG("",-1,getFormatted("%1$s",STR(*evalctx)),message_group::Echo);
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);

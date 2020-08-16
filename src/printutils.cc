@@ -197,3 +197,45 @@ void resetSuppressedMessages()
 	printedDeprecations.clear();
 	lastmessages.clear();
 }
+
+
+std::string getGroupName(const enum message_group &groupName)
+{
+	std::string group="";
+	switch (groupName)
+	{
+	case message_group::Warning:
+		return group="Warning";
+		break;
+	case message_group::Error:
+		return group="Error";
+		break;
+	case message_group::UI_Warning:
+		return group="UI_Warning";
+		break;
+	case message_group::Font_Warning:
+		return group="Font_Warning";
+		break;
+	case message_group::Export_Warning:
+		return group="Export_Warning";
+		break;
+	case message_group::Export_Error:
+		return group="Export_Error";
+		break;
+	case message_group::Parser_Error:
+		return group="Parser_Error";
+		break;
+	case message_group::Trace:
+		return group="Trace";
+		break;
+	case message_group::Deprecated:
+		return group="Deprecated";
+		break;
+	case message_group::Echo:
+		return group="Echo";
+		break;
+	default:
+		break;
+	}
+	return group;
+}

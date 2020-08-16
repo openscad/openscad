@@ -626,7 +626,7 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	LOG("",-1,getFormatted("%1$s",*echo_context.ctx),message_group::Echo);
+	LOG("",-1,getFormatted("%1$s",STR(*echo_context.ctx)),message_group::Echo);
 	return expr;
 }
 

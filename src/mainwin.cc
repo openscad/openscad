@@ -3079,21 +3079,20 @@ void MainWindow::consoleOutput(const enum message_group &msg_group,const QString
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-
 	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
 	if (msg_group==message_group::Warning || msg_group==message_group::Deprecated) {
 		this->compileWarnings++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
 	} else if (msg_group==message_group::UI_Warning || msg_group==message_group::Font_Warning || msg_group==message_group::Font_Warning) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
 	} else if (msg_group==message_group::Error) {
 		this->compileErrors++;
-		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span></a>&nbsp;");
-		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span></a>&nbsp;");
+		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span></a>&nbsp;");
+		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span></a>&nbsp;");
 	} else if (msg_group==message_group::Export_Error || msg_group==message_group::UI_Error || msg_group==message_group::Parser_Error) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
 	} else if (msg_group==message_group::Trace) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
 	} else {
 		this->console->appendPlainText(msg);
 	}
