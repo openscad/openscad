@@ -97,26 +97,23 @@ static std::string arg_colorscheme;
 class Echostream
 {
 public:
-	Echostream(const char *filename)
+	Echostream(std::ostream &stream) : stream(stream)
 	{
 		set_output_handler(&Echostream::output, this);
-		if (strcmp(filename, "-") == 0) {
-			file = false;
-		}
-		else {
-			fstream.open(filename);
-			file = true;
-		}
+	}
+	Echostream(const char *filename) : fstream(filename), stream(fstream)
+	{
+		set_output_handler(&Echostream::output, this);
 	}
 	static void output(const std::string &msg, void *userdata)
 	{
 		auto thisp = static_cast<Echostream *>(userdata);
-		(thisp->file ? thisp->fstream : std::cout) << msg << "\n";
+		thisp->stream << msg << "\n";
 	}
 
 private:
 	std::ofstream fstream;
-	bool file;
+	std::ostream &stream;
 };
 
 static void help(const char *arg0, const po::options_description &desc, bool failure = false)
@@ -362,7 +359,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #endif
 	shared_ptr<Echostream> echostream;
 	if (curFormat == FileFormat::ECHO) {
-		echostream.reset(new Echostream(new_output_file));
+		if (filename_str == "-") {
+			echostream.reset(new Echostream(std::cout));
+		}
+		else {
+			echostream.reset(new Echostream(new_output_file));
+		}
 	}
 
 	FileModule *root_module;
