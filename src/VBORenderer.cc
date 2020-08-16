@@ -35,6 +35,8 @@
 VBORenderer::VBORenderer()
 	: Renderer()
 {
+	vbo_renderer_shader.progid = 0;
+	
 	const char *vs_source =
 	"uniform float xscale, yscale;\n"
 	"attribute vec4 color1, color2;\n"
@@ -87,6 +89,7 @@ VBORenderer::VBORenderer()
 	err = glGetError();
 	if (err != GL_NO_ERROR) {
 		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+		return;
 	}
 	glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
 	if (status == GL_FALSE) {
@@ -94,6 +97,7 @@ VBORenderer::VBORenderer()
 		char logbuffer[1000];
 		glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
 		PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
+		return;
 	}
 
 	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -102,6 +106,7 @@ VBORenderer::VBORenderer()
 	err = glGetError();
 	if (err != GL_NO_ERROR) {
 		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+		return;
 	}
 	glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
 	if (status == GL_FALSE) {
@@ -109,12 +114,40 @@ VBORenderer::VBORenderer()
 		char logbuffer[1000];
 		glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
 		PRINTDB("OpenGL Program Compile Fragement Shader Error:\n%s", logbuffer);
+		return;
 	}
 
 	GLuint vbo_shader_prog = glCreateProgram();
 	glAttachShader(vbo_shader_prog, vs);
 	glAttachShader(vbo_shader_prog, fs);
 	glLinkProgram(vbo_shader_prog);
+
+	err = glGetError();
+	if (err != GL_NO_ERROR) {
+		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+		return;
+	}
+
+	glGetProgramiv(vbo_shader_prog, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE) {
+		int loglen;
+		char logbuffer[1000];
+		glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
+		PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
+		return;
+	}
+	
+	int loglen;
+	char logbuffer[1000];
+	glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
+	if (loglen > 0) {
+		PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
+	}
+	glValidateProgram(vbo_shader_prog);
+	glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
+	if (loglen > 0) {
+		PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
+	}
 
 	vbo_renderer_shader.progid = vbo_shader_prog; // 0
 	vbo_renderer_shader.type = Renderer::CSG_RENDERING;
@@ -126,31 +159,6 @@ VBORenderer::VBORenderer()
 	vbo_renderer_shader.data.csg_rendering.mask = glGetAttribLocation(vbo_shader_prog, "mask"); // 6
 	vbo_renderer_shader.data.csg_rendering.xscale = glGetUniformLocation(vbo_shader_prog, "xscale"); // 7
 	vbo_renderer_shader.data.csg_rendering.yscale = glGetUniformLocation(vbo_shader_prog, "yscale"); // 8
-
-	err = glGetError();
-	if (err != GL_NO_ERROR) {
-		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-	}
-
-	glGetProgramiv(vbo_shader_prog, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
-	} else {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
-		}
-		glValidateProgram(vbo_shader_prog);
-		glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
-		}
-	}
 }
 
 void VBORenderer::resize(int w, int h)

@@ -82,7 +82,7 @@ private:
 OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
 				 shared_ptr<CSGProducts> highlights_products,
 				 shared_ptr<CSGProducts> background_products)
-	: product_vertex_sets(new std::vector<VertexSets *>()),
+	: product_vertex_sets(std::make_shared<ProductVertexSets>()),
 	  root_products(root_products),
 	  highlights_products(highlights_products),
 	  background_products(background_products)
@@ -93,15 +93,10 @@ OpenCSGRenderer::~OpenCSGRenderer()
 {
 	if (product_vertex_sets) {
 		for (auto &vertex_sets : *product_vertex_sets) {
-			glDeleteBuffers(1,&vertex_sets->first);
-			for (auto &vertex_set : *vertex_sets->second) {
-					delete vertex_set;
-			}
-			vertex_sets->second->clear();
-			delete vertex_sets;
+			glDeleteBuffers(1,&vertex_sets.first);
+			vertex_sets.second->clear();
 		}
 		product_vertex_sets->clear();
-		delete product_vertex_sets;
 	}
 }
 
@@ -129,7 +124,7 @@ void OpenCSGRenderer::draw_with_shader(const Renderer::shaderinfo_t *shaderinfo)
 		}
 	} else {
 		PRINTD("OpenCSGRenderer VBO");
-		if (!getProductVertexSets().size()) {
+		if (!getProductVertexSets()->size()) {
 			if (this->root_products) {
 				createCSGProducts(*this->root_products, false, false);
 			}
@@ -140,7 +135,7 @@ void OpenCSGRenderer::draw_with_shader(const Renderer::shaderinfo_t *shaderinfo)
 				createCSGProducts(*this->highlights_products, true, false);
 			}
 		}
-		renderCSGProducts(nullptr, shaderinfo);
+		renderCSGProducts(std::make_shared<CSGProducts>(), shaderinfo);
 	}
 }
 
@@ -169,24 +164,24 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const VertexSet &vertex_set,
 void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
-	std::vector<Vertex> *render_buffer = new std::vector<Vertex>();
-	std::vector<VertexSet *> *vertex_sets = 0;
-	VertexSet *prev = 0;
-	VertexSet *vertex_set = 0;
+	std::unique_ptr<std::vector<Vertex>> render_buffer = std::make_unique<std::vector<Vertex>>();
+	std::unique_ptr<VertexSets> vertex_sets;
+	VertexSet *prev = nullptr;
+	VertexSet *vertex_set = nullptr;
 
 	GLuint vbo;
 
 	for(const auto &product : products.products) {
 		// one vbo for each product
 		if (product.intersections.size() || product.subtractions.size()) {
-			vertex_sets = new std::vector<VertexSet *>();
+			vertex_sets = std::make_unique<std::vector<std::unique_ptr<VertexSet>>>();
 
 			GLsizei combined_draw_size = 0;
 			Color4f last_color;
 
 			for(const auto &csgobj : product.intersections) {
 				if (csgobj.leaf->geom && vertex_sets) {
-					prev = (vertex_sets->empty() ? 0 : vertex_sets->back());
+					prev = (vertex_sets->empty() ? nullptr : vertex_sets->back().get());
 					vertex_set = new VertexSet({true, OpenSCADOperator::INTERSECTION, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
 					GLintptr prev_start_offset = 0;
 					GLsizei prev_draw_size = 0;
@@ -225,14 +220,14 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highli
 						vertex_set->draw_cull_back = true;
 					}
 
-					vertex_sets->push_back(vertex_set);
+					vertex_sets->push_back(std::unique_ptr<VertexSet>(vertex_set));
 					combined_draw_size += vertex_set->draw_size;
 				}
 			}
 
 			for(const auto &csgobj : product.subtractions) {
 				if (csgobj.leaf->geom && vertex_sets) {
-					prev = (vertex_sets->empty() ? 0 : vertex_sets->back());
+					prev = (vertex_sets->empty() ? 0 : vertex_sets->back().get());
 					vertex_set = new VertexSet({true, OpenSCADOperator::DIFFERENCE, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
 					GLintptr prev_start_offset = 0;
 					GLsizei prev_draw_size = 0;
@@ -262,7 +257,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highli
 								csgmode, csgobj.leaf->matrix, last_color);
 					vertex_set->draw_cull_front = true;
 					vertex_set->draw_cull_back = false;
-					vertex_sets->push_back(vertex_set);
+					vertex_sets->push_back(std::unique_ptr<VertexSet>(vertex_set));
 					combined_draw_size += vertex_set->draw_size;
 				}
 			}
@@ -270,7 +265,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highli
 			if (render_buffer->size()) {
 				glGenBuffers(1, &vbo);
 
-				product_vertex_sets->push_back(new VertexSets(vbo,vertex_sets));
+				product_vertex_sets->emplace_back(vbo,std::move(vertex_sets));
 
 				glBindBuffer(GL_ARRAY_BUFFER, vbo);
 				glBufferData(GL_ARRAY_BUFFER, render_buffer->size()*sizeof(Vertex), render_buffer->data(), GL_STATIC_DRAW);
@@ -279,11 +274,10 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highli
 			}
 		}
 	}
-	delete render_buffer;
 #endif // ENABLE_OPENCSG
 }
 
-void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const
+void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
 	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
@@ -300,7 +294,7 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> products, 
 				glDepthFunc(GL_EQUAL);
 			}
 			OPENGL_TEST("start");
-			if (shaderinfo) glUseProgram(shaderinfo->progid);
+			if (shaderinfo && shaderinfo->progid) glUseProgram(shaderinfo->progid);
 			OPENGL_TEST("load shader");
 
 			for (const auto &csgobj : product.intersections) {
@@ -377,56 +371,54 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> products, 
 		for(const auto &vertex_sets : *product_vertex_sets) {
 			std::vector<OpenCSG::Primitive*> primitives;
 
-			if (vertex_sets) {
-				for(const auto &vertex_set : *vertex_sets->second) {
-					if (vertex_set->is_opencsg_vertex_set) {
-						OpenCSG::Primitive *primitive = nullptr;
-						if ((primitive = createVBOPrimitive(*vertex_set, vertex_sets->first)) != nullptr) {
-							primitives.push_back(primitive);
-						}
+			for(const auto &vertex_set : *vertex_sets.second) {
+				if (vertex_set->is_opencsg_vertex_set) {
+					OpenCSG::Primitive *primitive = nullptr;
+					if ((primitive = createVBOPrimitive(*vertex_set, vertex_sets.first)) != nullptr) {
+						primitives.push_back(primitive);
 					}
 				}
-
-				if (primitives.size() > 1) {
-					OpenCSG::render(primitives);
-					glDepthFunc(GL_EQUAL);
-				}
-				if (shaderinfo) glUseProgram(shaderinfo->progid);
-
-				glBindBuffer(GL_ARRAY_BUFFER, vertex_sets->first);
-				for(const auto &vertex_set : *vertex_sets->second) {
-					if (vertex_set->is_opencsg_vertex_set)
-					{
-						if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-							glUniform3f(shaderinfo->data.select_rendering.identifier,
-									((vertex_set->identifier >> 0) & 0xff) / 255.0f,
-									((vertex_set->identifier >> 8) & 0xff) / 255.0f, ((vertex_set->identifier >> 16) & 0xff) / 255.0f);
-						}
-											
-						if (!vertex_set->draw_cull_front && !vertex_set->draw_cull_back) {
-							draw_surface(*vertex_set, shaderinfo, true);
-						}
-						if (vertex_set->draw_cull_front) {
-							glEnable(GL_CULL_FACE); // cull face
-							glCullFace(GL_FRONT);
-							draw_surface(*vertex_set, shaderinfo, true);
-							glDisable(GL_CULL_FACE);
-						}
-						if (vertex_set->draw_cull_back) {
-							glEnable(GL_CULL_FACE); // cull face
-							glCullFace(GL_BACK);
-							draw_surface(*vertex_set, shaderinfo, true);
-							glDisable(GL_CULL_FACE);
-						}
-					}
-				}
-
-				glBindBuffer(GL_ARRAY_BUFFER,0);
-
-				if (shaderinfo) glUseProgram(0);
-				for(auto &p : primitives) delete p;
-				glDepthFunc(GL_LEQUAL);
 			}
+
+			if (primitives.size() > 1) {
+				OpenCSG::render(primitives);
+				glDepthFunc(GL_EQUAL);
+			}
+			if (shaderinfo && shaderinfo->progid) glUseProgram(shaderinfo->progid);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertex_sets.first);
+			for(const auto &vertex_set : *vertex_sets.second) {
+				if (vertex_set->is_opencsg_vertex_set)
+				{
+					if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+						glUniform3f(shaderinfo->data.select_rendering.identifier,
+								((vertex_set->identifier >> 0) & 0xff) / 255.0f,
+								((vertex_set->identifier >> 8) & 0xff) / 255.0f, ((vertex_set->identifier >> 16) & 0xff) / 255.0f);
+					}
+										
+					if (!vertex_set->draw_cull_front && !vertex_set->draw_cull_back) {
+						draw_surface(*vertex_set, shaderinfo, true);
+					}
+					if (vertex_set->draw_cull_front) {
+						glEnable(GL_CULL_FACE); // cull face
+						glCullFace(GL_FRONT);
+						draw_surface(*vertex_set, shaderinfo, true);
+						glDisable(GL_CULL_FACE);
+					}
+					if (vertex_set->draw_cull_back) {
+						glEnable(GL_CULL_FACE); // cull face
+						glCullFace(GL_BACK);
+						draw_surface(*vertex_set, shaderinfo, true);
+						glDisable(GL_CULL_FACE);
+					}
+				}
+			}
+
+			glBindBuffer(GL_ARRAY_BUFFER,0);
+
+			if (shaderinfo) glUseProgram(0);
+			for(auto &p : primitives) delete p;
+			glDepthFunc(GL_LEQUAL);
 		}
 	}
 

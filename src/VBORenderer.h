@@ -36,7 +36,9 @@ public:
 		GLbyte mask[3];
 	};
 
-	typedef std::pair<GLuint, std::vector<VertexSet *> *> VertexSets;
+	typedef std::vector<std::unique_ptr<VertexSet>> VertexSets;
+	typedef std::pair<GLuint, std::unique_ptr<VertexSets>> VBOVertexSets;
+	typedef std::vector<VBOVertexSets> ProductVertexSets;
 
 public:
 	VBORenderer();

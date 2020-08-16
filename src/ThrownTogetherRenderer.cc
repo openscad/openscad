@@ -34,7 +34,7 @@
 ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
 						shared_ptr<CSGProducts> highlight_products,
 						shared_ptr<CSGProducts> background_products)
-	: product_vertex_sets(new std::vector<VertexSets *>()),
+	: product_vertex_sets(std::make_shared<ProductVertexSets>()),
 	  root_products(root_products), highlight_products(highlight_products), background_products(background_products)
 {
 }
@@ -43,15 +43,10 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 {
 	if (product_vertex_sets) {
 		for (auto &vertex_sets : *product_vertex_sets) {
-			glDeleteBuffers(1,&vertex_sets->first);
-			for (auto &vertex_set : *vertex_sets->second) {
-				delete vertex_set;
-			}
-			vertex_sets->second->clear();
-			delete vertex_sets;
+			glDeleteBuffers(1,&vertex_sets.first);
+			vertex_sets.second->clear();
 		}
 		product_vertex_sets->clear();
-		delete product_vertex_sets;
 	}
 }
 
@@ -62,7 +57,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 
 void ThrownTogetherRenderer::draw_with_shader(const Renderer::shaderinfo_t *shaderinfo, bool showedges) const {
 
-	if (shaderinfo) glUseProgram(shaderinfo->progid);
+	if (shaderinfo && shaderinfo->progid) glUseProgram(shaderinfo->progid);
 
 	PRINTD("Thrown draw");
 	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
@@ -80,7 +75,7 @@ void ThrownTogetherRenderer::draw_with_shader(const Renderer::shaderinfo_t *shad
 		if (this->highlight_products)
 		 	renderCSGProducts(this->highlight_products, shaderinfo, true, false, showedges, false);
 	} else {
-		if (!getProductVertexSets().size()) {
+		if (!getProductVertexSets()->size()) {
 			if (this->root_products)
 				createCSGProducts(*this->root_products, false, false);
 			if (this->background_products)
@@ -89,7 +84,7 @@ void ThrownTogetherRenderer::draw_with_shader(const Renderer::shaderinfo_t *shad
 				createCSGProducts(*this->highlight_products, true, false);
 		}
 
-		renderCSGProducts(nullptr, shaderinfo);
+		renderCSGProducts(std::make_shared<CSGProducts>(), shaderinfo);
 		
 	}
 	if (shaderinfo) glUseProgram(0);
@@ -118,7 +113,8 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, con
 	glPushMatrix();
 	glMultMatrixd(m.data());
 	render_surface(csgobj.leaf->geom, csgmode, m, shaderinfo);
-	if (showedges) {
+	// only use old render_edges if there is no shader progid
+	if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
 		// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 		setColor(edge_colormode);
 		render_edges(csgobj.leaf->geom, csgmode);
@@ -127,7 +123,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject &csgobj, con
 
 }
 
-void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts> products, const Renderer::shaderinfo_t *shaderinfo,
+void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts> &products, const Renderer::shaderinfo_t *shaderinfo,
 						bool highlight_mode, bool background_mode, bool showedges,
 						bool fberror) const
 {
@@ -146,37 +142,35 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 		}
 	} else {
 		for(const auto &vertex_sets : *product_vertex_sets) {
-			if (vertex_sets) {
-				glBindBuffer(GL_ARRAY_BUFFER, vertex_sets->first);
-				for(const auto &vertex_set : *vertex_sets->second) {
-					if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-						glUniform3f(shaderinfo->data.select_rendering.identifier, ((vertex_set->identifier >> 0) & 0xff) / 255.0f,
-											((vertex_set->identifier >> 8) & 0xff) / 255.0f, ((vertex_set->identifier >> 16) & 0xff) / 255.0f);
-					}
-					if (!vertex_set->draw_cull_front && !vertex_set->draw_cull_back) {
-						draw_surface(*vertex_set, shaderinfo, true);
-					}
-					if (vertex_set->draw_cull_front) {
-						glEnable(GL_CULL_FACE); // cull face
-						glCullFace(GL_FRONT);
-						draw_surface(*vertex_set, shaderinfo, true);
-						glDisable(GL_CULL_FACE);
-					}
-					if (vertex_set->draw_cull_back) {
-						glEnable(GL_CULL_FACE); // cull face
-						glCullFace(GL_BACK);
-						draw_surface(*vertex_set, shaderinfo, true);
-						glDisable(GL_CULL_FACE);
-					}
+			glBindBuffer(GL_ARRAY_BUFFER, vertex_sets.first);
+			for(const auto &vertex_set : *vertex_sets.second) {
+				if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+					glUniform3f(shaderinfo->data.select_rendering.identifier, ((vertex_set->identifier >> 0) & 0xff) / 255.0f,
+										((vertex_set->identifier >> 8) & 0xff) / 255.0f, ((vertex_set->identifier >> 16) & 0xff) / 255.0f);
 				}
-
-				glBindBuffer(GL_ARRAY_BUFFER,0);
+				if (!vertex_set->draw_cull_front && !vertex_set->draw_cull_back) {
+					draw_surface(*vertex_set, shaderinfo, true);
+				}
+				if (vertex_set->draw_cull_front) {
+					glEnable(GL_CULL_FACE); // cull face
+					glCullFace(GL_FRONT);
+					draw_surface(*vertex_set, shaderinfo, true);
+					glDisable(GL_CULL_FACE);
+				}
+				if (vertex_set->draw_cull_back) {
+					glEnable(GL_CULL_FACE); // cull face
+					glCullFace(GL_BACK);
+					draw_surface(*vertex_set, shaderinfo, true);
+					glDisable(GL_CULL_FACE);
+				}
 			}
+
+			glBindBuffer(GL_ARRAY_BUFFER,0);
 		}		
 	}
 }
 
-void ThrownTogetherRenderer::createChainObject(std::vector<VertexSet *> &vertex_sets, std::vector<Vertex> &render_buffer,
+void ThrownTogetherRenderer::createChainObject(VertexSets &vertex_sets, std::vector<Vertex> &render_buffer,
                                                const class CSGChainObject &csgobj, bool highlight_mode,
                                                bool background_mode, bool fberror, OpenSCADOperator type) const
 {
@@ -187,7 +181,7 @@ void ThrownTogetherRenderer::createChainObject(std::vector<VertexSet *> &vertex_
 	if (csgobj.leaf->geom) {
 		if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
-		prev = (vertex_sets.empty() ? 0 : vertex_sets.back());
+		prev = (vertex_sets.empty() ? 0 : vertex_sets.back().get());
 		vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
 		GLintptr prev_start_offset = 0;
 		GLsizei prev_draw_size = 0;
@@ -214,9 +208,9 @@ void ThrownTogetherRenderer::createChainObject(std::vector<VertexSet *> &vertex_
 			this->create_surface(csgobj.leaf->geom,
 			render_buffer, *vertex_set, prev_start_offset, prev_draw_size,
 			csgmode, csgobj.leaf->matrix, color);
-			vertex_sets.push_back(vertex_set);
+			vertex_sets.push_back(std::unique_ptr<VertexSet>(vertex_set));
 
-			prev = (vertex_sets.empty() ? 0 : vertex_sets.back());
+			prev = (vertex_sets.empty() ? 0 : vertex_sets.back().get());
 			vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
 			if (prev) {
 				prev_start_offset = prev->start_offset;
@@ -230,7 +224,7 @@ void ThrownTogetherRenderer::createChainObject(std::vector<VertexSet *> &vertex_
 			render_buffer, *vertex_set, prev_start_offset, prev_draw_size,
 			csgmode, csgobj.leaf->matrix, color);
 		}
-		vertex_sets.push_back(vertex_set);
+		vertex_sets.push_back(std::unique_ptr<VertexSet>(vertex_set));
 	}
 }
 
@@ -240,14 +234,14 @@ void ThrownTogetherRenderer::createCSGProducts(const CSGProducts &products,
 	PRINTD("Thrown renderCSGProducts");
 	this->geomVisitMark.clear();
 
-	std::vector<Vertex> *render_buffer = new std::vector<Vertex>();
-	std::vector<VertexSet *> *vertex_sets = 0;
+	std::unique_ptr<std::vector<Vertex>> render_buffer = std::make_unique<std::vector<Vertex>>();
+	std::unique_ptr<std::vector<std::unique_ptr<VertexSet>>> vertex_sets;
 	GLuint vbo;
 
 	if (render_buffer) {
 		for(const auto &product : products.products) {
 			if (product.intersections.size() || product.subtractions.size()) {
-				vertex_sets = new std::vector<VertexSet *>();
+				vertex_sets = std::make_unique<std::vector<std::unique_ptr<VertexSet>>>();
 				if (vertex_sets) {
 					for(const auto &csgobj : product.intersections) {
 						createChainObject(*vertex_sets, *render_buffer, csgobj, highlight_mode, background_mode, false, OpenSCADOperator::INTERSECTION);
@@ -258,7 +252,7 @@ void ThrownTogetherRenderer::createCSGProducts(const CSGProducts &products,
 					if (render_buffer->size()) {
 						glGenBuffers(1, &vbo);
 
-						product_vertex_sets->push_back(new VertexSets(vbo,vertex_sets));
+						product_vertex_sets->emplace_back(vbo,std::move(vertex_sets));
 						glBindBuffer(GL_ARRAY_BUFFER, vbo);
 						glBufferData(GL_ARRAY_BUFFER, render_buffer->size()*sizeof(Vertex), render_buffer->data(), GL_STATIC_DRAW);
 						glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -268,7 +262,6 @@ void ThrownTogetherRenderer::createCSGProducts(const CSGProducts &products,
 			}
 		}
 	}
-	delete render_buffer;
 }
 
 Renderer::ColorMode ThrownTogetherRenderer::getColorMode(const CSGNode::Flag &flags, bool highlight_mode,

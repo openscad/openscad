@@ -217,14 +217,15 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     if (${DISABLED} EQUAL -1)
 
-      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL)
+      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
 
-      if (${EXPERIMENTAL} EQUAL -1)
+      if (${EXPERIMENTAL_TEST} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=function-literals")
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+	set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -260,6 +261,13 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+
+      # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
+      if (EXPERIMENTAL)
+        if (${TESTCMD_EXE} MATCHES "^.*openscad$")
+	  set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
+	endif()
+      endif()
 
       # debug message
       #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
