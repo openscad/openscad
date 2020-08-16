@@ -153,7 +153,7 @@ static bool with_output(const std::string &filename, F f, std::ios::openmode mod
 		f(std::cout);
 		return true;
 	}
-	std::ofstream fstream(filename);
+	std::ofstream fstream(filename, mode);
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", filename.c_str());
 		return false;
