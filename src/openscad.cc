@@ -391,12 +391,14 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	}
 
 	text += "\n\x03\n" + commandline_commands;
-	if (!parse(root_module, text, filename, filename, false)) {
-		delete root_module;  // parse failed
+
+	std::string parser_filename = filename == "-" ? "<stdin>" : filename;
+	if (!parse(root_module, text, parser_filename, parser_filename, false)) {
+		delete root_module; // parse failed
 		root_module = nullptr;
 	}
 	if (!root_module) {
-		PRINTB("Can't parse file '%s'!\n", filename.c_str());
+		PRINTB("Can't parse file '%s'!\n", parser_filename.c_str());
 		return 1;
 	}
 
