@@ -627,6 +627,18 @@ disable_tests(
 
 )
 
+# Disable LIB3MF tests if library was disabled in build
+if(NOT LIB3MF_FOUND)
+	disable_tests(
+		opencsgtest_import_3mf-tests
+		cgalpngtest_import_3mf-tests
+		csgpngtest_import_3mf-tests
+		throwntogethertest_import_3mf-tests
+		3mfpngtest_cube10
+		3mfexport_3mf-export
+	)
+endif()
+
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
