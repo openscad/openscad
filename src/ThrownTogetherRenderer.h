@@ -20,9 +20,9 @@ public:
 	BoundingBox getBoundingBox() const override;
 private:
 	void createCSGProducts(const CSGProducts &products, bool highlight_mode, bool background_mode) const;
-	void renderCSGProducts(const shared_ptr<CSGProducts> products, const Renderer::shaderinfo_t *, bool highlight_mode = false, bool background_mode = false, bool showedges = false,
+	void renderCSGProducts(const shared_ptr<CSGProducts> &products, const Renderer::shaderinfo_t *, bool highlight_mode = false, bool background_mode = false, bool showedges = false,
 				bool fberror = false) const;
-	void createChainObject(std::vector<VertexSet *> &vertex_sets, std::vector<Vertex> &render_buffer,
+	void createChainObject(VertexSets &vertex_sets, std::vector<Vertex> &render_buffer,
 				const class CSGChainObject &csgobj, bool highlight_mode, bool background_mode,
 				bool fberror, OpenSCADOperator type) const;
 	void renderChainObject(const class CSGChainObject &csgobj, const Renderer::shaderinfo_t *, bool highlight_mode,
@@ -31,10 +31,9 @@ private:
 	Renderer::ColorMode getColorMode(const CSGNode::Flag &flags, bool highlight_mode,
 	                                 bool background_mode, bool fberror, OpenSCADOperator type) const;
 					 
-	inline const std::vector<VertexSets *> &getProductVertexSets() const { return *product_vertex_sets; }
+	inline const shared_ptr<ProductVertexSets> &getProductVertexSets() const { return product_vertex_sets; }
 
-	std::vector<VertexSets *> *product_vertex_sets;
-
+	shared_ptr<ProductVertexSets> product_vertex_sets;
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlight_products;
 	shared_ptr<CSGProducts> background_products;

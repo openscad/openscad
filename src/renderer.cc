@@ -14,6 +14,9 @@
 Renderer::Renderer() : colorscheme(nullptr)
 {
 	PRINTD("Renderer() start");
+
+	renderer_shader.progid = 0;
+
 	// Setup default colors
 	// The main colors, MATERIAL and CUTOUT, come from this object's
 	// colorscheme. Colorschemes don't currently hold information
@@ -31,7 +34,6 @@ Renderer::Renderer() : colorscheme(nullptr)
 
 	setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-#ifdef ENABLE_OPENCSG
 	/*
 	Uniforms:
 	1 color1 - face color
@@ -102,18 +104,73 @@ Renderer::Renderer() : colorscheme(nullptr)
 	"    gl_FragColor = color2;\n"
 	"}\n";
 
+	GLint status;
+	GLenum err;
 	auto vs = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
 	glCompileShader(vs);
+	err = glGetError();
+	if (err != GL_NO_ERROR) {
+		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+		return;
+	}
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE) {
+		int loglen;
+		char logbuffer[1000];
+		glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
+		PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
+		return;
+	}
 
 	auto fs = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
 	glCompileShader(fs);
+	err = glGetError();
+	if (err != GL_NO_ERROR) {
+		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+		return;
+	}
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE) {
+		int loglen;
+		char logbuffer[1000];
+		glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
+		PRINTDB("OpenGL Program Compile Fragement Shader Error:\n%s", logbuffer);
+		return;
+	}
 
 	auto edgeshader_prog = glCreateProgram();
 	glAttachShader(edgeshader_prog, vs);
 	glAttachShader(edgeshader_prog, fs);
 	glLinkProgram(edgeshader_prog);
+
+	err = glGetError();
+	if (err != GL_NO_ERROR) {
+		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+		return;
+	}
+
+	glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE) {
+		int loglen;
+		char logbuffer[1000];
+		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+		PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
+		return;
+	}
+	
+	int loglen;
+	char logbuffer[1000];
+	glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+	if (loglen > 0) {
+		PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
+	}
+	glValidateProgram(edgeshader_prog);
+	glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+	if (loglen > 0) {
+		PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
+	}
 
 	renderer_shader.progid = edgeshader_prog; // 0
 	renderer_shader.type = CSG_RENDERING;
@@ -126,32 +183,6 @@ Renderer::Renderer() : colorscheme(nullptr)
 	renderer_shader.data.csg_rendering.xscale = glGetUniformLocation(edgeshader_prog, "xscale"); // 7
 	renderer_shader.data.csg_rendering.yscale = glGetUniformLocation(edgeshader_prog, "yscale"); // 8
 
-	auto err = glGetError();
-	if (err != GL_NO_ERROR) {
-		fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-	}
-
-	GLint status;
-	glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
-	} else {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
-		}
-		glValidateProgram(edgeshader_prog);
-		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
-		}
-	}
-#endif // ENABLE_OPENCSG
 	PRINTD("Renderer() end");
 }
 
