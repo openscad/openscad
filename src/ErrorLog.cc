@@ -36,7 +36,7 @@ void ErrorLog::initGUI()
 
 void ErrorLog::toErrorLog(const Message &log_msg)
 {
-	if(log_msg.group==message_group::None) return;
+	if(log_msg.group==message_group::None || log_msg.group==message_group::Echo) return;
 	QString temp = QString::fromStdString(log_msg.msg+log_msg.file+log_msg.file);
 	if(!logsMap.contains(temp))
 	{
@@ -45,41 +45,9 @@ void ErrorLog::toErrorLog(const Message &log_msg)
 	}
 }
 
-QString ErrorLog::getGroupName(const enum message_group &groupName)
-{
-	switch (groupName)
-	{
-	case message_group::Warning:
-		return QString::fromStdString("Warning");
-		break;
-	case message_group::Error:
-		return QString::fromStdString("Error");
-		break;
-	case message_group::UI_Warning:
-		return QString::fromStdString("UI_Warning");
-		break;
-	case message_group::Font_Warning:
-		return QString::fromStdString("Font_Warning");
-		break;
-	case message_group::Export_Warning:
-		return QString::fromStdString("Export_Warning");
-		break;
-	case message_group::Export_Error:
-		return QString::fromStdString("Export_Error");
-		break;
-	case message_group::Parser_Error:
-		return QString::fromStdString("Parser_Error");
-		break;
-	default:
-		break;
-	}
-	return QString();
-}
-
-
 void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 {
-	QStandardItem* groupName = new QStandardItem(getGroupName(log_msg.group));
+	QStandardItem* groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
 	errorLogModel->setItem(row,0,groupName);
 	QStandardItem* fileName = new QStandardItem(QString::fromStdString(log_msg.file));
 	errorLogModel->setItem(row,1,fileName);

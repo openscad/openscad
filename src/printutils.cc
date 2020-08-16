@@ -75,10 +75,10 @@ void print_messages_pop()
 }
 
 
-void PRINTTMP(const std::string &msg)
-{
+// void PRINTTMP(const std::string &msg)
+// {
 
-}
+// }
 
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
@@ -150,7 +150,7 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower(lowdebug);
 	if (OpenSCAD::debug=="all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
-		//PRINT_NOCACHE( shortfname+": "+ msg );
+		PRINT_NOCACHE( message_group::None,shortfname+": "+ msg ,"");
 	}
 }
 

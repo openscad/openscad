@@ -92,7 +92,7 @@ namespace /* anonymous*/ {
 
 ValuePtr Expression::checkUndef(ValuePtr&& val, const std::shared_ptr<Context>& context) const {
 	if (val->isUncheckedUndef())
-		PRINTB("WARNING: %s %s", val->toUndefString() % loc.toRelativeString(context->documentPath()));
+		LOG(boostfs_uncomplete(loc.filePath(),context->documentPath()).generic_string(),loc.firstLine(),getFormatted("%1$s %2$s",val->toUndefString()),message_group::Warning);
 	return val;
 }
 

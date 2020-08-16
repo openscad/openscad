@@ -21,7 +21,6 @@ public:
 	void refEditor(EditorInterface *o);
 	void toErrorLog(const Message &log_msg);
 	void showtheErrorInGUI(const Message &log_msg);
-	QString getGroupName(const enum message_group &groupName);
 	void clearModel();
 	int getLine(int row,int col);
 	QStandardItemModel* errorLogModel;

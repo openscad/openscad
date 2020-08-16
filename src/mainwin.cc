@@ -3093,6 +3093,8 @@ void MainWindow::consoleOutput(const enum message_group &msg_group,const QString
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
 	} else if (msg_group==message_group::Trace) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+	} else if(msg_group==message_group::Echo) {
+		this->console->appendPlainText(QString::fromStdString(getGroupName(msg_group)+":")+msg);
 	} else {
 		this->console->appendPlainText(msg);
 	}
