@@ -166,7 +166,7 @@ void OctoPrint::slice(const QString fileUrl, const QString slicer, const QString
 			[](QNetworkReply *reply) {
 				const auto doc = QJsonDocument::fromJson(reply->readAll());
 				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-				//PRINT("Slice command successfully executed.");
+				LOG("",-1,"Slice command successfully executed.",message_group::None);
 			}
 	);
 }

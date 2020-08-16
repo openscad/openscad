@@ -86,7 +86,7 @@ AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) 
 	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 
 #if 0 && DEBUG
-	//PRINT("New eval ctx:");
+	LOG("",-1,"New eval ctx:",message_group::None);
 	c.dump(nullptr, this);
 #endif
 	try{

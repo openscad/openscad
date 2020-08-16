@@ -55,7 +55,7 @@ static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 
 static void export_3mf_error(const std::string msg, PLib3MFModel *&model)
 {
-	//PRINT(msg);
+	LOG("",-1,msg,message_group::None);
 	if (model) {
 		lib3mf_release(model);
 		model = nullptr;
@@ -111,12 +111,13 @@ static bool append_polyset(const PolySet &ps, PLib3MFModelMeshObject *&model)
 static bool append_nef(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject *&model)
 {
 	if (!root_N.p3) {
-		//PRINT("EXPORT-ERROR: Export failed, empty geometry.");
+		LOG("",-1,"Export failed, empty geometry.",message_group::Export_Error);
 		return false;
 	}
 
 	if (!root_N.p3->is_simple()) {
 		//"EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair");
+		LOG("",-1,"Exported object may not be a valid 2-manifold and may need repair",message_group::Export_Warning);
 	}
 
 	PolySet ps{3};
@@ -162,7 +163,7 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
 	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
 	if (result != LIB3MF_OK) {
-		//PRINT("EXPORT-ERROR: Error reading 3MF library version");
+		LOG("",-1,"Error reading 3MF library version",message_group::Export_Error);
 		return;
 	}
 
@@ -174,7 +175,7 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	PLib3MFModel *model;
 	result = lib3mf_createmodel(&model);
 	if (result != LIB3MF_OK) {
-		//PRINT("EXPORT-ERROR: Can't create 3MF model.");
+		LOG("",-1,"Can't create 3MF model.",message_group::Export_Error);
 		return;
 	}
 
@@ -194,7 +195,7 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	lib3mf_release(writer);
 	lib3mf_release(model);
 	if (result != LIB3MF_OK) {
-		//PRINT("EXPORT-ERROR: Error writing 3MF model.");
+		LOG("",-1,"Error writing 3MF model.",message_group::Export_Error);
 	}
 
 
@@ -206,7 +207,7 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 
 void export_3mf(const shared_ptr<const Geometry> &, std::ostream &)
 {
-	//PRINT("Export to 3MF format was not enabled when building the application.");
+	LOG("",-1,"Export to 3MF format was not enabled when building the application.",message_group::None);
 }
 
 #endif // ENABLE_LIB3MF

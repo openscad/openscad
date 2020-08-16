@@ -225,7 +225,7 @@ bool deproject( CGAL_Point_2 &p2, projection_t &projection, CGAL_Plane_3 &plane,
 		p3 = *point_test;
 		return false;
 	}
-	//PRINT("ERROR: deproject failure");
+	LOG("",-1,"Deproject failure",message_group::Error);
 	return true;
 }
 
@@ -421,7 +421,7 @@ namespace CGALUtils {
 				else err = deproject( p2, goodproj, plane, cp2 );
 				if (vertmap.count(p3)) cp3 = vertmap[p3];
 				else err = deproject( p3, goodproj, plane, cp3 );
-				if (err) //PRINT("WARNING: 2d->3d deprojection failure");
+				if (err) LOG("",-1,"2d->3d deprojection failure",message_group::Warning);
 				Polygon tri;
 				tri.push_back(Vector3d(CGAL::to_double(cp1.x()), CGAL::to_double(cp1.y()), CGAL::to_double(cp1.z())));
 				tri.push_back(Vector3d(CGAL::to_double(cp2.x()), CGAL::to_double(cp2.y()), CGAL::to_double(cp2.z())));
@@ -541,7 +541,7 @@ namespace CGALUtils {
 				else err = deproject( p2, goodproj, plane, cp2 );
 				if (vertmap.count(p3)) cp3 = vertmap[p3];
 				else err = deproject( p3, goodproj, plane, cp3 );
-				if (err) //PRINT("WARNING: 2d->3d deprojection failure");
+				if (err) LOG("",-1,"D2d->3d deprojection failure",message_group::Warning);
 				pgon.push_back( cp1 );
 				pgon.push_back( cp2 );
 				pgon.push_back( cp3 );

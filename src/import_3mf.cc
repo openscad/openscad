@@ -81,7 +81,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 	DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
 	HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
 	if (result != LIB3MF_OK) {
-		//PRINT("ERROR: Error reading 3MF library version");
+		LOG("",-1,"Error reading 3MF library version",message_group::Error);
 		return new PolySet(3);
 	}
 

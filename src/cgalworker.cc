@@ -35,10 +35,10 @@ void CGALWorker::work()
 		root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
 	}
 	catch (const ProgressCancelException &e) {
-		//PRINT("Rendering cancelled.");
+		LOG("",-1,"Rendering cancelled.",message_group::None);
 	}
 	catch (const HardWarningException &e) {
-		//PRINT("Rendering cancelled on first warning.");
+		LOG("",-1,"Rendering cancelled on first warning.",message_group::None);
 	}
 
 	emit done(root_geom);

@@ -52,7 +52,7 @@ static int objectid;
 static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		//PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
+		LOG("",-1,"Export failed, the object isn't a valid 2-manifold.",message_group::Export_Warning);
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);

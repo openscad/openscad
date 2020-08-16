@@ -61,7 +61,7 @@ void RenderStatistic::print(const Geometry &geom)
 
 void RenderStatistic::visit(const GeometryList& geomlist)
 {
-  //PRINT("   Top level object is a list of objects:");
+  LOG("",-1,"   Top level object is a list of objects:",message_group::None);
   LOG("",-1,getFormatted("   Objects:     %1$d",
     geomlist.getChildren().size()),
     message_group::None);
@@ -70,7 +70,7 @@ void RenderStatistic::visit(const GeometryList& geomlist)
 void RenderStatistic::visit(const PolySet& ps)
 {
   assert(ps.getDimension() == 3);
-  //PRINT("   Top level object is a 3D object:");
+  LOG("",-1,"   Top level object is a 3D object:",message_group::None);
   LOG("",-1,getFormatted("   Facets:     %1$6d",
     ps.numFacets()),
     message_group::None);
@@ -78,7 +78,7 @@ void RenderStatistic::visit(const PolySet& ps)
 
 void RenderStatistic::visit(const Polygon2d& poly)
 {
-  //PRINT("   Top level object is a 2D object:");
+  LOG("",-1,"   Top level object is a 2D object:",message_group::None);
   LOG("",-1,getFormatted("   Contours:     %1$6d",
     poly.outlines().size()),
     message_group::None);
@@ -89,7 +89,7 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
 {
   if (Nef.getDimension() == 3) {
     bool simple = Nef.p3->is_simple();
-    //PRINT("   Top level object is a 3D object:");
+    LOG("",-1,"   Top level object is a 3D object:",message_group::None);
     LOG("",-1,getFormatted("   Simple:     %6s",(simple ? "yes" : "no")),message_group::None);
     LOG("",-1,getFormatted("   Vertices:     %1$6d",Nef.p3->number_of_vertices()),message_group::None);
     LOG("",-1,getFormatted("   Halfedges:     %1$6d",Nef.p3->number_of_halfedges()),message_group::None);
@@ -98,7 +98,7 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
     LOG("",-1,getFormatted("   Facets:     %1$6d",Nef.p3->number_of_facets()),message_group::None);
     LOG("",-1,getFormatted("   Volumes:     %1$6d",Nef.p3->number_of_volumes()),message_group::None);
     if (!simple) {
-      //PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair!");
+      LOG("",-1,"Object may not be a valid 2-manifold and may need repair!",message_group::UI_Warning);
     }
   }
 }

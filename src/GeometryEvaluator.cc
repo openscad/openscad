@@ -71,8 +71,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				if (!N->isEmpty()) {
 					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
 					if (err) {
-						//PRINT("ERROR: Nef->PolySet failed");
-					}
+						LOG("",-1,"Nef->PolySet failed.",message_group::Error);					}
 				}
 			}
 
@@ -289,7 +288,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
-				//PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
+				LOG("",-1,"GeometryEvaluator: Node didn't fit into cache.",message_group::Warning);
 			}
 		}
 	}
@@ -1118,7 +1117,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 							PolySet *ps = new PolySet(3);
                             bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
 							if (err) {
-								//PRINT("ERROR: Nef->PolySet failed");
+								LOG("",-1,"Nef->PolySet failed",message_group::Error);
 							}
 							else {
 								chPS.reset(ps);

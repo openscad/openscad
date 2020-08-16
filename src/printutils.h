@@ -37,7 +37,7 @@ int msg_id;
 enum message_group group;
 };
 
-typedef void (OutputHandlerFunc)(const enum message_group &msg_group,const std::string &msg, void *userdata);
+typedef void (OutputHandlerFunc)(const enum message_group &msg_group,const std::string &msg,const std::string &loc,void *userdata);
 typedef void (OutputHandlerFunc2)(const Message &msg, void *userdata);
 
 extern OutputHandlerFunc *outputhandler;
@@ -67,13 +67,12 @@ void resetSuppressedMessages();
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
 void PRINTTMP(const std::string &msg);
-void PRINT(const enum message_group &msg_group,const std::string &msg);
+void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
 #define PRINTB(_fmt, _arg) do { PRINTTMP(str(boost::format(_fmt) % _arg)); } while (0)
 
 void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
-// void LOG(const Message &msg);
 
-void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg);
+void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
 #define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
 // #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 

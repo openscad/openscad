@@ -129,7 +129,7 @@ FontCache::FontCache()
 	// Just load the configs. We'll build the fonts once all configs are loaded
 	this->config = FcInitLoadConfig();
 	if (!this->config) {
-		//PRINT("FONT-WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
+		LOG("",-1,"Can't initialize fontconfig library, text() objects will not be rendered",message_group::Font_Warning);
 		return;
 	}
 
@@ -174,7 +174,7 @@ FontCache::FontCache()
 
 	const FT_Error error = FT_Init_FreeType(&this->library);
 	if (error) {
-		//PRINT("FONT-WARNING: Can't initialize freetype library, text() objects will not be rendered");
+		LOG("",-1,"Can't initialize freetype library, text() objects will not be rendered",message_group::Font_Warning);
 		return;
 	}
 

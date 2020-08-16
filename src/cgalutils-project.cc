@@ -215,7 +215,7 @@ namespace CGALUtils {
 				
 			if (!newN.p3 || newN.p3->is_empty()) {
 				CGAL::set_error_behaviour(old_behaviour);
-				//PRINT("WARNING: projection() failed.");
+				LOG("",-1,"Projection() failed.",message_group::Warning);
 				return poly;
 			}
 				
@@ -249,7 +249,7 @@ namespace CGALUtils {
 			PolySet ps(3);
 			bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
 			if (err) {
-				//PRINT("ERROR: Nef->PolySet failed");
+				LOG("",-1,"Nef->PolySet failed",message_group::Error);
 				return poly;
 			}
 			poly = PolysetUtils::project(ps);

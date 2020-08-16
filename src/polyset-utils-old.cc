@@ -237,6 +237,6 @@ namespace PolysetUtils {
 					outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
 			}
 		}
-		if (degeneratePolygons > 0) //PRINT("WARNING: PolySet has degenerate polygons");
+		if (degeneratePolygons > 0) LOG("",-1,"PolySet has degenerate polygons",message_group::Warning);
 	}
 }

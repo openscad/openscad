@@ -27,7 +27,7 @@ public:
 		std::vector<shared_ptr<CSGNode> > highlightNodes = evaluator.getHighlightNodes();
 		std::vector<shared_ptr<CSGNode> > backgroundNodes = evaluator.getBackgroundNodes();
 
-		//PRINT("Compiling design (CSG Products normalization)...");
+		LOG("",-1,"Compiling design (CSG Products normalization)...",message_group::None);
 		CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
 		if (csgRoot) {
 			shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
@@ -38,7 +38,7 @@ public:
 			}
 			else {
 				this->root_products.reset();
-				//PRINT("WARNING: CSG normalization resulted in an empty tree");
+				LOG("",-1,"CSG normalization resulted in an empty tree",message_group::Warning);
 			}
 		}
 

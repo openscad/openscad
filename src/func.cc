@@ -128,7 +128,7 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		double numresultsd = std::abs( v2->toDouble() );
 		if (std::isinf(numresultsd)  || std::isnan(numresultsd)) {
 			LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("rands() cannot create an infinite number of results"),message_group::Warning);
-			//PRINT("WARNING: resetting number of results to 1");
+			LOG("",-1,"Resetting number of results to 1",message_group::Warning);
 			numresultsd = 1;
 		}
 		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );

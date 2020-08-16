@@ -155,7 +155,7 @@ void localization_init() {
 		bind_textdomain_codeset("openscad", "UTF-8");
 		textdomain("openscad");
 	} else {
-		//PRINT("Could not initialize localization.");
+		LOG("",-1,"Could not initialize localization.",message_group::None);
 	}
 }
 
@@ -173,11 +173,10 @@ Camera get_camera(const po::variables_map &vm)
 				camera.setup(cam_parameters);
 			}
 			catch (bad_lexical_cast &) {
-				//PRINT("Camera setup requires numbers as parameters");
+				LOG("",-1,"Camera setup requires numbers as parameters",message_group::None);
 			}
 		} else {
-			//PRINT("Camera setup requires either 7 numbers for Gimbal Camera");
-			//PRINT("or 6 numbers for Vector Camera");
+			LOG("",-1,"Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera",message_group::None);
 			exit(1);
 		}
 	}
@@ -203,7 +202,7 @@ Camera get_camera(const po::variables_map &vm)
 			camera.projection = Camera::ProjectionType::PERSPECTIVE;
 		}
 		else {
-			//PRINT("projection needs to be 'o' or 'p' for ortho or perspective\n");
+			LOG("",-1,"projection needs to be 'o' or 'p' for ortho or perspective\n",message_group::None);
 			exit(1);
 		}
 	}
@@ -214,7 +213,7 @@ Camera get_camera(const po::variables_map &vm)
 		vector<string> strs;
 		boost::split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			//PRINT("Need 2 numbers for imgsize");
+			LOG("",-1,"Need 2 numbers for imgsize",message_group::None);
 			exit(1);
 		} else {
 			try {
@@ -222,7 +221,7 @@ Camera get_camera(const po::variables_map &vm)
 				h = lexical_cast<int>(strs[1]);
 			}
 			catch (bad_lexical_cast &) {
-				//PRINT("Need 2 numbers for imgsize");
+				LOG("",-1,"Need 2 numbers for imgsize",message_group::None);
 			}
 		}
 	}
@@ -244,7 +243,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		return false;
 	}
 	if (root_geom->isEmpty()) {
-		//PRINT("Current top level object is empty.");
+		LOG("",-1,"Current top level object is empty.",message_group::None);
 		return false;
 	}
 	exportFileByName(root_geom, format, filename, filename);
@@ -264,7 +263,8 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 	if (exit_if_not_found) {
 		// PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		//PRINT(boost::join(ColorMap::inst()->colorSchemeNames(), "\n"));
+		LOG("",-1,(boost::join(ColorMap::inst()->colorSchemeNames(), "\n")),message_group::None);
+
 		exit(1);
 	} else {
 		// PRINTB("Unknown color scheme '%s', using default '%s'.", arg_colorscheme % ColorMap::inst()->defaultColorSchemeName());
@@ -301,7 +301,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 			formatName = suffix;
 		} else {
 			// PRINTB("\nUnknown suffix '%s' for output file %s", suffix % output_file_str);
-			//PRINT("Either add a valid suffix or specify one using --export-format\n");
+			LOG("",-1,"Either add a valid suffix or specify one using --export-format\n",message_group::None);
 			return 1;
 		}
 	}
@@ -397,7 +397,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		std::string geom_out(output_file);
 		int result = write_deps(deps_out, geom_out);
 		if (!result) {
-			//PRINT("error writing deps");
+			LOG("",-1,"Error writing deps",message_group::None);
 			return 1;
 		}
 	}
@@ -469,7 +469,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 					} else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
 						root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
 					}
-					//PRINT("Converted to Nef polyhedron");
+					LOG("",-1,"Converted to Nef polyhedron",message_group::None);
 				}
 			} else {
 				root_geom.reset(new CGAL_Nef_polyhedron());
@@ -521,7 +521,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		}
 
 #else
-		//PRINT("OpenSCAD has been compiled without CGAL support!\n");
+		LOG("",-1,"OpenSCAD has been compiled without CGAL support!\n",message_group::None);
 		return 1;
 #endif
 
@@ -773,7 +773,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 bool QtUseGUI() { return false; }
 int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
-	//PRINT("Error: compiled without QT, but trying to run GUI\n");
+	LOG("",-1,"Compiled without QT, but trying to run GUI\n",message_group::Error);
 	return 1;
 }
 #endif // OPENSCAD_QTGUI
@@ -1079,12 +1079,12 @@ int main(int argc, char **argv)
 	}
 	else if (QtUseGUI()) {
 		if(vm.count("export-format")) {
-			//PRINT("Ignoring --export-format option");
+			LOG("",-1,"Ignoring --export-format option",message_group::None);
 		}
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
-		//PRINT("Requested GUI mode but can't open display!\n");
+		LOG("",-1,"Requested GUI mode but can't open display!\n",message_group::None);
 		return 1;
 	}
 

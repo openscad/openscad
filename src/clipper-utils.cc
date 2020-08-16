@@ -41,7 +41,7 @@ namespace ClipperUtils {
 		  // Most likely caught a RangeTest exception from clipper
 		  // Note that Clipper up to v6.2.1 incorrectly throws
 			// an exception of type char* rather than a clipperException()
-		  //PRINT("WARNING: Range check failed for polygon. skipping");
+			LOG("",-1,"Range check failed for polygon. skipping",message_group::Warning);
 		}
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;

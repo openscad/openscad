@@ -80,7 +80,7 @@ void PRINTTMP(const std::string &msg)
 
 }
 
-void PRINT(const enum message_group &msg_group,const std::string &msg)
+void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
 	if (msg.empty()) return;
 	if (print_messages_stack.size() > 0) {
@@ -89,10 +89,10 @@ void PRINT(const enum message_group &msg_group,const std::string &msg)
 		}
 		print_messages_stack.back() += msg;
 	}
-	PRINT_NOCACHE(msg_group,msg);
+	PRINT_NOCACHE(msg_group,msg,loc);
 }
 
-void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg)
+void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
 	if (msg.empty()) return;
 
@@ -109,7 +109,7 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg)
 			if (!outputhandler) {
 				fprintf(stderr, "%s\n", msg.c_str());
 			} else {
-				outputhandler(msg_group,msg,outputhandler_data);
+				outputhandler(msg_group,msg,loc,outputhandler_data);
 			}
 		}
 	if(!std::current_exception()) {
@@ -125,7 +125,10 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg)
 void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
 {
 		//to console
-		PRINT(msg_group,msg);
+
+		std::string loc = file.length()>0?file+",":file;
+		loc += line>0?std::to_string(line):"";
+		PRINT(msg_group,msg,loc);
 
 		//to error log
 		if (!outputhandler2) {

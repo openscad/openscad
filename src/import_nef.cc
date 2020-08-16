@@ -29,7 +29,7 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 		f >> *(N->p3);
 	} catch (const CGAL::Failure_exception &e) {
 		LOG("",loc.firstLine(),getFormatted("Failure trying to import '%1$s', import()",filename),message_group::Warning);
-		//PRINT(e.what());
+		LOG("",-1,e.what(),message_group::None);
 		N = new CGAL_Nef_polyhedron;
 	}
 	CGAL::set_error_behaviour(old_behaviour);

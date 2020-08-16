@@ -36,6 +36,7 @@ void ErrorLog::initGUI()
 
 void ErrorLog::toErrorLog(const Message &log_msg)
 {
+	if(log_msg.group==message_group::None) return;
 	QString temp = QString::fromStdString(log_msg.msg+log_msg.file+log_msg.file);
 	if(!logsMap.contains(temp))
 	{
