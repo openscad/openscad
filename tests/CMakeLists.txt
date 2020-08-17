@@ -847,7 +847,9 @@ add_custom_target(svg_viewbox_tests ALL
 
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
-add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+if (WIN32)
+  add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+endif()
 list(SUBLIST CGALPNGTEST_FILES 0 1 CGALPNGSTDIOTEST_FILES)
 add_cmdline_test(cgalpngstdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format png --render -o SUFFIX png STDIN true STDOUT true EXPECTEDDIR cgalpngtest FILES
                                    ${CGALPNGSTDIOTEST_FILES})

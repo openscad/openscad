@@ -80,11 +80,12 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
 	const char *name2open, const char *name2display)
 {
+#ifndef WIN32
 	if (strcmp(name2open, "-") == 0) {
-		// TODO: on windows, is cout okay for binary?
 		exportFile(root_geom, std::cout, format);
 		return;
 	}
+#endif
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
 	if (format == FileFormat::_3MF || format == FileFormat::STL) {
 		mode |= std::ios::binary;

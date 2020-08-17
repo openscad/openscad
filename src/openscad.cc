@@ -149,10 +149,18 @@ static int info()
 template <typename F>
 static bool with_output(const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
 {
+#ifdef WIN32
+    // Windows does not like binary output on stdout
+	if (filename == "-" && mode & std::ios::binary == 0) {
+		f(std::cout);
+		return true;
+	}
+#else
 	if (filename == "-") {
 		f(std::cout);
 		return true;
 	}
+#endif
 	std::ofstream fstream(filename, mode);
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", filename.c_str());
