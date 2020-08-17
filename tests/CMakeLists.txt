@@ -847,12 +847,12 @@ add_custom_target(svg_viewbox_tests ALL
 
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
-if (WIN32)
-  add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
-endif()
-list(SUBLIST CGALPNGTEST_FILES 0 1 CGALPNGSTDIOTEST_FILES)
-add_cmdline_test(cgalpngstdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format png --render -o SUFFIX png STDIN true STDOUT true EXPECTEDDIR cgalpngtest FILES
+add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+if (NOT WIN32)
+  list(SUBLIST CGALPNGTEST_FILES 0 1 CGALPNGSTDIOTEST_FILES)
+  add_cmdline_test(cgalpngstdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format png --render -o SUFFIX png STDIN true STDOUT true EXPECTEDDIR cgalpngtest FILES
                                    ${CGALPNGSTDIOTEST_FILES})
+endif()
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
