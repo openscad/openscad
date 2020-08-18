@@ -563,22 +563,28 @@ const Geometry *PrimitiveNode::createGeometry() const
 		auto p = new PolySet(3);
 		g = p;
 		p->setConvexity(this->convexity);
-		for (size_t i=0; i<this->faces->toVector().size(); ++i)	{
+		const auto &pts = this->points->toVector();
+		size_t face_i = 0;
+		for (const auto &face : this->faces->toVector())	{
 			p->append_poly();
-			const auto &vec = this->faces->toVector()[i]->toVector();
-			for (size_t j=0; j<vec.size(); ++j) {
-				size_t pt = (size_t)vec[j]->toDouble();
-				if (pt < this->points->toVector().size()) {
+			size_t fp_i = 0;
+			for (const auto &pt_i_val : face->toVector()) {
+				size_t pt_i = (size_t)pt_i_val->toDouble();
+				if (pt_i < pts.size()) {
 					double px, py, pz;
-					if (!this->points->toVector()[pt]->getVec3(px, py, pz, 0.0) ||
+					if (!pts[pt_i]->getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
 						LOG(boostfs_uncomplete(this->modinst->location().filePath(),this->document_path).generic_string(),this->modinst->location().firstLine(),
-							getFormatted("Unable to convert point at index %1$d to a vec3 of numbers",j),message_group::Error);
+							getFormatted("Unable to convert points[%1$d] = %2$s to a vec3 of numbers",pt_i,pts[pt_i]->toEchoString()),message_group::Error);
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
+				} else {
+					PRINTB("WARNING: Point index %d is out of bounds (from faces[%d][%d]), %s", pt_i % face_i % fp_i % this->modinst->location().toRelativeString(this->document_path));
 				}
+				fp_i++;
 			}
+			face_i++;
 		}
 	}
 		break;
@@ -621,34 +627,38 @@ const Geometry *PrimitiveNode::createGeometry() const
 	case primitive_type_e::POLYGON:	{
 			auto p = new Polygon2d();
 			g = p;
-
 			Outline2d outline;
 			double x,y;
-			const auto &vec = this->points->toVector();
-			for (unsigned int i=0; i<vec.size(); ++i) {
-				const auto &val = *vec[i];
-				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
+			size_t i = 0;
+			for (const auto &val : this->points->toVector()) {
+				if (!val->getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					LOG(boostfs_uncomplete(this->modinst->location().filePath(),this->document_path).generic_string(),this->modinst->location().firstLine(),
-						getFormatted("Unable to convert point %1$s at index %2$d to a vec2 of numbers",val.toEchoString(),i),message_group::Error);
+						getFormatted("Unable to convert points[%d] = %s to a vec2 of numbers",i,val->toEchoString()),message_group::Error);
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
+				i++;
 			}
 
 			if (this->paths->toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
+				size_t path_i = 0;
 				for (const auto &polygon : this->paths->toVector()) {
 					Outline2d curroutline;
+					size_t path_pt_i = 0;
 					for (const auto &index : polygon->toVector()) {
 						unsigned int idx = (unsigned int)index->toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
+						} else {
+							PRINTB("WARNING: Point index %d is out of bounds (from paths[%d][%d]), %s", idx % path_i % path_pt_i % this->modinst->location().toRelativeString(this->document_path));
 						}
-						// FIXME: Warning on out of bounds?
+						++path_pt_i;
 					}
 					p->addOutline(curroutline);
+					++path_i;
 				}
 			}
 
