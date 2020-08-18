@@ -69,7 +69,7 @@ void resetSuppressedMessages();
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINTTMP(const std::string &msg);
+void PRINTTMP(const std::string &msg); //just temporarily here [************Must Remove]
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
 #define PRINTB(_fmt, _arg) do { PRINTTMP(str(boost::format(_fmt) % _arg)); } while (0)
 

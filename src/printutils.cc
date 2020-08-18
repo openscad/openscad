@@ -75,10 +75,10 @@ void print_messages_pop()
 }
 
 
-// void PRINTTMP(const std::string &msg)
-// {
+void PRINTTMP(const std::string &msg)
+{
 
-// }
+}
 
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
@@ -87,7 +87,8 @@ void PRINT(const enum message_group &msg_group,const std::string &msg,const std:
 		if (!print_messages_stack.back().empty()) {
 			print_messages_stack.back() += "\n";
 		}
-		print_messages_stack.back() += msg;
+		if(msg_group!=message_group::None) print_messages_stack.back() += getGroupName(msg_group)+":"+msg;
+		else print_messages_stack.back() += msg;
 	}
 	PRINT_NOCACHE(msg_group,msg,loc);
 }
@@ -205,34 +206,34 @@ std::string getGroupName(const enum message_group &groupName)
 	switch (groupName)
 	{
 	case message_group::Warning:
-		return group="Warning";
+		return group="WARNING";
 		break;
 	case message_group::Error:
-		return group="Error";
+		return group="ERROR";
 		break;
 	case message_group::UI_Warning:
-		return group="UI_Warning";
+		return group="UI-WARNING";
 		break;
 	case message_group::Font_Warning:
-		return group="Font_Warning";
+		return group="FONT-WARNING";
 		break;
 	case message_group::Export_Warning:
-		return group="Export_Warning";
+		return group="EXPORT-WARNING";
 		break;
 	case message_group::Export_Error:
-		return group="Export_Error";
+		return group="EXPORT-ERROR";
 		break;
 	case message_group::Parser_Error:
-		return group="Parser_Error";
+		return group="PARSER-ERROR";
 		break;
 	case message_group::Trace:
-		return group="Trace";
+		return group="TRACE";
 		break;
 	case message_group::Deprecated:
-		return group="Deprecated";
+		return group="DEPRECATED";
 		break;
 	case message_group::Echo:
-		return group="Echo";
+		return group="ECHO";
 		break;
 	default:
 		break;
