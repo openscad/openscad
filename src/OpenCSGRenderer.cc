@@ -182,7 +182,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highli
 			for(const auto &csgobj : product.intersections) {
 				if (csgobj.leaf->geom && vertex_sets) {
 					prev = (vertex_sets->empty() ? nullptr : vertex_sets->back().get());
-					vertex_set = new VertexSet({true, OpenSCADOperator::INTERSECTION, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
+					vertex_set = new VertexSet({SHADER, true, OpenSCADOperator::INTERSECTION, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, false, false, false, csgobj.leaf->index});
 					GLintptr prev_start_offset = 0;
 					GLsizei prev_draw_size = 0;
 					if (prev) {
@@ -228,7 +228,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, bool highli
 			for(const auto &csgobj : product.subtractions) {
 				if (csgobj.leaf->geom && vertex_sets) {
 					prev = (vertex_sets->empty() ? 0 : vertex_sets->back().get());
-					vertex_set = new VertexSet({true, OpenSCADOperator::DIFFERENCE, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
+					vertex_set = new VertexSet({SHADER, true, OpenSCADOperator::DIFFERENCE, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, false, false, false, csgobj.leaf->index});
 					GLintptr prev_start_offset = 0;
 					GLsizei prev_draw_size = 0;
 					if (prev) {

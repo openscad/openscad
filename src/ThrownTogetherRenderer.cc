@@ -182,7 +182,7 @@ void ThrownTogetherRenderer::createChainObject(VertexSets &vertex_sets, std::vec
 		if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
 		prev = (vertex_sets.empty() ? 0 : vertex_sets.back().get());
-		vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
+		vertex_set = new VertexSet({SHADER, false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, false, false, false, csgobj.leaf->index});
 		GLintptr prev_start_offset = 0;
 		GLsizei prev_draw_size = 0;
 		if (prev) {
@@ -211,7 +211,7 @@ void ThrownTogetherRenderer::createChainObject(VertexSets &vertex_sets, std::vec
 			vertex_sets.push_back(std::unique_ptr<VertexSet>(vertex_set));
 
 			prev = (vertex_sets.empty() ? 0 : vertex_sets.back().get());
-			vertex_set = new VertexSet({false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, csgobj.leaf->index});
+			vertex_set = new VertexSet({SHADER, false, type, csgobj.leaf->geom->getConvexity(), GL_TRIANGLES, 0, 0, false, false, false, false, false, csgobj.leaf->index});
 			if (prev) {
 				prev_start_offset = prev->start_offset;
 				prev_draw_size = prev->draw_size;

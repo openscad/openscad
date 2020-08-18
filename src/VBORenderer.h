@@ -11,8 +11,17 @@
 class VBORenderer : public Renderer
 {
 public:
+	enum VertexType
+	{
+		PC = 1,
+		PNC,
+		SHADER,
+		MAX_VERTEX_TYPE,
+	};
+	
 	struct VertexSet
 	{
+		VertexType vertex_type;
 		bool is_opencsg_vertex_set;
 		OpenSCADOperator operation;
 		unsigned int convexity;
@@ -21,6 +30,9 @@ public:
 		GLintptr start_offset;
 		bool draw_cull_front;
 		bool draw_cull_back;
+		bool change_lighting;
+		bool change_depth_test;
+		bool change_linewidth;
 		int identifier;
 	};
 
@@ -36,6 +48,19 @@ public:
 		GLbyte mask[3];
 	};
 
+	struct PCVertex
+	{
+		GLfloat position[3];
+		GLfloat color[4];
+	};
+
+	struct PNCVertex
+	{
+		GLfloat position[3];
+		GLfloat normal[3];
+		GLfloat color[4];
+	};
+
 	typedef std::vector<std::unique_ptr<VertexSet>> VertexSets;
 	typedef std::pair<GLuint, std::unique_ptr<VertexSets>> VBOVertexSets;
 	typedef std::vector<VBOVertexSets> ProductVertexSets;
@@ -48,11 +73,23 @@ public:
 	virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f &col, Color4f &outcolor) const;
 
 	virtual void create_surface(shared_ptr<const Geometry> geom, std::vector<Vertex> &render_buffer,
-				    VertexSet &vertex_set, GLintptr prev_start_offset, GLsizei prev_draw_size,
-				    csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
+	 			    VertexSet &vertex_set, GLintptr prev_start_offset,
+				    GLsizei prev_draw_size, csgmode_e csgmode, const Transform3d &m,
+				    const Color4f &color) const;
 	virtual void draw_surface(const VertexSet &vertex_set, const Renderer::shaderinfo_t *shaderinfo = nullptr, bool use_color_array = false) const;
-	virtual inline void create_edges(shared_ptr<const Geometry> /* geom */, csgmode_e /* csgmode */) {}
-	virtual inline void draw_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const { render_edges(geom, csgmode); }
+
+	virtual void create_edges(shared_ptr<const Geometry> geom,
+				  std::vector<PCVertex> &render_buffer,
+				  VertexSets &vertex_sets, const VertexSet &template_set,
+				  GLintptr prev_start_offset, GLsizei prev_draw_size,
+				  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
+	virtual void draw_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const;
+	
+	virtual void create_polygons(shared_ptr<const Geometry> geom,
+				  std::vector<PCVertex> &render_buffer,
+				  VertexSets &vertex_sets, const VertexSet &template_set,
+				  GLintptr prev_start_offset, GLsizei prev_draw_size,
+				  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
 
 private:
 	void create_triangle(std::vector<Vertex> &vertices, const Color4f &color,

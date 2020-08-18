@@ -372,6 +372,7 @@ void VBORenderer::create_surface(shared_ptr<const Geometry> geom, std::vector<Ve
 			}
 		}
 
+		vertex_set.draw_type = GL_TRIANGLES;
 		vertex_set.draw_size = render_buffer.size() - render_buffer_start_size;
 		vertex_set.start_offset = 0;
 		if (render_buffer_start_size) {
@@ -414,6 +415,7 @@ void VBORenderer::create_surface(shared_ptr<const Geometry> geom, std::vector<Ve
 			}
 		}
 
+		vertex_set.draw_type = GL_TRIANGLES;
 		vertex_set.draw_size = render_buffer.size() - render_buffer_start_size;
 		vertex_set.start_offset = 0;
 		if (render_buffer_start_size) {
@@ -486,4 +488,204 @@ void VBORenderer::draw_surface(const VertexSet &vertex_set, const Renderer::shad
 		glDisableClientState(GL_NORMAL_ARRAY);
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void VBORenderer::create_edges(shared_ptr<const Geometry> geom, std::vector<PCVertex> &render_buffer,
+				VertexSets &vertex_sets, const VertexSet &template_set,
+				GLintptr prev_start_offset, GLsizei prev_draw_size,
+				csgmode_e csgmode, const Transform3d &m,
+				const Color4f &color) const
+{
+	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+
+	size_t render_buffer_start_size = render_buffer.size();
+
+	if (!ps) return;
+
+	if (ps->getDimension() == 2) {
+		if (csgmode == Renderer::CSGMODE_NONE) {
+			PRINTD("create_edges 2D CSGMODE_NONE");
+			// Render only outlines
+			for (const Outline2d &o : ps->getPolygon().outlines()) {
+				std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
+				(*vs) = template_set;
+
+				for (const Vector2d &v : o.vertices) {
+					Vector3d p0(v[0],v[1],0.0); p0 = m * p0;
+
+					PCVertex vertex = {
+						{(float)p0[0], (float)p0[1], (float)p0[2]},
+						{color[0], color[1], color[2], color[3]},
+					};
+					render_buffer.push_back(vertex);
+				}
+				vs->draw_type = GL_LINE_LOOP;
+				vs->draw_size = render_buffer.size() - render_buffer_start_size;
+				vs->start_offset = 0;
+				if (render_buffer_start_size) {
+					vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
+				}
+
+				render_buffer_start_size = render_buffer.size();
+				prev_start_offset = vs->start_offset;
+				prev_draw_size = vs->draw_size;
+
+				vertex_sets.emplace_back(std::move(vs));
+			}
+			
+		}
+		else {
+			// Render 2D objects 1mm thick, but differences slightly larger
+			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
+
+			for (const Outline2d &o : ps->getPolygon().outlines()) {
+				std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
+				(*vs) = template_set;
+
+				// Render top+bottom outlines
+				for (double z = -zbase/2; z < zbase; z += zbase) {
+					for (const Vector2d &v : o.vertices) {
+						Vector3d p0(v[0],v[1],z); p0 = m * p0;
+
+						PCVertex vertex = {
+							{(float)p0[0], (float)p0[1], (float)p0[2]},
+							{color[0], color[1], color[2], color[3]},
+						};
+						render_buffer.push_back(vertex);
+					}
+				}
+				vs->draw_type = GL_LINE_LOOP;
+				vs->draw_size = render_buffer.size() - render_buffer_start_size;
+				vs->start_offset = 0;
+				if (render_buffer_start_size) {
+					vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
+				}
+
+				render_buffer_start_size = render_buffer.size();
+				prev_start_offset = vs->start_offset;
+				prev_draw_size = vs->draw_size;
+
+				vertex_sets.emplace_back(std::move(vs));
+
+				vs = std::make_unique<VertexSet>();
+				(*vs) = template_set;
+
+				// Render sides
+				for (const Vector2d &v : o.vertices) {
+					Vector3d p0(v[0], v[1], -zbase/2); p0 = m * p0;
+					Vector3d p1(v[0], v[1], +zbase/2); p1 = m * p1;
+					PCVertex vertex = {
+						{(float)p0[0], (float)p0[1], (float)p0[2]},
+						{color[0], color[1], color[2], color[3]},
+					};
+					render_buffer.push_back(vertex);
+					vertex = {
+						{(float)p1[0], (float)p1[1], (float)p1[2]},
+						{color[0], color[1], color[2], color[3]},
+					};
+					render_buffer.push_back(vertex);
+				}
+				vs->draw_type = GL_LINES;
+				vs->draw_size = render_buffer.size() - render_buffer_start_size;
+				vs->start_offset = 0;
+				if (render_buffer_start_size) {
+					vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
+				}
+
+				render_buffer_start_size = render_buffer.size();
+				prev_start_offset = vs->start_offset;
+				prev_draw_size = vs->draw_size;
+
+				vertex_sets.emplace_back(std::move(vs));
+			}
+		}
+	} else if (ps->getDimension() == 3) {
+		std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
+		(*vs) = template_set;
+
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
+			const Polygon *poly = &ps->polygons[i];
+
+			for (size_t j = 0; j < poly->size(); ++j) {
+				const Vector3d &p = m * poly->at(j);
+				PCVertex vertex = {
+					{(float)p[0], (float)p[1], (float)p[2]},
+					{color[0], color[1], color[2], color[3]},
+				};
+				render_buffer.push_back(vertex);
+			}
+		}
+		vs->draw_type = GL_LINE_LOOP;
+		vs->draw_size = render_buffer.size() - render_buffer_start_size;
+		vs->start_offset = 0;
+		if (render_buffer_start_size) {
+			vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
+		}
+		
+		vertex_sets.emplace_back(std::move(vs));
+	}
+	else {
+		assert(false && "Cannot render object with no dimension");
+	}
+}
+
+void VBORenderer::draw_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const
+{
+	render_edges(geom, csgmode);
+}
+
+void VBORenderer::create_polygons(shared_ptr<const Geometry> geom,
+				  std::vector<PCVertex> &render_buffer,
+				  VertexSets &vertex_sets, const VertexSet &template_set,
+				  GLintptr prev_start_offset, GLsizei prev_draw_size,
+				  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
+{
+	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+
+	if (!ps) return;
+
+	PRINTD("create_polygons");
+	if (ps->getDimension() == 2) {
+		// Draw 2D polygons
+		size_t render_buffer_start_size = render_buffer.size();
+
+		for (const auto &polygon : ps->polygons) {
+			PRINTD("creating polygon");
+			std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
+			(*vs) = template_set;
+			
+			PRINTDB("vs pointer = %p, template_set = %p", vs.get() % &template_set);
+
+			for (const auto &p : polygon) {
+				Vector3d p0(p[0], p[1], 0.0); p0 = m * p0;
+
+				PRINTDB("creating point [%f, %f, %f]", p0[0] % p0[1] % p0[2]);
+
+				PCVertex vertex = {
+					{(float)p0[0], (float)p0[1], (float)p0[2]},
+					{color[0], color[1], color[2], color[3]},
+				};
+				render_buffer.push_back(vertex);
+			}
+			
+			vs->draw_type = GL_POLYGON;
+			vs->draw_size = render_buffer.size() - render_buffer_start_size;
+			vs->start_offset = 0;
+			if (render_buffer_start_size) {
+				vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
+			}
+
+			PRINTDB("draw size %d", vs->draw_size);
+			PRINTDB("start_offset %d", vs->start_offset);
+
+			render_buffer_start_size = render_buffer.size();
+			prev_start_offset = vs->start_offset;
+			prev_draw_size = vs->draw_size;
+
+			vertex_sets.emplace_back(std::move(vs));
+			PRINTDB("vertex_sets.size = %d", vertex_sets.size());
+		}
+	} else {
+		assert(false && "Cannot render object with no dimension");
+	}
 }
