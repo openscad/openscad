@@ -154,7 +154,7 @@ bool PlatformUtils::createBackupPath()
 	std::string path = PlatformUtils::backupPath();
 	bool OK = false;
 	try {
-		if (!fs::exists(fs::path(path))) {
+        if (!fs::exists(fs::path(path))) {
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
