@@ -4,6 +4,7 @@
 #include "printutils.h"
 #include "memory.h"
 #include "cgalutils.h"
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 #if BOOST_VERSION > 105800
 

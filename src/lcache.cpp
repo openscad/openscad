@@ -6,7 +6,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/filesystem.hpp>
-#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 #include "PlatformUtils.h"
 #include "printutils.h"
