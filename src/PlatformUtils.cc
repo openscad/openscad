@@ -173,7 +173,7 @@ std::string PlatformUtils::localCachePath() {
         if (pathstr=="") return "";
         path = fs::path( pathstr );
         if (!fs::exists(path)) return "";
-        path = boosty::canonical( path );
+        path = fs::canonical( path );
         if (path.empty()) return "";
         path /= OPENSCAD_FOLDER_NAME;
         path /= "cache";
