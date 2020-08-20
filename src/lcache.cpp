@@ -31,7 +31,7 @@ bool LCache::insert(const std::string& key, const std::string& serializedgeom) {
     fs::path new_path = fs::path(path) / fs::path(hased_file);
 
     if(!fs::exists(new_path)){
-        std::ofstream fstream(new_path.c_str());
+        std::ofstream fstream(new_path.string());
         fstream << serializedgeom;
         fstream.close();
     } else {
@@ -44,13 +44,15 @@ bool LCache::get(const std::string &key, std::string &serializedgeom) {
     std::string hased_file = getHash(key);
     fs::path new_path = fs::path(path) / fs::path(hased_file);
 
-    std::ifstream fstream(new_path.c_str());
+    std::ifstream fstream(new_path.string());
     if(!fstream.is_open()) {
         PRINTDB("Cannot open Cache file: %s", key);
+        fstream.close();
         return false;
     }
     std::string data((std::istreambuf_iterator<char>(fstream)), std::istreambuf_iterator<char>());
     serializedgeom = data;
+    fstream.close();
     return true;
 }
 
