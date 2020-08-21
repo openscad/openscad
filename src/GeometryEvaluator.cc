@@ -756,18 +756,19 @@ static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 /*
 	Compare Euclidean length of vectors
 	Return:
-		-1 : if v1  > v2
+		-1 : if v1  < v2
 		 0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
-		 1 : if v1  < v2
+		 1 : if v1  > v2
 */
 int sgn_vdiff(const Vector2d &v1, const Vector2d &v2) {
 	constexpr double ratio_threshold = 1e5; // 10ppm difference
 	double l1 = v1.norm();
 	double l2 = v2.norm();
-	// If ratio of avg vector length / difference is large enough, they are considered equal.
-	// Use ratio so that threshold is basically independent of geometry scale.
-	double diff_ratio = (l1+l2)/(2*fabs(l2-l1));
-	return (diff_ratio > ratio_threshold) ? 0 : (l1 < l2) ? 1 : -1;
+	// Compare the average and difference, to be independent of geometry scale.
+	// If the difference is within ratio_threshold of the avg, treat as equal.
+	double scale = (l1+l2);
+	double diff = 2*std::fabs(l1-l2)*ratio_threshold;
+	return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
 }
 
 /*
@@ -810,7 +811,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 
 			int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
-			bool splitfirst = diff_sign==1 || (diff_sign == 0 && !flip);
+			bool splitfirst = diff_sign == -1 || (diff_sign == 0 && !flip);
 
 // Enable/Disable testing of 4-way split quads, with added midpoint.
 // These look very nice when(and only when) diagonals are near equal.
@@ -930,7 +931,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		if ((node.scale_x == 1.0 && node.scale_y == 1.0) || node.scale_x != node.scale_y) {
 			slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
 		} else { // uniform scaling with twist, use conical helix calculation
-			slices = (unsigned int)Calc::get_conical_helix_slices(sqrt(max_r1_sqr), node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
+			slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
 		}
 	} else if (node.scale_x != node.scale_y) {
 		// Non uniform scaling, w/o twist

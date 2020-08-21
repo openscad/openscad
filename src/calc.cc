@@ -55,7 +55,6 @@ int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
 	Where (twist*PI/180) is just twist in radians, aka "T"
 */
 static double helix_arc_length(double r_sqr, double height, double twist) {
-	// FIXME: What if twist + scale (and even non-uniform scale) ?
 	double T = twist * M_DEG2RAD;
 	double c = height / T;
 	return T * sqrt(r_sqr + c*c);
@@ -77,7 +76,7 @@ int Calc::get_helix_slices(double r_sqr, double height, double twist, double fn,
 		return std::max(fn_slices, min_slices);
 	}
 	int fa_slices = static_cast<int>(ceil(twist / fa));
-	int fs_slices = static_cast<int>(helix_arc_length(r_sqr, height, twist) / fs);
+	int fs_slices = static_cast<int>(ceil(helix_arc_length(r_sqr, height, twist) / fs));
 	return std::max(std::min(fa_slices, fs_slices), min_slices);
 }
 
@@ -94,9 +93,9 @@ static double archimedes_length(double a, double theta) {
 	return 0.5*a*(theta*sqrt(1+theta*theta)+asinh(theta));
 }
 
-int Calc::get_conical_helix_slices(double r, double height, double twist, double scale, double fn, double fs, double fa) {
+int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, double scale, double fn, double fs, double fa) {
 	twist = fabs(twist);
-
+	double r = sqrt(r_sqr);
 	int min_slices = std::max(static_cast<int>(ceil(twist / 120.0)), 1);
 	if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return min_slices;
 	if (fn > 0.0) {
