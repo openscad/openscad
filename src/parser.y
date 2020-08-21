@@ -337,10 +337,8 @@ expr
               if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
                 $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               } else {
-                LOG(boostfs_uncomplete(LOCD("literal", @$).filePath(),mainFilePath.parent_path()).generic_string(),
-                LOCD("literal", @$).firstLine(),
-                getFormatted("Support for function literals is disabled"),
-                message_group::Warning);
+                LOG(message_group::Warning,LOCD("literal", @$),mainFilePath.parent_path().generic_string(),
+                "Support for function literals is disabled");
                 $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
               }
               delete $3;
@@ -692,7 +690,8 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  LOG(sourcefile()->string(),lexerget_lineno(),s,message_group::Error);
+  Location loc = Location(lexerget_lineno(),-1,-1,-1,sourcefile());
+  LOG(message_group::Error,loc,"","Parser error in file %1$s, line %2$d: %3$s\n",(*sourcefile()), lexerget_lineno(), s);
 }
 
 #ifdef DEBUG
@@ -719,27 +718,20 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {
 				//both assignments in the mainFile
-				LOG(loc.fileName(),
-					loc.firstLine(),
-					getFormatted("%1$s was assigned on line %2$i but was overwritten",assignment->getName(),assignment->location().firstLine()),
-					message_group::Warning);
+				LOG(message_group::Warning,loc,"","%1$s was assigned on line %2$i but was overwritten on line %3$i",
+          assignment->getName(),assignment->location().firstLine(),loc.firstLine());
 			} else if (uncPathCurr == uncPathPrev) {
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times
 				if (assignment->location().firstLine() != loc.firstLine()) {
-				LOG(loc.fileName(),
-					loc.firstLine(),
-					getFormatted("%1$s was assigned on line %2$i of %3$s but was overwritten",
-          assignment->getName(),assignment->location().firstLine(),uncPathPrev),
-					message_group::Warning);
+				LOG(message_group::Warning,loc,"",
+          "%1$s was assigned on line %2$i of %3$s but was overwritten on line %4$i",
+          assignment->getName(),assignment->location().firstLine(),uncPathPrev,loc.firstLine());
 				}
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
-				LOG(uncPathCurr.generic_string(),
-					loc.firstLine(),
-					getFormatted("%1$s was assigned on line %2$i of %3$s but was overwritten",
-          assignment->getName(),assignment->location().firstLine(),uncPathPrev),
-					message_group::Warning);
+				LOG(message_group::Warning,loc,"","%1$s was assigned on line %2$i of %3$s but was overwritten on line %4$i of %5$s",
+          assignment->getName(),assignment->location().firstLine(),uncPathPrev,loc.firstLine(),uncPathCurr);
 			}
 			assignment->setExpr(shared_ptr<Expression>(expr));
 			assignment->setLocation(loc);

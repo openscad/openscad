@@ -46,8 +46,8 @@ void GeometryCache::setMaxSizeMB(size_t limit)
 
 void GeometryCache::print()
 {
-	LOG("",-1,getFormatted("Geometries in cache: %1$d",this->cache.size()),message_group::None);
-	LOG("",-1,getFormatted("Geometry cache size in bytes: %1$d",this->cache.totalCost()),message_group::None);
+	LOG(message_group::None,Location::NONE,"","Geometries in cache: %1$d",this->cache.size());
+	LOG(message_group::None,Location::NONE,"","Geometry cache size in bytes: %1$d",this->cache.totalCost());
 }
 
 GeometryCache::cache_entry::cache_entry(const shared_ptr<const Geometry> &geom)

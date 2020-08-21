@@ -94,7 +94,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		{
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
-				LOG("",-1,getFormatted("Can't open library file '%1$s'\n",filename),message_group::Warning);
+				LOG(message_group::Warning,Location::NONE,"","Can't open library file '%1$s'\n",filename);
 				return 0;
 			}
 			text = STR(ifs.rdbuf() << "\n\x03\n" << commandline_commands);

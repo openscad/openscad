@@ -79,8 +79,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
-				LOG(boostfs_uncomplete(inst.location().filePath(),ctx->documentPath()).generic_string(),inst.location().firstLine(),
-					getFormatted("Bad range parameter in for statement: too many elements (%1$lu)",steps),message_group::Warning);
+				LOG(message_group::Warning,inst.location(),ctx->documentPath(),
+					"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 			} else {
 				for (double val : range) {
 					c->set_variable(it_name, ValuePtr(val));
@@ -143,24 +143,24 @@ AbstractNode* ControlModule::getChild(const ValuePtr &value, const std::shared_p
 	if (value->type()!=Value::Type::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
-		LOG("",-1,getFormatted("Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toString()),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toString());
 		return nullptr;
 	}
 	double v;
 	if (!value->getDouble(v)) {
-		LOG("",-1,getFormatted("Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toString()),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toString());
 		return nullptr;
 	}
 
 	int n = static_cast<int>(trunc(v));
 	if (n < 0) {
-		LOG("",-1,getFormatted("Negative children index (%1$d) not allowed",n),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Negative children index (%1$d) not allowed",n);
 		return nullptr; // Disallow negative child indices
 	}
 	if (n >= static_cast<int>(modulectx->numChildren())) {
 		// How to deal with negative objects in this case?
 		// (e.g. first child of difference is invalid)
-		LOG("",-1,getFormatted("Children index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren()),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Children index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
 		return nullptr;
 	}
 	// OK
@@ -180,8 +180,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			if (evalctx->getArgValue(0)->getDouble(v)) {
 				n = trunc(v);
 				if (n < 0) {
-					LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),
-						getFormatted("Negative child index (%1$d) not allowed",n),message_group::Warning);
+					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+						"Negative child index (%1$d) not allowed",n);
 					return nullptr; // Disallow negative child indices
 				}
 			}
@@ -200,8 +200,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		else {
 			// How to deal with negative objects in this case?
 			// (e.g. first child of difference is invalid)
-			LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),
-				getFormatted("Child index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren()),message_group::Warning);
+			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+				"Child index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
 		}
 		return node;
 	}
@@ -249,8 +249,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= RangeType::MAX_RANGE_STEPS) {
-					LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),
-						getFormatted("Bad range parameter for children: too many elements (%1$lu)",steps),message_group::Warning);
+					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+						"Bad range parameter for children: too many elements (%1$lu)",steps);
 					return nullptr;
 				}
 				AbstractNode* node;
@@ -266,8 +266,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			else {
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
-				LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),
-					getFormatted("Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toEchoString()),message_group::Warning);
+				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+					"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toEchoString());
 				return nullptr;
 			}
 		}
@@ -278,7 +278,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	case Type::ECHO: {
 		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 		else node = new GroupNode(inst, evalctx);
-		LOG("",-1,STR(*evalctx),message_group::Echo);
+		LOG(message_group::Echo,Location::NONE,"",STR(*evalctx));
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);

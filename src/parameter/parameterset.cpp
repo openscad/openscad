@@ -83,7 +83,7 @@ bool ParameterSet::readParameterSet(const std::string &filename)
 		return true;
 	}
 	catch (const pt::json_parser_error &e) {
-		LOG("",-1,getFormatted("Cannot open Parameter Set '%1$s': %2$s",filename,e.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Cannot open Parameter Set '%1$s': %2$s",filename,e.what());
 	}
 	return false;
 }
@@ -96,7 +96,7 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 		pt::write_json(filename, this->root);
 	}
 	catch (const pt::json_parser_error &e) {
-		LOG("",-1,getFormatted("Cannot write Parameter Set '%1$s': %2$s",filename,e.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Cannot write Parameter Set '%1$s': %2$s",filename,e.what());
 	}
 }
 
@@ -128,7 +128,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		}
 	}
 	catch (std::exception const& e) {
-		LOG("",-1,getFormatted("Cannot apply Parameter Set '%1$s'",e.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Cannot apply Parameter Set '%1$s'",e.what());
 	}
 }
 

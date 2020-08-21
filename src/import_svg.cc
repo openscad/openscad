@@ -159,7 +159,7 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 		}
 		return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
 	} catch (const std::exception& e) {
-		LOG("",loc.firstLine(),getFormatted("%1$s, import()",e.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s, import() at line %2$d",e.what(),loc.firstLine());
 		return new Polygon2d();
 	}
 }

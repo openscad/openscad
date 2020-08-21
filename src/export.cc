@@ -86,7 +86,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 	}
 	std::ofstream fstream(name2open, mode);
 	if (!fstream.is_open()) {
-		LOG("",-1,getFormatted("Can't open file \"%1$s\" for export",name2display),message_group::None);
+		LOG(message_group::None,Location::NONE,"","Can't open file \"%1$s\" for export",name2display);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
@@ -101,7 +101,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat fo
 			onerror = true;
 		}
 		if (onerror) {
-			LOG("",-1,getFormatted("\"%1$s\" write error. (Disk full?)",name2display),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","\"%1$s\" write error. (Disk full?)",name2display);
 		}
 	}
 }

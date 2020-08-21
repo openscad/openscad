@@ -43,7 +43,7 @@ void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 		output << N->dump();
 	}
 	else {
-		LOG("",-1,"Not a CGALNefPoly. Add some CSG ops?",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Not a CGALNefPoly. Add some CSG ops?");
 	}
 }
 
@@ -53,7 +53,7 @@ void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output)
 		output << *(N->p3);
 	}
 	else {
-		LOG("",-1,"Not a CGALNefPoly. Add some CSG ops?",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Not a CGALNefPoly. Add some CSG ops?");
 	}
 }
 #endif

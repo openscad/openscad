@@ -69,7 +69,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 	addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
 	addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
     } catch (const std::exception & e) {
-			LOG(path.generic_string().c_str(),-1,getFormatted("Error reading color scheme file: %1$s",e.what()),message_group::Error);
+			LOG(message_group::None,Location::NONE,"","Error reading color scheme file: '%1$s': %2$s",path.generic_string().c_str(),e.what());
 	_error = e.what();
 	_name = "";
 	_index = 0;

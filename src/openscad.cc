@@ -99,11 +99,11 @@ class Echostream : public std::ofstream
 {
 public:
 	Echostream(const char * filename) : std::ofstream(filename) {
-		// set_output_handler( &Echostream::output, this );
+		set_output_handler( &Echostream::output, this );
 	}
-	static void output(const std::string &msg, void *userdata) {
+	static void output(const enum message_group &msg_group,const std::string &msg,const std::string &loc, void *userdata) {
 		auto thisp = static_cast<Echostream*>(userdata);
-		*thisp << msg << "\n";
+		*thisp << getGroupName(msg_group) <<msg << loc<<"\n";
 	}
 	~Echostream() {
 		this->close();
@@ -155,7 +155,7 @@ void localization_init() {
 		bind_textdomain_codeset("openscad", "UTF-8");
 		textdomain("openscad");
 	} else {
-		LOG("",-1,"Could not initialize localization.",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Could not initialize localization.");
 	}
 }
 
@@ -173,10 +173,10 @@ Camera get_camera(const po::variables_map &vm)
 				camera.setup(cam_parameters);
 			}
 			catch (bad_lexical_cast &) {
-				LOG("",-1,"Camera setup requires numbers as parameters",message_group::None);
+				LOG(message_group::None,Location::NONE,"","Camera setup requires numbers as parameters");
 			}
 		} else {
-			LOG("",-1,"Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera",message_group::None);
+			LOG(message_group::None,Location::NONE,"","Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera");
 			exit(1);
 		}
 	}
@@ -202,7 +202,7 @@ Camera get_camera(const po::variables_map &vm)
 			camera.projection = Camera::ProjectionType::PERSPECTIVE;
 		}
 		else {
-			LOG("",-1,"projection needs to be 'o' or 'p' for ortho or perspective\n",message_group::None);
+			LOG(message_group::None,Location::NONE,"","projection needs to be 'o' or 'p' for ortho or perspective\n");
 			exit(1);
 		}
 	}
@@ -213,7 +213,7 @@ Camera get_camera(const po::variables_map &vm)
 		vector<string> strs;
 		boost::split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			LOG("",-1,"Need 2 numbers for imgsize",message_group::None);
+			LOG(message_group::None,Location::NONE,"","Need 2 numbers for imgsize");
 			exit(1);
 		} else {
 			try {
@@ -221,7 +221,7 @@ Camera get_camera(const po::variables_map &vm)
 				h = lexical_cast<int>(strs[1]);
 			}
 			catch (bad_lexical_cast &) {
-				LOG("",-1,"Need 2 numbers for imgsize",message_group::None);
+				LOG(message_group::None,Location::NONE,"","Need 2 numbers for imgsize");
 			}
 		}
 	}
@@ -243,7 +243,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		return false;
 	}
 	if (root_geom->isEmpty()) {
-		LOG("",-1,"Current top level object is empty.",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Current top level object is empty.");
 		return false;
 	}
 	exportFileByName(root_geom, format, filename, filename);
@@ -263,7 +263,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 	if (exit_if_not_found) {
 		// PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
-		LOG("",-1,(boost::join(ColorMap::inst()->colorSchemeNames(), "\n")),message_group::None);
+		LOG(message_group::None,Location::NONE,"",(boost::join(ColorMap::inst()->colorSchemeNames(), "\n")));
 
 		exit(1);
 	} else {
@@ -301,7 +301,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 			formatName = suffix;
 		} else {
 			// PRINTB("\nUnknown suffix '%s' for output file %s", suffix % output_file_str);
-			LOG("",-1,"Either add a valid suffix or specify one using --export-format\n",message_group::None);
+			LOG(message_group::None,Location::NONE,"","Either add a valid suffix or specify one using --export-format\n");
 			return 1;
 		}
 	}
@@ -397,7 +397,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		std::string geom_out(output_file);
 		int result = write_deps(deps_out, geom_out);
 		if (!result) {
-			LOG("",-1,"Error writing deps",message_group::None);
+			LOG(message_group::None,Location::NONE,"","Error writing deps");
 			return 1;
 		}
 	}
@@ -469,7 +469,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 					} else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
 						root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
 					}
-					LOG("",-1,"Converted to Nef polyhedron",message_group::None);
+					LOG(message_group::None,Location::NONE,"","Converted to Nef polyhedron");
 				}
 			} else {
 				root_geom.reset(new CGAL_Nef_polyhedron());
@@ -521,7 +521,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		}
 
 #else
-		LOG("",-1,"OpenSCAD has been compiled without CGAL support!\n",message_group::None);
+		LOG(message_group::None,Location::NONE,"","OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
 #endif
 
@@ -773,7 +773,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 bool QtUseGUI() { return false; }
 int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
-	LOG("",-1,"Compiled without QT, but trying to run GUI\n",message_group::Error);
+	LOG(message_group::Error,Location::NONE,"","Compiled without QT, but trying to run GUI\n");
 	return 1;
 }
 #endif // OPENSCAD_QTGUI
@@ -1079,12 +1079,12 @@ int main(int argc, char **argv)
 	}
 	else if (QtUseGUI()) {
 		if(vm.count("export-format")) {
-			LOG("",-1,"Ignoring --export-format option",message_group::None);
+			LOG(message_group::None,Location::NONE,"","Ignoring --export-format option");
 		}
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
-		LOG("",-1,"Requested GUI mode but can't open display!\n",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Requested GUI mode but can't open display!\n");
 		return 1;
 	}
 

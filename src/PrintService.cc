@@ -36,10 +36,10 @@ PrintService::PrintService()
 	try {
 		init();
 	} catch (const NetworkException& e) {
-		LOG("",-1,getFormatted("%1$s",e.getErrorMessage()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
 	}
 	if (enabled) {
-		LOG("",-1,getFormatted("External print service available: %1$s (upload limit = %2$d MB)",displayName.toStdString(),fileSizeLimitMB),message_group::None);
+		LOG(message_group::None,Location::NONE,"","External print service available: %1$s (upload limit = %2$d MB)",displayName.toStdString(),fileSizeLimitMB);
 	}
 }
 
@@ -142,7 +142,7 @@ const QString PrintService::upload(const QString& fileName, const QString& conte
 					const QString msg = "Could not get data.cartUrl field from response.";
 					throw NetworkException(QNetworkReply::ProtocolFailure, msg);
 				}
-				LOG("",-1,getFormatted("Upload finished, opening URL %1$s.",cartUrl.toStdString()),message_group::None);
+				LOG(message_group::None,Location::NONE,"","Upload finished, opening URL %1$s.",cartUrl.toStdString());
 				return cartUrl;
 			}
 	);

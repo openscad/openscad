@@ -75,9 +75,7 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
 		if (assignment->getExpr()->isLiteral() && this->variables.find(assignment->getName()) != this->variables.end()) {
-			LOG(boostfs_uncomplete(assignment->location().filePath(),this->documentPath()).generic_string(),assignment->location().firstLine(),
-				getFormatted("Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName()),
-				message_group::Warning);
+			LOG(message_group::Warning,assignment->location(),this->documentPath(),"Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName());
 		}
 		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
@@ -91,7 +89,7 @@ shared_ptr<const UserFunction> ModuleContext::findLocalFunction(const std::strin
  	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
 		auto f = this->functions_p->find(name)->second;
 		if (!f->is_enabled()) {
-			LOG("",-1,getFormatted("Experimental builtin function '%1$s' is not enabled.",name),message_group::Warning);
+			LOG(message_group::Warning,Location::NONE,"","Experimental builtin function '%1$s' is not enabled.",name);
 			return nullptr;
 		}
 		return f;
@@ -104,7 +102,7 @@ shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &n
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		auto m = this->modules_p->find(name)->second;
 		if (!m->is_enabled()) {
-			LOG("",-1,getFormatted("Experimental builtin module '%1$s' is not enabled.",name),message_group::Warning);
+			LOG(message_group::Warning,Location::NONE,"","Experimental builtin module '%1$s' is not enabled.",name);
 			return nullptr;
 		}
 		auto replacement = Builtins::instance()->isDeprecated(name);

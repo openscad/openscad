@@ -86,10 +86,10 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 				 std::string(e.what()).find("has_on") != std::string::npos) ||
 				std::string(e.what()).find("ss_plane.has_on(sv_prev->point())") != std::string::npos ||
 				std::string(e.what()).find("ss_circle.has_on(sp)") != std::string::npos) {
-			LOG("",-1,"PolySet has nonplanar faces. Attempting alternate construction",message_group::None);
+			LOG(message_group::None,Location::NONE,"","PolySet has nonplanar faces. Attempting alternate construction");
 			plane_error=true;
 		} else {
-			LOG("",-1,getFormatted("CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what()),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what());
 
 		}
 	}
@@ -103,7 +103,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			LOG("",-1,getFormatted("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what()),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what());
 		}
 	CGAL::set_error_behaviour(old_behaviour);
 	return new CGAL_Nef_polyhedron(N);
@@ -306,7 +306,7 @@ namespace CGALUtils {
 		// 2. Validate mesh (manifoldness)
 		auto unconnected = GeometryUtils::findUnconnectedEdges(polygons);
 		if (unconnected > 0) {
-			LOG("",-1,getFormatted("Non-manifold mesh encountered: %1$d unconnected edges",unconnected),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Non-manifold mesh encountered: %1$d unconnected edges",unconnected);
 		}
 		// 3. Triangulate each face
 		const auto& verts = allVertices.getArray();
@@ -370,7 +370,7 @@ namespace CGALUtils {
 		// 4. Validate mesh (manifoldness)
 		auto unconnected2 = GeometryUtils::findUnconnectedEdges(allTriangles);
 		if (unconnected2 > 0) {
-			LOG("",-1,getFormatted("Non-manifold mesh created: %1$d unconnected edges",unconnected2),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Non-manifold mesh created: %1$d unconnected edges",unconnected2);
 		}
 
 		for (const auto &t : allTriangles) {

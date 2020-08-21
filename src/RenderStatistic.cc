@@ -46,12 +46,11 @@ void RenderStatistic::printCacheStatistic()
 
 void RenderStatistic::printRenderingTime(std::chrono::milliseconds ms)
 {
-  LOG("",-1,getFormatted("Total rendering time: %1$d:%2$02d:%3$02d.%4$03d",
+  LOG(message_group::None,Location::NONE,"","Total rendering time: %1$d:%2$02d:%3$02d.%4$03d",
     (ms.count() /1000/60/60     ),
     (ms.count() /1000/60 % 60   ),
     (ms.count() /1000    % 60   ),
-    (ms.count()          % 1000 )),
-    message_group::None);
+    (ms.count()          % 1000 ));
 }
 
 void RenderStatistic::print(const Geometry &geom)
@@ -61,27 +60,24 @@ void RenderStatistic::print(const Geometry &geom)
 
 void RenderStatistic::visit(const GeometryList& geomlist)
 {
-  LOG("",-1,"   Top level object is a list of objects:",message_group::None);
-  LOG("",-1,getFormatted("   Objects:     %1$d",
-    geomlist.getChildren().size()),
-    message_group::None);
+  LOG(message_group::None,Location::NONE,"","   Top level object is a list of objects:");
+  LOG(message_group::None,Location::NONE,"","   Objects:     %1$d",
+    geomlist.getChildren().size());
 }
 
 void RenderStatistic::visit(const PolySet& ps)
 {
   assert(ps.getDimension() == 3);
-  LOG("",-1,"   Top level object is a 3D object:",message_group::None);
-  LOG("",-1,getFormatted("   Facets:     %1$6d",
-    ps.numFacets()),
-    message_group::None);
+  LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
+  LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",
+    ps.numFacets());
 }
 
 void RenderStatistic::visit(const Polygon2d& poly)
 {
-  LOG("",-1,"   Top level object is a 2D object:",message_group::None);
-  LOG("",-1,getFormatted("   Contours:     %1$6d",
-    poly.outlines().size()),
-    message_group::None);
+  LOG(message_group::None,Location::NONE,"","   Top level object is a 2D object:");
+  LOG(message_group::None,Location::NONE,"","   Contours:     %1$6d",
+    poly.outlines().size());
 }
 
 #ifdef ENABLE_CGAL
@@ -89,16 +85,16 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
 {
   if (Nef.getDimension() == 3) {
     bool simple = Nef.p3->is_simple();
-    LOG("",-1,"   Top level object is a 3D object:",message_group::None);
-    LOG("",-1,getFormatted("   Simple:     %6s",(simple ? "yes" : "no")),message_group::None);
-    LOG("",-1,getFormatted("   Vertices:     %1$6d",Nef.p3->number_of_vertices()),message_group::None);
-    LOG("",-1,getFormatted("   Halfedges:     %1$6d",Nef.p3->number_of_halfedges()),message_group::None);
-    LOG("",-1,getFormatted("   Edges:     %1$6d",Nef.p3->number_of_edges()),message_group::None);
-    LOG("",-1,getFormatted("   Halffacets:     %1$6d",Nef.p3->number_of_halffacets()),message_group::None);
-    LOG("",-1,getFormatted("   Facets:     %1$6d",Nef.p3->number_of_facets()),message_group::None);
-    LOG("",-1,getFormatted("   Volumes:     %1$6d",Nef.p3->number_of_volumes()),message_group::None);
+    LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
+    LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
+    LOG(message_group::None,Location::NONE,"","   Vertices:     %1$6d",Nef.p3->number_of_vertices());
+    LOG(message_group::None,Location::NONE,"","   Halfedges:     %1$6d",Nef.p3->number_of_halfedges());
+    LOG(message_group::None,Location::NONE,"","   Edges:     %1$6d",Nef.p3->number_of_edges());
+    LOG(message_group::None,Location::NONE,"","   Halffacets:     %1$6d",Nef.p3->number_of_halffacets());
+    LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",Nef.p3->number_of_facets());
+    LOG(message_group::None,Location::NONE,"","   Volumes:     %1$6d",Nef.p3->number_of_volumes());
     if (!simple) {
-      LOG("",-1,"Object may not be a valid 2-manifold and may need repair!",message_group::UI_Warning);
+      LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
     }
   }
 }

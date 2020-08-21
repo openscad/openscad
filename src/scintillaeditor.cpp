@@ -87,7 +87,7 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
 		_name = QString::fromStdString(pt.get<std::string>("name"));
 		_index = pt.get<int>("index");
 	} catch (const std::exception & e) {
-		LOG("",-1,getFormatted("Error reading color scheme file '%1$s': %2$s",path.generic_string(),e.what()),message_group::None);
+		LOG(message_group::None,Location::NONE,"","Error reading color scheme file '%1$s': %2$s",path.generic_string(),e.what());
 		_name = "";
 		_index = 0;
 	}
@@ -247,7 +247,7 @@ void ScintillaEditor::addTemplate(const fs::path path)
 
 				templateMap.insert(key, ScadTemplate(content, cursor_offset));
 			} catch (const std::exception & e) {
-				LOG("",-1,getFormatted("Error reading template file '%1$s': %2$s",path.generic_string(),e.what()),message_group::None);
+				LOG(message_group::None,Location::NONE,"","Error reading template file '%1$s': %2$s",path.generic_string(),e.what());
 			}
 		}
 	}

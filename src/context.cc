@@ -112,7 +112,7 @@ void Context::set_variable(const std::string &name, const Value &value)
 void Context::set_constant(const std::string &name, const ValuePtr &value)
 {
 	if (this->constants.find(name) != this->constants.end()) {
-		LOG("",-1,getFormatted("Attempt to modify constant '%1$s'.",name),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Attempt to modify constant '%1$s'.",name);
 	}
 	else {
 		this->constants[name] = value;
@@ -160,7 +160,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 			}
 		}
 		if (!silent) {
-			LOG(boostfs_uncomplete(loc.filePath(),this->documentPath()).generic_string(),loc.firstLine(),getFormatted("Ignoring unknown variable '%1$s'",name),message_group::Warning);
+			LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 		}
 		return ValuePtr::undefined;
 	}
@@ -174,7 +174,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		LOG(boostfs_uncomplete(loc.filePath(),this->documentPath()).generic_string(),loc.firstLine(),getFormatted("Ignoring unknown variable '%1$s'",name),message_group::Warning);
+		LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 	}
 	return ValuePtr::undefined;
 }
@@ -217,7 +217,7 @@ bool Context::has_local_variable(const std::string &name) const
  * @param docPath document path of the root file, used to calculate the relative path
  */
 static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
-	LOG(boostfs_uncomplete(loc.filePath(),docPath).generic_string(),loc.firstLine(),getFormatted("Ignoring unknown %1$s, '%2$s'.",what,name),message_group::Warning);
+	LOG(message_group::Warning,loc,docPath,"Ignoring unknown %1$s, '%2$s'.",what,name);
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const

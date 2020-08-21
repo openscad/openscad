@@ -123,20 +123,29 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,co
 	}
 }
 
-void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
+// void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
+// {
+// 		//to console
+
+// 		std::string loc = file.length()>0?file+",":file;
+// 		loc += line>0?std::to_string(line):"";
+// 		PRINT(msg_group,msg,loc);
+
+// 		//to error log
+// 		if (!outputhandler2) {
+// 		fprintf(stderr, "%s\n", msg.c_str());
+// 		} else {
+// 			Message msgObj = {file,line,msg,0,msg_group};
+// 			outputhandler2(msgObj, outputhandler_data2);
+// 		}
+// }
+void PRINTLOG(const Message &msg_obj)
 {
-		//to console
-
-		std::string loc = file.length()>0?file+",":file;
-		loc += line>0?std::to_string(line):"";
-		PRINT(msg_group,msg,loc);
-
 		//to error log
 		if (!outputhandler2) {
-		fprintf(stderr, "%s\n", msg.c_str());
+		// fprintf(stderr, "%s\n", msg.c_str());
 		} else {
-			Message msgObj = {file,line,msg,0,msg_group};
-			outputhandler2(msgObj, outputhandler_data2);
+			outputhandler2(msg_obj, outputhandler_data2);
 		}
 }
 

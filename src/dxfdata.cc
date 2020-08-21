@@ -84,7 +84,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
-		LOG("",-1,getFormatted("Can't open DXF file '%1$s'.",filename),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Can't open DXF file '%1$s'.",filename);
 		return;
 	}
 
@@ -149,7 +149,7 @@ DxfData::DxfData(double fn, double fs, double fa,
     }
     catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				LOG(filename,-1,getFormatted("Illegal ID '%1$s'",id_str),message_group::Warning);
+				LOG(message_group::Warning,Location::NONE,"","Illegal ID '%1$s' in `%2$s'",id_str,filename);
 			}
 			break;
   	}
@@ -406,20 +406,20 @@ DxfData::DxfData(double fn, double fs, double fa,
 		}
     }
     catch (boost::bad_lexical_cast &blc) {
-		LOG(filename,-1,getFormatted("Illegal value '%1$s'",data),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Illegal value '%1$s'in `%2$s'",data,filename);
   	}
     catch (const std::out_of_range& oor) {
-		LOG(filename,-1,getFormatted("Not enough input values for %1$s.",data),message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"","Not enough input values for %1$s. in '%2$s'",data,filename);
   	}
 	}
 
 	for (const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
-			LOG(QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()),-1,
-				getFormatted("Unsupported DXF Entity '%1$s' (%2$x).",i.first,i.second),message_group::Warning);
+			LOG(message_group::Warning,Location::NONE,"",
+				"Unsupported DXF Entity '%1$s' (%2$x) in %s.",i.first,i.second,QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		} else {
-			LOG(QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()),-1,
-				getFormatted("Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s'",i.first,i.second,layername),message_group::Warning);
+			LOG(message_group::Warning,Location::NONE,"",
+				"Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",i.first,i.second,layername,QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		}
 	}
 

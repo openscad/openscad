@@ -9,6 +9,8 @@
 #include <libintl.h>
 #undef snprintf
 #include <locale.h>
+#include "AST.h"
+
 inline char * _( const char * msgid ) { return gettext( msgid ); }
 inline const char * _( const char * msgid, const char *msgctxt) {
 	/* The separator between msgctxt and msgid in a .mo file.  */
@@ -36,7 +38,7 @@ struct Message{
 std::string file;
 int line;
 std::string msg;
-int msg_id;
+// int msg_id;
 enum message_group group;
 };
 
@@ -73,7 +75,8 @@ void PRINTTMP(const std::string &msg); //just temporarily here [************Must
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
 #define PRINTB(_fmt, _arg) do { PRINTTMP(str(boost::format(_fmt) % _arg)); } while (0)
 
-void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
+// void PRINTLOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
+void PRINTLOG(const Message &msg_obj);
 
 void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
 #define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
@@ -154,8 +157,18 @@ public:
 };
 
 template <typename F, typename... Args>
-std::string getFormatted(F&& f, Args&&... args)
+void LOG(const message_group &msg_grp,const Location &loc,const std::string &docPath,F&& f, Args&&... args)
 {
 	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
-	return msg.format();
+	const auto formatted = msg.format();
+	//call PRINT  -> to console
+	std::cout<<formatted<<std::endl;
+	PRINT(msg_grp,formatted,loc.toRelativeString(docPath));
+
+
+	// const std::string relativePath = boostfs_uncomplete(loc.filePath(), docPath).generic_string();
+	const int line = loc.firstLine();
+	//call  -> to errorLog
+	Message msgObj = {loc.fileName(),line,formatted,msg_grp};
+	PRINTLOG(msgObj);
 }

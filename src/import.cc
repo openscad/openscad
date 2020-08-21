@@ -128,7 +128,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin->isDefined() && !originOk){
-		LOG(boostfs_uncomplete(evalctx->loc.filePath(),ctx->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString()),message_group::Warning);
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
 	}
 
 	const auto center = c->lookup_variable("center", true);
@@ -143,10 +143,9 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 		double val = dpi->toDouble();
 		if (val < 0.001) {
 		std::string filePath = boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string();
-		LOG(filePath,inst->location().firstLine(),
-			getFormatted("Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import()",
-			origin->toEchoString(),filePath),
-			message_group::Warning);
+		LOG(message_group::Warning,Location::NONE,"",
+			"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
+			origin->toEchoString(),filePath,filePath,inst->location().firstLine());
 		} else {
 			node->dpi = val;
 		}
@@ -201,7 +200,7 @@ const Geometry *ImportNode::createGeometry() const
 	}
 #endif
 	default:
-		LOG("",loc.firstLine(),getFormatted("Unsupported file format while trying to import file '%1$s', import()",this->filename),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Unsupported file format while trying to import file '%1$s', import() at line %2$d",this->filename,loc.firstLine());
 		g = new PolySet(3);
 	}
 

@@ -57,7 +57,7 @@ void Console::actionSaveAs_triggered()
 		QTextStream stream(&file);
 		stream << text;
 		stream.flush();
-		LOG("",-1,getFormatted("Console content saved to '%1$s'.",fileName.toStdString()),message_group::None);
+		LOG(message_group::None,Location::NONE,"","Console content saved to '%1$s'.",fileName.toStdString());
 	}
 }
 

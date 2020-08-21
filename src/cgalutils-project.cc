@@ -208,14 +208,14 @@ namespace CGALUtils {
 					newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
 				}
 				catch (const CGAL::Failure_exception &e) {
-					LOG("",-1,getFormatted(" CGAL error in CGALUtils::project during bigbox intersection: %1$s",e.what()),message_group::Error);
+					LOG(message_group::Error,Location::NONE,""," CGAL error in CGALUtils::project during bigbox intersection: %1$s",e.what());
 
 				}
 			}
 				
 			if (!newN.p3 || newN.p3->is_empty()) {
 				CGAL::set_error_behaviour(old_behaviour);
-				LOG("",-1,"Projection() failed.",message_group::Warning);
+				LOG(message_group::Warning,Location::NONE,"","Projection() failed.");
 				return poly;
 			}
 				
@@ -237,8 +237,7 @@ namespace CGALUtils {
 				}
 				poly = convertToPolygon2d(*zremover.output_nefpoly2d);
 			}	catch (const CGAL::Failure_exception &e) {
-				LOG("",-1,getFormatted("CGAL error in CGALUtils::project while flattening: %1$s",e.what()),message_group::Error);
-
+				LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::project while flattening: %1$s",e.what());
 			}
 			PRINTD("</svg>");
 				
@@ -249,7 +248,7 @@ namespace CGALUtils {
 			PolySet ps(3);
 			bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
 			if (err) {
-				LOG("",-1,"Nef->PolySet failed",message_group::Error);
+				LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
 				return poly;
 			}
 			poly = PolysetUtils::project(ps);

@@ -92,7 +92,7 @@ namespace /* anonymous*/ {
 
 ValuePtr Expression::checkUndef(ValuePtr&& val, const std::shared_ptr<Context>& context) const {
 	if (val->isUncheckedUndef())
-		LOG(boostfs_uncomplete(loc.filePath(),context->documentPath()).generic_string(),loc.firstLine(),getFormatted("%1$s %2$s",val->toUndefString()),message_group::Warning);
+		LOG(message_group::Warning,loc,context->documentPath(),"%1$s %2$s",val->toUndefString());
 	return val;
 }
 
@@ -281,8 +281,7 @@ static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr
 }
 static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
 	//"WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
-	LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),
-		getFormatted("begin %1$s than the end, but step %2$s'",begin,step),message_group::Warning);
+	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s'",begin,step);
 }
 
 ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
@@ -464,7 +463,7 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),getFormatted("Recursion detected calling function '%1$s'",name),message_group::Error);
+	LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
 }
 
 /**
@@ -475,10 +474,10 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
-	LOG(boostfs_uncomplete(val->location().filePath(),ctx->documentPath()).generic_string(),val->location().firstLine(),getFormatted("Called by '%1$s'",val->get_name()),message_group::Trace);
+	LOG(message_group::Trace,val->location(),ctx->documentPath(),"Called by '%1$s'",val->get_name());
 }
 static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
-	LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),getFormatted("Can't call function on %1$s",name),message_group::Warning);
+	LOG(message_group::Warning,loc,ctx->documentPath(),"Can't call function on %1$s",name);
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
@@ -626,7 +625,7 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	LOG("",-1,getFormatted("%1$s",STR(*echo_context.ctx)),message_group::Echo);
+	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(*echo_context.ctx));
 	return expr;
 }
 
@@ -714,7 +713,7 @@ ValuePtr LcEach::evaluate(const std::shared_ptr<Context>& context) const
         RangeType range = v->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-           LOG(boostfs_uncomplete(loc.filePath(),context->documentPath()).generic_string(),loc.firstLine(),getFormatted("Bad range parameter in for statement: too many elements (%1$lu)",steps),message_group::Warning);
+           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
         } else {
             for (double val : range) {
                 vec.push_back(ValuePtr(val));
@@ -768,7 +767,7 @@ ValuePtr LcFor::evaluate(const std::shared_ptr<Context>& context) const
         RangeType range = it_values->toRange();
         uint32_t steps = range.numValues();
         if (steps >= 1000000) {
-           LOG(boostfs_uncomplete(loc.filePath(),context->documentPath()).generic_string(),loc.firstLine(),getFormatted("Bad range parameter in for statement: too many elements (%1$lu)",steps),message_group::Warning);
+           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
         } else {
             for (double val : range) {
                 c->set_variable(it_name, ValuePtr(val));
@@ -819,7 +818,7 @@ ValuePtr LcForC::evaluate(const std::shared_ptr<Context>& context) const
         vec.push_back(this->expr->evaluate(c.ctx));
 
         if (counter++ == 1000000) {
-			LOG(boostfs_uncomplete(loc.filePath(),context->documentPath()).generic_string(),loc.firstLine(),getFormatted("For loop counter exceeded limit"),message_group::Error);
+			LOG(message_group::Error,loc,context->documentPath(),"For loop counter exceeded limit");
             throw LoopCntException::create("for", loc);
         }
 
@@ -884,9 +883,9 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 		
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
 		if (message->isDefined()) {
-			LOG(boostfs_uncomplete(evalctx->loc.filePath(),context->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("Assertion%1$s failed: %2$s",exprText,message->toEchoString()),message_group::Error);
+			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed: %2$s",exprText,message->toEchoString());
 		} else {
-			LOG(boostfs_uncomplete(evalctx->loc.filePath(),context->documentPath()).generic_string(),evalctx->loc.firstLine(),getFormatted("Assertion%1$s failed",exprText),message_group::Error);
+			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed",exprText);
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
@@ -955,7 +954,7 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 		}
 
 		if (counter++ == 1000000){
-			LOG(boostfs_uncomplete(loc.filePath(),ctx->documentPath()).generic_string(),loc.firstLine(),getFormatted("Recursion detected calling function '1%s'",name),message_group::Error);
+			LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '1%s'",name);
 			throw RecursionException::create("function", name,loc);
 		}
 	}

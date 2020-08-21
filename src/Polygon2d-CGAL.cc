@@ -115,7 +115,7 @@ PolySet *Polygon2d::tessellate() const
 
   }
 	catch (const CGAL::Precondition_exception &e) {
-		LOG("",-1,getFormatted("CGAL error in Polygon2d::tesselate(): %1$s",e.what()),message_group::None);
+		LOG(message_group::None,Location::NONE,"","CGAL error in Polygon2d::tesselate(): %1$s",e.what());
 		CGAL::set_error_behaviour(old_behaviour);
 		return nullptr;
 	}

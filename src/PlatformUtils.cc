@@ -100,10 +100,10 @@ bool PlatformUtils::createUserLibraryPath()
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
-			LOG("",-1,getFormatted("Cannot create %1$s",path),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Cannot create %1$s",path);
 		}
 	} catch (const fs::filesystem_error& ex) {
-		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return OK;
 }
@@ -125,7 +125,7 @@ std::string PlatformUtils::userLibraryPath()
 		//PRINTB("Appended path %s", path );
 		//PRINTB("Exists: %i", fs::exists(path) );
 	} catch (const fs::filesystem_error& ex) {
-		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return path.generic_string();
 }
@@ -144,7 +144,7 @@ std::string PlatformUtils::backupPath()
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
 	} catch (const fs::filesystem_error& ex) {
-		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return path.generic_string();
 }
@@ -158,10 +158,10 @@ bool PlatformUtils::createBackupPath()
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
-			LOG("",-1,getFormatted("Cannot create %1$s",path),message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Cannot create %1$s",path);
 		}
 	} catch (const fs::filesystem_error& ex) {
-		LOG("",-1,getFormatted("%1$s",ex.what()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return OK;
 }

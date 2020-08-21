@@ -68,7 +68,7 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
 		if (err) { 
-			LOG("",-1,"Nef->PolySet failed",message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
 		}
 		else {
 			append_geometry(ps, mesh);

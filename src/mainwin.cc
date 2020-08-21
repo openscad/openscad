@@ -157,7 +157,7 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
 }
 
 void fileExportedMessage(const char *format, const QString &filename) {
-	LOG("",-1,getFormatted("%1$s export finished: %2$s",format,filename.toUtf8().constData()),message_group::None);
+	LOG(message_group::None,Location::NONE,"","%1$s export finished: %2$s",format,filename.toUtf8().constData());
 }
 
 } // namespace
@@ -432,9 +432,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
 
-	LOG("",-1,helptitle,message_group::None);
-	LOG("",-1,copyrighttext,message_group::None);
-	
+	LOG(message_group::None,Location::NONE,"",std::string(helptitle));
+	LOG(message_group::None,Location::NONE,"",std::string(copyrighttext));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
@@ -995,7 +994,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			auto mtime = this->root_module->handleDependencies();
 			if (mtime > this->deps_mtime) {
 				this->deps_mtime = mtime;
-				LOG("",-1,getFormatted("Used file cache size: %1$d files",ModuleCache::instance()->size()),message_group::None);
+				LOG(message_group::None,Location::NONE,"","Used file cache size: %1$d files",ModuleCache::instance()->size());
 				didcompile = true;
 			}
 		}
@@ -1134,7 +1133,7 @@ void MainWindow::instantiateRoot()
 
 	if (this->root_module) {
 		// Evaluate CSG tree
-		LOG("",-1,"Compiling design (CSG Tree generation)...",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Tree generation)...");
 		this->processEvents();
 
 		AbstractNode::resetIndexCounter();
@@ -1154,7 +1153,7 @@ void MainWindow::instantiateRoot()
 				this->root_node = this->absolute_root_node;
 			}
 			if (nextLocation) {
-				LOG(boostfs_uncomplete(nextLocation->filePath(),top_ctx->documentPath()).generic_string(),nextLocation->firstLine(),getFormatted("More than one Root Modifier (!)"),message_group::None);
+				LOG(message_group::None,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1164,11 +1163,11 @@ void MainWindow::instantiateRoot()
 
 	if (!this->root_node) {
 		if (parser_error_pos < 0) {
-			LOG("",-1,"Compilation failed! (no top level object found)",message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Compilation failed! (no top level object found)");
 		} else {
-			LOG("",-1,"Compilation failed!",message_group::Error);
+			LOG(message_group::Error,Location::NONE,"","Compilation failed!");
 		}
-			LOG("",-1," ",message_group::None);
+			LOG(message_group::None,Location::NONE,""," ");
 		this->processEvents();
 	}
 }
@@ -1182,7 +1181,7 @@ void MainWindow::compileCSG()
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	try{
 		assert(this->root_node);
-		LOG("",-1,"Compiling design (CSG Products generation)...",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Products generation)...");
 		this->processEvents();
 
 		// Main CSG evaluation
@@ -1208,14 +1207,14 @@ void MainWindow::compileCSG()
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
-			LOG("",-1,"CSG generation cancelled.",message_group::None);
+			LOG(message_group::None,Location::NONE,"","CSG generation cancelled.");
 		}catch(const HardWarningException &){
-			LOG("",-1,"CSG generation cancelled due to hardwarning being enabled.",message_group::None);
+			LOG(message_group::None,Location::NONE,"","CSG generation cancelled due to hardwarning being enabled.");
 		}
 		progress_report_fin();
 		updateStatusBar(nullptr);
 
-		LOG("",-1,"Compiling design (CSG Products normalization)...",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Products normalization)...");
 		this->processEvents();
 
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
@@ -1229,14 +1228,14 @@ void MainWindow::compileCSG()
 			}
 			else {
 				this->root_products.reset();
-				LOG("",-1,"CSG normalization resulted in an empty tree",message_group::Warning);
+				LOG(message_group::Warning,Location::NONE,"","CSG normalization resulted in an empty tree");
 				this->processEvents();
 			}
 		}
 
 		const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
 		if (highlight_terms.size() > 0) {
-			LOG("",-1,getFormatted("Compiling highlights (%1$d CSG Trees)...",highlight_terms.size()),message_group::None);
+			LOG(message_group::None,Location::NONE,"","Compiling highlights (%1$d CSG Trees)...",highlight_terms.size());
 			this->processEvents();
 		
 			this->highlights_products.reset(new CSGProducts());
@@ -1253,7 +1252,7 @@ void MainWindow::compileCSG()
 	
 		const auto &background_terms = csgrenderer.getBackgroundNodes();
 		if (background_terms.size() > 0) {
-			LOG("",-1,getFormatted("Compiling background (%1$d CSG Trees)...",background_terms.size()),message_group::None);
+			LOG(message_group::None,Location::NONE,"","Compiling background (%1$d CSG Trees)...",background_terms.size());
 			this->processEvents();
 		
 			this->background_products.reset(new CSGProducts());
@@ -1271,14 +1270,13 @@ void MainWindow::compileCSG()
 		if (this->root_products &&
 				(this->root_products->size() >
 				Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-				LOG("",-1,getFormatted("Normalized tree has %1$d elements!",this->root_products->size()),message_group::UI_Warning);
-				LOG("",-1,"OpenCSG rendering has been disabled.",message_group::UI_Warning);
+				LOG(message_group::UI_Warning,Location::NONE,"","Normalized tree has %1$d elements!",this->root_products->size());
+				LOG(message_group::UI_Warning,Location::NONE,"","OpenCSG rendering has been disabled.");
 		}
 #ifdef ENABLE_OPENCSG
 		else {
-			LOG("",-1,getFormatted("Normalized tree has %1$d elements!",
-				(this->root_products ? this->root_products->size() : 0)),
-				message_group::None);
+			LOG(message_group::None,Location::NONE,"","Normalized tree has %1$d elements!",
+				(this->root_products ? this->root_products->size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
@@ -1288,7 +1286,7 @@ void MainWindow::compileCSG()
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
 																														this->highlights_products,
 																														this->background_products);
-		LOG("",-1,"Compile and preview finished.",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Compile and preview finished.");
 		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
 		RenderStatistic::printRenderingTime(ms);
 		this->processEvents();
@@ -1396,14 +1394,14 @@ void MainWindow::writeBackup(QFile *file)
 	writer << activeEditor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
 	
-	LOG("",-1,getFormatted("Saved backup file: %1$s", file->fileName().toUtf8().constData()),message_group::None);
+	LOG(message_group::None,Location::NONE,"","Saved backup file: %1$s", file->fileName().toUtf8().constData());
 }
 
 void MainWindow::saveBackup()
 {
 	auto path = PlatformUtils::backupPath();
 	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-		LOG("",-1,getFormatted("Cannot create backup path: %1$s",path),message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Cannot create backup path: %1$s",path);
 		return;
 	}
 
@@ -1421,7 +1419,7 @@ void MainWindow::saveBackup()
 	}
 
 	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
-		LOG("",-1,"Failed to create backup file",message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Failed to create backup file");
 		return;
 	}
 	return writeBackup(this->tempFile);
@@ -1441,9 +1439,9 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		LOG("",-1,getFormatted("Library path %1$s doesn't exist. Creating",path),message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Library path %1$s doesn't exist. Creating",path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			LOG("",-1,getFormatted("Cannot create library path: %1$s",path),message_group::UI_Error);	
+			LOG(message_group::UI_Error,Location::NONE,"","Cannot create library path: %1$s",path);	
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -1685,21 +1683,21 @@ void MainWindow::updateCamera(const std::shared_ptr<FileContext> ctx)
 	if (vpr->getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpr(x, y, z);
 	}else{
-		LOG("",-1,getFormatted("Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers",vpr->toEchoString()),message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers",vpr->toEchoString());
 	}
 
 	const auto vpt = ctx->lookup_variable("$vpt");
 	if (vpt->getVec3(x, y, z, 0.0)){
 		qglview->cam.setVpt(x, y, z);
 	}else{
-		LOG("",-1,getFormatted("Unable to convert $vpt=%s to a vec3 or vec2 of numbers",vpr->toEchoString()),message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Unable to convert $vpt=%s to a vec3 or vec2 of numbers",vpr->toEchoString());
 	}
 
 	const auto vpd = ctx->lookup_variable("$vpd");
 	if (vpd->type() == Value::Type::NUMBER){
 		qglview->cam.setVpd(vpd->toDouble());
 	}else{
-		LOG("",-1,getFormatted("Unable to convert $vpd=%1$s to a number",vpr->toEchoString()),message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Unable to convert $vpd=%1$s to a number",vpr->toEchoString());
 	}
 }
 
@@ -1802,7 +1800,7 @@ void MainWindow::actionReloadRenderPreview()
 	autoReloadTimer->stop();
 	setCurrentOutput();
 
-	// LOG("",-1,"Parsing design (AST generation)...",message_group::None);
+	// Lmessage_group::NoneOG("",-1,"Parsing design (AST generation)...");
 	// this->processEvents();
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
@@ -1913,11 +1911,11 @@ void MainWindow::action3DPrint()
 
 	switch (selectedService) {
 	case print_service_t::PRINT_SERVICE:
-		LOG("",-1,getFormatted("Sending design to print service %1$s...",printService->getDisplayName().toStdString()),message_group::None);
+		LOG(message_group::None,Location::NONE,"","Sending design to print service %1$s...",printService->getDisplayName().toStdString());
 		sendToPrintService();
 		break;
 	case print_service_t::OCTOPRINT:
-		LOG("",-1,"Sending design to OctoPrint...",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Sending design to OctoPrint...");
 		sendToOctoPrint();
 		break;
 	default:
@@ -1932,7 +1930,7 @@ void MainWindow::sendToOctoPrint()
 	OctoPrint octoPrint;
 
 	if (octoPrint.url().trimmed().isEmpty()) {
-		LOG("",-1,"OctoPrint connection not configured. Please check preferences.",message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","OctoPrint connection not configured. Please check preferences.");
 		return;
 	}
 
@@ -1953,7 +1951,7 @@ void MainWindow::sendToOctoPrint()
 
 	QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
 	if (!exportFile.open()) {
-		LOG("",-1,"Could not open temporary file.",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Could not open temporary file.");
 		return;
 	}
 	const QString exportFileName = exportFile.fileName();
@@ -1983,7 +1981,7 @@ void MainWindow::sendToOctoPrint()
 		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
 		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
 	} catch (const NetworkException& e) {
-		LOG("",-1,getFormatted("%1$s",e.getErrorMessage()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
 	}
 
 	updateStatusBar(nullptr);
@@ -2000,7 +1998,7 @@ void MainWindow::sendToPrintService()
 	
 	QTemporaryFile exportFile;
 	if (!exportFile.open()) {
-		LOG("",-1,"Could not open temporary file.",message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Could not open temporary file.");
 		return;
 	}
 	const QString exportFilename = exportFile.fileName();
@@ -2017,7 +2015,7 @@ void MainWindow::sendToPrintService()
 
 	QFile file(exportFilename);
 	if (!file.open(QIODevice::ReadOnly)) {
-		LOG("",-1,"Unable to open exported STL file.",message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Unable to open exported STL file.");
 		return;
 	}
 	const QString fileContentBase64 = file.readAll().toBase64();
@@ -2025,7 +2023,7 @@ void MainWindow::sendToPrintService()
 	if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
 		const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
 		QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
-		LOG("",-1,getFormatted("%1$s",msg.toStdString()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",msg.toStdString());
 		return;
 	}
 	
@@ -2038,7 +2036,7 @@ void MainWindow::sendToPrintService()
         const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool { return network_progress_func(v); });
 		QDesktopServices::openUrl(QUrl{partUrl});
 	} catch (const NetworkException& e) {
-		LOG("",-1,getFormatted("%1$s",e.getErrorMessage()),message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
     }
 
 	updateStatusBar(nullptr);
@@ -2054,7 +2052,7 @@ void MainWindow::actionRender()
 	autoReloadTimer->stop();
 	setCurrentOutput();
 
-	// LOG("",-1,"Parsing design (AST generation)...",message_group::None);
+	// Lmessage_group::NoneOG("",-1,"Parsing design (AST generation)...");
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
@@ -2074,7 +2072,7 @@ void MainWindow::cgalRender()
 	this->cgalRenderer = nullptr;
 	this->root_geom.reset();
 
-	LOG("",-1,"Rendering Polygon Mesh using CGAL...",message_group::None);
+	LOG(message_group::None,Location::NONE,"","Rendering Polygon Mesh using CGAL...");
 
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2094,7 +2092,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		if (!root_geom->isEmpty()) {
 			RenderStatistic().print(*root_geom);
 		}
-		LOG("",-1,"Rendering finished.\n",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Rendering finished.\n");
 
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
@@ -2103,8 +2101,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		LOG("",-1,"No top level geometry to render",message_group::UI_Warning);
-		LOG("",-1," ",message_group::None);
+		LOG(message_group::UI_Warning,Location::NONE,"","No top level geometry to render");
+		LOG(message_group::None,Location::NONE,""," ");
 	}
 
 	updateStatusBar(nullptr);
@@ -2255,8 +2253,8 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 }
 
 void MainWindow::exceptionCleanup(){
-	LOG("",-1,"Execution aborted",message_group::None);
-	LOG("",-1," ",message_group::None);
+	LOG(message_group::None,Location::NONE,"","Execution aborted");
+	LOG(message_group::None,Location::NONE,""," ");
 	GuiLocker::unlock();
 	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
@@ -2330,13 +2328,13 @@ void MainWindow::actionCheckValidity()
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		LOG("",-1,"Nothing to validate! Try building first (press F6).",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Nothing to validate! Try building first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_geom->getDimension() != 3) {
-		LOG("",-1,"Current top level object is not a 3D object.",message_group::None);
+		LOG(message_group::None,Location::NONE,"","Current top level object is not a 3D object.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2349,7 +2347,7 @@ void MainWindow::actionCheckValidity()
 	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
 		valid = N->p3 ? N->p3->is_valid() : false;
 	}
-	LOG("",-1,getFormatted("Valid:      %1$6s",(valid ? "yes" : "no")),message_group::None);
+	LOG(message_group::None,Location::NONE,"","Valid:      %1$6s",(valid ? "yes" : "no"));
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2359,7 +2357,7 @@ void MainWindow::actionCheckValidity()
 bool MainWindow::canExport(unsigned int dim)
 {
 	if (!this->root_geom) {
-		LOG("",-1,"Nothing to export! Try rendering first (press F6)",message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Nothing to export! Try rendering first (press F6)");
 		clearCurrentOutput();
 		return false;
 	}
@@ -2387,20 +2385,20 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	if (this->root_geom->getDimension() != dim) {
-		LOG("",-1,getFormatted("Current top level object is not a %1$dD object.",dim),message_group::UI_Error);
+		LOG(message_group::UI_Error,Location::NONE,"","Current top level object is not a %1$dD object.",dim);
 		clearCurrentOutput();
 		return false;
 	}
 
 	if (this->root_geom->isEmpty()) {
-		LOG("",-1,"Current top level object is empty.",message_group::UI_Error);
+		LOG(message_group::UI_Error,Location::NONE,"","Current top level object is empty.");
 		clearCurrentOutput();
 		return false;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-		LOG("",-1,"Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",message_group::UI_Warning);
+		LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
 	return true;
@@ -2479,7 +2477,7 @@ void MainWindow::actionExportCSG()
 	setCurrentOutput();
 
 	if (!this->root_node) {
-		LOG("",-1,"Nothing to export. Please try compiling first.",message_group::Error);
+		LOG(message_group::Error,Location::NONE,"","Nothing to export. Please try compiling first.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2494,7 +2492,7 @@ void MainWindow::actionExportCSG()
 
 	std::ofstream fstream(csg_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
-		LOG("",-1,getFormatted("Can't open file \"%1$s\" for export",csg_filename.toLocal8Bit().constData()),message_group::None);
+		LOG(message_group::None,Location::NONE,"","Can't open file \"%1$s\" for export",csg_filename.toLocal8Bit().constData());
 	}
 	else {
 		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
@@ -3082,17 +3080,17 @@ void MainWindow::consoleOutput(const enum message_group &msg_group,const QString
 	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
 	if (msg_group==message_group::Warning || msg_group==message_group::Deprecated) {
 		this->compileWarnings++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+ "</span>&nbsp;");
 	} else if (msg_group==message_group::UI_Warning || msg_group==message_group::Font_Warning || msg_group==message_group::Font_Warning) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+ "</span>&nbsp;");
 	} else if (msg_group==message_group::Error) {
 		this->compileErrors++;
-		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span></a>&nbsp;");
-		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span></a>&nbsp;");
+		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+ "</span></a>&nbsp;");
+		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+ "</span></a>&nbsp;");
 	} else if (msg_group==message_group::Export_Error || msg_group==message_group::UI_Error || msg_group==message_group::Parser_Error) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+ "</span>&nbsp;");
 	} else if (msg_group==message_group::Trace) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+":"+ QT_HTML_ESCAPE(QString(msg))+","+QT_HTML_ESCAPE(QString(loc)) + "</span>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+ "</span>&nbsp;");
 	} else if(msg_group==message_group::Echo) {
 		this->console->appendPlainText(QString::fromStdString(getGroupName(msg_group)+":")+msg);
 	} else {

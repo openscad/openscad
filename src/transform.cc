@@ -93,12 +93,12 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			if (v->getDouble(num)){
 				scalevec.setConstant(num);
 			}else{
-				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),getFormatted(" Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",v->toEchoString()),message_group::Warning);
+				LOG(message_group::Warning,inst->location(),ctx->documentPath()," Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",v->toEchoString());
 			}
 		}
 		if(OpenSCAD::rangeCheck){
 			if(scalevec[0]==0 || scalevec[1]==0 || scalevec[2]==0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])){
-				LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),getFormatted("scale(%1$s)",v->toEchoString()),message_group::Warning);
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"scale(%1$s)",v->toEchoString());
 			}
 		}
 		node->matrix.scale(scalevec);
@@ -136,13 +136,13 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			bool v_supplied = (val_v->isDefined());
 			if(ok){
 				if(v_supplied){
-					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),getFormatted("When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)",val_a->toEchoString(),val_v->toEchoString()),message_group::Warning);
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)",val_a->toEchoString(),val_v->toEchoString());
 				}
 			}else{
 				if(v_supplied){
-					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),getFormatted("Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a->toEchoString(),val_v->toEchoString()),message_group::Warning);
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a->toEchoString(),val_v->toEchoString());
 				}else{
-					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),getFormatted("Problem converting rotate(a=%1$s) parameter",val_a->toEchoString()),message_group::Warning);
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Problem converting rotate(a=%1$s) parameter",val_a->toEchoString());
 				}
 			}
 			Matrix3d M;
@@ -160,15 +160,15 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
 			if(val_v->isDefined() && ! vConverted){
 				if(aConverted){
-					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
-						getFormatted("Problem converting rotate(..., v=%1$s) parameter",val_v->toEchoString()),message_group::Warning);
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+						"Problem converting rotate(..., v=%1$s) parameter",val_v->toEchoString());
 				}else{
-					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
-						getFormatted("Problem converting rotate(a=%s, v=%s) parameter",val_a->toEchoString(),val_v->toEchoString()),message_group::Warning);
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+						"Problem converting rotate(a=%s, v=%s) parameter",val_a->toEchoString(),val_v->toEchoString());
 				}
 			}else if(!aConverted){
-					LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
-						getFormatted("Problem converting rotate(a=%s) parameter",val_a->toEchoString()),message_group::Warning);
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+						"Problem converting rotate(a=%s) parameter",val_a->toEchoString());
 			}
 		}
 	}
@@ -177,8 +177,8 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		double x = 1.0, y = 0.0, z = 0.0;
 
 		if (!val_v->getVec3(x, y, z, 0.0)) {
-			LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
-				getFormatted("Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",val_v->toEchoString()),message_group::Warning);
+			LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+				"Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",val_v->toEchoString());
 		}
 
 		// x /= sqrt(x*x + y*y + z*z)
@@ -206,8 +206,8 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (ok) {
 			node->matrix.translate(translatevec);
 		}else{
-			LOG(boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string(),inst->location().firstLine(),
-				getFormatted("Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",v->toEchoString()),message_group::Warning);
+			LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+				"Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",v->toEchoString());
 		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {

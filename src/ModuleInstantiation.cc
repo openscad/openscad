@@ -78,7 +78,7 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
-	LOG(boostfs_uncomplete(mod->location().filePath(),ctx->documentPath()).generic_string(),mod->location().firstLine(),getFormatted("Called by '%1$s'",mod->name()),message_group::Trace);
+	LOG(message_group::Trace,mod->location(),ctx->documentPath(),"Called by '%1$s'",mod->name());
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
@@ -86,7 +86,7 @@ AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) 
 	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 
 #if 0 && DEBUG
-	LOG("",-1,"New eval ctx:",message_group::None);
+	LOG(message_group::None,Location::NONE,"","New eval ctx:");
 	c.dump(nullptr, this);
 #endif
 	try{

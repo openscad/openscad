@@ -59,14 +59,14 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
         }
       }
       if (resolvedArgs.find(name) != resolvedArgs.end()) {
-          LOG(boostfs_uncomplete(this->loc.filePath(),this->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("argument %1$s supplied more than once",name),message_group::Warning);
+          LOG(message_group::Warning,this->loc,this->documentPath(),"argument %1$s supplied more than once",name);
       }
       resolvedArgs[name] = expr;
     }
     // If positional, find name of arg with this position
     else if (posarg < args.size()) resolvedArgs[args[posarg++]->getName()] = expr;
     else if (!silent && !tooManyWarned){
-      LOG(boostfs_uncomplete(this->loc.filePath(),this->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("Too many unnamed arguments supplied"),message_group::Warning);
+      LOG(message_group::Warning,this->loc,this->documentPath(),"Too many unnamed arguments supplied");
       tooManyWarned=true;
     }
   }
@@ -90,9 +90,9 @@ void EvalContext::assignTo(std::shared_ptr<Context> target) const
 		if (assignment->getExpr()) v = assignment->getExpr()->evaluate(target);
 		
 		if (assignment->getName().empty()){
-			LOG(boostfs_uncomplete(this->loc.filePath(),target->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("Assignment without variable name %1$s",v->toEchoString()),message_group::Warning);
+			LOG(message_group::Warning,this->loc,target->documentPath(),"Assignment without variable name %1$s",v->toEchoString());
 		} else if (target->has_local_variable(assignment->getName())) {
-			LOG(boostfs_uncomplete(this->loc.filePath(),target->documentPath()).generic_string(),this->loc.firstLine(),getFormatted("Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),v->toEchoString()),message_group::Warning);
+			LOG(message_group::Warning,this->loc,target->documentPath(),"Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),v->toEchoString());
 		} else {
 			target->set_variable(assignment->getName(), v);
 		}
