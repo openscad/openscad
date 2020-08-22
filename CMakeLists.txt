@@ -80,7 +80,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   endif()
 endif()
 
-set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
+set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options serialization)
 
 find_package(PkgConfig)
 
@@ -251,6 +251,16 @@ if(NOT MSVC)
   add_definitions(${LIB3MF_CFLAGS})
   include_directories(${LIB3MF_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+endif()
+
+find_package(Hiredis QUIET)
+if (HIREDIS_FOUND)
+  message(STATUS "Hiredis: Enabled")
+  include_directories(${HIREDIS_INCLUDE_DIR})
+  list(APPEND COMMON_LIBRARIES ${HIREDIS_LIBRARIES})
+  add_definitions(-DENABLE_CARIO)
+else()
+  message(STATUS "Hiredis: Disabled")
 endif()
 
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
@@ -509,6 +519,11 @@ set(CORE_SOURCES
   src/libsvg/tspan.cc
   src/libsvg/util.cc
   src/parameter/parameterset.cpp
+  src/clipper-utils.cc
+  src/Assignment.cc
+  src/annotation.cc 
+  src/ext/polyclipping/clipper.cpp
+  src/PCSettings.cpp
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -527,7 +542,11 @@ set(CGAL_SOURCES
   src/CGALCache.cc
   src/CSGTreeEvaluator.cc
   src/Polygon2d-CGAL.cc
-  src/GeometryEvaluator.cc)
+  src/GeometryEvaluator.cc
+  src/pcache.cpp
+  src/lcache.cpp
+  src/PCSettings.cpp)
+
 
 #
 # Offscreen OpenGL context source code

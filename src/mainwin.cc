@@ -48,6 +48,7 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #include "RenderStatistic.h"
+#include "PCSettings.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -125,6 +126,13 @@
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
+
+#if BOOST_VERSION > 105800
+#include "lcache.h"
+#ifdef ENABLE_HIREDIS
+#include "pcache.h"
+#endif
+#endif
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -1161,6 +1169,7 @@ void MainWindow::instantiateRoot()
 void MainWindow::compileCSG()
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+
 	try{
 		assert(this->root_node);
 		PRINT("Compiling design (CSG Products generation)...");
@@ -1169,6 +1178,7 @@ void MainWindow::compileCSG()
 		// Main CSG evaluation
 		this->progresswidget = new ProgressWidget(this);
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+
 
 #ifdef ENABLE_CGAL
 			GeometryEvaluator geomevaluator(this->tree);
@@ -1791,6 +1801,14 @@ void MainWindow::actionReloadRenderPreview()
 
 void MainWindow::csgReloadRender()
 {
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    initPC();
+    connectPC();
+#endif
+#endif
+    PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
+
 	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
@@ -1805,6 +1823,11 @@ void MainWindow::csgReloadRender()
 #endif
 	}
 	compileEnded();
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    PCache::getInst()->disconnect();
+#endif
+#endif
 }
 
 void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
@@ -1819,6 +1842,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
+
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
@@ -1830,10 +1854,19 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 		// it must be called from the mainloop
 		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
 	}
+
 }
 
 void MainWindow::csgRender()
 {
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    initPC();
+    connectPC();
+#endif
+#endif
+    PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
+
 	if (this->root_node) compileCSG();
 
 	// Go to non-CGAL view mode
@@ -1866,6 +1899,12 @@ void MainWindow::csgRender()
 	}
 
 	compileEnded();
+
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    PCache::getInst()->disconnect();
+#endif
+#endif
 }
 
 void MainWindow::action3DPrint()
@@ -2035,11 +2074,19 @@ void MainWindow::actionRender()
 	setCurrentOutput();
 
 	PRINT("Parsing design (AST generation)...");
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    this->initPC();
+#endif
+#endif
+    PCSettings::instance()->enableLocalCache = Preferences::inst()->getValue("advanced/enable_local_cache").toBool();
+
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(false));
 	compile(false);
+
 }
 
 void MainWindow::cgalRender()
@@ -2518,6 +2565,17 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    if(PCSettings::instance()->enablePersistentCache){
+        initPC();
+        connectPC();
+        if(!PCache::getInst()->flushall())
+            PRINT("WARNING: Unable to clear persistent cache");
+        PCache::getInst()->disconnect();
+    }
+#endif
+#endif
 }
 
 void MainWindow::viewModeActionsUncheck()
@@ -3097,3 +3155,31 @@ QString MainWindow::exportPath(const char *suffix) {
 	}
 	return path;
 }
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+void MainWindow::initPC(){
+    PCSettings::instance()->enablePersistentCache = Preferences::inst()->getValue("advanced/enable_persistent_cache").toBool();
+    if(PCSettings::instance()->enablePersistentCache){
+        PCSettings::instance()->ipAddress = Preferences::inst()->getValue("advanced/ipAddressEdit").toString().toStdString();
+        PCSettings::instance()->port = Preferences::inst()->getValue("advanced/portNumberEdit").toUInt();
+        PCSettings::instance()->enableAuth = Preferences::inst()->getValue("advanced/enablePasswordAuth").toBool();
+        if(PCSettings::instance()->enableAuth){
+            PCSettings::instance()->password = Preferences::inst()->getValue("advanced/passwordEdit").toString().toStdString();
+        }
+    }
+}
+
+void MainWindow::connectPC(){
+
+    if(PCSettings::instance()->enablePersistentCache){
+        PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
+        if(PCSettings::instance()->enableAuth){
+            PCache::getInst()->connectWithPassword();
+        }else{
+            PCache::getInst()->connect();
+        }
+    }
+
+}
+#endif //ENABLE_HIREDIS
+#endif

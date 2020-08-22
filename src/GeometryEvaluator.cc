@@ -29,6 +29,12 @@
 #include "degree_trig.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
+#include "PCSettings.h"
+
+#ifdef ENABLE_HIREDIS
+#include "pcache.h"
+#endif
+#include "lcache.h"
 
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
@@ -48,12 +54,33 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 																															 bool allownef)
 {
 	const std::string &key = this->tree.getIdString(node);
+    LCache lCache;
 	if (!GeometryCache::instance()->contains(key)) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
-		if (CGALCache::instance()->contains(key)) {
+#if BOOST_VERSION > 105800
+#ifdef ENABLE_HIREDIS
+        if(PCSettings::instance()->enablePersistentCache && PCache::getInst()->containsCGAL(key)){
+            N = PCache::getInst()->getCGAL(key);
+        }
+        else if(PCSettings::instance()->enableLocalCache && lCache.containsCGAL(key)){
+            N = lCache.getCGAL(key);
+        }
+        else if (CGALCache::instance()->contains(key)) {
 			N = CGALCache::instance()->get(key);
 		}
-
+#else
+        if (PCSettings::instance()->enableLocalCache && lCache.containsCGAL(key)){
+            N = lCache.getCGAL(key);
+        }
+        else if (CGALCache::instance()->contains(key)) {
+            N = CGALCache::instance()->get(key);
+        }
+#endif
+#else
+        if (CGALCache::instance()->contains(key)) {
+            N = CGALCache::instance()->get(key);
+        }
+#endif
 		// If not found in any caches, we need to evaluate the geometry
 		if (N) {
 			this->root = N;
@@ -93,6 +120,17 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		smartCacheInsert(node, this->root);
 		return this->root;
 	}
+
+#if BOOST_VERSION > 105800
+#ifdef ENABLE_HIREDIS
+    if(PCSettings::instance()->enablePersistentCache && PCache::getInst()->containsGeom(key)){
+        return PCache::getInst()->getGeometry(key);
+    }
+#endif
+    if (PCSettings::instance()->enableLocalCache && lCache.containsGeom(key)){
+        return lCache.getGeometry(key);
+    }
+#endif
 	return GeometryCache::instance()->get(key);
 }
 
@@ -282,16 +320,40 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 																				 const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
-
+    LCache lCache;
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
-		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
+        if (!CGALCache::instance()->contains(key)) {
+            CGALCache::instance()->insert(key, N);
+#if BOOST_VERSION > 105800
+            if(PCSettings::instance()->enableLocalCache && !lCache.insertCGAL(key,N)) {
+                PRINT("WARNING: Polyhedron is not inserted into local cache");
+            }
+
+#ifdef ENABLE_HIREDIS
+            if(PCSettings::instance()->enablePersistentCache && !PCache::getInst()->insertCGAL(key, N)){
+                PRINT("WARNING: Polyhedron is not inserted into redis cache");
+            }
+#endif
+#endif
+        }
 	}
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
 				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
+#if BOOST_VERSION > 105800
+            if(PCSettings::instance()->enableLocalCache && !lCache.insertGeometry(key, geom)) {
+                PRINT("WARNING: Geometry is not inserted into local cache");
+            }
+
+#ifdef ENABLE_HIREDIS
+            if(PCSettings::instance()->enablePersistentCache && !PCache::getInst()->insertGeometry(key, geom)){
+                PRINT("WARNING: Geometry is not inserted into redis cache");
+            }
+#endif
+#endif
 		}
 	}
 }
@@ -299,6 +361,19 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 bool GeometryEvaluator::isSmartCached(const AbstractNode &node)
 {
 	const std::string &key = this->tree.getIdString(node);
+
+#if BOOST_VERSION > 105800
+#ifdef ENABLE_HIREDIS
+    if(PCSettings::instance()->enablePersistentCache){
+        return (PCache::getInst()->containsGeom(key) ||
+                PCache::getInst()->containsCGAL(key));
+    }
+#endif
+    if(PCSettings::instance()->enableLocalCache) {
+        LCache lCache;
+        return (lCache.containsGeom(key) || lCache.containsCGAL(key));
+    }
+#endif
 	return (GeometryCache::instance()->contains(key) ||
 					CGALCache::instance()->contains(key));
 }
@@ -309,8 +384,41 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &
 	shared_ptr<const Geometry> geom;
 	bool hasgeom = GeometryCache::instance()->contains(key);
 	bool hascgal = CGALCache::instance()->contains(key);
-	if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
-	else if (hasgeom) geom = GeometryCache::instance()->get(key);
+    LCache lCache;
+#if BOOST_VERSION > 105800
+#ifdef ENABLE_HIREDIS
+    if (PCSettings::instance()->enablePersistentCache){
+        bool pc_hasgeom = PCache::getInst()->containsGeom(key);
+        bool pc_hascgal = PCache::getInst()->containsCGAL(key);
+        if (pc_hascgal && (preferNef || !pc_hasgeom)) geom = PCache::getInst()->getCGAL(key);
+        else if (pc_hasgeom) geom = PCache::getInst()->getGeometry(key);
+    } else if (PCSettings::instance()->enableLocalCache) {
+        bool lc_hasgeom = lCache.containsGeom(key);
+        bool lc_hascgal = lCache.containsCGAL(key);
+        if (lc_hascgal && (preferNef || !lc_hasgeom)) geom = lCache.getCGAL(key);
+        else if (lc_hasgeom) geom = lCache.getGeometry(key);
+    }
+    else{
+        if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
+        else if (hasgeom) geom = GeometryCache::instance()->get(key);
+   }
+#else
+    if(PCSettings::instance()->enableLocalCache) {
+        bool lc_hasgeom = lCache.containsGeom(key);
+        bool lc_hascgal = lCache.containsCGAL(key);
+        if (lc_hascgal && (preferNef || !lc_hasgeom)) geom = lCache.getCGAL(key);
+        else if (lc_hasgeom) geom = lCache.getGeometry(key);
+    }
+    else{
+        if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
+        else if (hasgeom) geom = GeometryCache::instance()->get(key);
+   }
+#endif
+#else
+    if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
+    else if (hasgeom) geom = GeometryCache::instance()->get(key);
+#endif
+
 	return geom;
 }
 

@@ -1,0 +1,50 @@
+#Hiredis Detection
+#
+#Priority List
+#0. HIREDIS_INCLUDE_DIR if set
+#1. OPENSCAD_LIBRARIES Hiredis
+#2. Sytem's standard include path (Using pkg-config)
+
+#OPENSCAD_LIBRARIES check is not added yet.
+
+isEmpty(HIREDIS_INCLUDEPATH){
+    HIREDIS_INCLUDEPATH = $$(HIREDIS_INCLUDE_DIR)
+}
+
+isEmpty(HIREDIS_LIBPATH){
+    HIREDIS_LIBPATH = $$(HIREDIS_LIBRARIES)
+}
+
+exists($$HIREDIS_INCLUDEPATH/hiredis/hiredis.h){
+    ENABLE_HIREDIS=yes
+} else {
+    HIREDIS_INCLUDEPATH = 
+    HIREDIS_LIBPATH = 
+}
+
+isEmpty(HIREDIS_INCLUDEPATH){
+    HIREDIS_CFLAGS = $$system("$$PKG_CONFIG --cflags hiredis")
+  !isEmpty(HIREDIS_CFLAGS){
+      ENABLE_HIREDIS=yes
+  }
+} else {
+    HIREDIS_CFLAGS = -I$$HIREDIS_INCLUDEPATH/hiredis
+}
+
+isEmpty(HIREDIS_LIBPATH){
+    HIREDIS_LIBS = $$system("$$PKG_CONFIG --libs hiredis")
+  !isEmpty(HIREDIS_LIBS){
+      ENABLE_HIREDIS=yes
+  }
+} else {
+    HIREDIS_LIBS = -I$$HIREDIS_LIBS -lhiredis
+}
+
+!isEmpty(ENABLE_HIREDIS){
+    DEFINES += ENABLE_HIREDIS
+    QMAKE_CXXFLAGS += $$HIREDIS_CFLAGS
+    LIBS += $$HIREDIS_LIBS
+    message("Hiredis enabled")
+} else {
+    message("Hiredis disabled")
+}

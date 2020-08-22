@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>512</width>
-             <height>793</height>
+             <width>520</width>
+             <height>766</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -681,15 +681,15 @@
                </item>
                <item row="1" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_30">
-                  <item>
-                    <widget class="QLabel" name="labelCharacterThreshold">
-                     <property name="text">
-                      <string>Character Threshold</string>
-                     </property>
-                    </widget>
+                 <item>
+                  <widget class="QLabel" name="labelCharacterThreshold">
+                   <property name="text">
+                    <string>Character Threshold</string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="lineEditCharacterThreshold" />
+                  <widget class="QLineEdit" name="lineEditCharacterThreshold"/>
                  </item>
                 </layout>
                </item>
@@ -1509,7 +1509,7 @@
              <x>0</x>
              <y>0</y>
              <width>602</width>
-             <height>891</height>
+             <height>971</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1626,6 +1626,118 @@
                   </widget>
                  </item>
                 </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_PC">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="title">
+               <string>Persistent Cache</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_pc1">
+                <item>
+                <widget class="QCheckBox" name="enableLocalCache">
+                <property name="text">
+                  <string>Enable Local Cache</string>
+                </property>
+                <property name="checked">
+                  <bool>false</bool>
+                </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enablePersistentCache">
+                 <property name="text">
+                  <string>Enable Persistent Cache using Redis</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc1">
+                 <item>
+                  <widget class="QLabel" name="label_pc1">
+                   <property name="text">
+                    <string>IP Address </string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="ipAddressEdit">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc2">
+                 <item>
+                  <widget class="QLabel" name="label_pc2">
+                   <property name="text">
+                    <string>Port Number </string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="portNumberEdit">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enablePasswordAuth">
+                 <property name="text">
+                  <string>Have a password</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc3">
+                 <item>
+                  <widget class="QLabel" name="label_pc4">
+                   <property name="text">
+                    <string>Password</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="passwordEdit">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_pc3">
+                 <property name="text">
+                  <string>note: Connection status and updates will be shown in the console.</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
