@@ -32,18 +32,14 @@
 
 #include "degree_trig.h"
 
-#define M_SQRT3   1.73205080756887719318 /* sqrt(3)   */
-#define M_SQRT3_4 0.86602540378443859659 /* sqrt(3/4) == sqrt(3)/2 */
-#define M_SQRT1_3 0.57735026918962573106 /* sqrt(1/3) == sqrt(3)/3 */
-
 static inline double rad2deg(double x)
 {
-	return x * 180 / M_PI;
+	return x * M_RAD2DEG;
 }
 
 static inline double deg2rad(double x)
 {
-	return x * M_PI / 180;
+	return x * M_DEG2RAD;
 }
 
 // this limit assumes 26+26=52 bits mantissa

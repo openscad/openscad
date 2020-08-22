@@ -753,41 +753,113 @@ static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 	}
 }
 
-static void add_slice(PolySet *ps, const Polygon2d &poly, 
-											double rot1, double rot2, 
-											double h1, double h2, 
+/*
+	Compare Euclidean length of vectors
+	Return:
+		-1 : if v1  < v2
+		 0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
+		 1 : if v1  > v2
+*/
+int sgn_vdiff(const Vector2d &v1, const Vector2d &v2) {
+	constexpr double ratio_threshold = 1e5; // 10ppm difference
+	double l1 = v1.norm();
+	double l2 = v2.norm();
+	// Compare the average and difference, to be independent of geometry scale.
+	// If the difference is within ratio_threshold of the avg, treat as equal.
+	double scale = (l1+l2);
+	double diff = 2*std::fabs(l1-l2)*ratio_threshold;
+	return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
+}
+
+/*
+	Attempt to triangulate quads in an ideal way.
+	Each quad is composed of two adjacent outline vertices: (prev1, curr1)
+	and their corresponding transformed points one step up: (prev2, curr2).
+	Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
+	However, when diagonals are equal length, decision may flip depending on other factors.
+*/
+static void add_slice(PolySet *ps, const Polygon2d &poly,
+											double rot1, double rot2,
+											double h1, double h2,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
+	Eigen::Affine2d trans_mid(Eigen::Scaling((scale1+scale2)/2) * Eigen::Affine2d(rotate_degrees(-(rot1+rot2)/2)));
 	
-	bool splitfirst = sin_degrees(rot1 - rot2) > 0.0;
+	bool is_straight = rot1==rot2 && scale1[0]==scale1[1] && scale2[0]==scale2[1];
+	bool any_zero = scale2[0] == 0 || scale2[1] == 0;
+	bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
+	// Not likely to matter, but when no twist (rot2 == rot1),
+	// setting back_twist true helps keep diagonals same as previous builds.
+	bool back_twist = rot2 <= rot1;
+
 	for(const auto &o : poly.outlines()) {
 		Vector2d prev1 = trans1 * o.vertices[0];
 		Vector2d prev2 = trans2 * o.vertices[0];
-		for (size_t i=1; i<=o.vertices.size(); ++i) {
+
+		// For equal length diagonals, flip selected choice depending on direction of twist and
+		// whether the outline is negative (eg circle hole inside a larger circle).
+		// This was tested against circles with a single point touching the origin,
+		// and extruded with twist.  Diagonal choice determined by whichever option
+		// matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
+		bool flip = ((!o.positive) xor (back_twist));
+	
+		for (size_t i=1;i<=o.vertices.size();++i) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
-			ps->append_poly();
-			
-			// Make sure to split negative outlines correctly
-			if (splitfirst xor !o.positive) {
+
+			int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
+			bool splitfirst = diff_sign == -1 || (diff_sign == 0 && !flip);
+
+// Enable/Disable testing of 4-way split quads, with added midpoint.
+// These look very nice when(and only when) diagonals are near equal.
+// This typically happens when an edge is colinear with the origin.
+#if 0
+			// Diagonals should be equal whenever an edge is co-linear with the origin (edge itself need not touch it)
+			if (!is_straight && diff_sign == 0) {
+				// Split into 4 triangles, with an added midpoint.
+				//Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
+				Vector2d mid = trans_mid * (o.vertices[(i-1) % o.vertices.size()] + o.vertices[i % o.vertices.size()])/2;
+				double h_mid = (h1+h2)/2;
+				ps->append_poly();
+				ps->insert_vertex(prev1[0], prev1[1], h1);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->append_poly();
+				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(curr2[0], curr2[1], h2);
+				ps->append_poly();
+				ps->insert_vertex(curr2[0], curr2[1], h2);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(prev2[0], prev2[1], h2);
+				ps->append_poly();
+				ps->insert_vertex(prev2[0], prev2[1], h2);
+				ps->insert_vertex(  mid[0],   mid[1], h_mid);
+				ps->insert_vertex(prev1[0], prev1[1], h1);
+			} else
+#endif
+			// Split along shortest diagonal,
+			// unless at top for a 0-scaled axis (which can create 0 thickness "ears")
+			if (splitfirst xor any_zero) {
+				ps->append_poly();
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
-				if (scale2[0] > 0 || scale2[1] > 0) {
+				if (!any_zero || (any_non_zero && prev2 != curr2)) {
 					ps->append_poly();
 					ps->insert_vertex(curr2[0], curr2[1], h2);
 					ps->insert_vertex(prev1[0], prev1[1], h1);
 					ps->insert_vertex(prev2[0], prev2[1], h2);
 				}
-			}
-			else {
+			}	else {
+				ps->append_poly();
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(prev2[0], prev2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
-				if (scale2[0] > 0 || scale2[1] > 0) {
+				if (!any_zero || (any_non_zero && prev2 != curr2)) {
 					ps->append_poly();
 					ps->insert_vertex(prev2[0], prev2[1], h2);
 					ps->insert_vertex(curr2[0], curr2[1], h2);
@@ -833,7 +905,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 
 	ps->append(*ps_bottom);
 	delete ps_bottom;
-	if (node.scale_x > 0 || node.scale_y > 0) {
+	// If either scale components are 0, then top will be zero-area, so skip it.
+	if (node.scale_x > 0 && node.scale_y > 0) {
 		Polygon2d top_poly(poly);
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
 		top_poly.transform(trans); // top
@@ -842,9 +915,38 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		ps->append(*ps_top);
 		delete ps_top;
 	}
-	size_t slices = node.slices;
 
-	for (unsigned int j = 0; j < slices; ++j) {
+	size_t slices;
+	if (node.has_slices) {
+		slices = node.slices;
+	} else if (node.has_twist) {
+		double max_r1_sqr = 0; // r1 is before scaling
+		Vector2d scale(node.scale_x, node.scale_y);
+		for(const auto &o : poly.outlines())
+			for(const auto &v : o.vertices)
+				max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
+		// Calculate Helical curve length for Twist with no Scaling
+		// **** Don't know how to handle twist with non-uniform scaling, ****
+		// **** so just use this straight helix calculation anyways.     ****
+		if ((node.scale_x == 1.0 && node.scale_y == 1.0) || node.scale_x != node.scale_y) {
+			slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
+		} else { // uniform scaling with twist, use conical helix calculation
+			slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
+		}
+	} else if (node.scale_x != node.scale_y) {
+		// Non uniform scaling, w/o twist
+		double max_delta_sqr = 0; // delta from before/after scaling
+		Vector2d scale(node.scale_x, node.scale_y);
+		for(const auto &o : poly.outlines())
+			for(const auto &v : o.vertices)
+				max_delta_sqr = fmax(max_delta_sqr, (v-v.cwiseProduct(scale)).squaredNorm());
+		slices = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
+	} else {
+		// uniform or [1,1] scaling w/o twist needs only one slice
+		slices = 1;
+	}
+
+	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*(j+1) / slices;
 		double height1 = h1 + (h2-h1)*j / slices;
@@ -957,8 +1059,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return nullptr;
 			}
 		}
-		fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 	}
+	fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 	
@@ -1117,9 +1219,9 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
 					if (!chPS) {
 						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-                        if (chN && !chN->isEmpty()) {
+						if (chN && !chN->isEmpty()) {
 							PolySet *ps = new PolySet(3);
-                            bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
 							if (err) {
 								PRINT("ERROR: Nef->PolySet failed");
 							}
