@@ -292,7 +292,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			// backwards compatible
 			node->faces = c->lookup_variable("triangles", true);
 			if (node->faces->type() != Value::Type::UNDEFINED) {
-				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+				LOG(message_group::Deprecated,Location::NONE,"","polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
 		break;

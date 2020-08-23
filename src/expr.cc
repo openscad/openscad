@@ -277,11 +277,12 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 */
 static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
+	// PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
+	LOG(message_group::Deprecated,loc,ctx->documentPath(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
 static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
 	//"WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
-	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s'",begin,step);
+	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s",begin,step);
 }
 
 ValuePtr Range::evaluate(const std::shared_ptr<Context>& context) const
@@ -474,7 +475,7 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Trace,val->location(),ctx->documentPath(),"Called by '%1$s'",val->get_name());
+	LOG(message_group::Trace,val->location(),ctx->documentPath(),"called by '%1$s'",val->get_name());
 }
 static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
 	LOG(message_group::Warning,loc,ctx->documentPath(),"Can't call function on %1$s",name);

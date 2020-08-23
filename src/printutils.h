@@ -35,10 +35,8 @@ enum class message_group {
 std::string getGroupName(const enum message_group &groupName);
 
 struct Message{
-std::string file;
-int line;
 std::string msg;
-// int msg_id;
+Location loc;
 enum message_group group;
 };
 
@@ -64,10 +62,10 @@ bool would_have_thrown();
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
-void printDeprecation(const std::string &str);
+//void printDeprecation(const std::string &str);
 void resetSuppressedMessages();
 
-#define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
+//#define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
@@ -162,13 +160,15 @@ void LOG(const message_group &msg_grp,const Location &loc,const std::string &doc
 	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
 	const auto formatted = msg.format();
 	//call PRINT  -> to console
-	std::cout<<formatted<<std::endl;
-	PRINT(msg_grp,formatted,loc.toRelativeString(docPath));
 
+	//check for deprecations
+	// if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted) != printedDeprecations.end()) return;
+	// if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted);
 
-	// const std::string relativePath = boostfs_uncomplete(loc.filePath(), docPath).generic_string();
-	const int line = loc.firstLine();
+	if(!loc.isNone()) PRINT(msg_grp,formatted,loc.toRelativeString(docPath));
+	else PRINT(msg_grp,formatted,"");
+
 	//call  -> to errorLog
-	Message msgObj = {loc.fileName(),line,formatted,msg_grp};
+	Message msgObj = {formatted,loc,msg_grp};
 	PRINTLOG(msgObj);
 }

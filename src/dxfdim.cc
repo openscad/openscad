@@ -177,7 +177,7 @@ ValuePtr builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared
 			bool originOk = v->getVec2(xorigin, yorigin);
 			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
 			if(!originOk){
-				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"dxf_cross(..., origin=%s) could not be converted, %1$s",v->toEchoString());
+				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"dxf_cross(..., origin=%1$s) could not be converted",v->toEchoString());
 			}
 		}else if (n == "scale"){
 			v->getDouble(scale);

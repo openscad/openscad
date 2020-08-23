@@ -93,7 +93,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			if (v->getDouble(num)){
 				scalevec.setConstant(num);
 			}else{
-				LOG(message_group::Warning,inst->location(),ctx->documentPath()," Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",v->toEchoString());
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",v->toEchoString());
 			}
 		}
 		if(OpenSCAD::rangeCheck){
@@ -207,7 +207,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			node->matrix.translate(translatevec);
 		}else{
 			LOG(message_group::Warning,inst->location(),ctx->documentPath(),
-				"Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",v->toEchoString());
+				"Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers",v->toEchoString());
 		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {

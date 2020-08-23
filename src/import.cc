@@ -86,7 +86,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (v->isUndefined()) {
 		v = c->lookup_variable("filename", true);
 		if (!v->isUndefined()) {
-			printDeprecation("filename= is deprecated. Please use file=");
+			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
 	}
 	const std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
@@ -115,7 +115,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (layerval->isUndefined()) {
 		layerval = c->lookup_variable("layername", true);
 		if (!layerval->isUndefined()) {
-			printDeprecation("layername= is deprecated. Please use layer=");
+			LOG(message_group::Deprecated,Location::NONE,"","layername= is deprecated. Please use layer=");
 		}
 	}
 	node->layername = layerval->isUndefined() ? ""  : layerval->toString();

@@ -6,9 +6,12 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
 #include "exceptions.h"
+#include <set>
+
 
 namespace fs = boost::filesystem;
 
+std::set<std::string> printedDeprecations;
 std::list<std::string> print_messages_stack;
 std::list<struct Message> log_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
@@ -82,12 +85,15 @@ void PRINTTMP(const std::string &msg)
 
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
-	if (msg.empty()) return;
+	if (msg_group == message_group::Deprecated && printedDeprecations.find(msg+loc) != printedDeprecations.end()) return;
+	if(msg_group == message_group::Deprecated) printedDeprecations.insert(msg+loc);
+
+	if (msg.empty() && msg_group!=message_group::Echo) return;
 	if (print_messages_stack.size() > 0) {
 		if (!print_messages_stack.back().empty()) {
 			print_messages_stack.back() += "\n";
 		}
-		if(msg_group!=message_group::None) print_messages_stack.back() += getGroupName(msg_group)+":"+msg;
+		if(msg_group!=message_group::None) print_messages_stack.back() += getGroupName(msg_group)+": "+msg;
 		else print_messages_stack.back() += msg;
 	}
 	PRINT_NOCACHE(msg_group,msg,loc);
@@ -95,9 +101,8 @@ void PRINT(const enum message_group &msg_group,const std::string &msg,const std:
 
 void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
-	if (msg.empty()) return;
-
-	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace) {
+	if (msg.empty() && msg_group!=message_group::Echo) return;
+	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace || msg_group==message_group::Echo) {
 		size_t i;
 		for (i=0; i<lastmessages.size(); ++i) {
 			if (lastmessages[i] != msg) break;
@@ -123,24 +128,10 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,co
 	}
 }
 
-// void LOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group)
-// {
-// 		//to console
-
-// 		std::string loc = file.length()>0?file+",":file;
-// 		loc += line>0?std::to_string(line):"";
-// 		PRINT(msg_group,msg,loc);
-
-// 		//to error log
-// 		if (!outputhandler2) {
-// 		fprintf(stderr, "%s\n", msg.c_str());
-// 		} else {
-// 			Message msgObj = {file,line,msg,0,msg_group};
-// 			outputhandler2(msgObj, outputhandler_data2);
-// 		}
-// }
 void PRINTLOG(const Message &msg_obj)
 {
+		if (msg_obj.group == message_group::Deprecated && printedDeprecations.find(msg_obj.msg) != printedDeprecations.end()) return;
+		if(msg_obj.group == message_group::Deprecated) printedDeprecations.insert(msg_obj.msg);
 		//to error log
 		if (!outputhandler2) {
 		// fprintf(stderr, "%s\n", msg.c_str());
@@ -189,18 +180,15 @@ std::string two_digit_exp_format(double x)
 	return two_digit_exp_format(std::to_string(x));
 }
 
-#include <set>
 
-std::set<std::string> printedDeprecations;
-
-void printDeprecation(const std::string &str)
-{
-	if (printedDeprecations.find(str) == printedDeprecations.end()) {
-		printedDeprecations.insert(str);
-		std::string msg = "DEPRECATED: " + str;
-		//PRINT(msg);
-	}
-}
+// void printDeprecation(const std::string &str)
+// {
+// 	if (printedDeprecations.find(str) == printedDeprecations.end()) {
+// 		printedDeprecations.insert(str);
+// 		std::string msg = "DEPRECATED: " + str;
+// 		// PRINT(msg);
+// 	}
+// }
 
 void resetSuppressedMessages()
 {
@@ -244,6 +232,8 @@ std::string getGroupName(const enum message_group &groupName)
 	case message_group::Echo:
 		return group="ECHO";
 		break;
+	case message_group::None:
+		return group="NONE";
 	default:
 		break;
 	}

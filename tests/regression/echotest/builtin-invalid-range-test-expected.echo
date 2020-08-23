@@ -1,74 +1,74 @@
 ECHO: "Primitives"
 ECHO: "i=1, primitive test"
 ECHO: "i=0, primitive test"
-WARNING: cube(size=[1, 0, 1], ...), in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=0), in file builtin-invalid-range-test.scad, line 9
-WARNING: cylinder(h=0, ...), in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=0, r2=0, ...), in file builtin-invalid-range-test.scad, line 11
-WARNING: square(size=0, ...), in file builtin-invalid-range-test.scad, line 12
-WARNING: square(size=[1, 0], ...), in file builtin-invalid-range-test.scad, line 13
-WARNING: square(size=[0, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=0), in file builtin-invalid-range-test.scad, line 15
+WARNING: cube(size=[1, 0, 1], ...) in file builtin-invalid-range-test.scad, line 8
+WARNING: sphere(r=0) in file builtin-invalid-range-test.scad, line 9
+WARNING: cylinder(h=0, ...) in file builtin-invalid-range-test.scad, line 10
+WARNING: cylinder(r1=0, r2=0, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: square(size=0, ...) in file builtin-invalid-range-test.scad, line 12
+WARNING: square(size=[1, 0], ...) in file builtin-invalid-range-test.scad, line 13
+WARNING: square(size=[0, 1], ...) in file builtin-invalid-range-test.scad, line 14
+WARNING: circle(r=0) in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=-1, primitive test"
-WARNING: cube(size=[1, -1, 1], ...), in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=-1), in file builtin-invalid-range-test.scad, line 9
-WARNING: cylinder(h=-1, ...), in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=-1, r2=-1, ...), in file builtin-invalid-range-test.scad, line 11
-WARNING: square(size=-1, ...), in file builtin-invalid-range-test.scad, line 12
-WARNING: square(size=[1, -1], ...), in file builtin-invalid-range-test.scad, line 13
-WARNING: square(size=[-1, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=-1), in file builtin-invalid-range-test.scad, line 15
+WARNING: cube(size=[1, -1, 1], ...) in file builtin-invalid-range-test.scad, line 8
+WARNING: sphere(r=-1) in file builtin-invalid-range-test.scad, line 9
+WARNING: cylinder(h=-1, ...) in file builtin-invalid-range-test.scad, line 10
+WARNING: cylinder(r1=-1, r2=-1, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: square(size=-1, ...) in file builtin-invalid-range-test.scad, line 12
+WARNING: square(size=[1, -1], ...) in file builtin-invalid-range-test.scad, line 13
+WARNING: square(size=[-1, 1], ...) in file builtin-invalid-range-test.scad, line 14
+WARNING: circle(r=-1) in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=-inf, primitive test"
-WARNING: cube(size=[1, -inf, 1], ...), in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=-inf), in file builtin-invalid-range-test.scad, line 9
-WARNING: cylinder(h=-inf, ...), in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=-inf, r2=-inf, ...), in file builtin-invalid-range-test.scad, line 11
-WARNING: square(size=-inf, ...), in file builtin-invalid-range-test.scad, line 12
-WARNING: square(size=[1, -inf], ...), in file builtin-invalid-range-test.scad, line 13
-WARNING: square(size=[-inf, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=-inf), in file builtin-invalid-range-test.scad, line 15
+WARNING: cube(size=[1, -inf, 1], ...) in file builtin-invalid-range-test.scad, line 8
+WARNING: sphere(r=-inf) in file builtin-invalid-range-test.scad, line 9
+WARNING: cylinder(h=-inf, ...) in file builtin-invalid-range-test.scad, line 10
+WARNING: cylinder(r1=-inf, r2=-inf, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: square(size=-inf, ...) in file builtin-invalid-range-test.scad, line 12
+WARNING: square(size=[1, -inf], ...) in file builtin-invalid-range-test.scad, line 13
+WARNING: square(size=[-inf, 1], ...) in file builtin-invalid-range-test.scad, line 14
+WARNING: circle(r=-inf) in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=nan, primitive test"
-WARNING: cube(size=[1, nan, 1], ...), in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=nan), in file builtin-invalid-range-test.scad, line 9
-WARNING: cylinder(h=nan, ...), in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=nan, r2=nan, ...), in file builtin-invalid-range-test.scad, line 11
-WARNING: square(size=nan, ...), in file builtin-invalid-range-test.scad, line 12
-WARNING: square(size=[1, nan], ...), in file builtin-invalid-range-test.scad, line 13
-WARNING: square(size=[nan, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=nan), in file builtin-invalid-range-test.scad, line 15
+WARNING: cube(size=[1, nan, 1], ...) in file builtin-invalid-range-test.scad, line 8
+WARNING: sphere(r=nan) in file builtin-invalid-range-test.scad, line 9
+WARNING: cylinder(h=nan, ...) in file builtin-invalid-range-test.scad, line 10
+WARNING: cylinder(r1=nan, r2=nan, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: square(size=nan, ...) in file builtin-invalid-range-test.scad, line 12
+WARNING: square(size=[1, nan], ...) in file builtin-invalid-range-test.scad, line 13
+WARNING: square(size=[nan, 1], ...) in file builtin-invalid-range-test.scad, line 14
+WARNING: circle(r=nan) in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=inf, primitive test"
-WARNING: cube(size=[1, inf, 1], ...), in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=inf), in file builtin-invalid-range-test.scad, line 9
-WARNING: cylinder(h=inf, ...), in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=inf, r2=inf, ...), in file builtin-invalid-range-test.scad, line 11
-WARNING: square(size=inf, ...), in file builtin-invalid-range-test.scad, line 12
-WARNING: square(size=[1, inf], ...), in file builtin-invalid-range-test.scad, line 13
-WARNING: square(size=[inf, 1], ...), in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=inf), in file builtin-invalid-range-test.scad, line 15
+WARNING: cube(size=[1, inf, 1], ...) in file builtin-invalid-range-test.scad, line 8
+WARNING: sphere(r=inf) in file builtin-invalid-range-test.scad, line 9
+WARNING: cylinder(h=inf, ...) in file builtin-invalid-range-test.scad, line 10
+WARNING: cylinder(r1=inf, r2=inf, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: square(size=inf, ...) in file builtin-invalid-range-test.scad, line 12
+WARNING: square(size=[1, inf], ...) in file builtin-invalid-range-test.scad, line 13
+WARNING: square(size=[inf, 1], ...) in file builtin-invalid-range-test.scad, line 14
+WARNING: circle(r=inf) in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=test, primitive test"
-WARNING: Unable to convert cube(size=[1, "test", 1], ...) parameter to a number or a vec3 of numbers, in file builtin-invalid-range-test.scad, line 8
-WARNING: Unable to convert square(size="test", ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 12
-WARNING: Unable to convert square(size=[1, "test"], ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 13
-WARNING: Unable to convert square(size=["test", 1], ...) parameter to a number or a vec2 of numbers, in file builtin-invalid-range-test.scad, line 14
+WARNING: Unable to convert cube(size=[1, "test", 1], ...) parameter to a number or a vec3 of numbers in file builtin-invalid-range-test.scad, line 8
+WARNING: Unable to convert square(size="test", ...) parameter to a number or a vec2 of numbers in file builtin-invalid-range-test.scad, line 12
+WARNING: Unable to convert square(size=[1, "test"], ...) parameter to a number or a vec2 of numbers in file builtin-invalid-range-test.scad, line 13
+WARNING: Unable to convert square(size=["test", 1], ...) parameter to a number or a vec2 of numbers in file builtin-invalid-range-test.scad, line 14
 ECHO: "Transformations"
 ECHO: "i=1, transformation test"
 ECHO: "i=0, transformation test"
-WARNING: scale(0), in file builtin-invalid-range-test.scad, line 26
+WARNING: scale(0) in file builtin-invalid-range-test.scad, line 26
 ECHO: "i=-1, transformation test"
 ECHO: "i=-inf, transformation test"
-WARNING: scale(-inf), in file builtin-invalid-range-test.scad, line 26
-WARNING: Problem converting rotate(a=-inf) parameter, in file builtin-invalid-range-test.scad, line 28
-WARNING: Unable to convert translate([0, -inf, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 30
+WARNING: scale(-inf) in file builtin-invalid-range-test.scad, line 26
+WARNING: Problem converting rotate(a=-inf) parameter in file builtin-invalid-range-test.scad, line 28
+WARNING: Unable to convert translate([0, -inf, 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "i=nan, transformation test"
-WARNING: scale(nan), in file builtin-invalid-range-test.scad, line 26
-WARNING: Problem converting rotate(a=nan) parameter, in file builtin-invalid-range-test.scad, line 28
-WARNING: Unable to convert translate([0, nan, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 30
+WARNING: scale(nan) in file builtin-invalid-range-test.scad, line 26
+WARNING: Problem converting rotate(a=nan) parameter in file builtin-invalid-range-test.scad, line 28
+WARNING: Unable to convert translate([0, nan, 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "i=inf, transformation test"
-WARNING: scale(inf), in file builtin-invalid-range-test.scad, line 26
-WARNING: Problem converting rotate(a=inf) parameter, in file builtin-invalid-range-test.scad, line 28
-WARNING: Unable to convert translate([0, inf, 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 30
+WARNING: scale(inf) in file builtin-invalid-range-test.scad, line 26
+WARNING: Problem converting rotate(a=inf) parameter in file builtin-invalid-range-test.scad, line 28
+WARNING: Unable to convert translate([0, inf, 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "i=test, transformation test"
-WARNING: Unable to convert scale("test") parameter to a number, a vec3 or vec2 of numbers or a number, in file builtin-invalid-range-test.scad, line 26
-WARNING: Problem converting rotate(a="test") parameter, in file builtin-invalid-range-test.scad, line 28
-WARNING: Unable to convert translate([0, "test", 0]) parameter to a vec3 or vec2 of numbers, in file builtin-invalid-range-test.scad, line 30
+WARNING: Unable to convert scale("test") parameter to a number, a vec3 or vec2 of numbers or a number in file builtin-invalid-range-test.scad, line 26
+WARNING: Problem converting rotate(a="test") parameter in file builtin-invalid-range-test.scad, line 28
+WARNING: Unable to convert translate([0, "test", 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "Those are okay"

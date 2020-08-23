@@ -45,7 +45,8 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % evalctx->loc.toRelativeString(this->documentPath()));
+			// PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % evalctx->loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Deprecated,evalctx->loc,this->documentPath(),"The %1$s() module will be removed in future releases. Use %2$s instead.", std::string(name),std::string(replacement));
 		}
 		return m->instantiate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), &inst, evalctx);
 	}

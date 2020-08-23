@@ -13,7 +13,7 @@ shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) cons
 	const auto &N = this->cache[id]->N;
 #ifdef DEBUG
 	LOG(message_group::None,Location::NONE,"","CGAL Cache hit: %1$s (%2$d bytes)",id.substr(0, 40),N ? N->memsize() : 0);
-#endif-1,getForma
+#endif
 	return N;
 }
 

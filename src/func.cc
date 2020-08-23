@@ -60,7 +60,7 @@ int process_id = getpid();
 std::mt19937 deterministic_rng( std::time(nullptr) + process_id );
 
 static void print_argCnt_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){
-	LOG(message_group::None,evalctx->loc,ctx->documentPath(),"%1$s() number of parameters does not match",name);
+	LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"%1$s() number of parameters does not match",name);
 }
 
 static void print_argConvert_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){

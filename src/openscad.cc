@@ -103,7 +103,16 @@ public:
 	}
 	static void output(const enum message_group &msg_group,const std::string &msg,const std::string &loc, void *userdata) {
 		auto thisp = static_cast<Echostream*>(userdata);
-		*thisp << getGroupName(msg_group) <<msg << loc<<"\n";
+		if(msg_group!=message_group::None)
+		{
+			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg<<"\n";
+			else *thisp << getGroupName(msg_group) <<": "<<msg << " "<<loc<<"\n";
+		}
+		else
+		{
+			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg <<"\n";
+			else *thisp <<msg << " "<<loc<<"\n";
+		}
 	}
 	~Echostream() {
 		this->close();
@@ -987,11 +996,11 @@ int main(int argc, char **argv)
 		output_files = vm["o"].as<vector<string>>();
 	}
 	if (vm.count("s")) {
-		printDeprecation("The -s option is deprecated. Use -o instead.\n");
+		LOG(message_group::Deprecated,Location::NONE,"","The -s option is deprecated. Use -o instead.\n");
 		output_files.push_back(vm["s"].as<string>());
 	}
 	if (vm.count("x")) {
-		printDeprecation("The -x option is deprecated. Use -o instead.\n");
+		LOG(message_group::Deprecated,Location::NONE,"","The -x option is deprecated. Use -o instead.\n");
 		output_files.push_back(vm["x"].as<string>());
 	}
 	if (vm.count("d")) {

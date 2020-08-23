@@ -78,7 +78,7 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
-	LOG(message_group::Trace,mod->location(),ctx->documentPath(),"Called by '%1$s'",mod->name());
+	LOG(message_group::Trace,mod->location(),ctx->documentPath(),"called by '%1$s'",mod->name());
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const

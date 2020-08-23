@@ -196,7 +196,7 @@ AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileC
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	} catch (EvaluationException &e) {
-		LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
+		// LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
 	}
 
 	return node;

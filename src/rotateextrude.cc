@@ -72,7 +72,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	auto angle = c->lookup_variable("angle", true);
 
 	if (!file->isUndefined()) {
-		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);

@@ -55,7 +55,7 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
           if (arg->getName() == name) found = true;
         }
         if (!found) {
-          //"WARNING: variable %s not specified as parameter, %s", name % this->loc.toRelativeString(this->documentPath()));
+		  LOG(message_group::Warning,this->loc,this->documentPath(),"variable %1$s not specified as parameter",name);
         }
       }
       if (resolvedArgs.find(name) != resolvedArgs.end()) {

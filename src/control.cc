@@ -173,7 +173,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 
 	switch (this->type) {
 	case Type::CHILD:	{
-		printDeprecation("child() will be removed in future releases. Use children() instead.");
+		LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 		int n = 0;
 		if (evalctx->numArgs() > 0) {
 			double v;
@@ -267,7 +267,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
 				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
-					"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toEchoString());
+					"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",value->toEchoString());
 				return nullptr;
 			}
 		}

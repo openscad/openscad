@@ -416,10 +416,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 	for (const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
 			LOG(message_group::Warning,Location::NONE,"",
-				"Unsupported DXF Entity '%1$s' (%2$x) in %s.",i.first,i.second,QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+				"Unsupported DXF Entity '%1$s' (%2$x) in %3$s.",i.first,i.second,QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		} else {
 			LOG(message_group::Warning,Location::NONE,"",
-				"Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",i.first,i.second,layername,QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+				"Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",i.first,i.second,layername,boostfs_uncomplete(filename, fs::current_path()).generic_string());
 		}
 	}
 
