@@ -10,7 +10,7 @@
 #undef snprintf
 #include <locale.h>
 #include "AST.h"
-
+#include <set>
 inline char * _( const char * msgid ) { return gettext( msgid ); }
 inline const char * _( const char * msgid, const char *msgctxt) {
 	/* The separator between msgctxt and msgid in a .mo file.  */
@@ -154,6 +154,8 @@ public:
 	}
 };
 
+extern std::set<std::string> printedDeprecations;
+
 template <typename F, typename... Args>
 void LOG(const message_group &msg_grp,const Location &loc,const std::string &docPath,F&& f, Args&&... args)
 {
@@ -165,6 +167,8 @@ void LOG(const message_group &msg_grp,const Location &loc,const std::string &doc
 	// if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted) != printedDeprecations.end()) return;
 	// if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted);
 
+	if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted+loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
+	if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted+loc.toRelativeString(docPath));
 	if(!loc.isNone()) PRINT(msg_grp,formatted,loc.toRelativeString(docPath));
 	else PRINT(msg_grp,formatted,"");
 

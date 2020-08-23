@@ -6,7 +6,6 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
 #include "exceptions.h"
-#include <set>
 
 
 namespace fs = boost::filesystem;
@@ -85,9 +84,8 @@ void PRINTTMP(const std::string &msg)
 
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
-	if (msg_group == message_group::Deprecated && printedDeprecations.find(msg+loc) != printedDeprecations.end()) return;
-	if(msg_group == message_group::Deprecated) printedDeprecations.insert(msg+loc);
-
+	// if (msg_group == message_group::Deprecated && printedDeprecations.find(msg+loc) != printedDeprecations.end()) return;
+	// if(msg_group == message_group::Deprecated) printedDeprecations.insert(msg+loc);
 	if (msg.empty() && msg_group!=message_group::Echo) return;
 	if (print_messages_stack.size() > 0) {
 		if (!print_messages_stack.back().empty()) {
@@ -105,10 +103,10 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,co
 	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace || msg_group==message_group::Echo) {
 		size_t i;
 		for (i=0; i<lastmessages.size(); ++i) {
-			if (lastmessages[i] != msg) break;
+			if (lastmessages[i] != msg+loc) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
-		else lastmessages.push_back(msg);
+		else lastmessages.push_back(msg+loc);
 	}
 	if(!deferred)
 		if (!OpenSCAD::quiet || msg_group==message_group::Error) {
@@ -130,8 +128,8 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,co
 
 void PRINTLOG(const Message &msg_obj)
 {
-		if (msg_obj.group == message_group::Deprecated && printedDeprecations.find(msg_obj.msg) != printedDeprecations.end()) return;
-		if(msg_obj.group == message_group::Deprecated) printedDeprecations.insert(msg_obj.msg);
+		// if (msg_obj.group == message_group::Deprecated && printedDeprecations.find(msg_obj.msg) != printedDeprecations.end()) return;
+		// if(msg_obj.group == message_group::Deprecated) printedDeprecations.insert(msg_obj.msg);
 		//to error log
 		if (!outputhandler2) {
 		// fprintf(stderr, "%s\n", msg.c_str());
