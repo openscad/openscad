@@ -14,7 +14,7 @@ ECHO: false
 ECHO: false
 ECHO: "--------"
 ECHO: "causing warnings:"
-WARNING: is_list() number of parameters does not match, in file islist-test.scad, line 17
+WARNING: is_list() number of parameters does not match in file islist-test.scad, line 17
 ECHO: undef
-WARNING: is_list() number of parameters does not match, in file islist-test.scad, line 18
+WARNING: is_list() number of parameters does not match in file islist-test.scad, line 18
 ECHO: undef

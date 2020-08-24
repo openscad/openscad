@@ -955,7 +955,7 @@ ValuePtr evaluate_function(const std::string& name, const std::shared_ptr<Expres
 		}
 
 		if (counter++ == 1000000){
-			LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '1%s'",name);
+			LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
 			throw RecursionException::create("function", name,loc);
 		}
 	}

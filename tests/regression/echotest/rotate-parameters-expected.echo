@@ -1,11 +1,11 @@
-WARNING: Problem converting rotate(a=undef) parameter, in file rotate-parameters.scad, line 30
-WARNING: Problem converting rotate(a=undef) parameter, in file rotate-parameters.scad, line 31
-WARNING: When parameter a is supplied as vector, v is ignored rotate(a=[45, 30, 15], v=[0, 0, 0]), in file rotate-parameters.scad, line 38
-WARNING: Problem converting rotate(a=[45, 45, 45, 45]) parameter, in file rotate-parameters.scad, line 46
-WARNING: Problem converting rotate(a=undef) parameter, in file rotate-parameters.scad, line 49
-WARNING: Problem converting rotate(a="45") parameter, in file rotate-parameters.scad, line 52
-WARNING: Problem converting rotate(..., v=[0, 1, 0, 0]) parameter, in file rotate-parameters.scad, line 55
-WARNING: Problem converting rotate(a=undef) parameter, in file rotate-parameters.scad, line 58
-WARNING: Problem converting rotate(a="a", v="v") parameter, in file rotate-parameters.scad, line 61
-WARNING: Problem converting rotate(a="a", v="v") parameter, in file rotate-parameters.scad, line 64
-WARNING: Problem converting rotate(a=["a"], v=["v"]) parameter, in file rotate-parameters.scad, line 67
+WARNING: Problem converting rotate(a=undef) parameter in file rotate-parameters.scad, line 30
+WARNING: Problem converting rotate(a=undef) parameter in file rotate-parameters.scad, line 31
+WARNING: When parameter a is supplied as vector, v is ignored rotate(a=[45, 30, 15], v=[0, 0, 0]) in file rotate-parameters.scad, line 38
+WARNING: Problem converting rotate(a=[45, 45, 45, 45]) parameter in file rotate-parameters.scad, line 46
+WARNING: Problem converting rotate(a=undef) parameter in file rotate-parameters.scad, line 49
+WARNING: Problem converting rotate(a="45") parameter in file rotate-parameters.scad, line 52
+WARNING: Problem converting rotate(..., v=[0, 1, 0, 0]) parameter in file rotate-parameters.scad, line 55
+WARNING: Problem converting rotate(a=undef) parameter in file rotate-parameters.scad, line 58
+WARNING: Problem converting rotate(a="a", v="v") parameter in file rotate-parameters.scad, line 61
+WARNING: Problem converting rotate(a="a", v="v") parameter in file rotate-parameters.scad, line 64
+WARNING: Problem converting rotate(a=["a"], v=["v"]) parameter in file rotate-parameters.scad, line 67

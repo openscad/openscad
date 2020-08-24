@@ -125,7 +125,7 @@ public:
 	}
 };
 
-#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()
+#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream()<< s).str()
 
 template <typename... Ts>
 class MessageClass

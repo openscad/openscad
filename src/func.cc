@@ -110,7 +110,7 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		if (std::isinf(min) || std::isnan(min)){
 			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rands() range min cannot be infinite");
 			min = -std::numeric_limits<double>::max()/2;
-			LOG(message_group::Warning,Location::NONE,"","Resetting to %1f",min);
+			LOG(message_group::Warning,Location::NONE,"","resetting to %1f",min);
 		}
 		ValuePtr v1 = evalctx->getArgValue(1);
 		if (v1->type() != Value::Type::NUMBER) goto quit;
@@ -118,7 +118,7 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		if (std::isinf(max)  || std::isnan(max)) {
 			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rands() range max cannot be infinite");
 			max = std::numeric_limits<double>::max()/2;
-			LOG(message_group::Warning,Location::NONE,"","Resetting to %1f",max);
+			LOG(message_group::Warning,Location::NONE,"","resetting to %1f",max);
 		}
 		if (max < min) {
 			double tmp = min; min = max; max = tmp;
@@ -128,7 +128,7 @@ ValuePtr builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr
 		double numresultsd = std::abs( v2->toDouble() );
 		if (std::isinf(numresultsd)  || std::isnan(numresultsd)) {
 			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rands() cannot create an infinite number of results");
-			LOG(message_group::Warning,Location::NONE,"","Resetting number of results to 1");
+			LOG(message_group::Warning,Location::NONE,"","resetting number of results to 1");
 			numresultsd = 1;
 		}
 		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );

@@ -1,5 +1,5 @@
-DEPRECATED: child() will be removed in future releases. Use children() instead. 
-ECHO:  
+DEPRECATED: child() will be removed in future releases. Use children() instead.
+ECHO: 
 DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead. in file allmodules.scad, line 6
 DEPRECATED: The dxf_linear_extrude() module will be removed in future releases. Use linear_extrude() instead. in file allmodules.scad, line 13
 DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. Use rotate_extrude() instead. in file allmodules.scad, line 15

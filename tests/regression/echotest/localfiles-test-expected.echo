@@ -1,3 +1,3 @@
-WARNING: variable h not specified as parameter, in file localfiles_module.scad, line 3
+WARNING: variable h not specified as parameter in file localfiles_module.scad, line 3
 DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.
 DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.

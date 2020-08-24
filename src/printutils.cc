@@ -100,7 +100,7 @@ void PRINT(const enum message_group &msg_group,const std::string &msg,const std:
 void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
 	if (msg.empty() && msg_group!=message_group::Echo) return;
-	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace || msg_group==message_group::Echo) {
+	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace) {
 		size_t i;
 		for (i=0; i<lastmessages.size(); ++i) {
 			if (lastmessages[i] != msg+loc) break;

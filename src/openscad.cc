@@ -397,7 +397,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	}
 	tree.setRoot(root_node);
 	if (nextLocation) {
-		// PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
+		LOG(message_group::Warning,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
 	}
 	fs::current_path(original_path);
 
