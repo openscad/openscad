@@ -106,11 +106,11 @@ public:
 		if(msg_group!=message_group::None)
 		{
 			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg<<"\n";
-			else *thisp << getGroupName(msg_group) <<": "<<msg << " "<<loc<<"\n";
+			else *thisp << getGroupName(msg_group) <<": "<<msg<<" "<<loc<<"\n";
 		}
 		else
 		{
-			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg <<"\n";
+			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg<<"\n";
 			else *thisp <<msg << " "<<loc<<"\n";
 		}
 	}

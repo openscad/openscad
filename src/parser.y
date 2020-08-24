@@ -718,20 +718,20 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {
 				//both assignments in the mainFile
-				LOG(message_group::Warning,loc,"","%1$s was assigned on line %2$i but was overwritten on line %3$i",
-          assignment->getName(),assignment->location().firstLine(),loc.firstLine());
+				LOG(message_group::Warning,loc,mainFilePath.parent_path().generic_string(),"%1$s was assigned on line %2$i but was overwritten",
+          assignment->getName(),assignment->location().firstLine());
 			} else if (uncPathCurr == uncPathPrev) {
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times
 				if (assignment->location().firstLine() != loc.firstLine()) {
-				LOG(message_group::Warning,loc,"",
-          "%1$s was assigned on line %2$i of %3$s but was overwritten on line %4$i",
-          assignment->getName(),assignment->location().firstLine(),uncPathPrev,loc.firstLine());
+				LOG(message_group::Warning,Location::NONE,"",
+          "%1$s was assigned on line %2$i of %3$s but was overwritten",
+          assignment->getName(),assignment->location().firstLine(),uncPathPrev);
 				}
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
-				LOG(message_group::Warning,loc,"","%1$s was assigned on line %2$i of %3$s but was overwritten on line %4$i of %5$s",
-          assignment->getName(),assignment->location().firstLine(),uncPathPrev,loc.firstLine(),uncPathCurr);
+				LOG(message_group::Warning,loc,mainFilePath.parent_path().generic_string(),"%1$s was assigned on line %2$i of %3$s but was overwritten",
+          assignment->getName(),assignment->location().firstLine(),uncPathPrev);
 			}
 			assignment->setExpr(shared_ptr<Expression>(expr));
 			assignment->setLocation(loc);
