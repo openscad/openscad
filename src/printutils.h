@@ -131,7 +131,21 @@ private:
 	template <std::size_t... Is>
 	std::string format(const std::index_sequence<Is...>) const
 	{
-		boost::format f(fmt);
+
+		std::string s;
+		for(int i=0; fmt[i]!='\0'; i++) 
+		{
+			if(fmt[i] == '%' && !('0' <= fmt[i+1] && fmt[i+1] <= '9')) 
+			{
+				s.append("%%");
+			} 
+			else 
+			{
+				s.push_back(fmt[i]);
+			}
+		}
+		
+		boost::format f(s);
 		f.exceptions(boost::io::bad_format_string_bit);
 		std::initializer_list<char> {(static_cast<void>(f % std::get<Is>(args)), char{}) ...};
 		return boost::str(f);
@@ -153,7 +167,7 @@ extern std::set<std::string> printedDeprecations;
 
 template <typename F, typename... Args>
 void LOG(const message_group &msg_grp,const Location &loc,const std::string &docPath,F&& f, Args&&... args)
-{
+{	
 	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
 	const auto formatted = msg.format();
 
