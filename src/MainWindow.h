@@ -103,8 +103,9 @@ private slots:
 
 public:
 	static void consoleOutput(const enum message_group &msg_group,const std::string &msg,const std::string &loc, void *userdata);
-	static void errorLogOutput(const Message &log_msg, void *userdata2);
-	static void noOutput(const std::string &, void*) {};  // /dev/null
+	static void errorLogOutput(const Message &log_msg, void *userdata);
+	static void noOutputConsole(const enum message_group &,const std::string &,const std::string &, void*) {};  // /dev/null
+	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
 	void parseTopLevelDocument(bool rebuildParameterWidget);

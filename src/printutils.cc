@@ -14,9 +14,8 @@ std::set<std::string> printedDeprecations;
 std::list<std::string> print_messages_stack;
 std::list<struct Message> log_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
-void *outputhandler_data = nullptr;
 OutputHandlerFunc2 *outputhandler2 = nullptr;
-void *outputhandler_data2 = nullptr;
+void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
@@ -42,7 +41,7 @@ void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 void set_output_handler2(OutputHandlerFunc2 *newhandler, void *userdata)
 {
 	outputhandler2 = newhandler;
-	outputhandler_data2 = userdata;
+	outputhandler_data = userdata;
 }
 
 void no_exceptions_for_warnings()
@@ -124,7 +123,7 @@ void PRINTLOG(const Message &msg_obj)
 		if (!outputhandler2) {
 		// fprintf(stderr, "%s\n", msg.c_str());
 		} else {
-			outputhandler2(msg_obj, outputhandler_data2);
+			outputhandler2(msg_obj, outputhandler_data);
 		}
 }
 

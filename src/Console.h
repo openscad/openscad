@@ -41,22 +41,6 @@ public:
 	virtual ~Console();
 	QString clickedAnchor;
 	void contextMenuEvent(QContextMenuEvent *event) override;
-	
-	void mousePressEvent(QMouseEvent *e)
-	{
-		clickedAnchor = (e->button() & Qt::LeftButton) ? anchorAt(e->pos()) : QString();
-		QPlainTextEdit::mousePressEvent(e);
-	}
-
-	void mouseReleaseEvent(QMouseEvent *e)
-	{
-		if (e->button() & Qt::LeftButton && !clickedAnchor.isEmpty() &&
-				anchorAt(e->pos()) == clickedAnchor) {
-			emit linkActivated(clickedAnchor);
-		}
-
-		QPlainTextEdit::mouseReleaseEvent(e);
-	}
 
 signals:
 	void linkActivated(QString);
@@ -64,6 +48,5 @@ signals:
 public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
-	void doSomething(QString temp);
 
 };

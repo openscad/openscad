@@ -3085,8 +3085,7 @@ void MainWindow::consoleOutput(const enum message_group &msg_group,const QString
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+" "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
 	} else if (msg_group==message_group::Error) {
 		this->compileErrors++;
-		// this->console->appendHtml("<a href=\""+QString(msg)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+QT_HTML_ESCAPE(QString(msg))+ "</span></a>&nbsp;");
-		this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+", "+QT_HTML_ESCAPE(QString(loc))+ "</span></a>&nbsp;");
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+", "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
 	} else if (msg_group==message_group::Export_Error || msg_group==message_group::UI_Error || msg_group==message_group::Parser_Error) {
 		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+" "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
 	} else if (msg_group==message_group::Trace) {
@@ -3118,12 +3117,14 @@ void MainWindow::setCurrentOutput()
 
 void MainWindow::hideCurrentOutput()
 {
-	// set_output_handler(&MainWindow::noOutput, this);
+	set_output_handler(&MainWindow::noOutputConsole, this);
+	set_output_handler2(&MainWindow::noOutputErrorLog, this);
 }
 
 void MainWindow::clearCurrentOutput()
 {
-	// set_output_handler(nullptr, nullptr);
+	set_output_handler(nullptr, nullptr);
+	set_output_handler2(nullptr, nullptr);
 }
 
 void MainWindow::openCSGSettingsChanged()
