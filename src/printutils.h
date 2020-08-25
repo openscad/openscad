@@ -62,18 +62,13 @@ bool would_have_thrown();
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
-//void printDeprecation(const std::string &str);
 void resetSuppressedMessages();
 
-//#define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINTTMP(const std::string &msg); //just temporarily here [************Must Remove]
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
-#define PRINTB(_fmt, _arg) do { PRINTTMP(str(boost::format(_fmt) % _arg)); } while (0)
 
-// void PRINTLOG(const std::string &file,const int &line,const std::string &msg,const enum message_group &msg_group);
 void PRINTLOG(const Message &msg_obj);
 
 void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
@@ -161,18 +156,16 @@ void LOG(const message_group &msg_grp,const Location &loc,const std::string &doc
 {
 	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
 	const auto formatted = msg.format();
-	//call PRINT  -> to console
 
 	//check for deprecations
-	// if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted) != printedDeprecations.end()) return;
-	// if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted);
-
 	if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted+loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
 	if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted+loc.toRelativeString(docPath));
+
+	//to console
 	if(!loc.isNone()) PRINT(msg_grp,formatted,loc.toRelativeString(docPath));
 	else PRINT(msg_grp,formatted,"");
 
-	//call  -> to errorLog
+	//to ErrorLog
 	Message msgObj = {formatted,loc,msg_grp};
 	PRINTLOG(msgObj);
 }

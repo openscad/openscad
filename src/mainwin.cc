@@ -1445,7 +1445,7 @@ void MainWindow::actionShowLibraryFolder()
 		}
 	}
 	auto url = QString::fromStdString(path);
-	//PRINTB("Opening file browser for %s", url.toStdString() );
+	//LOG(message_group::None,Location::NONE,"","Opening file browser for %1$s",url.toStdString());
 	QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 

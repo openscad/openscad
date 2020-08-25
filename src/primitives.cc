@@ -577,7 +577,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					}
 					p->insert_vertex(px, py, pz);
 				} else {
-					PRINTB("WARNING: Point index %d is out of bounds (from faces[%d][%d]), %s", pt_i % face_i % fp_i % this->modinst->location().toRelativeString(this->document_path));
+					LOG(message_group::Warning,this->modinst->location(),this->document_path,"Point index %1$d is out of bounds (from faces[%2$d][%3$d])",pt_i , face_i , fp_i);
 				}
 				fp_i++;
 			}
@@ -650,7 +650,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						} else {
-							PRINTB("WARNING: Point index %d is out of bounds (from paths[%d][%d]), %s", idx % path_i % path_pt_i % this->modinst->location().toRelativeString(this->document_path));
+							LOG(message_group::Warning,this->modinst->location(),this->document_path,"Point index %1$d is out of bounds (from paths[%2$d][%3$d])",idx , path_i , path_pt_i);
 						}
 						++path_pt_i;
 					}

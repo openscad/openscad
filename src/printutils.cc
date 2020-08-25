@@ -76,16 +76,8 @@ void print_messages_pop()
 	}
 }
 
-
-void PRINTTMP(const std::string &msg)
-{
-
-}
-
 void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
 {
-	// if (msg_group == message_group::Deprecated && printedDeprecations.find(msg+loc) != printedDeprecations.end()) return;
-	// if(msg_group == message_group::Deprecated) printedDeprecations.insert(msg+loc);
 	if (msg.empty() && msg_group!=message_group::Echo) return;
 	if (print_messages_stack.size() > 0) {
 		if (!print_messages_stack.back().empty()) {
@@ -128,8 +120,6 @@ void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,co
 
 void PRINTLOG(const Message &msg_obj)
 {
-		// if (msg_obj.group == message_group::Deprecated && printedDeprecations.find(msg_obj.msg) != printedDeprecations.end()) return;
-		// if(msg_obj.group == message_group::Deprecated) printedDeprecations.insert(msg_obj.msg);
 		//to error log
 		if (!outputhandler2) {
 		// fprintf(stderr, "%s\n", msg.c_str());
@@ -177,16 +167,6 @@ std::string two_digit_exp_format(double x)
 {
 	return two_digit_exp_format(std::to_string(x));
 }
-
-
-// void printDeprecation(const std::string &str)
-// {
-// 	if (printedDeprecations.find(str) == printedDeprecations.end()) {
-// 		printedDeprecations.insert(str);
-// 		std::string msg = "DEPRECATED: " + str;
-// 		// PRINT(msg);
-// 	}
-// }
 
 void resetSuppressedMessages()
 {
