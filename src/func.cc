@@ -693,7 +693,7 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 		for (size_t j = 0; j < searchTableSize; ++j) {
 			const VectorType &entryVec = table[j]->toVector();
 			if (entryVec.size() <= index_col_num) {
-				LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3s",j,(index_col_num + 1),table[j]->toEchoString());
+				LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s",j,(index_col_num + 1),table[j]->toEchoString());
 				return VectorType();
 			}
 			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num]->toString().c_str(), 0);
