@@ -22,6 +22,9 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0" colspan="3">
     <widget class="QTableView" name="logTable">
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
      <property name="dragEnabled">
       <bool>true</bool>
      </property>

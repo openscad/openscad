@@ -17,6 +17,7 @@ ErrorLog::~ErrorLog()
 void ErrorLog::refEditor(EditorInterface *o)
 {
 	activeEditor=o;
+	connect(this,SIGNAL(requestJump(int)),activeEditor,SLOT(jumpToLine(int)));
 }
 
 void ErrorLog::initGUI()
@@ -94,7 +95,6 @@ void ErrorLog::onTableCellClicked(const QModelIndex & index)
     {
 		int r= index.row();
 		int line = getLine(r,2);
-		activeEditor->setCursorPosition(line,0); // not working, focus problem
-		activeEditor->setFocus();
+		emit requestJump(line-1);
 	}
 }

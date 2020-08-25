@@ -28,6 +28,9 @@ public:
 	int row;
 	EditorInterface *activeEditor;
 
+signals:
+	void requestJump(int);
+
 private slots:
 	void onTableCellClicked(const QModelIndex & index);
 };

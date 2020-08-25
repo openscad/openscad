@@ -121,6 +121,7 @@ public slots:
 	void nextBookmark() override;
 	void prevBookmark() override;
 	void jumpToNextError() override;
+	void jumpToLine(int line);
 
 private slots:
 	void onTextChanged();
