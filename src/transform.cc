@@ -164,11 +164,11 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 						"Problem converting rotate(..., v=%1$s) parameter",val_v->toEchoString());
 				}else{
 					LOG(message_group::Warning,inst->location(),ctx->documentPath(),
-						"Problem converting rotate(a=%s, v=%s) parameter",val_a->toEchoString(),val_v->toEchoString());
+						"Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a->toEchoString(),val_v->toEchoString());
 				}
 			}else if(!aConverted){
 					LOG(message_group::Warning,inst->location(),ctx->documentPath(),
-						"Problem converting rotate(a=%s) parameter",val_a->toEchoString());
+						"Problem converting rotate(a=%1$s) parameter",val_a->toEchoString());
 			}
 		}
 	}
