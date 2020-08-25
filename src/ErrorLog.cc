@@ -27,11 +27,11 @@ void ErrorLog::initGUI()
 	QList<QString> labels = QList<QString>() << QString("Group")<< QString("File") << QString("Line")<<QString("Info"); 
 	errorLogModel->setHorizontalHeaderLabels(labels);
 	logTable->verticalHeader()->hide();
-	logTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	logTable->setSelectionBehavior(QAbstractItemView::SelectItems);
-	logTable->setSelectionMode(QAbstractItemView::SingleSelection);
-	logTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	logTable->setModel(errorLogModel);
+	logTable->setColumnWidth(0,80);
+	logTable->setColumnWidth(1,200);
+	logTable->setColumnWidth(2,80); //last column will strech itself
+
 }
 
 void ErrorLog::toErrorLog(const Message &log_msg)
@@ -47,9 +47,10 @@ void ErrorLog::toErrorLog(const Message &log_msg)
 
 void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 {
-
 	QStandardItem* groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
+	groupName->setEditable(false);
 	errorLogModel->setItem(row,0,groupName);
+
 	QStandardItem* fileName;
 	QStandardItem* lineNo;
 	if(!log_msg.loc.isNone())
@@ -62,10 +63,14 @@ void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 		fileName = new QStandardItem(QString());
 		lineNo = new QStandardItem(QString());
 	}
+	fileName->setEditable(false);
+	lineNo->setEditable(false);
 	errorLogModel->setItem(row,1,fileName);
 	errorLogModel->setItem(row,2,lineNo);
 
+
 	QStandardItem* msg = new QStandardItem(QString::fromStdString(log_msg.msg));
+	msg->setEditable(false);
 	errorLogModel->setItem(row,3,msg);
 	errorLogModel->setRowCount(++row);
 }
