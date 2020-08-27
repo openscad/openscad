@@ -48,6 +48,7 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #include "RenderStatistic.h"
+#include "scintillaeditor.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -2853,9 +2854,12 @@ void MainWindow::hide3DViewToolbar()
 
 void MainWindow::hideEditor()
 {
+	auto e = (ScintillaEditor *) this->activeEditor;
 	if (viewActionHideEditor->isChecked()) {
+		e->qsci->setReadOnly(true);
 		editorDock->close();
 	}else {
+		e->qsci->setReadOnly(false);
 		editorDock->show();
 	}
 }
