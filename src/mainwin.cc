@@ -2857,6 +2857,9 @@ void MainWindow::hideEditor()
 	auto e = (ScintillaEditor *) this->activeEditor;
 	if (viewActionHideEditor->isChecked()) {
 		e->qsci->setReadOnly(true);
+		if (e->qsci->isListActive()) {
+			e->qsci->cancelList();
+		}
 		editorDock->close();
 	}else {
 		e->qsci->setReadOnly(false);
