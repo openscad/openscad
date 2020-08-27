@@ -64,6 +64,7 @@ public:
 	QPoint mapToGlobal(const QPoint &) override;
 
 	void setCursorPosition(int line, int col) override;
+	void setFocus() override;
 
 private:
 	void getRange(int *lineFrom, int *lineTo);
@@ -121,7 +122,6 @@ public slots:
 	void nextBookmark() override;
 	void prevBookmark() override;
 	void jumpToNextError() override;
-	void jumpToLine(int line);
 
 private slots:
 	void onTextChanged();

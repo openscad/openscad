@@ -256,6 +256,7 @@ public slots:
 	void errorLogTopLevelChanged(bool);
 	void processEvents();
 	void jumpToLine(int,int);
+	void openFileFromPath(QString,int);
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();

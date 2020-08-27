@@ -14,12 +14,6 @@ ErrorLog::~ErrorLog()
 	if(errorLogModel) delete errorLogModel;
 }
 
-void ErrorLog::refEditor(EditorInterface *o)
-{
-	activeEditor=o;
-	connect(this,SIGNAL(requestJump(int)),activeEditor,SLOT(jumpToLine(int)));
-}
-
 void ErrorLog::initGUI()
 {
 	row=0;
@@ -95,6 +89,7 @@ void ErrorLog::onTableCellClicked(const QModelIndex & index)
     {
 		int r= index.row();
 		int line = getLine(r,2);
-		emit requestJump(line-1);
+		QString path = logTable->model()->index(r,1).data().toString();
+		emit openFile(path,line-1);
 	}
 }

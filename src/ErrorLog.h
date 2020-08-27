@@ -18,7 +18,6 @@ public:
 	ErrorLog& operator=(ErrorLog&& source) = delete;
 	virtual ~ErrorLog();
 	void initGUI();
-	void refEditor(EditorInterface *o);
 	void toErrorLog(const Message &log_msg);
 	void showtheErrorInGUI(const Message &log_msg);
 	void clearModel();
@@ -26,10 +25,10 @@ public:
 	QStandardItemModel* errorLogModel;
 	QHash<QString,bool>logsMap;
 	int row;
-	EditorInterface *activeEditor;
 
 signals:
 	void requestJump(int);
+	void openFile(QString,int);
 
 private slots:
 	void onTableCellClicked(const QModelIndex & index);

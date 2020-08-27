@@ -219,7 +219,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
-	this->errorLogWidget->refEditor(this->activeEditor);
+	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 
 	connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 	connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -602,6 +602,15 @@ MainWindow::MainWindow(const QStringList &filenames)
   	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
   }
 }
+
+void MainWindow::openFileFromPath(QString path,int line)
+{
+	activeEditor->setFocus();
+	if(!path.isEmpty()) tabManager->open(path);
+	activeEditor->setFocus();
+	activeEditor->setCursorPosition(line,0);
+}
+
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {

@@ -1222,8 +1222,7 @@ void ScintillaEditor::jumpToNextError()
 	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
 }
 
-void ScintillaEditor::jumpToLine(int line)
+void ScintillaEditor::setFocus()
 {
 	qsci->SendScintilla(QsciScintilla::SCI_SETFOCUS, true);
-	setCursorPosition(line,0);
 }
