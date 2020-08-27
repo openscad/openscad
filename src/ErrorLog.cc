@@ -44,6 +44,10 @@ void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 {
 	QStandardItem* groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
 	groupName->setEditable(false);
+	
+	if(log_msg.group==message_group::Error) groupName->setForeground(QColor::fromRgb(255,0,0)); //make this item red.
+	else if(log_msg.group==message_group::Warning) groupName->setForeground(QColor::fromRgb(252, 211, 3)); //make this item yellow
+	
 	errorLogModel->setItem(row,0,groupName);
 
 	QStandardItem* fileName;
