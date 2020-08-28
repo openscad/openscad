@@ -38,7 +38,7 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
-	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
+	// LOG(message_group::None,Location::NONE,"","utf16 to utf8 conversion: numbytes %1$i",numbytes);
 
 	std::string utf8_str(numbytes,0);
 	lpMultiByteStr = &utf8_str[0];

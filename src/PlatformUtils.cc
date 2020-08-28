@@ -96,7 +96,7 @@ bool PlatformUtils::createUserLibraryPath()
 	bool OK = false;
 	try {
 		if (!fs::exists(fs::path(path))) {
-			//PRINTB("Creating library folder %s", path );
+			LOG(message_group::None,Location::NONE,"","Creating library folder %1$s",path);
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
@@ -117,13 +117,13 @@ std::string PlatformUtils::userLibraryPath()
 		path = fs::path( pathstr );
 		if (!fs::exists(path)) return "";
 		path = fs::canonical( path );
-		//PRINTB("path size %i",fs::stringy(path).size());
-		//PRINTB("lib path found: [%s]", path );
+		// LOG(message_group::None,Location::NONE,"","path size %1$i",fs::stringy(path).size());
+		// LOG(message_group::None,Location::NONE,"","lib path found: [%1$s]",path);
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "libraries";
-		//PRINTB("Appended path %s", path );
-		//PRINTB("Exists: %i", fs::exists(path) );
+		// LOG(message_group::None,Location::NONE,"","Appended path %1$s",path);
+		// LOG(message_group::None,Location::NONE,"","Exists: %1$i",fs::exists(path));
 	} catch (const fs::filesystem_error& ex) {
 		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}

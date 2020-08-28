@@ -76,7 +76,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 
 #ifdef DEBUG
 	// Causes too much debug output
-	//if (!shouldCompile) PRINTB("Using cached library: %s (%p)", filename % lib_mod);
+	//if (!shouldCompile) LOG(message_group::None,Location::NONE,"","Using cached library: %1$s (%2$p)",filename,lib_mod);
 #endif
 
 	// If cache lookup failed (non-existing or old timestamp), compile module
