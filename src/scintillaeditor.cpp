@@ -1098,10 +1098,10 @@ bool ScintillaEditor::modifyNumber(int key)
 
 	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
 
-	QRegExp rx("[a-df-zA-DF-Z]");
+	QRegExp rx("[_a-zA-Z]");
 	auto check = text.mid(begin-1,1);
 	if(rx.exactMatch(check)) return false;
-	
+
 	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
 	auto nr=text.mid(begin,end-begin);
@@ -1117,7 +1117,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	auto exponent=tail-((dotpos>=curpos)?1:0);
 	long long int step=Preferences::inst()->getValue("editor/stepSize").toInt();
 	for (int i=exponent; i>0; i--) step*=10;
-
+	
 	switch (key) {
 		case Qt::Key_Up:   number+=step; break;
 		case Qt::Key_Down: number-=step; break;
