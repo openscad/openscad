@@ -75,44 +75,45 @@ void print_messages_pop()
 	}
 }
 
-void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
+// void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
+void PRINT(const Message &msgObj)
 {
-	if (msg.empty() && msg_group!=message_group::Echo) return;
+	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
 	if (print_messages_stack.size() > 0) {
 		if (!print_messages_stack.back().empty()) {
 			print_messages_stack.back() += "\n";
 		}
-		if(msg_group!=message_group::None) print_messages_stack.back() += getGroupName(msg_group)+": "+msg;
-		else print_messages_stack.back() += msg;
+		if(msgObj.group!=message_group::None) print_messages_stack.back() += getGroupName(msgObj.group)+": "+msgObj.msg;
+		else print_messages_stack.back() += msgObj.msg;
 	}
-	PRINT_NOCACHE(msg_group,msg,loc);
+	PRINT_NOCACHE(msgObj);
 }
 
-void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
+void PRINT_NOCACHE(const Message &msgObj)
 {
-	if (msg.empty() && msg_group!=message_group::Echo) return;
-	if (msg_group==message_group::Warning || msg_group==message_group::Error || msg_group==message_group::Trace) {
+	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
+	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Error || msgObj.group==message_group::Trace) {
 		size_t i;
 		for (i=0; i<lastmessages.size(); ++i) {
-			if (lastmessages[i] != msg+loc) break;
+			if (lastmessages[i] != msgObj.msg+msgObj.loc.toRelativeString(msgObj.docPath)) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
-		else lastmessages.push_back(msg+loc);
+		else lastmessages.push_back(msgObj.msg+msgObj.loc.toRelativeString(msgObj.docPath));
 	}
 	if(!deferred)
-		if (!OpenSCAD::quiet || msg_group==message_group::Error) {
+		if (!OpenSCAD::quiet || msgObj.group==message_group::Error) {
 			if (!outputhandler) {
-				fprintf(stderr, "%s\n", msg.c_str());
+				fprintf(stderr, "%s\n", msgObj.msg.c_str());
 			} else {
-				outputhandler(msg_group,msg,loc,outputhandler_data);
+				outputhandler(msgObj,outputhandler_data);
 			}
 		}
 	if(!std::current_exception()) {
-		if((OpenSCAD::hardwarnings && msg_group==message_group::Warning) || (no_throw && msg_group==message_group::Error)){
+		if((OpenSCAD::hardwarnings && msgObj.group==message_group::Warning) || (no_throw && msgObj.group==message_group::Error)){
 			if(no_throw)
 				deferred = true;
 			else
-				throw HardWarningException(msg);
+				throw HardWarningException(msgObj.msg);
 		}
 	}
 }
@@ -138,7 +139,8 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower(lowdebug);
 	if (OpenSCAD::debug=="all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
-		PRINT_NOCACHE( message_group::None,shortfname+": "+ msg ,"");
+			Message msgObj = {shortfname+": "+ msg,Location::NONE,"",message_group::None,};
+		PRINT_NOCACHE(msgObj);
 	}
 }
 

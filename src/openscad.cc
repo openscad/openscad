@@ -101,17 +101,20 @@ public:
 	Echostream(const char * filename) : std::ofstream(filename) {
 		set_output_handler( &Echostream::output, this );
 	}
-	static void output(const enum message_group &msg_group,const std::string &msg,const std::string &loc, void *userdata) {
+	static void output(const Message &msgObj, void *userdata) {
 		auto thisp = static_cast<Echostream*>(userdata);
-		if(msg_group!=message_group::None)
+		std::string loc;
+		if(!msgObj.loc.isNone()) loc=msgObj.loc.toRelativeString(msgObj.docPath);
+		else loc="";
+		if(msgObj.group!=message_group::None)
 		{
-			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg<<"\n";
-			else *thisp << getGroupName(msg_group) <<": "<<msg<<" "<<loc<<"\n";
+			if(loc.empty()) *thisp << getGroupName(msgObj.group) <<": "<<msgObj.msg<<"\n";
+			else *thisp << getGroupName(msgObj.group) <<": "<<msgObj.msg<<" "<<loc<<"\n";
 		}
 		else
 		{
-			if(loc.empty()) *thisp << getGroupName(msg_group) <<": "<<msg<<"\n";
-			else *thisp <<msg << " "<<loc<<"\n";
+			if(loc.empty()) *thisp << getGroupName(msgObj.group) <<": "<<msgObj.msg<<"\n";
+			else *thisp <<msgObj.msg << " "<<loc<<"\n";
 		}
 	}
 	~Echostream() {

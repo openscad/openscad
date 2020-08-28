@@ -3073,36 +3073,36 @@ void MainWindow::quit()
 #endif
 }
 
-void MainWindow::consoleOutput(const enum message_group &msg_group,const std::string &msg,const std::string &loc, void *userdata)
+void MainWindow::consoleOutput(const Message &msgObj, void *userdata)
 {
 	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	auto thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(enum message_group,msg_group),Q_ARG(QString, QString::fromStdString(msg)),Q_ARG(QString, QString::fromStdString(loc)));
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(Message, msgObj));
 }
 
-void MainWindow::consoleOutput(const enum message_group &msg_group,const QString &msg,const QString &loc)
+void MainWindow::consoleOutput(const Message &msgObj)
 {
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-	if (msg_group==message_group::Warning || msg_group==message_group::Deprecated) {
+	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated) {
 		this->compileWarnings++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+" "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
-	} else if (msg_group==message_group::UI_Warning || msg_group==message_group::Font_Warning || msg_group==message_group::Font_Warning) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+" "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
-	} else if (msg_group==message_group::Error) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+	} else if (msgObj.group==message_group::UI_Warning || msgObj.group==message_group::Font_Warning || msgObj.group==message_group::Font_Warning) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+	} else if (msgObj.group==message_group::Error) {
 		this->compileErrors++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+", "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
-	} else if (msg_group==message_group::Export_Error || msg_group==message_group::UI_Error || msg_group==message_group::Parser_Error) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+" "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
-	} else if (msg_group==message_group::Trace) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msg_group)))+": "+ QT_HTML_ESCAPE(QString(msg))+" "+QT_HTML_ESCAPE(QString(loc))+ "</span>&nbsp;");
-	} else if(msg_group==message_group::Echo) {
-		this->console->appendPlainText(QString::fromStdString(getGroupName(msg_group)+":")+msg);
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+", "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+	} else if (msgObj.group==message_group::Export_Error || msgObj.group==message_group::UI_Error || msgObj.group==message_group::Parser_Error) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+	} else if (msgObj.group==message_group::Trace) {
+		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+	} else if(msgObj.group==message_group::Echo) {
+		this->console->appendPlainText(QString::fromStdString(getGroupName(msgObj.group)+":")+QString::fromStdString(msgObj.msg));
 	} else {
-		this->console->appendPlainText(msg);
+		this->console->appendPlainText(QString::fromStdString(msgObj.msg));
 	}
 	this->processEvents();
 }

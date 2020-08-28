@@ -97,14 +97,14 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const enum message_group &msg_group,const QString &msg,const QString &loc);
+	void consoleOutput(const Message &msgObj);
 	void setCursor();
 	void errorLogOutput(const Message &log_msg);
 
 public:
-	static void consoleOutput(const enum message_group &msg_group,const std::string &msg,const std::string &loc, void *userdata);
+	static void consoleOutput(const Message &msgObj, void *userdata);
 	static void errorLogOutput(const Message &log_msg, void *userdata);
-	static void noOutputConsole(const enum message_group &,const std::string &,const std::string &, void*) {};  // /dev/null
+	static void noOutputConsole(const Message &, void*) {};  // /dev/null
 	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();

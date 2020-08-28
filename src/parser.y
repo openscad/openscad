@@ -724,7 +724,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times
 				if (assignment->location().firstLine() != loc.firstLine()) {
-				LOG(message_group::Warning,Location::NONE,"",
+				LOG(message_group::Warning,assignment->location(),mainFilePath.parent_path().generic_string(),
           "%1$s was assigned on line %2$i of %3$s but was overwritten",
           assignment->getName(),assignment->location().firstLine(),uncPathPrev);
 				}

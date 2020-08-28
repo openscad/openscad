@@ -37,10 +37,11 @@ std::string getGroupName(const enum message_group &groupName);
 struct Message{
 std::string msg;
 Location loc;
+std::string docPath;
 enum message_group group;
 };
 
-typedef void (OutputHandlerFunc)(const enum message_group &msg_group,const std::string &msg,const std::string &loc,void *userdata);
+typedef void (OutputHandlerFunc)(const Message &msg,void *userdata);
 typedef void (OutputHandlerFunc2)(const Message &msg, void *userdata);
 
 extern OutputHandlerFunc *outputhandler;
@@ -67,11 +68,11 @@ void resetSuppressedMessages();
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
+void PRINT(const Message &msgObj);
 
 void PRINTLOG(const Message &msg_obj);
 
-void PRINT_NOCACHE(const enum message_group &msg_group,const std::string &msg,const std::string &loc);
+void PRINT_NOCACHE(const Message &msgObj);
 #define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
 // #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
@@ -175,11 +176,11 @@ void LOG(const message_group &msg_grp,const Location &loc,const std::string &doc
 	if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted+loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
 	if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted+loc.toRelativeString(docPath));
 
+	Message msgObj = {formatted,loc,docPath,msg_grp};
+
 	//to console
-	if(!loc.isNone()) PRINT(msg_grp,formatted,loc.toRelativeString(docPath));
-	else PRINT(msg_grp,formatted,"");
+	PRINT(msgObj);
 
 	//to ErrorLog
-	Message msgObj = {formatted,loc,msg_grp};
 	PRINTLOG(msgObj);
 }
