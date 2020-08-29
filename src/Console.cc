@@ -40,7 +40,7 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
-	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(doSomething(QString)));
+	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(QString)));
 }
 
 Console::~Console()
@@ -79,10 +79,10 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	delete menu;
 }
 
-void Console::doSomething(QString temp)
+void Console::hyperlinkClicked(QString loc) //non const because of manipulation
 {
 	// for error jumps
-	std::string s = temp.toStdString();
+	std::string s = loc.toStdString();
 	std::vector<std::string> words;
 	boost::split(words, s, boost::is_any_of(", "), boost::token_compress_on);
 
