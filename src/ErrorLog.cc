@@ -7,11 +7,21 @@ ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 	setupUi(this);
 	initGUI();
 	connect(logTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
+	this->errorLogComboBox->installEventFilter(this);
 }
 
 ErrorLog::~ErrorLog()
 {
 	if(errorLogModel) delete errorLogModel;
+}
+
+
+bool ErrorLog::eventFilter(QObject *obj, QEvent *event)
+{
+	if (event->type() == QEvent::Wheel) {
+		return true;
+	}
+	return QObject::eventFilter(obj, event);
 }
 
 void ErrorLog::initGUI()
@@ -32,12 +42,13 @@ void ErrorLog::initGUI()
 void ErrorLog::toErrorLog(const Message &log_msg)
 {
 	if(log_msg.group==message_group::None || log_msg.group==message_group::Echo) return;
-	QString temp = QString::fromStdString(log_msg.msg+log_msg.loc.fileName());
-	if(!logsMap.contains(temp))
-	{
-	logsMap.insert(temp,true);
+
+	QString currGroup = errorLogComboBox->currentText();
+	//handle combobox
+	if(errorLogComboBox->currentIndex()==0);
+	else if(currGroup.toStdString()!=getGroupName(log_msg.group)) return;
+	
 	showtheErrorInGUI(log_msg);
-	}
 }
 
 void ErrorLog::showtheErrorInGUI(const Message &log_msg)
@@ -96,4 +107,9 @@ void ErrorLog::onTableCellClicked(const QModelIndex & index)
 		QString path = logTable->model()->index(r,1).data().toString();
 		emit openFile(path,line-1);
 	}
+}
+
+void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString &arg1)
+{
+	emit refreshErrorLogUI();
 }

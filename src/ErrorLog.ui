@@ -51,6 +51,62 @@
      </attribute>
     </widget>
    </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="errorLogComboBox">
+     <item>
+      <property name="text">
+       <string>All</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ERROR</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>WARNING</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>UI-WARNING</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>FONT-WARNING</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>EXPORT-WARNING</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>EXPORT-ERROR</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>TRACE</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>DEPRECATED</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="errorLogShow">
+     <property name="text">
+      <string>Show:</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

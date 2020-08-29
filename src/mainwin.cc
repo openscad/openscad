@@ -220,6 +220,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
 	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
+	connect(this->errorLogWidget,SIGNAL(refreshErrorLogUI()),this,SLOT(refreshLogGUI()));
 
 	connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 	connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -611,6 +612,10 @@ void MainWindow::openFileFromPath(QString path,int line)
 	activeEditor->setCursorPosition(line,0);
 }
 
+void MainWindow::refreshLogGUI()
+{
+	tabManager->save(activeEditor);
+}
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {

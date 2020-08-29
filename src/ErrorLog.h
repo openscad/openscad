@@ -16,6 +16,7 @@ public:
 	ErrorLog(ErrorLog&& source) = delete;
 	ErrorLog& operator=(const ErrorLog& source) = delete;
 	ErrorLog& operator=(ErrorLog&& source) = delete;
+	bool eventFilter(QObject *obj, QEvent *event);
 	virtual ~ErrorLog();
 	void initGUI();
 	void toErrorLog(const Message &log_msg);
@@ -27,9 +28,10 @@ public:
 	int row;
 
 signals:
-	void requestJump(int);
 	void openFile(QString,int);
+	void refreshErrorLogUI();
 
 private slots:
 	void onTableCellClicked(const QModelIndex & index);
+	void on_errorLogComboBox_currentIndexChanged(const QString &arg1);
 };

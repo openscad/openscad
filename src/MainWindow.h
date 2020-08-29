@@ -257,6 +257,7 @@ public slots:
 	void processEvents();
 	void jumpToLine(int,int);
 	void openFileFromPath(QString,int);
+	void refreshLogGUI();
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
