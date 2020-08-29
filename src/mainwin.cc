@@ -221,6 +221,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 	connect(this->errorLogWidget,SIGNAL(refreshErrorLogUI()),this,SLOT(refreshLogGUI()));
+	connect(this->console,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 
 	connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 	connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -3092,18 +3093,22 @@ void MainWindow::consoleOutput(const Message &msgObj)
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
+	std::string temp = std::to_string(msgObj.loc.firstLine())+","+msgObj.loc.fileName();
+	// std::cout<<temp<<std::endl;
+
 	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated) {
 		this->compileWarnings++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+		this->console->appendHtml("<a href=\""+QString::fromStdString(temp)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+		// this->console->appendHtml("<a href=\"#\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
 	} else if (msgObj.group==message_group::UI_Warning || msgObj.group==message_group::Font_Warning || msgObj.group==message_group::Font_Warning) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+		this->console->appendHtml("<a href=\""+QString::fromStdString(temp)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
 	} else if (msgObj.group==message_group::Error) {
 		this->compileErrors++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+", "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+		this->console->appendHtml("<a href=\""+QString::fromStdString(temp)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+", "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
 	} else if (msgObj.group==message_group::Export_Error || msgObj.group==message_group::UI_Error || msgObj.group==message_group::Parser_Error) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+		this->console->appendHtml("<a href=\""+QString::fromStdString(temp)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
 	} else if (msgObj.group==message_group::Trace) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span>&nbsp;");
+		this->console->appendHtml("<a href=\""+QString::fromStdString(temp)+"\"><span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
 	} else if(msgObj.group==message_group::Echo) {
 		this->console->appendPlainText(QString::fromStdString(getGroupName(msgObj.group)+":")+QString::fromStdString(msgObj.msg));
 	} else {

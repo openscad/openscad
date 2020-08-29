@@ -31,11 +31,16 @@
 #include "Console.h"
 #include "printutils.h"
 
+
+#include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
+#include <boost/algorithm/string/split.hpp> // Include for boost::split
+
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
+	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(doSomething(QString)));
 }
 
 Console::~Console()
@@ -72,4 +77,18 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	menu->addAction(this->actionSaveAs);
     menu->exec(event->globalPos());
 	delete menu;
+}
+
+void Console::doSomething(QString temp)
+{
+	// for error jumps
+	std::string s = temp.toStdString();
+	std::vector<std::string> words;
+	boost::split(words, s, boost::is_any_of(", "), boost::token_compress_on);
+
+	if(words.size()!=2) return;
+	if(words[0].empty() || words[1].empty()) return;  //for empty locations
+	int line = std::stoi(words[0]);
+	QString path = QString::fromStdString(words[1]);
+	emit openFile(path,line-1);
 }
