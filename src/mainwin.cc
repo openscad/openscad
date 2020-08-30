@@ -1127,8 +1127,11 @@ void MainWindow::instantiateRoot()
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
 		this->updateCamera(filectx.ctx);
-		
-		if (this->absolute_root_node) {
+    auto suffix_ptr = filectx.ctx->lookup_variable("$export_suffix", true);
+		this->custom_export_suffix = suffix_ptr ? QString::fromStdString(suffix_ptr->toString()) : QString();
+
+    if (this->absolute_root_node)
+		{
 			// Do we have an explicit root node (! modifier)?
 			const Location *nextLocation = nullptr;
 			if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
@@ -3077,23 +3080,30 @@ void MainWindow::processEvents()
 
 QString MainWindow::exportPath(const char *suffix) {
 	QString path;
-	auto path_it = this->export_paths.find(suffix);
-	if(path_it != export_paths.end())
-	{
-		path = QFileInfo(path_it->second).absolutePath() + QString("/");
-		if(activeEditor->filepath.isEmpty())
-			path += QString(_("Untitled")) + suffix;
-		else
-			path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
-	}
-	else
-	{
-		if(activeEditor->filepath.isEmpty())
-			path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") + QString(_("Untitled")) + suffix;
-		else {
-			auto info = QFileInfo(activeEditor->filepath);
-			path = info.absolutePath() + QString("/") + info.completeBaseName() + suffix;
-		}
-	}
+
+  QString new_suffix(suffix);
+
+	if (!this->custom_export_suffix.isEmpty()) {
+      new_suffix.prepend("-" + this->custom_export_suffix);
+  }
+
+	auto path_it = this->export_paths.find(new_suffix.toStdString().c_str());
+
+	if (path_it != export_paths.end()) {
+			path = QFileInfo(path_it->second).absolutePath() + QString("/");
+			if (activeEditor->filepath.isEmpty())
+          path += QString(_("Untitled")) + new_suffix;
+			else
+          path += QFileInfo(activeEditor->filepath).completeBaseName() + new_suffix; 
+ }
+  else {
+			if (activeEditor->filepath.isEmpty())
+          path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") +
+              QString(_("Untitled")) + new_suffix;
+			else {
+          auto info = QFileInfo(activeEditor->filepath);
+					path = info.absolutePath() + QString("/") + info.completeBaseName() + new_suffix;
+			}
+  }
 	return path;
 }
