@@ -136,7 +136,7 @@ void ShortcutConfigurator::createModel(QObject* parent,const QList<QAction *> &a
                     model->setHorizontalHeaderLabels(labels);
                 }
                 model->setItem(row, index, shortcutItem);
-                shortcutOccupied.insert(shortcut,action);
+                if(!shortcutOccupied.contains(shortcut)) shortcutOccupied.insert(shortcut,actionName);
                 index++;
             }
             row++;
@@ -207,14 +207,14 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                 if(!val.isArray())
                 {
                     QString singleShortcut = val.toString().trimmed();
-                    if(shortcutOccupied.contains(singleShortcut) && shortcutOccupied[singleShortcut]->objectName()!=actionName)
+                    if(shortcutOccupied.contains(singleShortcut) && shortcutOccupied[singleShortcut]!=actionName)
                     {
-                        raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]->objectName()));
+                        raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+singleShortcut+"\" conflicts with "+shortcutOccupied[singleShortcut]));
                         continue;
                     }
                     else if(!singleShortcut.isEmpty()) 
                     {
-                        shortcutOccupied.insert(singleShortcut,action);
+                        shortcutOccupied.insert(singleShortcut,actionName);
                     }
                     action->setShortcut(QKeySequence(singleShortcut));
                 }
@@ -230,19 +230,19 @@ void ShortcutConfigurator::applyConfigFile(const QList<QAction *> &actions)
                         {
                             const QString defaultShortcut = defaultShortcuts[action][0].toString(QKeySequence::NativeText);
                             if(defaultShortcut.isEmpty()) continue;
-                            shortcutOccupied.insert(defaultShortcut,action);
+                            shortcutOccupied.insert(defaultShortcut,actionName);
                             shortcutsListFinal.append(defaultShortcut);
                         }
                         else 
                         {
-                            if(shortcutOccupied.contains(shortcut) && shortcutOccupied[shortcut]->objectName()!=actionName)
+                            if(shortcutOccupied.contains(shortcut) && shortcutOccupied[shortcut]!=actionName)
                             {
-                                raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]->objectName()));
+                                raiseError(QString::fromStdString(configFileLoc.c_str())+QString(":\n"+actionName+" shortcut \""+shortcut+"\" conflicts with "+shortcutOccupied[shortcut]));
                                 continue;
                             }
                             else if(!shortcut.isEmpty()) 
                             {
-                                shortcutOccupied.insert(shortcut,action);
+                                shortcutOccupied.insert(shortcut,actionName);
                             }
                             shortcutsListFinal.append(shortcut);
                         }
@@ -314,9 +314,9 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
                 return;
         }
 
-        if(shortcutOccupied[updatedShortcut])
+        if(shortcutOccupied.contains(updatedShortcut))
         {
-            raiseError(QString("Shortcut Already Occupied By: "+shortcutOccupied[updatedShortcut]->objectName()));
+            raiseError(QString("Shortcut Already Occupied By: "+shortcutOccupied[updatedShortcut]));
             return;
         }
 
@@ -379,7 +379,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
             changedAction->setShortcuts(shortcutsListFinal);
         }
 
-        if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,changedAction);
+        if(updatedShortcut!=QString::fromUtf8("")) shortcutOccupied.insert(updatedShortcut,changedAction->objectName());
         putData(index,updatedShortcut);
         // write into the file
         QJsonObject object;

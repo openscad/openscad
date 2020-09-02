@@ -37,7 +37,7 @@ private:
     void putData(QModelIndex indexA,QString data);
     std::string configFileLoc;
     QHash<QString, QAction *> shortcutsMap;
-    QHash<QString, QAction *> shortcutOccupied;
+    QHash<QString, QString> shortcutOccupied;
     QList<QString> actionsName;
     QMap<QAction*,QList<QKeySequence>> defaultShortcuts;
     QList<QAction *> actionsList;
