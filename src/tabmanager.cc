@@ -93,6 +93,11 @@ void TabManager::tabSwitched(int x)
     par->parameterTopLevelChanged(par->parameterDock->isFloating());
     par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
 
+    if (editor->filepath.isEmpty()) {
+        par->errorLogWidget->errorLogComboBox->setEnabled(false);
+    }
+    else par->errorLogWidget->errorLogComboBox->setEnabled(true);
+
 	for (int idx = 0; idx < tabWidget->count(); ++idx) {
 		QWidget * button = tabWidget->tabButton(idx, QTabBar::RightSide);
 		if (button) {

@@ -603,6 +603,12 @@ MainWindow::MainWindow(const QStringList &filenames)
   if (Feature::ExperimentalMouseSelection.is_enabled()) {
   	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
   }
+	if (activeEditor->filepath.isEmpty())
+	{
+		this->errorLogWidget->errorLogComboBox->setEnabled(false);
+	}
+	else this->errorLogWidget->errorLogComboBox->setEnabled(true);
+
 }
 
 void MainWindow::openFileFromPath(QString path,int line)
@@ -991,7 +997,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
 		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
-			this->errorLogWidget->clearModel();	
+			 this->errorLogWidget->clearModel();	
 			if (activeEditor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
