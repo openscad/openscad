@@ -975,3 +975,9 @@ Preferences *Preferences::inst() {
     
     return instance;
 }
+
+
+void Preferences::onRegerateDueToClose(MainWindow* mw)
+{
+	emit regenerateSc(mw);
+}

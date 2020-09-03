@@ -467,13 +467,18 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->editortoolbar->actions());
 
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
-	Preferences* instance = Preferences::inst();
+	instance = Preferences::inst();
 	instance->ButtonConfig->init();
 	// init shortcut-config
 	QList<QAction *>allActions = this->findChildren<QAction *>();
 	instance->shortcutconfigurator->collectDefaults(allActions);
 	instance->shortcutconfigurator->applyConfigFile(allActions);
 	instance->shortcutconfigurator->initGUI(allActions);
+	instance->shortcutconfigurator->searchBox->setText("");
+
+	connect(this,SIGNAL(regenDueToClose(MainWindow*)),instance,SLOT(onRegerateDueToClose(MainWindow*)));
+
+	connect(instance,SIGNAL(regenerateSc(MainWindow*)),this,SLOT(onRegenerateSc(MainWindow*)));
 
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
@@ -626,6 +631,18 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 	}
 }
 
+void MainWindow::onRegenerateSc(MainWindow* mw)
+{
+	if(mw==this) return;
+	QList<QAction *>allActions = this->findChildren<QAction *>();
+	instance->shortcutconfigurator->resetClass();
+	instance->shortcutconfigurator->collectDefaults(allActions);
+	instance->shortcutconfigurator->applyConfigFile(allActions);
+	instance->shortcutconfigurator->initGUI(allActions);
+	instance->shortcutconfigurator->searchBox->setText("");
+}
+
+
 /**
  * Update window settings that get overwritten by the restoreState()
  * Qt call. So the values are loaded before the call and restored here
@@ -770,6 +787,8 @@ MainWindow::~MainWindow()
 {
 	// If root_module is not null then it will be the same as parsed_module,
 	// so no need to delete it.
+	instance->shortcutconfigurator->searchBox->setText("");	
+	emit regenDueToClose(this);
 	delete parsed_module;
 	delete root_node;
 #ifdef ENABLE_CGAL

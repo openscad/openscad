@@ -43,7 +43,7 @@ public:
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
 	EditorInterface *customizerEditor;
-
+	Preferences* instance;
 	ContextHandle<BuiltinContext> top_ctx;
 	FileModule *root_module;      // Result of parsing
 	FileModule *parsed_module;		// Last parse for include list
@@ -134,6 +134,7 @@ private:
 public slots:
 	void updateRecentFiles(EditorInterface *edt);
 	void updateRecentFileActions();
+	void onRegenerateSc(MainWindow* mw);
 
 private slots:
 	void actionOpen();
@@ -321,6 +322,7 @@ private:
 signals:
 	void highlightError(int);
 	void unhighlightLastError();
+	void regenDueToClose(MainWindow* mw);
 };
 
 class GuiLocker

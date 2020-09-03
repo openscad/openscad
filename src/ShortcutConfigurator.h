@@ -27,6 +27,8 @@ public:
     void collectDefaults(const QList<QAction *> &allActions);
     void initGUI(const QList<QAction *> &allActions);
     void applyConfigFile(const QList<QAction *> &actions);
+    void updateShortcut(QAction* changedAction,QString updatedShortcut,const QModelIndex & index);
+    void resetClass();
 
 private:
     void createModel(QObject* parent,const QList<QAction *> &actions);
@@ -36,7 +38,7 @@ private:
     QString getData(int row,int col);
     void putData(QModelIndex indexA,QString data);
     std::string configFileLoc;
-    QHash<QString, QAction *> shortcutsMap;
+    QMultiHash<QString, QAction *> shortcutsMap;
     QHash<QString, QString> shortcutOccupied;
     QList<QString> actionsName;
     QMap<QAction*,QList<QKeySequence>> defaultShortcuts;
