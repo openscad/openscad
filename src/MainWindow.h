@@ -322,7 +322,7 @@ private:
 signals:
 	void highlightError(int);
 	void unhighlightLastError();
-	void regenDueToClose(MainWindow* mw);
+	void regenerateScOnWindowClose(MainWindow* mw);
 };
 
 class GuiLocker

@@ -404,6 +404,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex & index)
 
         if(shortcutOccupied.contains(updatedShortcut))
         {
+            if(shortcutOccupied[updatedShortcut]==updatedAction) return; // ignore if assigned shortcut is assiged to same action again.
             raiseError(QString("Shortcut Already Occupied By: "+shortcutOccupied[updatedShortcut]));
             return;
         }

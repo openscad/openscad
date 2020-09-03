@@ -476,7 +476,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	instance->shortcutconfigurator->initGUI(allActions);
 	instance->shortcutconfigurator->searchBox->setText("");
 
-	connect(this,SIGNAL(regenDueToClose(MainWindow*)),instance,SLOT(onRegerateDueToClose(MainWindow*)));
+	connect(this,SIGNAL(regenerateScOnWindowClose(MainWindow*)),instance,SLOT(onRegerateDueToClose(MainWindow*)));
 
 	connect(instance,SIGNAL(regenerateSc(MainWindow*)),this,SLOT(onRegenerateSc(MainWindow*)));
 
@@ -788,7 +788,7 @@ MainWindow::~MainWindow()
 	// If root_module is not null then it will be the same as parsed_module,
 	// so no need to delete it.
 	instance->shortcutconfigurator->searchBox->setText("");	
-	emit regenDueToClose(this);
+	emit regenerateScOnWindowClose(this);
 	delete parsed_module;
 	delete root_node;
 #ifdef ENABLE_CGAL
