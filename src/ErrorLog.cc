@@ -1,6 +1,7 @@
 #include "ErrorLog.h"
 #include "printutils.h"
 #include "MainWindow.h"
+#include <boost/filesystem.hpp>
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
@@ -65,7 +66,8 @@ void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 	QStandardItem* lineNo;
 	if(!log_msg.loc.isNone())
 	{
-		fileName = new QStandardItem(QString::fromStdString(log_msg.loc.fileName()));
+		if(is_regular_file(log_msg.loc.filePath())) fileName = new QStandardItem(QString::fromStdString(log_msg.loc.fileName()));
+		else fileName = new QStandardItem(QString());
 		lineNo = new QStandardItem(QString::number(log_msg.loc.firstLine()));
 	}
 	else
