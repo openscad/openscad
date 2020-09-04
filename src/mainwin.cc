@@ -220,7 +220,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
 	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
-	connect(this->errorLogWidget,SIGNAL(refreshErrorLogUI()),this,SLOT(refreshLogGUI()));
 	connect(this->console,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 
 	connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -603,11 +602,6 @@ MainWindow::MainWindow(const QStringList &filenames)
   if (Feature::ExperimentalMouseSelection.is_enabled()) {
   	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
   }
-	if (activeEditor->filepath.isEmpty())
-	{
-		this->errorLogWidget->errorLogComboBox->setEnabled(false);
-	}
-	else this->errorLogWidget->errorLogComboBox->setEnabled(true);
 
 }
 
@@ -617,11 +611,6 @@ void MainWindow::openFileFromPath(QString path,int line)
 	if(!path.isEmpty()) tabManager->open(path);
 	activeEditor->setFocus();
 	activeEditor->setCursorPosition(line,0);
-}
-
-void MainWindow::refreshLogGUI()
-{
-	tabManager->save(activeEditor);
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)

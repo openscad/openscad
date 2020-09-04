@@ -42,7 +42,7 @@ void ErrorLog::initGUI()
 void ErrorLog::toErrorLog(const Message &log_msg)
 {
 	if(log_msg.group==message_group::None || log_msg.group==message_group::Echo) return;
-
+	lastMessages.push_back(std::forward<const Message>(log_msg));
 	QString currGroup = errorLogComboBox->currentText();
 	//handle combobox
 	if(errorLogComboBox->currentIndex()==0);
@@ -89,8 +89,7 @@ void ErrorLog::clearModel()
 {
 	errorLogModel->clear();
 	initGUI();
-	logsMap.clear();
-
+	lastMessages.clear();
 }
 
 int ErrorLog::getLine(int row,int col)
@@ -109,7 +108,16 @@ void ErrorLog::onTableCellClicked(const QModelIndex & index)
 	}
 }
 
-void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString &arg1)
+void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString &group)
 {
-	emit refreshErrorLogUI();
+	errorLogModel->clear();
+	initGUI();
+	for(auto itr = lastMessages.begin();itr!=lastMessages.end();itr++)
+	{
+		if(group==QString::fromStdString("All")) showtheErrorInGUI(*itr);
+		else if(group==QString::fromStdString(getGroupName(itr->group))) 
+		{
+			showtheErrorInGUI(*itr);
+		}
+	}
 }

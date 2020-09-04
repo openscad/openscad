@@ -27,9 +27,11 @@ public:
 	QHash<QString,bool>logsMap;
 	int row;
 
+private:
+	std::list<Message>lastMessages;
+
 signals:
 	void openFile(QString,int);
-	void refreshErrorLogUI();
 
 private slots:
 	void onTableCellClicked(const QModelIndex & index);
