@@ -149,6 +149,7 @@ void TabManager::prevTab()
 
 void TabManager::actionNew()
 {
+    if(par->viewActionHideEditor->isChecked()) par->viewActionHideEditor->trigger(); //if editor hidden, make it visible
     createTab("");
 }
 
