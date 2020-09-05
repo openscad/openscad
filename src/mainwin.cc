@@ -172,7 +172,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
 	errorLogDockTitleWidget = new QWidget();
-	// errorLogDockTitleWidget = new QWidget();
 	
 
 	this->editorDock->setConfigKey("view/hideEditor");
@@ -183,6 +182,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->parameterDock->setAction(this->viewActionHideParameters);
 	this->errorLogDock->setConfigKey("view/hideErrorLog");
 	this->errorLogDock->setAction(this->viewActionHideErrorLog);
+
+	this->tabifyDockWidget(this->consoleDock,this->errorLogDock); // Move Second Dock on top of First
 
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
@@ -471,7 +472,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
