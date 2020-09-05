@@ -16,6 +16,9 @@
 #include "settings.h"
 #include "QSettingsCached.h"
 
+#include <QWheelEvent>
+#include<QPoint>
+
 namespace fs=boost::filesystem;
 
 const QString ScintillaEditor::cursorPlaceHolder = "^~^";
@@ -198,6 +201,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
+	qsci->viewport()->installEventFilter(this);
 
     qsci->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(qsci, SIGNAL(customContextMenuRequested(const QPoint &)), this, SIGNAL(showContextMenuEvent(const QPoint &)));
@@ -780,30 +784,54 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	if (obj != qsci) return EditorInterface::eventFilter(obj, e);
-
-	if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
-		auto *keyEvent = static_cast<QKeyEvent*> (e);
-
-		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
-				(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
-				(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
-				(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
-				(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
-				(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
-				(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
-				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
-
-		if (handleKeyEventNavigateNumber(keyEvent)) {
-			return true;
+	bool enableNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::enableNumberScrollWheel).toBool();
+	
+	if(obj == qsci->viewport() && enableNumberScrollWheel)
+	{
+		if(e->type() == QEvent::Wheel)
+		{
+			auto *wheelEvent = static_cast <QWheelEvent*> (e);
+			PRINTDB("%s - modifier: %s",(e->type()==QEvent::Wheel?"Wheel Event":"")%(wheelEvent->modifiers() & Qt::AltModifier?"Alt":"Other Button"));
+			if(handleWheelEventNavigateNumber(wheelEvent))
+			{
+				qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 1);
+				return true;
+			}
 		}
-		if (handleKeyEventBlockCopy(keyEvent)) {
-			return true;
-		}
-		if (handleKeyEventBlockMove(keyEvent)) {
-			return true;
-		}
+		return false;
 	}
+	else if(obj == qsci)
+	{
+		if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease)
+		{
+			auto *keyEvent = static_cast<QKeyEvent*> (e);
+
+			PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
+					(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
+					(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
+					(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
+					(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
+					(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
+					(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
+					(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
+
+			if (handleKeyEventNavigateNumber(keyEvent))
+			{
+				return true;
+			}
+			if (handleKeyEventBlockCopy(keyEvent))
+			{
+				return true;
+			}
+			if (handleKeyEventBlockMove(keyEvent))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	else return EditorInterface::eventFilter(obj, e);
+
 	return false;
 }
 
@@ -958,6 +986,69 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 	return false;
 }
 
+bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
+{
+	auto modifierNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::modifierNumberScrollWheel).toString();
+	bool modifier;	
+	static bool wasChanged = false;
+	static bool previewAfterUndo = false;
+
+	if(modifierNumberScrollWheel=="Alt")
+	{
+		modifier = wheelEvent->modifiers() & Qt::AltModifier;
+	}
+	else if(modifierNumberScrollWheel=="Left Mouse Button")
+	{
+		modifier = wheelEvent->buttons() & Qt::LeftButton;
+	}
+	else
+	{
+		modifier = (wheelEvent->buttons() & Qt::LeftButton) | (wheelEvent->modifiers() & Qt::AltModifier);	
+	}
+
+	if (modifier)
+	 {
+		if (!wasChanged) qsci->beginUndoAction();
+
+		if (wheelEvent->delta() < 0)
+		{
+			if (modifyNumber(Qt::Key_Down)) 
+			{
+				wasChanged = true;
+				previewAfterUndo = true;
+			}
+		}
+		else
+		{
+			// wheelEvent->delta() > 0
+			if (modifyNumber(Qt::Key_Up))
+			{
+				wasChanged = true;
+				previewAfterUndo = true;
+			}
+		}
+		if (!wasChanged) qsci->endUndoAction();
+
+		return true;
+	}
+
+	if (previewAfterUndo)
+	{
+        int k = wheelEvent->buttons() & Qt::LeftButton;
+		if (wasChanged) qsci->endUndoAction();
+		wasChanged = false;
+		auto *cmd = qsci->standardCommands()->boundTo(k);
+		if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
+			QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+		else if (cmd || wheelEvent->delta())
+		{
+			// any insert or command (but not undo/redo) cancels the preview after undo
+			previewAfterUndo = false;
+		}
+	}
+	return false;
+}
+
 void ScintillaEditor::navigateOnNumber(int key)
 {
 	int line, index;
@@ -999,27 +1090,34 @@ bool ScintillaEditor::modifyNumber(int key)
 	int line, index;
 	qsci->getCursorPosition(&line, &index);
 	auto text=qsci->text(line);
-
 	int lineFrom, indexFrom, lineTo, indexTo;
 	qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
 	auto hadSelection=qsci->hasSelectedText();
+	qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
+	qsci->setCursorPosition(line, index);
 
 	auto begin=QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+
+	QRegExp rx("[_a-zA-Z]");
+	auto check = text.mid(begin-1,1);
+	if(rx.exactMatch(check)) return false;
+
 	auto end=text.indexOf(QRegExp("[^0-9.]"),index);
 	if (end<0) end=text.length();
 	auto nr=text.mid(begin,end-begin);
-	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d*$")) && nr.contains(QRegExp("\\d"))) ) return false;
+	if ( !(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegExp("\\d"))) ) return false;
 	auto sign=nr[0]=='+'||nr[0]=='-';
 	if (nr.endsWith('.')) nr=nr.left(nr.length()-1);
 	auto curpos=index-begin;
+	if(curpos==0 || (curpos==1 && (nr[0]=='+' || nr[0]=='-'))) return false;
 	auto dotpos=nr.indexOf('.');
 	auto decimals=dotpos<0?0:nr.length()-dotpos-1;
 	auto number=(dotpos<0)?nr.toLongLong():(nr.left(dotpos)+nr.mid(dotpos+1)).toLongLong();
 	auto tail=nr.length()-curpos;
 	auto exponent=tail-((dotpos>=curpos)?1:0);
-	long long int step=1;
+	long long int step=Preferences::inst()->getValue("editor/stepSize").toInt();
 	for (int i=exponent; i>0; i--) step*=10;
-
+	
 	switch (key) {
 		case Qt::Key_Up:   number+=step; break;
 		case Qt::Key_Down: number-=step; break;
