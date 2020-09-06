@@ -157,7 +157,7 @@ shared_ptr<const Geometry> PCache::getGeometry(const std::string &key){
     std::string data;
     shared_ptr<const Geometry> geom;
     Geom_cache_entry ce;
-    if(get("GEOM-"+key, data)){
+    if(get("GEOM-"+key, data) && !data.empty()){
         std::stringstream ss(data);
         boost::archive::text_iarchive io(ss);
         io >> ce;
