@@ -2865,9 +2865,16 @@ void MainWindow::hideEditor()
 		if (e->qsci->isListActive()) {
 			e->qsci->cancelList();
 		}
+		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+		if (e->qsci->isCallTipActive()) {
+		 	e->cancelCallTip();
+		}
 		editorDock->close();
 	}else {
 		e->qsci->setReadOnly(false);
+		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
 		editorDock->show();
 	}
 }

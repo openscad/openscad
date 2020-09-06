@@ -1319,3 +1319,8 @@ void ScintillaEditor::jumpToNextError()
 {
 	findMarker(1, 0, [this](int line){ return qsci->markerFindNext(line, 1 << errMarkerNumber); });
 }
+
+void ScintillaEditor::cancelCallTip()
+{
+	qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
+}
