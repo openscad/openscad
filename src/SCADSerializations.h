@@ -17,96 +17,96 @@ BOOST_SERIALIZATION_SPLIT_FREE(PolySet);
 BOOST_SERIALIZATION_SPLIT_FREE(Polygon2d);
 BOOST_SERIALIZATION_SPLIT_FREE(Geometry);
 
-namespace boost{
-namespace serialization{
+namespace boost {
+namespace serialization {
 
 template <class Archive>
-void serialize(Archive &ar, CGAL_cache_entry &ce, const unsigned int ){
-    ar & ce.N;
-    ar & ce.msg;
+void serialize(Archive &ar, CGAL_cache_entry &ce, const unsigned int){
+  ar &ce.N;
+  ar &ce.msg;
 }
 
 template <class Archive>
 void serialize(Archive &ar, Geom_cache_entry &ce, const unsigned int){
-    ar & ce.geom;
-    ar & ce.msg;
+  ar &ce.geom;
+  ar &ce.msg;
 }
 
 
 template <class Archive>
 void serialize(Archive &ar, Vector3d &v, const unsigned int){
-    ar & v(0);
-    ar & v(1);
-    ar & v(2);
+  ar &v(0);
+  ar &v(1);
+  ar &v(2);
 }
 
 template <class Archive>
 void serialize(Archive &ar, Vector2d &v, const unsigned int){
-    ar & v(0);
-    ar & v(1);
-}
-
-template<class Archive>
-void serialize(Archive &ar, Outline2d &o, const unsigned int){
-    ar & o.vertices;
-    ar & o.positive;
-}
-
-template<class Archive>
-void save(Archive &ar, const Geometry& g, const unsigned int){
-    unsigned int tmp = g.getConvexity();
-    ar & tmp;
-}
-template<class Archive>
-void load(Archive &ar,  Geometry& g, const unsigned int){
-    unsigned int tmp ;
-    tmp = g.getConvexity();
-    ar & tmp;
+  ar &v(0);
+  ar &v(1);
 }
 
 template <class Archive>
-void save(Archive &ar, const PolySet& ps, const unsigned int){
-    ar & boost::serialization::base_object<Geometry> (ps);
-
-    ar & ps.polygons;
-    ar & ps.getPolygon();
-    unsigned int tmp = ps.getDimension();
-    ar & tmp;
-}
-template<class Archive>
-void load(Archive &ar, PolySet& ps, const unsigned int){
-    ar & boost::serialization::base_object<Geometry> (ps);
-
-    ar & ps.polygons;
-    Polygon2d polygon;
-    ar & polygon;
-    ps.setPolygon(polygon);
-    unsigned int dim;
-    ar & dim;
-
-    ps.setDim(dim);
-    ps.setTrueDirty();
-    ps.setUnknown();
+void serialize(Archive &ar, Outline2d &o, const unsigned int){
+  ar &o.vertices;
+  ar &o.positive;
 }
 
-template<class Archive>
-void save(Archive &ar, const Polygon2d& p, const unsigned int){
-    ar & boost::serialization::base_object<Geometry> (p);
-
-    ar & p.outlines();
-    bool sanitized = p.isSanitized();
-    ar & sanitized;
+template <class Archive>
+void save(Archive &ar, const Geometry &g, const unsigned int){
+  unsigned int tmp = g.getConvexity();
+  ar &tmp;
 }
-template<class Archive>
-void load(Archive &ar, Polygon2d& p,const unsigned int){
-    ar & boost::serialization::base_object<Geometry> (p);
+template <class Archive>
+void load(Archive &ar,  Geometry &g, const unsigned int){
+  unsigned int tmp;
+  tmp = g.getConvexity();
+  ar &tmp;
+}
 
-    Polygon2d::Outlines2d o;
-    ar & o;
-    p.setOutlines(o);
-    bool sanitized;
-    ar & sanitized;
-    p.setSanitized(sanitized);
+template <class Archive>
+void save(Archive &ar, const PolySet &ps, const unsigned int){
+  ar &boost::serialization::base_object<Geometry>(ps);
+
+  ar &ps.polygons;
+  ar &ps.getPolygon();
+  unsigned int tmp = ps.getDimension();
+  ar &tmp;
+}
+template <class Archive>
+void load(Archive &ar, PolySet &ps, const unsigned int){
+  ar &boost::serialization::base_object<Geometry>(ps);
+
+  ar &ps.polygons;
+  Polygon2d polygon;
+  ar &polygon;
+  ps.setPolygon(polygon);
+  unsigned int dim;
+  ar &dim;
+
+  ps.setDim(dim);
+  ps.setTrueDirty();
+  ps.setUnknown();
+}
+
+template <class Archive>
+void save(Archive &ar, const Polygon2d &p, const unsigned int){
+  ar &boost::serialization::base_object<Geometry>(p);
+
+  ar &p.outlines();
+  bool sanitized = p.isSanitized();
+  ar &sanitized;
+}
+template <class Archive>
+void load(Archive &ar, Polygon2d &p, const unsigned int){
+  ar &boost::serialization::base_object<Geometry>(p);
+
+  Polygon2d::Outlines2d o;
+  ar &o;
+  p.setOutlines(o);
+  bool sanitized;
+  ar &sanitized;
+  p.setSanitized(sanitized);
 }
 
 } // namespace serialization

@@ -2,14 +2,15 @@
 
 #include <string>
 
-class PCSettings{
+class PCSettings
+{
 public:
-    static PCSettings* instance();
-    std::string ipAddress, password;
-    unsigned int port;
-    bool enablePersistentCache, enableAuth, enableLocalCache;
+  static PCSettings *instance();
+  std::string ipAddress, password;
+  unsigned int port;
+  bool enablePersistentCache, enableAuth, enableLocalCache;
 private:
-    static PCSettings* inst;
-    PCSettings();
-    ~PCSettings() {}
+  static PCSettings *inst;
+  PCSettings();
+  ~PCSettings() {}
 };
