@@ -13,6 +13,8 @@ std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
+std::string OpenSCAD::debug_output("");
+std::string OpenSCAD::debug_output_filename("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
 bool OpenSCAD::parameterCheck = true;
@@ -117,6 +119,7 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	if (OpenSCAD::debug=="all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
 		PRINT_NOCACHE( shortfname+": "+ msg );
+        OpenSCAD::debug_output += shortfname+": "+msg+"\n";
 	}
 }
 

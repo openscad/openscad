@@ -158,6 +158,13 @@ void Preferences::init() {
 	this->defaultmap["editor/characterThreshold"] = 1;
 	this->defaultmap["editor/stepSize"] = 1;
 
+    this->defaultmap["advanced/enable_local_cache"] = false;
+    this->defaultmap["advanced/enable_persistent_cache"] = false;
+    this->defaultmap["advanced/ipAddressEdit"] = "127.0.0.1";
+    this->defaultmap["advanced/portNumberEdit"] = "6379";
+    this->defaultmap["advanced/enablePasswordAuth"] = false;
+    this->defaultmap["advanced/passwordEdit"] = "";
+
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
@@ -494,6 +501,58 @@ void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 	QSettingsCached settings;
 	settings.setValue("advanced/forceGoldfeather", state);
 	emit openCSGSettingsChanged();
+}
+
+void Preferences::on_enableLocalCache_toggled(bool state)
+{
+    QSettingsCached settings;
+    settings.setValue("advanced/enable_local_cache", state);
+    if(state){
+        this->enablePersistentCache->setChecked(!state);
+        on_enablePersistentCache_toggled(!state);
+    }
+}
+
+void Preferences::on_enablePersistentCache_toggled(bool state)
+{
+    QSettingsCached settings;
+    settings.setValue("advanced/enable_persistent_cache", state);
+    this->ipAddressEdit->setDisabled(!state);
+    this->portNumberEdit->setDisabled(!state);
+    this->enablePasswordAuth->setDisabled(!state);
+    if(!state){
+        this->passwordEdit->setDisabled(!state);
+        this->label_pc4->setDisabled(!state);
+        this->enablePasswordAuth->setChecked(state);
+    }
+    this->label_pc1->setDisabled(!state);
+    this->label_pc2->setDisabled(!state);
+    this->label_pc3->setDisabled(!state);
+    if(state) {
+        this->enableLocalCache->setChecked(!state);
+        on_enableLocalCache_toggled(!state);
+    }
+}
+
+void Preferences::on_enablePasswordAuth_toggled(bool state){
+    QSettingsCached settings;
+    settings.setValue("advanced/enablePasswordAuth", state);
+    this->passwordEdit->setDisabled(!state);
+    this->label_pc4->setDisabled(!state);
+}
+void Preferences::on_ipAddressEdit_textChanged(const QString &text){
+    QSettingsCached settings;
+    settings.setValue("advanced/ipAddressEdit", text);
+}
+
+void Preferences::on_portNumberEdit_textChanged(const QString &text){
+    QSettingsCached settings;
+    settings.setValue("advanced/portNumberEdit", text);
+}
+
+void Preferences::on_passwordEdit_textChanged(const QString &text){
+    QSettingsCached settings;
+    settings.setValue("advanced/passwordEdit", text);
 }
 
 void Preferences::on_mouseWheelZoomBox_toggled(bool state)
@@ -918,8 +977,14 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
+    BlockSignals<QCheckBox *>(this->enableLocalCache)->setChecked(getValue("advanced/enable_local_cache").toBool());
+    BlockSignals<QCheckBox *>(this->enablePersistentCache)->setChecked(getValue("advanced/enable_persistent_cache").toBool());
+    BlockSignals<QCheckBox *>(this->enablePasswordAuth)->setChecked(getValue("advanced/enablePasswordAuth").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
 	BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
+    BlockSignals<QLineEdit *>(this->ipAddressEdit)->setText(getValue("advanced/ipAddressEdit").toString());
+    BlockSignals<QLineEdit *>(this->portNumberEdit)->setText(getValue("advanced/portNumberEdit").toString());
+    BlockSignals<QLineEdit *>(this->passwordEdit)->setText(getValue("advanced/passwordEdit").toString());
 
 	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
@@ -928,6 +993,15 @@ void Preferences::updateGUI()
 	this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 	this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 	this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
+
+    this->label_pc1->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->label_pc2->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->label_pc3->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->label_pc4->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->ipAddressEdit->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->portNumberEdit->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->enablePasswordAuth->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
+    this->passwordEdit->setEnabled(getValue("advanced/enable_persistent_cache").toBool());
 
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);

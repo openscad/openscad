@@ -19,6 +19,7 @@ public:
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);
 	PolySet(const Polygon2d &origin);
+    PolySet() {}
 	~PolySet();
 
 	const Polygon2d &getPolygon() const { return polygon; }
@@ -47,7 +48,11 @@ public:
 
 	bool is_convex() const;
 	boost::tribool convexValue() const { return this->convex; }
-
+    void setUnknown() {this->convex = unknown;}
+    void setTrueDirty() {this->dirty=true;}
+    void setDim(unsigned  int d) {dim = d;}
+    void setPolygon(Polygon2d p) {polygon = p;}
+    bool serializable() const override {return true; }
 private:
 	Polygon2d polygon;
 	unsigned int dim;

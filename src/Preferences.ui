@@ -135,9 +135,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-450</y>
-             <width>602</width>
-             <height>901</height>
+             <y>0</y>
+             <width>520</width>
+             <height>766</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -847,6 +847,66 @@
                     <string>Indent using</string>
                    </property>
                   </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QGroupBox" name="groupBoxDisplay">
+              <property name="title">
+               <string>Display</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout">
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableBraceMatching">
+                 <property name="text">
+                  <string>Enable brace matching</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="checkBoxHighlightCurrentLine">
+                 <property name="text">
+                  <string>Highlight current line</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableLineNumbers">
+                 <property name="text">
+                  <string>Display Line Numbers</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QGroupBox" name="groupBoxAutocomplete">
+              <property name="title">
+               <string>Autocomplete</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout1">
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableAutocomplete">
+                 <property name="text">
+                  <string>Enable Autocompletion</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_30">
+                 <item>
+                  <widget class="QLabel" name="labelCharacterThreshold">
+                   <property name="text">
+                    <string>Character Threshold</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditCharacterThreshold"/>
                  </item>
                 </layout>
                </item>
@@ -1733,6 +1793,118 @@
                   </widget>
                  </item>
                 </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_PC">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="title">
+               <string>Persistent Cache</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_pc1">
+                <item>
+                <widget class="QCheckBox" name="enableLocalCache">
+                <property name="text">
+                  <string>Enable Local Cache</string>
+                </property>
+                <property name="checked">
+                  <bool>false</bool>
+                </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enablePersistentCache">
+                 <property name="text">
+                  <string>Enable Persistent Cache using Redis</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc1">
+                 <item>
+                  <widget class="QLabel" name="label_pc1">
+                   <property name="text">
+                    <string>IP Address </string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="ipAddressEdit">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc2">
+                 <item>
+                  <widget class="QLabel" name="label_pc2">
+                   <property name="text">
+                    <string>Port Number </string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="portNumberEdit">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enablePasswordAuth">
+                 <property name="text">
+                  <string>Have a password</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_pc3">
+                 <item>
+                  <widget class="QLabel" name="label_pc4">
+                   <property name="text">
+                    <string>Password</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="passwordEdit">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_pc3">
+                 <property name="text">
+                  <string>note: Connection status and updates will be shown in the console.</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
