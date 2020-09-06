@@ -2865,9 +2865,11 @@ void MainWindow::hideEditor()
 		if (e->qsci->isListActive()) {
 			e->qsci->cancelList();
 		}
+		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
 		editorDock->close();
 	}else {
 		e->qsci->setReadOnly(false);
+		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
 		editorDock->show();
 	}
 }
