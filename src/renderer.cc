@@ -173,7 +173,7 @@ Renderer::Renderer() : colorscheme(nullptr)
 	}
 
 	renderer_shader.progid = edgeshader_prog; // 0
-	renderer_shader.type = CSG_RENDERING;
+	renderer_shader.type = EDGE_RENDERING;
 	renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
 	renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
 	renderer_shader.data.csg_rendering.trig = glGetAttribLocation(edgeshader_prog, "trig"); // 3
@@ -210,7 +210,7 @@ Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool 
 
 void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const
 {
-	if (shaderinfo && shaderinfo->type != CSG_RENDERING) {
+	if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
 		return;
 	}
 
@@ -283,7 +283,7 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
 			(shaderinfo) ? shaderinfo->type : Renderer::NONE;
 
 	switch (type) {
-	case Renderer::CSG_RENDERING:
+	case Renderer::EDGE_RENDERING:
 		glVertexAttrib3d(shaderinfo->data.csg_rendering.trig, e0f, e1f, e2f);
 		glVertexAttrib3d(shaderinfo->data.csg_rendering.point_b, p1[0], p1[1], p1[2] + z);
 		glVertexAttrib3d(shaderinfo->data.csg_rendering.point_c, p2[0], p2[1], p2[2] + z);
@@ -366,7 +366,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 	if (!ps) return;
 
 #ifdef ENABLE_OPENCSG
-	if (shaderinfo && shaderinfo->type == CSG_RENDERING) {
+	if (shaderinfo && shaderinfo->type == EDGE_RENDERING) {
 		glUniform1f(shaderinfo->data.csg_rendering.xscale, shaderinfo->vp_size_x);
 		glUniform1f(shaderinfo->data.csg_rendering.yscale, shaderinfo->vp_size_y);
 	}

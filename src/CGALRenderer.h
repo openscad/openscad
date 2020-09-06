@@ -12,7 +12,7 @@ class CGALRenderer : public VBORenderer
 public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
 	~CGALRenderer();
-	void draw(bool showfaces, bool showedges) const override;
+	void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 	void setColorScheme(const ColorScheme &cs) override;
 	BoundingBox getBoundingBox() const override;
 
@@ -28,5 +28,6 @@ private:
 	void createPolysets() const;
 	bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
 	
-	mutable VBORenderer::ProductVertexSets product_vertex_sets;
+	mutable VertexStates polyset_states;
+	mutable GLuint polyset_vbo;
 };

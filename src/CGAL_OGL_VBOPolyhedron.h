@@ -45,7 +45,7 @@ public:
 	}
 
 	void draw(bool showedges) const override {
-		PRINTD("VBO draw()");
+		PRINTDB("VBO draw(%d)", showedges);
 		// grab current state to restore after
 		GLfloat current_point_size, current_line_width;
 		GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
@@ -56,47 +56,17 @@ public:
 		glGetFloatv(GL_LINE_WIDTH, &current_line_width);
 
 		if(this->style == SNC_BOUNDARY) {
-			for (auto &halffacet : this->polyhedron_halffacets_) {
-				glBindBuffer(GL_ARRAY_BUFFER, halffacet.vbo);
-				glEnable(GL_LIGHTING);
-				if (halffacet.vertex_set->draw_cull_front || halffacet.vertex_set->draw_cull_back) {
-					glEnable(GL_CULL_FACE);
-					if (halffacet.vertex_set->draw_cull_front) {
-				        	glCullFace(GL_BACK);
-					} else if (halffacet.vertex_set->draw_cull_front) {
-						glCullFace(GL_FRONT);			
-					}
-				}
-				glEnableClientState(GL_VERTEX_ARRAY);
-				glEnableClientState(GL_NORMAL_ARRAY);
-				glEnableClientState(GL_COLOR_ARRAY);
-				glVertexPointer(3, GL_FLOAT, sizeof(VBORenderer::PNCVertex), (GLvoid *)(0));
-				glNormalPointer(GL_FLOAT, sizeof(VBORenderer::PNCVertex), (GLvoid *)(sizeof(float)*3));
-				glColorPointer(4, GL_FLOAT, sizeof(VBORenderer::PNCVertex), (GLvoid *)((sizeof(float)*3)*2));
-				
-				glDrawArrays(halffacet.vertex_set->draw_type, 0, halffacet.vertex_set->draw_size);
-				if (halffacet.vertex_set->draw_cull_front || halffacet.vertex_set->draw_cull_back) {
-					glDisable(GL_CULL_FACE);
-				}
+			glBindBuffer(GL_ARRAY_BUFFER, halffacets_vbo);
+			for (const auto &halffacet : this->halffacets_states) {
+				if (halffacet) halffacet->drawArrays();
 			}
 		}
 		
 		if (this->style != SNC_BOUNDARY || showedges) {
-			glDisable(GL_LIGHTING);
-			glDisable(GL_LIGHTING);
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
-			glLineWidth(5.0f);
-			glBindBuffer(GL_ARRAY_BUFFER, this->polyhedron_edges_.vbo);
-			glVertexPointer(3, GL_FLOAT, sizeof(VBORenderer::PCVertex), (GLvoid *)(0));
-			glColorPointer(4, GL_FLOAT, sizeof(VBORenderer::PCVertex), (GLvoid *)(sizeof(float)*3));
-			glDrawArrays(this->polyhedron_edges_.vertex_set->draw_type, 0, this->polyhedron_edges_.vertex_set->draw_size);
-
-			glPointSize(10.0f);
-			glBindBuffer(GL_ARRAY_BUFFER, this->polyhedron_vertices_.vbo);
-			glVertexPointer(3, GL_FLOAT, sizeof(VBORenderer::PCVertex), (GLvoid *)(0));
-			glColorPointer(4, GL_FLOAT, sizeof(VBORenderer::PCVertex), (GLvoid *)(sizeof(float)*3));
-			glDrawArrays(this->polyhedron_vertices_.vertex_set->draw_type, 0, this->polyhedron_vertices_.vertex_set->draw_size);
+			glBindBuffer(GL_ARRAY_BUFFER, points_edges_vbo);
+			for (const auto &point_edge : this->points_edges_states) {
+				if (point_edge) point_edge->drawArrays();
+			}
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -109,7 +79,7 @@ public:
 		if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
 		if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
 
-		PRINTD("VBO draw() end");
+		PRINTDB("VBO draw(%d) end", showedges);
 	}
 	
 }; // CGAL_OGL_Polyhedron

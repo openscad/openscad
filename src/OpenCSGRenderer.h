@@ -9,6 +9,66 @@
 
 #include "VBORenderer.h"
 
+class OpenCSGVertexState : public VertexState
+{
+public:
+	OpenCSGVertexState()
+		: VertexState(), csg_object_index_(0)
+	{}
+	OpenCSGVertexState(GLenum draw_type, GLsizei draw_size, size_t draw_offset = 0)
+		: VertexState(draw_type, draw_size, draw_offset),
+		  csg_object_index_(0)
+	{}
+	OpenCSGVertexState(size_t csg_object_index = 0)
+		: VertexState(),
+		  csg_object_index_(csg_object_index)
+	{}
+	OpenCSGVertexState(GLenum draw_type, GLsizei draw_size, size_t draw_offset,
+			   size_t csg_object_index)
+		: VertexState(draw_type, draw_size, draw_offset),
+		  csg_object_index_(csg_object_index)
+	{}
+	virtual ~OpenCSGVertexState() {}
+
+	size_t csgObjectIndex() const { return csg_object_index_; }
+	void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
+
+private:
+	size_t csg_object_index_;
+};
+
+class OpenCSGVertexStateFactory : public VertexStateFactory
+{
+public:
+	OpenCSGVertexStateFactory() {}
+	virtual ~OpenCSGVertexStateFactory() {}
+	
+	std::shared_ptr<VertexState> createVertexState(GLenum draw_type, size_t draw_size, size_t draw_offset = 0) const override {
+		return std::make_shared<OpenCSGVertexState>(draw_type, draw_size, draw_offset);
+	}
+};
+
+typedef std::vector<OpenCSG::Primitive *> OpenCSGPrimitives;
+class OpenCSGVBOProduct
+{
+public:
+	OpenCSGVBOProduct(std::unique_ptr<OpenCSGPrimitives> primitives,
+			  std::unique_ptr<VertexStates> states,
+		  	  GLuint vbo)
+		: primitives_(std::move(primitives)), states_(std::move(states)), vbo_(vbo) {}
+	virtual ~OpenCSGVBOProduct() {}
+	
+	const OpenCSGPrimitives &primitives() const { return *(primitives_.get()); }
+	const VertexStates &states() const { return *(states_.get()); }
+	const GLuint vbo() const { return vbo_; }
+	
+private:
+	const std::unique_ptr<OpenCSGPrimitives> primitives_;
+	const std::unique_ptr<VertexStates> states_;
+	const GLuint vbo_;
+};
+typedef std::vector<std::unique_ptr<OpenCSGVBOProduct>> OpenCSGVBOProducts;
+
 class OpenCSGRenderer : public VBORenderer
 {
 public:
@@ -16,22 +76,20 @@ public:
 			shared_ptr<CSGProducts> highlights_products,
 			shared_ptr<CSGProducts> background_products);
 	virtual ~OpenCSGRenderer();
-	void draw(bool showfaces, bool showedges) const override;
-	void draw_with_shader(const Renderer::shaderinfo_t *shaderinfo) const override;
+	void draw(bool showfaces, bool showedges, const Renderer::shaderinfo_t *shaderinfo = nullptr) const override;
 
 	BoundingBox getBoundingBox() const override;
 private:
 #ifdef ENABLE_OPENCSG
 	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
-	class OpenCSGVBOPrim *createVBOPrimitive(const VertexSet &vertex_set, const GLuint vbo) const;
+	class OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> vertex_state,
+						 const OpenCSG::Operation operation, const unsigned int convexity, const GLuint vbo) const;
 #endif // ENABLE_OPENCSG
-	void createCSGProducts(const class CSGProducts &products, bool highlight_mode, bool background_mode) const;
-	void renderCSGProducts(const shared_ptr<class CSGProducts> &products, const Renderer::shaderinfo_t *shaderinfo,
+	void createCSGProducts(const class CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const;
+	void renderCSGProducts(const shared_ptr<class CSGProducts> &products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
 				bool highlight_mode = false, bool background_mode = false) const;
 
-	inline const shared_ptr<ProductVertexSets> &getProductVertexSets() const { return product_vertex_sets; }
-
-	shared_ptr<ProductVertexSets> product_vertex_sets;
+	mutable OpenCSGVBOProducts vbo_vertex_products;
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlights_products;
 	shared_ptr<CSGProducts> background_products;

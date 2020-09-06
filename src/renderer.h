@@ -18,6 +18,7 @@ public:
 	enum shader_type_t {
 		NONE,
 		CSG_RENDERING,
+		EDGE_RENDERING,
 		SELECT_RENDERING,
 	};
 
@@ -55,8 +56,7 @@ public:
 	virtual void resize(int w, int h);
 	virtual inline const Renderer::shaderinfo_t &getShader() const { return renderer_shader; }
 
-	virtual void draw(bool showfaces, bool showedges) const = 0;
-	virtual void draw_with_shader(const shaderinfo_t *) const  { this->draw(true, true); }
+	virtual void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const = 0;
 	virtual BoundingBox getBoundingBox() const = 0;
 
 #define CSGMODE_DIFFERENCE_FLAG 0x10

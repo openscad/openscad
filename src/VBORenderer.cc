@@ -150,7 +150,7 @@ VBORenderer::VBORenderer()
 	}
 
 	vbo_renderer_shader.progid = vbo_shader_prog; // 0
-	vbo_renderer_shader.type = Renderer::CSG_RENDERING;
+	vbo_renderer_shader.type = EDGE_RENDERING;
 	vbo_renderer_shader.data.csg_rendering.color_area = glGetAttribLocation(vbo_shader_prog, "color1"); // 1
 	vbo_renderer_shader.data.csg_rendering.color_edge = glGetAttribLocation(vbo_shader_prog, "color2"); // 2
 	vbo_renderer_shader.data.csg_rendering.trig = glGetAttribLocation(vbo_shader_prog, "trig"); // 3
@@ -205,9 +205,9 @@ bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f &c
 	return false;
 }
 
-void VBORenderer::create_triangle(std::vector<Vertex> &vertices, const Color4f &color,
-					const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
-				  bool e0, bool e1, bool e2, bool mirrored) const
+void VBORenderer::create_triangle(VertexData &vertex_data, const Color4f &color,
+				  const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
+				  bool mirrored) const
 {
 	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
 	double ay = p1[1] - p0[1], by = p1[1] - p2[1];
@@ -217,474 +217,334 @@ void VBORenderer::create_triangle(std::vector<Vertex> &vertices, const Color4f &
 	double nz = ax*by - ay*bx;
 	double nl = sqrt(nx*nx + ny*ny + nz*nz);
 
-	GLbyte e0f = e0 ? 2 : -1;
-	GLbyte e1f = e1 ? 2 : -1;
-	GLbyte e2f = e2 ? 2 : -1;
-
-	Vertex vertex = {
-		{(float)p0[0], (float)p0[1], (float)p0[2]},
-		{(float)(nx/nl), (float)(ny/nl), (float)(nz/nl)},
-		{color[0], color[1], color[2], color[3]},
-		{(color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0},
-		{e0f, e1f, e2f},
-		{(float)p1[0], (float)p1[1], (float)p1[2]},
-		{(float)p2[0], (float)p2[1], (float)p2[2]},
-		{0, 1, 0}
-	};
-	vertices.push_back(vertex);
-
+	addAttributeValues(*vertex_data.positionData(), p0[0], p0[1], p0[2]);
 	if (!mirrored) {
-		vertex = {
-			{(float)p1[0], (float)p1[1], (float)p1[2]},
-			{(float)(nx/nl), (float)(ny/nl), (float)(nz/nl)},
-			{color[0], color[1], color[2], color[3]},
-			{(color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0},
-			{e0f, e1f, e2f},
-			{(float)p0[0], (float)p0[1], (float)p0[2]},
-			{(float)p2[0], (float)p2[1], (float)p2[2]},
-			{0, 0, 1}
-		};
-		vertices.push_back(vertex);
+		addAttributeValues(*vertex_data.positionData(), p1[0], p1[1], p1[2]);
 	}
-
-	vertex = {
-		{(float)p2[0], (float)p2[1], (float)p2[2]},
-		{(float)(nx/nl), (float)(ny/nl), (float)(nz/nl)},
-		{color[0], color[1], color[2], color[3]},
-		{(color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0},
-		{e0f, e1f, e2f},
-		{(float)p0[0], (float)p0[1], (float)p0[2]},
-		{(float)p1[0], (float)p1[1], (float)p1[2]},
-		{1, 0, 0}
-	};
-	vertices.push_back(vertex);
-
+	addAttributeValues(*vertex_data.positionData(), p2[0], p2[1], p2[2]);
 	if (mirrored) {
-		vertex = {
-			{(float)p1[0], (float)p1[1], (float)p1[2]},
-			{(float)(nx/nl), (float)(ny/nl), (float)(nz/nl)},
-			{color[0], color[1], color[2], color[3]},
-			{(color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0},
-			{e0f, e1f, e2f},
-			{(float)p0[0], (float)p0[1], (float)p0[2]},
-			{(float)p2[0], (float)p2[1], (float)p2[2]},
-			{0, 0, 1}
-		};
-		vertices.push_back(vertex);
+		addAttributeValues(*vertex_data.positionData(), p1[0], p1[1], p1[2]);
+	}
+	if (vertex_data.hasNormalData()) {
+		addAttributeValues(3, *vertex_data.normalData(), (nx/nl), (ny/nl), (nz/nl));		
+	}
+	if (vertex_data.hasColorData()) {
+		addAttributeValues(3, *vertex_data.colorData(), color[0], color[1], color[2], color[3]);
 	}
 }
 
-void VBORenderer::create_surface(shared_ptr<const Geometry> geom, std::vector<Vertex> &render_buffer,
-				 VertexSet &vertex_set, GLintptr prev_start_offset, GLsizei prev_draw_size,
+void VBORenderer::create_surface(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
 				 csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
 {
 	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
 
-	size_t render_buffer_start_size = render_buffer.size();
-
 	if (!ps) { return; }
+	PRINTDB("create_surface : %s",
+		(csgmode == CSGMODE_NONE ? "CSGMODE_NONE" :
+		 csgmode == CSGMODE_NORMAL ? "CSGMODE_NORMAL" :
+		 csgmode == CSGMODE_DIFFERENCE ? "CSGMODE_DIFFERENCE" :
+		 csgmode == CSGMODE_BACKGROUND ? "CSGMODE_BACKGROUND" :
+		 csgmode == CSGMODE_BACKGROUND_DIFFERENCE ? "CSGMODE_BACKGROUND_DIFFERENCE" :
+		 csgmode == CSGMODE_HIGHLIGHT ? "CSGMODE_HIGHLIGHT" :
+		 csgmode == CSGMODE_HIGHLIGHT_DIFFERENCE ? "CSGMODE_HIGHLIGHT_DIFFERENCE" : "CSGMODE UNDEFINED")
+	);
 
 	bool mirrored = m.matrix().determinant() < 0;
+	size_t triangle_count = 0;
 
 	if (ps->getDimension() == 2) {
-		// Render 2D objects 1mm thick, but differences slightly larger
-		double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
-		// Render top+bottom
-		for (double z = -zbase/2; z < zbase; z += zbase) {
-			fflush(stderr);
-			for (size_t i = 0; i < ps->polygons.size(); i++) {
-				const Polygon *poly = &ps->polygons[i];
-				Vector3d p0 = poly->at(0); p0[2] += z; p0 = m * p0;
-				Vector3d p1 = poly->at(1); p1[2] += z; p1 = m * p1;
-				Vector3d p2 = poly->at(2); p2[2] += z; p2 = m * p2;
-
-				if (poly->size() == 3) {
-					if (z < 0) {
-						create_triangle(render_buffer, color, p0, p2, p1, true, true, true, mirrored);
-					} else {
-						create_triangle(render_buffer, color, p0, p1, p2, true, true, true, mirrored);
-					}
-				}
-				else if (poly->size() == 4) {
-					Vector3d p3 = poly->at(3); p3[2] += z; p3 = m * p3;
-
-					if (z < 0) {
-						create_triangle(render_buffer, color, p0, p3, p1, true, false, true, mirrored);
-						create_triangle(render_buffer, color, p2, p1, p3, true, false, true, mirrored);
-					} else {
-						create_triangle(render_buffer, color, p0, p1, p3, true, false, true, mirrored);
-						create_triangle(render_buffer, color, p2, p3, p1, true, false, true, mirrored);
-					}
-				}
-				else {
-					Vector3d center = Vector3d::Zero();
-					for (size_t j = 0; j < poly->size(); j++) {
-						center[0] += poly->at(j)[0];
-						center[1] += poly->at(j)[1];
-					}
-					center[0] /= poly->size();
-					center[1] /= poly->size();
-
-					for (size_t j = 1; j <= poly->size(); j++) {
-						Vector3d p0 = center; center[2] += z; p0 = m * p0;
-						Vector3d p1 = poly->at(j % poly->size()); p1[2] += z; p1 = m * p1;
-						Vector3d p2 = poly->at(j - 1); p2[2] += z; p2 = m * p2;
-
-						if (z < 0) {
-							create_triangle(render_buffer, color, p0, p1, p2, false, true, false, mirrored);
-						} else {
-							create_triangle(render_buffer, color, p0, p2, p1, false, true, false, mirrored);
-						}
-					}
-				}
-			}
-		}
-
-		// Render sides
-		if (ps->getPolygon().outlines().size() > 0) {
-			for (const Outline2d &o : ps->getPolygon().outlines()) {
-				for (size_t j = 1; j <= o.vertices.size(); j++) {
-					Vector3d p1 = m * Vector3d(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
-					Vector3d p2 = m * Vector3d(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
-					Vector3d p3 = m * Vector3d(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase/2);
-					Vector3d p4 = m * Vector3d(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], zbase/2);
-
-					create_triangle(render_buffer, color, p2, p1, p3,true, true, false, mirrored);
-					create_triangle(render_buffer, color, p2, p3, p4, false, true, true, mirrored);
-				}
-			}
-		}
-		else {
-			// If we don't have borders, use the polygons as borders.
-			// FIXME: When is this used?
-			const Polygons *borders_p = &ps->polygons;
-			for (size_t i = 0; i < borders_p->size(); i++) {
-				const Polygon *poly = &borders_p->at(i);
-				for (size_t j = 1; j <= poly->size(); j++) {
-					Vector3d p1 = poly->at(j - 1); p1[2] -= zbase/2; p1 = m * p1;
-					Vector3d p2 = poly->at(j - 1); p2[2] += zbase/2; p2 = m * p2;
-					Vector3d p3 = poly->at(j % poly->size()); p3[2] -= zbase/2; p3 = m * p3;
-					Vector3d p4 = poly->at(j % poly->size()); p4[2] += zbase/2; p4 = m * p4;
-
-					create_triangle(render_buffer, color, p2, p1, p3, true, true, false, mirrored);
-					create_triangle(render_buffer, color, p2, p3, p4, false, true, true, mirrored);
-				}
-			}
-		}
-
-		vertex_set.draw_type = GL_TRIANGLES;
-		vertex_set.draw_size = render_buffer.size() - render_buffer_start_size;
-		vertex_set.start_offset = 0;
-		if (render_buffer_start_size) {
-			vertex_set.start_offset = prev_start_offset + prev_draw_size*sizeof(Vertex);
-		}
-
+		PRINTD("create_surface 2D");
+		create_polygons(geom, vertex_array, csgmode, m, color);
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
-			const Polygon *poly = &ps->polygons[i];
-			Vector3d p0 = m * poly->at(0);
-			Vector3d p1 = m * poly->at(1);
-			Vector3d p2 = m * poly->at(2);
+		VertexData &vertex_data = vertex_array.data();
+		VertexStates &vertex_states = vertex_array.states();
+		size_t last_size = vertex_data.sizeInBytes();
+		PRINTDB("create_surface last_size = %d", last_size);
 
-			if (poly->size() == 3) {
-				create_triangle(render_buffer, color, p0, p1, p2, true, true, true, mirrored);
+		for (const auto &poly : ps->polygons) {
+			Vector3d p0 = m * poly.at(0);
+			Vector3d p1 = m * poly.at(1);
+			Vector3d p2 = m * poly.at(2);
+
+			if (poly.size() == 3) {
+				create_triangle(vertex_data, color, p0, p1, p2, mirrored);
+				triangle_count++;
 			}
-			else if (poly->size() == 4) {
-				Vector3d p3 = m * poly->at(3);
+			else if (poly.size() == 4) {
+				Vector3d p3 = m * poly.at(3);
 
-				create_triangle(render_buffer, color, p0, p1, p3, true, false, true, mirrored);
-				create_triangle(render_buffer, color, p2, p3, p1, true, false, true, mirrored);
+				create_triangle(vertex_data, color, p0, p1, p3, mirrored);
+				create_triangle(vertex_data, color, p2, p3, p1, mirrored);
+				triangle_count+=2;
 			}
 			else {
 				Vector3d center = Vector3d::Zero();
-				for (size_t j = 0; j < poly->size(); j++) {
-					center[0] += poly->at(j)[0];
-					center[1] += poly->at(j)[1];
-					center[2] += poly->at(j)[2];
+				for (size_t i = 0; i < poly.size(); i++) {
+					center[0] += poly.at(i)[0];
+					center[1] += poly.at(i)[1];
+					center[2] += poly.at(i)[2];
 				}
-				center[0] /= poly->size();
-				center[1] /= poly->size();
-				center[2] /= poly->size();
-				for (size_t j = 1; j <= poly->size(); j++) {
+				center[0] /= poly.size();
+				center[1] /= poly.size();
+				center[2] /= poly.size();
+				for (size_t i = 1; i <= poly.size(); i++) {
 					Vector3d p0 = m * center;
-					Vector3d p1 = m * poly->at(j % poly->size());
-					Vector3d p2 = m * poly->at(j - 1);
+					Vector3d p1 = m * poly.at(i % poly.size());
+					Vector3d p2 = m * poly.at(i - 1);
 
-					create_triangle(render_buffer, color, p0, p2, p1, false, true, false, mirrored);
+					create_triangle(vertex_data, color, p0, p2, p1, mirrored);
+					triangle_count++;
 				}
 			}
 		}
 
-		vertex_set.draw_type = GL_TRIANGLES;
-		vertex_set.draw_size = render_buffer.size() - render_buffer_start_size;
-		vertex_set.start_offset = 0;
-		if (render_buffer_start_size) {
-			vertex_set.start_offset = prev_start_offset + prev_draw_size*sizeof(Vertex);
-		}
+		std::shared_ptr<VertexState> vs = vertex_array.createVertexState(GL_TRIANGLES, triangle_count*3, vertex_array.writeIndex());
+		vertex_states.emplace_back(std::move(vs));
+		vertex_array.addAttributePointers(last_size);
 	}
 	else {
 		assert(false && "Cannot render object with no dimension");
 	}
 }
 
-void VBORenderer::draw_surface(const VertexSet &vertex_set, const Renderer::shaderinfo_t *shaderinfo, bool use_color_array) const
-{
-	Renderer::shader_type_t type =
-			(shaderinfo) ? shaderinfo->type : Renderer::NONE;
-
-	if (type == Renderer::CSG_RENDERING) {
-		glUniform1f(shaderinfo->data.csg_rendering.xscale, shaderinfo->vp_size_x);
-		glUniform1f(shaderinfo->data.csg_rendering.yscale, shaderinfo->vp_size_y);
-	}
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	if (use_color_array || (type == CSG_RENDERING)) {
-		glEnableClientState(GL_NORMAL_ARRAY);
-	}
-	if (use_color_array) {
-		glEnableClientState(GL_COLOR_ARRAY);
-	}
-	if (type == Renderer::CSG_RENDERING) {
-		glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.color_area);
-		glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.color_edge);
-		glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.trig);
-		glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_b);
-		glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_c);
-		glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.mask);
-	}
-
-	glVertexPointer(3, GL_FLOAT, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, position)));
-	if (use_color_array || (type == CSG_RENDERING)) {
-		glNormalPointer(GL_FLOAT, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, normal)));
-	}
-	if (use_color_array) {
-		glColorPointer(4, GL_FLOAT, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, color1)));
-	}
-
-	if (type == CSG_RENDERING) {
-		glVertexAttribPointer(vbo_renderer_shader.data.csg_rendering.color_area, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, color1)));
-		glVertexAttribPointer(vbo_renderer_shader.data.csg_rendering.color_edge, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, color2)));
-		glVertexAttribPointer(vbo_renderer_shader.data.csg_rendering.trig, 3, GL_BYTE, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, trig)));
-		glVertexAttribPointer(vbo_renderer_shader.data.csg_rendering.point_b, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, pos_b)));
-		glVertexAttribPointer(vbo_renderer_shader.data.csg_rendering.point_c, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, pos_c)));
-		glVertexAttribPointer(vbo_renderer_shader.data.csg_rendering.mask, 3, GL_BYTE, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(vertex_set.start_offset + offsetof(Vertex, mask)));
-	}
-
-	glDrawArrays(vertex_set.draw_type, 0, vertex_set.draw_size);
-
-	if (type == CSG_RENDERING) {
-		glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.color_area);
-		glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.color_edge);
-		glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.trig);
-		glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_b);
-		glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_c);
-		glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.mask);
-	}
-
-	if (use_color_array) {
-		glDisableClientState(GL_COLOR_ARRAY);
-	}
-	if (use_color_array || (type == CSG_RENDERING)) {
-		glDisableClientState(GL_NORMAL_ARRAY);
-	}
-	glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-void VBORenderer::create_edges(shared_ptr<const Geometry> geom, std::vector<PCVertex> &render_buffer,
-				VertexSets &vertex_sets, const VertexSet &template_set,
-				GLintptr prev_start_offset, GLsizei prev_draw_size,
-				csgmode_e csgmode, const Transform3d &m,
+void VBORenderer::create_edges(shared_ptr<const Geometry> geom,
+				VertexArray &vertex_array, csgmode_e csgmode,
+				const Transform3d &m,
 				const Color4f &color) const
 {
 	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
 
-	size_t render_buffer_start_size = render_buffer.size();
-
 	if (!ps) return;
+	
+	PRINTD("create_edges");
+
+	VertexData &vertex_data = vertex_array.data();
+	VertexStates &vertex_states = vertex_array.states();
 
 	if (ps->getDimension() == 2) {
 		if (csgmode == Renderer::CSGMODE_NONE) {
-			PRINTD("create_edges 2D CSGMODE_NONE");
 			// Render only outlines
 			for (const Outline2d &o : ps->getPolygon().outlines()) {
-				std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
-				(*vs) = template_set;
-
+				size_t last_size = vertex_data.sizeInBytes();
 				for (const Vector2d &v : o.vertices) {
 					Vector3d p0(v[0],v[1],0.0); p0 = m * p0;
 
-					PCVertex vertex = {
-						{(float)p0[0], (float)p0[1], (float)p0[2]},
-						{color[0], color[1], color[2], color[3]},
-					};
-					render_buffer.push_back(vertex);
+					addAttributeValues(*vertex_data.positionData(), (float)p0[0], (float)p0[1], (float)p0[2]);
+					if (vertex_data.hasColorData()) {
+						addAttributeValues(*vertex_data.colorData(), color[0], color[1], color[2], color[3]);
+					}
 				}
-				vs->draw_type = GL_LINE_LOOP;
-				vs->draw_size = render_buffer.size() - render_buffer_start_size;
-				vs->start_offset = 0;
-				if (render_buffer_start_size) {
-					vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
-				}
-
-				render_buffer_start_size = render_buffer.size();
-				prev_start_offset = vs->start_offset;
-				prev_draw_size = vs->draw_size;
-
-				vertex_sets.emplace_back(std::move(vs));
+				std::shared_ptr<VertexState> line_loop = vertex_array.createVertexState(GL_LINE_LOOP, o.vertices.size(), vertex_array.writeIndex());
+				vertex_states.emplace_back(std::move(line_loop));
+				vertex_array.addAttributePointers(last_size);
 			}
-			
-		}
-		else {
+		} else {
 			// Render 2D objects 1mm thick, but differences slightly larger
-			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
-
+			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
 			for (const Outline2d &o : ps->getPolygon().outlines()) {
-				std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
-				(*vs) = template_set;
+				size_t last_size = vertex_data.sizeInBytes();
 
 				// Render top+bottom outlines
 				for (double z = -zbase/2; z < zbase; z += zbase) {
 					for (const Vector2d &v : o.vertices) {
 						Vector3d p0(v[0],v[1],z); p0 = m * p0;
 
-						PCVertex vertex = {
-							{(float)p0[0], (float)p0[1], (float)p0[2]},
-							{color[0], color[1], color[2], color[3]},
-						};
-						render_buffer.push_back(vertex);
+						addAttributeValues(*vertex_data.positionData(), (float)p0[0], (float)p0[1], (float)p0[2]);
+						if (vertex_data.hasColorData()) {
+							PRINTD("create_edges adding color to top/bottom outline");
+							addAttributeValues(*vertex_data.colorData(), color[0], color[1], color[2], color[3]);
+						}
 					}
 				}
-				vs->draw_type = GL_LINE_LOOP;
-				vs->draw_size = render_buffer.size() - render_buffer_start_size;
-				vs->start_offset = 0;
-				if (render_buffer_start_size) {
-					vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
-				}
 
-				render_buffer_start_size = render_buffer.size();
-				prev_start_offset = vs->start_offset;
-				prev_draw_size = vs->draw_size;
+				std::shared_ptr<VertexState> line_loop = vertex_array.createVertexState(GL_LINE_LOOP, o.vertices.size()*2, vertex_array.writeIndex());
+				vertex_states.emplace_back(std::move(line_loop));
+				vertex_array.addAttributePointers(last_size);
 
-				vertex_sets.emplace_back(std::move(vs));
-
-				vs = std::make_unique<VertexSet>();
-				(*vs) = template_set;
-
+				last_size = vertex_data.sizeInBytes();
 				// Render sides
 				for (const Vector2d &v : o.vertices) {
 					Vector3d p0(v[0], v[1], -zbase/2); p0 = m * p0;
 					Vector3d p1(v[0], v[1], +zbase/2); p1 = m * p1;
-					PCVertex vertex = {
-						{(float)p0[0], (float)p0[1], (float)p0[2]},
-						{color[0], color[1], color[2], color[3]},
-					};
-					render_buffer.push_back(vertex);
-					vertex = {
-						{(float)p1[0], (float)p1[1], (float)p1[2]},
-						{color[0], color[1], color[2], color[3]},
-					};
-					render_buffer.push_back(vertex);
+					addAttributeValues(*vertex_data.positionData(), (float)p0[0], (float)p0[1], (float)p0[2]);
+					addAttributeValues(*vertex_data.positionData(), (float)p1[0], (float)p1[1], (float)p1[2]);
+					if (vertex_data.hasColorData()) {
+						PRINTD("create_edges adding color to outline sides");
+						addAttributeValues(2, *vertex_data.colorData(), color[0], color[1], color[2], color[3]);
+					}
 				}
-				vs->draw_type = GL_LINES;
-				vs->draw_size = render_buffer.size() - render_buffer_start_size;
-				vs->start_offset = 0;
-				if (render_buffer_start_size) {
-					vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
-				}
-
-				render_buffer_start_size = render_buffer.size();
-				prev_start_offset = vs->start_offset;
-				prev_draw_size = vs->draw_size;
-
-				vertex_sets.emplace_back(std::move(vs));
+				
+				std::shared_ptr<VertexState> lines = vertex_array.createVertexState(GL_LINES, o.vertices.size()*2, vertex_array.writeIndex());
+				vertex_states.emplace_back(std::move(lines));
+				vertex_array.addAttributePointers(last_size);
 			}
 		}
 	} else if (ps->getDimension() == 3) {
-		std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
-		(*vs) = template_set;
-
-		for (size_t i = 0; i < ps->polygons.size(); ++i) {
-			const Polygon *poly = &ps->polygons[i];
-
-			for (size_t j = 0; j < poly->size(); ++j) {
-				const Vector3d &p = m * poly->at(j);
-				PCVertex vertex = {
-					{(float)p[0], (float)p[1], (float)p[2]},
-					{color[0], color[1], color[2], color[3]},
-				};
-				render_buffer.push_back(vertex);
+		for (const auto &polygon : ps->polygons) {
+			size_t last_size = vertex_data.sizeInBytes();
+			for (const auto &vertex : polygon) {
+				const Vector3d &p = m * vertex;
+				addAttributeValues(*vertex_data.positionData(), (float)p[0], (float)p[1], (float)p[2]);
+				if (vertex_data.hasColorData()) {
+					addAttributeValues(*vertex_data.colorData(), color[0], color[1], color[2], color[3]);
+				}
 			}
+			std::shared_ptr<VertexState> line_loop = vertex_array.createVertexState(GL_LINE_LOOP, polygon.size(), vertex_array.writeIndex());
+			vertex_states.emplace_back(std::move(line_loop));
+			vertex_array.addAttributePointers(last_size);
 		}
-		vs->draw_type = GL_LINE_LOOP;
-		vs->draw_size = render_buffer.size() - render_buffer_start_size;
-		vs->start_offset = 0;
-		if (render_buffer_start_size) {
-			vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
-		}
-		
-		vertex_sets.emplace_back(std::move(vs));
 	}
 	else {
 		assert(false && "Cannot render object with no dimension");
 	}
 }
 
-void VBORenderer::draw_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const
-{
-	render_edges(geom, csgmode);
-}
-
-void VBORenderer::create_polygons(shared_ptr<const Geometry> geom,
-				  std::vector<PCVertex> &render_buffer,
-				  VertexSets &vertex_sets, const VertexSet &template_set,
-				  GLintptr prev_start_offset, GLsizei prev_draw_size,
+void VBORenderer::create_polygons(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
 				  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
 {
 	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
 
 	if (!ps) return;
 
-	PRINTD("create_polygons");
+	VertexData &vertex_data = vertex_array.data();
+	VertexStates &vertex_states = vertex_array.states();
+
 	if (ps->getDimension() == 2) {
-		// Draw 2D polygons
-		size_t render_buffer_start_size = render_buffer.size();
+		PRINTD("create_polygons 2D");
+		bool mirrored = m.matrix().determinant() < 0;
+		size_t triangle_count = 0;
+		size_t last_size = vertex_data.sizeInBytes();
 
-		for (const auto &polygon : ps->polygons) {
-			PRINTD("creating polygon");
-			std::unique_ptr<VertexSet> vs = std::make_unique<VertexSet>();
-			(*vs) = template_set;
-			
-			PRINTDB("vs pointer = %p, template_set = %p", vs.get() % &template_set);
+		if (csgmode == Renderer::CSGMODE_NONE) {
+			PRINTD("create_polygons CSGMODE_NONE");
+			for (const auto &poly : ps->polygons) {
+				Vector3d p0 = poly.at(0); p0 = m * p0;
+				Vector3d p1 = poly.at(1); p1 = m * p1;
+				Vector3d p2 = poly.at(2); p2 = m * p2;
 
-			for (const auto &p : polygon) {
-				Vector3d p0(p[0], p[1], 0.0); p0 = m * p0;
+				if (poly.size() == 3) {
+					create_triangle(vertex_data, color, p0, p1, p2, mirrored);
+					triangle_count++;
+				}
+				else if (poly.size() == 4) {
+					Vector3d p3 = poly.at(3); p3 = m * p3;
 
-				PRINTDB("creating point [%f, %f, %f]", p0[0] % p0[1] % p0[2]);
+					create_triangle(vertex_data, color, p0, p1, p3, mirrored);
+					create_triangle(vertex_data, color, p2, p3, p1, mirrored);
+					triangle_count+=2;
+				}
+				else {
+					Vector3d center = Vector3d::Zero();
+					for (const auto &point : poly) {
+						center[0] += point[0];
+						center[1] += point[1];
+					}
+					center[0] /= poly.size();
+					center[1] /= poly.size();
 
-				PCVertex vertex = {
-					{(float)p0[0], (float)p0[1], (float)p0[2]},
-					{color[0], color[1], color[2], color[3]},
-				};
-				render_buffer.push_back(vertex);
+					for (size_t i = 1; i <= poly.size(); i++) {
+						Vector3d p0 = center; p0 = m * p0;
+						Vector3d p1 = poly.at(i % poly.size()); p1 = m * p1;
+						Vector3d p2 = poly.at(i - 1); p2 = m * p2;
+
+						create_triangle(vertex_data, color, p0, p2, p1, mirrored);
+						triangle_count++;
+					}
+				}
 			}
-			
-			vs->draw_type = GL_POLYGON;
-			vs->draw_size = render_buffer.size() - render_buffer_start_size;
-			vs->start_offset = 0;
-			if (render_buffer_start_size) {
-				vs->start_offset = prev_start_offset + prev_draw_size*sizeof(PCVertex);
+		} else {
+			PRINTD("create_polygons 1mm thick");
+			// Render 2D objects 1mm thick, but differences slightly larger
+			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
+			// Render top+bottom
+			for (double z = -zbase/2; z < zbase; z += zbase) {
+				for (const auto &poly : ps->polygons) {
+					Vector3d p0 = poly.at(0); p0[2] += z; p0 = m * p0;
+					Vector3d p1 = poly.at(1); p1[2] += z; p1 = m * p1;
+					Vector3d p2 = poly.at(2); p2[2] += z; p2 = m * p2;
+
+					if (poly.size() == 3) {
+						if (z < 0) {
+							create_triangle(vertex_data, color, p0, p2, p1, mirrored);
+						} else {
+							create_triangle(vertex_data, color, p0, p1, p2, mirrored);
+						}
+						triangle_count++;
+					}
+					else if (poly.size() == 4) {
+						Vector3d p3 = poly.at(3); p3[2] += z; p3 = m * p3;
+
+						if (z < 0) {
+							create_triangle(vertex_data, color, p0, p3, p1, mirrored);
+							create_triangle(vertex_data, color, p2, p1, p3, mirrored);
+						} else {
+							create_triangle(vertex_data, color, p0, p1, p3, mirrored);
+							create_triangle(vertex_data, color, p2, p3, p1, mirrored);
+						}
+						triangle_count+=2;
+					}
+					else {
+						Vector3d center = Vector3d::Zero();
+						for (const auto &point : poly) {
+							center[0] += point[0];
+							center[1] += point[1];
+						}
+						center[0] /= poly.size();
+						center[1] /= poly.size();
+
+						for (size_t i = 1; i <= poly.size(); i++) {
+							Vector3d p0 = center; center[2] += z; p0 = m * p0;
+							Vector3d p1 = poly.at(i % poly.size()); p1[2] += z; p1 = m * p1;
+							Vector3d p2 = poly.at(i - 1); p2[2] += z; p2 = m * p2;
+
+							if (z < 0) {
+								create_triangle(vertex_data, color, p0, p1, p2, mirrored);
+							} else {
+								create_triangle(vertex_data, color, p0, p2, p1, mirrored);
+							}
+							triangle_count++;
+						}
+					}
+				}
 			}
 
-			PRINTDB("draw size %d", vs->draw_size);
-			PRINTDB("start_offset %d", vs->start_offset);
+			// Render sides
+			if (ps->getPolygon().outlines().size() > 0) {
+				PRINTD("Render outlines as sides");
+				for (const Outline2d &o : ps->getPolygon().outlines()) {
+					for (size_t i = 1; i <= o.vertices.size(); i++) {
+						Vector3d p1 = m * Vector3d(o.vertices[i-1][0], o.vertices[i-1][1], -zbase/2);
+						Vector3d p2 = m * Vector3d(o.vertices[i-1][0], o.vertices[i-1][1], zbase/2);
+						Vector3d p3 = m * Vector3d(o.vertices[i % o.vertices.size()][0], o.vertices[i % o.vertices.size()][1], -zbase/2);
+						Vector3d p4 = m * Vector3d(o.vertices[i % o.vertices.size()][0], o.vertices[i % o.vertices.size()][1], zbase/2);
 
-			render_buffer_start_size = render_buffer.size();
-			prev_start_offset = vs->start_offset;
-			prev_draw_size = vs->draw_size;
+						create_triangle(vertex_data, color, p2, p1, p3, mirrored);
+						create_triangle(vertex_data, color, p2, p3, p4, mirrored);
+						triangle_count+=2;
+					}
+				}
+			} else {
+				// If we don't have borders, use the polygons as borders.
+				// FIXME: When is this used?
+				PRINTD("Render sides with polygons");
+				for (const auto &poly : ps->polygons) {
+					for (size_t i = 1; i <= poly.size(); i++) {
+						Vector3d p1 = poly.at(i - 1); p1[2] -= zbase/2; p1 = m * p1;
+						Vector3d p2 = poly.at(i - 1); p2[2] += zbase/2; p2 = m * p2;
+						Vector3d p3 = poly.at(i % poly.size()); p3[2] -= zbase/2; p3 = m * p3;
+						Vector3d p4 = poly.at(i % poly.size()); p4[2] += zbase/2; p4 = m * p4;
 
-			vertex_sets.emplace_back(std::move(vs));
-			PRINTDB("vertex_sets.size = %d", vertex_sets.size());
+						create_triangle(vertex_data, color, p2, p1, p3, mirrored);
+						create_triangle(vertex_data, color, p2, p3, p4, mirrored);
+						triangle_count+=2;
+					}
+				}
+			}
 		}
+		
+		std::shared_ptr<VertexState> vs = vertex_array.createVertexState(GL_TRIANGLES, triangle_count*3, vertex_array.writeIndex());
+		vertex_states.emplace_back(std::move(vs));
+		vertex_array.addAttributePointers(last_size);
 	} else {
 		assert(false && "Cannot render object with no dimension");
 	}
