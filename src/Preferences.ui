@@ -850,66 +850,6 @@
                  </item>
                 </layout>
                </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QGroupBox" name="groupBoxDisplay">
-              <property name="title">
-               <string>Display</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout">
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="checkBoxEnableBraceMatching">
-                 <property name="text">
-                  <string>Enable brace matching</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QCheckBox" name="checkBoxHighlightCurrentLine">
-                 <property name="text">
-                  <string>Highlight current line</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="checkBoxEnableLineNumbers">
-                 <property name="text">
-                  <string>Display Line Numbers</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QGroupBox" name="groupBoxAutocomplete">
-              <property name="title">
-               <string>Autocomplete</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout1">
-               <item row="0" column="0">
-                <widget class="QCheckBox" name="checkBoxEnableAutocomplete">
-                 <property name="text">
-                  <string>Enable Autocompletion</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_30">
-                 <item>
-                  <widget class="QLabel" name="labelCharacterThreshold">
-                   <property name="text">
-                    <string>Character Threshold</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="lineEditCharacterThreshold"/>
-                 </item>
-                </layout>
-               </item>
                <item row="2" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_15">
                  <item>
@@ -2071,7 +2011,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
+             <spacer name="verticalSpacer_1">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2088,7 +2028,7 @@
               <property name="title">
                <string>Debugging</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_16">
+              <layout class="QVBoxLayout" name="verticalLayout_17">
                <item>
                 <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
                  <property name="text">
