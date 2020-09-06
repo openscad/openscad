@@ -2867,6 +2867,9 @@ void MainWindow::hideEditor()
 		}
 		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
 		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+		if (e->qsci->isCallTipActive()) {
+		 	e->cancelCallTip();
+		}
 		editorDock->close();
 	}else {
 		e->qsci->setReadOnly(false);
