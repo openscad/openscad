@@ -2866,10 +2866,12 @@ void MainWindow::hideEditor()
 			e->qsci->cancelList();
 		}
 		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
 		editorDock->close();
 	}else {
 		e->qsci->setReadOnly(false);
 		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
 		editorDock->show();
 	}
 }
