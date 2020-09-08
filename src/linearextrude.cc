@@ -129,16 +129,15 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	double slicesVal = 0;
 	slices->getFiniteDouble(slicesVal);
 	node->slices = static_cast<int>(slicesVal);
+	if (node->slices > 0) {
+		node->has_slices = true;
+	} 
 
 	node->twist = 0.0;
 	twist->getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
-		if (node->slices == 0) {
-			node->slices = static_cast<int>(fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360)));
-		}
 		node->has_twist = true;
 	}
-	node->slices = std::max(node->slices, 1);
 
 	if (node->filename.empty()) {
 		auto instantiatednodes = inst->instantiateChildren(evalctx);
@@ -170,12 +169,14 @@ std::string LinearExtrudeNode::toString() const
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist;
 	}
-	if (this->slices > 1) {
+	if (this->has_slices) {
 		stream << ", slices = " << this->slices;
 	}
 	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
-	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-
+	if (!this->has_slices) {
+		stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs;
+	}
+	stream << ")";
 	return stream.str();
 }
 
@@ -185,6 +186,6 @@ void register_builtin_dxf_linear_extrude()
 
 	Builtins::init("linear_extrude", new LinearExtrudeModule(),
 				{
-					"linear_extrude(number, center = true, convexity = 10, degrees, slices = 20, scale = 1.0 [, $fn])",
+					"linear_extrude(number, center = true, convexity = 10, twist, slices = 20, scale = 1.0 [, $fn])",
 				});
 }

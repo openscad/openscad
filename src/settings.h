@@ -53,15 +53,16 @@ public:
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
-
-	static SettingsEntry octoPrintUrl;
-	static SettingsEntry octoPrintApiKey;
-	static SettingsEntry octoPrintFileFormat;
-	static SettingsEntry octoPrintAction;
-	static SettingsEntry octoPrintSlicerEngine;
-	static SettingsEntry octoPrintSlicerEngineDesc;
-	static SettingsEntry octoPrintSlicerProfile;
-	static SettingsEntry octoPrintSlicerProfileDesc;
+    static SettingsEntry enableNumberScrollWheel;
+    static SettingsEntry modifierNumberScrollWheel;
+    static SettingsEntry octoPrintUrl;
+    static SettingsEntry octoPrintApiKey;
+    static SettingsEntry octoPrintFileFormat;
+    static SettingsEntry octoPrintAction;
+    static SettingsEntry octoPrintSlicerEngine;
+    static SettingsEntry octoPrintSlicerEngineDesc;
+    static SettingsEntry octoPrintSlicerProfile;
+    static SettingsEntry octoPrintSlicerProfileDesc;
 
     static SettingsEntry exportUseAsciiSTL;
 

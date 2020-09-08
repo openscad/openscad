@@ -1065,7 +1065,7 @@ void register_builtin_functions()
 
 	Builtins::init("tan", new BuiltinFunction(&builtin_tan),
 				{
-					"tan(number) -> degrees",
+					"tan(degrees) -> number",
 				});
 
 	Builtins::init("atan", new BuiltinFunction(&builtin_atan),
@@ -1075,7 +1075,7 @@ void register_builtin_functions()
 
 	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2),
 				{
-					"atan2(number) -> degrees",
+					"atan2(number, number) -> degrees",
 				});
 
 	Builtins::init("round", new BuiltinFunction(&builtin_round),
