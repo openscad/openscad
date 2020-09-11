@@ -153,7 +153,10 @@ void CGALRenderer::createPolysets() const
 			vertex_array.writeIndex(0);
 
 			std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
-			init_state->glEnd().emplace_back([]() { PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
+			init_state->glEnd().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)");
+				glDisable(GL_LIGHTING);
+			});
 			polyset_states.emplace_back(std::move(init_state));
 
 			// Create 2D polygons
@@ -161,8 +164,14 @@ void CGALRenderer::createPolysets() const
 			this->create_polygons(polyset, vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
 
 			std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
-			edge_state->glBegin().emplace_back([]() { PRINTD("glDisable(GL_DEPTH_TEST)"); glDisable(GL_DEPTH_TEST); });
-			edge_state->glBegin().emplace_back([]() { PRINTD("glLineWidth(2)"); glLineWidth(2); });
+			edge_state->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glDisable(GL_DEPTH_TEST)");
+				glDisable(GL_DEPTH_TEST);
+			});
+			edge_state->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glLineWidth(2)");
+				glLineWidth(2);
+			});
 			polyset_states.emplace_back(std::move(edge_state));
 			
 			// Create 2D edges
@@ -170,7 +179,10 @@ void CGALRenderer::createPolysets() const
 			this->create_edges(polyset, vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
 			
 			std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
-			end_state->glBegin().emplace_back([]() { PRINTD("glEnable(GL_DEPTH_TEST)"); glEnable(GL_DEPTH_TEST); });
+			end_state->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glEnable(GL_DEPTH_TEST)");
+				glEnable(GL_DEPTH_TEST);
+			});
 			polyset_states.emplace_back(std::move(end_state));
 		} else {
 			PRINTD("3d polysets");

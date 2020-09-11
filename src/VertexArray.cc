@@ -15,7 +15,7 @@ std::unique_ptr<std::vector<GLbyte>> VertexData::createInterleavedBuffer() const
 	std::unique_ptr<std::vector<GLbyte>> interleaved_buffer = std::make_unique<std::vector<GLbyte>>();
 
 	// All attribute vectors need to be the same size to interleave
-	size_t idx = 0, last_size = 0;
+	size_t idx = 0, last_size = 0, stride = 0;
 	for (const auto &data : attributes_) {
 		if (idx != 0) {
 			if (last_size != data->size() / data->count()) {
@@ -26,17 +26,16 @@ std::unique_ptr<std::vector<GLbyte>> VertexData::createInterleavedBuffer() const
 		}
 		last_size = data->size() / data->count();
 		idx++;
+		stride += data->sizeofAttribute();
 	}
 
-	PRINTDB("interleaved_buffer = %p", interleaved_buffer.get());
-	PRINTDB("attributes_.size() = %d", ((*attributes_.begin())->size() / (*attributes_.begin())->count()));
 	for (size_t i = 0; i < ((*attributes_.begin())->size() / (*attributes_.begin())->count()); i++) {
 		for (const auto &data : attributes_) {
 			size_t size = data->sizeofAttribute();
 			interleaved_buffer->insert(interleaved_buffer->end(), &(data->toBytes().get()[i*size]), &(data->toBytes().get()[i*size])+size);
 		}
 	}
-	PRINTDB("interleaved_buffer->size() = %d", interleaved_buffer->size());
+	PRINTDB("interleaved_buffer size = %d", (interleaved_buffer->size() / stride));
 	
 	return std::move(interleaved_buffer);
 }
@@ -102,6 +101,25 @@ void VertexState::drawArrays() const
 	}
 }
 
+void VertexArray::addSurfaceData()
+{
+	std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
+	vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
+	vertex_data->addNormalData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
+	vertex_data->addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
+	surface_index_ = array_.size();
+	addVertexData(vertex_data);
+}
+
+void VertexArray::addEdgeData()
+{
+	std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
+	vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
+	vertex_data->addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
+	edge_index_ = array_.size();
+	addVertexData(vertex_data);
+}
+
 void VertexArray::createInterleavedVBO(GLuint &vbo) const
 {
 	std::vector<GLbyte> interleaved_buffer;
@@ -160,13 +178,15 @@ void VertexArray::createSequentialVBO(GLuint &vbo) const
 
 void VertexArray::addAttributePointers(size_t start_offset)
 {
-	VertexData &vertex_data = this->data();
+	if (!this->data()) return;
+	
+	std::shared_ptr<VertexData> vertex_data = this->data();
 	std::shared_ptr<VertexState> vs = this->states().back();
 
-	GLsizei count = vertex_data.positionData()->count();
-	GLenum type = vertex_data.positionData()->glType();
-	GLsizei stride = vertex_data.stride();
-	size_t offset = start_offset + vertex_data.interleavedOffset(vertex_data.positionIndex());
+	GLsizei count = vertex_data->positionData()->count();
+	GLenum type = vertex_data->positionData()->glType();
+	GLsizei stride = vertex_data->stride();
+	size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->positionIndex());
 	vs->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)"); glEnableClientState(GL_VERTEX_ARRAY); });
 	vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
 		auto vs = vs_ptr.lock();
@@ -178,9 +198,9 @@ void VertexArray::addAttributePointers(size_t start_offset)
 	});
 	vs->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisableClientState(GL_VERTEX_ARRAY)"); glDisableClientState(GL_VERTEX_ARRAY); });
 	
-	if (vertex_data.hasNormalData()) {
-		type = vertex_data.normalData()->glType();
-		size_t offset = start_offset + vertex_data.interleavedOffset(vertex_data.normalIndex());
+	if (vertex_data->hasNormalData()) {
+		type = vertex_data->normalData()->glType();
+		size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->normalIndex());
 		vs->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_NORMAL_ARRAY)"); glEnableClientState(GL_NORMAL_ARRAY); });
 		vs->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
 			auto vs = vs_ptr.lock();
@@ -192,10 +212,10 @@ void VertexArray::addAttributePointers(size_t start_offset)
 		});
 		vs->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisableClientState(GL_NORMAL_ARRAY)"); glDisableClientState(GL_NORMAL_ARRAY); });
 	}
-	if (vertex_data.hasColorData()) {
-		count = vertex_data.colorData()->count();
-		type = vertex_data.colorData()->glType();
-		size_t offset = start_offset + vertex_data.interleavedOffset(vertex_data.colorIndex());
+	if (vertex_data->hasColorData()) {
+		count = vertex_data->colorData()->count();
+		type = vertex_data->colorData()->glType();
+		size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->colorIndex());
 		vs->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)"); glEnableClientState(GL_COLOR_ARRAY); });
 		vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
 			auto vs = vs_ptr.lock();

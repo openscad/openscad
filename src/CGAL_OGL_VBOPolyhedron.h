@@ -45,7 +45,7 @@ public:
 	}
 
 	void draw(bool showedges) const override {
-		PRINTDB("VBO draw(%d)", showedges);
+		PRINTDB("VBO draw(showedges = %d)", showedges);
 		// grab current state to restore after
 		GLfloat current_point_size, current_line_width;
 		GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
@@ -79,7 +79,7 @@ public:
 		if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
 		if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
 
-		PRINTDB("VBO draw(%d) end", showedges);
+		PRINTD("VBO draw() end");
 	}
 	
 }; // CGAL_OGL_Polyhedron

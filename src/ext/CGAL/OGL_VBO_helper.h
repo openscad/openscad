@@ -99,22 +99,39 @@ public:
 		GLenum type = vertex_data.positionData()->glType();
 		GLsizei stride = vertex_data.stride();
 		size_t offset = last_size + vertex_data.interleavedOffset(vertex_data.positionIndex());
-		vertex_state->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_VERTEX_ARRAY)"); glEnableClientState(GL_VERTEX_ARRAY); });
-		vertex_state->glBegin().emplace_back([count, type, stride, offset]() { PRINTD("glVertexPointer()"); glVertexPointer(count, type, stride, (GLvoid *)offset); });
+		vertex_state->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)");
+			glEnableClientState(GL_VERTEX_ARRAY);
+		});
+		vertex_state->glBegin().emplace_back([count, type, stride, offset]() {
+			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)", count % type % stride % offset);
+			glVertexPointer(count, type, stride, (GLvoid *)offset); });
 		if (vertex_data.hasNormalData()) {
 			type = vertex_data.normalData()->glType();
 			stride = vertex_data.stride();
 			offset = last_size + vertex_data.interleavedOffset(vertex_data.normalIndex());
-			vertex_state->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_NORMAL_ARRAY)"); glEnableClientState(GL_NORMAL_ARRAY); });
-			vertex_state->glBegin().emplace_back([type, stride, offset]() { PRINTD("glNormalPointer"); glNormalPointer(type, stride, (GLvoid *)offset); });
+			vertex_state->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_NORMAL_ARRAY)");
+				glEnableClientState(GL_NORMAL_ARRAY);
+			});
+			vertex_state->glBegin().emplace_back([type, stride, offset]() {
+				if (OpenSCAD::debug != "") PRINTDB("glNormalPointer(%d, %d, %p)", type % stride % offset);
+				glNormalPointer(type, stride, (GLvoid *)offset);
+			});
 		}
 		if (vertex_data.hasColorData()) {
 			count = vertex_data.colorData()->count();
 			type = vertex_data.colorData()->glType();
 			stride = vertex_data.stride();
 			offset = last_size + vertex_data.interleavedOffset(vertex_data.colorIndex());
-			vertex_state->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_COLOR_ARRAY)"); glEnableClientState(GL_COLOR_ARRAY); });
-			vertex_state->glBegin().emplace_back([count, type, stride, offset]() { PRINTD("glColorPointer"); glColorPointer(count, type, stride, (GLvoid *)offset); });
+			vertex_state->glBegin().emplace_back([]() { 
+				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)");
+				glEnableClientState(GL_COLOR_ARRAY);
+			});
+			vertex_state->glBegin().emplace_back([count, type, stride, offset]() {
+				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)", count % type % stride % offset);
+				glColorPointer(count, type, stride, (GLvoid *)offset);
+			});
 		}
 	}
 
@@ -220,22 +237,39 @@ public:
 			draw(v, points_edges_data);
 
 		std::shared_ptr<VertexState> points = std::make_shared<VertexState>(GL_POINTS, vertices_.size());
-		points->glBegin().emplace_back([]() { PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
-		points->glBegin().emplace_back([]() { PRINTD("glPointSize(10.0f)"); glPointSize(10.0f); });
+		points->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)");
+			glDisable(GL_LIGHTING);
+		});
+		points->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glPointSize(10.0f)");
+			glPointSize(10.0f);
+		});
 
 		GLsizei count = points_edges_data.positionData()->count();
 		GLenum type = points_edges_data.positionData()->glType();
 		GLsizei stride = points_edges_data.stride();
 		size_t offset = last_size + points_edges_data.interleavedOffset(points_edges_data.positionIndex());
-		points->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_VERTEX_ARRAY)"); glEnableClientState(GL_VERTEX_ARRAY); });
-		points->glBegin().emplace_back([count, type, stride, offset]() { PRINTD("glVertexPointer()"); glVertexPointer(count, type, stride, (GLvoid *)offset); });
+		points->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)");
+			glEnableClientState(GL_VERTEX_ARRAY);
+		});
+		points->glBegin().emplace_back([count, type, stride, offset]() {
+			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)", count % type % stride % offset);
+			glVertexPointer(count, type, stride, (GLvoid *)offset); });
 		if (points_edges_data.hasColorData()) {
 			count = points_edges_data.colorData()->count();
 			type = points_edges_data.colorData()->glType();
 			stride = points_edges_data.stride();
 			offset = last_size + points_edges_data.interleavedOffset(points_edges_data.colorIndex());
-			points->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_COLOR_ARRAY)"); glEnableClientState(GL_COLOR_ARRAY); });
-			points->glBegin().emplace_back([count, type, stride, offset]() { PRINTD("glColorPointer()"); glColorPointer(count, type, stride, (GLvoid *)offset); });
+			points->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)");
+				glEnableClientState(GL_COLOR_ARRAY);
+			});
+			points->glBegin().emplace_back([count, type, stride, offset]() {
+				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)", count % type % stride % offset);
+				glColorPointer(count, type, stride, (GLvoid *)offset);
+			});
 		}
 		points_edges_states.emplace_back(std::move(points));
 		
@@ -246,22 +280,40 @@ public:
 			draw(e, points_edges_data);
 
 		std::shared_ptr<VertexState> lines = std::make_shared<VertexState>(GL_LINES, edges_.size()*2);
-		lines->glBegin().emplace_back([]() { PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
-		lines->glBegin().emplace_back([]() { PRINTD("glLineWidth(5.0f)"); glLineWidth(5.0f); });
+		lines->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)");
+			glDisable(GL_LIGHTING);
+		});
+		lines->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glLineWidth(5.0f)");
+			glLineWidth(5.0f);
+		});
 
 		count = points_edges_data.positionData()->count();
 		type = points_edges_data.positionData()->glType();
 		stride = points_edges_data.stride();
 		offset = last_size + points_edges_data.interleavedOffset(points_edges_data.positionIndex());
-		lines->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_VERTEX_ARRAY)"); glEnableClientState(GL_VERTEX_ARRAY); });
-		lines->glBegin().emplace_back([count, type, stride, offset]() { PRINTD("glVertexPointer()"); glVertexPointer(count, type, stride, (GLvoid *)offset); });
+		lines->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)");
+			glEnableClientState(GL_VERTEX_ARRAY);
+		});
+		lines->glBegin().emplace_back([count, type, stride, offset]() {
+			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)", count % type % stride % offset);
+			glVertexPointer(count, type, stride, (GLvoid *)offset);
+		});
 		if (points_edges_data.hasColorData()) {
 			count = points_edges_data.colorData()->count();
 			type = points_edges_data.colorData()->glType();
 			stride = points_edges_data.stride();
 			offset = last_size + points_edges_data.interleavedOffset(points_edges_data.colorIndex());
-			lines->glBegin().emplace_back([]() { PRINTD("glEnableClientState(GL_COLOR_ARRAY)"); glEnableClientState(GL_COLOR_ARRAY); });
-			lines->glBegin().emplace_back([count, type, stride, offset]() { PRINTD("glColorPointer()"); glColorPointer(count, type, stride, (GLvoid *)offset); });
+			lines->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)");
+				glEnableClientState(GL_COLOR_ARRAY);
+			});
+			lines->glBegin().emplace_back([count, type, stride, offset]() {
+				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)", count % type % stride % offset);
+				glColorPointer(count, type, stride, (GLvoid *)offset);
+			});
 		}
 		points_edges_states.emplace_back(std::move(lines));
 		points_edges_data.createInterleavedVBO(points_edges_vbo);
@@ -273,10 +325,19 @@ public:
 		halffacets_data.addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
 
 		std::shared_ptr<VertexState> vs = std::make_shared<VertexState>();
-		vs->glBegin().emplace_back([]() { PRINTD("glEnable(GL_LIGHTING)"); glEnable(GL_LIGHTING); });
+		vs->glBegin().emplace_back([]() {
+			if (OpenSCAD::debug != "") PRINTD("glEnable(GL_LIGHTING)");
+			glEnable(GL_LIGHTING);
+		});
 		if (cull_backfaces || color_backfaces) {
-			vs->glBegin().emplace_back([]() { PRINTD("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
-			vs->glBegin().emplace_back([]() { PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
+			vs->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)");
+				glEnable(GL_CULL_FACE);
+			});
+			vs->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)");
+				glCullFace(GL_BACK);
+			});
 		}
 		halffacets_states.emplace_back(std::move(vs));
 
@@ -286,14 +347,23 @@ public:
 				draw(f, halffacets_states, halffacets_data, i);
 			if (color_backfaces) {
 				std::shared_ptr<VertexState> vs = std::make_shared<VertexState>();
-				vs->glBegin().emplace_back([]() { PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
+				vs->glBegin().emplace_back([]() {
+					if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)");
+					glCullFace(GL_FRONT);
+				});
 				halffacets_states.emplace_back(std::move(vs));
 			}
 		}
 		if (cull_backfaces || color_backfaces) {
 			std::shared_ptr<VertexState> vs = std::make_shared<VertexState>();
-			vs->glBegin().emplace_back([]() { PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
-			vs->glBegin().emplace_back([]() { PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
+			vs->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)");
+				glCullFace(GL_BACK);
+			});
+			vs->glBegin().emplace_back([]() {
+				if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)");
+				glDisable(GL_CULL_FACE);
+			});
 			halffacets_states.emplace_back(std::move(vs));
 		}
 		
