@@ -7,39 +7,17 @@
 #include <opencsg.h>
 #endif
 #include "csgnode.h"
+#include "VertexArray.h"
+
+class VBOShaderVertexState : public VertexState
+{
+public:
+	VBOShaderVertexState(size_t draw_offset) : VertexState(0,0,draw_offset) {}
+	virtual ~VBOShaderVertexState() {}
+};
 
 class VBORenderer : public Renderer
 {
-public:
-	struct VertexSet
-	{
-		bool is_opencsg_vertex_set;
-		OpenSCADOperator operation;
-		unsigned int convexity;
-		GLenum draw_type;
-		GLsizei draw_size;
-		GLintptr start_offset;
-		bool draw_cull_front;
-		bool draw_cull_back;
-		int identifier;
-	};
-
-	struct Vertex
-	{
-		GLfloat position[3];
-		GLfloat normal[3];
-		GLfloat color1[4];
-		GLfloat color2[4];
-		GLbyte trig[3];
-		GLfloat pos_b[3];
-		GLfloat pos_c[3];
-		GLbyte mask[3];
-	};
-
-	typedef std::vector<std::unique_ptr<VertexSet>> VertexSets;
-	typedef std::pair<GLuint, std::unique_ptr<VertexSets>> VBOVertexSets;
-	typedef std::vector<VBOVertexSets> ProductVertexSets;
-
 public:
 	VBORenderer();
 	virtual ~VBORenderer() {};
@@ -47,19 +25,44 @@ public:
 	virtual const Renderer::shaderinfo_t &getShader() const;
 	virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f &col, Color4f &outcolor) const;
 
-	virtual void create_surface(shared_ptr<const Geometry> geom, std::vector<Vertex> &render_buffer,
-				    VertexSet &vertex_set, GLintptr prev_start_offset, GLsizei prev_draw_size,
+	virtual void create_surface(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
 				    csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
-	virtual void draw_surface(const VertexSet &vertex_set, const Renderer::shaderinfo_t *shaderinfo = nullptr, bool use_color_array = false) const;
-	virtual inline void create_edges(shared_ptr<const Geometry> /* geom */, csgmode_e /* csgmode */) {}
-	virtual inline void draw_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const { render_edges(geom, csgmode); }
 
+	virtual void create_edges(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+			  	  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
+
+	virtual void create_polygons(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+			  	     csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
+				     
+protected:
+	void add_shader_data(VertexArray &vertex_array) const;
+	void add_shader_pointers(VertexArray &vertex_array) const;
+	void shader_attribs_enable() const;
+	void shader_attribs_disable() const;
+	
 private:
-	void create_triangle(std::vector<Vertex> &vertices, const Color4f &color,
-			const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
-			bool e0, bool e1, bool e2, bool mirrored) const;
+	void create_triangle(VertexArray &vertex_array, const Color4f &color,
+				const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
+				size_t primitive_index = 0,
+				double z_offset = 0, size_t shape_size = 0,
+				size_t shape_dimensions = 0, bool outlines = false,
+				bool mirror = false) const;
+
+	void add_shader_attributes(VertexArray &vertex_array, Color4f color,
+				const std::vector<Vector3d> &points,
+				size_t active_point_index = 0, size_t primitive_index = 0,
+				double z_offset = 0, size_t shape_size = 0,
+				size_t shape_dimensions = 0, bool outlines = false,
+				bool mirror = false) const;
 
 	shaderinfo_t vbo_renderer_shader;
+	mutable size_t shader_write_index;
+	enum ShaderAttribIndex {
+		TRIG_ATTRIB,
+		MASK_ATTRIB,
+		POINT_B_ATTRIB,
+		POINT_C_ATTRIB,
+	};
 };
 
 #endif // __VBORENDERER_H__

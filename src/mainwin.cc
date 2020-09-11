@@ -48,6 +48,7 @@
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #include "RenderStatistic.h"
+#include "scintillaeditor.h"
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
 #ifdef ENABLE_OPENCSG
@@ -2848,9 +2849,27 @@ void MainWindow::hide3DViewToolbar()
 
 void MainWindow::hideEditor()
 {
+	auto e = (ScintillaEditor *) this->activeEditor;
 	if (viewActionHideEditor->isChecked()) {
+		// Workaround manually disabling interactions with editor by setting it
+		// to read-only when not being shown.  This is an upstream bug from Qt
+		// (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
+		// may eventually get resolved at which point this bit and the stuff in
+		// the else should be removed. Currently known to affect 5.14.1 and 5.15.0
+		e->qsci->setReadOnly(true);
+		if (e->qsci->isListActive()) {
+			e->qsci->cancelList();
+		}
+		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
+		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
+		if (e->qsci->isCallTipActive()) {
+		 	e->cancelCallTip();
+		}
 		editorDock->close();
 	}else {
+		e->qsci->setReadOnly(false);
+		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
 		editorDock->show();
 	}
 }
