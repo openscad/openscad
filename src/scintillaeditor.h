@@ -64,6 +64,7 @@ public:
 	QPoint mapToGlobal(const QPoint &) override;
 
 	void setCursorPosition(int line, int col) override;
+	void cancelCallTip();
 
 private:
 	void getRange(int *lineFrom, int *lineTo);
@@ -79,6 +80,7 @@ private:
 
 	bool eventFilter(QObject *obj, QEvent *event) override;
 	bool handleKeyEventNavigateNumber(QKeyEvent *);
+	bool handleWheelEventNavigateNumber(QWheelEvent *);
 	bool handleKeyEventBlockCopy(QKeyEvent *);
 	bool handleKeyEventBlockMove(QKeyEvent *);
 	void navigateOnNumber(int key);
