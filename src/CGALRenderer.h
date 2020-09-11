@@ -30,4 +30,8 @@ private:
 	
 	mutable VertexStates polyset_states;
 	mutable GLuint polyset_vbo;
+	enum {
+		POLYSET_2D_DATA,
+		POLYSET_3D_DATA
+	};
 };

@@ -133,11 +133,14 @@ void CGALRenderer::createPolysets() const
 	polyset_states.clear();
 
 	VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states);
+	
+	// POLYSET_2D_DATA
 	std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
 	vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
 	vertex_data->addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
 	vertex_array.addVertexData(vertex_data);
 
+	// POLYSET_3D_DATA
 	vertex_data = std::make_shared<VertexData>();
 	vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
 	vertex_data->addNormalData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
@@ -150,7 +153,7 @@ void CGALRenderer::createPolysets() const
 		PRINTD("polysets");
 		if (polyset->getDimension() == 2) {
 			PRINTD("2d polysets");
-			vertex_array.writeIndex(0);
+			vertex_array.writeIndex(POLYSET_2D_DATA);
 
 			std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
 			init_state->glEnd().emplace_back([]() {
@@ -186,7 +189,7 @@ void CGALRenderer::createPolysets() const
 			polyset_states.emplace_back(std::move(end_state));
 		} else {
 			PRINTD("3d polysets");
-			vertex_array.writeIndex(1);
+			vertex_array.writeIndex(POLYSET_3D_DATA);
 
 			// Create 3D polygons
 			getColor(ColorMode::MATERIAL, color);
