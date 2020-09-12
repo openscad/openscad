@@ -208,7 +208,7 @@ workflows:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-mxe-32bit-master:
+      - openscad-mxe-32bit:
           context: secret-context
           filters:
               branches:
@@ -221,7 +221,7 @@ workflows:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-mxe-64bit-master:
+      - openscad-mxe-64bit:
           context: secret-context
           filters:
               branches:
@@ -235,7 +235,7 @@ workflows:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-appimage-64bit-master:
+      - openscad-appimage-64bit:
           context: secret-context
           filters:
               branches:
