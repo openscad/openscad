@@ -22,6 +22,12 @@ LCache::LCache() {
   path = PlatformUtils::localCachePath();
 }
 
+std::string LCache::getHash(const std::string key) {
+  const std::hash<std::string> string_hash;
+  const size_t i = string_hash(key);
+  return STR(std::uppercase << std::setfill('0') << std::setw(16) << std::hex << i);
+}
+
 bool LCache::insert(const std::string &key, const std::string &serializedgeom) {
   if ((!fs::exists(path)) && (!PlatformUtils::createLocalCachePath())) {
     PRINTB("Error: Cannot create cache path: %s", path);
@@ -61,14 +67,6 @@ bool LCache::contains(const std::string &key) {
   std::string hased_file = getHash(key);
   fs::path new_path = fs::path(path) / fs::path(hased_file);
   return fs::exists(new_path);
-}
-
-std::string LCache::getHash(const std::string key) {
-  std::hash<std::string> string_hash;
-  size_t i = string_hash(key);
-  std::stringstream ss;
-  ss << i;
-  return ss.str();
 }
 
 bool LCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
