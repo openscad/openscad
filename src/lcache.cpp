@@ -156,7 +156,7 @@ bool LCache::containsCGAL(const std::string &key){
   return result;
 }
 
-bool LCache::containsGeom(const std::string &key){
+bool LCache::containsGeometry(const std::string &key){
   const auto result = contains(prefixGEOM, key);
   PRINTDB("[%s] GEOM: %s", result % key.c_str());
   return result;
