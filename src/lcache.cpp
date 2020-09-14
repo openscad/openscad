@@ -12,7 +12,7 @@
 #include "lcache.h"
 #include "pcache.h"
 #include "SCADSerializations.h"
-
+#include "ext/picosha2/picosha2.h"
 
 namespace fs = boost::filesystem;
 
@@ -21,57 +21,59 @@ namespace fs = boost::filesystem;
 namespace {
 
 std::string getHash(const std::string& key) {
-  const std::hash<std::string> string_hash;
-  const auto i = string_hash(key);
-  return STR(std::uppercase << std::setfill('0') << std::setw(16) << std::hex << i);
+  std::string hash = picosha2::hash256_hex_string(key);
+  return hash;
 }
 
-std::pair<fs::path, fs::path> getPath(const std::string& path, const std::string &prefix, const std::string& key) {
+file_path_t getPath(const std::string& path, const std::string &prefix, const std::string& key) {
   const auto hash = getHash(key);
-  return std::make_pair(fs::path(path) / fs::path(prefix + hash.substr(0, 2)), fs::path(hash.substr(2)));
-}
-
-bool exists(const std::pair<fs::path, fs::path>& filePath, bool create = false) {
-  if (!fs::exists(std::get<0>(filePath))) {
-    fs::create_directories(std::get<0>(filePath));
-    return false;
-  }
-  return fs::exists(std::get<0>(filePath) / std::get<1>(filePath));
-}
-
-std::string fullPath(const std::pair<fs::path, fs::path>& filePath) {
-  auto fullPath = (std::get<0>(filePath) / std::get<1>(filePath)).string();
-  return fullPath;
+  return file_path_t{ fs::path(path) / fs::path(prefix + hash.substr(0, 2)), hash.substr(2) };
 }
 
 }
 
 const std::string LCache::prefixCGAL = "c";
 const std::string LCache::prefixGEOM = "g";
+const boost::uintmax_t LCache::cacheSizeLimit = 10000000;
+const boost::uintmax_t LCache::cacheSizeClean =  8000000;
 
 LCache::LCache() {
+  size = 0;
   path = PlatformUtils::localCachePath();
   if ((!fs::exists(path)) && (!PlatformUtils::createLocalCachePath())) {
     PRINTB("Error: Cannot create cache path: %s", path);
   }
+
+  cleanup();
 }
 
 bool LCache::insert(const std::string &prefix, const std::string &key, const std::string &serializedgeom) {
-  const std::pair<fs::path, fs::path> filePath = getPath(path, prefix, key);
-  if (!exists(filePath, true)) {
-    std::ofstream fstream(fullPath(filePath));
+  const file_path_t filePath = getPath(path, prefix, key);
+  if (!filePath.path_exists()) {
+    fs::create_directory(filePath.dir());
+    fs::path tempPath = filePath.unique_path();
+    std::ofstream fstream(tempPath.string());
     fstream << serializedgeom;
     fstream.close();
-  }
-  else {
-    PRINTDB("Cache file already exists %s", key);
+    boost::system::error_code ec;
+    fs::rename(tempPath, filePath.path(), ec);
+    if (ec) {
+      fs::remove(tempPath);
+    }
+    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    entries.push_back(file_entry_t{filePath, now, serializedgeom.size()});
+    size += serializedgeom.size();
+
+    if (size > cacheSizeLimit) {
+      cleanup();
+    }
   }
   return true;
 }
 
 bool LCache::get(const std::string &prefix, const std::string &key, std::string &serializedgeom) {
-  const std::pair<fs::path, fs::path> filePath = getPath(path, prefix, key);
-  std::ifstream fstream(fullPath(filePath));
+  const file_path_t filePath = getPath(path, prefix, key);
+  std::ifstream fstream(filePath.path().string());
   if (!fstream.is_open()) {
     PRINTDB("Cannot open Cache file: %s", key);
     fstream.close();
@@ -83,13 +85,61 @@ bool LCache::get(const std::string &prefix, const std::string &key, std::string 
   return true;
 }
 
-bool LCache::contains(const std::string &prefix, const std::string &key) {
-  const std::pair<fs::path, fs::path> filePath = getPath(path, prefix, key);
-  return exists(filePath);
+bool LCache::contains(const std::string &prefix, const std::string &key) const {
+  const file_path_t filePath = getPath(path, prefix, key);
+  return filePath.path_exists();
+}
+
+void LCache::cleanup() {
+  PRINTDB("del     : <%10d> start", size);
+  for (const auto& entry : entries) {
+    if (size < cacheSizeClean) {
+      break;
+    }
+    boost::system::error_code ec;
+    fs::remove(entry.path.path());
+    fs::remove(entry.path.dir(), ec);
+    size -= entry.size;
+    const auto& path = entry.path;
+    PRINTDB("del     : <%10d> %s/%s", size % path.dir().filename() % path.path().filename().string());
+  }
+
+  entries.clear();
+
+  const size_t hashLen = 64;
+  const size_t splitLen = 2;
+  const size_t dirLen = prefixCGAL.size() + splitLen;
+  const size_t fileLen = hashLen - splitLen;
+  if (fs::is_directory(path)) {
+    for (auto& dirEntry : boost::make_iterator_range(fs::directory_iterator(path), {})) {
+      const auto dir = dirEntry.path().filename().string();
+      if (fs::is_directory(dirEntry.path()) && dir.size() == dirLen) {
+        for (auto& fileEntry : boost::make_iterator_range(fs::directory_iterator(dirEntry.path()), {})) {
+          const auto file = fileEntry.path().filename().string();
+          if (fs::is_regular(fileEntry.path()) && file.size() == fileLen) {
+            const boost::uintmax_t fileSize = fs::file_size(fileEntry.path());
+            entries.push_back(file_entry_t{file_path_t{dirEntry.path(), file}, fs::last_write_time(fileEntry.path()), fileSize});
+            size += fileSize;
+          }
+        }
+      }
+    }
+  }
+
+  std::sort(entries.begin(), entries.end(), [](const file_entry_t& a, const file_entry_t& b) {
+    return a.time < b.time;
+  });
+  PRINTDB("del     : <%10d> end", size);
+}
+
+void LCache::status() const {
+  for (const auto e : entries) {
+    std::cout << " " << e.path.path() << " (" << e.size << "/" << e.time << ")" << "\n";
+  }
 }
 
 bool LCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_polyhedron> &N){
-  PRINTDB("add CGAL: %s", key.c_str());
+  PRINTDB("add CGAL: <%10d> %s", size % key.c_str());
   std::stringstream ss1;
   if (N->p3 != nullptr) {
     std::stringstream ss;
@@ -104,7 +154,7 @@ bool LCache::insertCGAL(const std::string &key, const shared_ptr<const CGAL_Nef_
 }
 
 bool LCache::insertGeometry(const std::string &key, const shared_ptr<const Geometry> &geom){
-  PRINTDB("add GEOM: %s", key.c_str());
+  PRINTDB("add GEOM: <%10d> %s", size % key.c_str());
   std::stringstream ss;
   if (geom != nullptr) {
     if (!geom->serializable()) {
@@ -118,7 +168,7 @@ bool LCache::insertGeometry(const std::string &key, const shared_ptr<const Geome
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> LCache::getCGAL(const std::string &key){
-  PRINTDB("get CGAL: %s", key.c_str());
+  PRINTDB("get CGAL: <%10d> %s", size % key.c_str());
   std::string data;
   if (get(prefixCGAL, key, data) && !data.empty()) {
     shared_ptr<CGAL_Nef_polyhedron3> p3(new CGAL_Nef_polyhedron3());
@@ -137,7 +187,7 @@ shared_ptr<const CGAL_Nef_polyhedron> LCache::getCGAL(const std::string &key){
 }
 
 shared_ptr<const Geometry> LCache::getGeometry(const std::string &key){
-  PRINTDB("get GEOM: %s", key.c_str());
+  PRINTDB("get GEOM: <%10d> %s", size % key.c_str());
   std::string data;
   shared_ptr<const Geometry> geom;
   Geom_cache_entry ce;
@@ -150,15 +200,15 @@ shared_ptr<const Geometry> LCache::getGeometry(const std::string &key){
   return geom;
 }
 
-bool LCache::containsCGAL(const std::string &key){
+bool LCache::containsCGAL(const std::string &key) const {
   const auto result = contains(prefixCGAL, key);
-  PRINTDB("[%s] CGAL: %s", result % key.c_str());
+  PRINTDB("[%s] CGAL: <%10d> %s", result % size % key.c_str());
   return result;
 }
 
-bool LCache::containsGeometry(const std::string &key){
+bool LCache::containsGeometry(const std::string &key) const {
   const auto result = contains(prefixGEOM, key);
-  PRINTDB("[%s] GEOM: %s", result % key.c_str());
+  PRINTDB("[%s] GEOM: <%10d> %s", result % size % key.c_str());
   return result;
 }
 
