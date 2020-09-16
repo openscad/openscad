@@ -32,7 +32,7 @@ public:
 	EdgeDict() { }
 
 	void add(const IndexedFace &face) {
-		for (size_t i=0;i<face.size();i++) {
+		for (size_t i=0; i<face.size(); ++i) {
 			IndexedEdge e(face[(i+1)%face.size()], face[i]);
 			if (this->count(e) > 0) this->remove(e);
 			else this->add(e.second, e.first);
@@ -40,7 +40,7 @@ public:
 	}
 
 	void remove(const IndexedTriangle &t) {
-		for (int i=0;i<3;i++) {
+		for (int i=0; i<3; ++i) {
 			IndexedEdge e(t[i], t[(i+1)%3]);
 			// If the edge exist, remove it
 			if (this->count(e) > 0) this->remove(e);
@@ -49,7 +49,7 @@ public:
 	}
 
 	void add(const IndexedTriangle &t) {
-		for (int i=0;i<3;i++) {
+		for (int i=0; i<3; ++i) {
 			IndexedEdge e(t[(i+1)%3], t[i]);
 			// If an opposite edge exists, they cancel out
 			if (this->count(e) > 0) this->remove(e);
@@ -139,7 +139,7 @@ public:
 		v2e_reverse.clear();
 		for (const auto &v : this->edges) {
 			const auto &e = v.first;
-			for (int i=0;i<v.second;i++) {
+			for (int i=0; i<v.second; ++i) {
 				v2e[e.first].push_back(e.second);
 				v2e_reverse[e.second].push_back(e.first);
 			}
@@ -147,7 +147,7 @@ public:
 
 		while (!v2e.empty()) {
 			std::unordered_map<int, std::list<int>>::iterator it;
-			for (it = v2e.begin();it != v2e.end();it++) {
+			for (it = v2e.begin(); it != v2e.end(); ++it) {
 				if (it->second.size() == 1) { // First single vertex
 					auto vidx = it->first;
 					auto next = it->second.front();
@@ -220,7 +220,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 				// Filter away inf and nan vertices as they cause libtess2 to crash
 				const auto &v = vertices[face[i]];
 				int k;
-				for (k=0;k<3;k++) {
+				for (k=0; k<3; ++k) {
 					if (std::isnan(v[k]) || std::isinf(v[k])) {
 						face.erase(face.begin()+i);
 						break;
@@ -233,7 +233,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 	// First polygon has < 3 points - no output
 	if (cleanfaces[0].size() < 3) return false;
 	// Remove collapsed holes
-	for (size_t i=1;i<cleanfaces.size();i++) {
+	for (size_t i=1; i<cleanfaces.size(); ++i) {
 		if (cleanfaces[i].size() < 3) {
 			cleanfaces.erase(cleanfaces.begin() + i);
 			i--;
@@ -322,10 +322,10 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 		
 		IndexedTriangle tri;
 		IndexedTriangle mappedtri;
-		for (int t=0;t<numelems;t++) {
+		for (int t=0; t<numelems; ++t) {
 			auto err = false;
 			mappedtri.fill(-1);
-			for (int i=0;i<3;i++) {
+			for (int i=0; i<3; ++i) {
 				auto vidx = vindices[elements[t*3 + i]];
 				if (vidx == TESS_UNDEF) {
 					err = true;
@@ -352,7 +352,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 				// Note: In some degenerate cases, we create triangles with mixed edge directions.
 				// In this case, don't reverse, but attempt to carry on
 				auto reverse = false;
-				for (int i=0;i<3;i++) {
+				for (int i=0; i<3; ++i) {
 					const IndexedEdge e(mappedtri[i], mappedtri[(i+1)%3]);
 					if (edges.count(e) > 0) {
 						reverse = false;
@@ -387,12 +387,12 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 			}
 		}
 #if 0
-		for (int i=0;i<inputSize;i++) {
+		for (int i=0; i<inputSize; ++i) {
 			if (!vflags[i]) { // vertex missing in output: C)
 				int starti = (i+inputSize-1)%inputSize;
 				int j;
 				PRINTD("   Fanning left-out vertices");
-				for (j = i; j < inputSize && !vflags[j]; j++) {
+				for (j = i; j < inputSize && !vflags[j]; ++j) {
 					// Create triangle fan from vertex i-1 to the first existing vertex
 					PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j+1)%inputSize)]);
 					tri[0] = allindices[starti];

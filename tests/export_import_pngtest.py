@@ -53,7 +53,7 @@ def createImport(inputfile, scadfile):
 #
 # Parse arguments
 #
-formats = ['csg', 'stl','off', 'amf', '3mf', 'dxf', 'svg']
+formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
 parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify 3d export format')
@@ -62,6 +62,15 @@ parser.set_defaults(requiremanifold=False)
 args,remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
+
+export_format = None
+if args.format == 'asciistl':
+    export_format = 'asciistl'
+    args.format = 'stl'
+elif args.format == 'binstl':
+    export_format = 'binstl'
+    args.format = 'stl'
+
 inputfile = remaining_args[0]         # Can be .scad file or a file to be imported
 pngfile = remaining_args[-1]
 remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
@@ -94,6 +103,9 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 # For any --render arguments to --render=cgal
 #
 tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in remaining_args]
+
+if export_format is not None:
+    tmpargs.extend(['--export-format', export_format])
 
 export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
 print('Running OpenSCAD #1:', file=sys.stderr)

@@ -52,6 +52,7 @@ public slots:
 	void on_enableHardwarningsCheckBox_toggled(bool);
 	void on_enableParameterCheckBox_toggled(bool);
 	void on_enableRangeCheckBox_toggled(bool);
+	void on_useAsciiSTLCheckBox_toggled(bool);
 	void on_enableHidapiTraceCheckBox_toggled(bool);
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
 	void on_checkBoxMouseCentricZoom_toggled(bool);
@@ -78,6 +79,8 @@ public slots:
 	void on_spinBoxLineWrapIndentationIndent_valueChanged(int);
 	void on_comboBoxLineWrapVisualizationStart_activated(int);
 	void on_comboBoxLineWrapVisualizationEnd_activated(int);
+	void on_comboBoxModifierNumberScrollWheel_activated(int);
+
 
 	// Display
 	void on_checkBoxHighlightCurrentLine_toggled(bool);
@@ -111,6 +114,13 @@ signals:
 	void characterThresholdChanged(int val) const;
 	void regenerateSc(MainWindow* mw) const;
 	
+	void stepSizeChanged(int val) const;
+
+private slots:
+	void on_lineEditStepSize_textChanged(const QString &arg1);
+
+	void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
+
 private:
     Preferences(QWidget *parent = nullptr);
 	void keyPressEvent(QKeyEvent *e) override;

@@ -47,7 +47,7 @@ mark_domains(CDT &ct,
     queue.pop_front();
     if (fh->info().nesting_level == -1) {
       fh->info().nesting_level = index;
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 3; ++i) {
         CDT::Edge e(fh,i);
         auto n = fh->neighbor(i);
         if (n->info().nesting_level == -1) {
@@ -127,7 +127,7 @@ PolySet *Polygon2d::tessellate() const
 	for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
 		if (fit->info().in_domain()) {
 			polyset->append_poly();
-			for (int i=0;i<3;i++) {
+			for (int i=0; i<3; ++i) {
 				polyset->append_vertex(fit->vertex(i)->point()[0],
 															 fit->vertex(i)->point()[1],
 															 0);

@@ -59,7 +59,7 @@ AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx,
 
 	node->convexity = static_cast<int>(convexity->toDouble());
 
-	if (cut->type() == Value::ValueType::BOOL) {
+	if (cut->type() == Value::Type::BOOL) {
 		node->cut_mode = cut->toBool();
 	}
 

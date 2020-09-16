@@ -29,10 +29,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "boosty.h"
 #include "FontCache.h"
 #include "PlatformUtils.h"
 #include "parsersettings.h"
+#include "printutils.h"
 
 extern std::vector<std::string> librarypath;
 
@@ -137,7 +137,7 @@ FontCache::FontCache()
 	fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
 	if (fs::is_directory(builtinfontpath)) {
 		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
-		add_font_dir(boosty::canonical(builtinfontpath).generic_string());
+		add_font_dir(fs::canonical(builtinfontpath).generic_string());
 	}
 
 	const char *home = getenv("HOME");
@@ -153,7 +153,7 @@ FontCache::FontCache()
 		std::string paths(env_font_path);
 		const std::string sep = PlatformUtils::pathSeparatorChar();
 		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
-		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); it++) {
+		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
 			const fs::path p(boost::copy_range<std::string>(*it));
 			if (fs::exists(p) && fs::is_directory(p)) {
 				std::string path = fs::absolute(p).string();
@@ -240,7 +240,7 @@ FontInfoList *FontCache::list_fonts() const
 	FcPatternDestroy(pattern);
 
 	FontInfoList *list = new FontInfoList();
-	for (int a = 0; a < font_set->nfont; a++) {
+	for (int a = 0; a < font_set->nfont; ++a) {
 		FcValue file_value;
 		FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
 
@@ -274,8 +274,8 @@ void FontCache::clear()
 void FontCache::dump_cache(const std::string &info)
 {
 	std::cout << info << ":";
-	for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); it++) {
-		std::cout << " " << (*it).first << " (" << (*it).second.second << ")";
+	for (const auto &item : this->cache) {
+		std::cout << " " <<  item.first << " (" << item.second.second << ")";
 	}
 	std::cout << std::endl;
 }
@@ -287,7 +287,7 @@ void FontCache::check_cleanup()
 	}
 
 	cache_t::iterator pos = this->cache.begin()++;
-	for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); it++) {
+	for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); ++it) {
 		if ((*pos).second.second > (*it).second.second) {
 			pos = it;
 		}
@@ -368,7 +368,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 	FcPatternDestroy(pattern);
 	FcPatternDestroy(match);
 
-	for (int a = 0; a < face->num_charmaps; a++) {
+	for (int a = 0; a < face->num_charmaps; ++a) {
 		FT_CharMap charmap = face->charmaps[a];
 		PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
 	}
@@ -400,7 +400,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 
 bool FontCache::try_charmap(FT_Face face, int platform_id, int encoding_id) const
 {
-	for (int idx = 0; idx < face->num_charmaps; idx++) {
+	for (int idx = 0; idx < face->num_charmaps; ++idx) {
 		FT_CharMap charmap = face->charmaps[idx];
 		if ((charmap->platform_id == platform_id) && ((encoding_id < 0) || (charmap->encoding_id == encoding_id))) {
 			if (FT_Set_Charmap(face, charmap) == 0) {

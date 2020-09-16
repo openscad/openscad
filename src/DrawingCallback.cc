@@ -102,7 +102,7 @@ void DrawingCallback::line_to(const Vector2d &to)
 // Quadric Bezier curve
 void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &to)
 {
-	for (unsigned long idx = 1;idx <= fn;idx++) {
+	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		add_vertex(pen * pow(1-a, 2) + 
 							 c1 * 2 * pow(1-a, 1) * a + 
@@ -114,7 +114,7 @@ void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &to)
 // Cubic Bezier curve
 void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &c2, const Vector2d &to)
 {
-	for (unsigned long idx = 1;idx <= fn;idx++) {
+	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		add_vertex(pen * pow(1-a, 3) + 
 							 c1 * 3 * pow(1-a, 2) * a + 

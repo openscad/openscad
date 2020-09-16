@@ -68,7 +68,7 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 {
 	attr_map_t attrs;
 	int attr_count = xmlTextReaderAttributeCount(reader);
-	for (int idx = 0;idx < attr_count;idx++) {
+	for (int idx = 0; idx < attr_count; ++idx) {
 		xmlTextReaderMoveToAttributeNo(reader, idx);
 		const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
 		const char *value = reinterpret_cast<const char *> (xmlTextReaderValue(reader));
@@ -186,7 +186,7 @@ int streamFile(const char *filename)
 }
 
 void dump(int idx, shape *s) {
-	for (int a = 0;a < idx;a++) {
+	for (int a = 0; a < idx; ++a) {
 		std::cout << "  ";
 	}
 	std::cout << "=> " << s->dump() << std::endl;
