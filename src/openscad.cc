@@ -703,6 +703,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		auto launcher = new LaunchingScreen();
 		auto dialogResult = launcher->exec();
 		if (dialogResult == QDialog::Accepted) {
+			if (launcher->isForceShowEditor()) {
+				settings.setValue("view/hideEditor", false);
+			}
 			auto files = launcher->selectedFiles();
 			// If nothing is selected in the launching screen, leave
 			// the "" dummy in inputFiles to open an empty MainWindow.
