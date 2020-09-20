@@ -280,8 +280,8 @@ static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr
 	// PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
 	LOG(message_group::Deprecated,loc,ctx->documentPath(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
+
 static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
-	//"WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
 	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s",begin,step);
 }
 
