@@ -93,7 +93,7 @@ namespace /* anonymous*/ {
 ValuePtr Expression::checkUndef(ValuePtr&& val, const std::shared_ptr<Context>& context) const {
 	if (val->isUncheckedUndef())
 		LOG(message_group::Warning,loc,context->documentPath(),"%1$s",val->toUndefString());
-	return val;
+	return std::move(val);
 }
 
 bool Expression::isLiteral() const
