@@ -1456,7 +1456,7 @@ void MainWindow::actionShowLibraryFolder()
 		}
 	}
 	auto url = QString::fromStdString(path);
-	//LOG(message_group::None,Location::NONE,"","Opening file browser for %1$s",url.toStdString());
+	LOG(message_group::None,Location::NONE,"","Opening file browser for %1$s",url.toStdString());
 	QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
@@ -1755,7 +1755,6 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	delete this->parsed_module;
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
-
 	if (this->root_module!=nullptr) {
 		//add parameters as annotation in AST
 		CommentParser::collectParameters(fulltext,this->root_module);
@@ -1811,8 +1810,6 @@ void MainWindow::actionReloadRenderPreview()
 	autoReloadTimer->stop();
 	setCurrentOutput();
 
-	// Lmessage_group::NoneOG("",-1,"Parsing design (AST generation)...");
-	// this->processEvents();
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(true));
@@ -1848,6 +1845,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	preview_requested=false;
 	setCurrentOutput();
 
+  LOG(message_group::None,Location::NONE,"","Parsing design (AST generation)...");
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
@@ -2063,7 +2061,7 @@ void MainWindow::actionRender()
 	autoReloadTimer->stop();
 	setCurrentOutput();
 
-	// Lmessage_group::NoneOG("",-1,"Parsing design (AST generation)...");
+  LOG(message_group::None,Location::NONE,"","Parsing design (AST generation)...");
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
