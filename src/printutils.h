@@ -148,7 +148,8 @@ private:
 		
 		boost::format f(s);
 		f.exceptions(boost::io::bad_format_string_bit);
-		std::initializer_list<char> {(static_cast<void>(f % std::get<Is>(args)), char{}) ...};
+		const auto unused = std::initializer_list<char> {(static_cast<void>(f % std::get<Is>(args)), char{}) ...};
+		static_cast<void>(unused);
 		return boost::str(f);
 	}
 
