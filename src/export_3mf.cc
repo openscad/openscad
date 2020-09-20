@@ -55,7 +55,7 @@ static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 
 static void export_3mf_error(const std::string msg, PLib3MFModel *&model)
 {
-	LOG(message_group::None,Location::NONE,"",std::string(msg));
+	LOG(message_group::Export_Error,Location::NONE,"",std::string(msg));
 	if (model) {
 		lib3mf_release(model);
 		model = nullptr;
@@ -69,11 +69,11 @@ static bool append_polyset(const PolySet &ps, PLib3MFModelMeshObject *&model)
 {
 	PLib3MFModelMeshObject *mesh;
 	if (lib3mf_model_addmeshobject(model, &mesh) != LIB3MF_OK) {
-		export_3mf_error("EXPORT-ERROR: Can't add mesh to 3MF model.", model);
+		export_3mf_error("Can't add mesh to 3MF model.", model);
 		return false;
 	}
 	if (lib3mf_object_setnameutf8(mesh, "OpenSCAD Model") != LIB3MF_OK) {
-		export_3mf_error("EXPORT-ERROR: Can't set name for 3MF model.", model);
+		export_3mf_error("Can't set name for 3MF model.", model);
 		return false;
 	}
 
@@ -90,18 +90,18 @@ static bool append_polyset(const PolySet &ps, PLib3MFModelMeshObject *&model)
 	Export::ExportMesh exportMesh{ps};
 
 	if (!exportMesh.foreach_vertex(vertexFunc)) {
-		export_3mf_error("EXPORT-ERROR: Can't add vertex to 3MF model.", model);
+		export_3mf_error("Can't add vertex to 3MF model.", model);
 		return false;
 	}
 
 	if (!exportMesh.foreach_triangle(triangleFunc)) {
-		export_3mf_error("EXPORT-ERROR: Can't add triangle to 3MF model.", model);
+		export_3mf_error("Can't add triangle to 3MF model.", model);
 		return false;
 	}
 
 	PLib3MFModelBuildItem *builditem;
 	if (lib3mf_model_addbuilditem(model, mesh, nullptr, &builditem) != LIB3MF_OK) {
-		export_3mf_error("EXPORT-ERROR: Can't add build item to 3MF model.", model);
+		export_3mf_error("Can't add build item to 3MF model.", model);
 		return false;
 	}
 
@@ -116,14 +116,13 @@ static bool append_nef(const CGAL_Nef_polyhedron &root_N, PLib3MFModelMeshObject
 	}
 
 	if (!root_N.p3->is_simple()) {
-		//"EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair");
 		LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	PolySet ps{3};
 	const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3, ps);
 	if (err) {
-		export_3mf_error("EXPORT-ERROR: Error converting NEF Polyhedron.", model);
+		export_3mf_error("Error converting NEF Polyhedron.", model);
 		return false;
 	}
 
@@ -186,7 +185,7 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 
 	PLib3MFModelWriter *writer;
 	if (lib3mf_model_querywriter(model, "3mf", &writer) != LIB3MF_OK) {
-		export_3mf_error("EXPORT-ERROR: Can't get writer for 3MF model.", model);
+		export_3mf_error("Can't get writer for 3MF model.", model);
 		return;
 	}
 
