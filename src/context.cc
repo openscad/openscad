@@ -217,7 +217,7 @@ bool Context::has_local_variable(const std::string &name) const
  * @param docPath document path of the root file, used to calculate the relative path
  */
 static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
-	LOG(message_group::Warning,loc,docPath,"Ignoring unknown %1$s, '%2$s'",what,name);
+	LOG(message_group::Warning,loc,docPath,"Ignoring unknown %1$s '%2$s'",what,name);
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
