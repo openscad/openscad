@@ -83,7 +83,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin->isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Rotate_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rotate_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
 	}
 	node->scale = scale->toDouble();
 	node->angle = 360;
