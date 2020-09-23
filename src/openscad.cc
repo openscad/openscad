@@ -182,8 +182,8 @@ Camera get_camera(const po::variables_map &vm)
 		}
 	}
 	else {
-		camera.viewall = true;
-		camera.autocenter = true;
+		camera.viewall = false;
+		camera.autocenter = false;
 	}
 
 	if (vm.count("viewall")) {
@@ -379,7 +379,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	top_ctx->setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
-	absolute_root_node = root_module->instantiate(top_ctx.ctx, &root_inst, nullptr);
+	ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
+	absolute_root_node = root_module->instantiateWithFileContext(filectx.ctx, &root_inst, nullptr);
+	camera.updateView(filectx.ctx);
 
 	// Do we have an explicit root node (! modifier)?
 	const Location *nextLocation = nullptr;
