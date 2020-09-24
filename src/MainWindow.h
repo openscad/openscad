@@ -110,7 +110,6 @@ public:
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void handleFileDrop(const QString &filename);
-	void updateCamera(const std::shared_ptr<class FileContext> ctx);
 	void updateTemporalVariables();
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);

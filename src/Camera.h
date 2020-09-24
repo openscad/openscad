@@ -17,6 +17,7 @@ projection, Perspective and Orthogonal.
 */
 
 #include "linalg.h"
+#include "modcontext.h"
 #include <vector>
 #include <Eigen/Geometry>
 
@@ -31,6 +32,7 @@ public:
 	void zoom(int delta, bool relative);
 	double zoomValue() const;
 	void resetView();
+	void updateView(const std::shared_ptr<class FileContext> ctx);
 	void viewAll(const BoundingBox &bbox);
 	std::string statusText() const;
 

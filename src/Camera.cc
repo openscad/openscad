@@ -83,6 +83,36 @@ void Camera::resetView()
 	setVpd(DEFAULT_DISTANCE);
 }
 
+/*!
+ * Update the viewport camera by evaluating the special variables. If they
+ * are assigned on top-level, the values are used to change the camera
+ * rotation, translation and distance.
+ */
+void Camera::updateView(const std::shared_ptr<FileContext> ctx)
+{
+	double x, y, z;
+	const auto vpr = ctx->lookup_variable("$vpr");
+	if (vpr->getVec3(x, y, z, 0.0)){
+		setVpr(x, y, z);
+	}else{
+		PRINTB("WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
+	}
+
+	const auto vpt = ctx->lookup_variable("$vpt");
+	if (vpt->getVec3(x, y, z, 0.0)){
+		setVpt(x, y, z);
+	}else{
+		PRINTB("WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
+	}
+
+	const auto vpd = ctx->lookup_variable("$vpd");
+	if (vpd->type() == Value::Type::NUMBER){
+		setVpd(vpd->toDouble());
+	}else{
+		PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
+	}
+}
+
 Eigen::Vector3d Camera::getVpt() const
 {
 	return -object_trans;
