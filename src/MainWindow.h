@@ -156,6 +156,7 @@ private slots:
 	void copyViewportTranslation();
 	void copyViewportRotation();
 	void copyViewportDistance();
+	void copyViewportFov();
 	void preferences();
     void hideEditorToolbar();
     void hide3DViewToolbar();

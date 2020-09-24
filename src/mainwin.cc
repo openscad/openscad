@@ -323,6 +323,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
 	connect(this->editActionCopyVPR, SIGNAL(triggered()), this, SLOT(copyViewportRotation()));
 	connect(this->editActionCopyVPD, SIGNAL(triggered()), this, SLOT(copyViewportDistance()));
+	connect(this->editActionCopyVPF, SIGNAL(triggered()), this, SLOT(copyViewportFov()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
     // Edit->Find
     connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
@@ -1466,6 +1467,12 @@ void MainWindow::copyViewportDistance()
 	QApplication::clipboard()->setText(txt);
 }
 
+void MainWindow::copyViewportFov()
+{
+	const QString txt = QString::number(qglview->cam.fovValue(), 'f', 2);
+	QApplication::clipboard()->setText(txt);
+}
+
 QList<double> MainWindow::getTranslation() const
 {
 	QList<double> ret;
@@ -1651,6 +1658,7 @@ void MainWindow::updateTemporalVariables()
 	top_ctx->set_variable("$vpr", ValuePtr(vpr));
 
 	top_ctx->set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
+	top_ctx->set_variable("$vpf", ValuePtr(qglview->cam.fovValue()));
 }
 
 

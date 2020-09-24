@@ -31,6 +31,7 @@ public:
 	void setProjection(ProjectionType type);
 	void zoom(int delta, bool relative);
 	double zoomValue() const;
+	double fovValue() const;
 	void resetView();
 	void updateView(const std::shared_ptr<class FileContext> ctx);
 	void viewAll(const BoundingBox &bbox);
@@ -42,6 +43,7 @@ public:
 	Eigen::Vector3d getVpr() const;
 	void setVpr(double x, double y, double z);
 	void setVpd(double d);
+	void setVpf(double d);
 
 	// Gimbalcam
 	Eigen::Vector3d object_trans;

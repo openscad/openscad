@@ -118,8 +118,15 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 		PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
 	}
 
+	const auto vpf = ctx->lookup_variable("$vpf");
+	if (vpf->type() == Value::Type::NUMBER){
+		setVpf(vpf->toDouble());
+	}else{
+		PRINTB("WARNING: Unable to convert $vpf=%s to a number", vpf->toEchoString());
+	}
+
 	if (this->viewall){
-		if (ctx->has_local_variable("$vpt") || ctx->has_local_variable("$vpr") || ctx->has_local_variable("$vpd")){
+		if (ctx->has_local_variable("$vpt") || ctx->has_local_variable("$vpr") || ctx->has_local_variable("$vpd") || ctx->has_local_variable("$vpf")){
 			PRINT("Viewall and autocenter disabled in favor of $vp*");
 			viewall = false;
 			autocenter = false;
@@ -162,13 +169,23 @@ double Camera::zoomValue() const
 	return viewer_distance;
 }
 
+void Camera::setVpf(double f)
+{
+    fov = f;
+}
+
+double Camera::fovValue() const
+{
+	return fov;
+}
+
 std::string Camera::statusText() const
 {
 	const auto vpt = getVpt();
 	const auto vpr = getVpr();
-	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
+	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f, fov = %.2f"));
 	fmt % vpt.x() % vpt.y() % vpt.z()
 		% vpr.x() % vpr.y() % vpr.z()
-		% viewer_distance;
+		% viewer_distance % fov;
 	return fmt.str();
 }
