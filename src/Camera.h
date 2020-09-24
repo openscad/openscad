@@ -61,6 +61,10 @@ public:
 	unsigned int pixel_width;
 	unsigned int pixel_height;
 
+	// true if camera settings are fixed
+	// (--camera option in commandline mode)
+	bool locked;
+
 protected:
 	// Perspective settings
 	double viewer_distance;

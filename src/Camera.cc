@@ -15,6 +15,7 @@ Camera::Camera() :
 
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
+	locked = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -38,6 +39,7 @@ void Camera::setup(std::vector<double> params)
 	} else {
 		assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
 	}
+	locked = true;
 }
 /*!
 	Moves camera so that the given bbox is fully visible.
@@ -60,6 +62,7 @@ void Camera::viewAll(const BoundingBox &bbox)
 		PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
 		PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 	}
+	locked = true;
 }
 
 void Camera::zoom(int zoom, bool relative)
@@ -90,6 +93,9 @@ void Camera::resetView()
  */
 void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 {
+	if (locked)
+		return;
+
 	double x, y, z;
 	const auto vpr = ctx->lookup_variable("$vpr");
 	if (vpr->getVec3(x, y, z, 0.0)){
