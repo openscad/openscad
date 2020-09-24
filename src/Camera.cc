@@ -96,41 +96,52 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 	if (locked)
 		return;
 
+	bool noauto = false;
 	double x, y, z;
-	const auto vpr = ctx->lookup_variable("$vpr");
-	if (vpr->getVec3(x, y, z, 0.0)){
-		setVpr(x, y, z);
-	}else{
-		PRINTB("WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
-	}
-
-	const auto vpt = ctx->lookup_variable("$vpt");
-	if (vpt->getVec3(x, y, z, 0.0)){
-		setVpt(x, y, z);
-	}else{
-		PRINTB("WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
-	}
-
-	const auto vpd = ctx->lookup_variable("$vpd");
-	if (vpd->type() == Value::Type::NUMBER){
-		setVpd(vpd->toDouble());
-	}else{
-		PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
-	}
-
-	const auto vpf = ctx->lookup_variable("$vpf");
-	if (vpf->type() == Value::Type::NUMBER){
-		setVpf(vpf->toDouble());
-	}else{
-		PRINTB("WARNING: Unable to convert $vpf=%s to a number", vpf->toEchoString());
-	}
-
-	if (this->viewall){
-		if (ctx->has_local_variable("$vpt") || ctx->has_local_variable("$vpr") || ctx->has_local_variable("$vpd") || ctx->has_local_variable("$vpf")){
-			PRINT("Viewall and autocenter disabled in favor of $vp*");
-			viewall = false;
-			autocenter = false;
+	const auto vpr = ctx->lookup_local_config_variable("$vpr");
+	if (vpr != ValuePtr::undefined) {
+		if (vpr->getVec3(x, y, z, 0.0)) {
+			setVpr(x, y, z);
+			noauto = true;
+		}else{
+			PRINTB("WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
 		}
+	}
+
+	const auto vpt = ctx->lookup_local_config_variable("$vpt");
+	if (vpt != ValuePtr::undefined) {
+		if (vpt->getVec3(x, y, z, 0.0)) {
+			setVpt(x, y, z);
+			noauto = true;
+		}else{
+			PRINTB("WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
+		}
+	}
+
+	const auto vpd = ctx->lookup_local_config_variable("$vpd");
+	if (vpd != ValuePtr::undefined) {
+		if (vpd->type() == Value::Type::NUMBER) {
+			setVpd(vpd->toDouble());
+			noauto = true;
+		}else{
+			PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
+		}
+	}
+
+	const auto vpf = ctx->lookup_local_config_variable("$vpf");
+	if (vpf != ValuePtr::undefined) {
+		if (vpf->type() == Value::Type::NUMBER) {
+			setVpf(vpf->toDouble());
+			noauto = true;
+		}else{
+			PRINTB("WARNING: Unable to convert $vpf=%s to a number", vpf->toEchoString());
+		}
+	}
+
+	if ((viewall || autocenter) && noauto) {
+		PRINT("Viewall and autocenter disabled in favor of $vp*");
+		viewall = false;
+		autocenter = false;
 	}
 }
 
