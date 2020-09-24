@@ -117,6 +117,14 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 	}else{
 		PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
 	}
+
+	if (this->viewall){
+		if (ctx->has_local_variable("$vpt") || ctx->has_local_variable("$vpr") || ctx->has_local_variable("$vpd")){
+			PRINT("Viewall and autocenter disabled in favor of $vp*");
+			viewall = false;
+			autocenter = false;
+		}
+	}
 }
 
 Eigen::Vector3d Camera::getVpt() const
