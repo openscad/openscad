@@ -4,9 +4,10 @@
 #include "degree_trig.h"
 
 static const double DEFAULT_DISTANCE = 140.0;
+static const double DEFAULT_FOV = 22.5;
 
 Camera::Camera() :
-	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false)
+	projection(ProjectionType::PERSPECTIVE), fov(DEFAULT_FOV), viewall(false), autocenter(false)
 {
 	PRINTD("Camera()");
 
@@ -83,6 +84,7 @@ void Camera::resetView()
 	setVpr(55, 0, 25);  // set in user space units
 	setVpt(0, 0, 0);
 	setVpd(DEFAULT_DISTANCE);
+	setVpf(DEFAULT_FOV);
 }
 
 /*!
