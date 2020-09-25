@@ -1086,6 +1086,15 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  SUFFIX png
                  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
 
+add_cmdline_test(openscad-camvp-variables EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 -o
+                 SUFFIX png
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-vp.scad)
+add_cmdline_test(openscad-camvp-override EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=120,80,60,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-vp.scad)
+
 # View Options tests
 add_cmdline_test(openscad-viewoptions-axes EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
 add_cmdline_test(openscad-viewoptions-axes-scales EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes,scales -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)

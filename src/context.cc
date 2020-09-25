@@ -191,6 +191,16 @@ std::string Context::lookup_variable_with_default(const std::string &variable, c
 	return (v->type() == Value::Type::STRING) ? v->toString() : def;
 }
 
+ValuePtr Context::lookup_local_config_variable(const std::string &name) const
+{
+	if (is_config_variable(name)) {
+		if (config_variables.find(name) != config_variables.end()) {
+			return config_variables.find(name)->second;
+		}
+	}
+	return ValuePtr::undefined;
+}
+
 bool Context::has_local_variable(const std::string &name) const
 {
 	if (is_config_variable(name)) {
