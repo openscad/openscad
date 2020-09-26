@@ -107,3 +107,6 @@ WARNING: Ignoring unknown module 'unknownIncuse' in file sub2/incuse.scad, line 
 WARNING: Ignoring unknown variable 'xyz' in file sub1/errors-warnings-incuse.scad, line 2
 ECHO: undef
 WARNING: Ignoring unknown function 'test' in file sub1/errors-warnings-incuse.scad, line 3
+WARNING: Unable to convert $vpr="[1,2,3]" to a vec3 or vec2 of numbers
+WARNING: Unable to convert $vpt=[1, 2, 3, 4] to a vec3 or vec2 of numbers
+WARNING: Unable to convert $vpd=[1] to a number

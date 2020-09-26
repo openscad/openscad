@@ -350,6 +350,7 @@
     <addaction name="editActionCopyVPT"/>
     <addaction name="editActionCopyVPR"/>
     <addaction name="editActionCopyVPD"/>
+    <addaction name="editActionCopyVPF"/>
     <addaction name="separator"/>
     <addaction name="editActionFind"/>
     <addaction name="editActionFindAndReplace"/>
@@ -943,6 +944,11 @@
   <action name="editActionCopyVPD">
    <property name="text">
     <string>Copy vie&amp;wport distance</string>
+   </property>
+  </action>
+  <action name="editActionCopyVPF">
+   <property name="text">
+    <string>Copy vie&amp;wport fov</string>
    </property>
   </action>
   <action name="editActionZoomTextIn">

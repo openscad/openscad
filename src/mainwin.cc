@@ -332,6 +332,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
 	connect(this->editActionCopyVPR, SIGNAL(triggered()), this, SLOT(copyViewportRotation()));
 	connect(this->editActionCopyVPD, SIGNAL(triggered()), this, SLOT(copyViewportDistance()));
+	connect(this->editActionCopyVPF, SIGNAL(triggered()), this, SLOT(copyViewportFov()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
     // Edit->Find
     connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
@@ -1155,7 +1156,7 @@ void MainWindow::instantiateRoot()
 
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
-		this->updateCamera(filectx.ctx);
+		this->qglview->cam.updateView(filectx.ctx);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -1494,6 +1495,12 @@ void MainWindow::copyViewportDistance()
 	QApplication::clipboard()->setText(txt);
 }
 
+void MainWindow::copyViewportFov()
+{
+	const QString txt = QString::number(qglview->cam.fovValue(), 'f', 2);
+	QApplication::clipboard()->setText(txt);
+}
+
 QList<double> MainWindow::getTranslation() const
 {
 	QList<double> ret;
@@ -1679,38 +1686,9 @@ void MainWindow::updateTemporalVariables()
 	top_ctx->set_variable("$vpr", ValuePtr(vpr));
 
 	top_ctx->set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
+	top_ctx->set_variable("$vpf", ValuePtr(qglview->cam.fovValue()));
 }
 
-
-/*!
- * Update the viewport camera by evaluating the special variables. If they
- * are assigned on top-level, the values are used to change the camera
- * rotation, translation and distance.
- */
-void MainWindow::updateCamera(const std::shared_ptr<FileContext> ctx)
-{
-	double x, y, z;
-	const auto vpr = ctx->lookup_variable("$vpr");
-	if (vpr->getVec3(x, y, z, 0.0)){
-		qglview->cam.setVpr(x, y, z);
-	}else{
-		LOG(message_group::UI_Warning,Location::NONE,"","Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers",vpr->toEchoString());
-	}
-
-	const auto vpt = ctx->lookup_variable("$vpt");
-	if (vpt->getVec3(x, y, z, 0.0)){
-		qglview->cam.setVpt(x, y, z);
-	}else{
-		LOG(message_group::UI_Warning,Location::NONE,"","Unable to convert $vpt=%s to a vec3 or vec2 of numbers",vpr->toEchoString());
-	}
-
-	const auto vpd = ctx->lookup_variable("$vpd");
-	if (vpd->type() == Value::Type::NUMBER){
-		qglview->cam.setVpd(vpd->toDouble());
-	}else{
-		LOG(message_group::UI_Warning,Location::NONE,"","Unable to convert $vpd=%1$s to a number",vpr->toEchoString());
-	}
-}
 
 /*!
 	Returns true if the current document is a file on disk and that file has new content.
