@@ -295,7 +295,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->hideFind(); 
 	frameCompileResult->hide();
 	this->labelCompileResultMessage->setOpenExternalLinks(false);
-	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
+	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showLink(QString)));
 
 	// File menu
 	connect(this->fileActionNewWindow, SIGNAL(triggered()), this, SLOT(actionNewWindow()));
@@ -1084,7 +1084,7 @@ void MainWindow::updateCompileResult()
 	toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
 	toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
-	msg += _(" For details see <a href=\"#console\">console window</a>.");
+	msg += _(" For details see the <a href=\"#errorlog\">error log</a> and <a href=\"#console\">console window</a>.");
 	labelCompileResultMessage->setText(msg);
 	frameCompileResult->show();
 }
@@ -2907,13 +2907,6 @@ void MainWindow::hideEditor()
 	}
 }
 
-void MainWindow::showConsole()
-{
-	viewActionHideConsole->setChecked(false);
-	consoleDock->show();
-	frameCompileResult->hide();
-}
-
 void MainWindow::hideConsole()
 {
 	if (viewActionHideConsole->isChecked()) {
@@ -2930,6 +2923,33 @@ void MainWindow::hideParameters()
 	} else {
 		parameterDock->show();
 	}
+}
+
+void MainWindow::showLink(const QString link)
+{
+	if (link == "#console") {
+		showConsole();
+	} else if (link == "#errorlog") {
+		showErrorLog();
+	}
+}
+
+void MainWindow::showConsole()
+{
+	viewActionHideConsole->setChecked(false);
+	frameCompileResult->hide();
+	consoleDock->show();
+	consoleDock->raise();
+	consoleDock->focusWidget();
+}
+
+void MainWindow::showErrorLog()
+{
+	viewActionHideErrorLog->setChecked(false);
+	frameCompileResult->hide();
+	errorLogDock->show();
+	errorLogDock->raise();
+	errorLogDock->focusWidget();
 }
 
 void MainWindow::hideErrorLog()

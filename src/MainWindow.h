@@ -167,7 +167,9 @@ private slots:
 	void hideEditor();
 	void hideConsole();
 	void hideErrorLog();
+	void showLink(const QString);
 	void showConsole();
+	void showErrorLog();
 	void hideParameters();
 
 public slots:
