@@ -26,13 +26,20 @@ enum class FileFormat {
 	AST,
 	TERM,
 	ECHO,
-	PNG
+    PNG,
+    PDF
+};
+
+struct ExportInfo {
+    FileFormat format;
+    std::string name2display;
+	std::string name2open;
+	std::string sourceFilePath;
+	std::string sourceFileName;
 };
 
 bool canPreview(const FileFormat format);
-
-void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
-											const char *name2open, const char *name2display);
+void exportFileByName(const shared_ptr<const class Geometry> &root_geom, ExportInfo exportInfo);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary=true);
@@ -43,6 +50,8 @@ void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
+
+void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, bool &onerror);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
@@ -66,6 +75,7 @@ struct ExportFileFormatOptions {
 		{"term", FileFormat::TERM},
 		{"echo", FileFormat::ECHO},
 		{"png", FileFormat::PNG},
+        {"pdf", FileFormat::PDF},
 	};
 };
 

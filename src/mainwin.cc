@@ -364,6 +364,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
+    connect(this->fileActionExportPDF, SIGNAL(triggered()), this, SLOT(actionExportPDF()));
 	connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
@@ -1913,6 +1914,20 @@ void MainWindow::action3DPrint()
 #endif
 }
 
+namespace {
+ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, const QString& sourceFilePath){
+	QFileInfo info(sourceFilePath);
+
+    ExportInfo exportInfo;
+    exportInfo.format = format;
+    exportInfo.name2open = exportFilename.toLocal8Bit().constData();
+    exportInfo.name2display = exportFilename.toUtf8().toStdString();
+    exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
+    exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
+    return exportInfo;
+}
+}
+
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -1954,7 +1969,8 @@ void MainWindow::sendToOctoPrint()
 		userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
 	}
 
-	exportFileByName(this->root_geom, exportFileFormat, exportFileName.toLocal8Bit().constData(), exportFileName.toUtf8());
+    ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
+    exportFileByName(this->root_geom, exportInfo);
 
 	try {
 		this->progresswidget = new ProgressWidget(this);
@@ -1993,7 +2009,8 @@ void MainWindow::sendToPrintService()
 	const QString exportFilename = exportFile.fileName();
 	
 	//Render the stl to a temporary file:
-	exportFileByName(this->root_geom, FileFormat::STL, exportFilename.toLocal8Bit().constData(), exportFilename.toUtf8());
+    ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFilename, activeEditor->filepath);
+    exportFileByName(this->root_geom, exportInfo);
 
 	//Create a name that the order process will use to refer to the file. Base it off of the project name
 	QString userFacingName = "unsaved.stl";
@@ -2417,9 +2434,10 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 		return;
 	}
 	this->export_paths[suffix] = exportFilename;
-	exportFileByName(this->root_geom, format,
-		exportFilename.toLocal8Bit().constData(),
-		exportFilename.toUtf8());
+
+    ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+    exportFileByName(this->root_geom, exportInfo);
+
 	fileExportedMessage(type_name, exportFilename);
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -2459,6 +2477,11 @@ void MainWindow::actionExportDXF()
 void MainWindow::actionExportSVG()
 {
 	actionExport(FileFormat::SVG, "SVG", ".svg", 2);
+}
+
+void MainWindow::actionExportPDF()
+{
+    actionExport(FileFormat::PDF, "PDF", ".pdf", 2);
 }
 
 void MainWindow::actionExportCSG()
@@ -3175,7 +3198,7 @@ QString MainWindow::exportPath(const char *suffix) {
 		if(activeEditor->filepath.isEmpty())
 			path += QString(_("Untitled")) + suffix;
 		else
-			path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
+            path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
 	}
 	else
 	{
