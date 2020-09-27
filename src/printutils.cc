@@ -170,6 +170,7 @@ std::string getGroupName(const enum message_group &groupName)
 	std::string group="";
 	switch (groupName)
 	{
+	case message_group::None:
 	case message_group::Warning:
 		return group="WARNING";
 		break;
@@ -200,8 +201,6 @@ std::string getGroupName(const enum message_group &groupName)
 	case message_group::Echo:
 		return group="ECHO";
 		break;
-	case message_group::None:
-		return group="NONE";
 	default:
 		break;
 	}
