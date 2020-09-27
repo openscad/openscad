@@ -284,7 +284,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 				node->color = *hexColor;
 			} else {
 				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to parse color \"%1$s\"",colorname);
-				LOG(message_group::Warning,Location::NONE,"","Please see https://en.wikipedia.org/wiki/Web_colors");
+				LOG(message_group::None,Location::NONE,"","Please see https://en.wikipedia.org/wiki/Web_colors");
 			}
 		}
 	}
