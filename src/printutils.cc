@@ -7,10 +7,14 @@
 #include <boost/filesystem.hpp>
 #include "exceptions.h"
 
+
 namespace fs = boost::filesystem;
 
+std::set<std::string> printedDeprecations;
 std::list<std::string> print_messages_stack;
+std::list<struct Message> log_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
+OutputHandlerFunc2 *outputhandler2 = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
@@ -19,18 +23,21 @@ bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
 
 boost::circular_buffer<std::string> lastmessages(5);
+boost::circular_buffer<struct Message> lastlogmessages(5);
+
+int count=0;
 
 namespace {
 	bool no_throw;
 	bool deferred;
 }
 
-void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
+void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata)
 {
 	outputhandler = newhandler;
+	outputhandler2 = newhandler2;
 	outputhandler_data = userdata;
 }
-
 
 void no_exceptions_for_warnings()
 {
@@ -63,44 +70,49 @@ void print_messages_pop()
 	}
 }
 
-void PRINT(const std::string &msg)
+void PRINT(const Message& msgObj)
 {
-	if (msg.empty()) return;
+	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
 	if (print_messages_stack.size() > 0) {
 		if (!print_messages_stack.back().empty()) {
 			print_messages_stack.back() += "\n";
 		}
-		print_messages_stack.back() += msg;
+		if(msgObj.group!=message_group::None) print_messages_stack.back() += getGroupName(msgObj.group)+": "+msgObj.msg;
+		else print_messages_stack.back() += msgObj.msg;
 	}
-	PRINT_NOCACHE(msg);
+	PRINT_NOCACHE(msgObj);
+
+	//to error log
+	if (outputhandler2) {
+		outputhandler2(msgObj, outputhandler_data);
+	}
 }
 
-void PRINT_NOCACHE(const std::string &msg)
+void PRINT_NOCACHE(const Message& msgObj)
 {
-	if (msg.empty()) return;
-
-	if (boost::starts_with(msg, "WARNING") || boost::starts_with(msg, "ERROR") || boost::starts_with(msg, "TRACE")) {
+	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
+	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Error || msgObj.group==message_group::Trace) {
 		size_t i;
 		for (i=0; i<lastmessages.size(); ++i) {
-			if (lastmessages[i] != msg) break;
+			if (lastmessages[i] != msgObj.msg+msgObj.loc.toRelativeString(msgObj.docPath)) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
-		else lastmessages.push_back(msg);
+		else lastmessages.push_back(msgObj.msg+msgObj.loc.toRelativeString(msgObj.docPath));
 	}
 	if(!deferred)
-		if (!OpenSCAD::quiet || boost::starts_with(msg, "ERROR")) {
+		if (!OpenSCAD::quiet || msgObj.group==message_group::Error) {
 			if (!outputhandler) {
-				fprintf(stderr, "%s\n", msg.c_str());
+				fprintf(stderr, "%s\n", msgObj.msg.c_str());
 			} else {
-				outputhandler(msg, outputhandler_data);
+				outputhandler(msgObj,outputhandler_data);
 			}
 		}
 	if(!std::current_exception()) {
-		if((OpenSCAD::hardwarnings && boost::starts_with(msg, "WARNING")) || (no_throw && boost::starts_with(msg, "ERROR"))){
+		if((OpenSCAD::hardwarnings && msgObj.group==message_group::Warning) || (no_throw && msgObj.group==message_group::Error)){
 			if(no_throw)
 				deferred = true;
 			else
-				throw HardWarningException(msg);
+				throw HardWarningException(msgObj.msg);
 		}
 	}
 }
@@ -116,7 +128,8 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower(lowdebug);
 	if (OpenSCAD::debug=="all" ||
 			lowdebug.find(lowshortfname) != std::string::npos) {
-		PRINT_NOCACHE( shortfname+": "+ msg );
+			Message msgObj = {shortfname+": "+ msg,Location::NONE,"",message_group::None,};
+		PRINT_NOCACHE(msgObj);
 	}
 }
 
@@ -145,21 +158,51 @@ std::string two_digit_exp_format(double x)
 	return two_digit_exp_format(std::to_string(x));
 }
 
-#include <set>
-
-std::set<std::string> printedDeprecations;
-
-void printDeprecation(const std::string &str)
-{
-	if (printedDeprecations.find(str) == printedDeprecations.end()) {
-		printedDeprecations.insert(str);
-		std::string msg = "DEPRECATED: " + str;
-		PRINT(msg);
-	}
-}
-
 void resetSuppressedMessages()
 {
 	printedDeprecations.clear();
 	lastmessages.clear();
+}
+
+
+std::string getGroupName(const enum message_group &groupName)
+{
+	std::string group="";
+	switch (groupName)
+	{
+	case message_group::None:
+	case message_group::Warning:
+		return group="WARNING";
+		break;
+	case message_group::Error:
+		return group="ERROR";
+		break;
+	case message_group::UI_Warning:
+		return group="UI-WARNING";
+		break;
+	case message_group::Font_Warning:
+		return group="FONT-WARNING";
+		break;
+	case message_group::Export_Warning:
+		return group="EXPORT-WARNING";
+		break;
+	case message_group::Export_Error:
+		return group="EXPORT-ERROR";
+		break;
+	case message_group::Parser_Error:
+		return group="PARSER-ERROR";
+		break;
+	case message_group::Trace:
+		return group="TRACE";
+		break;
+	case message_group::Deprecated:
+		return group="DEPRECATED";
+		break;
+	case message_group::Echo:
+		return group="ECHO";
+		break;
+	default:
+		break;
+	}
+	return group;
 }

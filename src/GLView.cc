@@ -7,7 +7,7 @@
 #include "renderer.h"
 #include "degree_trig.h"
 #include <cmath>
-
+#include "boost-utils.h"
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -66,7 +66,7 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
+	LOG(message_group::UI_Warning,Location::NONE,"","GLView: unknown colorscheme %1$s",cs);
   }
 }
 

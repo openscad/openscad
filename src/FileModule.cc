@@ -68,7 +68,7 @@ void FileModule::registerUse(const std::string path, const Location &loc)
 		if (fs::is_regular(path)) {
 			FontCache::instance()->register_font_file(path);
 		} else {
-			PRINTB("ERROR: Can't read font with path '%s'", path);
+			LOG(message_group::Error,Location::NONE,"","Can't read font with path '%1$s'",path);
 		}
 	} else {
 		auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);
@@ -196,7 +196,7 @@ AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileC
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	} catch (EvaluationException &e) {
-		//PRINT(e.what()); //please output the message before throwing the exception
+		// LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
 	}
 
 	return node;

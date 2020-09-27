@@ -1,6 +1,6 @@
 ERROR: Recursion detected calling module 'crash' in file recursion-test-module.scad, line 2
-TRACE: called by 'crash', in file recursion-test-module.scad, line 2.
-TRACE: called by 'crash', in file recursion-test-module.scad, line 2.
-TRACE: called by 'crash', in file recursion-test-module.scad, line 2.
-TRACE: called by 'crash', in file recursion-test-module.scad, line 2.
-TRACE: called by 'crash', in file recursion-test-module.scad, line 2.
+TRACE: called by 'crash' in file recursion-test-module.scad, line 2
+TRACE: called by 'crash' in file recursion-test-module.scad, line 2
+TRACE: called by 'crash' in file recursion-test-module.scad, line 2
+TRACE: called by 'crash' in file recursion-test-module.scad, line 2
+TRACE: called by 'crash' in file recursion-test-module.scad, line 2

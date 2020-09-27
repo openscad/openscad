@@ -1,7 +1,7 @@
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file for-tests.scad, line 19
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file for-tests.scad, line 31
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 35
-WARNING: begin is smaller than the end, but step is negative, in file for-tests.scad, line 38
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file for-tests.scad, line 19
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file for-tests.scad, line 31
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 35
+WARNING: begin is smaller than the end, but step is negative in file for-tests.scad, line 38
 ECHO: "a"
 ECHO: "↑"
 ECHO: "b"
@@ -13,23 +13,23 @@ ECHO: "INF", 0
 ECHO: "-INF", 0
 ECHO: "INF", 0
 ECHO: "-INF", 1
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 72
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file for-tests.scad, line 73
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 73
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file for-tests.scad, line 74
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 74
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 75
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 77
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 80
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 84
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 72
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file for-tests.scad, line 73
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 73
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file for-tests.scad, line 74
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 74
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 75
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 77
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 80
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 84
 ECHO: "[0:1:4294967296] end capped"
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 90
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 90
 ECHO: "[0:1:8589934592] end capped"
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 95
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 95
 ECHO: "[0:1:4294967295] end capped"
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 100
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 100
 ECHO: "[0:1:4294967294] end capped"
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file for-tests.scad, line 106
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file for-tests.scad, line 106
 ECHO: "[0:1:5000] end capped"
 ECHO: 0
 ECHO: 1

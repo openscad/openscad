@@ -73,6 +73,7 @@ public:
 	QWidget *editorDockTitleWidget;
 	QWidget *consoleDockTitleWidget;
 	QWidget *parameterDockTitleWidget;
+	QWidget *errorLogDockTitleWidget;
 
 	int compileErrors;
 	int compileWarnings;
@@ -96,12 +97,15 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const QString &msg);
+	void consoleOutput(const Message &msgObj);
 	void setCursor();
+	void errorLogOutput(const Message &log_msg);
 
 public:
-	static void consoleOutput(const std::string &msg, void *userdata);
-	static void noOutput(const std::string &, void*) {};  // /dev/null
+	static void consoleOutput(const Message &msgObj, void *userdata);
+	static void errorLogOutput(const Message &log_msg, void *userdata);
+	static void noOutputConsole(const Message &, void*) {};  // /dev/null
+	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
 	void parseTopLevelDocument(bool rebuildParameterWidget);
@@ -119,7 +123,7 @@ private:
 
 	void loadViewSettings();
 	void loadDesignSettings();
-    void updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar);
+    void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
 	void show_examples();
@@ -162,7 +166,10 @@ private slots:
     void hide3DViewToolbar();
 	void hideEditor();
 	void hideConsole();
+	void hideErrorLog();
+	void showLink(const QString);
 	void showConsole();
+	void showErrorLog();
 	void hideParameters();
 
 public slots:
@@ -233,6 +240,7 @@ public:
 
 	void changedTopLevelConsole(bool);
 	void changedTopLevelEditor(bool);
+	void changedTopLevelErrorLog(bool);
 
 	QList<double> getTranslation() const;
 	QList<double> getRotation() const;
@@ -242,11 +250,15 @@ public slots:
 	void on_editorDock_visibilityChanged(bool);
 	void on_consoleDock_visibilityChanged(bool);
 	void on_parameterDock_visibilityChanged(bool);
+	void on_errorLogDock_visibilityChanged(bool);
 	void on_toolButtonCompileResultClose_clicked();
 	void editorTopLevelChanged(bool);
 	void consoleTopLevelChanged(bool);
 	void parameterTopLevelChanged(bool);
+	void errorLogTopLevelChanged(bool);
 	void processEvents();
+	void jumpToLine(int,int);
+	void openFileFromPath(QString,int);
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();

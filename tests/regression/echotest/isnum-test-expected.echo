@@ -15,7 +15,7 @@ ECHO: false
 ECHO: false
 ECHO: false
 ECHO: "resulting in warnings:"
-WARNING: is_num() number of parameters does not match, in file isnum-test.scad, line 22
+WARNING: is_num() number of parameters does not match in file isnum-test.scad, line 22
 ECHO: undef
-WARNING: is_num() number of parameters does not match, in file isnum-test.scad, line 23
+WARNING: is_num() number of parameters does not match in file isnum-test.scad, line 23
 ECHO: undef

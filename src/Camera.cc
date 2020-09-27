@@ -105,7 +105,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 			setVpr(x, y, z);
 			noauto = true;
 		}else{
-			PRINTB("WARNING: Unable to convert $vpr=%s to a vec3 or vec2 of numbers", vpr->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr->toEchoString());
 		}
 	}
 
@@ -115,7 +115,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 			setVpt(x, y, z);
 			noauto = true;
 		}else{
-			PRINTB("WARNING: Unable to convert $vpt=%s to a vec3 or vec2 of numbers", vpt->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt->toEchoString());
 		}
 	}
 
@@ -125,7 +125,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 			setVpd(vpd->toDouble());
 			noauto = true;
 		}else{
-			PRINTB("WARNING: Unable to convert $vpd=%s to a number", vpd->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd->toEchoString());
 		}
 	}
 
@@ -135,12 +135,12 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 			setVpf(vpf->toDouble());
 			noauto = true;
 		}else{
-			PRINTB("WARNING: Unable to convert $vpf=%s to a number", vpf->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf->toEchoString());
 		}
 	}
 
 	if ((viewall || autocenter) && noauto) {
-		PRINT("Viewall and autocenter disabled in favor of $vp*");
+		LOG(message_group::Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
 		viewall = false;
 		autocenter = false;
 	}

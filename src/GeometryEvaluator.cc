@@ -29,6 +29,7 @@
 #include "degree_trig.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
+#include "boost-utils.h"
 
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
@@ -70,8 +71,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				if (!N->isEmpty()) {
 					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
 					if (err) {
-						PRINT("ERROR: Nef->PolySet failed");
-					}
+						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");					}
 				}
 			}
 
@@ -100,8 +100,7 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem &item, unsigned 
 	if (!item.first->modinst->isBackground() && item.second) {
 		if (!dim) dim = item.second->getDimension();
 		else if (dim != item.second->getDimension() && !item.second->isEmpty()) {
-			std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-			PRINTB("WARNING: Mixing 2D and 3D objects is not supported, %s", loc);
+			LOG(message_group::Warning,item.first->modinst->location(),this->tree.getDocumentPath(),"Mixing 2D and 3D objects is not supported");
 			return false;
 		}
 	}
@@ -212,8 +211,8 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 			geometry->addOutline(outline);
 		}
 		catch (const CGAL::Failure_exception &e) {
-			PRINTB("ERROR: GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %s", e.what());
-		}
+			LOG(message_group::Warning,Location::NONE,"","GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s",e.what());
+}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
 	return geometry;
@@ -265,8 +264,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 				children.push_back(polygons);
 			}
 			else {
-				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 3D child object for 2D operation, %s", loc);
+				LOG(message_group::Warning,item.first->modinst->location(),this->tree.getDocumentPath(),"Ignoring 3D child object for 2D operation");
 			}
 		}
 	}
@@ -290,7 +288,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
 			if (!GeometryCache::instance()->insert(key, geom)) {
-				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
+				LOG(message_group::Warning,Location::NONE,"","GeometryEvaluator: Node didn't fit into cache.");
 			}
 		}
 	}
@@ -334,8 +332,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
-				std::string loc = item.first->modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Ignoring 2D child object for 3D operation, %s", loc);
+				LOG(message_group::Warning,item.first->modinst->location(),this->tree.getDocumentPath(),"Ignoring 2D child object for 3D operation");
 			}
 			else if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
 				children.push_back(item);
@@ -380,7 +377,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		clipType = ClipperLib::ctDifference;
 		break;
 	default:
-		PRINTB("Error: Unknown boolean operation %d", int(op));
+		LOG(message_group::Error,Location::NONE,"","Unknown boolean operation %1$d",int(op));
 		return nullptr;
 		break;
 	}
@@ -682,8 +679,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 		if (!isSmartCached(node)) {
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
-				std::string loc = node.modinst->location().toRelativeString(this->tree.getDocumentPath());
-				PRINTB("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object. %s", loc);
+				LOG(message_group::Warning,node.modinst->location(),this->tree.getDocumentPath(),"Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			}
 			else {
 				// First union all children
@@ -1054,7 +1050,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 			max_x = fmax(max_x, v[0]);
 
 			if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
-				PRINTB("ERROR: all points for rotate_extrude() must have the same X coordinate sign (range is %.2f -> %.2f)", min_x % max_x);
+				LOG(message_group::Error,Location::NONE,"","all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)",min_x,max_x);
 				delete ps;
 				return nullptr;
 			}
@@ -1223,7 +1219,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 							PolySet *ps = new PolySet(3);
 							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
 							if (err) {
-								PRINT("ERROR: Nef->PolySet failed");
+								LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
 							}
 							else {
 								chPS.reset(ps);

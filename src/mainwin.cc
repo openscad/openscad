@@ -158,7 +158,7 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
 }
 
 void fileExportedMessage(const char *format, const QString &filename) {
-	PRINTB("%s export finished: %s", format % filename.toUtf8().constData());
+	LOG(message_group::None,Location::NONE,"","%1$s export finished: %2$s",format,filename.toUtf8().constData());
 }
 
 } // namespace
@@ -172,6 +172,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
+	errorLogDockTitleWidget = new QWidget();
+	
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -179,6 +181,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->consoleDock->setAction(this->viewActionHideConsole);
 	this->parameterDock->setConfigKey("view/hideCustomizer");
 	this->parameterDock->setAction(this->viewActionHideParameters);
+	this->errorLogDock->setConfigKey("view/hideErrorLog");
+	this->errorLogDock->setAction(this->viewActionHideErrorLog);
+
+	this->tabifyDockWidget(this->consoleDock,this->errorLogDock); // Move Second Dock on top of First
 
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
@@ -214,6 +220,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->setTabToolBarVisible(tabManager->count());
 	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
+
+	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
+	connect(this->console,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 
 	connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
 	connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
@@ -286,7 +295,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->hideFind(); 
 	frameCompileResult->hide();
 	this->labelCompileResultMessage->setOpenExternalLinks(false);
-	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showConsole()));
+	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showLink(QString)));
 
 	// File menu
 	connect(this->fileActionNewWindow, SIGNAL(triggered()), this, SLOT(actionNewWindow()));
@@ -410,6 +419,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
     connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
+    connect(this->viewActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -425,9 +435,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 	setCurrentOutput();
 
 	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
-	PRINT(helptitle);
-	PRINT(copyrighttext);
 
+	LOG(message_group::None,Location::NONE,"",std::string(helptitle));
+	LOG(message_group::None,Location::NONE,"",std::string(copyrighttext));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
@@ -464,7 +474,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
@@ -516,6 +525,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideConsole = settings.value("view/hideConsole").toBool();
 	bool hideEditor = settings.value("view/hideEditor").toBool();
 	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
+	bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
     bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
     bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 	
@@ -524,7 +534,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
-    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideEditorToolbar, hide3DViewToolbar);
+    updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar);
 
 	if (windowState.size() == 0) {
 		/*
@@ -563,6 +573,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
+	connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
@@ -593,6 +604,17 @@ MainWindow::MainWindow(const QStringList &filenames)
   if (Feature::ExperimentalMouseSelection.is_enabled()) {
   	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
   }
+
+}
+
+void MainWindow::openFileFromPath(QString path,int line)
+{
+	if (editorDock->isVisible()) {
+		activeEditor->setFocus();
+		if(!path.isEmpty()) tabManager->open(path);
+		activeEditor->setFocus();
+		activeEditor->setCursorPosition(line,0);
+	}
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
@@ -625,7 +647,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool editorToolbar, bool viewToolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer,bool errorLog, bool editorToolbar, bool viewToolbar)
 {
 	viewActionHideConsole->setChecked(console);
 	hideConsole();
@@ -637,6 +659,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
     hide3DViewToolbar();
 	viewActionHideParameters->setChecked(customizer);
 	hideParameters();
+	viewActionHideErrorLog->setChecked(errorLog);
+	hideErrorLog();
 }
 
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
@@ -736,6 +760,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
 		parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
+		errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
 	} else {
 		if (editorDock->isFloating()) {
 			editorDock->setFloating(false);
@@ -749,6 +774,10 @@ void MainWindow::updateUndockMode(bool undockMode)
 			parameterDock->setFloating(false);
 		}
 		parameterDock->setFeatures(parameterDock->features() & ~QDockWidget::DockWidgetFloatable);
+		if (errorLogDock->isFloating()) {
+			errorLogDock->setFloating(false);
+		}
+		errorLogDock->setFeatures(errorLogDock->features() & ~QDockWidget::DockWidgetFloatable);
 	}
 }
 
@@ -758,6 +787,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 	editorDock->setTitleBarWidget(reorderMode ? nullptr : editorDockTitleWidget);
 	consoleDock->setTitleBarWidget(reorderMode ? nullptr : consoleDockTitleWidget);
 	parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
+	errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
@@ -916,7 +946,6 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
 	OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
-
 	try{
 		bool shouldcompiletoplevel = false;
 		bool didcompile = false;
@@ -961,6 +990,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
 		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
+			 this->errorLogWidget->clearModel();	
 			if (activeEditor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
@@ -978,7 +1008,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 			auto mtime = this->root_module->handleDependencies();
 			if (mtime > this->deps_mtime) {
 				this->deps_mtime = mtime;
-				PRINTB("Used file cache size: %d files", ModuleCache::instance()->size());
+				LOG(message_group::None,Location::NONE,"","Used file cache size: %1$d files",ModuleCache::instance()->size());
 				didcompile = true;
 			}
 		}
@@ -1054,7 +1084,7 @@ void MainWindow::updateCompileResult()
 	toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
 	toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
-	msg += _(" For details see <a href=\"#console\">console window</a>.");
+	msg += _(" For details see the <a href=\"#errorlog\">error log</a> and <a href=\"#console\">console window</a>.");
 	labelCompileResultMessage->setText(msg);
 	frameCompileResult->show();
 }
@@ -1117,7 +1147,7 @@ void MainWindow::instantiateRoot()
 
 	if (this->root_module) {
 		// Evaluate CSG tree
-		PRINT("Compiling design (CSG Tree generation)...");
+		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Tree generation)...");
 		this->processEvents();
 
 		AbstractNode::resetIndexCounter();
@@ -1137,7 +1167,7 @@ void MainWindow::instantiateRoot()
 				this->root_node = this->absolute_root_node;
 			}
 			if (nextLocation) {
-				PRINTB("WARNING: More than one Root Modifier (!) %s", nextLocation->toRelativeString(top_ctx->documentPath()));
+				LOG(message_group::None,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1147,11 +1177,11 @@ void MainWindow::instantiateRoot()
 
 	if (!this->root_node) {
 		if (parser_error_pos < 0) {
-			PRINT("ERROR: Compilation failed! (no top level object found)");
+			LOG(message_group::Error,Location::NONE,"","Compilation failed! (no top level object found)");
 		} else {
-			PRINT("ERROR: Compilation failed!");
+			LOG(message_group::Error,Location::NONE,"","Compilation failed!");
 		}
-		PRINT(" ");
+			LOG(message_group::None,Location::NONE,""," ");
 		this->processEvents();
 	}
 }
@@ -1165,7 +1195,7 @@ void MainWindow::compileCSG()
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	try{
 		assert(this->root_node);
-		PRINT("Compiling design (CSG Products generation)...");
+		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Products generation)...");
 		this->processEvents();
 
 		// Main CSG evaluation
@@ -1191,14 +1221,14 @@ void MainWindow::compileCSG()
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
-			PRINT("CSG generation cancelled.");
+			LOG(message_group::None,Location::NONE,"","CSG generation cancelled.");
 		}catch(const HardWarningException &){
-			PRINT("CSG generation cancelled due to hardwarning being enabled.");
+			LOG(message_group::None,Location::NONE,"","CSG generation cancelled due to hardwarning being enabled.");
 		}
 		progress_report_fin();
 		updateStatusBar(nullptr);
 
-		PRINT("Compiling design (CSG Products normalization)...");
+		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Products normalization)...");
 		this->processEvents();
 
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
@@ -1212,14 +1242,14 @@ void MainWindow::compileCSG()
 			}
 			else {
 				this->root_products.reset();
-				PRINT("WARNING: CSG normalization resulted in an empty tree");
+				LOG(message_group::Warning,Location::NONE,"","CSG normalization resulted in an empty tree");
 				this->processEvents();
 			}
 		}
 
 		const std::vector<shared_ptr<CSGNode> > &highlight_terms = csgrenderer.getHighlightNodes();
 		if (highlight_terms.size() > 0) {
-			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
+			LOG(message_group::None,Location::NONE,"","Compiling highlights (%1$d CSG Trees)...",highlight_terms.size());
 			this->processEvents();
 		
 			this->highlights_products.reset(new CSGProducts());
@@ -1236,7 +1266,7 @@ void MainWindow::compileCSG()
 	
 		const auto &background_terms = csgrenderer.getBackgroundNodes();
 		if (background_terms.size() > 0) {
-			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
+			LOG(message_group::None,Location::NONE,"","Compiling background (%1$d CSG Trees)...",background_terms.size());
 			this->processEvents();
 		
 			this->background_products.reset(new CSGProducts());
@@ -1254,13 +1284,13 @@ void MainWindow::compileCSG()
 		if (this->root_products &&
 				(this->root_products->size() >
 				Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-			PRINTB("UI-WARNING: Normalized tree has %d elements!", this->root_products->size());
-			PRINT("UI-WARNING: OpenCSG rendering has been disabled.");
+				LOG(message_group::UI_Warning,Location::NONE,"","Normalized tree has %1$d elements!",this->root_products->size());
+				LOG(message_group::UI_Warning,Location::NONE,"","OpenCSG rendering has been disabled.");
 		}
 #ifdef ENABLE_OPENCSG
 		else {
-			PRINTB("Normalized CSG tree has %d elements",
-						(this->root_products ? this->root_products->size() : 0));
+			LOG(message_group::None,Location::NONE,"","Normalized tree has %1$d elements!",
+				(this->root_products ? this->root_products->size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
@@ -1270,7 +1300,7 @@ void MainWindow::compileCSG()
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
 																														this->highlights_products,
 																														this->background_products);
-		PRINT("Compile and preview finished.");
+		LOG(message_group::None,Location::NONE,"","Compile and preview finished.");
 		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
 		RenderStatistic::printRenderingTime(ms);
 		this->processEvents();
@@ -1378,14 +1408,14 @@ void MainWindow::writeBackup(QFile *file)
 	writer << activeEditor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
 	
-	PRINTB("Saved backup file: %s", file->fileName().toUtf8().constData());
+	LOG(message_group::None,Location::NONE,"","Saved backup file: %1$s", file->fileName().toUtf8().constData());
 }
 
 void MainWindow::saveBackup()
 {
 	auto path = PlatformUtils::backupPath();
 	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-		PRINTB("UI-WARNING: Cannot create backup path: %s", path);
+		LOG(message_group::UI_Warning,Location::NONE,"","Cannot create backup path: %1$s",path);
 		return;
 	}
 
@@ -1403,7 +1433,7 @@ void MainWindow::saveBackup()
 	}
 
 	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
-		PRINT("UI-WARNING: Failed to create backup file");
+		LOG(message_group::UI_Warning,Location::NONE,"","Failed to create backup file");
 		return;
 	}
 	return writeBackup(this->tempFile);
@@ -1423,13 +1453,13 @@ void MainWindow::actionShowLibraryFolder()
 {
 	auto path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
-		PRINTB("UI-WARNING: Library path %s doesn't exist. Creating", path);
+		LOG(message_group::UI_Warning,Location::NONE,"","Library path %1$s doesn't exist. Creating",path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			PRINTB("UI-ERROR: Cannot create library path: %s",path);
+			LOG(message_group::UI_Error,Location::NONE,"","Cannot create library path: %1$s",path);	
 		}
 	}
 	auto url = QString::fromStdString(path);
-	//PRINTB("Opening file browser for %s", url.toStdString() );
+	LOG(message_group::None,Location::NONE,"","Opening file browser for %1$s",url.toStdString());
 	QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
@@ -1760,8 +1790,6 @@ void MainWindow::actionReloadRenderPreview()
 	autoReloadTimer->stop();
 	setCurrentOutput();
 
-	// PRINT("Parsing design (AST generation)...");
-	// this->processEvents();
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
 	this->top_ctx->set_variable("$preview", ValuePtr(true));
@@ -1797,7 +1825,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	preview_requested=false;
 	setCurrentOutput();
 
-	PRINT("Parsing design (AST generation)...");
+  LOG(message_group::None,Location::NONE,"","Parsing design (AST generation)...");
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
@@ -1872,11 +1900,11 @@ void MainWindow::action3DPrint()
 
 	switch (selectedService) {
 	case print_service_t::PRINT_SERVICE:
-		PRINTB("Sending design to print service %s...", printService->getDisplayName().toStdString());
+		LOG(message_group::None,Location::NONE,"","Sending design to print service %1$s...",printService->getDisplayName().toStdString());
 		sendToPrintService();
 		break;
 	case print_service_t::OCTOPRINT:
-		PRINT("Sending design to OctoPrint...");
+		LOG(message_group::None,Location::NONE,"","Sending design to OctoPrint...");
 		sendToOctoPrint();
 		break;
 	default:
@@ -1891,7 +1919,7 @@ void MainWindow::sendToOctoPrint()
 	OctoPrint octoPrint;
 
 	if (octoPrint.url().trimmed().isEmpty()) {
-		PRINT("ERROR: OctoPrint connection not configured. Please check preferences.");
+		LOG(message_group::Error,Location::NONE,"","OctoPrint connection not configured. Please check preferences.");
 		return;
 	}
 
@@ -1912,7 +1940,7 @@ void MainWindow::sendToOctoPrint()
 
 	QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
 	if (!exportFile.open()) {
-		PRINT("Could not open temporary file.");
+		LOG(message_group::None,Location::NONE,"","Could not open temporary file.");
 		return;
 	}
 	const QString exportFileName = exportFile.fileName();
@@ -1942,7 +1970,7 @@ void MainWindow::sendToOctoPrint()
 		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
 		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage());
+		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
 	}
 
 	updateStatusBar(nullptr);
@@ -1959,7 +1987,7 @@ void MainWindow::sendToPrintService()
 	
 	QTemporaryFile exportFile;
 	if (!exportFile.open()) {
-		PRINT("ERROR: Could not open temporary file.");
+		LOG(message_group::Error,Location::NONE,"","Could not open temporary file.");
 		return;
 	}
 	const QString exportFilename = exportFile.fileName();
@@ -1976,7 +2004,7 @@ void MainWindow::sendToPrintService()
 
 	QFile file(exportFilename);
 	if (!file.open(QIODevice::ReadOnly)) {
-		PRINT("ERROR: Unable to open exported STL file.");
+		LOG(message_group::Error,Location::NONE,"","Unable to open exported STL file.");
 		return;
 	}
 	const QString fileContentBase64 = file.readAll().toBase64();
@@ -1984,7 +2012,7 @@ void MainWindow::sendToPrintService()
 	if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
 		const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
 		QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
-		PRINTB("ERROR: %s", msg.toStdString());
+		LOG(message_group::Error,Location::NONE,"","%1$s",msg.toStdString());
 		return;
 	}
 	
@@ -1997,7 +2025,7 @@ void MainWindow::sendToPrintService()
         const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool { return network_progress_func(v); });
 		QDesktopServices::openUrl(QUrl{partUrl});
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage());
+		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
     }
 
 	updateStatusBar(nullptr);
@@ -2013,7 +2041,7 @@ void MainWindow::actionRender()
 	autoReloadTimer->stop();
 	setCurrentOutput();
 
-	PRINT("Parsing design (AST generation)...");
+  LOG(message_group::None,Location::NONE,"","Parsing design (AST generation)...");
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
@@ -2033,7 +2061,7 @@ void MainWindow::cgalRender()
 	this->cgalRenderer = nullptr;
 	this->root_geom.reset();
 
-	PRINT("Rendering Polygon Mesh using CGAL...");
+	LOG(message_group::None,Location::NONE,"","Rendering Polygon Mesh using CGAL...");
 
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2053,7 +2081,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		if (!root_geom->isEmpty()) {
 			RenderStatistic().print(*root_geom);
 		}
-		PRINT("Rendering finished.\n");
+		LOG(message_group::None,Location::NONE,"","Rendering finished.\n");
 
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
@@ -2062,8 +2090,8 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		else viewModeSurface();
 	}
 	else {
-		PRINT("UI-WARNING: No top level geometry to render");
-		PRINT(" ");
+		LOG(message_group::UI_Warning,Location::NONE,"","No top level geometry to render");
+		LOG(message_group::None,Location::NONE,""," ");
 	}
 
 	updateStatusBar(nullptr);
@@ -2214,8 +2242,8 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 }
 
 void MainWindow::exceptionCleanup(){
-	PRINT("Execution aborted");
-	PRINT(" ");
+	LOG(message_group::None,Location::NONE,"","Execution aborted");
+	LOG(message_group::None,Location::NONE,""," ");
 	GuiLocker::unlock();
 	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
@@ -2289,13 +2317,13 @@ void MainWindow::actionCheckValidity()
 	setCurrentOutput();
 
 	if (!this->root_geom) {
-		PRINT("Nothing to validate! Try building first (press F6).");
+		LOG(message_group::None,Location::NONE,"","Nothing to validate! Try building first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_geom->getDimension() != 3) {
-		PRINT("Current top level object is not a 3D object.");
+		LOG(message_group::None,Location::NONE,"","Current top level object is not a 3D object.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2308,7 +2336,7 @@ void MainWindow::actionCheckValidity()
 	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
 		valid = N->p3 ? N->p3->is_valid() : false;
 	}
-	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
+	LOG(message_group::None,Location::NONE,"","Valid:      %1$6s",(valid ? "yes" : "no"));
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2318,7 +2346,7 @@ void MainWindow::actionCheckValidity()
 bool MainWindow::canExport(unsigned int dim)
 {
 	if (!this->root_geom) {
-		PRINT("ERROR: Nothing to export! Try rendering first (press F6).");
+		LOG(message_group::Error,Location::NONE,"","Nothing to export! Try rendering first (press F6)");
 		clearCurrentOutput();
 		return false;
 	}
@@ -2346,20 +2374,20 @@ bool MainWindow::canExport(unsigned int dim)
 	}
 
 	if (this->root_geom->getDimension() != dim) {
-		PRINTB("UI-ERROR: Current top level object is not a %dD object.", dim);
+		LOG(message_group::UI_Error,Location::NONE,"","Current top level object is not a %1$dD object.",dim);
 		clearCurrentOutput();
 		return false;
 	}
 
 	if (this->root_geom->isEmpty()) {
-		PRINT("UI-ERROR: Current top level object is empty.");
+		LOG(message_group::UI_Error,Location::NONE,"","Current top level object is empty.");
 		clearCurrentOutput();
 		return false;
 	}
 
 	auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-		PRINT("UI-WARNING: Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+		LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 	
 	return true;
@@ -2438,7 +2466,7 @@ void MainWindow::actionExportCSG()
 	setCurrentOutput();
 
 	if (!this->root_node) {
-		PRINT("ERROR: Nothing to export. Please try compiling first.");
+		LOG(message_group::Error,Location::NONE,"","Nothing to export. Please try compiling first.");
 		clearCurrentOutput();
 		return;
 	}
@@ -2453,7 +2481,7 @@ void MainWindow::actionExportCSG()
 
 	std::ofstream fstream(csg_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
+		LOG(message_group::None,Location::NONE,"","Can't open file \"%1$s\" for export",csg_filename.toLocal8Bit().constData());
 	}
 	else {
 		fstream << this->tree.getString(*this->root_node, "\t") << "\n";
@@ -2748,6 +2776,11 @@ void MainWindow::on_parameterDock_visibilityChanged(bool)
     parameterTopLevelChanged(parameterDock->isFloating());
 }
 
+void MainWindow::on_errorLogDock_visibilityChanged(bool)
+{
+    errorLogTopLevelChanged(parameterDock->isFloating());
+}
+
 void MainWindow::changedTopLevelEditor(bool topLevel)
 {
 	setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
@@ -2789,6 +2822,23 @@ void MainWindow::consoleTopLevelChanged(bool topLevel)
 void MainWindow::parameterTopLevelChanged(bool topLevel)
 {
     setDockWidgetTitle(parameterDock, QString(_("Customizer")), topLevel);
+}
+
+void MainWindow::changedTopLevelErrorLog(bool topLevel)
+{
+	setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
+}
+
+void MainWindow::errorLogTopLevelChanged(bool topLevel)
+{
+	setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
+
+    Qt::WindowFlags flags = (errorLogDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+	if(topLevel)
+	{
+		errorLogDock->setWindowFlags(flags);
+		errorLogDock->show();
+	}
 }
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
@@ -2857,13 +2907,6 @@ void MainWindow::hideEditor()
 	}
 }
 
-void MainWindow::showConsole()
-{
-	viewActionHideConsole->setChecked(false);
-	consoleDock->show();
-	frameCompileResult->hide();
-}
-
 void MainWindow::hideConsole()
 {
 	if (viewActionHideConsole->isChecked()) {
@@ -2879,6 +2922,42 @@ void MainWindow::hideParameters()
 		parameterDock->hide();
 	} else {
 		parameterDock->show();
+	}
+}
+
+void MainWindow::showLink(const QString link)
+{
+	if (link == "#console") {
+		showConsole();
+	} else if (link == "#errorlog") {
+		showErrorLog();
+	}
+}
+
+void MainWindow::showConsole()
+{
+	viewActionHideConsole->setChecked(false);
+	frameCompileResult->hide();
+	consoleDock->show();
+	consoleDock->raise();
+	consoleDock->focusWidget();
+}
+
+void MainWindow::showErrorLog()
+{
+	viewActionHideErrorLog->setChecked(false);
+	frameCompileResult->hide();
+	errorLogDock->show();
+	errorLogDock->raise();
+	errorLogDock->focusWidget();
+}
+
+void MainWindow::hideErrorLog()
+{
+	if (viewActionHideErrorLog->isChecked()) {
+		errorLogDock->hide();
+	} else {
+		errorLogDock->show();
 	}
 }
 
@@ -2969,6 +3048,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		this->editorDock->disableSettingsUpdate();
 		this->consoleDock->disableSettingsUpdate();
 		this->parameterDock->disableSettingsUpdate();
+		this->errorLogDock->disableSettingsUpdate();
 
 		event->accept();
 	} else {
@@ -3011,52 +3091,66 @@ void MainWindow::quit()
 #endif
 }
 
-void MainWindow::consoleOutput(const std::string &msg, void *userdata)
+void MainWindow::consoleOutput(const Message &msgObj, void *userdata)
 {
 	// Invoke the method in the main thread in case the output
 	// originates in a worker thread.
 	auto thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(QString, QString::fromStdString(msg)));
+	QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(Message, msgObj));
 }
 
-void MainWindow::consoleOutput(const QString &msg)
+void MainWindow::consoleOutput(const Message &msgObj)
 {
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-
 	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-	if (msg.startsWith("WARNING:") || msg.startsWith("DEPRECATED:")) {
+	std::string hyperlinkedData = std::to_string(msgObj.loc.firstLine())+","+msgObj.loc.fileName();
+
+	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated) {
 		this->compileWarnings++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
-	} else if (msg.startsWith("UI-WARNING:") || msg.startsWith("FONT-WARNING:") || msg.startsWith("EXPORT-WARNING:")) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
-	} else if (msg.startsWith("ERROR:")) {
+		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+	} else if (msgObj.group==message_group::UI_Warning || msgObj.group==message_group::Font_Warning || msgObj.group==message_group::Font_Warning) {
+		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+	} else if (msgObj.group==message_group::Error) {
 		this->compileErrors++;
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
-	} else if (msg.startsWith("EXPORT-ERROR:") || msg.startsWith("UI-ERROR:") || msg.startsWith("PARSER-ERROR:")) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
-	} else if (msg.startsWith("TRACE:")) {
-		this->console->appendHtml("<span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString(msg)) + "</span>&nbsp;");
+		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+", "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+	} else if (msgObj.group==message_group::Export_Error || msgObj.group==message_group::UI_Error || msgObj.group==message_group::Parser_Error) {
+		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+	} else if (msgObj.group==message_group::Trace) {
+		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+	} else if(msgObj.group==message_group::Echo) {
+		this->console->appendPlainText(QString::fromStdString(getGroupName(msgObj.group)+":")+QString::fromStdString(msgObj.msg));
 	} else {
-		this->console->appendPlainText(msg);
+		this->console->appendPlainText(QString::fromStdString(msgObj.msg));
 	}
 	this->processEvents();
 }
 
+void MainWindow::errorLogOutput(const Message &log_msg, void *userdata)
+{
+	auto thisp = static_cast<MainWindow*>(userdata);
+	QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(Message, log_msg));
+}
+
+void MainWindow::errorLogOutput(const Message &log_msg)
+{
+	this->errorLogWidget->toErrorLog(log_msg);
+}
+
 void MainWindow::setCurrentOutput()
 {
-	set_output_handler(&MainWindow::consoleOutput, this);
+	set_output_handler(&MainWindow::consoleOutput, &MainWindow::errorLogOutput, this);
 }
 
 void MainWindow::hideCurrentOutput()
 {
-	set_output_handler(&MainWindow::noOutput, this);
+	set_output_handler(&MainWindow::noOutputConsole, &MainWindow::noOutputErrorLog, this);
 }
 
 void MainWindow::clearCurrentOutput()
 {
-	set_output_handler(nullptr, nullptr);
+	set_output_handler(nullptr, nullptr, nullptr);
 }
 
 void MainWindow::openCSGSettingsChanged()
@@ -3093,4 +3187,9 @@ QString MainWindow::exportPath(const char *suffix) {
 		}
 	}
 	return path;
+}
+
+void MainWindow::jumpToLine(int line,int col)
+{
+	this->activeEditor->setCursorPosition(line, col);
 }

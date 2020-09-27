@@ -33,19 +33,19 @@ fs::path search_libs(const fs::path &localpath)
 static bool check_valid(const fs::path &p, const std::vector<std::string> *openfilenames)
 {
 	if (p.empty()) {
-		//PRINTB("WARNING: File path is blank: %s",p);
+		// LOG(message_group::Warning,Location::NONE,"","File path is blank: %1$s",p);
 		return false;
 	}
 	if (!p.has_parent_path()) {
-		//PRINTB("WARNING: No parent path: %s",p);
+		// LOG(message_group::Warning,Location::NONE,"","No parent path: %1$s",p);
 		return false;
 	}
 	if (!fs::exists(p)) {
-		//PRINTB("WARNING: File not found: %s",p);
+		// LOG(message_group::Warning,Location::NONE,"","File not found: %1$s",p);
 		return false;
 	}
 	if (fs::is_directory(p)) {
-		//PRINTB("WARNING: %s invalid - points to a directory",p);
+		// LOG(message_group::Warning,Location::NONE,"","%1$s invalid - points to a directory",p);
 		return false;
 	}
 	std::string fullname = p.generic_string();
@@ -53,7 +53,7 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	if (openfilenames) {
 		for(const auto &s : *openfilenames) {
 			if (s == fullname) {
-//				PRINTB("WARNING: circular include file %s", fullname);
+				// LOG(message_group::Warning,Location::NONE,"","circular include file %1$s",fullname);
 				return false;
 			}
 		}

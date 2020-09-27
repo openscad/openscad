@@ -5,10 +5,12 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include <utility>
 #include <libintl.h>
 #undef snprintf
 #include <locale.h>
+#include "AST.h"
+#include <set>
 inline char * _( const char * msgid ) { return gettext( msgid ); }
 inline const char * _( const char * msgid, const char *msgctxt) {
 	/* The separator between msgctxt and msgid in a .mo file.  */
@@ -25,9 +27,26 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 	}
 }
 
-typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
+enum class message_group {
+	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo
+};
+
+
+std::string getGroupName(const enum message_group &groupName);
+
+struct Message{
+std::string msg;
+Location loc;
+std::string docPath;
+enum message_group group;
+};
+
+typedef void (OutputHandlerFunc)(const Message &msg,void *userdata);
+typedef void (OutputHandlerFunc2)(const Message &msg, void *userdata);
+
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
+
 namespace OpenSCAD {
 	extern std::string debug;
 	extern bool quiet;
@@ -36,25 +55,23 @@ namespace OpenSCAD {
 	extern bool rangeCheck;
 }
 
-void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
+void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata);
 void no_exceptions_for_warnings();
 bool would_have_thrown();
 
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
-void printDeprecation(const std::string &str);
 void resetSuppressedMessages();
 
-#define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINT(const std::string &msg);
-#define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
+void PRINT(const Message &msgObj);
 
-void PRINT_NOCACHE(const std::string &msg);
-#define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
+void PRINT_NOCACHE(const Message &msgObj);
+#define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
+// #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
 void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const class ModuleInstantiation *inst);
 
@@ -101,4 +118,63 @@ public:
 	}
 };
 
-#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()
+#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream()<< s).str()
+
+template <typename... Ts>
+class MessageClass
+{
+private:
+	std::string fmt;
+	std::tuple<Ts...> args;
+	template <std::size_t... Is>
+	std::string format(const std::index_sequence<Is...>) const
+	{
+
+		std::string s;
+		for(int i=0; fmt[i]!='\0'; i++) 
+		{
+			if(fmt[i] == '%' && !('0' <= fmt[i+1] && fmt[i+1] <= '9')) 
+			{
+				s.append("%%");
+			} 
+			else 
+			{
+				s.push_back(fmt[i]);
+			}
+		}
+		
+		boost::format f(s);
+		f.exceptions(boost::io::bad_format_string_bit);
+		const auto unused = std::initializer_list<char> {(static_cast<void>(f % std::get<Is>(args)), char{}) ...};
+		static_cast<void>(unused);
+		return boost::str(f);
+	}
+
+public:
+	template <typename... Args>
+	MessageClass(std::string&& fmt, Args&&... args) : fmt(std::forward<std::string>(fmt)), args(std::forward<Args>(args)...)
+	{
+	}
+
+	std::string format() const
+	{
+	return format(std::index_sequence_for<Ts...>{});
+	}
+};
+
+extern std::set<std::string> printedDeprecations;
+
+template <typename F, typename... Args>
+void LOG(const message_group &msg_grp,const Location &loc,const std::string &docPath,F&& f, Args&&... args)
+{	
+	const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
+	const auto formatted = msg.format();
+
+	//check for deprecations
+	if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted+loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
+	if(msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted+loc.toRelativeString(docPath));
+
+	Message msgObj = {formatted,loc,docPath,msg_grp};
+
+	PRINT(msgObj);
+}

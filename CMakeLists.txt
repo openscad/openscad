@@ -585,6 +585,7 @@ set(GUI_SOURCES
   src/AutoUpdater.cc
   src/Console.cc
   src/Dock.cc
+  src/ErrorLog.cc
   src/EventFilter.h
   src/FontListDialog.cc
   src/FontListTableView.cc

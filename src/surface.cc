@@ -40,6 +40,7 @@
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
+#include "boost-utils.h"
 #include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -141,12 +142,12 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 		 ret_val = lodepng::load_file(png, filename);
 	}catch(std::bad_alloc &ba){
 
-		PRINTB("WARNING: bad_alloc caught for '%s'.", ba.what());
+		LOG(message_group::Warning,Location::NONE,"","bad_alloc caught for '%1$s'.",ba.what());
 		return data;
 	}
 
 	if(ret_val == 78){
-		PRINTB("WARNING: The file '%s' couldn't be opened.", filename);
+		LOG(message_group::Warning,Location::NONE,"","The file '%1$s' couldn't be opened.",filename);
 		return data;
 	}
 
@@ -159,7 +160,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 	std::vector<uint8_t> img;
 	auto error = lodepng::decode(img, width, height, png);
 	if (error) {
-		PRINTB("ERROR: Can't read PNG image '%s'", filename);
+		LOG(message_group::Warning,Location::NONE,"","Can't read PNG image '%1$s'",filename);
 		data.clear();
 		return data;
 	}
@@ -175,7 +176,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	std::ifstream stream(filename.c_str());
 
 	if (!stream.good()) {
-		PRINTB("WARNING: Can't open DAT file '%s'.", filename);
+		LOG(message_group::Warning,Location::NONE,"","Can't open DAT file '%1$s'.",filename);
 		return data;
 	}
 
@@ -205,7 +206,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		}
 		catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				PRINTB("WARNING: Illegal value in '%s': %s", filename % blc.what());
+				LOG(message_group::Warning,Location::NONE,"","Illegal value in '%1$s': %2$s",filename,blc.what());
 			}
 			break;
   	}

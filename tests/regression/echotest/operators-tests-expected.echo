@@ -1,5 +1,5 @@
-WARNING: begin is smaller than the end, but step is negative, in file operators-tests.scad, line 17
-WARNING: begin is smaller than the end, but step is negative, in file operators-tests.scad, line 18
+WARNING: begin is smaller than the end, but step is negative in file operators-tests.scad, line 17
+WARNING: begin is smaller than the end, but step is negative in file operators-tests.scad, line 18
 ECHO: false, " == ", false, "->", true
 ECHO: false, " >  ", false, "->", false
 ECHO: false, " >= ", false, "->", true

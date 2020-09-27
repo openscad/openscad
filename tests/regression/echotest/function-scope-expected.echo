@@ -1,5 +1,5 @@
 ECHO: duplicate_let = 33
 ECHO: defaults = 42
-WARNING: Ignoring unknown variable 'x', in file function-scope.scad, line 10.
+WARNING: Ignoring unknown variable 'x' in file function-scope.scad, line 10
 ECHO: scope_leak = undef
 ECHO: scope_leak_config = 42

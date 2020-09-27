@@ -4,7 +4,7 @@ ECHO: "[a01] ", 2
 ECHO: "[a01] ", 3
 ECHO: "[a01] ", 4
 ECHO: "[a02] ----- [4:1]"
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file range-tests.scad, line 2
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file range-tests.scad, line 2
 ECHO: "[a02] ", 1
 ECHO: "[a02] ", 2
 ECHO: "[a02] ", 3
@@ -22,7 +22,7 @@ ECHO: "[a05] ", -2
 ECHO: "[a05] ", -1
 ECHO: "[a05] ", 0
 ECHO: "[a06] ----- [0:-3]"
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file range-tests.scad, line 6
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file range-tests.scad, line 6
 ECHO: "[a06] ", -3
 ECHO: "[a06] ", -2
 ECHO: "[a06] ", -1
@@ -34,7 +34,7 @@ ECHO: "[a07] ", 0
 ECHO: "[a07] ", 1
 ECHO: "[a07] ", 2
 ECHO: "[a08] ----- [2:-2]"
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, in file range-tests.scad, line 8
+DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file range-tests.scad, line 8
 ECHO: "[a08] ", -2
 ECHO: "[a08] ", -1
 ECHO: "[a08] ", 0
@@ -51,11 +51,11 @@ ECHO: "[b02] ", 1
 ECHO: "[b02] ", 3
 ECHO: "[b02] ", 5
 ECHO: "[b03] ----- [1:-1:5]"
-WARNING: begin is smaller than the end, but step is negative, in file range-tests.scad, line 12
+WARNING: begin is smaller than the end, but step is negative in file range-tests.scad, line 12
 ECHO: "[b04] ----- [5:1:1]"
-WARNING: begin is greater than the end, but step is positive, in file range-tests.scad, line 13
+WARNING: begin is greater than the end, but step is positive in file range-tests.scad, line 13
 ECHO: "[b05] ----- [5:2:1]"
-WARNING: begin is greater than the end, but step is positive, in file range-tests.scad, line 14
+WARNING: begin is greater than the end, but step is positive in file range-tests.scad, line 14
 ECHO: "[b06] ----- [5:-1:1]"
 ECHO: "[b06] ", 5
 ECHO: "[b06] ", 4
@@ -65,7 +65,7 @@ ECHO: "[b06] ", 1
 ECHO: "[b07] ----- [0:0:0]"
 ECHO: "[b08] ----- [1:0:1]"
 ECHO: "[b09] ----- [1:0:5]"
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file range-tests.scad, line 18
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file range-tests.scad, line 18
 ECHO: "[b10] ----- [0:1:0]"
 ECHO: "[b10] ", 0
 ECHO: "[b11] ----- [3:-.5:-3]"
