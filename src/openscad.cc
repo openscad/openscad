@@ -101,22 +101,12 @@ public:
 	Echostream(const char * filename) : std::ofstream(filename) {
 		set_output_handler( &Echostream::output, nullptr, this );
 	}
-	static void output(const Message &msgObj, void *userdata) {
-		auto thisp = static_cast<Echostream*>(userdata);
-		std::string loc;
-		if(!msgObj.loc.isNone()) loc=msgObj.loc.toRelativeString(msgObj.docPath);
-		else loc="";
-		if(msgObj.group!=message_group::None)
-		{
-			if(loc.empty()) *thisp << getGroupName(msgObj.group) <<": "<<msgObj.msg<<"\n";
-			else *thisp << getGroupName(msgObj.group) <<": "<<msgObj.msg<<" "<<loc<<"\n";
-		}
-		else
-		{
-			if(loc.empty()) *thisp << getGroupName(msgObj.group) <<": "<<msgObj.msg<<"\n";
-			else *thisp <<msgObj.msg << " "<<loc<<"\n";
-		}
+	static void output(const Message& msgObj, void *userdata) {
+		auto stream = static_cast<Echostream*>(userdata);
+		const std::string loc = msgObj.loc.isNone() ? "" : " " + msgObj.loc.toRelativeString(msgObj.docPath);
+		*stream << getGroupName(msgObj.group) << ": " << msgObj.msg << loc << "\n";
 	}
+
 	~Echostream() {
 		this->close();
 	}
