@@ -99,7 +99,7 @@ class Echostream : public std::ofstream
 {
 public:
 	Echostream(const char * filename) : std::ofstream(filename) {
-		set_output_handler( &Echostream::output, this );
+		set_output_handler( &Echostream::output, nullptr, this );
 	}
 	static void output(const Message &msgObj, void *userdata) {
 		auto thisp = static_cast<Echostream*>(userdata);
@@ -851,7 +851,7 @@ int main(int argc, char **argv)
 	
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
-	// if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr);
+	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr, nullptr);
 #else
 	PlatformUtils::ensureStdIO();
 #endif

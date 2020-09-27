@@ -32,15 +32,10 @@ namespace {
 	bool deferred;
 }
 
-void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
+void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata)
 {
 	outputhandler = newhandler;
-	outputhandler_data = userdata;
-}
-
-void set_output_handler2(OutputHandlerFunc2 *newhandler, void *userdata)
-{
-	outputhandler2 = newhandler;
+	outputhandler2 = newhandler2;
 	outputhandler_data = userdata;
 }
 
@@ -75,8 +70,7 @@ void print_messages_pop()
 	}
 }
 
-// void PRINT(const enum message_group &msg_group,const std::string &msg,const std::string &loc)
-void PRINT(const Message &msgObj)
+void PRINT(const Message& msgObj)
 {
 	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
 	if (print_messages_stack.size() > 0) {
@@ -87,9 +81,14 @@ void PRINT(const Message &msgObj)
 		else print_messages_stack.back() += msgObj.msg;
 	}
 	PRINT_NOCACHE(msgObj);
+
+	//to error log
+	if (outputhandler2) {
+		outputhandler2(msgObj, outputhandler_data);
+	}
 }
 
-void PRINT_NOCACHE(const Message &msgObj)
+void PRINT_NOCACHE(const Message& msgObj)
 {
 	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
 	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Error || msgObj.group==message_group::Trace) {
@@ -116,16 +115,6 @@ void PRINT_NOCACHE(const Message &msgObj)
 				throw HardWarningException(msgObj.msg);
 		}
 	}
-}
-
-void PRINTLOG(const Message &msg_obj)
-{
-		//to error log
-		if (!outputhandler2) {
-		// fprintf(stderr, "%s\n", msg.c_str());
-		} else {
-			outputhandler2(msg_obj, outputhandler_data);
-		}
 }
 
 void PRINTDEBUG(const std::string &filename, const std::string &msg)

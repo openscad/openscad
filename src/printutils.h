@@ -55,8 +55,7 @@ namespace OpenSCAD {
 	extern bool rangeCheck;
 }
 
-void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
-void set_output_handler2(OutputHandlerFunc2 *newhandler, void *userdata);
+void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata);
 void no_exceptions_for_warnings();
 bool would_have_thrown();
 
@@ -69,8 +68,6 @@ void resetSuppressedMessages();
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
 void PRINT(const Message &msgObj);
-
-void PRINTLOG(const Message &msg_obj);
 
 void PRINT_NOCACHE(const Message &msgObj);
 #define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
@@ -179,9 +176,5 @@ void LOG(const message_group &msg_grp,const Location &loc,const std::string &doc
 
 	Message msgObj = {formatted,loc,docPath,msg_grp};
 
-	//to console
 	PRINT(msgObj);
-
-	//to ErrorLog
-	PRINTLOG(msgObj);
 }

@@ -3120,20 +3120,17 @@ void MainWindow::errorLogOutput(const Message &log_msg)
 
 void MainWindow::setCurrentOutput()
 {
-	set_output_handler(&MainWindow::consoleOutput, this);
-	set_output_handler2(&MainWindow::errorLogOutput,this);
+	set_output_handler(&MainWindow::consoleOutput, &MainWindow::errorLogOutput, this);
 }
 
 void MainWindow::hideCurrentOutput()
 {
-	set_output_handler(&MainWindow::noOutputConsole, this);
-	set_output_handler2(&MainWindow::noOutputErrorLog, this);
+	set_output_handler(&MainWindow::noOutputConsole, &MainWindow::noOutputErrorLog, this);
 }
 
 void MainWindow::clearCurrentOutput()
 {
-	set_output_handler(nullptr, nullptr);
-	set_output_handler2(nullptr, nullptr);
+	set_output_handler(nullptr, nullptr, nullptr);
 }
 
 void MainWindow::openCSGSettingsChanged()
