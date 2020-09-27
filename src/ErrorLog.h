@@ -17,7 +17,6 @@ public:
 	ErrorLog& operator=(const ErrorLog& source) = delete;
 	ErrorLog& operator=(ErrorLog&& source) = delete;
 	bool eventFilter(QObject *obj, QEvent *event);
-	virtual ~ErrorLog();
 	void initGUI();
 	void toErrorLog(const Message &log_msg);
 	void showtheErrorInGUI(const Message &log_msg);

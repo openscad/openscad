@@ -11,12 +11,6 @@ ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 	this->errorLogComboBox->installEventFilter(this);
 }
 
-ErrorLog::~ErrorLog()
-{
-	if(errorLogModel) delete errorLogModel;
-}
-
-
 bool ErrorLog::eventFilter(QObject *obj, QEvent *event)
 {
 	if (event->type() == QEvent::Wheel) {
