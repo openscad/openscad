@@ -107,7 +107,6 @@ shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &n
 		}
 		auto replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			// PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead.", name % replacement);
 			LOG(message_group::Deprecated,Location::NONE,"","The %1$s() module will be removed in future releases. Use %2$s instead.",std::string(name),std::string(replacement));
 		}
 		return m;
