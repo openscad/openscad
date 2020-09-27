@@ -703,6 +703,28 @@ static Location debug_location(const std::string& info, const YYLTYPE& loc)
 }
 #endif
 
+static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path)
+{
+	LOG(message_group::Warning,
+			loc,
+			path.parent_path().generic_string(),
+			"%1$s was assigned on line %2$i but was overwritten",
+			assignment->getName(),
+			assignment->location().firstLine());
+
+}
+
+static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path1, const fs::path& path2)
+{
+	LOG(message_group::Warning,
+			loc,
+			path1.parent_path().generic_string(),
+			"%1$s was assigned on line %2$i of %3$s but was overwritten",
+			assignment->getName(),
+			assignment->location().firstLine(),
+			path2);
+}
+
 void handle_assignment(const std::string token, Expression *expr, const Location loc)
 {
 	bool found = false;
@@ -718,20 +740,16 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {
 				//both assignments in the mainFile
-				LOG(message_group::Warning,loc,mainFilePath.parent_path().generic_string(),"%1$s was assigned on line %2$i but was overwritten",
-          assignment->getName(),assignment->location().firstLine());
+				warn_reassignment(loc, assignment, mainFilePath);
 			} else if (uncPathCurr == uncPathPrev) {
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times
 				if (assignment->location().firstLine() != loc.firstLine()) {
-				LOG(message_group::Warning,assignment->location(),mainFilePath.parent_path().generic_string(),
-          "%1$s was assigned on line %2$i of %3$s but was overwritten",
-          assignment->getName(),assignment->location().firstLine(),uncPathPrev);
+					warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 				}
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
-				LOG(message_group::Warning,loc,mainFilePath.parent_path().generic_string(),"%1$s was assigned on line %2$i of %3$s but was overwritten",
-          assignment->getName(),assignment->location().firstLine(),uncPathPrev);
+				warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 			}
 			assignment->setExpr(shared_ptr<Expression>(expr));
 			assignment->setLocation(loc);
