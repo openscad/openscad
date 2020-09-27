@@ -609,10 +609,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 void MainWindow::openFileFromPath(QString path,int line)
 {
-	activeEditor->setFocus();
-	if(!path.isEmpty()) tabManager->open(path);
-	activeEditor->setFocus();
-	activeEditor->setCursorPosition(line,0);
+	if (editorDock->isVisible()) {
+		activeEditor->setFocus();
+		if(!path.isEmpty()) tabManager->open(path);
+		activeEditor->setFocus();
+		activeEditor->setCursorPosition(line,0);
+	}
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
