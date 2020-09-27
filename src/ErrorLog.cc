@@ -34,10 +34,10 @@ void ErrorLog::initGUI()
 	errorLogModel->setHorizontalHeaderLabels(labels);
 	logTable->verticalHeader()->hide();
 	logTable->setModel(errorLogModel);
-	logTable->setColumnWidth(0,80);
-	logTable->setColumnWidth(1,200);
-	logTable->setColumnWidth(2,80); //last column will strech itself
-
+	logTable->setColumnWidth(COLUMN_GROUP, 80);
+	logTable->setColumnWidth(COLUMN_FILE, 200);
+	logTable->setColumnWidth(COLUMN_LINENO, 80);
+	//last column will stretch itself
 }
 
 void ErrorLog::toErrorLog(const Message &log_msg)
@@ -60,30 +60,34 @@ void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 	if(log_msg.group==message_group::Error) groupName->setForeground(QColor::fromRgb(255,0,0)); //make this item red.
 	else if(log_msg.group==message_group::Warning) groupName->setForeground(QColor::fromRgb(252, 211, 3)); //make this item yellow
 	
-	errorLogModel->setItem(row,0,groupName);
+	errorLogModel->setItem(row, COLUMN_GROUP, groupName);
 
 	QStandardItem* fileName;
 	QStandardItem* lineNo;
-	if(!log_msg.loc.isNone())
-	{
-		if(is_regular_file(log_msg.loc.filePath())) fileName = new QStandardItem(QString::fromStdString(log_msg.loc.fileName()));
-		else fileName = new QStandardItem(QString());
+	if (!log_msg.loc.isNone()) {
+		const auto& filePath = log_msg.loc.filePath();
+		if (is_regular_file(filePath)) {
+			const auto path = QString::fromStdString(filePath.generic_string());
+			fileName = new QStandardItem(QString::fromStdString(filePath.filename().generic_string()));
+			fileName->setToolTip(path);
+			fileName->setData(path, Qt::UserRole);
+		} else {
+			fileName = new QStandardItem(QString());
+		}
 		lineNo = new QStandardItem(QString::number(log_msg.loc.firstLine()));
-	}
-	else
-	{
+	} else {
 		fileName = new QStandardItem(QString());
 		lineNo = new QStandardItem(QString());
 	}
 	fileName->setEditable(false);
 	lineNo->setEditable(false);
-	errorLogModel->setItem(row,1,fileName);
-	errorLogModel->setItem(row,2,lineNo);
-
+	lineNo->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
+	errorLogModel->setItem(row, COLUMN_FILE, fileName);
+	errorLogModel->setItem(row, COLUMN_LINENO, lineNo);
 
 	QStandardItem* msg = new QStandardItem(QString::fromStdString(log_msg.msg));
 	msg->setEditable(false);
-	errorLogModel->setItem(row,3,msg);
+	errorLogModel->setItem(row, COLUMN_MESSAGE, msg);
 	errorLogModel->setRowCount(++row);
 }
 
@@ -101,12 +105,11 @@ int ErrorLog::getLine(int row,int col)
 
 void ErrorLog::onTableCellClicked(const QModelIndex & index)
 {
-    if (index.isValid() && index.column()!=0) 
-    {
-		int r= index.row();
-		int line = getLine(r,2);
-		QString path = logTable->model()->index(r,1).data().toString();
-		emit openFile(path,line-1);
+	if (index.isValid() && index.column() != 0) {
+		const int r = index.row();
+		const int line = getLine(r, COLUMN_LINENO);
+		const auto path = logTable->model()->index(r, COLUMN_FILE).data(Qt::UserRole).toString();
+		emit openFile(path, line - 1);
 	}
 }
 

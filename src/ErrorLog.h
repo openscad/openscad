@@ -28,10 +28,14 @@ public:
 	int row;
 
 private:
-	std::list<Message>lastMessages;
+	std::list<Message> lastMessages;
+	static constexpr int COLUMN_GROUP = 0;
+	static constexpr int COLUMN_FILE = 1;
+	static constexpr int COLUMN_LINENO = 2;
+	static constexpr int COLUMN_MESSAGE = 3;
 
 signals:
-	void openFile(QString,int);
+	void openFile(const QString, int);
 
 private slots:
 	void onTableCellClicked(const QModelIndex & index);
