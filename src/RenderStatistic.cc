@@ -60,24 +60,24 @@ void RenderStatistic::print(const Geometry &geom)
 
 void RenderStatistic::visit(const GeometryList& geomlist)
 {
-  LOG(message_group::None,Location::NONE,"","   Top level object is a list of objects:");
-  LOG(message_group::None,Location::NONE,"","   Objects:     %1$d",
-    geomlist.getChildren().size());
+	LOG(message_group::None,Location::NONE,"","   Top level object is a list of objects:");
+	LOG(message_group::None,Location::NONE,"","   Objects:    %1$d",
+	geomlist.getChildren().size());
 }
 
 void RenderStatistic::visit(const PolySet& ps)
 {
-  assert(ps.getDimension() == 3);
-  LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
-  LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",
-    ps.numFacets());
+	assert(ps.getDimension() == 3);
+	LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
+	LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",
+	ps.numFacets());
 }
 
 void RenderStatistic::visit(const Polygon2d& poly)
 {
-  LOG(message_group::None,Location::NONE,"","   Top level object is a 2D object:");
-  LOG(message_group::None,Location::NONE,"","   Contours:     %1$6d",
-    poly.outlines().size());
+	LOG(message_group::None,Location::NONE,"","   Top level object is a 2D object:");
+	LOG(message_group::None,Location::NONE,"","   Contours:   %1$6d",
+	poly.outlines().size());
 }
 
 #ifdef ENABLE_CGAL
@@ -87,12 +87,12 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
     bool simple = Nef.p3->is_simple();
     LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object:");
     LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
-    LOG(message_group::None,Location::NONE,"","   Vertices:     %1$6d",Nef.p3->number_of_vertices());
-    LOG(message_group::None,Location::NONE,"","   Halfedges:     %1$6d",Nef.p3->number_of_halfedges());
-    LOG(message_group::None,Location::NONE,"","   Edges:     %1$6d",Nef.p3->number_of_edges());
-    LOG(message_group::None,Location::NONE,"","   Halffacets:     %1$6d",Nef.p3->number_of_halffacets());
+    LOG(message_group::None,Location::NONE,"","   Vertices:   %1$6d",Nef.p3->number_of_vertices());
+    LOG(message_group::None,Location::NONE,"","   Halfedges:  %1$6d",Nef.p3->number_of_halfedges());
+    LOG(message_group::None,Location::NONE,"","   Edges:      %1$6d",Nef.p3->number_of_edges());
+    LOG(message_group::None,Location::NONE,"","   Halffacets: %1$6d",Nef.p3->number_of_halffacets());
     LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",Nef.p3->number_of_facets());
-    LOG(message_group::None,Location::NONE,"","   Volumes:     %1$6d",Nef.p3->number_of_volumes());
+    LOG(message_group::None,Location::NONE,"","   Volumes:    %1$6d",Nef.p3->number_of_volumes());
     if (!simple) {
       LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
     }
