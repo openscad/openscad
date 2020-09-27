@@ -248,7 +248,12 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		LOG(message_group::None,Location::NONE,"","Current top level object is empty.");
 		return false;
 	}
-	exportFileByName(root_geom, format, filename, filename);
+    ExportInfo exportInfo;
+    exportInfo.format = format;
+    exportInfo.name2open = filename;
+    exportInfo.name2display = filename;
+
+    exportFileByName(root_geom, exportInfo);
 	return true;
 }
 
@@ -495,7 +500,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
             }
 		}
 
-		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG) {
+		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
 			if (!checkAndExport(root_geom, 2, curFormat, new_output_file)) {
 				return 1;
 			}

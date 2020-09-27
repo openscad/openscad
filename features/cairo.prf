@@ -1,0 +1,48 @@
+#Cairo Detection
+#
+# Priority
+# 0. CAIRO_INCLUDE_DIR if set
+# 1. OPENSCAD_LIBRARIES cairo
+# 2. system's standard include paths for cairo (Using pkg-config)
+# OPENSCAD_LIBRARIES check is not added yet
+
+isEmpty(CAIRO_INCLUDEPATH){
+    CAIRO_INCLUDEPATH = $$(CAIRO_INCLUDE_DIR)
+}
+isEmpty(CAIRO_LIBPATH){
+    CAIRO_LIBPATH = $$(CAIRO_LIBRARIES)
+}
+
+exists($$CAIRO_INCLUDEPATH/cairo/cairo.h){
+    ENABLE_CAIRO=yes
+} else {
+    CAIRO_INCLUDEPATH = 
+    CAIRO_LIBPATH = 
+}
+
+isEmpty(CAIRO_INCLUDEPATH){
+  CAIRO_CFLAGS = $$system("$$PKG_CONFIG --cflags cairo")
+  !isEmpty(CAIRO_CFLAGS){
+      ENABLE_CAIRO=yes
+  }
+} else {
+    CAIRO_CFLAGS = -I$$CAIRO_INCLUDEPATH/cairo
+}
+
+isEmpty(CAIRO_LIBPATH){
+    CAIRO_LIBS = $$system("$$PKG_CONFIG --libs cairo")
+    !isEmpty(CAIRO_LIBS){
+        ENABLE_CAIRO=yes
+    }
+} else {
+    CAIRO_LIBS = -L$$CAIRO_LIBPATH -lcairo
+}
+
+!isEmpty(ENABLE_CAIRO){
+    DEFINES += ENABLE_CAIRO
+    QMAKE_CXXFLAGS += $$CAIRO_CFLAGS
+    LIBS += $$CAIRO_LIBS
+    message("cairo enabled")
+} else {
+    message("cairo disabled")
+}
