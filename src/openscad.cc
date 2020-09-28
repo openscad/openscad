@@ -843,10 +843,11 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
-	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, nullptr, nullptr);
+	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
+	if (isGuiLaunched) set_output_handler(nslog, nullptr, nullptr);
 #else
 	PlatformUtils::ensureStdIO();
 #endif
