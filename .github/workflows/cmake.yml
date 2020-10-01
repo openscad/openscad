@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Submodules
       run: git submodule update --init --recursive
     - name: Install dependencies
@@ -27,7 +27,7 @@ jobs:
     - name: Dependency fixup
       run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
-      run: ./scripts/github-ci.sh
+      run: ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
