@@ -1,4 +1,3 @@
-group();
 group() {
 	multmatrix([[1, 0, 0, -100], [0, 1, 0, 0], [0, 0, 1, -30], [0, 0, 0, 1]]) {
 		cylinder($fn = 0, $fa = 12, $fs = 2, h = 45, r1 = 6, r2 = 2, center = false);
@@ -124,3 +123,4 @@ group() {
 		cylinder($fn = 0, $fa = 12, $fs = 2, h = 55.2857, r1 = 6, r2 = 2, center = false);
 	}
 }
+

@@ -1,7 +1,3 @@
-group();
-group();
-group();
-group();
 group() {
 	cube(size = [8, 8, 8], center = true);
 }
@@ -15,4 +11,4 @@ group() {
 		cylinder($fn = 0, $fa = 12, $fs = 2, h = 8, r1 = 5, r2 = 1, center = true);
 	}
 }
-group();
+
