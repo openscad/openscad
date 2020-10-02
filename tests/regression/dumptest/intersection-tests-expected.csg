@@ -85,7 +85,6 @@ multmatrix([[1, 0, 0, 12], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 }
 multmatrix([[1, 0, 0, 24], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	intersection() {
-		group();
 		cube(size = [5, 5, 5], center = true);
 		cylinder($fn = 0, $fa = 12, $fs = 2, h = 20, r1 = 2, r2 = 2, center = true);
 	}

@@ -140,9 +140,13 @@ namespace ClipperUtils {
 	{
 		std::vector<ClipperLib::Paths> pathsvector;
 		for (const auto &polygon : polygons) {
-			auto polypaths = fromPolygon2d(*polygon);
-			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
-			pathsvector.push_back(polypaths);
+			if (polygon) {
+				auto polypaths = fromPolygon2d(*polygon);
+				if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
+				pathsvector.push_back(polypaths);
+			} else {
+				pathsvector.push_back(ClipperLib::Paths());
+			}
 		}
 		auto res = ClipperUtils::apply(pathsvector, clipType);
 		assert(res);
@@ -226,6 +230,7 @@ namespace ClipperUtils {
 		auto lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
 
 		for (size_t i=1; i<polygons.size(); ++i) {
+      if (!polygons[i]) continue;
 			ClipperLib::Paths minkowski_terms;
 			auto rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 

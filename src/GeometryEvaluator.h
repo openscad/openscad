@@ -40,6 +40,8 @@ public:
 private:
 	class ResultObject {
 	public:
+		// Default constructor with nullptr can be used to represent empty geometry,
+		// for example union() with no children, etc.
 		ResultObject() : is_const(true) {}
 		ResultObject(const Geometry *g) : is_const(true), const_pointer(g) {}
 		ResultObject(shared_ptr<const Geometry> &g) : is_const(true), const_pointer(g) {}
