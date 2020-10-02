@@ -34,11 +34,19 @@ enum class message_group {
 
 std::string getGroupName(const enum message_group &groupName);
 
-struct Message{
-std::string msg;
-Location loc;
-std::string docPath;
-enum message_group group;
+struct Message {
+	std::string msg;
+	Location loc;
+	std::string docPath;
+	enum message_group group;
+
+	Message()
+	: msg(""), loc(Location::NONE), docPath(""), group(message_group::None)
+	{ }
+
+	Message(const std::string& msg, const Location& loc, const std::string& docPath, const message_group& group)
+	: msg(msg), loc(loc), docPath(docPath), group(group)
+	{ }
 };
 
 typedef void (OutputHandlerFunc)(const Message &msg,void *userdata);

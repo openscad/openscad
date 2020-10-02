@@ -567,6 +567,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #include <QtConcurrentRun>
 #include "settings.h"
 
+Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
@@ -652,6 +653,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 
 	// Other global settings
+	qRegisterMetaType<Message>();
 	qRegisterMetaType<shared_ptr<const Geometry>>();
 
 	FontCache::registerProgressHandler(dialogInitHandler);
