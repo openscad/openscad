@@ -103,8 +103,7 @@ public:
 	}
 	static void output(const Message& msgObj, void *userdata) {
 		auto stream = static_cast<Echostream*>(userdata);
-		const std::string loc = msgObj.loc.isNone() ? "" : " " + msgObj.loc.toRelativeString(msgObj.docPath);
-		*stream << getGroupName(msgObj.group) << ": " << msgObj.msg << loc << "\n";
+		*stream << msgObj.str() << "\n";
 	}
 
 	~Echostream() {
