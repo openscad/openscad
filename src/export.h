@@ -39,7 +39,7 @@ struct ExportInfo {
 };
 
 bool canPreview(const FileFormat format);
-void exportFileByName(const shared_ptr<const class Geometry> &root_geom, ExportInfo exportInfo);
+void exportFileByName(const shared_ptr<const class Geometry> &root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary=true);
@@ -48,10 +48,10 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_pdf(const shared_ptr<const Geometry> &geom, std::ostream &output, const ExportInfo& exportInfo);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
 
-void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, bool &onerror);
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 

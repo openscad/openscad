@@ -42,9 +42,9 @@ bool canPreview(const FileFormat format) {
 					format == FileFormat::PNG);
 }
 
-void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
+void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, const ExportInfo& exportInfo)
 {
-	switch (format) {
+	switch (exportInfo.format) {
 	case FileFormat::ASCIISTL:
 		export_stl(root_geom, output, false);
 		break;
@@ -66,6 +66,9 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::SVG:
 		export_svg(root_geom, output);
 		break;
+	case FileFormat::PDF:
+		export_pdf(root_geom, output, exportInfo);
+		break;
 	case FileFormat::NEFDBG:
 		export_nefdbg(root_geom, output);
 		break;
@@ -77,16 +80,14 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	}
 }
 
-void exportFileByName(const shared_ptr<const Geometry> &root_geom, ExportInfo exportInfo)
+void exportFileByName(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
 {
-    if (exportInfo.format == FileFormat::PDF){
-        bool onerror = false;
-        export_pdf(root_geom, exportInfo, onerror);
-        if (onerror) {
-            LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
-        }
-        return;
-    }
+#ifndef WIN32
+	if (exportInfo.name2open == "-") {
+		exportFile(root_geom, std::cout, exportInfo);
+		return;
+	}
+#endif
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
 	if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL) {
 		mode |= std::ios::binary;
@@ -98,7 +99,7 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, ExportInfo ex
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
 		try {
-            exportFile(root_geom, fstream, exportInfo.format);
+            exportFile(root_geom, fstream, exportInfo);
 		} catch (std::ios::failure&) {
 			onerror = true;
 		}

@@ -161,11 +161,17 @@ void draw_geom(const shared_ptr<const Geometry> &geom, cairo_t *cr, bool &inpape
     }
 }
 
-void export_pdf(const shared_ptr<const Geometry> &geom, ExportInfo exportInfo, bool &onerror){
+static cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
+{
+	std::ostream *stream = static_cast<std::ostream *>(closure);
+	stream->write(reinterpret_cast<const char *>(data), length);
+	return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
+}
 
-    cairo_surface_t *surface = cairo_pdf_surface_create(exportInfo.name2open.c_str(), WPOINTS, HPOINTS);
+void export_pdf(const shared_ptr<const Geometry> &geom, std::ostream &output, const ExportInfo& exportInfo)
+{
+    cairo_surface_t *surface = cairo_pdf_surface_create_for_stream(export_pdf_write, &output, WPOINTS, HPOINTS);
     if(cairo_surface_status(surface)==cairo_status_t::CAIRO_STATUS_NULL_POINTER){
-        onerror=true;
         cairo_surface_destroy(surface);
         return;
     }
