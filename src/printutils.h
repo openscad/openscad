@@ -47,6 +47,12 @@ struct Message {
 	Message(const std::string& msg, const Location& loc, const std::string& docPath, const message_group& group)
 	: msg(msg), loc(loc), docPath(docPath), group(group)
 	{ }
+
+	std::string str() const {
+		const auto g = group == message_group::None ? "" : getGroupName(group) + ": ";
+		const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
+		return g + msg + l;
+	}
 };
 
 typedef void (OutputHandlerFunc)(const Message &msg,void *userdata);
