@@ -105,11 +105,10 @@ public:
 	{
 		set_output_handler(&Echostream::output, nullptr, this);
 	}
-	static void output(const Message &msgObj, void *userdata)
+	static void output(const Message& msgObj, void *userdata)
 	{
 		auto self = static_cast<Echostream*>(userdata);
-		const std::string loc = msgObj.loc.isNone() ? "" : " " + msgObj.loc.toRelativeString(msgObj.docPath);
-		self->stream << getGroupName(msgObj.group) << ": " << msgObj.msg << loc << "\n";
+		self->stream << msgObj.str() << "\n";
 	}
 	~Echostream() {
 		if (fstream.is_open()) fstream.close();

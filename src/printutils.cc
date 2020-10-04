@@ -72,14 +72,15 @@ void print_messages_pop()
 
 void PRINT(const Message& msgObj)
 {
-	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
+	if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
+
 	if (print_messages_stack.size() > 0) {
 		if (!print_messages_stack.back().empty()) {
 			print_messages_stack.back() += "\n";
 		}
-		if(msgObj.group!=message_group::None) print_messages_stack.back() += getGroupName(msgObj.group)+": "+msgObj.msg;
-		else print_messages_stack.back() += msgObj.msg;
+		print_messages_stack.back() += msgObj.str();
 	}
+
 	PRINT_NOCACHE(msgObj);
 
 	//to error log
@@ -90,25 +91,28 @@ void PRINT(const Message& msgObj)
 
 void PRINT_NOCACHE(const Message& msgObj)
 {
-	if (msgObj.msg.empty() && msgObj.group!=message_group::Echo) return;
-	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Error || msgObj.group==message_group::Trace) {
+	if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
+
+	const auto msg = msgObj.str();
+
+	if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error || msgObj.group == message_group::Trace) {
 		size_t i;
-		for (i=0; i<lastmessages.size(); ++i) {
-			if (lastmessages[i] != msgObj.msg+msgObj.loc.toRelativeString(msgObj.docPath)) break;
+		for (i = 0; i < lastmessages.size(); ++i) {
+			if (lastmessages[i] != msg) break;
 		}
 		if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
-		else lastmessages.push_back(msgObj.msg+msgObj.loc.toRelativeString(msgObj.docPath));
+		lastmessages.push_back(msg);
 	}
 	if(!deferred)
-		if (!OpenSCAD::quiet || msgObj.group==message_group::Error) {
+		if (!OpenSCAD::quiet || msgObj.group == message_group::Error) {
 			if (!outputhandler) {
-				fprintf(stderr, "%s\n", msgObj.msg.c_str());
+				std::cerr << msg << "\n";
 			} else {
 				outputhandler(msgObj,outputhandler_data);
 			}
 		}
 	if(!std::current_exception()) {
-		if((OpenSCAD::hardwarnings && msgObj.group==message_group::Warning) || (no_throw && msgObj.group==message_group::Error)){
+		if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) || (no_throw && msgObj.group == message_group::Error)) {
 			if(no_throw)
 				deferred = true;
 			else
