@@ -70,6 +70,11 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #ifdef __APPLE__
 #include "AppleEvents.h"
   #ifdef OPENSCAD_UPDATER
@@ -152,18 +157,15 @@ static int info()
 template <typename F>
 static bool with_output(const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
 {
-#ifdef WIN32
-    // Windows does not like binary output on stdout
-	if (filename == "-" && (mode & std::ios::binary) == 0) {
-		f(std::cout);
-		return true;
-	}
-#else
 	if (filename == "-") {
+#ifdef WIN32
+		if ((mode & std::ios::binary) == 0) {
+			_setmode(_fileno(stdout), _O_BINARY);
+		}
+#endif
 		f(std::cout);
 		return true;
 	}
-#endif
 	std::ofstream fstream(filename, mode);
 	if (!fstream.is_open()) {
 		LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", filename.c_str());
