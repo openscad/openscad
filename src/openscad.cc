@@ -159,7 +159,7 @@ static bool with_output(const std::string &filename, F f, std::ios::openmode mod
 {
 	if (filename == "-") {
 #ifdef WIN32
-		if ((mode & std::ios::binary) == 0) {
+		if ((mode & std::ios::binary) != 0) {
 			_setmode(_fileno(stdout), _O_BINARY);
 		}
 #endif
