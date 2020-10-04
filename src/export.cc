@@ -33,6 +33,7 @@
 
 #ifdef WIN32
 #include <io.h>
+#include <fcntl.h>
 #endif
 
 #define QUOTE(x__) # x__
