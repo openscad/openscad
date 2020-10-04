@@ -36,6 +36,7 @@ struct ExportInfo {
 	std::string name2open;
 	std::string sourceFilePath;
 	std::string sourceFileName;
+	bool useStdOut;
 };
 
 bool canPreview(const FileFormat format);

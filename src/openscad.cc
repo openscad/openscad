@@ -282,12 +282,14 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		LOG(message_group::None,Location::NONE,"","Current top level object is empty.");
 		return false;
 	}
-    ExportInfo exportInfo;
-    exportInfo.format = format;
-    exportInfo.name2open = filename;
-    exportInfo.name2display = filename;
 
-    exportFileByName(root_geom, exportInfo);
+	ExportInfo exportInfo;
+	exportInfo.format = format;
+	exportInfo.name2open = filename;
+	exportInfo.name2display = filename;
+	exportInfo.useStdOut = exportInfo.name2open == "-";
+
+	exportFileByName(root_geom, exportInfo);
 	return true;
 }
 

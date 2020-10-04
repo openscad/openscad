@@ -31,6 +31,10 @@
 
 #include <fstream>
 
+#ifdef WIN32
+#include <io.h>
+#endif
+
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
@@ -80,26 +84,28 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	}
 }
 
-void exportFileByName(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
+void exportFileByNameStdout(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
 {
-#ifndef WIN32
-	if (exportInfo.name2open == "-") {
-		exportFile(root_geom, std::cout, exportInfo);
-		return;
-	}
+#ifdef WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
 #endif
+	exportFile(root_geom, std::cout, exportInfo);
+}
+
+void exportFileByNameStream(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
+{
 	std::ios::openmode mode = std::ios::out | std::ios::trunc;
-	if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL) {
+	if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
 		mode |= std::ios::binary;
 	}
-    std::ofstream fstream(exportInfo.name2open.c_str(), mode);
+	std::ofstream fstream(exportInfo.name2open, mode);
 	if (!fstream.is_open()) {
 		LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
 	} else {
 		bool onerror = false;
 		fstream.exceptions(std::ios::badbit|std::ios::failbit);
 		try {
-            exportFile(root_geom, fstream, exportInfo);
+			exportFile(root_geom, fstream, exportInfo);
 		} catch (std::ios::failure&) {
 			onerror = true;
 		}
@@ -111,6 +117,15 @@ void exportFileByName(const shared_ptr<const Geometry> &root_geom, const ExportI
 		if (onerror) {
 			LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
 		}
+	}
+}
+
+void exportFileByName(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
+{
+	if (exportInfo.useStdOut) {
+		exportFileByNameStdout(root_geom, exportInfo);
+	} else {
+		exportFileByNameStream(root_geom, exportInfo);
 	}
 }
 
