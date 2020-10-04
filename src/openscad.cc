@@ -168,7 +168,7 @@ static bool with_output(const std::string &filename, F f, std::ios::openmode mod
 	}
 	std::ofstream fstream(filename, mode);
 	if (!fstream.is_open()) {
-		LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", filename.c_str());
+		LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", filename);
 		return false;
 	}
 	else {
@@ -397,7 +397,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	} else {
 		std::ifstream ifs(filename.c_str());
 		if (!ifs.is_open()) {
-			LOG(message_group::None, Location::NONE, "", "Can't open input file '%s'!\n", filename.c_str());
+			LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", filename);
 			return 1;
 		}
 		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
@@ -411,7 +411,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		root_module = nullptr;
 	}
 	if (!root_module) {
-		LOG(message_group::None, Location::NONE, "", "Can't parse file '%s'!\n", parser_filename.c_str());
+		LOG(message_group::None, Location::NONE, "", "Can't parse file '%1$s'!\n", parser_filename);
 		return 1;
 	}
 
@@ -459,7 +459,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	if (curFormat == FileFormat::CSG) {
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-		LOG(message_group::None,Location::NONE,"","Can't open file \"%s\" for export",new_output_file);
+			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
@@ -472,7 +472,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	else if (curFormat == FileFormat::AST) {
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			LOG(message_group::None,Location::NONE,"","Can't open file \"%s\" for export",new_output_file);
+			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
@@ -490,7 +490,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			LOG(message_group::None, Location::NONE, "", "Can't open file \"%s\" for export", new_output_file);
+			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
 		}
 		else {
 			with_output(filename_str, [root_raw_term](std::ostream & stream) {
