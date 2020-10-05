@@ -70,6 +70,11 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #ifdef __APPLE__
 #include "AppleEvents.h"
   #ifdef OPENSCAD_UPDATER
@@ -94,21 +99,29 @@ std::string commandline_commands;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
-
-class Echostream : public std::ofstream
+class Echostream
 {
 public:
-	Echostream(const char * filename) : std::ofstream(filename) {
-		set_output_handler( &Echostream::output, nullptr, this );
+	Echostream(std::ostream &stream) : stream(stream)
+	{
+		set_output_handler(&Echostream::output, nullptr, this);
 	}
-	static void output(const Message& msgObj, void *userdata) {
-		auto stream = static_cast<Echostream*>(userdata);
-		*stream << msgObj.str() << "\n";
+	Echostream(const char *filename) : fstream(filename), stream(fstream)
+	{
+		set_output_handler(&Echostream::output, nullptr, this);
+	}
+	static void output(const Message& msgObj, void *userdata)
+	{
+		auto self = static_cast<Echostream*>(userdata);
+		self->stream << msgObj.str() << "\n";
+	}
+	~Echostream() {
+		if (fstream.is_open()) fstream.close();
 	}
 
-	~Echostream() {
-		this->close();
-	}
+private:
+	std::ofstream fstream;
+	std::ostream &stream;
 };
 
 static void help(const char *arg0, const po::options_description &desc, bool failure = false)
@@ -139,6 +152,29 @@ static int info()
 	}
 
 	return 0;
+}
+
+template <typename F>
+static bool with_output(const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
+{
+	if (filename == "-") {
+#ifdef WIN32
+		if ((mode & std::ios::binary) != 0) {
+			_setmode(_fileno(stdout), _O_BINARY);
+		}
+#endif
+		f(std::cout);
+		return true;
+	}
+	std::ofstream fstream(filename, mode);
+	if (!fstream.is_open()) {
+		LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", filename);
+		return false;
+	}
+	else {
+		f(fstream);
+		return true;
+	}
 }
 
 /**
@@ -240,19 +276,21 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 													 FileFormat format, const char *filename)
 {
 	if (root_geom->getDimension() != nd) {
-		LOG(message_group::None,Location::NONE,"","Current top level object is not a %dD object.",nd);
+		LOG(message_group::None,Location::NONE,"","Current top level object is not a %1$dD object.",nd);
 		return false;
 	}
 	if (root_geom->isEmpty()) {
 		LOG(message_group::None,Location::NONE,"","Current top level object is empty.");
 		return false;
 	}
-    ExportInfo exportInfo;
-    exportInfo.format = format;
-    exportInfo.name2open = filename;
-    exportInfo.name2display = filename;
 
-    exportFileByName(root_geom, exportInfo);
+	ExportInfo exportInfo;
+	exportInfo.format = format;
+	exportInfo.name2open = filename;
+	exportInfo.name2display = filename;
+	exportInfo.useStdOut = exportInfo.name2open == "-";
+
+	exportFileByName(root_geom, exportInfo);
 	return true;
 }
 
@@ -336,7 +374,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #endif
 	shared_ptr<Echostream> echostream;
 	if (curFormat == FileFormat::ECHO) {
-		echostream.reset(new Echostream(new_output_file));
+		if (filename_str == "-") {
+			echostream.reset(new Echostream(std::cout));
+		}
+		else {
+			echostream.reset(new Echostream(new_output_file));
+		}
 	}
 
 	FileModule *root_module;
@@ -348,19 +391,27 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 	handle_dep(filename);
 
-	std::ifstream ifs(filename.c_str());
-	if (!ifs.is_open()) {
-		LOG(message_group::None,Location::NONE,"","Can't open input file '%s'!\n",filename.c_str());
-		return 1;
+	std::string text;
+	if (filename == "-") {
+		text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
+	} else {
+		std::ifstream ifs(filename.c_str());
+		if (!ifs.is_open()) {
+			LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", filename);
+			return 1;
+		}
+		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	}
-	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
 	text += "\n\x03\n" + commandline_commands;
-	if (!parse(root_module, text, filename, filename, false)) {
-		delete root_module;  // parse failed
+
+	std::string parser_filename = filename == "-" ? "<stdin>" : filename;
+	if (!parse(root_module, text, parser_filename, parser_filename, false)) {
+		delete root_module; // parse failed
 		root_module = nullptr;
 	}
 	if (!root_module) {
-		LOG(message_group::None,Location::NONE,"","Can't parse file '%s'!\n",filename.c_str());
+		LOG(message_group::None, Location::NONE, "", "Can't parse file '%1$s'!\n", parser_filename);
 		return 1;
 	}
 
@@ -408,22 +459,26 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	if (curFormat == FileFormat::CSG) {
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-		LOG(message_group::None,Location::NONE,"","Can't open file \"%s\" for export",new_output_file);
+			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node, "\t") << "\n";
-			fstream.close();
+			with_output(filename_str, [&tree, root_node](std::ostream &stream) {
+				stream << tree.getString(*root_node, "\t") << "\n";
+			});
 			fs::current_path(original_path);
 		}
 	}
 	else if (curFormat == FileFormat::AST) {
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			LOG(message_group::None,Location::NONE,"","Can't open file \"%s\" for export",new_output_file);
+			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
 		}
 		else {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
+			with_output(filename_str, [root_module](std::ostream &stream) {
+				stream << root_module->dump("");
+			});
 			fstream << root_module->dump("");
 			fstream.close();
 			fs::current_path(original_path);
@@ -435,15 +490,16 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 
 		std::ofstream fstream(new_output_file);
 		if (!fstream.is_open()) {
-			LOG(message_group::None,Location::NONE,"","Can't open file \"%s\" for export",new_output_file);
+			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
 		}
 		else {
-			if (!root_raw_term || root_raw_term->isEmptySet())
-				fstream << "No top-level CSG object\n";
-			else {
-				fstream << root_raw_term->dump() << "\n";
-			}
-			fstream.close();
+			with_output(filename_str, [root_raw_term](std::ostream & stream) {
+				if (!root_raw_term || root_raw_term->isEmptySet()) {
+					stream << "No top-level CSG object\n";
+				} else {
+					stream << root_raw_term->dump() << "\n";
+				}
+			});
 		}
 	}
 	else if (curFormat == FileFormat::ECHO) {
@@ -506,21 +562,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 		}
 
 		if (curFormat == FileFormat::PNG) {
-			auto success = true;
-			std::ofstream fstream(new_output_file,std::ios::out|std::ios::binary);
-			if (!fstream.is_open()) {
-				LOG(message_group::None,Location::NONE,"","Can't open file \"%s\" for export",new_output_file);
-				success = false;
-			}
-			else {
+			bool success = true;
+			bool wrote = with_output(new_output_file, [&success, root_geom, &viewOptions, &camera, &glview](std::ostream &stream) {
 				if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
-					success = export_png(root_geom, viewOptions, camera, fstream);
+					success = export_png(root_geom, viewOptions, camera, stream);
 				} else {
-					success = export_png(*glview, fstream);
+					success = export_png(*glview, stream);
 				}
-				fstream.close();
-			}
-			return success ? 0 : 1;
+			}, std::ios::out | std::ios::binary);
+			return (success && wrote) ? 0 : 1;
 		}
 
 #else
@@ -870,7 +920,7 @@ int main(int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
-		("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term, nef3, nefdbg. (May be used multiple time for different exports)\n")
+		("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")

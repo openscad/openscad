@@ -1915,17 +1915,21 @@ void MainWindow::action3DPrint()
 }
 
 namespace {
-ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, const QString& sourceFilePath){
-	QFileInfo info(sourceFilePath);
 
-    ExportInfo exportInfo;
-    exportInfo.format = format;
-    exportInfo.name2open = exportFilename.toLocal8Bit().constData();
-    exportInfo.name2display = exportFilename.toUtf8().toStdString();
-    exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
-    exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
-    return exportInfo;
+ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, const QString& sourceFilePath)
+{
+	const QFileInfo info(sourceFilePath);
+
+	ExportInfo exportInfo;
+	exportInfo.format = format;
+	exportInfo.name2open = exportFilename.toLocal8Bit().constData();
+	exportInfo.name2display = exportFilename.toUtf8().toStdString();
+	exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
+	exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
+	exportInfo.useStdOut = false;
+	return exportInfo;
 }
+
 }
 
 void MainWindow::sendToOctoPrint()

@@ -690,8 +690,8 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  Location loc = Location(lexerget_lineno(),-1,-1,-1,sourcefile());
-  LOG(message_group::Error,loc,"","Parser error: %1$s\n", s);
+	Location loc = Location(lexerget_lineno(), -1, -1, -1, sourcefile());
+	LOG(message_group::Error, loc, "", "Parser error: %1$s", s);
 }
 
 #ifdef DEBUG
