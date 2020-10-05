@@ -54,6 +54,13 @@ std::istream &operator>>(std::istream &is, Nef_polyhedron_3<Kernel, Items, Mark>
 
 } // namespace CGAL
 
+void custom_ph_print(std::ostream &ps, CGAL_Nef_polyhedron3& ph){
+	auto &obj = ph;
+	typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
+	custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure *>(obj.sncp()), false, false);
+	O.print();
+}
+
 namespace boost {
 namespace serialization {
 
@@ -312,14 +319,8 @@ void spawnOpWorker(std::vector<std::string> shmems)
 
 	// Serialize the result
 	unsigned serialized_size = (*first_obj).memsize();
-	std::stringstream ps =
-			prealloc_ss(serialized_size * 2); // Fixme: approx x2 because of the ASCII mode
-	CGAL::set_binary_mode(ps);            // Not working :(((
-	// ps << *first_obj->p3;
-	auto &obj = *first_obj->p3;
-	typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
-	custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure*>(obj.sncp()), false, false);
-	O.print();
+	std::stringstream ps = prealloc_ss(serialized_size + 500);
+	custom_ph_print(ps, *first_obj->p3);
 
 	// Upload to shmem
 	shm1.truncate(ps.tellp());
@@ -359,7 +360,7 @@ void update_with_collisions(std::vector<unsigned> &collision_list, unsigned obje
 	for (unsigned i = 0; i < polysets.size(); ++i) {
 		if (i == object_pos) continue;
 		BoundingBox bb2 = polysets.at(i)->getBoundingBox();
-		if (bb1.intersects(bb2)) {
+		if (bb1.exteriorDistance(bb2) < 0.0001d) {
 			bool collision_hit = false;
 			for (auto &it : collision_list) {
 				if (it == i) {
@@ -393,7 +394,7 @@ inline void buildPolySetMergeTrees(std::vector<std::vector<unsigned>> &merge_tre
 	Imagine the following structure: 196 43 2 758
 	Where every digit represents a polyset [1 - 9], spaces represent objects that don't
 	intersect and the absent of space means that the objects intersect. The merge trees can be
-	built using the following itterative algorithm:
+	built using the following iterative algorithm:
 
 	merge_trees = <>
 	not_allowed = <>
@@ -683,22 +684,17 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 	for (auto solid_it = solid; solid_it != solids.end(); ++solid_it) {
 
 		std::stringstream ps;
-		CGAL::set_binary_mode(ps); // Not working :(((
 		// Either a PolySet or a Polyhedron serialization
 		if ((!solid_it->ps && !solid_it->ph) || (solid_it->ps && solid_it->ph))
 			throw MultithreadedError("ERROR: Invalid Geometry type!");
 		if (solid_it->ps) {
-			ps = prealloc_ss(solid_it->ps->memsize());
+			ps = prealloc_ss(solid_it->ps->memsize() + 500);
 			boost::archive::binary_oarchive oa(ps);
 			oa &(solid_it->ps->polygons);
 		}
 		if (solid_it->ph) {
-			ps = prealloc_ss(solid_it->ph->memsize() * 2); // FIXME: broken set_binary_mode
-			// ps << *solid_it->ph->p3;
-			auto &obj = *solid_it->ph->p3;
-			typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
-			custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure *>(obj.sncp()), false, false);
-			O.print();
+			ps = prealloc_ss(solid_it->ph->memsize() + 500);
+			custom_ph_print(ps, *solid_it->ph->p3);
 		}
 
 		// Upload them to shmem
@@ -758,26 +754,27 @@ inline void buildSolidsList(PolySetHolder sets[], unsigned sets_size,
 }
 
 CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &children,
-																								OpenSCADOperator op, bool unordered)
+																								OpenSCADOperator op)
 {
 	conditional_priority_queue q;
-	// if (unordered) q.changeToUnordered();
 
 	std::list<AVAIL_GEOMETRY> solids;
 	std::vector<int> node_marks;
 
 	// 0. Separate operations
 	if (op == OpenSCADOperator::DIFFERENCE) {
-		q.changeToUnordered();
-		// if (children.size() > 2) {
-		// 	Geometry::Geometries top_level;
-		// 	auto it = children.begin();
-		// 	top_level.push_front(*it++);
-		// 	top_level.push_front(
-		// 			std::make_pair(children.back().first,
-		// 										 shared_ptr<const Geometry>(applyMultithreadedUnion(it, children.end()))));
-		// 	return applyMultithreadedOperator(top_level, op, true);
-		// }
+		if (children.size() > 2) {
+			Geometry::Geometries top_level;
+			auto it = children.begin();
+			top_level.push_back(*it++);
+			top_level.push_back(
+					std::make_pair(children.back().first,
+												 shared_ptr<const Geometry>(applyMultithreadedUnion(it, children.end()))));
+			return applyMultithreadedOperator(top_level, op);
+		}
+		if(children.size() <= 2){
+			q.changeToUnordered();
+		}
 	}
 
 	// 1. Separate the different geometry descriptions
@@ -818,8 +815,6 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterato
 	std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
 	try {
-		// int min_progress_mark = std::numeric_limits<int>::max();
-		// int max_progress_mark = std::numeric_limits<int>::min();
 		// sort children by fewest faces
 		std::vector<const PolySet *> polysets;
 		std::vector<shared_ptr<const CGAL_Nef_polyhedron>> polyhedrons;

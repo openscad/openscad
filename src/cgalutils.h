@@ -29,7 +29,7 @@ namespace CGALUtils {
 	CGAL_Nef_polyhedron &doOpOnPolyhedrons(OpenSCADOperator op, CGAL_Nef_polyhedron &root,
 																			 CGAL_Nef_polyhedron &sec);
 	CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &children,
-																								OpenSCADOperator op, bool unordered=false);
+																								OpenSCADOperator op);
 	CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterator chbegin,
 																						 Geometry::Geometries::const_iterator chend);
 	//FIXME: Old, can be removed:
