@@ -29,9 +29,9 @@ namespace CGALUtils {
 	CGAL_Nef_polyhedron &doOpOnPolyhedrons(OpenSCADOperator op, CGAL_Nef_polyhedron &root,
 																			 CGAL_Nef_polyhedron &sec);
 	CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &children,
-																								OpenSCADOperator op);
-	CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::iterator chbegin,
-																						 Geometry::Geometries::iterator chend);
+																								OpenSCADOperator op, bool unordered=false);
+	CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterator chbegin,
+																						 Geometry::Geometries::const_iterator chend);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);

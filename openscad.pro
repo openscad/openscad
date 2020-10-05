@@ -406,7 +406,8 @@ HEADERS += src/version_check.h \
            src/input/InputDriverManager.h \
            src/input/AxisConfigWidget.h \
            src/input/ButtonConfigWidget.h \
-           src/input/WheelIgnorer.h
+           src/input/WheelIgnorer.h \
+           src/custom_SNC_io_parser.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \

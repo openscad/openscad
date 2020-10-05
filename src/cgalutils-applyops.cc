@@ -90,8 +90,9 @@ namespace CGALUtils {
 			// DIFFERENCE is a strictly ordered operation and cannot be multithreaded ?! :(
 			// Multithreaded pipeline
 			#ifdef QT_CORE_LIB // Needed because of Qprocess
-					if (OpenSCADOperator::INTERSECTION == op && Feature::ExperimentalMultiProcessing.is_enabled())
-						return applyMultithreadedOperator(children, op);
+			if ((OpenSCADOperator::INTERSECTION == op || OpenSCADOperator::DIFFERENCE == op) &&
+					Feature::ExperimentalMultiProcessing.is_enabled())
+				return applyMultithreadedOperator(children, op);
 			#endif
 
 			// Default old behaviour

@@ -1,3 +1,4 @@
+#define CGAL_NEF_POLYHEDRON_IOSTREAM_3_H
 #ifdef ENABLE_CGAL
 
 #include <boost/interprocess/shared_memory_object.hpp>
@@ -14,13 +15,44 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/string.hpp>
 
+#include "custom_SNC_io_parser.h"
+
+#include <boost/archive/text_oarchive.hpp>
+
 #include <Eigen/Core>
 
 #ifdef QT_CORE_LIB // Needed because of Qprocess
 #include <QProcess>
 #endif
 
-#include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+// #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+
+namespace CGAL { // TODO: define sort
+
+// template <typename Kernel, typename Items, typename Mark>
+// std::ostream &operator<<(std::ostream &os, Nef_polyhedron_3<Kernel, Items, Mark> &NP)
+// {
+// 	typedef typename Nef_polyhedron_3<Kernel, Items, Mark>::SNC_structure SNC_structure;
+// #ifdef CGAL_NEF3_SORT_OUTPUT
+// 	custom::SNC_io_parser<SNC_structure> O(os, NP.snc(), true, true);
+// #else
+// 	custom::SNC_io_parser<SNC_structure> O(os, NP.snc(), false, true);
+// #endif
+// 	O.print();
+// 	return os;
+// }
+
+template <typename Kernel, typename Items, typename Mark>
+std::istream &operator>>(std::istream &is, Nef_polyhedron_3<Kernel, Items, Mark> &NP)
+{
+	typedef typename Nef_polyhedron_3<Kernel, Items, Mark>::SNC_structure SNC_structure;
+	custom::SNC_io_parser<SNC_structure> I(is, NP.snc());
+	I.read();
+	NP.pl()->initialize(&NP.snc());
+	return is;
+}
+
+} // namespace CGAL
 
 namespace boost {
 namespace serialization {
@@ -38,13 +70,23 @@ void serialize(Archive &ar, Eigen::Matrix<double, 3, 1> &mat, const unsigned int
 
 typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 struct QueueItemGreater {
+	bool unordered = false;
 	// stable sort for priority_queue by facets, then progress mark
 	bool operator()(const QueueConstItem &lhs, const QueueConstItem &rhs) const
 	{
+		if(unordered) return false;
 		size_t l = lhs.first->p3->number_of_facets();
 		size_t r = rhs.first->p3->number_of_facets();
 		return (l > r) || (l == r && lhs.second > rhs.second);
 	}
+};
+
+class conditional_priority_queue
+	: public std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater>
+{
+	public:
+	void changeToUnordered(){ comp.unordered = true; }
+	void changeToOrdered(){ comp.unordered = false; }
 };
 
 /* Calling abort() or exit() does not call any C++ destructors which is
@@ -273,7 +315,11 @@ void spawnOpWorker(std::vector<std::string> shmems)
 	std::stringstream ps =
 			prealloc_ss(serialized_size * 2); // Fixme: approx x2 because of the ASCII mode
 	CGAL::set_binary_mode(ps);            // Not working :(((
-	ps << *first_obj->p3;
+	// ps << *first_obj->p3;
+	auto &obj = *first_obj->p3;
+	typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
+	custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure*>(obj.sncp()), false, false);
+	O.print();
 
 	// Upload to shmem
 	shm1.truncate(ps.tellp());
@@ -648,7 +694,11 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		}
 		if (solid_it->ph) {
 			ps = prealloc_ss(solid_it->ph->memsize() * 2); // FIXME: broken set_binary_mode
-			ps << *solid_it->ph->p3;
+			// ps << *solid_it->ph->p3;
+			auto &obj = *solid_it->ph->p3;
+			typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
+			custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure *>(obj.sncp()), false, false);
+			O.print();
 		}
 
 		// Upload them to shmem
@@ -708,12 +758,27 @@ inline void buildSolidsList(PolySetHolder sets[], unsigned sets_size,
 }
 
 CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &children,
-																								OpenSCADOperator op)
+																								OpenSCADOperator op, bool unordered)
 {
-	std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
+	conditional_priority_queue q;
+	// if (unordered) q.changeToUnordered();
 
 	std::list<AVAIL_GEOMETRY> solids;
 	std::vector<int> node_marks;
+
+	// 0. Separate operations
+	if (op == OpenSCADOperator::DIFFERENCE) {
+		q.changeToUnordered();
+		// if (children.size() > 2) {
+		// 	Geometry::Geometries top_level;
+		// 	auto it = children.begin();
+		// 	top_level.push_front(*it++);
+		// 	top_level.push_front(
+		// 			std::make_pair(children.back().first,
+		// 										 shared_ptr<const Geometry>(applyMultithreadedUnion(it, children.end()))));
+		// 	return applyMultithreadedOperator(top_level, op, true);
+		// }
+	}
 
 	// 1. Separate the different geometry descriptions
 	for (auto &it : children) {
@@ -721,14 +786,12 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 		separateDifferentGeometries(
 				it,
 				[&](const PolySet *polyset) {
-					if (op == OpenSCADOperator::INTERSECTION && polyset->isEmpty())
-						bad_flag = true; // Intersecting with nothing
+					if (polyset->isEmpty()) bad_flag = true; // Intersecting with nothing
 					solids.push_back({TYPE_MEM::LOCAL, polyset, nullptr});
 					// polysets.push_back(chps);
 				},
 				[&](std::shared_ptr<const CGAL_Nef_polyhedron> polyhedron) {
-					if (op == OpenSCADOperator::INTERSECTION && polyhedron->isEmpty())
-						bad_flag = true; // Intersecting with nothing
+					if (polyhedron->isEmpty()) bad_flag = true; // Intersecting with nothing
 					solids.push_back({TYPE_MEM::LOCAL, nullptr, polyhedron});
 				},
 				[&](int node_mark) {
@@ -749,8 +812,8 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 	return CombineSolids(q, op);
 }
 
-CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::iterator chbegin,
-																						 Geometry::Geometries::iterator chend)
+CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterator chbegin,
+																						 Geometry::Geometries::const_iterator chend)
 {
 	std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
@@ -804,6 +867,10 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::iterator chbe
 
 	} catch (const CGAL::Failure_exception &e) {
 		PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+	} catch (const MultithreadedError &e) {
+		PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+	} catch (...) {
+		PRINT("ERROR: CGAL error in CGALUtils::applyUnion");
 	}
 	return nullptr;
 }
