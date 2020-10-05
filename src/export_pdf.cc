@@ -237,7 +237,7 @@ const std::string get_cairo_version() {
 	return cairo_version;
 }
 
-void export_pdf(const shared_ptr<const Geometry> &, ExportInfo , bool &){
+void export_pdf(const shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
 
     LOG(message_group::Error, Location::NONE, "", "Export to PDF format was not enabled when building the application.");
 
