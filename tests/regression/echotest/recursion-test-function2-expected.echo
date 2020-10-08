@@ -1,2 +1,2 @@
 ERROR: Recursion detected calling function 'crash' in file recursion-test-function2.scad, line 2
-TRACE: called by 'crash', in file recursion-test-function2.scad, line 3.
+TRACE: called by 'crash' in file recursion-test-function2.scad, line 3

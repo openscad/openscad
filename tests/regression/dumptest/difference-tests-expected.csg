@@ -37,7 +37,6 @@ multmatrix([[1, 0, 0, 24], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 }
 multmatrix([[1, 0, 0, 24], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	difference() {
-		group();
 		cube(size = [10, 10, 10], center = true);
 		cylinder($fn = 0, $fa = 12, $fs = 2, h = 20, r1 = 4, r2 = 4, center = true);
 	}

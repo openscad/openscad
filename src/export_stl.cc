@@ -151,7 +151,7 @@ size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
 {
   size_t triangle_count = 0;
 	if (!root_N.p3->is_simple()) {
-		PRINT("EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair");
+		LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	PolySet ps(3);
@@ -159,7 +159,7 @@ size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
 		triangle_count += append_stl(ps, output, binary);
 	}
 	else {
-		PRINT("EXPORT-ERROR: Nef->PolySet failed");
+		LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
 	}
 
   return triangle_count;
@@ -215,7 +215,7 @@ void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
         output.put((triangle_count >> 16) & 0xff);
         output.put((triangle_count >> 24) & 0xff);
         if (triangle_count > 4294967295) {
-            PRINT("EXPORT-ERROR: Triangle count exceeded 4294967295, so the stl file is not valid");
+            LOG(message_group::Export_Error,Location::NONE,"","Triangle count exceeded 4294967295, so the stl file is not valid");
         }
     }
     else {

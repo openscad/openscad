@@ -1,4 +1,4 @@
 color([0, 1, 1, 1]) {
 	text(text = "6! = 720", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
 }
-group();
+

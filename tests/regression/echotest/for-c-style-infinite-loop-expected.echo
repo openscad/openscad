@@ -1,2 +1,2 @@
-ERROR: for loop counter exceeded limit, in file for-c-style-infinite-loop.scad, line 1
-TRACE: called by 'echo', in file for-c-style-infinite-loop.scad, line 1.
+ERROR: For loop counter exceeded limit in file for-c-style-infinite-loop.scad, line 1
+TRACE: called by 'echo' in file for-c-style-infinite-loop.scad, line 1

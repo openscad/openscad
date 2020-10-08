@@ -2,6 +2,6 @@ WARNING: Can't open library ''.
 WARNING: Can't open library 'non/existent/path/non-file'.
 WARNING: Can't open library 'test/'.
 WARNING: Can't open library '/'.
-WARNING: Ignoring unknown module 'test3', in file use-tests.scad, line 42.
-WARNING: Ignoring unknown module 'test4', in file use-tests.scad, line 43.
-WARNING: Ignoring unknown variable 'test2_variable', in file use-tests.scad, line 49.
+WARNING: Ignoring unknown module 'test3' in file use-tests.scad, line 42
+WARNING: Ignoring unknown module 'test4' in file use-tests.scad, line 43
+WARNING: Ignoring unknown variable 'test2_variable' in file use-tests.scad, line 49

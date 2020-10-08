@@ -1,28 +1,28 @@
 ECHO: [-3, 6, -3]
 ECHO: [17, -10, 8]
 ECHO: [15, 15, 15]
-WARNING: Invalid value (NaN) in parameter vector for cross(), in file cross-tests.scad, line 5
+WARNING: Invalid value (NaN) in parameter vector for cross() in file cross-tests.scad, line 5
 ECHO: undef
-WARNING: Invalid value (INF) in parameter vector for cross(), in file cross-tests.scad, line 6
+WARNING: Invalid value (INF) in parameter vector for cross() in file cross-tests.scad, line 6
 ECHO: undef
-WARNING: Invalid value (INF) in parameter vector for cross(), in file cross-tests.scad, line 7
+WARNING: Invalid value (INF) in parameter vector for cross() in file cross-tests.scad, line 7
 ECHO: undef
-WARNING: Invalid number of parameters for cross(), in file cross-tests.scad, line 9
+WARNING: Invalid number of parameters for cross() in file cross-tests.scad, line 9
 ECHO: undef
-WARNING: Invalid type of parameters for cross(), in file cross-tests.scad, line 10
+WARNING: Invalid type of parameters for cross() in file cross-tests.scad, line 10
 ECHO: undef
-WARNING: Invalid type of parameters for cross(), in file cross-tests.scad, line 11
+WARNING: Invalid type of parameters for cross() in file cross-tests.scad, line 11
 ECHO: undef
-WARNING: Invalid number of parameters for cross(), in file cross-tests.scad, line 12
+WARNING: Invalid number of parameters for cross() in file cross-tests.scad, line 12
 ECHO: undef
-WARNING: Invalid vector size of parameter for cross(), in file cross-tests.scad, line 13
+WARNING: Invalid vector size of parameter for cross() in file cross-tests.scad, line 13
 ECHO: undef
-WARNING: Invalid vector size of parameter for cross(), in file cross-tests.scad, line 14
+WARNING: Invalid vector size of parameter for cross() in file cross-tests.scad, line 14
 ECHO: undef
-WARNING: Invalid value in parameter vector for cross(), in file cross-tests.scad, line 15
+WARNING: Invalid value in parameter vector for cross() in file cross-tests.scad, line 15
 ECHO: undef
-WARNING: Invalid value in parameter vector for cross(), in file cross-tests.scad, line 16
+WARNING: Invalid value in parameter vector for cross() in file cross-tests.scad, line 16
 ECHO: undef
-WARNING: Invalid value in parameter vector for cross(), in file cross-tests.scad, line 17
+WARNING: Invalid value in parameter vector for cross() in file cross-tests.scad, line 17
 ECHO: undef
 ECHO: -3

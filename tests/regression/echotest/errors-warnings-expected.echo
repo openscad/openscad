@@ -1,50 +1,53 @@
-WARNING: Ignoring unknown function 'test', in file errors-warnings.scad, line 19.
-WARNING: dxf_cross(..., origin=[inf, nan]) could not be converted, in file errors-warnings.scad, line 79
+WARNING: Ignoring unknown function 'test' in file errors-warnings.scad, line 19
+WARNING: dxf_cross(..., origin=[inf, nan]) could not be converted in file errors-warnings.scad, line 79
 WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 79
-WARNING: dxf_dim(..., origin=[1, 2, 3]) could not be converted, in file errors-warnings.scad, line 84
+WARNING: dxf_dim(..., origin=[1, 2, 3]) could not be converted in file errors-warnings.scad, line 84
 WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 84
-WARNING: dxf_cross(..., origin=[inf, 0]) could not be converted, in file errors-warnings.scad, line 92
-WARNING: dxf_cross(..., notSupported=...) is not supported, in file errors-warnings.scad, line 92
+WARNING: dxf_cross(..., origin=[inf, 0]) could not be converted in file errors-warnings.scad, line 92
+WARNING: dxf_cross(..., notSupported=...) is not supported in file errors-warnings.scad, line 92
 WARNING: Can't find cross in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 92
-WARNING: dxf_dim(..., notSupported=...) is not supported, in file errors-warnings.scad, line 98
+WARNING: dxf_dim(..., notSupported=...) is not supported in file errors-warnings.scad, line 98
 WARNING: Can't find dimension 'TotalWidth' in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 98
-WARNING: Ignoring unknown variable 'a', in file errors-warnings.scad, line 1.
+WARNING: Ignoring unknown variable 'a' in file errors-warnings.scad, line 1
 ECHO: undef
-WARNING: linear_extrude(..., origin="string") could not be converted, in file errors-warnings.scad, line 15
-WARNING: Ignoring unknown module 'hello', in file errors-warnings.scad, line 17.
-WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too, in file errors-warnings.scad, line 21
-WARNING: Ignoring radius variable 'r1' as diameter 'd1' is defined too, in file errors-warnings.scad, line 22
-WARNING: Problem converting rotate(a=inf) parameter, in file errors-warnings.scad, line 24
-WARNING: Problem converting rotate(a=[inf, inf]) parameter, in file errors-warnings.scad, line 25
-WARNING: Problem converting rotate(a=nan) parameter, in file errors-warnings.scad, line 26
-WARNING: variable rad not specified as parameter, in file errors-warnings.scad, line 29
-WARNING: Too many unnamed arguments supplied, in file errors-warnings.scad, line 31
-WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 33
-WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 34
-WARNING: Cylinder parameters ambiguous, in file errors-warnings.scad, line 35
-WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range, in file errors-warnings.scad, line 42
-WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range, in file errors-warnings.scad, line 42
-WARNING: Unable to parse color "notaname", in file errors-warnings.scad, line 43. 
-WARNING: Please see https://en.wikipedia.org/wiki/Web_colors
-WARNING: Ignoring unknown module 'box', in file errors-warnings.scad, line 44.
-WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 46
-WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 47
-WARNING: $fs too small - clamping to 0.010000, in file errors-warnings.scad, line 54
-WARNING: $fa too small - clamping to 0.010000, in file errors-warnings.scad, line 55
-WARNING: argument center supplied more than once, in file errors-warnings.scad, line 58
-WARNING: argument r supplied more than once, in file errors-warnings.scad, line 59
-WARNING: rotate_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 61
-WARNING: linear_extrude(..., origin="test") could not be converted, in file errors-warnings.scad, line 65
-WARNING: linear_extrude(..., scale=inf) could not be converted, in file errors-warnings.scad, line 65
+WARNING: linear_extrude(..., origin="string") could not be converted in file errors-warnings.scad, line 15
+WARNING: Ignoring unknown module 'hello' in file errors-warnings.scad, line 17
+WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too. in file errors-warnings.scad, line 21
+WARNING: Ignoring radius variable 'r1' as diameter 'd1' is defined too. in file errors-warnings.scad, line 22
+WARNING: Problem converting rotate(a=inf) parameter in file errors-warnings.scad, line 24
+WARNING: Problem converting rotate(a=[inf, inf]) parameter in file errors-warnings.scad, line 25
+WARNING: Problem converting rotate(a=nan) parameter in file errors-warnings.scad, line 26
+WARNING: variable rad not specified as parameter in file errors-warnings.scad, line 29
+WARNING: Too many unnamed arguments supplied in file errors-warnings.scad, line 31
+WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 33
+WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 34
+WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 35
+WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range in file errors-warnings.scad, line 42
+WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range in file errors-warnings.scad, line 42
+WARNING: Unable to parse color "notaname" in file errors-warnings.scad, line 43
+Please see https://en.wikipedia.org/wiki/Web_colors
+WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
+WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 46
+WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 47
+WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 54
+WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 55
+WARNING: argument center supplied more than once in file errors-warnings.scad, line 58
+WARNING: argument r supplied more than once in file errors-warnings.scad, line 59
+WARNING: rotate_extrude(..., origin="test") could not be converted in file errors-warnings.scad, line 61
+WARNING: linear_extrude(..., origin="test") could not be converted in file errors-warnings.scad, line 65
+WARNING: linear_extrude(..., scale=inf) could not be converted in file errors-warnings.scad, line 65
 ECHO: 10
 ECHO: 15
 ECHO: 20
-WARNING: lookup("test", ...) first argument is not a number, in file errors-warnings.scad, line 73
+WARNING: lookup("test", ...) first argument is not a number in file errors-warnings.scad, line 73
 ECHO: undef
-WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 74
+WARNING: lookup() number of parameters does not match in file errors-warnings.scad, line 74
 ECHO: undef
-WARNING: lookup() number of parameters does not match, in file errors-warnings.scad, line 75
+WARNING: lookup() number of parameters does not match in file errors-warnings.scad, line 75
 ECHO: undef
 ECHO: "dim-all.dxf"
-WARNING: module cube() does not support child modules, in file errors-warnings.scad, line 104
-WARNING: module sphere() does not support child modules, in file errors-warnings.scad, line 107
+WARNING: module cube() does not support child modules in file errors-warnings.scad, line 104
+WARNING: module sphere() does not support child modules in file errors-warnings.scad, line 107
+WARNING: Unable to convert $vpr="[1,2,3]" to a vec3 or vec2 of numbers
+WARNING: Unable to convert $vpt=[1, 2, 3, 4] to a vec3 or vec2 of numbers
+WARNING: Unable to convert $vpd=[1] to a number

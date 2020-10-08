@@ -541,14 +541,14 @@ void TabManager::refreshDocument()
     if (!editor->filepath.isEmpty()) {
         QFile file(editor->filepath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            PRINTB("Failed to open file %s: %s",
-                         editor->filepath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+            LOG(message_group::None,Location::NONE,"","Failed to open file %1$s: %2$s",
+                editor->filepath.toLocal8Bit().constData(),file.errorString().toLocal8Bit().constData());
         }
         else {
             QTextStream reader(&file);
             reader.setCodec("UTF-8");
             auto text = reader.readAll();
-            PRINTB("Loaded design '%s'.", editor->filepath.toLocal8Bit().constData());
+            LOG(message_group::None,Location::NONE,"","Loaded design '%1$s'.",editor->filepath.toLocal8Bit().constData());
             if (editor->toPlainText() != text) {
                 editor->setPlainText(text);
                 setContentRenderState(); // since last render
@@ -627,7 +627,7 @@ void TabManager::saveError(const QIODevice &file, const std::string &msg, Editor
 {
     const std::string messageFormat = msg + " %s (%s)";
     const char *fileName = edt->filepath.toLocal8Bit().constData();
-    PRINTB(messageFormat.c_str(), fileName % file.errorString().toLocal8Bit().constData());
+    LOG(message_group::None,Location::NONE,"","%1$s %2$s (%3$s)",msg.c_str(),fileName,file.errorString().toLocal8Bit().constData());
 
     const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
     const QString dialogFormat(dialogFormatStr.c_str());
@@ -668,7 +668,7 @@ void TabManager::save(EditorInterface *edt)
         bool saveOk = writer.status() == QTextStream::Ok;
 	if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
         if (saveOk) {
-            PRINTB(_("Saved design '%s'."), edt->filepath.toLocal8Bit().constData());
+            LOG(message_group::None,Location::NONE,"","Saved design '%1$s'.",edt->filepath.toLocal8Bit().constData());
             edt->setContentModified(false);
         } else {
             saveError(file, _("Error saving design"), edt);

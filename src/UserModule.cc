@@ -35,12 +35,12 @@
 #include "printutils.h"
 #include "compiler_specific.h"
 #include <sstream>
+#include "boost-utils.h"
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
 static void NOINLINE print_err(std::string name, const Location &loc,const std::shared_ptr<const Context> ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
+	LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling module '%1$s'",name);
 }
 
 AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const

@@ -34,6 +34,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 // $children is not a config_variable. config_variables have dynamic scope, 
@@ -111,7 +112,7 @@ void Context::set_variable(const std::string &name, const Value &value)
 void Context::set_constant(const std::string &name, const ValuePtr &value)
 {
 	if (this->constants.find(name) != this->constants.end()) {
-		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
+		LOG(message_group::Warning,Location::NONE,"","Attempt to modify constant '%1$s'.",name);
 	}
 	else {
 		this->constants[name] = value;
@@ -159,7 +160,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 			}
 		}
 		if (!silent) {
-			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 		}
 		return ValuePtr::undefined;
 	}
@@ -173,7 +174,7 @@ ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Lo
 		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
+		LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 	}
 	return ValuePtr::undefined;
 }
@@ -189,6 +190,16 @@ std::string Context::lookup_variable_with_default(const std::string &variable, c
 {
 	ValuePtr v = this->lookup_variable(variable, true, loc);
 	return (v->type() == Value::Type::STRING) ? v->toString() : def;
+}
+
+ValuePtr Context::lookup_local_config_variable(const std::string &name) const
+{
+	if (is_config_variable(name)) {
+		if (config_variables.find(name) != config_variables.end()) {
+			return config_variables.find(name)->second;
+		}
+	}
+	return ValuePtr::undefined;
 }
 
 bool Context::has_local_variable(const std::string &name) const
@@ -216,7 +227,7 @@ bool Context::has_local_variable(const std::string &name) const
  * @param docPath document path of the root file, used to calculate the relative path
  */
 static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
-	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
+	LOG(message_group::Warning,loc,docPath,"Ignoring unknown %1$s '%2$s'",what,name);
 }
  
 ValuePtr Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const

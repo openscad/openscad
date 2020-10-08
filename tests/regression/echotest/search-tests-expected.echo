@@ -1,4 +1,4 @@
-WARNING: vTable1 was assigned on line 29 but was overwritten on line 32
+WARNING: vTable1 was assigned on line 29 but was overwritten in file search-tests.scad, line 32
 ECHO: "Characters in string ("a"): [0]"
 ECHO: "Characters in string ("adeq"): [[0, 5], [3, 8], [4], []]"
 ECHO: "Default string search ("abe"): [0, 1, 8]"
@@ -16,18 +16,18 @@ ECHO: "Default list string search (["b", "zzz", "a", "c", "apple", "dog"]): [1, 
 ECHO: "Default list mixed search (["b", 4, "zzz", "c", "apple", 500, "a", ""]): [1, 3, [], 2, 9, [], 4, []]"
 ECHO: "Return all matches for mixed search (["b", 4, "zzz", "c", "apple", 500, "a", ""]): [[1, 5], [3], [], [2, 6], [9], [], [4, 10], []]"
 ECHO: "Return all matches for mixed search; alternate columns ([1, "zz", "dog", 500, 11]): [[0], [], [3], [], [10]]"
-WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: 123, in file search-tests.scad, line 73
+WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: 123 in file search-tests.scad, line 73
 ECHO: []
-WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: "string", in file search-tests.scad, line 76
+WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: "string" in file search-tests.scad, line 76
 ECHO: []
-  WARNING: search term not found: "a", in file search-tests.scad, line 79
+WARNING: search term not found: "a" in file search-tests.scad, line 79
 ECHO: [[]]
-  WARNING: search term not found: "b", in file search-tests.scad, line 82
-  WARNING: search term not found: "c", in file search-tests.scad, line 82
-  WARNING: search term not found: "d", in file search-tests.scad, line 82
+WARNING: search term not found: "b" in file search-tests.scad, line 82
+WARNING: search term not found: "c" in file search-tests.scad, line 82
+WARNING: search term not found: "d" in file search-tests.scad, line 82
 ECHO: [[0], [], [], []]
 ECHO: [[], [], [], []]
-WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: undef, in file search-tests.scad, line 87
+WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: undef in file search-tests.scad, line 87
 ECHO: []
-WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: -inf, in file search-tests.scad, line 90
+WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: -inf in file search-tests.scad, line 90
 ECHO: []

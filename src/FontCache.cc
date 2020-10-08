@@ -129,7 +129,7 @@ FontCache::FontCache()
 	// Just load the configs. We'll build the fonts once all configs are loaded
 	this->config = FcInitLoadConfig();
 	if (!this->config) {
-		PRINT("FONT-WARNING: Can't initialize fontconfig library, text() objects will not be rendered");
+		LOG(message_group::Font_Warning,Location::NONE,"","Can't initialize fontconfig library, text() objects will not be rendered");
 		return;
 	}
 
@@ -174,7 +174,7 @@ FontCache::FontCache()
 
 	const FT_Error error = FT_Init_FreeType(&this->library);
 	if (error) {
-		PRINT("FONT-WARNING: Can't initialize freetype library, text() objects will not be rendered");
+		LOG(message_group::Font_Warning,Location::NONE,"","Can't initialize freetype library, text() objects will not be rendered");
 		return;
 	}
 
@@ -216,7 +216,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 void FontCache::register_font_file(const std::string &path)
 {
 	if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *> (path.c_str()))) {
-		PRINTB("Can't register font '%s'", path);
+		LOG(message_group::None,Location::NONE,"","Can't register font '%1$s'",path);
 	}
 }
 
@@ -226,7 +226,7 @@ void FontCache::add_font_dir(const std::string &path)
 		return;
 	}
 	if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *> (path.c_str()))) {
-		PRINTB("Can't register font directory '%s'", path);
+		LOG(message_group::None,Location::NONE,"","Can't register font directory '%1$s'",path);
 	}
 }
 
@@ -392,7 +392,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string &font) const
 		if (!charmap_set)
 			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
 		if (!charmap_set)
-			PRINTB("Font-Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
+			LOG(message_group::Font_Warning,Location::NONE,"","Could not select a char map for font %1$s/%2$s'",face->family_name,face->style_name);
 	}
 	
 	return error ? nullptr : face;

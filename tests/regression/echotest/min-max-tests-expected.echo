@@ -1,18 +1,18 @@
-WARNING: min() number of parameters does not match, in file min-max-tests.scad, line 1
+WARNING: min() number of parameters does not match in file min-max-tests.scad, line 1
 ECHO: undef
-WARNING: max() number of parameters does not match, in file min-max-tests.scad, line 2
+WARNING: max() number of parameters does not match in file min-max-tests.scad, line 2
 ECHO: undef
-WARNING: min() parameter could not be converted, in file min-max-tests.scad, line 3
+WARNING: min() parameter could not be converted in file min-max-tests.scad, line 3
 ECHO: undef
-WARNING: max() parameter could not be converted, in file min-max-tests.scad, line 4
+WARNING: max() parameter could not be converted in file min-max-tests.scad, line 4
 ECHO: undef
-WARNING: min() parameter could not be converted, in file min-max-tests.scad, line 5
+WARNING: min() parameter could not be converted in file min-max-tests.scad, line 5
 ECHO: undef
-WARNING: max() parameter could not be converted, in file min-max-tests.scad, line 6
+WARNING: max() parameter could not be converted in file min-max-tests.scad, line 6
 ECHO: undef
-WARNING: min() parameter could not be converted, in file min-max-tests.scad, line 7
+WARNING: min() parameter could not be converted in file min-max-tests.scad, line 7
 ECHO: undef
-WARNING: max() parameter could not be converted, in file min-max-tests.scad, line 8
+WARNING: max() parameter could not be converted in file min-max-tests.scad, line 8
 ECHO: undef
 ECHO: 0
 ECHO: 0
@@ -28,9 +28,9 @@ ECHO: 0
 ECHO: 2
 ECHO: 0
 ECHO: 2
-WARNING: min() parameter could not be converted, in file min-max-tests.scad, line 23
+WARNING: min() parameter could not be converted in file min-max-tests.scad, line 23
 ECHO: undef
-WARNING: max() parameter could not be converted, in file min-max-tests.scad, line 24
+WARNING: max() parameter could not be converted in file min-max-tests.scad, line 24
 ECHO: undef
 ECHO: 0
 ECHO: 5

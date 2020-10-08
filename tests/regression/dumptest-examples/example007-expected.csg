@@ -1,9 +1,8 @@
-group();
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 	group() {
 		difference() {
 			rotate_extrude(angle = 360, convexity = 3, $fn = 0, $fa = 12, $fs = 2) {
-				import(file = "example007.dxf", layer = "dorn", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+				import(file = "example007.dxf", layer = "dorn", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 			}
 			group() {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -12,7 +11,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 							multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -50], [0, 0, 0, 1]]) {
 									linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-										import(file = "example007.dxf", layer = "cutout1", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+										import(file = "example007.dxf", layer = "cutout1", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 									}
 								}
 							}
@@ -20,7 +19,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -50], [0, 0, 0, 1]]) {
 										linear_extrude(height = 100, center = false, convexity = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-											import(file = "example007.dxf", layer = "cutout2", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+											import(file = "example007.dxf", layer = "cutout2", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 										}
 									}
 								}
@@ -34,7 +33,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 							multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -50], [0, 0, 0, 1]]) {
 									linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-										import(file = "example007.dxf", layer = "cutout1", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+										import(file = "example007.dxf", layer = "cutout1", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 									}
 								}
 							}
@@ -42,7 +41,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -50], [0, 0, 0, 1]]) {
 										linear_extrude(height = 100, center = false, convexity = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-											import(file = "example007.dxf", layer = "cutout2", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+											import(file = "example007.dxf", layer = "cutout2", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 										}
 									}
 								}

@@ -1,6 +1,6 @@
 DEPRECATED: child() will be removed in future releases. Use children() instead.
-WARNING: Negative child index (-1) not allowed, in file children-warnings-tests.scad, line 1
-WARNING: Child index (5) out of bounds (1 children), in file children-warnings-tests.scad, line 4
-WARNING: Child index (5) out of bounds (2 children), in file children-warnings-tests.scad, line 4
-WARNING: Bad range parameter for children: too many elements (10001), in file children-warnings-tests.scad, line 15
-WARNING: Bad parameter type ("test") for children, only accept: empty, number, vector, range, in file children-warnings-tests.scad, line 19
+WARNING: Negative child index (-1) not allowed in file children-warnings-tests.scad, line 1
+WARNING: Child index (5) out of bounds (1 children) in file children-warnings-tests.scad, line 4
+WARNING: Child index (5) out of bounds (2 children) in file children-warnings-tests.scad, line 4
+WARNING: Bad range parameter for children: too many elements (10001) in file children-warnings-tests.scad, line 15
+WARNING: Bad parameter type ("test") for children, only accept: empty, number, vector, range in file children-warnings-tests.scad, line 19
