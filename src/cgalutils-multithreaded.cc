@@ -1,8 +1,8 @@
-#define CGAL_NEF_POLYHEDRON_IOSTREAM_3_H
 #ifdef ENABLE_CGAL
 
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/streams/bufferstream.hpp>
 
 #include "cgalutils.h"
 #include "polyset.h"
@@ -27,7 +27,7 @@
 
 // #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
-namespace CGAL { // TODO: define sort
+namespace CGAL { // TODO: sort
 
 // template <typename Kernel, typename Items, typename Mark>
 // std::ostream &operator<<(std::ostream &os, Nef_polyhedron_3<Kernel, Items, Mark> &NP)
@@ -283,14 +283,14 @@ void spawnOpWorker(std::vector<std::string> shmems)
 			shm = &shm2;
 
 		mapped_region region(*shm, read_only);
-
-		std::stringstream ps = prealloc_ss(region.get_size());
-		CGAL::set_binary_mode(ps); // Not working :(((
-		ps.write((const char *)region.get_address(), region.get_size());
-
+		// std::stringstream ps = prealloc_ss(region.get_size());
+		// CGAL::set_binary_mode(ps); // Not working :(((
+		// ps.write((const char *)region.get_address(), region.get_size());
+		bufferstream ps(std::ios::binary | std::ios::in);
+		ps.buffer(( char *)region.get_address(), region.get_size());
 		// Deserialize the object
 		if ('s' == shmems.at(2).c_str()[k]) {
-			boost::archive::binary_iarchive ia(ps);
+			boost::archive::binary_iarchive ia(dynamic_cast<std::istream &>(ps));
 			ia &(sobjects[k].polygons);
 			// shm.truncate(0);
 		}
@@ -298,6 +298,8 @@ void spawnOpWorker(std::vector<std::string> shmems)
 			ps >> *hobjects[k];
 			// shm.truncate(0);
 		}
+		if (!ps.good() || ps.bad() || ps.fail())
+			throw MultithreadedError("ERROR: Insufficient shmem buffer!");
 	}
 	// Create Nef Polyhedrons
 	CGAL_Nef_polyhedron p0(hobjects[0]);
@@ -317,15 +319,17 @@ void spawnOpWorker(std::vector<std::string> shmems)
 	// Apply Union
 	doOpOnPolyhedrons(op, *first_obj, *second_obj);
 
-	// Serialize the result
+	// Serialize the result and upload to shmem
 	unsigned serialized_size = (*first_obj).memsize();
-	std::stringstream ps = prealloc_ss(serialized_size + 500);
-	custom_ph_print(ps, *first_obj->p3);
-
-	// Upload to shmem
-	shm1.truncate(ps.tellp());
+	shm1.truncate(serialized_size);
 	mapped_region region(shm1, read_write);
-	ps.read((char *)region.get_address(), region.get_size());
+	// std::stringstream ps = prealloc_ss(serialized_size + 500);
+	bufferstream ps(std::ios::binary | std::ios::out);
+	ps.buffer((char *)region.get_address(), region.get_size());
+	custom_ph_print(ps, *first_obj->p3);
+	if (!ps.good() || ps.bad() || ps.fail())
+		throw MultithreadedError("ERROR: Insufficient shmem buffer!");
+		
 	PRINT("DONE");
 }
 
@@ -503,13 +507,18 @@ inline void fetchAndOrderSolidsBySize(
 			using namespace boost::interprocess;
 			mapped_region region(solid_it.shm, read_only);
 
-			std::stringstream ps = prealloc_ss(region.get_size());
-			CGAL::set_binary_mode(ps); // Not working :(((
-			ps.write((const char *)region.get_address(), region.get_size());
+			// std::stringstream ps = prealloc_ss(region.get_size());
+			// CGAL::set_binary_mode(ps); // Not working :(((
+			// ps.write((const char *)region.get_address(), region.get_size());
+			bufferstream ps(std::ios::binary | std::ios::in);
+			ps.buffer((char *)region.get_address(), region.get_size());
 
 			// Serialized Polyhedron
 			std::shared_ptr<CGAL_Nef_polyhedron3> ppol = std::make_shared<CGAL_Nef_polyhedron3>();
 			ps >> *ppol;
+			if (!ps.good() || ps.bad() || ps.fail())
+				throw MultithreadedError("ERROR: Insufficient shmem buffer!");
+
 			CGAL_Nef_polyhedron *ph = new CGAL_Nef_polyhedron(ppol);
 			curChild.reset(ph);
 		}
@@ -683,26 +692,40 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 	// Serialize the solids
 	for (auto solid_it = solid; solid_it != solids.end(); ++solid_it) {
 
-		std::stringstream ps;
+		// std::stringstream ps;
+
 		// Either a PolySet or a Polyhedron serialization
 		if ((!solid_it->ps && !solid_it->ph) || (solid_it->ps && solid_it->ph))
 			throw MultithreadedError("ERROR: Invalid Geometry type!");
+			
+		int size = 500; // Header overhead
+		if (solid_it->ps)size += solid_it->ps->memsize()*1.2;
+		if (solid_it->ph)size += solid_it->ph->memsize();
+
+		// Serialize + shmem upload
+
+		solid_it->shm.truncate(size);
+		mapped_region region(solid_it->shm, read_write);
+		bufferstream ps(std::ios::binary | std::ios::out);
+		ps.buffer((char *)region.get_address(), region.get_size());
+
 		if (solid_it->ps) {
-			ps = prealloc_ss(solid_it->ps->memsize() + 500);
-			boost::archive::binary_oarchive oa(ps);
+			// ps = prealloc_ss(solid_it->ps->memsize() + 500);
+			boost::archive::binary_oarchive oa(dynamic_cast<std::ostream &>(ps));
 			oa &(solid_it->ps->polygons);
 		}
 		if (solid_it->ph) {
-			ps = prealloc_ss(solid_it->ph->memsize() + 500);
+			// ps = prealloc_ss(solid_it->ph->memsize() + 500);
 			custom_ph_print(ps, *solid_it->ph->p3);
 		}
 
 		// Upload them to shmem
-		ps.seekg(0, std::ios::end);
-		solid_it->shm.truncate(ps.tellg());
-		ps.seekg(0, std::ios::beg);
-		mapped_region region(solid_it->shm, read_write);
-		ps.read((char *)region.get_address(), region.get_size());
+		// ps.seekg(0, std::ios::end);
+		// solid_it->shm.truncate(ps.tellg());
+		// std::cout << "real: " << ps.tellg() << std::endl;
+		// ps.seekg(0, std::ios::beg);
+		// mapped_region region(solid_it->shm, read_write);
+		// ps.read((char *)region.get_address(), region.get_size());
 
 	}
 	
