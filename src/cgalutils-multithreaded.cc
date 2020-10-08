@@ -54,10 +54,12 @@ std::istream &operator>>(std::istream &is, Nef_polyhedron_3<Kernel, Items, Mark>
 
 } // namespace CGAL
 
-void custom_ph_print(std::ostream &ps, CGAL_Nef_polyhedron3& ph){
+void custom_ph_print(std::ostream &ps, CGAL_Nef_polyhedron3 &ph)
+{
 	auto &obj = ph;
 	typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
-	custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure *>(obj.sncp()), false, false);
+	custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure *>(obj.sncp()), false,
+																				 false);
 	O.print();
 }
 
@@ -81,7 +83,7 @@ struct QueueItemGreater {
 	// stable sort for priority_queue by facets, then progress mark
 	bool operator()(const QueueConstItem &lhs, const QueueConstItem &rhs) const
 	{
-		if(unordered) return false;
+		if (unordered) return false;
 		size_t l = lhs.first->p3->number_of_facets();
 		size_t r = rhs.first->p3->number_of_facets();
 		return (l > r) || (l == r && lhs.second > rhs.second);
@@ -91,9 +93,9 @@ struct QueueItemGreater {
 class conditional_priority_queue
 	: public std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater>
 {
-	public:
-	void changeToUnordered(){ comp.unordered = true; }
-	void changeToOrdered(){ comp.unordered = false; }
+public:
+	void changeToUnordered() { comp.unordered = true; }
+	void changeToOrdered() { comp.unordered = false; }
 };
 
 /* Calling abort() or exit() does not call any C++ destructors which is
@@ -101,6 +103,7 @@ detrimental to any left unreleased shared memory. */
 class MultithreadedError : public std::runtime_error
 {
 	std::string msg;
+
 public:
 	MultithreadedError(const char *what) : runtime_error(what) {}
 };
@@ -115,7 +118,7 @@ struct AVAIL_GEOMETRY {
 	boost::interprocess::shared_memory_object shm;
 
 	AVAIL_GEOMETRY() {}
-	AVAIL_GEOMETRY(AVAIL_GEOMETRY&&) = default;
+	AVAIL_GEOMETRY(AVAIL_GEOMETRY &&) = default;
 	AVAIL_GEOMETRY(TYPE_MEM type, const PolySet *ps, shared_ptr<const CGAL_Nef_polyhedron> ph)
 	{
 		this->type = type;
@@ -151,22 +154,19 @@ public:
 	}
 	operator const PolySet *() const
 	{
-		if (PS_TYPES::NONE == ps_type)
-			throw MultithreadedError("ERROR: ps_type cannot be unset");
+		if (PS_TYPES::NONE == ps_type) throw MultithreadedError("ERROR: ps_type cannot be unset");
 		return PS_TYPES::CONST == ps_type ? const_ps : local_ps.get();
 	}
 	PolySetHolder &operator=(const PolySet *ps)
 	{
-		if (PS_TYPES::NONE != ps_type)
-			throw MultithreadedError("ERROR: ps_type cannot be set");
+		if (PS_TYPES::NONE != ps_type) throw MultithreadedError("ERROR: ps_type cannot be set");
 		const_ps = ps;
 		ps_type = PS_TYPES::CONST;
 		return *this;
 	}
 	PolySetHolder &operator=(std::shared_ptr<PolySet> ps)
 	{
-		if (PS_TYPES::NONE != ps_type)
-			throw MultithreadedError("ERROR: ps_type cannot be set");
+		if (PS_TYPES::NONE != ps_type) throw MultithreadedError("ERROR: ps_type cannot be set");
 		local_ps = ps;
 		ps_type = PS_TYPES::LOCAL;
 		return *this;
@@ -257,15 +257,14 @@ void setProgName(std::string progname)
 
 void spawnOpWorker(std::vector<std::string> shmems)
 {
-	if (4 != shmems.size())
-		throw MultithreadedError("ERROR: wrong number of arguments");
+	if (4 != shmems.size()) throw MultithreadedError("ERROR: wrong number of arguments");
 
 	using namespace boost::interprocess;
 	using namespace CGALUtils;
 
 	shared_memory_object shm1(open_only, shmems.at(0).c_str(), read_write);
 	shared_memory_object shm2(open_only, shmems.at(1).c_str(), read_only);
-	
+
 	std::cout << "ok!" << std::endl; // Signal that shmems are open
 	std::string go;
 	std::getline(std::cin, go); // Wait for turn
@@ -287,7 +286,7 @@ void spawnOpWorker(std::vector<std::string> shmems)
 		// CGAL::set_binary_mode(ps); // Not working :(((
 		// ps.write((const char *)region.get_address(), region.get_size());
 		bufferstream ps(std::ios::binary | std::ios::in);
-		ps.buffer(( char *)region.get_address(), region.get_size());
+		ps.buffer((char *)region.get_address(), region.get_size());
 		// Deserialize the object
 		if ('s' == shmems.at(2).c_str()[k]) {
 			boost::archive::binary_iarchive ia(dynamic_cast<std::istream &>(ps));
@@ -329,7 +328,7 @@ void spawnOpWorker(std::vector<std::string> shmems)
 	custom_ph_print(ps, *first_obj->p3);
 	if (!ps.good() || ps.bad() || ps.fail())
 		throw MultithreadedError("ERROR: Insufficient shmem buffer!");
-		
+
 	PRINT("DONE");
 }
 
@@ -471,7 +470,8 @@ inline void mergeNonIntersectingPolySets(std::vector<std::vector<unsigned>> &mer
 void separateDifferentGeometries(const Geometry::GeometryItem &it, auto F1, auto F2, auto F3)
 #else
 template <typename functor1, typename functor2, typename functor3>
-void separateDifferentGeometries(const Geometry::GeometryItem &it, functor1 F1, functor2 F2, functor3 F3)
+void separateDifferentGeometries(const Geometry::GeometryItem &it, functor1 F1, functor2 F2,
+																 functor3 F3)
 #endif
 {
 	const shared_ptr<const Geometry> &chgeom = it.second;
@@ -566,17 +566,19 @@ inline CGAL_Nef_polyhedron *CombineSolids(
 
 static int highestOneBit(int i)
 {
-	return 8*sizeof(int)-__builtin_clz(i);
+	return 8 * sizeof(int) - __builtin_clz(i);
 }
 
 template <class Functor>
-inline void treeAlgo(unsigned num_steps, unsigned num_objects, unsigned n_pass, unsigned start_step, Functor f){
+inline void treeAlgo(unsigned num_steps, unsigned num_objects, unsigned n_pass, unsigned start_step,
+										 Functor f)
+{
 	for (unsigned i = start_step; i < num_steps; ++i) {
 		int nskip = 1 << i;
 		int c = 1 << (i + 1); // Every 2^(i+1)th object
 		unsigned num_children_on_step = (num_objects + c - 1) / c;
-		
-		for(unsigned n = 0; n < n_pass; ++n){
+
+		for (unsigned n = 0; n < n_pass; ++n) {
 			for (unsigned j = 0; j < num_children_on_step; ++j) {
 				if (j * c + nskip >= num_objects) continue;
 				f(j, c, nskip, n);
@@ -590,9 +592,9 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 {
 	auto solid = solids.begin();
 	unsigned size = solids.size();
-	if ((size / 2) <= 1) return;      // At least 4 objects
-	if( ((size-1) & (size-2)) == 0 ){ // Count is 2^n+1, this is sub-optimal
-		solid++; // Skip one object here
+	if ((size / 2) <= 1) return;          // At least 4 objects
+	if (((size - 1) & (size - 2)) == 0) { // Count is 2^n+1, this is sub-optimal
+		solid++;                            // Skip one object here
 		size--;
 	}
 
@@ -601,9 +603,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 	// std::cout << "num objects:" << size << " num steps:" << num_steps << std::endl;
 
 	unsigned num_children = 0;
-	treeAlgo(num_steps, size, 1, 0, [&](unsigned, unsigned, unsigned, unsigned){
-		++num_children;
-	});
+	treeAlgo(num_steps, size, 1, 0, [&](unsigned, unsigned, unsigned, unsigned) { ++num_children; });
 
 	using namespace boost::interprocess;
 	QProcess ch[num_children];
@@ -615,11 +615,11 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 											.count();
 	// std::cout << time_now << std::endl;
 	std::string name = std::to_string(time_now) + "_";
-	
+
 	// Create the shmems
 	auto solid_it = solid;
-	for(unsigned i = 0; i < size; ++i){
-		
+	for (unsigned i = 0; i < size; ++i) {
+
 		auto shmem_name = name + std::to_string(i);
 		// Create the empty shmems
 		shared_memory_object::remove(shmem_name.c_str());
@@ -679,7 +679,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		++chnum;
 	});
 
-	for(chnum = 0; chnum < num_children; ++chnum){
+	for (chnum = 0; chnum < num_children; ++chnum) {
 		ch[chnum].waitForReadyRead(-1); // Wait for the children to open the shmems
 	}
 
@@ -697,10 +697,10 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		// Either a PolySet or a Polyhedron serialization
 		if ((!solid_it->ps && !solid_it->ph) || (solid_it->ps && solid_it->ph))
 			throw MultithreadedError("ERROR: Invalid Geometry type!");
-			
+
 		int size = 500; // Header overhead
-		if (solid_it->ps)size += solid_it->ps->memsize()*1.2;
-		if (solid_it->ph)size += solid_it->ph->memsize();
+		if (solid_it->ps) size += solid_it->ps->memsize() * 1.2;
+		if (solid_it->ph) size += solid_it->ph->memsize();
 
 		// Serialize + shmem upload
 
@@ -726,9 +726,8 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		// ps.seekg(0, std::ios::beg);
 		// mapped_region region(solid_it->shm, read_write);
 		// ps.read((char *)region.get_address(), region.get_size());
-
 	}
-	
+
 	// Processing
 	auto chnum0 = 0;
 	auto chnum1 = 0;
@@ -748,15 +747,16 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 
 	// Collect the objects
 	std::vector<std::string> keep_list;
-	treeAlgo(num_steps+1, size, 2, num_steps, [&](unsigned j, unsigned c, unsigned nskip, unsigned) {
-		auto first_object = solid;
-		std::advance(first_object, j * c);
-		auto second_object = first_object;
-		std::advance(second_object, nskip);
+	treeAlgo(num_steps + 1, size, 2, num_steps,
+					 [&](unsigned j, unsigned c, unsigned nskip, unsigned) {
+						 auto first_object = solid;
+						 std::advance(first_object, j * c);
+						 auto second_object = first_object;
+						 std::advance(second_object, nskip);
 
-		keep_list.push_back(first_object->shmem_name);
-		keep_list.push_back(second_object->shmem_name);
-	});
+						 keep_list.push_back(first_object->shmem_name);
+						 keep_list.push_back(second_object->shmem_name);
+					 });
 	keep_list.push_back("");
 	// for(auto z: keep_list)std::cout << " keep_list: " << z << std::endl;
 	solids.remove_if([&](AVAIL_GEOMETRY &geom) {
@@ -795,7 +795,7 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 												 shared_ptr<const Geometry>(applyMultithreadedUnion(it, children.end()))));
 			return applyMultithreadedOperator(top_level, op);
 		}
-		if(children.size() <= 2){
+		if (children.size() <= 2) {
 			q.changeToUnordered();
 		}
 	}
@@ -823,8 +823,7 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 
 	// 4. OP as many solids as possible in parallel
 	applyMultithreadedOps(solids, SCADOpToStr(op));
-	if(solids.size() > 4)
-		throw MultithreadedError("ERROR: Failed operations on solids, size > 4!");
+	if (solids.size() > 4) throw MultithreadedError("ERROR: Failed operations on solids, size > 4!");
 
 	// 5. Combine the remaining objects
 	fetchAndOrderSolidsBySize(solids, node_marks, q);
@@ -847,7 +846,7 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterato
 		for (auto it = chbegin; it != chend; ++it) {
 			separateDifferentGeometries(
 					*it,
-					[&](const PolySet* polyset) {
+					[&](const PolySet *polyset) {
 						// Separated PolySets
 						polysets.push_back(polyset);
 					},
