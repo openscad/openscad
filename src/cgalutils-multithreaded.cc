@@ -699,7 +699,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 			throw MultithreadedError("ERROR: Invalid Geometry type!");
 
 		int size = 500; // Header overhead
-		if (solid_it->ps) size += solid_it->ps->memsize() * 1.2;
+		if (solid_it->ps) size += solid_it->ps->memsize() * 1.3;
 		if (solid_it->ph) size += solid_it->ph->memsize();
 
 		// Serialize + shmem upload
