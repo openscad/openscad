@@ -541,16 +541,13 @@ set(CGAL_SOURCES
   src/cgalutils-tess.cc
   src/export_nef.cc
   src/import_nef.cc
-<<<<<<< HEAD
   src/CGAL_Nef_polyhedron.cc
-=======
   src/cgalutils.cc 
   src/cgalutils-applyops.cc 
   src/cgalutils-project.cc 
   src/cgalutils-tess.cc 
   src/cgalutils-polyhedron.cc 
   src/cgalutils-multithreaded.cc
->>>>>>> Implement #391
   src/CGALCache.cc
   src/CSGTreeEvaluator.cc
   src/Polygon2d-CGAL.cc
