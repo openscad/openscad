@@ -192,7 +192,7 @@ CGAL_Nef_polyhedron &doOpOnPolyhedrons(OpenSCADOperator op, CGAL_Nef_polyhedron 
 		root.minkowski(sec);
 		break;
 	default:
-		PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
+		PRINTDB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
 	}
 	return root;
 }
@@ -213,7 +213,7 @@ std::string SCADOpToStr(OpenSCADOperator op)
 		return "m";
 		break;
 	default:
-		PRINTB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
+		PRINTDB("ERROR: Unsupported CGAL operator: %d", static_cast<int>(op));
 		return "x";
 	}
 }
@@ -235,7 +235,7 @@ OpenSCADOperator SCADStrToOp(std::string &s)
 		return OpenSCADOperator::MINKOWSKI;
 		break;
 	default:
-		PRINTB("ERROR: Unsupported CGAL operator: %s", s);
+		PRINTDB("ERROR: Unsupported CGAL operator: %s", s);
 		throw MultithreadedError("ERROR: Unsupported CGAL operator!");
 	}
 }
@@ -329,7 +329,7 @@ void spawnOpWorker(std::vector<std::string> shmems)
 	if (!ps.good() || ps.bad() || ps.fail())
 		throw MultithreadedError("ERROR: Insufficient shmem buffer!");
 
-	PRINT("DONE");
+	PRINTD("DONE");
 }
 
 unsigned first_avail_object(std::vector<unsigned> &list1, std::vector<unsigned> &list2,
@@ -672,7 +672,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		args << op.c_str();
 		ch[chnum].start(pname.c_str(), args);
 		if (!ch[chnum].waitForStarted()) {
-			PRINT("Worker Thread Creation Failed!");
+			PRINTD("Worker Thread Creation Failed!");
 			throw MultithreadedError("Worker Thread Creation Failed!");
 		}
 
@@ -739,7 +739,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		}
 		if (1 == pass_num) { // Wait
 			ch[chnum1].waitForFinished(-1);
-			PRINTB("WORKER %d: %s", (chnum1) % (ch[chnum1].readAllStandardError().data()));
+			PRINTDB("WORKER %d: %s", (chnum1) % (ch[chnum1].readAllStandardError().data()));
 			progress_tick();
 			++chnum1;
 		}
@@ -801,24 +801,36 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 	}
 
 	// 1. Separate the different geometry descriptions
+	bool first_obj = true;
 	for (auto &it : children) {
 		bool bad_flag = false;
 		separateDifferentGeometries(
 				it,
 				[&](const PolySet *polyset) {
-					if (polyset->isEmpty()) bad_flag = true; // Intersecting with nothing
-					solids.push_back({TYPE_MEM::LOCAL, polyset, nullptr});
-					// polysets.push_back(chps);
+					if (polyset && !polyset->isEmpty())
+						solids.push_back({TYPE_MEM::LOCAL, polyset, nullptr});
+					else {
+						if ((op == OpenSCADOperator::DIFFERENCE) && first_obj) bad_flag = true;
+					}
 				},
 				[&](std::shared_ptr<const CGAL_Nef_polyhedron> polyhedron) {
-					if (polyhedron->isEmpty()) bad_flag = true; // Intersecting with nothing
-					solids.push_back({TYPE_MEM::LOCAL, nullptr, polyhedron});
+					if (polyhedron && !polyhedron->isEmpty())
+						solids.push_back({TYPE_MEM::LOCAL, nullptr, polyhedron});
+					else {
+						if ((op == OpenSCADOperator::DIFFERENCE) && first_obj) bad_flag = true;
+					}
 				},
 				[&](int node_mark) {
 					//
 					node_marks.push_back(node_mark);
 				});
-		if (bad_flag) return nullptr;
+		first_obj = false;
+		if (bad_flag) return nullptr; /* op with nothing */
+	}
+	if (!solids.size()) return nullptr;
+	if ((op == OpenSCADOperator::INTERSECTION) && (solids.size() != children.size())) {
+		/* Intersecting with nothing */
+		return nullptr;
 	}
 
 	// 4. OP as many solids as possible in parallel
@@ -883,11 +895,11 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterato
 		return CombineSolids(q, OpenSCADOperator::UNION);
 
 	} catch (const CGAL::Failure_exception &e) {
-		PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+		PRINTDB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
 	} catch (const MultithreadedError &e) {
-		PRINTB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
+		PRINTDB("ERROR: CGAL error in CGALUtils::applyUnion: %s", e.what());
 	} catch (...) {
-		PRINT("ERROR: CGAL error in CGALUtils::applyUnion");
+		PRINTD("ERROR: CGAL error in CGALUtils::applyUnion");
 	}
 	return nullptr;
 }
