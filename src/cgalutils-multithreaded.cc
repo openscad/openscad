@@ -20,6 +20,7 @@
 #include <boost/archive/text_oarchive.hpp>
 
 #include <Eigen/Core>
+#include <chrono>
 
 #ifdef QT_CORE_LIB // Needed because of Qprocess
 #include <QProcess>

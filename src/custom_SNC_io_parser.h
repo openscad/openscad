@@ -1,15 +1,67 @@
 #pragma once
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include "gmpxx_boost_serialization.hpp"
-
 #include "cgalutils.h"
 
 namespace custom {
 
-typedef typename boost::archive::binary_oarchive oarchive;
-typedef typename boost::archive::binary_iarchive iarchive;
+template <class T>
+std::ostream &operator&(std::ostream &os, T &&t)
+{
+	static_assert(std::is_fundamental<typename std::remove_reference<T>::type>::value,
+								"Only fundamental types are safe to serialize");
+	os.write(reinterpret_cast<const char *>(&t), sizeof(t));
+	return os;
+}
+
+template <class T>
+std::istream &operator&(std::istream &is, T &&t)
+{
+	static_assert(std::is_fundamental<typename std::remove_reference<T>::type>::value,
+								"Only fundamental types are safe to deserialize");
+	is.read(reinterpret_cast<char *>(&t), sizeof(t));
+	return is;
+}
+
+inline void load_mpz(std::istream &ar, __mpz_struct &z)
+{
+	// do the POD part
+	int mp_alloc, mp_size;
+	ar &mp_alloc &mp_size;
+
+	// make room for arriving limbs
+	mpz_realloc2(&z, mp_alloc * sizeof(mp_limb_t) * 8);
+	z._mp_size = mp_size;
+
+	// now deserialize the limbs array
+	mp_limb_t *limbp = z._mp_d;
+	for (int i = 0; i < mp_alloc; ++i) {
+		ar &(*limbp);
+		++limbp;
+	}
+}
+
+inline void save_mpz(std::ostream &ar, const __mpz_struct &z)
+{
+	ar &z._mp_alloc &z._mp_size;
+	// now serialize the limbs array
+	mp_limb_t *limbp = z._mp_d;
+	for (int i = 0; i < z._mp_alloc; ++i) {
+		ar &(*limbp);
+		++limbp;
+	}
+}
+
+std::ostream &operator&(std::ostream &os, __mpz_struct &z)
+{
+	save_mpz(os, z);
+	return os;
+}
+
+std::istream &operator&(std::istream &is, __mpz_struct &z)
+{
+	load_mpz(is, z);
+	return is;
+}
 
 // namespace CGAL {
 
@@ -621,7 +673,7 @@ class Geometry_io<CGAL::Cartesian_tag, Kernel>
 {
 public:
 	template <typename EK, typename K, typename Compose_>
-	static typename EK::Point_3 read_point_impl(iarchive &ia, Compose_)
+	static typename EK::Point_3 read_point_impl(std::istream &ia, Compose_)
 	{
 		typedef CGAL::Fraction_traits<typename K::FT> FracTraits;
 		typename FracTraits::Type hx, hy, hz, hw;
@@ -641,7 +693,7 @@ public:
 	}
 
 	template <typename EK, typename K, typename Compose_>
-	static typename EK::Plane_3 read_plane_impl(iarchive &ia, Compose_)
+	static typename EK::Plane_3 read_plane_impl(std::istream &ia, Compose_)
 	{
 		typedef CGAL::Fraction_traits<typename K::FT> FracTraits;
 		typename FracTraits::Type a, b, c, d;
@@ -660,7 +712,7 @@ public:
 	}
 
 	template <typename EK, typename K>
-	static typename EK::Point_3 read_point_impl(iarchive &ia, CGAL::Null_functor)
+	static typename EK::Point_3 read_point_impl(std::istream &ia, CGAL::Null_functor)
 	{
 		typename K::FT hx, hy, hz, hw;
 		ia &hx &hy &hz &hw;
@@ -668,7 +720,7 @@ public:
 	}
 
 	template <typename EK, typename K>
-	static typename EK::Plane_3 read_plane_impl(iarchive &ia, CGAL::Null_functor)
+	static typename EK::Plane_3 read_plane_impl(std::istream &ia, CGAL::Null_functor)
 	{
 		typename K::FT a, b, c, d;
 		ia &a &b &c &d;
@@ -676,19 +728,19 @@ public:
 	}
 
 	template <typename EK, typename K>
-	static typename EK::Point_3 read_point(iarchive &ia)
+	static typename EK::Point_3 read_point(std::istream &ia)
 	{
 		return read_point_impl<EK, K>(ia, typename CGAL::Fraction_traits<typename K::FT>::Compose());
 	}
 
 	template <typename EK, typename K>
-	static typename EK::Plane_3 read_plane(iarchive &ia)
+	static typename EK::Plane_3 read_plane(std::istream &ia)
 	{
 		return read_plane_impl<EK, K>(ia, typename CGAL::Fraction_traits<typename K::FT>::Compose());
 	}
 
 	template <typename R, typename Decompose_>
-	static void print_point_impl(oarchive &oa, const CGAL::Point_3<R> p, Decompose_)
+	static void print_point_impl(std::ostream &oa, const CGAL::Point_3<R> p, Decompose_)
 	{
 		typedef CGAL::Fraction_traits<typename R::FT> FracTraits;
 		typedef std::vector<typename FracTraits::Numerator_type> NV;
@@ -722,7 +774,7 @@ public:
 	}
 
 	template <typename R, typename Decompose_>
-	static void print_vector_impl(oarchive &oa, const CGAL::Vector_3<R> p, Decompose_)
+	static void print_vector_impl(std::ostream &oa, const CGAL::Vector_3<R> p, Decompose_)
 	{
 		typedef CGAL::Fraction_traits<typename R::FT> FracTraits;
 		typedef typename FracTraits::Numerator_type NumType;
@@ -750,7 +802,7 @@ public:
 	}
 
 	template <typename R, typename Decompose_>
-	static void print_plane_impl(oarchive &oa, const CGAL::Plane_3<R> p, Decompose_)
+	static void print_plane_impl(std::ostream &oa, const CGAL::Plane_3<R> p, Decompose_)
 	{
 		typedef CGAL::Fraction_traits<typename R::FT> FracTraits;
 		typedef std::vector<typename FracTraits::Numerator_type> NV;
@@ -789,39 +841,39 @@ public:
 	}
 
 	template <typename R>
-	static void print_point_impl(oarchive &oa, const CGAL::Point_3<R> p, CGAL::Null_functor)
+	static void print_point_impl(std::ostream &oa, const CGAL::Point_3<R> p, CGAL::Null_functor)
 	{
 		oa &p.x() & p.y() & p.z() & 1;
 	}
 
 	template <typename R>
-	static void print_vector_impl(oarchive &oa, const CGAL::Vector_3<R> v, CGAL::Null_functor)
+	static void print_vector_impl(std::ostream &oa, const CGAL::Vector_3<R> v, CGAL::Null_functor)
 	{
 		oa &v.x() & v.y() & v.z() & 1;
 	}
 
 	template <typename R>
-	static void print_plane_impl(oarchive &oa, const CGAL::Plane_3<R> p, CGAL::Null_functor)
+	static void print_plane_impl(std::ostream &oa, const CGAL::Plane_3<R> p, CGAL::Null_functor)
 	{
 		oa &p.a() & p.b() & p.c() & p.d();
 	}
 
 	template <class R>
-	static void print_point(oarchive &oa, const CGAL::Point_3<R> &p)
+	static void print_point(std::ostream &oa, const CGAL::Point_3<R> &p)
 	{
 		print_point_impl(oa, Nef_3_internal::get_point(p),
 										 typename CGAL::Fraction_traits<typename R::FT>::Decompose());
 	}
 
 	template <class R>
-	static void print_vector(oarchive &oa, const CGAL::Vector_3<R> &v)
+	static void print_vector(std::ostream &oa, const CGAL::Vector_3<R> &v)
 	{
 		print_vector_impl(oa, Nef_3_internal::get_vector(v),
 											typename CGAL::Fraction_traits<typename R::FT>::Decompose());
 	}
 
 	template <class R>
-	static void print_plane(oarchive &oa, const CGAL::Plane_3<R> &p)
+	static void print_plane(std::ostream &oa, const CGAL::Plane_3<R> &p)
 	{
 		print_plane_impl(oa, Nef_3_internal::get_plane(p),
 										 typename CGAL::Fraction_traits<typename R::FT>::Decompose());
@@ -833,7 +885,7 @@ class Geometry_io<CGAL::Homogeneous_tag, Kernel>
 {
 public:
 	template <typename EK, typename K>
-	static typename EK::Point_3 read_point(iarchive &ia)
+	static typename EK::Point_3 read_point(std::istream &ia)
 	{
 		typename K::RT hx, hy, hz, hw;
 		ia &hx &hy &hz &hw;
@@ -841,7 +893,7 @@ public:
 	}
 
 	template <typename EK, typename K>
-	static typename EK::Plane_3 read_plane(iarchive &ia)
+	static typename EK::Plane_3 read_plane(std::istream &ia)
 	{
 		typename K::RT a, b, c, d;
 		ia &a &b &c &d;
@@ -849,37 +901,37 @@ public:
 	}
 
 	template <typename R>
-	static void print_point_impl(oarchive &oa, const CGAL::Point_3<R> &p)
+	static void print_point_impl(std::ostream &oa, const CGAL::Point_3<R> &p)
 	{
 		oa &p;
 	}
 
 	template <typename R>
-	static void print_vector_impl(oarchive &oa, const CGAL::Vector_3<R> &vec)
+	static void print_vector_impl(std::ostream &oa, const CGAL::Vector_3<R> &vec)
 	{
 		oa &vec.x() & vec.y() & vec.z();
 	}
 
 	template <typename R>
-	static void print_plane_impl(oarchive &oa, const CGAL::Plane_3<R> &p)
+	static void print_plane_impl(std::ostream &oa, const CGAL::Plane_3<R> &p)
 	{
 		oa &p.a() & p.b() & p.c() & p.d();
 	}
 
 	template <class R>
-	static void print_point(oarchive &oa, const CGAL::Point_3<R> &p)
+	static void print_point(std::ostream &oa, const CGAL::Point_3<R> &p)
 	{
 		print_point_impl(oa, Nef_3_internal::get_point(p));
 	}
 
 	template <class R>
-	static void print_vector(oarchive &oa, const CGAL::Vector_3<R> &v)
+	static void print_vector(std::ostream &oa, const CGAL::Vector_3<R> &v)
 	{
 		print_vector_impl(oa, Nef_3_internal::get_vector(v));
 	}
 
 	template <class R>
-	static void print_plane(oarchive &oa, const CGAL::Plane_3<R> &p)
+	static void print_plane(std::ostream &oa, const CGAL::Plane_3<R> &p)
 	{
 		print_plane_impl(oa, Nef_3_internal::get_plane(p));
 	}
@@ -1016,33 +1068,33 @@ public:
 		return -1;
 	}
 
-	void print_vertex(oarchive &oa, Vertex_handle) const;
-	void print_edge(oarchive &oa, Halfedge_handle) const;
-	void print_facet(oarchive &oa, Halffacet_handle) const;
-	void print_volume(oarchive &oa, Volume_handle) const;
-	void print_sedge(oarchive &oa, SHalfedge_handle) const;
-	void print_sloop(oarchive &oa, SHalfloop_handle) const;
-	void print_sface(oarchive &oa, SFace_handle) const;
+	void print_vertex(std::ostream &oa, Vertex_handle) const;
+	void print_edge(std::ostream &oa, Halfedge_handle) const;
+	void print_facet(std::ostream &oa, Halffacet_handle) const;
+	void print_volume(std::ostream &oa, Volume_handle) const;
+	void print_sedge(std::ostream &oa, SHalfedge_handle) const;
+	void print_sloop(std::ostream &oa, SHalfloop_handle) const;
+	void print_sface(std::ostream &oa, SFace_handle) const;
 	void print() const;
 
 	template <typename NT>
-	bool read_vertex(iarchive &ia, Vertex_handle);
+	bool read_vertex(std::istream &ia, Vertex_handle);
 	template <typename NT>
-	bool read_edge(iarchive &ia, Halfedge_handle);
+	bool read_edge(std::istream &ia, Halfedge_handle);
 	template <typename NT>
-	bool read_facet(iarchive &ia, Halffacet_handle);
-	bool read_volume(iarchive &ia, Volume_handle);
+	bool read_facet(std::istream &ia, Halffacet_handle);
+	bool read_volume(std::istream &ia, Volume_handle);
 	template <typename NT>
-	bool read_svertex(iarchive &ia, SVertex_handle);
+	bool read_svertex(std::istream &ia, SVertex_handle);
 	template <typename NT>
-	bool read_sedge(iarchive &ia, SHalfedge_handle);
+	bool read_sedge(std::istream &ia, SHalfedge_handle);
 	template <typename NT>
-	bool read_sloop(iarchive &ia, SHalfloop_handle);
-	bool read_sface(iarchive &ia, SFace_handle);
+	bool read_sloop(std::istream &ia, SHalfloop_handle);
+	bool read_sface(std::istream &ia, SFace_handle);
 	void add_infi_box();
 	void read();
 	template <typename K>
-	void read_items(iarchive &ia, int);
+	void read_items(std::istream &ia, int);
 
 	static void dump(SNC_structure &W, std::ostream &os = std::cerr, bool sort = false)
 	{
@@ -1051,7 +1103,7 @@ public:
 	}
 
 	template <typename Iter, typename Index>
-	void output_sorted_indexes(oarchive &oa, Iter begin, Iter end, Index i) const
+	void output_sorted_indexes(std::ostream &oa, Iter begin, Iter end, Index i) const
 	{
 		int low = i[begin];
 		int high = low;
@@ -1277,7 +1329,7 @@ SNC_io_parser<EW>::SNC_io_parser(std::ostream &os, SNC_structure &W, bool sort, 
 template <typename EW>
 void SNC_io_parser<EW>::print() const
 {
-	oarchive oa(out);
+	std::ostream &oa = out;
 	if (this->is_extended_kernel() && (!reduce || !this->is_bounded()))
 		oa & true;
 	else
@@ -1315,7 +1367,7 @@ void SNC_io_parser<EW>::print() const
 template <typename EW>
 void SNC_io_parser<EW>::read()
 {
-	iarchive ia(in);
+	std::istream &ia = in;
 
 	bool kernel_type = false; // extended is true
 	ia &kernel_type;
@@ -1349,7 +1401,7 @@ void SNC_io_parser<EW>::read()
 
 template <typename EW>
 template <typename K>
-void SNC_io_parser<EW>::read_items(iarchive &ia, int plus01)
+void SNC_io_parser<EW>::read_items(std::istream &ia, int plus01)
 {
 
 	typename std::vector<Vertex_iterator>::iterator vi;
@@ -1393,7 +1445,7 @@ void SNC_io_parser<EW>::read_items(iarchive &ia, int plus01)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_vertex(oarchive &oa, Vertex_handle v) const
+void SNC_io_parser<EW>::print_vertex(std::ostream &oa, Vertex_handle v) const
 {
 	SM_decorator SD(&*v);
 	if (sorted) {
@@ -1424,7 +1476,7 @@ void SNC_io_parser<EW>::print_vertex(oarchive &oa, Vertex_handle v) const
 
 template <typename EW>
 template <typename K>
-bool SNC_io_parser<EW>::read_vertex(iarchive &ia, Vertex_handle vh)
+bool SNC_io_parser<EW>::read_vertex(std::istream &ia, Vertex_handle vh)
 {
 	bool OK = true;
 	int index;
@@ -1461,7 +1513,7 @@ bool SNC_io_parser<EW>::read_vertex(iarchive &ia, Vertex_handle vh)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_edge(oarchive &oa, Halfedge_handle e) const
+void SNC_io_parser<EW>::print_edge(std::ostream &oa, Halfedge_handle e) const
 {
 	SM_decorator D(&*e->source());
 	oa &index(e->twin()) & index(e->source());
@@ -1485,7 +1537,7 @@ void SNC_io_parser<EW>::print_edge(oarchive &oa, Halfedge_handle e) const
 
 template <typename EW>
 template <typename K>
-bool SNC_io_parser<EW>::read_edge(iarchive &ia, Halfedge_handle eh)
+bool SNC_io_parser<EW>::read_edge(std::istream &ia, Halfedge_handle eh)
 {
 
 	bool OK = true;
@@ -1520,7 +1572,7 @@ bool SNC_io_parser<EW>::read_edge(iarchive &ia, Halfedge_handle eh)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_facet(oarchive &oa, Halffacet_handle f) const
+void SNC_io_parser<EW>::print_facet(std::ostream &oa, Halffacet_handle f) const
 {
 	oa &index(f->twin());
 	Halffacet_cycle_iterator it;
@@ -1546,7 +1598,7 @@ void SNC_io_parser<EW>::print_facet(oarchive &oa, Halffacet_handle f) const
 
 template <typename EW>
 template <typename K>
-bool SNC_io_parser<EW>::read_facet(iarchive &ia, Halffacet_handle fh)
+bool SNC_io_parser<EW>::read_facet(std::istream &ia, Halffacet_handle fh)
 {
 	bool OK = true;
 	int index;
@@ -1585,7 +1637,7 @@ bool SNC_io_parser<EW>::read_facet(iarchive &ia, Halffacet_handle fh)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_volume(oarchive &oa, Volume_handle c) const
+void SNC_io_parser<EW>::print_volume(std::ostream &oa, Volume_handle c) const
 {
 	Shell_entry_iterator it;
 	int count = 0;
@@ -1600,7 +1652,7 @@ void SNC_io_parser<EW>::print_volume(oarchive &oa, Volume_handle c) const
 }
 
 template <typename EW>
-bool SNC_io_parser<EW>::read_volume(iarchive &ia, Volume_handle ch)
+bool SNC_io_parser<EW>::read_volume(std::istream &ia, Volume_handle ch)
 {
 	bool OK = true;
 	int index;
@@ -1620,7 +1672,7 @@ bool SNC_io_parser<EW>::read_volume(iarchive &ia, Volume_handle ch)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_sedge(oarchive &oa, SHalfedge_handle e) const
+void SNC_io_parser<EW>::print_sedge(std::ostream &oa, SHalfedge_handle e) const
 {
 	// index { twin, sprev, snext, source, sface, prev, next, facet | circle } mark
 	oa &index(e->twin()) & index(e->sprev()) & index(e->snext()) & index(e->source()) &
@@ -1640,7 +1692,7 @@ void SNC_io_parser<EW>::print_sedge(oarchive &oa, SHalfedge_handle e) const
 
 template <typename EW>
 template <typename K>
-bool SNC_io_parser<EW>::read_sedge(iarchive &ia, SHalfedge_handle seh)
+bool SNC_io_parser<EW>::read_sedge(std::istream &ia, SHalfedge_handle seh)
 {
 	bool OK = true;
 	int index;
@@ -1676,7 +1728,7 @@ bool SNC_io_parser<EW>::read_sedge(iarchive &ia, SHalfedge_handle seh)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_sloop(oarchive &oa, SHalfloop_handle l) const
+void SNC_io_parser<EW>::print_sloop(std::ostream &oa, SHalfloop_handle l) const
 {
 	oa &index(l->twin()) & index(l->incident_sface()) & index(l->facet());
 	if (reduce) {
@@ -1691,7 +1743,7 @@ void SNC_io_parser<EW>::print_sloop(oarchive &oa, SHalfloop_handle l) const
 
 template <typename EW>
 template <typename K>
-bool SNC_io_parser<EW>::read_sloop(iarchive &ia, SHalfloop_handle slh)
+bool SNC_io_parser<EW>::read_sloop(std::istream &ia, SHalfloop_handle slh)
 {
 	bool OK = true;
 	int index;
@@ -1717,7 +1769,7 @@ bool SNC_io_parser<EW>::read_sloop(iarchive &ia, SHalfloop_handle slh)
 }
 
 template <typename EW>
-void SNC_io_parser<EW>::print_sface(oarchive &oa, SFace_handle f) const
+void SNC_io_parser<EW>::print_sface(std::ostream &oa, SFace_handle f) const
 {
 	SM_decorator D(&*f->center_vertex());
 	oa &index(f->center_vertex());
@@ -1737,7 +1789,7 @@ void SNC_io_parser<EW>::print_sface(oarchive &oa, SFace_handle f) const
 }
 
 template <typename EW>
-bool SNC_io_parser<EW>::read_sface(iarchive &ia, SFace_handle sfh)
+bool SNC_io_parser<EW>::read_sface(std::istream &ia, SFace_handle sfh)
 {
 
 	bool OK = true;
