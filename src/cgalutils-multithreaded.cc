@@ -144,10 +144,8 @@ class PolySetHolder
 
 public:
 	PolySetHolder() {}
-	PolySetHolder(const PolySetHolder &hol)
-		: local_ps(hol.local_ps), const_ps(hol.const_ps), ps_type(hol.ps_type)
-	{
-	}
+	PolySetHolder &operator=(const PolySetHolder &) = default;
+	PolySetHolder(const PolySetHolder &) = default;
 	PolySetHolder(const PolySet *ps) : local_ps(nullptr), const_ps(ps), ps_type(PS_TYPES::CONST) {}
 	PolySetHolder(const std::shared_ptr<PolySet> ps)
 		: local_ps(ps), const_ps(nullptr), ps_type(PS_TYPES::LOCAL)
