@@ -362,7 +362,7 @@ void update_with_collisions(std::vector<unsigned> &collision_list, unsigned obje
 	for (unsigned i = 0; i < polysets.size(); ++i) {
 		if (i == object_pos) continue;
 		BoundingBox bb2 = polysets.at(i)->getBoundingBox();
-		if (bb1.exteriorDistance(bb2) < 0.0001d) {
+		if (bb1.exteriorDistance(bb2) < 0.0001) {
 			bool collision_hit = false;
 			for (auto &it : collision_list) {
 				if (it == i) {
@@ -466,31 +466,35 @@ inline void mergeNonIntersectingPolySets(std::vector<std::vector<unsigned>> &mer
 }
 
 #if 0 // C++14 feature currently not supported by all c++14 compilers
-void separateDifferentGeometries(const Geometry::GeometryItem &it, auto F1, auto F2, auto F3)
+bool separateDifferentGeometries(const Geometry::GeometryItem &it, auto F1, auto F2, auto F3)
 #else
 template <typename functor1, typename functor2, typename functor3>
-void separateDifferentGeometries(const Geometry::GeometryItem &it, functor1 F1, functor2 F2,
+bool separateDifferentGeometries(const Geometry::GeometryItem &it, functor1 F1, functor2 F2,
 																 functor3 F3)
 #endif
 {
+	bool ok = false;
 	const shared_ptr<const Geometry> &chgeom = it.second;
 	shared_ptr<const CGAL_Nef_polyhedron> curChild =
 			dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 	if (!curChild) {
 		const PolySet *chps = dynamic_cast<const PolySet *>(chgeom.get());
-		if (chps) {
+		if (chps && !chps->isEmpty()) {
 			// polysetops
 			F1(chps);
+			ok = true;
 		}
 	}
-	if (curChild) {
+	if (curChild && !curChild->isEmpty()) {
 		// polyhedronops
 		F2(curChild);
+		ok = true;
 	}
 	if (it.first) {
 		// nodemarkops
 		F3(it.first->progress_mark);
 	}
+	return ok;
 }
 
 inline void fetchAndOrderSolidsBySize(
@@ -802,35 +806,25 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 	// 1. Separate the different geometry descriptions
 	bool first_obj = true;
 	for (auto &it : children) {
-		bool bad_flag = false;
-		separateDifferentGeometries(
-				it,
-				[&](const PolySet *polyset) {
-					if (polyset && !polyset->isEmpty())
-						solids.push_back({TYPE_MEM::LOCAL, polyset, nullptr});
-					else {
-						if ((op == OpenSCADOperator::DIFFERENCE) && first_obj) bad_flag = true;
-					}
-				},
-				[&](std::shared_ptr<const CGAL_Nef_polyhedron> polyhedron) {
-					if (polyhedron && !polyhedron->isEmpty())
-						solids.push_back({TYPE_MEM::LOCAL, nullptr, polyhedron});
-					else {
-						if ((op == OpenSCADOperator::DIFFERENCE) && first_obj) bad_flag = true;
-					}
-				},
-				[&](int node_mark) {
-					//
-					node_marks.push_back(node_mark);
-				});
+		if (!separateDifferentGeometries(
+						it,
+						[&](const PolySet *polyset) {
+							solids.push_back({TYPE_MEM::LOCAL, polyset, nullptr});
+						},
+						[&](std::shared_ptr<const CGAL_Nef_polyhedron> polyhedron) {
+							solids.push_back({TYPE_MEM::LOCAL, nullptr, polyhedron});
+						},
+						[&](int node_mark) {
+							//
+							node_marks.push_back(node_mark);
+						})) {
+			/* op with nothing */
+			if ((op == OpenSCADOperator::DIFFERENCE) && first_obj) return nullptr;
+			if ((op == OpenSCADOperator::INTERSECTION)) return nullptr;
+		}
 		first_obj = false;
-		if (bad_flag) return nullptr; /* op with nothing */
 	}
 	if (!solids.size()) return nullptr;
-	if ((op == OpenSCADOperator::INTERSECTION) && (solids.size() != children.size())) {
-		/* Intersecting with nothing */
-		return nullptr;
-	}
 
 	// 4. OP as many solids as possible in parallel
 	applyMultithreadedOps(solids, SCADOpToStr(op));
