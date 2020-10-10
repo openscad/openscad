@@ -25,13 +25,13 @@ public:
 	virtual const Renderer::shaderinfo_t &getShader() const;
 	virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f &col, Color4f &outcolor) const;
 
-	virtual void create_surface(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+	virtual void create_surface(const Geometry *geom, VertexArray &vertex_array,
 				    csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
 
-	virtual void create_edges(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+	virtual void create_edges(const Geometry *geom, VertexArray &vertex_array,
 			  	  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
 
-	virtual void create_polygons(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+	virtual void create_polygons(const Geometry *geom, VertexArray &vertex_array,
 			  	     csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
 				     
 protected:

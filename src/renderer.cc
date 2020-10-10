@@ -357,11 +357,11 @@ static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vec
 	}
 }
 
-void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo) const
+void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo) const
 {
 	PRINTD("Renderer render");
 	bool mirrored = m.matrix().determinant() < 0;
-	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	const PolySet* ps = dynamic_cast<const PolySet*>(geom.get());
 
 	if (!ps) return;
 
@@ -486,9 +486,9 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 
 	For some reason, this is not used to render edges in Preview mode
 */
-void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const
+void Renderer::render_edges(const shared_ptr<const Geometry> &geom, csgmode_e csgmode) const
 {
-	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	const PolySet* ps = dynamic_cast<const PolySet*>(geom.get());
 
 	if (!ps) return;
 

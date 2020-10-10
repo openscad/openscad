@@ -32,7 +32,8 @@ std::unique_ptr<std::vector<GLbyte>> VertexData::createInterleavedBuffer() const
 	for (size_t i = 0; i < ((*attributes_.begin())->size() / (*attributes_.begin())->count()); i++) {
 		for (const auto &data : attributes_) {
 			size_t size = data->sizeofAttribute();
-			interleaved_buffer->insert(interleaved_buffer->end(), &(data->toBytes().get()[i*size]), &(data->toBytes().get()[i*size])+size);
+			const GLbyte *bytes_start = &(data->toBytes()[i*size]);
+			interleaved_buffer->insert(interleaved_buffer->end(), bytes_start, bytes_start + size);
 		}
 	}
 	PRINTDB("interleaved_buffer size = %d", (interleaved_buffer->size() / stride));
@@ -61,7 +62,8 @@ std::unique_ptr<std::vector<GLbyte>> VertexData::createSequentialBuffer() const
 	std::unique_ptr<std::vector<GLbyte>> sequential_buffer = std::make_unique<std::vector<GLbyte>>();
 	
 	for (const auto &data : attributes_) {
-		sequential_buffer->insert(sequential_buffer->end(), data->toBytes().get(), data->toBytes().get() + data->sizeInBytes());
+		const GLbyte * bytes_start = data->toBytes();
+		sequential_buffer->insert(sequential_buffer->end(), bytes_start, bytes_start + data->sizeInBytes());
 	}
 	return std::move(sequential_buffer);
 }

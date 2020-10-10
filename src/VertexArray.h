@@ -26,7 +26,7 @@ public:
 	// Return the OpenGL type of the element
 	virtual GLenum glType() const = 0;
 	// Return pointer to the raw bytes of the element vector
-	virtual const std::shared_ptr<GLbyte> toBytes() const = 0;
+	virtual const GLbyte* toBytes() const = 0;
 
 	// Add common types to element vector
 	virtual void addData(GLbyte data) = 0;
@@ -62,17 +62,17 @@ template <typename T, size_t C, GLenum E>
 class AttributeData : public IAttributeData
 {
 public:
-	AttributeData() : data_(std::make_shared<std::vector<T>>()) {}
+	AttributeData() : data_() {}
 	virtual ~AttributeData() {}
 
 	inline size_t count() const override { return C; }
-	inline size_t size() const override { return data_->size(); }
+	inline size_t size() const override { return data_.size(); }
 	inline size_t sizeofType() const override { return sizeof(T); }
 	inline size_t sizeofAttribute() const override { return sizeof(T) * C; }
-	inline size_t sizeInBytes() const override { return data_->size() * sizeof(T); }
+	inline size_t sizeInBytes() const override { return data_.size() * sizeof(T); }
 	inline GLenum glType() const override { return E; }
 
-	inline const std::shared_ptr<GLbyte> toBytes() const override { return std::shared_ptr<GLbyte>(data_, (GLbyte *)(data_.get()->data())); }
+	inline const GLbyte* toBytes() const override { return (GLbyte *)(data_.data()); }
 	
 	inline void addData(GLbyte value) override { add_data((T)value); }
 	inline void addData(GLshort value) override { add_data((T)value); }
@@ -87,9 +87,9 @@ public:
 	
 private:
 	// Internal method to add data of template type to element vector
-	void add_data(T value) { data_->emplace_back(value); }
+	void add_data(T value) { data_.emplace_back(value); }
 
-	std::shared_ptr<std::vector<T>> data_;
+	std::vector<T> data_;
 };
 
 // Storeage and access class for multiple AttributeData that make up one vertex.

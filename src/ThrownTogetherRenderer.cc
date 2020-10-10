@@ -197,7 +197,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
 			getShaderColor(colormode, leaf_color, color);
 			
-			create_surface(csgobj.leaf->geom, vertex_array, csgmode, csgobj.leaf->matrix, color);
+			create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, color);
 			std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
 			if (vs) {
 				vs->csgObjectIndex(csgobj.leaf->index);
@@ -211,7 +211,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
 			vertex_states.emplace_back(std::move(cull));
 
-			create_surface(csgobj.leaf->geom, vertex_array, csgmode, csgobj.leaf->matrix, color);
+			create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, color);
 			std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
 			if (vs) {
 				vs->csgObjectIndex(csgobj.leaf->index);
@@ -226,7 +226,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
 			vertex_states.emplace_back(std::move(cull));
 
-			create_surface(csgobj.leaf->geom, vertex_array, csgmode, csgobj.leaf->matrix, color);
+			create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, color);
 			vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
 			if (vs) {
 				vs->csgObjectIndex(csgobj.leaf->index);

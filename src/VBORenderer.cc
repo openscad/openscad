@@ -336,10 +336,10 @@ void VBORenderer::create_triangle(VertexArray &vertex_array, const Color4f &colo
 	}
 }
 
-void VBORenderer::create_surface(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+void VBORenderer::create_surface(const Geometry *geom, VertexArray &vertex_array,
 				 csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
 {
-	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	const PolySet* ps = dynamic_cast<const PolySet*>(geom);
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
 	if (!ps || !vertex_data) { return; }
@@ -401,12 +401,12 @@ void VBORenderer::create_surface(shared_ptr<const Geometry> geom, VertexArray &v
 	}
 }
 
-void VBORenderer::create_edges(shared_ptr<const Geometry> geom,
+void VBORenderer::create_edges(const Geometry *geom,
 				VertexArray &vertex_array, csgmode_e csgmode,
 				const Transform3d &m,
 				const Color4f &color) const
 {
-	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	const PolySet* ps = dynamic_cast<const PolySet*>(geom);
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
 	if (!ps || !vertex_data) return;
@@ -491,10 +491,10 @@ void VBORenderer::create_edges(shared_ptr<const Geometry> geom,
 	}
 }
 
-void VBORenderer::create_polygons(shared_ptr<const Geometry> geom, VertexArray &vertex_array,
+void VBORenderer::create_polygons(const Geometry *geom, VertexArray &vertex_array,
 				  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
 {
-	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+	const PolySet* ps = dynamic_cast<const PolySet*>(geom);
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
 	if (!ps || !vertex_data) return;

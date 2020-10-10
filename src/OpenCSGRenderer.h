@@ -82,7 +82,7 @@ public:
 private:
 #ifdef ENABLE_OPENCSG
 	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
-	class OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> vertex_state,
+	class OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> &vertex_state,
 						 const OpenCSG::Operation operation, const unsigned int convexity, const GLuint vbo) const;
 #endif // ENABLE_OPENCSG
 	void createCSGProducts(const class CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const;

@@ -140,7 +140,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, O
 }
 
 // Primitive for drawing using OpenCSG
-OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> vertex_state,
+OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> &vertex_state,
 						    const OpenCSG::Operation operation, const unsigned int convexity, const GLuint vbo) const
 {
 	std::unique_ptr<VertexState> opencsg_vs = std::make_unique<VertexState>(vertex_state->drawType(), vertex_state->drawSize());
@@ -190,13 +190,13 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				add_shader_pointers(vertex_array);
 				if (color[3] == 1.0f) {
 					// object is opaque, draw normally
-					create_surface(csgobj.leaf->geom, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
+					create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 					if (surface != nullptr) {
 						surface->csgObjectIndex(csgobj.leaf->index);
-						primitives->emplace_back(std::move(createVBOPrimitive(surface,
+						primitives->push_back(createVBOPrimitive(surface,
 												      OpenCSG::Intersection,
-												      csgobj.leaf->geom->getConvexity(), vertex_vbo)));
+												      csgobj.leaf->geom->getConvexity(), vertex_vbo));
 					}
 				} else {
 					// object is transparent, so draw rear faces first.  Issue #1496
@@ -205,9 +205,8 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 					cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
 					vertex_states->emplace_back(std::move(cull));
 
-					create_surface(csgobj.leaf->geom, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
+					create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
-					std::shared_ptr<VertexState> surface_copy = std::make_shared<VertexState>();
 
 					if (surface != nullptr) {
 						surface->csgObjectIndex(csgobj.leaf->index);
@@ -216,13 +215,11 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 										   OpenCSG::Intersection,
 										   csgobj.leaf->geom->getConvexity(), vertex_vbo)));
 
-						(*surface_copy) = *(surface);
-
 						cull = std::make_shared<VertexState>();
 						cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
 						vertex_states->emplace_back(std::move(cull));
 						
-						vertex_states->emplace_back(std::move(surface_copy));
+						vertex_states->emplace_back(surface);
 
 						cull = std::make_shared<VertexState>();
 						cull->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
@@ -261,7 +258,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
 				vertex_states->emplace_back(std::move(cull));
 
-				create_surface(csgobj.leaf->geom, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
+				create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 
 				std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 				if (surface != nullptr) {
