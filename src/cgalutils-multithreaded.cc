@@ -16,9 +16,6 @@
 #include <boost/serialization/string.hpp>
 
 #include "custom_SNC_io_parser.h"
-
-#include <boost/archive/text_oarchive.hpp>
-
 #include <Eigen/Core>
 #include <chrono>
 
@@ -28,41 +25,27 @@
 
 // #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
-namespace CGAL { // TODO: sort
+class PHIO : public CGAL_Nef_polyhedron3{
 
-// template <typename Kernel, typename Items, typename Mark>
-// std::ostream &operator<<(std::ostream &os, Nef_polyhedron_3<Kernel, Items, Mark> &NP)
-// {
-// 	typedef typename Nef_polyhedron_3<Kernel, Items, Mark>::SNC_structure SNC_structure;
-// #ifdef CGAL_NEF3_SORT_OUTPUT
-// 	custom::SNC_io_parser<SNC_structure> O(os, NP.snc(), true, true);
-// #else
-// 	custom::SNC_io_parser<SNC_structure> O(os, NP.snc(), false, true);
-// #endif
-// 	O.print();
-// 	return os;
-// }
+public:
+	static void custom_ph_print(std::ostream &ps, CGAL_Nef_polyhedron3 &ph)
+	{
+		// TODO: sort
+		auto &obj = (PHIO &)ph;
+		typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
+		custom::SNC_io_parser<SNC_structure> O(ps, obj.snc(), false, false);
+		O.print();
+	}
 
-template <typename Kernel, typename Items, typename Mark>
-std::istream &operator>>(std::istream &is, Nef_polyhedron_3<Kernel, Items, Mark> &NP)
-{
-	typedef typename Nef_polyhedron_3<Kernel, Items, Mark>::SNC_structure SNC_structure;
-	custom::SNC_io_parser<SNC_structure> I(is, NP.snc());
-	I.read();
-	NP.pl()->initialize(&NP.snc());
-	return is;
-}
-
-} // namespace CGAL
-
-void custom_ph_print(std::ostream &ps, CGAL_Nef_polyhedron3 &ph)
-{
-	auto &obj = ph;
-	typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
-	custom::SNC_io_parser<SNC_structure> O(ps, *const_cast<SNC_structure *>(obj.sncp()), false,
-																				 false);
-	O.print();
-}
+	static void custom_ph_read(std::istream &is, CGAL_Nef_polyhedron3 &ph)
+	{
+		auto &obj = (PHIO &)ph;
+		typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
+		custom::SNC_io_parser<SNC_structure> I(is, obj.snc());
+		I.read();
+		obj.pl()->initialize(&obj.snc());
+	}
+};
 
 namespace boost {
 namespace serialization {
@@ -293,7 +276,8 @@ void spawnOpWorker(std::vector<std::string> shmems)
 			// shm.truncate(0);
 		}
 		if ('h' == shmems.at(2).c_str()[k]) {
-			ps >> *hobjects[k];
+//			ps >> *hobjects[k];
+			PHIO::custom_ph_read(ps, *hobjects[k]);
 			// shm.truncate(0);
 		}
 		if (!ps.good() || ps.bad() || ps.fail())
@@ -324,7 +308,7 @@ void spawnOpWorker(std::vector<std::string> shmems)
 	// std::stringstream ps = prealloc_ss(serialized_size + 500);
 	bufferstream ps(std::ios::binary | std::ios::out);
 	ps.buffer((char *)region.get_address(), region.get_size());
-	custom_ph_print(ps, *first_obj->p3);
+	PHIO::custom_ph_print(ps, *first_obj->p3);
 	if (!ps.good() || ps.bad() || ps.fail())
 		throw MultithreadedError("ERROR: Insufficient shmem buffer!");
 
@@ -518,7 +502,8 @@ inline void fetchAndOrderSolidsBySize(
 
 			// Serialized Polyhedron
 			std::shared_ptr<CGAL_Nef_polyhedron3> ppol = std::make_shared<CGAL_Nef_polyhedron3>();
-			ps >> *ppol;
+//			ps >> *ppol;
+			PHIO::custom_ph_read(ps, *ppol);
 			if (!ps.good() || ps.bad() || ps.fail())
 				throw MultithreadedError("ERROR: Insufficient shmem buffer!");
 
@@ -719,7 +704,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 		}
 		if (solid_it->ph) {
 			// ps = prealloc_ss(solid_it->ph->memsize() + 500);
-			custom_ph_print(ps, *solid_it->ph->p3);
+			PHIO::custom_ph_print(ps, *solid_it->ph->p3);
 		}
 
 		// Upload them to shmem
