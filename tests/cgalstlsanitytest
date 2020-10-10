@@ -3,9 +3,17 @@
 import re, sys, subprocess, os
 from validatestl import validateSTL
 
-stlfile = sys.argv[3] + '.stl'
+if len(sys.argv) < 4:
+    sys.exit(1)
 
-subprocess.check_call([sys.argv[2], sys.argv[1], '-o', stlfile])
+stlfile = sys.argv[-1] + '.stl'
+
+r_args = '';
+if len(sys.argv) > 4:
+    for i in range(2, len(sys.argv)-2, 1):
+        r_args = r_args + sys.argv[i] + ' ';
+
+subprocess.check_call([sys.argv[-2], sys.argv[1], '-o', stlfile, r_args])
 
 ret = validateSTL(stlfile)
 os.unlink(stlfile)
