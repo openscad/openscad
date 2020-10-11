@@ -51,31 +51,30 @@ RenderColorScheme::RenderColorScheme() : _path("")
 
 RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 {
-  try {
-    boost::property_tree::read_json(path.generic_string().c_str(), pt);
-    _name = pt.get<std::string>("name");
-    _index = pt.get<int>("index");
-    _show_in_gui = pt.get<bool>("show-in-gui");
-
-    addColor(RenderColor::BACKGROUND_COLOR, "background");
-    addColor(RenderColor::AXES_COLOR, "axes-color");
-    addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
-    addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
-    addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
-    addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
-    addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
-    addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
-    addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
-    addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
-    addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
-  }
-  catch (const std::exception &e) {
-    PRINTB("Error reading color scheme file '%s': %s", path.generic_string().c_str() % e.what());
-    _error = e.what();
-    _name = "";
-    _index = 0;
-    _show_in_gui = false;
-  }
+    try {
+	boost::property_tree::read_json(path.generic_string().c_str(), pt);
+	_name = pt.get<std::string>("name");
+	_index = pt.get<int>("index");
+	_show_in_gui = pt.get<bool>("show-in-gui");
+	
+	addColor(RenderColor::BACKGROUND_COLOR, "background");
+	addColor(RenderColor::AXES_COLOR, "axes-color");
+	addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
+	addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
+	addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
+	addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
+	addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
+	addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
+	addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
+	addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
+	addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
+    } catch (const std::exception & e) {
+			LOG(message_group::None,Location::NONE,"","Error reading color scheme file: '%1$s': %2$s",path.generic_string().c_str(),e.what());
+	_error = e.what();
+	_name = "";
+	_index = 0;
+	_show_in_gui = false;
+    }
 }
 
 RenderColorScheme::~RenderColorScheme()

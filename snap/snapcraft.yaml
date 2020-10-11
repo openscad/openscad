@@ -109,6 +109,7 @@ parts:
     - libmpfr-dev
     - python
     - cmake
+    - libcairo2-dev
     - libboost-dev
     - libboost-regex-dev
     - libboost-system-dev

@@ -1,19 +1,19 @@
-WARNING: e was assigned on line 49 but was overwritten on line 52
-WARNING: f was assigned on line 58 but was overwritten on line 61
-WARNING: g was assigned on line 67 but was overwritten on line 69
-WARNING: h was assigned on line 73 but was overwritten on line 75
-WARNING: Ignoring unknown variable 'h', in file scope-assignment-tests.scad, line 75.
+WARNING: e was assigned on line 49 but was overwritten in file scope-assignment-tests.scad, line 52
+WARNING: f was assigned on line 58 but was overwritten in file scope-assignment-tests.scad, line 61
+WARNING: g was assigned on line 67 but was overwritten in file scope-assignment-tests.scad, line 69
+WARNING: h was assigned on line 73 but was overwritten in file scope-assignment-tests.scad, line 75
+WARNING: Ignoring unknown variable 'h' in file scope-assignment-tests.scad, line 75
 WARNING: undefined operation (undefined * number) in file scope-assignment-tests.scad, line 75
 ECHO: "union scope"
 ECHO: "local a (5):", 5
 ECHO: "global a (4):", 4
 ECHO: "module scope:"
-WARNING: Module mymodule: Parameter b is overwritten with a literal, in file scope-assignment-tests.scad, line 12
+WARNING: Module mymodule: Parameter b is overwritten with a literal in file scope-assignment-tests.scad, line 12
 ECHO: "local b (7)", 7
-WARNING: Module mymodule: Parameter b is overwritten with a literal, in file scope-assignment-tests.scad, line 12
+WARNING: Module mymodule: Parameter b is overwritten with a literal in file scope-assignment-tests.scad, line 12
 ECHO: "local b (7)", 7
 ECHO: "module children scope:"
-WARNING: Module mymodule2: Parameter b2 is overwritten with a literal, in file scope-assignment-tests.scad, line 20
+WARNING: Module mymodule2: Parameter b2 is overwritten with a literal in file scope-assignment-tests.scad, line 20
 ECHO: "b2 (3)", 3
 ECHO: "for loop (c = 0,1,25):"
 ECHO: "c", 0

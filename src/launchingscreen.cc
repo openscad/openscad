@@ -19,11 +19,11 @@ LaunchingScreen *LaunchingScreen::getDialog() {
 void LaunchingScreen::openFile(const QString &filename)
 {
 	QVariant v(filename);
-	this->checkOpen(v);
+	this->checkOpen(v, false);
 	this->done(QDialog::Accepted);
 }
 
-LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
+LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent), forceShowEditor(true)
 {
 	LaunchingScreen::inst = this;
 	setupUi(this);
@@ -78,6 +78,11 @@ QStringList LaunchingScreen::selectedFiles() const
 	return this->files;
 }
 
+bool LaunchingScreen::isForceShowEditor() const
+{
+  return this->forceShowEditor || this->files.isEmpty();
+}
+
 void LaunchingScreen::enableRecentButton(const QModelIndex &, const QModelIndex &)
 {
 	this->openRecentButton->setEnabled(true);
@@ -91,7 +96,7 @@ void LaunchingScreen::openRecent()
 		return;
 	}
 
-	checkOpen(item->data(Qt::UserRole));
+	checkOpen(item->data(Qt::UserRole), false);
 }
 
 void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *)
@@ -108,16 +113,17 @@ void LaunchingScreen::openExample()
 		return;
 	}
 
-	checkOpen(item->data(0, Qt::UserRole));
+	checkOpen(item->data(0, Qt::UserRole), true);
 }
 
-void LaunchingScreen::checkOpen(const QVariant &data)
+void LaunchingScreen::checkOpen(const QVariant &data, bool forceShowEditor)
 {
 	const QString path = data.toString();
 	if (path.isEmpty()) {
 		return;
 	}
-    
+
+	this->forceShowEditor = forceShowEditor;
 	this->files.append(path);
 	accept();
 }
@@ -126,6 +132,7 @@ void LaunchingScreen::openUserFile()
 {
 	QFileInfo fileInfo = UIUtils::openFile(this);
 	if (fileInfo.exists()) {
+		this->forceShowEditor = false;
 		this->files.append(fileInfo.canonicalFilePath());
 		accept();
 	}

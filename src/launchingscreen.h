@@ -16,6 +16,7 @@ public:
 	explicit LaunchingScreen(QWidget *parent = nullptr);
 	~LaunchingScreen();
 	QStringList selectedFiles() const;
+	bool isForceShowEditor() const;
 
 public slots:
 	void openFile(const QString &filename);
@@ -30,8 +31,9 @@ private slots:
 	void openUserManualURL() const;
 	
 private:
-	void checkOpen(const QVariant &data);
+	void checkOpen(const QVariant &data, bool forceShowEditor);
   
-	QStringList files;
+  QStringList files;
+  bool forceShowEditor;
   static LaunchingScreen *inst;
 };

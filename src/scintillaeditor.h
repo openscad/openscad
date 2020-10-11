@@ -64,6 +64,7 @@ public:
 	QPoint mapToGlobal(const QPoint &) override;
 
 	void setCursorPosition(int line, int col) override;
+	void setFocus() override;
 	void cancelCallTip();
 
 private:

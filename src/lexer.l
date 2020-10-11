@@ -38,6 +38,7 @@
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
@@ -154,7 +155,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 							BEGIN(INITIAL);
 							fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
 							if (fullpath.empty()) {
-								PRINTB("WARNING: Can't open library '%s'.", filename);
+							LOG(message_group::Warning,Location::NONE,"","Can't open library '%1$s'.",filename);
 								parserlval.text = strdup(filename.c_str());
 							} else {
 								handle_dep(fullpath.generic_string());
@@ -315,7 +316,7 @@ void includefile(const Location& loc)
   }
   else {
     rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
-    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
+    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
     return;
   };
 
@@ -328,7 +329,7 @@ void includefile(const Location& loc)
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
+    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();
     return;
   }

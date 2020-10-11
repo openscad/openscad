@@ -3,12 +3,12 @@ ECHO: 6
 ECHO: 6
 ECHO: 2
 ECHO: 3
-WARNING: Ignoring duplicate variable assignment $a = 4, in file let-tests.scad, line 8
+WARNING: Ignoring duplicate variable assignment $a = 4 in file let-tests.scad, line 8
 ECHO: 6
-WARNING: Ignoring duplicate variable assignment b = 5, in file let-tests.scad, line 9
+WARNING: Ignoring duplicate variable assignment b = 5 in file let-tests.scad, line 9
 ECHO: 6
-WARNING: Ignoring duplicate variable assignment $a = 4, in file let-tests.scad, line 10
-WARNING: Ignoring duplicate variable assignment b = 5, in file let-tests.scad, line 10
+WARNING: Ignoring duplicate variable assignment $a = 4 in file let-tests.scad, line 10
+WARNING: Ignoring duplicate variable assignment b = 5 in file let-tests.scad, line 10
 ECHO: 6
 ECHO: 12
 ECHO: 6
@@ -16,8 +16,8 @@ ECHO: 12
 ECHO: 18
 ECHO: [1, 1]
 ECHO: [[1, 2], [2, 2]]
-WARNING: Assignment without variable name 42, in file let-tests.scad, line 21
-WARNING: Assignment without variable name 1, in file let-tests.scad, line 22
-WARNING: Assignment without variable name 2, in file let-tests.scad, line 22
-WARNING: Assignment without variable name 3, in file let-tests.scad, line 22
-WARNING: Assignment without variable name 4, in file let-tests.scad, line 22
+WARNING: Assignment without variable name 42 in file let-tests.scad, line 21
+WARNING: Assignment without variable name 1 in file let-tests.scad, line 22
+WARNING: Assignment without variable name 2 in file let-tests.scad, line 22
+WARNING: Assignment without variable name 3 in file let-tests.scad, line 22
+WARNING: Assignment without variable name 4 in file let-tests.scad, line 22

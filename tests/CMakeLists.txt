@@ -194,11 +194,25 @@ endfunction()
 #
 find_package(PythonInterp 3.4 REQUIRED)
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR;STDIN;STDOUT" "FILES;ARGS" ${ARGN})
+
+  set(EXTRA_OPTIONS "")
 
   # If sharing results with another test, pass on this to the python script
   if (TESTCMD_EXPECTEDDIR)
-    set(EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
+    list(APPEND EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
+  endif()
+
+  if (TESTCMD_KERNEL)
+    list(APPEND EXTRA_OPTIONS -k ${TESTCMD_KERNEL})
+  endif()
+
+  if (TESTCMD_STDIN)
+    list(APPEND EXTRA_OPTIONS --stdin)
+  endif()
+
+  if (TESTCMD_STDOUT)
+    list(APPEND EXTRA_OPTIONS --stdout)
   endif()
 
   if (TESTCMD_EXE)
@@ -270,7 +284,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
       # debug message
       #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
-      # only add test is it is not experimental or if it is and experimental option is enabled
+      # only add test if it is not experimental or if it is and experimental option is enabled
       if (${EXPERIMENTAL_TEST} EQUAL -1 OR EXPERIMENTAL)
       	add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
       	set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
@@ -354,6 +368,7 @@ file(GLOB DEPRECATED_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/de
 file(GLOB ISSUES_2D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB SCAD_PDF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/pdf/*.scad)
 file(GLOB SCAD_SVG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/svg/svg-spec/*.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/svg/box-w-holes-2d.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/svg/line-cap-line-join.scad
@@ -509,6 +524,7 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/mi
                            )
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
+list(SUBLIST CGALPNGTEST_FILES 0 1 CGALPNGSTDIOTEST_FILES)
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/intersection-prune-test.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
@@ -830,11 +846,17 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 #
 
 add_cmdline_test(astdumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES ${ASTDUMPTEST_FILES})
+add_cmdline_test(astdumpstdiotest EXE ${OPENSCAD_BINPATH} ARGS --enable=function-literals --export-format ast -o SUFFIX ast STDOUT true STDIN true EXPECTEDDIR astdumptest FILES
+                                  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
+
+
 add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                              ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
+add_cmdline_test(echostdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format echo -o SUFFIX echo STDOUT true STDIN true EXPECTEDDIR echotest FILES
+                               ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad)
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --check-parameter-ranges=on -o SUFFIX echo FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/builtin-invalid-range-test.scad)
 
 # generate a very large scad file which we would rather not commit to the source tree
@@ -854,6 +876,7 @@ add_custom_target(svg_viewbox_tests ALL
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(cgalpngstdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format png --render -o SUFFIX png STDIN true STDOUT true EXPECTEDDIR cgalpngtest FILES ${CGALPNGSTDIOTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg --render EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
@@ -991,6 +1014,7 @@ add_cmdline_test(amfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOUR
 add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=3MF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
+add_cmdline_test(pdfexporttest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=PDF KERNEL Square:2 EXPECTEDDIR pdfexporttest SUFFIX png FILES ${SCAD_PDF_FILES})
 
 #
 # Corner-case Export/Import tests
@@ -1176,6 +1200,15 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
                  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-tests.scad)
+
+add_cmdline_test(openscad-camvp-variables EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 -o
+                 SUFFIX png
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-vp.scad)
+add_cmdline_test(openscad-camvp-override EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=120,80,60,0,0,0 -o
+                 SUFFIX png
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-vp.scad)
 
 # View Options tests
 add_cmdline_test(openscad-viewoptions-axes EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)

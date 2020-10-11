@@ -67,7 +67,9 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		if (err) { 
+			LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
+		}
 		else {
 			append_geometry(ps, mesh);
 		}

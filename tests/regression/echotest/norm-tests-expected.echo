@@ -3,7 +3,7 @@ ECHO: 1
 ECHO: 2.23607
 ECHO: 3.74166
 ECHO: 5.47723
-WARNING: norm() number of parameters does not match, in file norm-tests.scad, line 8
+WARNING: norm() number of parameters does not match in file norm-tests.scad, line 8
 ECHO: undef
 ECHO: nan
 ECHO: inf
@@ -12,18 +12,18 @@ ECHO: undef
 ECHO: undef
 ECHO: undef
 ECHO: undef
-WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 19
+WARNING: Incorrect arguments to norm() in file norm-tests.scad, line 19
 ECHO: undef
-WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 20
+WARNING: Incorrect arguments to norm() in file norm-tests.scad, line 20
 ECHO: undef
-WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 21
+WARNING: Incorrect arguments to norm() in file norm-tests.scad, line 21
 ECHO: undef
-WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 22
+WARNING: Incorrect arguments to norm() in file norm-tests.scad, line 22
 ECHO: undef
-WARNING: Incorrect arguments to norm(), in file norm-tests.scad, line 23
+WARNING: Incorrect arguments to norm() in file norm-tests.scad, line 23
 ECHO: undef
 ECHO: undef
-WARNING: norm() number of parameters does not match, in file norm-tests.scad, line 26
+WARNING: norm() number of parameters does not match in file norm-tests.scad, line 26
 ECHO: undef
-WARNING: norm() number of parameters does not match, in file norm-tests.scad, line 27
+WARNING: norm() number of parameters does not match in file norm-tests.scad, line 27
 ECHO: undef

@@ -1,25 +1,24 @@
-group();
 %linear_extrude(height = 22, center = true, convexity = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-	import(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1591481975);
+	import(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1553293473);
 }
 %group() {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 		linear_extrude(height = 2, center = true, convexity = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			import(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1591481975);
+			import(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1553293473);
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -12], [0, 0, 0, 1]]) {
 		linear_extrude(height = 2, center = true, convexity = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			import(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1591481975);
+			import(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1553293473);
 		}
 	}
 }
 intersection() {
 	linear_extrude(height = 20, center = true, convexity = 10, twist = -57.5288, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-		import(file = "example009.dxf", layer = "fan_top", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1591481975);
+		import(file = "example009.dxf", layer = "fan_top", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1553293473);
 	}
 	rotate_extrude(angle = 360, convexity = 10, $fn = 0, $fa = 12, $fs = 2) {
-		import(file = "example009.dxf", layer = "fan_side", origin = [0, -40], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1591481975);
+		import(file = "example009.dxf", layer = "fan_side", origin = [0, -40], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1553293473);
 	}
 }
 

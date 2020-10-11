@@ -35,6 +35,7 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern const std::string get_cairo_version();
 extern const std::string get_lib3mf_version();
 extern const std::string get_fontconfig_version();
 extern const std::string get_harfbuzz_version();
@@ -130,6 +131,7 @@ std::string LibraryInfo::info()
 	  << "\nfontconfig version: " << get_fontconfig_version()
 	  << "\nfreetype version: " << get_freetype_version()
 	  << "\nharfbuzz version: " << get_harfbuzz_version()
+	  << "\ncairo version: " << get_cairo_version()
 	  << "\nlib3mf version: " << get_lib3mf_version()
 	  << "\nFeatures: " << Feature::features()
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()

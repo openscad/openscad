@@ -64,7 +64,7 @@ void Feature::enable_feature(const std::string &feature_name, bool status)
 	if (it != feature_map.end()) {
 		it->second->enable(status);
 	} else {
-		PRINTB("WARNING: Ignoring request to enable unknown feature '%s'.", feature_name);
+		LOG(message_group::Warning,Location::NONE,"","Ignoring request to enable unknown feature '%1$s'.",feature_name);
 	}
 }
 

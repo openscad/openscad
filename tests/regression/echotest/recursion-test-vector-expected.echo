@@ -1,6 +1,6 @@
 ERROR: Recursion detected calling module 'rec' in file recursion-test-vector.scad, line 6
-TRACE: called by 'rec', in file recursion-test-vector.scad, line 8.
-TRACE: called by 'rec', in file recursion-test-vector.scad, line 8.
-TRACE: called by 'rec', in file recursion-test-vector.scad, line 8.
-TRACE: called by 'rec', in file recursion-test-vector.scad, line 8.
-TRACE: called by 'rec', in file recursion-test-vector.scad, line 8.
+TRACE: called by 'rec' in file recursion-test-vector.scad, line 8
+TRACE: called by 'rec' in file recursion-test-vector.scad, line 8
+TRACE: called by 'rec' in file recursion-test-vector.scad, line 8
+TRACE: called by 'rec' in file recursion-test-vector.scad, line 8
+TRACE: called by 'rec' in file recursion-test-vector.scad, line 8

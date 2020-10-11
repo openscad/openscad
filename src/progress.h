@@ -9,7 +9,7 @@ extern void *progress_report_userdata;
 void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *userdata, int mark), void *userdata);
 void progress_report_fin();
 void progress_update(const AbstractNode *node, int mark);
-// CGALUtils::applyUnion may process nodes out of order, so allow for an increment instead of tracking exact node
+// CGALUtils::applyUnion3D may process nodes out of order, so allow for an increment instead of tracking exact node
 void progress_tick();
 
 class ProgressCancelException { };

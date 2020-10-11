@@ -40,6 +40,7 @@
 #include <assert.h>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");
@@ -225,7 +226,7 @@ int AmfImporter::streamFile(const char *filename)
 	xmlTextReaderPtr reader = createXmlReader(filename);
 	
 	if (reader == nullptr) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % this->loc.firstLine());
+		LOG(message_group::Warning,Location::NONE,"","Can't open import file '%1$s', import() at line %2$d",filename,this->loc.firstLine());
 		return 1;
 	}
 
@@ -241,7 +242,7 @@ int AmfImporter::streamFile(const char *filename)
 		ret = -1;
 	}
 	if (ret != 0) {
-		PRINTB("WARNING: Failed to parse file '%s', import() at line %d", filename % this->loc.firstLine());
+		LOG(message_group::Warning,Location::NONE,"","Failed to parse file '%1$s', import() at line %2$d",filename,this->loc.firstLine());
 	}
 	return ret;
 }
@@ -270,12 +271,12 @@ PolySet * AmfImporter::read(const std::string filename)
 		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
-		CGAL_Nef_polyhedron *N = CGALUtils::applyUnion(children.begin(), children.end());
+		CGAL_Nef_polyhedron *N = CGALUtils::applyUnion3D(children.begin(), children.end());
 		PolySet *result = new PolySet(3);
 		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
 			delete result;
 			p = new PolySet(3);
-			PRINTB("ERROR: Error importing multi-object AMF file '%s', import() at line %d", filename % this->loc.firstLine());
+			LOG(message_group::Error,Location::NONE,"","Error importing multi-object AMF file '%1$s', import() at line %2$d",filename,this->loc.firstLine());
 		} else {
 			p = result;
 		}
@@ -341,10 +342,10 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 		const char *filename = last_slash ? last_slash + 1 : filepath;
 		zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
 		if (zipfile == nullptr) {
-			PRINTB("WARNING: Can't read file '%s' from zipped AMF '%s', import() at line %d", filename % filepath % this->loc.firstLine());
+			LOG(message_group::Warning,Location::NONE,"","Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d",filename,filepath,this->loc.firstLine());
 		}
 		if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
-			PRINTB("WARNING: Trying to read single entry '%s'", zip_get_name(archive, 0, 0));
+			LOG(message_group::Warning,Location::NONE,"","Trying to read single entry '%1$s'",zip_get_name(archive, 0, 0));
 			zipfile = zip_fopen_index(archive, 0, 0);
 		}
 		if (zipfile) {
