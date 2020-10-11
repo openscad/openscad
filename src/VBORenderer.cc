@@ -336,24 +336,23 @@ void VBORenderer::create_triangle(VertexArray &vertex_array, const Color4f &colo
 	}
 }
 
-void VBORenderer::create_surface(const Geometry *geom, VertexArray &vertex_array,
+void VBORenderer::create_surface(const PolySet &ps, VertexArray &vertex_array,
 				 csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
 {
-	const PolySet* ps = dynamic_cast<const PolySet*>(geom);
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
-	if (!ps || !vertex_data) { return; }
+	if (!vertex_data) { return; }
 
 	bool mirrored = m.matrix().determinant() < 0;
 	size_t triangle_count = 0;
 
-	if (ps->getDimension() == 2) {
-		create_polygons(geom, vertex_array, csgmode, m, color);
-	} else if (ps->getDimension() == 3) {
+	if (ps.getDimension() == 2) {
+		create_polygons(ps, vertex_array, csgmode, m, color);
+	} else if (ps.getDimension() == 3) {
 		VertexStates &vertex_states = vertex_array.states();
 		size_t last_size = vertex_data->sizeInBytes();
 
-		for (const auto &poly : ps->polygons) {
+		for (const auto &poly : ps.polygons) {
 			Vector3d p0 = m * poly.at(0);
 			Vector3d p1 = m * poly.at(1);
 			Vector3d p2 = m * poly.at(2);
@@ -397,22 +396,21 @@ void VBORenderer::create_surface(const Geometry *geom, VertexArray &vertex_array
 	}
 }
 
-void VBORenderer::create_edges(const Geometry *geom,
+void VBORenderer::create_edges(const PolySet &ps,
 				VertexArray &vertex_array, csgmode_e csgmode,
 				const Transform3d &m,
 				const Color4f &color) const
 {
-	const PolySet* ps = dynamic_cast<const PolySet*>(geom);
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
-	if (!ps || !vertex_data) return;
+	if (!vertex_data) return;
 
 	VertexStates &vertex_states = vertex_array.states();
 
-	if (ps->getDimension() == 2) {
+	if (ps.getDimension() == 2) {
 		if (csgmode == Renderer::CSGMODE_NONE) {
 			// Render only outlines
-			for (const Outline2d &o : ps->getPolygon().outlines()) {
+			for (const Outline2d &o : ps.getPolygon().outlines()) {
 				size_t last_size = vertex_data->sizeInBytes();
 				for (const Vector2d &v : o.vertices) {
 					Vector3d p0(v[0],v[1],0.0); p0 = m * p0;
@@ -429,7 +427,7 @@ void VBORenderer::create_edges(const Geometry *geom,
 		} else {
 			// Render 2D objects 1mm thick, but differences slightly larger
 			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
-			for (const Outline2d &o : ps->getPolygon().outlines()) {
+			for (const Outline2d &o : ps.getPolygon().outlines()) {
 				size_t last_size = vertex_data->sizeInBytes();
 
 				// Render top+bottom outlines
@@ -467,8 +465,8 @@ void VBORenderer::create_edges(const Geometry *geom,
 				vertex_array.addAttributePointers(last_size);
 			}
 		}
-	} else if (ps->getDimension() == 3) {
-		for (const auto &polygon : ps->polygons) {
+	} else if (ps.getDimension() == 3) {
+		for (const auto &polygon : ps.polygons) {
 			size_t last_size = vertex_data->sizeInBytes();
 			for (const auto &vertex : polygon) {
 				const Vector3d &p = m * vertex;
@@ -487,17 +485,16 @@ void VBORenderer::create_edges(const Geometry *geom,
 	}
 }
 
-void VBORenderer::create_polygons(const Geometry *geom, VertexArray &vertex_array,
+void VBORenderer::create_polygons(const PolySet &ps, VertexArray &vertex_array,
 				  csgmode_e csgmode, const Transform3d &m, const Color4f &color) const
 {
-	const PolySet* ps = dynamic_cast<const PolySet*>(geom);
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
-	if (!ps || !vertex_data) return;
+	if (!vertex_data) return;
 
 	VertexStates &vertex_states = vertex_array.states();
 
-	if (ps->getDimension() == 2) {
+	if (ps.getDimension() == 2) {
 		PRINTD("create_polygons 2D");
 		bool mirrored = m.matrix().determinant() < 0;
 		size_t triangle_count = 0;
@@ -505,7 +502,7 @@ void VBORenderer::create_polygons(const Geometry *geom, VertexArray &vertex_arra
 
 		if (csgmode == Renderer::CSGMODE_NONE) {
 			PRINTD("create_polygons CSGMODE_NONE");
-			for (const auto &poly : ps->polygons) {
+			for (const auto &poly : ps.polygons) {
 				Vector3d p0 = poly.at(0); p0 = m * p0;
 				Vector3d p1 = poly.at(1); p1 = m * p1;
 				Vector3d p2 = poly.at(2); p2 = m * p2;
@@ -550,7 +547,7 @@ void VBORenderer::create_polygons(const Geometry *geom, VertexArray &vertex_arra
 			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
 			// Render top+bottom
 			for (double z = -zbase/2; z < zbase; z += zbase) {
-				for (const auto &poly : ps->polygons) {
+				for (const auto &poly : ps.polygons) {
 					Vector3d p0 = poly.at(0); p0[2] += z; p0 = m * p0;
 					Vector3d p1 = poly.at(1); p1[2] += z; p1 = m * p1;
 					Vector3d p2 = poly.at(2); p2[2] += z; p2 = m * p2;
@@ -608,9 +605,9 @@ void VBORenderer::create_polygons(const Geometry *geom, VertexArray &vertex_arra
 			}
 
 			// Render sides
-			if (ps->getPolygon().outlines().size() > 0) {
+			if (ps.getPolygon().outlines().size() > 0) {
 				PRINTD("Render outlines as sides");
-				for (const Outline2d &o : ps->getPolygon().outlines()) {
+				for (const Outline2d &o : ps.getPolygon().outlines()) {
 					for (size_t i = 1; i <= o.vertices.size(); i++) {
 						Vector3d p1 = m * Vector3d(o.vertices[i-1][0], o.vertices[i-1][1], -zbase/2);
 						Vector3d p2 = m * Vector3d(o.vertices[i-1][0], o.vertices[i-1][1], zbase/2);
@@ -628,7 +625,7 @@ void VBORenderer::create_polygons(const Geometry *geom, VertexArray &vertex_arra
 				// If we don't have borders, use the polygons as borders.
 				// FIXME: When is this used?
 				PRINTD("Render sides with polygons");
-				for (const auto &poly : ps->polygons) {
+				for (const auto &poly : ps.polygons) {
 					for (size_t i = 1; i <= poly.size(); i++) {
 						Vector3d p1 = poly.at(i - 1); p1[2] -= zbase/2; p1 = m * p1;
 						Vector3d p2 = poly.at(i - 1); p2[2] += zbase/2; p2 = m * p2;

@@ -47,15 +47,17 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity, const OpenCSGRenderer &renderer) :
 			OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE), renderer(renderer) { }
-	shared_ptr<const Geometry> geom;
+	shared_ptr<const PolySet> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
 
 	void render() override {
-		glPushMatrix();
-		glMultMatrixd(m.data());
-		renderer.render_surface(geom, csgmode, m);
-		glPopMatrix();
+		if (geom) {
+			glPushMatrix();
+			glMultMatrixd(m.data());
+			renderer.render_surface(*geom, csgmode, m);
+			glPopMatrix();
+		}
 	}
 private:
 	const OpenCSGRenderer &renderer;
@@ -133,7 +135,10 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
 	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
-	prim->geom = csgobj.leaf->geom;
+	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
+	if (ps) {
+		prim->geom = ps;
+	}
 	prim->m = csgobj.leaf->matrix;
 	prim->csgmode = get_csgmode(highlight_mode, background_mode, type);
 	return prim;
@@ -170,6 +175,9 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 
 		for(const auto &csgobj : product.intersections) {
 			if (csgobj.leaf->geom) {
+				const PolySet* ps = dynamic_cast<const PolySet*>(csgobj.leaf->geom.get());
+				if (!ps) continue;
+
 				const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 
@@ -190,7 +198,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				add_shader_pointers(vertex_array);
 				if (color[3] == 1.0f) {
 					// object is opaque, draw normally
-					create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, last_color);
+					create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 					if (surface != nullptr) {
 						surface->csgObjectIndex(csgobj.leaf->index);
@@ -205,7 +213,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 					cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
 					vertex_states->emplace_back(std::move(cull));
 
-					create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, last_color);
+					create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 
 					if (surface != nullptr) {
@@ -233,6 +241,8 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 
 		for(const auto &csgobj : product.subtractions) {
 			if (csgobj.leaf->geom) {
+				const PolySet* ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+				if (!ps) continue;
 				const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 
@@ -258,8 +268,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
 				vertex_states->emplace_back(std::move(cull));
 
-				create_surface(csgobj.leaf->geom.get(), vertex_array, csgmode, csgobj.leaf->matrix, last_color);
-
+				create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 				std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 				if (surface != nullptr) {
 					surface->csgObjectIndex(csgobj.leaf->index);
@@ -309,6 +318,9 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 			}
 
 			for (const auto &csgobj : product.intersections) {
+				const PolySet* ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+				if (!ps) continue;
+
 				if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
 					int identifier = csgobj.leaf->index;
 					glUniform3f(shaderinfo->data.select_rendering.identifier,
@@ -334,20 +346,23 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 				const Color4f color = setColor(colormode, c.data(), shaderinfo);
 				if (color[3] == 1.0f) {
 					// object is opaque, draw normally
-					render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+					render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
 				} else {
 					// object is transparent, so draw rear faces first.  Issue #1496
 					glEnable(GL_CULL_FACE);
 					glCullFace(GL_FRONT);
-					render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+					render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
 					glCullFace(GL_BACK);
-					render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+					render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
 					glDisable(GL_CULL_FACE);
 				}
 
 				glPopMatrix();
 			}
 			for(const auto &csgobj : product.subtractions) {
+				const PolySet* ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+				if (!ps) continue;
+
 				const Color4f &c = csgobj.leaf->color;
 				csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 
@@ -366,7 +381,7 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 				// negative objects should only render rear faces
 				glEnable(GL_CULL_FACE);
 				glCullFace(GL_FRONT);
-				render_surface(csgobj.leaf->geom, csgmode, csgobj.leaf->matrix, shaderinfo);
+				render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
 				glDisable(GL_CULL_FACE);
 
 				glPopMatrix();

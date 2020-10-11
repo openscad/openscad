@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "colormap.h"
 #include "enums.h"
-#include "Geometry.h"
+#include "polyset.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>
@@ -92,8 +92,8 @@ public:
 	virtual void setColorScheme(const ColorScheme &cs);
 
 	virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type=OpenSCADOperator::UNION) const;
-	virtual void render_surface(const shared_ptr<const class Geometry> &geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo = nullptr) const;
-	virtual void render_edges(const shared_ptr<const Geometry> &geom, csgmode_e csgmode) const;
+	virtual void render_surface(const PolySet &geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo = nullptr) const;
+	virtual void render_edges(const PolySet &geom, csgmode_e csgmode) const;
 
 protected:
 	std::map<ColorMode,Color4f> colormap;

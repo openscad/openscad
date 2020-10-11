@@ -90,7 +90,6 @@ void CGALRenderer::buildPolyhedrons() const
 {
 	PRINTD("buildPolyhedrons");
 	this->polyhedrons.clear();
-	this.polyhedrons.reserve(this->nefPolyhedrons.size());
 
 	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
 		for(const auto &N : this->nefPolyhedrons) {
@@ -163,7 +162,7 @@ void CGALRenderer::createPolysets() const
 
 			// Create 2D polygons
 			getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
-			this->create_polygons(polyset.get(), vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
+			this->create_polygons(*polyset, vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
 
 			std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
 			edge_state->glBegin().emplace_back([]() {
@@ -178,7 +177,7 @@ void CGALRenderer::createPolysets() const
 			
 			// Create 2D edges
 			getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
-			this->create_edges(polyset.get(), vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
+			this->create_edges(*polyset, vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
 			
 			std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
 			end_state->glBegin().emplace_back([]() {
@@ -192,7 +191,7 @@ void CGALRenderer::createPolysets() const
 
 			// Create 3D polygons
 			getColor(ColorMode::MATERIAL, color);
-			this->create_surface(polyset.get(), vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), color);
+			this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), color);
 		}
 	}
 	
@@ -226,13 +225,13 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
 
 				glLineWidth(2);
 				setColor(ColorMode::CGAL_EDGE_2D_COLOR);
-				this->render_edges(polyset, CSGMODE_NONE);
+				this->render_edges(*polyset, CSGMODE_NONE);
 				glEnable(GL_DEPTH_TEST);
 			}
 			else {
 				// Draw 3D polygons
 				setColor(ColorMode::MATERIAL);
-				this->render_surface(polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
+				this->render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
 			}
 		}
 	} else {

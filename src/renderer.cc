@@ -357,13 +357,10 @@ static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vec
 	}
 }
 
-void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo) const
+void Renderer::render_surface(const PolySet &ps, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo) const
 {
 	PRINTD("Renderer render");
 	bool mirrored = m.matrix().determinant() < 0;
-	const PolySet* ps = dynamic_cast<const PolySet*>(geom.get());
-
-	if (!ps) return;
 
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo && shaderinfo->type == EDGE_RENDERING) {
@@ -371,15 +368,15 @@ void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgm
 		glUniform1f(shaderinfo->data.csg_rendering.yscale, shaderinfo->vp_size_y);
 	}
 #endif /* ENABLE_OPENCSG */
-	if (ps->getDimension() == 2) {
+	if (ps.getDimension() == 2) {
 		// Render 2D objects 1mm thick, but differences slightly larger
 		double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 		glBegin(GL_TRIANGLES);
 
 		// Render top+bottom
 		for (double z = -zbase/2; z < zbase; z += zbase) {
-			for (size_t i = 0; i < ps->polygons.size(); ++i) {
-				const Polygon *poly = &ps->polygons[i];
+			for (size_t i = 0; i < ps.polygons.size(); ++i) {
+				const Polygon *poly = &ps.polygons[i];
 				if (poly->size() == 3) {
 					if (z < 0) {
 						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(2), poly->at(1), true, true, true, z, mirrored);
@@ -418,8 +415,8 @@ void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgm
 		}
 
 		// Render sides
-		if (ps->getPolygon().outlines().size() > 0) {
-			for (const Outline2d &o : ps->getPolygon().outlines()) {
+		if (ps.getPolygon().outlines().size() > 0) {
+			for (const Outline2d &o : ps.getPolygon().outlines()) {
 				for (size_t j = 1; j <= o.vertices.size(); ++j) {
 					Vector3d p1(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
 					Vector3d p2(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
@@ -433,7 +430,7 @@ void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgm
 		else {
 			// If we don't have borders, use the polygons as borders.
 			// FIXME: When is this used?
-			const Polygons *borders_p = &ps->polygons;
+			const Polygons *borders_p = &ps.polygons;
 			for (size_t i = 0; i < borders_p->size(); ++i) {
 				const Polygon *poly = &borders_p->at(i);
 				for (size_t j = 1; j <= poly->size(); ++j) {
@@ -447,9 +444,9 @@ void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgm
 			}
 		}
 		glEnd();
-	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); ++i) {
-			const Polygon *poly = &ps->polygons[i];
+	} else if (ps.getDimension() == 3) {
+		for (size_t i = 0; i < ps.polygons.size(); ++i) {
+			const Polygon *poly = &ps.polygons[i];
 			glBegin(GL_TRIANGLES);
 			if (poly->size() == 3) {
 				gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(2), true, true, true, 0, mirrored);
@@ -486,17 +483,13 @@ void Renderer::render_surface(const shared_ptr<const class Geometry> &geom, csgm
 
 	For some reason, this is not used to render edges in Preview mode
 */
-void Renderer::render_edges(const shared_ptr<const Geometry> &geom, csgmode_e csgmode) const
+void Renderer::render_edges(const PolySet &ps, csgmode_e csgmode) const
 {
-	const PolySet* ps = dynamic_cast<const PolySet*>(geom.get());
-
-	if (!ps) return;
-
 	glDisable(GL_LIGHTING);
-	if (ps->getDimension() == 2) {
+	if (ps.getDimension() == 2) {
 		if (csgmode == Renderer::CSGMODE_NONE) {
 			// Render only outlines
-			for (const Outline2d &o : ps->getPolygon().outlines()) {
+			for (const Outline2d &o : ps.getPolygon().outlines()) {
 				glBegin(GL_LINE_LOOP);
 				for (const Vector2d &v : o.vertices) {
 					glVertex3d(v[0], v[1], 0);
@@ -508,7 +501,7 @@ void Renderer::render_edges(const shared_ptr<const Geometry> &geom, csgmode_e cs
 			// Render 2D objects 1mm thick, but differences slightly larger
 			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
 
-			for (const Outline2d &o : ps->getPolygon().outlines()) {
+			for (const Outline2d &o : ps.getPolygon().outlines()) {
 				// Render top+bottom outlines
 				for (double z = -zbase/2; z < zbase; z += zbase) {
 					glBegin(GL_LINE_LOOP);
@@ -526,9 +519,9 @@ void Renderer::render_edges(const shared_ptr<const Geometry> &geom, csgmode_e cs
 				glEnd();
 			}
 		}
-	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); ++i) {
-			const Polygon *poly = &ps->polygons[i];
+	} else if (ps.getDimension() == 3) {
+		for (size_t i = 0; i < ps.polygons.size(); ++i) {
+			const Polygon *poly = &ps.polygons[i];
 			glBegin(GL_LINE_LOOP);
 			for (size_t j = 0; j < poly->size(); ++j) {
 				const Vector3d &p = poly->at(j);
@@ -546,6 +539,6 @@ void Renderer::render_edges(const shared_ptr<const Geometry> &geom, csgmode_e cs
 
 #else //NULLGL
 static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
-void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo) const {}
-void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const {}
+void Renderer::render_surface(const PolySet &ps, csgmode_e csgmode, const Transform3d &m, const shaderinfo_t *shaderinfo) const {}
+void Renderer::render_edges(const PolySet &ps, csgmode_e csgmode) const {}
 #endif //NULLGL
