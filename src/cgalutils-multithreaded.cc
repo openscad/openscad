@@ -302,7 +302,7 @@ void spawnOpWorker(std::vector<std::string> shmems)
 	doOpOnPolyhedrons(op, *first_obj, *second_obj);
 
 	// Serialize the result and upload to shmem
-	unsigned serialized_size = (*first_obj).memsize();
+	unsigned serialized_size = (*first_obj).memsize() * 1.3;
 	shm1.truncate(serialized_size);
 	mapped_region region(shm1, read_write);
 	// std::stringstream ps = prealloc_ss(serialized_size + 500);
@@ -688,7 +688,7 @@ inline void applyMultithreadedOps(std::list<AVAIL_GEOMETRY> &solids, std::string
 
 		int size = 500; // Header overhead
 		if (solid_it->ps) size += solid_it->ps->memsize() * 1.3;
-		if (solid_it->ph) size += solid_it->ph->memsize();
+		if (solid_it->ph) size += solid_it->ph->memsize() * 1.3;
 
 		// Serialize + shmem upload
 
