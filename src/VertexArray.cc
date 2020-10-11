@@ -44,7 +44,7 @@ void VertexData::fillInterleavedBuffer(GLbyte* interleaved_buffer) const
 
 void VertexData::createInterleavedVBO(GLuint &vbo) const
 {
-  size_t total_bytes = this->sizeInBytes();
+	size_t total_bytes = this->sizeInBytes();
 	if (total_bytes) {
 		GLbyte* interleaved_buffer = new GLbyte[total_bytes];
 		fillInterleavedBuffer(interleaved_buffer);

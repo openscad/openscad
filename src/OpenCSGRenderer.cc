@@ -211,9 +211,9 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 					if (surface != nullptr) {
 						surface->csgObjectIndex(csgobj.leaf->index);
 
-						primitives->emplace_back(std::move(createVBOPrimitive(surface,
+						primitives->emplace_back(createVBOPrimitive(surface,
 										   OpenCSG::Intersection,
-										   csgobj.leaf->geom->getConvexity(), vertex_vbo)));
+										   csgobj.leaf->geom->getConvexity(), vertex_vbo));
 
 						cull = std::make_shared<VertexState>();
 						cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
@@ -264,9 +264,9 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				if (surface != nullptr) {
 					surface->csgObjectIndex(csgobj.leaf->index);
 
-					primitives->emplace_back(std::move(createVBOPrimitive(surface,
+					primitives->emplace_back(createVBOPrimitive(surface,
 									   OpenCSG::Subtraction,
-									   csgobj.leaf->geom->getConvexity(), vertex_vbo)));
+									   csgobj.leaf->geom->getConvexity(), vertex_vbo));
 				} else {
 					assert(false && "Subtraction surface state was nullptr");
 				}
@@ -435,7 +435,6 @@ BoundingBox OpenCSGRenderer::getBoundingBox() const
 	if (this->root_products) bbox = this->root_products->getBoundingBox();
 	if (this->highlights_products) bbox.extend(this->highlights_products->getBoundingBox());
 	if (this->background_products) bbox.extend(this->background_products->getBoundingBox());
-
 
 	return bbox;
 }

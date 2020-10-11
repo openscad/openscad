@@ -161,12 +161,18 @@ public:
 	
 	// Calculate the offset of interleaved attribute data based on VertexData index
 	size_t interleavedOffset(size_t index) const {
-		if (index && attributes_.size()) { return (attributes_[--index]->sizeofAttribute()+interleavedOffset(index)); }
+		if (index && attributes_.size()) {
+			--index;
+			return (attributes_[index]->sizeofAttribute()+interleavedOffset(index));
+		}
 		return 0;
 	}
 	// Calculate the offset of sequential attribute data based on VertexData index
 	size_t sequentialOffset(size_t index) const {
-		if (index) return (attributes_[--index]->sizeInBytes()+sequentialOffset(index));
+		if (index) {
+			--index;
+			return (attributes_[index]->sizeInBytes()+sequentialOffset(index));
+		}
 		return 0;
 	}
 	// Calculate the total size of the buffer in bytes
@@ -293,7 +299,10 @@ public:
 	
 	// Calculate and return the offset in bytes of a given index
 	size_t indexOffset(size_t index) const {
-		if (index > 0) return array_[--index]->sizeInBytes() + indexOffset(index);
+		if (index) {
+			--index;
+			return array_[index]->sizeInBytes() + indexOffset(index);
+		}
 		return 0;
 	}
 	// Use VertexStateFactory to create a new VertexState object

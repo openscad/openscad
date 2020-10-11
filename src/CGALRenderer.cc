@@ -89,9 +89,10 @@ const std::list<shared_ptr<class CGAL_OGL_Polyhedron> > &CGALRenderer::getPolyhe
 void CGALRenderer::buildPolyhedrons() const
 {
 	PRINTD("buildPolyhedrons");
-	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-		this->polyhedrons.clear();
+	this->polyhedrons.clear();
+	this.polyhedrons.reserve(this->nefPolyhedrons.size());
 
+	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
 		for(const auto &N : this->nefPolyhedrons) {
 			auto p = new CGAL_OGL_Polyhedron(*this->colorscheme);
 			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
@@ -101,8 +102,6 @@ void CGALRenderer::buildPolyhedrons() const
 			this->polyhedrons.push_back(shared_ptr<CGAL_OGL_Polyhedron>(p));
 		}
 	} else {
-		this->polyhedrons.clear();
-
 		for(const auto &N : this->nefPolyhedrons) {
 			auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme);
 			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);

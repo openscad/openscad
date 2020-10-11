@@ -60,7 +60,7 @@ public:
 	
 	const OpenCSGPrimitives &primitives() const { return *(primitives_.get()); }
 	const VertexStates &states() const { return *(states_.get()); }
-	const GLuint vbo() const { return vbo_; }
+	GLuint vbo() const { return vbo_; }
 	
 private:
 	const std::unique_ptr<OpenCSGPrimitives> primitives_;

@@ -374,13 +374,9 @@ void VBORenderer::create_surface(const Geometry *geom, VertexArray &vertex_array
 			else {
 				Vector3d center = Vector3d::Zero();
 				for (size_t i = 0; i < poly.size(); i++) {
-					center[0] += poly.at(i)[0];
-					center[1] += poly.at(i)[1];
-					center[2] += poly.at(i)[2];
+					center += poly.at(i);
 				}
-				center[0] /= poly.size();
-				center[1] /= poly.size();
-				center[2] /= poly.size();
+				center /= poly.size();
 				for (size_t i = 1; i <= poly.size(); i++) {
 					Vector3d p0 = m * center;
 					Vector3d p1 = m * poly.at(i % poly.size());
