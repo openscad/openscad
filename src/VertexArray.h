@@ -175,13 +175,13 @@ public:
 	inline size_t size() const { return sizeInBytes()/stride(); }
 
 	// Create an interleaved buffer and return it as unique_ptr
-	std::unique_ptr<std::vector<GLbyte>> createInterleavedBuffer() const;
+	void fillInterleavedBuffer(GLbyte* buf) const;
 	// Create an interleaved buffer in the provided vbo.
 	// If the vbo does not exist it will be created and returned.
 	void createInterleavedVBO(GLuint &vbo) const;
 	
 	// Create a sequential buffer and return it as unique_ptr
-	std::unique_ptr<std::vector<GLbyte>> createSequentialBuffer() const;
+	void fillSequentialBuffer(GLbyte* buf) const;
 	// Create a sequential buffer in the provided vbo.
 	// If the vbo does not exist it will be created and returned.
 	void createSequentialVBO(GLuint &vbo) const;
