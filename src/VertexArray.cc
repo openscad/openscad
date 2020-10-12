@@ -60,36 +60,6 @@ void VertexData::createInterleavedVBO(GLuint &vbo) const
 	}
 }
 
-void VertexData::fillSequentialBuffer(GLbyte *sequential_buffer) const
-{
-	GLbyte * dst = sequential_buffer;
-	for (const auto &data : attributes_) {
-		const size_t size = data->sizeInBytes();
-		std::memcpy((void *)dst, (void *)data->toBytes(), size);
-		dst += size;
-	}
-}
-
-void VertexData::createSequentialVBO(GLuint &vbo) const
-{
-	size_t total_bytes = this->sizeInBytes();
-
-	if (total_bytes) {
-		GLbyte* sequential_buffer = new GLbyte[total_bytes];
-		fillSequentialBuffer(sequential_buffer);
-
-		if (vbo == 0) {
-			glGenBuffers(1, &vbo);
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, total_bytes, sequential_buffer, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		delete[] sequential_buffer;
-	}
-}
-
 void VertexState::drawArrays() const
 {
 	for (const auto &gl_func : gl_begin_) {
@@ -155,36 +125,6 @@ void VertexArray::createInterleavedVBO(GLuint &vbo) const
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		delete[] interleaved_buffer;
-	}
-}
-
-void VertexArray::createSequentialVBO(GLuint &vbo) const
-{
-	for (const auto &state : states_) {
-		size_t index = state->drawOffset();
-		state->drawOffset(this->indexOffset(index));
-	}
-
-	size_t total_bytes = this->indexOffset(this->size());
-	if (total_bytes) {
-		GLbyte* sequential_buffer = new GLbyte[total_bytes];
-		GLbyte* dst = sequential_buffer;
-		for (const auto &data : array_) {
-			size_t data_bytes = data->sizeInBytes();
-			if (data_bytes) {
-				data->fillSequentialBuffer(dst);
-			}
-			dst += data_bytes;
-		}
-
-		if (vbo == 0) {
-			glGenBuffers(1, &vbo);
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, total_bytes, sequential_buffer, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		delete[] sequential_buffer;
 	}
 }
 

@@ -167,14 +167,6 @@ public:
 		}
 		return 0;
 	}
-	// Calculate the offset of sequential attribute data based on VertexData index
-	size_t sequentialOffset(size_t index) const {
-		if (index) {
-			--index;
-			return (attributes_[index]->sizeInBytes()+sequentialOffset(index));
-		}
-		return 0;
-	}
 	// Calculate the total size of the buffer in bytes
 	size_t sizeInBytes() const { size_t size = 0; for (const auto &data : attributes_) size+=data->sizeInBytes(); return size; }
 	// Calculate the total number of vertices in buffer
@@ -185,12 +177,6 @@ public:
 	// Create an interleaved buffer in the provided vbo.
 	// If the vbo does not exist it will be created and returned.
 	void createInterleavedVBO(GLuint &vbo) const;
-	
-	// Create a sequential buffer and return it as unique_ptr
-	void fillSequentialBuffer(GLbyte* buf) const;
-	// Create a sequential buffer in the provided vbo.
-	// If the vbo does not exist it will be created and returned.
-	void createSequentialVBO(GLuint &vbo) const;
 	
 private:
 	std::vector<std::shared_ptr<IAttributeData>> attributes_;
@@ -313,9 +299,6 @@ public:
 	// Create an interleaved VBO in the provided VBO from the VertexData in the array.
 	// If the vbo does not exist it will be created and returned.
 	void createInterleavedVBO(GLuint &vbo) const;
-	// Create an sequential VBO in the provided VBO from the VertexData in the array.
-	// If the vbo does not exist it will be created and returned.
-	void createSequentialVBO(GLuint &vbo) const;
 	
 	// Method adds begin/end states that enable and point to the VertexData in the array
 	void addAttributePointers(size_t start_offset = 0);
