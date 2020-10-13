@@ -61,7 +61,7 @@ void serialize(Archive &ar, Eigen::Matrix<double, 3, 1> &mat, const unsigned int
 } // namespace serialization
 } // namespace boost
 
-typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
+typedef std::pair<CGAL_Nef_polyhedron*, int> QueueConstItem;
 struct QueueItemGreater {
 	bool unordered = false;
 	// stable sort for priority_queue by facets, then progress mark
@@ -467,12 +467,14 @@ bool separateDifferentGeometries(const Geometry::GeometryItem &it, functor1 F1, 
 			// polysetops
 			F1(chps);
 			ok = true;
+
 		}
 	}
 	if (curChild && !curChild->isEmpty()) {
 		// polyhedronops
 		F2(curChild);
 		ok = true;
+
 	}
 	if (it.first) {
 		// nodemarkops
@@ -486,7 +488,7 @@ inline void fetchAndOrderSolidsBySize(
 		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> &q)
 {
 	for (auto &solid_it : solids) {
-		std::shared_ptr<const CGAL_Nef_polyhedron> curChild = make_shared<const CGAL_Nef_polyhedron>();
+		CGAL_Nef_polyhedron *curChild = nullptr;
 
 		if (solid_it.type == TYPE_MEM::SHMEM) {
 
@@ -502,28 +504,32 @@ inline void fetchAndOrderSolidsBySize(
 
 			// Serialized Polyhedron
 			std::shared_ptr<CGAL_Nef_polyhedron3> ppol = std::make_shared<CGAL_Nef_polyhedron3>();
-//			ps >> *ppol;
+			//			ps >> *ppol;
 			PHIO::custom_ph_read(ps, *ppol);
 			if (!ps.good() || ps.bad() || ps.fail())
 				throw MultithreadedError("ERROR: Insufficient shmem buffer!");
 
 			CGAL_Nef_polyhedron *ph = new CGAL_Nef_polyhedron(ppol);
-			curChild.reset(ph);
+			curChild = ph;
 		}
 		if (solid_it.type == TYPE_MEM::LOCAL) { // Non-serialized geometry
 			if ((!solid_it.ps && !solid_it.ph) || (solid_it.ps && solid_it.ph))
 				throw MultithreadedError("ERROR: Invalid Geometry type!");
-			if (solid_it.ps) curChild.reset(createNefPolyhedronFromGeometry(*solid_it.ps));
-			if (solid_it.ph) curChild = solid_it.ph;
+			if (solid_it.ps) curChild = createNefPolyhedronFromGeometry(*solid_it.ps);
+			if (solid_it.ph) curChild = new CGAL_Nef_polyhedron(*solid_it.ph.get());
+			
 		}
 
-		if (curChild && !curChild->isEmpty()) {
-			int node_mark = -1;
-			if (node_marks.size()) {
-				node_mark = node_marks.back();
-				node_marks.pop_back();
+		if (curChild) {
+			if (!curChild->isEmpty()) {
+				int node_mark = -1;
+				if (node_marks.size()) {
+					node_mark = node_marks.back();
+					node_marks.pop_back();
+				}
+				q.emplace(curChild, node_mark);
 			}
-			q.emplace(curChild, node_mark);
+			else delete curChild;
 		}
 	}
 }
@@ -538,14 +544,13 @@ inline CGAL_Nef_polyhedron *CombineSolids(
 		q.pop();
 		auto p2 = q.top();
 		q.pop();
-		q.emplace(make_shared<const CGAL_Nef_polyhedron>(doOpOnPolyhedrons(
-									op, (CGAL_Nef_polyhedron &)*p1.first, (CGAL_Nef_polyhedron &)*p2.first)),
-							-1);
+		q.emplace(&doOpOnPolyhedrons(op, *p1.first, *p2.first), -1);
+		delete p2.first;
 		// progress_tick();
 	}
 
 	if (q.size() == 1) {
-		return new CGAL_Nef_polyhedron(q.top().first->p3);
+		return q.top().first;
 	}
 	else {
 		return nullptr;
@@ -768,7 +773,6 @@ CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &chil
 																								OpenSCADOperator op)
 {
 	conditional_priority_queue q;
-
 	std::list<AVAIL_GEOMETRY> solids;
 	std::vector<int> node_marks;
 
@@ -825,7 +829,6 @@ CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterato
 																						 Geometry::Geometries::const_iterator chend)
 {
 	std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
-
 	try {
 		// sort children by fewest faces
 		std::vector<const PolySet *> polysets;

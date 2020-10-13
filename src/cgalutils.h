@@ -25,9 +25,9 @@ namespace CGALUtils {
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	CGAL_Nef_polyhedron *applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
-	
+
 	CGAL_Nef_polyhedron &doOpOnPolyhedrons(OpenSCADOperator op, CGAL_Nef_polyhedron &root,
-																			 CGAL_Nef_polyhedron &sec);
+																				 const CGAL_Nef_polyhedron &sec);
 	CGAL_Nef_polyhedron *applyMultithreadedOperator(const Geometry::Geometries &children,
 																								OpenSCADOperator op);
 	CGAL_Nef_polyhedron *applyMultithreadedUnion(Geometry::Geometries::const_iterator chbegin,
