@@ -273,7 +273,7 @@ Camera get_camera(const po::variables_map &vm)
 #define OPENSCAD_QTGUI 1
 #endif
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
-													 FileFormat format, const char *filename)
+													 FileFormat format, const std::string& filename)
 {
 	if (root_geom->getDimension() != nd) {
 		LOG(message_group::None,Location::NONE,"","Current top level object is not a %1$dD object.",nd);
@@ -470,7 +470,6 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<BuiltinContext> &top_ctx, FileFormat curFormat, FileModule *root_module)
 {
 	const std::string filename_str = fs::path(cmd.output_file).generic_string();
-	const char *new_output_file = filename_str.c_str();
 
 	auto fpath = fs::absolute(fs::path(cmd.filename));
 	auto fparent = fpath.parent_path();
@@ -507,50 +506,29 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	}
 
 	if (curFormat == FileFormat::CSG) {
-		std::ofstream fstream(new_output_file);
-		if (!fstream.is_open()) {
-			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
-		}
-		else {
-			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			with_output(filename_str, [&tree, root_node](std::ostream &stream) {
-				stream << tree.getString(*root_node, "\t") << "\n";
-			});
-			fs::current_path(cmd.original_path);
-		}
+		fs::current_path(fparent); // Force exported filenames to be relative to document path
+		with_output(filename_str, [&tree, root_node](std::ostream &stream) {
+			stream << tree.getString(*root_node, "\t") << "\n";
+		});
+		fs::current_path(cmd.original_path);
 	}
 	else if (curFormat == FileFormat::AST) {
-		std::ofstream fstream(new_output_file);
-		if (!fstream.is_open()) {
-			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
-		}
-		else {
-			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			with_output(filename_str, [root_module](std::ostream &stream) {
-				stream << root_module->dump("");
-			});
-			fstream << root_module->dump("");
-			fstream.close();
-			fs::current_path(cmd.original_path);
-		}
+		fs::current_path(fparent); // Force exported filenames to be relative to document path
+		with_output(filename_str, [root_module](std::ostream &stream) {
+			stream << root_module->dump("");
+		});
+		fs::current_path(cmd.original_path);
 	}
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
-
-		std::ofstream fstream(new_output_file);
-		if (!fstream.is_open()) {
-			LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", new_output_file);
-		}
-		else {
-			with_output(filename_str, [root_raw_term](std::ostream & stream) {
-				if (!root_raw_term || root_raw_term->isEmptySet()) {
-					stream << "No top-level CSG object\n";
-				} else {
-					stream << root_raw_term->dump() << "\n";
-				}
-			});
-		}
+		with_output(filename_str, [root_raw_term](std::ostream & stream) {
+			if (!root_raw_term || root_raw_term->isEmptySet()) {
+				stream << "No top-level CSG object\n";
+			} else {
+				stream << root_raw_term->dump() << "\n";
+			}
+		});
 	}
 	else if (curFormat == FileFormat::ECHO) {
 		// echo -> don't need to evaluate any geometry
@@ -602,20 +580,20 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
             curFormat == FileFormat::NEFDBG ||
             curFormat == FileFormat::NEF3 )
         {
-            if(!checkAndExport(root_geom, 3, curFormat, new_output_file)) {
+            if(!checkAndExport(root_geom, 3, curFormat, filename_str)) {
                 return 1;
             }
 		}
 
 		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
-			if (!checkAndExport(root_geom, 2, curFormat, new_output_file)) {
+			if (!checkAndExport(root_geom, 2, curFormat, filename_str)) {
 				return 1;
 			}
 		}
 
 		if (curFormat == FileFormat::PNG) {
 			bool success = true;
-			bool wrote = with_output(new_output_file, [&success, &root_geom, &cmd, &camera, &glview](std::ostream &stream) {
+			bool wrote = with_output(filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream &stream) {
 				if (cmd.viewOptions.renderer == RenderType::CGAL || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
 					success = export_png(root_geom, cmd.viewOptions, camera, stream);
 				} else {
