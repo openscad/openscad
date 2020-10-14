@@ -127,6 +127,8 @@
 #include <memory>
 #include <QtNetwork>
 
+static const int autoReloadPollingPeriodMS = 200;
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -275,12 +277,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	autoReloadTimer = new QTimer(this);
 	autoReloadTimer->setSingleShot(false);
-	autoReloadTimer->setInterval(200);
+	autoReloadTimer->setInterval(autoReloadPollingPeriodMS);
 	connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
 	waitAfterReloadTimer = new QTimer(this);
 	waitAfterReloadTimer->setSingleShot(true);
-	waitAfterReloadTimer->setInterval(200);
+	waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
 	connect(this->parameterWidget, SIGNAL(previewRequested(bool)), this, SLOT(actionRenderPreview(bool)));
 	connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
@@ -1764,7 +1766,7 @@ void MainWindow::autoReloadSet(bool on)
 	QSettingsCached settings;
 	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
-		autoReloadTimer->start(200);
+		autoReloadTimer->start(autoReloadPollingPeriodMS);
 	} else {
 		autoReloadTimer->stop();
 	}
