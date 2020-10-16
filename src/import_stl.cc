@@ -2,11 +2,17 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "AST.h"
+#include "boost-utils.h"
 
-#include <boost/algorithm/string.hpp>
+#include <fstream>
+#include <boost/predef.h>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
-#include <fstream>
+#include <boost/algorithm/string.hpp>
+
+#if !defined(BOOST_ENDIAN_BIG_BYTE_AVAILABLE) && !defined(BOOST_ENDIAN_LITTLE_BYTE_AVAILABLE)
+#error Byte order undefined or unknown. Currently only BOOST_ENDIAN_BIG_BYTE and BOOST_ENDIAN_LITTLE_BYTE are supported.
+#endif
 
 #define STL_FACET_NUMBYTES 4*3*4+2
 // as there is no 'float32_t' standard, we assume the systems 'float'
@@ -23,7 +29,7 @@ union stl_facet {
 	} data;
 };
 
-#ifdef BOOST_BIG_ENDIAN
+#if BOOST_ENDIAN_BIG_BYTE
 static void uint32_byte_swap(uint32_t &x)
 {
 # if __GNUC__ >= 4 && __GNUC_MINOR__ >= 3
@@ -45,8 +51,8 @@ static void uint32_byte_swap(uint32_t &x)
 static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
-#ifdef BOOST_BIG_ENDIAN
-	for ( int i = 0; i < 12; i++ ) {
+#if BOOST_ENDIAN_BIG_BYTE
+	for ( int i = 0; i < 12; ++i ) {
 		uint32_byte_swap( facet.data32[ i ] );
 	}
 	// we ignore attribute byte count
@@ -60,7 +66,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
+		LOG(message_group::Warning,Location::NONE,"","Can't open import file '%1$s', import() at line %2$d",filename,loc.firstLine());
 		return p;
 	}
 	
@@ -75,7 +81,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 	if (f.good() && !f.eof()) {
 		uint32_t facenum = 0;
 		f.read((char *)&facenum, sizeof(uint32_t));
-#ifdef BOOST_BIG_ENDIAN
+#if BOOST_ENDIAN_BIG_BYTE
 		uint32_byte_swap( facenum );
 #endif
 		if (file_size ==  static_cast<std::streamoff>(80 + 4 + 50*facenum)) {
@@ -104,12 +110,12 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 			boost::smatch results;
 			if (boost::regex_search(line, results, ex_vertices)) {
 				try {
-					for (int v=0;v<3;v++) {
+					for (int v=0; v<3; ++v) {
 						vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
 					}
 				}
 				catch (const boost::bad_lexical_cast &blc) {
-					PRINTB("WARNING: Can't parse vertex line '%s', import() at line %d", line % loc.firstLine());
+					LOG(message_group::Warning,Location::NONE,"","Can't parse vertex line '%1$s', import() at line %2$d",line,loc.firstLine());
 					i = 10;
 					continue;
 				}

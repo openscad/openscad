@@ -47,7 +47,7 @@ unsigned int GeometryList::getDimension() const
 	for (const auto &item : this->children) {
 		if (!dim) dim = item.second->getDimension();
 		else if (dim != item.second->getDimension()) {
-			PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
+			LOG(message_group::Warning,Location::NONE,"","Mixing 2D and 3D objects is not supported.");
 			break;
 		}
 	}
@@ -75,7 +75,7 @@ void flatten(const GeometryList &geomlist, GeometryList::Geometries &childlist)
 }
 
 /*!
-  Creates a new GeometryList which has a flat hierarchy (all
+	Creates a new GeometryList which has a flat hierarchy (all
 	children directly reachable GeometryLists are collected in a flat
 	list)
 */

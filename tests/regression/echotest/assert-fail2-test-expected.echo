@@ -1,2 +1,2 @@
 ERROR: Assertion '((a < 20) && (b < 20))' failed: "Test! <html>&</html>" in file assert-fail2-test.scad, line 3
-TRACE: called by 'assert', in file assert-fail2-test.scad, line 3.
+TRACE: called by 'assert' in file assert-fail2-test.scad, line 3

@@ -31,11 +31,18 @@
 #include "Console.h"
 #include "printutils.h"
 
+
+#include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
+#include <boost/algorithm/string/split.hpp> // Include for boost::split
+
+#include <boost/filesystem.hpp>
+
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
+	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(QString)));
 }
 
 Console::~Console()
@@ -56,7 +63,7 @@ void Console::actionSaveAs_triggered()
 		QTextStream stream(&file);
 		stream << text;
 		stream.flush();
-		PRINTB("Console content saved to '%s'.", fileName.toStdString());
+		LOG(message_group::None,Location::NONE,"","Console content saved to '%1$s'.",fileName.toStdString());
 	}
 }
 
@@ -72,4 +79,24 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	menu->addAction(this->actionSaveAs);
     menu->exec(event->globalPos());
 	delete menu;
+}
+
+void Console::hyperlinkClicked(QString loc) //non const because of manipulation
+{
+	// for error jumps
+	std::string s = loc.toStdString();
+	std::vector<std::string> words;
+	boost::split(words, s, boost::is_any_of(", "), boost::token_compress_on);
+
+	if(words.size()!=2) return;
+	if(words[0].empty() || words[1].empty()) return;  //for empty locations
+	int line = std::stoi(words[0]);
+	boost::filesystem::path p = boost::filesystem::path(words[1]);
+	if(boost::filesystem::is_regular_file(p)) 
+	{
+		QString path = QString::fromStdString(words[1]);
+		emit openFile(path,line-1);
+	}
+	else openFile(QString(),line-1);
+	
 }

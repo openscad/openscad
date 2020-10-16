@@ -26,28 +26,6 @@
 
 #pragma once
 
-#include <QtGlobal>
-
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-
-// Dummy class for compiling Preferences.cc for Qt4
-struct OctoPrint
-{
-	OctoPrint() {}
-	~OctoPrint() {}
-
-	const std::pair<const QString, const QString> getVersion() const { return {}; }
-	const std::vector<std::pair<const QString, const QString>> getSlicers() const { return {}; }
-	const std::vector<std::pair<const QString, const QString>> getProfiles(const QString) const { return {}; }
-};
-
-struct NetworkException
-{
-	const QString getErrorMessage() const { return ""; }
-};
-
-#else
-
 #include <tuple>
 
 #include <QFile>
@@ -73,5 +51,3 @@ public:
 private:
 	const QJsonDocument getJsonData(const QString endpoint) const;
 };
-
-#endif

@@ -8,6 +8,7 @@
 #include "ModuleCache.h"
 #include <cmath>
 #include <memory>
+#include "boost-utils.h"
 #ifdef DEBUG
 #include <boost/format.hpp>
 #endif
@@ -73,11 +74,10 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		if (assignment->expr->isLiteral() && this->variables.find(assignment->name) != this->variables.end()) {
-			std::string loc = assignment->location().toRelativeString(this->documentPath());
-			PRINTB("WARNING: Module %s: Parameter %s is overwritten with a literal, %s", module.name % assignment->name % loc);
+		if (assignment->getExpr()->isLiteral() && this->variables.find(assignment->getName()) != this->variables.end()) {
+			LOG(message_group::Warning,assignment->location(),this->documentPath(),"Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName());
 		}
-		this->set_variable(assignment->name, assignment->expr->evaluate(get_shared_ptr()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
 
 // Experimental code. See issue #399
@@ -89,7 +89,7 @@ shared_ptr<const UserFunction> ModuleContext::findLocalFunction(const std::strin
  	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
 		auto f = this->functions_p->find(name)->second;
 		if (!f->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
+			LOG(message_group::Warning,Location::NONE,"","Experimental builtin function '%1$s' is not enabled.",name);
 			return nullptr;
 		}
 		return f;
@@ -102,12 +102,12 @@ shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &n
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		auto m = this->modules_p->find(name)->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
+			LOG(message_group::Warning,Location::NONE,"","Experimental builtin module '%1$s' is not enabled.",name);
 			return nullptr;
 		}
 		auto replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead.", name % replacement);
+			LOG(message_group::Deprecated,Location::NONE,"","The %1$s() module will be removed in future releases. Use %2$s instead.",std::string(name),std::string(replacement));
 		}
 		return m;
 	}
@@ -148,7 +148,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		if (m) {
 			s << "  module args:";
 			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg->name % variables[arg->name];
+				s << boost::format("    %s = %s") % arg->getName() % variables[arg->getName()];
 			}
 		}
 	}
@@ -227,6 +227,6 @@ void FileContext::initializeModule(const class FileModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		this->set_variable(assignment->name, assignment->expr->evaluate(get_shared_ptr()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
 }

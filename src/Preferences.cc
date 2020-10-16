@@ -63,14 +63,14 @@ class SettingsReader : public Settings::SettingsVisitor
 
 	try {
 		switch (entry.defaultValue().type()) {
-		case Value::ValueType::STRING:
+		case Value::Type::STRING:
 			return Value(trimmed_value);
-		case Value::ValueType::NUMBER: 
+		case Value::Type::NUMBER: 
 			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
 				return Value(boost::lexical_cast<double>(trimmed_value));
 			}
 			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::ValueType::BOOL:
+		case Value::Type::BOOL:
 			boost::to_lower(trimmed_value);
 			if ("false" == trimmed_value) {
 				return Value(false);
@@ -106,21 +106,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 void Preferences::init() {
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
-#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
-#if defined (Q_OS_WIN)
-	const QString fontfamily{"Console"};
-#elif defined (Q_OS_MAC)
-	const QString fontfamily{"Monaco"};
-#else
-	const QString fontfamily{"Mono"};
-#endif
-
-	QFont font;
-	font.setStyleHint(QFont::TypeWriter);
-	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
-#else
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-#endif
+
 	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
@@ -169,6 +156,7 @@ void Preferences::init() {
 
 	this->defaultmap["editor/enableAutocomplete"] = true;
 	this->defaultmap["editor/characterThreshold"] = 1;
+	this->defaultmap["editor/stepSize"] = 1;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -179,11 +167,7 @@ void Preferences::init() {
 #else
 	this->toolBar->removeAction(prefsActionUpdate);
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 	addPrefPage(group, prefsAction3DPrint, page3DPrint);
-#else
-	this->toolBar->removeAction(prefsAction3DPrint);
-#endif
 #ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
 #else
@@ -213,6 +197,7 @@ void Preferences::init() {
 	this->opencsgLimitEdit->setValidator(validator);
 	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(validator);
 	this->lineEditCharacterThreshold->setValidator(validator1);
+	this->lineEditStepSize->setValidator(validator1);
 
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
@@ -220,7 +205,7 @@ void Preferences::init() {
 	initComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
 	initComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
 	initComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
-	initComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	initComboBox(this->comboBoxModifierNumberScrollWheel, Settings::Settings::modifierNumberScrollWheel);
 	initSpinBoxRange(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBoxRange(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
 	initSpinBoxRange(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
@@ -336,7 +321,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 void Preferences::setupFeaturesPage()
 {
 	int row = 0;
-	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
+	for (Feature::iterator it = Feature::begin(); it != Feature::end(); ++it) {
 		Feature *feature = *it;
 		
 		QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
@@ -628,6 +613,13 @@ void Preferences::on_checkBoxEnableLineNumbers_toggled(bool checked)
 	writeSettings();
 }
 
+void Preferences::on_checkBoxEnableNumberScrollWheel_toggled(bool val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::enableNumberScrollWheel, Value(val));
+	comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
+	writeSettings();
+}
+
 void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -659,6 +651,18 @@ void Preferences::on_lineEditCharacterThreshold_textChanged(const QString &text)
 	emit characterThresholdChanged(text.toInt());
 }
 
+void Preferences::on_lineEditStepSize_textChanged(const QString &text)
+{
+	QSettingsCached settings;
+	settings.setValue("editor/stepSize", text);
+	emit stepSizeChanged(text.toInt());
+}
+
+void Preferences::on_comboBoxModifierNumberScrollWheel_activated(int val)
+{
+	applyComboBox(comboBoxModifierNumberScrollWheel, val, Settings::Settings::modifierNumberScrollWheel);
+}
+
 void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -675,6 +679,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 {
 	QSettingsCached settings;
 	settings.setValue("advanced/enableParameterRangeCheck", state);
+}
+
+void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
+{
+	Settings::Settings::inst()->set(Settings::Settings::exportUseAsciiSTL, Value(checked));
+	writeSettings();
 }
 
 void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
@@ -905,9 +915,11 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
+	BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
 
 	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
@@ -915,6 +927,7 @@ void Preferences::updateGUI()
 	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 	this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
+	this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
 
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -923,6 +936,7 @@ void Preferences::updateGUI()
 	updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
 	updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+	updateComboBox(this->comboBoxModifierNumberScrollWheel, Settings::Settings::modifierNumberScrollWheel);
 	initSpinBoxDouble(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
 	initSpinBoxDouble(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 	initSpinBoxDouble(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
@@ -931,6 +945,7 @@ void Preferences::updateGUI()
 	initCheckBox(this->checkBoxBackspaceUnindents, Settings::Settings::backspaceUnindents);
 	initCheckBox(this->checkBoxHighlightCurrentLine, Settings::Settings::highlightCurrentLine);
 	initCheckBox(this->checkBoxEnableBraceMatching, Settings::Settings::enableBraceMatching);
+	initCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
 	initCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
 	initCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
 	initCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
@@ -942,8 +957,7 @@ void Preferences::updateGUI()
 	For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
 	*/
 	this->spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
-
-
+	this->comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintUrl).toString()));
 	BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)->setText(QString::fromStdString(s->get(Settings::Settings::octoPrintApiKey).toString()));
 	updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
@@ -990,3 +1004,5 @@ Preferences *Preferences::inst() {
     
     return instance;
 }
+
+

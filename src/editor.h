@@ -30,10 +30,12 @@ public:
 	virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
 	virtual QMenu * createStandardContextMenu() = 0;
 	virtual QPoint mapToGlobal(const QPoint &) = 0;
+	virtual void setCursorPosition(int /*line*/, int /*col*/) {};
+	virtual void setFocus() = 0;
 
 signals:
   void contentsChanged();
-  void modificationChanged(bool, EditorInterface *);												
+  void modificationChanged(bool, EditorInterface *);
   void showContextMenuEvent(const QPoint& pos);
 
 public slots:

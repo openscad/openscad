@@ -33,6 +33,7 @@
 #include "libsvg/libsvg.h"
 #include "clipper-utils.h"
 #include "AST.h"
+#include "boost-utils.h"
 
 namespace {
 
@@ -158,7 +159,7 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 		}
 		return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
 	} catch (const std::exception& e) {
-		PRINTB("ERROR: %s, import() at line %d", e.what() % loc.firstLine());
+		LOG(message_group::Error,Location::NONE,"","%1$s, import() at line %2$d",e.what(),loc.firstLine());
 		return new Polygon2d();
 	}
 }

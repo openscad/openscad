@@ -5,7 +5,7 @@
 #include "exceptions.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -36,11 +36,11 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 {
 	if (!inlined) stream << indent;
 	stream << modname + "(";
-	for (size_t i=0; i < this->arguments.size(); i++) {
+	for (size_t i=0; i < this->arguments.size(); ++i) {
 		const auto &arg = this->arguments[i];
 		if (i > 0) stream << ", ";
-		if (!arg->name.empty()) stream << arg->name << " = ";
-		stream << *arg->expr;
+		if (!arg->getName().empty()) stream << arg->getName() << " = ";
+		stream << *arg->getExpr();
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";
@@ -78,7 +78,7 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
-	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
+	LOG(message_group::Trace,mod->location(),ctx->documentPath(),"called by '%1$s'",mod->name());
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
@@ -86,7 +86,7 @@ AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) 
 	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 
 #if 0 && DEBUG
-	PRINT("New eval ctx:");
+	LOG(message_group::None,Location::NONE,"","New eval ctx:");
 	c.dump(nullptr, this);
 #endif
 	try{

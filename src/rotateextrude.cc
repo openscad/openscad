@@ -33,7 +33,7 @@
 #include "builtin.h"
 #include "polyset.h"
 #include "handle_dep.h"
-
+#include "boost-utils.h"
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -72,7 +72,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	auto angle = c->lookup_variable("angle", true);
 
 	if (!file->isUndefined()) {
-		printDeprecation("Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
@@ -82,8 +82,8 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	node->convexity = static_cast<int>(convexity->toDouble());
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: rotate_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	if(origin->isDefined() && !originOk){
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rotate_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
 	}
 	node->scale = scale->toDouble();
 	node->angle = 360;

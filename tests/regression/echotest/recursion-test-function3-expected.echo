@@ -1,7 +1,7 @@
 ECHO: sum10 = 55
 ERROR: Recursion detected calling function 'add_up_to' in file recursion-test-function3.scad, line 5
-TRACE: called by 'add_up_to', in file recursion-test-function3.scad, line 5.
-TRACE: called by 'add_up_to', in file recursion-test-function3.scad, line 5.
-TRACE: called by 'add_up_to', in file recursion-test-function3.scad, line 5.
-TRACE: called by 'add_up_to', in file recursion-test-function3.scad, line 5.
-TRACE: called by 'add_up_to', in file recursion-test-function3.scad, line 5.
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5

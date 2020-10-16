@@ -2,16 +2,14 @@
 #include "ignoreWheelWhenNotFocused.h"
 
 ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
+	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD), suppressUpdate(false)
 {
-	this->pressed = true;
-	this->suppressUpdate=false;
-
 	setValue();
-	connect(slider, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
-	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
+
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
+
+	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onEditingFinished()));
 	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
@@ -21,49 +19,37 @@ ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobje
 
 void ParameterSlider::onSliderChanged(int)
 {
-	double v = slider->value()*step;
-
 	if (!this->suppressUpdate) {
+		const double v = doubleSpinBox->minimum() + slider->value() * step;
+		PRINTDB("onSliderChanged(): %.2f (slider = %d)", v % slider->value());
+		this->suppressUpdate = true;
 		this->doubleSpinBox->setValue(v);
-		
-		if (this->pressed) {
-			object->value = ValuePtr(v);
-			emit changed();
-		}
+		this->suppressUpdate = false;
 	}
 }
 
 void ParameterSlider::onSpinBoxChanged(double v)
 {
 	if (!this->suppressUpdate) {
-		this->suppressUpdate=true;
-		if(v>0){
-			this->slider->setValue((int)((v+step/2.0)/step));
-		}else{
-			this->slider->setValue((int)((v-step/2.0)/step));
-		}
+		PRINTDB("onSpinBoxChanged(): %.2f", v);
+		this->suppressUpdate = true;
+		slider->setValue(std::nextafter((v - doubleSpinBox->minimum()) / step, max_uint32));
 		this->suppressUpdate=false;
 	}
 }
 
 void ParameterSlider::onEditingFinished()
 {
-	this->onSliderChanged(0);
-}
-
-void ParameterSlider::onPressed()
-{
-	this->pressed = false;
-}
-
-void ParameterSlider::onReleased(){
-	this->pressed = true;
-	onSliderChanged(0);
+	const double v = doubleSpinBox->value();
+	PRINTDB("updateValue(): %.2f", v);
+	object->value = ValuePtr(v);
+	emit changed();
 }
 
 void ParameterSlider::setValue()
 {
-	this->suppressUpdate=true;
+	this->suppressUpdate = true;
+	const double v = object->value->toDouble();
 
 	if (object->values->toRange().step_value() > 0) {
 		setPrecision(object->values->toRange().step_value());
@@ -72,29 +58,35 @@ void ParameterSlider::setValue()
 		decimalPrecision = 1;
 		step = 1;
 	}
-	int minSlider = 0;
+
+	double min = 0;
+	double max = 0;
 	int maxSlider = 0;
-	double min=0;
-	double max=0;
-	if(object->values->type() == Value::ValueType::RANGE ){ // [min:max] and [min:step:max] format
-		minSlider = object->values->toRange().begin_value()/step;
-		maxSlider = object->values->toRange().end_value()/step;
-		
-		min = object->values->toRange().begin_value();
-		max = object->values->toRange().end_value();
-	}else{ // [max] format from makerbot customizer
+	int curSlider = 0;
+	if (object->values->type() == Value::Type::RANGE) {
+		// [min:max] and [min:step:max] format
+		const double b = object->values->toRange().begin_value();
+		const double e = object->values->toRange().end_value();
+		maxSlider = std::nextafter((e - b) / step, max_uint32);
+		curSlider = std::nextafter((v - b) / step, max_uint32);
+		min = b;
+		// Truncate end value to full steps, same as Thingiverse customizer.
+		// This also makes sure the step size of the spin box does not go to
+		// invalid values.
+		max = b + maxSlider * step;
+	} else {
+		// [max] format from makerbot customizer
+		decimalPrecision = 0;
 		step = 1;
 		maxSlider =  std::stoi(object->values->toVector()[0]->toString());
+		curSlider = v;
 		max = maxSlider;
-		decimalPrecision = 0;
 	}
 
-	int current=object->value->toDouble()/step;
 	this->stackedWidgetBelow->setCurrentWidget(this->pageSlider);
 	this->pageSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-	this->slider->setRange(minSlider,maxSlider);
-	this->slider->setValue(current);
+	this->slider->setRange(0, maxSlider);
+	this->slider->setValue(curSlider);
 
 	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
 	this->pageSpin->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
@@ -102,6 +94,7 @@ void ParameterSlider::setValue()
 	this->doubleSpinBox->setMaximum(max);
 	this->doubleSpinBox->setSingleStep(step);
 	this->doubleSpinBox->setDecimals(decimalPrecision);
-	this->doubleSpinBox->setValue(object->value->toDouble());
-	this->suppressUpdate=false;
+	this->doubleSpinBox->setValue(v);
+	this->suppressUpdate = false;
+	PRINTDB("ParameterSlider: [%.2f:%.2f:%.2f, %.2f] - (%d - %d, %d)", min % step % max % v % 0 % maxSlider % curSlider);
 }

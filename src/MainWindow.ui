@@ -300,6 +300,7 @@
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
+     <addaction name="fileActionExportPDF"/>
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
@@ -350,6 +351,7 @@
     <addaction name="editActionCopyVPT"/>
     <addaction name="editActionCopyVPR"/>
     <addaction name="editActionCopyVPD"/>
+    <addaction name="editActionCopyVPF"/>
     <addaction name="separator"/>
     <addaction name="editActionFind"/>
     <addaction name="editActionFindAndReplace"/>
@@ -417,6 +419,7 @@
     <addaction name="viewActionHideEditor"/>
     <addaction name="viewActionHideConsole"/>
     <addaction name="viewActionHideParameters"/>
+    <addaction name="viewActionHideErrorLog"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -436,7 +439,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="tabToolBar">
-    <property name="windowTitle">
+   <property name="windowTitle">
     <string>Tabs</string>
    </property>
    <property name="movable">
@@ -451,7 +454,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <widget class="QWidget" name="tabToolBarContents">
+       <widget class="QWidget" name="tabToolBarContents">
     <property name="sizePolicy">
      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
       <horstretch>0</horstretch>
@@ -691,6 +694,37 @@
     </layout>
    </widget>
   </widget>
+  <widget class="Dock" name="errorLogDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="errorLogDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="ErrorLog" name="errorLogWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="fileActionNew">
    <property name="icon">
     <iconset resource="../openscad.qrc">
@@ -911,6 +945,11 @@
   <action name="editActionCopyVPD">
    <property name="text">
     <string>Copy vie&amp;wport distance</string>
+   </property>
+  </action>
+  <action name="editActionCopyVPF">
+   <property name="text">
+    <string>Copy vie&amp;wport fov</string>
    </property>
   </action>
   <action name="editActionZoomTextIn">
@@ -1530,12 +1569,37 @@
     <string>Hide Customizer</string>
    </property>
   </action>
+
+  <action name="fileActionExportPDF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/PDF.png</normaloff>:/images/PDF.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as PDF...</string>
+   </property>
+  </action>
+  
   <action name="viewActionHide3DViewToolBar">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>Hide 3D view toolbar</string>
+   </property>
+  </action>
+  <action name="viewActionHideErrorLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide ErrorLog</string>
+   </property>
+   <property name="toolTip">
+    <string>Hide ErrorLog</string>
    </property>
   </action>
  </widget>
@@ -1568,6 +1632,12 @@
    <class>Console</class>
    <extends>QPlainTextEdit</extends>
    <header>Console.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ErrorLog</class>
+   <extends>QWidget</extends>
+   <header>ErrorLog.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

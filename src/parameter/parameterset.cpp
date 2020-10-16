@@ -4,6 +4,7 @@
 #include "expression.h"
 #include "printutils.h"
 #include <boost/property_tree/json_parser.hpp>
+#include "boost-utils.h"
 
 std::string ParameterSet::parameterSetsKey("parameterSets");
 std::string ParameterSet::fileFormatVersionKey("fileFormatVersion");
@@ -82,7 +83,7 @@ bool ParameterSet::readParameterSet(const std::string &filename)
 		return true;
 	}
 	catch (const pt::json_parser_error &e) {
-		PRINTB("ERROR: Cannot open Parameter Set '%s': %s", filename % e.what());
+		LOG(message_group::Error,Location::NONE,"","Cannot open Parameter Set '%1$s': %2$s",filename,e.what());
 	}
 	return false;
 }
@@ -95,7 +96,7 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 		pt::write_json(filename, this->root);
 	}
 	catch (const pt::json_parser_error &e) {
-		PRINTB("ERROR: Cannot write Parameter Set '%s': %s", filename % e.what());
+		LOG(message_group::Error,Location::NONE,"","Cannot write Parameter Set '%1$s': %2$s",filename,e.what());
 	}
 }
 
@@ -107,19 +108,19 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		boost::optional<pt::ptree &> set = getParameterSet(setName);
 		for (auto &assignment : fileModule->scope.assignments) {
 			for (auto &v : set.get()) {
-				if (v.first == assignment->name) {
-					const ValuePtr defaultValue = assignment->expr->evaluate(ctx.ctx);
-					if (defaultValue->type() == Value::ValueType::STRING) {
-						assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.data())));
+				if (v.first == assignment->getName()) {
+					const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+					if (defaultValue->type() == Value::Type::STRING) {
+						assignment->setExpr(make_shared<Literal>(ValuePtr(v.second.data())));
 					}
-					else if (defaultValue->type() == Value::ValueType::BOOL) {
-						assignment->expr = shared_ptr<Expression>(new Literal(ValuePtr(v.second.get_value<bool>())));
+					else if (defaultValue->type() == Value::Type::BOOL) {
+						assignment->setExpr(make_shared<Literal>(ValuePtr(v.second.get_value<bool>())));
 					} else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 						if (!params) continue;
 						ContextHandle<Context> ctx{Context::create<Context>()};
 						if (defaultValue->type() == params->evaluate(ctx.ctx)->type()) {
-							assignment->expr = params;
+							assignment->setExpr(params);
 						}
 					}
 				}
@@ -127,7 +128,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		}
 	}
 	catch (std::exception const& e) {
-		PRINTB("ERROR: Cannot apply parameter Set: %s", e.what());
+		LOG(message_group::Error,Location::NONE,"","Cannot apply Parameter Set '%1$s'",e.what());
 	}
 }
 

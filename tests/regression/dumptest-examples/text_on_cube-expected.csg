@@ -1,4 +1,3 @@
-group();
 difference() {
 	union() {
 		color([0.501961, 0.501961, 0.501961, 1]) {

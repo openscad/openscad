@@ -1,10 +1,10 @@
-WARNING: lookup(undef, ...) first argument is not a number, in file lookup-tests.scad, line 1
+WARNING: lookup(undef, ...) first argument is not a number in file lookup-tests.scad, line 1
 ECHO: undef
-WARNING: lookup(undef, ...) first argument is not a number, in file lookup-tests.scad, line 2
+WARNING: lookup(undef, ...) first argument is not a number in file lookup-tests.scad, line 2
 ECHO: undef
-WARNING: lookup(undef, ...) first argument is not a number, in file lookup-tests.scad, line 3
+WARNING: lookup(undef, ...) first argument is not a number in file lookup-tests.scad, line 3
 ECHO: undef
-WARNING: lookup(undef, ...) first argument is not a number, in file lookup-tests.scad, line 4
+WARNING: lookup(undef, ...) first argument is not a number in file lookup-tests.scad, line 4
 ECHO: undef
 ECHO: 0
 ECHO: 0.5

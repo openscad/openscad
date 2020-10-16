@@ -73,12 +73,12 @@ AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	const auto delta = c->lookup_variable("delta", true);
 	const auto chamfer = c->lookup_variable("chamfer", true);
 
-	if (r->isDefinedAs(Value::ValueType::NUMBER)) {
+	if (r->isDefinedAs(Value::Type::NUMBER)) {
 		r->getDouble(node->delta);
-	} else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
+	} else if (delta->isDefinedAs(Value::Type::NUMBER)) {
 		delta->getDouble(node->delta);
 		node->join_type = ClipperLib::jtMiter;
-		if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+		if (chamfer->isDefinedAs(Value::Type::BOOL) && chamfer->toBool()) {
 			node->chamfer = true;
 			node->join_type = ClipperLib::jtSquare;
 		}

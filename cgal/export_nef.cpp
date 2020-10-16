@@ -55,7 +55,7 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
-	for ( int i = 0; i < 12; i++ ) {
+	for ( int i = 0; i < 12; ++i ) {
 		uint32_byte_swap( facet.data32[ i ] );
 	}
 	// we ignore attribute byte count
@@ -69,7 +69,7 @@ PolySet *import_stl(const std::string &filename)
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    PRINTB("WARNING: Can't open import file '%s'.", filename);
+    LOG(message_group::Warning,Location::None,"","Can't open import file: %1$s",filename);
     return NULL;
   }
 
@@ -113,12 +113,12 @@ PolySet *import_stl(const std::string &filename)
       boost::smatch results;
       if (boost::regex_search(line, results, ex_vertices)) {
         try {
-          for (int v=0;v<3;v++) {
+          for (int v=0; v<3; ++v) {
             vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
           }
         }
         catch (const boost::bad_lexical_cast &blc) {
-          PRINTB("WARNING: Can't parse vertex line '%s'.", line);
+          LOG(message_group::Warning,Location::None,"","Can't parse vertex line: %1$s",line);
           i = 10;
           continue;
         }

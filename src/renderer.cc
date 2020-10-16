@@ -52,8 +52,12 @@ Renderer::Renderer() : colorscheme(nullptr)
 	PRINTD("Renderer() end");
 }
 
-void Renderer::setColor(const float color[4], GLint *shaderinfo) const
+void Renderer::setColor(const float color[4], const GLView::shaderinfo_t *shaderinfo) const
 {
+	if (shaderinfo && shaderinfo->type != GLView::shaderinfo_t::CSG_RENDERING) {
+		return;
+	}
+
 	PRINTD("setColor a");
 	Color4f col;
 	getColor(ColorMode::MATERIAL,col);
@@ -65,14 +69,14 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 	glColor4fv(c);
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
-		glUniform4f(shaderinfo[ShaderInfo::COLOR1], c[0], c[1], c[2], c[3]);
-		glUniform4f(shaderinfo[ShaderInfo::COLOR2], (c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
+		glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
+		glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 	}
 #endif
 }
 
 // returns the color which has been set, which may differ from the color input parameter
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], const GLView::shaderinfo_t *shaderinfo) const
 {
 	PRINTD("setColor b");
 	Color4f basecol;
@@ -94,16 +98,16 @@ Color4f Renderer::setColor(ColorMode colormode, const float color[4], GLint *sha
 	return basecol;
 }
 
-void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
-{	
+void Renderer::setColor(ColorMode colormode, const GLView::shaderinfo_t *shaderinfo) const
+{
 	PRINTD("setColor c");
 	float c[4] = {-1,-1,-1,-1};
 	setColor(colormode, c, shaderinfo);
 }
 
-/* fill this->colormap with matching entries from the colorscheme. note 
-this does not change Highlight or Background colors as they are not 
-represented in the colorscheme (yet). Also edgecolors are currently the 
+/* fill this->colormap with matching entries from the colorscheme. note
+this does not change Highlight or Background colors as they are not
+represented in the colorscheme (yet). Also edgecolors are currently the
 same for CGAL & OpenCSG */
 void Renderer::setColorScheme(const ColorScheme &cs) {
 	PRINTD("setColorScheme");
@@ -116,8 +120,8 @@ void Renderer::setColorScheme(const ColorScheme &cs) {
 }
 
 #ifdef ENABLE_OPENCSG
-static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
-													bool e0, bool e1, bool e2, double z, bool mirror)
+static void draw_triangle(const GLView::shaderinfo_t *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
+                          bool e0, bool e1, bool e2, double z, bool mirror)
 {
 	// e0,e1,e2 are used to disable some edges from display.
 	// Edges are numbered to correspond with the vertex opposite of them.
@@ -127,18 +131,18 @@ static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d 
 	double d1 = e1 ? 0.0 : 1.0;
 	double d2 = e2 ? 0.0 : 1.0;
 	if (mirror) {
-		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], 1.0, d1, d2);
+		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
 		glVertex3f(p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, d1, 1.0);
+		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
 		glVertex3f(p2[0], p2[1], p2[2] + z);
-		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, 1.0, d2);
+		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
 		glVertex3f(p1[0], p1[1], p1[2] + z);
   } else {
-		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], 1.0, d1, d2);
+		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
 		glVertex3f(p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, 1.0, d2);
+		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
 		glVertex3f(p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3f(shaderinfo[ShaderInfo::BARYCENTRIC], d0, d1, 1.0);
+		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
 		glVertex3f(p2[0], p2[1], p2[2] + z);
 	}
 }
@@ -147,13 +151,13 @@ static void draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d 
 #ifndef NULLGL
 static void draw_tri(const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, double z, bool mirror)
 {
-	glVertex3f(p0[0], p0[1], p0[2] + z);
-	if (!mirror) glVertex3f(p1[0], p1[1], p1[2] + z);
-	glVertex3f(p2[0], p2[1], p2[2] + z);
-	if (mirror) glVertex3f(p1[0], p1[1], p1[2] + z);
+	glVertex3d(p0[0], p0[1], p0[2] + z);
+	if (!mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
+	glVertex3d(p2[0], p2[1], p2[2] + z);
+	if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
 }
 
-static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
+static void gl_draw_triangle(const GLView::shaderinfo_t *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
 {
 	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
 	double ay = p1[1] - p0[1], by = p1[1] - p2[1];
@@ -162,7 +166,7 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 	double ny = az*bx - ax*bz;
 	double nz = ax*by - ay*bx;
 	double nl = sqrt(nx*nx + ny*ny + nz*nz);
-	glNormal3f(nx / nl, ny / nl, nz / nl);
+	glNormal3d(nx / nl, ny / nl, nz / nl);
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
 		draw_triangle(shaderinfo, p0, p1, p2, e0, e1, e2, z, mirrored);
@@ -174,7 +178,7 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 	}
 }
 
-void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
+void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, const GLView::shaderinfo_t *shaderinfo) const
 {
 	PRINTD("Renderer render");
 	bool mirrored = m.matrix().determinant() < 0;
@@ -189,7 +193,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 
 		// Render top+bottom
 		for (double z = -zbase/2; z < zbase; z += zbase) {
-			for (size_t i = 0; i < ps->polygons.size(); i++) {
+			for (size_t i = 0; i < ps->polygons.size(); ++i) {
 				const Polygon *poly = &ps->polygons[i];
 				if (poly->size() == 3) {
 					if (z < 0) {
@@ -209,13 +213,13 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 				}
 				else {
 					Vector3d center = Vector3d::Zero();
-					for (size_t j = 0; j < poly->size(); j++) {
+					for (size_t j = 0; j < poly->size(); ++j) {
 						center[0] += poly->at(j)[0];
 						center[1] += poly->at(j)[1];
 					}
 					center[0] /= poly->size();
 					center[1] /= poly->size();
-					for (size_t j = 1; j <= poly->size(); j++) {
+					for (size_t j = 1; j <= poly->size(); ++j) {
 						if (z < 0) {
 							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
 									true, false, false, z, mirrored);
@@ -231,7 +235,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 		// Render sides
 		if (ps->getPolygon().outlines().size() > 0) {
 			for (const Outline2d &o : ps->getPolygon().outlines()) {
-				for (size_t j = 1; j <= o.vertices.size(); j++) {
+				for (size_t j = 1; j <= o.vertices.size(); ++j) {
 					Vector3d p1(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
 					Vector3d p2(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
 					Vector3d p3(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase/2);
@@ -245,9 +249,9 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 			// If we don't have borders, use the polygons as borders.
 			// FIXME: When is this used?
 			const Polygons *borders_p = &ps->polygons;
-			for (size_t i = 0; i < borders_p->size(); i++) {
+			for (size_t i = 0; i < borders_p->size(); ++i) {
 				const Polygon *poly = &borders_p->at(i);
-				for (size_t j = 1; j <= poly->size(); j++) {
+				for (size_t j = 1; j <= poly->size(); ++j) {
 					Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
 					Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
 					p1[2] -= zbase/2, p2[2] += zbase/2;
@@ -259,7 +263,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 		}
 		glEnd();
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
 			const Polygon *poly = &ps->polygons[i];
 			glBegin(GL_TRIANGLES);
 			if (poly->size() == 3) {
@@ -271,7 +275,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 			}
 			else {
 				Vector3d center = Vector3d::Zero();
-				for (size_t j = 0; j < poly->size(); j++) {
+				for (size_t j = 0; j < poly->size(); ++j) {
 					center[0] += poly->at(j)[0];
 					center[1] += poly->at(j)[1];
 					center[2] += poly->at(j)[2];
@@ -279,7 +283,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 				center[0] /= poly->size();
 				center[1] /= poly->size();
 				center[2] /= poly->size();
-				for (size_t j = 1; j <= poly->size(); j++) {
+				for (size_t j = 1; j <= poly->size(); ++j) {
 					gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()), true, false, false, 0, mirrored);
 				}
 			}
@@ -338,10 +342,10 @@ void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) 
 			}
 		}
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
 			const Polygon *poly = &ps->polygons[i];
 			glBegin(GL_LINE_LOOP);
-			for (size_t j = 0; j < poly->size(); j++) {
+			for (size_t j = 0; j < poly->size(); ++j) {
 				const Vector3d &p = poly->at(j);
 				glVertex3d(p[0], p[1], p[2]);
 			}
@@ -356,7 +360,7 @@ void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) 
 
 
 #else //NULLGL
-static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
-void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const {}
+static void gl_draw_triangle(const GLView::shaderinfo_t *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
+void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, const GLView::shaderinfo_t *shaderinfo) const {}
 void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) const {}
 #endif //NULLGL

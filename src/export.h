@@ -13,6 +13,7 @@
 class PolySet;
 
 enum class FileFormat {
+  ASCIISTL,
 	STL,
 	OFF,
 	AMF,
@@ -25,20 +26,33 @@ enum class FileFormat {
 	AST,
 	TERM,
 	ECHO,
-	PNG
+    PNG,
+    PDF
 };
 
-void exportFileByName(const shared_ptr<const class Geometry> &root_geom, FileFormat format,
-											const char *name2open, const char *name2display);
+struct ExportInfo {
+    FileFormat format;
+    std::string name2display;
+	std::string name2open;
+	std::string sourceFilePath;
+	std::string sourceFileName;
+	bool useStdOut;
+};
 
-void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output);
+bool canPreview(const FileFormat format);
+void exportFileByName(const shared_ptr<const class Geometry> &root_geom, const ExportInfo& exportInfo);
+
+void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
+    bool binary=true);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_pdf(const shared_ptr<const Geometry> &geom, std::ostream &output, const ExportInfo& exportInfo);
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_nef3(const shared_ptr<const Geometry> &geom, std::ostream &output);
+
 
 // void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
@@ -47,7 +61,9 @@ enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
 
 struct ExportFileFormatOptions {
 	const std::map<const std::string, FileFormat> exportFileFormats{
-		{"stl", FileFormat::STL},
+		{"asciistl", FileFormat::ASCIISTL},
+		{"binstl", FileFormat::STL},
+		{"stl", FileFormat::ASCIISTL},  // Deprecated.  Later to FileFormat::STL
 		{"off", FileFormat::OFF},
 		{"amf", FileFormat::AMF},
 		{"3mf", FileFormat::_3MF},
@@ -60,6 +76,7 @@ struct ExportFileFormatOptions {
 		{"term", FileFormat::TERM},
 		{"echo", FileFormat::ECHO},
 		{"png", FileFormat::PNG},
+        {"pdf", FileFormat::PDF},
 	};
 };
 
@@ -96,8 +113,11 @@ struct ViewOptions {
 	
 };
 
+class OffscreenView;
+
+std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& options, Camera camera);
 bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
-bool export_preview_png(Tree &tree, const ViewOptions& options, Camera camera, std::ostream &output);
+bool export_png(const OffscreenView &glview, std::ostream &output);
 
 namespace Export {
 

@@ -41,7 +41,7 @@ namespace ClipperUtils {
 		  // Most likely caught a RangeTest exception from clipper
 		  // Note that Clipper up to v6.2.1 incorrectly throws
 			// an exception of type char* rather than a clipperException()
-		  PRINT("WARNING: Range check failed for polygon. skipping");
+			LOG(message_group::Warning,Location::NONE,"","Range check failed for polygon. skipping");
 		}
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;
@@ -105,7 +105,7 @@ namespace ClipperUtils {
 			// intersection operations must be split into a sequence of binary operations
 			auto source = pathsvector[0];
 			ClipperLib::PolyTree result;
-			for (unsigned int i = 1; i < pathsvector.size(); i++) {
+			for (unsigned int i = 1; i < pathsvector.size(); ++i) {
 				clipper.AddPaths(source, ClipperLib::ptSubject, true);
 				clipper.AddPaths(pathsvector[i], ClipperLib::ptClip, true);
 				clipper.Execute(clipType, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
@@ -140,11 +140,15 @@ namespace ClipperUtils {
 	{
 		std::vector<ClipperLib::Paths> pathsvector;
 		for (const auto &polygon : polygons) {
-			auto polypaths = fromPolygon2d(*polygon);
-			if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
-			pathsvector.push_back(polypaths);
+			if (polygon) {
+				auto polypaths = fromPolygon2d(*polygon);
+				if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
+				pathsvector.push_back(polypaths);
+			} else {
+				pathsvector.push_back(ClipperLib::Paths());
+			}
 		}
-		auto res = apply(pathsvector, clipType);
+		auto res = ClipperUtils::apply(pathsvector, clipType);
 		assert(res);
 		return res;
 	}
@@ -225,7 +229,8 @@ namespace ClipperUtils {
 		ClipperLib::Clipper c;
 		auto lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
 
-		for (size_t i=1; i<polygons.size(); i++) {
+		for (size_t i=1; i<polygons.size(); ++i) {
+      if (!polygons[i]) continue;
 			ClipperLib::Paths minkowski_terms;
 			auto rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 

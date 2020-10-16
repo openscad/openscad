@@ -40,6 +40,7 @@
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
+#include "boost-utils.h"
 #include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -96,17 +97,17 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	handle_dep(fs::path(filename).generic_string());
 
 	auto center = c->lookup_variable("center", true);
-	if (center->type() == Value::ValueType::BOOL) {
+	if (center->type() == Value::Type::BOOL) {
 		node->center = center->toBool();
 	}
 
 	auto convexity = c->lookup_variable("convexity", true);
-	if (convexity->type() == Value::ValueType::NUMBER) {
+	if (convexity->type() == Value::Type::NUMBER) {
 		node->convexity = static_cast<int>(convexity->toDouble());
 	}
 
 	auto invert = c->lookup_variable("invert", true);
-	if (invert->type() == Value::ValueType::BOOL) {
+	if (invert->type() == Value::Type::BOOL) {
 		node->invert = invert->toBool();
 	}
 
@@ -115,8 +116,8 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 
 void SurfaceNode::convert_image(img_data_t &data, std::vector<uint8_t> &img, unsigned int width, unsigned int height) const
 {
-	for (unsigned int y = 0;y < height;y++) {
-		for (unsigned int x = 0;x < width;x++) {
+	for (unsigned int y = 0; y < height; ++y) {
+		for (unsigned int x = 0; x < width; ++x) {
 			long idx = 4 * (y * width + x);
 			double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
 			double z = 100.0/255 * (invert ? 1 - pixel : pixel);
@@ -141,12 +142,12 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 		 ret_val = lodepng::load_file(png, filename);
 	}catch(std::bad_alloc &ba){
 
-		PRINTB("WARNING: bad_alloc caught for '%s'.", ba.what());
+		LOG(message_group::Warning,Location::NONE,"","bad_alloc caught for '%1$s'.",ba.what());
 		return data;
 	}
 
 	if(ret_val == 78){
-		PRINTB("WARNING: The file '%s' couldn't be opened.", filename);
+		LOG(message_group::Warning,Location::NONE,"","The file '%1$s' couldn't be opened.",filename);
 		return data;
 	}
 
@@ -159,7 +160,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 	std::vector<uint8_t> img;
 	auto error = lodepng::decode(img, width, height, png);
 	if (error) {
-		PRINTB("ERROR: Can't read PNG image '%s'", filename);
+		LOG(message_group::Warning,Location::NONE,"","Can't read PNG image '%1$s'",filename);
 		data.clear();
 		return data;
 	}
@@ -175,7 +176,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	std::ifstream stream(filename.c_str());
 
 	if (!stream.good()) {
-		PRINTB("WARNING: Can't open DAT file '%s'.", filename);
+		LOG(message_group::Warning,Location::NONE,"","Can't open DAT file '%1$s'.",filename);
 		return data;
 	}
 
@@ -205,7 +206,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		}
 		catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				PRINTB("WARNING: Illegal value in '%s': %s", filename % blc.what());
+				LOG(message_group::Warning,Location::NONE,"","Illegal value in '%1$s': %2$s",filename,blc.what());
 			}
 			break;
   	}
@@ -234,8 +235,8 @@ const Geometry *SurfaceNode::createGeometry() const
 	double ox = center ? -(columns-1)/2.0 : 0;
 	double oy = center ? -(lines-1)/2.0 : 0;
 
-	for (int i = 1; i < lines; i++)
-	for (int j = 1; j < columns; j++)
+	for (int i = 1; i < lines; ++i)
+	for (int j = 1; j < columns; ++j)
 	{
 		double v1 = data[std::make_pair(i-1, j-1)];
 		double v2 = data[std::make_pair(i-1, j)];
@@ -264,7 +265,7 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
 	}
 
-	for (int i = 1; i < lines; i++)
+	for (int i = 1; i < lines; ++i)
 	{
 		p->append_poly();
 		p->append_vertex(ox + 0, oy + i-1, min_val);
@@ -279,7 +280,7 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->insert_vertex(ox + columns-1, oy + i, min_val);
 	}
 
-	for (int i = 1; i < columns; i++)
+	for (int i = 1; i < columns; ++i)
 	{
 		p->append_poly();
 		p->insert_vertex(ox + i-1, oy + 0, min_val);
@@ -296,9 +297,9 @@ const Geometry *SurfaceNode::createGeometry() const
 
 	if (columns > 1 && lines > 1) {
 		p->append_poly();
-		for (int i = 0; i < columns-1; i++)
+		for (int i = 0; i < columns-1; ++i)
 			p->insert_vertex(ox + i, oy + 0, min_val);
-		for (int i = 0; i < lines-1; i++)
+		for (int i = 0; i < lines-1; ++i)
 			p->insert_vertex(ox + columns-1, oy + i, min_val);
 		for (int i = columns-1; i > 0; i--)
 			p->insert_vertex(ox + i, oy + lines-1, min_val);

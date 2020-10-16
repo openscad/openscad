@@ -2,9 +2,6 @@
 #include "printutils.h"
 #include "input/InputEventMapper.h"
 
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
-
 namespace Settings {
 
 static std::list<SettingsEntry *> entries;
@@ -45,49 +42,56 @@ bool SettingsEntry::is_default() const
 }
 
 static Value value(std::string s1, std::string s2) {
-	Value::VectorType v;
-	v += ValuePtr(s1), ValuePtr(s2);
+	VectorType v;
+	v.emplace_back(s1);
+	v.emplace_back(s2);
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
-	Value::VectorType v;
-	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp));
+	VectorType v;
+	v.emplace_back(value(s1, s1disp));
+	v.emplace_back(value(s2, s2disp));
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
-	Value::VectorType v;
-	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp));
+	VectorType v;
+	v.emplace_back(value(s1, s1disp));
+	v.emplace_back(value(s2, s2disp));
+	v.emplace_back(value(s3, s3disp));
 	return v;
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
-	Value::VectorType v;
-	v += ValuePtr(value(s1, s1disp)), ValuePtr(value(s2, s2disp)), ValuePtr(value(s3, s3disp)), ValuePtr(value(s4, s4disp));
+	VectorType v;
+	v.emplace_back(value(s1, s1disp));
+	v.emplace_back(value(s2, s2disp));
+	v.emplace_back(value(s3, s3disp));
+	v.emplace_back(value(s4, s4disp));
 	return v;
 }
 
 static Value axisValues() {
-	Value::VectorType v;
-	v += ValuePtr(value("None", _("None")));
+	VectorType v;
+	v.emplace_back(value("None", _("None")));
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		auto userData = (boost::format("+%d") % (i+1)).str();
 		auto text = (boost::format(_("Axis %d")) % i).str();
-		v += ValuePtr(value(userData, text));
+		v.emplace_back(value(userData, text));
 
 		userData = (boost::format("-%d") % (i+1)).str();
 		text = (boost::format(_("Axis %d (inverted)")) % i).str();
-		v += ValuePtr(value(userData, text));
+		v.emplace_back(value(userData, text));
 	}
 	return v;
 }
 
 static Value buttonValues() {
-	Value::VectorType v;
-	v += ValuePtr(value("None", _("None")));
-	v += ValuePtr(value("viewActionTogglePerspective", _("Toggle Perspective")));
+	VectorType v;
+	v.emplace_back(value("None", _("None")));
+	v.emplace_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
 	return v;
 }
 
@@ -178,6 +182,9 @@ SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Inden
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
+SettingsEntry Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", Value(true), Value(true));
+SettingsEntry Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", values("Alt", _("Alt"), "Left Mouse Button", _("Left Mouse Button"), "Either", _("Either")), Value("Alt"));
+
 
 SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
 SettingsEntry Settings::octoPrintApiKey("printing", "octoPrintApiKey", Value(""), Value(""));
@@ -187,6 +194,8 @@ SettingsEntry Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine
 SettingsEntry Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", Value(""), Value(""));
 SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", Value(""), Value(""));
 SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
+
+SettingsEntry Settings::exportUseAsciiSTL("export", "useAsciiSTL", Value(true), Value(false));
 
 SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
 SettingsEntry Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", Value(true), Value(false));

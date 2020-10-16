@@ -194,6 +194,7 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
+CONFIG += cairo
 
 # Make experimental features available
 experimental {
@@ -228,6 +229,7 @@ load(uic)
 uic.commands += -tr q_
 
 FORMS   += src/MainWindow.ui \
+           src/ErrorLog.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
@@ -258,6 +260,7 @@ HEADERS += src/AST.h \
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/Assignment.cc \
+           src/export_pdf.cc \
            src/expr.cc \
            src/function.cc \
            src/module.cc \
@@ -312,7 +315,6 @@ HEADERS += src/version_check.h \
            src/exceptions.h \
            src/grid.h \
            src/hash.h \
-           src/highlighter.h \
            src/localscope.h \
            src/feature.h \
            src/node.h \
@@ -359,7 +361,9 @@ HEADERS += src/version_check.h \
            src/system-gl.h \
            src/boost-utils.h \
            src/LibraryInfo.h \
+           src/RenderStatistic.h \
            src/svg.h \
+           src/mouseselector.h \
            \
            src/OffscreenView.h \
            src/OffscreenContext.h \
@@ -371,9 +375,9 @@ HEADERS += src/version_check.h \
            \
            src/Dock.h \
            src/Console.h \
+           src/ErrorLog.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
-           src/legacyeditor.h \
            src/LibraryInfoDialog.h \
            \
            src/comment.h\
@@ -466,6 +470,7 @@ SOURCES += \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
            src/LibraryInfo.cc \
+           src/RenderStatistic.cc \
            \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
@@ -479,7 +484,6 @@ SOURCES += \
            \
            src/settings.cc \
            src/rendersettings.cc \
-           src/highlighter.cc \
            src/initConfig.cc \
            src/Preferences.cc \
            src/SettingsWriter.cc \
@@ -530,13 +534,14 @@ SOURCES += \
            src/UIUtils.cc \
            src/Dock.cc \
            src/Console.cc \
+           src/ErrorLog.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \
-           src/legacyeditor.cc \
            src/LibraryInfoDialog.cc\
            \
            src/comment.cpp \
+           src/mouseselector.cc \
            \
            src/parameter/ParameterWidget.cc\
            src/parameter/parameterobject.cpp \

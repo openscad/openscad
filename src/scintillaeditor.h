@@ -63,6 +63,10 @@ public:
 	QMenu *createStandardContextMenu() override;
 	QPoint mapToGlobal(const QPoint &) override;
 
+	void setCursorPosition(int line, int col) override;
+	void setFocus() override;
+	void cancelCallTip();
+
 private:
 	void getRange(int *lineFrom, int *lineTo);
 	void setColormap(const EditorColorScheme *colorScheme);
@@ -77,6 +81,7 @@ private:
 
 	bool eventFilter(QObject *obj, QEvent *event) override;
 	bool handleKeyEventNavigateNumber(QKeyEvent *);
+	bool handleWheelEventNavigateNumber(QWheelEvent *);
 	bool handleKeyEventBlockCopy(QKeyEvent *);
 	bool handleKeyEventBlockMove(QKeyEvent *);
 	void navigateOnNumber(int key);

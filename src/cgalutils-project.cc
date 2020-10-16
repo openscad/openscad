@@ -201,20 +201,21 @@ namespace CGALUtils {
 					CGAL_Point_3 minpt(-inf, -inf, -eps);
 					CGAL_Point_3 maxpt( inf,  inf,  eps);
 					CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-					for (int i=0;i<8;i++) pts.push_back(bigcuboid.vertex(i));
+					for (int i=0; i<8; ++i) pts.push_back(bigcuboid.vertex(i));
 					CGAL_Polyhedron bigbox;
 					CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
 					CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
 					newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
 				}
 				catch (const CGAL::Failure_exception &e) {
-					PRINTB("ERROR: CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
+					LOG(message_group::Error,Location::NONE,""," CGAL error in CGALUtils::project during bigbox intersection: %1$s",e.what());
+
 				}
 			}
 				
 			if (!newN.p3 || newN.p3->is_empty()) {
 				CGAL::set_error_behaviour(old_behaviour);
-				PRINT("WARNING: projection() failed.");
+				LOG(message_group::Warning,Location::NONE,"","Projection() failed.");
 				return poly;
 			}
 				
@@ -236,7 +237,7 @@ namespace CGALUtils {
 				}
 				poly = convertToPolygon2d(*zremover.output_nefpoly2d);
 			}	catch (const CGAL::Failure_exception &e) {
-				PRINTB("ERROR: CGAL error in CGALUtils::project while flattening: %s", e.what());
+				LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::project while flattening: %1$s",e.what());
 			}
 			PRINTD("</svg>");
 				
@@ -247,7 +248,7 @@ namespace CGALUtils {
 			PolySet ps(3);
 			bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
 			if (err) {
-				PRINT("ERROR: Nef->PolySet failed");
+				LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
 				return poly;
 			}
 			poly = PolysetUtils::project(ps);

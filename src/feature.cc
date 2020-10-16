@@ -24,6 +24,7 @@ Feature::list_t Feature::feature_list;
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalMouseSelection("mouse-selection", "Enable mouse selector");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -62,7 +63,7 @@ void Feature::enable_feature(const std::string &feature_name, bool status)
 	if (it != feature_map.end()) {
 		it->second->enable(status);
 	} else {
-		PRINTB("WARNING: Ignoring request to enable unknown feature '%s'.", feature_name);
+		LOG(message_group::Warning,Location::NONE,"","Ignoring request to enable unknown feature '%1$s'.",feature_name);
 	}
 }
 

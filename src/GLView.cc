@@ -7,7 +7,7 @@
 #include "renderer.h"
 #include "degree_trig.h"
 #include <cmath>
-
+#include "boost-utils.h"
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -36,7 +36,6 @@ GLView::GLView()
   opencsg_support = true;
   static int sId = 0;
   this->opencsg_id = sId++;
-  for (int i = 0; i < ShaderInfo::SHADERINFO_SIZE; i++) this->shaderinfo[i] = 0;
 #endif
 }
 
@@ -67,7 +66,7 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
+	LOG(message_group::UI_Warning,Location::NONE,"","GLView: unknown colorscheme %1$s",cs);
   }
 }
 
@@ -84,7 +83,7 @@ void GLView::setCamera(const Camera &cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera()
+void GLView::setupCamera() const
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -117,7 +116,6 @@ void GLView::setupCamera()
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
-
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
@@ -276,12 +274,13 @@ void GLView::enable_opencsg_shaders()
     glLinkProgram(edgeshader_prog);
     glErrorCheck();
 
-    shaderinfo[ShaderInfo::EDGESHADER_PROG] = edgeshader_prog;
-    shaderinfo[ShaderInfo::COLOR1]          = glGetUniformLocation(edgeshader_prog, "color1");
+    shaderinfo.progid = edgeshader_prog; // 0
+    shaderinfo.type = GLView::shaderinfo_t::CSG_RENDERING;
+    shaderinfo.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
     glErrorCheck();
-    shaderinfo[ShaderInfo::COLOR2]          = glGetUniformLocation(edgeshader_prog, "color2");
+    shaderinfo.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
     glErrorCheck();
-    shaderinfo[ShaderInfo::BARYCENTRIC]     = glGetAttribLocation(edgeshader_prog, "barycentric");
+    shaderinfo.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric");
     glErrorCheck();
 
     GLint status;
@@ -379,7 +378,7 @@ void GLView::showSmallaxes(const Color4f &col)
   gluLookAt(0.0, -1.0, 0.0,
 						0.0, 0.0, 0.0,
 						0.0, 0.0, 1.0);
-	 
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -445,7 +444,7 @@ void GLView::showSmallaxes(const Color4f &col)
 void GLView::showAxes(const Color4f &col)
 {
   auto l = cam.zoomValue();
-  
+
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
@@ -670,7 +669,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5}};
 
 	// walk through axes
-	for (int di=0;di<6;di++){
+	for (int di=0; di<6; ++di){
 
 		// setup negative axes
 		double polarity = 1;

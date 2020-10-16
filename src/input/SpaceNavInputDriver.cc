@@ -65,7 +65,7 @@ bool SpaceNavInputDriver::spnav_input(void)
 	// The low level driver seems to inhibit events in the dead zone, so if we
 	// enter that case, make sure to zero out our axis values.
 	bool have_event = false;
-	for (int a = 0;a < 3;a++) {
+	for (int a = 0; a < 3; ++a) {
 		if (spnav_poll_event(&ev) != 0) {
 			have_event = true;
 			break;

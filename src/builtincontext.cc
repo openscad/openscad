@@ -8,6 +8,7 @@
 #include "ModuleInstantiation.h"
 #include "printutils.h"
 #include "evalcontext.h"
+#include "boost-utils.h"
 
 BuiltinContext::BuiltinContext() : Context()
 {
@@ -16,7 +17,7 @@ BuiltinContext::BuiltinContext() : Context()
 void BuiltinContext::init()
 {
 	for(const auto &assignment : Builtins::instance()->getAssignments()) {
-		this->set_variable(assignment->name, assignment->expr->evaluate(shared_from_this()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(shared_from_this()));
 	}
 
 	this->set_constant("PI", ValuePtr(M_PI));
@@ -28,7 +29,7 @@ ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::s
 	if (search != Builtins::instance()->getFunctions().end()) {
 		AbstractFunction *f = search->second;
 		if (f->is_enabled()) return f->evaluate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), evalctx);
-		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
+		else LOG(message_group::Warning,evalctx->loc,this->documentPath(),"Experimental builtin function '%1$s' is not enabled",name);
 	}
 	return Context::evaluate_function(name, evalctx);
 }
@@ -40,11 +41,11 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Warning,evalctx->loc,this->documentPath(),"Experimental builtin module '%1$s' is not enabled",name);
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % evalctx->loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Deprecated,evalctx->loc,this->documentPath(),"The %1$s() module will be removed in future releases. Use %2$s instead.", std::string(name),std::string(replacement));
 		}
 		return m->instantiate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), &inst, evalctx);
 	}

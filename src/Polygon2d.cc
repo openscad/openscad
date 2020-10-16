@@ -58,7 +58,7 @@ bool Polygon2d::isEmpty() const
 void Polygon2d::transform(const Transform2d &mat)
 {
 	if (mat.matrix().determinant() == 0) {
-		PRINT("WARNING: Scaling a 2D object with 0 - removing object");
+		LOG(message_group::Warning,Location::NONE,"","Scaling a 2D object with 0 - removing object");
 		this->theoutlines.clear();
 		return;
 	}
@@ -103,7 +103,7 @@ bool Polygon2d::is_convex() const
 	int N = pts.size();
 
 	// Check for a right turn. This assumes the polygon is simple.
-	for (int i = 0; i < N; i++) {
+	for (int i = 0; i < N; ++i) {
 		const auto &d1 = pts[(i+1)%N] - pts[i];
 		const auto &d2 = pts[(i+2)%N] - pts[(i+1)%N];
 		double zcross = d1[0] * d2[1] - d1[1] * d2[0];

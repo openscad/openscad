@@ -331,13 +331,12 @@ build_eigen()
   rm -rf eigen-$version
 
   if [ ! -f eigen-$version.tar.bz2 ]; then
-    curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
-    mv $version.tar.bz2 eigen-$version.tar.bz2
+    curl -LO https://gitlab.com/libeigen/eigen/-/archive/$version/eigen-$version.tar.bz2
   fi
   EIGENDIR=`tar tjf eigen-$version.tar.bz2 | head -1 | cut -f1 -d"/"`
-  rm -rf $EIGENDIR
+  rm -rf "./$EIGENDIR"
   tar xjf eigen-$version.tar.bz2
-  ln -s ./$EIGENDIR eigen-$version
+  ln -s "./$EIGENDIR" eigen-$version || true
   cd eigen-$version
   mkdir build
   cd build

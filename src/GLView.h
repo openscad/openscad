@@ -25,14 +25,6 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #include "Camera.h"
 #include "colormap.h"
 
-enum ShaderInfo {
-	EDGESHADER_PROG = 0,
-	COLOR1,
-	COLOR2,
-	BARYCENTRIC,
-	SHADERINFO_SIZE
-};
-
 class GLView
 {
 public:
@@ -45,7 +37,7 @@ public:
 	virtual void paintGL();
 
 	void setCamera(const Camera &cam);
-	void setupCamera();
+	void setupCamera() const;
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
@@ -62,9 +54,11 @@ public:
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
-	virtual bool save(const char *filename) = 0;
+	virtual bool save(const char *filename) const = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
+
+	virtual ~GLView(){};
 
 	Renderer *renderer;
 	const ColorScheme *colorscheme;
@@ -78,13 +72,37 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	GLint shaderinfo[ShaderInfo::SHADERINFO_SIZE];
+	/// Shader attribute identifiers
+	struct shaderinfo_t {
+		enum shader_type_t {
+			NONE,
+			CSG_RENDERING,
+			SELECT_RENDERING,
+		};
+		int progid = 0;
+		shader_type_t type;
+		union {
+			struct {
+				int color_area;
+				int color_edge;
+        // barycentric coordinates of the current vertex
+				int barycentric;
+			} csg_rendering;
+			struct {
+				int identifier;
+			} select_rendering;
+		} data;
+
+	};
+
+	shaderinfo_t shaderinfo;
 	bool is_opencsg_capable;
 	bool has_shaders;
 	void enable_opencsg_shaders();
 	virtual void display_opencsg_warning() = 0;
 	bool opencsg_support;
 	int opencsg_id;
+
 #endif
 private:
 	void showCrosshairs(const Color4f &col);

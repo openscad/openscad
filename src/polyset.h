@@ -4,6 +4,7 @@
 #include "linalg.h"
 #include "GeometryUtils.h"
 #include "Polygon2d.h"
+#include "GLView.h"
 #include <vector>
 #include <string>
 
@@ -13,6 +14,7 @@ BOOST_TRIBOOL_THIRD_STATE(unknown)
 class PolySet : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Polygons polygons;
 
 	PolySet(unsigned int dim, boost::tribool convex = unknown);

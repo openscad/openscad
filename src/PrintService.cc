@@ -25,6 +25,7 @@
  */
 
 #include "printutils.h"
+#include "boost-utils.h"
 #include "PrintService.h"
 
 std::mutex PrintService::printServiceMutex;
@@ -35,10 +36,10 @@ PrintService::PrintService()
 	try {
 		init();
 	} catch (const NetworkException& e) {
-		PRINTB("ERROR: %s", e.getErrorMessage());
+		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
 	}
 	if (enabled) {
-		PRINTB("External print service available: %s (upload limit = %d MB)", displayName.toStdString() % fileSizeLimitMB);
+		LOG(message_group::None,Location::NONE,"","External print service available: %1$s (upload limit = %2$d MB)",displayName.toStdString(),fileSizeLimitMB);
 	}
 }
 
@@ -141,7 +142,7 @@ const QString PrintService::upload(const QString& fileName, const QString& conte
 					const QString msg = "Could not get data.cartUrl field from response.";
 					throw NetworkException(QNetworkReply::ProtocolFailure, msg);
 				}
-				PRINTB("Upload finished, opening URL %s.", cartUrl.toStdString());
+				LOG(message_group::None,Location::NONE,"","Upload finished, opening URL %1$s.",cartUrl.toStdString());
 				return cartUrl;
 			}
 	);

@@ -33,6 +33,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <cstdint>
+#include "boost-utils.h"
 
 class ControlModule : public AbstractModule
 {
@@ -74,31 +75,32 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		const std::string &it_name = evalctx->getArgName(l);
 		ValuePtr it_values = evalctx->getArgValue(l, ctx);
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
-		if (it_values->type() == Value::ValueType::RANGE) {
+		if (it_values->type() == Value::Type::RANGE) {
 			RangeType range = it_values->toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst.location(),ctx->documentPath(),
+					"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c->set_variable(it_name, ValuePtr(*it));
+				for (double val : range) {
+					c->set_variable(it_name, ValuePtr(val));
 					for_eval(node, inst, l+1, c.ctx, evalctx);
 				}
 			}
 		}
-		else if (it_values->type() == Value::ValueType::VECTOR) {
-			for (size_t i = 0; i < it_values->toVector().size(); i++) {
+		else if (it_values->type() == Value::Type::VECTOR) {
+			for (size_t i = 0; i < it_values->toVector().size(); ++i) {
 				c->set_variable(it_name, it_values->toVector()[i]);
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			}
 		}
-		else if (it_values->type() == Value::ValueType::STRING) {
+		else if (it_values->type() == Value::Type::STRING) {
 			utf8_split(it_values->toString(), [&](ValuePtr v) {
 				c->set_variable(it_name, v);
 				for_eval(node, inst, l+1, c.ctx, evalctx);
 			});
 		}
-		else if (it_values->type() != Value::ValueType::UNDEFINED) {
+		else if (it_values->type() != Value::Type::UNDEFINED) {
 			c->set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, c.ctx, evalctx);
 		}
@@ -107,7 +109,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		// the local scope (as they may depend on the for loop variables
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
 		for (const auto &assignment : inst.scope.assignments) {
-			c->set_variable(assignment->name, assignment->expr->evaluate(c.ctx));
+			c->set_variable(assignment->getName(), assignment->getExpr()->evaluate(c.ctx));
 		}
 
 		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(c.ctx);
@@ -138,28 +140,27 @@ const std::shared_ptr<EvalContext> ControlModule::getLastModuleCtx(const std::sh
 // static
 AbstractNode* ControlModule::getChild(const ValuePtr &value, const std::shared_ptr<EvalContext> modulectx)
 {
-	if (value->type()!=Value::ValueType::NUMBER) {
+	if (value->type()!=Value::Type::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
+		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toString());
 		return nullptr;
 	}
 	double v;
 	if (!value->getDouble(v)) {
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
+		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value->toString());
 		return nullptr;
 	}
 
 	int n = static_cast<int>(trunc(v));
 	if (n < 0) {
-		PRINTB("WARNING: Negative children index (%d) not allowed", n);
+		LOG(message_group::Warning,Location::NONE,"","Negative children index (%1$d) not allowed",n);
 		return nullptr; // Disallow negative child indices
 	}
 	if (n >= static_cast<int>(modulectx->numChildren())) {
 		// How to deal with negative objects in this case?
 		// (e.g. first child of difference is invalid)
-		PRINTB("WARNING: Children index (%d) out of bounds (%d children)"
-			, n % modulectx->numChildren());
+		LOG(message_group::Warning,Location::NONE,"","Children index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
 		return nullptr;
 	}
 	// OK
@@ -172,14 +173,15 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 
 	switch (this->type) {
 	case Type::CHILD:	{
-		printDeprecation("child() will be removed in future releases. Use children() instead.");
+		LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 		int n = 0;
 		if (evalctx->numArgs() > 0) {
 			double v;
 			if (evalctx->getArgValue(0)->getDouble(v)) {
 				n = trunc(v);
 				if (n < 0) {
-					PRINTB("WARNING: Negative child index (%d) not allowed, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
+					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+						"Negative child index (%1$d) not allowed",n);
 					return nullptr; // Disallow negative child indices
 				}
 			}
@@ -198,8 +200,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		else {
 			// How to deal with negative objects in this case?
 			// (e.g. first child of difference is invalid)
-			PRINTB("WARNING: Child index (%d) out of bounds (%d children), %s",
-				n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
+			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+				"Child index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
 		}
 		return node;
 	}
@@ -228,14 +230,14 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		else if (evalctx->numArgs()>0) {
 			// one (or more ignored) parameter
 			ValuePtr value = evalctx->getArgValue(0);
-			if (value->type() == Value::ValueType::NUMBER) {
+			if (value->type() == Value::Type::NUMBER) {
 				return getChild(value, modulectx);
 			}
-			else if (value->type() == Value::ValueType::VECTOR) {
+			else if (value->type() == Value::Type::VECTOR) {
 				AbstractNode* node;
 				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 				else node = new GroupNode(inst, evalctx);
-				const Value::VectorType& vect = value->toVector();
+				const VectorType& vect = value->toVector();
 				for(const auto &vectvalue : vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
 					if (childnode==nullptr) continue; // error
@@ -243,18 +245,19 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				}
 				return node;
 			}
-			else if (value->type() == Value::ValueType::RANGE) {
+			else if (value->type() == Value::Type::RANGE) {
 				RangeType range = value->toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= RangeType::MAX_RANGE_STEPS) {
-					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps % evalctx->loc.toRelativeString(ctx->documentPath()));
+					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+						"Bad range parameter for children: too many elements (%1$lu)",steps);
 					return nullptr;
 				}
 				AbstractNode* node;
 				if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 				else node = new GroupNode(inst, evalctx);
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
+				for (double val : range) {
+					AbstractNode* childnode = getChild(ValuePtr(val),modulectx); // with error cases
 					if (childnode==nullptr) continue; // error
 					node->children.push_back(childnode);
 				}
@@ -263,7 +266,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			else {
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
-				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range, %s", value->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+					"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",value->toEchoString());
 				return nullptr;
 			}
 		}
@@ -274,10 +278,12 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	case Type::ECHO: {
 		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 		else node = new GroupNode(inst, evalctx);
-		PRINTB("%s", STR("ECHO: " << *evalctx));
+		LOG(message_group::Echo,Location::NONE,"",STR(*evalctx));
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);
+		// echo without child geometries should not count as valid CSGNode
+		if (node->children.empty()) return nullptr;
 	}
 		break;
 
@@ -288,6 +294,8 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		evaluate_assert(c.ctx, evalctx);
 		inst->scope.apply(c.ctx);
 		node->children = inst->instantiateChildren(c.ctx);
+		// assert without child geometries should not count as valid CSGNode
+		if (node->children.empty()) return nullptr;
 	}
 		break;
 
@@ -309,7 +317,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		// We create a new context to avoid parameters from influencing each other
 		// -> parallel evaluation. This is to be backwards compatible.
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
-		for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 			if (!evalctx->getArgName(i).empty())
 				c->set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
