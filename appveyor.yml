@@ -11,7 +11,7 @@ image:
 init:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T init started'
   # Uncomment to enable RDP login at init time, this will not block job execution.
-  #  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
   - ps: Get-Date -UFormat '### %Y-%m-%d %T install started'
