@@ -1,7 +1,6 @@
 #include "GeometryUtils.h"
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"
-#include "Reindexer.h"
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
 #include <cmath>
@@ -194,18 +193,20 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 																							 const Vector3f *normal)
 {
 	// Algorithm outline:
-  // o Remove consecutive equal vertices and null ears (i.e. 23,24,23)
+	// o Remove consecutive equal vertices and null ears (i.e. 23,24,23)
 	// o Ignore polygons with < 3 vertices
 	// o Pass-through polygons with 3 vertices
 	// o Pass polygon to libtess2
 	// o Postprocess to clean up misbehaviors in libtess2
 
-  // No polygon. FIXME: Will this ever happen or can we assert here?
-  if (faces.empty()) return false;
+	// No polygon. FIXME: Will this ever happen or can we assert here?
+	if (faces.empty()) return false;
 
 	// Remove consecutive equal vertices, as well as null ears
 	auto cleanfaces = faces;
-  for (auto &face : cleanfaces) {
+	// Save time since PolySet should not need this anymore.
+	// This method does not appear to be used anywhere else currently.
+/*	for (auto &face : cleanfaces) {
 		size_t i=0;
 		while (face.size() >= 3 && i < face.size()) {
 			if (face[i] == face[(i+1)%face.size()]) { // Two consecutively equal indices
@@ -238,7 +239,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 			cleanfaces.erase(cleanfaces.begin() + i);
 			i--;
 		}
-	}
+	}*/
 
 	if (cleanfaces.size() == 1 && cleanfaces[0].size() == 3) {
 		// Input polygon has 3 points. shortcut tessellation.
@@ -248,57 +249,57 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 	}
 
 	// Build edge dict.
-  // This contains all edges in the original polygon.
+	// This contains all edges in the original polygon.
 	// To maintain connectivity, all these edges must exist in the output.
 	EdgeDict edges;
 	for (const auto &face : cleanfaces) {
 		edges.add(face);
 	}
 
-  TESSreal *normalvec = nullptr;
-  TESSreal passednormal[3];
-  if (normal) {
-    passednormal[0] = (*normal)[0];
+	TESSreal *normalvec = nullptr;
+	TESSreal passednormal[3];
+	if (normal) {
+		passednormal[0] = (*normal)[0];
 		passednormal[1] = (*normal)[1];
 		passednormal[2] = (*normal)[2];
-    normalvec = passednormal;
-  }
+		normalvec = passednormal;
+	}
 
-  TESSalloc ma;
-  TESStesselator* tess = nullptr;
+	TESSalloc ma;
+	TESStesselator* tess = nullptr;
 
-  memset(&ma, 0, sizeof(ma));
-  ma.memalloc = stdAlloc;
-  ma.memfree = stdFree;
-  ma.extraVertices = 256; // realloc not provided, allow 256 extra vertices.
+	memset(&ma, 0, sizeof(ma));
+	ma.memalloc = stdAlloc;
+	ma.memfree = stdFree;
+	ma.extraVertices = 256; // realloc not provided, allow 256 extra vertices.
   
-  if (!(tess = tessNewTess(&ma))) return true;
+	if (!(tess = tessNewTess(&ma))) return true;
 
 	int numContours = 0;
-  std::vector<TESSreal> contour;
+	std::vector<TESSreal> contour;
 	// Since libtess2's indices is based on the running number of points added, we need to map back
 	// to our indices. allindices does the mapping.
 	std::vector<int> allindices;
-  for (const auto &face : cleanfaces) {
-    contour.clear();
-    for (auto idx : face) {
+	for (const auto &face : faces) {
+		contour.clear();
+		for (auto idx : face) {
 			const auto &v = vertices[idx];
-      contour.push_back(v[0]);
-      contour.push_back(v[1]);
-      contour.push_back(v[2]);
+			contour.push_back(v[0]);
+			contour.push_back(v[1]);
+			contour.push_back(v[2]);
 			allindices.push_back(idx);
-    }
+		}
 		assert(face.size() >= 3);
 		PRINTDB("Contour: %d\n", face.size());
-    tessAddContour(tess, 3, &contour.front(), sizeof(TESSreal) * 3, face.size());
+		tessAddContour(tess, 3, &contour.front(), sizeof(TESSreal) * 3, face.size());
 		numContours++;
-  }
+	}
 
-  if (!tessTesselate(tess, TESS_WINDING_ODD, TESS_CONSTRAINED_DELAUNAY_TRIANGLES, 3, 3, normalvec)) return -1;
+	if (!tessTesselate(tess, TESS_WINDING_ODD, TESS_CONSTRAINED_DELAUNAY_TRIANGLES, 3, 3, normalvec)) return -1;
 
-  const auto vindices = tessGetVertexIndices(tess);
-  const auto elements = tessGetElements(tess);
-  auto numelems = tessGetElementCount(tess);
+	const auto vindices = tessGetVertexIndices(tess);
+	const auto elements = tessGetElements(tess);
+	auto numelems = tessGetElementCount(tess);
   
 	/*
 		At this point, we have a delaunay triangle mesh.
@@ -311,137 +312,106 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 		where the edge direction is reversed compared to the input polygon.
 		This will also destroy connectivity and we need to flip those back.
 	 */
-		/*
-			Algorithm:
-			A) Collect all triangles using _only_ existing vertices -> triangles
-			B) Locate all unused vertices
-			C) For each unused vertex, create a triangle connecting it to the existing mesh
-		*/
-		auto inputSize = allindices.size(); // inputSize is number of points added to libtess2
-		std::vector<int> vflags(inputSize); // Inits with 0's
-		
-		IndexedTriangle tri;
-		IndexedTriangle mappedtri;
-		for (int t=0; t<numelems; ++t) {
-			auto err = false;
-			mappedtri.fill(-1);
-			for (int i=0; i<3; ++i) {
-				auto vidx = vindices[elements[t*3 + i]];
-				if (vidx == TESS_UNDEF) {
-					err = true;
-				}
-				else {
-					tri[i] = vidx; // A)
-					mappedtri[i] = allindices[vidx];
-				}
+	/*
+		Algorithm:
+		A) Collect all triangles using _only_ existing vertices -> triangles
+		B) Locate all unused vertices
+		C) For each unused vertex, create a triangle connecting it to the existing mesh
+	*/
+	auto inputSize = allindices.size(); // inputSize is number of points added to libtess2
+	std::vector<int> vflags(inputSize); // Inits with 0's
+	
+	IndexedTriangle tri;
+	IndexedTriangle mappedtri;
+	for (int t=0; t<numelems; ++t) {
+		auto err = false;
+		mappedtri.fill(-1);
+		for (int i=0; i<3; ++i) {
+			auto vidx = vindices[elements[t*3 + i]];
+			if (vidx == TESS_UNDEF) {
+				err = true;
 			}
-			PRINTDB("%d (%d) %d (%d) %d (%d)",
-							elements[t*3 + 0] % mappedtri[0] %
-							elements[t*3 + 1] % mappedtri[1] %
-							elements[t*3 + 2] % mappedtri[2]);
-			// FIXME: We ignore self-intersecting triangles rather than detecting and handling this
-			if (!err) {
-				vflags[tri[0]]++; // B)
-				vflags[tri[1]]++;
-				vflags[tri[2]]++;
-
-				// For each edge in mappedtri, locate the opposite edge in the original polygon.
-				// If an opposite edge was found, we need to flip.
-				// In addition, remove each edge from the dict to be able to later find
-				// missing edges.
-				// Note: In some degenerate cases, we create triangles with mixed edge directions.
-				// In this case, don't reverse, but attempt to carry on
-				auto reverse = false;
-				for (int i=0; i<3; ++i) {
-					const IndexedEdge e(mappedtri[i], mappedtri[(i+1)%3]);
-					if (edges.count(e) > 0) {
-						reverse = false;
-						break;
-					}
-					else if (edges.count(e.second, e.first) > 0) {
-						reverse = true;
-					}
-				}
-				if (reverse) {
-					mappedtri.reverseInPlace();
-					PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
-				}
-
-				// Remove the generated triangle from the original.
-				// Add new boundary edges to the edge dict
-				edges.remove(mappedtri);
-				triangles.push_back(mappedtri);
+			else {
+				tri[i] = vidx; // A)
+				mappedtri[i] = allindices[vidx];
 			}
 		}
+		PRINTDB("%d (%d) %d (%d) %d (%d)",
+						elements[t*3 + 0] % mappedtri[0] %
+						elements[t*3 + 1] % mappedtri[1] %
+						elements[t*3 + 2] % mappedtri[2]);
+		// FIXME: We ignore self-intersecting triangles rather than detecting and handling this
+		if (!err) {
+			vflags[tri[0]]++; // B)
+			vflags[tri[1]]++;
+			vflags[tri[2]]++;
+
+			// For each edge in mappedtri, locate the opposite edge in the original polygon.
+			// If an opposite edge was found, we need to flip.
+			// In addition, remove each edge from the dict to be able to later find
+			// missing edges.
+			// Note: In some degenerate cases, we create triangles with mixed edge directions.
+			// In this case, don't reverse, but attempt to carry on
+			auto reverse = false;
+			for (int i=0; i<3; ++i) {
+				const IndexedEdge e(mappedtri[i], mappedtri[(i+1)%3]);
+				if (edges.count(e) > 0) {
+					reverse = false;
+					break;
+				}
+				else if (edges.count(e.second, e.first) > 0) {
+					reverse = true;
+				}
+			}
+			if (reverse) {
+				mappedtri.reverseInPlace();
+				PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
+			}
+
+			// Remove the generated triangle from the original.
+			// Add new boundary edges to the edge dict
+			edges.remove(mappedtri);
+			triangles.push_back(mappedtri);
+		}
+	}
+
+	if (!edges.empty()) {
+		PRINTDB("   %d edges remaining after main triangulation", edges.size());
+		edges.print();
+		
+		// Collect loops from remaining edges and triangulate loops manually
+		edges.triangulateLoops(triangles);
 
 		if (!edges.empty()) {
-			PRINTDB("   %d edges remaining after main triangulation", edges.size());
+			PRINTDB("   %d edges remaining after loop triangulation", edges.size());
 			edges.print();
-			
-			// Collect loops from remaining edges and triangulate loops manually
-			edges.triangulateLoops(triangles);
-
-			if (!edges.empty()) {
-				PRINTDB("   %d edges remaining after loop triangulation", edges.size());
-				edges.print();
-			}
 		}
+	}
 #if 0
-		for (int i=0; i<inputSize; ++i) {
-			if (!vflags[i]) { // vertex missing in output: C)
-				int starti = (i+inputSize-1)%inputSize;
-				int j;
-				PRINTD("   Fanning left-out vertices");
-				for (j = i; j < inputSize && !vflags[j]; ++j) {
-					// Create triangle fan from vertex i-1 to the first existing vertex
-					PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j+1)%inputSize)]);
-					tri[0] = allindices[starti];
-					tri[1] = allindices[j];
-					tri[2] = allindices[(j+1)%inputSize];
-					vflags[tri[0]]++;
-					vflags[tri[1]]++;
-					vflags[tri[2]]++;
-					triangles.push_back(tri);
-				}
-				i = j;
+	for (int i=0; i<inputSize; ++i) {
+		if (!vflags[i]) { // vertex missing in output: C)
+			int starti = (i+inputSize-1)%inputSize;
+			int j;
+			PRINTD("   Fanning left-out vertices");
+			for (j = i; j < inputSize && !vflags[j]; ++j) {
+				// Create triangle fan from vertex i-1 to the first existing vertex
+				PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j+1)%inputSize)]);
+				tri[0] = allindices[starti];
+				tri[1] = allindices[j];
+				tri[2] = allindices[(j+1)%inputSize];
+				vflags[tri[0]]++;
+				vflags[tri[1]]++;
+				vflags[tri[2]]++;
+				triangles.push_back(tri);
 			}
+			i = j;
 		}
+	}
 #endif
 
   tessDeleteTess(tess);
 
   return false;
-}
-
-/*!
-	Tessellates a single contour. Non-indexed version.
-	Appends resulting triangles to triangles.
-*/
-bool GeometryUtils::tessellatePolygon(const Polygon &polygon, Polygons &triangles,
-																			const Vector3f *normal)
-{
-	auto err = false;
-	Reindexer<Vector3f> uniqueVertices;
-	std::vector<IndexedFace> indexedfaces{{}};
-	auto &currface = indexedfaces.back();
-	for (const auto &v : polygon) {
-		auto idx = uniqueVertices.lookup(v.cast<float>());
-		if (currface.empty() || idx != currface.back()) currface.push_back(idx);
-	}
-	if (currface.front() == currface.back()) currface.pop_back();
-	if (currface.size() >= 3) { // Cull empty triangles
-		const auto& verts = uniqueVertices.getArray();
-		std::vector<IndexedTriangle> indexedtriangles;
-		err = tessellatePolygonWithHoles(verts, indexedfaces, indexedtriangles, normal);
-		for (const auto &t : indexedtriangles) {
-			triangles.push_back(Polygon());
-			Polygon &p = triangles.back();
-			p.push_back(verts[t[0]].cast<double>());
-			p.push_back(verts[t[1]].cast<double>());
-			p.push_back(verts[t[2]].cast<double>());
-		}
-	}
-	return err;
 }
 
 int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons)

@@ -3,8 +3,6 @@
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
-#include "polyset-utils.h"
-#include "grid.h"
 
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
@@ -45,57 +43,39 @@ namespace /* anonymous */ {
 #if 1 // Use Grid
 		void operator()(HDS& hds) override {
 			CGAL_Polybuilder B(hds, true);
-		
-			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
-			std::vector<std::vector<size_t>> indices;
-
-			// Align all vertices to grid and build vertex array in vertices
-			for(const auto &p : ps.polygons) {
-				indices.push_back(std::vector<size_t>());
-				indices.back().reserve(p.size());
-				for (auto v : boost::adaptors::reverse(p)) {
-					// align v to the grid; the CGALPoint will receive the aligned vertex
-					size_t idx = grid.align(v);
-					if (idx == vertices.size()) {
-						CGALPoint p(v[0], v[1], v[2]);
-						vertices.push_back(p);
-					}
-					indices.back().push_back(idx);
-				}
-			}
+			
+			PolySet psq;
+			psq.copyPolygons(ps);
+			psq.quantizeVertices();
+			psq.getVertices<CGALPoint>(vertices);
 
 #ifdef GEN_SURFACE_DEBUG
 			printf("polyhedron(faces=[");
 			int pidx = 0;
 #endif
-			B.begin_surface(vertices.size(), ps.polygons.size());
+			B.begin_surface(vertices.size(), psq.numFacets());
 			for(const auto &p : vertices) {
 				B.add_vertex(p);
 			}
-			for(auto &pindices : indices) {
+			for(const auto &p : boost::adaptors::reverse(psq.getIndexedPolygons())) {
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
-
-				// We remove duplicate indices since there is a bug in CGAL's
-				// Polyhedron_incremental_builder_3::test_facet() which fails to detect this
-				std::vector<size_t>::iterator last = std::unique(pindices.begin(), pindices.end());
-				std::advance(last, -1);
-				if (*last != pindices.front()) last++; // In case the first & last are equal
-				pindices.erase(last, pindices.end());
-				if (pindices.size() >=3 && B.test_facet(pindices.begin(), pindices.end())) {
-					B.add_facet(pindices.begin(), pindices.end());
-				}
+				for (const auto &f : boost::adaptors::reverse(p)) {
+					if (B.test_facet(f.begin(), f.end())) {
+						B.add_facet(f.begin(), f.end());
+					}
 #ifdef GEN_SURFACE_DEBUG
-				printf("[");
-				int fidx = 0;
-				for (auto i : boost::adaptors::reverse(pindices)) {
-					if (fidx++ > 0) printf(",");
-					printf("%ld", i);
-				}
-				printf("]");
+					printf("[");
+					int fidx = 0;
+					for (auto i : boost::adaptors::reverse(f)) {
+						if (fidx++ > 0) printf(",");
+						printf("%ld", i);
+					}
+					printf("]");
 #endif
+				}
 			}
 			B.end_surface();
 #ifdef GEN_SURFACE_DEBUG
@@ -115,51 +95,38 @@ namespace /* anonymous */ {
 		void operator()(HDS& hds)
 			{
 				CGAL_Polybuilder B(hds, true);
-				Reindexer<Vector3d> vertices;
-				std::vector<size_t> indices(3);
-
-				// Estimating same # of vertices as polygons (very rough)
-				B.begin_surface(ps.polygons.size(), ps.polygons.size());
+				std::vector<CGALPoint> vertices;
+				
+				PolySet psq;
+				psq.copyPolygons(ps);
+				psq.reindex();
+				psq.getVertices<CGALPoint>(vertices);
+				
+				B.begin_surface(vertices.size(), psq.numFacets());
 				int pidx = 0;
 #ifdef GEN_SURFACE_DEBUG
 				printf("polyhedron(faces=[");
 #endif
-				for(const auto &p : ps.polygons) {
+				for (const auto &v : vertices) {
+					B.add_vertex(v);
+				}
+				for(const auto &p : boost::adaptors::reverse(psq.getIndexedPolygons())) {
 #ifdef GEN_SURFACE_DEBUG
 					if (pidx++ > 0) printf(",");
 #endif
-					indices.clear();
-					for (const auto &v, boost::adaptors::reverse(p)) {
-						size_t s = vertices.size();
-						size_t idx = vertices.lookup(v);
-						// If we added a vertex, also add it to the CGAL builder
-						if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
-						indices.push_back(idx);
-					}
-					// We perform this test since there is a bug in CGAL's
-					// Polyhedron_incremental_builder_3::test_facet() which
-					// fails to detect duplicate indices
-					bool err = false;
-					for (std::size_t i = 0; i < indices.size(); ++i) {
-						// check if vertex indices[i] is already in the sequence [0..i-1]
-						for (std::size_t k = 0; k < i && !err; ++k) {
-							if (indices[k] == indices[i]) {
-								err = true;
-								break;
-							}
-						}
-					}
-					if (!err && B.test_facet(indices.begin(), indices.end())) {
-						B.add_facet(indices.begin(), indices.end());
+					for (const auto &f : p) {
+						if (B.test_facet(f.begin(), f.end())) {
+							B.add_facet(f.begin(), f.end());
 #ifdef GEN_SURFACE_DEBUG
-						printf("[");
-						int fidx = 0;
-						for(auto i : indices) {
-							if (fidx++ > 0) printf(",");
-							printf("%ld", i);
-						}
-						printf("]");
+							printf("[");
+							int fidx = 0;
+							for(const auto &i : f) {
+								if (fidx++ > 0) printf(",");
+								printf("%ld", i);
+							}
+							printf("]");
 #endif
+						}
 					}
 				}
 				B.end_surface();
@@ -169,7 +136,7 @@ namespace /* anonymous */ {
 				printf("points=[");
 				for (int vidx=0; vidx<vertices.size(); ++vidx) {
 					if (vidx > 0) printf(",");
-					const Vector3d &v = vertices.getArray()[vidx];
+					const Vector3d &v = vertices[vidx];
 					printf("[%g,%g,%g]", v[0], v[1], v[2]);
 				}
 				printf("]);\n");
@@ -284,6 +251,7 @@ namespace CGALUtils {
 				double z = CGAL::to_double(v.point().z());
 				ps.append_vertex(x, y, z);
 			} while (hc != hc_end);
+			ps.close_poly();
 		}
 		return err;
 	}

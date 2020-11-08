@@ -124,6 +124,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 					p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
 					p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
 					p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
+					p->close_poly();
 				}
 			}
 		}
@@ -139,6 +140,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 			p->append_vertex(facet.data.x1, facet.data.y1, facet.data.z1);
 			p->append_vertex(facet.data.x2, facet.data.y2, facet.data.z2);
 			p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
+			p->close_poly();
 		}
 	}
 	return p;

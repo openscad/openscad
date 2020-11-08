@@ -26,7 +26,6 @@
 
 #include "export.h"
 #include "polyset.h"
-#include "polyset-utils.h"
 #include "printutils.h"
 
 #ifdef ENABLE_LIB3MF
@@ -140,8 +139,8 @@ static bool append_3mf(const shared_ptr<const Geometry> &geom, PLib3MFModelMeshO
 		return append_nef(*N, model);
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-		PolySet triangulated(3);
-		PolysetUtils::tessellate_faces(*ps, triangulated);
+		PolySet triangulated(*ps);
+		triangulated->tessellate();
 		return append_polyset(triangulated, model);
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {

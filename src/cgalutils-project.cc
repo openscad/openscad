@@ -7,7 +7,6 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "Polygon2d.h"
-#include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
 
@@ -251,7 +250,7 @@ namespace CGALUtils {
 				LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
 				return poly;
 			}
-			poly = PolysetUtils::project(ps);
+			poly = ps.project();
 		}
 		return poly;
 	}

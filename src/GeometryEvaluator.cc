@@ -19,7 +19,6 @@
 #include "cgalutils.h"
 #include "rendernode.h"
 #include "clipper-utils.h"
-#include "polyset-utils.h"
 #include "polyset.h"
 #include "calc.h"
 #include "printutils.h"
@@ -71,7 +70,8 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				if (!N->isEmpty()) {
 					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
 					if (err) {
-						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");					}
+						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");
+					}
 				}
 			}
 
@@ -83,9 +83,10 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
 				if (!convex) {
 					assert(ps->getDimension() == 3);
-					auto ps_tri = new PolySet(3, ps->convexValue());
-					ps_tri->setConvexity(ps->getConvexity());
-					PolysetUtils::tessellate_faces(*ps, *ps_tri);
+
+					PolySet *ps_tri = new PolySet(*ps);
+					ps_tri->tessellate();
+
 					this->root.reset(ps_tri);
 				}
 			}
@@ -742,15 +743,6 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 	return Response::ContinueTraversal;
 }
 
-static void translate_PolySet(PolySet &ps, const Vector3d &translation)
-{
-	for(auto &p : ps.polygons) {
-		for(auto &v : p) {
-			v += translation;
-		}
-	}
-}
-
 /*
 	Compare Euclidean length of vectors
 	Return:
@@ -825,18 +817,25 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(  mid[0],   mid[1], h_mid);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->close_poly();
+
 				ps->append_poly();
 				ps->insert_vertex(curr1[0], curr1[1], h1);
 				ps->insert_vertex(  mid[0],   mid[1], h_mid);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
+				ps->close_poly();
+
 				ps->append_poly();
 				ps->insert_vertex(curr2[0], curr2[1], h2);
 				ps->insert_vertex(  mid[0],   mid[1], h_mid);
 				ps->insert_vertex(prev2[0], prev2[1], h2);
+				ps->close_poly();
+
 				ps->append_poly();
 				ps->insert_vertex(prev2[0], prev2[1], h2);
 				ps->insert_vertex(  mid[0],   mid[1], h_mid);
 				ps->insert_vertex(prev1[0], prev1[1], h1);
+				ps->close_poly();
 			} else
 #endif
 			// Split along shortest diagonal,
@@ -846,22 +845,26 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->close_poly();
 				if (!any_zero || (any_non_zero && prev2 != curr2)) {
 					ps->append_poly();
 					ps->insert_vertex(curr2[0], curr2[1], h2);
 					ps->insert_vertex(prev1[0], prev1[1], h1);
 					ps->insert_vertex(prev2[0], prev2[1], h2);
+					ps->close_poly();
 				}
 			}	else {
 				ps->append_poly();
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(prev2[0], prev2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->close_poly();
 				if (!any_zero || (any_non_zero && prev2 != curr2)) {
 					ps->append_poly();
 					ps->insert_vertex(prev2[0], prev2[1], h2);
 					ps->insert_vertex(curr2[0], curr2[1], h2);
 					ps->insert_vertex(curr1[0], curr1[1], h1);
+					ps->close_poly();
 				}
 			}
 			prev1 = curr1;
@@ -896,10 +899,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	PolySet *ps_bottom = poly.tessellate(); // bottom
 	
 	// Flip vertex ordering for bottom polygon
-	for(auto &p : ps_bottom->polygons) {
-		std::reverse(p.begin(), p.end());
-	}
-	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
+	ps_bottom->reverse();
+	ps_bottom->translate(Vector3d(0,0,h1));
 
 	ps->append(*ps_bottom);
 	delete ps_bottom;
@@ -909,7 +910,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
 		top_poly.transform(trans); // top
 		PolySet *ps_top = top_poly.tessellate();
-		translate_PolySet(*ps_top, Vector3d(0,0,h2));
+		ps_top->translate(Vector3d(0,0,h2));
 		ps->append(*ps_top);
 		delete ps_top;
 	}
@@ -1068,9 +1069,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		ps_start->transform(rot);
 		// Flip vertex ordering
 		if (!flip_faces) {
-			for(auto &p : ps_start->polygons) {
-				std::reverse(p.begin(), p.end());
-			}
+			ps_start->reverse();
 		}
 		ps->append(*ps_start);
 		delete ps_start;
@@ -1079,9 +1078,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
 		ps_end->transform(rot2);
 		if (flip_faces) {
-			for(auto &p : ps_end->polygons) {
-				std::reverse(p.begin(), p.end());
-			}
+			ps_end->reverse();
 		}
 		ps->append(*ps_end);
 		delete ps_end;
@@ -1106,10 +1103,12 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				ps->insert_vertex(rings[j%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
 				ps->insert_vertex(rings[j%2][(i+1)%o.vertices.size()]);
+				ps->close_poly();
 				ps->append_poly();
 				ps->insert_vertex(rings[j%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
+				ps->close_poly();
 			}
 		}
 	}
@@ -1228,7 +1227,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 							}
 						}
 					}
-					if (chPS) poly = PolysetUtils::project(*chPS);
+					if (chPS) poly = chPS->project();
 #endif
 
 					if (poly) {

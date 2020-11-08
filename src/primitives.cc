@@ -396,36 +396,42 @@ const Geometry *PrimitiveNode::createGeometry() const
 			p->append_vertex(x2, y1, z2);
 			p->append_vertex(x2, y2, z2);
 			p->append_vertex(x1, y2, z2);
+			p->close_poly();
 
 			p->append_poly(); // bottom
 			p->append_vertex(x1, y2, z1);
 			p->append_vertex(x2, y2, z1);
 			p->append_vertex(x2, y1, z1);
 			p->append_vertex(x1, y1, z1);
+			p->close_poly();
 
 			p->append_poly(); // side1
 			p->append_vertex(x1, y1, z1);
 			p->append_vertex(x2, y1, z1);
 			p->append_vertex(x2, y1, z2);
 			p->append_vertex(x1, y1, z2);
+			p->close_poly();
 
 			p->append_poly(); // side2
 			p->append_vertex(x2, y1, z1);
 			p->append_vertex(x2, y2, z1);
 			p->append_vertex(x2, y2, z2);
 			p->append_vertex(x2, y1, z2);
+			p->close_poly();
 
 			p->append_poly(); // side3
 			p->append_vertex(x2, y2, z1);
 			p->append_vertex(x1, y2, z1);
 			p->append_vertex(x1, y2, z2);
 			p->append_vertex(x2, y2, z2);
+			p->close_poly();
 
 			p->append_poly(); // side4
 			p->append_vertex(x1, y2, z1);
 			p->append_vertex(x1, y1, z1);
 			p->append_vertex(x1, y1, z2);
 			p->append_vertex(x1, y2, z2);
+			p->close_poly();
 		}
 	}
 		break;
@@ -458,6 +464,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			p->append_poly();
 			for (int i = 0; i < fragments; ++i)
 				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
+			p->close_poly();
 
 			for (int i = 0; i < rings-1; ++i) {
 				auto r1 = &ring[i];
@@ -473,6 +480,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 						p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
 						p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
 						p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
+						p->close_poly();
 						r1i++;
 					} else {
 					sphere_next_r2:
@@ -481,6 +489,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 						p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
 						p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
 						p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
+						p->close_poly();
 						r2i++;
 					}
 				}
@@ -492,6 +501,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 												 ring[rings-1].points[i].y,
 												 ring[rings-1].z);
 			}
+			p->close_poly();
 		}
 	}
 		break;
@@ -526,18 +536,21 @@ const Geometry *PrimitiveNode::createGeometry() const
 					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 					p->insert_vertex(circle2[j].x, circle2[j].y, z2);
 					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+					p->close_poly();
 				} else {
 					if (r1 > 0) {
 						p->append_poly();
 						p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 						p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 						p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+						p->close_poly();
 					}
 					if (r2 > 0) {
 						p->append_poly();
 						p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 						p->insert_vertex(circle2[j].x, circle2[j].y, z2);
 						p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+						p->close_poly();
 					}
 				}
 			}
@@ -546,12 +559,14 @@ const Geometry *PrimitiveNode::createGeometry() const
 				p->append_poly();
 				for (int i=0; i<fragments; ++i)
 					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+				p->close_poly();
 			}
 
 			if (this->r2 > 0) {
 				p->append_poly();
 				for (int i=0; i<fragments; ++i)
 					p->append_vertex(circle2[i].x, circle2[i].y, z2);
+				p->close_poly();
 			}
 		}
 	}
@@ -581,6 +596,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 				}
 				fp_i++;
 			}
+			p->close_poly();
 			face_i++;
 		}
 	}

@@ -32,7 +32,6 @@
 // dxfdata.h must come first for Eigen SIMD alignment issues
 #include "dxfdata.h"
 #include "polyset.h"
-#include "polyset-utils.h"
 #include "printutils.h"
 
 #include "CGALRenderer.h"
@@ -57,10 +56,9 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
-    // See testdata/scad/3D/features/polyhedron-concave-test.scad
-		auto ps_tri = new PolySet(3, ps->convexValue());
-		ps_tri->setConvexity(ps->getConvexity());
-		PolysetUtils::tessellate_faces(*ps, *ps_tri);
+		// See testdata/scad/3D/features/polyhedron-concave-test.scad
+		PolySet *ps_tri = new PolySet(*ps);
+		ps_tri->tessellate();
 		this->polysets.push_back(shared_ptr<const PolySet>(ps_tri));
 	}
 	else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
@@ -121,7 +119,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			glDisable(GL_LIGHTING);
 			setColor(ColorMode::CGAL_FACE_2D_COLOR);
 			
-			for (const auto &polygon : polyset->polygons) {
+			for (const auto &polygon : polyset->getPolygons()) {
 				glBegin(GL_POLYGON);
 				for (const auto &p : polygon) {
 					glVertex3d(p[0], p[1], 0);

@@ -134,23 +134,13 @@ namespace Export {
 
 ExportMesh::ExportMesh(const PolySet &ps)
 {
-	std::vector<std::array<int, 3>> triangleIndices;
-	for (const auto &p : ps.polygons) {
-		auto pos1 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
-		auto pos2 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
-		auto pos3 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
-		triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
+	ps.getVertices<std::array<double,3>>(this->vertices,array_convert<std::array<double,3>,Vector3d>);
+	PolySet ps_tri(ps);
+	
+	for (const auto &i : ps_tri.getIndexedTriangles()) {
+		triangles.emplace_back(i[0],i[1],i[2]);
 	}
-
-	int index = 0;
-	std::map<int, int> indexTranslationMap;
-	for (const auto& e : vertexMap) {
-		indexTranslationMap.emplace(e.second, index++);
-	}
-
-	for (const auto &i : triangleIndices) {
-		triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
-	}
+	
 	std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
 		return t1.key < t2.key;
 	});
@@ -158,8 +148,8 @@ ExportMesh::ExportMesh(const PolySet &ps)
 
 bool ExportMesh::foreach_vertex(const std::function<bool(const std::array<double, 3>&)> callback) const
 {
-	for (const auto& e : vertexMap) {
-		if (!callback(e.first)) {
+	for (const auto& v : this->vertices) {
+		if (!callback(v)) {
 			return false;
 		}
 	}
