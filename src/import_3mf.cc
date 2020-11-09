@@ -173,7 +173,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 			p->append_vertex(vertex1.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2]);
 			p->append_vertex(vertex2.m_fPosition[0], vertex2.m_fPosition[1], vertex2.m_fPosition[2]);
 			p->append_vertex(vertex3.m_fPosition[0], vertex3.m_fPosition[1], vertex3.m_fPosition[2]);
-			ps->close_poly();
+			p->close_poly();
 		}
 
 		if (first_mesh) {
