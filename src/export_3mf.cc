@@ -140,7 +140,7 @@ static bool append_3mf(const shared_ptr<const Geometry> &geom, PLib3MFModelMeshO
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		PolySet triangulated(*ps);
-		triangulated->tessellate();
+		triangulated.tessellate();
 		return append_polyset(triangulated, model);
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
