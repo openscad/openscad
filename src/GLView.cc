@@ -241,20 +241,14 @@ void GLView::enable_opencsg_shaders()
         const float th = 1.414; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
         const float fade = 1.414; // thickness of fade (antialiasing) in screen pixels
         vec3 d = fwidth(vBC);
-        //vec3 d = abs(dFdx(vBC)); + abs(dFdy(vBC));
-        //vec3 d = vec3(1.0, 1.0, 1.0);
         vec3 a3 = smoothstep((th-fade)*d, th*d, vBC);
         return min(min(a3.x, a3.y), a3.z);
       }
 
       void main(void) {
         gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
-        //gl_FragColor = vec4(vec3(edgeFactor()), 1.0);
       }
     )FS_PROG";
-
-    // Does this help mac CI server graphical glitches?
-    glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_NICEST);
 
     auto vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);

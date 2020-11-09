@@ -85,7 +85,7 @@ public:
 			struct {
 				int color_area;
 				int color_edge;
-        // barycentric coordinates of the current vertex
+				// barycentric coordinates of the current vertex
 				int barycentric;
 			} csg_rendering;
 			struct {
