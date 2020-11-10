@@ -328,6 +328,7 @@ void PolySet::close_poly()
 
 void PolySet::close_poly_only()
 {
+	if (this->polygons.back().empty() || this->polygons.back().size() < 3) this->polygons.pop_back();
 	if (this->indexed_polygons.back().empty()) this->indexed_polygons.pop_back(); // Cull empty faces
 }
 
@@ -626,17 +627,10 @@ void PolySet::tessellate()
 			IndexedTriangles triangles;
 			auto err = false;
 			
-			// FIXME: PolySet should not allow empty faces to get here
-			for (const auto &face : faces) {
-				if (face.empty() || face.size() < 3)
-					err = true;
-					break;
-			}
-			
 			if (faces.size() == 1 && faces[0].size() == 3) {
 				triangles.emplace_back(faces[0][0], faces[0][1], faces[0][2]);
-			} else if (!err) {
-				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
+			} else {
+				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr, false);
 			}
 			if (!err) {
 				for (const auto &t : triangles) {

@@ -588,6 +588,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
 						LOG(message_group::Error,this->modinst->location(),this->document_path,
 							"Unable to convert points[%1$d] = %2$s to a vec3 of numbers",pt_i,pts[pt_i]->toEchoString());
+						p->close_poly();
 						return p;
 					}
 					p->insert_vertex(px, py, pz);

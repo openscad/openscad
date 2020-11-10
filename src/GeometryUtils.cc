@@ -188,9 +188,9 @@ public:
 	Returns true on error, false on success.
 */
 bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
-																							 const std::vector<IndexedFace> &faces, 
-																							 std::vector<IndexedTriangle> &triangles,
-																							 const Vector3f *normal)
+						const std::vector<IndexedFace> &faces, 
+						std::vector<IndexedTriangle> &triangles,
+						const Vector3f *normal, bool clean_faces)
 {
 	// Algorithm outline:
 	// o Remove consecutive equal vertices and null ears (i.e. 23,24,23)
@@ -199,47 +199,48 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 	// o Pass polygon to libtess2
 	// o Postprocess to clean up misbehaviors in libtess2
 
-	// No polygon. FIXME: Will this ever happen or can we assert here?
-	if (faces.empty()) return false;
+	// No polygon.
+	if (faces.empty()) assert(false && "tessellatePolygonWithHoles faces empty!!!");
 
 	// Remove consecutive equal vertices, as well as null ears
 	auto cleanfaces = faces;
-	// Save time since PolySet should not need this anymore.
-	// This method does not appear to be used anywhere else currently.
-/*	for (auto &face : cleanfaces) {
-		size_t i=0;
-		while (face.size() >= 3 && i < face.size()) {
-			if (face[i] == face[(i+1)%face.size()]) { // Two consecutively equal indices
-				face.erase(face.begin()+i);
-			}
-			else if (face[(i+face.size()-1)%face.size()] == face[(i+1)%face.size()]) { // Null ear
-				if (i == 0) face.erase(face.begin() + i, face.begin() + i + 2);
-				else face.erase(face.begin() + i - 1, face.begin() + i + 1);
-				i--;
-			}
-			else {
-				// Filter away inf and nan vertices as they cause libtess2 to crash
-				const auto &v = vertices[face[i]];
-				int k;
-				for (k=0; k<3; ++k) {
-					if (std::isnan(v[k]) || std::isinf(v[k])) {
-						face.erase(face.begin()+i);
-						break;
-					}
+	// Save time if the caller knows faces are clean
+	if (clean_faces) {
+		for (auto &face : cleanfaces) {
+			size_t i=0;
+			while (face.size() >= 3 && i < face.size()) {
+				if (face[i] == face[(i+1)%face.size()]) { // Two consecutively equal indices
+					face.erase(face.begin()+i);
 				}
-				if (k == 3) i++;
+				else if (face[(i+face.size()-1)%face.size()] == face[(i+1)%face.size()]) { // Null ear
+					if (i == 0) face.erase(face.begin() + i, face.begin() + i + 2);
+					else face.erase(face.begin() + i - 1, face.begin() + i + 1);
+					i--;
+				}
+				else {
+					// Filter away inf and nan vertices as they cause libtess2 to crash
+					const auto &v = vertices[face[i]];
+					int k;
+					for (k=0; k<3; ++k) {
+						if (std::isnan(v[k]) || std::isinf(v[k])) {
+							face.erase(face.begin()+i);
+							break;
+						}
+					}
+					if (k == 3) i++;
+				}
+			}
+		}
+		// First polygon has < 3 points - no output
+		if (cleanfaces[0].size() < 3) return false;
+		// Remove collapsed holes
+		for (size_t i=1; i<cleanfaces.size(); ++i) {
+			if (cleanfaces[i].size() < 3) {
+				cleanfaces.erase(cleanfaces.begin() + i);
+				i--;
 			}
 		}
 	}
-	// First polygon has < 3 points - no output
-	if (cleanfaces[0].size() < 3) return false;
-	// Remove collapsed holes
-	for (size_t i=1; i<cleanfaces.size(); ++i) {
-		if (cleanfaces[i].size() < 3) {
-			cleanfaces.erase(cleanfaces.begin() + i);
-			i--;
-		}
-	}*/
 
 	if (cleanfaces.size() == 1 && cleanfaces[0].size() == 3) {
 		// Input polygon has 3 points. shortcut tessellation.

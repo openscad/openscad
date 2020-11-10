@@ -19,7 +19,7 @@ namespace GeometryUtils {
 	bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 					const std::vector<IndexedFace> &faces, 
 					std::vector<IndexedTriangle> &triangles,
-					const Vector3f *normal = nullptr);
+					const Vector3f *normal = nullptr, bool clean_faces = true);
 	
 	int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>> &polygons);
 	int findUnconnectedEdges(const std::vector<IndexedTriangle> &triangles);
