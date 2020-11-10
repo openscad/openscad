@@ -194,22 +194,14 @@ void PolySet::append_poly(const Polygon &poly)
 	if (poly.size() < 3)
 		return;
 
-	this->polygons.emplace_back(poly);
-	this->num_appends++;
-	
-	IndexedFace currface;
-	currface.reserve(poly.size());
+	// don't allow invalid numbers
+	append_poly();
 	for (const auto &v : poly) {
-		// Create vertex indices and remove consecutive duplicate vertices
-		auto idx = this->vertexLookup(v);
-		if (currface.empty() || idx != currface.back()) currface.emplace_back(idx);
+		append_vertex(v);
 	}
-	if (currface.front() == currface.back()) currface.pop_back();
-	if (currface.size() >= 3) {
-		this->indexed_polygons.emplace_back(IndexedPolygon());
-		this->indexed_polygons.back().emplace_back(currface);
-		this->num_facets++;
-	}
+	close_poly();
+
+	this->num_appends++;
 
 	this->dirty = true;
 	this->triangles_dirty = true;
@@ -228,6 +220,12 @@ void PolySet::append_vertex(double x, double y, double z)
 
 void PolySet::append_vertex(const Vector3d &v)
 {
+	// do not append vertex if numeric error
+	if (std::isnan(v.cast<double>()[0]) || std::isinf(v.cast<double>()[0]) ||
+	    std::isnan(v.cast<double>()[1]) || std::isinf(v.cast<double>()[1]) ||
+	    std::isnan(v.cast<double>()[2]) || std::isinf(v.cast<double>()[2]))
+		return;
+
 	this->polygons.back().emplace_back(v);
 	size_t index = this->vertexLookup(v);
 
@@ -254,6 +252,12 @@ void PolySet::insert_vertex(double x, double y, double z)
 
 void PolySet::insert_vertex(const Vector3d &v)
 {
+	// do not insert vertex if numeric error
+	if (std::isnan(v.cast<double>()[0]) || std::isinf(v.cast<double>()[0]) ||
+	    std::isnan(v.cast<double>()[1]) || std::isinf(v.cast<double>()[1]) ||
+	    std::isnan(v.cast<double>()[2]) || std::isinf(v.cast<double>()[2]))
+		return;
+
 	this->polygons.back().emplace(this->polygons.back().begin(), v);
 	size_t index = this->vertexLookup(v);
 
@@ -566,7 +570,7 @@ void PolySet::quantizeVertices()
 			this->polygons.erase(iter);
 			this->num_degenerate_polygons++;
 		}
-		else {
+		if (face.size() >= 3){
 			this->indexed_polygons.emplace_back(IndexedPolygon());
 			this->indexed_polygons.back().emplace_back(face);
 			this->num_facets++;
@@ -621,9 +625,17 @@ void PolySet::tessellate()
 		for (auto &faces : this->indexed_polygons) {
 			IndexedTriangles triangles;
 			auto err = false;
+			
+			// FIXME: PolySet should not allow empty faces to get here
+			for (const auto &face : faces) {
+				if (face.empty() || face.size() < 3)
+					err = true;
+					break;
+			}
+			
 			if (faces.size() == 1 && faces[0].size() == 3) {
 				triangles.emplace_back(faces[0][0], faces[0][1], faces[0][2]);
-			} else {
+			} else if (!err) {
 				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
 			}
 			if (!err) {

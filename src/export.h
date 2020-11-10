@@ -153,7 +153,7 @@ public:
 	bool foreach_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const;
 
 private:
-	std::vector<std::array<double, 3>> vertices;
+	std::map<std::array<double, 3>, int> vertexMap;
 	std::vector<Triangle> triangles;
 };
 
