@@ -3,7 +3,7 @@
 #include "FileModule.h"
 #include "printutils.h"
 #include "openscad.h"
-
+#include "boost-utils.h"
 #include <boost/format.hpp>
 
 #include <stdio.h>
@@ -76,7 +76,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 
 #ifdef DEBUG
 	// Causes too much debug output
-	//if (!shouldCompile) PRINTB("Using cached library: %s (%p)", filename % lib_mod);
+	//if (!shouldCompile) LOG(message_group::None,Location::NONE,"","Using cached library: %1$s (%2$p)",filename,lib_mod);
 #endif
 
 	// If cache lookup failed (non-existing or old timestamp), compile module
@@ -94,7 +94,7 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		{
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
-				PRINTB("WARNING: Can't open library file '%s'\n", filename);
+				LOG(message_group::Warning,Location::NONE,"","Can't open library file '%1$s'\n",filename);
 				return 0;
 			}
 			text = STR(ifs.rdbuf() << "\n\x03\n" << commandline_commands);

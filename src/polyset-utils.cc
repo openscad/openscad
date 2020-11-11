@@ -98,7 +98,9 @@ namespace PolysetUtils {
 				}
 			}
 		}
-		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
+		if (degeneratePolygons > 0) {
+			LOG(message_group::Warning,Location::NONE,"","PolySet has degenerate polygons");
+		}
 	}
 
 	bool is_approximately_convex(const PolySet &ps) {

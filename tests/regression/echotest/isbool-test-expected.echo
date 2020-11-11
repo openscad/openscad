@@ -14,7 +14,7 @@ ECHO: false
 ECHO: false
 ECHO: false
 ECHO: "resulting in warnings:"
-WARNING: is_bool() number of parameters does not match, in file isbool-test.scad, line 17
+WARNING: is_bool() number of parameters does not match in file isbool-test.scad, line 17
 ECHO: undef
-WARNING: is_bool() number of parameters does not match, in file isbool-test.scad, line 18
+WARNING: is_bool() number of parameters does not match in file isbool-test.scad, line 18
 ECHO: undef

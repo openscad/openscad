@@ -84,7 +84,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
-		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
+		LOG(message_group::Warning,Location::NONE,"","Can't open DXF file '%1$s'.",filename);
 		return;
 	}
 
@@ -149,7 +149,7 @@ DxfData::DxfData(double fn, double fs, double fa,
     }
     catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				PRINTB("WARNING: Illegal ID '%s' in `%s'", id_str % filename);
+				LOG(message_group::Warning,Location::NONE,"","Illegal ID '%1$s' in `%2$s'",id_str,filename);
 			}
 			break;
   	}
@@ -406,20 +406,20 @@ DxfData::DxfData(double fn, double fs, double fa,
 		}
     }
     catch (boost::bad_lexical_cast &blc) {
-	  	PRINTB("WARNING: Illegal value %s in '%s'", data % filename);
+		LOG(message_group::Warning,Location::NONE,"","Illegal value '%1$s'in `%2$s'",data,filename);
   	}
     catch (const std::out_of_range& oor) {
-	  	PRINTB("WARNING: not enough input values for %s in '%s'", data % filename);
+		LOG(message_group::Warning,Location::NONE,"","Not enough input values for %1$s. in '%2$s'",data,filename);
   	}
 	}
 
 	for (const auto &i : unsupported_entities_list) {
 		if (layername.empty()) {
-			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
-						 i.first % i.second % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+			LOG(message_group::Warning,Location::NONE,"",
+				"Unsupported DXF Entity '%1$s' (%2$x) in %3$s.",i.first,i.second,QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
 		} else {
-			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s.",
-						 i.first % i.second % layername % QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+			LOG(message_group::Warning,Location::NONE,"",
+				"Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",i.first,i.second,layername,boostfs_uncomplete(filename, fs::current_path()).generic_string());
 		}
 	}
 

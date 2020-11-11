@@ -1,6 +1,6 @@
 ECHO: "special variable inheritance"
 ECHO: 23, 5
-WARNING: Ignoring unknown variable 'a', in file variable-scope-tests.scad, line 8.
+WARNING: Ignoring unknown variable 'a' in file variable-scope-tests.scad, line 8
 ECHO: undef
 ECHO: 23, 5
 ECHO: "$children scope"
@@ -13,18 +13,18 @@ ECHO: "child_module_2 child 1"
 ECHO: "copy $children"
 ECHO: "copy_children_module: ", 2, 2
 ECHO: "inner variables shadows parameter"
-WARNING: Module inner_variables: Parameter b is overwritten with a literal, in file variable-scope-tests.scad, line 45
+WARNING: Module inner_variables: Parameter b is overwritten with a literal in file variable-scope-tests.scad, line 45
 ECHO: 5, 24
 ECHO: "user-defined special variables as parameter"
 ECHO: 7
 ECHO: 7
 ECHO: "assign only visible in children's scope"
 DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead. in file variable-scope-tests.scad, line 72
-WARNING: Ignoring unknown variable 'c', in file variable-scope-tests.scad, line 65.
+WARNING: Ignoring unknown variable 'c' in file variable-scope-tests.scad, line 65
 ECHO: undef
 ECHO: 5
 ECHO: "undeclared variable can still be passed and used"
-WARNING: variable d not specified as parameter, in file variable-scope-tests.scad, line 81
+WARNING: variable d not specified as parameter in file variable-scope-tests.scad, line 81
 ECHO: 6
 ECHO: "attempt to assign from a not-yet-defined variable which also exists globally"
 ECHO: 5, 1

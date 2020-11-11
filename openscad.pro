@@ -196,6 +196,8 @@ CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
 CONFIG += hiredis
+CONFIG += cairo
+
 # Make experimental features available
 experimental {
   DEFINES += ENABLE_EXPERIMENTAL
@@ -229,6 +231,7 @@ load(uic)
 uic.commands += -tr q_
 
 FORMS   += src/MainWindow.ui \
+           src/ErrorLog.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
@@ -264,6 +267,7 @@ SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/Assignment.cc \
            src/PCSettings.cpp \
+           src/export_pdf.cc \
            src/expr.cc \
            src/function.cc \
            src/lcache.cpp \
@@ -380,6 +384,7 @@ HEADERS += src/version_check.h \
            \
            src/Dock.h \
            src/Console.h \
+           src/ErrorLog.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/LibraryInfoDialog.h \
@@ -538,6 +543,7 @@ SOURCES += \
            src/UIUtils.cc \
            src/Dock.cc \
            src/Console.cc \
+           src/ErrorLog.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
            src/launchingscreen.cc \

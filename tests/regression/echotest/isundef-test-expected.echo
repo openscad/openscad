@@ -2,7 +2,7 @@ ECHO: "Normal variables"
 ECHO: true
 ECHO: false
 ECHO: true
-WARNING: Ignoring unknown variable 'a', in file isundef-test.scad, line 8.
+WARNING: Ignoring unknown variable 'a' in file isundef-test.scad, line 8
 ECHO: undef
 ECHO: "hallo"
 ECHO: undef
@@ -11,13 +11,13 @@ ECHO: false
 ECHO: true
 ECHO: true
 ECHO: true
-WARNING: Ignoring unknown variable 'd', in file isundef-test.scad, line 21.
+WARNING: Ignoring unknown variable 'd' in file isundef-test.scad, line 21
 ECHO: undef
 ECHO: "Special variables"
 ECHO: true
 ECHO: false
 ECHO: true
-WARNING: Ignoring unknown variable '$a', in file isundef-test.scad, line 30.
+WARNING: Ignoring unknown variable '$a' in file isundef-test.scad, line 30
 ECHO: undef
 ECHO: 132465
 ECHO: undef
@@ -27,16 +27,16 @@ ECHO: "constants resulting in false"
 ECHO: false
 ECHO: false
 ECHO: "constants resulting in undef"
-WARNING: is_undef() number of parameters does not match, in file isundef-test.scad, line 42
+WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 42
 ECHO: undef
-WARNING: is_undef() number of parameters does not match, in file isundef-test.scad, line 43
+WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 43
 ECHO: undef
-WARNING: is_undef() number of parameters does not match, in file isundef-test.scad, line 44
+WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 44
 ECHO: undef
 ECHO: "functions resulting in true"
-WARNING: len() number of parameters does not match, in file isundef-test.scad, line 47
+WARNING: len() number of parameters does not match in file isundef-test.scad, line 47
 ECHO: true
-WARNING: is_undef() number of parameters does not match, in file isundef-test.scad, line 48
+WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 48
 ECHO: true
 ECHO: "functions resulting in false"
 ECHO: false

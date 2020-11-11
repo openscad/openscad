@@ -1,4 +1,3 @@
-group();
 group() {
 	difference() {
 		union() {
@@ -14,3 +13,4 @@ group() {
 		}
 	}
 }
+

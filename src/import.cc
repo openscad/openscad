@@ -41,7 +41,7 @@
 #include "fileutils.h"
 #include "feature.h"
 #include "handle_dep.h"
-
+#include "boost-utils.h"
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -86,7 +86,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (v->isUndefined()) {
 		v = c->lookup_variable("filename", true);
 		if (!v->isUndefined()) {
-			printDeprecation("filename= is deprecated. Please use file=");
+			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
 	}
 	const std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
@@ -115,7 +115,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (layerval->isUndefined()) {
 		layerval = c->lookup_variable("layername", true);
 		if (!layerval->isUndefined()) {
-			printDeprecation("layername= is deprecated. Please use layer=");
+			LOG(message_group::Deprecated,Location::NONE,"","layername= is deprecated. Please use layer=");
 		}
 	}
 	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
@@ -128,7 +128,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin->isDefined() && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
 	}
 
 	const auto center = c->lookup_variable("center", true);
@@ -142,10 +142,10 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (dpi->type() == Value::Type::NUMBER) {
 		double val = dpi->toDouble();
 		if (val < 0.001) {
-			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
-					node->dpi %
-					inst->location().toRelativeString(ctx->documentPath()) %
-					inst->location().firstLine());
+		std::string filePath = boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string();
+		LOG(message_group::Warning,Location::NONE,"",
+			"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
+			origin->toEchoString(),filePath,filePath,inst->location().firstLine());
 		} else {
 			node->dpi = val;
 		}
@@ -200,7 +200,7 @@ const Geometry *ImportNode::createGeometry() const
 	}
 #endif
 	default:
-		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
+		LOG(message_group::Error,Location::NONE,"","Unsupported file format while trying to import file '%1$s', import() at line %2$d",this->filename,loc.firstLine());
 		g = new PolySet(3);
 	}
 

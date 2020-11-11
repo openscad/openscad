@@ -139,7 +139,7 @@ const QString OctoPrint::upload(const QString exportFileName, const QString file
 				const auto doc = QJsonDocument::fromJson(reply->readAll());
 				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
 				const auto location = reply->header(QNetworkRequest::LocationHeader).toString();
-				PRINTB("Uploaded successfully to %s", location.toStdString());
+				LOG(message_group::None,Location::NONE,"","Uploaded successfully to %1$s",location.toStdString());
 				return location;
 			}
 	);
@@ -166,7 +166,7 @@ void OctoPrint::slice(const QString fileUrl, const QString slicer, const QString
 			[](QNetworkReply *reply) {
 				const auto doc = QJsonDocument::fromJson(reply->readAll());
 				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-				PRINT("Slice command successfully executed.");
+				LOG(message_group::None,Location::NONE,"","Slice command successfully executed.");
 			}
 	);
 }

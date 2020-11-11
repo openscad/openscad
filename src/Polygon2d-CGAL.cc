@@ -1,7 +1,7 @@
 #include "Polygon2d-CGAL.h"
 #include "polyset.h"
 #include "printutils.h"
-
+#include "boost-utils.h"
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -115,7 +115,7 @@ PolySet *Polygon2d::tessellate() const
 
   }
 	catch (const CGAL::Precondition_exception &e) {
-		PRINTB("CGAL error in Polygon2d::tesselate(): %s", e.what());
+		LOG(message_group::None,Location::NONE,"","CGAL error in Polygon2d::tesselate(): %1$s",e.what());
 		CGAL::set_error_behaviour(old_behaviour);
 		return nullptr;
 	}

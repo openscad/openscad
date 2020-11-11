@@ -41,7 +41,7 @@ LCache::LCache() {
   size = 0;
   path = PlatformUtils::localCachePath();
   if ((!fs::exists(path)) && (!PlatformUtils::createLocalCachePath())) {
-    PRINTB("Error: Cannot create cache path: %s", path);
+	  LOG(message_group::Error, Location::NONE, "", "Cannot create cache path: %s", path);
   }
 
   cleanup();

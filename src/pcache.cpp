@@ -213,13 +213,13 @@ void PCache::print(){
   if (checkReply(reply)) {
     return;
   }
-  PRINTB("CGAL Polyhedrons in cache: %d", reply->elements);
+	LOG(message_group::None, Location::NONE, "", "CGAL Polyhedrons in cache: %1$d", reply->elements);
   freeReplyObject(reply);
   reply = static_cast<redisReply *>(redisCommand(rct, "KEYS GEOM-*"));
   if (checkReply(reply)) {
     return;
   }
-  PRINTB("Geometries in cache: %d", reply->elements);
+	LOG(message_group::Warning, Location::NONE, "", "Geometries in cache: %1$d", reply->elements);
   freeReplyObject(reply);
 }
 
@@ -233,7 +233,7 @@ bool PCache::checkContext(redisContext *rct){
       err = "NULL Context";
     }
     cstatus = false;
-    PRINTB("WARNING:(Persistent Cache) Unable to establish connection due to: %s", err);
+  	LOG(message_group::Warning, Location::NONE, "", "(Persistent Cache) Unable to establish connection due to: %1$s", err);
     return true;
   }
   cstatus = true;
@@ -249,7 +249,7 @@ bool PCache::checkReply(redisReply *reply){
     else {
       err = "NULL Reply";
     }
-    PRINTB("WARNING:(Persistent Cache) Cannot cache operations due to: %s", err);
+	  LOG(message_group::Warning, Location::NONE, "", "(Persistent Cache) Cannot cache operations due to: %1$s", err);
     return true;
   }
   return false;

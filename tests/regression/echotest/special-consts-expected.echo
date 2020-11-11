@@ -3,19 +3,19 @@ ECHO: "undef is undef"
 ECHO: "a is undef"
 ECHO: "undef is a"
 ECHO: "a is b"
-WARNING: Ignoring unknown variable 'c', in file special-consts.scad, line 21.
+WARNING: Ignoring unknown variable 'c' in file special-consts.scad, line 21
 ECHO: "c is undef"
-WARNING: Ignoring unknown variable 'c', in file special-consts.scad, line 25.
+WARNING: Ignoring unknown variable 'c' in file special-consts.scad, line 25
 ECHO: "undef is c"
-WARNING: Ignoring unknown variable '$customSpecialVariable', in file special-consts.scad, line 29.
+WARNING: Ignoring unknown variable '$customSpecialVariable' in file special-consts.scad, line 29
 ECHO: "$customSpecialVariable is undef"
 ECHO: "-- comparing undef --"
 ECHO: "undef evaluates false"
-WARNING: Ignoring unknown variable 'c', in file special-consts.scad, line 40.
+WARNING: Ignoring unknown variable 'c' in file special-consts.scad, line 40
 ECHO: "undef evaluates false"
 ECHO: "-- echo undef --"
 ECHO: undef
-WARNING: Ignoring unknown variable 'c', in file special-consts.scad, line 44.
+WARNING: Ignoring unknown variable 'c' in file special-consts.scad, line 44
 ECHO: undef
 ECHO: "-- calculating with undef --"
 WARNING: undefined operation (undefined / number) in file special-consts.scad, line 47
@@ -42,4 +42,4 @@ ECHO: "-- comparing nan --"
 ECHO: "nan != nan"
 ECHO: "-- 3d objects --"
 ECHO: "-- for loops --"
-WARNING: Bad range parameter in for statement: too many elements (4294967295), in file special-consts.scad, line 106
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file special-consts.scad, line 106

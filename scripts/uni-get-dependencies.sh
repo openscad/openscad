@@ -95,7 +95,7 @@ get_debian_deps()
  apt-get -y install \
   build-essential curl libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
-  libmpfr-dev libboost-dev libglew-dev \
+  libmpfr-dev libboost-dev libglew-dev libcairo2-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev libdouble-conversion-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
