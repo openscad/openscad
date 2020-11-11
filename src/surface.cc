@@ -248,21 +248,25 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + j-1, oy + i-1, v1);
 		p->append_vertex(ox + j, oy + i-1, v2);
 		p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+		p->close_poly();
 
 		p->append_poly();
 		p->append_vertex(ox + j, oy + i-1, v2);
 		p->append_vertex(ox + j, oy + i, v4);
 		p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+		p->close_poly();
 
 		p->append_poly();
 		p->append_vertex(ox + j, oy + i, v4);
 		p->append_vertex(ox + j-1, oy + i, v3);
 		p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+		p->close_poly();
 
 		p->append_poly();
 		p->append_vertex(ox + j-1, oy + i, v3);
 		p->append_vertex(ox + j-1, oy + i-1, v1);
 		p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
+		p->close_poly();
 	}
 
 	for (int i = 1; i < lines; ++i)
@@ -272,12 +276,14 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + 0, oy + i-1, data[std::make_pair(i-1, 0)]);
 		p->append_vertex(ox + 0, oy + i, data[std::make_pair(i, 0)]);
 		p->append_vertex(ox + 0, oy + i, min_val);
+		p->close_poly();
 
 		p->append_poly();
 		p->insert_vertex(ox + columns-1, oy + i-1, min_val);
 		p->insert_vertex(ox + columns-1, oy + i-1, data[std::make_pair(i-1, columns-1)]);
 		p->insert_vertex(ox + columns-1, oy + i, data[std::make_pair(i, columns-1)]);
 		p->insert_vertex(ox + columns-1, oy + i, min_val);
+		p->close_poly();
 	}
 
 	for (int i = 1; i < columns; ++i)
@@ -287,12 +293,14 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->insert_vertex(ox + i-1, oy + 0, data[std::make_pair(0, i-1)]);
 		p->insert_vertex(ox + i, oy + 0, data[std::make_pair(0, i)]);
 		p->insert_vertex(ox + i, oy + 0, min_val);
+		p->close_poly();
 
 		p->append_poly();
 		p->append_vertex(ox + i-1, oy + lines-1, min_val);
 		p->append_vertex(ox + i-1, oy + lines-1, data[std::make_pair(lines-1, i-1)]);
 		p->append_vertex(ox + i, oy + lines-1, data[std::make_pair(lines-1, i)]);
 		p->append_vertex(ox + i, oy + lines-1, min_val);
+		p->close_poly();
 	}
 
 	if (columns > 1 && lines > 1) {
@@ -305,6 +313,7 @@ const Geometry *SurfaceNode::createGeometry() const
 			p->insert_vertex(ox + i, oy + lines-1, min_val);
 		for (int i = lines-1; i > 0; i--)
 			p->insert_vertex(ox + 0, oy + i, min_val);
+		p->close_poly();
 	}
 
 	return p;

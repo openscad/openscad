@@ -457,7 +457,6 @@ set(CORE_SOURCES
   src/offset.cc
   src/parsersettings.cc
   src/polyset.cc
-  src/polyset-utils.cc
   src/primitives.cc
   src/printutils.cc
   src/progress.cc

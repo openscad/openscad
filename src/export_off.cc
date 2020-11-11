@@ -26,7 +26,6 @@
 
 #include "export.h"
 #include "polyset.h"
-#include "polyset-utils.h"
 #include "dxfdata.h"
 
 #ifdef ENABLE_CGAL
@@ -34,30 +33,14 @@
 #include "cgal.h"
 #include "cgalutils.h"
 
-#include "Reindexer.h"
 #include "grid.h"
 
-struct IndexedMesh {
-	IndexedMesh() : numfaces(0) {}
-
-	Reindexer<Vector3d> vertices;
-	std::vector<int> indices;
-	size_t numfaces;
-};
-
-
-static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
+static void append_geometry(const PolySet &ps, PolySet &mesh)
 {
-	for(const auto &p : ps.polygons) {
-		for(const auto &v : p) {
-			mesh.indices.push_back(mesh.vertices.lookup(v));
-		}
-		mesh.numfaces++;
-		mesh.indices.push_back(-1);
-	}
+	mesh.append(ps);
 }
 
-void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
+void append_geometry(const shared_ptr<const Geometry> &geom, PolySet &mesh)
 {
 	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
 		for (const Geometry::GeometryItem &item : geomlist->getChildren()) {
@@ -86,26 +69,22 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	IndexedMesh mesh;
+	PolySet mesh(3,unknown);
 	append_geometry(geom, mesh);
 
-	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const auto& v = mesh.vertices.getArray();
-	size_t numverts = mesh.vertices.size();
-	for (size_t i=0; i<numverts; ++i) {
-		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
-	}
-	size_t cnt = 0;
-	for (size_t i=0; i<mesh.numfaces; ++i) {
-		size_t nverts = 0;
-		while (mesh.indices[cnt++] != -1) nverts++;
-		output << nverts;
-		cnt -= nverts + 1;
-		for (size_t n=0; n<nverts; ++n) output << " " << mesh.indices[cnt++];
-		output << "\n";
-        cnt++; // Skip the -1 marker
-	}
+	std::vector<Vector3f> vertices;
+	mesh.getVertices<Vector3f>(vertices);
 
+	output << "OFF " << vertices.size() << " " << mesh.getIndexedTriangles().size() << " 0\n";
+	size_t numverts = vertices.size();
+	for (const auto &v : vertices) {
+		output << v[0] << " " << v[1] << " " << v[2] << " " << "\n";		
+	}
+	for (const auto &t : mesh.getIndexedTriangles()) {
+		output << t.size();
+		output << " " << t[0] << " " << t[1] << " " << t[2];
+		output << "\n";
+	}
 }
 
 #endif // ENABLE_CGAL

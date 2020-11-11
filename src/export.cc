@@ -135,7 +135,7 @@ namespace Export {
 ExportMesh::ExportMesh(const PolySet &ps)
 {
 	std::vector<std::array<int, 3>> triangleIndices;
-	for (const auto &p : ps.polygons) {
+	for (const auto &p : ps.getPolygons()) {
 		auto pos1 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
 		auto pos2 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
 		auto pos3 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));

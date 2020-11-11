@@ -7,7 +7,6 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "Polygon2d.h"
-#include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
 #include "degree_trig.h"
@@ -26,7 +25,6 @@
 #pragma pop_macro("NDEBUG")
 
 #include "svg.h"
-#include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"
 
@@ -42,21 +40,14 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	// we tessellate the polyset before checking.
 	PolySet psq(ps);
 	psq.quantizeVertices();
-	PolySet ps_tri(3, psq.convexValue());
-	PolysetUtils::tessellate_faces(psq, ps_tri);
-	if (ps_tri.is_convex()) {
+	PolySet ps_tri(psq);
+	ps_tri.tessellate();
+	if (ps_tri.isConvex()) {
 		typedef CGAL::Epick K;
 		// Collect point cloud
-		// FIXME: Use unordered container (need hash)
-		// NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
-		// instead.
-		std::list<K::Point_3> points;
-		for (const auto &poly : psq.polygons) {
-			for (const auto &p : poly) {
-				points.push_back(vector_convert<K::Point_3>(p));
-			}
-		}
-
+		std::vector<K::Point_3> points;
+		psq.getVertices<K::Point_3,std::vector<K::Point_3>>(points, vector_convert<K::Point_3,Vector3d>);
+		
 		if (points.size() <= 3) return new CGAL_Nef_polyhedron();
 
 		// Apply hull
@@ -170,16 +161,16 @@ namespace CGALUtils {
 		typedef std::map<Edge, int, VecPairCompare> Edge_to_facet_map;
 		Edge_to_facet_map edge_to_facet_map;
 		std::vector<Plane> facet_planes;
-		facet_planes.reserve(ps.polygons.size());
+		facet_planes.reserve(ps.getPolygons().size());
 
-		for (size_t i = 0; i < ps.polygons.size(); ++i) {
+		for (size_t i = 0; i < ps.getPolygons().size(); ++i) {
 			Plane plane;
-			auto N = ps.polygons[i].size();
+			auto N = ps.getPolygons()[i].size();
 			if (N >= 3) {
 				std::vector<Point> v(N);
 				for (size_t j = 0; j < N; ++j) {
-					v[j] = vector_convert<Point>(ps.polygons[i][j]);
-					Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
+					v[j] = vector_convert<Point>(ps.getPolygons()[i][j]);
+					Edge edge(ps.getPolygons()[i][j],ps.getPolygons()[i][(j+1)%N]);
 					if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
 					edge_to_facet_map[edge] = i;
 				}
@@ -190,18 +181,18 @@ namespace CGALUtils {
 			facet_planes.push_back(plane);
 		}
 
-		for (size_t i = 0; i < ps.polygons.size(); ++i) {
-			auto N = ps.polygons[i].size();
+		for (size_t i = 0; i < ps.getPolygons().size(); ++i) {
+			auto N = ps.getPolygons()[i].size();
 			if (N < 3) continue;
 			for (size_t j = 0; j < N; ++j) {
-				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
+				Edge other_edge(ps.getPolygons()[i][(j+1)%N], ps.getPolygons()[i][j]);
 				if (edge_to_facet_map.count(other_edge) == 0) return false;//
 				//Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
 				//if (it == edge_to_facet_map.end()) return false; // not a closed manifold
 				//int other_facet = it->second;
 				int other_facet = edge_to_facet_map[other_edge];
 
-				auto p = vector_convert<Point>(ps.polygons[i][(j+2)%N]);
+				auto p = vector_convert<Point>(ps.getPolygons()[i][(j+2)%N]);
 
 				if (facet_planes[other_facet].has_on_positive_side(p)) {
 					// Check angle
@@ -224,9 +215,9 @@ namespace CGALUtils {
 		while(!facets_to_visit.empty()) {
 			int f = facets_to_visit.front(); facets_to_visit.pop();
 
-			for (size_t i = 0; i < ps.polygons[f].size(); ++i) {
-				int j = (i+1) % ps.polygons[f].size();
-				auto it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
+			for (size_t i = 0; i < ps.getPolygons()[f].size(); ++i) {
+				int j = (i+1) % ps.getPolygons()[f].size();
+				auto it = edge_to_facet_map.find(Edge(ps.getPolygons()[f][j], ps.getPolygons()[f][i]));
 				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
 				if (!explored_facets.count(it->second)) {
 					explored_facets.insert(it->second);
@@ -236,7 +227,7 @@ namespace CGALUtils {
 		}
 
 		// Make sure that we were able to reach all polygons during our visit
-		return explored_facets.size() == ps.polygons.size();
+		return explored_facets.size() == ps.getPolygons().size();
 	}
 
 
@@ -268,126 +259,47 @@ namespace CGALUtils {
 		// 4. Validate mesh (manifoldness)
 		// 5. Create PolySet
 
-		bool err = false;
-
 		// 1. Build Indexed PolyMesh
-		Reindexer<Vector3f> allVertices;
-		std::vector<std::vector<IndexedFace>> polygons;
-
 		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {
 			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
 			// Since we're downscaling to float, vertices might merge during this conversion.
 			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
 			// vertices.
-			polygons.push_back(std::vector<IndexedFace>());
-			auto &faces = polygons.back();
+			ps.append_poly_only();
 			// the 0-mark-volume is the 'empty' volume of space. skip it.
 			if (!hfaceti->incident_volume()->mark()) {
 				CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
 				CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
 					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
 					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
-					faces.push_back(IndexedFace());
-					auto &currface = faces.back();
+					ps.append_facet();
 					CGAL_For_all(c1, c2) {
 						CGAL_Point_3 p = c1->source()->center_vertex()->point();
-						// Create vertex indices and remove consecutive duplicate vertices
-						auto idx = allVertices.lookup(vector_convert<Vector3f>(p));
-						if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+						ps.append_vertex(vector_convert<Vector3d>(p));
 					}
-					if (!currface.empty() && currface.front() == currface.back()) currface.pop_back();
-					if (currface.size() < 3) faces.pop_back(); // Cull empty triangles
+					ps.close_facet();
 				}
 			}
-			if (faces.empty()) polygons.pop_back(); // Cull empty faces
+			ps.close_poly_only();
 		}
 
 		// 2. Validate mesh (manifoldness)
-		auto unconnected = GeometryUtils::findUnconnectedEdges(polygons);
+		auto unconnected = GeometryUtils::findUnconnectedEdges(ps.getIndexedPolygons());
 		if (unconnected > 0) {
 			LOG(message_group::Error,Location::NONE,"","Non-manifold mesh encountered: %1$d unconnected edges",unconnected);
 		}
+		
 		// 3. Triangulate each face
-		const auto& verts = allVertices.getArray();
-		std::vector<IndexedTriangle> allTriangles;
-		for (const auto &faces : polygons) {
-#if 0 // For debugging
-			std::cerr << "---\n";
-			for(const auto &poly : faces) {
-				for(auto i : poly) {
-					std::cerr << i << " ";
-				}
-				std::cerr << "\n";
-			}
-#if 0 // debug
-			std::cerr.precision(20);
-			for(const auto &poly : faces) {
-				for(auto i : poly) {
-					std::cerr << verts[i][0] << "," << verts[i][1] << "," << verts[i][2] << "\n";
-				}
-				std::cerr << "\n";
-			}
-#endif // debug
-			std::cerr << "-\n";
-#endif // debug
-#if 0 // For debugging
-		std::cerr.precision(20);
-		for (size_t i=0; i<allVertices.size(); ++i) {
-			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
-#endif // debug
+		ps.tessellate();
 
-			/* at this stage, we have a sequence of polygons. the first
-				 is the "outside edge' or 'body' or 'border', and the rest of the
-				 polygons are 'holes' within the first. there are several
-				 options here to get rid of the holes. we choose to go ahead
-				 and let the tessellater deal with the holes, and then
-				 just output the resulting 3d triangles*/
-
-			// We cannot trust the plane from Nef polyhedron to be correct.
-			// Passing an incorrect normal vector can cause a crash in the constrained delaunay triangulator
-			// See http://cgal-discuss.949826.n4.nabble.com/Nef3-Wrong-normal-vector-reported-causes-triangulator-crash-tt4660282.html
-			// CGAL::Vector_3<CGAL_Kernel3> nvec = plane.orthogonal_vector();
-			// K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()), CGAL::to_double(nvec.z()));
-			std::vector<IndexedTriangle> triangles;
-			auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
-			if (!err) {
-				for (const auto &t : triangles) {
-					assert(t[0] >= 0 && t[0] < static_cast<int>(allVertices.size()));
-					assert(t[1] >= 0 && t[1] < static_cast<int>(allVertices.size()));
-					assert(t[2] >= 0 && t[2] < static_cast<int>(allVertices.size()));
-					allTriangles.push_back(t);
-				}
-			}
-		}
-
-#if 0 // For debugging
-		for(const auto &t : allTriangles) {
-			std::cerr << t[0] << " " << t[1] << " " << t[2] << "\n";
-		}
-#endif // debug
 		// 4. Validate mesh (manifoldness)
-		auto unconnected2 = GeometryUtils::findUnconnectedEdges(allTriangles);
+		auto unconnected2 = GeometryUtils::findUnconnectedEdges(ps.getIndexedTriangles());
 		if (unconnected2 > 0) {
 			LOG(message_group::Error,Location::NONE,"","Non-manifold mesh created: %1$d unconnected edges",unconnected2);
 		}
 
-		for (const auto &t : allTriangles) {
-			ps.append_poly();
-			ps.append_vertex(verts[t[0]]);
-			ps.append_vertex(verts[t[1]]);
-			ps.append_vertex(verts[t[2]]);
-		}
-
-#if 0 // For debugging
-		std::cerr.precision(20);
-		for (size_t i=0; i<allVertices.size(); ++i) {
-			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
-#endif // debug
-
-		return err;
+		return false;
 	}
 }; // namespace CGALUtils
 

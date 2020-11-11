@@ -8,7 +8,6 @@
 #include "printutils.h"
 #include "progress.h"
 #include "Polygon2d.h"
-#include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
 
@@ -27,7 +26,6 @@
 
 #include "memory.h"
 #include "svg.h"
-#include "Reindexer.h"
 #include "GeometryUtils.h"
 
 #include <map>
@@ -210,17 +208,16 @@ namespace CGALUtils {
 			if (N) {
 				if (!N->isEmpty()) {
 					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-						points.push_back(vector_convert<K::Point_3>(i->point()));
+						points.emplace_back(vector_convert<K::Point_3>(i->point()));
 					}
 				}
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
-					for(const auto &p : ps->polygons) {
-						for(const auto &v : p) {
-							points.push_back(K::Point_3(v[0], v[1], v[2]));
-						}
-					}
+					std::vector<K::Point_3> ps_vertices;
+					ps->getVertices<K::Point_3,std::vector<K::Point_3>>(ps_vertices, vector_convert<K::Point_3,Vector3d>);
+
+					points.insert(points.end(), ps_vertices.begin(), ps_vertices.end());
 				}
 			}
 		}
@@ -280,7 +277,7 @@ namespace CGALUtils {
 					else if (nef && nef->p3->is_simple()) nef->p3->convert_to_polyhedron(poly);
 					else throw 0;
 
-					if ((ps && ps->is_convex()) ||
+					if ((ps && ps->isConvex()) ||
 							(!ps && is_weakly_convex(poly))) {
 						PRINTDB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef"));
 						P[i].push_back(poly);

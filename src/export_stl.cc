@@ -26,7 +26,6 @@
 
 #include "export.h"
 #include "polyset.h"
-#include "polyset-utils.h"
 #include "dxfdata.h"
 
 #ifdef ENABLE_CGAL
@@ -36,7 +35,7 @@
 
 namespace {
 
-std::string toString(const Vector3d &v)
+std::string toString(const Vector3f &v)
 {
 	return STR(v[0] << " " << v[1] << " " << v[2]);
 }
@@ -70,76 +69,73 @@ void write_vector(std::ostream &output, const Vector3f& v) {
 	
 size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
 {
-    size_t triangle_count = 0;
-    PolySet triangulated(3);
-    PolysetUtils::tessellate_faces(ps, triangulated);
+	size_t triangle_count = 0;
+	PolySet triangulated(ps);
+	triangulated.tessellate();
+    
+	std::vector<Vector3f> vertices;
+	triangulated.getVertices<Vector3f>(vertices);
 
-	for(const auto &p : triangulated.polygons) {
-		assert(p.size() == 3); // STL only allows triangles
-        triangle_count++;
+	for(const auto &t : triangulated.getIndexedTriangles()) {
+		triangle_count++;
 
-        if (binary) {
-            Vector3f p0 = p[0].cast<float>();
-            Vector3f p1 = p[1].cast<float>();
-            Vector3f p2 = p[2].cast<float>();
+		Vector3f p0 = vertices[t[0]];
+		Vector3f p1 = vertices[t[1]];
+		Vector3f p2 = vertices[t[2]];
 
-            // Ensure 3 distinct vertices.
-            if ((p0 != p1) && (p0 != p2) && (p1 != p2)) {
-                Vector3f normal = (p1 - p0).cross(p2 - p0);
-                normal.normalize();
-                if (!is_finite(normal) || is_nan(normal)) {
-                    // Collinear vertices.
-                    normal << 0, 0, 0;
-                }
-                write_vector(output, normal);
-            }
-            write_vector(output, p0);
-            write_vector(output, p1);
-            write_vector(output, p2);
-            char attrib[2] = {0,0};
-            output.write(attrib, 2);
-        }
-        else { // ascii
-            std::array<std::string, 3> vertexStrings;
-            std::transform(p.cbegin(), p.cend(), vertexStrings.begin(),
-                toString);
+		if (binary) {
+			// Ensure 3 distinct vertices.
+			if ((t[0] != t[1]) && (t[0] != t[2]) && (t[1] != t[2])) {
+				Vector3f normal = (p1 - p0).cross(p2 - p0);
+				normal.normalize();
+				if (!is_finite(normal) || is_nan(normal)) {
+					// Collinear vertices.
+					normal << 0, 0, 0;
+				}
+				write_vector(output, normal);
+			}
+			write_vector(output, p0);
+			write_vector(output, p1);
+			write_vector(output, p2);
+			char attrib[2] = {0,0};
+			output.write(attrib, 2);
+		}
+		else { // ascii
+			std::array<std::string, 3> vertexStrings;
+			vertexStrings[0] = toString(p0);
+			vertexStrings[1] = toString(p1);
+			vertexStrings[2] = toString(p2);
+			
+			if ((t[0] != t[1]) && (t[0] != t[2]) && (t[1] != t[2])) {
 
-            if (vertexStrings[0] != vertexStrings[1] &&
-                vertexStrings[0] != vertexStrings[2] &&
-                vertexStrings[1] != vertexStrings[2]) {
+				// The above condition ensures that there are 3 distinct
+				// vertices, but they may be collinear. If they are, the unit
+				// normal is meaningless so the default value of "0 0 0" can
+				// be used. If the vertices are not collinear then the unit
+				// normal must be calculated from the components.
+				output << "  facet normal ";
 
-                // The above condition ensures that there are 3 distinct
-                // vertices, but they may be collinear. If they are, the unit
-                // normal is meaningless so the default value of "0 0 0" can
-                // be used. If the vertices are not collinear then the unit
-                // normal must be calculated from the components.
-                output << "  facet normal ";
+				Vector3f normal = (p1 - p0).cross(p2 - p0);
+				normal.normalize();
+				if (is_finite(normal) && !is_nan(normal)) {
+					output << normal[0] << " " << normal[1] << " " << normal[2]
+					<< "\n";
+				}
+				else {
+					output << "0 0 0\n";
+				}
+				output << "    outer loop\n";
 
-                Vector3d p0 = fromString(vertexStrings[0]);
-                Vector3d p1 = fromString(vertexStrings[1]);
-                Vector3d p2 = fromString(vertexStrings[2]);
+				for (const auto &vertexString : vertexStrings) {
+					output << "      vertex " << vertexString << "\n";
+				}
+				output << "    endloop\n";
+				output << "  endfacet\n";
+			}
+		}
+	}
 
-                Vector3d normal = (p1 - p0).cross(p2 - p0);
-                normal.normalize();
-                if (is_finite(normal) && !is_nan(normal)) {
-                    output << normal[0] << " " << normal[1] << " " << normal[2]
-                      << "\n";
-                }
-                else {
-                    output << "0 0 0\n";
-                }
-                output << "    outer loop\n";
-
-                for (const auto &vertexString : vertexStrings) {
-                    output << "      vertex " << vertexString << "\n";
-                }
-                output << "    endloop\n";
-                output << "  endfacet\n";
-            }
-        }
-    }
-
-    return triangle_count;
+	return triangle_count;
 }
 
 /*!

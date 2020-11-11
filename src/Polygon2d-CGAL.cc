@@ -129,9 +129,10 @@ PolySet *Polygon2d::tessellate() const
 			polyset->append_poly();
 			for (int i=0; i<3; ++i) {
 				polyset->append_vertex(fit->vertex(i)->point()[0],
-															 fit->vertex(i)->point()[1],
-															 0);
+							fit->vertex(i)->point()[1],
+							0);
 			}
+			polyset->close_poly();
 		}
 	}
 	return polyset;

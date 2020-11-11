@@ -337,7 +337,6 @@ HEADERS += src/version_check.h \
            src/Polygon2d.h \
            src/clipper-utils.h \
            src/GeometryUtils.h \
-           src/polyset-utils.h \
            src/polyset.h \
            src/printutils.h \
            src/fileutils.h \
@@ -445,7 +444,6 @@ SOURCES += \
            src/Geometry.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
-           src/polyset-utils.cc \
            src/GeometryUtils.cc \
            src/polyset.cc \
            src/csgops.cc \
@@ -648,7 +646,6 @@ opencsg {
 cgal {
 HEADERS += src/cgal.h \
            src/cgalutils.h \
-           src/Reindexer.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
