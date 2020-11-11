@@ -69,6 +69,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #ifdef WIN32
 #include <io.h>
@@ -316,6 +317,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 struct CommandLine
 {
+	  const bool is_stdout;
     const char *deps_output_file;
     const std::string &filename;
     std::string output_file;
@@ -323,7 +325,7 @@ struct CommandLine
     const std::string &parameterFile;
     const std::string &setName;
     const ViewOptions& viewOptions;
-    const std::string &export_format;
+    const boost::optional<FileFormat> export_format;
     unsigned animate_frames;
 };
 
@@ -336,36 +338,33 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 	tree.setDocumentPath(doc.remove_filename().string());
 
 	ExportFileFormatOptions exportFileFormatOptions;
-	FileFormat curFormat;
-	std::string formatName;
+	FileFormat export_format;
 
 	// Determine output file format and assign it to formatName
-	if(!cmd.export_format.empty()) {
-		formatName = cmd.export_format;
+	if(cmd.export_format.is_initialized()) {
+		export_format = cmd.export_format.get();
 	} else {
 		// else extract format from file extension
-		auto suffix = fs::path(cmd.output_file).extension().generic_string();
-		suffix = suffix.substr(1);
+		const auto path = fs::path(cmd.output_file);
+		std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
 		boost::algorithm::to_lower(suffix);
-		if(exportFileFormatOptions.exportFileFormats.find(suffix) != exportFileFormatOptions.exportFileFormats.end()) {
-			formatName = suffix;
+		const auto format_iter = exportFileFormatOptions.exportFileFormats.find(suffix);
+		if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
+			export_format = format_iter->second;
 		} else {
-			LOG(message_group::None,Location::NONE,"","Either add a valid suffix or specify one using --export-format\n");
+			LOG(message_group::None, Location::NONE, "", "Either add a valid suffix or specify one using the --export-format option.");
 			return 1;
 		}
 	}
 
-	curFormat = exportFileFormatOptions.exportFileFormats.at(formatName);
-	std::string filename_str = fs::path(cmd.output_file).generic_string();
-
 	// Do some minimal checking of output directory before rendering (issue #432)
-	auto output_path = fs::path(cmd.output_file).parent_path();
-	if (output_path.empty()) {
+	auto output_dir = fs::path(cmd.output_file).parent_path();
+	if (output_dir.empty()) {
 		// If output_file_str has no directory prefix, set output directory to current directory.
-		output_path = fs::current_path();
+		output_dir = fs::current_path();
 	}
-	if (!fs::is_directory(output_path)) {
-		LOG(message_group::None,Location::NONE,"","\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_path.generic_string(), filename_str);
+	if (!fs::is_directory(output_dir)) {
+		LOG(message_group::None,Location::NONE,"","\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_dir.generic_string(), cmd.output_file);
 		return 1;
 	}
 
@@ -373,19 +372,14 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 
 	// Top context - this context only holds builtins
 	ContextHandle<BuiltinContext> top_ctx{Context::create<BuiltinContext>()};
-	const bool preview = canPreview(curFormat) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+	const bool preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	top_ctx->set_variable("$preview", ValuePtr(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx->dump(nullptr, nullptr));
 #endif
 	shared_ptr<Echostream> echostream;
-	if (curFormat == FileFormat::ECHO) {
-		if (filename_str == "-") {
-			echostream.reset(new Echostream(std::cout));
-		}
-		else {
-			echostream.reset(new Echostream(filename_str));
-		}
+	if (export_format == FileFormat::ECHO) {
+		echostream.reset(cmd.is_stdout ? new Echostream(std::cout) : new Echostream(cmd.output_file));
 	}
 
 	FileModule *root_module;
@@ -434,7 +428,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 	AbstractNode::resetIndexCounter();
 
 	if (cmd.animate_frames == 0) {
-		return do_export(cmd, tree, camera, top_ctx, curFormat, root_module);
+		return do_export(cmd, tree, camera, top_ctx, export_format, root_module);
 	}
 	else {
 		// export the requested number of animated frames
@@ -457,7 +451,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 			CommandLine frame_cmd = cmd;
 			frame_cmd.output_file = frame_str;
 
-			int r = do_export(frame_cmd, tree, camera, top_ctx, curFormat, root_module);
+			int r = do_export(frame_cmd, tree, camera, top_ctx, export_format, root_module);
 			if (r != 0) {
 				return r;
 			}
@@ -944,7 +938,7 @@ int main(int argc, char **argv)
 
 	vector<string> output_files;
 	const char *deps_output_file = nullptr;
-	std::string export_format;
+	boost::optional<FileFormat> export_format;
 
 	ViewOptions viewOptions{};
 	po::options_description desc("Allowed options");
@@ -1131,13 +1125,14 @@ int main(int argc, char **argv)
 	}
 
 	ExportFileFormatOptions exportFileFormatOptions;
-	if(vm.count("export-format")) {
-		auto tmp_format = vm["export-format"].as<string>();
-		if(exportFileFormatOptions.exportFileFormats.find(tmp_format) != exportFileFormatOptions.exportFileFormats.end()) {
-			export_format = tmp_format;
+	if (vm.count("export-format")) {
+		const auto format = vm["export-format"].as<string>();
+		const auto format_iter = exportFileFormatOptions.exportFileFormats.find(format);
+		if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
+			export_format.emplace(format_iter->second);
 		}
 		else {
-			LOG(message_group::None,Location::NONE,"","\nUnknown --export-format option '%1$s'.  Use -h to list available options.\n",tmp_format.c_str());
+			LOG(message_group::None, Location::NONE, "", "Unknown --export-format option '%1$s'.  Use -h to list available options.", format);
 			return 1;
 		}
 	}
@@ -1149,8 +1144,16 @@ int main(int argc, char **argv)
 
 	Camera camera = get_camera(vm);
 
-	if (animate_frames && output_files.empty()) {
-		output_files.emplace_back("frame.png");
+	if (animate_frames) {
+		for (const auto& filename : output_files) {
+			if (filename == "-") {
+				LOG(message_group::None, Location::NONE, "", "Option --animate is not supported when exporting to stdout.");
+				return 1;
+			}
+		}
+		if (output_files.empty()) {
+			output_files.emplace_back("frame.png");
+		}
 	}
 
 	auto cmdlinemode = false;
@@ -1168,8 +1171,10 @@ int main(int argc, char **argv)
 				rc = info();
 			}
 			else {
-				for(auto output_file : output_files) {
-					const CommandLine cmd{deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, export_format, animate_frames};
+				for(const auto& filename : output_files) {
+					const bool is_stdout = filename == "-";
+					const std::string output_file = is_stdout ? "<stdout>" : filename;
+					const CommandLine cmd{is_stdout, deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, export_format, animate_frames};
 					rc |= cmdline(cmd, camera);
 				}
 			}
