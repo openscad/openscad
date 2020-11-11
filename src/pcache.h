@@ -73,9 +73,12 @@ private:
 };
 #endif // if BOOST_VERSION > 105800
 #else
+
 class PCache
 {
-  PCache() {PRINT("Unable to detect Hiredis");}
+  PCache() {
+    LOG(message_group::None,Location::NONE,"","Unable to detect Hiredis");
+  }
 };
 
 #endif // ifdef ENABLE_HIREDIS
