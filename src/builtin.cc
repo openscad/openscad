@@ -85,7 +85,7 @@ void Builtins::initialize()
 	register_builtin_offset();
 	register_builtin_dxf_linear_extrude();
 	register_builtin_dxf_rotate_extrude();
-    register_builtin_offset_extrude();
+	register_builtin_offset_extrude();
 	register_builtin_text();
 
 	this->deprecations.emplace("dxf_linear_extrude", "linear_extrude()");
