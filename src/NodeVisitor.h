@@ -17,7 +17,7 @@ class NodeVisitor :
 	public Visitor<class CsgOpNode>,
 	public Visitor<class LinearExtrudeNode>,
 	public Visitor<class RotateExtrudeNode>,
-  public Visitor<class OffsetExtrudeNode>,
+	public Visitor<class OffsetExtrudeNode>,
 	public Visitor<class ImportNode>,
 	public Visitor<class PrimitiveNode>,
 	public Visitor<class TextNode>,

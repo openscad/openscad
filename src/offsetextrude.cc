@@ -29,14 +29,10 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
-#include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
-#include "calc.h"
 #include "polyset.h"
-#include "handle_dep.h"
 
-#include <cmath>
 #include <sstream>
 #include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
