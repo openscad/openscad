@@ -1421,9 +1421,7 @@ static bool rotate_shared_edge(Polygon &a, Polygon &b) {
   return false;
 }
 
-static void add_slice_offset(PolySet *ps, PolySet *edgePs,
-                             Polygon2d *slice1, double h1,
-                             Polygon2d *slice2, double h2)
+static void add_slice_offset(PolySet *ps, PolySet *edgePs, Polygon2d *slice, double h1, double h2)
 {
   auto cps = new PolySet(3, ps->convexValue());
   // Loop through each polygon of the edge, detect if the edge maps to bottom or top slice
@@ -1431,7 +1429,7 @@ static void add_slice_offset(PolySet *ps, PolySet *edgePs,
     cps->append_poly();
     for (auto p : polygon) {
       bool did_add = false;
-      for (const auto &o1 : slice2->outlines()) {
+      for (const auto &o1 : slice->outlines()) {
         for (auto v1 : o1.vertices) {
           if (p[0] == v1[0] && p[1] == v1[1]) {
             cps->append_vertex(p[0], p[1], h1);
@@ -1530,13 +1528,13 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
         }
         if (i == 0) {
           Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), ClipperUtils::applyOffset(poly, offset_per_slice * -1, join_type, miter_limit, arc_tolerance));
-          add_slice_offset(ps, clipped_polys, s, h1_size, tmp_slice, h1_size + height_increment);
+          add_slice_offset(ps, clipped_polys, tmp_slice, h1_size, h1_size + height_increment);
         } else {
-          add_slice_offset(ps, clipped_polys, s, h1_size, last_slice, h1_size + height_increment);
+          add_slice_offset(ps, clipped_polys, last_slice, h1_size, h1_size + height_increment);
         }
       } else {
         PolySet *clipped_polys = difference_polygons(last_slice, s)->tessellate();
-        add_slice_offset(ps, clipped_polys, last_slice, h1_size + height_increment, s, h1_size);
+        add_slice_offset(ps, clipped_polys, s, h1_size + height_increment, h1_size);
       }
 
       last_slice = s;
