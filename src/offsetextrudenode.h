@@ -8,7 +8,7 @@ class OffsetExtrudeNode : public AbstractPolyNode
 {
 public:
     VISITABLE();
-    OffsetExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+    OffsetExtrudeNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx) {
         convexity = 0;
         fn = fs = fa = 0;
         delta = height = 1;
@@ -17,8 +17,8 @@ public:
         miter_limit = 1000000.0;
         join_type = ClipperLib::jtRound;
     }
-    virtual std::string toString() const;
-    virtual std::string name() const { return "offset_extrude"; }
+    std::string toString() const override;
+    std::string name() const override { return "offset_extrude"; }
 
     bool chamfer, center;
     double delta, height, fn, fs, fa;

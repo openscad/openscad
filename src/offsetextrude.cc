@@ -34,8 +34,11 @@
 #include "builtin.h"
 #include "calc.h"
 #include "polyset.h"
+#include "handle_dep.h"
 
+#include <cmath>
 #include <sstream>
+#include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -51,9 +54,9 @@ public:
 
 AbstractNode *OffsetExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-    auto node = new OffsetExtrudeNode(inst);
+    auto node = new OffsetExtrudeNode(inst, evalctx);
 
-    AssignmentList args{Assignment("height"), Assignment("center"), Assignment("slices"), Assignment("r"), Assignment("delta"), Assignment("chamfer")};
+    AssignmentList args{assignment("height"), assignment("center"), assignment("slices"), assignment("r"), assignment("delta"), assignment("chamfer")};
 
     ContextHandle<Context> c{Context::create<Context>(ctx)};
     c->setVariables(evalctx, args);
@@ -81,7 +84,7 @@ AbstractNode *OffsetExtrudeModule::instantiate(const std::shared_ptr<Context>& c
         evalctx->numArgs() > 0 &&
         evalctx->getArgName(0) == "") {
         auto val = evalctx->getArgValue(0);
-        if (val->type() == Value::ValueType::NUMBER) height = val;
+        if (val->type() == Value::Type::NUMBER) height = val;
     }
     node->height = 1;
     height->getFiniteDouble(node->height);
@@ -97,18 +100,18 @@ AbstractNode *OffsetExtrudeModule::instantiate(const std::shared_ptr<Context>& c
     node->slices = static_cast<int>(slicesVal);
     node->slices = std::max(node->slices, 1);
 
-    if (r->isDefinedAs(Value::ValueType::NUMBER)) {
+    if (r->isDefinedAs(Value::Type::NUMBER)) {
         r->getDouble(node->delta);
-    } else if (delta->isDefinedAs(Value::ValueType::NUMBER)) {
+    } else if (delta->isDefinedAs(Value::Type::NUMBER)) {
         delta->getDouble(node->delta);
         node->join_type = ClipperLib::jtMiter;
-        if (chamfer->isDefinedAs(Value::ValueType::BOOL) && chamfer->toBool()) {
+        if (chamfer->isDefinedAs(Value::Type::BOOL) && chamfer->toBool()) {
             node->chamfer = true;
             node->join_type = ClipperLib::jtSquare;
         }
     }
 
-    if (center->type() == Value::ValueType::BOOL)
+    if (center->type() == Value::Type::BOOL)
         node->center = center->toBool();
 
     auto instantiatednodes = inst->instantiateChildren(evalctx);
