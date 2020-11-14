@@ -44,103 +44,103 @@ namespace fs = boost::filesystem;
 class OffsetExtrudeModule : public AbstractModule
 {
 public:
-  OffsetExtrudeModule() { }
-  AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
+	OffsetExtrudeModule() { }
+	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 };
 
 AbstractNode *OffsetExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-  auto node = new OffsetExtrudeNode(inst, evalctx);
+	auto node = new OffsetExtrudeNode(inst, evalctx);
 
-  AssignmentList args{assignment("height"), assignment("center"), assignment("slices"), assignment("r"), assignment("delta"), assignment("chamfer")};
+	AssignmentList args{assignment("height"), assignment("center"), assignment("slices"), assignment("r"), assignment("delta"), assignment("chamfer")};
 
-  ContextHandle<Context> c{Context::create<Context>(ctx)};
-  c->setVariables(evalctx, args);
-  inst->scope.apply(evalctx);
+	ContextHandle<Context> c{Context::create<Context>(ctx)};
+	c->setVariables(evalctx, args);
+	inst->scope.apply(evalctx);
 
-  node->fn = c->lookup_variable("$fn")->toDouble();
-  node->fs = c->lookup_variable("$fs")->toDouble();
-  node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn")->toDouble();
+	node->fs = c->lookup_variable("$fs")->toDouble();
+	node->fa = c->lookup_variable("$fa")->toDouble();
 
-  node->delta = 1;
-  node->chamfer = false;
-  node->join_type = ClipperLib::jtRound;
-  node->center = false;
-  auto r = c->lookup_variable("r", true);
-  auto delta = c->lookup_variable("delta", true);
-  auto chamfer = c->lookup_variable("chamfer", true);
-  auto height = c->lookup_variable("height", true);
-  auto convexity = c->lookup_variable("convexity", true);
-  auto center = c->lookup_variable("center", true);
-  auto slices = c->lookup_variable("slices", true);
+	node->delta = 1;
+	node->chamfer = false;
+	node->join_type = ClipperLib::jtRound;
+	node->center = false;
+	auto r = c->lookup_variable("r", true);
+	auto delta = c->lookup_variable("delta", true);
+	auto chamfer = c->lookup_variable("chamfer", true);
+	auto height = c->lookup_variable("height", true);
+	auto convexity = c->lookup_variable("convexity", true);
+	auto center = c->lookup_variable("center", true);
+	auto slices = c->lookup_variable("slices", true);
 
-  // if height not given, and first argument is a number,
-  // then assume it should be the height.
-  if (c->lookup_variable("height")->isUndefined() &&
-      evalctx->numArgs() > 0 &&
-      evalctx->getArgName(0) == "") {
-    auto val = evalctx->getArgValue(0);
-    if (val->type() == Value::Type::NUMBER) height = val;
-  }
-  node->height = 1;
-  height->getFiniteDouble(node->height);
-  node->convexity = static_cast<int>(convexity->toDouble());
+	// if height not given, and first argument is a number,
+	// then assume it should be the height.
+	if (c->lookup_variable("height")->isUndefined() &&
+			evalctx->numArgs() > 0 &&
+			evalctx->getArgName(0) == "") {
+		auto val = evalctx->getArgValue(0);
+		if (val->type() == Value::Type::NUMBER) height = val;
+	}
+	node->height = 1;
+	height->getFiniteDouble(node->height);
+	node->convexity = static_cast<int>(convexity->toDouble());
 
-  if (node->height == 0) node->height = 1;
+	if (node->height == 0) node->height = 1;
 
-  if (node->convexity <= 0)
-    node->convexity = 1;
+	if (node->convexity <= 0)
+		node->convexity = 1;
 
-  double slicesVal = 0;
-  slices->getFiniteDouble(slicesVal);
-  node->slices = static_cast<int>(slicesVal);
-  node->slices = std::max(node->slices, 1);
+	double slicesVal = 0;
+	slices->getFiniteDouble(slicesVal);
+	node->slices = static_cast<int>(slicesVal);
+	node->slices = std::max(node->slices, 1);
 
-  if (r->isDefinedAs(Value::Type::NUMBER)) {
-    r->getDouble(node->delta);
-  } else if (delta->isDefinedAs(Value::Type::NUMBER)) {
-    delta->getDouble(node->delta);
-    node->join_type = ClipperLib::jtMiter;
-    if (chamfer->isDefinedAs(Value::Type::BOOL) && chamfer->toBool()) {
-      node->chamfer = true;
-      node->join_type = ClipperLib::jtSquare;
-    }
-  }
+	if (r->isDefinedAs(Value::Type::NUMBER)) {
+		r->getDouble(node->delta);
+	} else if (delta->isDefinedAs(Value::Type::NUMBER)) {
+		delta->getDouble(node->delta);
+		node->join_type = ClipperLib::jtMiter;
+		if (chamfer->isDefinedAs(Value::Type::BOOL) && chamfer->toBool()) {
+			node->chamfer = true;
+			node->join_type = ClipperLib::jtSquare;
+		}
+	}
 
-  if (center->type() == Value::Type::BOOL)
-    node->center = center->toBool();
+	if (center->type() == Value::Type::BOOL)
+		node->center = center->toBool();
 
-  auto instantiatednodes = inst->instantiateChildren(evalctx);
-  node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	auto instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
-  return node;
+	return node;
 }
 
 std::string OffsetExtrudeNode::toString() const
 {
-  std::stringstream stream;
+	std::stringstream stream;
 
-  bool isRadius = this->join_type == ClipperLib::jtRound;
-  auto var = isRadius ? "(r = " : "(delta = ";
+	bool isRadius = this->join_type == ClipperLib::jtRound;
+	auto var = isRadius ? "(r = " : "(delta = ";
 
-  stream  << this->name() << var << std::dec << this->delta;
-  if (!isRadius) {
-    stream << ", chamfer = " << (this->chamfer ? "true" : "false");
-  }
-  stream << ", height = " << this->height
-         << ", slices = " << this->slices
-         << ", center = " << (this->center ? "true" : "false")
-         << ", $fn = " << this->fn
-         << ", $fa = " << this->fa
-         << ", $fs = " << this->fs << ")";
+	stream  << this->name() << var << std::dec << this->delta;
+	if (!isRadius) {
+		stream << ", chamfer = " << (this->chamfer ? "true" : "false");
+	}
+	stream << ", height = " << this->height
+				 << ", slices = " << this->slices
+				 << ", center = " << (this->center ? "true" : "false")
+				 << ", $fn = " << this->fn
+				 << ", $fa = " << this->fa
+				 << ", $fs = " << this->fs << ")";
 
-  return stream.str();
+	return stream.str();
 }
 
 void register_builtin_offset_extrude()
 {
-  Builtins::init("offset_extrude", new OffsetExtrudeModule(), {
-      "offset_extrude(height, r = 1, slices = 1, center = false[, $fn, $fa, $fs])",
-      "offset_extrude(height, delta = 1, slices = 1, chamfer = false, center = false[, $fn, $fa, $fs])",
-  });
+	Builtins::init("offset_extrude", new OffsetExtrudeModule(), {
+			"offset_extrude(height, r = 1, slices = 1, center = false[, $fn, $fa, $fs])",
+			"offset_extrude(height, delta = 1, slices = 1, chamfer = false, center = false[, $fn, $fa, $fs])",
+	});
 }

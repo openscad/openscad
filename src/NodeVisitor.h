@@ -93,7 +93,7 @@ public:
   Response visit(class State &state, const class ColorNode &node) override {
 		return visit(state, (const class AbstractNode &)node);
 	}
-  Response visit(class State &state, const class OffsetNode &node) override {
+	Response visit(class State &state, const class OffsetNode &node) override {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
 	// Add visit() methods for new visitable subtypes of AbstractNode here
