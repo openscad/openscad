@@ -1,0 +1,69 @@
+group() {
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			offset_extrude(r = -5, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+				square(size = [10, 10], center = true);
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			offset_extrude(r = -6, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+				square(size = [10, 10], center = true);
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 24], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			offset_extrude(r = -7, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+				square(size = [10, 10], center = true);
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 36], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			offset_extrude(r = -8, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+				square(size = [10, 10], center = true);
+			}
+		}
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				offset_extrude(r = -9, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+					square(size = [10, 10], center = true);
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				offset_extrude(r = -10, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+					square(size = [10, 10], center = true);
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 24], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				offset_extrude(r = -11, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+					square(size = [10, 10], center = true);
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 36], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				offset_extrude(r = -12, height = 5, slices = 5, center = false, $fn = 0, $fa = 12, $fs = 2) {
+					square(size = [10, 10], center = true);
+				}
+			}
+		}
+	}
+}
+

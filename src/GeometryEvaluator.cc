@@ -1386,7 +1386,7 @@ Polygon2d * difference_polygons(Polygon2d *outer, Polygon2d *inner)
 }
 
 static bool is_poly_flat(Polygon p) {
-	return p[0][2] == p[1][2] && p[0][2] == p[2][2] && p[1][2] == p[2][2];
+	return p[0][2] == p[1][2] && p[0][2] == p[2][2];
 }
 
 static bool rotate_shared_edge(Polygon &a, Polygon &b) {
@@ -1442,8 +1442,7 @@ static void add_slice_offset(PolySet *ps, PolySet *edgePs, Polygon2d *slice, dou
 		}
 	}
 
-	//check for and rotate flat triangles
-	bool did_rotate = true;
+	// find all flat triangles
 	std::list<unsigned long> flat_offsets;
 	for (unsigned long i = 0; i < cps->polygons.size(); i++) {
 		if (is_poly_flat(cps->polygons[i])) {
@@ -1451,11 +1450,14 @@ static void add_slice_offset(PolySet *ps, PolySet *edgePs, Polygon2d *slice, dou
 		}
 	}
 
+	// if there are any flat triangles, loop through and rotate
+	bool did_rotate = !flat_offsets.empty();
 	while (did_rotate) {
 		did_rotate = false;
 		for (auto i = flat_offsets.begin(); i != flat_offsets.end() && !did_rotate; i++) {
 			auto &flat = cps->polygons[*i];
-			//find a non-flat triangle which shares an edge and rotate those triangles
+			// find a non-flat triangle which shares an edge and rotate those triangles
+			// this may not always create a pretty result, but it does a decent job
 			for (auto side = cps->polygons.begin(); side != cps->polygons.end() && !did_rotate; side++)
 			{
 				if (!is_poly_flat(*side) && rotate_shared_edge(flat, *side))
@@ -1468,12 +1470,12 @@ static void add_slice_offset(PolySet *ps, PolySet *edgePs, Polygon2d *slice, dou
 	}
 	flat_offsets.clear();
 	ps->append(*cps);
+	delete cps;
 }
 
 static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &poly)
 {
-	bool cvx = poly.is_convex();
-	auto *ps = new PolySet(3, !cvx ? boost::tribool(false) : boost::tribool(true));
+	auto *ps = new PolySet(3, boost::tribool(poly.is_convex()));
 	ps->setConvexity(node.convexity);
 
 	double h1, h2;
@@ -1516,36 +1518,44 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
 		double height_increment = (h2 - h1) / node.slices;
 		double num_fragments = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
 		double arc_tolerance = std::abs(node.delta) * (1 - cos(G_PI / num_fragments));
-		auto *last_slice = const_cast<Polygon2d *>(&poly);
 
 		for (int i = 0; i < node.slices; i++) {
-			Polygon2d *s = ClipperUtils::applyOffset(poly, offset_per_slice * (i + 1), join_type, miter_limit, arc_tolerance);
+			auto *last_slice = ClipperUtils::applyOffset(poly, offset_per_slice * i, join_type, miter_limit, arc_tolerance);
+			auto *next_slice = ClipperUtils::applyOffset(poly, offset_per_slice * (i + 1), join_type, miter_limit, arc_tolerance);
+			auto *clipped_slice = outwards ? difference_polygons(next_slice, last_slice) : difference_polygons(last_slice, next_slice);
+			auto *clipped_polys = clipped_slice->tessellate();
 
 			if (outwards) {
-				PolySet *clipped_polys = difference_polygons(s, last_slice)->tessellate();
 				for(auto &p : clipped_polys->polygons) {
 					std::reverse(p.begin(), p.end());
 				}
 				if (i == 0) {
-					Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), ClipperUtils::applyOffset(poly, offset_per_slice * -1, join_type, miter_limit, arc_tolerance));
+					auto *tmp_offset = ClipperUtils::applyOffset(poly, offset_per_slice * -1, join_type, miter_limit, arc_tolerance);
+					Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), tmp_offset);
 					add_slice_offset(ps, clipped_polys, tmp_slice, h1_size, h1_size + height_increment);
+					delete tmp_slice;
+					delete tmp_offset;
 				} else {
 					add_slice_offset(ps, clipped_polys, last_slice, h1_size, h1_size + height_increment);
 				}
 			} else {
-				PolySet *clipped_polys = difference_polygons(last_slice, s)->tessellate();
-				add_slice_offset(ps, clipped_polys, s, h1_size + height_increment, h1_size);
+				add_slice_offset(ps, clipped_polys, next_slice, h1_size + height_increment, h1_size);
 			}
-
-			last_slice = s;
-			h1_size = h1_size + height_increment;
 
 			// top layer
 			if (i == node.slices - 1) {
-				PolySet *ps_top = s->tessellate();
+				PolySet *ps_top = next_slice->tessellate();
 				translate_PolySet(*ps_top, Vector3d(0,0, h2));
 				ps->append(*ps_top);
+				delete ps_top;
+			} else {
+				h1_size = h1_size + height_increment;
 			}
+
+			delete clipped_slice;
+			delete clipped_polys;
+			delete next_slice;
+			delete last_slice;
 		}
 	}
 
