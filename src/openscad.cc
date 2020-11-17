@@ -156,9 +156,9 @@ static int info()
 }
 
 template <typename F>
-static bool with_output(const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
+static bool with_output(const bool is_stdout, const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
 {
-	if (filename == "-") {
+	if (is_stdout) {
 #ifdef WIN32
 		if ((mode & std::ios::binary) != 0) {
 			_setmode(_fileno(stdout), _O_BINARY);
@@ -274,7 +274,7 @@ Camera get_camera(const po::variables_map &vm)
 #define OPENSCAD_QTGUI 1
 #endif
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
-													 FileFormat format, const std::string& filename)
+													 FileFormat format, const bool is_stdout, const std::string& filename)
 {
 	if (root_geom->getDimension() != nd) {
 		LOG(message_group::None,Location::NONE,"","Current top level object is not a %1$dD object.",nd);
@@ -289,7 +289,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	exportInfo.format = format;
 	exportInfo.name2open = filename;
 	exportInfo.name2display = filename;
-	exportInfo.useStdOut = exportInfo.name2open == "-";
+	exportInfo.useStdOut = is_stdout;
 
 	exportFileByName(root_geom, exportInfo);
 	return true;
@@ -317,16 +317,17 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 
 struct CommandLine
 {
-	  const bool is_stdout;
-    const char *deps_output_file;
-    const std::string &filename;
-    std::string output_file;
-    const fs::path &original_path;
-    const std::string &parameterFile;
-    const std::string &setName;
-    const ViewOptions& viewOptions;
-    const boost::optional<FileFormat> export_format;
-    unsigned animate_frames;
+	const bool is_stdin;
+	const std::string &filename;
+	const bool is_stdout;
+	std::string output_file;
+	const char *deps_output_file;
+	const fs::path &original_path;
+	const std::string &parameterFile;
+	const std::string &setName;
+	const ViewOptions& viewOptions;
+	const boost::optional<FileFormat> export_format;
+	unsigned animate_frames;
 };
 
 int do_export(const CommandLine& cmd, Tree &tree, Camera& camera, ContextHandle<BuiltinContext> &, FileFormat, FileModule *root_module);
@@ -382,12 +383,8 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 		echostream.reset(cmd.is_stdout ? new Echostream(std::cout) : new Echostream(cmd.output_file));
 	}
 
-	FileModule *root_module;
-
-	handle_dep(cmd.filename);
-
 	std::string text;
-	if (cmd.filename == "-") {
+	if (cmd.is_stdin) {
 		text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
 	} else {
 		std::ifstream ifs(cmd.filename);
@@ -395,18 +392,19 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 			LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", cmd.filename);
 			return 1;
 		}
+		handle_dep(cmd.filename);
 		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	}
 
 	text += "\n\x03\n" + commandline_commands;
 
-	std::string parser_filename = cmd.filename == "-" ? "<stdin>" : cmd.filename;
-	if (!parse(root_module, text, parser_filename, parser_filename, false)) {
+	FileModule *root_module = nullptr;
+	if (!parse(root_module, text, cmd.filename, cmd.filename, false)) {
 		delete root_module; // parse failed
 		root_module = nullptr;
 	}
 	if (!root_module) {
-		LOG(message_group::None, Location::NONE, "", "Can't parse file '%1$s'!\n", parser_filename);
+		LOG(message_group::None, Location::NONE, "", "Can't parse file '%1$s'!\n", cmd.filename);
 		return 1;
 	}
 
@@ -501,14 +499,14 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 
 	if (curFormat == FileFormat::CSG) {
 		fs::current_path(fparent); // Force exported filenames to be relative to document path
-		with_output(filename_str, [&tree, root_node](std::ostream &stream) {
+		with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream &stream) {
 			stream << tree.getString(*root_node, "\t") << "\n";
 		});
 		fs::current_path(cmd.original_path);
 	}
 	else if (curFormat == FileFormat::AST) {
 		fs::current_path(fparent); // Force exported filenames to be relative to document path
-		with_output(filename_str, [root_module](std::ostream &stream) {
+		with_output(cmd.is_stdout, filename_str, [root_module](std::ostream &stream) {
 			stream << root_module->dump("");
 		});
 		fs::current_path(cmd.original_path);
@@ -516,7 +514,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
 		auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
-		with_output(filename_str, [root_raw_term](std::ostream & stream) {
+		with_output(cmd.is_stdout, filename_str, [root_raw_term](std::ostream & stream) {
 			if (!root_raw_term || root_raw_term->isEmptySet()) {
 				stream << "No top-level CSG object\n";
 			} else {
@@ -574,20 +572,20 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
             curFormat == FileFormat::NEFDBG ||
             curFormat == FileFormat::NEF3 )
         {
-            if(!checkAndExport(root_geom, 3, curFormat, filename_str)) {
+            if(!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
                 return 1;
             }
 		}
 
 		if(curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
-			if (!checkAndExport(root_geom, 2, curFormat, filename_str)) {
+			if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
 				return 1;
 			}
 		}
 
 		if (curFormat == FileFormat::PNG) {
 			bool success = true;
-			bool wrote = with_output(filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream &stream) {
+			bool wrote = with_output(cmd.is_stdout, filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream &stream) {
 				if (cmd.viewOptions.renderer == RenderType::CGAL || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
 					success = export_png(root_geom, cmd.viewOptions, camera, stream);
 				} else {
@@ -1172,9 +1170,11 @@ int main(int argc, char **argv)
 			}
 			else {
 				for(const auto& filename : output_files) {
+					const bool is_stdin = inputFiles[0] == "-";
+					const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
 					const bool is_stdout = filename == "-";
 					const std::string output_file = is_stdout ? "<stdout>" : filename;
-					const CommandLine cmd{is_stdout, deps_output_file, inputFiles[0], output_file, original_path, parameterFile, parameterSet, viewOptions, export_format, animate_frames};
+					const CommandLine cmd{is_stdin, input_file, is_stdout, output_file, deps_output_file, original_path, parameterFile, parameterSet, viewOptions, export_format, animate_frames};
 					rc |= cmdline(cmd, camera);
 				}
 			}
