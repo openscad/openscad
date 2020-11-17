@@ -1498,10 +1498,9 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
 	delete ps_bottom;
 
 	if (node.delta == 0) {
-		size_t slices = node.slices;
-		for (unsigned int j = 0; j < slices; j++) {
-			double height1 = h1 + (h2-h1)*j / slices;
-			double height2 = h1 + (h2-h1)*(j+1) / slices;
+		for (int j = 0; j < node.slices; j++) {
+			double height1 = h1 + (h2-h1)*j / node.slices;
+			double height2 = h1 + (h2-h1)*(j+1) / node.slices;
 			Vector2d scale1(1,1);
 			add_slice(ps, poly, 0, 0, height1, height2, scale1, scale1);
 		}
@@ -1529,15 +1528,7 @@ static Geometry *extrudePolygon(const OffsetExtrudeNode &node, const Polygon2d &
 				for(auto &p : clipped_polys->polygons) {
 					std::reverse(p.begin(), p.end());
 				}
-				if (i == 0) {
-					auto *tmp_offset = ClipperUtils::applyOffset(poly, offset_per_slice * -1, join_type, miter_limit, arc_tolerance);
-					Polygon2d *tmp_slice = difference_polygons(const_cast<Polygon2d *>(&poly), tmp_offset);
-					add_slice_offset(ps, clipped_polys, tmp_slice, h1_size, h1_size + height_increment);
-					delete tmp_slice;
-					delete tmp_offset;
-				} else {
-					add_slice_offset(ps, clipped_polys, last_slice, h1_size, h1_size + height_increment);
-				}
+				add_slice_offset(ps, clipped_polys, last_slice, h1_size, h1_size + height_increment);
 			} else {
 				add_slice_offset(ps, clipped_polys, next_slice, h1_size + height_increment, h1_size);
 			}
