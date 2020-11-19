@@ -9,6 +9,8 @@
 #include "offsetnode.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
+#include "roofnode.h"
+#include "skeleton.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"
@@ -1593,6 +1595,43 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 		}
 		addToParent(state, node, geom);
 		node.progress_report();
+	}
+	return Response::ContinueTraversal;
+}
+
+static Geometry *roofPolygon(const RoofNode &node, const Polygon2d &poly)
+{
+        
+    PolySet *roof = test9(poly.outlines());
+    
+    std::cout << "pizda"
+        << roof->polygons.size()
+        << "\n";
+
+    std::cout << "huj\n" << poly.dump() << "\n" ;
+    
+    return roof;
+}
+
+Response GeometryEvaluator::visit(State &state, const RoofNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+			if (geometry) {
+				auto *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				Geometry *roof = roofPolygon(node, *polygons);
+				assert(roof);
+				geom.reset(roof);
+				delete geometry;
+			}
+		}
+		else {
+			geom = smartCacheGet(node, false);
+		}
+		addToParent(state, node, geom);
 	}
 	return Response::ContinueTraversal;
 }
