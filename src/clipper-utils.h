@@ -14,6 +14,7 @@ namespace ClipperUtils {
 
 	int getScalePow2(const BoundingBox& bounds);
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly, int pow2);
+        VectorOfVector2d fromPath(ClipperLib::Path path);
 	Polygon2d *sanitize(const Polygon2d &poly);
 	Polygon2d *toPolygon2d(const ClipperLib::PolyTree &poly, int pow2);
 	ClipperLib::Paths process(const ClipperLib::Paths &polygons, 

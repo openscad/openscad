@@ -1602,7 +1602,7 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 static Geometry *roofPolygon(const RoofNode &node, const Polygon2d &poly)
 {
         
-    PolySet *roof = test9(poly.outlines());
+    PolySet *roof = test9(poly);
     
     std::cout << "pizda"
         << roof->polygons.size()

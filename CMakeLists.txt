@@ -542,7 +542,9 @@ set(CORE_SOURCES
   src/projection.cc
   src/render.cc
   src/rendersettings.cc
+  src/roof.cc
   src/rotateextrude.cc
+  src/skeleton.cc
   src/stackcheck.h
   src/surface.cc
   src/svg.cc

@@ -16,6 +16,15 @@ namespace ClipperUtils {
 		int exp = std::ilogb(maxCoeff) + 1;
 		return (CLIPPER_BITS-1) - exp;
 	}
+        
+	VectorOfVector2d fromPath(ClipperLib::Path path)
+	{
+		VectorOfVector2d ret;
+		for (auto v : path) {
+			ret.emplace_back(1.0 * v.X / CLIPPER_SCALE, 1.0 * v.Y / CLIPPER_SCALE);
+		}
+		return ret;
+	}
 
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly, int pow2)
 	{
