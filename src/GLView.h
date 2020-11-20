@@ -85,24 +85,14 @@ public:
 			struct {
 				int color_area;
 				int color_edge;
-				int trig;
-
-				// the other two points of the triangle while rendering
-				int point_b;
-				int point_c;
-
-				int mask;
-				int xscale;
-				int yscale;
+				// barycentric coordinates of the current vertex
+				int barycentric;
 			} csg_rendering;
 			struct {
 				int identifier;
 			} select_rendering;
 		} data;
 
-		// values: Viewport size
-		GLint vp_size_x;
-		GLint vp_size_y;
 	};
 
 	shaderinfo_t shaderinfo;
