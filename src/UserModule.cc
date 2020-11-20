@@ -66,7 +66,7 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new GroupNode(inst, evalctx);
+	AbstractNode *node = new GroupNode(inst, evalctx, std::string("module ") + this->name);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(c.ctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 

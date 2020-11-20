@@ -51,13 +51,16 @@ class TransformModule : public AbstractModule
 {
 public:
 	transform_type_e type;
-	TransformModule(transform_type_e type) : type(type) { }
+	TransformModule(transform_type_e type, const std::string &verbose_name) : type(type), verbose_name(verbose_name) { }
 	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
+
+private:
+  const std::string verbose_name;
 };
 
 AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new TransformNode(inst, evalctx);
+	auto node = new TransformNode(inst, evalctx, verbose_name);
 
 	AssignmentList args;
 
@@ -252,7 +255,10 @@ std::string TransformNode::toString() const
 	return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx), matrix(Transform3d::Identity())
+TransformNode::TransformNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, const std::string &verbose_name) :
+  AbstractNode(mi, ctx),
+  matrix(Transform3d::Identity()),
+  _name(verbose_name)
 {
 }
 
@@ -261,29 +267,34 @@ std::string TransformNode::name() const
 	return "transform";
 }
 
+std::string TransformNode::verbose_name() const
+{
+	return _name;
+}
+
 void register_builtin_transform()
 {
-	Builtins::init("scale", new TransformModule(transform_type_e::SCALE),
+	Builtins::init("scale", new TransformModule(transform_type_e::SCALE, "scale"),
 				{
 					"scale([x, y, z])",
 				});
 
-	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE),
+	Builtins::init("rotate", new TransformModule(transform_type_e::ROTATE, "rotate"),
 				{
 					"rotate([x, y, z])",
 				});
 
-	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR),
+	Builtins::init("mirror", new TransformModule(transform_type_e::MIRROR, "mirror"),
 				{
 					"mirror([x, y, z])",
 				});
 
-	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE),
+	Builtins::init("translate", new TransformModule(transform_type_e::TRANSLATE, "translate"),
 				{
 					"translate([x, y, z])",
 				});
 
-	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX),
+	Builtins::init("multmatrix", new TransformModule(transform_type_e::MULTMATRIX, "multmatrix"),
 				{
 					"multmatrix(matrix_4_by_4)",
 				});
