@@ -3,4 +3,4 @@
 #include "Polygon2d.h"
 #include "polyset.h"
 
-PolySet *test9(const Polygon2d &poly);
+PolySet *straight_skeleton_roof(const Polygon2d &poly);

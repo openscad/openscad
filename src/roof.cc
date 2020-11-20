@@ -65,7 +65,7 @@ std::string RoofNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << "huj pizda zalupa";
+	stream << "";
 
 	return stream.str();
 }

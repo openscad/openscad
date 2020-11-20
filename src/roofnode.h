@@ -2,7 +2,6 @@
 
 #include "node.h"
 #include "value.h"
-#include "clipper-utils.h"
 
 class RoofNode : public AbstractPolyNode
 {

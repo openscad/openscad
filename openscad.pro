@@ -336,7 +336,7 @@ HEADERS += src/version_check.h \
            src/offsetnode.h \
            src/linearextrudenode.h \
            src/roofnode.h \
-           src/skeleton.h \
+           src/ssroof.h \
            src/rotateextrudenode.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
@@ -483,7 +483,7 @@ SOURCES += \
            src/offset.cc \
            src/linearextrude.cc \
            src/roof.cc \
-           src/skeleton.cc \
+           src/ssroof.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
            src/fileutils.cc \

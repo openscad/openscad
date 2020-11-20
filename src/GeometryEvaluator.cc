@@ -10,7 +10,7 @@
 #include "transformnode.h"
 #include "linearextrudenode.h"
 #include "roofnode.h"
-#include "skeleton.h"
+#include "ssroof.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"
@@ -1599,18 +1599,10 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 	return Response::ContinueTraversal;
 }
 
-static Geometry *roofPolygon(const RoofNode &node, const Polygon2d &poly)
+static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
 {
-        
-    PolySet *roof = test9(poly);
-    
-    std::cout << "pizda"
-        << roof->polygons.size()
-        << "\n";
-
-    std::cout << "huj\n" << poly.dump() << "\n" ;
-    
-    return roof;
+	PolySet *roof = straight_skeleton_roof(poly);
+	return roof;
 }
 
 Response GeometryEvaluator::visit(State &state, const RoofNode &node)
@@ -1622,7 +1614,7 @@ Response GeometryEvaluator::visit(State &state, const RoofNode &node)
 			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			if (geometry) {
 				auto *polygons = dynamic_cast<const Polygon2d*>(geometry);
-				Geometry *roof = roofPolygon(node, *polygons);
+				Geometry *roof = roofOverPolygon(node, *polygons);
 				assert(roof);
 				geom.reset(roof);
 				delete geometry;
