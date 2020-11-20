@@ -371,6 +371,11 @@ file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/*.sca
 file(GLOB_RECURSE BUGS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs2D/*.scad)
 
+list(APPEND SCAD_PCACHE_TIME_FILES
+                  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/pcache/CSG.scad)
+list(APPEND SCAD_PCACHE_HITS_FILES
+                  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/pcache/logo.scad)
+
 list(REMOVE_ITEM EXAMPLE_3D_FILES
                   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example015.scad
                   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Advanced/module_recursion.scad
@@ -716,6 +721,9 @@ set_test_config(Heavy
   cgalpngtest_issue267-normalization-crash
   csgpngtest_issue267-normalization-crash
   opencsgtest_issue267-normalization-crash
+
+  pcachepngtest_logo
+  pcachepngtest_CSG
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -941,6 +949,13 @@ add_cmdline_test(3mfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOUR
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 add_cmdline_test(svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_2D_FILES})
 add_cmdline_test(pdfexporttest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=PDF KERNEL Square:2 EXPECTEDDIR pdfexporttest SUFFIX png FILES ${SCAD_PDF_FILES})
+
+#
+# Persistent cache tests
+# make sure you flush the cache in redis before running these tests and also give your password if any
+
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/persistent_cache_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --cache=redis,127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_TIME_FILES})
+add_cmdline_test(pcachepngtest EXE ${PYTHON_EXECUTABLE} ARGS SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/debug_output_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --debug=pcache --log-expected-dir=${CMAKE_CURRENT_SOURCE_DIR}/regression/pcachepngtest/ --cache=redis,127.0.0.1,6379,foobared EXPECTEDDIR pcachepngtest SUFFIX png FILES ${SCAD_PCACHE_HITS_FILES})
 
 #
 # Corner-case Export/Import tests

@@ -35,6 +35,7 @@ exists(local.pri): include(local.pri)
     include(config_$${VARIANT}.pri)
   }
 }
+CONFIG += experimental
 
 debug {
   experimental {
@@ -194,6 +195,7 @@ CONFIG += libzip
 CONFIG += hidapi
 CONFIG += spnav
 CONFIG += double-conversion
+CONFIG += hiredis
 CONFIG += cairo
 
 # Make experimental features available
@@ -250,22 +252,29 @@ BISONSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
+           src/PCSettings.h \
            src/Package.h \
            src/Assignment.h \
+           src/SCADSerializations.h \
            src/expression.h \
            src/function.h \
-           src/module.h \           
+           src/lcache.h \
+           src/module.h \            \
+           src/pcache.h
            src/UserModule.h \
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
            src/Assignment.cc \
+           src/PCSettings.cpp \
            src/export_pdf.cc \
            src/expr.cc \
            src/function.cc \
+           src/lcache.cpp \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc
+           src/annotation.cc \
+           src/pcache.cpp
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l

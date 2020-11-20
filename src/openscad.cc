@@ -47,6 +47,7 @@
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
+#include "PCSettings.h"
 #include "boost-utils.h"
 #include"parameter/parameterset.h"
 #include <string>
@@ -84,6 +85,13 @@
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
+#endif
+
+#if BOOST_VERSION > 105800
+#include "lcache.h"
+#ifdef ENABLE_HIREDIS
+#include "pcache.h"
+#endif
 #endif
 
 namespace po = boost::program_options;
@@ -319,6 +327,18 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 	Tree tree;
 	boost::filesystem::path doc(filename);
 	tree.setDocumentPath(doc.remove_filename().string());
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    if(PCSettings::instance()->enablePersistentCache){
+        PCache::getInst()->init(PCSettings::instance()->ipAddress, PCSettings::instance()->port, PCSettings::instance()->password);
+        if(PCSettings::instance()->enableAuth){
+            PCache::getInst()->connectWithPassword();
+        }else{
+            PCache::getInst()->connect();
+        }
+    }
+#endif
+#endif
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
@@ -514,7 +534,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 			glview = prepare_preview(tree, viewOptions, camera);
 		} else {
 			// Force creation of CGAL objects (for testing)
-			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+            root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (root_geom) {
 				if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
 					if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
@@ -561,6 +581,20 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 			}
 		}
 
+        if(!OpenSCAD::debug_output_filename.empty()){
+            std::string debug_filename_str = fs::path(OpenSCAD::debug_output_filename).generic_string();
+            std::ofstream fstream(debug_filename_str.c_str());
+            if (!fstream.is_open()) {
+						    LOG(message_group::Warning,Location::NONE,"","Can't open file \"%1$s\" for logging debug messages", debug_filename_str);
+            }
+            else {
+                fs::current_path(fparent); // Force exported filenames to be relative to document path
+                fstream << OpenSCAD::debug_output;
+                fstream.close();
+                fs::current_path(original_path);
+            }
+        }
+
 		if (curFormat == FileFormat::PNG) {
 			bool success = true;
 			bool wrote = with_output(new_output_file, [&success, root_geom, &viewOptions, &camera, &glview](std::ostream &stream) {
@@ -579,6 +613,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, const std
 #endif
 
 	}
+
+#ifdef ENABLE_HIREDIS
+#if BOOST_VERSION > 105800
+    PCache::getInst()->disconnect();
+#endif
+#endif
 	delete root_node;
 	return 0;
 }
@@ -958,8 +998,10 @@ int main(int argc, char **argv)
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
 		("debug", po::value<string>(), "special debug info")
+        ("debug-output", po::value<string>(), "output debug messages into a log")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+        ("cache", po::value<string>(), "=file (local cache) or Redis, IP Address, Port Number, Password if any")
 		;
 
 	po::options_description hidden("Hidden options");
@@ -985,10 +1027,17 @@ int main(int argc, char **argv)
 	}
 
 	OpenSCAD::debug = "";
+    OpenSCAD::debug_output_filename = "";
 	if (vm.count("debug")) {
 		OpenSCAD::debug = vm["debug"].as<string>();
 		LOG(message_group::None,Location::NONE,"","Debug on. --debug=%1$s",OpenSCAD::debug);
 	}
+
+    if (vm.count("debug-output") && vm.count("debug")) {
+        OpenSCAD::debug_output_filename = vm["debug-output"].as<string>();
+		    LOG(message_group::None,Location::NONE,"","Logging debug messages into %1$s", OpenSCAD::debug_output_filename);
+    }
+
 	if (vm.count("quiet")) {
 		OpenSCAD::quiet = true;
 	}
@@ -1112,6 +1161,33 @@ int main(int argc, char **argv)
 	}
 
 	Camera camera = get_camera(vm);
+
+    if(vm.count("cache")) {
+        vector<string> strs;
+        boost::split(strs, vm["cache"].as<string>(), is_any_of(","));
+        if(strs[0].compare("file")==0) {
+            PCSettings::instance()->enableLocalCache = true;
+        }
+        else if (strs[0].compare("redis")==0){
+            PCSettings::instance()->enablePersistentCache =  true;
+            if(strs.size()==3 ||strs.size()==4){
+                PCSettings::instance()->ipAddress = strs[1];
+                try{
+                    PCSettings::instance()->port = lexical_cast<unsigned int>(strs[2]);
+                }catch(bad_lexical_cast &){
+		                LOG(message_group::Warning,Location::NONE,"","Port number must be numerical, using the default Port number 6379");
+                    PCSettings::instance()->port = 6379;
+                }
+                if(strs.size()==4){
+                    PCSettings::instance()->enableAuth = true;
+                    PCSettings::instance()->password = strs[3];
+                }
+            }else{
+								LOG(message_group::None,Location::NONE,"","Persistent cache requires IP Address, Port Number and Password if any");
+                exit(1);
+            }
+        }
+    }
 
 	auto cmdlinemode = false;
 	if (!output_files.empty()) { // cmd-line mode

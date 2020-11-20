@@ -25,6 +25,7 @@ public:
 	virtual bool isEmpty() const = 0;
 	virtual Geometry *copy() const = 0;
 	virtual size_t numFacets() const = 0;
+    virtual bool serializable() const = 0;
 
 	unsigned int getConvexity() const { return convexity; }
 	void setConvexity(int c) { this->convexity = c; }
@@ -71,6 +72,8 @@ public:
 	bool isEmpty() const override;
 	Geometry *copy() const override { return new GeometryList(*this); };
 	size_t numFacets() const override { assert(false && "not implemented"); return 0; };
+
+    bool serializable() const override {return false; }
 
 	const Geometries &getChildren() const {
 		return this->children;

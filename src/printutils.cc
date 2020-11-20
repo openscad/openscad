@@ -17,6 +17,8 @@ OutputHandlerFunc *outputhandler = nullptr;
 OutputHandlerFunc2 *outputhandler2 = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
+std::string OpenSCAD::debug_output("");
+std::string OpenSCAD::debug_output_filename("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
 bool OpenSCAD::parameterCheck = true;
@@ -130,9 +132,8 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	boost::algorithm::to_lower(lowshortfname);
 	std::string lowdebug(OpenSCAD::debug);
 	boost::algorithm::to_lower(lowdebug);
-	if (OpenSCAD::debug=="all" ||
-			lowdebug.find(lowshortfname) != std::string::npos) {
-			Message msgObj = {shortfname+": "+ msg,Location::NONE,"",message_group::None,};
+	if (OpenSCAD::debug=="all" || lowdebug.find(lowshortfname) != std::string::npos) {
+		Message msgObj = {shortfname+": "+ msg,Location::NONE,"",message_group::None,};
 		PRINT_NOCACHE(msgObj);
 	}
 }
