@@ -130,20 +130,35 @@ static void draw_triangle(const GLView::shaderinfo_t *shaderinfo, const Vector3d
 	double d0 = e0 ? 0.0 : 1.0;
 	double d1 = e1 ? 0.0 : 1.0;
 	double d2 = e2 ? 0.0 : 1.0;
-	if (mirror) {
-		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
-		glVertex3f(p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
-		glVertex3f(p2[0], p2[1], p2[2] + z);
-		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
-		glVertex3f(p1[0], p1[1], p1[2] + z);
-  } else {
-		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
-		glVertex3f(p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
-		glVertex3f(p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
-		glVertex3f(p2[0], p2[1], p2[2] + z);
+	switch(shaderinfo->type) {
+	case GLView::shaderinfo_t::CSG_RENDERING:
+		if (mirror) {
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+		} else {
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
+		}
+		break;
+	case GLView::shaderinfo_t::NONE:
+	case GLView::shaderinfo_t::SELECT_RENDERING:
+		if (mirror) {
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+		} else {
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
+		}
 	}
 }
 #endif
