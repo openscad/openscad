@@ -14,8 +14,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Homebrew
       env:
-        HOMEBREW_NO_AUTO_UPDATE=1
-        ENV_SPECIFIC_DISABLE="|edges_view-options-tests"
+        HOMEBREW_NO_AUTO_UPDATE: 1
+        ENV_SPECIFIC_DISABLE: "|edges_view-options-tests"
       run: |
         ./scripts/macosx-build-homebrew.sh
     - name: Build OpenSCAD
