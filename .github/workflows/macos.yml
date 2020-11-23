@@ -12,6 +12,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Checkout MCAD
+      run: |
+        git submodule update --init --recursive
     - name: Setup Homebrew
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
@@ -20,16 +23,15 @@ jobs:
         ./scripts/macosx-build-homebrew.sh
     - name: Build OpenSCAD
       run: |
-        git submodule update --init --recursive
         qmake openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info
         make -j2
         cd tests
         cmake .
-        make
+        make -j2
     - name: Run Test Suite
       run: |
         cd tests
-        ctest -j2
+        ctest -j2 -E 'edges_view-options-tests'
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
