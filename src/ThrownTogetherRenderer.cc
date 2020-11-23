@@ -52,8 +52,6 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 	if (shaderinfo && shaderinfo->progid) {
 		glUseProgram(shaderinfo->progid);
 		if (shaderinfo->type == EDGE_RENDERING && showedges) {
-			glUniform1f(shaderinfo->data.csg_rendering.xscale, shaderinfo->vp_size_x);
-			glUniform1f(shaderinfo->data.csg_rendering.yscale, shaderinfo->vp_size_y);
 			shader_attribs_enable();
 		}
 	}
@@ -204,6 +202,11 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
 			std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
 			if (vs) {
+				shaderinfo_t shader_info = this->getShader();
+				vs->glBegin().emplace_back([shader_info,color]() {
+					glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]);
+					glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0);
+				});
 				vs->csgObjectIndex(csgobj.leaf->index);
 			}
 		} else { // root mode
@@ -218,6 +221,11 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
 			std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
 			if (vs) {
+				shaderinfo_t shader_info = this->getShader();
+				vs->glBegin().emplace_back([shader_info,color]() {
+					glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]);
+					glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0);
+				});
 				vs->csgObjectIndex(csgobj.leaf->index);
 			}
 
@@ -233,6 +241,11 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
 			vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
 			if (vs) {
+				shaderinfo_t shader_info = this->getShader();
+				vs->glBegin().emplace_back([shader_info,color]() {
+					glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]);
+					glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0);
+				});
 				vs->csgObjectIndex(csgobj.leaf->index);
 			}
 			

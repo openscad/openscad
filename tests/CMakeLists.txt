@@ -647,14 +647,20 @@ disable_tests(
 
 # Disable LIB3MF tests if library was disabled in build
 if(NOT LIB3MF_FOUND)
-	disable_tests(
-		opencsgtest_import_3mf-tests
-		cgalpngtest_import_3mf-tests
-		csgpngtest_import_3mf-tests
-		throwntogethertest_import_3mf-tests
-		3mfpngtest_cube10
-		3mfexport_3mf-export
-	)
+  # check for package again in case this is qmake build ctest
+  if(NOT MSVC)
+    pkg_check_modules(LIB3MF lib3MF)
+  endif()
+  if (NOT LIB3MF_FOUND)
+    disable_tests(
+      opencsgtest_import_3mf-tests
+      cgalpngtest_import_3mf-tests
+      csgpngtest_import_3mf-tests
+      throwntogethertest_import_3mf-tests
+      3mfpngtest_cube10
+      3mfexport_3mf-export
+    )
+  endif()
 endif()
 
 # 2D tests

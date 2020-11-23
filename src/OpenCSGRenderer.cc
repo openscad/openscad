@@ -201,6 +201,12 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 					create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 					if (surface != nullptr) {
+						shaderinfo_t shader_info = this->getShader();
+						surface->glBegin().emplace_back([shader_info,last_color]() {
+							glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]);
+							glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0);
+						});
+
 						surface->csgObjectIndex(csgobj.leaf->index);
 						primitives->push_back(createVBOPrimitive(surface,
 												      OpenCSG::Intersection,
@@ -217,6 +223,12 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 
 					if (surface != nullptr) {
+						shaderinfo_t shader_info = this->getShader();
+						surface->glBegin().emplace_back([shader_info,last_color]() {
+							glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]);
+							glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0);
+						});
+
 						surface->csgObjectIndex(csgobj.leaf->index);
 
 						primitives->emplace_back(createVBOPrimitive(surface,
@@ -271,6 +283,11 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
 				std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 				if (surface != nullptr) {
+					shaderinfo_t shader_info = this->getShader();
+					surface->glBegin().emplace_back([shader_info,last_color]() {
+						glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]);
+						glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0);
+					});
 					surface->csgObjectIndex(csgobj.leaf->index);
 
 					primitives->emplace_back(createVBOPrimitive(surface,
@@ -402,8 +419,6 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 				glUseProgram(shaderinfo->progid);
 
 				if (shaderinfo->type == EDGE_RENDERING && showedges) {
-					glUniform1f(shaderinfo->data.csg_rendering.xscale, shaderinfo->vp_size_x);
-					glUniform1f(shaderinfo->data.csg_rendering.yscale, shaderinfo->vp_size_y);
 					shader_attribs_enable();
 				}
 			}
@@ -414,7 +429,7 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 				if (vertex) {
 					std::shared_ptr<OpenCSGVertexState> csg_vertex = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex);
 					if (csg_vertex) {
-						if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+						if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
 							glUniform3f(shaderinfo->data.select_rendering.identifier,
 									((csg_vertex->csgObjectIndex() >> 0) & 0xff) / 255.0f,
 									((csg_vertex->csgObjectIndex() >> 8) & 0xff) / 255.0f,

@@ -22,7 +22,6 @@ public:
 	VBORenderer();
 	virtual ~VBORenderer() {};
 	virtual void resize(int w, int h);
-	virtual const Renderer::shaderinfo_t &getShader() const;
 	virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f &col, Color4f &outcolor) const;
 
 	virtual void create_surface(const PolySet &ps, VertexArray &vertex_array,
@@ -55,13 +54,9 @@ private:
 				size_t shape_dimensions = 0, bool outlines = false,
 				bool mirror = false) const;
 
-	shaderinfo_t vbo_renderer_shader;
 	mutable size_t shader_write_index;
 	enum ShaderAttribIndex {
-		TRIG_ATTRIB,
-		MASK_ATTRIB,
-		POINT_B_ATTRIB,
-		POINT_C_ATTRIB,
+		BARYCENTRIC_ATTRIB
 	};
 };
 

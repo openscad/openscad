@@ -72,7 +72,12 @@ const AbstractNode *AbstractNode::getNodeByID(int idx, std::deque<const Abstract
 
 std::string GroupNode::name() const
 {
-	return "group";
+  return "group";
+}
+
+std::string GroupNode::verbose_name() const
+{
+  return this->_name;
 }
 
 std::string ListNode::name() const

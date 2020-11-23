@@ -153,6 +153,25 @@ void GLView::paintGL()
 }
 
 #ifdef ENABLE_OPENCSG
+
+void glErrorCheck() {
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
+  }
+}
+
+void glCompileCheck(GLuint shader) {
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status == GL_FALSE) {
+    int loglen;
+    char logbuffer[1000];
+    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
+    PRINTDB("OpenGL Shader Program Compile Error:\n%s", logbuffer);
+  }
+}
+
 void GLView::enable_opencsg_shaders()
 {
   const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
@@ -187,8 +206,30 @@ void GLView::enable_opencsg_shaders()
 }
 #endif
 
+
+#ifdef DEBUG
+// Requires OpenGL 4.3+ 
+/*
+  void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                  GLsizei length, const GLchar* message, const void* userParam)
+  {
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%X, severity = 0x%X, message = %s\n",
+            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message);
+  }
+//*/
+#endif
+
 void GLView::initializeGL()
 {
+#ifdef DEBUG
+/*
+  // Requires OpenGL 4.3+
+  glEnable              ( GL_DEBUG_OUTPUT );
+  glDebugMessageCallback( MessageCallback, 0 );
+//*/
+#endif
+
   glEnable(GL_DEPTH_TEST);
   glDepthRange(-far_far_away, +far_far_away);
 

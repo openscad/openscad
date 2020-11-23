@@ -35,151 +35,11 @@
 VBORenderer::VBORenderer()
 	: Renderer(), shader_write_index(0)
 {
-	vbo_renderer_shader.progid = 0;
-	
-	const char *vs_source = R"(
-		uniform float xscale, yscale;
-		attribute vec4 color_area;
-		attribute vec3 trig, mask;
-		attribute vec3 point_b, point_c;
-		varying vec4 fcolor_area;
-		varying vec3 tp, tr;
-		varying float shading;
-		void main() {
-			vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;
-			vec4 p1 = gl_ModelViewProjectionMatrix * vec4(point_b, 1.0);
-			vec4 p2 = gl_ModelViewProjectionMatrix * vec4(point_c, 1.0);
-			float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));
-			float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));
-			float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));
-			float s = (a + b + c) / 2.0;
-			float A = sqrt(s*(s-a)*(s-b)*(s-c));
-			float ha = 2.0*A/a;
-			gl_Position = p0;
-			tp = vec3(float(mask.x), float(mask.y), float(mask.z)) * ha;
-			tr = vec3(float(trig.x), float(trig.y), float(trig.z));
-			vec3 normal, lightDir;
-			normal = normalize(gl_NormalMatrix * gl_Normal);
-			lightDir = normalize(vec3(gl_LightSource[0].position));
-			shading = 0.2 + abs(dot(normal, lightDir));
-			fcolor_area = color_area;
-		}
-	)";
-
-	/*
-	Inputs:
-	tp && tr - if any components of tp < tr, use color2 (edge color)
-	shading  - multiplied by color1. color2 is is without lighting
-	*/
-	const char *fs_source = R"(
-		varying vec4 fcolor_area;
-		varying vec3 tp, tr, tmp;
-		varying float shading;
-		void main() {
-			gl_FragColor = vec4(fcolor_area.r * shading, fcolor_area.g * shading, fcolor_area.b * shading, fcolor_area.a);
-			if (tp.x < tr.x || tp.y < tr.y || tp.z < tr.z)
-				gl_FragColor = vec4((fcolor_area.r+1.0)/2.0, (fcolor_area.g+1.0)/2.0, (fcolor_area.b+1.0)/2.0, 1.0);
-		}
-	)";
-	GLint status;
-	GLenum err;
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vs, 1, (const GLchar**)&vs_source, NULL);
-	glCompileShader(vs);
-	err = glGetError();
-	if (err != GL_NO_ERROR) {
-		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-		return;
-	}
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-		PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
-		return;
-	}
-
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
-	glCompileShader(fs);
-	err = glGetError();
-	if (err != GL_NO_ERROR) {
-		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-		return;
-	}
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-		PRINTDB("OpenGL Program Compile Fragement Shader Error:\n%s", logbuffer);
-		return;
-	}
-
-	GLuint vbo_shader_prog = glCreateProgram();
-	glAttachShader(vbo_shader_prog, vs);
-	glAttachShader(vbo_shader_prog, fs);
-	glLinkProgram(vbo_shader_prog);
-
-	err = glGetError();
-	if (err != GL_NO_ERROR) {
-		PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-		return;
-	}
-
-	glGetProgramiv(vbo_shader_prog, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
-		return;
-	}
-	
-	int loglen;
-	char logbuffer[1000];
-	glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-	if (loglen > 0) {
-		PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
-	}
-	glValidateProgram(vbo_shader_prog);
-	glGetProgramInfoLog(vbo_shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-	if (loglen > 0) {
-		PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
-	}
-
-	vbo_renderer_shader.progid = vbo_shader_prog; // 0
-	vbo_renderer_shader.type = EDGE_RENDERING;
-	vbo_renderer_shader.data.csg_rendering.color_area = glGetAttribLocation(vbo_shader_prog, "color_area");
-	vbo_renderer_shader.data.csg_rendering.trig = glGetAttribLocation(vbo_shader_prog, "trig");
-	vbo_renderer_shader.data.csg_rendering.mask = glGetAttribLocation(vbo_shader_prog, "mask");
-	vbo_renderer_shader.data.csg_rendering.point_b = glGetAttribLocation(vbo_shader_prog, "point_b");
-	vbo_renderer_shader.data.csg_rendering.point_c = glGetAttribLocation(vbo_shader_prog, "point_c");
-	vbo_renderer_shader.data.csg_rendering.xscale = glGetUniformLocation(vbo_shader_prog, "xscale");
-	vbo_renderer_shader.data.csg_rendering.yscale = glGetUniformLocation(vbo_shader_prog, "yscale");
-	PRINTDB("vbo_renderer_shader color_area = %d", vbo_renderer_shader.data.csg_rendering.color_area);
-	PRINTDB("vbo_renderer_shader trig = %d", vbo_renderer_shader.data.csg_rendering.trig);
-	PRINTDB("vbo_renderer_shader mask = %d", vbo_renderer_shader.data.csg_rendering.mask);
-	PRINTDB("vbo_renderer_shader point_b = %d", vbo_renderer_shader.data.csg_rendering.point_b);
-	PRINTDB("vbo_renderer_shader point_c = %d", vbo_renderer_shader.data.csg_rendering.point_c);
-	PRINTDB("vbo_renderer_shader xscale = %d", vbo_renderer_shader.data.csg_rendering.xscale);
-	PRINTDB("vbo_renderer_shader yscale = %d", vbo_renderer_shader.data.csg_rendering.yscale);
 }
 
 void VBORenderer::resize(int w, int h)
 {
 	Renderer::resize(w,h);
-	vbo_renderer_shader.vp_size_x = w;
-	vbo_renderer_shader.vp_size_y = h;
-}
-
-const Renderer::shaderinfo_t &VBORenderer::getShader() const
-{
-	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-		return Renderer::getShader();
-	}
-	return vbo_renderer_shader;
 }
 
 bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f &color, Color4f &outcolor) const
@@ -224,61 +84,39 @@ void VBORenderer::add_shader_attributes(VertexArray &vertex_array, Color4f color
 
 	if (OpenSCAD::debug != "") PRINTDB("create_vertex(%d, %d, %f, %d, %d, %d, %d)",
 		active_point_index % primitive_index % z_offset % shape_size % shape_dimensions % outlines % mirror);
-	if (points.size() == 3 &&
-		vbo_renderer_shader.data.csg_rendering.trig && vbo_renderer_shader.data.csg_rendering.mask &&
-		vbo_renderer_shader.data.csg_rendering.point_b && vbo_renderer_shader.data.csg_rendering.point_c) {
+	if (points.size() == 3 && getShader().data.csg_rendering.barycentric) {
 		// Get edge states
-		std::array<GLshort, 3> trig_flags;
-		std::array<GLshort, 3> mask_flags;
+		std::array<GLshort, 3> barycentric_flags;
+
 		if (!outlines) {
 			// top / bottom or 3d object
 			if (shape_size == 3) {
-				trig_flags = {2, 2, 2};
+				//true, true, true
+				barycentric_flags = {0, 0, 0};
 			} else if (shape_size == 4) {
-				trig_flags = {2, -1, 2};
+				//false, true, true
+				barycentric_flags = {1, 0, 0};
 			} else {
-				trig_flags = {-1, 2, -1};
+				//true, false, false
+				barycentric_flags = {0, 1, 1};
 			}
 		} else {
 			// sides
 			if (primitive_index == 0) {
-				trig_flags = {2, 2, -1};
+				//true, false, true
+				barycentric_flags = {0, 1, 0};
 			} else {
-				trig_flags = {-1, 2, 2};
+				//true, true, false
+				barycentric_flags = {0, 0, 1};
 			}
 		}
 		
-		Vector3d pb, pc;
-	
-		if (active_point_index == 0) {
-			mask_flags = {0, 1, 0};
-			pb = points[1];
-			pc = points[2];
-		}
-		if (active_point_index == 1) {
-			mask_flags = {0, 0, 1};
-			pb = points[0];
-			pc = points[2];
-		}
-		if (active_point_index == 2) {
-			mask_flags = {1, 0, 0};
-			pb = points[0];
-			pc = points[1];
-		}
+		barycentric_flags[active_point_index] = 1;
 
-		addAttributeValues(*(vertex_data->attributes()[TRIG_ATTRIB]), trig_flags[0], trig_flags[1], trig_flags[2]);
-		addAttributeValues(*(vertex_data->attributes()[MASK_ATTRIB]), mask_flags[0], mask_flags[1], mask_flags[2]);
-		addAttributeValues(*(vertex_data->attributes()[POINT_B_ATTRIB]), pb[0], pb[1], pb[2]);
-		addAttributeValues(*(vertex_data->attributes()[POINT_C_ATTRIB]), pc[0], pc[1], pc[2]);
+		addAttributeValues(*(vertex_data->attributes()[BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2]);
 
-		if (OpenSCAD::debug != "") PRINTDB("create_vertex trig : [%d, %d, %d]",
-			trig_flags[0] % trig_flags[1] % trig_flags[2]);
-		if (OpenSCAD::debug != "") PRINTDB("create_vertex mask : [%d, %d, %d]",
-			mask_flags[0] % mask_flags[1] % mask_flags[2]);
-		if (OpenSCAD::debug != "") PRINTDB("create_vertex point_b : [%d, %d, %d]",
-			pb[0] % pb[1] % (pb[2]));
-		if (OpenSCAD::debug != "") PRINTDB("create_vertex point_c : [%d, %d, %d]",
-			pc[0] % pc[1] % (pc[2]));
+		if (OpenSCAD::debug != "") PRINTDB("create_vertex barycentric : [%d, %d, %d]",
+			barycentric_flags[0] % barycentric_flags[1] % barycentric_flags[2]);
 
 	} else {
 		if (OpenSCAD::debug != "") PRINTDB("create_vertex bad points size = %d", points.size());
@@ -653,10 +491,7 @@ void VBORenderer::create_polygons(const PolySet &ps, VertexArray &vertex_array,
 void VBORenderer::add_shader_data(VertexArray &vertex_array) const
 {
 	std::shared_ptr<VertexData> shader_data = std::make_shared<VertexData>();
-	shader_data->addAttributeData(std::make_shared<AttributeData<GLshort,3,GL_SHORT>>()); // trig
-	shader_data->addAttributeData(std::make_shared<AttributeData<GLshort,3,GL_SHORT>>()); // mask
-	shader_data->addAttributeData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>()); // point_b
-	shader_data->addAttributeData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>()); // point_c
+	shader_data->addAttributeData(std::make_shared<AttributeData<GLshort,3,GL_SHORT>>()); // barycentric
 	shader_write_index = vertex_array.size();
 	vertex_array.addVertexData(shader_data);
 }
@@ -678,76 +513,12 @@ void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
 	GLenum type = 0;
 	size_t offset = 0;
 
-	if (vertex_data->hasColorData() && vbo_renderer_shader.data.csg_rendering.color_area) {
-		index = vbo_renderer_shader.data.csg_rendering.color_area;
-		count = vertex_data->colorData()->count();
-		type = vertex_data->colorData()->glType();
-		stride = vertex_data->stride();
-		offset = vertex_start_offset + vertex_data->interleavedOffset(vertex_data->colorIndex());
-		vs->glBegin().emplace_back([index, count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
-			auto vs = vs_ptr.lock();
-			if (vs) {
-				if (OpenSCAD::debug != "") PRINTDB("glVertexAttribPointer(%d, %d, %d, %p)",
-					count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
-				glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(vs->drawOffset() + offset));
-			}
-		});
-	}
-
-	if (vbo_renderer_shader.data.csg_rendering.trig) {
-		index = vbo_renderer_shader.data.csg_rendering.trig;
-		count = shader_data->attributes()[TRIG_ATTRIB]->count();
-		type = shader_data->attributes()[TRIG_ATTRIB]->glType();
+	if (getShader().data.csg_rendering.barycentric) {
+		index = getShader().data.csg_rendering.barycentric;
+		count = shader_data->attributes()[BARYCENTRIC_ATTRIB]->count();
+		type = shader_data->attributes()[BARYCENTRIC_ATTRIB]->glType();
 		stride = shader_data->stride();
-		offset = shader_start_offset + shader_data->interleavedOffset(TRIG_ATTRIB);
-		ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
-			auto ss = ss_ptr.lock();
-			if (ss) {
-				if (OpenSCAD::debug != "") PRINTDB("glVertexAttribPointer(%d, %d, %d, %p)",
-					count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-				glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
-			}
-		});
-	}
-
-	if (vbo_renderer_shader.data.csg_rendering.mask) {
-		index = vbo_renderer_shader.data.csg_rendering.mask;
-		count = shader_data->attributes()[MASK_ATTRIB]->count();
-		type = shader_data->attributes()[MASK_ATTRIB]->glType();
-		stride = shader_data->stride();
-		offset = shader_start_offset + shader_data->interleavedOffset(MASK_ATTRIB);
-		ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
-			auto ss = ss_ptr.lock();
-			if (ss) {
-				if (OpenSCAD::debug != "") PRINTDB("glVertexAttribPointer(%d, %d, %d, %p)",
-					count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-				glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
-			}
-		});
-	}
-
-	if (vbo_renderer_shader.data.csg_rendering.point_b) {
-		index = vbo_renderer_shader.data.csg_rendering.point_b;
-		count = shader_data->attributes()[POINT_B_ATTRIB]->count();
-		type = shader_data->attributes()[POINT_B_ATTRIB]->glType();
-		stride = shader_data->stride();
-		offset = shader_start_offset + shader_data->interleavedOffset(POINT_B_ATTRIB);
-		ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
-			auto ss = ss_ptr.lock();
-			if (ss) {
-				if (OpenSCAD::debug != "") PRINTDB("glVertexAttribPointer(%d, %d, %d, %p)",
-					count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-				glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
-			}
-		});
-	}
-
-	if (vbo_renderer_shader.data.csg_rendering.point_c) {
-		index = vbo_renderer_shader.data.csg_rendering.point_c;
-		count = shader_data->attributes()[POINT_C_ATTRIB]->count();
-		type = shader_data->attributes()[POINT_C_ATTRIB]->glType();
-		stride = shader_data->stride();
-		offset = shader_start_offset + shader_data->interleavedOffset(POINT_C_ATTRIB);
+		offset = shader_start_offset + shader_data->interleavedOffset(BARYCENTRIC_ATTRIB);
 		ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
 			auto ss = ss_ptr.lock();
 			if (ss) {
@@ -764,35 +535,11 @@ void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
 
 void VBORenderer::shader_attribs_enable() const
 {
-	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.color_area);
-	glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.color_area);
-
-	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.trig);
-	glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.trig);
-
-	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.mask);
-	glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.mask);
-	
-	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.point_b);
-	glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_b);
-
-	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.point_c);
-	glEnableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_c);
+	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
+	glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric);
 }
 void VBORenderer::shader_attribs_disable() const
 {
-	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.color_area);
-	glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.color_area);
-
-	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.trig);
-	glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.trig);
-
-	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.mask);
-	glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.mask);
-	
-	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.point_b);
-	glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_b);
-
-	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", vbo_renderer_shader.data.csg_rendering.point_c);
-	glDisableVertexAttribArray(vbo_renderer_shader.data.csg_rendering.point_c);
+	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
+	glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric);
 }

@@ -38,6 +38,9 @@ public:
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
 	virtual std::string name() const = 0;
+  /*| When a more specific name for user interaction shall be used, such as module names,
+      the verbose name shall be overloaded. */
+  virtual std::string verbose_name() const { return this->name(); }
   /*! Should return a Geometry instance describing the node. Returns nullptr if smth.
 		goes wrong. This is only called by PolySetEvaluator, to make sure polysets
 		are inserted into the cache*/
@@ -111,9 +114,12 @@ class GroupNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	GroupNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { }
+	GroupNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, const std::string &name="") : AbstractNode(mi, ctx), _name(name) { }
 	~GroupNode() { }
 	std::string name() const override;
+  std::string verbose_name() const override;
+private:
+	const std::string _name;
 };
 
 /*!
