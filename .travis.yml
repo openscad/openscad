@@ -29,7 +29,8 @@ matrix:
       cache:
         - apt
         - ccache
-    - if: NOT branch = coverity_scan
+    - if: branch = macos-dummy
+#   - if: NOT branch = coverity_scan
       os: osx
       compiler: clang
       env:
