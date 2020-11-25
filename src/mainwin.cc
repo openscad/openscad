@@ -262,8 +262,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->anim_dumping = false;
 	this->anim_dump_start_step = 0;
 
-	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
-
 	this->qglview->statusLabel = new QLabel(this);
 	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
@@ -3074,11 +3072,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			delete this->tempFile;
 			this->tempFile = nullptr;
 		}
-		this->editorDock->disableSettingsUpdate();
-		this->consoleDock->disableSettingsUpdate();
-		this->parameterDock->disableSettingsUpdate();
-		this->errorLogDock->disableSettingsUpdate();
-
+		for (auto dock : findChildren<Dock *>()) {
+			dock->disableSettingsUpdate();
+		}
 		event->accept();
 	} else {
 		event->ignore();

@@ -1254,6 +1254,9 @@
    <property name="text">
     <string>Ce&amp;nter</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+0</string>
+   </property>
   </action>
   <action name="viewActionPerspective">
    <property name="checkable">
@@ -1569,7 +1572,6 @@
     <string>Hide Customizer</string>
    </property>
   </action>
-
   <action name="fileActionExportPDF">
    <property name="icon">
     <iconset resource="../openscad.qrc">
@@ -1579,7 +1581,6 @@
     <string>Export as PDF...</string>
    </property>
   </action>
-  
   <action name="viewActionHide3DViewToolBar">
    <property name="checkable">
     <bool>true</bool>
