@@ -68,22 +68,47 @@ std::list<CGAL_Polygon_with_holes_2> polygons_with_holes(const Polygon2d &poly)
 	return ret;
 }
 
-std::vector<CGAL_Polygon_2> faces_cleanup(CGAL_Ss::Face_iterator faces_begin, CGAL_Ss::Face_iterator faces_end)
+std::vector<CGAL_Polygon_2> faces_cleanup(CGAL_SsPtr ss)
 {
 	std::vector<CGAL_Polygon_2> faces;
-	
-	// convert faces to polygonss
-	for (auto face = faces_begin; face!=faces_end; face++) {
+
+	std::map<CGAL_Point_2, CGAL_Point_2> skipped_vertices;
+	std::function<CGAL_Point_2 (const CGAL_Point_2 &)> skipped_vertex = [&](const CGAL_Point_2 &p) {
+		auto pp = skipped_vertices.find(p);
+		if (pp == skipped_vertices.end()) {
+			return p;
+		} else {
+			return skipped_vertex(pp->second);
+		}
+	};
+
+	for (auto h=ss->halfedges_begin(); h!=ss->halfedges_end(); h++) {
+		auto v0 = h->opposite()->vertex(),
+			 v1 = h->vertex();
+		auto p0 = v0->point(),
+			 p1 = v1->point();
+		auto t0 = v0->time(),
+			 t1 = v1->time();
+		auto d2 = CGAL::squared_distance(p0, p1);
+		const double dt = 1./1024.;
+		if (t0 != 0 && t0 < t1 && std::floor(t0 / dt) == std::floor(t1 / dt) && d2 < dt*dt*64) {
+			skipped_vertices[p0] = p1;
+			std::cout << "Skipping vertex #" << skipped_vertices.size() - 1 << "\n";
+		}
+	}
+
+	// convert faces to polygons
+	for (auto face = ss->faces_begin(); face!=ss->faces_end(); face++) {
 		CGAL_Polygon_2 dirty_face;
 
 		for (auto h=face->halfedge(); ;) {
-			dirty_face.push_back(h->vertex()->point());
+			CGAL_Point_2 pp = h->vertex()->point();
+				dirty_face.push_back(pp);
 			h = h->next();
 			if (h == face->halfedge()) {
 				break;
 			}
 		}
-		faces.push_back(dirty_face);
 	}
 
 	// look for an antenna
@@ -145,16 +170,55 @@ std::vector<CGAL_Polygon_2> faces_cleanup(CGAL_Ss::Face_iterator faces_begin, CG
 		}
 	}
 
-	return faces;
-}
-
-void print_polygon(const CGAL_Polygon_2 &poly) {
-	for (size_t k=0; k<poly.size(); k++) {
-		size_t j = (k==poly.size()-1) ? 0 : (k + 1);
-		std::cout << "set arrow from " << poly[k].x() << "," << poly[k].y()
-			<< " to " << poly[j].x() << "," << poly[j].y()
-			<< "\n";
+	// now there are no antennas, probably
+	// do convex partition
+	std::list<CGAL_PT::Polygon_2> convex_faces;
+	for (auto face : faces) {
+		if (!face.is_convex()) {
+			if (!face.is_simple()) {
+				std::cout << "huj huj\n"
+					<< face << "\n";
+			}
+			CGAL::approx_convex_partition_2(face.vertices_begin(), face.vertices_end(),
+					std::back_inserter(convex_faces));
+		}
 	}
+
+	// now remove skipped points
+	faces.clear();
+	for (auto convex_face : convex_faces) {
+		for (auto p=convex_face.vertices_begin(); p!=convex_face.vertices_end(); p++) {
+
+		}
+	}
+	
+/*
+	// convert faces to polygons
+	for (auto face = ss->faces_begin(); face!=ss->faces_end(); face++) {
+		CGAL_Polygon_2 dirty_face;
+
+		for (auto h=face->halfedge(); ;) {
+			CGAL_Point_2 pp = skipped_vertex(h->vertex()->point());
+			if (dirty_face.size() == 0 || dirty_face[dirty_face.size()-1] != pp) {
+				dirty_face.push_back(pp);
+			}
+			h = h->next();
+			if (h == face->halfedge()) {
+				break;
+			}
+		}
+		if (dirty_face.size() >= 2 && dirty_face[0] == dirty_face[dirty_face.size() - 1]) {
+			dirty_face.erase(dirty_face.begin() + dirty_face.size() - 1);
+		}
+		if (dirty_face.size() >= 3) {
+			faces.push_back(dirty_face);
+		} else {
+			std::cout << "Skipped face with " << dirty_face.size() << " vertices\n";
+		}
+	}
+*/
+
+	return faces;
 }
 
 PolySet *straight_skeleton_roof(const Polygon2d &poly)
@@ -172,13 +236,12 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 			heights[p] = v->time();
 		}
 
-		for (auto face : faces_cleanup(ss->faces_begin(), ss->faces_end())) {
+		for (auto face : faces_cleanup(ss)) {
 			std::list<CGAL_PT::Polygon_2> facets;
 			if (!face.is_convex()) {
 				if (!face.is_simple()) {
 					std::cout << "huj huj\n"
 						<< face << "\n";
-					print_polygon(face);
 				}
 				CGAL::approx_convex_partition_2(face.vertices_begin(), face.vertices_end(),
 						std::back_inserter(facets));
