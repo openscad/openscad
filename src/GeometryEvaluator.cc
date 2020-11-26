@@ -1601,7 +1601,8 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 
 static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
 {
-	PolySet *roof = straight_skeleton_roof(poly);
+	//PolySet *roof = straight_skeleton_roof(poly);
+	PolySet *roof = voronoi_diagram_roof(poly);
 	return roof;
 }
 
