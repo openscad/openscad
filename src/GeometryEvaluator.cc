@@ -11,6 +11,7 @@
 #include "linearextrudenode.h"
 #include "roofnode.h"
 #include "ssroof.h"
+#include "vdroof.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"

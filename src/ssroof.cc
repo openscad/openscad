@@ -321,6 +321,8 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 	return hat;
 }
 
+/*
+
 std::vector<CGAL_Point_2> discretize_arc(const CGAL_Point_2 &point, const CGAL_Segment_2 &segment,
 		const CGAL_Point_2 &source, const CGAL_Point_2 &target)
 {
@@ -537,3 +539,5 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 
 	return hat;
 }
+
+*/
