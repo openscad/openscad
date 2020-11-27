@@ -60,6 +60,9 @@
    </item>
    <item row="0" column="1">
     <widget class="QComboBox" name="errorLogComboBox">
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
      <item>
       <property name="text">
        <string>All</string>

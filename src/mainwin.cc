@@ -262,8 +262,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->anim_dumping = false;
 	this->anim_dump_start_step = 0;
 
-	editActionZoomTextIn->setShortcuts(QList<QKeySequence>() << editActionZoomTextIn->shortcuts() << QKeySequence("CTRL+="));
-
 	this->qglview->statusLabel = new QLabel(this);
 	this->qglview->statusLabel->setMinimumWidth(100);
 	statusBar()->addWidget(this->qglview->statusLabel);
@@ -2178,19 +2176,19 @@ void MainWindow::selectObject(QPoint mouse)
 			fs::path libpath = get_library_for_path(location.filePath());
 			if (!libpath.empty()) {
 				// Display the library (without making the window too wide!)
-				ss << step->name() << " (library "
+				ss << step->verbose_name() << " (library "
 				   << location.fileName().substr(libpath.string().length() + 1) << ":"
 				   << location.firstLine() << ")";
 			}
 			else if (activeEditor->filepath.toStdString() == location.fileName()) {
-				ss << step->name() << " (" << location.filePath().filename().string() << ":"
+				ss << step->verbose_name() << " (" << location.filePath().filename().string() << ":"
 				   << location.firstLine() << ")";
 			}
 			else {
 				auto relname = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
 				  .generic_string();
 				// Set the displayed name relative to the active editor window
-				ss << step->name() << " (" << relname << ":" << location.firstLine() << ")";
+				ss << step->verbose_name() << " (" << relname << ":" << location.firstLine() << ")";
 			}
 
 			// Prepare the action to be sent
@@ -3074,11 +3072,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			delete this->tempFile;
 			this->tempFile = nullptr;
 		}
-		this->editorDock->disableSettingsUpdate();
-		this->consoleDock->disableSettingsUpdate();
-		this->parameterDock->disableSettingsUpdate();
-		this->errorLogDock->disableSettingsUpdate();
-
+		for (auto dock : findChildren<Dock *>()) {
+			dock->disableSettingsUpdate();
+		}
 		event->accept();
 	} else {
 		event->ignore();
