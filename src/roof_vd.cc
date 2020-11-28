@@ -114,7 +114,7 @@ std::vector<Vector2d> discretize_arc(const Point &point, const Segment &segment,
 {
 	std::vector<Vector2d> ret;
 	
-	const double max_angle_deviation = M_PI / 64;
+	const double max_angle_deviation = 3.14 / 64;
 
 	const Vector2d p(point.a, point.b);
 	const Vector2d p0(segment.p0.a, segment.p0.b);
