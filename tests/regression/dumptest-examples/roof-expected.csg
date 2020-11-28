@@ -1,4 +1,4 @@
- {
+roof(method = "voronoi diagram") {
 	square(size = [1, 1], center = true);
 }
 

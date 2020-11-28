@@ -10,8 +10,8 @@
 #include "transformnode.h"
 #include "linearextrudenode.h"
 #include "roofnode.h"
-#include "ssroof.h"
-#include "vdroof.h"
+#include "roof_ss.h"
+#include "roof_vd.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"
@@ -1602,8 +1602,14 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 
 static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
 {
-	//PolySet *roof = straight_skeleton_roof(poly);
-	PolySet *roof = voronoi_diagram_roof(poly);
+	PolySet *roof;
+	if (node.method == "voronoi diagram") {
+		roof = roof_vd::voronoi_diagram_roof(poly);
+	} else if (node.method == "straight skeleton") {
+		roof = roof_ss::straight_skeleton_roof(poly);
+	} else {
+		assert(node.method == "AINT NOBODY HAVE TIME FOR THAT");
+	}
 	return roof;
 }
 

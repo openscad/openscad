@@ -1,3 +1,6 @@
+// This file is a part of openscad. Everything implied is implied.
+// Author: Alexey Korepanov <kaikaikai@yandex.ru>
+
 #include <cmath>
 #include <algorithm>
 #include <map>
@@ -6,16 +9,16 @@
 
 #include "GeometryUtils.h"
 #include "clipper-utils.h"
-#include "vdroof.h"
+#include "roof_vd.h"
 
 #include <vector>
 #include <cassert>
 
-#include <iostream>
+namespace roof_vd {
 
 typedef ClipperLib::cInt       VD_int;
 
-typedef boost::polygon::voronoi_diagram<double>      voronoi_diagram;
+typedef ::boost::polygon::voronoi_diagram<double>      voronoi_diagram;
 
 struct Point {
 	VD_int a;
@@ -59,41 +62,41 @@ bool segment_has_endpoint(const Segment &segment, const Point &point) {
 	return segment.p0 == point || segment.p1 == point;
 }
 
+} // roof_vd
 
 namespace boost {
-	namespace polygon {
+namespace polygon {
+	template <>
+		struct geometry_concept<roof_vd::Point> {
+			typedef point_concept type;
+		};
+	template <>
+		struct point_traits<roof_vd::Point> {
+			typedef roof_vd::VD_int coordinate_type;
 
-		template <>
-			struct geometry_concept<Point> {
-				typedef point_concept type;
-			};
+			static inline coordinate_type get(
+					const roof_vd::Point& point, orientation_2d orient) {
+				return (orient == HORIZONTAL) ? point.a : point.b;
+			}
+		};
+	template <>
+		struct geometry_concept<roof_vd::Segment> {
+			typedef segment_concept type;
+		};
+	template <>
+		struct segment_traits<roof_vd::Segment> {
+			typedef roof_vd::VD_int coordinate_type;
+			typedef roof_vd::Point point_type;
 
-		template <>
-			struct point_traits<Point> {
-				typedef VD_int coordinate_type;
-
-				static inline coordinate_type get(
-						const Point& point, orientation_2d orient) {
-					return (orient == HORIZONTAL) ? point.a : point.b;
-				}
-			};
-
-		template <>
-			struct geometry_concept<Segment> {
-				typedef segment_concept type;
-			};
-
-		template <>
-			struct segment_traits<Segment> {
-				typedef VD_int coordinate_type;
-				typedef Point point_type;
-
-				static inline point_type get(const Segment& segment, direction_1d dir) {
-					return dir.to_int() ? segment.p1 : segment.p0;
-				}
-			};
-	}  // polygon
+			static inline point_type get(const roof_vd::Segment& segment, direction_1d dir) {
+				return dir.to_int() ? segment.p1 : segment.p0;
+			}
+		};
+}  // polygon
 }  // boost
+
+
+namespace roof_vd {
 
 double distance_to_segment(const Vector2d &vertex, const Segment &segment) {
 	Vector2d segment_normal(-(segment.p1.b - segment.p0.b), segment.p1.a - segment.p0.a);
@@ -137,9 +140,6 @@ std::vector<Vector2d> discretize_arc(const Point &point, const Segment &segment,
 	// x coordinates of source and target
 	const double transformed_v0_x = (A * (v0 - p))[0];
 	const double transformed_v1_x = (A * (v1 - p))[0];
-	if (!(transformed_v0_x < transformed_v1_x)) {
-		std::cout << "pizda " << transformed_v0_x << ", " << transformed_v1_x << "\n";
-	}
 	assert(transformed_v0_x < transformed_v1_x);
 	
 	// in transformed coordinates the parabola has equation y = (x^2 - point_distance^2) / (2 point_distance)
@@ -168,16 +168,16 @@ std::vector<Vector2d> discretize_arc(const Point &point, const Segment &segment,
 		}
 	}
 
-	auto d =  ClipperUtils::CLIPPER_SCALE;
-	std::cout << "\n\nhuj\n";
-	std::cout << "segment: " << segment.p0.a / d << ", " << segment.p0.b /d
-		<< " --- " << segment.p1.a/d << ", " << segment.p1.b /d
-		<< "\n"
-		<< "point: " << point.a/d << ", " << point.b/d
-		<< "\n"
-		<< "v0: " << v0[0] /d << ", " << v0[1] /d << "\n"
-		<< "v1: " << v1[0] /d << ", " << v1[1] /d
-		<< "\n";
+	//auto d =  ClipperUtils::CLIPPER_SCALE;
+	//std::cout << "\n\nhuj\n";
+	//std::cout << "segment: " << segment.p0.a / d << ", " << segment.p0.b /d
+	//	<< " --- " << segment.p1.a/d << ", " << segment.p1.b /d
+	//	<< "\n"
+	//	<< "point: " << point.a/d << ", " << point.b/d
+	//	<< "\n"
+	//	<< "v0: " << v0[0] /d << ", " << v0[1] /d << "\n"
+	//	<< "v1: " << v1[0] /d << ", " << v1[1] /d
+	//	<< "\n";
 
 	for (auto x : transformed_points_x) {
 		if (x == transformed_v0_x) {
@@ -187,8 +187,6 @@ std::vector<Vector2d> discretize_arc(const Point &point, const Segment &segment,
 		} else {
 			ret.push_back(p + Ai*Vector2d(x, y(x)));
 		}
-		std::cout << ret.back()[0] / ClipperUtils::CLIPPER_SCALE << ", " << ret.back()[1]  / ClipperUtils::CLIPPER_SCALE
-			<< "\n";
 	}
 
 	return ret;
@@ -223,7 +221,7 @@ struct Faces_2_plus_1 {
 		}
 	};
 	std::vector<std::vector<Vector2d>> faces;
-	std::map<Vector2d,double, Vector2d_comp> heights;
+	std::map<Vector2d,double,Vector2d_comp> heights;
 };
 
 
@@ -236,49 +234,39 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram &vd,
 			const Point &point) {
 		Segment segment = segments[cell->source_index()];
 		return ( cell->contains_segment() && segment_has_endpoint(segment, point) )
-			|| (cell->source_category() == boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT
+			|| (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT
 					&& segment.p0 == point)
-			|| (cell->source_category() == boost::polygon::SOURCE_CATEGORY_SEGMENT_END_POINT
+			|| (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_END_POINT
 					&& segment.p1 == point);
 	};
-
-	auto edge_passes_through_point = [&vd, &segments, cell_contains_point](const voronoi_diagram::edge_type *edge,
-			const Point &point) {
-		return cell_contains_point(edge->cell(), point) && cell_contains_point(edge->twin()->cell(), point);
-	};
 				
-	for (voronoi_diagram::const_cell_iterator cell_it = vd.cells().begin();
-			cell_it != vd.cells().end(); cell_it++) {
+	for (voronoi_diagram::const_cell_iterator cell = vd.cells().begin();
+			cell != vd.cells().end(); cell++) {
 		
-		// cell info
-		const voronoi_diagram::cell_type& cell = *cell_it;
-		std::size_t cell_index = cell.source_index();
-		// incident edge is cell.incident_edge();
-		assert(!cell.is_degenerate());
-
-		// all cells have an associated segment
+		std::size_t cell_index = cell->source_index();
+		assert(!cell->is_degenerate());
 		const Segment &segment = segments[cell_index];
 
-		if (cell.contains_segment()) {
+		if (cell->contains_segment()) {
 			// walk around the cell, find edge starting from segment.p1 or passing through it
-			const voronoi_diagram::edge_type *edge = cell.incident_edge();
+			const voronoi_diagram::edge_type *edge = cell->incident_edge();
 			
-			std::cout << "\nsegment cell " << segment << "\n";
+			//std::cout << "\nsegment cell " << segment << "\n";
 
 			for (;;) {
-				if (edge_passes_through_point(edge, segment.p1) 
-						&& !edge_passes_through_point(edge->next(), segment.p1)) {
+				if (cell_contains_point(edge->twin()->cell(), segment.p1) 
+						&& !cell_contains_point(edge->next()->twin()->cell(), segment.p1)) {
 					break;
 				}
 				edge = edge->next();
-				assert(edge != cell.incident_edge());
+				assert(edge != cell->incident_edge());
 			}
 
-			std::cout << "starting edge: "; print_edge(edge); std::cout << "\n";
-			std::cout << "next edge: "; print_edge(edge->next()); std::cout << "\n";
-			std::cout << "segment.p1: " << segment.p1 << "\n";
-			std::cout << "segment for edge: " << segments[edge->cell()->source_index()] << "\n";
-			std::cout << "segment for twin: " << segments[edge->twin()->cell()->source_index()] << "\n";
+			//std::cout << "starting edge: "; print_edge(edge); std::cout << "\n";
+			//std::cout << "next edge: "; print_edge(edge->next()); std::cout << "\n";
+			//std::cout << "segment.p1: " << segment.p1 << "\n";
+			//std::cout << "segment for edge: " << segments[edge->cell()->source_index()] << "\n";
+			//std::cout << "segment for twin: " << segments[edge->twin()->cell()->source_index()] << "\n";
 
 			ret.faces.emplace_back();
 			{
@@ -296,7 +284,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram &vd,
 					assert(twin_cell->contains_point());
 					Segment twin_segment = segments[twin_cell->source_index()];
 					Point twin_point = 
-						(twin_cell->source_category() == boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
+						(twin_cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
 						twin_segment.p0 : twin_segment.p1;
 					Vector2d v0(edge->vertex0()->x(), edge->vertex0()->y()),
 							 v1(edge->vertex1()->x(), edge->vertex1()->y());
@@ -308,24 +296,24 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram &vd,
 					}
 				}
 				edge = edge->next();
-			} while (!edge_passes_through_point(edge, segment.p0));
+			} while (!cell_contains_point(edge->twin()->cell(), segment.p0));
 			{
 				Vector2d p(segment.p0.a, segment.p0.b);
 				ret.faces.back().push_back(p);
 				ret.heights[p] = 0.0;
 			}
 		} else {  // point cell
-			const voronoi_diagram::edge_type *edge = cell.incident_edge();
-			const Point point = (cell.source_category() == boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
+			const voronoi_diagram::edge_type *edge = cell->incident_edge();
+			const Point point = (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
 				segment.p0 : segment.p1;
 			while (!( edge->is_secondary() && edge->prev()->is_secondary() )) {
 				edge = edge->next();
 			}
 
-			std::cout << "\npoint cell" << point << "\n";
-			std::cout << "starting edge: "; print_edge(edge); std::cout << "\n";
-			std::cout << "twin stuff: " << segments[edge->twin()->cell()->source_index()].p0
-				<< "\n";
+			//std::cout << "\npoint cell" << point << "\n";
+			//std::cout << "starting edge: "; print_edge(edge); std::cout << "\n";
+			//std::cout << "twin stuff: " << segments[edge->twin()->cell()->source_index()].p0
+			//	<< "\n";
 
 			auto add_triangle = [&ret,&point](const Vector2d &v0, const Vector2d &v1) {
 				ret.faces.emplace_back();
@@ -345,7 +333,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram &vd,
 					segments[edge->twin()->cell()->source_index()].p0 ==
 					segments[edge->prev()->twin()->cell()->source_index()].p1) {
 				// inner non-degenerate cell
-				std::cout << "non-degenerate cell\n";
+				//std::cout << "non-degenerate cell\n";
 				for (;;) {
 					edge = edge->next();
 					if (edge->is_secondary()) {
@@ -365,7 +353,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram &vd,
 					}
 				}
 			} else {
-				std::cout << "degenerate or outer cell\n";
+				//std::cout << "degenerate or outer cell\n";
 			}
 		}
 	}
@@ -387,12 +375,12 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 		}
 	}
 	
-	std::cout << "Computing Voronoi\n" << std::flush;
+	std::cout << "Computing Voronoi... " << std::flush;
 	voronoi_diagram vd;
-	boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
-	std::cout << "Voronoi computed, computing inner faces\n" << std::flush;
+	::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
+	std::cout << "done.\nComputing inner faces... " << std::flush;
 	Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments);
-	std::cout << "Inner faces computed\n";
+	std::cout << "done.\n" << std::flush;
 	
 	/*
 	for (std::vector<Vector2d> face : inner_faces.faces) {
@@ -439,3 +427,5 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 	return hat;
 
 }
+
+} // roof_vd
