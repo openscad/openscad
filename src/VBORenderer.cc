@@ -37,7 +37,7 @@
 #include <sstream>
 
 VBORenderer::VBORenderer()
-	: Renderer(), shader_write_index(0)
+	: Renderer(), shader_attributes_index(0)
 {
 }
 
@@ -75,6 +75,119 @@ bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f &c
 	return false;
 }
 
+size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts> &products, bool highlight_mode, bool background_mode, bool unique_geometry) const
+{
+	size_t buffer_size = 0;
+	if (unique_geometry) this->geomVisitMark.clear();
+
+	for (const auto &product : products->products) {
+		for (const auto &csgobj : product.intersections) {
+			buffer_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
+		}
+		for (const auto &csgobj : product.subtractions) {
+			buffer_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
+		}
+	}
+	return buffer_size;
+}
+
+size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject &csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type, bool unique_geometry) const
+{
+	size_t buffer_size = 0;
+	if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+	csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
+
+	if (csgobj.leaf->geom) {
+		const PolySet* ps = dynamic_cast<const PolySet*>(csgobj.leaf->geom.get());
+		if (ps) {
+			buffer_size += getSurfaceBufferSize(*ps, csgmode);
+		}
+	}
+	return buffer_size;
+}
+
+size_t VBORenderer::getSurfaceBufferSize(const PolySet &polyset, csgmode_e csgmode) const
+{
+	size_t buffer_size = 0;
+	for (const auto &poly : polyset.polygons) {
+		if (poly.size() == 3) {
+			buffer_size++;
+		} else if (poly.size() == 4) {
+			buffer_size+=2;
+		} else {
+			buffer_size+=poly.size();
+		}
+	}						
+	if (polyset.getDimension() == 2) {
+		if (csgmode != CSGMODE_NONE) {
+			buffer_size*=2; // top and bottom
+			// sides
+			if (polyset.getPolygon().outlines().size() > 0) {
+				for (const Outline2d &o : polyset.getPolygon().outlines()) {
+					buffer_size+=o.vertices.size()*2;
+				}
+			} else {
+				for (const auto &poly : polyset.polygons) {
+					buffer_size+=poly.size()*2;
+				}
+			}
+		}
+	}
+	return buffer_size*3;
+}
+
+size_t VBORenderer::getEdgeBufferSize(const std::shared_ptr<CSGProducts> &products, bool highlight_mode, bool background_mode, bool unique_geometry) const
+{
+	size_t buffer_size = 0;
+	if (unique_geometry) this->geomVisitMark.clear();
+
+	for (const auto &product : products->products) {
+		for (const auto &csgobj : product.intersections) {
+			buffer_size += getEdgeBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION, unique_geometry);
+		}
+		for (const auto &csgobj : product.subtractions) {
+			buffer_size += getEdgeBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE, unique_geometry);
+		}
+	}
+	return buffer_size;
+}
+
+size_t VBORenderer::getEdgeBufferSize(const CSGChainObject &csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type, bool unique_geometry) const
+{
+	size_t buffer_size = 0;
+	if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+	csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
+
+	if (csgobj.leaf->geom) {
+		const PolySet* ps = dynamic_cast<const PolySet*>(csgobj.leaf->geom.get());
+		if (ps) {
+			buffer_size += getEdgeBufferSize(*ps, csgmode);
+		}
+	}
+	return buffer_size;
+}
+
+size_t VBORenderer::getEdgeBufferSize(const PolySet &polyset, csgmode_e csgmode) const
+{
+	size_t buffer_size = 0;
+	if (polyset.getDimension() == 2) {
+		// Render only outlines
+		for (const Outline2d &o : polyset.getPolygon().outlines()) {
+			buffer_size += o.vertices.size();
+			if (csgmode != CSGMODE_NONE) {
+				buffer_size += o.vertices.size();
+				// Render sides
+				buffer_size += o.vertices.size()*2;
+			}
+		}
+	} else if (polyset.getDimension() == 3) {
+		for (const auto &polygon : polyset.polygons) {
+			buffer_size += polygon.size();
+		}
+	}
+	return buffer_size;
+}
+
 void VBORenderer::add_shader_attributes(VertexArray &vertex_array, Color4f color,
 					const std::array<Vector3d,3> &points,
 					const std::array<Vector3d,3> &normals,
@@ -83,10 +196,9 @@ void VBORenderer::add_shader_attributes(VertexArray &vertex_array, Color4f color
 					size_t shape_dimensions, bool outlines,
 					bool mirror) const
 {
-	if (!shader_write_index || shader_write_index >= vertex_array.size() ||
-		!vertex_array.data(shader_write_index)) return;
+	if (!shader_attributes_index) return;
 	
-	shared_ptr<VertexData> shader_data = vertex_array.data(shader_write_index);
+	shared_ptr<VertexData> vertex_data = vertex_array.data();//shader_write_index);
 
 	if (points.size() == 3 && getShader().data.csg_rendering.barycentric) {
 		// Get edge states
@@ -117,7 +229,7 @@ void VBORenderer::add_shader_attributes(VertexArray &vertex_array, Color4f color
 		
 		barycentric_flags[active_point_index] = 1;
 
-		addAttributeValues(*(shader_data->attributes()[BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2]);
+		addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2]);
 	} else {
 		if (OpenSCAD::debug != "") PRINTDB("add_shader_attributes bad points size = %d", points.size());
 	}
@@ -153,13 +265,19 @@ void VBORenderer::create_vertex(VertexArray &vertex_array, const Color4f &color,
 		entry.first = vertex_array.elementsMap().find(interleaved_vertex);
 		if (entry.first == vertex_array.elementsMap().end()) {
 			// append vertex data if this is a new element
-			vertex_array.append(*temp_array);
+			size_t buffer_offset = vertex_array.verticesOffset();
+			if (!vertex_array.initialSize()) {
+				vertex_array.append(*temp_array);
+			} else {
+				glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, interleaved_vertex.size(), interleaved_vertex.data());
+			}
+			vertex_array.verticesOffset(buffer_offset + interleaved_vertex.size());
 			entry = vertex_array.elementsMap().emplace(interleaved_vertex, vertex_array.elementsMap().size());
 		} else {
 			if (OpenSCAD::debug != "") {
 				// in debug, check for bad hash matches
 				size_t i = 0;
-				if (interleaved_vertex.size() != entry.first->first.size()){
+				if (interleaved_vertex.size() != entry.first->first.size()) {
 					PRINTDB("vertex index = %d", entry.first->second);
 					assert(false && "VBORenderer invalid vertex match size!!!");
 				}
@@ -260,7 +378,7 @@ void VBORenderer::create_surface(const PolySet &ps, VertexArray &vertex_array,
 		VertexStates &vertex_states = vertex_array.states();
 		std::unordered_map<Vector3d,size_t> vert_mult_map;
 		std::vector<Vector3d> mult_verts;
-		size_t last_size = vertex_data->sizeInBytes();
+		size_t last_size = vertex_array.verticesOffset();
 		
 		size_t elements_offset = 0;
 		if (vertex_array.useElements()) {
@@ -341,7 +459,7 @@ void VBORenderer::create_edges(const PolySet &ps,
 		if (csgmode == Renderer::CSGMODE_NONE) {
 			// Render only outlines
 			for (const Outline2d &o : ps.getPolygon().outlines()) {
-				size_t last_size = vertex_data->sizeInBytes();
+				size_t last_size = vertex_array.verticesOffset();
 				size_t elements_offset = 0;
 				if (vertex_array.useElements()) {
 					elements_offset = vertex_array.elements().sizeInBytes();
@@ -368,7 +486,7 @@ void VBORenderer::create_edges(const PolySet &ps,
 			// Render 2D objects 1mm thick, but differences slightly larger
 			double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
 			for (const Outline2d &o : ps.getPolygon().outlines()) {
-				size_t last_size = vertex_data->sizeInBytes();
+				size_t last_size = vertex_array.verticesOffset();
 				size_t elements_offset = 0;
 				if (vertex_array.useElements()) {
 					elements_offset = vertex_array.elements().sizeInBytes();
@@ -395,7 +513,7 @@ void VBORenderer::create_edges(const PolySet &ps,
 				vertex_states.emplace_back(std::move(line_loop));
 				vertex_array.addAttributePointers(last_size);
 
-				last_size = vertex_data->sizeInBytes();
+				last_size = vertex_array.verticesOffset();
 				if (vertex_array.useElements()) {
 					elements_offset = vertex_array.elements().sizeInBytes();
 					// this can vary size if polyset provides indexed triangles
@@ -423,7 +541,7 @@ void VBORenderer::create_edges(const PolySet &ps,
 		}
 	} else if (ps.getDimension() == 3) {
 		for (const auto &polygon : ps.polygons) {
-			size_t last_size = vertex_data->sizeInBytes();
+			size_t last_size = vertex_array.verticesOffset();
 			size_t elements_offset = 0;
 			if (vertex_array.useElements()) {
 				elements_offset = vertex_array.elements().sizeInBytes();
@@ -467,7 +585,7 @@ void VBORenderer::create_polygons(const PolySet &ps, VertexArray &vertex_array,
 		PRINTD("create_polygons 2D");
 		bool mirrored = m.matrix().determinant() < 0;
 		size_t triangle_count = 0;
-		size_t last_size = vertex_data->sizeInBytes();
+		size_t last_size = vertex_array.verticesOffset();
 		size_t elements_offset = 0;
 		if (vertex_array.useElements()) {
 			elements_offset = vertex_array.elements().sizeInBytes();
@@ -636,21 +754,21 @@ void VBORenderer::create_polygons(const PolySet &ps, VertexArray &vertex_array,
 
 void VBORenderer::add_shader_data(VertexArray &vertex_array) const
 {
-	std::shared_ptr<VertexData> shader_data = std::make_shared<VertexData>();
-	shader_data->addAttributeData(std::make_shared<AttributeData<GLshort,3,GL_SHORT>>()); // barycentric
-	shader_write_index = vertex_array.size();
-	vertex_array.addVertexData(shader_data);
+	std::shared_ptr<VertexData> vertex_data = vertex_array.data();//std::make_shared<VertexData>();
+	
+	shader_attributes_index = vertex_data->attributes().size(); //vertex_array.size();
+	vertex_data->addAttributeData(std::make_shared<AttributeData<GLshort,3,GL_SHORT>>()); // barycentric
 }
 
 void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
 {
-	shared_ptr<VertexData> shader_data = vertex_array.data(shader_write_index);
+	shared_ptr<VertexData> vertex_data = vertex_array.data();
 
-	if (!shader_data) return;
+	if (!vertex_data) return;
 	
-	size_t shader_start_offset = shader_data->sizeInBytes();
+	size_t start_offset = vertex_array.verticesOffset();
 
-	std::shared_ptr<VertexState> ss = std::make_shared<VBOShaderVertexState>(shader_write_index, 0,
+	std::shared_ptr<VertexState> ss = std::make_shared<VBOShaderVertexState>(vertex_array.writeIndex(), 0,
 										 vertex_array.verticesVBO(),
 										 vertex_array.elementsVBO());
 	GLuint index = 0;
@@ -660,10 +778,10 @@ void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
 
 	if (getShader().data.csg_rendering.barycentric) {
 		index = getShader().data.csg_rendering.barycentric;
-		count = shader_data->attributes()[BARYCENTRIC_ATTRIB]->count();
-		type = shader_data->attributes()[BARYCENTRIC_ATTRIB]->glType();
-		stride = shader_data->stride();
-		offset = shader_start_offset + shader_data->interleavedOffset(BARYCENTRIC_ATTRIB);
+		count = vertex_data->attributes()[shader_attributes_index+BARYCENTRIC_ATTRIB]->count();
+		type = vertex_data->attributes()[shader_attributes_index+BARYCENTRIC_ATTRIB]->glType();
+		stride = vertex_data->stride();
+		offset = start_offset + vertex_data->interleavedOffset(shader_attributes_index+BARYCENTRIC_ATTRIB);
 		ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
 			auto ss = ss_ptr.lock();
 			if (ss) {

@@ -137,19 +137,22 @@ void CGALRenderer::createPolysets() const
 	polyset_states.clear();
 
 	VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states, true);
+	vertex_array.addEdgeData();
+	vertex_array.addSurfaceData();
 	
-	// POLYSET_2D_DATA
-	std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
-	vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
-	vertex_data->addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
-	vertex_array.addVertexData(vertex_data);
+	// worst case buffer size
+	size_t buffer_size = 0;
+	if (this->polysets.size()) {
+		for (const auto &polyset : this->polysets) {
+			buffer_size += getSurfaceBufferSize(*polyset);
+			buffer_size += getEdgeBufferSize(*polyset);
+		}
+	}
+	buffer_size *= vertex_array.stride();
+	vertex_array.initialSize(buffer_size);
 
-	// POLYSET_3D_DATA
-	vertex_data = std::make_shared<VertexData>();
-	vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
-	vertex_data->addNormalData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
-	vertex_data->addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
-	vertex_array.addVertexData(vertex_data);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
+	glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_STATIC_DRAW);
 	
 	for (const auto &polyset : this->polysets) {
 		Color4f color;
@@ -157,7 +160,7 @@ void CGALRenderer::createPolysets() const
 		PRINTD("polysets");
 		if (polyset->getDimension() == 2) {
 			PRINTD("2d polysets");
-			vertex_array.writeIndex(POLYSET_2D_DATA);
+			vertex_array.writeEdge();
 
 			std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
 			init_state->glEnd().emplace_back([]() {
@@ -193,7 +196,7 @@ void CGALRenderer::createPolysets() const
 			polyset_states.emplace_back(std::move(end_state));
 		} else {
 			PRINTD("3d polysets");
-			vertex_array.writeIndex(POLYSET_3D_DATA);
+			vertex_array.writeSurface();
 
 			// Create 3D polygons
 			getColor(ColorMode::MATERIAL, color);
@@ -202,6 +205,8 @@ void CGALRenderer::createPolysets() const
 	}
 	
 	if (this->polysets.size()) {
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 		vertex_array.createInterleavedVBOs();
 		polyset_vertices_vbo = vertex_array.verticesVBO();
 		polyset_elements_vbo = vertex_array.elementsVBO();

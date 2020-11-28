@@ -187,10 +187,13 @@ void VertexArray::createInterleavedVBOs()
 		state->drawOffset(this->indexOffset(index));
 	}
 	
-	if (vertices_.size()) {
-		size_t total_size = this->sizeInBytes();
+	// If the upfront size was not known, the the buffer has to be built
+	size_t total_size = this->sizeInBytes();
+	if (!initial_size_ && total_size) {
 		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_);
 		glBufferData(GL_ARRAY_BUFFER, total_size, nullptr, GL_STATIC_DRAW);
+		
+		PRINTDB("total_size: %d", total_size);
 		
 		size_t dst_start = 0;
 		for (const auto &vertex_data : vertices_) {

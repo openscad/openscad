@@ -304,10 +304,10 @@ public:
 class VertexArray
 {
 public:
-	VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates &states, bool use_elements = false)
+	VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates &states, bool use_elements = false, size_t initial_size = 0)
 		: factory_(std::move(factory)), states_(states), write_index_(0),
 		  surface_index_(0), edge_index_(0), vertices_vbo_(0), elements_vbo_(0),
-		  use_elements_(use_elements)
+		  use_elements_(use_elements), initial_size_(initial_size), vertices_offset_(0)
 	{
 		glGenBuffers(1, &vertices_vbo_);
 		if (use_elements)
@@ -352,6 +352,8 @@ public:
 	inline void writeSurface() { write_index_ = surface_index_; }
 	// Set the internal write index to the edge index
 	inline void writeEdge() { write_index_ = edge_index_; }
+	// Return the total stride for all buffers
+	inline size_t stride() const { size_t stride = 0; for (const auto &v : vertices_) { stride += v->stride(); } return stride; }
 	
 	// Calculate and return the offset in bytes of a given index
 	size_t indexOffset(size_t index) const {
@@ -378,10 +380,26 @@ public:
 	// Create an empty copy of the vertex array type
 	std::shared_ptr<VertexArray> create() const;
 	
-	inline bool useElements() { return use_elements_; }
+	// Return whether this Vertex Array uses elements
+	inline bool useElements() const { return use_elements_; }
+	
+	// Return the initial buffer size allocated by Vertex Array
+	inline size_t initialSize() const { return initial_size_; }
+	// Set the initial buffer size allocated by VertexArray
+	inline void initialSize(size_t initial_size) { initial_size_ = initial_size; }
+	
+	// Return reference to vertices VBO
 	inline GLuint &verticesVBO() { return vertices_vbo_; }
+	// Return reference to elements VBO
 	inline GLuint &elementsVBO() { return elements_vbo_; }
+	
+	// Return the internal unique vertex/element map
 	inline ElementsMap &elementsMap() { return elements_map_; }
+	
+	// Return current vertices offset
+	inline size_t verticesOffset() const { return vertices_offset_; }
+	// Set current vertices offset
+	inline void verticesOffset(size_t offset) { vertices_offset_ = offset; }
 
 private:
 	std::shared_ptr<VertexStateFactory> factory_;
@@ -392,7 +410,9 @@ private:
 	GLuint vertices_vbo_;
 	GLuint elements_vbo_;
 	bool use_elements_;
+	size_t initial_size_;
 	std::vector<std::shared_ptr<VertexData>> vertices_;
+	size_t vertices_offset_;
 	VertexData elements_;
 	ElementsMap elements_map_;
 };

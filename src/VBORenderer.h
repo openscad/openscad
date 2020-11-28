@@ -8,6 +8,9 @@
 #endif
 #include "csgnode.h"
 #include "VertexArray.h"
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
+
 
 class VBOShaderVertexState : public VertexState
 {
@@ -24,6 +27,12 @@ public:
 	virtual ~VBORenderer() {}
 	virtual void resize(int w, int h);
 	virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f &col, Color4f &outcolor) const;
+	virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts> &products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;
+	virtual size_t getSurfaceBufferSize(const CSGChainObject &csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type=OpenSCADOperator::UNION, bool unique_geometry = false) const;
+	virtual size_t getSurfaceBufferSize(const PolySet &polyset, csgmode_e csgmode = CSGMODE_NORMAL) const;
+	virtual size_t getEdgeBufferSize(const std::shared_ptr<CSGProducts> &products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;
+	virtual size_t getEdgeBufferSize(const CSGChainObject &csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type=OpenSCADOperator::UNION, bool unique_geometry = false) const;
+	virtual size_t getEdgeBufferSize(const PolySet &polyset, csgmode_e csgmode = CSGMODE_NORMAL) const;
 
 	virtual void create_surface(const PolySet &ps, VertexArray &vertex_array,
 				    csgmode_e csgmode, const Transform3d &m, const Color4f &color) const;
@@ -54,6 +63,9 @@ protected:
 	void add_shader_pointers(VertexArray &vertex_array) const;
 	void shader_attribs_enable() const;
 	void shader_attribs_disable() const;
+
+	mutable std::unordered_map<std::pair<const Geometry*,const Transform3d*>, int,
+				   boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;
 	
 private:
 	void add_shader_attributes(VertexArray &vertex_array, Color4f color,
@@ -64,7 +76,7 @@ private:
 				size_t shape_dimensions = 0, bool outlines = false,
 				bool mirror = false) const;
 
-	mutable size_t shader_write_index;
+	mutable size_t shader_attributes_index;
 	enum ShaderAttribIndex {
 		BARYCENTRIC_ATTRIB
 	};

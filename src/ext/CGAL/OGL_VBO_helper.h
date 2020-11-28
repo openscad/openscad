@@ -218,12 +218,18 @@ public:
 		points_edges_array.writeEdge();
 		size_t last_size = 0;
 		size_t elements_offset = 0;
+		size_t buffer_size = vertices_.size() + edges_.size()*2;
+		
+		buffer_size *= points_edges_array.stride();
+		points_edges_array.initialSize(buffer_size);
+
+		glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO());
+		glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_STATIC_DRAW);
 		
 		// Points
 		Vertex_iterator v;
 		if (points_edges_array.useElements()) {
 			elements_offset = points_edges_array.elements().sizeInBytes();
-			// this can vary size if polyset provides triangles
 			if (vertices_.size() <= 0xff) {
 				points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
 			} else if (vertices_.size() <= 0xffff) {
@@ -253,11 +259,10 @@ public:
 		
 		// Edges
 		Edge_iterator e;
-		last_size = points_edges_array.data()->sizeInBytes();
+		last_size = points_edges_array.verticesOffset();
 		elements_offset = 0;
 		if (points_edges_array.useElements()) {
 			elements_offset = points_edges_array.elements().sizeInBytes();
-			// this can vary size if polyset provides triangles
 			if (edges_.size()*2 <= 0xff) {
 				points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
 			} else if (edges_.size()*2 <= 0xffff) {
@@ -286,11 +291,12 @@ public:
 		points_edges_states.emplace_back(std::move(vs));
 		points_edges_array.addAttributePointers(last_size);
 
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 		points_edges_array.createInterleavedVBOs();
 		points_edges_vertices_vbo = points_edges_array.verticesVBO();
 		points_edges_elements_vbo = points_edges_array.elementsVBO();
 		
-
 		// Halffacets
 		VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states, true);
 		halffacets_array.addSurfaceData();

@@ -2,8 +2,6 @@
 
 #include "renderer.h"
 #include "csgnode.h"
-#include <unordered_map>
-#include <boost/functional/hash.hpp>
 
 #include "VBORenderer.h"
 
@@ -76,6 +74,6 @@ private:
 	shared_ptr<CSGProducts> background_products;
 	mutable GLuint vertices_vbo;
 	mutable GLuint elements_vbo;
-	mutable std::unordered_map<std::pair<const Geometry*,const Transform3d*>, int,
-				   boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;
+	/*mutable std::unordered_map<std::pair<const Geometry*,const Transform3d*>, int,
+				   boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;*/
 };
