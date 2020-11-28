@@ -334,13 +334,7 @@ expr
         : logic_or
         | TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
             {
-              if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
-                $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
-              } else {
-                LOG(message_group::Warning,LOCD("literal", @$),mainFilePath.parent_path().generic_string(),
-                "Support for function literals is disabled");
-                $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
-              }
+			  $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               delete $3;
             }
         | logic_or '?' expr ':' expr

@@ -22,7 +22,6 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
-const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalMouseSelection("mouse-selection", "Enable mouse selector");
 
