@@ -382,7 +382,6 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 	Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments);
 	std::cout << "done.\n" << std::flush;
 	
-	/*
 	for (std::vector<Vector2d> face : inner_faces.faces) {
 		assert(face.size() >= 3);
 
@@ -408,8 +407,8 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 		}
 		delete tess;
 	}
-	*/
 
+        /*
 	for (std::vector<Vector2d> face : inner_faces.faces) {
 		assert(face.size() >= 3);
 		Polygon floor, roof;
@@ -423,6 +422,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 		hat->append_poly(floor);
 		hat->append_poly(roof);
 	}
+        */
 	
 	return hat;
 
