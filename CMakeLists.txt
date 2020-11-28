@@ -543,8 +543,8 @@ set(CORE_SOURCES
   src/render.cc
   src/rendersettings.cc
   src/roof.cc
-  src/roof-ss.cc
-  src/roof-vd.cc
+  src/roof_ss.cc
+  src/roof_vd.cc
   src/rotateextrude.cc
   src/stackcheck.h
   src/surface.cc

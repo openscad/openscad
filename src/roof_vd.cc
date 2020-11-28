@@ -9,10 +9,9 @@
 
 #include "GeometryUtils.h"
 #include "clipper-utils.h"
+#include "printutils.h"
 #include "roof_vd.h"
 
-#include <vector>
-#include <cassert>
 
 namespace roof_vd {
 
@@ -192,6 +191,7 @@ std::vector<Vector2d> discretize_arc(const Point &point, const Segment &segment,
 	return ret;
 }
 
+/*
 void print_edge(const voronoi_diagram::edge_type *edge) {
 	if (!edge->vertex0())
 		std::cout << "inf inf";
@@ -212,7 +212,7 @@ void print_edge(const voronoi_diagram::edge_type *edge) {
 		std::cout << " (secondary)";
 
 }
-
+*/
 
 struct Faces_2_plus_1 {
 	struct Vector2d_comp {
@@ -375,12 +375,11 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly)
 		}
 	}
 	
-	std::cout << "Computing Voronoi... " << std::flush;
+        LOG(message_group::None,Location::NONE,"","Computing Voronoi diagram...");
 	voronoi_diagram vd;
 	::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
-	std::cout << "done.\nComputing inner faces... " << std::flush;
+        LOG(message_group::None,Location::NONE,"","Voronoi diagram computed.");
 	Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments);
-	std::cout << "done.\n" << std::flush;
 	
 	for (std::vector<Vector2d> face : inner_faces.faces) {
 		assert(face.size() >= 3);

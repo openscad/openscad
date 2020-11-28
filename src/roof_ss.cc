@@ -13,6 +13,7 @@
 
 #include "GeometryUtils.h"
 #include "clipper-utils.h"
+#include "printutils.h"
 #include "roof_ss.h"
 
 namespace roof_ss {
@@ -74,9 +75,9 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 	std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(poly);
 	
 	for (CGAL_Polygon_with_holes_2 shape : shapes) {
-		std::cout << "Computing straight skeleton..." << std::flush;
+        LOG(message_group::None,Location::NONE,"","Computing straight skeleton...");
 		CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
-		std::cout << " done.\n";
+        LOG(message_group::None,Location::NONE,"","Straight skeleton computed.");
 		// store heights of vertices
 		auto vector2d_comp = [](const Vector2d &a, const Vector2d &b) {
 			return (a[0]<b[0]) || (a[0]==b[0] && a[1]<b[1]);

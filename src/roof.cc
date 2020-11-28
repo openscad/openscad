@@ -51,8 +51,6 @@ AbstractNode *RoofModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	return node;
 }
 
-
-
 std::string RoofNode::toString() const
 {
 	std::stringstream stream;
@@ -61,8 +59,6 @@ std::string RoofNode::toString() const
 
 	return stream.str();
 }
-
-
 
 void register_builtin_roof()
 {
