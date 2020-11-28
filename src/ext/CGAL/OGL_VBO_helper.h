@@ -35,104 +35,89 @@ namespace OGL {
 // ----------------------------------------------------------------------------
 class VBOPolyhedron : public virtual Polyhedron {
 public:
-	VBOPolyhedron()
-		: Polyhedron(), points_edges_vbo(0), halffacets_vbo(0)
+	VBOPolyhedron(const VBORenderer &renderer)
+		: Polyhedron(),
+		  points_edges_vertices_vbo(0), points_edges_elements_vbo(0),
+		  halffacets_vertices_vbo(0), halffacets_elements_vbo(0), renderer_(renderer)
 	{}
 	virtual ~VBOPolyhedron()
 	{
-		if (points_edges_vbo != 0) glDeleteBuffers(1, &points_edges_vbo);
-		if (halffacets_vbo != 0) glDeleteBuffers(1, &halffacets_vbo);
+		if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
+		if (points_edges_elements_vbo) glDeleteBuffers(1, &points_edges_elements_vbo);
+		if (halffacets_vertices_vbo) glDeleteBuffers(1, &halffacets_vertices_vbo);
+		if (halffacets_elements_vbo) glDeleteBuffers(1, &halffacets_elements_vbo);
 	}
 
-	void draw(Vertex_iterator v, VertexData &vertex_data) const { 
-		//      CGAL_NEF_TRACEN("drawing vertex "<<*v);
+	void draw(Vertex_iterator v, VertexArray &vertex_array) const { 
 		PRINTD("draw(Vertex_iterator)");
+		
 		CGAL::Color c = getVertexColor(v);
-		addAttributeValues(*vertex_data.positionData(), (float)v->x(), (float)v->y(), (float)v->z());
-		if (vertex_data.hasColorData()) {
-			addAttributeValues(*vertex_data.colorData(), (float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0);
-		}
+		renderer_.create_vertex(vertex_array,
+					{(float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0},
+					{Vector3d((float)v->x(), (float)v->y(), (float)v->z())},
+					{},
+					0, 0, 0.0, 1, 1);
 	}
 
-	void draw(Edge_iterator e, VertexData &vertex_data) const { 
-		//      CGAL_NEF_TRACEN("drawing edge "<<*e);
+	void draw(Edge_iterator e, VertexArray &vertex_array) const { 
 		PRINTD("draw(Edge_iterator)");
+		
 		Double_point p = e->source(), q = e->target();
 		CGAL::Color c = getEdgeColor(e);
-		addAttributeValues(*vertex_data.positionData(), (float)p.x(), (float)p.y(), (float)p.z());
-		addAttributeValues(*vertex_data.positionData(), (float)q.x(), (float)q.y(), (float)q.z());
-		if (vertex_data.hasColorData()) {
-			addAttributeValues(2, *vertex_data.colorData(), (float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0);
-		}
+		Color4f color = {(float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0};
+
+		renderer_.create_vertex(vertex_array, color,
+					{Vector3d((float)p.x(), (float)p.y(), (float)p.z())},
+					{},
+					0, 0, 0.0, 1, 2, true);
+		renderer_.create_vertex(vertex_array, color,
+					{Vector3d((float)q.x(), (float)q.y(), (float)q.z())},
+					{},
+					0, 1, 0.0, 1, 2, true);
 	}
 
 	typedef struct _TessUserData {
+		GLenum which;
 		GLdouble *normal;
 		CGAL::Color color;
-		size_t last_size_in_bytes;
-		size_t start_draw_size;
-		VertexStates &vertex_states;
-		VertexData &vertex_data;
+		size_t primitive_index;
+		size_t active_point_index;
+		size_t last_size;
+		size_t draw_size;
+		size_t elements_offset;
+		VertexArray &vertex_array;
+		const VBORenderer &renderer;
 	} TessUserData;
 
 	static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
 		TessUserData *tess(static_cast<TessUserData *>(user));
 		// Create separate vertex set since "which" could be different draw type
-		VertexData &vertex_data = tess->vertex_data;
-
-		std::shared_ptr<VertexState> vertex_state = std::make_shared<VertexState>(which, 0);
-
-		tess->last_size_in_bytes = vertex_data.sizeInBytes();
-		tess->start_draw_size = vertex_data.size();
-		tess->vertex_states.emplace_back(std::move(vertex_state));
+		tess->which = which;
+		tess->draw_size = 0;
+		
+		tess->last_size = tess->vertex_array.data()->sizeInBytes();
+		tess->elements_offset = 0;
+		if (tess->vertex_array.useElements()) {
+			tess->elements_offset = tess->vertex_array.elements().sizeInBytes();
+			// this can vary size if polyset provides triangles
+			tess->vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+			tess->vertex_array.elementsMap().clear();
+		}
 	}
 
 	static inline void CGAL_GLU_TESS_CALLBACK endCallback(GLvoid *user) {
 		TessUserData *tess(static_cast<TessUserData *>(user));
-		VertexData &vertex_data = (tess->vertex_data);
-		std::shared_ptr<VertexState> vertex_state = tess->vertex_states.back();
-		size_t last_size = tess->last_size_in_bytes;
-		
-		vertex_state->drawSize(vertex_data.size() - tess->start_draw_size);
 
-		GLsizei count = vertex_data.positionData()->count();
-		GLenum type = vertex_data.positionData()->glType();
-		GLsizei stride = vertex_data.stride();
-		size_t offset = last_size + vertex_data.interleavedOffset(vertex_data.positionIndex());
-		vertex_state->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)");
-			glEnableClientState(GL_VERTEX_ARRAY);
-		});
-		vertex_state->glBegin().emplace_back([count, type, stride, offset]() {
-			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)", count % type % stride % offset);
-			glVertexPointer(count, type, stride, (GLvoid *)offset); });
-		if (vertex_data.hasNormalData()) {
-			type = vertex_data.normalData()->glType();
-			stride = vertex_data.stride();
-			offset = last_size + vertex_data.interleavedOffset(vertex_data.normalIndex());
-			vertex_state->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_NORMAL_ARRAY)");
-				glEnableClientState(GL_NORMAL_ARRAY);
-			});
-			vertex_state->glBegin().emplace_back([type, stride, offset]() {
-				if (OpenSCAD::debug != "") PRINTDB("glNormalPointer(%d, %d, %p)", type % stride % offset);
-				glNormalPointer(type, stride, (GLvoid *)offset);
-			});
-		}
-		if (vertex_data.hasColorData()) {
-			count = vertex_data.colorData()->count();
-			type = vertex_data.colorData()->glType();
-			stride = vertex_data.stride();
-			offset = last_size + vertex_data.interleavedOffset(vertex_data.colorIndex());
-			vertex_state->glBegin().emplace_back([]() { 
-				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)");
-				glEnableClientState(GL_COLOR_ARRAY);
-			});
-			vertex_state->glBegin().emplace_back([count, type, stride, offset]() {
-				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)", count % type % stride % offset);
-				glColorPointer(count, type, stride, (GLvoid *)offset);
-			});
-		}
+		GLenum elements_type = 0;
+		if (tess->vertex_array.useElements())
+			elements_type = tess->vertex_array.elementsData()->glType();
+		std::shared_ptr<VertexState> vs = tess->vertex_array.createVertexState(
+			tess->which, tess->draw_size, elements_type,
+			tess->vertex_array.writeIndex(), tess->elements_offset);
+		tess->vertex_array.states().emplace_back(std::move(vs));
+		tess->vertex_array.addAttributePointers(tess->last_size);
+		tess->primitive_index++;
+		PRINTDB("primitive_count = %d, vertices = %d", tess->primitive_index % tess->active_point_index);
 	}
 
 	static inline void CGAL_GLU_TESS_CALLBACK errorCallback(GLenum errorCode) {
@@ -145,19 +130,29 @@ public:
 	static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid* vertex, GLvoid* user) {
 		GLdouble* pc(static_cast<GLdouble*>(vertex));
 		TessUserData *tess(static_cast<TessUserData *>(user));
-		//GLdouble* pu(static_cast<GLdouble*>(user));
-		//    CGAL_NEF_TRACEN("vertexCallback coord  "<<pc[0]<<","<<pc[1]<<","<<pc[2]);
-		//    CGAL_NEF_TRACEN("vertexCallback normal "<<pu[0]<<","<<pu[1]<<","<<pu[2]);
-		VertexData &halffacet_data = tess->vertex_data;
-		size_t last_size = halffacet_data.sizeInBytes();
-
-		addAttributeValues(*(halffacet_data.positionData()), (float)pc[0], (float)pc[1], (float)pc[2]);
-		if (halffacet_data.hasNormalData()) {
-			addAttributeValues(*(halffacet_data.normalData()), (float)(tess->normal[0]), (float)(tess->normal[1]), (float)(tess->normal[2]));
+		size_t shape_size = 0;
+		
+		switch (tess->which) {
+			case GL_TRIANGLES:
+			case GL_TRIANGLE_FAN:
+			case GL_TRIANGLE_STRIP:
+				shape_size = 3;
+				break;
+			case GL_POINTS:
+				shape_size = 1;
+				break;
+			default:
+				break;
 		}
-		if (halffacet_data.hasColorData()) {
-			addAttributeValues(*(halffacet_data.colorData()), (float)(tess->color.red()/255.0f), (float)(tess->color.green()/255.0f), (float)(tess->color.blue()/255.0f), 1.0);
-		}
+		
+		
+		tess->renderer.create_vertex(tess->vertex_array,
+					{(float)(tess->color.red()/255.0f), (float)(tess->color.green()/255.0f), (float)(tess->color.blue()/255.0f), 1.0},
+					{Vector3d((float)pc[0], (float)pc[1], (float)pc[2])},
+					{Vector3d((float)(tess->normal[0]), (float)(tess->normal[1]), (float)(tess->normal[2]))},
+					0, 0, 0.0, shape_size, 3);
+		tess->draw_size++;
+		tess->active_point_index++;
 	}
 
 	static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
@@ -176,9 +171,9 @@ public:
 		}
 	}
 
-	void draw(Halffacet_iterator f, VertexStates &vertex_states, VertexData &vertex_data, bool is_back_facing) const {
+	void draw(Halffacet_iterator f, VertexArray &vertex_array, bool is_back_facing) const {
 		PRINTD("draw(Halffacet_iterator)");
-		//      CGAL_NEF_TRACEN("drawing facet "<<(f->debug(),""));
+		
 		GLUtesselator* tess_ = gluNewTess();
 		gluTessCallback(tess_, GLenum(GLU_TESS_VERTEX_DATA),
 			      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &vertexCallback);
@@ -195,29 +190,22 @@ public:
 
 		DFacet::Coord_const_iterator cit;
 		TessUserData tess_data = {
-			f->normal(), getFacetColor(f,is_back_facing),
-			0, 0, vertex_states, vertex_data
+			0, f->normal(), getFacetColor(f,is_back_facing),
+			0, 0, 0, 0, 0, vertex_array, renderer_
 		};
 		
 		gluTessBeginPolygon(tess_,&tess_data);
-		//      CGAL_NEF_TRACEN(" ");
-		//      CGAL_NEF_TRACEN("Begin Polygon");
-		gluTessNormal(tess_,f->dx(),f->dy(),f->dz());
 		// forall facet cycles of f:
 		for(unsigned i = 0; i < f->number_of_facet_cycles(); ++i) {
 			gluTessBeginContour(tess_);
-			//	CGAL_NEF_TRACEN("  Begin Contour");
 			// put all vertices in facet cycle into contour:
 			for(cit = f->facet_cycle_begin(i); 
 				cit != f->facet_cycle_end(i); ++cit) {
 				gluTessVertex(tess_, *cit, *cit);
-				//	  CGAL_NEF_TRACEN("    add Vertex");
 			}
 			gluTessEndContour(tess_);
-			//	CGAL_NEF_TRACEN("  End Contour");
 		}
 		gluTessEndPolygon(tess_);
-		//      CGAL_NEF_TRACEN("End Polygon");
 		gluDeleteTess(tess_);
 		combineCallback(NULL, NULL, NULL, NULL);
 	}
@@ -225,149 +213,122 @@ public:
 	void create_polyhedron() {
 		PRINTD("create_polyhedron");
 
-		VertexData points_edges_data;
-		points_edges_data.addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
-		points_edges_data.addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
-
-		// Points
-		size_t last_size = points_edges_data.sizeInBytes();
+		VertexArray points_edges_array(std::make_shared<VertexStateFactory>(), points_edges_states, true);
+		points_edges_array.addEdgeData();
+		points_edges_array.writeEdge();
+		size_t last_size = 0;
+		size_t elements_offset = 0;
 		
+		// Points
 		Vertex_iterator v;
-	        for(v=vertices_.begin();v!=vertices_.end();++v) 
-			draw(v, points_edges_data);
-
-		std::shared_ptr<VertexState> points = std::make_shared<VertexState>(GL_POINTS, vertices_.size());
-		points->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)");
-			glDisable(GL_LIGHTING);
-		});
-		points->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glPointSize(10.0f)");
-			glPointSize(10.0f);
-		});
-
-		GLsizei count = points_edges_data.positionData()->count();
-		GLenum type = points_edges_data.positionData()->glType();
-		GLsizei stride = points_edges_data.stride();
-		size_t offset = last_size + points_edges_data.interleavedOffset(points_edges_data.positionIndex());
-		points->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)");
-			glEnableClientState(GL_VERTEX_ARRAY);
-		});
-		points->glBegin().emplace_back([count, type, stride, offset]() {
-			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)", count % type % stride % offset);
-			glVertexPointer(count, type, stride, (GLvoid *)offset); });
-		if (points_edges_data.hasColorData()) {
-			count = points_edges_data.colorData()->count();
-			type = points_edges_data.colorData()->glType();
-			stride = points_edges_data.stride();
-			offset = last_size + points_edges_data.interleavedOffset(points_edges_data.colorIndex());
-			points->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)");
-				glEnableClientState(GL_COLOR_ARRAY);
-			});
-			points->glBegin().emplace_back([count, type, stride, offset]() {
-				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)", count % type % stride % offset);
-				glColorPointer(count, type, stride, (GLvoid *)offset);
-			});
+		if (points_edges_array.useElements()) {
+			elements_offset = points_edges_array.elements().sizeInBytes();
+			// this can vary size if polyset provides triangles
+			if (vertices_.size() <= 0xff) {
+				points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
+			} else if (vertices_.size() <= 0xffff) {
+				points_edges_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
+			} else {
+				points_edges_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+			}
+			points_edges_array.elementsMap().clear();
 		}
-		points_edges_states.emplace_back(std::move(points));
+
+		std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
+		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
+		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glPointSize(10.0f)"); glPointSize(10.0f); });
+		points_edges_states.emplace_back(std::move(settings));
+		
+	        for(v=vertices_.begin();v!=vertices_.end();++v) 
+			draw(v, points_edges_array);
+		
+		GLenum elements_type = 0;
+		if (points_edges_array.useElements())
+			elements_type = points_edges_array.elementsData()->glType();
+		std::shared_ptr<VertexState> vs = points_edges_array.createVertexState(
+			GL_POINTS, vertices_.size(), elements_type,
+			points_edges_array.writeIndex(), elements_offset);
+		points_edges_states.emplace_back(std::move(vs));
+		points_edges_array.addAttributePointers(last_size);
 		
 		// Edges
-		last_size = points_edges_data.sizeInBytes();
 		Edge_iterator e;
-	        for(e=edges_.begin();e!=edges_.end();++e)
-			draw(e, points_edges_data);
-
-		std::shared_ptr<VertexState> lines = std::make_shared<VertexState>(GL_LINES, edges_.size()*2);
-		lines->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)");
-			glDisable(GL_LIGHTING);
-		});
-		lines->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glLineWidth(5.0f)");
-			glLineWidth(5.0f);
-		});
-
-		count = points_edges_data.positionData()->count();
-		type = points_edges_data.positionData()->glType();
-		stride = points_edges_data.stride();
-		offset = last_size + points_edges_data.interleavedOffset(points_edges_data.positionIndex());
-		lines->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)");
-			glEnableClientState(GL_VERTEX_ARRAY);
-		});
-		lines->glBegin().emplace_back([count, type, stride, offset]() {
-			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)", count % type % stride % offset);
-			glVertexPointer(count, type, stride, (GLvoid *)offset);
-		});
-		if (points_edges_data.hasColorData()) {
-			count = points_edges_data.colorData()->count();
-			type = points_edges_data.colorData()->glType();
-			stride = points_edges_data.stride();
-			offset = last_size + points_edges_data.interleavedOffset(points_edges_data.colorIndex());
-			lines->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)");
-				glEnableClientState(GL_COLOR_ARRAY);
-			});
-			lines->glBegin().emplace_back([count, type, stride, offset]() {
-				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)", count % type % stride % offset);
-				glColorPointer(count, type, stride, (GLvoid *)offset);
-			});
+		last_size = points_edges_array.data()->sizeInBytes();
+		elements_offset = 0;
+		if (points_edges_array.useElements()) {
+			elements_offset = points_edges_array.elements().sizeInBytes();
+			// this can vary size if polyset provides triangles
+			if (edges_.size()*2 <= 0xff) {
+				points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
+			} else if (edges_.size()*2 <= 0xffff) {
+				points_edges_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
+			} else {
+				points_edges_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+			}
+			points_edges_array.elementsMap().clear();
 		}
-		points_edges_states.emplace_back(std::move(lines));
-		points_edges_data.createInterleavedVBO(points_edges_vbo);
+
+		settings = std::make_shared<VertexState>();
+		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
+		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glLineWidth(5.0f)"); glLineWidth(5.0f); });
+		points_edges_states.emplace_back(std::move(settings));
+
+	        for(e=edges_.begin();e!=edges_.end();++e)
+			draw(e, points_edges_array);
+
+
+		elements_type = 0;
+		if (points_edges_array.useElements())
+			elements_type = points_edges_array.elementsData()->glType();
+		vs = points_edges_array.createVertexState(
+			GL_LINES, edges_.size()*2, elements_type,
+			points_edges_array.writeIndex(), elements_offset);
+		points_edges_states.emplace_back(std::move(vs));
+		points_edges_array.addAttributePointers(last_size);
+
+		points_edges_array.createInterleavedVBOs();
+		points_edges_vertices_vbo = points_edges_array.verticesVBO();
+		points_edges_elements_vbo = points_edges_array.elementsVBO();
+		
 
 		// Halffacets
-		VertexData halffacets_data;
-		halffacets_data.addPositionData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
-		halffacets_data.addNormalData(std::make_shared<AttributeData<GLfloat,3,GL_FLOAT>>());
-		halffacets_data.addColorData(std::make_shared<AttributeData<GLfloat,4,GL_FLOAT>>());
+		VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states, true);
+		halffacets_array.addSurfaceData();
+		halffacets_array.writeSurface();
+		last_size = 0;
 
-		std::shared_ptr<VertexState> vs = std::make_shared<VertexState>();
-		vs->glBegin().emplace_back([]() {
-			if (OpenSCAD::debug != "") PRINTD("glEnable(GL_LIGHTING)");
-			glEnable(GL_LIGHTING);
-		});
+		settings = std::make_shared<VertexState>();
+		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_LIGHTING)"); glEnable(GL_LIGHTING); });
+		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glLineWidth(5.0f)"); glLineWidth(5.0f); });
 		if (cull_backfaces || color_backfaces) {
-			vs->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)");
-				glEnable(GL_CULL_FACE);
-			});
-			vs->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)");
-				glCullFace(GL_BACK);
-			});
+			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
+			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
 		}
-		halffacets_states.emplace_back(std::move(vs));
+		halffacets_states.emplace_back(std::move(settings));
 
-	        for (int i = 0; i < (color_backfaces ? 2 : 1); i++) {
+		for (int i = 0; i < (color_backfaces ? 2 : 1); i++) {
+
 			Halffacet_iterator f;
 			for(f=halffacets_.begin();f!=halffacets_.end();++f)
-				draw(f, halffacets_states, halffacets_data, i);
+				draw(f, halffacets_array, i);
+
 			if (color_backfaces) {
-				std::shared_ptr<VertexState> vs = std::make_shared<VertexState>();
-				vs->glBegin().emplace_back([]() {
-					if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)");
-					glCullFace(GL_FRONT);
-				});
-				halffacets_states.emplace_back(std::move(vs));
+				settings = std::make_shared<VertexState>();
+				settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
+				halffacets_states.emplace_back(std::move(settings));
 			}
 		}
+
 		if (cull_backfaces || color_backfaces) {
-			std::shared_ptr<VertexState> vs = std::make_shared<VertexState>();
-			vs->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)");
-				glCullFace(GL_BACK);
-			});
-			vs->glBegin().emplace_back([]() {
-				if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)");
-				glDisable(GL_CULL_FACE);
-			});
-			halffacets_states.emplace_back(std::move(vs));
+			settings = std::make_shared<VertexState>();
+			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
+			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
+			halffacets_states.emplace_back(std::move(settings));
 		}
 		
-		halffacets_data.createInterleavedVBO(halffacets_vbo);
+		halffacets_array.createInterleavedVBOs();
+		halffacets_vertices_vbo = halffacets_array.verticesVBO();
+		halffacets_elements_vbo = halffacets_array.elementsVBO();
 	}
 
 	void init() override { 
@@ -382,10 +343,13 @@ public:
 	}
 
 protected:
-	GLuint points_edges_vbo;
-	GLuint halffacets_vbo;
+	GLuint points_edges_vertices_vbo;
+	GLuint points_edges_elements_vbo;
+	GLuint halffacets_vertices_vbo;
+	GLuint halffacets_elements_vbo;
 	VertexStates points_edges_states;
 	VertexStates halffacets_states;
+	const VBORenderer &renderer_;
 }; // Polyhedron
 
 } // namespace OGL

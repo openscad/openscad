@@ -15,17 +15,19 @@ public:
 	OpenCSGVertexState()
 		: VertexState(), csg_object_index_(0)
 	{}
-	OpenCSGVertexState(GLenum draw_type, GLsizei draw_size, size_t draw_offset = 0)
-		: VertexState(draw_type, draw_size, draw_offset),
+	OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
+			   size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo)
+		: VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
 		  csg_object_index_(0)
 	{}
 	OpenCSGVertexState(size_t csg_object_index = 0)
 		: VertexState(),
 		  csg_object_index_(csg_object_index)
 	{}
-	OpenCSGVertexState(GLenum draw_type, GLsizei draw_size, size_t draw_offset,
+	OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
+			   size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
 			   size_t csg_object_index)
-		: VertexState(draw_type, draw_size, draw_offset),
+		: VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
 		  csg_object_index_(csg_object_index)
 	{}
 	virtual ~OpenCSGVertexState() {}
@@ -43,8 +45,10 @@ public:
 	OpenCSGVertexStateFactory() {}
 	virtual ~OpenCSGVertexStateFactory() {}
 	
-	std::shared_ptr<VertexState> createVertexState(GLenum draw_type, size_t draw_size, size_t draw_offset = 0) const override {
-		return std::make_shared<OpenCSGVertexState>(draw_type, draw_size, draw_offset);
+	std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
+							size_t draw_offset, size_t element_offset,
+							GLuint vertices_vbo, GLuint elements_vbo) const override {
+		return std::make_shared<OpenCSGVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
 	}
 };
 
@@ -53,19 +57,26 @@ class OpenCSGVBOProduct
 {
 public:
 	OpenCSGVBOProduct(std::unique_ptr<OpenCSGPrimitives> primitives,
-			  std::unique_ptr<VertexStates> states,
-		  	  GLuint vbo)
-		: primitives_(std::move(primitives)), states_(std::move(states)), vbo_(vbo) {}
-	virtual ~OpenCSGVBOProduct() {}
+			  std::unique_ptr<VertexStates> states, GLuint vertices_vbo, GLuint elements_vbo)
+		: primitives_(std::move(primitives)), states_(std::move(states)),
+		  vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo) {}
+	virtual ~OpenCSGVBOProduct() {
+		if (vertices_vbo_) {
+			glDeleteBuffers(1, &vertices_vbo_);
+		}
+		if (elements_vbo_) {
+			glDeleteBuffers(1, &elements_vbo_);
+		}
+	}
 	
 	const OpenCSGPrimitives &primitives() const { return *(primitives_.get()); }
 	const VertexStates &states() const { return *(states_.get()); }
-	GLuint vbo() const { return vbo_; }
-	
+
 private:
 	const std::unique_ptr<OpenCSGPrimitives> primitives_;
 	const std::unique_ptr<VertexStates> states_;
-	const GLuint vbo_;
+	GLuint vertices_vbo_;
+	GLuint elements_vbo_;
 };
 typedef std::vector<std::unique_ptr<OpenCSGVBOProduct>> OpenCSGVBOProducts;
 
@@ -75,7 +86,7 @@ public:
 	OpenCSGRenderer(shared_ptr<class CSGProducts> root_products,
 			shared_ptr<CSGProducts> highlights_products,
 			shared_ptr<CSGProducts> background_products);
-	virtual ~OpenCSGRenderer();
+	virtual ~OpenCSGRenderer() {}
 	void draw(bool showfaces, bool showedges, const Renderer::shaderinfo_t *shaderinfo = nullptr) const override;
 
 	BoundingBox getBoundingBox() const override;
@@ -83,7 +94,7 @@ private:
 #ifdef ENABLE_OPENCSG
 	class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
 	class OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> &vertex_state,
-						 const OpenCSG::Operation operation, const unsigned int convexity, const GLuint vbo) const;
+						 const OpenCSG::Operation operation, const unsigned int convexity) const;
 #endif // ENABLE_OPENCSG
 	void createCSGProducts(const class CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const;
 	void renderCSGProducts(const shared_ptr<class CSGProducts> &products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,

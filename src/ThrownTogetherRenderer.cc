@@ -34,13 +34,19 @@
 ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
 						shared_ptr<CSGProducts> highlight_products,
 						shared_ptr<CSGProducts> background_products)
-	: root_products(root_products), highlight_products(highlight_products), background_products(background_products)
+	: root_products(root_products), highlight_products(highlight_products), background_products(background_products),
+	  vertices_vbo(0), elements_vbo(0)
 {
 }
 
 ThrownTogetherRenderer::~ThrownTogetherRenderer()
 {
-	glDeleteBuffers(1,&vbo);
+	if (vertices_vbo) {
+		glDeleteBuffers(1, &vertices_vbo);
+	}
+	if (elements_vbo) {
+		glDeleteBuffers(1, &elements_vbo);
+	}
 }
 
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
@@ -72,7 +78,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 		 	renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
 	} else {
 		if (!vertex_states.size()) {
-			VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states);
+			VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states, true);
 			vertex_array.addSurfaceData();
 			add_shader_data(vertex_array);
 
@@ -83,8 +89,9 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 			if (this->highlight_products)
 				createCSGProducts(*this->highlight_products, vertex_array, true, false);
 				
-			glGenBuffers(1, &vbo);
-			vertex_array.createInterleavedVBO(vbo);
+			vertex_array.createInterleavedVBOs();
+			vertices_vbo = vertex_array.verticesVBO();
+			elements_vbo = vertex_array.elementsVBO();
 		}
 
 		renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
@@ -154,27 +161,23 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 			}
 		}
 	} else {
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-		for(const auto &vertex : vertex_states) {
-			if (vertex) {
-				std::shared_ptr<TTRVertexState> csg_vertex = std::dynamic_pointer_cast<TTRVertexState>(vertex);
-				if (csg_vertex) {
+		for(const auto &vs : vertex_states) {
+			if (vs) {
+				std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
+				if (csg_vs) {
 					if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
 						glUniform3f(shaderinfo->data.select_rendering.identifier,
-								((csg_vertex->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-								((csg_vertex->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-								((csg_vertex->csgObjectIndex() >> 16) & 0xff) / 255.0f);
+								((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+								((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+								((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f);
 					}
 				}
-				std::shared_ptr<VBOShaderVertexState> shader_vertex = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex);
-				if (!shader_vertex || (shader_vertex && showedges)) {
-					vertex->drawArrays();
+				std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+				if (!shader_vs || (shader_vs && showedges)) {
+					vs->draw();
 				}
 			}
 		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
 

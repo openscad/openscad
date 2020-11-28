@@ -29,7 +29,8 @@ private:
 	bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
 	
 	mutable VertexStates polyset_states;
-	mutable GLuint polyset_vbo;
+	mutable GLuint polyset_vertices_vbo;
+	mutable GLuint polyset_elements_vbo;
 	enum {
 		POLYSET_2D_DATA,
 		POLYSET_3D_DATA

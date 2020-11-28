@@ -16,8 +16,10 @@ public:
 	TTRVertexState(size_t csg_object_index)
 		: VertexState(), csg_object_index_(csg_object_index)
 	{}
-	TTRVertexState(GLenum draw_type, GLsizei draw_size, size_t draw_offset = 0, size_t csg_object_index = 0)
-		: VertexState(draw_type, draw_size, draw_offset), csg_object_index_(csg_object_index)
+	TTRVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
+			size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
+			size_t csg_object_index = 0)
+		: VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo), csg_object_index_(csg_object_index)
 	{}
 	virtual ~TTRVertexState() {}
 
@@ -33,8 +35,10 @@ public:
 	TTRVertexStateFactory() {}
 	virtual ~TTRVertexStateFactory() {}
 	
-	std::shared_ptr<VertexState> createVertexState(GLenum draw_type, size_t draw_size, size_t draw_offset = 0) const override {
-		return std::make_shared<TTRVertexState>(draw_type, draw_size, draw_offset);
+	std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
+							size_t draw_offset, size_t element_offset,
+							GLuint vertices_vbo, GLuint elements_vbo) const override {
+		return std::make_shared<TTRVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
 	}
 };
 
@@ -44,7 +48,7 @@ public:
 	ThrownTogetherRenderer(shared_ptr<class CSGProducts> root_products,
 				shared_ptr<CSGProducts> highlight_products,
 				shared_ptr<CSGProducts> background_products);
-  virtual ~ThrownTogetherRenderer();
+	virtual ~ThrownTogetherRenderer();
 	void draw(bool showfaces, bool showedges, const Renderer::shaderinfo_t *shaderinfo = nullptr) const override;
 
 	BoundingBox getBoundingBox() const override;
@@ -67,10 +71,11 @@ private:
 	                                 bool background_mode, bool fberror, OpenSCADOperator type) const;
 
 	mutable VertexStates vertex_states;
-	mutable GLuint vbo;
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlight_products;
 	shared_ptr<CSGProducts> background_products;
+	mutable GLuint vertices_vbo;
+	mutable GLuint elements_vbo;
 	mutable std::unordered_map<std::pair<const Geometry*,const Transform3d*>, int,
 				   boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;
 };

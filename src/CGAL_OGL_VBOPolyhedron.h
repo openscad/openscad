@@ -38,8 +38,8 @@ class CGAL_OGL_VBOPolyhedron : public CGAL::OGL::VBOPolyhedron, public CGAL_OGL_
 {
 public:
 
-	CGAL_OGL_VBOPolyhedron(const ColorScheme &cs)
-		: CGAL::OGL::VBOPolyhedron(), CGAL_OGL_Polyhedron(cs) {
+	CGAL_OGL_VBOPolyhedron(const ColorScheme &cs, const VBORenderer &renderer)
+		: CGAL::OGL::VBOPolyhedron(renderer), CGAL_OGL_Polyhedron(cs), renderer_(renderer) {
 		PRINTD("CGAL_OGL_VBOPolyhedron()");
 		PRINTD("CGAL_OGL_VBOPolyhedron() end");
 	}
@@ -56,20 +56,16 @@ public:
 		glGetFloatv(GL_LINE_WIDTH, &current_line_width);
 
 		if(this->style == SNC_BOUNDARY) {
-			glBindBuffer(GL_ARRAY_BUFFER, halffacets_vbo);
 			for (const auto &halffacet : this->halffacets_states) {
-				if (halffacet) halffacet->drawArrays();
+				if (halffacet) halffacet->draw();
 			}
 		}
 		
 		if (this->style != SNC_BOUNDARY || showedges) {
-			glBindBuffer(GL_ARRAY_BUFFER, points_edges_vbo);
 			for (const auto &point_edge : this->points_edges_states) {
-				if (point_edge) point_edge->drawArrays();
+				if (point_edge) point_edge->draw();
 			}
 		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		// restore states
 		glPointSize(current_point_size);
@@ -81,6 +77,9 @@ public:
 
 		PRINTD("VBO draw() end");
 	}
+	
+private:
+	const VBORenderer &renderer_;
 	
 }; // CGAL_OGL_Polyhedron
 

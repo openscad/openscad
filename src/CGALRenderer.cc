@@ -41,7 +41,8 @@
 //#include "Preferences.h"
 
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
-	: last_render_state(Feature::ExperimentalVxORenderers.is_enabled()), polyset_vbo(0) // FIXME: this is temporary to make switching between renderers seamless.
+	: last_render_state(Feature::ExperimentalVxORenderers.is_enabled()), // FIXME: this is temporary to make switching between renderers seamless.
+	  polyset_vertices_vbo(0), polyset_elements_vbo(0)
 {
 	this->addGeometry(geom);
 }
@@ -75,7 +76,12 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 
 CGALRenderer::~CGALRenderer()
 {
-	if (polyset_vbo) glDeleteBuffers(1, &polyset_vbo);
+	if (polyset_vertices_vbo) {
+		glDeleteBuffers(1, &polyset_vertices_vbo);
+	}
+	if (polyset_elements_vbo) {
+		glDeleteBuffers(1, &polyset_elements_vbo);
+	}
 }
 
 const std::list<shared_ptr<class CGAL_OGL_Polyhedron> > &CGALRenderer::getPolyhedrons() const
@@ -102,7 +108,7 @@ void CGALRenderer::buildPolyhedrons() const
 		}
 	} else {
 		for(const auto &N : this->nefPolyhedrons) {
-			auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme);
+			auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme, *this);
 			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
 			// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
 			// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
@@ -130,7 +136,7 @@ void CGALRenderer::createPolysets() const
 	
 	polyset_states.clear();
 
-	VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states);
+	VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states, true);
 	
 	// POLYSET_2D_DATA
 	std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
@@ -196,8 +202,9 @@ void CGALRenderer::createPolysets() const
 	}
 	
 	if (this->polysets.size()) {
-		glGenBuffers(1, &polyset_vbo);
-		vertex_array.createInterleavedVBO(polyset_vbo);
+		vertex_array.createInterleavedVBOs();
+		polyset_vertices_vbo = vertex_array.verticesVBO();
+		polyset_elements_vbo = vertex_array.elementsVBO();
 	}
 }
 
@@ -247,13 +254,9 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
 		glGetFloatv(GL_POINT_SIZE, &current_point_size);
 		glGetFloatv(GL_LINE_WIDTH, &current_line_width);
 
-		glBindBuffer(GL_ARRAY_BUFFER, polyset_vbo);
-
 		for (const auto &polyset : polyset_states) {
-			if (polyset) polyset->drawArrays();
+			if (polyset) polyset->draw();
 		}
-		
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		// restore states
 		glPointSize(current_point_size);
