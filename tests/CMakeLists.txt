@@ -237,7 +237,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=function-literals")
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
       endif()
 
@@ -842,7 +841,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 #
 
 add_cmdline_test(astdumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES ${ASTDUMPTEST_FILES})
-add_cmdline_test(astdumpstdiotest EXE ${OPENSCAD_BINPATH} ARGS --enable=function-literals --export-format ast -o SUFFIX ast STDOUT true STDIN true EXPECTEDDIR astdumptest FILES
+add_cmdline_test(astdumpstdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format ast -o SUFFIX ast STDOUT true STDIN true EXPECTEDDIR astdumptest FILES
                                   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
 
 
