@@ -602,10 +602,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
 
-  if (Feature::ExperimentalMouseSelection.is_enabled()) {
-  	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
-  }
-
+  this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
 }
 
 void MainWindow::openFileFromPath(QString path,int line)
@@ -2137,10 +2134,6 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
  */
 void MainWindow::selectObject(QPoint mouse)
 {
-	if (!Feature::ExperimentalMouseSelection.is_enabled()) {
-		return;
-	}
-
 	// selecting without a renderer?!
 	if (!this->qglview->renderer) {
 		return;

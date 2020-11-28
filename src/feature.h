@@ -16,7 +16,6 @@ public:
 
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
-	static const Feature ExperimentalMouseSelection;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;
