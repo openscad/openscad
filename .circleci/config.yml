@@ -100,7 +100,7 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: "10.1.0"
+      xcode: 12.2.0
     steps:
       - checkout
       - run:
