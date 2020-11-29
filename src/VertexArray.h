@@ -329,15 +329,20 @@ public:
 
 	
 	VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates &states,
-			size_t vertices_size = 0, size_t elements_size = 0)
+			GLuint vertices_vbo = 0, GLuint elements_vbo = 0)
 		: factory_(std::move(factory)), states_(states), write_index_(0),
 		  surface_index_(0), edge_index_(0),
 		  use_elements_(false),
-		  vertices_vbo_(0), elements_vbo_(0),
-		  vertices_size_(vertices_size), elements_size_(elements_size),
+		  vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo),
+		  vertices_size_(0), elements_size_(0),
 		  vertices_offset_(0), elements_offset_(0)
 	{
-		glGenBuffers(1, &vertices_vbo_);
+		if (!vertices_vbo_) {
+			glGenBuffers(1, &vertices_vbo_);
+		}
+		if (elements_vbo_) {
+			use_elements_ = true;
+		}
 	}
 	virtual ~VertexArray() {}
 	

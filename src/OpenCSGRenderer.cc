@@ -151,12 +151,23 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCS
 
 void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const
 {
+	size_t vbo_count = products.products.size();
+	size_t vbo_index = 0;
+	if (vbo_count) {
+		if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			vbo_count *= 2;
+		}
+		all_vbos_.resize(vbo_count);
+		glGenBuffers(vbo_count, all_vbos_.data());
+	}
+	
 #ifdef ENABLE_OPENCSG
 	for(const auto &product : products.products) {
 		Color4f last_color;
 		std::unique_ptr<OpenCSGPrimitives> primitives = std::make_unique<OpenCSGPrimitives>();
 		std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
-		VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()));
+		VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
+					 all_vbos_[vbo_index++]);
 		vertex_array.addSurfaceData();
 		vertex_array.writeSurface();
 		add_shader_data(vertex_array);
@@ -175,6 +186,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 			}
 			
 			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				vertex_array.elementsVBO() = all_vbos_[vbo_index++];
 				if (vertices_size <= 0xff) {
 					vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
 				} else if (vertices_size <= 0xffff) {
@@ -196,6 +208,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
 			}
 		} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			vertex_array.elementsVBO() = all_vbos_[vbo_index++];
 			vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
 		}
 
@@ -336,8 +349,8 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 		vertex_array.createInterleavedVBOs();
 		vbo_vertex_products.emplace_back(std::make_unique<OpenCSGVBOProduct>(
 				std::move(primitives), std::move(vertex_states)));
-		all_vbos_.emplace_back(vertex_array.verticesVBO());
-		all_vbos_.emplace_back(vertex_array.elementsVBO());
+		//all_vbos_.emplace_back(vertex_array.verticesVBO());
+		//all_vbos_.emplace_back(vertex_array.elementsVBO());
 	}
 #endif // ENABLE_OPENCSG
 }
