@@ -78,24 +78,42 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 		 	renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
 	} else {
 		if (!vertex_states.size()) {
-			VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states, true);
+			VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states);
 			vertex_array.addSurfaceData();
 			add_shader_data(vertex_array);
 			
-			// worst case buffer size
-			size_t buffer_size = 0;
-			if (this->root_products)
-				buffer_size += (getSurfaceBufferSize(this->root_products, false, false, true)*2);
-			if (this->background_products)
-				buffer_size += getSurfaceBufferSize(this->background_products, false, true, true);
-			if (this->highlight_products)
-				buffer_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
-			buffer_size *= vertex_array.stride();
-			PRINTDB("Buffer size = %d, stride = %d", buffer_size % vertex_array.stride());
-			vertex_array.initialSize(buffer_size);
+			if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+				size_t vertices_size = 0, elements_size = 0;
+				if (this->root_products)
+					vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true)*2);
+				if (this->background_products)
+					vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
+				if (this->highlight_products)
+					vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
 
-			glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
-			glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_STATIC_DRAW);
+				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+					if (vertices_size <= 0xff) {
+						vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
+					} else if (vertices_size <= 0xffff) {
+						vertex_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
+					} else {
+						vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+					}
+					elements_size = vertices_size * vertex_array.elements().stride();
+					vertex_array.elementsSize(elements_size);
+				}
+				vertices_size *= vertex_array.stride();
+				vertex_array.verticesSize(vertices_size);
+
+				glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
+				glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO());
+					glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+				}
+			} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+			}
 
 			if (this->root_products)
 				createCSGProducts(*this->root_products, vertex_array, false, false);
@@ -103,8 +121,13 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 				createCSGProducts(*this->background_products, vertex_array, false, true);
 			if (this->highlight_products)
 				createCSGProducts(*this->highlight_products, vertex_array, true, false);
-				
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			
+			if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				}
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
 
 			vertex_array.createInterleavedVBOs();
 			vertices_vbo = vertex_array.verticesVBO();

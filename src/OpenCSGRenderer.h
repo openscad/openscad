@@ -56,18 +56,9 @@ typedef std::vector<OpenCSG::Primitive *> OpenCSGPrimitives;
 class OpenCSGVBOProduct
 {
 public:
-	OpenCSGVBOProduct(std::unique_ptr<OpenCSGPrimitives> primitives,
-			  std::unique_ptr<VertexStates> states, GLuint vertices_vbo, GLuint elements_vbo)
-		: primitives_(std::move(primitives)), states_(std::move(states)),
-		  vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo) {}
-	virtual ~OpenCSGVBOProduct() {
-		if (vertices_vbo_) {
-			glDeleteBuffers(1, &vertices_vbo_);
-		}
-		if (elements_vbo_) {
-			glDeleteBuffers(1, &elements_vbo_);
-		}
-	}
+	OpenCSGVBOProduct(std::unique_ptr<OpenCSGPrimitives> primitives, std::unique_ptr<VertexStates> states)
+		: primitives_(std::move(primitives)), states_(std::move(states)) {}
+	virtual ~OpenCSGVBOProduct() {}
 	
 	const OpenCSGPrimitives &primitives() const { return *(primitives_.get()); }
 	const VertexStates &states() const { return *(states_.get()); }
@@ -75,8 +66,6 @@ public:
 private:
 	const std::unique_ptr<OpenCSGPrimitives> primitives_;
 	const std::unique_ptr<VertexStates> states_;
-	GLuint vertices_vbo_;
-	GLuint elements_vbo_;
 };
 typedef std::vector<std::unique_ptr<OpenCSGVBOProduct>> OpenCSGVBOProducts;
 
@@ -86,7 +75,11 @@ public:
 	OpenCSGRenderer(shared_ptr<class CSGProducts> root_products,
 			shared_ptr<CSGProducts> highlights_products,
 			shared_ptr<CSGProducts> background_products);
-	virtual ~OpenCSGRenderer() {}
+	virtual ~OpenCSGRenderer() {
+		if (all_vbos_.size()) {
+			glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
+		}
+	}
 	void draw(bool showfaces, bool showedges, const Renderer::shaderinfo_t *shaderinfo = nullptr) const override;
 
 	BoundingBox getBoundingBox() const override;
@@ -101,6 +94,7 @@ private:
 				bool highlight_mode = false, bool background_mode = false) const;
 
 	mutable OpenCSGVBOProducts vbo_vertex_products;
+	mutable std::vector<GLuint> all_vbos_;
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlights_products;
 	shared_ptr<CSGProducts> background_products;

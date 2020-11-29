@@ -35,10 +35,10 @@ namespace OGL {
 // ----------------------------------------------------------------------------
 class VBOPolyhedron : public virtual Polyhedron {
 public:
-	VBOPolyhedron(const VBORenderer &renderer)
+	VBOPolyhedron()
 		: Polyhedron(),
 		  points_edges_vertices_vbo(0), points_edges_elements_vbo(0),
-		  halffacets_vertices_vbo(0), halffacets_elements_vbo(0), renderer_(renderer)
+		  halffacets_vertices_vbo(0), halffacets_elements_vbo(0)
 	{}
 	virtual ~VBOPolyhedron()
 	{
@@ -52,11 +52,10 @@ public:
 		PRINTD("draw(Vertex_iterator)");
 		
 		CGAL::Color c = getVertexColor(v);
-		renderer_.create_vertex(vertex_array,
-					{(float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0},
-					{Vector3d((float)v->x(), (float)v->y(), (float)v->z())},
-					{},
-					0, 0, 0.0, 1, 1);
+		vertex_array.createVertex({Vector3d((float)v->x(), (float)v->y(), (float)v->z())},
+						{},
+						{(float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0},
+						0, 0, 0.0, 1, 1);
 	}
 
 	void draw(Edge_iterator e, VertexArray &vertex_array) const { 
@@ -66,14 +65,14 @@ public:
 		CGAL::Color c = getEdgeColor(e);
 		Color4f color = {(float)c.red()/255.0f, (float)c.green()/255.0f, (float)c.blue()/255.0f, 1.0};
 
-		renderer_.create_vertex(vertex_array, color,
-					{Vector3d((float)p.x(), (float)p.y(), (float)p.z())},
-					{},
-					0, 0, 0.0, 1, 2, true);
-		renderer_.create_vertex(vertex_array, color,
-					{Vector3d((float)q.x(), (float)q.y(), (float)q.z())},
-					{},
-					0, 1, 0.0, 1, 2, true);
+		vertex_array.createVertex({Vector3d((float)p.x(), (float)p.y(), (float)p.z())},
+						{},
+						color,
+						0, 0, 0.0, 1, 2, true);
+		vertex_array.createVertex({Vector3d((float)q.x(), (float)q.y(), (float)q.z())},
+						{},
+						color,
+						0, 1, 0.0, 1, 2, true);
 	}
 
 	typedef struct _TessUserData {
@@ -86,7 +85,6 @@ public:
 		size_t draw_size;
 		size_t elements_offset;
 		VertexArray &vertex_array;
-		const VBORenderer &renderer;
 	} TessUserData;
 
 	static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
@@ -146,11 +144,10 @@ public:
 		}
 		
 		
-		tess->renderer.create_vertex(tess->vertex_array,
-					{(float)(tess->color.red()/255.0f), (float)(tess->color.green()/255.0f), (float)(tess->color.blue()/255.0f), 1.0},
-					{Vector3d((float)pc[0], (float)pc[1], (float)pc[2])},
-					{Vector3d((float)(tess->normal[0]), (float)(tess->normal[1]), (float)(tess->normal[2]))},
-					0, 0, 0.0, shape_size, 3);
+		tess->vertex_array.createVertex({Vector3d((float)pc[0], (float)pc[1], (float)pc[2])},
+						{Vector3d((float)(tess->normal[0]), (float)(tess->normal[1]), (float)(tess->normal[2]))},
+						{(float)(tess->color.red()/255.0f), (float)(tess->color.green()/255.0f), (float)(tess->color.blue()/255.0f), 1.0},
+						0, 0, 0.0, shape_size, 3);
 		tess->draw_size++;
 		tess->active_point_index++;
 	}
@@ -191,7 +188,7 @@ public:
 		DFacet::Coord_const_iterator cit;
 		TessUserData tess_data = {
 			0, f->normal(), getFacetColor(f,is_back_facing),
-			0, 0, 0, 0, 0, vertex_array, renderer_
+			0, 0, 0, 0, 0, vertex_array
 		};
 		
 		gluTessBeginPolygon(tess_,&tess_data);
@@ -213,30 +210,41 @@ public:
 	void create_polyhedron() {
 		PRINTD("create_polyhedron");
 
-		VertexArray points_edges_array(std::make_shared<VertexStateFactory>(), points_edges_states, true);
+		VertexArray points_edges_array(std::make_shared<VertexStateFactory>(), points_edges_states);
 		points_edges_array.addEdgeData();
 		points_edges_array.writeEdge();
 		size_t last_size = 0;
 		size_t elements_offset = 0;
-		size_t buffer_size = vertices_.size() + edges_.size()*2;
 		
-		buffer_size *= points_edges_array.stride();
-		points_edges_array.initialSize(buffer_size);
-
-		glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO());
-		glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_STATIC_DRAW);
-		
-		// Points
-		Vertex_iterator v;
-		if (points_edges_array.useElements()) {
-			elements_offset = points_edges_array.elements().sizeInBytes();
-			if (vertices_.size() <= 0xff) {
+		size_t vertices_size = vertices_.size() + edges_.size()*2, elements_size = 0;
+		vertices_size *= points_edges_array.stride();
+		if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			if (vertices_size <= 0xff) {
 				points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
-			} else if (vertices_.size() <= 0xffff) {
+			} else if (vertices_size <= 0xffff) {
 				points_edges_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
 			} else {
 				points_edges_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
 			}
+			elements_size = vertices_size * points_edges_array.elements().stride();
+		}
+
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			points_edges_array.verticesSize(vertices_size);
+			points_edges_array.elementsSize(elements_size);
+
+			glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO());
+			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO());
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+			}
+		}		
+		
+		// Points
+		Vertex_iterator v;
+		if (points_edges_array.useElements()) {
+			elements_offset = points_edges_array.elementsOffset();
 			points_edges_array.elementsMap().clear();
 		}
 
@@ -262,14 +270,7 @@ public:
 		last_size = points_edges_array.verticesOffset();
 		elements_offset = 0;
 		if (points_edges_array.useElements()) {
-			elements_offset = points_edges_array.elements().sizeInBytes();
-			if (edges_.size()*2 <= 0xff) {
-				points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
-			} else if (edges_.size()*2 <= 0xffff) {
-				points_edges_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
-			} else {
-				points_edges_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
-			}
+			elements_offset = points_edges_array.elementsOffset();
 			points_edges_array.elementsMap().clear();
 		}
 
@@ -291,14 +292,19 @@ public:
 		points_edges_states.emplace_back(std::move(vs));
 		points_edges_array.addAttributePointers(last_size);
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
 
 		points_edges_array.createInterleavedVBOs();
 		points_edges_vertices_vbo = points_edges_array.verticesVBO();
 		points_edges_elements_vbo = points_edges_array.elementsVBO();
 		
 		// Halffacets
-		VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states, true);
+		VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
 		halffacets_array.addSurfaceData();
 		halffacets_array.writeSurface();
 		last_size = 0;
@@ -355,7 +361,6 @@ protected:
 	GLuint halffacets_elements_vbo;
 	VertexStates points_edges_states;
 	VertexStates halffacets_states;
-	const VBORenderer &renderer_;
 }; // Polyhedron
 
 } // namespace OGL

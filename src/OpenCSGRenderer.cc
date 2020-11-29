@@ -154,27 +154,51 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 #ifdef ENABLE_OPENCSG
 	for(const auto &product : products.products) {
 		Color4f last_color;
-		std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
 		std::unique_ptr<OpenCSGPrimitives> primitives = std::make_unique<OpenCSGPrimitives>();
-		VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()), true);
+		std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
+		VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()));
 		vertex_array.addSurfaceData();
-		
 		vertex_array.writeSurface();
 		add_shader_data(vertex_array);
-		
-		// worst case buffer size
-		size_t buffer_size = 0;
-		for (const auto &csgobj : product.intersections) {
-			buffer_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
-		}
-		for (const auto &csgobj : product.subtractions) {
-			buffer_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-		}
-		buffer_size *= vertex_array.stride();
-		vertex_array.initialSize(buffer_size);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
-		glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_STATIC_DRAW);
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			size_t vertices_size = 0, elements_size = 0;
+			for (const auto &csgobj : product.intersections) {
+				if (csgobj.leaf->geom) {
+					vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
+				}
+			}
+			for (const auto &csgobj : product.subtractions) {
+				if (csgobj.leaf->geom) {
+					vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
+				}
+			}
+			
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				if (vertices_size <= 0xff) {
+					vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
+				} else if (vertices_size <= 0xffff) {
+					vertex_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
+				} else {
+					vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+				}
+				elements_size = vertices_size * vertex_array.elements().stride();
+				vertex_array.elementsSize(elements_size);
+			}
+			
+			vertices_size *= vertex_array.stride();
+			vertex_array.verticesSize(vertices_size);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
+			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO());
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+			}
+		} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+		}
+
 		for(const auto &csgobj : product.intersections) {
 			if (csgobj.leaf->geom) {
 				const PolySet* ps = dynamic_cast<const PolySet*>(csgobj.leaf->geom.get());
@@ -212,7 +236,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 					std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 					if (surface != nullptr) {
 						surface->csgObjectIndex(csgobj.leaf->index);
-						primitives->push_back(createVBOPrimitive(surface,
+						primitives->emplace_back(createVBOPrimitive(surface,
 												      OpenCSG::Intersection,
 												      csgobj.leaf->geom->getConvexity()));
 					}
@@ -301,12 +325,19 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				vertex_states->emplace_back(std::move(cull));
 			}
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
+
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+
 		vertex_array.createInterleavedVBOs();
 		vbo_vertex_products.emplace_back(std::make_unique<OpenCSGVBOProduct>(
-				std::move(primitives), std::move(vertex_states),
-				vertex_array.verticesVBO(), vertex_array.elementsVBO()));
+				std::move(primitives), std::move(vertex_states)));
+		all_vbos_.emplace_back(vertex_array.verticesVBO());
+		all_vbos_.emplace_back(vertex_array.elementsVBO());
 	}
 #endif // ENABLE_OPENCSG
 }

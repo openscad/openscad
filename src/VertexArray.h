@@ -3,21 +3,23 @@
 #ifndef __VERTEX_H__
 #define __VERTEX_H__
 
-#include <system-gl.h>
-#include <printutils.h>
 #include <unordered_map>
+#include <boost/functional/hash.hpp>
+
+#include "system-gl.h"
+#include "printutils.h"
+#include "linalg.h"
+#include "feature.h"
+
 
 // Hash function for opengl vertex data.
 template<typename T>
 struct vertex_hash : std::unary_function<T, size_t> {
-  std::size_t operator()(T const& vertex) const {
-    size_t seed = 0;
-    for (size_t i = 0; i < vertex.size(); ++i) {
-      auto elem = *(vertex.data() + i);
-      seed ^= std::hash<typename T::value_type>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
-    return seed;
-  }
+	std::size_t operator()(T const& vertex) const {
+		size_t seed = 0;
+		for (size_t i = 0; i < vertex.size(); ++i) boost::hash_combine(seed, vertex.data()[i]);
+		return seed;
+	}
 };
 
 typedef std::unordered_map<std::vector<GLbyte>, GLuint, vertex_hash<std::vector<GLbyte>>> ElementsMap;
@@ -45,7 +47,12 @@ public:
 	virtual const GLbyte* toBytes() const = 0;
 	// Create an empty copy of the attribute data type
 	virtual std::shared_ptr<IAttributeData> create() const = 0;
+	// Append data to the end of the attribute
 	virtual void append(const IAttributeData &data) = 0;
+	// Clear the entire attribute
+	virtual void clear() = 0;
+	// Remove data from the end of the attribute
+	virtual void remove(size_t count) = 0;
 
 	// Add common types to element vector
 	virtual void addData(GLbyte data) = 0;
@@ -99,6 +106,8 @@ public:
 			PRINTD("AttributeData append type mismatch!!!");
 		}
 	}
+	void clear() override { data_.clear(); }
+	void remove(size_t count) { data_.erase(data_.end()-(count*C), data_.end()); }
 	inline const GLbyte* toBytes() const override { return (GLbyte *)(data_.data()); }
 	
 	inline void addData(GLbyte value) override { add_data((T)value); }
@@ -164,6 +173,9 @@ public:
 	}
 	
 	void append(const VertexData &data);
+	void clear() { for(auto &a : attributes_) a->clear(); }
+	// Remove the last n interleaved vertices
+	void remove(size_t count = 1);
 	
 	// Return reference to internal IAttributeData vector
 	inline const std::vector<std::shared_ptr<IAttributeData>> &attributes() const { return attributes_; }
@@ -208,7 +220,9 @@ public:
 	inline bool empty() const { return attributes_.empty(); }
 
 	// Create an interleaved buffer and return it as GLbyte array pointer
-	void fillInterleavedBuffer(GLbyte* buf) const;
+	void fillInterleavedBuffer(GLbyte* interleaved_buffer) const;
+	// Get the last interleaved vertex
+	void getLastVertex(std::vector<GLbyte> &interleaved_buffer) const;
 	// Create an interleaved buffer in the provided vbo.
 	// If the vbo does not exist it will be created and returned.
 	void createInterleavedVBO(GLuint &vbo) const;
@@ -263,7 +277,7 @@ public:
 	inline void elementOffset(size_t element_offset) { element_offset_ = element_offset; }
 	
 	// Wrap glDrawArrays/glDrawElements call and use gl_begin/gl_end state information
-	void draw() const;
+	virtual void draw(bool bind_buffers = true) const;
 	
 	// Mimic VAO state functionality. Lambda functions used to hold OpenGL state calls.
 	inline std::vector<std::function<void()>> &glBegin() { return gl_begin_; }
@@ -304,14 +318,26 @@ public:
 class VertexArray
 {
 public:
-	VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates &states, bool use_elements = false, size_t initial_size = 0)
+	typedef std::function<void(VertexArray &vertex_array,
+				const std::array<Vector3d,3> &points,
+	     			const std::array<Vector3d,3> &normals,
+				const Color4f &color,
+	     			size_t active_point_index, size_t primitive_index,
+	     			double z_offset, size_t shape_size,
+	     			size_t shape_dimensions, bool outlines,
+	     			bool mirror)> CreateVertexCallback;
+
+	
+	VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates &states,
+			size_t vertices_size = 0, size_t elements_size = 0)
 		: factory_(std::move(factory)), states_(states), write_index_(0),
-		  surface_index_(0), edge_index_(0), vertices_vbo_(0), elements_vbo_(0),
-		  use_elements_(use_elements), initial_size_(initial_size), vertices_offset_(0)
+		  surface_index_(0), edge_index_(0),
+		  use_elements_(false),
+		  vertices_vbo_(0), elements_vbo_(0),
+		  vertices_size_(vertices_size), elements_size_(elements_size),
+		  vertices_offset_(0), elements_offset_(0)
 	{
 		glGenBuffers(1, &vertices_vbo_);
-		if (use_elements)
-			glGenBuffers(1, &elements_vbo_);
 	}
 	virtual ~VertexArray() {}
 	
@@ -322,9 +348,31 @@ public:
 	// Add common edge data vertex layout PC
 	void addEdgeData();
 	// Add elements data to VertexArray
-	void addElementsData(std::shared_ptr<IAttributeData> data) { elements_.addAttributeData(data); }
+	void addElementsData(std::shared_ptr<IAttributeData> data) {
+		if (!elements_vbo_) {
+			glGenBuffers(1, &elements_vbo_);
+			use_elements_ = true;
+		}
+		elements_.addAttributeData(data);
+	}
 	
+	// Create an empty copy of the VertexArray structure
+	std::shared_ptr<VertexArray> create() const;
+	// Append VertexArray data to this VertexArray
 	void append(const VertexArray &vertex_array);
+	// Clear all data from the VertexArray
+	void clear() { for (auto &v : vertices_) v->clear(); }
+
+	// Create a single vertex in the VertexArray
+	// The method parameters provide a common interface to pass all data
+	// necessary to create a complete vertex
+	void createVertex(const std::array<Vector3d,3> &points,
+     			const std::array<Vector3d,3> &normals,
+			const Color4f &color,
+     			size_t active_point_index = 0, size_t primitive_index = 0,
+     			double z_offset = 0, size_t shape_size = 0,
+     			size_t shape_dimensions = 0, bool outlines = false,
+     			bool mirror = false, CreateVertexCallback vertex_callback = nullptr);
 	
 	// Return reference to the VertexStates
 	inline VertexStates &states() { return states_; }
@@ -369,7 +417,7 @@ public:
 	}
 
 	// Create an interleaved buffer and return it as GLbyte array pointer
-	void fillInterleavedBuffer(std::vector<GLbyte> &buf) const;
+	void fillInterleavedBuffer(std::vector<GLbyte> &interleaved_buffer) const;
 
 	// Create an interleaved VBO from the VertexData in the array.
 	void createInterleavedVBOs();
@@ -377,16 +425,22 @@ public:
 	// Method adds begin/end states that enable and point to the VertexData in the array
 	void addAttributePointers(size_t start_offset = 0);
 	
-	// Create an empty copy of the vertex array type
-	std::shared_ptr<VertexArray> create() const;
-	
 	// Return whether this Vertex Array uses elements
 	inline bool useElements() const { return use_elements_; }
 	
 	// Return the initial buffer size allocated by Vertex Array
-	inline size_t initialSize() const { return initial_size_; }
+	inline size_t verticesSize() const { return vertices_size_; }
 	// Set the initial buffer size allocated by VertexArray
-	inline void initialSize(size_t initial_size) { initial_size_ = initial_size; }
+	inline void verticesSize(size_t vertices_size) {
+		vertices_size_ = vertices_size;
+		if (Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			interleaved_buffer_.resize(vertices_size_);
+		}
+	}
+	// Return the elements buffer size allocated by Vertex Array
+	inline size_t elementsSize() const { return elements_size_; }
+	// Set the elements buffer size allocated by VertexArray
+	inline void elementsSize(size_t elements_size) { elements_size_ = elements_size; }
 	
 	// Return reference to vertices VBO
 	inline GLuint &verticesVBO() { return vertices_vbo_; }
@@ -400,6 +454,11 @@ public:
 	inline size_t verticesOffset() const { return vertices_offset_; }
 	// Set current vertices offset
 	inline void verticesOffset(size_t offset) { vertices_offset_ = offset; }
+	
+	// Return current elements offset
+	inline size_t elementsOffset() const { return elements_offset_; }
+	// Set current elements offset
+	inline void elementsOffset(size_t offset) { elements_offset_ = offset; }
 
 private:
 	std::shared_ptr<VertexStateFactory> factory_;
@@ -407,12 +466,12 @@ private:
 	size_t write_index_;
 	size_t surface_index_;
 	size_t edge_index_;
-	GLuint vertices_vbo_;
-	GLuint elements_vbo_;
 	bool use_elements_;
-	size_t initial_size_;
 	std::vector<std::shared_ptr<VertexData>> vertices_;
-	size_t vertices_offset_;
+	std::vector<GLbyte> interleaved_buffer_;
+	GLuint vertices_vbo_, elements_vbo_;
+	size_t vertices_size_, elements_size_;
+	size_t vertices_offset_, elements_offset_;
 	VertexData elements_;
 	ElementsMap elements_map_;
 };

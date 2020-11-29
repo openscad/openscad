@@ -68,9 +68,10 @@ protected:
 				   boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;
 	
 private:
-	void add_shader_attributes(VertexArray &vertex_array, Color4f color,
+	void add_shader_attributes(VertexArray &vertex_array,
 				const std::array<Vector3d,3> &points,
 				const std::array<Vector3d,3> &normals,
+				const Color4f &color,
 				size_t active_point_index = 0, size_t primitive_index = 0,
 				double z_offset = 0, size_t shape_size = 0,
 				size_t shape_dimensions = 0, bool outlines = false,

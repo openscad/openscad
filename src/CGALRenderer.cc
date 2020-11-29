@@ -108,7 +108,7 @@ void CGALRenderer::buildPolyhedrons() const
 		}
 	} else {
 		for(const auto &N : this->nefPolyhedrons) {
-			auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme, *this);
+			auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme);
 			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
 			// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
 			// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
@@ -136,23 +136,41 @@ void CGALRenderer::createPolysets() const
 	
 	polyset_states.clear();
 
-	VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states, true);
+	VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
 	vertex_array.addEdgeData();
 	vertex_array.addSurfaceData();
 	
-	// worst case buffer size
-	size_t buffer_size = 0;
-	if (this->polysets.size()) {
-		for (const auto &polyset : this->polysets) {
-			buffer_size += getSurfaceBufferSize(*polyset);
-			buffer_size += getEdgeBufferSize(*polyset);
+	if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+		size_t vertices_size = 0, elements_size = 0;
+		if (this->polysets.size()) {
+			for (const auto &polyset : this->polysets) {
+				vertices_size += getSurfaceBufferSize(*polyset);
+				vertices_size += getEdgeBufferSize(*polyset);
+			}
 		}
-	}
-	buffer_size *= vertex_array.stride();
-	vertex_array.initialSize(buffer_size);
+		if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			if (vertices_size <= 0xff) {
+				vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
+			} else if (vertices_size <= 0xffff) {
+				vertex_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
+			} else {
+				vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+			}
+			elements_size = vertices_size * vertex_array.elements().stride();
+			vertex_array.elementsSize(elements_size);
+		}
+		vertices_size *= vertex_array.stride();
+		vertex_array.verticesSize(vertices_size);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
-	glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
+		glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+		if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO());
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+		}
+	} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+		vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+	}
 	
 	for (const auto &polyset : this->polysets) {
 		Color4f color;
@@ -205,7 +223,12 @@ void CGALRenderer::createPolysets() const
 	}
 	
 	if (this->polysets.size()) {
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
 
 		vertex_array.createInterleavedVBOs();
 		polyset_vertices_vbo = vertex_array.verticesVBO();

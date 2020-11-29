@@ -38,8 +38,8 @@ class CGAL_OGL_VBOPolyhedron : public CGAL::OGL::VBOPolyhedron, public CGAL_OGL_
 {
 public:
 
-	CGAL_OGL_VBOPolyhedron(const ColorScheme &cs, const VBORenderer &renderer)
-		: CGAL::OGL::VBOPolyhedron(renderer), CGAL_OGL_Polyhedron(cs), renderer_(renderer) {
+	CGAL_OGL_VBOPolyhedron(const ColorScheme &cs)
+		: CGAL::OGL::VBOPolyhedron(), CGAL_OGL_Polyhedron(cs) {
 		PRINTD("CGAL_OGL_VBOPolyhedron()");
 		PRINTD("CGAL_OGL_VBOPolyhedron() end");
 	}
@@ -77,10 +77,6 @@ public:
 
 		PRINTD("VBO draw() end");
 	}
-	
-private:
-	const VBORenderer &renderer_;
-	
 }; // CGAL_OGL_Polyhedron
 
 
