@@ -35,9 +35,6 @@
 #include <cstddef>
 #include <iomanip>
 #include <sstream>
-#include <functional>
-
-using namespace std::placeholders;
 
 VBORenderer::VBORenderer()
 	: Renderer(), shader_attributes_index(0)
@@ -250,7 +247,19 @@ void VBORenderer::create_vertex(VertexArray &vertex_array, const Color4f &color,
 	vertex_array.createVertex(points, normals, color, active_point_index,
 				primitive_index, z_offset, shape_size,
 				shape_dimensions, outlines, mirror,
-				std::bind(&VBORenderer::add_shader_attributes,this,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11)
+				[this](VertexArray &vertex_array,
+					const std::array<Vector3d,3> &points,
+					const std::array<Vector3d,3> &normals,
+					const Color4f &color,
+					size_t active_point_index, size_t primitive_index,
+					double z_offset, size_t shape_size,
+					size_t shape_dimensions, bool outlines,
+					bool mirror) -> void {
+					this->add_shader_attributes(vertex_array, points, normals, color,
+									active_point_index, primitive_index,
+									z_offset, shape_size, shape_dimensions,
+									outlines, mirror);
+				}
 			);
 
 }
