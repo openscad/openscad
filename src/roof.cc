@@ -43,8 +43,6 @@ AbstractNode *RoofModule::instantiate(const std::shared_ptr<Context>& ctx, const
 		node->method = "voronoi diagram";
 	}
 
-	std::cout << "SET METHOD: " << node->method << "\n" << std::flush;
-
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
