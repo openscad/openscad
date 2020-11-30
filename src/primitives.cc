@@ -630,7 +630,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			for (const auto &val : this->points->toVector()) {
 				if (!val->getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
 					LOG(message_group::Error,this->modinst->location(),this->document_path,
-						"Unable to convert points[%d] = %s to a vec2 of numbers",i,val->toEchoString());
+						"Unable to convert points[%1$d] = %2$s to a vec2 of numbers",i,val->toEchoString());
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
