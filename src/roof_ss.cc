@@ -1,13 +1,14 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include <boost/shared_ptr.hpp>
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/create_straight_skeleton_from_polygon_with_holes_2.h>
 #include <CGAL/partition_2.h>
 #include <CGAL/Partition_traits_2.h>
 
-#include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <map>
 

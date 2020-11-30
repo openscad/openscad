@@ -1,13 +1,12 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#define _USE_MATH_DEFINES
 #include <cmath>
+
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
-
-#define _USE_MATH_DEFINES
-#include <cmath>
 
 #include "GeometryUtils.h"
 #include "clipper-utils.h"
