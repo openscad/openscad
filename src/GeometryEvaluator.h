@@ -64,7 +64,7 @@ private:
 	bool isSmartCached(const AbstractNode &node);
 	bool isValidDim(const Geometry::GeometryItem &item, unsigned int &dim) const;
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
-	Geometry::Geometries collectChildren3D(const AbstractNode &node);
+	Geometry::Geometries collectChildren3D(const AbstractNode &node, const bool promote2dTo3d);
 	Polygon2d *applyMinkowski2D(const AbstractNode &node);
 	Polygon2d *applyHull2D(const AbstractNode &node);
 	Geometry *applyHull3D(const AbstractNode &node);
