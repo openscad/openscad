@@ -1,4 +1,4 @@
-roof(method = "voronoi diagram") {
+roof(method = "voronoi diagram", $fa = 12, $fs = 2, $fn = 0) {
 	square(size = [1, 1], center = true);
 }
 
