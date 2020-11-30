@@ -51,7 +51,7 @@ CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d &points)
 std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Polygon2d &poly)
 {
 	std::vector<CGAL_Polygon_with_holes_2> ret;
-	PolyTree polytree = ClipperUtils::sanitize(ClipperUtils::fromPolygon2d(poly));  // how do we check if this was successful?
+	PolyTree polytree = ClipperUtils::sanitize(ClipperUtils::fromPolygon2d(poly));
 
 	// lambda for recursive walk through polytree
 	std::function<void (PolyNode *)> walk = [&](PolyNode *c) {
@@ -78,8 +78,8 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 	PolySet *hat = new PolySet(3);
 
 	try {
+		// roof
 		std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(poly);
-
 		for (CGAL_Polygon_with_holes_2 shape : shapes) {
 			CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
 			// store heights of vertices
@@ -113,18 +113,36 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 						std::back_inserter(facets));
 
 				for (auto facet : facets) {
-					Polygon floor, roof;
+					Polygon roof;
 					for (auto v=facet.vertices_begin(); v!=facet.vertices_end(); v++) {
-						floor.push_back({v->x(), v->y(), 0.0});
 						Vector2d vv(v->x(), v->y());
 						roof.push_back({v->x(), v->y(), heights[vv]});
 					}
 					hat->append_poly(roof);
-					std::reverse(floor.begin(), floor.end());  // floor has wrong orientation
-					hat->append_poly(floor);
 				}
 			}
 		}
+
+		// floor
+		{
+			// pass poly through clipper as for straight skeleton
+			// because this may change vertices coordinates
+			Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(ClipperUtils::sanitize(
+						ClipperUtils::fromPolygon2d(poly)));
+			PolySet *tess = poly_sanitized->tessellate();
+			for (std::vector<Vector3d> triangle : tess->polygons) {
+				Polygon floor;
+				for (Vector3d tv : triangle) {
+					floor.push_back(tv);
+				}
+				// floor has wrong orientation
+				std::reverse(floor.begin(), floor.end());
+				hat->append_poly(floor);
+			}
+			delete tess;
+			delete poly_sanitized;
+		}
+
 		return hat;
 	} catch (RoofNode::roof_exception &e) {
 		delete hat;

@@ -341,6 +341,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 		::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
 		Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, ClipperUtils::CLIPPER_SCALE * fs);
 
+		// roof
 		for (std::vector<Vector2d> face : inner_faces.faces) {
 			if (!(face.size() >= 3)) {
 				RAISE_ROOF_EXCEPTION("Voronoi error");
@@ -352,22 +353,39 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 			face_poly.addOutline(outline);
 			PolySet *tess = face_poly.tessellate();
 			for (std::vector<Vector3d> triangle : tess->polygons) {
-				Polygon floor, roof;
+				Polygon roof;
 				for (Vector3d tv : triangle) {
 					Vector2d v;
 					v << tv[0], tv[1];
 					auto d = ClipperUtils::CLIPPER_SCALE;
-					floor.push_back({v[0] / d, v[1] / d, 0.0});
 					if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
 						RAISE_ROOF_EXCEPTION("Voronoi error");
 					}
-					roof.push_back({v[0] / d, v[1] / d, inner_faces.heights[v] / d});
+					roof.push_back(Vector3d(v[0] / d, v[1] / d, inner_faces.heights[v] / d));
 				}
-				std::reverse(floor.begin(), floor.end());  // floor has wrong orientation
-				hat->append_poly(floor);
 				hat->append_poly(roof);
 			}
 			delete tess;
+		}
+
+		// floor
+		{
+			// pass poly through clipper, as for voronoi diagram
+			// because this may change vertices coordinates
+			Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(ClipperUtils::sanitize(
+						ClipperUtils::fromPolygon2d(poly)));
+			PolySet *tess = poly_sanitized->tessellate();
+			for (std::vector<Vector3d> triangle : tess->polygons) {
+				Polygon floor;
+				for (Vector3d tv : triangle) {
+					floor.push_back(tv);
+				}
+				// floor has wrong orientation
+				std::reverse(floor.begin(), floor.end());
+				hat->append_poly(floor);
+			}
+			delete tess;
+			delete poly_sanitized;
 		}
 	} catch (RoofNode::roof_exception &e) {
 		delete hat;
