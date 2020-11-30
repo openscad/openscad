@@ -1604,7 +1604,7 @@ static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
 {
 	PolySet *roof;
 	if (node.method == "voronoi diagram") {
-		roof = roof_vd::voronoi_diagram_roof(poly);
+		roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
 	} else if (node.method == "straight skeleton") {
 		roof = roof_ss::straight_skeleton_roof(poly);
 	} else {
@@ -1622,7 +1622,14 @@ Response GeometryEvaluator::visit(State &state, const RoofNode &node)
 			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
 			if (geometry) {
 				auto *polygons = dynamic_cast<const Polygon2d*>(geometry);
-				Geometry *roof = roofOverPolygon(node, *polygons);
+				Geometry *roof;
+				try {
+					roof = roofOverPolygon(node, *polygons);
+				} catch (RoofNode::roof_exception &e) {
+					LOG(message_group::Error,node.modinst->location(),this->tree.getDocumentPath(),
+							"Skeleton computation error. " + e.message());
+					roof = new PolySet(3);
+				}
 				assert(roof);
 				geom.reset(roof);
 				delete geometry;

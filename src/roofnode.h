@@ -16,6 +16,14 @@ public:
 	std::string toString() const override;
 	std::string name() const override { return "roof"; }
 
-	double fn;
+	double fa, fs, fn;
 	std::string method;
+
+	class roof_exception: public std::exception {
+		public:
+			roof_exception(const std::string message) : m (message) {};
+			std::string message() {return m;}
+		private:
+			std::string m;
+	};
 };

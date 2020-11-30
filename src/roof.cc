@@ -1,22 +1,14 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
-#include "roofnode.h"
+#include <sstream>
 
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "fileutils.h"
 #include "builtin.h"
-#include "polyset.h"
-
-#include <sstream>
-#include "boost-utils.h"
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
-
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include "roofnode.h"
 
 class RoofModule : public AbstractModule
 {
@@ -35,7 +27,16 @@ AbstractNode *RoofModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
 
+	node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fs = c->lookup_variable("$fs")->toDouble();
 	node->fn = c->lookup_variable("$fn")->toDouble();
+
+	node->fa = std::max(node->fa, 0.01);
+	node->fs = std::max(node->fs, 0.01);
+	if (node->fn > 0) {
+		node->fa = 360.0 / node->fn;
+		node->fs = 0.0;
+	}
 
 	node->method = c->lookup_variable_with_default("method", "voronoi diagram");
 
@@ -53,7 +54,11 @@ std::string RoofNode::toString() const
 {
 	std::stringstream stream;
 
-	stream  << "roof(method = \"" << this->method << "\")";
+	stream  << "roof(method = \"" << this->method << "\""
+		<< ", $fa = " << this->fa
+		<< ", $fs = " << this->fs
+		<< ", $fn = " << this->fn
+		<< ")";
 
 	return stream.str();
 }

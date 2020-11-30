@@ -14,11 +14,11 @@
 #include "GeometryUtils.h"
 #include "clipper-utils.h"
 #include "printutils.h"
+#include "roofnode.h"
 #include "roof_ss.h"
 
-#define RAISE_EXCEPTION(message) LOG(message_group::Error,Location::NONE,"",\
-		(boost::format("Error in file %s, line %d: %s") % __FILE__ % __LINE__ % (message)).str()); \
-		throw 1;
+#define RAISE_ROOF_EXCEPTION(message) \
+		throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_ss {
 
@@ -80,9 +80,7 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 		std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(poly);
 
 		for (CGAL_Polygon_with_holes_2 shape : shapes) {
-			LOG(message_group::None,Location::NONE,"","Computing straight skeleton...");
 			CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
-			LOG(message_group::None,Location::NONE,"","Straight skeleton computed.");
 			// store heights of vertices
 			auto vector2d_comp = [](const Vector2d &a, const Vector2d &b) {
 				return (a[0]<b[0]) || (a[0]==b[0] && a[1]<b[1]);
@@ -105,7 +103,7 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 					}
 				}
 				if (!face.is_simple()) {
-					RAISE_EXCEPTION("A non-simple face in straight skeleton, likely cause is cgal issue #5177");
+					RAISE_ROOF_EXCEPTION("A non-simple face in straight skeleton, likely cause is cgal issue #5177");
 				}
 
 				// do convex partition if necesary
@@ -127,13 +125,10 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 			}
 		}
 		return hat;
-	} catch (int e) {
+	} catch (RoofNode::roof_exception &e) {
 		delete hat;
-		hat = new PolySet(3);
-		return hat;
+		throw e;
 	}
-
-	return hat;
 }
 
 } // roof_ss
