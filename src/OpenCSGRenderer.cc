@@ -30,14 +30,6 @@
 #include "csgnode.h"
 #include "feature.h"
 
-#define OPENGL_TEST(place) \
-do { \
-	auto err = glGetError(); \
-	if (err != GL_NO_ERROR) { \
-		fprintf(stderr, "OpenGL error " place ":\n %s\n\n", gluErrorString(err)); \
-	} \
-} while (false)
-
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 
@@ -201,11 +193,11 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 			vertices_size *= vertex_array.stride();
 			vertex_array.verticesSize(vertices_size);
 
-			glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
-			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()); GL_ERROR_CHECK();
+			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO());
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()); GL_ERROR_CHECK();
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 			}
 		} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
 			vertex_array.elementsVBO() = all_vbos_[vbo_index++];
@@ -238,8 +230,10 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				shaderinfo_t shader_info = this->getShader();
 				std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0,0,vertex_array.verticesVBO(),vertex_array.elementsVBO());
 				color_state->glBegin().emplace_back([shader_info,last_color]() {
-					glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]);
-					glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0);
+					GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
+					glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]); GL_ERROR_CHECK();
+					GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((last_color[0]+1)/2) % ((last_color[1]+1)/2) % ((last_color[2]+1)/2));
+					glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0); GL_ERROR_CHECK();
 				});
 				vertex_states->emplace_back(std::move(color_state));
 
@@ -256,8 +250,8 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				} else {
 					// object is transparent, so draw rear faces first.  Issue #1496
 					std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
-					cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
-					cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
+					cull->glBegin().emplace_back([]() { GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
+					cull->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
 					vertex_states->emplace_back(std::move(cull));
 
 					create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
@@ -271,13 +265,13 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 										   csgobj.leaf->geom->getConvexity()));
 
 						cull = std::make_shared<VertexState>();
-						cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
+						cull->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
 						vertex_states->emplace_back(std::move(cull));
 						
 						vertex_states->emplace_back(surface);
 
 						cull = std::make_shared<VertexState>();
-						cull->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
+						cull->glEnd().emplace_back([]() { GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
 						vertex_states->emplace_back(std::move(cull));
 					} else {
 						assert(false && "Intersection surface state was nullptr");
@@ -311,15 +305,17 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				shaderinfo_t shader_info = this->getShader();
 				std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0,0,vertex_array.verticesVBO(),vertex_array.elementsVBO());
 				color_state->glBegin().emplace_back([shader_info,last_color]() {
-					glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]);
-					glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0);
+					GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
+					glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]); GL_ERROR_CHECK();
+					GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (last_color[0]+1)/2 % (last_color[1]+1)/2 % (last_color[2]+1)/2);
+					glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0]+1)/2, (last_color[1]+1)/2, (last_color[2]+1)/2, 1.0); GL_ERROR_CHECK();
 				});
 				vertex_states->emplace_back(std::move(color_state));
 
 				// negative objects should only render rear faces
 				std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
-				cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
-				cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
+				cull->glBegin().emplace_back([]() { GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); GL_ERROR_CHECK(); });
+				cull->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); GL_ERROR_CHECK(); });
 				vertex_states->emplace_back(std::move(cull));
 
 				create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
@@ -334,23 +330,23 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 				}
 				
 				cull = std::make_shared<VertexState>();
-				cull->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
+				cull->glEnd().emplace_back([]() { GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); }); GL_ERROR_CHECK();
 				vertex_states->emplace_back(std::move(cull));
 			}
 		}
 
 		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
 			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 			}
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+			glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 		}
 
 		vertex_array.createInterleavedVBOs();
 		vbo_vertex_products.emplace_back(std::make_unique<OpenCSGVBOProduct>(
 				std::move(primitives), std::move(vertex_states)));
-		//all_vbos_.emplace_back(vertex_array.verticesVBO());
-		//all_vbos_.emplace_back(vertex_array.elementsVBO());
 	}
 #endif // ENABLE_OPENCSG
 }
@@ -371,13 +367,13 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 			}
 			if (primitives.size() > 1) {
 				OpenCSG::render(primitives);
-				glDepthFunc(GL_EQUAL);
+				glDepthFunc(GL_EQUAL); GL_ERROR_CHECK();
 			}
 
 			if (shaderinfo && shaderinfo->progid) {
 				if (shaderinfo->type != EDGE_RENDERING ||
 					(shaderinfo->type == EDGE_RENDERING && showedges))
-					glUseProgram(shaderinfo->progid);
+					glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
 			}
 
 			for (const auto &csgobj : product.intersections) {
@@ -388,7 +384,7 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 					int identifier = csgobj.leaf->index;
 					glUniform3f(shaderinfo->data.select_rendering.identifier,
 							((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
-							((identifier >> 16) & 0xff) / 255.0f);
+							((identifier >> 16) & 0xff) / 255.0f); GL_ERROR_CHECK();
 				}
 
 				const Color4f &c = csgobj.leaf->color;
@@ -457,12 +453,14 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 	} else {
 		for (const auto &product : vbo_vertex_products) {
 			if (product->primitives().size() > 1) {
-				OpenCSG::render(product->primitives());
-				glDepthFunc(GL_EQUAL);
+				OpenCSG::render(product->primitives()); GL_ERROR_CHECK();
+				GL_TRACE0("glDepthFunc(GL_EQUAL)");
+				glDepthFunc(GL_EQUAL); GL_ERROR_CHECK();
 			}
 
 			if (shaderinfo && shaderinfo->progid) {
-				glUseProgram(shaderinfo->progid);
+				GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
+				glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
 
 				if (shaderinfo->type == EDGE_RENDERING && showedges) {
 					shader_attribs_enable();
@@ -474,10 +472,14 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 					std::shared_ptr<OpenCSGVertexState> csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs);
 					if (csg_vs) {
 						if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
+							GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->data.select_rendering.identifier %
+								(((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+								(((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+								(((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
 							glUniform3f(shaderinfo->data.select_rendering.identifier,
 									((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
 									((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-									((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f);
+									((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f); GL_ERROR_CHECK();
 						}
 					}
 					std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
@@ -488,13 +490,15 @@ void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products,
 			}
 
 			if (shaderinfo && shaderinfo->progid) {
-				glUseProgram(0);
+				GL_TRACE0("glUseProgram(0)");
+				glUseProgram(0); GL_ERROR_CHECK();
 				
 				if (shaderinfo->type == EDGE_RENDERING && showedges) {
 					shader_attribs_disable();
 				}
 			}
-			glDepthFunc(GL_LEQUAL);
+			GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+			glDepthFunc(GL_LEQUAL); GL_ERROR_CHECK();
 		}
 	}
 

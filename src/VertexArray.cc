@@ -23,7 +23,7 @@ void VertexData::fillInterleavedBuffer(GLbyte* interleaved_buffer) const
 			if (last_size != data->size() / data->count()) {
 				PRINTDB("attribute data for vertex incorrect size at index %d = %d", idx % (data->size() / data->count()));
 				PRINTDB("last_size = %d", last_size);
-				return;
+				assert(false);
 			}
 		}
 		last_size = data->size() / data->count();
@@ -93,9 +93,12 @@ void VertexData::createInterleavedVBO(GLuint &vbo) const
 			glGenBuffers(1, &vbo);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, total_bytes, interleaved_buffer, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo); GL_ERROR_CHECK();
+		GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_bytes % (void *)interleaved_buffer);
+		glBufferData(GL_ARRAY_BUFFER, total_bytes, interleaved_buffer, GL_STATIC_DRAW); GL_ERROR_CHECK();
+		GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 		delete[] interleaved_buffer;
 	}
 }
@@ -133,57 +136,61 @@ void VertexData::append(const VertexData &data) {
 void VertexState::draw(bool bind_buffers) const
 {
 	if (vertices_vbo_ && bind_buffers) {
-		if (OpenSCAD::debug != "") PRINTDB("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
-		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_);
+		GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
+		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_); GL_ERROR_CHECK();
 	}
 	if (elements_vbo_ && bind_buffers) {
-		if (OpenSCAD::debug != "") PRINTDB("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_);
+		GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_); GL_ERROR_CHECK();
 	}
 	for (const auto &gl_func : gl_begin_) {
 		gl_func();
 	}
 	if (draw_size_ > 0) {
 		if (elements_vbo_) {
-			if (OpenSCAD::debug != "") PRINTDB("glDrawElements(%s, %d, %s, %d)",
-							(draw_mode_ == GL_POINTS ? "GL_POINTS" :
-							 draw_mode_ == GL_LINES ? "GL_LINES" :
-							 draw_mode_ == GL_LINE_LOOP ? "GL_LINE_LOOP" :
-							 draw_mode_ == GL_LINE_STRIP ? "GL_LINE_STRIP" :
-							 draw_mode_ == GL_TRIANGLES ? "GL_TRIANGLES" :
-							 draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" :
-							 draw_mode_ == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN" :
-							 draw_mode_ == GL_QUADS ? "GL_QUADS" :
-							 draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
-							 draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
-							 "UNKNOWN") % draw_size_ % 
-							(draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
-						 	 draw_type_ == GL_UNSIGNED_INT ? "GL_UNSIGNED_INT" :
-							 "UNKNOWN") % element_offset_);
+			GL_TRACE("glDrawElements(%s, %d, %s, %d)",
+				(draw_mode_ == GL_POINTS ? "GL_POINTS" :
+				 draw_mode_ == GL_LINES ? "GL_LINES" :
+				 draw_mode_ == GL_LINE_LOOP ? "GL_LINE_LOOP" :
+				 draw_mode_ == GL_LINE_STRIP ? "GL_LINE_STRIP" :
+				 draw_mode_ == GL_TRIANGLES ? "GL_TRIANGLES" :
+				 draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" :
+				 draw_mode_ == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN" :
+				 draw_mode_ == GL_QUADS ? "GL_QUADS" :
+				 draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
+				 draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
+				 "UNKNOWN") % draw_size_ % 
+				(draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
+			 	 draw_type_ == GL_UNSIGNED_INT ? "GL_UNSIGNED_INT" :
+				 "UNKNOWN") % element_offset_);
 			glDrawElements(draw_mode_, draw_size_, draw_type_, (GLvoid *)element_offset_);
 		} else {
-			if (OpenSCAD::debug != "") PRINTDB("glDrawArrays(%s, 0, %d)",
-							(draw_mode_ == GL_POINTS ? "GL_POINTS" :
-							 draw_mode_ == GL_LINES ? "GL_LINES" :
-							 draw_mode_ == GL_LINE_LOOP ? "GL_LINE_LOOP" :
-							 draw_mode_ == GL_LINE_STRIP ? "GL_LINE_STRIP" :
-							 draw_mode_ == GL_TRIANGLES ? "GL_TRIANGLES" :
-							 draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" :
-							 draw_mode_ == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN" :
-							 draw_mode_ == GL_QUADS ? "GL_QUADS" :
-							 draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
-							 draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
-							 "UNKNOWN") % draw_size_);
+			GL_TRACE("glDrawArrays(%s, 0, %d)",
+				(draw_mode_ == GL_POINTS ? "GL_POINTS" :
+				 draw_mode_ == GL_LINES ? "GL_LINES" :
+				 draw_mode_ == GL_LINE_LOOP ? "GL_LINE_LOOP" :
+				 draw_mode_ == GL_LINE_STRIP ? "GL_LINE_STRIP" :
+				 draw_mode_ == GL_TRIANGLES ? "GL_TRIANGLES" :
+				 draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" :
+				 draw_mode_ == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN" :
+				 draw_mode_ == GL_QUADS ? "GL_QUADS" :
+				 draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
+				 draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
+				 "UNKNOWN") % draw_size_);
 			glDrawArrays(draw_mode_, 0, draw_size_);
 		}
 	}
 	for (const auto &gl_func : gl_end_) {
 		gl_func();
 	}
-	if (elements_vbo_ && bind_buffers)
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	if (vertices_vbo_ && bind_buffers)
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	if (elements_vbo_ && bind_buffers) {
+		GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+	}
+	if (vertices_vbo_ && bind_buffers) {
+		GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+	}
 }
 
 void VertexArray::addSurfaceData()
@@ -259,7 +266,9 @@ void VertexArray::createVertex(const std::array<Vector3d,3> &points,
 				if (interleaved_buffer_.size()) {
 					memcpy(interleaved_buffer_.data() + vertices_offset_,interleaved_vertex.data(),interleaved_vertex.size());
 				} else {
+					GL_TRACE("glBufferSubData(GL_ARRAY_BUFFER, %d, %d, %p)", vertices_offset_ % interleaved_vertex.size() % interleaved_vertex.data());
 					glBufferSubData(GL_ARRAY_BUFFER, vertices_offset_, interleaved_vertex.size(), interleaved_vertex.data());
+					GL_ERROR_CHECK();
 				}
 				data()->clear();
 			}
@@ -292,19 +301,22 @@ void VertexArray::createVertex(const std::array<Vector3d,3> &points,
 		} else {
 			if (elementsData()->sizeofAttribute() == sizeof(GLubyte)) {
 				GLubyte index = (GLubyte)entry.first->second;
+				GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
 				glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
 						elementsData()->sizeofAttribute(),
-						&index);
+						&index); GL_ERROR_CHECK();
 			} else if (elementsData()->sizeofAttribute() == sizeof(GLushort)) {
 				GLushort index = (GLushort)entry.first->second;
+				GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
 				glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
 						elementsData()->sizeofAttribute(),
-						&index);
+						&index); GL_ERROR_CHECK();
 			} else if (elementsData()->sizeofAttribute() == sizeof(GLuint)) {
 				GLuint index = (GLuint)entry.first->second;
+				GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
 				glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
 						elementsData()->sizeofAttribute(),
-						&index);
+						&index); GL_ERROR_CHECK();
 			} else {
 				assert(false && "create_vertex invalid index attribute size");
 			}
@@ -320,7 +332,9 @@ void VertexArray::createVertex(const std::array<Vector3d,3> &points,
 			if (interleaved_buffer_.size()) {
 				memcpy(interleaved_buffer_.data() + vertices_offset_,interleaved_vertex.data(),interleaved_vertex.size());
 			} else {
+				GL_TRACE("glBufferSubData(GL_ARRAY_BUFFER, %d, %d, %p)", vertices_offset_ % interleaved_vertex.size() % interleaved_vertex.data());
 				glBufferSubData(GL_ARRAY_BUFFER, vertices_offset_, interleaved_vertex.size(), interleaved_vertex.data());
+				GL_ERROR_CHECK();
 			}
 			vertices_offset_ += interleaved_vertex.size();
 			data()->clear();
@@ -353,8 +367,10 @@ void VertexArray::createInterleavedVBOs()
 	size_t total_size = this->sizeInBytes();
 	// If VertexArray is not empty, and initial size is zero
 	if (!vertices_size_ && total_size) {
-		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_);
-		glBufferData(GL_ARRAY_BUFFER, total_size, nullptr, GL_STATIC_DRAW);
+		GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
+		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_); GL_ERROR_CHECK();
+		GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_size % (void *)nullptr);
+		glBufferData(GL_ARRAY_BUFFER, total_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 		
 		size_t dst_start = 0;
 		for (const auto &vertex_data : vertices_) {
@@ -375,7 +391,8 @@ void VertexArray::createInterleavedVBOs()
 					}
 					last_size = data->size() / data->count();
 					for (size_t i = 0; i < last_size; ++i) {
-						glBufferSubData(GL_ARRAY_BUFFER, dst, size, src);
+						GL_TRACE("glBufferSubData(GL_ARRAY_BUFFER, %p, %d, %p)", (void *)dst % size % (void *)src);
+						glBufferSubData(GL_ARRAY_BUFFER, dst, size, src); GL_ERROR_CHECK();
 						src += size;
 						dst += stride;
 					}
@@ -386,24 +403,33 @@ void VertexArray::createInterleavedVBOs()
 			dst_start = vertex_data->sizeInBytes();
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 	} else if (vertices_size_ && interleaved_buffer_.size()) {
-		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_);
-		glBufferData(GL_ARRAY_BUFFER, interleaved_buffer_.size(), interleaved_buffer_.data(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
+		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_); GL_ERROR_CHECK();
+		GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", interleaved_buffer_.size() % (void *)interleaved_buffer_.data());
+		glBufferData(GL_ARRAY_BUFFER, interleaved_buffer_.size(), interleaved_buffer_.data(), GL_STATIC_DRAW); GL_ERROR_CHECK();
+		GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 	}
 	
+	PRINTDB("use_elements_ = %d, elements_size_ = %d", use_elements_ % elements_size_);
 	if (use_elements_ && (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled())) {
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_);
+		GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_); GL_ERROR_CHECK();
 		if (!Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW);
+			GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_.sizeInBytes() % (void *)nullptr);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 		}
 		size_t last_size = 0;
 		for (const auto &e : elements_.attributes()) {
-			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, last_size, e->sizeInBytes(), e->toBytes());
+			GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", last_size % e->sizeInBytes() % (void *)e->toBytes());
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, last_size, e->sizeInBytes(), e->toBytes()); GL_ERROR_CHECK();
 			last_size += e->sizeInBytes();
 		}
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 	}
 }
 
@@ -418,44 +444,45 @@ void VertexArray::addAttributePointers(size_t start_offset)
 	GLenum type = vertex_data->positionData()->glType();
 	GLsizei stride = vertex_data->stride();
 	size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->positionIndex());
-	vs->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_VERTEX_ARRAY)"); glEnableClientState(GL_VERTEX_ARRAY); });
+	vs->glBegin().emplace_back([]() { GL_TRACE0("glEnableClientState(GL_VERTEX_ARRAY)"); glEnableClientState(GL_VERTEX_ARRAY); GL_ERROR_CHECK(); });
 	vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
 		auto vs = vs_ptr.lock();
 		if (vs) {
-			if (OpenSCAD::debug != "") PRINTDB("glVertexPointer(%d, %d, %d, %p)",
+			GL_TRACE("glVertexPointer(%d, %d, %d, %p)",
 				count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
 			glVertexPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset));
+			GL_ERROR_CHECK();
 		}
 	});
-	vs->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisableClientState(GL_VERTEX_ARRAY)"); glDisableClientState(GL_VERTEX_ARRAY); });
+	vs->glEnd().emplace_back([]() { GL_TRACE0("glDisableClientState(GL_VERTEX_ARRAY)"); glDisableClientState(GL_VERTEX_ARRAY); GL_ERROR_CHECK(); });
 	
 	if (vertex_data->hasNormalData()) {
 		type = vertex_data->normalData()->glType();
 		size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->normalIndex());
-		vs->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_NORMAL_ARRAY)"); glEnableClientState(GL_NORMAL_ARRAY); });
+		vs->glBegin().emplace_back([]() { GL_TRACE0("glEnableClientState(GL_NORMAL_ARRAY)"); glEnableClientState(GL_NORMAL_ARRAY); GL_ERROR_CHECK(); });
 		vs->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
 			auto vs = vs_ptr.lock();
 			if (vs) {
-				if (OpenSCAD::debug != "") PRINTDB("glNormalPointer(%d, %d, %p)",
-					type % stride % (GLvoid *)(vs->drawOffset() + offset));
+				GL_TRACE("glNormalPointer(%d, %d, %p)", type % stride % (GLvoid *)(vs->drawOffset() + offset));
 				glNormalPointer(type, stride, (GLvoid *)(vs->drawOffset() + offset));
+				GL_ERROR_CHECK();
 			}
 		});
-		vs->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisableClientState(GL_NORMAL_ARRAY)"); glDisableClientState(GL_NORMAL_ARRAY); });
+		vs->glEnd().emplace_back([]() { GL_TRACE0("glDisableClientState(GL_NORMAL_ARRAY)"); glDisableClientState(GL_NORMAL_ARRAY); GL_ERROR_CHECK(); });
 	}
 	if (vertex_data->hasColorData()) {
 		count = vertex_data->colorData()->count();
 		type = vertex_data->colorData()->glType();
 		size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->colorIndex());
-		vs->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnableClientState(GL_COLOR_ARRAY)"); glEnableClientState(GL_COLOR_ARRAY); });
+		vs->glBegin().emplace_back([]() { GL_TRACE0("glEnableClientState(GL_COLOR_ARRAY)"); glEnableClientState(GL_COLOR_ARRAY); GL_ERROR_CHECK(); });
 		vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
 			auto vs = vs_ptr.lock();
 			if (vs) {
-				if (OpenSCAD::debug != "") PRINTDB("glColorPointer(%d, %d, %d, %p)",
-					count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
+				GL_TRACE("glColorPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
 				glColorPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset));
+				GL_ERROR_CHECK();
 			}
 		});
-		vs->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisableClientState(GL_COLOR_ARRAY)"); glDisableClientState(GL_COLOR_ARRAY); });
+		vs->glEnd().emplace_back([]() { GL_TRACE0("glDisableClientState(GL_COLOR_ARRAY)"); glDisableClientState(GL_COLOR_ARRAY); GL_ERROR_CHECK(); });
 	}
 }

@@ -105,11 +105,15 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 				vertices_size *= vertex_array.stride();
 				vertex_array.verticesSize(vertices_size);
 
-				glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO());
-				glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+				GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
+				glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()); GL_ERROR_CHECK();
+				GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
+				glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO());
-					glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+					GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()); GL_ERROR_CHECK();
+					GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
+					glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 				}
 			} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
 				vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
@@ -124,9 +128,11 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 			
 			if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
 				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+					GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 				}
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+				glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 			}
 
 			vertex_array.createInterleavedVBOs();
@@ -206,10 +212,15 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 				std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
 				if (csg_vs) {
 					if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+						GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+								shaderinfo->data.select_rendering.identifier %
+								(((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+								(((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+								(((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
 						glUniform3f(shaderinfo->data.select_rendering.identifier,
 								((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
 								((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-								((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f);
+								((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f); GL_ERROR_CHECK();
 					}
 				}
 				std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
@@ -245,8 +256,10 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			shaderinfo_t shader_info = this->getShader();
 			std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0,0,vertex_array.verticesVBO(),vertex_array.elementsVBO());
 			color_state->glBegin().emplace_back([shader_info,color]() {
-				glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]);
-				glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0);
+				GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
+				glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]); GL_ERROR_CHECK();
+				GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0]+1)/2 % (color[1]+1)/2 % (color[2]+1)/2);
+				glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0); GL_ERROR_CHECK();
 			});
 			vertex_states.emplace_back(std::move(color_state));
 			
@@ -262,14 +275,16 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			shaderinfo_t shader_info = this->getShader();
 			std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0,0,vertex_array.verticesVBO(),vertex_array.elementsVBO());
 			color_state->glBegin().emplace_back([shader_info,color]() {
-				glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]);
-				glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0);
+				GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
+				glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]); GL_ERROR_CHECK();
+				GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0]+1)/2 % (color[1]+1)/2 % (color[2]+1)/2);
+				glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0); GL_ERROR_CHECK();
 			});
 			vertex_states.emplace_back(std::move(color_state));
 			
 			std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
-			cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
-			cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
+			cull->glBegin().emplace_back([]() { GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); GL_ERROR_CHECK(); });
+			cull->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK(); });
 			vertex_states.emplace_back(std::move(cull));
 
 			create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
@@ -286,13 +301,15 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 			shader_info = this->getShader();
 			color_state = std::make_shared<VBOShaderVertexState>(0,0,vertex_array.verticesVBO(),vertex_array.elementsVBO());
 			color_state->glBegin().emplace_back([shader_info,color]() {
-				glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]);
-				glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0);
+				GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
+				glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]); GL_ERROR_CHECK();
+				GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0]+1)/2 % (color[1]+1)/2 % (color[2]+1)/2);
+				glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0]+1)/2, (color[1]+1)/2, (color[2]+1)/2, 1.0); GL_ERROR_CHECK();
 			});
 			vertex_states.emplace_back(std::move(color_state));
 
 			cull = std::make_shared<VertexState>();
-			cull->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
+			cull->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); GL_ERROR_CHECK(); });
 			vertex_states.emplace_back(std::move(cull));
 
 			create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
@@ -301,7 +318,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 				vs->csgObjectIndex(csgobj.leaf->index);
 			}
 			
-			vertex_states.back()->glEnd().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
+			vertex_states.back()->glEnd().emplace_back([]() { GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); GL_ERROR_CHECK(); });
 		}
 	}
 }

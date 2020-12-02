@@ -115,7 +115,6 @@ public:
 		tess->vertex_array.states().emplace_back(std::move(vs));
 		tess->vertex_array.addAttributePointers(tess->last_size);
 		tess->primitive_index++;
-		PRINTDB("primitive_count = %d, vertices = %d", tess->primitive_index % tess->active_point_index);
 	}
 
 	static inline void CGAL_GLU_TESS_CALLBACK errorCallback(GLenum errorCode) {
@@ -233,11 +232,15 @@ public:
 			points_edges_array.verticesSize(vertices_size);
 			points_edges_array.elementsSize(elements_size);
 
-			glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO());
-			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW);
+			GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", points_edges_array.verticesVBO());
+			glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO()); GL_ERROR_CHECK();
+			GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
+			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO());
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW);
+				GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", points_edges_array.elementsVBO());
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO()); GL_ERROR_CHECK();
+				GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
 			}
 		}		
 		
@@ -249,8 +252,8 @@ public:
 		}
 
 		std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
-		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
-		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glPointSize(10.0f)"); glPointSize(10.0f); });
+		settings->glBegin().emplace_back([]() { GL_TRACE0("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); GL_ERROR_CHECK(); });
+		settings->glBegin().emplace_back([]() { GL_TRACE0("glPointSize(10.0f)"); glPointSize(10.0f); GL_ERROR_CHECK(); });
 		points_edges_states.emplace_back(std::move(settings));
 		
 	        for(v=vertices_.begin();v!=vertices_.end();++v) 
@@ -275,8 +278,8 @@ public:
 		}
 
 		settings = std::make_shared<VertexState>();
-		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); });
-		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glLineWidth(5.0f)"); glLineWidth(5.0f); });
+		settings->glBegin().emplace_back([]() { GL_TRACE0("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); GL_ERROR_CHECK(); });
+		settings->glBegin().emplace_back([]() { GL_TRACE0("glLineWidth(5.0f)"); glLineWidth(5.0f); GL_ERROR_CHECK(); });
 		points_edges_states.emplace_back(std::move(settings));
 
 	        for(e=edges_.begin();e!=edges_.end();++e)
@@ -294,9 +297,11 @@ public:
 
 		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
 			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 			}
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+			glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
 		}
 
 		points_edges_array.createInterleavedVBOs();
@@ -310,11 +315,11 @@ public:
 		last_size = 0;
 
 		settings = std::make_shared<VertexState>();
-		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_LIGHTING)"); glEnable(GL_LIGHTING); });
-		settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glLineWidth(5.0f)"); glLineWidth(5.0f); });
+		settings->glBegin().emplace_back([]() { GL_TRACE0("glEnable(GL_LIGHTING)"); glEnable(GL_LIGHTING); GL_ERROR_CHECK(); });
+		settings->glBegin().emplace_back([]() { GL_TRACE0("glLineWidth(5.0f)"); glLineWidth(5.0f); GL_ERROR_CHECK(); });
 		if (cull_backfaces || color_backfaces) {
-			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); });
-			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
+			settings->glBegin().emplace_back([]() { GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); GL_ERROR_CHECK(); });
+			settings->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK(); });
 		}
 		halffacets_states.emplace_back(std::move(settings));
 
@@ -326,15 +331,15 @@ public:
 
 			if (color_backfaces) {
 				settings = std::make_shared<VertexState>();
-				settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); });
+				settings->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); GL_ERROR_CHECK(); });
 				halffacets_states.emplace_back(std::move(settings));
 			}
 		}
 
 		if (cull_backfaces || color_backfaces) {
 			settings = std::make_shared<VertexState>();
-			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glCullFace(GL_BACK)"); glCullFace(GL_BACK); });
-			settings->glBegin().emplace_back([]() { if (OpenSCAD::debug != "") PRINTD("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); });
+			settings->glBegin().emplace_back([]() { GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK(); });
+			settings->glBegin().emplace_back([]() { GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); GL_ERROR_CHECK(); });
 			halffacets_states.emplace_back(std::move(settings));
 		}
 		

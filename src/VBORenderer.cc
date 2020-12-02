@@ -755,9 +755,9 @@ void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
 		ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
 			auto ss = ss_ptr.lock();
 			if (ss) {
-				if (OpenSCAD::debug != "") PRINTDB("glVertexAttribPointer(%d, %d, %d, %p)",
-					count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
+				GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
 				glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
+				GL_ERROR_CHECK();
 			}
 		});
 	}
@@ -767,11 +767,11 @@ void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
 
 void VBORenderer::shader_attribs_enable() const
 {
-	if (OpenSCAD::debug != "") PRINTDB("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-	glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric);
+	GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
+	glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
 }
 void VBORenderer::shader_attribs_disable() const
 {
-	if (OpenSCAD::debug != "") PRINTDB("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-	glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric);
+	GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
+	glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
 }

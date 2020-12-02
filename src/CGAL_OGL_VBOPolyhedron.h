@@ -52,8 +52,8 @@ public:
 		GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
 		GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
 
-		glGetFloatv(GL_POINT_SIZE, &current_point_size);
-		glGetFloatv(GL_LINE_WIDTH, &current_line_width);
+		glGetFloatv(GL_POINT_SIZE, &current_point_size); GL_ERROR_CHECK();
+		glGetFloatv(GL_LINE_WIDTH, &current_line_width); GL_ERROR_CHECK();
 
 		if(this->style == SNC_BOUNDARY) {
 			for (const auto &halffacet : this->halffacets_states) {
@@ -68,8 +68,10 @@ public:
 		}
 
 		// restore states
-		glPointSize(current_point_size);
-		glLineWidth(current_line_width);
+		GL_TRACE("glPointSize(%d)", current_point_size);
+		glPointSize(current_point_size); GL_ERROR_CHECK();
+		GL_TRACE("glLineWidth(%d)", current_line_width);
+		glLineWidth(current_line_width); GL_ERROR_CHECK();
 
 		if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
 		if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);

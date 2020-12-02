@@ -11,6 +11,26 @@
 #include "linalg.h"
 #include "feature.h"
 
+#define GL_ERROR_CHECK() \
+do { \
+	auto err = glGetError(); \
+	if (err != GL_NO_ERROR) { \
+		PRINTDB("%d : OpenGL error: %s\n", __LINE__ % gluErrorString(err)); \
+	} \
+} while (0)
+
+//#define GL_TRACE_ENABLE
+#ifdef GL_TRACE_ENABLE
+#define GL_TRACE(fmt_, args) do { \
+	if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__ % args); \
+} while (0)
+#define GL_TRACE0(fmt_) do { \
+	if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__); \
+} while (0)
+#else // GL_TRACE_ENABLE
+#define GL_TRACE(fmt_, args) do {} while (0)
+#define GL_TRACE0(fmt_) do {} while (0)
+#endif // GL_TRACE_ENABLE
 
 // Hash function for opengl vertex data.
 template<typename T>
@@ -103,7 +123,7 @@ public:
 		if (from != nullptr) {
 			data_.insert(data_.end(),from->data_.begin(),from->data_.end());
 		} else {
-			PRINTD("AttributeData append type mismatch!!!");
+			assert(false && "AttributeData append type mismatch!!!");
 		}
 	}
 	void clear() override { data_.clear(); }
@@ -356,8 +376,8 @@ public:
 	void addElementsData(std::shared_ptr<IAttributeData> data) {
 		if (!elements_vbo_) {
 			glGenBuffers(1, &elements_vbo_);
-			use_elements_ = true;
 		}
+		use_elements_ = true;
 		elements_.addAttributeData(data);
 	}
 	
