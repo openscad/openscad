@@ -203,7 +203,7 @@ void VBORenderer::add_shader_attributes(VertexArray &vertex_array,
 
 	if (points.size() == 3 && getShader().data.csg_rendering.barycentric) {
 		// Get edge states
-		std::array<GLshort, 3> barycentric_flags;
+		std::array<GLubyte, 3> barycentric_flags;
 
 		if (!outlines) {
 			// top / bottom or 3d object
@@ -230,7 +230,7 @@ void VBORenderer::add_shader_attributes(VertexArray &vertex_array,
 		
 		barycentric_flags[active_point_index] = 1;
 
-		addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2]);
+		addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
 	} else {
 		if (OpenSCAD::debug != "") PRINTDB("add_shader_attributes bad points size = %d", points.size());
 	}
@@ -727,7 +727,7 @@ void VBORenderer::add_shader_data(VertexArray &vertex_array) const
 {
 	std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 	shader_attributes_index = vertex_data->attributes().size();
-	vertex_data->addAttributeData(std::make_shared<AttributeData<GLshort,3,GL_SHORT>>()); // barycentric
+	vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte,4,GL_UNSIGNED_BYTE>>()); // barycentric
 }
 
 void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
