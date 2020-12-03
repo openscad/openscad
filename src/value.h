@@ -558,11 +558,6 @@ public:
   static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
 
 private:
-  static Value multvecnum(const VectorType &vecval, const Value &numval);
-  static Value multvecvec(const VectorType &vec1, const VectorType &vec2);
-  static Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec);
-  static Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec);
-
   Variant value;
 };
 

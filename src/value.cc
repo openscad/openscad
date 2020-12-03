@@ -895,7 +895,7 @@ Value Value::operator-(const Value &v) const
   return boost::apply_visitor(minus_visitor(), this->value, v.value);
 }
 
-Value Value::multvecnum(const VectorType &vecval, const Value &numval)
+Value multvecnum(const VectorType &vecval, const Value &numval)
 {
   // Vector * Number
   VectorType dstv;
@@ -905,7 +905,7 @@ Value Value::multvecnum(const VectorType &vecval, const Value &numval)
   return std::move(dstv);
 }
 
-Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
+Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
   // Matrix * Vector
   VectorType dstv;
@@ -929,7 +929,7 @@ Value Value::multmatvec(const VectorType &matrixvec, const VectorType &vectorvec
   return std::move(dstv);
 }
 
-Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
+Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 {
   assert(vectorvec.size() == matrixvec.size());
   // Vector * Matrix
@@ -955,14 +955,14 @@ Value Value::multvecmat(const VectorType &vectorvec, const VectorType &matrixvec
     }
     dstv.emplace_back(r_e);
   }
-  return std::move(dstv);
+  return Value(std::move(dstv));
 }
 
-Value Value::multvecvec(const VectorType &vec1, const VectorType &vec2) {
+Value multvecvec(const VectorType &vec1, const VectorType &vec2) {
   // Vector dot product.
   auto r = 0.0;
   for (size_t i=0;i<vec1.size();i++) {
-    if (vec1[i].type() != Type::NUMBER || vec2[i].type() != Type::NUMBER) {
+    if (vec1[i].type() != Value::Type::NUMBER || vec2[i].type() != Value::Type::NUMBER) {
       return Value::undef(STR("undefined operation (" << vec1[i].typeName() << " * " << vec2[i].typeName() << ")"));
     }
     r += vec1[i].toDouble() * vec2[i].toDouble();
@@ -970,49 +970,62 @@ Value Value::multvecvec(const VectorType &vec1, const VectorType &vec2) {
   return Value(r);
 }
 
-Value Value::operator*(const Value &v) const
+class multiply_visitor : public boost::static_visitor<Value>
 {
-  if (this->type() == Type::NUMBER) {
-    if (v.type() == Type::NUMBER) {
-      return Value(this->toDouble() * v.toDouble());
-    } else if (v.type() == Type::VECTOR) {
-      return multvecnum(v.toVector(), *this);
-    }
-  } else if (this->type() == Type::VECTOR) {
-    if (v.type() == Type::NUMBER) {
-      return multvecnum(this->toVector(), v);
-    } else if (v.type() == Type::VECTOR) {
-      const auto &vec1 = this->toVector();
-      const auto &vec2 = v.toVector();
-      if (vec1.empty() || vec2.empty()) return Value::undef("Multiplication is undefined on empty vectors");
-      if (vec1[0].type() == Type::NUMBER) {
-        if (vec2[0].type() == Type::NUMBER) {
-          if (vec1.size() == vec2.size()) return multvecvec(vec1, vec2);
-        } else if (vec2[0].type() == Type::VECTOR) {
-          if (vec1.size() == vec2.size()) return multvecmat(vec1, vec2);
-        }
-      } else if (vec1[0].type() == Type::VECTOR) {
-        if (vec2[0].type() == Type::NUMBER) {
-          if (vec1[0].toVector().size() == vec2.size()) return multmatvec(vec1, vec2);
-        } else if (vec2[0].type() == Type::VECTOR) {
-          if (vec1[0].toVector().size() == vec2.size()) {
-            // Matrix * Matrix
-            int row = 0;
-						VectorType dstv;
-            for (const auto &srcrow : vec1) {
-              const auto &srcrowvec = srcrow.toVector();
-              if (srcrowvec.size() != vec2.size()) return Value::undef(STR("matrix*matrix left operand row length does not match right operand row count (" << srcrowvec.size() << " != " << vec2.size() << ") at row " << row));
-              dstv.emplace_back(multvecmat(srcrowvec, vec2));
-							++row;
-            }
-            return Value(std::move(dstv));
+public:
+  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
+    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " * " << getTypeName(op2) << ")"));
+  }
+  Value operator()(const double &op1, const double &op2) const { return op1 * op2; }
+  Value operator()(const double &op1, const VectorType &op2) const { return multvecnum(op2, op1); }
+  Value operator()(const VectorType &op1, const double &op2) const { return multvecnum(op1, op2); }
+
+  Value operator()(const VectorType &op1, const VectorType &op2) const {
+    if (op1.empty() || op2.empty()) return Value::undef("Multiplication is undefined on empty vectors");
+    auto first1 = op1.begin(), first2 = op2.begin();
+    auto eltype1 = (*first1).type(), eltype2 = (*first2).type();
+    if (eltype1 == Value::Type::NUMBER) {
+      if (eltype2 == Value::Type::NUMBER) {
+        if (op1.size() == op2.size()) return multvecvec(op1,op2);
+        else return Value::undef(STR("vector*vector requires matching lengths (" << op1.size() << " != " << op2.size() << ')'));
+      } else if (eltype2 == Value::Type::VECTOR) {
+        if (op1.size() == op2.size()) return multvecmat(op1, op2);
+        else return Value::undef(STR("vector*matrix requires vector length to match matrix row count (" << op1.size() << " != " << op2.size() << ')'));
+      }
+    } else if (eltype1 == Value::Type::VECTOR) {
+      if (eltype2 == Value::Type::NUMBER) {
+        if ((*first1).toVector().size() == op2.size()) return multmatvec(op1, op2);
+        else return Value::undef(STR("matrix*vector requires matrix column count to match vector length (" << (*first1).toVector().size() << " != " << op2.size() << ')'));
+      } else if (eltype2 == Value::Type::VECTOR) {
+        if ((*first1).toVector().size() == op2.size()) {
+          // Matrix * Matrix
+          VectorType dstv;
+          size_t i = 0;
+          for (const auto &srcrow : op1) {
+            const auto &srcrowvec = srcrow.toVector();
+            if (srcrowvec.size() != op2.size()) return Value::undef(STR("matrix*matrix left operand row length does not match right operand row count (" << srcrowvec.size() << " != " << op2.size() << ") at row " << i));
+            auto temp = multvecmat(srcrowvec, op2);
+            if (temp.isUndefined()) {
+							temp.toUndef().append(STR("while processing left operand at row " << i));
+							return temp;
+						} else {
+							dstv.emplace_back(temp);
+						}
+            ++i;
           }
+          return Value(std::move(dstv));
+        } else {
+          return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (" << (*first1).toVector().size() << " != " << op2.size() << ')'));
         }
-		    return Value::undef(STR("undefined vector*vector multiplication where first elements are types " << this->typeName() << " and " << v.typeName() ));
       }
     }
-  }
-	return Value::undef(STR("undefined vector*vector multiplication where first elements are type " << this->typeName() << " and " << v.typeName() ));
+    return Value::undef(STR("undefined vector*vector multiplication where first elements are types " << (*first1).typeName() << " and " << (*first2).typeName() ));
+	}
+};
+
+Value Value::operator*(const Value &v) const
+{
+	return boost::apply_visitor(multiply_visitor(), this->value, v.value);
 }
 
 Value Value::operator/(const Value &v) const

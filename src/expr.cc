@@ -144,12 +144,8 @@ Value BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 		return checkUndef(this->left->evaluate(context) <  this->right->evaluate(context), context);
 	case Op::LessEqual:
 		return checkUndef(this->left->evaluate(context) <= this->right->evaluate(context), context);
-	case Op::Greater:{
-		auto l = this->left->evaluate(context);
-		auto r = this->right->evaluate(context);
-		auto v = l > r;
+	case Op::Greater:
 		return checkUndef(this->left->evaluate(context) >  this->right->evaluate(context), context);
-	}
 	case Op::GreaterEqual:
 		return checkUndef(this->left->evaluate(context) >= this->right->evaluate(context), context);
 	case Op::Equal:
