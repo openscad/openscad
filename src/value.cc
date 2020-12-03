@@ -213,9 +213,7 @@ Value Value::clone() const {
 
 Value Value::undef(const std::string &why)
 {
-	auto undef = UndefPtr{why};
-	auto v = Value{undef};
-  return v;
+  return Value{UndefType{why}};
 }
 
 const std::string Value::typeName() const
@@ -233,7 +231,7 @@ const std::string Value::typeName() const
 }
 
 // free functions for use by static_visitor templated functions in creating undef messages.
-std::string getTypeName(const UndefPtr&) { return "undefined"; }
+std::string getTypeName(const UndefType&) { return "undefined"; }
 std::string getTypeName(bool) { return "bool"; }
 std::string getTypeName(double) { return "number"; }
 std::string getTypeName(const str_utf8_wrapper&) { return "string"; }
@@ -311,7 +309,7 @@ public:
     return DoubleConvert(op1, buffer, builder, dc);
   }
 
-  std::string operator()(const UndefPtr &) const {
+  std::string operator()(const UndefType &) const {
     return "undef";
   }
 
@@ -374,7 +372,7 @@ public:
     stream << DoubleConvert(op1, buffer, builder, dc);
   }
 
-  void operator()(const UndefPtr&) const {
+  void operator()(const UndefType&) const {
     stream << "undef";
   }
 
@@ -455,29 +453,29 @@ std::string Value::toEchoString(const tostring_visitor *visitor) const
 
 std::string UndefType::toString() const {
   std::ostringstream stream;
-  if (!reasons.empty()) {
-    auto it = reasons.begin();
+  if (!reasons->empty()) {
+    auto it = reasons->begin();
     stream << *it;
-    for (++it; it != reasons.end(); ++it) {
+    for (++it; it != reasons->end(); ++it) {
       stream << "\n\t" << *it;
     }
   }
   // clear reasons so multiple same warnings are not given on the same value
-  reasons.clear();
+  reasons->clear();
   return stream.str();
 }
 
 const UndefType& Value::toUndef()
 {
-  return *(boost::get<UndefPtr>(this->value));
+  return boost::get<UndefType>(this->value);
 }
 
 std::string Value::toUndefString() const
 {
-  return boost::get<UndefPtr>(this->value)->toString();
+  return boost::get<UndefType>(this->value).toString();
 }
 
-std::ostream& operator<<(std::ostream& stream, const UndefPtr& u)
+std::ostream& operator<<(std::ostream& stream, const UndefType& u)
 {
 	stream << "undef";
 	return stream;
@@ -668,7 +666,7 @@ const FunctionType& Value::toFunction() const
 
 bool Value::isUncheckedUndef() const
 {
-  return this->type()==Type::UNDEFINED && !boost::get<UndefPtr>(this->value)->empty();
+  return this->type()==Type::UNDEFINED && !boost::get<UndefType>(this->value).empty();
 }
 
 Value FunctionType::operator==(const FunctionType &other) const {
@@ -760,7 +758,7 @@ class notequal_visitor : public boost::static_visitor<Value>
 public:
   template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { return true; }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 != op2; }
-  Value operator()(const UndefPtr&, const UndefPtr&) const { return false; }
+  Value operator()(const UndefType&, const UndefType&) const { return false; }
 };
 
 class equals_visitor : public boost::static_visitor<Value>
@@ -768,7 +766,7 @@ class equals_visitor : public boost::static_visitor<Value>
 public:
   template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { return false; }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 == op2; }
-  Value operator()(const UndefPtr&, const UndefPtr&) const { return true; }
+  Value operator()(const UndefType&, const UndefType&) const { return true; }
 };
 
 class less_visitor : public boost::static_visitor<Value>

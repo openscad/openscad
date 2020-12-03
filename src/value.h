@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <limits>
 #include <iostream>
+#include <memory>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
@@ -165,7 +166,7 @@ public:
   const T& operator*() const { return *value; }
   const T* operator->() const { return value.get(); }
   bool operator==(const ValuePtr& other) const { return *value == *other; }
-  bool operator!=(const ValuePtr& other) const { return !(*this == other); }
+  bool operator!=(const ValuePtr& other) const { return *value != *other; }
   bool operator< (const ValuePtr& other) const { return *value <  *other; }
   bool operator> (const ValuePtr& other) const { return *value >  *other; }
   bool operator<=(const ValuePtr& other) const { return *value <= *other; }
@@ -286,11 +287,12 @@ std::ostream& operator<<(std::ostream& stream, const FunctionPtr& f);
 class UndefType
 {
 public:
-  UndefType() { } // TODO: eventually deprecate undef creation without a reason.
-  UndefType(const std::string &why) : reasons{why} { }
+  // TODO: eventually deprecate undef creation without a reason.
+  UndefType() : reasons{ std::make_unique<std::vector<std::string>>() } { }
+  explicit UndefType(const std::string &why) : reasons{ std::make_unique<std::vector<std::string>>(std::initializer_list<std::string>({why})) } { }
 
   // Append another reason in case a chain of undefined operations are made before handling
-  const UndefType &append(const std::string &why) const { reasons.push_back(why); return *this; }
+  const UndefType &append(const std::string &why) const { reasons->push_back(why); return *this; }
 
   Value operator< (const UndefType &other) const;
   Value operator> (const UndefType &other) const;
@@ -299,15 +301,15 @@ public:
   friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<UndefType>& u);
 
   std::string toString() const;
-  bool empty() const { return reasons.empty(); }
+  bool empty() const { return reasons->empty(); }
 private:
+  // using unique_ptr to keep the size small enough that the variant of
+  // all value types does not exceed the 24 bytes.
   // mutable to allow clearing reasons, which should avoid duplication of warnings that have already been displayed.
-  mutable std::vector<std::string> reasons;
+  mutable std::unique_ptr<std::vector<std::string>> reasons;
 };
 
-using UndefPtr = ValuePtr<UndefType>;
-
-std::ostream& operator<<(std::ostream& stream, const UndefPtr& u);
+std::ostream& operator<<(std::ostream& stream, const UndefType& u);
 
 /**
  *  Value class encapsulates a boost::variant value which can represent any of the
@@ -485,7 +487,7 @@ public:
   };
 
 private:
-  Value() : value(UndefPtr(std::string{})) { } // Don't default construct empty Values.  If "undefined" needed, use reference to Value::undefined, or call Value::undef() for return by value
+  Value() : value(UndefType()) { } // Don't default construct empty Values.  If "undefined" needed, use reference to Value::undefined, or call Value::undef() for return by value
 public:
   Value(const Value &) = delete; // never copy, move instead
   Value &operator=(const Value &v) = delete; // never copy, move instead
@@ -559,7 +561,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant<UndefPtr, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
+  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
   static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
 
 private:
