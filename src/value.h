@@ -290,7 +290,7 @@ public:
   UndefType(const std::string &why) : reasons{why} { }
 
   // Append another reason in case a chain of undefined operations are made before handling
-  UndefType &append(const std::string &why) { reasons.push_back(why); return *this; }
+  const UndefType &append(const std::string &why) const { reasons.push_back(why); return *this; }
 
   Value operator< (const UndefType &other) const;
   Value operator> (const UndefType &other) const;
@@ -457,12 +457,12 @@ public:
         return Value::undefined;
       }
     }
-    bool operator==(const VectorType &v) const { return size()==v.size() && std::equal(begin(), end(), v.begin()); }
-    bool operator< (const VectorType &v) const { return std::lexicographical_compare(begin(), end(), v.begin(), v.end()); }
-    bool operator> (const VectorType &v) const { return std::lexicographical_compare(v.begin(), v.end(), begin(), end()); }
-    bool operator!=(const VectorType &v) const { return !operator==(v); }
-    bool operator<=(const VectorType &v) const { return !operator> (v); }
-    bool operator>=(const VectorType &v) const { return !operator< (v); }
+    Value operator==(const VectorType &v) const;
+    Value operator< (const VectorType &v) const;
+    Value operator> (const VectorType &v) const;
+    Value operator!=(const VectorType &v) const;
+    Value operator<=(const VectorType &v) const;
+    Value operator>=(const VectorType &v) const;
 
     void emplace_back(Value&& val);
     void emplace_back(EmbeddedVectorType&& mbed);

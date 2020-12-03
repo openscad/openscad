@@ -703,6 +703,58 @@ Value UndefType::operator>=(const UndefType &other) const {
   return Value::undef("operation undefined (undefined >= undefined)");
 }
 
+Value VectorType::operator==(const VectorType &v) const {
+  size_t i = 0;
+  auto first1 = this->begin(), last1 = this->end(), first2 = v.begin(), last2 = v.end();
+  for ( ; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
+    Value temp = *first1 == *first2;
+    if (temp.isUndefined()) {
+			temp.toUndef().append(STR("in vector comparison at index " << i));
+			return temp;
+		}
+    if (!temp) return false;
+  }
+  return (first1 == last1) && (first2 == last2);
+}
+
+Value VectorType::operator!=(const VectorType &v) const {
+  Value temp = this->VectorType::operator==(v);
+  if (temp.isUndefined()) return temp;
+  return !temp;
+}
+
+// lexicographical compare with possible undef result
+Value VectorType::operator< (const VectorType &v) const {
+  auto first1 = this->begin(), last1 = this->end(), first2 = v.begin(), last2 = v.end();
+  size_t i = 0;
+  for ( ; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
+    Value temp = *first1 < *first2;
+    if (temp.isUndefined()) {
+			temp.toUndef().append(STR("in vector comparison at index " << i));
+			return temp;
+		}
+    if (temp) return true;
+    if (*first2 < *first1) return false;
+  }
+  return (first1 == last1) && (first2 != last2);
+}
+
+Value VectorType::operator> (const VectorType &v) const {
+  return v.VectorType::operator<(*this);
+}
+
+Value VectorType::operator<=(const VectorType &v) const {
+  Value temp = this->VectorType::operator>(v);
+  if (temp.isUndefined()) return temp;
+  return !temp;
+}
+
+Value VectorType::operator>=(const VectorType &v) const {
+  Value temp = this->VectorType::operator<(v);
+  if (temp.isUndefined()) return temp;
+  return !temp;
+}
+
 class notequal_visitor : public boost::static_visitor<Value>
 {
 public:
