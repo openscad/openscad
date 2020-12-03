@@ -343,7 +343,7 @@ public:
   }
 
   std::string operator()(const FunctionPtr &v) const {
-    return STR(v);
+    return STR(*v);
   }
 };
 
@@ -406,7 +406,7 @@ public:
   }
 
   void operator()(const FunctionPtr &v) const {
-    stream << v;
+    stream << *v;
   }
 };
 
@@ -670,7 +670,7 @@ bool Value::isUncheckedUndef() const
 }
 
 Value FunctionType::operator==(const FunctionType &other) const {
-  return this == &other;
+  return this  == &other;
 }
 Value FunctionType::operator!=(const FunctionType &other) const {
   return this != &other;
@@ -759,6 +759,7 @@ public:
   template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { return true; }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 != op2; }
   Value operator()(const UndefType&, const UndefType&) const { return false; }
+  template <typename T> Value operator()(const ValuePtr<T> &op1, const ValuePtr<T> &op2) const { return *op1 != *op2; }
 };
 
 class equals_visitor : public boost::static_visitor<Value>
@@ -767,6 +768,7 @@ public:
   template <typename T, typename U> Value operator()(const T &op1, const U &op2) const { return false; }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 == op2; }
   Value operator()(const UndefType&, const UndefType&) const { return true; }
+  template <typename T> Value operator()(const ValuePtr<T> &op1, const ValuePtr<T> &op2) const { return *op1 == *op2; }
 };
 
 class less_visitor : public boost::static_visitor<Value>
@@ -776,6 +778,7 @@ public:
     return Value::undef(STR("undefined operation (" << getTypeName(op1) << " < " << getTypeName(op2) << ")"));
   }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 <  op2; }
+  template <typename T> Value operator()(const ValuePtr<T> &op1, const ValuePtr<T> &op2) const { return *op1 < *op2; }
 };
 
 class greater_visitor : public boost::static_visitor<Value>
@@ -785,6 +788,7 @@ public:
     return Value::undef(STR("undefined operation (" << getTypeName(op1) << " > " << getTypeName(op2) << ")"));
 	}
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 >  op2; }
+  template <typename T> Value operator()(const ValuePtr<T> &op1, const ValuePtr<T> &op2) const { return *op1 >  *op2; }
 };
 
 class lessequal_visitor : public boost::static_visitor<Value>
@@ -794,6 +798,7 @@ public:
     return Value::undef(STR("undefined operation (" << getTypeName(op1) << " <= " << getTypeName(op2) << ")"));
 }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 <= op2; }
+  template <typename T> Value operator()(const ValuePtr<T> &op1, const ValuePtr<T> &op2) const { return *op1 <= *op2; }
 };
 
 class greaterequal_visitor : public boost::static_visitor<Value>
@@ -803,6 +808,7 @@ public:
     return Value::undef(STR("undefined operation (" << getTypeName(op1) << " >= " << getTypeName(op2) << ")"));
   }
   template <typename T> Value operator()(const T &op1, const T &op2) const { return op1 >= op2; }
+  template <typename T> Value operator()(const ValuePtr<T> &op1, const ValuePtr<T> &op2) const { return *op1 >= *op2; }
 };
 
 Value Value::operator==(const Value &v) const
@@ -1211,17 +1217,17 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
     << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
 }
 
-std::ostream& operator<<(std::ostream& stream, const FunctionPtr& f)
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
 {
   stream << "function(";
   bool first = true;
-  for (const auto& arg : *(f->getArgs())) {
+  for (const auto& arg : *(f.getArgs())) {
     stream << (first ? "" : ", ") << arg->getName();
     if (arg->getExpr()) {
       stream << " = " << *arg->getExpr();
     }
     first = false;
   }
-  stream << ") " << f->getExpr();
+  stream << ") " << *f.getExpr();
   return stream;
 }

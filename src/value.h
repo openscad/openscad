@@ -165,12 +165,6 @@ public:
 
   const T& operator*() const { return *value; }
   const T* operator->() const { return value.get(); }
-  bool operator==(const ValuePtr& other) const { return *value == *other; }
-  bool operator!=(const ValuePtr& other) const { return *value != *other; }
-  bool operator< (const ValuePtr& other) const { return *value <  *other; }
-  bool operator> (const ValuePtr& other) const { return *value >  *other; }
-  bool operator<=(const ValuePtr& other) const { return *value <= *other; }
-  bool operator>=(const ValuePtr& other) const { return *value >= *other; }
 
 private:
   std::shared_ptr<T> value;
@@ -267,7 +261,6 @@ public:
   const std::shared_ptr<Context>& getCtx() const { return ctx; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
   const std::shared_ptr<AssignmentList>& getArgs() const { return args; }
-  friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<FunctionType>& f);
 private:
   std::shared_ptr<Context> ctx;
   std::shared_ptr<Expression> expr;
@@ -276,7 +269,7 @@ private:
 
 using FunctionPtr = ValuePtr<FunctionType>;
 
-std::ostream& operator<<(std::ostream& stream, const FunctionPtr& f);
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
 
 /*
   Require a reason why (string), any time an undefined value is created/returned.
