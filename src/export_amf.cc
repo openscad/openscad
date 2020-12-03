@@ -52,7 +52,7 @@ static int objectid;
 static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
-		PRINT("EXPORT-WARNING: Export failed, the object isn't a valid 2-manifold.");
+		LOG(message_group::Export_Warning,Location::NONE,"","Export failed, the object isn't a valid 2-manifold.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -111,7 +111,7 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		output << " <object id=\"" << objectid++ << "\">\r\n"
 					 << "  <mesh>\r\n";
 		output << "   <vertices>\r\n";
-		for (size_t i = 0; i < vertices.size(); i++) {
+		for (size_t i = 0; i < vertices.size(); ++i) {
 			std::string s = vertices[i];
 			output << "    <vertex><coordinates>\r\n";
 			char* chrs = new char[s.length() + 1];
@@ -127,7 +127,7 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		}
 		output << "   </vertices>\r\n";
 		output << "   <volume>\r\n";
-		for (size_t i = 0; i < triangles.size(); i++) {
+		for (size_t i = 0; i < triangles.size(); ++i) {
 			triangle t = triangles[i];
 			output << "    <triangle>\r\n";
 			size_t index;
@@ -143,7 +143,7 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		output << "  </mesh>\r\n"
 					 << " </object>\r\n";
 	} catch (CGAL::Assertion_exception& e) {
-		PRINTB("EXPORT-ERROR: CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %s", e.what());
+		LOG(message_group::Export_Error,Location::NONE,"","CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s",e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }

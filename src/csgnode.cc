@@ -63,16 +63,30 @@ primitives, each having a CSG type associated with it.
 	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
 */
 
+shared_ptr<CSGNode> CSGNode::createEmptySet() {
+	return shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), "empty()", 0));
+}
+
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
-	// In case we're creating a CSG terms from a pruned tree, left/right can be nullptr
-	if (!right) {
+	// Note that shared_ptr<CSGNode> == nullptr is different from having a CSGNode with shared_ptr<Geometry> geom == nullptr
+	// The former indicates lack of a geometry node (could be echo or assert node), and the latter represents the empty set of geometry.
+	if (!left && !right) {
+		return CSGNode::createEmptySet();
+	} else if (!left && right) {
+		return right;
+	} else if (left && !right) {
+		return left;
+	} else {
+		// In case we're creating a CSG term from a pruned tree, left or right may be the empty set
+		if (right->isEmptySet()) {
 		if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE) return left;
 		else return right;
 	}
-	if (!left) {
+		if (left->isEmptySet()) {
 		if (type == OpenSCADOperator::UNION) return right;
 		else return left;
+	}
 	}
 
   // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
@@ -85,7 +99,7 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
 		BoundingBox newbox(newmin, newmax);
 		if (newbox.isNull()) {
-			return shared_ptr<CSGNode>(); // Prune entire product
+			return CSGNode::createEmptySet(); // Prune entire product
 		}
 	}
 	else if (type == OpenSCADOperator::DIFFERENCE) {

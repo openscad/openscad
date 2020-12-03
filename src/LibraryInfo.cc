@@ -35,6 +35,7 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern const std::string get_cairo_version();
 extern const std::string get_lib3mf_version();
 extern const std::string get_fontconfig_version();
 extern const std::string get_harfbuzz_version();
@@ -130,6 +131,7 @@ std::string LibraryInfo::info()
 	  << "\nfontconfig version: " << get_fontconfig_version()
 	  << "\nfreetype version: " << get_freetype_version()
 	  << "\nharfbuzz version: " << get_harfbuzz_version()
+	  << "\ncairo version: " << get_cairo_version()
 	  << "\nlib3mf version: " << get_lib3mf_version()
 	  << "\nFeatures: " << Feature::features()
 	  << "\nApplication Path: " << PlatformUtils::applicationPath()
@@ -142,15 +144,15 @@ std::string LibraryInfo::info()
 	  << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
 	  << "\nOpenSCAD library path:\n";
 
-	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
-		s << "  " << *it << "\n";
+	for (const auto &path : librarypath) {
+		s << "  " << path << "\n";
 	}
 
 	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == nullptr ? "<not set>" : env_font_path)
 	  << "\nOpenSCAD font path:\n";
 	
-	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {
-		s << "  " << *it << "\n";
+	for (const auto &path : fontpath) {
+		s << "  " << path << "\n";
 	}
 
 	return s.str();

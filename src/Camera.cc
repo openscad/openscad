@@ -4,9 +4,10 @@
 #include "degree_trig.h"
 
 static const double DEFAULT_DISTANCE = 140.0;
+static const double DEFAULT_FOV = 22.5;
 
 Camera::Camera() :
-	projection(ProjectionType::PERSPECTIVE), fov(22.5), viewall(false), autocenter(false)
+	projection(ProjectionType::PERSPECTIVE), fov(DEFAULT_FOV), viewall(false), autocenter(false)
 {
 	PRINTD("Camera()");
 
@@ -15,6 +16,7 @@ Camera::Camera() :
 
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
+	locked = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -38,6 +40,7 @@ void Camera::setup(std::vector<double> params)
 	} else {
 		assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
 	}
+	locked = true;
 }
 /*!
 	Moves camera so that the given bbox is fully visible.
@@ -81,6 +84,66 @@ void Camera::resetView()
 	setVpr(55, 0, 25);  // set in user space units
 	setVpt(0, 0, 0);
 	setVpd(DEFAULT_DISTANCE);
+	setVpf(DEFAULT_FOV);
+}
+
+/*!
+ * Update the viewport camera by evaluating the special variables. If they
+ * are assigned on top-level, the values are used to change the camera
+ * rotation, translation and distance.
+ */
+void Camera::updateView(const std::shared_ptr<FileContext> ctx)
+{
+	if (locked)
+		return;
+
+	bool noauto = false;
+	double x, y, z;
+	const auto vpr = ctx->lookup_local_config_variable("$vpr");
+	if (vpr.isDefined()) {
+		if (vpr.getVec3(x, y, z, 0.0)) {
+			setVpr(x, y, z);
+			noauto = true;
+		}else{
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr.toEchoString());
+		}
+	}
+
+	const auto vpt = ctx->lookup_local_config_variable("$vpt");
+	if (vpt.isDefined()) {
+		if (vpt.getVec3(x, y, z, 0.0)) {
+			setVpt(x, y, z);
+			noauto = true;
+		}else{
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt.toEchoString());
+		}
+	}
+
+	const auto vpd = ctx->lookup_local_config_variable("$vpd");
+	if (vpd.isDefined()) {
+		if (vpd.type() == Value::Type::NUMBER) {
+			setVpd(vpd.toDouble());
+			noauto = true;
+		}else{
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd.toEchoString());
+		}
+	}
+
+	const auto vpf = ctx->lookup_local_config_variable("$vpf");
+	if (vpf.isDefined()) {
+		if (vpf.type() == Value::Type::NUMBER) {
+			setVpf(vpf.toDouble());
+			noauto = true;
+		}else{
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf.toEchoString());
+		}
+	}
+
+	if ((viewall || autocenter) && noauto) {
+		LOG(message_group::Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
+		viewall = false;
+		autocenter = false;
+	}
 }
 
 Eigen::Vector3d Camera::getVpt() const
@@ -118,13 +181,23 @@ double Camera::zoomValue() const
 	return viewer_distance;
 }
 
+void Camera::setVpf(double f)
+{
+    fov = f;
+}
+
+double Camera::fovValue() const
+{
+	return fov;
+}
+
 std::string Camera::statusText() const
 {
 	const auto vpt = getVpt();
 	const auto vpr = getVpr();
-	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f"));
+	boost::format fmt(_("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f, fov = %.2f"));
 	fmt % vpt.x() % vpt.y() % vpt.z()
 		% vpr.x() % vpr.y() % vpr.z()
-		% viewer_distance;
+		% viewer_distance % fov;
 	return fmt.str();
 }

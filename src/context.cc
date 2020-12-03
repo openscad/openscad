@@ -34,6 +34,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 // $children is not a config_variable. config_variables have dynamic scope, 
@@ -112,8 +113,9 @@ void Context::set_variable(const std::string &name, Value&& value)
 void Context::set_constant(const std::string &name, Value&& value)
 {
 	if (this->constants.contains(name)) {
-		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
-	}	else {
+		LOG(message_group::Warning,Location::NONE,"","Attempt to modify constant '%1$s'.",name);
+	}
+	else {
 		this->constants.emplace(name, std::move(value));
 	}
 }
@@ -141,10 +143,7 @@ void Context::apply_config_variables(const std::shared_ptr<Context> &other)
 
 const Value& Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
-	if (!this->ctx_stack) {
-		PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return Value::undefined;
-	}
+	assert(this->ctx_stack && "Context had null stack in lookup_variable()!!");
 	ValueMap::const_iterator result;
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
@@ -154,7 +153,7 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 			}
 		}
 		if (!silent) {
-			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 		}
 		return Value::undefined;
 	}
@@ -170,7 +169,7 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
+		LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 	}
 	return Value::undefined;
 }
@@ -186,6 +185,17 @@ const std::string& Context::lookup_variable_with_default(const std::string &vari
 {
 	const Value& v = this->lookup_variable(variable, true, loc);
 	return (v.type() == Value::Type::STRING) ? v.toStrUtf8Wrapper().toString() : def;
+}
+
+Value Context::lookup_local_config_variable(const std::string &name) const
+{
+	if (is_config_variable(name)) {
+  	ValueMap::const_iterator result;
+		if ((result = config_variables.find(name)) != config_variables.end()) {
+			return result->second.clone();
+		}
+	}
+	return Value::undefined.clone();
 }
 
 bool Context::has_local_variable(const std::string &name) const
@@ -213,7 +223,7 @@ bool Context::has_local_variable(const std::string &name) const
  * @param docPath document path of the root file, used to calculate the relative path
  */
 static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
-	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
+	LOG(message_group::Warning,loc,docPath,"Ignoring unknown %1$s '%2$s'",what,name);
 }
  
 Value Context::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const

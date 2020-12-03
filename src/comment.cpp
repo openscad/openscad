@@ -24,7 +24,7 @@ typedef std::vector <GroupInfo> GroupList;
 static int getLineToStop( const std::string &fulltext){
 	int lineNo=1;
 	bool inString=false;
-	for (unsigned int i=0; i<fulltext.length(); i++) {
+	for (unsigned int i=0; i<fulltext.length(); ++i) {
 	// increase line number
 		if (fulltext[i] == '\n') {
 			lineNo++;
@@ -86,7 +86,7 @@ static std::string getComment(const std::string &fulltext, int line)
 
 	// Locate line
 	unsigned int start = 0;
-	for (; start<fulltext.length() ; start++) {
+	for (; start<fulltext.length() ; ++start) {
 		if (line <= 1) break;
 		if (fulltext[start] == '\n') line--;
 	}
@@ -100,7 +100,7 @@ static std::string getComment(const std::string &fulltext, int line)
 	unsigned int startText = 0;
 	int noOfSemicolon = 0;
 	bool inString = false;
-	for (;startText < comment.length() - 1;startText++) {
+	for (; startText < comment.length() - 1; ++startText) {
 		if (inString && comment.compare(startText, 2, "\\\"") == 0) {
 			startText++;
 			continue;
@@ -128,7 +128,7 @@ static std::string getDescription(const std::string &fulltext, int line)
 	if (line < 1) return "";
 
 	unsigned int start = 0;
-	for (; start<fulltext.length() ; start++) {
+	for (; start<fulltext.length() ; ++start) {
 		if (line <= 1) break;
 		if (fulltext[start] == '\n') line--;
 	}
@@ -196,7 +196,7 @@ static GroupList collectGroups(const std::string &fulltext)
 	bool inString = false; // check if its string or (line-) comment
 
 	// iterate through whole scad file
-	for (unsigned int i=0; i<fulltext.length(); i++) {
+	for (unsigned int i=0; i<fulltext.length(); ++i) {
 		// increase line number
 		if (fulltext[i] == '\n') {
 			lineNo++;

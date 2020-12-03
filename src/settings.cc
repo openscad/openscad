@@ -2,9 +2,6 @@
 #include "printutils.h"
 #include "input/InputEventMapper.h"
 
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
-
 namespace Settings {
 
 static std::list<SettingsEntry *> entries;
@@ -79,7 +76,7 @@ static Value axisValues() {
 	VectorType v;
 	v.emplace_back(value("None", _("None")));
 
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		auto userData = (boost::format("+%d") % (i+1)).str();
 		auto text = (boost::format(_("Axis %d")) % i).str();
 		v.emplace_back(value(userData, text));
@@ -185,6 +182,9 @@ SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Inden
 SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
 SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
 SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
+SettingsEntry Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", Value(true), Value(true));
+SettingsEntry Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", values("Alt", _("Alt"), "Left Mouse Button", _("Left Mouse Button"), "Either", _("Either")), Value("Alt"));
+
 
 SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
 SettingsEntry Settings::octoPrintApiKey("printing", "octoPrintApiKey", Value(""), Value(""));

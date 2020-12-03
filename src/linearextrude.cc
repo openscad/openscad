@@ -38,6 +38,7 @@
 
 #include <cmath>
 #include <sstream>
+#include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -77,7 +78,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	const auto &slices = c->lookup_variable("slices", true);
 
 	if (!file.isUndefined() && file.type() == Value::Type::STRING) {
-		printDeprecation("Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		auto filename = lookup_file(file.toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
@@ -104,14 +105,14 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin.isDefined() && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 	node->scale_x = node->scale_y = 1;
 	bool scaleOK = scale.getFiniteDouble(node->scale_x);
 	scaleOK &= scale.getFiniteDouble(node->scale_y);
 	scaleOK |= scale.getVec2(node->scale_x, node->scale_y, true);
 	if((origin.isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
-		PRINTB("WARNING: linear_extrude(..., scale=%s) could not be converted, %s", scale.toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., scale=%1$s) could not be converted",scale.toEchoString());
 	}
 
 	if (center.type() == Value::Type::BOOL)
@@ -128,16 +129,15 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	double slicesVal = 0;
 	slices.getFiniteDouble(slicesVal);
 	node->slices = static_cast<int>(slicesVal);
+	if (node->slices > 0) {
+		node->has_slices = true;
+	} 
 
 	node->twist = 0.0;
 	twist.getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
-		if (node->slices == 0) {
-			node->slices = static_cast<int>(fmax(2, fabs(Calc::get_fragments_from_r(node->height, node->fn, node->fs, node->fa) * node->twist / 360)));
-		}
 		node->has_twist = true;
 	}
-	node->slices = std::max(node->slices, 1);
 
 	if (node->filename.empty()) {
 		auto instantiatednodes = inst->instantiateChildren(evalctx);
@@ -169,12 +169,14 @@ std::string LinearExtrudeNode::toString() const
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist;
 	}
-	if (this->slices > 1) {
+	if (this->has_slices) {
 		stream << ", slices = " << this->slices;
 	}
 	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
-	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-
+	if (!this->has_slices) {
+		stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs;
+	}
+	stream << ")";
 	return stream.str();
 }
 
@@ -184,6 +186,6 @@ void register_builtin_dxf_linear_extrude()
 
 	Builtins::init("linear_extrude", new LinearExtrudeModule(),
 				{
-					"linear_extrude(number, center = true, convexity = 10, degrees, slices = 20, scale = 1.0 [, $fn])",
+					"linear_extrude(number, center = true, convexity = 10, twist, slices = 20, scale = 1.0 [, $fn])",
 				});
 }

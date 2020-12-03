@@ -58,6 +58,7 @@ travis_start ctest "Running tests using ctest"
 # opencsgtest_issue1258
 # throwntogethertest_issue1089
 # throwntogethertest_issue1215
+
 ctest $PARALLEL_CTEST -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\
@@ -81,7 +82,7 @@ opencsgtest_issue1165|\
 opencsgtest_issue1258|\
 throwntogethertest_issue1089|\
 throwntogethertest_issue1215\
-"
+$ENV_SPECIFIC_DISABLE"
 if [[ $? != 0 ]]; then
   echo "Test failure"
   exit 1

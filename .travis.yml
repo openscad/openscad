@@ -30,14 +30,34 @@ matrix:
         - apt
         - ccache
     - if: NOT branch = coverity_scan
+      os: linux
+      sudo: required
+      compiler: gcc
+      dist: focal
+      env:
+        - DIST="Ubuntu 20.04 (Focal)"
+        - PARALLEL_CTEST=-j4
+      before_install:
+        - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
+      cache:
+        - apt
+        - ccache
+    - if: branch = macos-dummy
+#   - if: NOT branch = coverity_scan
       os: osx
+      osx_image: xcode12.2
       compiler: clang
       env:
         - PARALLEL_CTEST=-j4
         - HOMEBREW_NO_AUTO_UPDATE=1
+        - ENV_SPECIFIC_DISABLE="|edges_view-options-tests"
       before_install:
         - test -d /usr/local/opt/opencsg/lib || { rmdir /usr/local/opt/opencsg; brew install opencsg; }
         - test -d /usr/local/opt/libzip/lib || { rmdir /usr/local/opt/libzip; brew install libzip; }
+        # prevent automatic upgrade to openjdk
+        - brew cask uninstall --force java
+        # prevent upgrades of non-critical packages that take long time
+        - brew pin node postgresql postgis ansible imagemagick
         - ./scripts/macosx-build-homebrew.sh
       before_cache:
         - brew cleanup

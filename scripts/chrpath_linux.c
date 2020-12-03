@@ -289,7 +289,7 @@ chrpath(const char *filename, const char *newpath, int convert)
     return 1;
   }
 
-  for (i = 0; i < ehdr.e_shnum; i++)
+  for (i = 0; i < ehdr.e_shnum; ++i)
   {
     if (read(fd, &shdr, sizeof(shdr)) != sizeof(shdr))
     {
@@ -490,7 +490,7 @@ elf_find_dynamic_section(int fd, Elf_Ehdr *ehdr, Elf_Phdr *phdr)
     return 1;
   }
 
-  for (i = 0; i < ehdr->e_phnum; i++)
+  for (i = 0; i < ehdr->e_phnum; ++i)
   {
     if (read(fd, phdr, sizeof(*phdr)) != sizeof(*phdr))
     {
@@ -615,13 +615,13 @@ killrpath(const char *filename)
      }
 
    dynpos = 0;
-   for (i = 0; dyns[i].d_tag != DT_NULL; i++)
+   for (i = 0; dyns[i].d_tag != DT_NULL; ++i)
      {
        dyns[dynpos] = dyns[i];
        if ( ! elf_dynpath_tag(dyns[i].d_tag) )
         dynpos++;
      }
-   for (; dynpos < i; dynpos++)
+   for (; dynpos < i; ++dynpos)
      dyns[dynpos].d_tag = DT_NULL;
 
    if (lseek(fd, phdr.p_offset, SEEK_SET) == -1

@@ -78,7 +78,7 @@ ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
 {
   const auto &vec = defaultValue.toVector();
   if (vec.size() == 0) return TEXT;
-  for (unsigned int i = 0;i < vec.size();i++) {
+  for (unsigned int i = 0;i < vec.size();++i) {
     if (vec[i].type() != Value::Type::NUMBER) {
       return TEXT;
     }

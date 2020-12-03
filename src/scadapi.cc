@@ -20,7 +20,7 @@ ScadApi::~ScadApi()
 void ScadApi::updateAutoCompletionList(const QStringList &context, QStringList &list)
 {
 	const QString c = context.last();
-	for (int a = 0;a < funcs.size();a++) {
+	for (int a = 0; a < funcs.size(); ++a) {
 		const ApiFunc &func = funcs.at(a);
 		const QString &name = func.get_name();
 		if (name.startsWith(c)) {
@@ -38,7 +38,7 @@ void ScadApi::autoCompletionSelected (const QString & /*selection*/)
 QStringList ScadApi::callTips (const QStringList &context, int /*commas*/, QsciScintilla::CallTipsStyle /*style*/, QList< int > & /*shifts*/)
 {
 	QStringList callTips;
-	for (int a = 0;a < funcs.size();a++) {
+	for (int a = 0; a < funcs.size(); ++a) {
 		if (funcs.at(a).get_name() == context.at(context.size() - 2)) {
 			callTips = funcs.at(a).get_params();
 			break;

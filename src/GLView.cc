@@ -7,7 +7,7 @@
 #include "renderer.h"
 #include "degree_trig.h"
 #include <cmath>
-
+#include "boost-utils.h"
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -66,16 +66,12 @@ void GLView::setColorScheme(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
+	LOG(message_group::UI_Warning,Location::NONE,"","GLView: unknown colorscheme %1$s",cs);
   }
 }
 
 void GLView::resizeGL(int w, int h)
 {
-#ifdef ENABLE_OPENCSG
-  shaderinfo.vp_size_x = w;
-  shaderinfo.vp_size_y = h;
-#endif
   cam.pixel_width = w;
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
@@ -155,6 +151,25 @@ void GLView::paintGL()
 }
 
 #ifdef ENABLE_OPENCSG
+
+void glErrorCheck() {
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
+  }
+}
+
+void glCompileCheck(GLuint shader) {
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status == GL_FALSE) {
+    int loglen;
+    char logbuffer[1000];
+    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
+    PRINTDB("OpenGL Shader Program Compile Error:\n%s", logbuffer);
+  }
+}
+
 void GLView::enable_opencsg_shaders()
 {
   const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
@@ -188,104 +203,79 @@ void GLView::enable_opencsg_shaders()
   }
 
   if (opencsg_support && this->has_shaders) {
-  /*
-    Uniforms:
-      1 color1 - face color
-      2 color2 - edge color
-      7 xscale
-      8 yscale
 
-    Attributes:
-      3 trig
-      4 pos_b
-      5 pos_c
-      6 mask
+    const char *vs_source = R"VS_PROG(
+      #version 110
 
-    Other:
-      9 width
-      10 height
+      uniform vec4 color1;        // face color
+      uniform vec4 color2;        // edge color
+      attribute vec3 barycentric; // barycentric form of vertex coord
+                                  // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
+      varying vec3 vBC;           // varying barycentric coords
+      varying float shading;      // multiplied by color1. color2 is without lighting
 
-    Outputs:
-      tp
-      tr
-      shading
-   */
-    const char *vs_source =
-			// Updated in this->resizeGL
-			"uniform float xscale, yscale;\n"
-	  	// The other two vectors of the triangle
-			"attribute vec3 pos_b, pos_c;\n"
-			// Trig: line width of edge: -1 dont draw
-			// mask: what is the current edge
-			// .x p0->p1, .y: p1->p2, .z p0->p2
-			"attribute vec3 trig, mask;\n"
-			// tp, tr infos for fragment shader edge highlighting
-			"varying vec3 tp, tr;\n"
-			// "darkdness" for fragment shader
-			"varying float shading;\n"
-			"void main() {\n"
-			"  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"  // projected vector
-			"  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n" // ?? pos_b = argument
-			"  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n" // ?? pos_b = argument
-			// Lengths of the sides of the rendered triangle
-			"  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-			"  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
-			"  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-			"  float s = (a + b + c) / 2.0;\n"
-			"  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
-			"  float ha = 2.0*A/a;\n"
-			"  gl_Position = p0;\n"
-			"  tp = mask * ha;\n"
-			"  tr = trig;\n"
-			"  vec3 normal, lightDir;\n"
-			"  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
-			"  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-			"  shading = 0.2 + abs(dot(normal, lightDir));\n"
-			"}\n";
+      void main(void) {
+        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+        vBC = barycentric;
+        vec3 normal, lightDir;
+        normal = normalize(gl_NormalMatrix * gl_Normal);
+        lightDir = normalize(vec3(gl_LightSource[0].position));
+        shading = 0.2 + abs(dot(normal, lightDir));
+      }
+    )VS_PROG";
 
-    /*
-      Inputs:
-        tp && tr - if any components of tp < tr, use color2 (edge color)
-        shading  - multiplied by color1. color2 is is without lighting
-    */
-    const char *fs_source =
-      "uniform vec4 color1, color2;\n"
-      "varying vec3 tp, tr, tmp;\n"
-      "varying float shading;\n"
-      "void main() {\n"
-      "  gl_FragColor = vec4(color1.r * shading, color1.g * shading, color1.b * shading, color1.a);\n"
-      "  if (tp.x < tr.x || tp.y < tr.y || tp.z < tr.z)\n"
-      "    gl_FragColor = color2;\n"
-      "}\n";
+    const char *fs_source = R"FS_PROG(
+      #version 110
+
+      uniform vec4 color1, color2;
+      varying vec3 vBC;
+      varying float shading;
+
+      vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
+        vec3 t;
+        t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+        return t * t * (3.0 - 2.0 * t);
+      }
+
+      float edgeFactor() {
+        const float th = 1.414; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
+        const float fade = 1.414; // thickness of fade (antialiasing) in screen pixels
+        vec3 d = fwidth(vBC);
+        vec3 a3 = smoothstep((th-fade)*d, th*d, vBC);
+        return min(min(a3.x, a3.y), a3.z);
+      }
+
+      void main(void) {
+        gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
+      }
+    )FS_PROG";
 
     auto vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
     glCompileShader(vs);
+    glCompileCheck(vs);
+    glErrorCheck();
 
     auto fs = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
     glCompileShader(fs);
+    glCompileCheck(fs);
+    glErrorCheck();
 
     auto edgeshader_prog = glCreateProgram();
     glAttachShader(edgeshader_prog, vs);
     glAttachShader(edgeshader_prog, fs);
     glLinkProgram(edgeshader_prog);
+    glErrorCheck();
 
     shaderinfo.progid = edgeshader_prog; // 0
     shaderinfo.type = GLView::shaderinfo_t::CSG_RENDERING;
     shaderinfo.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
+    glErrorCheck();
     shaderinfo.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-    shaderinfo.data.csg_rendering.trig = glGetAttribLocation(edgeshader_prog, "trig"); // 3
-    shaderinfo.data.csg_rendering.point_b = glGetAttribLocation(edgeshader_prog, "pos_b"); // 4
-    shaderinfo.data.csg_rendering.point_c = glGetAttribLocation(edgeshader_prog, "pos_c"); // 5
-    shaderinfo.data.csg_rendering.mask = glGetAttribLocation(edgeshader_prog, "mask"); // 6
-    shaderinfo.data.csg_rendering.xscale = glGetUniformLocation(edgeshader_prog, "xscale"); // 7
-    shaderinfo.data.csg_rendering.yscale = glGetUniformLocation(edgeshader_prog, "yscale"); // 8
-
-    auto err = glGetError();
-    if (err != GL_NO_ERROR) {
-      fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-    }
+    glErrorCheck();
+    shaderinfo.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric");
+    glErrorCheck();
 
     GLint status;
     glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
@@ -311,8 +301,30 @@ void GLView::enable_opencsg_shaders()
 }
 #endif
 
+
+#ifdef DEBUG
+// Requires OpenGL 4.3+ 
+/*
+  void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                  GLsizei length, const GLchar* message, const void* userParam)
+  {
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%X, severity = 0x%X, message = %s\n",
+            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message);
+  }
+//*/
+#endif
+
 void GLView::initializeGL()
 {
+#ifdef DEBUG
+/*
+  // Requires OpenGL 4.3+
+  glEnable              ( GL_DEBUG_OUTPUT );
+  glDebugMessageCallback( MessageCallback, 0 );
+//*/
+#endif
+
   glEnable(GL_DEPTH_TEST);
   glDepthRange(-far_far_away, +far_far_away);
 
@@ -651,7 +663,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5}};
 
 	// walk through axes
-	for (int di=0;di<6;di++){
+	for (int di=0; di<6; ++di){
 
 		// setup negative axes
 		double polarity = 1;

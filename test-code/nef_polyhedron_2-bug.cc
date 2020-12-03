@@ -65,7 +65,7 @@ void print(const Nef_polyhedron &RST)
 			std::cout << "Y\n";
 		}
 		else {
-			for (Hole_const_iterator hit = explorer.holes_begin(fit); hit != explorer.holes_end(fit); hit++){
+			for (Hole_const_iterator hit = explorer.holes_begin(fit); hit != explorer.holes_end(fit); ++hit){
 				std::cout << "Hole: ";
 				Halfedge_around_face_const_circulator hafc(hit), done(hit);
 				do{

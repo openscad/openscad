@@ -53,7 +53,8 @@ public:
     static SettingsEntry highlightCurrentLine;
     static SettingsEntry enableBraceMatching;
     static SettingsEntry enableLineNumbers;
-
+    static SettingsEntry enableNumberScrollWheel;
+    static SettingsEntry modifierNumberScrollWheel;
 	static SettingsEntry octoPrintUrl;
 	static SettingsEntry octoPrintApiKey;
 	static SettingsEntry octoPrintFileFormat;

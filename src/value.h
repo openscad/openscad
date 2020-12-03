@@ -51,16 +51,17 @@ public:
 
   class iterator {
   public:
+    // iterator_traits required types:
     using iterator_category = std::forward_iterator_tag ;
     using value_type        = double;
-    using difference_type   = void;
-    using reference         = value_type;
-    using pointer           = void;
+    using difference_type   = void;       // type used by operator-(iterator), not implemented for forward interator
+    using reference         = value_type; // type used by operator*(), not actually a reference
+    using pointer           = void;       // type used by operator->(), not implemented
     iterator(const RangeType &range, type_t type);
     iterator& operator++();
-    reference operator*() { return val; }
+    reference operator*();
     bool operator==(const iterator& other) const;
-    bool operator!=(const iterator& other) const { return !operator==(other); }
+    bool operator!=(const iterator& other) const;
   private:
     const RangeType &range;
     double val;
@@ -90,6 +91,10 @@ public:
       (this->begin_val == other.begin_val &&
        this->step_val == other.step_val &&
        n1 == n2);
+  }
+
+  bool operator!=(const RangeType &other) const {
+    return !(*this==other);
   }
 
   bool operator<(const RangeType &other) const {
@@ -226,6 +231,7 @@ public:
   str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); } // makes a copy of shared_ptr
 
   bool operator==(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str == rhs.str_ptr->u8str; }
+  bool operator!=(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str != rhs.str_ptr->u8str; }
   bool operator< (const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str <  rhs.str_ptr->u8str; }
   bool operator> (const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str >  rhs.str_ptr->u8str; }
   bool operator<=(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str <= rhs.str_ptr->u8str; }
@@ -249,20 +255,18 @@ private:
 class FunctionType {
 public:
   FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> args)
-    : ctx(ctx), expr(expr), args(std::move(args)) { }
-  FunctionType(FunctionType&&) = default;
-  FunctionType& operator=(FunctionType&&) = default;
-  bool operator==(const FunctionType&) const { return false; }
-  bool operator!=(const FunctionType& other) const { return !(*this == other); }
-  bool operator< (const FunctionType&) const { return false; }
-  bool operator> (const FunctionType&) const { return false; }
-  bool operator<=(const FunctionType&) const { return false; }
-  bool operator>=(const FunctionType&) const { return false; }
+    : ctx(ctx), expr(expr), args(args) { }
+  Value operator==(const FunctionType &other) const;
+  Value operator!=(const FunctionType &other) const;
+  Value operator< (const FunctionType &other) const;
+  Value operator> (const FunctionType &other) const;
+  Value operator<=(const FunctionType &other) const;
+  Value operator>=(const FunctionType &other) const;
 
   const std::shared_ptr<Context>& getCtx() const { return ctx; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
-  const AssignmentList& getArgs() const { return *args; }
-
+  const std::shared_ptr<AssignmentList>& getArgs() const { return args; }
+  friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<FunctionType>& f);
 private:
   std::shared_ptr<Context> ctx;
   std::shared_ptr<Expression> expr;
@@ -271,7 +275,39 @@ private:
 
 using FunctionPtr = ValuePtr<FunctionType>;
 
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
+std::ostream& operator<<(std::ostream& stream, const FunctionPtr& f);
+
+/*
+  Require a reason why (string), any time an undefined value is created/returned.
+  This allows for passing of "exception" information from low level functions (i.e. from value.cc)
+  up to Expression::evaluate() or other functions where a proper "WARNING: ..."
+  with ASTNode Location info (source file, line number) can be included.
+*/
+class UndefType
+{
+public:
+  UndefType() { } // TODO: eventually deprecate undef creation without a reason.
+  UndefType(const std::string &why) : reasons{why} { }
+
+  // Append another reason in case a chain of undefined operations are made before handling
+  UndefType &append(const std::string &why) { reasons.push_back(why); return *this; }
+
+  Value operator< (const UndefType &other) const;
+  Value operator> (const UndefType &other) const;
+  Value operator<=(const UndefType &other) const;
+  Value operator>=(const UndefType &other) const;
+  friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<UndefType>& u);
+
+  std::string toString() const;
+  bool empty() const { return reasons.empty(); }
+private:
+  // mutable to allow clearing reasons, which should avoid duplication of warnings that have already been displayed.
+  mutable std::vector<std::string> reasons;
+};
+
+using UndefPtr = ValuePtr<UndefType>;
+
+std::ostream& operator<<(std::ostream& stream, const UndefPtr& u);
 
 /**
  *  Value class encapsulates a boost::variant value which can represent any of the
@@ -300,6 +336,7 @@ public:
     RANGE,
     FUNCTION
   };
+  // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
 
   /**
@@ -448,7 +485,7 @@ public:
   };
 
 private:
-  Value() : value(boost::blank()) { } // Don't default construct empty Values.  If "undefined" needed, use reference to Value::undefined, or call Value::undef() for return by value
+  Value() : value(UndefPtr(std::string{})) { } // Don't default construct empty Values.  If "undefined" needed, use reference to Value::undefined, or call Value::undef() for return by value
 public:
   Value(const Value &) = delete; // never copy, move instead
   Value &operator=(const Value &v) = delete; // never copy, move instead
@@ -462,11 +499,14 @@ public:
                                                         // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
   template<class T> Value(T&& val) : value(std::forward<T>(val)) { }
 
+  static Value undef(const std::string &why); // creation of undef requires a reason!
+
   const std::string typeName() const;
   Type type() const { return static_cast<Type>(this->value.which()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }
   bool isUndefined() const { return this->type() == Type::UNDEFINED; }
+  bool isUncheckedUndef() const;
 
   // Conversion to boost::variant "BoundedType"s. const ref where appropriate.
   bool toBool() const;
@@ -486,6 +526,8 @@ public:
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
   std::string toEchoString(const tostring_visitor *visitor) const;
+  const UndefType& toUndef();
+  std::string toUndefString() const;
   void toStream(std::ostringstream &stream) const;
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
@@ -495,20 +537,21 @@ public:
 
   // Common Operators
   operator bool() const { return this->toBool(); }
-  bool operator==(const Value &v) const;
-  bool operator!=(const Value &v) const;
-  bool operator<(const Value &v) const;
-  bool operator<=(const Value &v) const;
-  bool operator>=(const Value &v) const;
-  bool operator>(const Value &v) const;
+  Value operator==(const Value &v) const;
+  Value operator!=(const Value &v) const;
+  Value operator< (const Value &v) const;
+  Value operator<=(const Value &v) const;
+  Value operator>=(const Value &v) const;
+  Value operator> (const Value &v) const;
   Value operator-() const;
-  Value operator[](const Value &v) const;
   Value operator[](size_t idx) const;
+  Value operator[](const Value &v) const;
   Value operator+(const Value &v) const;
   Value operator-(const Value &v) const;
   Value operator*(const Value &v) const;
   Value operator/(const Value &v) const;
   Value operator%(const Value &v) const;
+  Value operator^(const Value &v) const;
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
     if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
@@ -516,7 +559,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant<boost::blank, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
+  typedef boost::variant<UndefPtr, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
   static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
 
 private:

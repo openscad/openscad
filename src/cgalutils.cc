@@ -86,10 +86,11 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 				 std::string(e.what()).find("has_on") != std::string::npos) ||
 				std::string(e.what()).find("ss_plane.has_on(sv_prev->point())") != std::string::npos ||
 				std::string(e.what()).find("ss_circle.has_on(sp)") != std::string::npos) {
-			PRINT("PolySet has nonplanar faces. Attempting alternate construction");
+			LOG(message_group::None,Location::NONE,"","PolySet has nonplanar faces. Attempting alternate construction");
 			plane_error=true;
 		} else {
-			PRINTB("ERROR: CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			LOG(message_group::Error,Location::NONE,"","CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what());
+
 		}
 	}
 	if (plane_error) try {
@@ -102,7 +103,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("ERROR: Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			LOG(message_group::Error,Location::NONE,"","Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what());
 		}
 	CGAL::set_error_behaviour(old_behaviour);
 	return new CGAL_Nef_polyhedron(N);
@@ -131,7 +132,7 @@ namespace CGALUtils {
 
 		// lexicographic comparison
 		bool operator < (Vector3d const& a, Vector3d const& b) {
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 3; ++i) {
 				if (a[i] < b[i]) return true;
 				else if (a[i] == b[i]) continue;
 				return false;
@@ -171,12 +172,12 @@ namespace CGALUtils {
 		std::vector<Plane> facet_planes;
 		facet_planes.reserve(ps.polygons.size());
 
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
+		for (size_t i = 0; i < ps.polygons.size(); ++i) {
 			Plane plane;
 			auto N = ps.polygons[i].size();
 			if (N >= 3) {
 				std::vector<Point> v(N);
-				for (size_t j = 0; j < N; j++) {
+				for (size_t j = 0; j < N; ++j) {
 					v[j] = vector_convert<Point>(ps.polygons[i][j]);
 					Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
 					if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
@@ -189,10 +190,10 @@ namespace CGALUtils {
 			facet_planes.push_back(plane);
 		}
 
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
+		for (size_t i = 0; i < ps.polygons.size(); ++i) {
 			auto N = ps.polygons[i].size();
 			if (N < 3) continue;
-			for (size_t j = 0; j < N; j++) {
+			for (size_t j = 0; j < N; ++j) {
 				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
 				if (edge_to_facet_map.count(other_edge) == 0) return false;//
 				//Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
@@ -223,7 +224,7 @@ namespace CGALUtils {
 		while(!facets_to_visit.empty()) {
 			int f = facets_to_visit.front(); facets_to_visit.pop();
 
-			for (size_t i = 0; i < ps.polygons[f].size(); i++) {
+			for (size_t i = 0; i < ps.polygons[f].size(); ++i) {
 				int j = (i+1) % ps.polygons[f].size();
 				auto it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
 				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
@@ -305,7 +306,7 @@ namespace CGALUtils {
 		// 2. Validate mesh (manifoldness)
 		auto unconnected = GeometryUtils::findUnconnectedEdges(polygons);
 		if (unconnected > 0) {
-			PRINTB("Error: Non-manifold mesh encountered: %d unconnected edges", unconnected);
+			LOG(message_group::Error,Location::NONE,"","Non-manifold mesh encountered: %1$d unconnected edges",unconnected);
 		}
 		// 3. Triangulate each face
 		const auto& verts = allVertices.getArray();
@@ -332,7 +333,7 @@ namespace CGALUtils {
 #endif // debug
 #if 0 // For debugging
 		std::cerr.precision(20);
-		for (size_t i=0;i<allVertices.size();i++) {
+		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}		
 #endif // debug
@@ -369,7 +370,7 @@ namespace CGALUtils {
 		// 4. Validate mesh (manifoldness)
 		auto unconnected2 = GeometryUtils::findUnconnectedEdges(allTriangles);
 		if (unconnected2 > 0) {
-			PRINTB("Error: Non-manifold triangle mesh created: %d unconnected edges", unconnected2);
+			LOG(message_group::Error,Location::NONE,"","Non-manifold mesh created: %1$d unconnected edges",unconnected2);
 		}
 
 		for (const auto &t : allTriangles) {
@@ -381,7 +382,7 @@ namespace CGALUtils {
 
 #if 0 // For debugging
 		std::cerr.precision(20);
-		for (size_t i=0;i<allVertices.size();i++) {
+		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
 		}		
 #endif // debug

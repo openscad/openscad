@@ -53,5 +53,4 @@ group() {
 		cylinder($fn = 30, $fa = 12, $fs = 2, h = 8, r1 = 0, r2 = 2, center = true);
 	}
 }
-group();
 

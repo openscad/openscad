@@ -38,9 +38,9 @@ template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
 		result = 0;
 	}
 	if (status.str() != "ok") {
-		PRINTB("WARNING: problem converting this number: %s", std::to_string(input));
-		PRINTB("WARNING: %s", status.str());
-		PRINTB("WARNING: setting result to %u", result);
+		LOG(message_group::Warning,Location::NONE,"","Problem converting this number: %1$s",std::to_string(input));
+		LOG(message_group::Warning,Location::NONE,"","%1$s",status.str());
+		LOG(message_group::Warning,Location::NONE,"","setting result to %1$u",result);
 	}
 	return result;
 }

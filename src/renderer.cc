@@ -10,6 +10,10 @@
 #include "grid.h"
 #include <Eigen/LU>
 
+#ifdef ENABLE_OPENCSG
+  #include "GLView.h"
+#endif
+
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 {
 	if (colormode==ColorMode::NONE) return false;
@@ -117,49 +121,44 @@ void Renderer::setColorScheme(const ColorScheme &cs) {
 
 #ifdef ENABLE_OPENCSG
 static void draw_triangle(const GLView::shaderinfo_t *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2,
-                          double e0f, double e1f, double e2f, double z, bool mirror)
+                          bool e0, bool e1, bool e2, double z, bool mirror)
 {
-	GLView::shaderinfo_t::shader_type_t type =
-			(shaderinfo) ? shaderinfo->type : GLView::shaderinfo_t::NONE;
-
-	switch (type) {
+	// e0,e1,e2 are used to disable some edges from display.
+	// Edges are numbered to correspond with the vertex opposite of them.
+	// The edge shader draws edges when the minimum component of barycentric coords is near 0
+	// Disabled edges have their corresponding components set to 1.0 when they would otherwise be 0.0.
+	double d0 = e0 ? 0.0 : 1.0;
+	double d1 = e1 ? 0.0 : 1.0;
+	double d2 = e2 ? 0.0 : 1.0;
+	switch(shaderinfo->type) {
 	case GLView::shaderinfo_t::CSG_RENDERING:
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.trig, e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.point_b, p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.point_c, p2[0], p2[1], p2[2] + z);
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.mask, 0.0, 1.0, 0.0);
-		glVertex3d(p0[0], p0[1], p0[2] + z);
-		if (!mirror) {
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.trig, e0f, e1f, e2f);
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.point_b, p0[0], p0[1], p0[2] + z);
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.point_c, p2[0], p2[1], p2[2] + z);
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.mask, 0.0, 0.0, 1.0);
-			glVertex3d(p1[0], p1[1], p1[2] + z);
-		}
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.trig, e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.point_b, p0[0], p0[1], p0[2] + z);
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.point_c, p1[0], p1[1], p1[2] + z);
-		glVertexAttrib3d(shaderinfo->data.csg_rendering.mask, 1.0, 0.0, 0.0);
-		glVertex3d(p2[0], p2[1], p2[2] + z);
 		if (mirror) {
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.trig, e0f, e1f, e2f);
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.point_b, p0[0], p0[1], p0[2] + z);
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.point_c, p2[0], p2[1], p2[2] + z);
-			glVertexAttrib3d(shaderinfo->data.csg_rendering.mask, 0.0, 0.0, 1.0);
-			glVertex3d(p1[0], p1[1], p1[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+		} else {
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+			glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
 		}
 		break;
-	default:
+	case GLView::shaderinfo_t::NONE:
 	case GLView::shaderinfo_t::SELECT_RENDERING:
-		glVertex3d(p0[0], p0[1], p0[2] + z);
-		if (!mirror) {
-			glVertex3d(p1[0], p1[1], p1[2] + z);
-		}
-		glVertex3d(p2[0], p2[1], p2[2] + z);
 		if (mirror) {
-			glVertex3d(p1[0], p1[1], p1[2] + z);
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+		} else {
+			glVertex3f(p0[0], p0[1], p0[2] + z);
+			glVertex3f(p1[0], p1[1], p1[2] + z);
+			glVertex3f(p2[0], p2[1], p2[2] + z);
 		}
-		break;
 	}
 }
 #endif
@@ -185,10 +184,7 @@ static void gl_draw_triangle(const GLView::shaderinfo_t *shaderinfo, const Vecto
 	glNormal3d(nx / nl, ny / nl, nz / nl);
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
-		double e0f = e0 ? 2.0 : -1.0;
-		double e1f = e1 ? 2.0 : -1.0;
-		double e2f = e2 ? 2.0 : -1.0;
-		draw_triangle(shaderinfo, p0, p1, p2, e0f, e1f, e2f, z, mirrored);
+		draw_triangle(shaderinfo, p0, p1, p2, e0, e1, e2, z, mirrored);
 	}
 	else
 #endif
@@ -205,12 +201,6 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 
 	if (!ps) return;
 
-#ifdef ENABLE_OPENCSG
-	if (shaderinfo && shaderinfo->type == GLView::shaderinfo_t::CSG_RENDERING) {
-		glUniform1f(shaderinfo->data.csg_rendering.xscale, shaderinfo->vp_size_x);
-		glUniform1f(shaderinfo->data.csg_rendering.yscale, shaderinfo->vp_size_y);
-	}
-#endif /* ENABLE_OPENCSG */
 	if (ps->getDimension() == 2) {
 		// Render 2D objects 1mm thick, but differences slightly larger
 		double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
@@ -218,7 +208,7 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 
 		// Render top+bottom
 		for (double z = -zbase/2; z < zbase; z += zbase) {
-			for (size_t i = 0; i < ps->polygons.size(); i++) {
+			for (size_t i = 0; i < ps->polygons.size(); ++i) {
 				const Polygon *poly = &ps->polygons[i];
 				if (poly->size() == 3) {
 					if (z < 0) {
@@ -229,28 +219,28 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 				}
 				else if (poly->size() == 4) {
 					if (z < 0) {
-						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(3), poly->at(1), true, false, true, z, mirrored);
-						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(1), poly->at(3), true, false, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(3), poly->at(1), false, true, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(1), poly->at(3), false, true, true, z, mirrored);
 					} else {
-						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), true, false, true, z, mirrored);
-						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), true, false, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), false, true, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), false, true, true, z, mirrored);
 					}
 				}
 				else {
 					Vector3d center = Vector3d::Zero();
-					for (size_t j = 0; j < poly->size(); j++) {
+					for (size_t j = 0; j < poly->size(); ++j) {
 						center[0] += poly->at(j)[0];
 						center[1] += poly->at(j)[1];
 					}
 					center[0] /= poly->size();
 					center[1] /= poly->size();
-					for (size_t j = 1; j <= poly->size(); j++) {
+					for (size_t j = 1; j <= poly->size(); ++j) {
 						if (z < 0) {
 							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
-									false, true, false, z, mirrored);
+									true, false, false, z, mirrored);
 						} else {
 							gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()),
-									false, true, false, z, mirrored);
+									true, false, false, z, mirrored);
 						}
 					}
 				}
@@ -260,13 +250,13 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 		// Render sides
 		if (ps->getPolygon().outlines().size() > 0) {
 			for (const Outline2d &o : ps->getPolygon().outlines()) {
-				for (size_t j = 1; j <= o.vertices.size(); j++) {
+				for (size_t j = 1; j <= o.vertices.size(); ++j) {
 					Vector3d p1(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
 					Vector3d p2(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
 					Vector3d p3(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase/2);
 					Vector3d p4(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], zbase/2);
-					gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
-					gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
+					gl_draw_triangle(shaderinfo, p2, p1, p3, true, false, true, 0, mirrored);
+					gl_draw_triangle(shaderinfo, p2, p3, p4, true, true, false, 0, mirrored);
 				}
 }
 		}
@@ -274,33 +264,33 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 			// If we don't have borders, use the polygons as borders.
 			// FIXME: When is this used?
 			const Polygons *borders_p = &ps->polygons;
-			for (size_t i = 0; i < borders_p->size(); i++) {
+			for (size_t i = 0; i < borders_p->size(); ++i) {
 				const Polygon *poly = &borders_p->at(i);
-				for (size_t j = 1; j <= poly->size(); j++) {
+				for (size_t j = 1; j <= poly->size(); ++j) {
 					Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
 					Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
 					p1[2] -= zbase/2, p2[2] += zbase/2;
 					p3[2] -= zbase/2, p4[2] += zbase/2;
-					gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
-					gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
+					gl_draw_triangle(shaderinfo, p2, p1, p3, true, false, true, 0, mirrored);
+					gl_draw_triangle(shaderinfo, p2, p3, p4, true, true, false, 0, mirrored);
 				}
 			}
 		}
 		glEnd();
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
 			const Polygon *poly = &ps->polygons[i];
 			glBegin(GL_TRIANGLES);
 			if (poly->size() == 3) {
 				gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(2), true, true, true, 0, mirrored);
 			}
 			else if (poly->size() == 4) {
-				gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), true, false, true, 0, mirrored);
-				gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), true, false, true, 0, mirrored);
+				gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), false, true, true, 0, mirrored);
+				gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), false, true, true, 0, mirrored);
 			}
 			else {
 				Vector3d center = Vector3d::Zero();
-				for (size_t j = 0; j < poly->size(); j++) {
+				for (size_t j = 0; j < poly->size(); ++j) {
 					center[0] += poly->at(j)[0];
 					center[1] += poly->at(j)[1];
 					center[2] += poly->at(j)[2];
@@ -308,8 +298,8 @@ void Renderer::render_surface(shared_ptr<const class Geometry> geom, csgmode_e c
 				center[0] /= poly->size();
 				center[1] /= poly->size();
 				center[2] /= poly->size();
-				for (size_t j = 1; j <= poly->size(); j++) {
-					gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()), false, true, false, 0, mirrored);
+				for (size_t j = 1; j <= poly->size(); ++j) {
+					gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()), true, false, false, 0, mirrored);
 				}
 			}
 			glEnd();
@@ -367,10 +357,10 @@ void Renderer::render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode) 
 			}
 		}
 	} else if (ps->getDimension() == 3) {
-		for (size_t i = 0; i < ps->polygons.size(); i++) {
+		for (size_t i = 0; i < ps->polygons.size(); ++i) {
 			const Polygon *poly = &ps->polygons[i];
 			glBegin(GL_LINE_LOOP);
-			for (size_t j = 0; j < poly->size(); j++) {
+			for (size_t j = 0; j < poly->size(); ++j) {
 				const Vector3d &p = poly->at(j);
 				glVertex3d(p[0], p[1], p[2]);
 			}

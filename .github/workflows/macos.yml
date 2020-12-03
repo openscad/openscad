@@ -1,0 +1,40 @@
+name: macos
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Checkout MCAD
+      run: |
+        git submodule update --init --recursive
+    - name: Setup Homebrew
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: 1
+        ENV_SPECIFIC_DISABLE: "|edges_view-options-tests"
+      run: |
+        ./scripts/macosx-build-homebrew.sh
+    - name: Build OpenSCAD
+      run: |
+        qmake openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info
+        make -j2
+        cd tests
+        cmake .
+        make -j2
+    - name: Run Test Suite
+      run: |
+        cd tests
+        ctest -j2 -E 'edges_view-options-tests'
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (MacOS)
+        path: tests/Testing/Temporary/*_report.html

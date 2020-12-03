@@ -1,16 +1,15 @@
-group();
 intersection() {
 	linear_extrude(height = 100, center = true, convexity = 3, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-		import(file = "example013.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+		import(file = "example013.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 	}
 	multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
 		linear_extrude(height = 100, center = true, convexity = 3, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			import(file = "example013.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+			import(file = "example013.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 		linear_extrude(height = 100, center = true, convexity = 3, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			import(file = "example013.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+			import(file = "example013.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 		}
 	}
 }

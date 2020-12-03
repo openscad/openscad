@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <iomanip>
-
+#include "boost-utils.h"
 #include "PlatformUtils.h"
-#include "boosty.h"
+#include "printutils.h"
 
 #ifdef INSTALL_SUFFIX
 #define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
@@ -54,7 +54,7 @@ static std::string lookupResourcesPath()
 #endif
 
 	fs::path tmpdir;
-	for (int a = 0;searchpath[a] != nullptr;a++) {
+	for (int a = 0; searchpath[a] != nullptr; ++a) {
 	    tmpdir = resourcedir / searchpath[a];
 	    
 			// The resource folder is the folder which contains "color-schemes" (as well as 
@@ -70,7 +70,7 @@ static std::string lookupResourcesPath()
 	}
 
 	// resourcedir defaults to applicationPath
-	std::string result = boosty::canonical(resourcedir).generic_string();
+	std::string result = fs::canonical(resourcedir).generic_string();
 	PRINTDB("Using resource folder '%s'", result);
 	return result;
 }
@@ -96,14 +96,14 @@ bool PlatformUtils::createUserLibraryPath()
 	bool OK = false;
 	try {
 		if (!fs::exists(fs::path(path))) {
-			//PRINTB("Creating library folder %s", path );
+			LOG(message_group::None,Location::NONE,"","Creating library folder %1$s",path);
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
-			PRINTB("ERROR: Cannot create %s", path );
+			LOG(message_group::Error,Location::NONE,"","Cannot create %1$s",path);
 		}
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return OK;
 }
@@ -116,16 +116,16 @@ std::string PlatformUtils::userLibraryPath()
 		if (pathstr=="") return "";
 		path = fs::path( pathstr );
 		if (!fs::exists(path)) return "";
-		path = boosty::canonical( path );
-		//PRINTB("path size %i",boosty::stringy(path).size());
-		//PRINTB("lib path found: [%s]", path );
+		path = fs::canonical( path );
+		// LOG(message_group::None,Location::NONE,"","path size %1$i",fs::stringy(path).size());
+		// LOG(message_group::None,Location::NONE,"","lib path found: [%1$s]",path);
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "libraries";
-		//PRINTB("Appended path %s", path );
-		//PRINTB("Exists: %i", fs::exists(path) );
+		// LOG(message_group::None,Location::NONE,"","Appended path %1$s",path);
+		// LOG(message_group::None,Location::NONE,"","Exists: %1$i",fs::exists(path));
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return path.generic_string();
 }
@@ -139,12 +139,12 @@ std::string PlatformUtils::backupPath()
 		if (pathstr=="") return "";
 		path = fs::path( pathstr );
 		if (!fs::exists(path)) return "";
-		path = boosty::canonical( path );
+		path = fs::canonical( path );
 		if (path.empty()) return "";
 		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return path.generic_string();
 }
@@ -158,10 +158,10 @@ bool PlatformUtils::createBackupPath()
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
-			PRINTB("ERROR: Cannot create %s", path );
+			LOG(message_group::Error,Location::NONE,"","Cannot create %1$s",path);
 		}
 	} catch (const fs::filesystem_error& ex) {
-		PRINTB("ERROR: %s",ex.what());
+		LOG(message_group::Error,Location::NONE,"","%1$s",ex.what());
 	}
 	return OK;
 }

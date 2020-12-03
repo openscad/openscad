@@ -1,29 +1,4 @@
 group();
-group() {
-	group();
-}
-group() {
-	group();
-}
-group() {
-	group();
-}
-group() {
-	group();
-}
-group() {
-	group();
-}
-group() {
-	group();
-}
-group() {
-	group();
-}
-group();
-group() {
-	group();
-}
 group();
 group();
 group();
@@ -32,31 +7,10 @@ group();
 group();
 group();
 group();
-group();
-group();
-group();
-group();
-group();
-group();
-group();
-group() {
-	group();
-}
-group();
-group();
-group();
-group();
-group();
-group();
-group();
-group() {
-	group();
-}
 group();
 cube(size = [1, 1, 1], center = false);
 sphere($fn = 0, $fa = 12, $fs = 2, r = inf);
 cylinder($fn = 0, $fa = 12, $fs = 2, h = inf, r1 = -inf, r2 = -inf, center = false);
-group();
 group();
 group();
 group();

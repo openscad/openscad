@@ -240,6 +240,16 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
+find_package(Cairo 1.14 QUIET)
+if (CAIRO_VERSION)
+  message(STATUS "Cairo: ${CAIRO_VERSION}")
+  include_directories(${CAIRO_INCLUDE_DIRS})
+  list(APPEND COMMON_LIBRARIES ${CAIRO_LIBRARIES})
+  add_definitions(-DENABLE_CAIRO)
+else()
+  message(STATUS "Cairo: disabled")
+endif()
+
 find_package(FLEX REQUIRED QUIET)
 message(STATUS "Flex: ${FLEX_VERSION}")
 
@@ -421,6 +431,7 @@ set(CORE_SOURCES
   src/export_amf.cc
   src/export_dxf.cc
   src/export_off.cc
+  src/export_pdf.cc
   src/export_stl.cc
   src/export_svg.cc
   src/expr.cc
@@ -585,6 +596,7 @@ set(GUI_SOURCES
   src/AutoUpdater.cc
   src/Console.cc
   src/Dock.cc
+  src/ErrorLog.cc
   src/EventFilter.h
   src/FontListDialog.cc
   src/FontListTableView.cc

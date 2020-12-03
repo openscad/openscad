@@ -39,6 +39,7 @@
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include "ModuleInstantiation.h"
+#include "boost-utils.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -113,8 +114,8 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 
 	if (d.type() == Value::Type::NUMBER) {
 		if (r_defined) {
-			std::string locStr = loc.toRelativeString(ctx->documentPath());
-			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too, %s", radius_var % diameter_var % locStr);
+			LOG(message_group::Warning,loc,ctx->documentPath(),
+				"Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.",radius_var,diameter_var);
 		}
 		return d.toDouble() / 2.0;
 	} else if (r_defined) {
@@ -134,7 +135,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	AssignmentList args;
 	AssignmentList optargs;
 	if(inst->scope.hasChildren()){
-		PRINTB("WARNING: module %s() does not support child modules, %s", node->name() % inst->location().toRelativeString(ctx->documentPath()));
+		LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+			"module %1$s() does not support child modules",node->name());
 	}
 
 	switch (this->type) {
@@ -175,11 +177,13 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	node->fa = c->lookup_variable("$fa").toDouble();
 
 	if (node->fs < F_MINIMUM) {
-		PRINTB("WARNING: $fs too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
+		LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+			"$fs too small - clamping to %1$f",F_MINIMUM);
 		node->fs = F_MINIMUM;
 	}
 	if (node->fa < F_MINIMUM) {
-		PRINTB("WARNING: $fa too small - clamping to %f, %s", F_MINIMUM % inst->location().toRelativeString(ctx->documentPath()));
+		LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+			"$fa too small - clamping to %1$f",F_MINIMUM);
 		node->fa = F_MINIMUM;
 	}
 
@@ -194,13 +198,12 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			converted |= size.getDouble(node->z);
 			converted |= size.getVec3(node->x, node->y, node->z);
 			if (!converted) {
-				PRINTB("WARNING: Unable to convert cube(size=%s, ...) parameter to a number or a vec3 of numbers, %s", size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
 			} else if(OpenSCAD::rangeCheck) {
 				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
-					PRINTB("WARNING: cube(size=%s, ...), %s",
-						size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"cube(size=%1$s, ...)",size.toEchoString());
 				}
 			}
 		}
@@ -214,8 +217,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-				PRINTB("WARNING: sphere(r=%s), %s",
-					r.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+					"sphere(r=%1$s)",r.toEchoString());
 			}
 		}
 		break;
@@ -232,7 +235,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if(r.type() == Value::Type::NUMBER &&
 			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 			){
-				PRINTB("WARNING: Cylinder parameters ambiguous, %s", inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+					"Cylinder parameters ambiguous");
 		}
 
 		if (r.type() == Value::Type::NUMBER) {
@@ -248,14 +252,13 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 		if(OpenSCAD::rangeCheck){
 			if (node->h <= 0 || !std::isfinite(node->h)){
-				PRINTB("WARNING: cylinder(h=%s, ...), %s",
-					h.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"cylinder(h=%1$s, ...)",h.toEchoString());
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
-				PRINTB("WARNING: cylinder(r1=%s, r2=%s, ...), %s",
-					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()) %
-					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()) %
-					inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+					"cylinder(r1=%1$s, r2=%2$s, ...)",
+					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()),
+					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()));
 			}
 		}
 
@@ -272,7 +275,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			// backwards compatible
 			node->faces = c->lookup_variable("triangles", true).clone();
 			if (node->faces.type() != Value::Type::UNDEFINED) {
-				printDeprecation("polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+				LOG(message_group::Deprecated,Location::NONE,"","polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
 		break;
@@ -286,14 +289,13 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			converted |= size.getDouble(node->y);
 			converted |= size.getVec2(node->x, node->y);
 			if (!converted) {
-				PRINTB("WARNING: Unable to convert square(size=%s, ...) parameter to a number or a vec2 of numbers, %s", size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
 			} else if (OpenSCAD::rangeCheck) {
 				bool ok = true;
 				ok &= (node->x > 0) && (node->y > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y);
 				if(!ok){
-					PRINTB("WARNING: square(size=%s, ...), %s",
-						size.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"square(size=%1$s, ...)",size.toEchoString());
 				}
 			}
 		}
@@ -307,8 +309,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
-				PRINTB("WARNING: circle(r=%s), %s",
-					r.toEchoString() % inst->location().toRelativeString(ctx->documentPath()));
+				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+					"circle(r=%1$s)",r.toEchoString());
 			}
 		}
 		break;
@@ -332,7 +334,7 @@ struct point2d {
 
 static void generate_circle(point2d *circle, double r, int fragments)
 {
-	for (int i=0; i<fragments; i++) {
+	for (int i=0; i<fragments; ++i) {
 		double phi = (360.0 * i) / fragments;
 		circle[i].x = r * cos_degrees(phi);
 		circle[i].y = r * sin_degrees(phi);
@@ -423,7 +425,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			auto ring = std::vector<ring_s>(rings);
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
-			for (int i = 0; i < rings; i++) {
+			for (int i = 0; i < rings; ++i) {
 //			double phi = (180.0 * (i + offset)) / (fragments/2);
 				double phi = (180.0 * (i + 0.5)) / rings;
 				double r = r1 * sin_degrees(phi);
@@ -433,10 +435,10 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			p->append_poly();
-			for (int i = 0; i < fragments; i++)
+			for (int i = 0; i < fragments; ++i)
 				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
-			for (int i = 0; i < rings-1; i++) {
+			for (int i = 0; i < rings-1; ++i) {
 				auto r1 = &ring[i];
 				auto  r2 = &ring[i+1];
 				int r1i = 0, r2i = 0;
@@ -464,7 +466,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			}
 
 			p->append_poly();
-			for (int i = 0; i < fragments; i++) {
+			for (int i = 0; i < fragments; ++i) {
 				p->insert_vertex(ring[rings-1].points[i].x,
 												 ring[rings-1].points[i].y,
 												 ring[rings-1].z);
@@ -495,7 +497,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			generate_circle(circle1.data(), r1, fragments);
 			generate_circle(circle2.data(), r2, fragments);
 
-			for (int i=0; i<fragments; i++) {
+			for (int i=0; i<fragments; ++i) {
 				int j = (i+1) % fragments;
 				if (r1 == r2) {
 					p->append_poly();
@@ -521,13 +523,13 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			if (this->r1 > 0) {
 				p->append_poly();
-				for (int i=0; i<fragments; i++)
+				for (int i=0; i<fragments; ++i)
 					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 			}
 
 			if (this->r2 > 0) {
 				p->append_poly();
-				for (int i=0; i<fragments; i++)
+				for (int i=0; i<fragments; ++i)
 					p->append_vertex(circle2[i].x, circle2[i].y, z2);
 			}
 		}
@@ -548,16 +550,16 @@ const Geometry *PrimitiveNode::createGeometry() const
 					double px, py, pz;
 					if (!pts[pt_i].getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
-						PRINTB("ERROR: Unable to convert points[%d] = %s to a vec3 of numbers, %s", pt_i % pts[pt_i].toEchoString() % this->modinst->location().toRelativeString(this->document_path));
+						LOG(message_group::Error,this->modinst->location(),this->document_path,"Unable to convert points[%1$d] = %2$s to a vec3 of numbers",pt_i,pts[pt_i].toEchoString());
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
 				} else {
-					PRINTB("WARNING: Point index %d is out of bounds (from faces[%d][%d]), %s", pt_i % face_i % fp_i % this->modinst->location().toRelativeString(this->document_path));
+					LOG(message_group::Warning,this->modinst->location(),this->document_path,"Point index %1$d is out of bounds (from faces[%2$d][%3$d])",pt_i,face_i,fp_i);
 				}
-				fp_i++;
+				++fp_i;
 			}
-			face_i++;
+			++face_i;
 		}
 	}
 		break;
@@ -588,7 +590,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 
 			Outline2d o;
 			o.vertices.resize(fragments);
-			for (int i=0; i < fragments; i++) {
+			for (int i=0; i < fragments; ++i) {
 				double phi = (360.0 * i) / fragments;
 				o.vertices[i] = {this->r1 * cos_degrees(phi), this->r1 * sin_degrees(phi)};
 			}
@@ -605,34 +607,39 @@ const Geometry *PrimitiveNode::createGeometry() const
 			size_t i = 0;
 			for (const auto &val : this->points.toVector()) {
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					PRINTB("ERROR: Unable to convert points[%d] = %s to a vec2 of numbers, %s", i % val.toEchoString() % this->modinst->location().toRelativeString(this->document_path));
+					LOG(message_group::Error,this->modinst->location(),this->document_path,"Unable to convert points[%1$d] = %2$s to a vec2 of numbers",i,val.toEchoString());
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
-				i++;
+				++i;
 			}
 
 			if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
 				p->addOutline(outline);
 			}
 			else {
+				size_t path_i = 0;
 				for (const auto &polygon : this->paths.toVector()) {
 					Outline2d curroutline;
+					size_t path_pt_i = 0;
 					for (const auto &index : polygon.toVector()) {
 						unsigned int idx = (unsigned int)index.toDouble();
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
+						} else {
+							LOG(message_group::Warning,this->modinst->location(),this->document_path,"Point index %1$d is out of bounds (from paths[%2$d][%3$d])",idx , path_i , path_pt_i);
 						}
-						// FIXME: Warning on out of bounds?
+						++path_pt_i;
 					}
 					p->addOutline(curroutline);
+					++path_i;
 				}
 			}
 
 			if (p->outlines().size() > 0) {
 				p->setConvexity(convexity);
 			}
-	}
+		}
 	}
 
 	return g;

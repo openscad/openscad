@@ -23,7 +23,7 @@ OffscreenView::~OffscreenView()
 #ifdef ENABLE_OPENCSG
 void OffscreenView::display_opencsg_warning()
 {
-  PRINT("OpenSCAD recommended OpenGL version is 2.0.");
+	LOG(message_group::None,Location::NONE,"","OpenSCAD recommended OpenGL version is 2.0.");
 }
 #endif
 

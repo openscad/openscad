@@ -24,7 +24,7 @@ ECHO: [3, 4, undef]
 ECHO: [3, 4, 5, 6]
 ECHO: [3, 4, 5, 6, true]
 ECHO: [3, 4, "5", 6, "test"]
-WARNING: begin is greater than the end, but step is positive, in file concat-tests.scad, line 33
+WARNING: begin is greater than the end, but step is positive in file concat-tests.scad, line 33
 ECHO: [3, 4, true, 6, [4 : 1 : 3]]
 ECHO: "--- element / vector"
 ECHO: [3]

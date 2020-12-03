@@ -40,7 +40,7 @@
 #include "feature.h"
 #include "printutils.h"
 #include <boost/bind.hpp>
-
+#include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -59,7 +59,7 @@ namespace {
 namespace /* anonymous*/ {
 
 	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
-		for (size_t i=0; i < l.size(); i++) {
+		for (size_t i=0; i < l.size(); ++i) {
 			const auto &arg = l[i];
 			if (i > 0) o << ", ";
 			if (!arg->getName().empty()) o << arg->getName()  << " = ";
@@ -68,6 +68,12 @@ namespace /* anonymous*/ {
 		return o;
 	}
 
+}
+
+Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& context) const {
+	if (val.isUncheckedUndef())
+		LOG(message_group::Warning,loc,context->documentPath(),"%1$s",val.toUndefString());
+	return std::move(val);
 }
 
 bool Expression::isLiteral() const
@@ -82,28 +88,22 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expres
 Value UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
-	case (Op::Not):
-		return !this->expr->evaluate(context);
-	case (Op::Negate):
-		return -this->expr->evaluate(context);
+	case (Op::Not):    return !this->expr->evaluate(context);
+	case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
 	default:
-		return Value::undefined.clone();
-		// FIXME: error:
+		assert(false && "Non-existent unary operator!");
+		throw EvaluationException("Non-existent unary operator!");
 	}
 }
 
 const char *UnaryOp::opString() const
 {
 	switch (this->op) {
-	case Op::Not:
-		return "!";
-		break;
-	case Op::Negate:
-		return "-";
-		break;
+	case Op::Not:    return "!";
+	case Op::Negate: return "-";
 	default:
-		return "";
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent unary operator!");
+		throw EvaluationException("Non-existent unary operator!");
 	}
 }
 
@@ -126,100 +126,62 @@ Value BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 	switch (this->op) {
 	case Op::LogicalAnd:
 		return this->left->evaluate(context) && this->right->evaluate(context);
-		break;
 	case Op::LogicalOr:
 		return this->left->evaluate(context) || this->right->evaluate(context);
-		break;
 	case Op::Exponent:
-		return Value(pow(this->left->evaluate(context).toDouble(), this->right->evaluate(context).toDouble()));
-		break;
+		return checkUndef(this->left->evaluate(context) ^  this->right->evaluate(context), context);
 	case Op::Multiply:
-		return this->left->evaluate(context) * this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) *  this->right->evaluate(context), context);
 	case Op::Divide:
-		return this->left->evaluate(context) / this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) /  this->right->evaluate(context), context);
 	case Op::Modulo:
-		return this->left->evaluate(context) % this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) %  this->right->evaluate(context), context);
 	case Op::Plus:
-		return this->left->evaluate(context) + this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) +  this->right->evaluate(context), context);
 	case Op::Minus:
-		return this->left->evaluate(context) - this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) -  this->right->evaluate(context), context);
 	case Op::Less:
-		return this->left->evaluate(context) < this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) <  this->right->evaluate(context), context);
 	case Op::LessEqual:
-		return this->left->evaluate(context) <= this->right->evaluate(context);
-		break;
-	case Op::Greater:
-		return this->left->evaluate(context) > this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) <= this->right->evaluate(context), context);
+	case Op::Greater:{
+		auto l = this->left->evaluate(context);
+		auto r = this->right->evaluate(context);
+		auto v = l > r;
+		return checkUndef(this->left->evaluate(context) >  this->right->evaluate(context), context);
+	}
 	case Op::GreaterEqual:
-		return this->left->evaluate(context) >= this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) >= this->right->evaluate(context), context);
 	case Op::Equal:
-		return this->left->evaluate(context) == this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) == this->right->evaluate(context), context);
 	case Op::NotEqual:
-		return this->left->evaluate(context) != this->right->evaluate(context);
-		break;
+		return checkUndef(this->left->evaluate(context) != this->right->evaluate(context), context);
 	default:
-		return Value::undefined.clone();
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent binary operator!");
+		throw EvaluationException("Non-existent binary operator!");
 	}
 }
 
 const char *BinaryOp::opString() const
 {
 	switch (this->op) {
-	case Op::LogicalAnd:
-		return "&&";
-		break;
-	case Op::LogicalOr:
-		return "||";
-		break;
-	case Op::Exponent:
-		return "^";
-		break;
-	case Op::Multiply:
-		return "*";
-		break;
-	case Op::Divide:
-		return "/";
-		break;
-	case Op::Modulo:
-		return "%";
-		break;
-	case Op::Plus:
-		return "+";
-		break;
-	case Op::Minus:
-		return "-";
-		break;
-	case Op::Less:
-		return "<";
-		break;
-	case Op::LessEqual:
-		return "<=";
-		break;
-	case Op::Greater:
-		return ">";
-		break;
-	case Op::GreaterEqual:
-		return ">=";
-		break;
-	case Op::Equal:
-		return "==";
-		break;
-	case Op::NotEqual:
-		return "!=";
-		break;
+	case Op::LogicalAnd:   return "&&";
+	case Op::LogicalOr:    return "||";
+	case Op::Exponent:     return "^";
+	case Op::Multiply:     return "*";
+	case Op::Divide:       return "/";
+	case Op::Modulo:       return "%";
+	case Op::Plus:         return "+";
+	case Op::Minus:        return "-";
+	case Op::Less:         return "<";
+	case Op::LessEqual:    return "<=";
+	case Op::Greater:      return ">";
+	case Op::GreaterEqual: return ">=";
+	case Op::Equal:        return "==";
+	case Op::NotEqual:     return "!=";
 	default:
-		return "";
-		// FIXME: Error: unknown op
+		assert(false && "Non-existent binary operator!");
+		throw EvaluationException("Non-existent binary operator!");
 	}
 }
 
@@ -295,11 +257,11 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 */
 static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
 	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINT_DEPRECATION("Using ranges of the form [begin:end] with begin value greater than the end value is deprecated, %s", locs);
+	LOG(message_group::Deprecated,loc,ctx->documentPath(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
+
 static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINTB("WARNING: begin %s than the end, but step %s, %s", begin % step % locs);
+	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s",begin,step);
 }
 
 Value Range::evaluate(const std::shared_ptr<Context>& context) const
@@ -396,7 +358,7 @@ Value Vector::evaluate(const std::shared_ptr<Context>& context) const
 void Vector::print(std::ostream &stream, const std::string &) const
 {
 	stream << "[";
-	for (size_t i=0; i < this->children.size(); i++) {
+	for (size_t i=0; i < this->children.size(); ++i) {
 		if (i > 0) stream << ", ";
 		stream << *this->children[i];
 	}
@@ -480,8 +442,7 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+	LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
 }
 
 /**
@@ -492,10 +453,10 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
-	PRINTB("TRACE: called by '%s', %s.", val->get_name() % val->location().toRelativeString(ctx->documentPath()));
+	LOG(message_group::Trace,val->location(),ctx->documentPath(),"called by '%1$s'",val->get_name());
 }
 static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
-	PRINTB("WARNING: Can't call function on %s %s", name % loc.toRelativeString(ctx->documentPath()));
+	LOG(message_group::Warning,loc,ctx->documentPath(),"Can't call function on %1$s",name);
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
@@ -573,7 +534,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 				return Value::undefined.clone();
 			} else {
 				const auto &func = v.toFunction();
-				return evaluate_function(name, func.getExpr(), func.getArgs(), func.getCtx(), evalCtx.ctx, this->loc);
+				return evaluate_function(name, func.getExpr(), *(func.getArgs()), func.getCtx(), evalCtx.ctx, this->loc);
 			}
 		} else if (isLookup) {
 			return context->evaluate_function(name, evalCtx.ctx);
@@ -644,7 +605,7 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	PRINTB("%s", STR("ECHO: " << *echo_context.ctx));
+	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(*echo_context.ctx));
 	return expr;
 }
 
@@ -722,7 +683,7 @@ Value LcEach::evalRecur(Value &&v, const std::shared_ptr<Context>& context) cons
 		const RangeType &range = v.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
 			EmbeddedVectorType vec;
 			for (double d : range) vec.emplace_back(d);
@@ -777,7 +738,7 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
 		const RangeType &range = it_values.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % loc.toRelativeString(context->documentPath()));
+           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
 			EmbeddedVectorType vec;
 			for (double d : range) {
@@ -830,8 +791,7 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
         vec.emplace_back(this->expr->evaluate(c.ctx));
 
         if (counter++ == 1000000) {
-            std::string locs = loc.toRelativeString(context->documentPath());
-            PRINTB("ERROR: for loop counter exceeded limit, %s", locs);
+			LOG(message_group::Error,loc,context->documentPath(),"For loop counter exceeded limit");
             throw LoopCntException::create("for", loc);
         }
 
@@ -889,18 +849,17 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 		const Expression *expr = assignments["condition"];
 		const Value &message = c->lookup_variable("message", true);
 
-		const auto locs = evalctx->loc.toRelativeString(context->documentPath());
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
 		if (message.isDefined()) {
-			PRINTB("ERROR: Assertion%s failed: %s %s", exprText % message.toEchoString() % locs);
+			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed: %2$s",exprText,message.toEchoString());
 		} else {
-			PRINTB("ERROR: Assertion%s failed %s", exprText % locs);
+			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed",exprText);
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
 }
 
-Value evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
+Value evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
 		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
 {
 	if (!expr) return Value::undefined.clone();
@@ -963,8 +922,7 @@ Value evaluate_function(const std::string& name, const std::shared_ptr<Expressio
 		}
 
 		if (counter++ == 1000000) {
-			const std::string locs = loc.toRelativeString(ctx->documentPath());
-			PRINTB("ERROR: Recursion detected calling function '%s' %s", name % locs);
+			LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
 			throw RecursionException::create("function", name,loc);
 		}
 	}

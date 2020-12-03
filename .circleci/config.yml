@@ -100,7 +100,7 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: "10.1.0"
+      xcode: 12.2.0
     steps:
       - checkout
       - run:
@@ -199,27 +199,47 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  master-build:
     jobs:
       - openscad-mxe-32bit:
           context: secret-context
           filters:
               branches:
-                  ignore:
-                      - coverity_scan
-                      - /^(?i:continuous)$/
+                  only:
+                      - master
       - openscad-mxe-64bit:
           context: secret-context
           filters:
               branches:
-                  ignore:
-                      - coverity_scan
-                      - /^(?i:continuous)$/
+                  only:
+                      - master
       - openscad-appimage-64bit:
           context: secret-context
           filters:
               branches:
+                  only:
+                      - master
+  branch-build:
+    jobs:
+      - openscad-mxe-32bit:
+          filters:
+              branches:
                   ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-mxe-64bit:
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-appimage-64bit:
+          filters:
+              branches:
+                  ignore:
+                      - master
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-macos:

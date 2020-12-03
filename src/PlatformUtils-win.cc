@@ -38,7 +38,7 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
-	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
+	// LOG(message_group::None,Location::NONE,"","utf16 to utf8 conversion: numbytes %1$i",numbytes);
 
 	std::string utf8_str(numbytes,0);
 	lpMultiByteStr = &utf8_str[0];
@@ -49,8 +49,8 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 
 	if (result != numbytes) {
 		DWORD errcode = GetLastError();
-		PRINT("ERROR: error converting w_char str to utf8 string");
-		PRINTB("ERROR: error code %i",errcode);
+		LOG(message_group::Error,Location::NONE,"","Error converting w_char str to utf8 string");
+		LOG(message_group::Error,Location::NONE,"","error code %1$i",errcode);
 	}
 
 	return utf8_str;
@@ -93,7 +93,7 @@ std::string PlatformUtils::documentsPath()
 {
 	const std::string retval = getFolderPath(CSIDL_PERSONAL);
 	if (retval.empty()) {
-	    PRINT("ERROR: Could not find My Documents location");
+		LOG(message_group::Error,Location::NONE,"","Could not find My Documents location");
 	}
 	return retval;
 }
@@ -102,7 +102,7 @@ std::string PlatformUtils::userConfigPath()
 {
 	const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
 	if (retval.empty()) {
-	    PRINT("ERROR: Could not find Local AppData location");
+		LOG(message_group::Error,Location::NONE,"","Could not find Local AppData location");
 	}
 	return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }

@@ -334,13 +334,7 @@ expr
         : logic_or
         | TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
             {
-              if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
-                $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
-              } else {
-                PRINTB("WARNING: Support for function literals is disabled %s",
-                LOCD("literal", @$).toRelativeString(mainFilePath.parent_path().generic_string()));
-                $$ = new Literal(Value::undefined.clone(), LOCD("literal", @$));
-              }
+              $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               delete $3;
             }
         | logic_or '?' expr ':' expr
@@ -690,8 +684,8 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
-         (*sourcefile()) % lexerget_lineno() % s);
+	Location loc = Location(lexerget_lineno(), -1, -1, -1, sourcefile());
+	LOG(message_group::Error, loc, "", "Parser error: %1$s", s);
 }
 
 #ifdef DEBUG
@@ -702,6 +696,28 @@ static Location debug_location(const std::string& info, const YYLTYPE& loc)
 	return location;
 }
 #endif
+
+static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path)
+{
+	LOG(message_group::Warning,
+			loc,
+			path.parent_path().generic_string(),
+			"%1$s was assigned on line %2$i but was overwritten",
+			assignment->getName(),
+			assignment->location().firstLine());
+
+}
+
+static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path1, const fs::path& path2)
+{
+	LOG(message_group::Warning,
+			loc,
+			path1.parent_path().generic_string(),
+			"%1$s was assigned on line %2$i of %3$s but was overwritten",
+			assignment->getName(),
+			assignment->location().firstLine(),
+			path2);
+}
 
 void handle_assignment(const std::string token, Expression *expr, const Location loc)
 {
@@ -718,28 +734,16 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {
 				//both assignments in the mainFile
-				PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
-						assignment->getName() %
-						assignment->location().firstLine() %
-						loc.firstLine());
+				warn_reassignment(loc, assignment, mainFilePath);
 			} else if (uncPathCurr == uncPathPrev) {
 				//assignment overwritten within the same file
 				//the line number being equal happens, when a file is included multiple times
 				if (assignment->location().firstLine() != loc.firstLine()) {
-					PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-							assignment->getName() %
-							assignment->location().firstLine() %
-							uncPathPrev %
-							loc.firstLine());
+					warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 				}
 			} else if (prevFile == mainFile && currFile != mainFile) {
 				//assignment from the mainFile overwritten by an include
-				PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
-						assignment->getName() %
-						assignment->location().firstLine() %
-						uncPathPrev %
-						loc.firstLine() %
-						uncPathCurr);
+				warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 			}
 			assignment->setExpr(shared_ptr<Expression>(expr));
 			assignment->setLocation(loc);

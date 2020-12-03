@@ -14,7 +14,7 @@ ECHO: false
 ECHO: false
 ECHO: false
 ECHO: "resulting in warnings:"
-WARNING: is_string() number of parameters does not match, in file isstring-test.scad, line 17
+WARNING: is_string() number of parameters does not match in file isstring-test.scad, line 17
 ECHO: undef
-WARNING: is_string() number of parameters does not match, in file isstring-test.scad, line 18
+WARNING: is_string() number of parameters does not match in file isstring-test.scad, line 18
 ECHO: undef

@@ -2,6 +2,7 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "AST.h"
+#include "boost-utils.h"
 
 #include <fstream>
 #include <boost/predef.h>
@@ -51,7 +52,7 @@ static void read_stl_facet(std::ifstream &f, stl_facet &facet)
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #if BOOST_ENDIAN_BIG_BYTE
-	for ( int i = 0; i < 12; i++ ) {
+	for ( int i = 0; i < 12; ++i ) {
 		uint32_byte_swap( facet.data32[ i ] );
 	}
 	// we ignore attribute byte count
@@ -65,7 +66,7 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 	// Open file and position at the end
 	std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if (!f.good()) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
+		LOG(message_group::Warning,Location::NONE,"","Can't open import file '%1$s', import() at line %2$d",filename,loc.firstLine());
 		return p;
 	}
 	
@@ -109,12 +110,12 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 			boost::smatch results;
 			if (boost::regex_search(line, results, ex_vertices)) {
 				try {
-					for (int v=0;v<3;v++) {
+					for (int v=0; v<3; ++v) {
 						vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
 					}
 				}
 				catch (const boost::bad_lexical_cast &blc) {
-					PRINTB("WARNING: Can't parse vertex line '%s', import() at line %d", line % loc.firstLine());
+					LOG(message_group::Warning,Location::NONE,"","Can't parse vertex line '%1$s', import() at line %2$d",line,loc.firstLine());
 					i = 10;
 					continue;
 				}

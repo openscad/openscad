@@ -155,7 +155,7 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
@@ -220,10 +220,12 @@ def post_process_3mf(filename):
     from zipfile import ZipFile
     xml_content = ZipFile(filename).read("3D/3dmodel.model")
     xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    # add tag end whitespace for lib3mf 2.0 output files
+    xml_content = re.sub('\"/>', '\" />', xml_content)
     with open(filename, 'wb') as xml_file:
         xml_file.write(xml_content.encode('utf-8'))
 
-def run_test(testname, cmd, args):
+def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
     cmdname = os.path.split(options.cmd)[1]
 
     if options.generate: 
@@ -243,9 +245,19 @@ def run_test(testname, cmd, args):
     outputname = os.path.normpath(outputname)
 
     outfile = open(outputname, "wb")
+    if redirect_stdin:
+        infile = open(args[0], "rb")
+    else:
+        infile = None
+
+    if redirect_stdin:
+        if not args[0].endswith('.scad'):
+            print("Error, expecting to replace input file with '-' to run a stdin test but first arg was not a .scad file")
+            return None
+        args[0] = "-"
 
     try:
-        cmdline = [cmd] + args + [outputname]
+        cmdline = [cmd] + args + ['-' if redirect_stdout else outputname]
         sys.stderr.flush()
         print('run_test() cmdline:', ' '.join(cmdline))
         fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "testdata/ttf"))
@@ -253,14 +265,17 @@ def run_test(testname, cmd, args):
         fontenv["OPENSCAD_FONT_PATH"] = fontdir
         print('using font directory:', fontdir)
         sys.stdout.flush()
-        proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdin = infile if redirect_stdin else None
+        stdout = outfile if redirect_stdout else subprocess.PIPE
+        proc = subprocess.Popen(cmdline, env=fontenv, stdin=stdin, stdout=stdout, stderr=subprocess.PIPE)
         comresult = proc.communicate()
-        stdouttext, errtext = comresult[0].decode('utf-8'),comresult[1].decode('utf-8')
-        if errtext != None and len(errtext) > 0:
-            print("stderr output: " + errtext, file=sys.stderr)
-        if stdouttext != None and len(stdouttext) > 0:
-            print("stdout output: " + stdouttext, file=sys.stderr)
+        if comresult[1]:
+            print("stderr output: " + comresult[1].decode('utf-8'), file=sys.stderr)
+        if comresult[0]:
+            print("stdout output: " + comresult[0].decode('utf-8'), file=sys.stderr)
         outfile.close()
+        if infile is not None:
+            infile.close()
         if proc.returncode != 0:
             print("Error: %s failed with return code %d" % (cmdname, proc.returncode), file=sys.stderr)
             return None
@@ -283,16 +298,19 @@ def usage():
     print("Options:", file=sys.stderr)
     print("  -g, --generate           Generate expected output for the given tests", file=sys.stderr)
     print("  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt", file=sys.stderr)
+    print("  -k, --kernel=<name[:n]>  Define kernel name and optionally size for morphology processing, default is Square:1", file=sys.stderr)
     print("  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)", file=sys.stderr)
     print("  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)", file=sys.stderr)
     print("  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
     print("  -c, --convexec=<name>    Path to ImageMagick 'convert' executable", file=sys.stderr)
+    print("      --stdin              Pipe input file to <cmdline-tool> by stdin, replacing input file name with '-' when calling <cmdline-tool>", file=sys.stderr)
+    print("      --stdout             Pipe output of <cmdline-tool> to output file, replacing output file name with '-' when calling <cmdline-tool>", file=sys.stderr)
 
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected_dir=", "test=", "file=", "comparator=", "stdin", "stdout"])
         debug('getopt args:'+str(sys.argv))
     except (getopt.GetoptError) as err:
         usage()
@@ -303,13 +321,18 @@ if __name__ == '__main__':
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
+    options.kernel = "Square:1"
     options.comparator = ""
+    options.stdin = False
+    options.stdout = False
 
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
         elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = a[1:]
             else: options.suffix = a
+        elif o in ("-k", "--kernel"):
+            options.kernel = a
         elif o in ("-e", "--expected-dir"):
             options.expecteddir = a
         elif o in ("-t", "--test"):
@@ -320,6 +343,10 @@ if __name__ == '__main__':
             options.comparison_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
+        elif o == "--stdin" :
+            options.stdin = True
+        elif o == "--stdout" :
+            options.stdout = True
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:
@@ -354,7 +381,7 @@ if __name__ == '__main__':
     # Verify test environment
     verification = verify_test(options.testname, options.cmd)
 
-    resultfile = run_test(options.testname, options.cmd, args[1:])
+    resultfile = run_test(options.testname, options.cmd, args[1:], options.stdin, options.stdout)
     if not resultfile: exit(1)
     if options.suffix == "3mf": post_process_3mf(resultfile)
     if not verification or not compare_with_expected(resultfile): exit(1)

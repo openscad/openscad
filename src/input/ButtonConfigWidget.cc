@@ -51,7 +51,7 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 }
 
 void ButtonConfigWidget::init() {
-	for (int i = 0; i < InputEventMapper::getMaxButtons(); i++ ){
+	for (int i = 0; i < InputEventMapper::getMaxButtons(); ++i ){
 		std::string s = std::to_string(i);
 		auto box = this->findChild<QComboBox *>(QString("comboBoxButton%1").arg(i));
 		auto ent = Settings::Settings::inst()->getSettingEntryByName("button" +s);
@@ -228,7 +228,7 @@ void ButtonConfigWidget::updateStates(){
 	if(!initialized) return;
 
 	int cnt = InputDriverManager::instance()->getButtonCount();
-	for (int i=0;i<InputEventMapper::getMaxButtons();i++) {
+	for (int i=0; i<InputEventMapper::getMaxButtons(); ++i) {
 		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
 		QString style =(cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
 		label->setStyleSheet(style);

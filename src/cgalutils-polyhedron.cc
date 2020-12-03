@@ -103,7 +103,7 @@ namespace /* anonymous */ {
 #endif
 #ifdef GEN_SURFACE_DEBUG
 			printf("points=[");
-			for (int i=0;i<vertices.size();i++) {
+			for (int i=0; i<vertices.size(); ++i) {
 				if (i > 0) printf(",");
 				const CGALPoint &p = vertices[i];
 				printf("[%g,%g,%g]", CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()));
@@ -167,7 +167,7 @@ namespace /* anonymous */ {
 				printf("],\n");
 
 				printf("points=[");
-				for (int vidx=0;vidx<vertices.size();vidx++) {
+				for (int vidx=0; vidx<vertices.size(); ++vidx) {
 					if (vidx > 0) printf(",");
 					const Vector3d &v = vertices.getArray()[vidx];
 					printf("[%g,%g,%g]", v[0], v[1], v[2]);
@@ -255,7 +255,7 @@ namespace CGALUtils {
 			p.delegate(builder);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in CGALUtils::createPolyhedronFromPolySet: %s", e.what());
+			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::createPolyhedronFromPolySet: %s", e.what());
 			err = true;
 		}
 		CGAL::set_error_behaviour(old_behaviour);
