@@ -738,9 +738,9 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 		unsigned int matchCount = 0;
 		size_t j = 0;
 		for (const auto &search_element : searchTable.toVector()) {
-			if ((index_col_num == 0 && findThis == search_element) ||
+			if ((index_col_num == 0 && (findThis == search_element).toBool()) ||
 			    (index_col_num < search_element.toVector().size() &&
-			     findThis == search_element.toVector()[index_col_num])) {
+			     (findThis == search_element.toVector()[index_col_num]).toBool())) {
 				returnvec.emplace_back(double(j));
 				matchCount++;
 				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
@@ -763,9 +763,9 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 			const auto &find_value = findVec[i];
 			size_t j = 0;
 			for (const auto &search_element : searchTable.toVector()) {
-				if ((index_col_num == 0 && find_value == search_element) ||
+				if ((index_col_num == 0 && (find_value == search_element).toBool()) ||
 				    (index_col_num < search_element.toVector().size() &&
-				     find_value   == search_element.toVector()[index_col_num])) {
+				     (find_value   == search_element.toVector()[index_col_num]).toBool())) {
 					matchCount++;
 					if (num_returns_per_match == 1) {
 						returnvec.emplace_back(double(j));

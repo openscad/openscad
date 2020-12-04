@@ -710,7 +710,7 @@ Value VectorType::operator==(const VectorType &v) const {
 			temp.toUndef().append(STR("in vector comparison at index " << i));
 			return temp;
 		}
-    if (!temp) return false;
+    if (!temp.toBool()) return false;
   }
   return (first1 == last1) && (first2 == last2);
 }
@@ -718,7 +718,7 @@ Value VectorType::operator==(const VectorType &v) const {
 Value VectorType::operator!=(const VectorType &v) const {
   Value temp = this->VectorType::operator==(v);
   if (temp.isUndefined()) return temp;
-  return !temp;
+  return !temp.toBool();
 }
 
 // lexicographical compare with possible undef result
@@ -731,8 +731,8 @@ Value VectorType::operator< (const VectorType &v) const {
 			temp.toUndef().append(STR("in vector comparison at index " << i));
 			return temp;
 		}
-    if (temp) return true;
-    if (*first2 < *first1) return false;
+    if (temp.toBool()) return true;
+    if ((*first2 < *first1).toBool()) return false;
   }
   return (first1 == last1) && (first2 != last2);
 }
@@ -744,13 +744,13 @@ Value VectorType::operator> (const VectorType &v) const {
 Value VectorType::operator<=(const VectorType &v) const {
   Value temp = this->VectorType::operator>(v);
   if (temp.isUndefined()) return temp;
-  return !temp;
+  return !temp.toBool();
 }
 
 Value VectorType::operator>=(const VectorType &v) const {
   Value temp = this->VectorType::operator<(v);
   if (temp.isUndefined()) return temp;
-  return !temp;
+  return !temp.toBool();
 }
 
 class notequal_visitor : public boost::static_visitor<Value>

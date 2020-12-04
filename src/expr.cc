@@ -88,7 +88,7 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location &loc) : Expres
 Value UnaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
-	case (Op::Not):    return !this->expr->evaluate(context);
+	case (Op::Not):    return !this->expr->evaluate(context).toBool();
 	case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
 	default:
 		assert(false && "Non-existent unary operator!");
@@ -125,9 +125,9 @@ Value BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
 	switch (this->op) {
 	case Op::LogicalAnd:
-		return this->left->evaluate(context) && this->right->evaluate(context);
+		return this->left->evaluate(context).toBool() && this->right->evaluate(context).toBool();
 	case Op::LogicalOr:
-		return this->left->evaluate(context) || this->right->evaluate(context);
+		return this->left->evaluate(context).toBool() || this->right->evaluate(context).toBool();
 	case Op::Exponent:
 		return checkUndef(this->left->evaluate(context) ^  this->right->evaluate(context), context);
 	case Op::Multiply:
@@ -193,7 +193,7 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 
 const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	return this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+	return this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
 }
 
 Value TernaryOp::evaluate(const std::shared_ptr<Context>& context) const
@@ -651,7 +651,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<Context>& context) const
 {
-	const shared_ptr<Expression> &expr = this->cond->evaluate(context) ? this->ifexpr : this->elseexpr;
+	const shared_ptr<Expression> &expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
 	if (expr) {
 		return expr->evaluate(context);
 	} else {
@@ -783,7 +783,7 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
     evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
 
 	unsigned int counter = 0;
-    while (this->cond->evaluate(c.ctx)) {
+    while (this->cond->evaluate(c.ctx).toBool()) {
         vec.emplace_back(this->expr->evaluate(c.ctx));
 
         if (counter++ == 1000000) {
@@ -841,7 +841,7 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 
 	const Value &condition = c->lookup_variable("condition", false, evalctx->loc);
 
-	if (!condition) {
+	if (!condition.toBool()) {
 		const Expression *expr = assignments["condition"];
 		const Value &message = c->lookup_variable("message", true);
 
