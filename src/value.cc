@@ -1009,7 +1009,7 @@ public:
 							temp.toUndef().append(STR("while processing left operand at row " << i));
 							return temp;
 						} else {
-							dstv.emplace_back(temp);
+							dstv.emplace_back(std::move(temp));
 						}
             ++i;
           }
