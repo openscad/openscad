@@ -841,6 +841,10 @@ Value Value::operator<=(const Value &v) const
 	return boost::apply_visitor(lessequal_visitor(), this->value, v.value);
 }
 
+bool Value::cmp_less(const Value& v1, const Value& v2) {
+	return v1.operator<(v2).toBool();
+}
+
 class plus_visitor : public boost::static_visitor<Value>
 {
 public:

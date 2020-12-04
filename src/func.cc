@@ -168,7 +168,7 @@ Value builtin_min(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		if (n == 1 && v0.type() == Value::Type::VECTOR) {
 			const auto &vec = v0.toVector();
 			if (!vec.empty()) {
-				return std::min_element(vec.begin(), vec.end())->clone();
+				return std::min_element(vec.begin(), vec.end(), Value::cmp_less)->clone();
 			}
 		}
 		if (v0.type() == Value::Type::NUMBER) {
@@ -203,7 +203,7 @@ Value builtin_max(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 		if (n == 1 && v0.type() == Value::Type::VECTOR) {
 			const auto &vec = v0.toVector();
 			if (!vec.empty()) {
-				return std::max_element(vec.begin(), vec.end())->clone();
+				return std::max_element(vec.begin(), vec.end(), Value::cmp_less)->clone();
 			}
 		}
 		if (v0.type() == Value::Type::NUMBER) {

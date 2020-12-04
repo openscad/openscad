@@ -531,7 +531,7 @@ public:
   bool getVec3(double &x, double &y, double &z, double defaultval) const;
 
   // Common Operators
-  operator bool() const { return this->toBool(); }
+  operator bool() const = delete;
   Value operator==(const Value &v) const;
   Value operator!=(const Value &v) const;
   Value operator< (const Value &v) const;
@@ -547,6 +547,8 @@ public:
   Value operator/(const Value &v) const;
   Value operator%(const Value &v) const;
   Value operator^(const Value &v) const;
+
+  static bool cmp_less(const Value& v1, const Value& v2);
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
     if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());

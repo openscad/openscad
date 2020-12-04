@@ -38,7 +38,7 @@ const Value & SettingsEntry::range() const
 
 bool SettingsEntry::is_default() const
 {
-	return _value == _default;
+	return (_value == _default).toBool();
 }
 
 static Value value(std::string s1, std::string s2) {

@@ -70,8 +70,10 @@ void ParameterObject::setValue(const Value &defaultValue, const Value &values)
 
 bool ParameterObject::operator == (const ParameterObject &second)
 {
-  return (this->defaultValue == second.defaultValue && this->values==second.values &&
-          this->description == second.description && this->groupName == second.groupName);
+  return ((this->defaultValue == second.defaultValue).toBool()
+					&& (this->values==second.values).toBool()
+					&& this->description == second.description
+					&& this->groupName == second.groupName);
 }
 
 ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
