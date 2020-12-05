@@ -42,4 +42,6 @@ jobs:
         if: ${{ always() }}
         with:
           name: Test Result Report (Windows)
-          path: tests/Testing/Temporary/*_report.html
+          path: |
+            tests/output/
+            tests/Testing/Temporary/*_report.html
