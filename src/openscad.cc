@@ -71,7 +71,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
@@ -159,7 +159,7 @@ template <typename F>
 static bool with_output(const bool is_stdout, const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
 {
 	if (is_stdout) {
-#ifdef WIN32
+#ifdef _WIN32
 		if ((mode & std::ios::binary) != 0) {
 			_setmode(_fileno(stdout), _O_BINARY);
 		}
