@@ -25,13 +25,13 @@ const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
 class SettingsConverter {
 public:
-	QsciScintilla::WrapMode toWrapMode(Value val);
-	QsciScintilla::WrapVisualFlag toLineWrapVisualization(Value val);
-	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(Value val);
-	QsciScintilla::WhitespaceVisibility toShowWhitespaces(Value val);
+	QsciScintilla::WrapMode toWrapMode(const Value &val);
+	QsciScintilla::WrapVisualFlag toLineWrapVisualization(const Value &val);
+	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(const Value &val);
+	QsciScintilla::WhitespaceVisibility toShowWhitespaces(const Value &val);
 };
 
-QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
+QsciScintilla::WrapMode SettingsConverter::toWrapMode(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Char") {
@@ -43,7 +43,7 @@ QsciScintilla::WrapMode SettingsConverter::toWrapMode(Value val)
 	}
 }
 
-QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value val)
+QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Text") {
@@ -59,7 +59,7 @@ QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(Value v
 	}
 }
 
-QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Value val)
+QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Same") {
@@ -71,7 +71,7 @@ QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(Valu
 	}
 }
 
-QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(Value val)
+QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const Value &val)
 {
 	auto strVal = val.toString();
 	if (strVal == "Always") {
@@ -785,7 +785,7 @@ QString ScintillaEditor::selectedText()
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
 	bool enableNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::enableNumberScrollWheel).toBool();
-	
+
 	if(obj == qsci->viewport() && enableNumberScrollWheel)
 	{
 		if(e->type() == QEvent::Wheel)
@@ -804,32 +804,32 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 	{
 		if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease)
 		{
-			auto *keyEvent = static_cast<QKeyEvent*> (e);
+		auto *keyEvent = static_cast<QKeyEvent*> (e);
 
-			PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
-					(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
-					(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
-					(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
-					(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
-					(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
-					(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
-					(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
+		PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
+				(e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
+				(keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
+				(keyEvent->modifiers() & Qt::ControlModifier ? "CTRL" : "ctrl") %
+				(keyEvent->modifiers() & Qt::AltModifier ? "ALT" : "alt") %
+				(keyEvent->modifiers() & Qt::MetaModifier ? "META" : "meta") %
+				(keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
+				(keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
 
 			if (handleKeyEventNavigateNumber(keyEvent))
 			{
-				return true;
-			}
+			return true;
+		}
 			if (handleKeyEventBlockCopy(keyEvent))
 			{
-				return true;
-			}
+			return true;
+		}
 			if (handleKeyEventBlockMove(keyEvent))
 			{
-				return true;
-			}
+			return true;
 		}
-		return false;
 	}
+	return false;
+}
 	else return EditorInterface::eventFilter(obj, e);
 
 	return false;
@@ -1117,7 +1117,7 @@ bool ScintillaEditor::modifyNumber(int key)
 	auto exponent=tail-((dotpos>=curpos)?1:0);
 	long long int step=Preferences::inst()->getValue("editor/stepSize").toInt();
 	for (int i=exponent; i>0; i--) step*=10;
-	
+
 	switch (key) {
 		case Qt::Key_Up:   number+=step; break;
 		case Qt::Key_Down: number-=step; break;

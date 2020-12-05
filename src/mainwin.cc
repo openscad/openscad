@@ -602,8 +602,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
 
-  this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
-}
+  	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+  }
 
 void MainWindow::openFileFromPath(QString path,int line)
 {
@@ -1288,7 +1288,7 @@ void MainWindow::compileCSG()
 #ifdef ENABLE_OPENCSG
 		else {
 			LOG(message_group::None,Location::NONE,"","Normalized tree has %1$d elements!",
-				(this->root_products ? this->root_products->size() : 0));
+						(this->root_products ? this->root_products->size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
 																								this->background_products,
@@ -1669,28 +1669,16 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx->set_variable("$t", ValuePtr(this->anim_tval));
-
+	this->top_ctx->set_variable("$t", Value(this->anim_tval));
 	auto camVpt = qglview->cam.getVpt();
-	VectorType vpt;
-	vpt.push_back(ValuePtr(camVpt.x()));
-	vpt.push_back(ValuePtr(camVpt.y()));
-	vpt.push_back(ValuePtr(camVpt.z()));
-	this->top_ctx->set_variable("$vpt", ValuePtr(vpt));
-
+	this->top_ctx->set_variable("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
 	auto camVpr = qglview->cam.getVpr();
-	VectorType vpr;
-	vpr.push_back(ValuePtr(camVpr.x()));
-	vpr.push_back(ValuePtr(camVpr.y()));
-	vpr.push_back(ValuePtr(camVpr.z()));
-	top_ctx->set_variable("$vpr", ValuePtr(vpr));
-
-	top_ctx->set_variable("$vpd", ValuePtr(qglview->cam.zoomValue()));
-	top_ctx->set_variable("$vpf", ValuePtr(qglview->cam.fovValue()));
+	top_ctx->set_variable("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
+	top_ctx->set_variable("$vpd", Value(qglview->cam.zoomValue()));
+	top_ctx->set_variable("$vpf", Value(qglview->cam.fovValue()));
 }
 
-
-/*!
+	/*!
 	Returns true if the current document is a file on disk and that file has new content.
 	Returns false if a file on disk has disappeared or if we haven't yet saved.
 */
@@ -1790,7 +1778,7 @@ void MainWindow::actionReloadRenderPreview()
 
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
-	this->top_ctx->set_variable("$preview", ValuePtr(true));
+	this->top_ctx->set_variable("$preview", Value(true));
 	compile(true);
 }
 
@@ -1827,7 +1815,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	this->processEvents();
 	this->afterCompileSlot = "csgRender";
 	this->procevents = !viewActionAnimate->isChecked();
-	this->top_ctx->set_variable("$preview", ValuePtr(true));
+	this->top_ctx->set_variable("$preview", Value(true));
 	compile(false,false,rebuildParameterWidget);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
@@ -2063,7 +2051,7 @@ void MainWindow::actionRender()
 	this->processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
-	this->top_ctx->set_variable("$preview", ValuePtr(false));
+	this->top_ctx->set_variable("$preview", Value(false));
 	compile(false);
 }
 
@@ -3193,7 +3181,7 @@ QString MainWindow::exportPath(const char *suffix) {
 		if(activeEditor->filepath.isEmpty())
 			path += QString(_("Untitled")) + suffix;
 		else
-            path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
+			path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
 	}
 	else
 	{

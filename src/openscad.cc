@@ -71,7 +71,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
@@ -159,7 +159,7 @@ template <typename F>
 static bool with_output(const bool is_stdout, const std::string &filename, F f, std::ios::openmode mode = std::ios::out)
 {
 	if (is_stdout) {
-#ifdef WIN32
+#ifdef _WIN32
 		if ((mode & std::ios::binary) != 0) {
 			_setmode(_fileno(stdout), _O_BINARY);
 		}
@@ -374,7 +374,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 	// Top context - this context only holds builtins
 	ContextHandle<BuiltinContext> top_ctx{Context::create<BuiltinContext>()};
 	const bool preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-	top_ctx->set_variable("$preview", ValuePtr(preview));
+	top_ctx->set_variable("$preview", Value(preview));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", top_ctx->dump(nullptr, nullptr));
 #endif
@@ -388,10 +388,10 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 		text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
 	} else {
 		std::ifstream ifs(cmd.filename);
-		if (!ifs.is_open()) {
+	if (!ifs.is_open()) {
 			LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", cmd.filename);
-			return 1;
-		}
+		return 1;
+	}
 		handle_dep(cmd.filename);
 		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	}
@@ -400,7 +400,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 
 	FileModule *root_module = nullptr;
 	if (!parse(root_module, text, cmd.filename, cmd.filename, false)) {
-		delete root_module; // parse failed
+		delete root_module;  // parse failed
 		root_module = nullptr;
 	}
 	if (!root_module) {
@@ -415,7 +415,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 		param.readParameterSet(cmd.parameterFile);
 		param.applyParameterSet(root_module, cmd.setName);
 	}
-
+    
 	root_module->handleDependencies();
 
 	auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -498,14 +498,14 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	}
 
 	if (curFormat == FileFormat::CSG) {
-		fs::current_path(fparent); // Force exported filenames to be relative to document path
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
 		with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream &stream) {
 			stream << tree.getString(*root_node, "\t") << "\n";
 		});
 		fs::current_path(cmd.original_path);
 	}
 	else if (curFormat == FileFormat::AST) {
-		fs::current_path(fparent); // Force exported filenames to be relative to document path
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
 		with_output(cmd.is_stdout, filename_str, [root_module](std::ostream &stream) {
 			stream << root_module->dump("");
 		});
@@ -519,7 +519,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 				stream << "No top-level CSG object\n";
 			} else {
 				stream << root_raw_term->dump() << "\n";
-			}
+		}
 		});
 	}
 	else if (curFormat == FileFormat::ECHO) {
@@ -590,7 +590,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 					success = export_png(root_geom, cmd.viewOptions, camera, stream);
 				} else {
 					success = export_png(*glview, stream);
-				}
+			}
 			}, std::ios::out | std::ios::binary);
 			return (success && wrote) ? 0 : 1;
 		}
@@ -916,7 +916,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-
+	
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
@@ -1123,7 +1123,7 @@ int main(int argc, char **argv)
 	}
 
 	ExportFileFormatOptions exportFileFormatOptions;
-	if (vm.count("export-format")) {
+	if(vm.count("export-format")) {
 		const auto format = vm["export-format"].as<string>();
 		const auto format_iter = exportFileFormatOptions.exportFileFormats.find(format);
 		if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {

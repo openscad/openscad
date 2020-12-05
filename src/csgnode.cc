@@ -80,13 +80,13 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 	} else {
 		// In case we're creating a CSG term from a pruned tree, left or right may be the empty set
 		if (right->isEmptySet()) {
-			if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE) return left;
-			else return right;
-		}
+		if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE) return left;
+		else return right;
+	}
 		if (left->isEmptySet()) {
-			if (type == OpenSCADOperator::UNION) return right;
-			else return left;
-		}
+		if (type == OpenSCADOperator::UNION) return right;
+		else return left;
+	}
 	}
 
   // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
@@ -246,7 +246,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 			else if (type == OpenSCADOperator::INTERSECTION) {
 				this->currentlist = &this->currentproduct->intersections;
 			}
-			this->currentlist->push_back(CSGChainObject(leaf, newflags));
+			this->currentlist->emplace_back(leaf, newflags);
 		} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 			assert(op->left() && op->right());
 			callstack.emplace(op->right(), op->getType(), newflags);

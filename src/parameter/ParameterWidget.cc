@@ -468,7 +468,7 @@ ParameterVirtualWidget* ParameterWidget::CreateParameterWidget(std::string param
 //reset all parameters to the default value of the design file
 void ParameterWidget::defaultParameter(){
 	for (const auto &entry : entries) {
-		entry.second->value=entry.second->defaultValue;
+		entry.second->value=entry.second->defaultValue.clone();
 	}
 }
 
@@ -483,17 +483,17 @@ void ParameterWidget::applyParameterSet(std::string setName)
 		entry_map_t::iterator entry = entries.find(v.first);
 		if (entry != entries.end()) {
 			if (entry->second->dvt == Value::Type::STRING) {
-				entry->second->value=ValuePtr(v.second.data());
+				entry->second->value = Value(v.second.data());
 			} else if (entry->second->dvt == Value::Type::BOOL) {
-				entry->second->value = ValuePtr(v.second.get_value<bool>());
+				entry->second->value = Value(v.second.get_value<bool>());
 			} else {
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 				
 				ContextHandle<Context> ctx{Context::create<Context>()};
-				ValuePtr newValue = params->evaluate(ctx.ctx);
-				if (entry->second->dvt == newValue->type()) {
-					entry->second->value = newValue;
+				Value newValue = params->evaluate(ctx.ctx);
+				if (entry->second->dvt == newValue.type()) {
+					entry->second->value = std::move(newValue);
 				}
 			}
 		}
@@ -548,7 +548,7 @@ void ParameterWidget::updateParameterSet(std::string setName, bool newSet)
 		pt::ptree iroot;
 		for (const auto &entry : entries) {
 			const auto &VariableName = entry.first;
-			const auto &VariableValue = entry.second->value->toString();
+			const auto &VariableValue = entry.second->value.toString();
 			iroot.put(VariableName, VariableValue);
 		}
 		this->setMgr->addParameterSet(setName, iroot);

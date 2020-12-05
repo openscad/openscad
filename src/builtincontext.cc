@@ -20,10 +20,10 @@ void BuiltinContext::init()
 		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(shared_from_this()));
 	}
 
-	this->set_constant("PI", ValuePtr(M_PI));
+	this->set_constant("PI", M_PI);
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
+Value BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {

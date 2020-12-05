@@ -15,7 +15,7 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameter
 void ParameterCheckBox::onChanged()
 {
 	if(!this->suppressUpdate){
-		object->value = ValuePtr(checkBox->isChecked());
+		object->value = Value(checkBox->isChecked());
 		emit changed();
 	}
 }
@@ -25,6 +25,6 @@ void ParameterCheckBox::setValue() {
 	this->stackedWidgetRight->setCurrentWidget(this->pageCheckBox);
 	this->pageCheckBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 	this->stackedWidgetBelow->hide();
-	this->checkBox->setChecked(object->value->toBool());
+	this->checkBox->setChecked(object->value.toBool());
 	this->suppressUpdate=false;
 }

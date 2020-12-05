@@ -63,60 +63,60 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	c->setVariables(evalctx, args, optargs);
 	inst->scope.apply(evalctx);
 
-	node->fn = c->lookup_variable("$fn")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
 
-	auto file = c->lookup_variable("file");
-	auto layer = c->lookup_variable("layer", true);
-	auto height = c->lookup_variable("height", true);
-	auto convexity = c->lookup_variable("convexity", true);
-	auto origin = c->lookup_variable("origin", true);
-	auto scale = c->lookup_variable("scale", true);
-	auto center = c->lookup_variable("center", true);
-	auto twist = c->lookup_variable("twist", true);
-	auto slices = c->lookup_variable("slices", true);
+	const auto &file = c->lookup_variable("file");
+	const auto &layer = c->lookup_variable("layer", true);
+	const auto &height = c->lookup_variable("height", true);
+	const auto &convexity = c->lookup_variable("convexity", true);
+	const auto &origin = c->lookup_variable("origin", true);
+	const auto &scale = c->lookup_variable("scale", true);
+	const auto &center = c->lookup_variable("center", true);
+	const auto &twist = c->lookup_variable("twist", true);
+	const auto &slices = c->lookup_variable("slices", true);
 
-	if (!file->isUndefined() && file->type() == Value::Type::STRING) {
+	if (!file.isUndefined() && file.type() == Value::Type::STRING) {
 		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
+		auto filename = lookup_file(file.toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}
 
-	// if height not given, and first argument is a number,
-	// then assume it should be the height.
-	if (c->lookup_variable("height")->isUndefined() &&
-			evalctx->numArgs() > 0 &&
-			evalctx->getArgName(0) == "") {
-		auto val = evalctx->getArgValue(0);
-		if (val->type() == Value::Type::NUMBER) height = val;
+	node->height = 100;
+	if (height.isDefined()) {
+		height.getFiniteDouble(node->height);
+	} else {
+		// if height not given, and first argument is a number,
+		// then assume it should be the height.
+		if (evalctx->numArgs() > 0 && evalctx->getArgName(0) == "") {
+			auto val = evalctx->getArgValue(0);
+			if (val.type() == Value::Type::NUMBER) val.getFiniteDouble(node->height);
+		}
 	}
 
-	node->layername = layer->isUndefined() ? "" : layer->toString();
-	node->height = 100;
-	height->getFiniteDouble(node->height);
-	double tmp_convexity;
-	if (convexity->getFiniteDouble(tmp_convexity)) {
-	  node->convexity = static_cast<int>(tmp_convexity);
-	} else {
-	  node->convexity = 0;
-	}
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+
+	double tmp_convexity = 0.0;
+	convexity.getFiniteDouble(tmp_convexity);
+	node->convexity = static_cast<int>(tmp_convexity);
+
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin->isDefined() && !originOk){
-	LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
+	if(origin.isDefined() && !originOk){
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 	node->scale_x = node->scale_y = 1;
-	bool scaleOK = scale->getFiniteDouble(node->scale_x);
-	scaleOK &= scale->getFiniteDouble(node->scale_y);
-	scaleOK |= scale->getVec2(node->scale_x, node->scale_y, true);
-	if(origin->isDefined() && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))){
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., scale=%1$s) could not be converted",scale->toEchoString());
+	bool scaleOK = scale.getFiniteDouble(node->scale_x);
+	scaleOK &= scale.getFiniteDouble(node->scale_y);
+	scaleOK |= scale.getVec2(node->scale_x, node->scale_y, true);
+	if((origin.isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., scale=%1$s) could not be converted",scale.toEchoString());
 	}
 
-	if (center->type() == Value::Type::BOOL)
-		node->center = center->toBool();
+	if (center.type() == Value::Type::BOOL)
+		node->center = center.toBool();
 
 	if (node->height <= 0) node->height = 0;
 
@@ -127,14 +127,14 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	if (node->scale_y < 0) node->scale_y = 0;
 
 	double slicesVal = 0;
-	slices->getFiniteDouble(slicesVal);
+	slices.getFiniteDouble(slicesVal);
 	node->slices = static_cast<int>(slicesVal);
 	if (node->slices > 0) {
 		node->has_slices = true;
 	} 
 
 	node->twist = 0.0;
-	twist->getFiniteDouble(node->twist);
+	twist.getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
 		node->has_twist = true;
 	}

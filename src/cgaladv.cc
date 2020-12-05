@@ -61,36 +61,34 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
 
-	auto convexity = ValuePtr::undefined;
-	auto path = ValuePtr::undefined;
-
 	if (type == CgaladvType::MINKOWSKI) {
-		convexity = c->lookup_variable("convexity", true);
+		const auto &convexity = c->lookup_variable("convexity", true);
+		node->convexity = static_cast<int>(convexity.toDouble());
 	} else if (type == CgaladvType::RESIZE) {
-		convexity = c->lookup_variable("convexity", true);
-		auto ns = c->lookup_variable("newsize");
+		const auto &convexity = c->lookup_variable("convexity", true);
+		node->convexity = static_cast<int>(convexity.toDouble());
+		const auto &ns = c->lookup_variable("newsize");
 		node->newsize << 0,0,0;
-		if (ns->type() == Value::Type::VECTOR ) {
-			const VectorType &vs = ns->toVector();
-			if ( vs.size() >= 1 ) node->newsize[0] = vs[0]->toDouble();
-			if ( vs.size() >= 2 ) node->newsize[1] = vs[1]->toDouble();
-			if ( vs.size() >= 3 ) node->newsize[2] = vs[2]->toDouble();
+		if ( ns.type() == Value::Type::VECTOR ) {
+			const auto &vs = ns.toVector();
+			if ( vs.size() >= 1 ) node->newsize[0] = vs[0].toDouble();
+			if ( vs.size() >= 2 ) node->newsize[1] = vs[1].toDouble();
+			if ( vs.size() >= 3 ) node->newsize[2] = vs[2].toDouble();
 		}
-		auto autosize = c->lookup_variable("auto");
+		const auto &autosize = c->lookup_variable("auto");
 		node->autosize << false, false, false;
-		if (autosize->type() == Value::Type::VECTOR ) {
-			const VectorType &va = autosize->toVector();
-			if ( va.size() >= 1 ) node->autosize[0] = va[0]->toBool();
-			if ( va.size() >= 2 ) node->autosize[1] = va[1]->toBool();
-			if ( va.size() >= 3 ) node->autosize[2] = va[2]->toBool();
+		if (autosize.type() == Value::Type::VECTOR) {
+			const auto &va = autosize.toVector();
+			if ( va.size() >= 1 ) node->autosize[0] = va[0].toBool();
+			if ( va.size() >= 2 ) node->autosize[1] = va[1].toBool();
+			if ( va.size() >= 3 ) node->autosize[2] = va[2].toBool();
 		}
-		else if (autosize->type() == Value::Type::BOOL ) {
-			node->autosize << autosize->toBool(),autosize->toBool(),autosize->toBool();
+		else if ( autosize.type() == Value::Type::BOOL ) {
+			node->autosize << autosize.toBool(),autosize.toBool(),autosize.toBool();
 		}
+	} else {
+		node->convexity = 0;
 	}
-
-	node->convexity = static_cast<int>(convexity->toDouble());
-	node->path = path;
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

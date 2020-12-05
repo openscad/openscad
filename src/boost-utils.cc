@@ -73,7 +73,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 		throw std::runtime_error("path or base was empty; couldn't generate relative path");
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	// drive letters are different; don't generate a relative path
 	if (*path_it != *base_it) return p;
 

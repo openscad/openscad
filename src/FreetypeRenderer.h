@@ -56,25 +56,25 @@ public:
         void set_segments(double segments) {
             this->segments = segments;
         }
-        void set_text(std::string text) {
+        void set_text(const std::string &text) {
             this->text = text;
         }
-        void set_font(std::string font) {
+        void set_font(const std::string &font) {
             this->font = font;
         }
-        void set_direction(std::string direction) {
+        void set_direction(const std::string &direction) {
             this->direction = direction;
         }
-        void set_language(std::string language) {
+        void set_language(const std::string &language) {
             this->language = language;
         }
-        void set_script(std::string script) {
+        void set_script(const std::string &script) {
             this->script = script;
         }
-        void set_halign(std::string halign) {
+        void set_halign(const std::string &halign) {
             this->halign = halign;
         }
-        void set_valign(std::string valign) {
+        void set_valign(const std::string &valign) {
             this->valign = valign;
         }
         friend std::ostream & operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
