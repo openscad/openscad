@@ -42,13 +42,13 @@ public:
 	QString clickedAnchor;
 	void contextMenuEvent(QContextMenuEvent *event) override;
 	
-	void mousePressEvent(QMouseEvent *e)
+	void mousePressEvent(QMouseEvent *e) override
 	{
 		clickedAnchor = (e->button() & Qt::LeftButton) ? anchorAt(e->pos()) : QString();
 		QPlainTextEdit::mousePressEvent(e);
 	}
 
-	void mouseReleaseEvent(QMouseEvent *e)
+	void mouseReleaseEvent(QMouseEvent *e) override
 	{
 		if (e->button() & Qt::LeftButton && !clickedAnchor.isEmpty() &&
 				anchorAt(e->pos()) == clickedAnchor) {
