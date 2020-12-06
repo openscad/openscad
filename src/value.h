@@ -47,6 +47,7 @@ private:
 
 public:
   static constexpr uint32_t MAX_RANGE_STEPS = 10000;
+  static const RangeType EMPTY;
 
   enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
 

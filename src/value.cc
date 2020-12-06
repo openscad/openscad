@@ -47,6 +47,7 @@ namespace fs=boost::filesystem;
 
 const Value Value::undefined;
 const VectorType VectorType::EMPTY;
+const RangeType RangeType::EMPTY{0,0,0};
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE 128
@@ -656,7 +657,11 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
 
 const RangeType& Value::toRange() const
 {
-  return *boost::get<RangePtr>(this->value);
+  const RangePtr *val = boost::get<RangePtr>(&this->value);
+  if (val) {
+    return **val;
+  }
+  else return RangeType::EMPTY;
 }
 
 const FunctionType& Value::toFunction() const
