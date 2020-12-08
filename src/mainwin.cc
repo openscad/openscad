@@ -2174,11 +2174,13 @@ void MainWindow::selectObject(QPoint mouse)
 
 			// Prepare the action to be sent
 			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
-			action->setProperty("file", QString::fromStdString(location.fileName()));
-			action->setProperty("line", location.firstLine());
-			action->setProperty("column", location.firstColumn());
+			if (editorDock->isVisible()) {
+				action->setProperty("file", QString::fromStdString(location.fileName()));
+				action->setProperty("line", location.firstLine());
+				action->setProperty("column", location.firstColumn());
 
-			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+				connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+			}
 		}
 
 		tracemenu.exec(this->qglview->mapToGlobal(mouse));
