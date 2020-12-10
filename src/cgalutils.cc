@@ -74,11 +74,14 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		CGAL_Polyhedron P;
 		auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
 		 if (!err) {
-		 	PRINTDB("Polyhedron is closed: %d", P.is_closed());
-		 	PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
-		 }
-
-		if (!err) N = new CGAL_Nef_polyhedron3(P);
+			if (!P.is_closed()) {
+				LOG(message_group::Error, Location::NONE,"","The given mesh is not closed! Unable to convert to CGAL_Nef_Polyhedron.");
+			} else if (!P.is_valid(false, 0)) {
+				LOG(message_group::Error, Location::NONE,"","The given mesh is invalid! Unable to convert to CGAL_Nef_Polyhedron.");
+			} else {
+				N = new CGAL_Nef_polyhedron3(P);
+			}
+		}
 	}
 	catch (const CGAL::Assertion_exception &e) {
 		// First two tests matches against CGAL < 4.10, the last two tests matches against CGAL >= 4.10
@@ -90,7 +93,6 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			plane_error=true;
 		} else {
 			LOG(message_group::Error,Location::NONE,"","CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what());
-
 		}
 	}
 	if (plane_error) try {
