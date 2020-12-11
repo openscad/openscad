@@ -224,13 +224,13 @@ namespace ClipperUtils {
 
 	Polygon2d *applyMinkowski(const std::vector<const Polygon2d*> &polygons)
 	{
-		if (polygons.size() == 1) return new Polygon2d(*polygons[0]); // Just copy
+		if (polygons.size() == 1) return polygons[0] ? new Polygon2d(*polygons[0]) : nullptr; // Just copy
 
 		ClipperLib::Clipper c;
-		auto lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
+		auto lhs = ClipperUtils::fromPolygon2d(polygons[0] ? *polygons[0] : Polygon2d());
 
 		for (size_t i=1; i<polygons.size(); ++i) {
-      if (!polygons[i]) continue;
+			if (!polygons[i]) continue;
 			ClipperLib::Paths minkowski_terms;
 			auto rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
 
