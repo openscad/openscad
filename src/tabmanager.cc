@@ -149,7 +149,7 @@ void TabManager::prevTab()
 
 void TabManager::actionNew()
 {
-    if(par->viewActionHideEditor->isChecked()) par->viewActionHideEditor->trigger(); //if editor hidden, make it visible
+    if(par->windowActionHideEditor->isChecked()) par->windowActionHideEditor->trigger(); //if editor hidden, make it visible
     createTab("");
 }
 
@@ -313,6 +313,11 @@ void TabManager::prevBookmark()
 void TabManager::jumpToNextError()
 {
     editor->jumpToNextError();
+}
+
+void TabManager::setFocus()
+{
+	editor->setFocus();
 }
 
 void TabManager::updateActionUndoState()

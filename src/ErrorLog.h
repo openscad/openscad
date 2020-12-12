@@ -16,7 +16,6 @@ public:
 	ErrorLog(ErrorLog&& source) = delete;
 	ErrorLog& operator=(const ErrorLog& source) = delete;
 	ErrorLog& operator=(ErrorLog&& source) = delete;
-	bool eventFilter(QObject *obj, QEvent *event);
 	void initGUI();
 	void toErrorLog(const Message &log_msg);
 	void showtheErrorInGUI(const Message &log_msg);
@@ -27,7 +26,12 @@ public:
 	int row;
 
 private:
+	void onIndexSelected(const QModelIndex& index);
+
+private:
 	std::list<Message> lastMessages;
+
+private:
 	static constexpr int COLUMN_GROUP = 0;
 	static constexpr int COLUMN_FILE = 1;
 	static constexpr int COLUMN_LINENO = 2;
@@ -37,6 +41,7 @@ signals:
 	void openFile(const QString, int);
 
 private slots:
-	void onTableCellClicked(const QModelIndex & index);
+	void on_logTable_doubleClicked(const QModelIndex & index);
 	void on_errorLogComboBox_currentIndexChanged(const QString &arg1);
+	void on_actionRowSelected_triggered(bool);
 };
