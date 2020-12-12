@@ -130,6 +130,7 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
+	void activateWindow(int);
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
@@ -164,13 +165,21 @@ private slots:
 	void preferences();
     void hideEditorToolbar();
     void hide3DViewToolbar();
-	void hideEditor();
-	void hideConsole();
-	void hideErrorLog();
 	void showLink(const QString);
+	void showEditor();
+	void hideEditor();
 	void showConsole();
+	void hideConsole();
 	void showErrorLog();
+	void hideErrorLog();
+	void showParameters();
 	void hideParameters();
+	void on_windowActionSelectEditor_triggered();
+	void on_windowActionSelectConsole_triggered();
+	void on_windowActionSelectCustomizer_triggered();
+	void on_windowActionSelectErrorLog_triggered();
+	void on_windowActionNextWindow_triggered();
+	void on_windowActionPreviousWindow_triggered();
 
 public slots:
 	void hideFind();
