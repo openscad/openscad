@@ -145,6 +145,11 @@ QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
 
+struct DockFocus {
+	QWidget *widget;
+	std::function<void(MainWindow *)> focus;
+};
+
 QAction *findAction(const QList<QAction *> &actions, const std::string &name)
 {
 	for (const auto action : actions) {
@@ -178,13 +183,13 @@ MainWindow::MainWindow(const QStringList &filenames)
 	
 
 	this->editorDock->setConfigKey("view/hideEditor");
-	this->editorDock->setAction(this->viewActionHideEditor);
+	this->editorDock->setAction(this->windowActionHideEditor);
 	this->consoleDock->setConfigKey("view/hideConsole");
-	this->consoleDock->setAction(this->viewActionHideConsole);
+	this->consoleDock->setAction(this->windowActionHideConsole);
 	this->parameterDock->setConfigKey("view/hideCustomizer");
-	this->parameterDock->setAction(this->viewActionHideParameters);
+	this->parameterDock->setAction(this->windowActionHideCustomizer);
 	this->errorLogDock->setConfigKey("view/hideErrorLog");
-	this->errorLogDock->setAction(this->viewActionHideErrorLog);
+	this->errorLogDock->setAction(this->windowActionHideErrorLog);
 
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
@@ -413,12 +418,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
-    connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
-    connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
-	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
-	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
-    connect(this->viewActionHideParameters, SIGNAL(triggered()), this, SLOT(hideParameters()));
-    connect(this->viewActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
+	connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
+	connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
+	connect(this->windowActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
+	connect(this->windowActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
+	connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
+	connect(this->windowActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -600,8 +605,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
 
-  	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
-  }
+	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+	activeEditor->setFocus();
+}
 
 void MainWindow::openFileFromPath(QString path,int line)
 {
@@ -643,20 +649,21 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer,bool errorLog, bool editorToolbar, bool viewToolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar)
 {
-	viewActionHideConsole->setChecked(console);
-	hideConsole();
-	viewActionHideEditor->setChecked(editor);
+	windowActionHideEditor->setChecked(editor);
 	hideEditor();
-    viewActionHideEditorToolBar->setChecked(editorToolbar);
-    hideEditorToolbar();
-    viewActionHide3DViewToolBar->setChecked(viewToolbar);
-    hide3DViewToolbar();
-	viewActionHideParameters->setChecked(customizer);
-	hideParameters();
-	viewActionHideErrorLog->setChecked(errorLog);
+	windowActionHideConsole->setChecked(console);
+	hideConsole();
+	windowActionHideErrorLog->setChecked(errorLog);
 	hideErrorLog();
+	windowActionHideCustomizer->setChecked(customizer);
+	hideParameters();
+
+	viewActionHideEditorToolBar->setChecked(editorToolbar);
+	hideEditorToolbar();
+	viewActionHide3DViewToolBar->setChecked(viewToolbar);
+	hide3DViewToolbar();
 }
 
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
@@ -918,7 +925,7 @@ void MainWindow::updateTVal()
 {
 	if (this->anim_numsteps == 0) return;
 
-	if (viewActionHideParameters->isVisible()) {
+	if (windowActionHideCustomizer->isVisible()) {
 		if (this->parameterWidget->childHasFocus()) return;
 	}
 	
@@ -1732,7 +1739,7 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 
 void MainWindow::changeParameterWidget()
 {
-	viewActionHideParameters->setVisible(true);
+	windowActionHideCustomizer->setVisible(true);
 }
 
 void MainWindow::checkAutoReload()
@@ -2888,10 +2895,27 @@ void MainWindow::hide3DViewToolbar()
     }
 }
 
+void MainWindow::showLink(const QString link)
+{
+	if (link == "#console") {
+		showConsole();
+	} else if (link == "#errorlog") {
+		showErrorLog();
+	}
+}
+
+void MainWindow::showEditor()
+{
+	windowActionHideEditor->setChecked(false);
+	hideEditor();
+	editorDock->raise();
+	tabManager->setFocus();
+}
+
 void MainWindow::hideEditor()
 {
 	auto e = (ScintillaEditor *) this->activeEditor;
-	if (viewActionHideEditor->isChecked()) {
+	if (windowActionHideEditor->isChecked()) {
 		// Workaround manually disabling interactions with editor by setting it
 		// to read-only when not being shown.  This is an upstream bug from Qt
 		// (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
@@ -2915,57 +2939,113 @@ void MainWindow::hideEditor()
 	}
 }
 
+void MainWindow::showConsole()
+{
+	windowActionHideConsole->setChecked(false);
+	frameCompileResult->hide();
+	consoleDock->show();
+	consoleDock->raise();
+	console->setFocus();
+}
+
 void MainWindow::hideConsole()
 {
-	if (viewActionHideConsole->isChecked()) {
+	if (windowActionHideConsole->isChecked()) {
 		consoleDock->hide();
 	} else {
 		consoleDock->show();
 	}
 }
 
+void MainWindow::showErrorLog()
+{
+	windowActionHideErrorLog->setChecked(false);
+	frameCompileResult->hide();
+	errorLogDock->show();
+	errorLogDock->raise();
+	errorLogWidget->logTable->setFocus();
+}
+
+void MainWindow::hideErrorLog()
+{
+	if (windowActionHideErrorLog->isChecked()) {
+		errorLogDock->hide();
+	} else {
+		errorLogDock->show();
+	}
+}
+
+void MainWindow::showParameters()
+{
+	windowActionHideCustomizer->setChecked(false);
+	parameterDock->show();
+	parameterDock->raise();
+	parameterWidget->scrollArea->setFocus();
+}
+
 void MainWindow::hideParameters()
 {
-	if (viewActionHideParameters->isChecked()) {
+	if (windowActionHideCustomizer->isChecked()) {
 		parameterDock->hide();
 	} else {
 		parameterDock->show();
 	}
 }
 
-void MainWindow::showLink(const QString link)
+void MainWindow::on_windowActionSelectEditor_triggered()
 {
-	if (link == "#console") {
-		showConsole();
-	} else if (link == "#errorlog") {
-		showErrorLog();
-	}
+	showEditor();
 }
 
-void MainWindow::showConsole()
+void MainWindow::on_windowActionSelectConsole_triggered()
 {
-	viewActionHideConsole->setChecked(false);
-	frameCompileResult->hide();
-	consoleDock->show();
-	consoleDock->raise();
-	consoleDock->focusWidget();
+	showConsole();
 }
 
-void MainWindow::showErrorLog()
+void MainWindow::on_windowActionSelectErrorLog_triggered()
 {
-	viewActionHideErrorLog->setChecked(false);
-	frameCompileResult->hide();
-	errorLogDock->show();
-	errorLogDock->raise();
-	errorLogDock->focusWidget();
+	showErrorLog();
 }
 
-void MainWindow::hideErrorLog()
+void MainWindow::on_windowActionSelectCustomizer_triggered()
 {
-	if (viewActionHideErrorLog->isChecked()) {
-		errorLogDock->hide();
-	} else {
-		errorLogDock->show();
+	showParameters();
+}
+
+void MainWindow::on_windowActionNextWindow_triggered()
+{
+	activateWindow(1);
+}
+
+void MainWindow::on_windowActionPreviousWindow_triggered()
+{
+	activateWindow(-1);
+}
+
+void MainWindow::activateWindow(int offset)
+{
+	const std::array<DockFocus, 4> docks = {{
+		{ editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
+		{ consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
+		{ errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
+		{ parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
+	}};
+
+	const int cnt = docks.size();
+	const auto focusWidget = QApplication::focusWidget();
+	for (auto widget = focusWidget;widget != nullptr;widget = widget->parentWidget()) {
+		for (int idx = 0;idx < cnt;++idx) {
+			if (widget == docks.at(idx).widget) {
+				for (int o = 1;o < cnt;++o) {
+					const int target = (cnt + idx + o * offset) % cnt;
+					const auto dock = docks.at(target);
+					if (dock.widget->isVisible()) {
+						dock.focus(this);
+						return;
+					}
+				}
+			}
+		}
 	}
 }
 

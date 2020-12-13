@@ -1322,6 +1322,7 @@ void ScintillaEditor::jumpToNextError()
 
 void ScintillaEditor::setFocus()
 {
+	qsci->setFocus();
 	qsci->SendScintilla(QsciScintilla::SCI_SETFOCUS, true);
 }
 
