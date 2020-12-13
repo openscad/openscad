@@ -186,8 +186,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->errorLogDock->setConfigKey("view/hideErrorLog");
 	this->errorLogDock->setAction(this->viewActionHideErrorLog);
 
-	this->tabifyDockWidget(this->consoleDock,this->errorLogDock); // Move Second Dock on top of First
-
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
 
