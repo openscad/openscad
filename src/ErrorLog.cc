@@ -116,7 +116,7 @@ void ErrorLog::on_actionRowSelected_triggered(bool)
 {
 	const auto indexes = logTable->selectionModel()->selectedRows(0);
 	if (indexes.size() == 1) {
-		onIndexSelected(indexes.constFirst());
+		onIndexSelected(indexes.first());
 	}
 }
 
