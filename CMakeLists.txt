@@ -612,6 +612,7 @@ set(GUI_SOURCES
   src/QSettingsCached.cc
   src/QWordSearchField.cc
   src/SettingsWriter.cc
+  src/ShortcutConfigurator.cc
   src/UIUtils.cc
   src/WindowManager.cc
   src/parameter/groupwidget.cpp

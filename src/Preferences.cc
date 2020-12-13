@@ -42,6 +42,7 @@
 #include "rendersettings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
+#include "ShortcutConfigurator.h"
 #include "SettingsWriter.h"
 #include "OctoPrint.h"
 
@@ -180,6 +181,7 @@ void Preferences::init() {
 	addPrefPage(group, prefsActionInput, pageInput);
 	addPrefPage(group, prefsActionInputButton, pageInputButton);
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
+	addPrefPage(group,prefsActionShortcuts,pageShortcuts);
 
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
@@ -1010,3 +1012,7 @@ Preferences *Preferences::inst() {
 }
 
 
+void Preferences::onRegerateDueToClose(MainWindow* mw)
+{
+	emit regenerateSc(mw);
+}

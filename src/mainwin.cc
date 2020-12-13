@@ -96,6 +96,8 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
+#include "ShortcutConfigurator.h"
+
 
 #define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
@@ -444,10 +446,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
-					this, SLOT(openCSGSettingsChanged()));
-	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
-					this, SLOT(setColorScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),this, SLOT(openCSGSettingsChanged()));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),this, SLOT(setColorScheme(const QString&)));
 
 	Preferences::inst()->apply_win(); // not sure if to be commented, checked must not be commented(done some changes in apply())
 
@@ -477,8 +477,18 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->editortoolbar->actions());
 
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
-	Preferences* instance = Preferences::inst();
+	instance = Preferences::inst();
 	instance->ButtonConfig->init();
+	// init shortcut-config
+	QList<QAction *>allActions = this->findChildren<QAction *>();
+	instance->shortcutconfigurator->collectDefaults(allActions);
+	instance->shortcutconfigurator->applyConfigFile(allActions);
+	instance->shortcutconfigurator->initGUI(allActions);
+	instance->shortcutconfigurator->searchBox->setText("");
+
+	connect(this,SIGNAL(regenerateScOnWindowClose(MainWindow*)),instance,SLOT(onRegerateDueToClose(MainWindow*)));
+
+	connect(instance,SIGNAL(regenerateSc(MainWindow*)),this,SLOT(onRegenerateSc(MainWindow*)));
 
 	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
 	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
@@ -578,6 +588,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	viewModeThrownTogether();
 	show();
 
+
 #ifdef ENABLE_OPENCSG
 	viewModePreview();
 #else
@@ -622,13 +633,15 @@ void MainWindow::initActionIcon(QAction *action, const char *darkResource, const
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 {
+
 	for (auto &action : actions) {
 		// prevent adding shortcut twice if action is added to multiple toolbars
 		if (action->toolTip().contains("&nbsp;")) {
 	    continue;
 		}
-		
+
 		const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+
 		if (shortCut.isEmpty()) {
 	    continue;
 		}
@@ -637,6 +650,18 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
 }
+
+void MainWindow::onRegenerateSc(MainWindow* mw)
+{
+	if(mw==this) return;
+	QList<QAction *>allActions = this->findChildren<QAction *>();
+	instance->shortcutconfigurator->resetClass();
+	instance->shortcutconfigurator->collectDefaults(allActions);
+	instance->shortcutconfigurator->applyConfigFile(allActions);
+	instance->shortcutconfigurator->initGUI(allActions);
+	instance->shortcutconfigurator->searchBox->setText("");
+}
+
 
 /**
  * Update window settings that get overwritten by the restoreState()
@@ -790,6 +815,8 @@ MainWindow::~MainWindow()
 {
 	// If root_module is not null then it will be the same as parsed_module,
 	// so no need to delete it.
+	instance->shortcutconfigurator->searchBox->setText("");	
+	emit regenerateScOnWindowClose(this);
 	delete parsed_module;
 	delete root_node;
 #ifdef ENABLE_CGAL
@@ -2907,11 +2934,13 @@ void MainWindow::hideEditor()
 		 	e->cancelCallTip();
 		}
 		editorDock->close();
+		QTimer::singleShot(0,consoleDock,SLOT(setFocus()));
 	}else {
 		e->qsci->setReadOnly(false);
 		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
 		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
 		editorDock->show();
+		QTimer::singleShot(0,editorDock,SLOT(setFocus()));
 	}
 }
 

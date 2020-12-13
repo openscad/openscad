@@ -7,6 +7,7 @@
 #include "ui_Preferences.h"
 #include "settings.h"
 #include "initConfig.h"
+#include "MainWindow.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences,public InitConfigurator
 {
@@ -97,7 +98,7 @@ public slots:
 	void on_lineEditOctoPrintURL_editingFinished();
 	void on_lineEditOctoPrintApiKey_editingFinished();
 	void on_pushButtonOctoPrintApiKey_clicked();
-
+	void onRegerateDueToClose(MainWindow* mw);
 signals:
 	void requestRedraw() const;
 	void updateUndockMode(bool undockMode) const;
@@ -111,12 +112,14 @@ signals:
 	void updateMouseCentricZoom(bool state) const;
 	void autocompleteChanged(bool status) const;
 	void characterThresholdChanged(int val) const;
+	void regenerateSc(MainWindow* mw) const;
+	
 	void stepSizeChanged(int val) const;
 
 private slots:
-    void on_lineEditStepSize_textChanged(const QString &arg1);
+	void on_lineEditStepSize_textChanged(const QString &arg1);
 
-    void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
+	void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
 
 private:
     Preferences(QWidget *parent = nullptr);

@@ -6,6 +6,10 @@ https://openclipart.org/detail/35425/tango-desktop-peripherals / Tango Icon Libr
 
 - prefsInput.png
 
+https://openclipart.org/detail/35269/tango-preferences-desktop-keyboard-shortcuts / Tango Icon Library / public domain:
+
+- prefsShortcuts.png
+
 https://commons.wikimedia.org/wiki/File:Input-gaming.svg / Tango Icon Library / public domain:
 
 - prefsInputAxis.png (Button removed)

@@ -236,6 +236,7 @@ FORMS   += src/MainWindow.ui \
            src/FontListDialog.ui \
            src/PrintInitDialog.ui \
            src/ProgressWidget.ui \
+           src/ShortcutConfigurator.ui \
            src/launchingscreen.ui \
            src/LibraryInfoDialog.ui \
            src/Console.ui \
@@ -285,6 +286,7 @@ HEADERS += src/version_check.h \
            src/GLView.h \
            src/MainWindow.h \
            src/tabmanager.h \
+           src/ShortcutConfigurator.h \
            src/tabwidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
@@ -528,6 +530,7 @@ SOURCES += \
            src/openscad.cc \
            src/mainwin.cc \
            src/tabmanager.cc \
+           src/ShortcutConfigurator.cc \
            src/tabwidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \

@@ -135,6 +135,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
+             <y>0</y>
+             <width>538</width>
+             <height>766</height>
              <y>-450</y>
              <width>602</width>
              <height>901</height>
@@ -848,6 +851,79 @@
                    </property>
                   </widget>
                  </item>
+                 <item>
+                  <spacer name="horizontalSpacer_21">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QGroupBox" name="groupBoxDisplay">
+              <property name="title">
+               <string>Display</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout">
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableBraceMatching">
+                 <property name="text">
+                  <string>Enable brace matching</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="checkBoxHighlightCurrentLine">
+                 <property name="text">
+                  <string>Highlight current line</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableLineNumbers">
+                 <property name="text">
+                  <string>Display Line Numbers</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QGroupBox" name="groupBoxAutocomplete">
+              <property name="title">
+               <string>Autocomplete</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout1">
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="checkBoxEnableAutocomplete">
+                 <property name="text">
+                  <string>Enable Autocompletion</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_30">
+                 <item>
+                  <widget class="QLabel" name="labelCharacterThreshold">
+                   <property name="text">
+                    <string>Character Threshold</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditCharacterThreshold"/>
+                 </item>
                 </layout>
                </item>
                <item row="2" column="1">
@@ -1292,8 +1368,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>84</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1615,6 +1691,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
+             <width>602</width>
              <width>548</width>
              <height>747</height>
             </rect>
@@ -1999,6 +2076,39 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageShortcuts">
+       <layout class="QGridLayout" name="gridLayout_15">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_ShortcutConfigurator">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="ShortcutConfigurator" name="shortcutconfigurator">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>98</width>
+             <height>28</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2036,6 +2146,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
+   <addaction name="prefsActionShortcuts"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -2142,6 +2253,18 @@
     <string>3D Printing Services</string>
    </property>
   </action>
+  <action name="prefsActionShortcuts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/icons/prefsShortcuts.png</normaloff>:/icons/prefsShortcuts.png</iconset>
+   </property>
+   <property name="text">
+    <string>Shortcuts</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -2154,6 +2277,12 @@
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
    <header>input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ShortcutConfigurator</class>
+   <extends>QWidget</extends>
+   <header>ShortcutConfigurator.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
