@@ -1805,6 +1805,18 @@ void MainWindow::csgReloadRender()
 	compileEnded();
 }
 
+void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, bool preview)
+{
+	autoReloadTimer->stop();
+	setCurrentOutput();
+	LOG(message_group::None, Location::NONE, "", " ");
+	LOG(message_group::None, Location::NONE, "", "Parsing design (AST generation)...");
+	this->processEvents();
+	this->afterCompileSlot = afterCompileSlot;
+	this->procevents = procevents;
+	this->top_ctx->set_variable("$preview", Value(preview));
+}
+
 void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 {
 	static bool preview_requested;
@@ -1812,16 +1824,10 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	preview_requested=true;
 	if (GuiLocker::isLocked()) return;
 	GuiLocker::lock();
-	autoReloadTimer->stop();
 	preview_requested=false;
-	setCurrentOutput();
 
-  LOG(message_group::None,Location::NONE,"","Parsing design (AST generation)...");
-	this->processEvents();
-	this->afterCompileSlot = "csgRender";
-	this->procevents = !viewActionAnimate->isChecked();
-	this->top_ctx->set_variable("$preview", Value(true));
-	compile(false,false,rebuildParameterWidget);
+	prepareCompile("csgRender", !viewActionAnimate->isChecked(), true);
+	compile(false, false, rebuildParameterWidget);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
 		// however, it's not possible to call it directly NOR make the loop
@@ -2049,14 +2055,8 @@ void MainWindow::actionRender()
 {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker::lock();
-	autoReloadTimer->stop();
-	setCurrentOutput();
 
-  LOG(message_group::None,Location::NONE,"","Parsing design (AST generation)...");
-	this->processEvents();
-	this->afterCompileSlot = "cgalRender";
-	this->procevents = true;
-	this->top_ctx->set_variable("$preview", Value(false));
+	prepareCompile("cgalRender", true, false);
 	compile(false);
 }
 
@@ -2092,7 +2092,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		if (!root_geom->isEmpty()) {
 			RenderStatistic().print(*root_geom);
 		}
-		LOG(message_group::None,Location::NONE,"","Rendering finished.\n");
+		LOG(message_group::None,Location::NONE,"","Rendering finished.");
 
 		this->root_geom = root_geom;
 		this->cgalRenderer = new CGALRenderer(root_geom);
