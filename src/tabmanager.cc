@@ -192,13 +192,14 @@ void TabManager::createTab(const QString &filename)
 
     Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
 
+    connect(editor, SIGNAL(uriDropped(const QUrl&)), par, SLOT(handleFileDrop(const QUrl&)));
     connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
-	connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
+    connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
     connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
-	connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
-	connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
+    connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
+    connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
     ((ScintillaEditor *)editor)->public_applySettings();
-	editor->addTemplate();
+    editor->addTemplate();
 
 	QShortcut *viewTemplates = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Insert), editor);
 	viewTemplates->setAutoRepeat(false);

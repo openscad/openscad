@@ -113,7 +113,6 @@ public:
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void handleFileDrop(const QString &filename);
 	void updateTemporalVariables();
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
@@ -138,6 +137,7 @@ private:
 public slots:
 	void updateRecentFiles(EditorInterface *edt);
 	void updateRecentFileActions();
+	void handleFileDrop(const QUrl& url);
 
 private slots:
 	void actionOpen();
