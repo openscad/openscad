@@ -123,6 +123,7 @@ private:
 
 	void loadViewSettings();
 	void loadDesignSettings();
+	void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
     void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
