@@ -3061,21 +3061,22 @@ void MainWindow::dropEvent(QDropEvent *event)
 	setCurrentOutput();
 	const QList<QUrl> urls = event->mimeData()->urls();
 	for (int i = 0; i < urls.size(); ++i) {
-		if (urls[i].scheme() != "file") continue;
-		handleFileDrop(urls[i].toLocalFile());
+		handleFileDrop(urls[i]);
 	}
 	clearCurrentOutput();
 }
 
-void MainWindow::handleFileDrop(const QString &filename)
+void MainWindow::handleFileDrop(const QUrl& url)
 {
-	const QFileInfo fileInfo(filename);
+	if (url.scheme() != "file") return;
+	const auto fileName = url.toLocalFile();
+	const auto fileInfo = QFileInfo{fileName};
 	const auto suffix = fileInfo.suffix().toLower();
 	const auto cmd = knownFileExtensions[suffix];
 	if (cmd.isEmpty()) {
-		tabManager->open(filename);
+		tabManager->open(fileName);
 	} else {
-		activeEditor->insert(cmd.arg(filename));
+		activeEditor->insert(cmd.arg(fileName));
 	}
 }
 
