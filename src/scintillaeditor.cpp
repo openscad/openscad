@@ -209,6 +209,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
 	qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
 	connect(qsci, SIGNAL(indicatorClicked(int, int, Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int, int, Qt::KeyboardModifiers)));
+
+#if QSCINTILLA_VERSION >= 0x020b00
+	connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
+#endif
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint &pos)
