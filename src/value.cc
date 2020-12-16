@@ -866,9 +866,11 @@ public:
     // FIXME: should we really truncate to shortest vector here?
     //   Maybe better to either "add zeroes" and return longest
     //   and/or issue an warning/error about length mismatch.
-    // Also would be better to use the new VectorType iterators to avoid auto flattening on "random-access"
-    for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
-      sum.emplace_back(op1[i] + op2[i]);
+    for (auto it1 = op1.begin(), end1 = op1.end(), it2 = op2.begin(), end2 = op2.end();
+         it1 != end1 && it2 != end2;
+         ++it1, ++it2)
+    {
+      sum.emplace_back(*it1 + *it2);
     }
     return std::move(sum);
   }
