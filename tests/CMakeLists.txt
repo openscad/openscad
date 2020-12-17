@@ -470,6 +470,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue3118-recur-limit.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue3541.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/root-modifiers.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/root-modifier-for.scad

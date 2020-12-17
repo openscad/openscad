@@ -368,6 +368,7 @@ public:
       using size_type = vec_t::size_type;
       vec_t vec;
       size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
+      size_type size() const { return vec.size() + embed_excess;  }
     };
     using vec_t = VectorObject::vec_t;
     shared_ptr<VectorObject> ptr;
@@ -379,17 +380,23 @@ public:
     struct VectorObjectDeleter {
       void operator()(VectorObject* vec);
     };
-    void flatten() const; // flatten replaces the VectorObject with a
+    void flatten() const; // flatten replaces VectorObject::vec with a new vector
+                          // where any embedded elements are copied direclty into the top level vec,
+                          // leaving only true elements for straightforward indexing by operator[].
     explicit VectorType(const shared_ptr<VectorObject> &copy) : ptr(copy) { } // called by clone()
   public:
     using size_type = VectorObject::size_type;
     static const VectorType EMPTY;
     // EmbeddedVectorType-aware iterator, manages its own stack of begin/end vec_t::const_iterators
     // such that calling code will only receive references to "true" elements (i.e. NOT EmbeddedVectorTypes).
+    // Also tracks the overall element index. In case flattening occurs during iteration, it can continue based on that index. (Issue #3541)
     class iterator {
     private:
+      const VectorObject* vo;
       std::vector<std::pair<vec_t::const_iterator, vec_t::const_iterator> > it_stack;
       vec_t::const_iterator it, end;
+      size_t index;
+
       // Recursively push stack while current (pseudo)element is an EmbeddedVector
       //  - Depends on the fact that VectorType::emplace_back(EmbeddedVectorType&& mbed)
       //    will not embed an empty vector, which ensures iterator will arrive at an actual element,
@@ -411,24 +418,32 @@ public:
       using difference_type   = void;
       using reference         = const value_type&;
       using pointer           = const value_type*;
-      iterator() : it_stack(), it(EMPTY.ptr->vec.begin()), end(EMPTY.ptr->vec.end()) {}
-      iterator(const vec_t& v) : it(v.begin()), end(v.end()) { check_and_push(); }
-      iterator(const vec_t& v, bool /*end*/) : it(v.end()) { }
+
+      iterator() : vo(EMPTY.ptr.get()), it_stack(), it(EMPTY.ptr->vec.begin()), end(EMPTY.ptr->vec.end()), index(0) {}
+      iterator(const VectorObject* v) : vo(v), it(v->vec.begin()), end(v->vec.end()), index(0) {
+        if (vo->embed_excess) check_and_push();
+      }
+      iterator(const VectorObject* v, bool /*end*/) : vo(v), index(v->size()) { }
       iterator& operator++() {
-        // recursively increment and pop stack while at the end of EmbeddedVector(s)
-        while (++it == end && !it_stack.empty()) {
-          const auto& up = it_stack.back();
-          it = up.first;
-          end = up.second;
-          it_stack.pop_back();
+        ++index;
+        if (vo->embed_excess) {
+          // recursively increment and pop stack while at the end of EmbeddedVector(s)
+          while (++it == end && !it_stack.empty()) {
+            const auto& up = it_stack.back();
+            it = up.first;
+            end = up.second;
+            it_stack.pop_back();
+          }
+          check_and_push();
+        } else { // vo->vec is flat
+          it = vo->vec.begin() + index;
         }
-        check_and_push();
         return *this;
       }
       reference operator*() const { return *it; };
       pointer operator->() const { return &*it; };
-      bool operator==(const iterator &other) const { return this->it == other.it && this->it_stack == other.it_stack; }
-      bool operator!=(const iterator &other) const { return this->it != other.it || this->it_stack != other.it_stack; }
+      bool operator==(const iterator &other) const { return this->vo == other.vo && this->index == other.index; }
+      bool operator!=(const iterator &other) const { return this->vo != other.vo || this->index != other.index; }
     };
     using const_iterator = const iterator;
     VectorType() : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
@@ -440,10 +455,10 @@ public:
     VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
     static Value Empty() { return VectorType(); }
 
-    const_iterator begin() const { return iterator(ptr->vec); }
-    const_iterator   end() const { return iterator(ptr->vec, true);   }
-    size_type size() const { return ptr->vec.size() + ptr->embed_excess;  }
-    bool empty() const { return ptr->vec.empty();  }
+    const_iterator begin() const { return iterator(ptr.get()); }
+    const_iterator   end() const { return iterator(ptr.get(), true); }
+    size_type size() const { return ptr->size(); }
+    bool empty() const { return ptr->vec.empty(); }
     // const accesses to VectorObject require .clone to be move-able
     const Value &operator[](size_t idx) const {
       if (idx < this->size()) {
