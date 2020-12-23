@@ -49,6 +49,74 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 	}
 }
 
+void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo)
+{
+	PRINTD("Thrown prepare");
+	if (Feature::ExperimentalVxORenderers.is_enabled() && !vertex_states.size()) {
+		VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states);
+		vertex_array.addSurfaceData();
+		add_shader_data(vertex_array);
+		
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			size_t vertices_size = 0, elements_size = 0;
+			if (this->root_products)
+				vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true)*2);
+			if (this->background_products)
+				vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
+			if (this->highlight_products)
+				vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
+
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				if (vertices_size <= 0xff) {
+					vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
+				} else if (vertices_size <= 0xffff) {
+					vertex_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
+				} else {
+					vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+				}
+				elements_size = vertices_size * vertex_array.elements().stride();
+				vertex_array.elementsSize(elements_size);
+			}
+			vertices_size *= vertex_array.stride();
+			vertex_array.verticesSize(vertices_size);
+
+			GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
+			glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()); GL_ERROR_CHECK();
+			GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
+			glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()); GL_ERROR_CHECK();
+				GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+			}
+		} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+			vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
+		}
+
+		if (this->root_products)
+			createCSGProducts(*this->root_products, vertex_array, false, false);
+		if (this->background_products)
+			createCSGProducts(*this->background_products, vertex_array, false, true);
+		if (this->highlight_products)
+			createCSGProducts(*this->highlight_products, vertex_array, true, false);
+		
+		if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+			if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+				GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+			}
+			GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+			glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+		}
+
+		vertex_array.createInterleavedVBOs();
+		vertices_vbo = vertex_array.verticesVBO();
+		elements_vbo = vertex_array.elementsVBO();
+	}
+}
+
+
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
 {
 	PRINTD("Thrown draw");
@@ -77,71 +145,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 		if (this->highlight_products)
 		 	renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
 	} else {
-		if (!vertex_states.size()) {
-			VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states);
-			vertex_array.addSurfaceData();
-			add_shader_data(vertex_array);
-			
-			if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-				size_t vertices_size = 0, elements_size = 0;
-				if (this->root_products)
-					vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true)*2);
-				if (this->background_products)
-					vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
-				if (this->highlight_products)
-					vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
-
-				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-					if (vertices_size <= 0xff) {
-						vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte,1,GL_UNSIGNED_BYTE>>());
-					} else if (vertices_size <= 0xffff) {
-						vertex_array.addElementsData(std::make_shared<AttributeData<GLushort,1,GL_UNSIGNED_SHORT>>());
-					} else {
-						vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
-					}
-					elements_size = vertices_size * vertex_array.elements().stride();
-					vertex_array.elementsSize(elements_size);
-				}
-				vertices_size *= vertex_array.stride();
-				vertex_array.verticesSize(vertices_size);
-
-				GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
-				glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()); GL_ERROR_CHECK();
-				GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-				glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
-				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-					GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()); GL_ERROR_CHECK();
-					GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-					glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
-				}
-			} else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-				vertex_array.addElementsData(std::make_shared<AttributeData<GLuint,1,GL_UNSIGNED_INT>>());
-			}
-
-			if (this->root_products)
-				createCSGProducts(*this->root_products, vertex_array, false, false);
-			if (this->background_products)
-				createCSGProducts(*this->background_products, vertex_array, false, true);
-			if (this->highlight_products)
-				createCSGProducts(*this->highlight_products, vertex_array, true, false);
-			
-			if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-				if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-					GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
-				}
-				GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-				glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
-			}
-
-			vertex_array.createInterleavedVBOs();
-			vertices_vbo = vertex_array.verticesVBO();
-			elements_vbo = vertex_array.elementsVBO();
-		}
-
 		renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
-		
 	}
 	if (shaderinfo && shaderinfo->progid) {
 		if (shaderinfo->type == EDGE_RENDERING && showedges) {
@@ -234,7 +238,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 
 void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
                                                const class CSGChainObject &csgobj, bool highlight_mode,
-                                               bool background_mode, OpenSCADOperator type) const
+                                               bool background_mode, OpenSCADOperator type)
 {
 	if (csgobj.leaf->geom) {
 		const PolySet* ps = dynamic_cast<const PolySet*>(csgobj.leaf->geom.get());
@@ -324,19 +328,17 @@ void ThrownTogetherRenderer::createChainObject(VertexArray &vertex_array,
 }
 
 void ThrownTogetherRenderer::createCSGProducts(const CSGProducts &products, VertexArray &vertex_array,
-						bool highlight_mode, bool background_mode) const
+						bool highlight_mode, bool background_mode)
 {
 	PRINTD("Thrown renderCSGProducts");
 	this->geomVisitMark.clear();
 
 	for(const auto &product : products.products) {
-		if (product.intersections.size() || product.subtractions.size()) {
-			for(const auto &csgobj : product.intersections) {
-				createChainObject(vertex_array, csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
-			}
-			for(const auto &csgobj : product.subtractions) {
-				createChainObject(vertex_array, csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-			}
+		for(const auto &csgobj : product.intersections) {
+			createChainObject(vertex_array, csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
+		}
+		for(const auto &csgobj : product.subtractions) {
+			createChainObject(vertex_array, csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 		}
 	}
 }

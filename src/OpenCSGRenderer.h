@@ -72,15 +72,16 @@ typedef std::vector<std::unique_ptr<OpenCSGVBOProduct>> OpenCSGVBOProducts;
 class OpenCSGRenderer : public VBORenderer
 {
 public:
-	OpenCSGRenderer(shared_ptr<class CSGProducts> root_products,
-			shared_ptr<CSGProducts> highlights_products,
-			shared_ptr<CSGProducts> background_products);
+	OpenCSGRenderer(std::shared_ptr<class CSGProducts> root_products,
+			std::shared_ptr<CSGProducts> highlights_products,
+			std::shared_ptr<CSGProducts> background_products);
 	virtual ~OpenCSGRenderer() {
 		if (all_vbos_.size()) {
 			glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
 		}
 	}
-	void draw(bool showfaces, bool showedges, const Renderer::shaderinfo_t *shaderinfo = nullptr) const override;
+	void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
+	void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 
 	BoundingBox getBoundingBox() const override;
 private:
@@ -89,13 +90,13 @@ private:
 	class OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState> &vertex_state,
 						 const OpenCSG::Operation operation, const unsigned int convexity) const;
 #endif // ENABLE_OPENCSG
-	void createCSGProducts(const class CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const;
-	void renderCSGProducts(const shared_ptr<class CSGProducts> &products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
+	void createCSGProducts(const class CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
+	void renderCSGProducts(const std::shared_ptr<class CSGProducts> &products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
 				bool highlight_mode = false, bool background_mode = false) const;
 
-	mutable OpenCSGVBOProducts vbo_vertex_products;
-	mutable std::vector<GLuint> all_vbos_;
-	shared_ptr<CSGProducts> root_products;
-	shared_ptr<CSGProducts> highlights_products;
-	shared_ptr<CSGProducts> background_products;
+	OpenCSGVBOProducts vbo_vertex_products;
+	std::vector<GLuint> all_vbos_;
+	std::shared_ptr<CSGProducts> root_products;
+	std::shared_ptr<CSGProducts> highlights_products;
+	std::shared_ptr<CSGProducts> background_products;
 };

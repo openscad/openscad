@@ -25,13 +25,12 @@
  */
 
 #include "system-gl.h"
+#include "memory.h"
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
-#include "csgnode.h"
 #include "feature.h"
 
 #ifdef ENABLE_OPENCSG
-#include <opencsg.h>
 
 class OpenCSGPrim : public OpenCSG::Primitive
 {
@@ -39,7 +38,7 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity, const OpenCSGRenderer &renderer) :
 			OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE), renderer(renderer) { }
-	shared_ptr<const PolySet> geom;
+	std::shared_ptr<const PolySet> geom;
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
 
@@ -73,13 +72,28 @@ private:
 };
 #endif // ENABLE_OPENCSG
 
-OpenCSGRenderer::OpenCSGRenderer(shared_ptr<CSGProducts> root_products,
-				 shared_ptr<CSGProducts> highlights_products,
-				 shared_ptr<CSGProducts> background_products)
+OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
+				 std::shared_ptr<CSGProducts> highlights_products,
+				 std::shared_ptr<CSGProducts> background_products)
 	: root_products(root_products),
 	  highlights_products(highlights_products),
 	  background_products(background_products)
 {
+}
+
+void OpenCSGRenderer::prepare(bool /*showfaces*/, bool showedges, const shaderinfo_t *shaderinfo)
+{
+	if (Feature::ExperimentalVxORenderers.is_enabled() && !vbo_vertex_products.size()) {
+		if (this->root_products) {
+			createCSGProducts(*this->root_products, shaderinfo, false, false);
+		}
+		if (this->background_products) {
+			createCSGProducts(*this->background_products, shaderinfo, false, true);
+		}
+		if (this->highlights_products) {
+			createCSGProducts(*this->highlights_products, shaderinfo, true, false);
+		}
+	}
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_t *shaderinfo) const
@@ -97,17 +111,6 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
 			renderCSGProducts(this->highlights_products, showedges, shaderinfo, true, false);
 		}
 	} else {
-		if (!vbo_vertex_products.size()) {
-			if (this->root_products) {
-				createCSGProducts(*this->root_products, shaderinfo, false, false);
-			}
-			if (this->background_products) {
-				createCSGProducts(*this->background_products, shaderinfo, false, true);
-			}
-			if (this->highlights_products) {
-				createCSGProducts(*this->highlights_products, shaderinfo, true, false);
-			}
-		}
 		renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
 	}
 }
@@ -116,7 +119,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject &csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
 	OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
-	shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
+	std::shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
 	if (ps) {
 		prim->geom = ps;
 	}
@@ -141,7 +144,7 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCS
 	return new OpenCSGVBOPrim(operation, convexity, std::move(opencsg_vs));
 }
 
-void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode) const
+void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode)
 {
 	size_t vbo_count = products.products.size();
 	size_t vbo_index = 0;
@@ -351,7 +354,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts &products, const Rende
 #endif // ENABLE_OPENCSG
 }
 
-void OpenCSGRenderer::renderCSGProducts(const shared_ptr<CSGProducts> &products, bool showedges, 
+void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts> &products, bool showedges, 
 					const Renderer::shaderinfo_t *shaderinfo,
 					bool highlight_mode, bool background_mode) const
 {

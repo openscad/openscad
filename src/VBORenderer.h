@@ -59,8 +59,8 @@ public:
      				bool mirror = false) const;
 				     
 protected:
-	void add_shader_data(VertexArray &vertex_array) const;
-	void add_shader_pointers(VertexArray &vertex_array) const;
+	void add_shader_data(VertexArray &vertex_array);
+	void add_shader_pointers(VertexArray &vertex_array);
 	void shader_attribs_enable() const;
 	void shader_attribs_disable() const;
 
@@ -77,7 +77,7 @@ private:
 				size_t shape_dimensions = 0, bool outlines = false,
 				bool mirror = false) const;
 
-	mutable size_t shader_attributes_index;
+	size_t shader_attributes_index;
 	enum ShaderAttribIndex {
 		BARYCENTRIC_ATTRIB
 	};

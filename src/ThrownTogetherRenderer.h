@@ -47,7 +47,8 @@ public:
 				shared_ptr<CSGProducts> highlight_products,
 				shared_ptr<CSGProducts> background_products);
 	virtual ~ThrownTogetherRenderer();
-	void draw(bool showfaces, bool showedges, const Renderer::shaderinfo_t *shaderinfo = nullptr) const override;
+	void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
+	void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 
 	BoundingBox getBoundingBox() const override;
 private:
@@ -60,20 +61,18 @@ private:
 				bool background_mode, bool fberror, OpenSCADOperator type) const;
 
 	void createCSGProducts(const CSGProducts &products, VertexArray &vertex_array,
-				bool highlight_mode, bool background_mode) const;
+				bool highlight_mode, bool background_mode);
 	void createChainObject(VertexArray &vertex_array, const class CSGChainObject &csgobj,
 				bool highlight_mode, bool background_mode,
-				OpenSCADOperator type) const;
+				OpenSCADOperator type);
 
 	Renderer::ColorMode getColorMode(const CSGNode::Flag &flags, bool highlight_mode,
 	                                 bool background_mode, bool fberror, OpenSCADOperator type) const;
 
-	mutable VertexStates vertex_states;
+	VertexStates vertex_states;
 	shared_ptr<CSGProducts> root_products;
 	shared_ptr<CSGProducts> highlight_products;
 	shared_ptr<CSGProducts> background_products;
-	mutable GLuint vertices_vbo;
-	mutable GLuint elements_vbo;
-	/*mutable std::unordered_map<std::pair<const Geometry*,const Transform3d*>, int,
-				   boost::hash<std::pair<const Geometry*,const Transform3d*>>> geomVisitMark;*/
+	GLuint vertices_vbo;
+	GLuint elements_vbo;
 };

@@ -723,14 +723,14 @@ void VBORenderer::create_polygons(const PolySet &ps, VertexArray &vertex_array,
 	}
 }
 
-void VBORenderer::add_shader_data(VertexArray &vertex_array) const
+void VBORenderer::add_shader_data(VertexArray &vertex_array)
 {
 	std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 	shader_attributes_index = vertex_data->attributes().size();
 	vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte,4,GL_UNSIGNED_BYTE>>()); // barycentric
 }
 
-void VBORenderer::add_shader_pointers(VertexArray &vertex_array) const
+void VBORenderer::add_shader_pointers(VertexArray &vertex_array)
 {
 	shared_ptr<VertexData> vertex_data = vertex_array.data();
 

@@ -72,6 +72,9 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 			this->nefPolyhedrons.push_back(new_N);
 		}
 	}
+	
+	if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty())
+		createPolyhedrons();
 }
 
 CGALRenderer::~CGALRenderer()
@@ -84,17 +87,9 @@ CGALRenderer::~CGALRenderer()
 	}
 }
 
-const std::list<shared_ptr<class CGAL_OGL_Polyhedron> > &CGALRenderer::getPolyhedrons() const
+void CGALRenderer::createPolyhedrons()
 {
-	if (!this->nefPolyhedrons.empty() &&
-	    (this->polyhedrons.empty() || Feature::ExperimentalVxORenderers.is_enabled() != last_render_state)) // FIXME: this is temporary to make switching between renderers seamless.
-	    buildPolyhedrons();
-	return this->polyhedrons;
-}
-
-void CGALRenderer::buildPolyhedrons() const
-{
-	PRINTD("buildPolyhedrons");
+	PRINTD("createPolyhedrons");
 	this->polyhedrons.clear();
 
 	if (!Feature::ExperimentalVxORenderers.is_enabled()) {
@@ -116,7 +111,7 @@ void CGALRenderer::buildPolyhedrons() const
 			this->polyhedrons.push_back(shared_ptr<CGAL_OGL_Polyhedron>(p));
 		}
 	}
-	PRINTD("buildPolyhedrons() end");
+	PRINTD("createPolyhedrons() end");
 }
 
 // Overridden from Renderer
@@ -130,7 +125,7 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs)
 	PRINTD("setColorScheme done");
 }
 
-void CGALRenderer::createPolysets() const
+void CGALRenderer::createPolysets()
 {
 	PRINTD("createPolysets() polyset");
 	
@@ -242,6 +237,17 @@ void CGALRenderer::createPolysets() const
 	}
 }
 
+void CGALRenderer::prepare(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/)
+{
+	PRINTD("prepare()");
+	if (!polyset_states.size()) createPolysets();
+	if (!this->nefPolyhedrons.empty() &&
+	    (this->polyhedrons.empty() || Feature::ExperimentalVxORenderers.is_enabled() != last_render_state)) // FIXME: this is temporary to make switching between renderers seamless.
+		createPolyhedrons();
+
+	PRINTD("prepare() end");
+}
+
 void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/) const
 {
 	PRINTD("draw()");
@@ -276,9 +282,6 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
 			}
 		}
 	} else {
-		PRINTDB("product_vertex_sets.size = %d", polyset_states.size());
-		if (!polyset_states.size()) createPolysets();
-		
 		// grab current state to restore after
 		GLfloat current_point_size, current_line_width;
 		GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);

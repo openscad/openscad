@@ -2138,11 +2138,18 @@ void MainWindow::selectObject(QPoint mouse)
 	if (!this->qglview->renderer) {
 		return;
 	}
+	
+	// selecting without select object?!
+	if (!this->selector) {
+		return;
+	}
 
 	// Nothing to select
 	if (!this->root_products) {
 		return;
 	}
+
+	this->qglview->renderer->prepare(true, false, &this->selector->shaderinfo);
 
 	// Update the selector with the right image size
 	this->selector->reset(this->qglview);

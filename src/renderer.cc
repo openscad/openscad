@@ -284,6 +284,9 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
 			glVertex3d(p1[0], p1[1], p1[2] + z);
 		}
 		glVertex3d(p2[0], p2[1], p2[2] + z);
+		if (mirror) {
+			glVertex3d(p1[0], p1[1], p1[2] + z);
+		}
 	}
 }
 #endif

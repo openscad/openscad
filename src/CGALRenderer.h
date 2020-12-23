@@ -12,27 +12,23 @@ class CGALRenderer : public VBORenderer
 public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
 	~CGALRenderer();
+	void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
 	void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 	void setColorScheme(const ColorScheme &cs) override;
 	BoundingBox getBoundingBox() const override;
 
-public:
-	mutable std::list<shared_ptr<class CGAL_OGL_Polyhedron> > polyhedrons;
-	std::list<shared_ptr<const class PolySet> > polysets;
-	std::list<shared_ptr<const CGAL_Nef_polyhedron> > nefPolyhedrons;
-
 private:
 	void addGeometry(const shared_ptr<const class Geometry> &geom);
-	const std::list<shared_ptr<class CGAL_OGL_Polyhedron> > &getPolyhedrons() const;
-	void buildPolyhedrons() const;
-	void createPolysets() const;
+	const std::list<shared_ptr<class CGAL_OGL_Polyhedron> > &getPolyhedrons() const { return this->polyhedrons; }
+	void createPolyhedrons();
+	void createPolysets();
 	bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
+
+	std::list<shared_ptr<class CGAL_OGL_Polyhedron> > polyhedrons;
+	std::list<shared_ptr<const class PolySet> > polysets;
+	std::list<shared_ptr<const CGAL_Nef_polyhedron> > nefPolyhedrons;
 	
-	mutable VertexStates polyset_states;
-	mutable GLuint polyset_vertices_vbo;
-	mutable GLuint polyset_elements_vbo;
-	enum {
-		POLYSET_2D_DATA,
-		POLYSET_3D_DATA
-	};
+	VertexStates polyset_states;
+	GLuint polyset_vertices_vbo;
+	GLuint polyset_elements_vbo;
 };
