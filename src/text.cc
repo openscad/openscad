@@ -57,9 +57,9 @@ AbstractNode *TextModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);
 
-	auto fn = c->lookup_variable("$fn")->toDouble();
-	auto fa = c->lookup_variable("$fa")->toDouble();
-	auto fs = c->lookup_variable("$fs")->toDouble();
+	const auto &fn = c->lookup_variable("$fn").toDouble();
+	const auto &fa = c->lookup_variable("$fa").toDouble();
+	const auto &fs = c->lookup_variable("$fs").toDouble();
 
 	node->params.set_fn(fn);
 	node->params.set_fa(fa);

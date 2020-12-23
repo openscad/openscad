@@ -8,6 +8,7 @@
 #include "value.h"
 #include "Assignment.h"
 #include "memory.h"
+#include "valuemap.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the
@@ -58,23 +59,21 @@ public:
 	virtual ~Context();
 	virtual void init() { }
 
-	const std::shared_ptr<Context> getParent() const { return this->parent; }
-	virtual ValuePtr evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const;
+	const std::shared_ptr<Context> &getParent() const { return this->parent; }
+	virtual Value evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> &evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
-	void setVariables(const std::shared_ptr<EvalContext> evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
+	void setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
 
-	void set_variable(const std::string &name, const ValuePtr &value);
-	void set_variable(const std::string &name, const Value &value);
-	void set_constant(const std::string &name, const ValuePtr &value);
-	void set_constant(const std::string &name, const Value &value);
+	void set_variable(const std::string &name, Value&& value);
+	void set_constant(const std::string &name, Value&& value);
 
-	void apply_variables(const std::shared_ptr<Context> other);
-	void apply_config_variables(const std::shared_ptr<Context> other);
-	ValuePtr lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
+	void apply_variables(const std::shared_ptr<Context> &other);
+	void apply_config_variables(const std::shared_ptr<Context> &other);
+	const Value& lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
 	double lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc=Location::NONE) const;
-	std::string lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc=Location::NONE) const;
-	ValuePtr lookup_local_config_variable(const std::string &name) const;
+	const std::string& lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc=Location::NONE) const;
+	Value lookup_local_config_variable(const std::string &name) const;
 
 	bool has_local_variable(const std::string &name) const;
 
@@ -87,8 +86,6 @@ public:
 protected:
 	const std::shared_ptr<Context> parent;
 	Stack *ctx_stack;
-
-	typedef std::unordered_map<std::string, ValuePtr> ValueMap;
 	ValueMap constants;
 	ValueMap variables;
 	ValueMap config_variables;
@@ -104,7 +101,7 @@ public:
 	// constructor for creating ContextHandle objects in-place in the local
 	// context list. This is needed as ContextHandle handles the Context
 	// stack via RAII so we need to use emplace_front() to create the objects.
-	friend ValuePtr evaluate_function(const std::string& name,
+	friend Value evaluate_function(const std::string& name,
 			const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
 			const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
 			const Location& loc);

@@ -16,10 +16,10 @@ void ParameterComboBox::onChanged(int idx)
 	if(!this->suppressUpdate){
 		if (object->dvt == Value::Type::STRING) {
 			const std::string v = comboBox->itemData(idx).toString().toStdString();
-			object->value = ValuePtr(v);
+			object->value = Value(v);
 		} else {
 			const double v = comboBox->itemData(idx).toDouble();
-			object->value = ValuePtr(v);
+			object->value = Value(v);
 		}
 		emit changed();
 	}
@@ -32,19 +32,18 @@ void ParameterComboBox::setValue()
 	this->pageComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
 	comboBox->clear();
-	const VectorType& vec = object->values->toVector();
-	for (const auto &textData : vec) {
+	for (const auto &textData : object->values.toVector()) {
 		QString text, data;
-		if (textData->toVector().size() > 1) {
-			text = QString::fromStdString(textData->toVector()[1]->toString());
-			data = QString::fromStdString(textData->toVector()[0]->toString());
+		if (textData.toVector().size() > 1) {
+			text = QString::fromStdString(textData.toVector()[1].toString());
+			data = QString::fromStdString(textData.toVector()[0].toString());
 		} else {
-			text = QString::fromStdString(textData->toString());
+			text = QString::fromStdString(textData.toString());
 			data = text;
 		}
 		comboBox->addItem(text, QVariant(data));
 	}
-	QString defaultData = QString::fromStdString(object->value->toString());
+	QString defaultData = QString::fromStdString(object->value.toString());
 	int idx = comboBox->findData(QVariant(defaultData));
 	if (idx >= 0) {
 		comboBox->setCurrentIndex(idx);

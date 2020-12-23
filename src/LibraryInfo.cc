@@ -133,8 +133,10 @@ std::string LibraryInfo::info()
 	  << "\nharfbuzz version: " << get_harfbuzz_version()
 	  << "\ncairo version: " << get_cairo_version()
 	  << "\nlib3mf version: " << get_lib3mf_version()
+#ifdef ENABLE_EXPERIMENTAL
 	  << "\nFeatures: " << Feature::features()
-	  << "\nApplication Path: " << PlatformUtils::applicationPath()
+#endif	  
+		<< "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nUser Documents Path: " << PlatformUtils::userDocumentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()

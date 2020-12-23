@@ -16,7 +16,7 @@ public:
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;
-	ValuePtr getArgValue(size_t i, const std::shared_ptr<Context> ctx = std::shared_ptr<Context>()) const;
+	Value getArgValue(size_t i, const std::shared_ptr<Context> ctx = std::shared_ptr<Context>()) const;
 	const AssignmentList & getArgs() const { return this->eval_arguments; }
 
 	AssignmentMap resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const;

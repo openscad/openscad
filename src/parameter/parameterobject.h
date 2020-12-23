@@ -11,9 +11,9 @@ class ParameterObject
 public:
 	typedef enum { UNDEFINED, COMBOBOX, SLIDER, CHECKBOX, TEXT, NUMBER, VECTOR } parameter_type_t;
 
-	ValuePtr value;
-	ValuePtr values;
-	ValuePtr defaultValue;
+	Value value;
+	Value values;
+	Value defaultValue;
 	Value::Type dvt;
 	parameter_type_t target;
 	QString description;
@@ -24,10 +24,10 @@ public:
 private:
 	Value::Type vt;
 	parameter_type_t checkVectorWidget();
-	void setValue(const ValuePtr defaultValue, const ValuePtr values);
+	void setValue(const Value &defaultValue, const Value &values);
 
 public:
-	ParameterObject(std::shared_ptr<Context> context, const shared_ptr<Assignment> &assignment, const ValuePtr defaultValue);
+	ParameterObject(std::shared_ptr<Context> context, const shared_ptr<Assignment> &assignment, const Value &defaultValue);
 	void applyParameter(const shared_ptr<Assignment> &assignment);
 	bool operator==(const ParameterObject &second);
 };

@@ -88,5 +88,5 @@ result = subprocess.call(convert_cmd)
 if result != 0:
     failquit('Converter failed with return code ' + str(result))
 
-try:    os.remove(exportfile)
-except: failquit('failure at os.remove('+exportfile+')')
+#try:    os.remove(exportfile)
+#except: failquit('failure at os.remove('+exportfile+')')

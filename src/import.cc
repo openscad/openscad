@@ -82,14 +82,17 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	c.dump(this, inst);
 #endif
 
-	auto v = c->lookup_variable("file", true);
-	if (v->isUndefined()) {
-		v = c->lookup_variable("filename", true);
-		if (!v->isUndefined()) {
+	const auto &v = c->lookup_variable("file", true);
+	std::string filename;
+	if (v.isDefined()) {
+		filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->path(), ctx->documentPath());
+	} else {
+		const auto &filename_val = c->lookup_variable("filename", true);
+		if (!filename_val.isUndefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
+		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->path(), ctx->documentPath());
 	}
-	const std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
 	if (!filename.empty()) handle_dep(filename);
 	ImportType actualtype = this->type;
 	if (actualtype == ImportType::UNKNOWN) {
@@ -106,55 +109,59 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 
 	auto node = new ImportNode(inst, evalctx, actualtype);
 
-	node->fn = c->lookup_variable("$fn")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
 
 	node->filename = filename;
-	auto layerval = c->lookup_variable("layer", true);
-	if (layerval->isUndefined()) {
-		layerval = c->lookup_variable("layername", true);
-		if (!layerval->isUndefined()) {
+	const auto &layerval = c->lookup_variable("layer", true);
+	if (layerval.isDefined()) {
+		node->layername = layerval.toString();
+	} else {
+		const auto &layername = c->lookup_variable("layername", true);
+		if (layername.isDefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","layername= is deprecated. Please use layer=");
+			node->layername = layername.toString();
+		} else {
+			node->layername = "";
 		}
 	}
-	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
-	node->convexity = (int)c->lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)c->lookup_variable("convexity", true).toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	const auto origin = c->lookup_variable("origin", true);
+	const auto &origin = c->lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin->isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
+	if(origin.isDefined() && !originOk){
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 
-	const auto center = c->lookup_variable("center", true);
-	node->center = center->type() == Value::Type::BOOL ? center->toBool() : false;
+	const auto &center = c->lookup_variable("center", true);
+	node->center = center.type() == Value::Type::BOOL ? center.toBool() : false;
 
-	node->scale = c->lookup_variable("scale", true)->toDouble();
+	node->scale = c->lookup_variable("scale", true).toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	node->dpi = ImportNode::SVG_DEFAULT_DPI;
-	const auto dpi = c->lookup_variable("dpi", true);
-	if (dpi->type() == Value::Type::NUMBER) {
-		double val = dpi->toDouble();
+	const auto &dpi = c->lookup_variable("dpi", true);
+	if (dpi.type() == Value::Type::NUMBER) {
+		double val = dpi.toDouble();
 		if (val < 0.001) {
 		std::string filePath = boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string();
 		LOG(message_group::Warning,Location::NONE,"",
 			"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
-			origin->toEchoString(),filePath,filePath,inst->location().firstLine());
+			origin.toEchoString(),filePath,filePath,inst->location().firstLine());
 		} else {
 			node->dpi = val;
 		}
 	}
 
-	auto width = c->lookup_variable("width", true);
-	auto height = c->lookup_variable("height", true);
-	node->width = (width->type() == Value::Type::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::Type::NUMBER) ? height->toDouble() : -1;
+	const auto &width = c->lookup_variable("width", true);
+	const auto &height = c->lookup_variable("height", true);
+	node->width = (width.type() == Value::Type::NUMBER) ? width.toDouble() : -1;
+	node->height = (height.type() == Value::Type::NUMBER) ? height.toDouble() : -1;
 
 	return node;
 }

@@ -97,6 +97,7 @@ private:
 signals:
 	void previewRequest(void);
 	void hyperlinkIndicatorClicked(int val);
+	void uriDropped(const QUrl&);
 
 public slots:
 	void zoomIn() override;

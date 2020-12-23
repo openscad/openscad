@@ -334,7 +334,7 @@ expr
         : logic_or
         | TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
             {
-			  $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+              $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               delete $3;
             }
         | logic_or '?' expr ':' expr
@@ -480,23 +480,23 @@ call
 primary
         : TOK_TRUE
             {
-              $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
+              $$ = new Literal(true, LOCD("literal", @$));
             }
         | TOK_FALSE
             {
-              $$ = new Literal(ValuePtr(false), LOCD("literal", @$));
+              $$ = new Literal(false, LOCD("literal", @$));
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+              $$ = new Literal(Value::undefined.clone(), LOCD("literal", @$));
             }
         | TOK_NUMBER
             {
-              $$ = new Literal(ValuePtr($1), LOCD("literal", @$));
+              $$ = new Literal(Value($1), LOCD("literal", @$));
             }
         | TOK_STRING
             {
-              $$ = new Literal(ValuePtr(std::string($1)), LOCD("string", @$));
+              $$ = new Literal(Value(std::string($1)), LOCD("string", @$));
               free($1);
             }
         | TOK_ID
@@ -518,7 +518,7 @@ primary
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(ValuePtr(VectorType()), LOCD("vector", @$));
+              $$ = new Literal(VectorType::Empty(), LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {

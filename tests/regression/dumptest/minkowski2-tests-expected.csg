@@ -103,3 +103,15 @@ multmatrix([[1, 0, 0, 30], [0, 1, 0, -45], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		circle($fn = 0, $fa = 12, $fs = 2, r = 0);
 	}
 }
+multmatrix([[1, 0, 0, 30], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	minkowski(convexity = 0) {
+		circle($fn = 0, $fa = 12, $fs = 2, r = 0);
+		circle($fn = 0, $fa = 12, $fs = 2, r = 5);
+	}
+}
+multmatrix([[1, 0, 0, -30], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	minkowski(convexity = 0) {
+		circle($fn = 0, $fa = 12, $fs = 2, r = 0);
+	}
+}
+

@@ -62,3 +62,14 @@ translate([30,-45]) minkowski() {
 	circle(r=1);
 	circle(r=0);
 }
+
+// Test empty as first polygon
+translate([30,30]) minkowski() {
+	circle(r=0);
+	circle(r=5);
+}
+
+// Test empty as first and only polygon
+translate([-30,30]) minkowski() {
+	circle(r=0);
+}

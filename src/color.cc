@@ -264,16 +264,17 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
 
-	auto v = c->lookup_variable("c");
-	if (v->type() == Value::Type::VECTOR) {
+	const auto &v = c->lookup_variable("c");
+	if (v.type() == Value::Type::VECTOR) {
+		const auto &vec = v.toVector();
 		for (size_t i = 0; i < 4; ++i) {
-			node->color[i] = i < v->toVector().size() ? (float)v->toVector()[i]->toDouble() : 1.0f;
+			node->color[i] = i < v.toVector().size() ? (float)v.toVector()[i].toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
 				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range",node->color[i]);
 			}
 		}
-	} else if (v->type() == Value::Type::STRING) {
-		auto colorname = v->toString();
+	} else if (v.type() == Value::Type::STRING) {
+		auto colorname = v.toString();
 		boost::algorithm::to_lower(colorname);
 		if (webcolors.find(colorname) != webcolors.end())	{
 			node->color = webcolors.at(colorname);
@@ -288,9 +289,9 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 			}
 		}
 	}
-	auto alpha = c->lookup_variable("alpha");
-	if (alpha->type() == Value::Type::NUMBER) {
-		node->color[3] = alpha->toDouble();
+	const auto &alpha = c->lookup_variable("alpha");
+	if (alpha.type() == Value::Type::NUMBER) {
+		node->color[3] = alpha.toDouble();
 	}
 
 	auto instantiatednodes = inst->instantiateChildren(evalctx);

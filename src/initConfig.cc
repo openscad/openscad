@@ -15,15 +15,15 @@ void InitConfigurator::initComboBox(QComboBox *comboBox, const Settings::Setting
 	comboBox->clear();
 	// Range is a vector of 2D vectors: [[name, value], ...]
 	for (const auto &v : entry.range().toVector()) {
-		QString val = QString::fromStdString(v[0]->toString());
-		QString qtext = QString::fromStdString(gettext(v[1]->toString().c_str()));
+		QString val = QString::fromStdString(v[0].toString());
+		QString qtext = QString::fromStdString(gettext(v[1].toString().c_str()));
 		comboBox->addItem(qtext, val);
 	}
 }
 
 void InitConfigurator::initSpinBoxRange(const BlockSignals<QSpinBox *> &spinBox,const Settings::SettingsEntry &entry)
 {
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setMaximum(range.end_value());
 }
@@ -61,7 +61,7 @@ void InitConfigurator::initDoubleSpinBox(QDoubleSpinBox *spinBox,const Settings:
 {
 	Settings::Settings *s = Settings::Settings::inst();
 
-	RangeType range = entry.range().toRange();
+	const RangeType &range = entry.range().toRange();
 	spinBox->blockSignals(true);
 	spinBox->setMinimum(range.begin_value());
 	spinBox->setSingleStep(range.step_value());
