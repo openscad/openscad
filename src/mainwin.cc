@@ -2086,9 +2086,9 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
 	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
+	RenderStatistic::printCacheStatistic();
+	RenderStatistic::printRenderingTime(ms);
 	if (root_geom) {
-		RenderStatistic::printCacheStatistic();
-		RenderStatistic::printRenderingTime(ms);
 		if (!root_geom->isEmpty()) {
 			RenderStatistic().print(*root_geom);
 		}
@@ -2102,7 +2102,6 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	}
 	else {
 		LOG(message_group::UI_Warning,Location::NONE,"","No top level geometry to render");
-		LOG(message_group::None,Location::NONE,""," ");
 	}
 
 	updateStatusBar(nullptr);
