@@ -109,6 +109,8 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem &item, unsigned 
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
+	CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
+
 	unsigned int dim = 0;
 	for(const auto &item : this->visitedchildren[node.index()]) {
 		if (!isValidDim(item, dim)) break;
