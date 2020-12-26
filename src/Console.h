@@ -65,6 +65,5 @@ signals:
 public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
-	void hyperlinkClicked(QString loc);
-
+	void hyperlinkClicked(const QString& loc);
 };
