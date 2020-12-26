@@ -351,9 +351,15 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 		else {
-			ifelse->else_scope.apply(evalctx);
-			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
-			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+			LocalScope* else_scope = ifelse->getElseScope();
+			if (else_scope) {
+				else_scope->apply(evalctx);
+				std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
+				node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+			} else {
+				// "if" with failed condition, and no "else" should not count as valid CSGNode
+				return nullptr;
+			}
 		}
 	}
 		break;
