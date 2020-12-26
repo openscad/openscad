@@ -470,7 +470,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	ModuleInstantiation root_inst("group");
 	ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 	AbstractNode *absolute_root_node = root_module->instantiateWithFileContext(filectx.ctx, &root_inst, nullptr);
-	camera.updateView(filectx.ctx);
+	camera.updateView(filectx.ctx, true);
 
 	const AbstractNode *root_node;
 	shared_ptr<const Geometry> root_geom;

@@ -92,7 +92,7 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<FileContext> ctx)
+void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarning)
 {
 	if (locked)
 		return;
@@ -139,7 +139,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 		}
 	}
 
-	if ((viewall || autocenter) && noauto) {
+	if (enableWarning && (viewall || autocenter) && noauto) {
 		LOG(message_group::Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
 		viewall = false;
 		autocenter = false;
