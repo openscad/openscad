@@ -1171,7 +1171,7 @@ void MainWindow::instantiateRoot()
 
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
-		this->qglview->cam.updateView(filectx.ctx);
+		this->qglview->cam.updateView(filectx.ctx, false);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
