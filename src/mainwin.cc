@@ -97,7 +97,6 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
-#define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
@@ -162,6 +161,14 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
 		}
    }
    return nullptr;
+}
+
+const QString htmlEscape(const QString& str) {
+	return str.toHtmlEscaped();
+}
+
+const QString htmlEscape(const std::string& str) {
+	return htmlEscape(QString::fromStdString(str));
 }
 
 void fileExportedMessage(const char *format, const QString &filename) {
@@ -3190,26 +3197,38 @@ void MainWindow::consoleOutput(const Message &msgObj)
 	auto c = this->console->textCursor();
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
-	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-	std::string hyperlinkedData = std::to_string(msgObj.loc.firstLine())+","+msgObj.loc.fileName();
 
-	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated) {
-		this->compileWarnings++;
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::UI_Warning || msgObj.group==message_group::Font_Warning || msgObj.group==message_group::Font_Warning) {
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::Error) {
-		this->compileErrors++;
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+", "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::Export_Error || msgObj.group==message_group::UI_Error || msgObj.group==message_group::Parser_Error) {
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::Trace) {
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if(msgObj.group==message_group::Echo) {
-		this->console->appendPlainText(QString::fromStdString(getGroupName(msgObj.group)+":")+QString::fromStdString(msgObj.msg));
-	} else {
-		this->console->appendPlainText(QString::fromStdString(msgObj.msg));
+	QString color;
+	switch (msgObj.group) {
+	case message_group::Warning:
+	case message_group::Deprecated:
+	case message_group::UI_Warning:
+	case message_group::Font_Warning:
+		color = "#ffffb0";
+		break;
+	case message_group::Error:
+	case message_group::UI_Error:
+	case message_group::Export_Error:
+	case message_group::Parser_Error:
+		color = "#ffb0b0";
+		break;
+	case message_group::Trace:
+		color = "#d0d0ff";
+		break;
+	default:
+		color = "#ffffff";
+		break;
 	}
+
+	const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
+	const auto link = QString("%1,%2").arg(msgObj.loc.firstLine()).arg(QString::fromStdString(msgObj.loc.fileName()));
+	const auto html = msgObj.loc.isNone() ? msg : QString("<a href=\"%1\">%2</a>").arg(htmlEscape(link)).arg(msg);
+	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
+	this->console->appendHtml(html + "&nbsp;");
+
+	this->compileWarnings += msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated ? 1 : 0;
+	this->compileErrors += msgObj.group==message_group::Error ? 1 : 0;
+
 	this->processEvents();
 }
 

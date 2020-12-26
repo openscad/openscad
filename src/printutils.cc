@@ -176,13 +176,11 @@ std::string getGroupName(const enum message_group &groupName)
 	{
 	case message_group::None:
 	case message_group::Warning:
+	case message_group::UI_Warning:
 		return group="WARNING";
 		break;
 	case message_group::Error:
 		return group="ERROR";
-		break;
-	case message_group::UI_Warning:
-		return group="UI-WARNING";
 		break;
 	case message_group::Font_Warning:
 		return group="FONT-WARNING";
