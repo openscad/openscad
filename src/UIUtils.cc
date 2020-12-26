@@ -156,6 +156,11 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 	return examples;
 }
 
+void UIUtils::openURL(const QString& url)
+{
+    QDesktopServices::openUrl(QUrl(url));
+}
+
 void UIUtils::openHomepageURL()
 {
     QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));

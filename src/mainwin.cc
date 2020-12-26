@@ -132,11 +132,11 @@ static const int autoReloadPollingPeriodMS = 200;
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2020 The OpenSCAD Developers\n\n"
-	"This program is free software; you can redistribute it and/or modify "
+	"<p>Copyright (C) 2009-2020 The OpenSCAD Developers</p>"
+	"<p>This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
-	"(at your option) any later version.\n";
+	"(at your option) any later version.<p>";
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
@@ -182,6 +182,13 @@ MainWindow::MainWindow(const QStringList &filenames)
 	  procevents(false), tempFile(nullptr), progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
+
+	const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+	const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
+
+	consoleOutputRaw(version);
+	consoleOutputRaw(weblink);
+	consoleOutputRaw(copyrighttext);
 
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
@@ -443,12 +450,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
 
-	setCurrentOutput();
-
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
-
-	LOG(message_group::None,Location::NONE,"",std::string(helptitle));
-	LOG(message_group::None,Location::NONE,"",std::string(copyrighttext));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
@@ -589,6 +590,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
+
+	setCurrentOutput();
 
 #ifdef ENABLE_OPENCSG
 	viewModePreview();
@@ -3224,11 +3227,16 @@ void MainWindow::consoleOutput(const Message &msgObj)
 	const auto link = QString("%1,%2").arg(msgObj.loc.firstLine()).arg(QString::fromStdString(msgObj.loc.fileName()));
 	const auto html = msgObj.loc.isNone() ? msg : QString("<a href=\"%1\">%2</a>").arg(htmlEscape(link)).arg(msg);
 	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-	this->console->appendHtml(html + "&nbsp;");
+	consoleOutputRaw(html + "&nbsp;");
 
 	this->compileWarnings += msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated ? 1 : 0;
 	this->compileErrors += msgObj.group==message_group::Error ? 1 : 0;
 
+}
+
+void MainWindow::consoleOutputRaw(const QString& html)
+{
+	this->console->appendHtml(html);
 	this->processEvents();
 }
 
