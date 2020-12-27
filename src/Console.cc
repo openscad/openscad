@@ -30,6 +30,7 @@
 
 #include "Console.h"
 #include "printutils.h"
+#include "UIUtils.h"
 
 
 #include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
@@ -42,7 +43,7 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
-	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(QString)));
+	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
 }
 
 Console::~Console()
@@ -81,10 +82,15 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	delete menu;
 }
 
-void Console::hyperlinkClicked(QString loc) //non const because of manipulation
+void Console::hyperlinkClicked(const QString& url)
 {
+	if (url.startsWith("http://") || url.startsWith("https://")) {
+		UIUtils::openURL(url);
+		return;
+	}
+
 	// for error jumps
-	std::string s = loc.toStdString();
+	const std::string s = url.toStdString();
 	std::vector<std::string> words;
 	boost::split(words, s, boost::is_any_of(", "), boost::token_compress_on);
 
@@ -92,11 +98,10 @@ void Console::hyperlinkClicked(QString loc) //non const because of manipulation
 	if(words[0].empty() || words[1].empty()) return;  //for empty locations
 	int line = std::stoi(words[0]);
 	boost::filesystem::path p = boost::filesystem::path(words[1]);
-	if(boost::filesystem::is_regular_file(p)) 
-	{
+	if (boost::filesystem::is_regular_file(p)) {
 		QString path = QString::fromStdString(words[1]);
-		emit openFile(path,line-1);
+		emit openFile(path, line - 1);
+	} else {
+		openFile(QString(), line - 1);
 	}
-	else openFile(QString(),line-1);
-	
 }
