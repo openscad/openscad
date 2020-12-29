@@ -1653,6 +1653,14 @@
     <string>&amp;Previous Window</string>
    </property>
   </action>
+  <action name="editActionInsertTemplate">
+   <property name="text">
+    <string>Insert Template</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Ins</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
