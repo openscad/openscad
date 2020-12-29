@@ -194,7 +194,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
 	errorLogDockTitleWidget = new QWidget();
-	
+
+	// actions not included in menu
+	this->addAction(editActionInsertTemplate);
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->windowActionHideEditor);
@@ -1538,6 +1540,8 @@ void MainWindow::hideFind()
 {
 	find_panel->hide();
 	activeEditor->findState = TabManager::FIND_HIDDEN;
+	editActionFindNext->setEnabled(false);
+	editActionFindPrevious->setEnabled(false);
 	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
@@ -1553,6 +1557,8 @@ void MainWindow::showFind()
 	//replaceLabel->setVisible(false); 
 	find_panel->show();
 	activeEditor->findState = TabManager::FIND_VISIBLE;
+	editActionFindNext->setEnabled(true);
+	editActionFindPrevious->setEnabled(true);
 	if (!activeEditor->selectedText().isEmpty()) {
 		findInputField->setText(activeEditor->selectedText());
 	}
@@ -1578,6 +1584,8 @@ void MainWindow::showFindAndReplace()
 	//replaceLabel->setVisible(true); 
 	find_panel->show();
 	activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
+	editActionFindNext->setEnabled(true);
+	editActionFindPrevious->setEnabled(true);
 	if (!activeEditor->selectedText().isEmpty()) {
 		findInputField->setText(activeEditor->selectedText());
 	}
@@ -3029,6 +3037,11 @@ void MainWindow::on_windowActionNextWindow_triggered()
 void MainWindow::on_windowActionPreviousWindow_triggered()
 {
 	activateWindow(-1);
+}
+
+void MainWindow::on_editActionInsertTemplate_triggered()
+{
+	activeEditor->displayTemplates();
 }
 
 void MainWindow::activateWindow(int offset)
