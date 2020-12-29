@@ -1721,6 +1721,7 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 {
+	bool reloadSettings = customizerEditor != activeEditor;
 	customizerEditor = nullptr;
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
@@ -1737,6 +1738,9 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
 	if (this->root_module!=nullptr) {
+		if (reloadSettings && !activeEditor->filepath.isEmpty()) {
+			this->parameterWidget->readFile(activeEditor->filepath);
+		}
 		//add parameters as annotation in AST
 		CommentParser::collectParameters(fulltext,this->root_module);
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
