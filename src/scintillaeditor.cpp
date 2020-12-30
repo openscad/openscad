@@ -155,9 +155,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	c = qsci->standardCommands()->find(QsciCommand::Redo);
 	c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
 	c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
-	// Ctrl-Ins displays templates
-	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
-	c->setAlternateKey(0);
 
 #ifdef Q_OS_MAC
 	const unsigned long modifier = Qt::META;

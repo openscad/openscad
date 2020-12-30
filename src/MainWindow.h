@@ -184,6 +184,7 @@ private slots:
 	void on_windowActionSelectErrorLog_triggered();
 	void on_windowActionNextWindow_triggered();
 	void on_windowActionPreviousWindow_triggered();
+	void on_editActionInsertTemplate_triggered();
 
 public slots:
 	void hideFind();

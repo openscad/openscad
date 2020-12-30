@@ -201,10 +201,6 @@ void TabManager::createTab(const QString &filename)
     ((ScintillaEditor *)editor)->public_applySettings();
     editor->addTemplate();
 
-	QShortcut *viewTemplates = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Insert), editor);
-	viewTemplates->setAutoRepeat(false);
-	connect(viewTemplates, SIGNAL(activated()), editor, SLOT(displayTemplates()));
-
     connect(par->editActionZoomTextIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
     connect(par->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 
@@ -371,30 +367,14 @@ void TabManager::closeTab()
 
 void TabManager::showContextMenuEvent(const QPoint& pos)
 {
-	QMenu *menu = editor->createStandardContextMenu();
-
-	QAction *separator = new QAction(menu->parent());
-	separator->setSeparator(true);
-
-	QAction *findAction = new QAction(menu->parent());
-	findAction->setText(_("Find"));
-	connect(findAction, SIGNAL(triggered()), par, SLOT(showFind()));
-
-	bool enable = editor->findState != FIND_HIDDEN;
-	QAction *findNextAction = new QAction(menu->parent());
-	findNextAction->setText(_("Find Next"));
-	findNextAction->setEnabled(enable);
-	connect(findNextAction, SIGNAL(triggered()), par, SLOT(findNext()));
-
-	QAction *findPrevAction = new QAction(menu->parent());
-	findPrevAction->setText(_("Find Previous"));
-	findPrevAction->setEnabled(enable);
-	connect(findPrevAction, SIGNAL(triggered()), par, SLOT(findPrev()));
+	auto menu = editor->createStandardContextMenu();
 
 	menu->addSeparator();
-	menu->addAction(findAction);
-	menu->addAction(findNextAction);
-	menu->addAction(findPrevAction);
+	menu->addAction(par->editActionFind);
+	menu->addAction(par->editActionFindNext);
+	menu->addAction(par->editActionFindPrevious);
+	menu->addSeparator();
+	menu->addAction(par->editActionInsertTemplate);
 	menu->exec(editor->mapToGlobal(pos));
 
 	delete menu;
