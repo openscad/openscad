@@ -2561,6 +2561,9 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
+    
+    setCurrentOutput();
+    LOG(message_group::None,Location::NONE,"","Caches Flushed");
 }
 
 void MainWindow::viewModeActionsUncheck()
