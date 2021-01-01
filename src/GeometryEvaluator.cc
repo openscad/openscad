@@ -158,10 +158,16 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 		}
 		case OpenSCADOperator::UNION:
 		{
-			return ResultObject(CGALUtils::applyUnion3D(children.begin(), children.end()));
+			Geometry::Geometries actualchildren;
+			for(const auto &item : children) {
+				if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
+			}
+			if (actualchildren.empty()) return ResultObject();
+			if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
+			return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end()));
 			break;
 		}
-		default: 
+		default:
 		{
 			return ResultObject(CGALUtils::applyOperator3D(children, op));
 			break;
@@ -329,7 +335,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		// NB! We insert into the cache here to ensure that all children of
 		// a node is a valid object. If we inserted as we created them, the 
 		// cache could have been modified before we reach this point due to a large
-		// sibling object. 
+		// sibling object.
 		smartCacheInsert(*chnode, chgeom);
 		
 		if (chgeom && chgeom->getDimension() == 2) {
@@ -674,7 +680,7 @@ Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 	operation:
 		o Union all children
 		o Perform transform
- */			
+ */
 Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
