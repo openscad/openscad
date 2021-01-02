@@ -293,16 +293,29 @@ void ScintillaEditor::applySettings()
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	onTextChanged();
 
-	if(Preferences::inst()->getValue("editor/enableAutocomplete").toBool())
-	{
+	setupAutoComplete(false);
+}
+
+void ScintillaEditor::setupAutoComplete(const bool forceOff)
+{
+	if (qsci->isListActive()) {
+		qsci->cancelList();
+	}
+
+	if (qsci->isCallTipActive()) {
+		qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
+	}
+
+	const bool configValue = Preferences::inst()->getValue("editor/enableAutocomplete").toBool();
+	const bool enable = configValue && !forceOff;
+
+	if (enable) {
 		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
 		qsci->setAutoCompletionFillupsEnabled(false);
- 		qsci->setAutoCompletionFillups("(");		
+		qsci->setAutoCompletionFillups("(");
 		qsci->setCallTipsVisible(10);
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
-	}
-	else
-	{
+	} else {
 		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
 		qsci->setAutoCompletionFillupsEnabled(false);
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
@@ -310,7 +323,6 @@ void ScintillaEditor::applySettings()
 
 	int val = Preferences::inst()->getValue("editor/characterThreshold").toInt();
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
-
 }
 
 void ScintillaEditor::fireModificationChanged(bool b)
@@ -1325,9 +1337,4 @@ void ScintillaEditor::setFocus()
 {
 	qsci->setFocus();
 	qsci->SendScintilla(QsciScintilla::SCI_SETFOCUS, true);
-}
-
-void ScintillaEditor::cancelCallTip()
-{
-	qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
 }
