@@ -25,8 +25,9 @@ CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &lo
 	std::string msg="";
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try{
-		N->p3.reset(new CGAL_Nef_polyhedron3);
-		f >> *(N->p3);
+		auto nef = new CGAL_Nef_polyhedron3;
+		f >> *nef;
+		N->p3.reset(nef);
 	} catch (const CGAL::Failure_exception &e) {
 		LOG(message_group::Warning,Location::NONE,"","Failure trying to import '%1$s', import() at line %2$d",filename,loc.firstLine());
 		LOG(message_group::None,Location::NONE,"",e.what());
