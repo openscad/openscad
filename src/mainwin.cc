@@ -2946,19 +2946,11 @@ void MainWindow::hideEditor()
 		// may eventually get resolved at which point this bit and the stuff in
 		// the else should be removed. Currently known to affect 5.14.1 and 5.15.0
 		e->qsci->setReadOnly(true);
-		if (e->qsci->isListActive()) {
-			e->qsci->cancelList();
-		}
-		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
-		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
-		if (e->qsci->isCallTipActive()) {
-		 	e->cancelCallTip();
-		}
+		e->setupAutoComplete(true);
 		editorDock->close();
-	}else {
+	} else {
 		e->qsci->setReadOnly(false);
-		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
-		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+		e->setupAutoComplete(false);
 		editorDock->show();
 	}
 }
