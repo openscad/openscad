@@ -41,12 +41,16 @@ CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &
 	return *this;
 }
 
+// Note: this is only the fallback method in case of failure in CGALUtils::applyMinkowski (see: cgalutils-applyops.cc)
 CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
 {
-	this->p3.reset(new CGAL_Nef_polyhedron3(CGAL::minkowski_sum_3(
-		const_cast<CGAL_Nef_polyhedron3&>(*this->p3),
-		const_cast<CGAL_Nef_polyhedron3&>(*other.p3)
-	)));
+	// It is required to construct copies of our const input operands here.
+	// "Postcondition: If either of the input polyhedra is non-convex, it is modified during the computation,
+	//  i.e., it is decomposed into convex pieces."
+	// from https://doc.cgal.org/latest/Minkowski_sum_3/group__PkgMinkowskiSum3Ref.html
+	CGAL_Nef_polyhedron3 op1(*this->p3);
+	CGAL_Nef_polyhedron3 op2(*other.p3);
+	this->p3.reset(new CGAL_Nef_polyhedron3(CGAL::minkowski_sum_3(op1, op2)));
 	return *this;
 }
 
