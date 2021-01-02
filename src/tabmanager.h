@@ -24,8 +24,8 @@ public:
     void setTabName(const QString &filename, EditorInterface *edt = nullptr);
     void refreshDocument();
     bool shouldClose();
-    void save(EditorInterface *edt);
-    void saveAs(EditorInterface *edt);
+    bool save(EditorInterface *edt);
+    bool saveAs(EditorInterface *edt);
     void open(const QString &filename);
     int count();
 
@@ -82,7 +82,7 @@ public slots:
     void actionNew();
     void setContentRenderState(); // since last render
     void setTabModified(bool, EditorInterface *);
-    void saveAll();
+    bool saveAll();
     void closeCurrentTab();
     void nextTab();
     void prevTab();

@@ -322,6 +322,12 @@ void TabManager::updateActionUndoState()
     par->editActionUndo->setEnabled(editor->canUndo());
 }
 
+void TabManager::onHyperlinkIndicatorClicked(int val)
+{
+    const QString filename = QString::fromStdString(editor->indicatorData[val].path);
+    this->open(filename);
+}
+
 void TabManager::applyAction(QObject *object, std::function<void(int, EditorInterface *)> func)
 {
 	QAction *action = dynamic_cast<QAction *>(object);
@@ -546,72 +552,70 @@ void TabManager::refreshDocument()
 
 bool TabManager::maybeSave(int x)
 {
-    EditorInterface *edt = (EditorInterface *)tabWidget->widget(x);
-    if (edt->isContentModified()) {
-        QMessageBox box(par);
-        box.setText(_("The document has been modified."));
-        box.setInformativeText(_("Do you want to save your changes?"));
-        box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        box.setDefaultButton(QMessageBox::Save);
-        box.setIcon(QMessageBox::Warning);
-        box.setWindowModality(Qt::ApplicationModal);
+	EditorInterface *edt = (EditorInterface *) tabWidget->widget(x);
+	if (edt->isContentModified()) {
+		QMessageBox box(par);
+		box.setText(_("The document has been modified."));
+		box.setInformativeText(_("Do you want to save your changes?"));
+		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+		box.setDefaultButton(QMessageBox::Save);
+		box.setIcon(QMessageBox::Warning);
+		box.setWindowModality(Qt::ApplicationModal);
 #ifdef Q_OS_MAC
-        // Cmd-D is the standard shortcut for this button on Mac
-        box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
-        box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+		// Cmd-D is the standard shortcut for this button on Mac
+		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
 #endif
-        auto ret = (QMessageBox::StandardButton) box.exec();
+		auto ret = (QMessageBox::StandardButton) box.exec();
 
-        if (ret == QMessageBox::Save) {
-            save(edt);
-            // Returns false on failed save
-            return !edt->isContentModified();
-        }
-        else if (ret == QMessageBox::Cancel) {
-            return false;
-        }
-    }
-    return true;
+		if (ret == QMessageBox::Save) {
+			save(edt);
+			// Returns false on failed save
+			return !edt->isContentModified();
+		} else if (ret == QMessageBox::Cancel) {
+			return false;
+		}
+	}
+	return true;
 }
 
+/*!
+ * Called for whole window close, returning false will abort the close
+ * operation.
+ */
 bool TabManager::shouldClose()
 {
-    foreach(EditorInterface *edt, editorList)
-    {
-        if(!edt->isContentModified())
-            continue;
+	foreach (EditorInterface *edt, editorList) {
+		if (!edt->isContentModified())
+			continue;
 
-        QMessageBox box(par);
-        box.setText(_("Some of the tabs are modified."));
-        box.setInformativeText(_("All unsaved changes will be lost."));
-        box.setStandardButtons(QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
-        box.setDefaultButton(QMessageBox::SaveAll);
-        box.setIcon(QMessageBox::Warning);
-        box.setWindowModality(Qt::ApplicationModal);
+		QMessageBox box(par);
+		box.setText(_("Some tabs have unsaved changes."));
+		box.setInformativeText(_("Do you want to save all your changes?"));
+		box.setStandardButtons(QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
+		box.setDefaultButton(QMessageBox::SaveAll);
+		box.setIcon(QMessageBox::Warning);
+		box.setWindowModality(Qt::ApplicationModal);
 #ifdef Q_OS_MAC
-        // Cmd-D is the standard shortcut for this button on Mac
-        box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
-        box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+		// Cmd-D is the standard shortcut for this button on Mac
+		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
 #endif
-        auto ret = (QMessageBox::StandardButton) box.exec();
+		auto ret = (QMessageBox::StandardButton) box.exec();
 
-        if (ret == QMessageBox::Cancel) {
-            return false;
-        }
-        else if(ret == QMessageBox::Discard) {
-            return true;
-        }
-        else if(ret == QMessageBox::SaveAll) {
-            saveAll();
-            return false;
-        }
-    }
-    return true;
+		if (ret == QMessageBox::Cancel) {
+			return false;
+		} else if (ret == QMessageBox::Discard) {
+			return true;
+		} else if (ret == QMessageBox::SaveAll) {
+			return saveAll();
+		}
+	}
+	return true;
 }
 
 void TabManager::saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt)
 {
-    const std::string messageFormat = msg + " %s (%s)";
     const char *fileName = edt->filepath.toLocal8Bit().constData();
     LOG(message_group::None,Location::NONE,"","%1$s %2$s (%3$s)",msg.c_str(),fileName,file.errorString().toLocal8Bit().constData());
 
@@ -621,86 +625,88 @@ void TabManager::saveError(const QIODevice &file, const std::string &msg, Editor
 }
 
 /*!
-    Save current document.
-    Should _always_ write to disk, since this is called by SaveAs - i.e. don't try to be
-    smart and check for document modification here.
+ * Save current document.
+ * Should _always_ write to disk, since this is called by SaveAs - i.e. don't
+ * try to be smart and check for document modification here.
  */
-void TabManager::save(EditorInterface *edt)
+bool TabManager::save(EditorInterface *edt)
 {
-    assert(edt != nullptr);
+	assert(edt != nullptr);
 
-    if (edt->filepath.isEmpty()) {
-        saveAs(edt);
-        return;
-    }
+	if (edt->filepath.isEmpty()) {
+		return saveAs(edt);
+	}
 
-    par->setCurrentOutput();
+	par->setCurrentOutput();
 
-    // If available (>= Qt 5.1), use QSaveFile to ensure the file is not
-    // destroyed if the device is full. Unfortunately this is not working
-    // as advertised (at least in Qt 5.3) as it does not detect the device
-    // full properly and happily commits a 0 byte file.
-    // Checking the QTextStream status flag after flush() seems to catch
-    // this condition.
-    QSaveFile file(edt->filepath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        saveError(file, _("Failed to open file for writing"), edt);
-    }
-    else {
-        QTextStream writer(&file);
-        writer.setCodec("UTF-8");
-        writer << edt->toPlainText();
-        writer.flush();
-        bool saveOk = writer.status() == QTextStream::Ok;
-	if (saveOk) { saveOk = file.commit(); } else { file.cancelWriting(); }
-        if (saveOk) {
-            LOG(message_group::None,Location::NONE,"","Saved design '%1$s'.",edt->filepath.toLocal8Bit().constData());
-            edt->setContentModified(false);
-        } else {
-            saveError(file, _("Error saving design"), edt);
-        }
-    }
-    par->updateRecentFiles(edt);
+	// If available (>= Qt 5.1), use QSaveFile to ensure the file is not
+	// destroyed if the device is full. Unfortunately this is not working
+	// as advertised (at least in Qt 5.3) as it does not detect the device
+	// full properly and happily commits a 0 byte file.
+	// Checking the QTextStream status flag after flush() seems to catch
+	// this condition.
+	QSaveFile file(edt->filepath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		saveError(file, _("Failed to open file for writing"), edt);
+		return false;
+	}
+
+	QTextStream writer(&file);
+	writer.setCodec("UTF-8");
+	writer << edt->toPlainText();
+	writer.flush();
+	bool saveOk = writer.status() == QTextStream::Ok;
+	if (saveOk) {
+		saveOk = file.commit();
+	} else {
+		file.cancelWriting();
+	}
+	if (saveOk) {
+		LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", edt->filepath.toLocal8Bit().constData());
+		edt->setContentModified(false);
+		par->updateRecentFiles(edt);
+	} else {
+		saveError(file, _("Error saving design"), edt);
+	}
+	return saveOk;
 }
 
-void TabManager::saveAs(EditorInterface *edt)
+bool TabManager::saveAs(EditorInterface *edt)
 {
-    auto new_filename = QFileDialog::getSaveFileName(par, _("Save File"),
-            edt->filepath.isEmpty()?_("Untitled.scad"):edt->filepath,
-            _("OpenSCAD Designs (*.scad)"));
-    if (!new_filename.isEmpty()) {
-        if (QFileInfo(new_filename).suffix().isEmpty()) {
-            new_filename.append(".scad");
+	assert(edt != nullptr);
 
-            // Manual overwrite check since Qt doesn't do it, when using the
-            // defaultSuffix property
-            QFileInfo info(new_filename);
-            if (info.exists()) {
-                if (QMessageBox::warning(par, par->windowTitle(),
-                                                                 QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName()),
-                                                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
-                    return;
-                }
-            }
-        }
-        par->parameterWidget->writeFileIfNotEmpty(new_filename);
-        setTabName(new_filename, edt);
-        save(edt);
-    }
+	const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+	auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+
+	if (!filename.isEmpty()) {
+		if (QFileInfo(filename).suffix().isEmpty()) {
+			filename.append(".scad");
+
+			// Manual overwrite check since Qt doesn't do it, when using the
+			// defaultSuffix property
+			QFileInfo info(filename);
+			if (info.exists()) {
+				const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+				if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+					return false;
+				}
+			}
+		}
+		par->parameterWidget->writeFileIfNotEmpty(filename);
+		setTabName(filename, edt);
+		return save(edt);
+	}
+	return false;
 }
 
-void TabManager::saveAll()
+bool TabManager::saveAll()
 {
-    foreach(EditorInterface *edt, editorList) 
-    {
-        if(edt->isContentModified()) {
-            save(edt);
-        }
-    }
-}
-
-void TabManager::onHyperlinkIndicatorClicked(int val)
-{
-    const QString filename = QString::fromStdString(editor->indicatorData[val].path);
-    this->open(filename);
+	foreach (EditorInterface *edt, editorList) {
+		if (edt->isContentModified()) {
+			if (!save(edt)) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
