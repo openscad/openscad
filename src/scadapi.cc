@@ -17,6 +17,8 @@ ScadApi::~ScadApi()
 {
 }
 
+int inString=false;
+
 void ScadApi::updateAutoCompletionList(const QStringList &context, QStringList &list)
 {
     //first see if we are in a string literal. if so, don't allow auto comlete
