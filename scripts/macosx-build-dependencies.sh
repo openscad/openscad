@@ -34,7 +34,7 @@ PACKAGES=(
     "gmp 6.1.2"
     "mpfr 4.0.2"
     "glew 2.1.0"
-    "gettext 0.19.8"
+    "gettext 0.21"
     "libffi 3.2.1"
     "freetype 2.9.1"
     "ragel 6.10"
@@ -46,11 +46,14 @@ PACKAGES=(
     "libuuid 1.6.2"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
-    "boost 1.65.1"
-    "cgal 4.13"
-    "qt5 5.9.7"
+    "boost 1.74.0"
+    "poppler 21.01.0"
+    "pixman 0.40.0"
+    "cairo 1.16.0"
+    "cgal 4.14.3"
+    "qt5 5.9.9"
     "opencsg 1.4.2"
-    "qscintilla 2.11.2"
+    "qscintilla 2.11.6"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.21.3"
@@ -171,7 +174,7 @@ build_qt5()
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups \
+		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp -no-qml-debug \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
@@ -179,7 +182,8 @@ build_qt5()
                 -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
                 -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
                 -skip qtvirtualkeyboard -skip qtlocation -skip qtwebengine -skip qtwebview \
-                -skip qtscript -skip qttranslations -skip qtdoc
+                -skip qtscript -skip qttranslations -skip qtdoc \
+                -no-feature-openal -no-feature-avfoundation
   make -j"$NUMCPU" 
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
@@ -190,13 +194,14 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  rm -rf QScintilla_gpl-$version
-  if [ ! -f QScintilla_gpl-$version.tar.gz ]; then
-      curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/QScintilla_gpl-$version.tar.gz
+  QSCINTILLA_FILENAME="QScintilla-$version.tar.gz"
+  rm -rf "${QSCINTILLA_FILENAME}"
+  if [ ! -f "${QSCINTILLA_FILENAME}" ]; then
+      curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
-  tar xzf QScintilla_gpl-$version.tar.gz
-  cd QScintilla_gpl-$version/Qt4Qt5
-#  patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
+  tar xzf "${QSCINTILLA_FILENAME}"
+  cd QScintilla*/Qt4Qt5
+  #patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake qscintilla.pro
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2_qt5.dylib $DEPLOYDIR/lib/libqscintilla2_qt5.dylib
@@ -504,8 +509,8 @@ build_gettext()
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-  patch -p1 < $OPENSCADDIR/patches/gettext.patch
-  ./configure --with-included-glib --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib"
+  #patch -p1 < $OPENSCADDIR/patches/gettext.patch
+  ./configure --with-included-glib --disable-java --disable-csharp --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib"
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
@@ -634,6 +639,89 @@ build_lib3mf()
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/lib3mf.version
+}
+
+build_poppler()
+{
+  version=$1
+  POPPLER_DIR="poppler-${version}"
+  POPPLER_FILENAME="${POPPLER_DIR}.tar.xz"
+
+  echo "Building poppler" $version "..."
+
+  cd $BASEDIR/src
+  rm -rf "$POPPLER_DIR"
+  if [ ! -f "${POPPLER_FILENAME}" ]; then
+    curl -LO https://poppler.freedesktop.org/"${POPPLER_FILENAME}"
+  fi
+  tar xzf "${POPPLER_FILENAME}"
+  cd "$POPPLER_DIR"
+  mkdir build
+  cd build
+  cmake .. \
+        -DCMAKE_INSTALL_PREFIX="$DEPLOYDIR" \
+        -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" \
+        -DBUILD_GTK_TESTS=OFF -DBUILD_QT5_TESTS=OFF -DBUILD_QT6_TESTS=OFF \
+        -DBUILD_CPP_TESTS=OFF -DENABLE_GTK_DOC=OFF -DENABLE_QT5=OFF \
+        -DENABLE_QT6=OFF -DENABLE_LIBOPENJPEG=none -DENABLE_DCTDECODER=none \
+        -DENABLE_UTILS=OFF
+  make -j"$NUMCPU" install
+  otool -L $DEPLOYDIR/lib/"libpoppler.dylib"
+  install_name_tool -id @rpath/libpoppler.dylib $DEPLOYDIR/lib/"libpoppler.dylib"
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/poppler.version
+}
+
+build_pixman()
+{
+  version=$1
+  PIXMAN_DIR="pixman-${version}"
+  PIXMAN_FILENAME="${PIXMAN_DIR}.tar.gz"
+
+  echo "Building pixman" $version "..."
+
+  cd $BASEDIR/src
+  rm -rf "$PIXMAN_DIR"
+  if [ ! -f "${PIXMAN_FILENAME}" ]; then
+    curl -LO https://www.cairographics.org/releases/"${PIXMAN_FILENAME}"
+  fi
+  tar xzf "${PIXMAN_FILENAME}"
+  cd "$PIXMAN_DIR"
+  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  make -j"$NUMCPU" install
+  otool -L $DEPLOYDIR/lib/"libpixman-1.dylib"
+  install_name_tool -id @rpath/libpixman-1.dylib $DEPLOYDIR/lib/"libpixman-1.dylib"
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/pixman.version
+}
+
+build_cairo()
+{
+  version=$1
+  CAIRO_DIR="cairo-${version}"
+  CAIRO_FILENAME="${CAIRO_DIR}.tar.xz"
+
+  echo "Building cairo" $version "..."
+
+  cd $BASEDIR/src
+  rm -rf "$CAIRO_DIR"
+  if [ ! -f "${CAIRO_FILENAME}" ]; then
+    curl -LO https://www.cairographics.org/releases/"${CAIRO_FILENAME}"
+  fi
+  tar xzf "${CAIRO_FILENAME}"
+  cd "$CAIRO_DIR"
+  ./configure --prefix=$DEPLOYDIR \
+        CXXFLAGS="$CXXSTDFLAGS" \
+        CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+        LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+        --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
+        --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
+        --enable-win32-font=no --enable-png=no --enable-ps=no \
+        --enable-svg=no
+  make -j"$NUMCPU" install
+  otool -L $DEPLOYDIR/lib/libcairo.dylib
+  install_name_tool -id @rpath/libcairo.dylib $DEPLOYDIR/lib/libcairo.dylib
+  install_name_tool -change @rpath/libpixman.dylib @rpath/libpixman-1.dylib $DEPLOYDIR/lib/libcairo.dylib
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/cairo.version
 }
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
