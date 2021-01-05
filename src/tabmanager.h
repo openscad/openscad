@@ -42,7 +42,8 @@ private:
     TabWidget *tabWidget;
 
     bool maybeSave(int);
-    void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);
+    bool save(EditorInterface *edt, const QString path);
+    void saveError(const QIODevice &file, const std::string &msg, const QString filepath);
 	void applyAction(QObject *object, std::function<void(int, EditorInterface *)> func);
 
 private slots:
