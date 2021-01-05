@@ -32,7 +32,9 @@ enum class message_group {
 };
 
 
-std::string getGroupName(const enum message_group &groupName);
+std::string getGroupName(const enum message_group &group);
+std::string getGroupColor(const enum message_group &group);
+bool getGroupTextPlain(const enum message_group &group);
 
 struct Message {
 	std::string msg;

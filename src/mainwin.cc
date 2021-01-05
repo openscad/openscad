@@ -3213,37 +3213,19 @@ void MainWindow::consoleOutput(const Message &msgObj)
 	c.movePosition(QTextCursor::End);
 	this->console->setTextCursor(c);
 
-	QString color;
-	switch (msgObj.group) {
-	case message_group::Warning:
-	case message_group::Deprecated:
-	case message_group::UI_Warning:
-	case message_group::Font_Warning:
-		color = "#ffffb0";
-		break;
-	case message_group::Error:
-	case message_group::UI_Error:
-	case message_group::Export_Error:
-	case message_group::Parser_Error:
-		color = "#ffb0b0";
-		break;
-	case message_group::Trace:
-		color = "#d0d0ff";
-		break;
-	default:
-		color = "#ffffff";
-		break;
+	if (getGroupTextPlain(msgObj.group)) {
+		this->console->appendPlainText(QString::fromStdString(msgObj.str()));
+	} else {
+		const auto color = QString::fromStdString(getGroupColor(msgObj.group));
+		const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
+		const auto link = QString("%1,%2").arg(msgObj.loc.firstLine()).arg(QString::fromStdString(msgObj.loc.fileName()));
+		const auto html = msgObj.loc.isNone() ? msg : QString("<a href=\"%1\">%2</a>").arg(htmlEscape(link)).arg(msg);
+		// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
+		consoleOutputRaw(html + "&nbsp;");
 	}
-
-	const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
-	const auto link = QString("%1,%2").arg(msgObj.loc.firstLine()).arg(QString::fromStdString(msgObj.loc.fileName()));
-	const auto html = msgObj.loc.isNone() ? msg : QString("<a href=\"%1\">%2</a>").arg(htmlEscape(link)).arg(msg);
-	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-	consoleOutputRaw(html + "&nbsp;");
 
 	this->compileWarnings += msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated ? 1 : 0;
 	this->compileErrors += msgObj.group==message_group::Error ? 1 : 0;
-
 }
 
 void MainWindow::consoleOutputRaw(const QString& html)
