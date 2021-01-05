@@ -569,9 +569,7 @@ bool TabManager::maybeSave(int x)
 		auto ret = (QMessageBox::StandardButton) box.exec();
 
 		if (ret == QMessageBox::Save) {
-			save(edt);
-			// Returns false on failed save
-			return !edt->isContentModified();
+			return save(edt);
 		} else if (ret == QMessageBox::Cancel) {
 			return false;
 		}
@@ -614,14 +612,14 @@ bool TabManager::shouldClose()
 	return true;
 }
 
-void TabManager::saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt)
+void TabManager::saveError(const QIODevice &file, const std::string &msg, const QString filepath)
 {
-    const char *fileName = edt->filepath.toLocal8Bit().constData();
+    const char *fileName = filepath.toLocal8Bit().constData();
     LOG(message_group::None,Location::NONE,"","%1$s %2$s (%3$s)",msg.c_str(),fileName,file.errorString().toLocal8Bit().constData());
 
     const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
     const QString dialogFormat(dialogFormatStr.c_str());
-    QMessageBox::warning(par, par->windowTitle(), dialogFormat.arg(edt->filepath).arg(file.errorString()));
+    QMessageBox::warning(par, par->windowTitle(), dialogFormat.arg(filepath).arg(file.errorString()));
 }
 
 /*!
@@ -635,8 +633,13 @@ bool TabManager::save(EditorInterface *edt)
 
 	if (edt->filepath.isEmpty()) {
 		return saveAs(edt);
+	} else {
+		return save(edt, edt->filepath);
 	}
+}
 
+bool TabManager::save(EditorInterface *edt, const QString path)
+{
 	par->setCurrentOutput();
 
 	// If available (>= Qt 5.1), use QSaveFile to ensure the file is not
@@ -645,9 +648,9 @@ bool TabManager::save(EditorInterface *edt)
 	// full properly and happily commits a 0 byte file.
 	// Checking the QTextStream status flag after flush() seems to catch
 	// this condition.
-	QSaveFile file(edt->filepath);
+	QSaveFile file(path);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-		saveError(file, _("Failed to open file for writing"), edt);
+		saveError(file, _("Failed to open file for writing"), path);
 		return false;
 	}
 
@@ -662,11 +665,11 @@ bool TabManager::save(EditorInterface *edt)
 		file.cancelWriting();
 	}
 	if (saveOk) {
-		LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", edt->filepath.toLocal8Bit().constData());
+		LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", path.toLocal8Bit().constData());
 		edt->setContentModified(false);
 		par->updateRecentFiles(edt);
 	} else {
-		saveError(file, _("Error saving design"), edt);
+		saveError(file, _("Error saving design"), path);
 	}
 	return saveOk;
 }
@@ -677,26 +680,30 @@ bool TabManager::saveAs(EditorInterface *edt)
 
 	const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
 	auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+	if (filename.isEmpty()) {
+		return false;
+	}
 
-	if (!filename.isEmpty()) {
-		if (QFileInfo(filename).suffix().isEmpty()) {
-			filename.append(".scad");
+	if (QFileInfo(filename).suffix().isEmpty()) {
+		filename.append(".scad");
+	}
 
-			// Manual overwrite check since Qt doesn't do it, when using the
-			// defaultSuffix property
-			QFileInfo info(filename);
-			if (info.exists()) {
-				const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-				if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
-					return false;
-				}
-			}
+	// Manual overwrite check since Qt doesn't do it, when using the
+	// defaultSuffix property
+	const QFileInfo info(filename);
+	if (info.exists()) {
+		const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+		if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+			return false;
 		}
+	}
+
+	bool saveOk = save(edt, filename);
+	if (saveOk) {
 		par->parameterWidget->writeFileIfNotEmpty(filename);
 		setTabName(filename, edt);
-		return save(edt);
 	}
-	return false;
+	return saveOk;
 }
 
 bool TabManager::saveAll()
