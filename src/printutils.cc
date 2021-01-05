@@ -198,3 +198,28 @@ std::string getGroupName(const enum message_group& group)
 		return "";
 	}
 }
+
+std::string getGroupColor(const enum message_group& group)
+{
+	switch (group) {
+	case message_group::Warning:
+	case message_group::Deprecated:
+	case message_group::UI_Warning:
+	case message_group::Font_Warning:
+		return "#ffffb0";
+	case message_group::Error:
+	case message_group::UI_Error:
+	case message_group::Export_Error:
+	case message_group::Parser_Error:
+		return "#ffb0b0";
+	case message_group::Trace:
+		return "#d0d0ff";
+	default:
+		return "#ffffff";
+	}
+}
+
+bool getGroupTextPlain(const enum message_group& group)
+{
+	return group == message_group::None || group == message_group::Echo;
+}
