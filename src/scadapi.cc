@@ -24,18 +24,16 @@ void ScadApi::updateAutoCompletionList(const QStringList &context, QStringList &
     bool inString=false;
     int line, col;
     qsci->getCursorPosition(&line, &col);
-    auto sLine = qsci->text(line);  //get the current line of text
-    QByteArray ba = sLine.toLocal8Bit();
-    const char *c_str = ba.data();
-    const char *p = c_str;
+    std::u32string sLine = qsci->text(line).toStdU32String();
+    int dx = 0;
     while (col-- > 0) {
-        if (*p == '\\')
+        const char32_t ch = sLine.at(dx++);
+        if (ch == '\\')
             lastWasEscape = true;   //next character will be literal handle \"
         else if (lastWasEscape)
             lastWasEscape = false;
-        else if (*p == '"')        //string toggle
+        else if (ch == '"')        //string toggle
             inString = !inString;
-        p++;
     }
     if (inString) return;  //we are in string literal, don't return autocomplete list
     //not in string literal, proceed as normal
