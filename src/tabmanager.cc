@@ -481,14 +481,18 @@ void TabManager::openTabFile(const QString &filename)
     const auto knownFileType = par->knownFileExtensions.contains(suffix);
     const auto cmd = par->knownFileExtensions[suffix];
     if (knownFileType && cmd.isEmpty()) {
-        setTabName(filename);
-        par->updateRecentFiles(editor);
+         setTabName(filename); //refeshDocument gets filename from editor
+         if (refreshDocument()) {     //doc opened
+            par->fileChangedOnDisk(); // force cached autoReloadId to update
+            par->updateRecentFiles(editor);
+        }
+        else {
+            setTabName(""); //can't open file
+        }
     } else {
         setTabName(nullptr);
         editor->setPlainText(cmd.arg(filename));
     }
-    par->fileChangedOnDisk(); // force cached autoReloadId to update
-    refreshDocument();
 
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
     try {
@@ -527,14 +531,17 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
     par->setWindowTitle(fname);
 }
 
-void TabManager::refreshDocument()
+//return false if file can't be opened
+bool TabManager::refreshDocument()
 {
+    bool brslt = true; //assume ok
     par->setCurrentOutput();
     if (!editor->filepath.isEmpty()) {
         QFile file(editor->filepath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             LOG(message_group::None,Location::NONE,"","Failed to open file %1$s: %2$s",
                 editor->filepath.toLocal8Bit().constData(),file.errorString().toLocal8Bit().constData());
+            brslt = false; //flag open error
         }
         else {
             QTextStream reader(&file);
@@ -548,6 +555,7 @@ void TabManager::refreshDocument()
         }
     }
     par->setCurrentOutput();
+    return brslt;
 }
 
 bool TabManager::maybeSave(int x)
