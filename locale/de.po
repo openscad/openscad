@@ -8,15 +8,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-08 16:25+0100\n"
-"PO-Revision-Date: 2020-05-23 03:18+0200\n"
+"POT-Creation-Date: 2021-01-08 17:20+0100\n"
+"PO-Revision-Date: 2021-01-08 17:26+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4.2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -286,20 +286,18 @@ msgid "Save console content to file"
 msgstr "Log in Datei speichern"
 
 #: objects/ui_ErrorLog.h:93
-#, fuzzy
-msgid "ErrorLog"
-msgstr "Fehler"
+msgid "Error Log"
+msgstr "Fehler&liste"
 
 #: objects/ui_ErrorLog.h:94
 msgid "RowSelected"
-msgstr ""
+msgstr "RowSelected"
 
 #: objects/ui_ErrorLog.h:96
 msgid "Return"
-msgstr ""
+msgstr "Return"
 
 #: objects/ui_ErrorLog.h:98
-#, fuzzy
 msgid "&Show"
 msgstr "Anzeigen"
 
@@ -309,35 +307,35 @@ msgstr "Alles"
 
 #: objects/ui_ErrorLog.h:100
 msgid "ERROR"
-msgstr ""
+msgstr "FEHLER"
 
 #: objects/ui_ErrorLog.h:101
 msgid "WARNING"
-msgstr ""
+msgstr "WARNUNG"
 
 #: objects/ui_ErrorLog.h:102
 msgid "UI-WARNING"
-msgstr ""
+msgstr "UI-WARNUNG"
 
 #: objects/ui_ErrorLog.h:103
 msgid "FONT-WARNING"
-msgstr ""
+msgstr "FONT-WARNUNG"
 
 #: objects/ui_ErrorLog.h:104
 msgid "EXPORT-WARNING"
-msgstr ""
+msgstr "EXPORT-WARNUNG"
 
 #: objects/ui_ErrorLog.h:105
 msgid "EXPORT-ERROR"
-msgstr ""
+msgstr "EXPORT-FEHLER"
 
 #: objects/ui_ErrorLog.h:106
 msgid "TRACE"
-msgstr ""
+msgstr "TRACE"
 
 #: objects/ui_ErrorLog.h:107
 msgid "DEPRECATED"
-msgstr ""
+msgstr "DEPRECATED"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -595,9 +593,8 @@ msgid "Copy vie&wport distance"
 msgstr "Aktuellen Abstand kopieren"
 
 #: objects/ui_MainWindow.h:1107
-#, fuzzy
 msgid "Copy vie&wport fov"
-msgstr "Viewport Bild kopieren"
+msgstr "Viewport Sichtfeld kopieren"
 
 #: objects/ui_MainWindow.h:1108
 msgid "Increase Font &Size"
@@ -616,9 +613,8 @@ msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
 #: objects/ui_MainWindow.h:1116
-#, fuzzy
 msgid "Hide Editor"
-msgstr "Editor verstecken"
+msgstr "Editor ausblenden"
 
 #: objects/ui_MainWindow.h:1117
 msgid "&Reload and Preview"
@@ -805,9 +801,8 @@ msgid "Ce&nter"
 msgstr "&Zentriert"
 
 #: objects/ui_MainWindow.h:1202
-#, fuzzy
 msgid "Ctrl+Shift+0"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+0"
 
 #: objects/ui_MainWindow.h:1204
 msgid "&Perspective"
@@ -818,9 +813,8 @@ msgid "&Orthogonal"
 msgstr "Or&thogonal"
 
 #: objects/ui_MainWindow.h:1206
-#, fuzzy
 msgid "Hide Console"
-msgstr "Konsole verstecken"
+msgstr "Konsole ausblenden"
 
 #: objects/ui_MainWindow.h:1207
 msgid "&About"
@@ -1000,7 +994,7 @@ msgstr "Shift+F2"
 
 #: objects/ui_MainWindow.h:1277
 msgid "Hide Editor toolbar"
-msgstr "Editor Symbolleiste verstecken"
+msgstr "Editor Symbolleiste ausblenden"
 
 #: objects/ui_MainWindow.h:1278
 msgid "U&nindent"
@@ -1016,65 +1010,55 @@ msgstr "&Befehlsübersicht"
 
 #: objects/ui_MainWindow.h:1283
 msgid "Hide Customizer"
-msgstr "Customizer verstecken"
+msgstr "Customizer ausblenden"
 
 #: objects/ui_MainWindow.h:1284
-#, fuzzy
 msgid "Export as PDF..."
-msgstr "&DXF exportieren..."
+msgstr "&PDF exportieren..."
 
 #: objects/ui_MainWindow.h:1285
-#, fuzzy
 msgid "Hide 3D View toolbar"
-msgstr "3D Symbolleiste verstecken"
+msgstr "3D Symbolleiste ausblenden"
 
 #: objects/ui_MainWindow.h:1286
-#, fuzzy
 msgid "Hide Error Log"
-msgstr "Editor Symbolleiste verstecken"
+msgstr "Fehlerliste ausblenden"
 
 #: objects/ui_MainWindow.h:1288
 msgid "Hide ErrorLog"
-msgstr ""
+msgstr "Fehlerliste ausblenden"
 
 #: objects/ui_MainWindow.h:1290
-#, fuzzy
 msgid "&Editor"
-msgstr "Editor"
+msgstr "&Editor"
 
 #: objects/ui_MainWindow.h:1291
-#, fuzzy
 msgid "&Console"
-msgstr "Konsole"
+msgstr "&Konsole"
 
 #: objects/ui_MainWindow.h:1292
-#, fuzzy
 msgid "C&ustomizer"
-msgstr "Customizer"
+msgstr "C&ustomizer"
 
 #: objects/ui_MainWindow.h:1293
-#, fuzzy
 msgid "Error &Log"
-msgstr "Fehler"
+msgstr "Fehler&liste"
 
 #: objects/ui_MainWindow.h:1294
-#, fuzzy
 msgid "&Next Window"
-msgstr "Neues Fenster"
+msgstr "&Nächstes Fenster"
 
 #: objects/ui_MainWindow.h:1295
-#, fuzzy
 msgid "&Previous Window"
-msgstr "Rückwärts suchen"
+msgstr "&Vorheriges Fenster"
 
 #: objects/ui_MainWindow.h:1296
-#, fuzzy
 msgid "Insert Template"
-msgstr "Tab einfügen"
+msgstr "Vorlage einfügen"
 
 #: objects/ui_MainWindow.h:1298
 msgid "Alt+Ins"
-msgstr ""
+msgstr "Alt+Ins"
 
 #: objects/ui_MainWindow.h:1300
 msgid "Message"
@@ -1129,9 +1113,8 @@ msgid "&Help"
 msgstr "&Hilfe"
 
 #: objects/ui_MainWindow.h:1315
-#, fuzzy
 msgid "&Window"
-msgstr "Neues Fenster"
+msgstr "&Fenster"
 
 #: objects/ui_MainWindow.h:1316 objects/ui_Preferences.h:1610
 #: src/settings.cc:180
@@ -1260,7 +1243,7 @@ msgstr "Details Inline anzeigen"
 
 #: objects/ui_ParameterWidget.h:186
 msgid "Hide Details"
-msgstr "Details verstecken"
+msgstr "Details ausblenden"
 
 #: objects/ui_ParameterWidget.h:187
 msgid "Description Only"
@@ -1329,33 +1312,31 @@ msgstr "Vergrößern an Maus zentrieren"
 
 #: objects/ui_Preferences.h:1561
 msgid "Number Scroll"
-msgstr ""
+msgstr "Number Scroll"
 
 #: objects/ui_Preferences.h:1562 src/settings.cc:186
-#, fuzzy
 msgid "Alt"
-msgstr "Alles"
+msgstr "Alt"
 
 #: objects/ui_Preferences.h:1563 src/settings.cc:186
 msgid "Left Mouse Button"
-msgstr ""
+msgstr "Left Mouse Button"
 
 #: objects/ui_Preferences.h:1564 src/settings.cc:186
 msgid "Either"
-msgstr ""
+msgstr "Either"
 
 #: objects/ui_Preferences.h:1566
-#, fuzzy
 msgid "Step Size"
-msgstr "Größe"
+msgstr "Schrittgröße"
 
 #: objects/ui_Preferences.h:1567
 msgid "Number Scroll Via Mouse Wheel"
-msgstr ""
+msgstr "Number Scroll Via Mouse Wheel"
 
 #: objects/ui_Preferences.h:1568
 msgid "Modifier For Wheel Scroll "
-msgstr ""
+msgstr "Modifier For Wheel Scroll "
 
 #: objects/ui_Preferences.h:1569
 msgid "Autocomplete"
@@ -1677,13 +1658,12 @@ msgid "Check the parameter range for builtin modules"
 msgstr "Parameter Bereiche für System-Module prüfen"
 
 #: objects/ui_Preferences.h:1666
-#, fuzzy
 msgid "Export Features"
-msgstr "Funktionen"
+msgstr "Export Features"
 
 #: objects/ui_Preferences.h:1667
 msgid "Default to ASCII STL export"
-msgstr ""
+msgstr "STL Export im ASCII format"
 
 #: objects/ui_Preferences.h:1668
 msgid "Debugging"
@@ -1707,39 +1687,38 @@ msgstr "%v / %m"
 
 #: objects/ui_ShortcutConfigurator.h:67
 msgid "Shortcut"
-msgstr ""
+msgstr "Shortcut"
 
 #: objects/ui_ShortcutConfigurator.h:70
-#, fuzzy
 msgid "Search"
-msgstr "Suchtext"
+msgstr "Suche"
 
 #: src/Network.h:116
 msgid "Timeout error"
 msgstr "Zeitüberschreitung"
 
 #: src/Camera.cc:198
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f, fov = %.2f"
 msgstr ""
 "Ansicht: Verschiebung = [ %.2f %.2f %.2f ], Rotation = [ %.2f %.2f %.2f ], "
-"Abstand = %.2f"
+"Abstand = %.2f, Sichtfeld = %.2f"
 
 #: src/Console.cc:61
 msgid "Save console content"
 msgstr "Log speichern"
 
 #: src/export.cc:104
-#, fuzzy, c-format
+#, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Datei\"%s\" konnte nicht zum Export geöffnet werden"
+msgstr "Datei\"%1$s\" konnte nicht zum Export geöffnet werden"
 
 #: src/export.cc:119
-#, fuzzy, c-format
+#, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "FEHLER:  \"%s\" Schreibfehler. (Speichervoll?)"
+msgstr "\"%1$s\" Schreibfehler. (Speicher voll?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."
@@ -1756,11 +1735,12 @@ msgstr[0] "%1 Warnung beim Kompilieren."
 msgstr[1] "%1 Warnungen beim Kompilieren."
 
 #: src/mainwin.cc:1102
-#, fuzzy
 msgid ""
 " For details see the <a href=\"#errorlog\">error log</a> and <a href="
 "\"#console\">console window</a>."
-msgstr " Für Details das <a href=\"#console\">Konsolen-Fenster</a> öffnen."
+msgstr ""
+" Für Details die <a href=\"#errorlog\">Fehlerliste</a> oder <a href="
+"\"#console\">Konsolen-Fenster</a> öffnen."
 
 #: src/mainwin.cc:1788
 msgid "Application"
@@ -1815,9 +1795,8 @@ msgid "Customizer"
 msgstr "Customizer"
 
 #: src/mainwin.cc:2868 src/mainwin.cc:2873
-#, fuzzy
 msgid "Error-Log"
-msgstr "Fehler"
+msgstr "Fehlerliste"
 
 #: src/mainwin.cc:2888 src/tabmanager.cc:221 src/tabmanager.cc:454
 #: src/tabmanager.cc:512 src/tabmanager.cc:681
@@ -1964,12 +1943,11 @@ msgstr "Möchten Sie die Änderungen speichern?"
 
 #: src/tabmanager.cc:591
 msgid "Some tabs have unsaved changes."
-msgstr ""
+msgstr "Es gibt Dokumente mit nicht gespeicherten Änderungen."
 
 #: src/tabmanager.cc:592
-#, fuzzy
 msgid "Do you want to save all your changes?"
-msgstr "Möchten Sie die Änderungen speichern?"
+msgstr "Möchten Sie alle Änderungen speichern?"
 
 #: src/tabmanager.cc:653
 msgid "Failed to open file for writing"
@@ -2008,19 +1986,16 @@ msgstr ""
 "gespeichert.Möchten Sie die Änderungen wirklich zurücksetzen?"
 
 #: src/parameter/ParameterWidget.cc:156
-#, fuzzy
 msgid "Add new preset"
-msgstr "neue Voreinstellung hinzufügen"
+msgstr "Neue Voreinstellung hinzufügen"
 
 #: src/parameter/ParameterWidget.cc:157
-#, fuzzy
 msgid "Remove current preset"
-msgstr "aktuelle Voreinstellung löschen"
+msgstr "Aktuelle Voreinstellung löschen"
 
 #: src/parameter/ParameterWidget.cc:158
-#, fuzzy
 msgid "Save current preset"
-msgstr "aktuelle Voreinstellung speichern"
+msgstr "Aktuelle Voreinstellung speichern"
 
 #: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
 #: src/parameter/ParameterWidget.cc:162
@@ -2191,6 +2166,9 @@ msgstr ""
 "addition to 2D paths for extrusion it is also possible to read design "
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
+
+#~ msgid "ErrorLog"
+#~ msgstr "Fehlerliste"
 
 #~ msgid "Find Next"
 #~ msgstr "Weiter suchen"
