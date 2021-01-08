@@ -1750,12 +1750,12 @@ msgstr "Zapisz zawartość konsoli do pliku"
 #: src/export.cc:104
 #, fuzzy, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Nie można otworzyć pliku \"%s\" do eksportu"
+msgstr "Nie można otworzyć pliku \"%1$s\" do eksportu"
 
 #: src/export.cc:119
 #, fuzzy, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "Błąd: \"%s\" – błąd zapisu. (Pełny dysk?)"
+msgstr "Błąd: \"%1$s\" – błąd zapisu. (Pełny dysk?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."
