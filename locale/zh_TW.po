@@ -954,7 +954,7 @@ msgstr "速查表"
 
 #: objects/ui_MainWindow.h:1207
 msgid "Hide Customizer"
-msgstr "隱藏制定"
+msgstr "隱藏自訂"
 
 #: objects/ui_MainWindow.h:1208
 #, fuzzy
@@ -1404,7 +1404,7 @@ msgstr "網址"
 
 #: objects/ui_Preferences.h:1540
 msgid "API Key"
-msgstr "API Key"
+msgstr "API金鑰"
 
 #: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1542
 msgid "Load"
@@ -1436,7 +1436,7 @@ msgstr "顯示"
 
 #: objects/ui_Preferences.h:1550
 msgid "Note: The API key is stored unencrypted in the application settings."
-msgstr "備註: 此API key以非加密儲存於軟體設定中."
+msgstr "備註: 此API金鑰以非加密儲存於軟體設定中."
 
 #: objects/ui_Preferences.h:1551
 msgid "OpenCSG"
@@ -1698,7 +1698,7 @@ msgstr "錯誤"
 
 #: src/PrintInitDialog.cc:44
 msgid "Print Service not available"
-msgstr "列印服務不可用"
+msgstr "無法取得列印服務"
 
 #: src/QGLView.cc:150
 msgid ""
@@ -1777,11 +1777,11 @@ msgstr "找上一個(&V)"
 
 #: src/tabmanager.cc:410
 msgid "Copy file name"
-msgstr ""
+msgstr "複製檔案名稱"
 
 #: src/tabmanager.cc:416
 msgid "Copy full path"
-msgstr ""
+msgstr "複製完整路徑"
 
 #: src/tabmanager.cc:421
 #, fuzzy
@@ -1803,7 +1803,7 @@ msgstr "有些分頁已被變更"
 
 #: src/tabmanager.cc:601
 msgid "All unsaved changes will be lost."
-msgstr ""
+msgstr "未儲存的變更都會遺失"
 
 #: src/tabmanager.cc:662
 msgid "Failed to open file for writing"
@@ -1969,9 +1969,9 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD是一個用於建立Solid 3D CAD模組的軟體。不同於大多數免費3D建模軟體（如"
-"Blender），它不著重於3D藝術方面而是CAD方面。因此當你計畫用於3D建模時此程式"
-"可能是你要的，但如果要做電腦動畫這肯定不是你要的。"
+"OpenSCAD是個用於建立Solid 3D CAD模組的軟體。不同於大多數免費3D建模軟體（如"
+"Blender），它著重的並非3D藝術方面而是CAD方面。如果你想用來進行3D建模"
+"它可能符合需求，然而可以確定的是，不適合拿來做電腦動畫。"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:21
@@ -1983,8 +1983,8 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD並非互動式建模器, 相反的它就像3D編譯器讀取描繪物件的腳本檔案然後從中"
-"渲染3D模型. 這使您（設計師）可以完全掌控建模過程且讓你可以簡單的改變建模過程的"
+"OpenSCAD並非互動式建模器, 相反的它就像個3D編譯器，讀取描繪物件的腳本檔案，然後從中"
+"渲染3D模型. 這使您（設計師）可以完全掌控建模過程，而且可以簡單的改變建模過程的"
 "任何步驟，或用於參數可調的設計。"
 
 #. (itstool) path: description/p
