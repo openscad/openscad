@@ -1739,12 +1739,12 @@ msgstr "Պահել վահանակի պարունակությունը"
 #: src/export.cc:104
 #, fuzzy, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Նիշքը բացել հնարավոր չէ\"%s\" տարածման համար"
+msgstr "Նիշքը բացել հնարավոր չէ\"%1$s\" տարածման համար"
 
 #: src/export.cc:119
 #, fuzzy, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "ՍԽԱԼՄՈՒՆՔ: \"%s\" չստացվեց պահել/գրել (Սկավառակը լցված է?)"
+msgstr "ՍԽԱԼՄՈՒՆՔ: \"%1$s\" չստացվեց պահել/գրել (Սկավառակը լցված է?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."

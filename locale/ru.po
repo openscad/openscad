@@ -1739,12 +1739,12 @@ msgstr "Сохранить содержимое консоли"
 #: src/export.cc:104
 #, fuzzy, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Не удалось открыть файл \"%s\" для экспорта"
+msgstr "Не удалось открыть файл \"%1$s\" для экспорта"
 
 #: src/export.cc:119
 #, fuzzy, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "Ошибка записи: «%s». (Диск переполнен?)"
+msgstr "Ошибка записи: «%1$s». (Диск переполнен?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."

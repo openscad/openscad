@@ -1742,12 +1742,12 @@ msgstr "儲存控制台內容"
 #: src/export.cc:104
 #, fuzzy, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "無法開啟檔案 \"%s\" 用以匯出"
+msgstr "無法開啟檔案 \"%1$s\" 用以匯出"
 
 #: src/export.cc:119
 #, fuzzy, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "錯誤: \"%s\" 寫入錯誤. (磁碟滿載?)"
+msgstr "錯誤: \"%1$s\" 寫入錯誤. (磁碟滿載?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."

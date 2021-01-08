@@ -1743,12 +1743,12 @@ msgstr ""
 #: src/export.cc:104
 #, fuzzy, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Не можу відкрити файл \"%s\" для експорту"
+msgstr "Не можу відкрити файл \"%1$s\" для експорту"
 
 #: src/export.cc:119
 #, fuzzy, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "ПОМИЛКА: \"%s\" помилка запису. (Диск переповнено?)"
+msgstr "ПОМИЛКА: \"%1$s\" помилка запису. (Диск переповнено?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."

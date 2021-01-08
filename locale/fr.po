@@ -1752,12 +1752,12 @@ msgstr "Enregistrer le contenu de la console"
 #: src/export.cc:104
 #, fuzzy, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Ne peut pas ouvrir le fichier \"%s\" pour exportation"
+msgstr "Ne peut pas ouvrir le fichier \"%1$s\" pour exportation"
 
 #: src/export.cc:119
 #, fuzzy, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "ERREUR: \"%s\" erreur d'écriture. (Disque plein?)"
+msgstr "ERREUR: \"%1$s\" erreur d'écriture. (Disque plein?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."
