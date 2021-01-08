@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 03:16+0200\n"
+"POT-Creation-Date: 2021-01-08 17:20+0100\n"
 "PO-Revision-Date: 2019-12-25 16:10+0800\n"
 "Last-Translator: 玉堂白鹤 <yjwork@qq.com>\n"
 "Language-Team: \n"
@@ -52,7 +52,7 @@ msgid "OK"
 msgstr "确定"
 
 #: objects/ui_AxisConfigWidget.h:853 objects/ui_ButtonConfigWidget.h:266
-#: objects/ui_Preferences.h:1457
+#: objects/ui_Preferences.h:1540
 msgid "Preferences"
 msgstr "首选项"
 
@@ -193,7 +193,7 @@ msgstr ""
 msgid "TextLabel"
 msgstr "紧跟文字"
 
-#: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1461
+#: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1544
 msgid "Update"
 msgstr "更新"
 
@@ -277,6 +277,60 @@ msgstr "另存为(&A)..."
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
 msgstr "保存控制台内容至文件"
+
+#: objects/ui_ErrorLog.h:93
+#, fuzzy
+msgid "Error Log"
+msgstr "错误"
+
+#: objects/ui_ErrorLog.h:94
+msgid "RowSelected"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:96
+msgid "Return"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:98
+#, fuzzy
+msgid "&Show"
+msgstr "显示"
+
+#: objects/ui_ErrorLog.h:99 objects/ui_MainWindow.h:1326
+msgid "All"
+msgstr "全部"
+
+#: objects/ui_ErrorLog.h:100
+msgid "ERROR"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:101
+msgid "WARNING"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:102
+msgid "UI-WARNING"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:103
+msgid "FONT-WARNING"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:104
+msgid "EXPORT-WARNING"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:105
+msgid "EXPORT-ERROR"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:106
+msgid "TRACE"
+msgstr ""
+
+#: objects/ui_ErrorLog.h:107
+msgid "DEPRECATED"
+msgstr ""
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -365,693 +419,757 @@ msgstr "库和编译信息"
 msgid "OpenSCAD Detailed Library and Build Information"
 msgstr "OpenSCAD 库和编译信息明细"
 
-#: objects/ui_MainWindow.h:955
+#: objects/ui_MainWindow.h:1027
 #, fuzzy
 msgid "&New File"
 msgstr "文件(&F)"
 
-#: objects/ui_MainWindow.h:957
+#: objects/ui_MainWindow.h:1029
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
-#: objects/ui_MainWindow.h:959
+#: objects/ui_MainWindow.h:1031
 msgid "New Window"
 msgstr ""
 
-#: objects/ui_MainWindow.h:960
+#: objects/ui_MainWindow.h:1032
 #, fuzzy
 msgid "&Open File"
 msgstr "文件(&F)"
 
-#: objects/ui_MainWindow.h:962
+#: objects/ui_MainWindow.h:1034
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
-#: objects/ui_MainWindow.h:964
+#: objects/ui_MainWindow.h:1036
 msgid "Open in New Window"
 msgstr ""
 
-#: objects/ui_MainWindow.h:965
+#: objects/ui_MainWindow.h:1037
 msgid "&Save"
 msgstr "保存(&S)"
 
-#: objects/ui_MainWindow.h:967
+#: objects/ui_MainWindow.h:1039
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
-#: objects/ui_MainWindow.h:969
+#: objects/ui_MainWindow.h:1041
 msgid "Save &As..."
 msgstr "另存为(&A)..."
 
-#: objects/ui_MainWindow.h:971
+#: objects/ui_MainWindow.h:1043
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
-#: objects/ui_MainWindow.h:973
+#: objects/ui_MainWindow.h:1045
 #, fuzzy
 msgid "Save All"
 msgstr "另存为"
 
-#: objects/ui_MainWindow.h:974
+#: objects/ui_MainWindow.h:1046
 msgid "&Reload"
 msgstr "重新载入(&R)"
 
-#: objects/ui_MainWindow.h:976
+#: objects/ui_MainWindow.h:1048
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
-#: objects/ui_MainWindow.h:978
+#: objects/ui_MainWindow.h:1050
 msgid "&Quit"
 msgstr "退出(&Q)"
 
-#: objects/ui_MainWindow.h:980
+#: objects/ui_MainWindow.h:1052
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
-#: objects/ui_MainWindow.h:982
+#: objects/ui_MainWindow.h:1054
 msgid "&Undo"
 msgstr "撤销(&U)"
 
-#: objects/ui_MainWindow.h:984
+#: objects/ui_MainWindow.h:1056
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
-#: objects/ui_MainWindow.h:986
+#: objects/ui_MainWindow.h:1058
 msgid "&Redo"
 msgstr "重做(&R)"
 
-#: objects/ui_MainWindow.h:988
+#: objects/ui_MainWindow.h:1060
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
-#: objects/ui_MainWindow.h:991
+#: objects/ui_MainWindow.h:1063
 msgid "Ctrl+Y"
 msgstr "Ctrl+Y"
 
-#: objects/ui_MainWindow.h:993
+#: objects/ui_MainWindow.h:1065
 msgid "Cu&t"
 msgstr "剪切(&T)"
 
-#: objects/ui_MainWindow.h:995
+#: objects/ui_MainWindow.h:1067
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
-#: objects/ui_MainWindow.h:997
+#: objects/ui_MainWindow.h:1069
 msgid "&Copy"
 msgstr "复制(&C)"
 
-#: objects/ui_MainWindow.h:999
+#: objects/ui_MainWindow.h:1071
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
-#: objects/ui_MainWindow.h:1001
+#: objects/ui_MainWindow.h:1073
 msgid "&Paste"
 msgstr "粘贴(&P)"
 
-#: objects/ui_MainWindow.h:1003
+#: objects/ui_MainWindow.h:1075
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
-#: objects/ui_MainWindow.h:1005
+#: objects/ui_MainWindow.h:1077
 msgid "&Indent"
 msgstr "缩进(&I)"
 
-#: objects/ui_MainWindow.h:1007
+#: objects/ui_MainWindow.h:1079
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
-#: objects/ui_MainWindow.h:1009
+#: objects/ui_MainWindow.h:1081
 msgid "C&omment"
 msgstr "注释(&O)"
 
-#: objects/ui_MainWindow.h:1011
+#: objects/ui_MainWindow.h:1083
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
-#: objects/ui_MainWindow.h:1013
+#: objects/ui_MainWindow.h:1085
 msgid "Unco&mment"
 msgstr "取消注释(&M)"
 
-#: objects/ui_MainWindow.h:1015
+#: objects/ui_MainWindow.h:1087
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-#: objects/ui_MainWindow.h:1017
+#: objects/ui_MainWindow.h:1089
 #, fuzzy
 msgid "Show Next Tab"
 msgstr "显示详细信息"
 
-#: objects/ui_MainWindow.h:1019
+#: objects/ui_MainWindow.h:1091
 #, fuzzy
 msgid "Ctrl+Tab"
 msgstr "Ctrl+T"
 
-#: objects/ui_MainWindow.h:1021
+#: objects/ui_MainWindow.h:1093
 msgid "Show Previous Tab"
 msgstr ""
 
-#: objects/ui_MainWindow.h:1023
+#: objects/ui_MainWindow.h:1095
 #, fuzzy
 msgid "Ctrl+Shift+Tab"
 msgstr "Ctrl+Shift+S"
 
-#: objects/ui_MainWindow.h:1025
+#: objects/ui_MainWindow.h:1097
 msgid "Copy viewport ima&ge"
 msgstr "复制三维视图图像(&G)"
 
-#: objects/ui_MainWindow.h:1027
+#: objects/ui_MainWindow.h:1099
 msgid "Ctrl+Shift+C"
 msgstr "Ctrl+Shift+C"
 
-#: objects/ui_MainWindow.h:1029
+#: objects/ui_MainWindow.h:1101
 msgid "Copy viewport transl&ation"
 msgstr "复制三维视图平移状态(&A)"
 
-#: objects/ui_MainWindow.h:1031
+#: objects/ui_MainWindow.h:1103
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
-#: objects/ui_MainWindow.h:1033
+#: objects/ui_MainWindow.h:1105
 msgid "Cop&y viewport rotation"
 msgstr "复制三维视图旋转状态(&Y)"
 
-#: objects/ui_MainWindow.h:1034
+#: objects/ui_MainWindow.h:1106
 msgid "Copy vie&wport distance"
 msgstr "复制三维视图距离状态(&W)"
 
-#: objects/ui_MainWindow.h:1035
+#: objects/ui_MainWindow.h:1107
+#, fuzzy
+msgid "Copy vie&wport fov"
+msgstr "复制三维视图图像(&G)"
+
+#: objects/ui_MainWindow.h:1108
 msgid "Increase Font &Size"
 msgstr "增加字体大小(&S)"
 
-#: objects/ui_MainWindow.h:1037
+#: objects/ui_MainWindow.h:1110
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
-#: objects/ui_MainWindow.h:1039
+#: objects/ui_MainWindow.h:1112
 msgid "Decrease Font Si&ze"
 msgstr "减小字体大小(&Z)"
 
-#: objects/ui_MainWindow.h:1041
+#: objects/ui_MainWindow.h:1114
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
-#: objects/ui_MainWindow.h:1043
-msgid "H&ide editor"
+#: objects/ui_MainWindow.h:1116
+#, fuzzy
+msgid "Hide Editor"
 msgstr "隐藏编辑器(&I)"
 
-#: objects/ui_MainWindow.h:1044
+#: objects/ui_MainWindow.h:1117
 msgid "&Reload and Preview"
 msgstr "重新载入并预览(&R)"
 
-#: objects/ui_MainWindow.h:1046
+#: objects/ui_MainWindow.h:1119
 msgid "F4"
 msgstr "F4"
 
-#: objects/ui_MainWindow.h:1048
+#: objects/ui_MainWindow.h:1121
 msgid "&Preview"
 msgstr "预览(&P)"
 
-#: objects/ui_MainWindow.h:1050
+#: objects/ui_MainWindow.h:1123
 msgid "F5"
 msgstr "F5"
 
-#: objects/ui_MainWindow.h:1052
+#: objects/ui_MainWindow.h:1125
 msgid "R&ender"
 msgstr "绘制(&E)"
 
-#: objects/ui_MainWindow.h:1054
+#: objects/ui_MainWindow.h:1127
 msgid "F6"
 msgstr "F6"
 
-#: objects/ui_MainWindow.h:1056
+#: objects/ui_MainWindow.h:1129
 msgid "&3D Print"
 msgstr "3D 打印(&3)"
 
-#: objects/ui_MainWindow.h:1058
+#: objects/ui_MainWindow.h:1131
 msgid "F8"
 msgstr "F8"
 
-#: objects/ui_MainWindow.h:1060
+#: objects/ui_MainWindow.h:1133
 msgid "&Check Validity"
 msgstr "检查有效性(&C)"
 
-#: objects/ui_MainWindow.h:1061
+#: objects/ui_MainWindow.h:1134
 msgid "Display A&ST..."
 msgstr "显示 AST(&S)..."
 
-#: objects/ui_MainWindow.h:1062
+#: objects/ui_MainWindow.h:1135
 msgid "Display CSG &Tree..."
 msgstr "显示 CSG 树(&T)..."
 
-#: objects/ui_MainWindow.h:1063
+#: objects/ui_MainWindow.h:1136
 msgid "Display CSG Pr&oducts..."
 msgstr "显示 CSG 结果(&O)..."
 
-#: objects/ui_MainWindow.h:1064
+#: objects/ui_MainWindow.h:1137
 msgid "Export as &STL..."
 msgstr "导出为 STL(&S)..."
 
-#: objects/ui_MainWindow.h:1066
+#: objects/ui_MainWindow.h:1139
 msgid "F7"
 msgstr "F7"
 
-#: objects/ui_MainWindow.h:1068
+#: objects/ui_MainWindow.h:1141
 msgid "Export as &OFF..."
 msgstr "导出为 OFF(&O)..."
 
-#: objects/ui_MainWindow.h:1069
+#: objects/ui_MainWindow.h:1142
 msgid "Preview"
 msgstr "预览"
 
-#: objects/ui_MainWindow.h:1071
+#: objects/ui_MainWindow.h:1144
 msgid "F9"
 msgstr "F9"
 
-#: objects/ui_MainWindow.h:1073
+#: objects/ui_MainWindow.h:1146
 msgid "Surfaces"
 msgstr "面"
 
-#: objects/ui_MainWindow.h:1075
+#: objects/ui_MainWindow.h:1148
 msgid "F10"
 msgstr "F10"
 
-#: objects/ui_MainWindow.h:1077
+#: objects/ui_MainWindow.h:1150
 msgid "Wireframe"
 msgstr "线框图"
 
-#: objects/ui_MainWindow.h:1079
+#: objects/ui_MainWindow.h:1152
 msgid "F11"
 msgstr "F11"
 
-#: objects/ui_MainWindow.h:1081
+#: objects/ui_MainWindow.h:1154
 msgid "Thrown Together"
 msgstr "所有绘制的物体"
 
-#: objects/ui_MainWindow.h:1083
+#: objects/ui_MainWindow.h:1156
 msgid "F12"
 msgstr "F12"
 
-#: objects/ui_MainWindow.h:1085
+#: objects/ui_MainWindow.h:1158
 msgid "Show Edges"
 msgstr "显示线框"
 
-#: objects/ui_MainWindow.h:1087
+#: objects/ui_MainWindow.h:1160
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
-#: objects/ui_MainWindow.h:1089
+#: objects/ui_MainWindow.h:1162
 msgid "Show Axes"
 msgstr "显示坐标轴"
 
-#: objects/ui_MainWindow.h:1091
+#: objects/ui_MainWindow.h:1164
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
-#: objects/ui_MainWindow.h:1093
+#: objects/ui_MainWindow.h:1166
 msgid "Show Crosshairs"
 msgstr "显示十字准线"
 
-#: objects/ui_MainWindow.h:1095
+#: objects/ui_MainWindow.h:1168
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
-#: objects/ui_MainWindow.h:1097
+#: objects/ui_MainWindow.h:1170
 msgid "Show Scale Markers"
 msgstr "显示坐标轴刻度"
 
-#: objects/ui_MainWindow.h:1098
+#: objects/ui_MainWindow.h:1171
 msgid "Animate"
 msgstr "动画"
 
-#: objects/ui_MainWindow.h:1099
+#: objects/ui_MainWindow.h:1172
 msgid "&Top"
 msgstr "顶部(&T)"
 
-#: objects/ui_MainWindow.h:1101
+#: objects/ui_MainWindow.h:1174
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
-#: objects/ui_MainWindow.h:1103
+#: objects/ui_MainWindow.h:1176
 msgid "&Bottom"
 msgstr "底部(&B)"
 
-#: objects/ui_MainWindow.h:1105
+#: objects/ui_MainWindow.h:1178
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
-#: objects/ui_MainWindow.h:1107
+#: objects/ui_MainWindow.h:1180
 msgid "&Left"
 msgstr "左侧面(&L)"
 
-#: objects/ui_MainWindow.h:1109
+#: objects/ui_MainWindow.h:1182
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
-#: objects/ui_MainWindow.h:1111
+#: objects/ui_MainWindow.h:1184
 msgid "&Right"
 msgstr "右侧面(&R)"
 
-#: objects/ui_MainWindow.h:1113
+#: objects/ui_MainWindow.h:1186
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
-#: objects/ui_MainWindow.h:1115
+#: objects/ui_MainWindow.h:1188
 msgid "&Front"
 msgstr "前面(&F)"
 
-#: objects/ui_MainWindow.h:1117
+#: objects/ui_MainWindow.h:1190
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
-#: objects/ui_MainWindow.h:1119
+#: objects/ui_MainWindow.h:1192
 msgid "Bac&k"
 msgstr "后面(&K)"
 
-#: objects/ui_MainWindow.h:1121
+#: objects/ui_MainWindow.h:1194
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
-#: objects/ui_MainWindow.h:1123
+#: objects/ui_MainWindow.h:1196
 msgid "&Diagonal"
 msgstr "对角线(&D)"
 
-#: objects/ui_MainWindow.h:1125
+#: objects/ui_MainWindow.h:1198
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
-#: objects/ui_MainWindow.h:1127
+#: objects/ui_MainWindow.h:1200
 msgid "Ce&nter"
 msgstr "原点居中(&N)"
 
-#: objects/ui_MainWindow.h:1128
+#: objects/ui_MainWindow.h:1202
+#, fuzzy
+msgid "Ctrl+Shift+0"
+msgstr "Ctrl+Shift+S"
+
+#: objects/ui_MainWindow.h:1204
 msgid "&Perspective"
 msgstr "透视画法(&P)"
 
-#: objects/ui_MainWindow.h:1129
+#: objects/ui_MainWindow.h:1205
 msgid "&Orthogonal"
 msgstr "正交画法(&O)"
 
-#: objects/ui_MainWindow.h:1130
-msgid "H&ide console"
+#: objects/ui_MainWindow.h:1206
+#, fuzzy
+msgid "Hide Console"
 msgstr "隐藏控制台(&I)"
 
-#: objects/ui_MainWindow.h:1131
+#: objects/ui_MainWindow.h:1207
 msgid "&About"
 msgstr "关于(&A)"
 
-#: objects/ui_MainWindow.h:1132
+#: objects/ui_MainWindow.h:1208
 msgid "&Documentation"
 msgstr "文档(&D)"
 
-#: objects/ui_MainWindow.h:1133
+#: objects/ui_MainWindow.h:1209
 msgid "Clear Recent"
 msgstr "清除最近访问"
 
-#: objects/ui_MainWindow.h:1134
+#: objects/ui_MainWindow.h:1210
 msgid "Export as &DXF..."
 msgstr "导出为 DXF(&D)..."
 
-#: objects/ui_MainWindow.h:1135
+#: objects/ui_MainWindow.h:1211
 msgid "&Close"
 msgstr "关闭(&C)"
 
-#: objects/ui_MainWindow.h:1137
+#: objects/ui_MainWindow.h:1213
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
-#: objects/ui_MainWindow.h:1139
+#: objects/ui_MainWindow.h:1215
 msgid "&Preferences"
 msgstr "首选项(&P)"
 
-#: objects/ui_MainWindow.h:1140
+#: objects/ui_MainWindow.h:1216
 msgid "&Find..."
 msgstr "查找(&F)..."
 
-#: objects/ui_MainWindow.h:1142
+#: objects/ui_MainWindow.h:1218
 msgid "Ctrl+F"
 msgstr "Ctrl+F"
 
-#: objects/ui_MainWindow.h:1144
+#: objects/ui_MainWindow.h:1220
 msgid "Fin&d and Replace..."
 msgstr "查找和替换(&D)..."
 
-#: objects/ui_MainWindow.h:1146
+#: objects/ui_MainWindow.h:1222
 msgid "Ctrl+Alt+F"
 msgstr "Ctrl+Alt+F"
 
-#: objects/ui_MainWindow.h:1148
+#: objects/ui_MainWindow.h:1224
 msgid "Find Ne&xt"
 msgstr "查找下一个(&X)"
 
-#: objects/ui_MainWindow.h:1150
+#: objects/ui_MainWindow.h:1226
 msgid "Ctrl+G"
 msgstr "Ctrl+G"
 
-#: objects/ui_MainWindow.h:1152
+#: objects/ui_MainWindow.h:1228
 msgid "Find Pre&vious"
 msgstr "查找上一个(&V)"
 
-#: objects/ui_MainWindow.h:1154
+#: objects/ui_MainWindow.h:1230
 msgid "Ctrl+Shift+G"
 msgstr "Ctrl+Shift+G"
 
-#: objects/ui_MainWindow.h:1156
+#: objects/ui_MainWindow.h:1232
 msgid "Use Se&lection for Find"
 msgstr "查找选定内容(&L)"
 
-#: objects/ui_MainWindow.h:1158
+#: objects/ui_MainWindow.h:1234
 msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
-#: objects/ui_MainWindow.h:1160
+#: objects/ui_MainWindow.h:1236
 msgid "Jump to next error"
 msgstr ""
 
-#: objects/ui_MainWindow.h:1162
+#: objects/ui_MainWindow.h:1238
 #, fuzzy
 msgid "Ctrl+Alt+E"
 msgstr "Ctrl+Alt+F"
 
-#: objects/ui_MainWindow.h:1164
+#: objects/ui_MainWindow.h:1240
 msgid "&Flush Caches"
 msgstr "刷新缓存(&F)"
 
-#: objects/ui_MainWindow.h:1165
+#: objects/ui_MainWindow.h:1241
 msgid "&OpenSCAD Homepage"
 msgstr "OpenSCAD 主页(&O)"
 
-#: objects/ui_MainWindow.h:1166
+#: objects/ui_MainWindow.h:1242
 msgid "&Automatic Reload and Preview"
 msgstr "自动重新加载和预览(&A)"
 
-#: objects/ui_MainWindow.h:1167
+#: objects/ui_MainWindow.h:1243
 msgid "Export as &Image..."
 msgstr "导出为图像(&I)..."
 
-#: objects/ui_MainWindow.h:1168
+#: objects/ui_MainWindow.h:1244
 msgid "Export as &CSG..."
 msgstr "导出为 CSG(&C)..."
 
-#: objects/ui_MainWindow.h:1169
+#: objects/ui_MainWindow.h:1245
 msgid "&Library info"
 msgstr "扩展库信息(&L)"
 
-#: objects/ui_MainWindow.h:1170
+#: objects/ui_MainWindow.h:1246
 msgid "Show &Library Folder..."
 msgstr "显示库文件夹(&L)..."
 
-#: objects/ui_MainWindow.h:1171
+#: objects/ui_MainWindow.h:1247
 msgid "Reset View"
 msgstr "重置视图"
 
-#: objects/ui_MainWindow.h:1172
+#: objects/ui_MainWindow.h:1248
 msgid "&Font List"
 msgstr "字体列表(&F)"
 
-#: objects/ui_MainWindow.h:1173
+#: objects/ui_MainWindow.h:1249
 msgid "Export as S&VG..."
 msgstr "导出为 SVG(&V)..."
 
-#: objects/ui_MainWindow.h:1174
+#: objects/ui_MainWindow.h:1250
 msgid "Export as &AMF..."
 msgstr "导出为 AMF(&A)..."
 
-#: objects/ui_MainWindow.h:1175
+#: objects/ui_MainWindow.h:1251
 msgid "Export as &3MF..."
 msgstr "导出为 3MF(&3)"
 
-#: objects/ui_MainWindow.h:1176
+#: objects/ui_MainWindow.h:1252
 msgid "Zoom In"
 msgstr "放大"
 
-#: objects/ui_MainWindow.h:1178
+#: objects/ui_MainWindow.h:1254
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
-#: objects/ui_MainWindow.h:1180
+#: objects/ui_MainWindow.h:1256
 msgid "Zoom Out"
 msgstr "缩小"
 
-#: objects/ui_MainWindow.h:1182
+#: objects/ui_MainWindow.h:1258
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
-#: objects/ui_MainWindow.h:1184
+#: objects/ui_MainWindow.h:1260
 msgid "View All"
 msgstr "全部显示"
 
-#: objects/ui_MainWindow.h:1186
+#: objects/ui_MainWindow.h:1262
 msgid "Ctrl+Shift+V"
 msgstr "Ctrl+Shift+V"
 
-#: objects/ui_MainWindow.h:1188
+#: objects/ui_MainWindow.h:1264
 msgid "Conv&ert Tabs to Spaces"
 msgstr "将制表符转换为空格(&E)"
 
-#: objects/ui_MainWindow.h:1189
+#: objects/ui_MainWindow.h:1265
 msgid "Toggle Bookmark"
 msgstr ""
 
-#: objects/ui_MainWindow.h:1191
+#: objects/ui_MainWindow.h:1267
 #, fuzzy
 msgid "Ctrl+F2"
 msgstr "Ctrl+F"
 
-#: objects/ui_MainWindow.h:1193
+#: objects/ui_MainWindow.h:1269
 msgid "Jump to next bookmark"
 msgstr ""
 
-#: objects/ui_MainWindow.h:1195
+#: objects/ui_MainWindow.h:1271
 #, fuzzy
 msgid "F2"
 msgstr "F12"
 
-#: objects/ui_MainWindow.h:1197
+#: objects/ui_MainWindow.h:1273
 msgid "Jump to previous bookmark"
 msgstr ""
 
-#: objects/ui_MainWindow.h:1199
+#: objects/ui_MainWindow.h:1275
 #, fuzzy
 msgid "Shift+F2"
 msgstr "Ctrl+Shift+S"
 
-#: objects/ui_MainWindow.h:1201
+#: objects/ui_MainWindow.h:1277
 #, fuzzy
 msgid "Hide Editor toolbar"
 msgstr "隐藏工具栏"
 
-#: objects/ui_MainWindow.h:1202
+#: objects/ui_MainWindow.h:1278
 msgid "U&nindent"
 msgstr "减少缩进(&N)"
 
-#: objects/ui_MainWindow.h:1204
+#: objects/ui_MainWindow.h:1280
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
-#: objects/ui_MainWindow.h:1206
+#: objects/ui_MainWindow.h:1282
 msgid "&Cheat Sheet"
 msgstr "速查表(&C)"
 
-#: objects/ui_MainWindow.h:1207
+#: objects/ui_MainWindow.h:1283
 msgid "Hide Customizer"
 msgstr "隐藏定制器"
 
-#: objects/ui_MainWindow.h:1208
+#: objects/ui_MainWindow.h:1284
 #, fuzzy
-msgid "Hide 3D view toolbar"
+msgid "Export as PDF..."
+msgstr "导出为 DXF(&D)..."
+
+#: objects/ui_MainWindow.h:1285
+#, fuzzy
+msgid "Hide 3D View toolbar"
 msgstr "隐藏工具栏"
 
-#: objects/ui_MainWindow.h:1209
+#: objects/ui_MainWindow.h:1286
+#, fuzzy
+msgid "Hide Error Log"
+msgstr "隐藏工具栏"
+
+#: objects/ui_MainWindow.h:1288
+msgid "Hide ErrorLog"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1290
+#, fuzzy
+msgid "&Editor"
+msgstr "编辑器"
+
+#: objects/ui_MainWindow.h:1291
+#, fuzzy
+msgid "&Console"
+msgstr "控制台"
+
+#: objects/ui_MainWindow.h:1292
+#, fuzzy
+msgid "C&ustomizer"
+msgstr "定制"
+
+#: objects/ui_MainWindow.h:1293
+#, fuzzy
+msgid "Error &Log"
+msgstr "错误"
+
+#: objects/ui_MainWindow.h:1294
+msgid "&Next Window"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1295
+#, fuzzy
+msgid "&Previous Window"
+msgstr "查找上一个(&V)"
+
+#: objects/ui_MainWindow.h:1296
+#, fuzzy
+msgid "Insert Template"
+msgstr "插入制表符"
+
+#: objects/ui_MainWindow.h:1298
+msgid "Alt+Ins"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1300
 msgid "Message"
 msgstr "信息"
 
-#: objects/ui_MainWindow.h:1212
+#: objects/ui_MainWindow.h:1303
 msgid "Time:"
 msgstr "时间:"
 
-#: objects/ui_MainWindow.h:1213
+#: objects/ui_MainWindow.h:1304
 msgid "FPS:"
 msgstr "帧率:"
 
-#: objects/ui_MainWindow.h:1214
+#: objects/ui_MainWindow.h:1305
 msgid "Steps:"
 msgstr "步数:"
 
-#: objects/ui_MainWindow.h:1215
+#: objects/ui_MainWindow.h:1306
 msgid "Dump Pictures"
 msgstr "生成图片"
 
-#: objects/ui_MainWindow.h:1216
+#: objects/ui_MainWindow.h:1307
 msgid "&File"
 msgstr "文件(&F)"
 
-#: objects/ui_MainWindow.h:1217
+#: objects/ui_MainWindow.h:1308
 msgid "Recen&t Files"
 msgstr "最近打开文件(&T)"
 
-#: objects/ui_MainWindow.h:1218
+#: objects/ui_MainWindow.h:1309
 msgid "&Examples"
 msgstr "示例(&E)"
 
-#: objects/ui_MainWindow.h:1219
+#: objects/ui_MainWindow.h:1310
 msgid "E&xport"
 msgstr "导出(&X)"
 
-#: objects/ui_MainWindow.h:1220
+#: objects/ui_MainWindow.h:1311
 msgid "&Edit"
 msgstr "编辑(&E)"
 
-#: objects/ui_MainWindow.h:1221
+#: objects/ui_MainWindow.h:1312
 msgid "&Design"
 msgstr "模型(&D)"
 
-#: objects/ui_MainWindow.h:1222
+#: objects/ui_MainWindow.h:1313
 msgid "&View"
 msgstr "视图(&V)"
 
-#: objects/ui_MainWindow.h:1223
+#: objects/ui_MainWindow.h:1314
 msgid "&Help"
 msgstr "帮助(&H)"
 
-#: objects/ui_MainWindow.h:1224 objects/ui_Preferences.h:1486
-#: src/settings.cc:176
+#: objects/ui_MainWindow.h:1315
+msgid "&Window"
+msgstr ""
+
+#: objects/ui_MainWindow.h:1316 objects/ui_Preferences.h:1610
+#: src/settings.cc:180
 msgid "Tabs"
 msgstr "制表符"
 
-#: objects/ui_MainWindow.h:1225 src/tabmanager.cc:375
+#: objects/ui_MainWindow.h:1317
 msgid "Find"
 msgstr "查找"
 
-#: objects/ui_MainWindow.h:1226 objects/ui_MainWindow.h:1233
+#: objects/ui_MainWindow.h:1318 objects/ui_MainWindow.h:1325
 msgid "Replace"
 msgstr "替换"
 
-#: objects/ui_MainWindow.h:1228
+#: objects/ui_MainWindow.h:1320
 msgid "Search string"
 msgstr "搜索字符串"
 
-#: objects/ui_MainWindow.h:1229
+#: objects/ui_MainWindow.h:1321
 #, fuzzy
 msgid "Previous"
 msgstr "查找上一个(&V)"
 
-#: objects/ui_MainWindow.h:1230
+#: objects/ui_MainWindow.h:1322
 msgid "Next"
 msgstr "下一个"
 
-#: objects/ui_MainWindow.h:1231
+#: objects/ui_MainWindow.h:1323
 msgid "Done"
 msgstr "完成"
 
-#: objects/ui_MainWindow.h:1232
+#: objects/ui_MainWindow.h:1324
 msgid "Replacement string"
 msgstr "替换字符串"
 
-#: objects/ui_MainWindow.h:1234
-msgid "All"
-msgstr "全部"
-
-#: objects/ui_MainWindow.h:1235
+#: objects/ui_MainWindow.h:1327
 msgid "Customizer Widget"
 msgstr "定制工具"
 
@@ -1095,7 +1213,7 @@ msgstr "再次显示此消息"
 msgid "Close"
 msgstr "关闭"
 
-#: objects/ui_ParameterEntryWidget.h:339 objects/ui_ParameterWidget.h:160
+#: objects/ui_ParameterEntryWidget.h:339 objects/ui_ParameterWidget.h:169
 msgid "Form"
 msgstr ""
 
@@ -1107,436 +1225,475 @@ msgstr "参数"
 msgid "Description"
 msgstr "描述"
 
-#: objects/ui_ParameterWidget.h:161
+#: objects/ui_ParameterWidget.h:170
 msgid "save preset"
 msgstr "保存预设"
 
-#: objects/ui_ParameterWidget.h:163
+#: objects/ui_ParameterWidget.h:172
 msgid "delete current preset"
 msgstr "删除当前预设"
 
-#: objects/ui_ParameterWidget.h:165
+#: objects/ui_ParameterWidget.h:174
 msgid "-"
 msgstr "-"
 
-#: objects/ui_ParameterWidget.h:167
+#: objects/ui_ParameterWidget.h:176
 msgid "preset selection"
 msgstr "选择预设"
 
-#: objects/ui_ParameterWidget.h:170 src/parameter/ParameterWidget.cc:154
+#: objects/ui_ParameterWidget.h:179
 msgid "add new preset"
 msgstr "添加新预设"
 
-#: objects/ui_ParameterWidget.h:172
+#: objects/ui_ParameterWidget.h:181
 msgid "+"
 msgstr "+"
 
-#: objects/ui_ParameterWidget.h:174
+#: objects/ui_ParameterWidget.h:183
 msgid "Automatic Preview"
 msgstr "自动预览"
 
-#: objects/ui_ParameterWidget.h:175
+#: objects/ui_ParameterWidget.h:184
 msgid "Show Details"
 msgstr "显示详细信息"
 
-#: objects/ui_ParameterWidget.h:176
+#: objects/ui_ParameterWidget.h:185
 msgid "Inline Details"
 msgstr ""
 
-#: objects/ui_ParameterWidget.h:177
+#: objects/ui_ParameterWidget.h:186
 msgid "Hide Details"
 msgstr "隐藏详细信息"
 
-#: objects/ui_ParameterWidget.h:178
+#: objects/ui_ParameterWidget.h:187
 msgid "Description Only"
 msgstr "仅描述"
 
-#: objects/ui_ParameterWidget.h:181
+#: objects/ui_ParameterWidget.h:190
 msgid "reset all parameters to the currently selected preset"
 msgstr "将所有参数重置为当前所选预设"
 
-#: objects/ui_ParameterWidget.h:183
+#: objects/ui_ParameterWidget.h:192 objects/ui_ShortcutConfigurator.h:68
 msgid "Reset"
 msgstr "重置"
 
-#: objects/ui_Preferences.h:1458
+#: objects/ui_Preferences.h:1541
 msgid "3D View"
 msgstr "3D 视图"
 
-#: objects/ui_Preferences.h:1459
+#: objects/ui_Preferences.h:1542
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "高级"
 
-#: objects/ui_Preferences.h:1460 src/mainwin.cc:2704 src/mainwin.cc:2709
+#: objects/ui_Preferences.h:1543 src/mainwin.cc:2825 src/mainwin.cc:2830
 msgid "Editor"
 msgstr "编辑器"
 
-#: objects/ui_Preferences.h:1462 objects/ui_Preferences.h:1537
+#: objects/ui_Preferences.h:1545 objects/ui_Preferences.h:1628
 msgid "Features"
 msgstr "特性"
 
-#: objects/ui_Preferences.h:1464
+#: objects/ui_Preferences.h:1547
 msgid "Enable/Disable experimental features"
 msgstr "启用/禁用实验功能"
 
-#: objects/ui_Preferences.h:1466
+#: objects/ui_Preferences.h:1549
 msgid "Axes"
 msgstr "坐标轴"
 
-#: objects/ui_Preferences.h:1468
+#: objects/ui_Preferences.h:1551
 msgid "Input driver configuration and Axis mapping"
 msgstr "输入驱动配置与轴映射"
 
-#: objects/ui_Preferences.h:1470
+#: objects/ui_Preferences.h:1553
 msgid "Buttons"
 msgstr "按钮"
 
-#: objects/ui_Preferences.h:1471 objects/ui_PrintInitDialog.h:109
+#: objects/ui_Preferences.h:1554 objects/ui_PrintInitDialog.h:109
 msgid "3D Print"
 msgstr "3D 打印"
 
-#: objects/ui_Preferences.h:1473
+#: objects/ui_Preferences.h:1556
 msgid "3D Printing Services"
 msgstr "3D 打印服务"
 
-#: objects/ui_Preferences.h:1475
+#: objects/ui_Preferences.h:1558
 msgid "Color scheme:"
 msgstr "配色方案:"
 
-#: objects/ui_Preferences.h:1476
+#: objects/ui_Preferences.h:1559
 msgid "Show Warnings and Errors in 3D View"
 msgstr "在 3D 视图中显示告警和错误"
 
-#: objects/ui_Preferences.h:1477
+#: objects/ui_Preferences.h:1560
 msgid "mouse centric zoom"
 msgstr "鼠标中心缩放"
 
-#: objects/ui_Preferences.h:1478
-msgid "Font"
-msgstr "字体"
-
-#: objects/ui_Preferences.h:1479
-msgid "Color syntax highlighting"
-msgstr "语法高亮"
-
-#: objects/ui_Preferences.h:1480
-msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Ctrl/Cmd +鼠标滚轮缩放文本"
-
-#: objects/ui_Preferences.h:1481
-msgid "Indentation"
-msgstr "缩进"
-
-#: objects/ui_Preferences.h:1482
-msgid "Auto Indent"
-msgstr "自动缩进"
-
-#: objects/ui_Preferences.h:1483
-msgid "Backspace unindents"
+#: objects/ui_Preferences.h:1561
+msgid "Number Scroll"
 msgstr ""
 
-#: objects/ui_Preferences.h:1484
-msgid "Indent using"
-msgstr "缩进使用"
+#: objects/ui_Preferences.h:1562 src/settings.cc:186
+#, fuzzy
+msgid "Alt"
+msgstr "全部"
 
-#: objects/ui_Preferences.h:1485 src/settings.cc:176
-msgid "Spaces"
-msgstr "空格"
+#: objects/ui_Preferences.h:1563 src/settings.cc:186
+msgid "Left Mouse Button"
+msgstr ""
 
-#: objects/ui_Preferences.h:1488
-msgid "Indentation width"
-msgstr "缩进宽度"
+#: objects/ui_Preferences.h:1564 src/settings.cc:186
+msgid "Either"
+msgstr ""
 
-#: objects/ui_Preferences.h:1489
-msgid "Tab width"
-msgstr "Tab 值"
-
-#: objects/ui_Preferences.h:1490
-msgid "Tab key function"
-msgstr "Tab 键功能"
-
-#: objects/ui_Preferences.h:1491 objects/ui_Preferences.h:1519
-#: src/settings.cc:177
-msgid "Indent"
-msgstr "缩进"
-
-#: objects/ui_Preferences.h:1492 src/settings.cc:177
-msgid "Insert Tab"
-msgstr "插入制表符"
-
-#: objects/ui_Preferences.h:1494
-msgid "Show whitespace"
-msgstr "显示空白字符"
-
-#: objects/ui_Preferences.h:1495 src/settings.cc:172
-msgid "Never"
-msgstr "从不"
-
-#: objects/ui_Preferences.h:1496 src/settings.cc:172
-msgid "Always"
-msgstr "总是"
-
-#: objects/ui_Preferences.h:1497
-msgid "Only after indentation"
-msgstr "仅在缩进后"
-
-#: objects/ui_Preferences.h:1499
-msgid "Size"
+#: objects/ui_Preferences.h:1566
+#, fuzzy
+msgid "Step Size"
 msgstr "尺寸"
 
-#: objects/ui_Preferences.h:1500
-msgid "Display"
-msgstr "显示"
+#: objects/ui_Preferences.h:1567
+msgid "Number Scroll Via Mouse Wheel"
+msgstr ""
 
-#: objects/ui_Preferences.h:1501
-msgid "Enable brace matching"
-msgstr "启用括号匹配"
+#: objects/ui_Preferences.h:1568
+msgid "Modifier For Wheel Scroll "
+msgstr ""
 
-#: objects/ui_Preferences.h:1502
-msgid "Highlight current line"
-msgstr "高亮当前行"
-
-#: objects/ui_Preferences.h:1503
-msgid "Display Line Numbers"
-msgstr "显示行号"
-
-#: objects/ui_Preferences.h:1504
+#: objects/ui_Preferences.h:1569
 msgid "Autocomplete"
 msgstr ""
 
-#: objects/ui_Preferences.h:1505
+#: objects/ui_Preferences.h:1570
 msgid "Enable Autocompletion"
 msgstr ""
 
-#: objects/ui_Preferences.h:1506
+#: objects/ui_Preferences.h:1571
 msgid "Character Threshold"
 msgstr ""
 
-#: objects/ui_Preferences.h:1507 objects/ui_Preferences.h:1532
+#: objects/ui_Preferences.h:1572 objects/ui_Preferences.h:1597
 msgid "Line wrap"
 msgstr "自动换行"
 
-#: objects/ui_Preferences.h:1508 objects/ui_Preferences.h:1521
-#: objects/ui_Preferences.h:1527 src/settings.cc:73 src/settings.cc:89
-#: src/settings.cc:167 src/settings.cc:170 src/settings.cc:171
+#: objects/ui_Preferences.h:1573 objects/ui_Preferences.h:1586
+#: objects/ui_Preferences.h:1592 src/settings.cc:77 src/settings.cc:93
+#: src/settings.cc:171 src/settings.cc:174 src/settings.cc:175
 msgid "None"
 msgstr "无"
 
-#: objects/ui_Preferences.h:1509 src/settings.cc:167
+#: objects/ui_Preferences.h:1574 src/settings.cc:171
 msgid "Wrap at character boundaries"
 msgstr "以字母为分界"
 
-#: objects/ui_Preferences.h:1510 src/settings.cc:167
+#: objects/ui_Preferences.h:1575 src/settings.cc:171
 msgid "Wrap at word boundaries"
 msgstr "以词为分界"
 
-#: objects/ui_Preferences.h:1512
+#: objects/ui_Preferences.h:1577
 msgid "Line wrap indentation"
 msgstr "缩进"
 
-#: objects/ui_Preferences.h:1513
+#: objects/ui_Preferences.h:1578
 msgid "Line wrap visualization"
 msgstr "提示符位置"
 
-#: objects/ui_Preferences.h:1514
+#: objects/ui_Preferences.h:1579
 msgid "Style"
 msgstr "风格"
 
-#: objects/ui_Preferences.h:1515 src/settings.cc:168
+#: objects/ui_Preferences.h:1580 src/settings.cc:172
 msgid "Fixed"
 msgstr "固定"
 
-#: objects/ui_Preferences.h:1516 src/settings.cc:168
+#: objects/ui_Preferences.h:1581 src/settings.cc:172
 msgid "Same"
 msgstr "保持原缩进"
 
-#: objects/ui_Preferences.h:1517 src/settings.cc:168
+#: objects/ui_Preferences.h:1582 src/settings.cc:172
 msgid "Indented"
 msgstr "增加1缩进"
 
-#: objects/ui_Preferences.h:1520
+#: objects/ui_Preferences.h:1584 objects/ui_Preferences.h:1615
+#: src/settings.cc:181
+msgid "Indent"
+msgstr "缩进"
+
+#: objects/ui_Preferences.h:1585
 msgid "Start"
 msgstr "行首"
 
-#: objects/ui_Preferences.h:1522 objects/ui_Preferences.h:1528
-#: src/settings.cc:170 src/settings.cc:171
+#: objects/ui_Preferences.h:1587 objects/ui_Preferences.h:1593
+#: src/settings.cc:174 src/settings.cc:175
 msgid "Text"
 msgstr "紧跟文字"
 
-#: objects/ui_Preferences.h:1523 objects/ui_Preferences.h:1529
-#: src/settings.cc:170 src/settings.cc:171
+#: objects/ui_Preferences.h:1588 objects/ui_Preferences.h:1594
+#: src/settings.cc:174 src/settings.cc:175
 msgid "Border"
 msgstr "贴边"
 
-#: objects/ui_Preferences.h:1524 objects/ui_Preferences.h:1530
-#: src/settings.cc:170 src/settings.cc:171
+#: objects/ui_Preferences.h:1589 objects/ui_Preferences.h:1595
+#: src/settings.cc:174 src/settings.cc:175
 msgid "Margin"
 msgstr "位于行号栏"
 
-#: objects/ui_Preferences.h:1526
+#: objects/ui_Preferences.h:1591
 msgid "End"
 msgstr "行尾"
 
-#: objects/ui_Preferences.h:1533
+#: objects/ui_Preferences.h:1598
+msgid "Display"
+msgstr "显示"
+
+#: objects/ui_Preferences.h:1599
+msgid "Highlight current line"
+msgstr "高亮当前行"
+
+#: objects/ui_Preferences.h:1600
+msgid "Display Line Numbers"
+msgstr "显示行号"
+
+#: objects/ui_Preferences.h:1601
+msgid "Enable brace matching"
+msgstr "启用括号匹配"
+
+#: objects/ui_Preferences.h:1602
+msgid "Font"
+msgstr "字体"
+
+#: objects/ui_Preferences.h:1603
+msgid "Color syntax highlighting"
+msgstr "语法高亮"
+
+#: objects/ui_Preferences.h:1604
+msgid "Ctrl/Cmd-Mouse-wheel zooms text"
+msgstr "Ctrl/Cmd +鼠标滚轮缩放文本"
+
+#: objects/ui_Preferences.h:1605
+msgid "Indentation"
+msgstr "缩进"
+
+#: objects/ui_Preferences.h:1606
+msgid "Auto Indent"
+msgstr "自动缩进"
+
+#: objects/ui_Preferences.h:1607
+msgid "Backspace unindents"
+msgstr ""
+
+#: objects/ui_Preferences.h:1608
+msgid "Indent using"
+msgstr "缩进使用"
+
+#: objects/ui_Preferences.h:1609 src/settings.cc:180
+msgid "Spaces"
+msgstr "空格"
+
+#: objects/ui_Preferences.h:1612
+msgid "Indentation width"
+msgstr "缩进宽度"
+
+#: objects/ui_Preferences.h:1613
+msgid "Tab width"
+msgstr "Tab 值"
+
+#: objects/ui_Preferences.h:1614
+msgid "Tab key function"
+msgstr "Tab 键功能"
+
+#: objects/ui_Preferences.h:1616 src/settings.cc:181
+msgid "Insert Tab"
+msgstr "插入制表符"
+
+#: objects/ui_Preferences.h:1618
+msgid "Show whitespace"
+msgstr "显示空白字符"
+
+#: objects/ui_Preferences.h:1619 src/settings.cc:176
+msgid "Never"
+msgstr "从不"
+
+#: objects/ui_Preferences.h:1620 src/settings.cc:176
+msgid "Always"
+msgstr "总是"
+
+#: objects/ui_Preferences.h:1621
+msgid "Only after indentation"
+msgstr "仅在缩进后"
+
+#: objects/ui_Preferences.h:1623
+msgid "Size"
+msgstr "尺寸"
+
+#: objects/ui_Preferences.h:1624
 msgid "Automatically check for updates"
 msgstr "自动检查更新"
 
-#: objects/ui_Preferences.h:1534
+#: objects/ui_Preferences.h:1625
 msgid "Include development snapshots"
 msgstr "包含开发快照"
 
-#: objects/ui_Preferences.h:1535
+#: objects/ui_Preferences.h:1626
 msgid "Check Now"
 msgstr "立即检查"
 
-#: objects/ui_Preferences.h:1536
+#: objects/ui_Preferences.h:1627
 msgid "Last checked: "
 msgstr "上次检查: "
 
-#: objects/ui_Preferences.h:1538 objects/ui_PrintInitDialog.h:114
+#: objects/ui_Preferences.h:1629 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
 msgstr ""
 
-#: objects/ui_Preferences.h:1539
+#: objects/ui_Preferences.h:1630
 msgid "URL"
 msgstr "URL"
 
-#: objects/ui_Preferences.h:1540
+#: objects/ui_Preferences.h:1631
 msgid "API Key"
 msgstr "API 密钥"
 
-#: objects/ui_Preferences.h:1541 objects/ui_Preferences.h:1542
+#: objects/ui_Preferences.h:1632 objects/ui_Preferences.h:1633
 msgid "Load"
 msgstr "加载"
 
-#: objects/ui_Preferences.h:1544
+#: objects/ui_Preferences.h:1635
 msgid "Check"
 msgstr "检查"
 
-#: objects/ui_Preferences.h:1545
+#: objects/ui_Preferences.h:1636
 msgid "Slicing Profile"
 msgstr ""
 
-#: objects/ui_Preferences.h:1546
+#: objects/ui_Preferences.h:1637
 msgid "Slicing Engine"
 msgstr ""
 
-#: objects/ui_Preferences.h:1547
+#: objects/ui_Preferences.h:1638
 msgid "File Format"
 msgstr "文件格式"
 
-#: objects/ui_Preferences.h:1548
+#: objects/ui_Preferences.h:1639
 msgid "Action"
 msgstr "动作"
 
-#: objects/ui_Preferences.h:1549
+#: objects/ui_Preferences.h:1640
 msgid "Show"
 msgstr "显示"
 
-#: objects/ui_Preferences.h:1550
+#: objects/ui_Preferences.h:1641
 msgid "Note: The API key is stored unencrypted in the application settings."
 msgstr "注意：API 密钥未加密地存储在应用程序设置中。"
 
-#: objects/ui_Preferences.h:1551
+#: objects/ui_Preferences.h:1642
 msgid "OpenCSG"
 msgstr "OpenCSG"
 
-#: objects/ui_Preferences.h:1552
+#: objects/ui_Preferences.h:1643
 msgid "Show capability warning"
 msgstr "显示性能警告"
 
-#: objects/ui_Preferences.h:1553
+#: objects/ui_Preferences.h:1644
 msgid "Enable for OpenGL 1.x"
 msgstr "启用 OpenGL 1.x"
 
-#: objects/ui_Preferences.h:1554
+#: objects/ui_Preferences.h:1645
 msgid "Turn off rendering at "
 msgstr "关闭渲染于 "
 
-#: objects/ui_Preferences.h:1555
+#: objects/ui_Preferences.h:1646
 msgid "elements"
 msgstr "元素"
 
-#: objects/ui_Preferences.h:1556
+#: objects/ui_Preferences.h:1647
 msgid "Force Goldfeather"
 msgstr "强制使用 Goldfeather 算法"
 
-#: objects/ui_Preferences.h:1557
+#: objects/ui_Preferences.h:1648
 msgid "CGAL"
 msgstr "CGAL"
 
-#: objects/ui_Preferences.h:1558
+#: objects/ui_Preferences.h:1649
 msgid "CGAL Cache size"
 msgstr "CGAL 缓存大小"
 
-#: objects/ui_Preferences.h:1559 objects/ui_Preferences.h:1561
+#: objects/ui_Preferences.h:1650 objects/ui_Preferences.h:1652
 msgid "MB"
 msgstr "MB"
 
-#: objects/ui_Preferences.h:1560
+#: objects/ui_Preferences.h:1651
 msgid "PolySet Cache size"
 msgstr "PolySet 缓存大小"
 
-#: objects/ui_Preferences.h:1562
+#: objects/ui_Preferences.h:1653
 msgid "User Interface"
 msgstr "用户界面"
 
-#: objects/ui_Preferences.h:1563
+#: objects/ui_Preferences.h:1654
 msgid "Enable docking of Editor and Console in different places"
 msgstr "解锁编辑器和控制台窗口位置"
 
-#: objects/ui_Preferences.h:1564
+#: objects/ui_Preferences.h:1655
 msgid "Enable undocking of Editor and Console to separate windows"
 msgstr "允许编辑器和控制台成为浮窗"
 
-#: objects/ui_Preferences.h:1565
+#: objects/ui_Preferences.h:1656
 msgid "Show Welcome Screen"
 msgstr "显示欢迎界面"
 
-#: objects/ui_Preferences.h:1566
+#: objects/ui_Preferences.h:1657
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr "启用用户界面本地化 (重启 OpenSCAD 后生效)"
 
-#: objects/ui_Preferences.h:1567
+#: objects/ui_Preferences.h:1658
 msgid "Bring window to front after automatic reload"
 msgstr "自动重新加载后将窗口移到前面"
 
-#: objects/ui_Preferences.h:1568
+#: objects/ui_Preferences.h:1659
 msgid "Play sound notification on render complete"
 msgstr "渲染完成时播放声音通知"
 
-#: objects/ui_Preferences.h:1569
+#: objects/ui_Preferences.h:1660
 #, fuzzy
 msgid "Play sound when render completion time is at least"
 msgstr "渲染完成时播放声音通知"
 
-#: objects/ui_Preferences.h:1570
+#: objects/ui_Preferences.h:1661
 msgid "sec"
 msgstr ""
 
-#: objects/ui_Preferences.h:1571
+#: objects/ui_Preferences.h:1662
 msgid "OpenSCAD Language Features"
 msgstr "OpenSCAD 语言功能"
 
-#: objects/ui_Preferences.h:1572
+#: objects/ui_Preferences.h:1663
 msgid "Warn when there is a parameter mismatch in user module calls"
 msgstr "当用户模块调用中的参数不匹配时发出警告"
 
-#: objects/ui_Preferences.h:1573
+#: objects/ui_Preferences.h:1664
 msgid "Stop on the first warning"
 msgstr "在第一个警告时停止"
 
-#: objects/ui_Preferences.h:1574
+#: objects/ui_Preferences.h:1665
 #, fuzzy
 msgid "Check the parameter range for builtin modules"
 msgstr "检查内置模块的参数范围"
 
-#: objects/ui_Preferences.h:1575
+#: objects/ui_Preferences.h:1666
+#, fuzzy
+msgid "Export Features"
+msgstr "特性"
+
+#: objects/ui_Preferences.h:1667
+msgid "Default to ASCII STL export"
+msgstr ""
+
+#: objects/ui_Preferences.h:1668
 msgid "Debugging"
 msgstr ""
 
-#: objects/ui_Preferences.h:1576
+#: objects/ui_Preferences.h:1669
 #, fuzzy
 msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
 msgstr "启用用户界面本地化 (重启 OpenSCAD 后生效)"
@@ -1553,55 +1710,67 @@ msgstr "%1"
 msgid "%v / %m"
 msgstr "%v / %m"
 
+#: objects/ui_ShortcutConfigurator.h:67
+msgid "Shortcut"
+msgstr ""
+
+#: objects/ui_ShortcutConfigurator.h:70
+#, fuzzy
+msgid "Search"
+msgstr "搜索字符串"
+
 #: src/Network.h:116
 msgid "Timeout error"
 msgstr ""
 
-#: src/Camera.cc:125
-#, c-format
+#: src/Camera.cc:198
+#, fuzzy, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
-"distance = %.2f"
+"distance = %.2f, fov = %.2f"
 msgstr ""
 "三维视图状态: 平移 = [ %.2f %.2f %.2f ], 旋转 = [ %.2f %.2f %.2f ], 距离 = "
 "%.2f"
 
-#: src/Console.cc:53
+#: src/Console.cc:61
 msgid "Save console content"
 msgstr "保存控制台内容"
 
-#: src/export.cc:78
-#, c-format
-msgid "Can't open file \"%s\" for export"
-msgstr "无法打开文件 \"%s\" 进行导出"
+#: src/export.cc:104
+#, fuzzy, c-format
+msgid "Can't open file \"%1$s\" for export"
+msgstr "无法打开文件 \"%1$s\" 进行导出"
 
-#: src/export.cc:93
-#, c-format
-msgid "ERROR: \"%s\" write error. (Disk full?)"
-msgstr "错误:\"%s\" 写入错误。(磁盘已满?)"
+#: src/export.cc:119
+#, fuzzy, c-format
+msgid "\"%1$s\" write error. (Disk full?)"
+msgstr "错误:\"%1$s\" 写入错误。(磁盘已满?)"
 
-#: src/mainwin.cc:1037
+#: src/mainwin.cc:1085
 msgid "Compile error."
 msgstr "编译错误。"
 
-#: src/mainwin.cc:1040
+#: src/mainwin.cc:1088
 msgid "Error while compiling '%1'."
 msgstr "编译 '%1' 时出错。"
 
-#: src/mainwin.cc:1044
+#: src/mainwin.cc:1092
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "编译生成 %1 个告警。"
 
-#: src/mainwin.cc:1054
-msgid " For details see <a href=\"#console\">console window</a>."
+#: src/mainwin.cc:1102
+#, fuzzy
+msgid ""
+" For details see the <a href=\"#errorlog\">error log</a> and <a href="
+"\"#console\">console window</a>."
 msgstr " 详见<a href=\"#console\">控制台窗口</a>。"
 
-#: src/mainwin.cc:1768
+#: src/mainwin.cc:1788
 msgid "Application"
 msgstr "应用程序"
 
-#: src/mainwin.cc:1769
+#: src/mainwin.cc:1789
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
@@ -1609,71 +1778,76 @@ msgstr ""
 "该文档已被修改。\n"
 "您真的要重新加载文件吗？"
 
-#: src/mainwin.cc:2006
+#: src/mainwin.cc:2052
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
 msgstr ""
 
-#: src/mainwin.cc:2007
+#: src/mainwin.cc:2053
 msgid "Upload Error"
 msgstr "上传错误"
 
-#: src/mainwin.cc:2341
+#: src/mainwin.cc:2442
 msgid "Export %1 File"
 msgstr "导出 %1 文件"
 
-#: src/mainwin.cc:2342
+#: src/mainwin.cc:2443
 msgid "%1 Files (*%2)"
 msgstr "%1 文件 (*%2)"
 
-#: src/mainwin.cc:2398
+#: src/mainwin.cc:2511
 msgid "Export CSG File"
 msgstr "导出 CSG 文件"
 
-#: src/mainwin.cc:2398
+#: src/mainwin.cc:2511
 msgid "CSG Files (*.csg)"
 msgstr "CSG 文件 (*.csg)"
 
-#: src/mainwin.cc:2425
+#: src/mainwin.cc:2538
 msgid "Export Image"
 msgstr "导出图像"
 
-#: src/mainwin.cc:2425
+#: src/mainwin.cc:2538
 msgid "PNG Files (*.png)"
 msgstr "PNG 文件 (*.png)"
 
-#: src/mainwin.cc:2725 src/mainwin.cc:2730
+#: src/mainwin.cc:2846 src/mainwin.cc:2851
 msgid "Console"
 msgstr "控制台"
 
-#: src/mainwin.cc:2742
+#: src/mainwin.cc:2863
 msgid "Customizer"
 msgstr "定制"
 
-#: src/mainwin.cc:2750 src/tabmanager.cc:225 src/tabmanager.cc:463
-#: src/tabmanager.cc:521 src/tabmanager.cc:684
+#: src/mainwin.cc:2868 src/mainwin.cc:2873
+#, fuzzy
+msgid "Error-Log"
+msgstr "错误"
+
+#: src/mainwin.cc:2888 src/tabmanager.cc:221 src/tabmanager.cc:454
+#: src/tabmanager.cc:512 src/tabmanager.cc:681
 msgid "Untitled.scad"
 msgstr "未命名.scad"
 
-#: src/mainwin.cc:3015 src/mainwin.cc:3022
+#: src/mainwin.cc:3283 src/mainwin.cc:3290
 #, fuzzy
 msgid "Untitled"
 msgstr "/未命名"
 
-#: src/OpenSCADApp.cc:61
+#: src/OpenSCADApp.cc:63
 msgid "Unknown error"
 msgstr "未知错误"
 
-#: src/OpenSCADApp.cc:64
+#: src/OpenSCADApp.cc:66
 msgid "Critical Error"
 msgstr "严重错误"
 
-#: src/OpenSCADApp.cc:64
+#: src/OpenSCADApp.cc:66
 msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
 
-#: src/OpenSCADApp.cc:88
+#: src/OpenSCADApp.cc:90
 msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
@@ -1681,16 +1855,16 @@ msgstr ""
 "Fontconfig 需要更新字体缓存。\n"
 "这可能需要几分钟。"
 
-#: src/Preferences.cc:241 src/Preferences.cc:246 src/Preferences.cc:737
-#: src/Preferences.cc:773
+#: src/Preferences.cc:230 src/Preferences.cc:235 src/Preferences.cc:751
+#: src/Preferences.cc:787
 msgid "<Default>"
 msgstr "<默认>"
 
-#: src/Preferences.cc:721
+#: src/Preferences.cc:735
 msgid "Success: Server Version = %2, API Version = %1"
 msgstr "成功: 服务器版本 = %2, API 版本 = %1"
 
-#: src/Preferences.cc:723 src/Preferences.cc:747 src/Preferences.cc:783
+#: src/Preferences.cc:737 src/Preferences.cc:761 src/Preferences.cc:797
 msgid "Error"
 msgstr "错误"
 
@@ -1734,98 +1908,83 @@ msgstr ""
 "%2 (%3)\n"
 "OpenGL 版本 %4\n"
 
-#: src/settings.cc:77
+#: src/settings.cc:81
 #, c-format
 msgid "Axis %d"
 msgstr "轴 %d"
 
-#: src/settings.cc:81
+#: src/settings.cc:85
 #, c-format
 msgid "Axis %d (inverted)"
 msgstr "轴 %d (反转)"
 
-#: src/settings.cc:90
+#: src/settings.cc:94
 msgid "Toggle Perspective"
 msgstr "切换透视"
 
-#: src/settings.cc:172
+#: src/settings.cc:176
 msgid "After indentation"
 msgstr "在缩进之后"
 
-#: src/settings.cc:185
+#: src/settings.cc:192
 msgid "Upload only"
 msgstr "仅上传"
 
-#: src/settings.cc:185
+#: src/settings.cc:192
 msgid "Upload & Slice"
 msgstr ""
 
-#: src/settings.cc:185
+#: src/settings.cc:192
 msgid "Upload, Slice & Select for printing"
 msgstr ""
 
-#: src/settings.cc:185
+#: src/settings.cc:192
 msgid "Upload, Slice & Start printing"
 msgstr ""
 
-#: src/tabmanager.cc:380
-#, fuzzy
-msgid "Find Next"
-msgstr "查找下一个(&X)"
-
-#: src/tabmanager.cc:385
-#, fuzzy
-msgid "Find Previous"
-msgstr "查找上一个(&V)"
-
-#: src/tabmanager.cc:410
+#: src/tabmanager.cc:401
 msgid "Copy file name"
 msgstr ""
 
-#: src/tabmanager.cc:416
+#: src/tabmanager.cc:407
 msgid "Copy full path"
 msgstr ""
 
-#: src/tabmanager.cc:421
+#: src/tabmanager.cc:412
 #, fuzzy
 msgid "Close Tab"
 msgstr "关闭"
 
-#: src/tabmanager.cc:567
+#: src/tabmanager.cc:558
 msgid "The document has been modified."
 msgstr "该文档已被修改。"
 
-#: src/tabmanager.cc:568
+#: src/tabmanager.cc:559
 msgid "Do you want to save your changes?"
 msgstr "要保存更改吗？"
 
-#: src/tabmanager.cc:600
-#, fuzzy
-msgid "Some of the tabs are modified."
-msgstr "该文档已被修改。"
-
-#: src/tabmanager.cc:601
-msgid "All unsaved changes will be lost."
+#: src/tabmanager.cc:591
+msgid "Some tabs have unsaved changes."
 msgstr ""
 
-#: src/tabmanager.cc:662
+#: src/tabmanager.cc:592
+#, fuzzy
+msgid "Do you want to save all your changes?"
+msgstr "要保存更改吗？"
+
+#: src/tabmanager.cc:653
 msgid "Failed to open file for writing"
 msgstr "无法打开文件进行写入"
 
 #: src/tabmanager.cc:672
-#, c-format
-msgid "Saved design '%s'."
-msgstr ""
-
-#: src/tabmanager.cc:675
 msgid "Error saving design"
 msgstr ""
 
-#: src/tabmanager.cc:683
+#: src/tabmanager.cc:682
 msgid "Save File"
 msgstr "保存文件"
 
-#: src/tabmanager.cc:685
+#: src/tabmanager.cc:682
 msgid "OpenSCAD Designs (*.scad)"
 msgstr "OpenSCAD 设计文件 (*.scad)"
 
@@ -1837,22 +1996,29 @@ msgstr ""
 "%1 已经存在。\n"
 "您要替换它么？"
 
-#: src/parameter/ParameterWidget.cc:79 src/parameter/ParameterWidget.cc:231
+#: src/parameter/ParameterWidget.cc:82 src/parameter/ParameterWidget.cc:232
 msgid "changes on current preset not saved"
 msgstr "当前预设的更改未保存"
 
-#: src/parameter/ParameterWidget.cc:81
+#: src/parameter/ParameterWidget.cc:84
 msgid ""
 "The changes on the current preset %1 are not saved yet. Do you really want "
 "to reset this preset and lose your changes?"
 msgstr "当前预设 %1 上的更改尚未保存。 您真的要重置此预设并丢失更改吗？"
 
 #: src/parameter/ParameterWidget.cc:156
-msgid "remove current preset"
+#, fuzzy
+msgid "Add new preset"
+msgstr "添加新预设"
+
+#: src/parameter/ParameterWidget.cc:157
+#, fuzzy
+msgid "Remove current preset"
 msgstr "移除当前预设"
 
 #: src/parameter/ParameterWidget.cc:158
-msgid "save current preset"
+#, fuzzy
+msgid "Save current preset"
 msgstr "保存当前预设"
 
 #: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
@@ -1860,48 +2026,48 @@ msgstr "保存当前预设"
 msgid "JSON file read only"
 msgstr "只读 JSON 文件"
 
-#: src/parameter/ParameterWidget.cc:215
+#: src/parameter/ParameterWidget.cc:216
 msgid "design default values"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:233
+#: src/parameter/ParameterWidget.cc:234
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
 msgstr "当前预设 %1 包含更改，但尚未保存。 您真的要更改预设并丢失更改吗？"
 
-#: src/parameter/ParameterWidget.cc:273
+#: src/parameter/ParameterWidget.cc:274
 msgid "Do you want to delete the current preset?"
 msgstr "要删除当前预设吗？"
 
-#: src/parameter/ParameterWidget.cc:275
+#: src/parameter/ParameterWidget.cc:276
 msgid "Do you want to delete the current preset '%1'?"
 msgstr "是否要删除当前预设 '%1'?"
 
-#: src/parameter/ParameterWidget.cc:515
+#: src/parameter/ParameterWidget.cc:516
 msgid "Create new set of parameter"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:515
+#: src/parameter/ParameterWidget.cc:516
 msgid "Enter name of the parameter set"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:526
+#: src/parameter/ParameterWidget.cc:527
 msgid "Set Name %1 already exists"
 msgstr ""
 
-#: src/parameter/ParameterWidget.cc:527
+#: src/parameter/ParameterWidget.cc:528
 #, fuzzy
 msgid "The set name  %1 already exists. Do you want overwrite it?"
 msgstr ""
 "%1 已经存在。\n"
 "您要替换它么？"
 
-#: src/parameter/ParameterWidget.cc:571
+#: src/parameter/ParameterWidget.cc:572
 msgid "Saving presets"
 msgstr "保存预设"
 
-#: src/parameter/ParameterWidget.cc:572
+#: src/parameter/ParameterWidget.cc:573
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
 msgstr ""
 
@@ -1997,6 +2163,22 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
+
+#, fuzzy
+#~ msgid "ErrorLog"
+#~ msgstr "错误"
+
+#, fuzzy
+#~ msgid "Find Next"
+#~ msgstr "查找下一个(&X)"
+
+#, fuzzy
+#~ msgid "Find Previous"
+#~ msgstr "查找上一个(&V)"
+
+#, fuzzy
+#~ msgid "Some of the tabs are modified."
+#~ msgstr "该文档已被修改。"
 
 #~ msgid "Save As"
 #~ msgstr "另存为"
