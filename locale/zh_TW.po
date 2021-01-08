@@ -954,7 +954,7 @@ msgstr "速查表"
 
 #: objects/ui_MainWindow.h:1207
 msgid "Hide Customizer"
-msgstr "隱藏制定"
+msgstr "隱藏自訂"
 
 #: objects/ui_MainWindow.h:1208
 #, fuzzy
