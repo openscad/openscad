@@ -362,7 +362,7 @@ msgid ""
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
 "Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>此清單顯示當前已註冊的字體 OpenSCAD.</p><p>例:</p><pre "
+"<html><head/><body><p>此清單顯示目前已註冊的字體 OpenSCAD.</p><p>例:</p><pre "
 "style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
@@ -1234,7 +1234,7 @@ msgstr "儲存預設"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "delete current preset"
-msgstr "刪除當前預設"
+msgstr "刪除目前預設"
 
 #: objects/ui_ParameterWidget.h:174
 msgid "-"
@@ -1274,7 +1274,7 @@ msgstr "僅限說明"
 
 #: objects/ui_ParameterWidget.h:190
 msgid "reset all parameters to the currently selected preset"
-msgstr "將所有參數重設為當前選擇預設"
+msgstr "將所有參數重設為目前選擇預設"
 
 #: objects/ui_ParameterWidget.h:192 objects/ui_ShortcutConfigurator.h:68
 msgid "Reset"
