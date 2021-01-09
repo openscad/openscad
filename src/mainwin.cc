@@ -3209,12 +3209,9 @@ void MainWindow::consoleOutput(const Message &msgObj, void *userdata)
 
 void MainWindow::consoleOutput(const Message &msgObj)
 {
-	auto c = this->console->textCursor();
-	c.movePosition(QTextCursor::End);
-	this->console->setTextCursor(c);
-
 	if (getGroupTextPlain(msgObj.group)) {
-		this->console->appendPlainText(QString::fromStdString(msgObj.str()));
+		this->console->addPlainText(QString::fromStdString(msgObj.str()));
+		this->processEvents();
 	} else {
 		const auto color = QString::fromStdString(getGroupColor(msgObj.group));
 		const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
@@ -3230,7 +3227,7 @@ void MainWindow::consoleOutput(const Message &msgObj)
 
 void MainWindow::consoleOutputRaw(const QString& html)
 {
-	this->console->appendHtml(html);
+	this->console->addHtml(html);
 	this->processEvents();
 }
 

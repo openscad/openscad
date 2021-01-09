@@ -27,7 +27,7 @@
 #include <QMenu>
 #include <QFileDialog>
 #include <QTextStream>
-
+#include <utility>
 #include "Console.h"
 #include "printutils.h"
 #include "UIUtils.h"
@@ -44,14 +44,53 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
 	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
+
+	this->updateTimer = new QTimer(this);
+	connect(this->updateTimer, &QTimer::timeout, this, &Console::update);
+	this->updateTimer->start(33); // flush messages to console at most ~30fps
 }
 
 Console::~Console()
 {
 }
 
+void Console::addHtml(QString html)
+{
+	this->msgBuffer.emplace_back(std::move(html), false);
+}
+
+void Console::addPlainText(QString text)
+{
+	this->msgBuffer.emplace_back(std::move(text), true);
+}
+
+void Console::update()
+{
+	bool setCursor = !msgBuffer.empty();
+	while (!msgBuffer.empty()) {
+		const auto &line = msgBuffer.front();
+		bool isPlain = line.isPlainText;
+		const QString br = isPlain ? "\n" : "<br>";
+		QString msg = line.msg;
+		msgBuffer.pop_front();
+		while (!msgBuffer.empty() && msgBuffer.front().isPlainText == isPlain) {
+			msg += br;
+			msg += msgBuffer.front().msg;
+			msgBuffer.pop_front();
+		}
+		if (isPlain) {
+			QPlainTextEdit::appendPlainText(msg);
+		} else {
+			QPlainTextEdit::appendHtml(msg);
+		}
+	}
+
+	if (setCursor) this->ensureCursorVisible();
+}
+
 void Console::actionClearConsole_triggered()
 {
+	this->msgBuffer.clear();
 	this->document()->clear();
 }
 
@@ -78,7 +117,7 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	menu->insertAction(menu->actions().at(0), this->actionClear);
 	menu->addSeparator();
 	menu->addAction(this->actionSaveAs);
-    menu->exec(event->globalPos());
+	menu->exec(event->globalPos());
 	delete menu;
 }
 

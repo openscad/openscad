@@ -29,12 +29,25 @@
 #include <QPlainTextEdit>
 #include <QMouseEvent>
 #include <QString>
+#include <QTimer>
+#include <list>
 #include "qtgettext.h"
 #include "ui_Console.h"
+
+struct ConsoleMsgItem
+{
+	QString msg;
+	bool isPlainText;
+	ConsoleMsgItem(QString msg, bool plain) : msg(std::move(msg)), isPlainText(plain) { }
+};
 
 class Console : public QPlainTextEdit, public Ui::Console
 {
 	Q_OBJECT
+
+private:
+	std::list<ConsoleMsgItem> msgBuffer;
+	QTimer *updateTimer;
 
 public:
 	Console(QWidget *parent = nullptr);
@@ -58,6 +71,9 @@ public:
 		QPlainTextEdit::mouseReleaseEvent(e);
 	}
 
+	void addHtml(QString html);
+	void addPlainText(QString text);
+
 signals:
 	void linkActivated(QString);
 	void openFile(QString,int);
@@ -66,4 +82,5 @@ public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
 	void hyperlinkClicked(const QString& loc);
+	void update();
 };
