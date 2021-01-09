@@ -307,7 +307,7 @@ msgstr "錯誤"
 
 #: objects/ui_ErrorLog.h:101
 msgid "WARNING"
-msgstr ""
+msgstr "警告"
 
 #: objects/ui_ErrorLog.h:102
 msgid "UI-WARNING"
