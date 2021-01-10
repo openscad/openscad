@@ -29,16 +29,14 @@
 #include <QPlainTextEdit>
 #include <QMouseEvent>
 #include <QString>
-#include <QTimer>
-#include <list>
+#include <boost/circular_buffer.hpp>
 #include "qtgettext.h"
 #include "ui_Console.h"
 
-struct ConsoleMsgItem
-{
-	QString msg;
-	bool isPlainText;
-	ConsoleMsgItem(QString msg, bool plain) : msg(std::move(msg)), isPlainText(plain) { }
+struct ConsoleMessageBlock {
+	QString message;
+	QString link;
+	message_group group;
 };
 
 class Console : public QPlainTextEdit, public Ui::Console
@@ -46,8 +44,9 @@ class Console : public QPlainTextEdit, public Ui::Console
 	Q_OBJECT
 
 private:
-	std::list<ConsoleMsgItem> msgBuffer;
-	QTimer *updateTimer;
+	static constexpr int MAX_LINES = 5000;
+	boost::circular_buffer<ConsoleMessageBlock> msgBuffer;
+	QTextCursor appendCursor; // keep a cursor always at the end of document.
 
 public:
 	Console(QWidget *parent = nullptr);
@@ -71,8 +70,8 @@ public:
 		QPlainTextEdit::mouseReleaseEvent(e);
 	}
 
-	void addHtml(QString html);
-	void addPlainText(QString text);
+	void addMessage(const Message &msg);
+	void addHtml(const QString &html);
 
 signals:
 	void linkActivated(QString);

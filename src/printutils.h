@@ -28,9 +28,9 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 }
 
 enum class message_group {
-	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo
+	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo,
+	_first=Error, _last=Echo
 };
-
 
 std::string getGroupName(const enum message_group &group);
 std::string getGroupColor(const enum message_group &group);
@@ -161,8 +161,7 @@ private:
 		
 		boost::format f(s);
 		f.exceptions(boost::io::bad_format_string_bit);
-		const auto unused = std::initializer_list<char> {(static_cast<void>(f % std::get<Is>(args)), char{}) ...};
-		static_cast<void>(unused);
+		[](auto&&...){}((f % std::get<Is>(args)) ...);
 		return boost::str(f);
 	}
 
