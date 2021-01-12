@@ -3215,6 +3215,7 @@ void MainWindow::consoleOutput(const Message &msgObj)
 
 	if (getGroupTextPlain(msgObj.group)) {
 		this->console->appendPlainText(QString::fromStdString(msgObj.str()));
+		this->processEvents();
 	} else {
 		const auto color = QString::fromStdString(getGroupColor(msgObj.group));
 		const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
