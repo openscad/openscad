@@ -25,18 +25,14 @@
  */
 
 #include <QMenu>
+#include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QRegularExpression>
 
 #include "Console.h"
 #include "printutils.h"
 #include "UIUtils.h"
-
-
-#include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
-#include <boost/algorithm/string/split.hpp> // Include for boost::split
-
-#include <boost/filesystem.hpp>
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -89,19 +85,18 @@ void Console::hyperlinkClicked(const QString& url)
 		return;
 	}
 
-	// for error jumps
-	const std::string s = url.toStdString();
-	std::vector<std::string> words;
-	boost::split(words, s, boost::is_any_of(", "), boost::token_compress_on);
-
-	if(words.size()!=2) return;
-	if(words[0].empty() || words[1].empty()) return;  //for empty locations
-	int line = std::stoi(words[0]);
-	boost::filesystem::path p = boost::filesystem::path(words[1]);
-	if (boost::filesystem::is_regular_file(p)) {
-		QString path = QString::fromStdString(words[1]);
-		emit openFile(path, line - 1);
-	} else {
-		openFile(QString(), line - 1);
+	const QRegularExpression regEx("^(\\d+),(.*)$");
+	const auto match = regEx.match(url);
+	if (match.hasMatch()) {
+		const auto line = match.captured(1).toInt();
+		const auto file = match.captured(2);
+		const auto info = QFileInfo(file);
+		if (info.isFile()) {
+			if (info.isReadable()) {
+				emit openFile(file, line - 1);
+			}
+		} else {
+			openFile(QString(), line - 1);
+		}
 	}
 }
