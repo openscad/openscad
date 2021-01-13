@@ -3147,6 +3147,10 @@ void MainWindow::helpFontInfo()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (tabManager->shouldClose()) {
+		// Disable invokeMethod calls for consoleOutput during shutdown,
+		// otherwise will segfault if echos are in progress.
+		hideCurrentOutput(); 
+
 		QSettingsCached settings;
 		settings.setValue("window/size", size());
 		settings.setValue("window/position", pos());
@@ -3215,6 +3219,7 @@ void MainWindow::consoleOutput(const Message &msgObj)
 
 	if (getGroupTextPlain(msgObj.group)) {
 		this->console->appendPlainText(QString::fromStdString(msgObj.str()));
+		this->processEvents();
 	} else {
 		const auto color = QString::fromStdString(getGroupColor(msgObj.group));
 		const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
