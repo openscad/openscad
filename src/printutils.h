@@ -28,9 +28,9 @@ inline const char * _( const char * msgid, const char *msgctxt) {
 }
 
 enum class message_group {
-	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo,
-	_first=Error, _last=Echo
+	Error,Warning,UI_Warning,Font_Warning,Export_Warning,Export_Error,UI_Error,Parser_Error,Trace,Deprecated,None,Echo
 };
+
 
 std::string getGroupName(const enum message_group &group);
 std::string getGroupColor(const enum message_group &group);
