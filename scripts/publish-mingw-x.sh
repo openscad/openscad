@@ -4,7 +4,7 @@
 #
 
 if test -z "$VERSION"; then
-  VERSION=`date "+%Y.%m.%d"`
+  VERSION=2021.01-RC6
   COMMIT=-c
 fi
 
