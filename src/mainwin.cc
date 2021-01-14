@@ -3149,7 +3149,10 @@ void MainWindow::helpFontInfo()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (tabManager->shouldClose()) {
-		hideCurrentOutput();
+		// Disable invokeMethod calls for consoleOutput during shutdown,
+		// otherwise will segfault if echos are in progress.
+		hideCurrentOutput(); 
+
 		QSettingsCached settings;
 		settings.setValue("window/size", size());
 		settings.setValue("window/position", pos());

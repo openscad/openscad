@@ -159,7 +159,7 @@ msgstr "座標軸設置: "
 
 #: objects/ui_AxisConfigWidget.h:893
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
-msgstr "<b>驅動程式選擇:</b> <i>(套用後需重新啟OpenSCAD)</i>"
+msgstr "<b>驅動程式選擇:</b> <i>(套用後需重新啟動OpenSCAD)</i>"
 
 #: objects/ui_AxisConfigWidget.h:894
 msgid "SpaceNav"
@@ -282,7 +282,7 @@ msgstr "將控制台內容存到檔案"
 #: objects/ui_ErrorLog.h:93
 #, fuzzy
 msgid "Error Log"
-msgstr "錯誤"
+msgstr "錯誤日誌"
 
 #: objects/ui_ErrorLog.h:94
 msgid "RowSelected"
@@ -303,35 +303,35 @@ msgstr "全部取代"
 
 #: objects/ui_ErrorLog.h:100
 msgid "ERROR"
-msgstr ""
+msgstr "錯誤"
 
 #: objects/ui_ErrorLog.h:101
 msgid "WARNING"
-msgstr ""
+msgstr "警告"
 
 #: objects/ui_ErrorLog.h:102
 msgid "UI-WARNING"
-msgstr ""
+msgstr "UI警告"
 
 #: objects/ui_ErrorLog.h:103
 msgid "FONT-WARNING"
-msgstr ""
+msgstr "字型警告"
 
 #: objects/ui_ErrorLog.h:104
 msgid "EXPORT-WARNING"
-msgstr ""
+msgstr "匯出警告"
 
 #: objects/ui_ErrorLog.h:105
 msgid "EXPORT-ERROR"
-msgstr ""
+msgstr "匯出錯誤"
 
 #: objects/ui_ErrorLog.h:106
 msgid "TRACE"
-msgstr ""
+msgstr "追溯"
 
 #: objects/ui_ErrorLog.h:107
 msgid "DEPRECATED"
-msgstr ""
+msgstr "棄用"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -362,7 +362,7 @@ msgid ""
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
 "Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>此清單顯示當前已註冊的字體 OpenSCAD.</p><p>例:</p><pre "
+"<html><head/><body><p>此清單顯示目前已註冊的字體 OpenSCAD.</p><p>例:</p><pre "
 "style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-"
 "right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
@@ -414,7 +414,7 @@ msgstr "版本"
 
 #: objects/ui_LibraryInfoDialog.h:72
 msgid "Lib & Build Info"
-msgstr "函式庫與建置資訊"
+msgstr "程式庫與建置資訊"
 
 #: objects/ui_LibraryInfoDialog.h:73
 msgid "OpenSCAD Detailed Library and Build Information"
@@ -670,7 +670,7 @@ msgstr "顯示CSG輸出(&O)..."
 
 #: objects/ui_MainWindow.h:1137
 msgid "Export as &STL..."
-msgstr "匯出成&STL..."
+msgstr "匯出為&STL..."
 
 #: objects/ui_MainWindow.h:1139
 msgid "F7"
@@ -678,7 +678,7 @@ msgstr "F7"
 
 #: objects/ui_MainWindow.h:1141
 msgid "Export as &OFF..."
-msgstr "匯出成&OFF..."
+msgstr "匯出為&OFF..."
 
 #: objects/ui_MainWindow.h:1142
 msgid "Preview"
@@ -836,7 +836,7 @@ msgstr "清除紀錄"
 
 #: objects/ui_MainWindow.h:1210
 msgid "Export as &DXF..."
-msgstr "匯出成&DXF..."
+msgstr "匯出為&DXF..."
 
 #: objects/ui_MainWindow.h:1211
 msgid "&Close"
@@ -913,19 +913,19 @@ msgstr "自動重新載入和預覽(&A)"
 
 #: objects/ui_MainWindow.h:1243
 msgid "Export as &Image..."
-msgstr "匯出成圖檔...(&I)"
+msgstr "匯出為圖檔...(&I)"
 
 #: objects/ui_MainWindow.h:1244
 msgid "Export as &CSG..."
-msgstr "匯出成CSG...(&C)"
+msgstr "匯出為CSG...(&C)"
 
 #: objects/ui_MainWindow.h:1245
 msgid "&Library info"
-msgstr "函式庫資訊(&L)"
+msgstr "程式庫資訊(&L)"
 
 #: objects/ui_MainWindow.h:1246
 msgid "Show &Library Folder..."
-msgstr "顯示函式庫目錄..."
+msgstr "顯示程式庫目錄..."
 
 #: objects/ui_MainWindow.h:1247
 msgid "Reset View"
@@ -937,15 +937,15 @@ msgstr "字型清單(&F)"
 
 #: objects/ui_MainWindow.h:1249
 msgid "Export as S&VG..."
-msgstr "匯出成S&VG..."
+msgstr "匯出為S&VG..."
 
 #: objects/ui_MainWindow.h:1250
 msgid "Export as &AMF..."
-msgstr "匯出成&AMF..."
+msgstr "匯出為&AMF..."
 
 #: objects/ui_MainWindow.h:1251
 msgid "Export as &3MF..."
-msgstr "匯出成&3MF..."
+msgstr "匯出為&3MF..."
 
 #: objects/ui_MainWindow.h:1252
 msgid "Zoom In"
@@ -1026,7 +1026,7 @@ msgstr "隱藏自訂"
 #: objects/ui_MainWindow.h:1284
 #, fuzzy
 msgid "Export as PDF..."
-msgstr "匯出成&DXF..."
+msgstr "匯出為PDF..."
 
 #: objects/ui_MainWindow.h:1285
 #, fuzzy
@@ -1036,7 +1036,7 @@ msgstr "隱藏3D檢視工具列"
 #: objects/ui_MainWindow.h:1286
 #, fuzzy
 msgid "Hide Error Log"
-msgstr "隱藏編輯器工具列"
+msgstr "隱藏錯誤日誌"
 
 #: objects/ui_MainWindow.h:1288
 msgid "Hide ErrorLog"
@@ -1060,7 +1060,7 @@ msgstr "自訂"
 #: objects/ui_MainWindow.h:1293
 #, fuzzy
 msgid "Error &Log"
-msgstr "錯誤"
+msgstr "錯誤日誌"
 
 #: objects/ui_MainWindow.h:1294
 #, fuzzy
@@ -1099,7 +1099,7 @@ msgstr "步驟："
 
 #: objects/ui_MainWindow.h:1306
 msgid "Dump Pictures"
-msgstr "轉儲圖片"
+msgstr "轉存圖片"
 
 #: objects/ui_MainWindow.h:1307
 msgid "&File"
@@ -1141,7 +1141,7 @@ msgstr "新視窗"
 #: objects/ui_MainWindow.h:1316 objects/ui_Preferences.h:1610
 #: src/settings.cc:180
 msgid "Tabs"
-msgstr "Tabs"
+msgstr "分頁"
 
 #: objects/ui_MainWindow.h:1317
 msgid "Find"
@@ -1174,7 +1174,7 @@ msgstr "取代字串"
 
 #: objects/ui_MainWindow.h:1327
 msgid "Customizer Widget"
-msgstr "自訂"
+msgstr "自訂小工具"
 
 #: objects/ui_OpenCSGWarningDialog.h:83
 msgid "OpenGL Warning"
@@ -1234,7 +1234,7 @@ msgstr "儲存預設"
 
 #: objects/ui_ParameterWidget.h:172
 msgid "delete current preset"
-msgstr "刪除當前預設"
+msgstr "刪除目前預設"
 
 #: objects/ui_ParameterWidget.h:174
 msgid "-"
@@ -1274,7 +1274,7 @@ msgstr "僅限說明"
 
 #: objects/ui_ParameterWidget.h:190
 msgid "reset all parameters to the currently selected preset"
-msgstr "將所有參數重設為當前選擇預設"
+msgstr "將所有參數重設為目前選擇預設"
 
 #: objects/ui_ParameterWidget.h:192 objects/ui_ShortcutConfigurator.h:68
 msgid "Reset"
@@ -1694,7 +1694,7 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1668
 msgid "Debugging"
-msgstr ""
+msgstr "除錯"
 
 #: objects/ui_Preferences.h:1669
 #, fuzzy
@@ -1799,7 +1799,7 @@ msgstr "%1 個檔案 (*%2)"
 
 #: src/mainwin.cc:2511
 msgid "Export CSG File"
-msgstr "會出CSG檔案"
+msgstr "匯出CSG檔案"
 
 #: src/mainwin.cc:2511
 msgid "CSG Files (*.csg)"
@@ -1824,7 +1824,7 @@ msgstr "自訂"
 #: src/mainwin.cc:2868 src/mainwin.cc:2873
 #, fuzzy
 msgid "Error-Log"
-msgstr "錯誤"
+msgstr "錯誤日誌"
 
 #: src/mainwin.cc:2888 src/tabmanager.cc:221 src/tabmanager.cc:454
 #: src/tabmanager.cc:512 src/tabmanager.cc:681
@@ -1965,7 +1965,7 @@ msgstr "是否要儲存你的變更？"
 
 #: src/tabmanager.cc:591
 msgid "Some tabs have unsaved changes."
-msgstr ""
+msgstr "分頁有未儲存的變更"
 
 #: src/tabmanager.cc:592
 #, fuzzy
@@ -1998,13 +1998,13 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:82 src/parameter/ParameterWidget.cc:232
 msgid "changes on current preset not saved"
-msgstr "當前預設變更未儲存"
+msgstr "目前預設變更未儲存"
 
 #: src/parameter/ParameterWidget.cc:84
 msgid ""
 "The changes on the current preset %1 are not saved yet. Do you really want "
 "to reset this preset and lose your changes?"
-msgstr "當前預設 %1 的變更尚未儲存。你確定要重設這個預設且捨棄你的改變嗎？"
+msgstr "目前預設 %1 的變更尚未儲存。你確定要重設這個預設且捨棄你的變更嗎？"
 
 #: src/parameter/ParameterWidget.cc:156
 #, fuzzy
@@ -2014,17 +2014,17 @@ msgstr "新增預設"
 #: src/parameter/ParameterWidget.cc:157
 #, fuzzy
 msgid "Remove current preset"
-msgstr "移除當前預設"
+msgstr "移除目前預設"
 
 #: src/parameter/ParameterWidget.cc:158
 #, fuzzy
 msgid "Save current preset"
-msgstr "儲存當前預設"
+msgstr "儲存目前預設"
 
 #: src/parameter/ParameterWidget.cc:160 src/parameter/ParameterWidget.cc:161
 #: src/parameter/ParameterWidget.cc:162
 msgid "JSON file read only"
-msgstr "JSON檔只能唯獨"
+msgstr "JSON檔只能唯讀"
 
 #: src/parameter/ParameterWidget.cc:216
 msgid "design default values"
@@ -2034,15 +2034,15 @@ msgstr "設計預設值"
 msgid ""
 "The current preset %1 contains changes, but is not saved yet. Do you really "
 "want to change the preset and lose your changes?"
-msgstr "當前預設 %1 含有變更且尚未儲存。你確定要改變這個預設且捨棄你的改變嗎？"
+msgstr "目前預設 %1 含有變更且尚未儲存。你確定要改變這個預設且捨棄你的變更嗎？"
 
 #: src/parameter/ParameterWidget.cc:274
 msgid "Do you want to delete the current preset?"
-msgstr "你要刪除當前預設嗎？"
+msgstr "你要刪除目前預設嗎？"
 
 #: src/parameter/ParameterWidget.cc:276
 msgid "Do you want to delete the current preset '%1'?"
-msgstr "你要刪除當前預設 '%1' 嗎？"
+msgstr "你要刪除目前預設 '%1' 嗎？"
 
 #: src/parameter/ParameterWidget.cc:516
 msgid "Create new set of parameter"
@@ -2174,7 +2174,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "ErrorLog"
-#~ msgstr "錯誤"
+#~ msgstr "錯誤日誌"
 
 #, fuzzy
 #~ msgid "Find Next"
