@@ -28,6 +28,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QRegularExpression>
 #include <QString>
 #include "Console.h"
 #include "printutils.h"
