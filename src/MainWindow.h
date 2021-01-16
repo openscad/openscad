@@ -32,6 +32,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 public:
 	class Preferences *prefs;
 
+	QTimer *consoleUpdater;
 	QTimer *animate_timer;
 	int anim_step;
 	int anim_numsteps;

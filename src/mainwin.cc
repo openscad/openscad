@@ -183,6 +183,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 {
 	setupUi(this);
 
+	consoleUpdater = new QTimer(this);
+	consoleUpdater->setSingleShot(true);
+	connect(consoleUpdater, SIGNAL(timeout()), this->console, SLOT(update()));
+
 	const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
 	const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
 
@@ -605,8 +609,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
-
-	this->console->setMaximumBlockCount(5000);
 
 	for(int i = 1; i < filenames.size(); ++i)
 		tabManager->createTab(filenames[i]);
@@ -3213,29 +3215,23 @@ void MainWindow::consoleOutput(const Message &msgObj, void *userdata)
 
 void MainWindow::consoleOutput(const Message &msgObj)
 {
-	auto c = this->console->textCursor();
-	c.movePosition(QTextCursor::End);
-	this->console->setTextCursor(c);
-
-	if (getGroupTextPlain(msgObj.group)) {
-		this->console->appendPlainText(QString::fromStdString(msgObj.str()));
-		this->processEvents();
-	} else {
-		const auto color = QString::fromStdString(getGroupColor(msgObj.group));
-		const auto msg = QString("<span style=\"color: black; background-color: %1;\">%2</span>").arg(color).arg(htmlEscape(msgObj.str()));
-		const auto link = QString("%1,%2").arg(msgObj.loc.firstLine()).arg(QString::fromStdString(msgObj.loc.fileName()));
-		const auto html = msgObj.loc.isNone() ? msg : QString("<a href=\"%1\">%2</a>").arg(htmlEscape(link)).arg(msg);
-		// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-		consoleOutputRaw(html + "&nbsp;");
+	this->console->addMessage(msgObj);
+	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated) {
+		++this->compileWarnings;
+	} else if (msgObj.group==message_group::Error) {
+		++this->compileErrors;
 	}
-
-	this->compileWarnings += msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated ? 1 : 0;
-	this->compileErrors += msgObj.group==message_group::Error ? 1 : 0;
+	// FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
+	// Then processEvents should no longer be needed here.
+	this->processEvents(); 
+	if (consoleUpdater && !consoleUpdater->isActive()) {
+		consoleUpdater->start(50); // Limit console updates to 20 FPS
+	}
 }
 
 void MainWindow::consoleOutputRaw(const QString& html)
 {
-	this->console->appendHtml(html);
+	this->console->addHtml(html);
 	this->processEvents();
 }
 

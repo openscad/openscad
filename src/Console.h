@@ -29,12 +29,24 @@
 #include <QPlainTextEdit>
 #include <QMouseEvent>
 #include <QString>
+#include <boost/circular_buffer.hpp>
 #include "qtgettext.h"
 #include "ui_Console.h"
+
+struct ConsoleMessageBlock {
+	QString message;
+	QString link;
+	message_group group;
+};
 
 class Console : public QPlainTextEdit, public Ui::Console
 {
 	Q_OBJECT
+
+private:
+	static constexpr int MAX_LINES = 5000;
+	boost::circular_buffer<ConsoleMessageBlock> msgBuffer;
+	QTextCursor appendCursor; // keep a cursor always at the end of document.
 
 public:
 	Console(QWidget *parent = nullptr);
@@ -58,6 +70,9 @@ public:
 		QPlainTextEdit::mouseReleaseEvent(e);
 	}
 
+	void addMessage(const Message &msg);
+	void addHtml(const QString &html);
+
 signals:
 	void linkActivated(QString);
 	void openFile(QString,int);
@@ -66,4 +81,5 @@ public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
 	void hyperlinkClicked(const QString& loc);
+	void update();
 };
