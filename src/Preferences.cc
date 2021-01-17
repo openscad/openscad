@@ -154,6 +154,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/autoReloadRaise"] = false;
 	this->defaultmap["advanced/enableSoundNotification"] = true;
 	this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
+	this->defaultmap["advanced/consoleMaxLines"] = 5000;
 	this->defaultmap["advanced/enableHardwarnings"] = false;
 	this->defaultmap["advanced/enableParameterCheck"] = true;
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
@@ -192,14 +193,16 @@ void Preferences::init() {
 	// Advanced pane	
 	const int absolute_max = (sizeof(void*) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
 	QValidator *memvalidator = new QIntValidator(1,absolute_max,this);
-	QValidator *validator = new QIntValidator(this);
+	auto *uintValidator = new QIntValidator(this);
+	uintValidator->setBottom(0);
 	QValidator *validator1 = new QRegExpValidator(QRegExp("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
 #ifdef ENABLE_CGAL
 	this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
 	this->polysetCacheSizeMBEdit->setValidator(memvalidator);
-	this->opencsgLimitEdit->setValidator(validator);
-	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(validator);
+	this->opencsgLimitEdit->setValidator(uintValidator);
+	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(uintValidator);
+	this->consoleMaxLinesEdit->setValidator(uintValidator);
 	this->lineEditCharacterThreshold->setValidator(validator1);
 	this->lineEditStepSize->setValidator(validator1);
 
@@ -639,6 +642,12 @@ void Preferences::on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QS
 	settings.setValue("advanced/timeThresholdOnRenderCompleteSound", text);
 }
 
+void Preferences::on_consoleMaxLinesEdit_textChanged(const QString &text)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/consoleMaxLines", text);
+}
+
 void Preferences::on_checkBoxEnableAutocomplete_toggled(bool state)
 {
 	QSettingsCached settings;
@@ -916,6 +925,7 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->launcherBox)->setChecked(getValue("launcher/showOnStartup").toBool());
 	BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)->setChecked(getValue("advanced/enableSoundNotification").toBool());
 	BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
+	BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)->setText(getValue("advanced/consoleMaxLines").toString());
 	BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());

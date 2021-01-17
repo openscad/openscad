@@ -1831,6 +1831,36 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_Console">
+              <property name="title">
+               <string>Console</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_Console">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_consoleMaxLines">
+                 <item>
+                  <widget class="QLabel" name="consoleMaxLinesLabel">
+                   <property name="text">
+                    <string>Maximum lines for Console to keep:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="consoleMaxLinesEdit"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="consoleUnlimitedLabel">
+                   <property name="text">
+                    <string>(0 for unlimited)</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox_lang">
               <property name="title">
                <string>OpenSCAD Language Features</string>

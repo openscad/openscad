@@ -29,7 +29,7 @@
 #include <QPlainTextEdit>
 #include <QMouseEvent>
 #include <QString>
-#include <boost/circular_buffer.hpp>
+#include <vector>
 #include "qtgettext.h"
 #include "ui_Console.h"
 
@@ -45,7 +45,7 @@ class Console : public QPlainTextEdit, public Ui::Console
 
 private:
 	static constexpr int MAX_LINES = 5000;
-	boost::circular_buffer<ConsoleMessageBlock> msgBuffer;
+	std::vector<ConsoleMessageBlock> msgBuffer;
 	QTextCursor appendCursor; // keep a cursor always at the end of document.
 
 public:

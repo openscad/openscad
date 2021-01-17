@@ -56,6 +56,7 @@ public slots:
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
 	void on_checkBoxMouseCentricZoom_toggled(bool);
 	void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString &);
+	void on_consoleMaxLinesEdit_textChanged(const QString &);
 	void on_checkBoxEnableAutocomplete_toggled(bool);
 	void on_lineEditCharacterThreshold_textChanged(const QString &);
   //

@@ -32,16 +32,15 @@
 #include <QString>
 #include "Console.h"
 #include "printutils.h"
+#include "Preferences.h"
 #include "UIUtils.h"
 
-Console::Console(QWidget *parent) : QPlainTextEdit(parent), msgBuffer(Console::MAX_LINES+1)
+Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
 	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
-	
-	this->setMaximumBlockCount(Console::MAX_LINES);
 	this->setUndoRedoEnabled(false);
 	this->appendCursor = this->textCursor();
 }
@@ -106,7 +105,7 @@ void Console::update()
 	}
 	msgBuffer.clear();
 	this->setTextCursor(appendCursor);
-	this->setMaximumBlockCount(Console::MAX_LINES);
+	this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
 }
 
 void Console::actionClearConsole_triggered()
