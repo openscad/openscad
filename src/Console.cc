@@ -83,6 +83,10 @@ void Console::addHtml(const QString& html)
 	this->setTextCursor(this->appendCursor);
 }
 
+void Console::setFont(const QString &fontFamily, uint ptSize) {
+	this->document()->setDefaultFont(QFont(fontFamily, ptSize));
+}
+
 void Console::update()
 {
 	// Faster to ignore block count until group of messages are done inserting.
