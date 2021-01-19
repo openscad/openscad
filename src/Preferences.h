@@ -57,6 +57,8 @@ public slots:
 	void on_checkBoxMouseCentricZoom_toggled(bool);
 	void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString &);
 	void on_consoleMaxLinesEdit_textChanged(const QString &);
+	void on_consoleFontChooser_activated(const QString &);
+	void on_consoleFontSize_currentIndexChanged(const QString &);
 	void on_checkBoxEnableAutocomplete_toggled(bool);
 	void on_lineEditCharacterThreshold_textChanged(const QString &);
   //
@@ -104,6 +106,7 @@ signals:
 	void updateUndockMode(bool undockMode) const;
 	void updateReorderMode(bool undockMode) const;
 	void fontChanged(const QString &family, uint size) const;
+	void consoleFontChanged(const QString &family, uint size) const;
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s) const;

@@ -81,5 +81,6 @@ public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
 	void hyperlinkClicked(const QString& loc);
+	void setFont(const QString &fontFamily, uint ptSize);
 	void update();
 };

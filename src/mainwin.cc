@@ -187,13 +187,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	consoleUpdater->setSingleShot(true);
 	connect(consoleUpdater, SIGNAL(timeout()), this->console, SLOT(update()));
 
-	const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
-	const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
-
-	consoleOutputRaw(version);
-	consoleOutputRaw(weblink);
-	consoleOutputRaw(copyrighttext);
-
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
@@ -240,11 +233,27 @@ MainWindow::MainWindow(const QStringList &filenames)
 						this, SLOT(actionOpenRecent()));
 	}
 
+	// Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
+	// Any code dependent on Preferences must come after the TabManager instantiation
 	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
 	connect(tabManager, SIGNAL(tabCountChanged(int)), this, SLOT(setTabToolBarVisible(int)));
 	this->setTabToolBarVisible(tabManager->count());
 	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
+
+	connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&, uint)), this->console, SLOT(setFont(const QString&, uint)));
+
+	const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+	const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
+	this->console->setFont(
+	  Preferences::inst()->getValue("advanced/consoleFontFamily").toString(),
+	  Preferences::inst()->getValue("advanced/consoleFontSize").toUInt()
+	);
+
+	consoleOutputRaw(version);
+	consoleOutputRaw(weblink);
+	consoleOutputRaw(copyrighttext);
+	this->consoleUpdater->start(0); // Show "Loaded Design" message from TabManager
 
 	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 	connect(this->console,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
