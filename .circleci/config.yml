@@ -126,13 +126,13 @@ jobs:
               sudo mkdir -p /opt/local
               sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
               if [ -f /opt/local/bin/port ]; then
-                  if [ "$(shasum -a 512 /tmp/$MACPORTS_CACHE | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
+                  if [ "$(shasum -a 512 /tmp/"$MACPORTS_CACHE" | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
                       echo "Failed to match sha512 for $MACPORTS_CACHE"
                       exit 1
                   fi
-                  if [ -f /tmp/libraries.tar.bz2 ]; then
-                      tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/libraries.tar.bz2 || true
-                      if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
+                  if [ -f /tmp/"$LIBRARIES_CACHE" ]; then
+                      tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/"$LIBRARIES_CACHE" || true
+                      if [ "$(shasum -a 512 /tmp/"$LIBRARIES_CACHE" | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
                           echo "Failed to match sha512 for $LIBRARIES_CACHE"
                           exit 1
                       fi
