@@ -137,6 +137,7 @@ jobs:
                           exit 1
                       fi
                   fi    
+                  echo "Start building dependencies: $(date)"
                   export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
                   export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
                   export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
@@ -160,6 +161,9 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
+                  ./scripts/macosx-build-dependencies.sh poppler
+                  ./scripts/macosx-build-dependencies.sh pixman
+                  ./scripts/macosx-build-dependencies.sh cairo
                   ./scripts/macosx-build-dependencies.sh glib2
                   ./scripts/macosx-build-dependencies.sh boost
                   ./scripts/macosx-build-dependencies.sh cgal
@@ -169,12 +173,14 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh -d sparkle
                   tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
                   shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+                  echo "Start building OpenSCAD: $(date)"
                   export NUMCPU=4
                   time ./scripts/release-common.sh -snapshot
                   OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
                   shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
                   shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
                   cp -v "$OPENSCAD_NAME"* /tmp/out/
+                  echo "Finished building OpenSCAD: $(date)"
               else
                   echo "MacPorts not found, installing $MACPORTS"
                   MACPORTSFILE="$MACPORTS".tar.bz2
