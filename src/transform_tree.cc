@@ -3,6 +3,7 @@
 #include "ModuleInstantiation.h"
 #include "transformnode.h"
 #include "printutils.h"
+#include "transform_tree.h"
 
 /*! Either flattens the list (or group, or whatever commutative thing it may),
  *  or outputs that list (if, say, it has special tags).
