@@ -5,11 +5,18 @@
 #include "printutils.h"
 #include "transform_tree.h"
 
+bool isCsgOp(const AbstractNode& node, OpenSCADOperator op) {
+  if (auto csg = dynamic_cast<const CsgOpNode *>(&node)) {
+    return csg->type == op;
+  }
+  return false;
+}
+
 /*! Either flattens the list (or group, or whatever commutative thing it may),
  *  or outputs that list (if, say, it has special tags).
  */
 template <class T>
-void flatten_and_delete(T *list, std::vector<AbstractNode *> &out)
+void flatten_and_delete(T *list, std::vector<AbstractNode *> &out, const OpenSCADOperator* pCsgOp = nullptr)
 {
 	if (list->modinst && list->modinst->hasSpecialTags()) {
 		out.push_back(list);
@@ -19,7 +26,11 @@ void flatten_and_delete(T *list, std::vector<AbstractNode *> &out)
 		if (child) {
       // Do we have a sublist of the same type T as list?
 			if (auto sublist = dynamic_cast<T *>(child)) {
-				flatten_and_delete(sublist, out);
+        // Check if we're targetting a specific CsgOpNode type: we don't want
+        // to flatten a UNION into an INTERSECTION or vice versa.
+        if (!pCsgOp || isCsgOp(*sublist, *pCsgOp)) {
+				  flatten_and_delete(sublist, out);
+        }
 			}
 			else {
 				out.push_back(child);
@@ -31,8 +42,13 @@ void flatten_and_delete(T *list, std::vector<AbstractNode *> &out)
 }
 
 /*! Destructively transforms the tree according to various enabled features.
- *  Generates nodes that may lack proper debug info in the process, so this
- *  definitely should be considererd highly experimental.
+ * Generates nodes that may lack proper debug info in the process, so this
+ * definitely should be considererd highly experimental.
+ *
+ * This code is quite obviously very hard to maintain: it's a hack, and
+ * just a way to evaluate this approach / a discussion starter. We might want
+ * to roll out some transformer pattern instead, or maybe embed this logic into
+ * some AbstractNode::normalize() method instead.
  */
 AbstractNode *transform_tree(AbstractNode *node)
 {
@@ -92,7 +108,10 @@ AbstractNode *transform_tree(AbstractNode *node)
         return new_node;
       }
     } else if (auto csg = dynamic_cast<CsgOpNode *>(node)) {
-      auto new_node = new CsgOpNode(mi, shared_ptr<EvalContext>(), csg->type);
+      const auto csgType = csg->type;
+
+	    // First, flatten nested children ListNodes
+	    auto new_node = new CsgOpNode(mi, shared_ptr<EvalContext>(), csgType);
       list = new ListNode(mi, shared_ptr<EvalContext>());
       list->children = csg->children;
       csg->children.clear();
@@ -102,12 +121,27 @@ AbstractNode *transform_tree(AbstractNode *node)
           "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
       }
 
-      if (new_node->children.size() == 1) {
-        LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child CsgOpNode\n");
-        auto child = new_node->children[0];
-        new_node->children.clear();
-        delete new_node;
-        return child;
+      // Try to flatten unions of unions and intersections of intersections.
+	    if (csgType == OpenSCADOperator::UNION || csgType == OpenSCADOperator::INTERSECTION) {
+        original_child_count = new_node->children.size();
+        auto new_node2 = new CsgOpNode(mi, shared_ptr<EvalContext>(), csgType);
+        flatten_and_delete(new_node, new_node2->children, &csgType);
+        if (original_child_count != new_node2->children.size()) {
+          LOG(message_group::None, Location::NONE, "",
+            "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node2->children.size());
+        }
+        new_node = new_node2;
+      }
+
+      // Whatever the CSG (apart from hull), one child => skip.
+      if (csgType != OpenSCADOperator::HULL) {
+        if (new_node->children.size() == 1) {
+          LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child CsgOpNode\n");
+          auto child = new_node->children[0];
+          new_node->children.clear();
+          delete new_node;
+          return child;
+        }
       }
 
       return new_node;
@@ -145,6 +179,7 @@ AbstractNode *transform_tree(AbstractNode *node)
           "[transform_tree] Pushing TransformNode down onto %1$d children (of which %2$d were TransformNodes)", children.size(), transform_children_count);
 
         if (children.size() == 1) {
+          // We've already pushed any transform down, so it's safe to bubble our only child up.
           return children[0];
         }
         AbstractNode *new_parent;
