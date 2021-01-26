@@ -461,6 +461,7 @@ SOURCES += \
            src/dxfdata.cc \
            src/dxfdim.cc \
            src/offset.cc \
+           src/transform_tree.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
