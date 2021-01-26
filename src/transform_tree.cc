@@ -113,6 +113,48 @@ AbstractNode *transform_tree(AbstractNode *node)
     }
   }
 
+  if (Feature::ExperimentalPushTransforms.is_enabled()) {
+    if (auto transform = dynamic_cast<TransformNode *>(node)) {
+      // Push transforms down.
+      auto has_any_specially_tagged_child = false;
+      auto transform_children_count = false;
+      for (auto child : transform->children) {
+        if (dynamic_cast<TransformNode *>(child)) transform_children_count = true;
+        if (child->modinst && child->modinst->hasSpecialTags()) has_any_specially_tagged_child = true;
+      }
+
+      if (!has_any_specially_tagged_child && (transform->children.size() > 1 || transform_children_count)) {
+        std::vector<AbstractNode *> children;
+        for (auto child : transform->children) {
+          if (auto child_transform = dynamic_cast<TransformNode *>(child)) {
+            child_transform->matrix = transform->matrix * child_transform->matrix;
+            children.push_back(child_transform);
+          } else {
+            auto clone = new TransformNode(mi, shared_ptr<EvalContext>(), transform->verbose_name());
+            clone->matrix = transform->matrix;
+            clone->children.push_back(child);
+            children.push_back(clone);
+          }
+        }
+
+        transform->children.clear();
+        delete transform;
+
+        LOG(message_group::None, Location::NONE, "",
+          "[transform_tree] Pushing TransformNode down onto %1$d children (of which %2$d were TransformNodes)", children.size(), transform_children_count);
+
+        if (children.size() == 1) {
+          return children[0];
+        }
+        AbstractNode *new_parent;
+        if (Feature::ExperimentalLazyUnion.is_enabled()) new_parent = new ListNode(mi, shared_ptr<EvalContext>());
+        else new_parent = new GroupNode(mi, shared_ptr<EvalContext>());
+
+        new_parent->children = children;
+
+        return new_parent;
+      }
+    }
   }
 
   // No changes (*sighs*)
