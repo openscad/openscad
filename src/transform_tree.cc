@@ -65,7 +65,7 @@ AbstractNode *transform_tree(AbstractNode *node)
   }
 
 	if (node->modinst && node->modinst->hasSpecialTags()) {
-    LOG(message_group::None, Location::NONE, "", "[transform_tree] Ignoring tree with special tags");
+    // LOG(message_group::None, Location::NONE, "", "[transform_tree] Ignoring tree with special tags");
 		return node;
 	}
 
@@ -76,12 +76,12 @@ AbstractNode *transform_tree(AbstractNode *node)
       // Flatten lists.
       auto new_node = new ListNode(mi, shared_ptr<EvalContext>());
       flatten_and_delete(list, new_node->children);
-      if (original_child_count != new_node->children.size()) {
-        LOG(message_group::None, Location::NONE, "",
-          "[transform_tree] Flattened ListNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
-      }
+      // if (original_child_count != new_node->children.size()) {
+      //   LOG(message_group::None, Location::NONE, "",
+      //     "[transform_tree] Flattened ListNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
+      // }
       if (new_node->children.size() == 1) {
-        LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child ListNode\n");
+        // LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child ListNode\n");
         auto child = new_node->children[0];
         new_node->children.clear();
         delete new_node;
@@ -94,12 +94,12 @@ AbstractNode *transform_tree(AbstractNode *node)
         // TODO(ochafik): Flatten root as a... Group unless we're in lazy-union mode (then as List)
         auto new_node = new GroupNode(mi, shared_ptr<EvalContext>());
         flatten_and_delete(group, new_node->children);
-        if (original_child_count != new_node->children.size()) {
-          LOG(message_group::None, Location::NONE, "",
-            "[transform_tree] Flattened GroupNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
-        }
+        // if (original_child_count != new_node->children.size()) {
+        //   LOG(message_group::None, Location::NONE, "",
+        //     "[transform_tree] Flattened GroupNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
+        // }
         if (new_node->children.size() == 1) {
-          LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child GroupNode\n");
+          // LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child GroupNode\n");
           auto child = new_node->children[0];
           new_node->children.clear();
           delete new_node;
@@ -116,27 +116,27 @@ AbstractNode *transform_tree(AbstractNode *node)
       list->children = csg->children;
       csg->children.clear();
       flatten_and_delete(list, new_node->children);
-      if (original_child_count != new_node->children.size()) {
-        LOG(message_group::None, Location::NONE, "",
-          "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
-      }
+      // if (original_child_count != new_node->children.size()) {
+      //   LOG(message_group::None, Location::NONE, "",
+      //     "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
+      // }
 
       // Try to flatten unions of unions and intersections of intersections.
 	    if (csgType == OpenSCADOperator::UNION || csgType == OpenSCADOperator::INTERSECTION) {
         original_child_count = new_node->children.size();
         auto new_node2 = new CsgOpNode(mi, shared_ptr<EvalContext>(), csgType);
         flatten_and_delete(new_node, new_node2->children, &csgType);
-        if (original_child_count != new_node2->children.size()) {
-          LOG(message_group::None, Location::NONE, "",
-            "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node2->children.size());
-        }
+        // if (original_child_count != new_node2->children.size()) {
+        //   LOG(message_group::None, Location::NONE, "",
+        //     "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node2->children.size());
+        // }
         new_node = new_node2;
       }
 
       // Whatever the CSG (apart from hull), one child => skip.
       if (csgType != OpenSCADOperator::HULL) {
         if (new_node->children.size() == 1) {
-          LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child CsgOpNode\n");
+          // LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child CsgOpNode\n");
           auto child = new_node->children[0];
           new_node->children.clear();
           delete new_node;
@@ -175,8 +175,8 @@ AbstractNode *transform_tree(AbstractNode *node)
         transform->children.clear();
         delete transform;
 
-        LOG(message_group::None, Location::NONE, "",
-          "[transform_tree] Pushing TransformNode down onto %1$d children (of which %2$d were TransformNodes)", children.size(), transform_children_count);
+        // LOG(message_group::None, Location::NONE, "",
+        //   "[transform_tree] Pushing TransformNode down onto %1$d children (of which %2$d were TransformNodes)", children.size(), transform_children_count);
 
         if (children.size() == 1) {
           // We've already pushed any transform down, so it's safe to bubble our only child up.
