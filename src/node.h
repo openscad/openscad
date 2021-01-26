@@ -101,9 +101,12 @@ class ListNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	ListNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractNode(mi, ctx) { }
+	ListNode(const class ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, const std::string &name="") : AbstractNode(mi, ctx), _name(name) { }
 	~ListNode() { }
 	std::string name() const override;
+  std::string verbose_name() const override;
+private:
+	const std::string _name;
 };
 
 /*!
