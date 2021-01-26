@@ -23,6 +23,7 @@ Feature::list_t Feature::feature_list;
  */
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalLazyModule("lazy-module", "Enable lazy modules (enhances lazy-union).");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
