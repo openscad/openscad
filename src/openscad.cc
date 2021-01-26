@@ -416,7 +416,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 		param.readParameterSet(cmd.parameterFile);
 		param.applyParameterSet(root_module, cmd.setName);
 	}
-    
+
 	root_module->handleDependencies();
 
 	auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -446,7 +446,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 			string frame_str = frame_file.generic_string();
 
 			LOG(message_group::None, Location::NONE, "", "Exporting %1$s...", cmd.filename);
-			
+
 			CommandLine frame_cmd = cmd;
 			frame_cmd.output_file = frame_str;
 
@@ -469,7 +469,8 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 	AbstractNode *absolute_root_node = root_module->instantiateWithFileContext(filectx.ctx, &root_inst, nullptr);
 
-  if (Feature::ExperimentalFlattenChildren.is_enabled()) {
+  if (Feature::ExperimentalFlattenChildren.is_enabled() ||
+      Feature::ExperimentalPushTransforms.is_enabled()) {
     absolute_root_node = transform_tree(absolute_root_node);
   }
 
@@ -921,7 +922,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
@@ -1024,7 +1025,7 @@ int main(int argc, char **argv)
 	if (vm.count("hardwarnings")) {
 		OpenSCAD::hardwarnings = true;
 	}
-	
+
 	std::map<std::string, bool*> flags;
 	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
 	flags.insert(std::make_pair("check-parameter-ranges",&OpenSCAD::rangeCheck));
@@ -1039,7 +1040,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	
+
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
@@ -1117,7 +1118,7 @@ int main(int argc, char **argv)
 		}
 		parameterSet = vm["P"].as<string>().c_str();
 	}
-	
+
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string>>();
