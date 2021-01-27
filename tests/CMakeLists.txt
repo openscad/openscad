@@ -241,6 +241,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
           "--enable=lazy-union"
           "--enable=lazy-module"
           "--enable=push-transforms"
+          "--enable=push-transforms-down-unions"
           "--enable=flatten-children"
         )
       endif()
@@ -282,6 +283,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # NOT WORKING YET:
       # set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-module")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=push-transforms")
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=push-transforms-down-unions")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=flatten-children")
       # debug message
       #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")

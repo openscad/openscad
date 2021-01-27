@@ -148,7 +148,7 @@ AbstractNode *transform_tree(AbstractNode *node)
     }
   }
 
-  if (Feature::ExperimentalPushTransforms.is_enabled()) {
+  if (Feature::ExperimentalPushTransformsDownUnions.is_enabled()) {
     if (auto transform = dynamic_cast<TransformNode *>(node)) {
       // Push transforms down.
       auto has_any_specially_tagged_child = false;
