@@ -102,7 +102,7 @@ inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpo
     cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
   }
 
-  //we have found the first occurrance of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
+  //we have found the first occurrence of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
   if(cont && zeropos && exppos){
     int count = &buffer[pos] - exppos + 1;
     memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
