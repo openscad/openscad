@@ -43,6 +43,16 @@ void flatten_and_delete(T *list, std::vector<AbstractNode *> &out, const OpenSCA
 	delete list;
 }
 
+void printTree(const AbstractNode& node, const std::string& indent) {
+  auto hasChildren = node.getChildren().size() > 0;
+  LOG(message_group::None,Location::NONE,"", "%1$s",
+      (indent + node.toString() + (hasChildren ? " {" : ";")).c_str());
+  for (const auto child : node.getChildren()) {
+    if (child) printTree(*child, indent + "  ");
+  }
+  if (hasChildren) LOG(message_group::None,Location::NONE,"", "%1$s", (indent + "}").c_str());
+}
+
 /*! Destructively transforms the tree according to various enabled features.
  * Generates nodes that may lack proper debug info in the process, so this
  * definitely should be considererd highly experimental.
@@ -54,8 +64,6 @@ void flatten_and_delete(T *list, std::vector<AbstractNode *> &out, const OpenSCA
  */
 AbstractNode *transform_tree(AbstractNode *node)
 {
-  auto original_child_count = node->children.size();
-
   auto has_child_with_special_tags = false;
   for (auto it = node->children.begin(); it != node->children.end(); it++) {
     auto child = *it;
@@ -67,41 +75,37 @@ AbstractNode *transform_tree(AbstractNode *node)
   }
 
 	if (node->modinst && node->modinst->hasSpecialTags()) {
-    // LOG(message_group::None, Location::NONE, "", "[transform_tree] Ignoring tree with special tags");
 		return node;
 	}
 
   auto mi = node->modinst;
 
   if (Feature::ExperimentalFlattenChildren.is_enabled()) {
-    if (auto list = dynamic_cast<ListNode *>(node)) {
-      // Flatten lists.
-      auto new_node = new ListNode(mi, shared_ptr<EvalContext>());
-      flatten_and_delete(list, new_node->children);
-      // if (original_child_count != new_node->children.size()) {
-      //   LOG(message_group::None, Location::NONE, "",
-      //     "[transform_tree] Flattened ListNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
-      // }
-      if (new_node->children.size() == 1) {
-        // LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child ListNode\n");
-        auto child = new_node->children[0];
-        new_node->children.clear();
-        delete new_node;
+    {
+      // Expand any lists in any children.
+      std::vector<AbstractNode *> children;
+      auto list = new ListNode(mi, shared_ptr<EvalContext>());
+      list->children = node->children;
+      node->children.clear();
+      flatten_and_delete(list, children);
+      node->children = children;
+    }
+
+    if (dynamic_cast<ListNode *>(node)) {
+      if (node->children.size() == 1) {
+        auto child = node->children[0];
+        node->children.clear();
+        delete node;
         return child;
       }
-      return new_node;
-    } else if (auto group = dynamic_cast<GroupNode *>(node)) {
+    } else if (dynamic_cast<GroupNode *>(node)) {
       if (!dynamic_cast<RootNode *>(node)) {
         // Flatten groups.
         // TODO(ochafik): Flatten root as a... Group unless we're in lazy-union mode (then as List)
         auto new_node = new GroupNode(mi, shared_ptr<EvalContext>());
-        flatten_and_delete(group, new_node->children);
-        // if (original_child_count != new_node->children.size()) {
-        //   LOG(message_group::None, Location::NONE, "",
-        //     "[transform_tree] Flattened GroupNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
-        // }
+        flatten_and_delete(node, new_node->children);
+
         if (new_node->children.size() == 1) {
-          // LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child GroupNode\n");
           auto child = new_node->children[0];
           new_node->children.clear();
           delete new_node;
@@ -112,41 +116,26 @@ AbstractNode *transform_tree(AbstractNode *node)
     } else if (auto csg = dynamic_cast<CsgOpNode *>(node)) {
       const auto csgType = csg->type;
 
-	    // First, flatten nested children ListNodes
-	    auto new_node = new CsgOpNode(mi, shared_ptr<EvalContext>(), csgType);
-      list = new ListNode(mi, shared_ptr<EvalContext>());
-      list->children = csg->children;
-      csg->children.clear();
-      flatten_and_delete(list, new_node->children);
-      // if (original_child_count != new_node->children.size()) {
-      //   LOG(message_group::None, Location::NONE, "",
-      //     "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node->children.size());
-      // }
-
       // Try to flatten unions of unions and intersections of intersections.
-	    if (csgType == OpenSCADOperator::UNION || csgType == OpenSCADOperator::INTERSECTION) {
-        original_child_count = new_node->children.size();
-        auto new_node2 = new CsgOpNode(mi, shared_ptr<EvalContext>(), csgType);
-        flatten_and_delete(new_node, new_node2->children, &csgType);
-        // if (original_child_count != new_node2->children.size()) {
-        //   LOG(message_group::None, Location::NONE, "",
-        //     "[transform_tree] Flattened CsgOpNode (%1$d -> %2$d children)", original_child_count, new_node2->children.size());
-        // }
-        new_node = new_node2;
+      if (csgType == OpenSCADOperator::UNION || csgType == OpenSCADOperator::INTERSECTION) {
+        auto new_node = new CsgOpNode(mi, shared_ptr<EvalContext>(), csgType);
+        new_node->children = node->children;
+        node->children.clear();
+        flatten_and_delete(node, new_node->children, &csgType);
+        node = new_node;
       }
 
       // Whatever the CSG (apart from hull), one child => skip.
       if (csgType != OpenSCADOperator::HULL) {
-        if (new_node->children.size() == 1) {
-          // LOG(message_group::None, Location::NONE, "", "[transform_tree] Dropping single-child CsgOpNode\n");
-          auto child = new_node->children[0];
-          new_node->children.clear();
-          delete new_node;
+        if (node->children.size() == 1) {
+          auto child = node->children[0];
+          node->children.clear();
+          delete node;
           return child;
         }
       }
 
-      return new_node;
+      return node;
     }
   }
 
@@ -155,40 +144,37 @@ AbstractNode *transform_tree(AbstractNode *node)
       // Push transforms down.
       auto has_any_specially_tagged_child = false;
       auto transform_children_count = false;
-      for (auto child : transform->children) {
+      for (auto child : node->children) {
         if (dynamic_cast<TransformNode *>(child)) transform_children_count = true;
         if (child->modinst && child->modinst->hasSpecialTags()) has_any_specially_tagged_child = true;
       }
 
-      if (!has_any_specially_tagged_child && (transform->children.size() > 1 || transform_children_count)) {
-        std::vector<AbstractNode *> children;
-        for (auto child : transform->children) {
+      if (!has_any_specially_tagged_child && (node->children.size() > 1 || transform_children_count)) {
+        std::vector<AbstractNode*> new_children;
+        for (auto child : node->children) {
           if (auto child_transform = dynamic_cast<TransformNode *>(child)) {
             child_transform->matrix = transform->matrix * child_transform->matrix;
-            children.push_back(child_transform);
+            new_children.push_back(child_transform);
           } else {
             auto clone = new TransformNode(mi, shared_ptr<EvalContext>(), transform->verbose_name());
             clone->matrix = transform->matrix;
             clone->children.push_back(child);
-            children.push_back(clone);
+            new_children.push_back(clone);
           }
         }
 
         transform->children.clear();
         delete transform;
 
-        // LOG(message_group::None, Location::NONE, "",
-        //   "[transform_tree] Pushing TransformNode down onto %1$d children (of which %2$d were TransformNodes)", children.size(), transform_children_count);
-
-        if (children.size() == 1) {
+        if (new_children.size() == 1) {
           // We've already pushed any transform down, so it's safe to bubble our only child up.
-          return children[0];
+          return new_children[0];
         }
         AbstractNode *new_parent;
         if (Feature::ExperimentalLazyUnion.is_enabled()) new_parent = new ListNode(mi, shared_ptr<EvalContext>());
         else new_parent = new GroupNode(mi, shared_ptr<EvalContext>());
 
-        new_parent->children = children;
+        new_parent->children = new_children;
 
         return new_parent;
       }

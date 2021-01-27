@@ -240,7 +240,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION}
           "--enable=lazy-union"
           "--enable=lazy-module"
-          "--enable=push-transforms"
           "--enable=push-transforms-down-unions"
           "--enable=flatten-children"
         )
@@ -282,7 +281,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
       # NOT WORKING YET:
       # set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-module")
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=push-transforms")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=push-transforms-down-unions")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=flatten-children")
       # debug message
