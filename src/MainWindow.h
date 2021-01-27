@@ -23,6 +23,11 @@
 #include "tabmanager.h"
 #include <memory>
 
+#ifdef ENABLE_LANGUAGESERVER
+#include "lsp/language_server_interface.h"
+#endif
+
+
 class MouseSelector;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -102,8 +107,11 @@ private slots:
 	void showProgress();
 	void openCSGSettingsChanged();
 	void consoleOutput(const Message& msgObj);
-	void setCursor();
 	void errorLogOutput(const Message &log_msg);
+	void setCursor();
+
+signals:
+    void externallySetCursor(QString file, int line, int column);
 
 public:
 	static void consoleOutput(const Message &msgObj, void *userdata);
@@ -345,6 +353,10 @@ private:
 	QString exportPath(const char *suffix); // look up the last export path and generate one if not found
 	int last_parser_error_pos; // last highlighted error position
 	int tabCount = 0;
+
+#ifdef ENABLE_LANGUAGESERVER
+    LanguageServerInterface *languageserver;
+#endif
 
 signals:
 	void highlightError(int);

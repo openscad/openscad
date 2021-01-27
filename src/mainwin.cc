@@ -555,7 +555,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
 	bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
 	bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
-	
 	// make sure it looks nice..
 	auto windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
@@ -1017,7 +1016,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
 		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
-			 this->errorLogWidget->clearModel();	
+			 this->errorLogWidget->clearModel();
 			if (activeEditor->isContentModified()) saveBackup();
 			parseTopLevelDocument(rebuildParameterWidget);
 			didcompile = true;
@@ -1186,7 +1185,7 @@ void MainWindow::instantiateRoot()
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
 		this->qglview->cam.updateView(filectx.ctx, false);
-		
+
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
 			const Location *nextLocation = nullptr;
@@ -1481,7 +1480,7 @@ void MainWindow::actionShowLibraryFolder()
 	if (!fs::exists(path)) {
 		LOG(message_group::UI_Warning,Location::NONE,"","Library path %1$s doesn't exist. Creating",path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			LOG(message_group::UI_Error,Location::NONE,"","Cannot create library path: %1$s",path);	
+			LOG(message_group::UI_Error,Location::NONE,"","Cannot create library path: %1$s",path);
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -2218,13 +2217,11 @@ void MainWindow::selectObject(QPoint mouse)
 
 			// Prepare the action to be sent
 			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
-			if (editorDock->isVisible()) {
-				action->setProperty("file", QString::fromStdString(location.fileName()));
-				action->setProperty("line", location.firstLine());
-				action->setProperty("column", location.firstColumn());
+            action->setProperty("file", QString::fromStdString(location.fileName()));
+            action->setProperty("line", location.firstLine());
+            action->setProperty("column", location.firstColumn());
 
-				connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
-			}
+            connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
 		}
 
 		tracemenu.exec(this->qglview->mapToGlobal(mouse));
@@ -2241,6 +2238,9 @@ void MainWindow::setCursor()
 			!action->property("column").isValid()) {
 		return;
 	}
+    if (!editorDock->isVisible()) {
+        return;
+    }
 
 	auto file = action->property("file").toString();
 	auto line = action->property("line").toInt();
@@ -2254,6 +2254,8 @@ void MainWindow::setCursor()
 
 	// move the cursor, the editor is 0 based whereby location is 1 based
 	this->activeEditor->setCursorPosition(line - 1, column - 1);
+
+    emit externallySetCursor(file, line, column);
 }
 
 /**
@@ -2579,7 +2581,7 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
-    
+
     setCurrentOutput();
     LOG(message_group::None,Location::NONE,"","Caches Flushed");
 }
@@ -3167,7 +3169,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	if (tabManager->shouldClose()) {
 		// Disable invokeMethod calls for consoleOutput during shutdown,
 		// otherwise will segfault if echos are in progress.
-		hideCurrentOutput(); 
+		hideCurrentOutput();
 
 		QSettingsCached settings;
 		settings.setValue("window/size", size());
@@ -3239,7 +3241,7 @@ void MainWindow::consoleOutput(const Message &msgObj)
 	}
 	// FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
 	// Then processEvents should no longer be needed here.
-	this->processEvents(); 
+	this->processEvents();
 	if (consoleUpdater && !consoleUpdater->isActive()) {
 		consoleUpdater->start(50); // Limit console updates to 20 FPS
 	}

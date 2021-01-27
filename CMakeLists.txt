@@ -42,6 +42,8 @@ option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
+option(LANGUAGESERVER "Build with languageserver support " ON)
+
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 
 if(PROFILE)
@@ -688,10 +690,29 @@ set(GUI_HEADERS
   src/NetworkSignal.h
   )
 
+
+if(LANGUAGESERVER)
+    if (HEADLESS)
+        message("WARNING: Language Server is not working headless currently")
+    endif()
+    set(LSP_SOURCES
+        src/lsp/connection_handler.cc
+        src/lsp/connection.cc
+        src/lsp/decoding.cc
+        src/lsp/language_server_interface.cc
+        src/lsp/lsp.cc
+        src/lsp/messages.cc
+    )
+    add_definitions(-DENABLE_LANGUAGESERVER)
+    list(APPEND COMMON_LIBRARIES -pthread)
+else()
+    set(LSP_SOURCES)
+endif()
+
 file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
-set(Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
+set(Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources} ${LSP_SOURCES})
 if(HEADLESS)
   add_definitions(-DOPENSCAD_NOGUI)
 else()
