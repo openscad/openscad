@@ -55,7 +55,7 @@ public:
   static void printRenderingTime(std::chrono::milliseconds ms);
   
   /**
-   * Actaully print the statistic based on the given Geometry
+   * Actually print the statistic based on the given Geometry
    * @arg geom A Geometry-derived object statistic for which we should print.
    */
   void print(const Geometry &geom);

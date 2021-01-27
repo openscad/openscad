@@ -624,7 +624,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
 	if (!editorDock->isVisible()) {
-		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
+		QAction *beforeAction = viewerToolBar->actions().at(2); //a separator, not a part of the class
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
 
