@@ -29,7 +29,9 @@ void flatten_and_delete(T *list, std::vector<AbstractNode *> &out, const OpenSCA
         // Check if we're targetting a specific CsgOpNode type: we don't want
         // to flatten a UNION into an INTERSECTION or vice versa.
         if (!pCsgOp || isCsgOp(*sublist, *pCsgOp)) {
-				  flatten_and_delete(sublist, out);
+				  flatten_and_delete(sublist, out, pCsgOp);
+        } else {
+          out.push_back(child);
         }
 			}
 			else {
