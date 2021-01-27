@@ -1,4 +1,5 @@
 #include "csgops.h"
+#include "colornode.h"
 #include "feature.h"
 #include "ModuleInstantiation.h"
 #include "transformnode.h"
@@ -81,7 +82,11 @@ AbstractNode *transform_tree(AbstractNode *node)
   auto mi = node->modinst;
 
   if (Feature::ExperimentalFlattenChildren.is_enabled()) {
-    {
+    if (dynamic_cast<ListNode *>(node) ||
+        dynamic_cast<GroupNode *>(node) ||
+        dynamic_cast<CsgOpNode *>(node) ||
+        dynamic_cast<TransformNode *>(node) ||
+        dynamic_cast<ColorNode *>(node)){
       // Expand any lists in any children.
       std::vector<AbstractNode *> children;
       auto list = new ListNode(mi, shared_ptr<EvalContext>());
