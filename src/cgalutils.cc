@@ -44,7 +44,8 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	psq.quantizeVertices();
 	PolySet ps_tri(3, psq.convexValue());
 	PolysetUtils::tessellate_faces(psq, ps_tri);
-	if (ps_tri.is_convex()) {
+	// TODO(ochafik): Have PolySet::is_convex recognize the multibody fast-unioned polysets as non-convex.
+	if (ps_tri.is_convex() && !Feature::ExperimentalFastUnion.is_enabled()) {
 		typedef CGAL::Epick K;
 		// Collect point cloud
 		// FIXME: Use unordered container (need hash)

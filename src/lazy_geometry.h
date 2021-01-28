@@ -24,15 +24,11 @@ public:
 	typedef std::function<std::string(const AbstractNode &node)> get_cache_key_fn_t;
 	static get_cache_key_fn_t no_get_cache_key_fn;
 
-	LazyGeometry() : geom(nullptr), pNode(nullptr) {}
-	LazyGeometry(const geom_ptr_t &geom, const AbstractNode *pNode = nullptr)
-		: geom(geom), pNode(pNode)
-	{
-	}
-	LazyGeometry(const LazyGeometry &other)
-		: geom(other.geom), pNode(other.pNode), polyhedron(other.polyhedron)
-	{
-	}
+	LazyGeometry();
+	LazyGeometry(const geom_ptr_t &geom, const AbstractNode *pNode = nullptr);
+	LazyGeometry(const LazyGeometry &other);
+
+  LazyGeometry& operator=(const LazyGeometry &other);
 
 	operator bool() const { return getGeom().get() != nullptr; }
 	geom_ptr_t getGeom() const;
@@ -47,7 +43,6 @@ public:
 	polyset_ptr_t getPolySet(const get_cache_key_fn_t &get_cache_key) const;
 
 private:
-	polyset_ptr_t concatenateDisjointPolySets(const PolySet &a, const PolySet &b) const;
 	polyhedron_ptr_t getPolyhedron_onlyIfGeomIsNef() const;
 
 	geom_ptr_t geom;

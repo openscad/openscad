@@ -211,7 +211,12 @@ namespace CGALUtils {
     // non overlapping children as possible (they can be fast-unioned w/o Nef),
     // *then* we should do full Nef-backed joins.
     for (auto it = chbegin; it != chend; ++it) {
-        LazyGeometry lazyGeom(it->second, it->first);
+        auto childGeom = it->second;
+        auto childNode = it->first;
+        if (!childGeom || childGeom->isEmpty()) {
+          continue;
+        }
+        LazyGeometry lazyGeom(childGeom, childNode);
         auto bbox = lazyGeom.getBoundingBox();
         if (!result) {
           result = lazyGeom;

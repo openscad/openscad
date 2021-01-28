@@ -11,6 +11,32 @@
 #include "bounding_boxes.h"
 #include "lazy_geometry.h"
 
+LazyGeometry::LazyGeometry() : geom(nullptr), pNode(nullptr) {}
+
+LazyGeometry::LazyGeometry(const geom_ptr_t &geom, const AbstractNode *pNode)
+	: geom(geom), pNode(pNode)
+{
+	assert(geom);
+	assert(isPolySet() || isNef());
+}
+
+LazyGeometry::LazyGeometry(const LazyGeometry &other)
+	: geom(other.geom), pNode(other.pNode), polyhedron(other.polyhedron)
+{
+	assert(geom);
+	assert(isPolySet() || isNef());
+}
+
+LazyGeometry &LazyGeometry::operator=(const LazyGeometry &other)
+{
+	geom = other.geom;
+	pNode = other.pNode;
+	polyhedron = other.polyhedron;
+	assert(geom);
+	assert(isPolySet() || isNef());
+	return *this;
+}
+
 LazyGeometry::get_cache_key_fn_t LazyGeometry::no_get_cache_key_fn = [](const AbstractNode &node) {
 	return "";
 };
@@ -52,8 +78,8 @@ LazyGeometry LazyGeometry::concatenateDisjoint(const LazyGeometry &other,
 																							 const get_cache_key_fn_t &get_cache_key) const
 {
 	// No matter what, we don't care if we have nefs here.
-	// The assumption is that joining two nefs is always more costly than creating one, but that might
-	// not be true.
+	// The assumption is that joining two nefs is always more costly than creating
+	// the nef resulting from joining the polysets but that might not be true.
 	// TODO(ochafik): Try and concatenate nefs?
 	return LazyGeometry(
 			concatenateDisjointPolySets(*getPolySet(get_cache_key), *other.getPolySet(get_cache_key)));
@@ -62,8 +88,19 @@ LazyGeometry LazyGeometry::concatenateDisjoint(const LazyGeometry &other,
 LazyGeometry LazyGeometry::joinProbablyOverlapping(const LazyGeometry &other,
 																									 const get_cache_key_fn_t &get_cache_key) const
 {
-	return LazyGeometry(LazyGeometry::nef_ptr_t(
-			new CGAL_Nef_polyhedron(*getNef(get_cache_key) + *other.getNef(get_cache_key))));
+	auto nef1 = getNef(get_cache_key);
+	auto nef2 = other.getNef(get_cache_key);
+	if (!nef2->p3) {
+		LOG(message_group::Warning, Location::NONE, "", "RHS Nef of union was null! (provided as %s)",
+				other.isNef() ? "nef" : "polyset");
+		return LazyGeometry(nef1);
+	}
+	else if (!nef1->p3) {
+		LOG(message_group::Warning, Location::NONE, "", "LHS Nef of union was null! (provided as %s)",
+				isNef() ? "nef" : "polyset");
+		return LazyGeometry(nef2);
+	}
+	return LazyGeometry(nef_ptr_t(new CGAL_Nef_polyhedron(*nef1 + *nef2)));
 }
 
 LazyGeometry::nef_ptr_t LazyGeometry::getNef(const get_cache_key_fn_t &get_cache_key) const
@@ -104,15 +141,6 @@ LazyGeometry::polyset_ptr_t LazyGeometry::getPolySet(const get_cache_key_fn_t &g
 		GeometryCache::instance()->insert(key, converted);
 	}
 	return converted;
-}
-
-LazyGeometry::polyset_ptr_t LazyGeometry::concatenateDisjointPolySets(const PolySet &a,
-																																			const PolySet &b) const
-{
-	// ScopedTimer timer("CGALUtils::applyUnion3D -> polyConcat");
-	auto c = new PolySet(a);
-	c->append(b);
-	return LazyGeometry::polyset_ptr_t(c);
 }
 
 LazyGeometry::polyhedron_ptr_t LazyGeometry::getPolyhedron_onlyIfGeomIsNef() const
