@@ -31,6 +31,7 @@
 #include "GeometryUtils.h"
 #include "lazy_geometry.h"
 #include "bounding_boxes.h"
+#include "ModuleInstantiation.h"
 
 #include <map>
 #include <queue>
@@ -207,6 +208,7 @@ namespace CGALUtils {
     LazyGeometry result;
     BoundingBoxes result_bboxes;
 
+    progress_tick();
     // TODO(ochafik): Use custom queue system. Ideally we want to group as many
     // non overlapping children as possible (they can be fast-unioned w/o Nef),
     // *then* we should do full Nef-backed joins.
@@ -223,9 +225,11 @@ namespace CGALUtils {
         } else if (result_bboxes.intersects(bbox)) {
           result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
         } else {
+          LOG(message_group::Echo, childNode->modinst->location(), "", "Doing fast union of disjoint solid");
           result = result.concatenateDisjoint(lazyGeom, get_cache_key);
         }
         result_bboxes.add(bbox);
+        progress_tick();
     }
 
     return result;
