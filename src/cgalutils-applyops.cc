@@ -29,6 +29,8 @@
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
+#include "lazy_geometry.h"
+#include "bounding_boxes.h"
 
 #include <map>
 #include <queue>
@@ -139,9 +141,13 @@ namespace CGALUtils {
 		return N;
 	}
 
-
-	CGAL_Nef_polyhedron *applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+    const get_cache_key_fn_t& get_cache_key)
 	{
+		if (Feature::ExperimentalFastUnion.is_enabled()) {
+			return applyUnion3DFast(chbegin, chend, get_cache_key).getGeom();
+		}
+
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark
@@ -183,7 +189,7 @@ namespace CGALUtils {
 			}
 
 			if (q.size() == 1) {
-				return new CGAL_Nef_polyhedron(q.top().first->p3);
+				return shared_ptr<const Geometry>(new CGAL_Nef_polyhedron(q.top().first->p3));
 			} else {
 				return nullptr;
 			}
@@ -194,7 +200,31 @@ namespace CGALUtils {
 		return nullptr;
 	}
 
+	LazyGeometry applyUnion3DFast(
+    Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+    const get_cache_key_fn_t& get_cache_key)
+	{
+    LazyGeometry result;
+    BoundingBoxes result_bboxes;
 
+    // TODO(ochafik): Use custom queue system. Ideally we want to group as many
+    // non overlapping children as possible (they can be fast-unioned w/o Nef),
+    // *then* we should do full Nef-backed joins.
+    for (auto it = chbegin; it != chend; ++it) {
+        LazyGeometry lazyGeom(it->second, it->first);
+        auto bbox = lazyGeom.getBoundingBox();
+        if (!result) {
+          result = lazyGeom;
+        } else if (result_bboxes.intersects(bbox)) {
+          result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
+        } else {
+          result = result.concatenateDisjoint(lazyGeom, get_cache_key);
+        }
+        result_bboxes.add(bbox);
+    }
+
+    return result;
+  }
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &result)
 	{
@@ -252,17 +282,17 @@ namespace CGALUtils {
 	/*!
 		children cannot contain nullptr objects
 	*/
-	Geometry const * applyMinkowski(const Geometry::Geometries &children)
+	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children)
 	{
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), nullptr};
+		shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
 		try {
 			while (++it != children.end()) {
-				operands[1] = it->second.get();
+				operands[1] = it->second;
 
 				typedef CGAL::Epick Hull_kernel;
 
@@ -272,9 +302,10 @@ namespace CGALUtils {
 				for (size_t i = 0; i < 2; ++i) {
 					CGAL_Polyhedron poly;
 
-					const PolySet * ps = dynamic_cast<const PolySet *>(operands[i]);
 
-					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
+					auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
+
+					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) nef->p3->convert_to_polyhedron(poly);
@@ -412,12 +443,12 @@ namespace CGALUtils {
 				}
 
 				if (it != std::next(children.begin()))
-					delete operands[0];
+					operands[0].reset();
 
 				if (result_parts.size() == 1) {
 					PolySet *ps = new PolySet(3,true);
 					createPolySetFromPolyhedron(*result_parts.begin(), *ps);
-					operands[0] = ps;
+					operands[0] = shared_ptr<const Geometry>(ps);
 				} else if (!result_parts.empty()) {
 					t.start();
 					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
@@ -428,7 +459,7 @@ namespace CGALUtils {
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
 						shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
 					}
-					CGAL_Nef_polyhedron *N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
+					auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
 					// FIXME: This should really never throw.
 					// Assert once we figured out what went wrong with issue #1069?
 					if (!N) throw 0;
@@ -437,7 +468,7 @@ namespace CGALUtils {
 					t.reset();
 					operands[0] = N;
 				} else {
-					operands[0] = new CGAL_Nef_polyhedron();
+					operands[0] = shared_ptr<const Geometry>(new CGAL_Nef_polyhedron());
 				}
 			}
 
@@ -451,11 +482,15 @@ namespace CGALUtils {
 			// If anything throws we simply fall back to Nef Minkowski
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-			CGAL_Nef_polyhedron *N = applyOperator3D(children, OpenSCADOperator::MINKOWSKI);
+			auto N = shared_ptr<const Geometry>(applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
 			CGAL::set_error_behaviour(old_behaviour);
 			return N;
 		}
 	}
+
+  get_cache_key_fn_t no_get_cache_key_fn = [](const AbstractNode& node) {
+    return "";
+  };
 }; // namespace CGALUtils
 
 

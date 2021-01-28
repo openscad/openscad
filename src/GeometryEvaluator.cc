@@ -164,7 +164,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 			}
 			if (actualchildren.empty()) return ResultObject();
 			if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-			return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end()));
+			return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end(), [&](const AbstractNode& node) {
+				return this->tree.getIdString(node);
+			}));
 			break;
 		}
 		default:

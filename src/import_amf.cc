@@ -271,16 +271,11 @@ PolySet * AmfImporter::read(const std::string filename)
 		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
-		CGAL_Nef_polyhedron *N = CGALUtils::applyUnion3D(children.begin(), children.end());
-		PolySet *result = new PolySet(3);
-		if (CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *result)) {
-			delete result;
-			p = new PolySet(3);
-			LOG(message_group::Error,Location::NONE,"","Error importing multi-object AMF file '%1$s', import() at line %2$d",filename,this->loc.firstLine());
+		if (auto polyset = CGALUtils::applyUnion3DFast(children.begin(), children.end()).getPolySet()) {
+			p = new PolySet(*polyset);
 		} else {
-			p = result;
+			LOG(message_group::Error,Location::NONE,"","Error importing multi-object AMF file '%1$s', import() at line %2$d",filename,this->loc.firstLine());
 		}
-		delete N;
 	}
 #endif
 	if (!p) {

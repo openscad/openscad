@@ -420,8 +420,8 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
         }
       }
       
-      if (minkowski_ch_it != std::next(children.begin())) delete operands[0];
       
+      if (minkowski_ch_it != std::next(children.begin())) operands[0].reset();
       if (result_parts.size() == 1) {
         PolySet *ps = new PolySet(3,true);
         createPolySetFromPolyhedron(*result_parts.begin(), *ps);
@@ -436,7 +436,7 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
                                                  shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
         }
-        CGAL_Nef_polyhedron *N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
+        auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         t.stop();
         if (N) PRINTDB("Minkowski: Union done: %f s",t.time());
         else PRINTDB("Minkowski: Union failed: %f s",t.time());

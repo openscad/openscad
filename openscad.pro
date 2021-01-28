@@ -653,6 +653,8 @@ HEADERS += src/cgal.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
            src/cgalworker.h \
+           src/bounding_boxes.h \
+           src/lazy_geometry.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
@@ -664,6 +666,7 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/cgalworker.cc \
+           src/lazy_geometry.cc \
            src/Polygon2d-CGAL.cc \
            src/import_nef.cc
 }
