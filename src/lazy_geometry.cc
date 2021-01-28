@@ -11,8 +11,8 @@
 #include "bounding_boxes.h"
 #include "lazy_geometry.h"
 
-LazyGeometry::get_cache_key_fn_t LazyGeometry::no_get_cache_key_fn = [](const AbstractNode& node) {
-  return "";
+LazyGeometry::get_cache_key_fn_t LazyGeometry::no_get_cache_key_fn = [](const AbstractNode &node) {
+	return "";
 };
 
 LazyGeometry::geom_ptr_t LazyGeometry::getGeom() const
@@ -28,10 +28,10 @@ bool LazyGeometry::isNef() const
 	return dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom).get() != nullptr;
 }
 
-CGAL_Iso_cuboid_3 LazyGeometry::getBoundingBox() const
+BoundingBoxes::BoundingBoxoid LazyGeometry::getBoundingBox() const
 {
 	if (auto polyset = dynamic_pointer_cast<const PolySet>(geom)) {
-		return BoundingBoxes::bboxToIsoCuboid(polyset->getBoundingBox());
+		return polyset->getBoundingBox();
 	}
 	else {
 		auto poly = getPolyhedron_onlyIfGeomIsNef();

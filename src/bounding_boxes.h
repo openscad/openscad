@@ -2,6 +2,7 @@
 
 #include "cgal.h"
 #include <vector>
+#include <boost/variant.hpp>
 
 /*!
  * A set of bounding boxes that can be in double or cartesian coordinates
@@ -10,6 +11,8 @@
 class BoundingBoxes
 {
 public:
+	typedef boost::variant<CGAL_Iso_cuboid_3, BoundingBox> BoundingBoxoid;
+
 	static CGAL_Iso_cuboid_3 bboxToIsoCuboid(const BoundingBox &bbox)
 	{
 		auto &min = bbox.min();
@@ -31,25 +34,33 @@ public:
 											 Eigen::Vector3d(to_double(max.x()), to_double(max.y()), to_double(max.z())));
 	}
 
-	void add(const BoundingBox &b) { bboxes.push_back(b); }
-	void add(const CGAL_Iso_cuboid_3 &b) { cuboids.push_back(b); }
-
-	static bool cuboidsIntersect(const CGAL_Iso_cuboid_3 &a, const CGAL_Iso_cuboid_3 &b)
+	void add(const BoundingBoxoid &x)
 	{
-		auto ba = isoCuboidToBbox(a);
-		auto bb = isoCuboidToBbox(b);
-		auto result = CGAL::intersection(a, b).has_value();
-		return result;
+		if (auto *bbox = boost::get<BoundingBox>(&x)) {
+			bboxes.push_back(*bbox);
+		}
+		else if (auto *cuboid = boost::get<CGAL_Iso_cuboid_3>(&x)) {
+			cuboids.push_back(*cuboid);
+		}
+		else {
+			assert(!"Unknown bbox type");
+		}
 	}
 
-	bool intersects(const BoundingBox &b)
+	bool intersects(const BoundingBoxoid &x)
 	{
-		return intersects_bboxes(b) || intersects_cuboids(bboxToIsoCuboid(b));
-	}
-
-	bool intersects(const CGAL_Iso_cuboid_3 &c)
-	{
-		return intersects_cuboids(c) || intersects_bboxes(isoCuboidToBbox(c));
+		if (auto *bbox = boost::get<BoundingBox>(&x)) {
+			return intersects_bboxes(*bbox) ||
+						 (cuboids.size() && intersects_cuboids(bboxToIsoCuboid(*bbox)));
+		}
+		else if (auto *cuboid = boost::get<CGAL_Iso_cuboid_3>(&x)) {
+			return intersects_cuboids(*cuboid) ||
+						 (bboxes.size() && intersects_bboxes(isoCuboidToBbox(*cuboid)));
+		}
+		else {
+			assert(!"Unknown bbox type");
+			return false;
+		}
 	}
 
 private:
@@ -66,7 +77,7 @@ private:
 	bool intersects_cuboids(const CGAL_Iso_cuboid_3 &c)
 	{
 		for (auto &cuboid : cuboids) {
-			if (cuboidsIntersect(c, cuboid)) {
+			if (CGAL::intersection(c, cuboid).has_value()) {
 				return true;
 			}
 		}

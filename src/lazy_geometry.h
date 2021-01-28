@@ -5,6 +5,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "linalg.h"
 
+#include "bounding_boxes.h"
 #include "cgal.h"
 #include "cgalutils.h"
 
@@ -37,7 +38,7 @@ public:
 	geom_ptr_t getGeom() const;
 	bool isPolySet() const;
 	bool isNef() const;
-	CGAL_Iso_cuboid_3 getBoundingBox() const;
+	BoundingBoxes::BoundingBoxoid getBoundingBox() const;
 	LazyGeometry concatenateDisjoint(const LazyGeometry &other,
 																	 const get_cache_key_fn_t &get_cache_key) const;
 	LazyGeometry joinProbablyOverlapping(const LazyGeometry &other,
