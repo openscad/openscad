@@ -3,9 +3,13 @@
 import re, sys, subprocess, os
 from validatestl import validateSTL
 
-stlfile = sys.argv[3] + '.stl'
+scad_file = sys.argv[1]
+openscad_bin = sys.argv[-2]
+other_args = sys.argv[2:-2]
 
-subprocess.check_call([sys.argv[2], sys.argv[1], '-o', stlfile])
+stlfile = scad_file + '.stl'
+
+subprocess.check_call([openscad_bin, scad_file] + other_args + ['-o', stlfile])
 
 ret = validateSTL(stlfile)
 os.unlink(stlfile)
