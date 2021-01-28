@@ -60,19 +60,12 @@ BoundingBoxes::BoundingBoxoid LazyGeometry::getBoundingBox() const
 		return polyset->getBoundingBox();
 	}
 	else {
-		auto poly = getPolyhedron_onlyIfGeomIsNef();
-		return CGAL::bounding_box(poly->points_begin(), poly->points_end());
+		auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+		assert(nef);
+		auto res = CGALUtils::boundingBox(*nef->p3);
+		return res;
 	}
 }
-// BoundingBox LazyGeometry::getBoundingBox() const {
-//   if (auto polyset = dynamic_pointer_cast<const PolySet>(geom)) {
-//     return polyset->getBoundingBox();
-//   } else {
-//     auto poly = getPolyhedron_onlyIfGeomIsNef();
-//     auto isoCuboid = CGAL::bounding_box(poly->points_begin(), poly->points_end());
-//     return BoundingBoxes::isoCuboidToBbox(isoCuboid);
-//   }
-// }
 
 LazyGeometry LazyGeometry::concatenateDisjoint(const LazyGeometry &other,
 																							 const get_cache_key_fn_t &get_cache_key) const
@@ -133,10 +126,15 @@ LazyGeometry::polyset_ptr_t LazyGeometry::getPolySet(const get_cache_key_fn_t &g
 	}
 
 	// ScopedTimer timer("CGALUtils::applyUnion3D -> polyhedronToPolySet");
-	auto poly = getPolyhedron_onlyIfGeomIsNef();
 	auto ps = new PolySet(3);
-	CGALUtils::createPolySetFromPolyhedron(*poly, *ps);
 	auto converted = LazyGeometry::polyset_ptr_t(ps);
+
+	auto nef = getNef(get_cache_key);
+	bool err = CGALUtils::createPolySetFromNefPolyhedron3(*nef->p3, *ps);
+	if (err) {
+		LOG(message_group::Error, Location::NONE, "", "LazyGeometry::getPolySet: Nef->PolySet failed");
+		return converted;
+	}
 	if (pNode && key != "") {
 		GeometryCache::instance()->insert(key, converted);
 	}
