@@ -225,7 +225,9 @@ namespace CGALUtils {
         } else if (result_bboxes.intersects(bbox)) {
           result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
         } else {
-          LOG(message_group::Echo, childNode->modinst->location(), "", "Doing fast union of disjoint solid");
+          LOG(message_group::Echo,
+            childNode && childNode->modinst ? childNode->modinst->location() : Location::NONE, "",
+            "Doing fast union of disjoint solid");
           result = result.concatenateDisjoint(lazyGeom, get_cache_key);
         }
         result_bboxes.add(bbox);
