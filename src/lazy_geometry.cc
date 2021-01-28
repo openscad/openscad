@@ -11,6 +11,10 @@
 #include "bounding_boxes.h"
 #include "lazy_geometry.h"
 
+LazyGeometry::get_cache_key_fn_t LazyGeometry::no_get_cache_key_fn = [](const AbstractNode& node) {
+  return "";
+};
+
 LazyGeometry::geom_ptr_t LazyGeometry::getGeom() const
 {
 	return geom;

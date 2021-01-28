@@ -36,15 +36,12 @@ namespace CGALUtils {
 		CGAL::Failure_behaviour old_behaviour;
 	};
 
-  typedef std::function<std::string(const AbstractNode &node)> get_cache_key_fn_t;
-  extern get_cache_key_fn_t no_get_cache_key_fn;
-
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const get_cache_key_fn_t& get_cache_key = no_get_cache_key_fn);
+		const LazyGeometry::get_cache_key_fn_t& get_cache_key = LazyGeometry::no_get_cache_key_fn);
 	LazyGeometry applyUnion3DFast(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const get_cache_key_fn_t& get_cache_key = no_get_cache_key_fn);
+		const LazyGeometry::get_cache_key_fn_t& get_cache_key = LazyGeometry::no_get_cache_key_fn);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);

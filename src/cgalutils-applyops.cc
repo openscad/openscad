@@ -142,7 +142,7 @@ namespace CGALUtils {
 	}
 
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-    const get_cache_key_fn_t& get_cache_key)
+    const LazyGeometry::get_cache_key_fn_t& get_cache_key)
 	{
 		if (Feature::ExperimentalFastUnion.is_enabled()) {
 			return applyUnion3DFast(chbegin, chend, get_cache_key).getGeom();
@@ -202,7 +202,7 @@ namespace CGALUtils {
 
 	LazyGeometry applyUnion3DFast(
     Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-    const get_cache_key_fn_t& get_cache_key)
+    const LazyGeometry::get_cache_key_fn_t& get_cache_key)
 	{
     LazyGeometry result;
     BoundingBoxes result_bboxes;
@@ -487,10 +487,6 @@ namespace CGALUtils {
 			return N;
 		}
 	}
-
-  get_cache_key_fn_t no_get_cache_key_fn = [](const AbstractNode& node) {
-    return "";
-  };
 }; // namespace CGALUtils
 
 

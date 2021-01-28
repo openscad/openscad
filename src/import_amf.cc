@@ -271,7 +271,7 @@ PolySet * AmfImporter::read(const std::string filename)
 		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
-		if (auto polyset = CGALUtils::applyUnion3DFast(children.begin(), children.end()).getPolySet()) {
+		if (auto polyset = CGALUtils::applyUnion3DFast(children.begin(), children.end()).getPolySet(LazyGeometry::no_get_cache_key_fn)) {
 			p = new PolySet(*polyset);
 		} else {
 			LOG(message_group::Error,Location::NONE,"","Error importing multi-object AMF file '%1$s', import() at line %2$d",filename,this->loc.firstLine());

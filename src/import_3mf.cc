@@ -199,7 +199,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 		for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
 		}
-		if (auto polyset = CGALUtils::applyUnion3DFast(children.begin(), children.end()).getPolySet()) {
+		if (auto polyset = CGALUtils::applyUnion3DFast(children.begin(), children.end()).getPolySet(LazyGeometry::no_get_cache_key_fn)) {
 			*p = *polyset;
 		}
 #endif

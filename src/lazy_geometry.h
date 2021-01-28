@@ -21,6 +21,7 @@ public:
 	typedef shared_ptr<const PolySet> polyset_ptr_t;
 	typedef shared_ptr<const CGAL_Polyhedron> polyhedron_ptr_t;
 	typedef std::function<std::string(const AbstractNode &node)> get_cache_key_fn_t;
+	static get_cache_key_fn_t no_get_cache_key_fn;
 
 	LazyGeometry() : geom(nullptr), pNode(nullptr) {}
 	LazyGeometry(const geom_ptr_t &geom, const AbstractNode *pNode = nullptr)
