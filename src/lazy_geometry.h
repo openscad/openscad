@@ -28,7 +28,7 @@ public:
 	LazyGeometry(const geom_ptr_t &geom, const AbstractNode *pNode = nullptr);
 	LazyGeometry(const LazyGeometry &other);
 
-  LazyGeometry& operator=(const LazyGeometry &other);
+	LazyGeometry &operator=(const LazyGeometry &other);
 
 	operator bool() const { return getGeom().get() != nullptr; }
 	geom_ptr_t getGeom() const;
@@ -43,12 +43,9 @@ public:
 	polyset_ptr_t getPolySet(const get_cache_key_fn_t &get_cache_key) const;
 
 private:
-	polyhedron_ptr_t getPolyhedron_onlyIfGeomIsNef() const;
-
 	geom_ptr_t geom;
 	// The node this geometry corresponds to, if any
 	// (nullptr for intermediate operations; top level operations will be cached
 	// in GeometryEvaluator).
 	const AbstractNode *pNode;
-	mutable polyhedron_ptr_t polyhedron;
 };
