@@ -1,0 +1,5 @@
+difference() {
+	cube(size = [10, 10, 10], center = true);
+	cylinder($fn = 0, $fa = 12, $fs = 2, h = 20, r1 = 4, r2 = 4, center = true);
+}
+

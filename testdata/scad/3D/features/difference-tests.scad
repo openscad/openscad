@@ -1,3 +1,9 @@
+// A note about colors:
+// fast-union clears the diff colors of unioned bodies, and it is currently
+// enabled for all tests. This file has a top-level union so it's all in the
+// same color (it would be colorfull with lazy-union on),
+// but ./difference-color-test.scad now tests the color behaviour explicitly.
+
 // Empty
 difference();
 // No children
