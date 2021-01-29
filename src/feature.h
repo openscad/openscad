@@ -16,6 +16,9 @@ public:
 
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
+  static const Feature ExperimentalLazyModule;
+  static const Feature ExperimentalFlattenChildren;
+	static const Feature ExperimentalPushTransformsDownUnions;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

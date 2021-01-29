@@ -23,6 +23,9 @@ Feature::list_t Feature::feature_list;
  */
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalLazyModule("lazy-module", "Enable lazy modules (enhances lazy-union).");
+const Feature Feature::ExperimentalFlattenChildren("flatten-children", "Enable flattening of children (enhances lazy-module).");
+const Feature Feature::ExperimentalPushTransformsDownUnions("push-transforms-down-unions", "Enable pushdown of transform nodes to union children (enhances lazy-union).");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
