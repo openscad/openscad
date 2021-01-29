@@ -77,7 +77,7 @@ private:
 	bool intersects_cuboids(const CGAL_Iso_cuboid_3 &c)
 	{
 		for (auto &cuboid : cuboids) {
-			if (CGAL::intersection(c, cuboid).has_value()) {
+			if (CGAL::intersection(c, cuboid) != boost::none) {
 				return true;
 			}
 		}
