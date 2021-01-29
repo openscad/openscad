@@ -92,8 +92,8 @@ LazyGeometry LazyGeometry::concatenateDisjoint(const LazyGeometry &other,
 	return LazyGeometry(concatenation);
 }
 
-LazyGeometry LazyGeometry::joinProbablyOverlapping(const LazyGeometry &other,
-																									 const get_cache_key_fn_t &get_cache_key) const
+LazyGeometry LazyGeometry::joinProbablyOverlapping(
+	const LazyGeometry &other, const get_cache_key_fn_t &get_cache_key) const
 {
 	auto nef1 = getNef(get_cache_key);
 	auto nef2 = other.getNef(get_cache_key);

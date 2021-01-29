@@ -47,12 +47,12 @@ namespace CGALUtils {
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 	bool is_approximately_convex(const PolySet &ps);
-  shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
+	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 
 	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
-	template <class Polyhedron_A, class Polyhedron_B> 
+	template <class Polyhedron_A, class Polyhedron_B>
 	void copyPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
@@ -64,7 +64,7 @@ namespace CGALUtils {
 	bool tessellatePolygonWithHoles(const PolyholeK &polygons,
 																	Polygons &triangles,
 																	const K::Vector_3 *normal = nullptr);
-	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons, 
+	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);
 };

@@ -214,25 +214,25 @@ namespace CGALUtils {
 		// non overlapping children as possible (they can be fast-unioned w/o Nef),
 		// *then* can start converting to Nefs and do heavy unions.
 		for (auto it = chbegin; it != chend; ++it) {
-				auto childGeom = it->second;
-				auto childNode = it->first;
-				if (!childGeom || childGeom->isEmpty()) {
-					continue;
-				}
-				LazyGeometry lazyGeom(childGeom, childNode);
-				auto bbox = lazyGeom.getBoundingBox();
-				if (!result) {
-					result = lazyGeom;
-				} else if (result_bboxes.intersects(bbox)) {
-					result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
-				} else {
-					LOG(message_group::Echo,
-						childNode && childNode->modinst ? childNode->modinst->location() : Location::NONE, "",
-						"Doing fast-union of disjoint solid");
-					result = result.concatenateDisjoint(lazyGeom, get_cache_key);
-				}
-				result_bboxes.add(bbox);
-				progress_tick();
+			auto childGeom = it->second;
+			auto childNode = it->first;
+			if (!childGeom || childGeom->isEmpty()) {
+				continue;
+			}
+			LazyGeometry lazyGeom(childGeom, childNode);
+			auto bbox = lazyGeom.getBoundingBox();
+			if (!result) {
+				result = lazyGeom;
+			} else if (result_bboxes.intersects(bbox)) {
+				result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
+			} else {
+				LOG(message_group::Echo,
+					childNode && childNode->modinst ? childNode->modinst->location() : Location::NONE, "",
+					"Doing fast-union of disjoint solid");
+				result = result.concatenateDisjoint(lazyGeom, get_cache_key);
+			}
+			result_bboxes.add(bbox);
+			progress_tick();
 		}
 
 		return result;
