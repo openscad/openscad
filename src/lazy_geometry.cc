@@ -72,15 +72,12 @@ LazyGeometry LazyGeometry::concatenateDisjoint(const LazyGeometry &other,
 	// The assumption is that joining two nefs is always more costly than creating
 	// the nef resulting from joining the polysets (also, it's not even sure we'd
 	// need a Nef result), but that might not be true in all cases.
-
-	PolySet other_copy(*other.getPolySet(get_cache_key));
-	other_copy.quantizeVertices();
-
 	auto concatenation = shared_ptr<PolySet>(new PolySet(*getPolySet(get_cache_key)));
-	concatenation->quantizeVertices();
-	concatenation->append(other_copy);
+	concatenation->append(*other.getPolySet(get_cache_key));
 	concatenation->quantizeVertices();
 
+#ifndef OPTIMISTIC_FAST_UNION
+	// Very costly detection of pathological cases.
 	CGAL_Polyhedron P;
 	auto err = CGALUtils::createPolyhedronFromPolySet(*concatenation, P);
 	if (err || !P.is_closed() || !P.is_valid(false, 0)) {
@@ -88,7 +85,7 @@ LazyGeometry LazyGeometry::concatenateDisjoint(const LazyGeometry &other,
 				"Fast union result couldn't be converted to a polyhedron. Reverting to slower full union.");
 		return joinProbablyOverlapping(other, get_cache_key);
 	}
-
+#endif
 	return LazyGeometry(concatenation);
 }
 
