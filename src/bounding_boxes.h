@@ -51,7 +51,7 @@ public:
 	{
 		if (auto *bbox = boost::get<BoundingBox>(&x)) {
 			return intersects_bboxes(*bbox) ||
-						 (cuboids.size() && intersects_cuboids(bboxToIsoCuboid(*bbox)));
+						 (!bbox->isEmpty() && cuboids.size() && intersects_cuboids(bboxToIsoCuboid(*bbox)));
 		}
 		else if (auto *cuboid = boost::get<CGAL_Iso_cuboid_3>(&x)) {
 			return intersects_cuboids(*cuboid) ||
