@@ -142,8 +142,9 @@ namespace CGALUtils {
 		return N;
 	}
 
-	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-    const LazyGeometry::get_cache_key_fn_t& get_cache_key)
+	shared_ptr<const Geometry> applyUnion3D(
+		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+		const LazyGeometry::get_cache_key_fn_t& get_cache_key)
 	{
 		if (Feature::ExperimentalFastUnion.is_enabled()) {
 			return applyUnion3DFast(chbegin, chend, get_cache_key).getGeom();
@@ -202,40 +203,40 @@ namespace CGALUtils {
 	}
 
 	LazyGeometry applyUnion3DFast(
-    Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-    const LazyGeometry::get_cache_key_fn_t& get_cache_key)
+		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+		const LazyGeometry::get_cache_key_fn_t& get_cache_key)
 	{
-    LazyGeometry result;
-    BoundingBoxes result_bboxes;
+		LazyGeometry result;
+		BoundingBoxes result_bboxes;
 
-    progress_tick();
-    // TODO(ochafik): Use custom queue system. Ideally we want to group as many
-    // non overlapping children as possible (they can be fast-unioned w/o Nef),
-    // *then* we should do full Nef-backed joins.
-    for (auto it = chbegin; it != chend; ++it) {
-        auto childGeom = it->second;
-        auto childNode = it->first;
-        if (!childGeom || childGeom->isEmpty()) {
-          continue;
-        }
-        LazyGeometry lazyGeom(childGeom, childNode);
-        auto bbox = lazyGeom.getBoundingBox();
-        if (!result) {
-          result = lazyGeom;
-        } else if (result_bboxes.intersects(bbox)) {
-          result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
-        } else {
-          LOG(message_group::Echo,
-            childNode && childNode->modinst ? childNode->modinst->location() : Location::NONE, "",
-            "Doing fast union of disjoint solid");
-          result = result.concatenateDisjoint(lazyGeom, get_cache_key);
-        }
-        result_bboxes.add(bbox);
-        progress_tick();
-    }
+		progress_tick();
+		// TODO(ochafik): Optimize the union order: we want to group as many
+		// non overlapping children as possible (they can be fast-unioned w/o Nef),
+		// *then* can start converting to Nefs and do heavy unions.
+		for (auto it = chbegin; it != chend; ++it) {
+				auto childGeom = it->second;
+				auto childNode = it->first;
+				if (!childGeom || childGeom->isEmpty()) {
+					continue;
+				}
+				LazyGeometry lazyGeom(childGeom, childNode);
+				auto bbox = lazyGeom.getBoundingBox();
+				if (!result) {
+					result = lazyGeom;
+				} else if (result_bboxes.intersects(bbox)) {
+					result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
+				} else {
+					LOG(message_group::Echo,
+						childNode && childNode->modinst ? childNode->modinst->location() : Location::NONE, "",
+						"Doing fast-union of disjoint solid");
+					result = result.concatenateDisjoint(lazyGeom, get_cache_key);
+				}
+				result_bboxes.add(bbox);
+				progress_tick();
+		}
 
-    return result;
-  }
+		return result;
+	}
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &result)
 	{

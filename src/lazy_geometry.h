@@ -9,10 +9,8 @@
 #include "cgal.h"
 #include "cgalutils.h"
 
-/*! Holds a Geometry and allows defered conversion to Nef or PolySet. Also,
+/*! Holds a Geometry and allows deferred conversion to Nef or PolySet. Also,
  * looks up the cache using the provided keys.
- *
- * TODO(ochafik): Find a way to unite GeometryEvaluator's smart cache with this.
  */
 class LazyGeometry
 {
@@ -35,8 +33,14 @@ public:
 	bool isPolySet() const;
 	bool isNef() const;
 	BoundingBoxes::BoundingBoxoid getBoundingBox() const;
+
+  /*! Does a union assuming this geometry and other are physically disjoint,
+   * i.e. their polygons don't intersect and none of them is containing the
+   * other. */
 	LazyGeometry concatenateDisjoint(const LazyGeometry &other,
 																	 const get_cache_key_fn_t &get_cache_key) const;
+
+  /*! Does a union assuming the two geometries are likely to intersect. */
 	LazyGeometry joinProbablyOverlapping(const LazyGeometry &other,
 																			 const get_cache_key_fn_t &get_cache_key) const;
 	nef_ptr_t getNef(const get_cache_key_fn_t &get_cache_key) const;
@@ -46,6 +50,7 @@ private:
 	geom_ptr_t geom;
 	// The node this geometry corresponds to, if any
 	// (nullptr for intermediate operations; top level operations will be cached
-	// in GeometryEvaluator).
+	// in GeometryEvaluator). This is used to compute the caching key used to
+  // fetch / store nefs converted to polysets and vice versa.
 	const AbstractNode *pNode;
 };

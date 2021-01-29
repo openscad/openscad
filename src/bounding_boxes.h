@@ -5,12 +5,16 @@
 #include <boost/variant.hpp>
 
 /*!
- * A set of bounding boxes that can be in double or cartesian coordinates
- * (best precision occurs when not mixing the two)
+ * A set of bounding boxes that can be in double or precise coordinates
+ * (i.e. BoundingBox coming from PolySet data vs. CGAL_Iso_cuboid_3 coming from
+ * CGAL_Nef_polyhedron data).
+ *
+ * Best precision occurs when not mixing the two.
  */
 class BoundingBoxes
 {
 public:
+	// Union of the two types of bounding boxes.
 	typedef boost::variant<CGAL_Iso_cuboid_3, BoundingBox> BoundingBoxoid;
 
 	static CGAL_Iso_cuboid_3 bboxToIsoCuboid(const BoundingBox &bbox)
@@ -21,10 +25,6 @@ public:
 		return CGAL_Iso_cuboid_3(NT3(min.x()), NT3(min.y()), NT3(min.z()), NT3(max.x()), NT3(max.y()),
 														 NT3(max.z()));
 	}
-
-	// static double to_double(const NT3& nt) {
-	//   return nt.numerator().to_double() / nt.denominator().to_double();
-	// }
 
 	static BoundingBox isoCuboidToBbox(const CGAL_Iso_cuboid_3 &cuboid)
 	{
