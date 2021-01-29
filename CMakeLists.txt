@@ -532,6 +532,7 @@ set(CGAL_SOURCES
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
+  src/lazy_geometry.cc
   src/export_nef.cc
   src/import_nef.cc
   src/CGAL_Nef_polyhedron.cc
