@@ -4,7 +4,6 @@
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
-#include "lazy_geometry.h"
 
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
@@ -14,6 +13,9 @@ typedef CGAL::Epick K;
 typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
+
+class LazyGeometry;
+class Tree;
 
 namespace /* anonymous */ {
         template<typename Result, typename V>
@@ -39,9 +41,9 @@ namespace CGALUtils {
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const LazyGeometry::get_cache_key_fn_t& get_cache_key = LazyGeometry::no_get_cache_key_fn);
-	LazyGeometry applyUnion3DFast(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const LazyGeometry::get_cache_key_fn_t& get_cache_key = LazyGeometry::no_get_cache_key_fn);
+		const Tree* tree = nullptr);
+	shared_ptr<const LazyGeometry> applyUnion3DFast(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+		const Tree* tree = nullptr);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);

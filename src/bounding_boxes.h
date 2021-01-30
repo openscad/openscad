@@ -37,7 +37,9 @@ public:
 	void add(const BoundingBoxoid &x)
 	{
 		if (auto *bbox = boost::get<BoundingBox>(&x)) {
-			bboxes.push_back(*bbox);
+			if (!bbox->isEmpty()) {
+				bboxes.push_back(*bbox);
+			}
 		}
 		else if (auto *cuboid = boost::get<CGAL_Iso_cuboid_3>(&x)) {
 			cuboids.push_back(*cuboid);
@@ -47,7 +49,20 @@ public:
 		}
 	}
 
-	bool intersects(const BoundingBoxoid &x)
+	bool empty() const { return bboxes.empty() && cuboids.empty(); }
+
+	BoundingBoxes &operator+=(const BoundingBoxes &other)
+	{
+		bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
+		cuboids.insert(cuboids.end(), other.cuboids.begin(), other.cuboids.end());
+		return *this;
+	}
+
+	/*! Whether these bounding boxes have any intersection with the provided one.
+	 * Beware: currently implemented in linear time! (CGAL has ways to improve
+	 * that)
+	 */
+	bool intersects(const BoundingBoxoid &x) const
 	{
 		if (auto *bbox = boost::get<BoundingBox>(&x)) {
 			return intersects_bboxes(*bbox) ||
@@ -63,8 +78,23 @@ public:
 		}
 	}
 
+	/*! Whether these bounding boxes have any intersection with any of the other.
+	 * Beware: currently implemented in quadratic time! (CGAL has ways to improve
+	 * that)
+	 */
+	bool intersects(const BoundingBoxes &other) const
+	{
+		for (auto &bbox : bboxes) {
+			if (other.intersects(bbox)) return true;
+		}
+		for (auto &cuboid : cuboids) {
+			if (other.intersects(cuboid)) return true;
+		}
+		return false;
+	}
+
 private:
-	bool intersects_bboxes(const BoundingBox &b)
+	bool intersects_bboxes(const BoundingBox &b) const
 	{
 		for (auto &bbox : bboxes) {
 			if (bbox.intersects(b)) {
@@ -74,7 +104,7 @@ private:
 		return false;
 	}
 
-	bool intersects_cuboids(const CGAL_Iso_cuboid_3 &c)
+	bool intersects_cuboids(const CGAL_Iso_cuboid_3 &c) const
 	{
 		for (auto &cuboid : cuboids) {
 			if (CGAL::intersection(c, cuboid) != boost::none) {

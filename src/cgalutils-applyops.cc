@@ -31,6 +31,7 @@
 #include "GeometryUtils.h"
 #include "lazy_geometry.h"
 #include "bounding_boxes.h"
+#include "Tree.h"
 #include "ModuleInstantiation.h"
 
 #include <map>
@@ -144,10 +145,11 @@ namespace CGALUtils {
 
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const LazyGeometry::get_cache_key_fn_t& get_cache_key)
+		const Tree* tree)
 	{
 		if (Feature::ExperimentalFastUnion.is_enabled()) {
-			return applyUnion3DFast(chbegin, chend, get_cache_key).getGeom();
+		  auto lazyGeom = applyUnion3DFast(chbegin, chend, tree);
+		  return lazyGeom ? lazyGeom->getGeom() : nullptr;
 		}
 
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
@@ -202,40 +204,77 @@ namespace CGALUtils {
 		return nullptr;
 	}
 
-	LazyGeometry applyUnion3DFast(
+	shared_ptr<const LazyGeometry> applyUnion3DFast(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const LazyGeometry::get_cache_key_fn_t& get_cache_key)
+		const Tree* tree)
 	{
+#ifdef FAST_UNION_LINEAR_UNION
 		LazyGeometry result;
-		BoundingBoxes result_bboxes;
 
 		progress_tick();
-		// TODO(ochafik): Optimize the union order: we want to group as many
-		// non overlapping children as possible (they can be fast-unioned w/o Nef),
-		// *then* can start converting to Nefs and do heavy unions.
 		for (auto it = chbegin; it != chend; ++it) {
-			auto childGeom = it->second;
-			auto childNode = it->first;
-			if (!childGeom || childGeom->isEmpty()) {
+			auto &chgeom = it->second;
+			auto &chnode = it->first;
+			if (!dynamic_pointer_cast<const PolySet>(chgeom) &&
+				 !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
 				continue;
 			}
-			LazyGeometry lazyGeom(childGeom, childNode);
-			auto bbox = lazyGeom.getBoundingBox();
-			if (!result) {
-				result = lazyGeom;
-			} else if (result_bboxes.intersects(bbox)) {
-				result = result.joinProbablyOverlapping(lazyGeom, get_cache_key);
-			} else {
-				LOG(message_group::Echo,
-					childNode && childNode->modinst ? childNode->modinst->location() : Location::NONE, "",
-					"Doing fast-union of disjoint solid");
-				result = result.concatenateDisjoint(lazyGeom, get_cache_key);
+			if (chgeom && !chgeom->isEmpty()) {
+				auto location = chnode && chnode->modinst ? chnode->modinst->location() : Location::NONE;
+				auto cacheKey = chnode && tree ? tree->getIdString(*chnode) : "";
+				result = result + LazyGeometry(chgeom, location, cacheKey);
 			}
-			result_bboxes.add(bbox);
+
 			progress_tick();
 		}
+		return make_shared<LazyGeometry>(result);
+#else
+		try {
+			typedef std::pair<shared_ptr<const LazyGeometry>, int> QueueConstItem;
+			struct QueueItemGreater {
+				// stable sort for priority_queue by facets, then progress mark
+				bool operator()(const QueueConstItem &lhs, const QueueConstItem& rhs) const
+				{
+					size_t l = lhs.first->getNumberOfFacets();
+					size_t r = rhs.first->getNumberOfFacets();
+					return (l > r) || (l == r && lhs.second > rhs.second);
+				}
+			};
+			std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
-		return result;
+			for (auto it = chbegin; it != chend; ++it) {
+				auto chgeom = it->second;
+				auto &chnode = it->first;
+				if (!dynamic_pointer_cast<const PolySet>(chgeom) &&
+					!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
+					continue;
+				}
+				if (chgeom && !chgeom->isEmpty()) {
+					auto progress_mark = chnode ? chnode->progress_mark : -1;
+					auto location = chnode && chnode->modinst ? chnode->modinst->location() : Location::NONE;
+					auto cacheKey = chnode && tree ? tree->getIdString(*chnode) : "";
+					q.emplace(make_shared<LazyGeometry>(chgeom, location, cacheKey), progress_mark);
+				}
+			}
+
+			progress_tick();
+			while (q.size() > 1) {
+				auto p1 = q.top();
+				q.pop();
+				assert(!q.empty());
+				auto p2 = q.top();
+				q.pop();
+				q.emplace(make_shared<LazyGeometry>(*p1.first + *p2.first), -1);
+				progress_tick();
+			}
+			assert(q.size() <= 1);
+			return q.empty() ? nullptr : q.top().first;
+		}
+		catch (const CGAL::Failure_exception &e) {
+			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DFast: %1$s", e.what());
+		}
+		return nullptr;
+#endif
 	}
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &result)

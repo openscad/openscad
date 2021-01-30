@@ -32,6 +32,7 @@
 #include "version_helper.h"
 #include "AST.h"
 #include "boost-utils.h"
+#include "lazy_geometry.h"
 
 #ifdef ENABLE_LIB3MF
 #ifndef LIB3MF_API_2
@@ -199,8 +200,8 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 		for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
 		}
-		if (auto polyset = CGALUtils::applyUnion3DFast(children.begin(), children.end()).getPolySet(LazyGeometry::no_get_cache_key_fn)) {
-			*p = *polyset;
+		if (auto geom = CGALUtils::applyUnion3DFast(children.begin(), children.end())) {
+			*p = *geom->getPolySet();
 		}
 #endif
 		return p;

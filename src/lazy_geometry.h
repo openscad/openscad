@@ -1,7 +1,7 @@
 #pragma once
 
+#include <set>
 #include "polyset.h"
-#include "node.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "linalg.h"
 
@@ -15,42 +15,71 @@
 class LazyGeometry
 {
 public:
-	typedef shared_ptr<const Geometry> geom_ptr_t;
-	typedef shared_ptr<const CGAL_Nef_polyhedron> nef_ptr_t;
-	typedef shared_ptr<const PolySet> polyset_ptr_t;
-	typedef shared_ptr<const CGAL_Polyhedron> polyhedron_ptr_t;
-	typedef std::function<std::string(const AbstractNode &node)> get_cache_key_fn_t;
-	static get_cache_key_fn_t no_get_cache_key_fn;
+	LazyGeometry() : location(Location::NONE) {}
+	LazyGeometry(const LazyGeometry &other)
+		: geom(other.geom), bboxes(other.bboxes), location(other.location), cacheKey(other.cacheKey)
+	{
+	}
 
-	LazyGeometry();
-	LazyGeometry(const geom_ptr_t &geom, const AbstractNode *pNode = nullptr);
-	LazyGeometry(const LazyGeometry &other);
+	// Used for leaf geometry that actually has a node attached (usually).
+	LazyGeometry(const shared_ptr<const Geometry> &geom, const Location &location,
+							 const std::string &cacheKey)
+		: geom(geom), location(location), cacheKey(cacheKey)
+	{
+		assert(geom);
+		assert(isPolySet() || isNef());
+	}
 
-	LazyGeometry &operator=(const LazyGeometry &other);
+	// Used for intermediate results.
+	LazyGeometry(const shared_ptr<const Geometry> &geom,
+							 const shared_ptr<const BoundingBoxes> &bboxes, const Location &location,
+							 const std::string &cacheKey)
+		: geom(geom), bboxes(bboxes), location(location), cacheKey(cacheKey)
+	{
+		assert(geom);
+		assert(isPolySet() || isNef());
+	}
 
-	operator bool() const { return getGeom().get() != nullptr; }
-	geom_ptr_t getGeom() const;
+	size_t getNumberOfFacets() const;
+	bool empty() const { return getGeom().get() != nullptr; }
+	operator bool() const { return !empty(); }
+	operator shared_ptr<const Geometry>() const { return getGeom(); }
+
+	shared_ptr<const Geometry> getGeom() const;
 	bool isPolySet() const;
 	bool isNef() const;
-	BoundingBoxes::BoundingBoxoid getBoundingBox() const;
 
-  /*! Does a union assuming this geometry and other are physically disjoint,
-   * i.e. their polygons don't intersect and none of them is containing the
-   * other. */
-	LazyGeometry concatenateDisjoint(const LazyGeometry &other,
-																	 const get_cache_key_fn_t &get_cache_key) const;
+	/*! May incur a big PolySet->Nef conversion cost if not already a nef or if
+	 * the nef isn't in the Geometry cache. */
+	shared_ptr<const CGAL_Nef_polyhedron> getNef() const;
 
-  /*! Does a union assuming the two geometries are likely to intersect. */
-	LazyGeometry joinProbablyOverlapping(const LazyGeometry &other,
-																			 const get_cache_key_fn_t &get_cache_key) const;
-	nef_ptr_t getNef(const get_cache_key_fn_t &get_cache_key) const;
-	polyset_ptr_t getPolySet(const get_cache_key_fn_t &get_cache_key) const;
+	/*! May incur a moderate Nef->PolySet conversion cost if not already a polyset
+	 * the nef isn't in the CGAL cache. */
+	shared_ptr<const PolySet> getPolySet() const;
+
+	/*! Returns a "meta bounding box" (collection of bboxes of unioned components
+	 * of this geometry. */
+	shared_ptr<const BoundingBoxes> getBoundingBoxes() const;
+
+	/*! Unions this with the other geometry. Uses bounding boxes to detect and
+	 * optimize non overlapping cases. */
+	LazyGeometry operator+(const LazyGeometry &other) const;
 
 private:
-	geom_ptr_t geom;
-	// The node this geometry corresponds to, if any
-	// (nullptr for intermediate operations; top level operations will be cached
-	// in GeometryEvaluator). This is used to compute the caching key used to
-  // fetch / store nefs converted to polysets and vice versa.
-	const AbstractNode *pNode;
+	/*! Does a union assuming this geometry and other are physically disjoint,
+	 * i.e. their polygons don't intersect and none of them is containing the
+	 * other. */
+	shared_ptr<const Geometry> concatenateDisjoint(const LazyGeometry &other) const;
+
+	/*! Does a union assuming the two geometries are likely to intersect. */
+	shared_ptr<const Geometry> joinProbablyOverlapping(const LazyGeometry &other) const;
+
+	// The underlying geometry. Immutable.
+	// Note that (Nef or PolySet) conversions of this geometry may live in the
+	// relevant cache, which getNef and getPolySet will look up before attempting
+	// any conversion.
+	shared_ptr<const Geometry> geom;
+	mutable shared_ptr<const BoundingBoxes> bboxes;
+	Location location;
+	std::string cacheKey;
 };
