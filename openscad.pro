@@ -576,6 +576,8 @@ SOURCES += \
            src/lsp/language_server_interface.cc \
            src/lsp/lsp.cc \
            src/lsp/messages.cc \
+           src/lsp/openscad_messages.cc \
+           src/lsp/project.cc \
 
 
 

@@ -2,17 +2,23 @@
 #include "connection.h"
 #include "messages.h"
 
-ConnectionHandler::ConnectionHandler(QObject *parent, uint16_t port) :
-        QObject(parent)
+ConnectionHandler::ConnectionHandler(QObject *parent, const ConnectionHandler::project_initializer &project_init,  uint16_t port) :
+        QObject(parent),
+        project_init_callback(project_init)
 {
     register_messages();
 
-    this->server.listen(QHostAddress::LocalHost, port);
+    if (!this->server.listen(QHostAddress::LocalHost, port)) {
+        std::cout << "Problem to listen on port " << port << ":"
+                << this->server.errorString().toStdString() << "\n";
+        // TODO: Terminate horribly!
+    }
     connect(&this->server, SIGNAL(newConnection()),
             this, SLOT(onNewConnection()));
+    std::cout << "Listening on port " << port << "\n";
 
 
-    // TODO: Timer to remove pending connections
+    // TODO: Timer to remove pending connections and unresolved requests
 }
 
 ConnectionHandler::~ConnectionHandler() {
@@ -46,15 +52,22 @@ void ConnectionHandler::send(RequestMessage &message,
 
 void ConnectionHandler::onNewConnection() {
     QTcpSocket *clientSocket = this->server.nextPendingConnection();
+
+    std::cout << "Received connection from "
+              << clientSocket->peerName().toStdString() << ":" << clientSocket->peerPort() << "\n";
+
     connect(clientSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
 
-    this->connections.emplace_back(std::make_unique<Connection>(this, clientSocket));
+    this->connections.emplace_back(std::make_unique<Connection>(this, clientSocket, this->project_init_callback()));
 }
 
 void ConnectionHandler::onSocketStateChanged(QAbstractSocket::SocketState socketState) {
     if (socketState == QAbstractSocket::UnconnectedState) {
         this->connections.remove_if([](const std::unique_ptr<Connection> &c) {
+            if (c)
+                std::cout << "closing connection to "
+                  << c->socket->peerName().toStdString() << ":" << c->socket->peerPort() << "\n";
             return !c || c->is_done();
         });
     }
@@ -107,23 +120,23 @@ void ConnectionHandler::handle_message(const QByteArray &buffer, Connection *con
             return;
         } else {
             auto decoded_msg = it->second(env);
-            decoded_msg->process(conn, &conn->active_project, id);
+            decoded_msg->process(conn, conn->active_project.get(), id);
         }
     }
     catch (std::unique_ptr<ResponseMessage> &msg) {
-        std::cout << "Cought response message\n";
+        std::cout << "Caught response message\n";
         conn->send(*msg, id);
     }
     catch (std::unique_ptr<ResponseError> &msg) {
-        std::cout << "Cought error ptr message: " << msg->message << "\n";
+        std::cout << "Caught error ptr message: " << msg->message << "\n";
         conn->send(*msg, id);
     }
     catch (ResponseError &msg) {
-        std::cout << "Cought error message: " << msg.message << "\n";
+        std::cout << "Caught error message: " << msg.message << "\n";
         conn->send(msg, id);
     }
     catch(std::exception &err) {
-        std::cerr << "cought std::exception during message handling: " << err.what() << "\n";
+        std::cerr << "Caught std::exception during message handling: " << err.what() << "\n";
         conn->send(ResponseError(ErrorCode::InternalError, err.what()), {});
     }
     /*catch(...) {

@@ -203,7 +203,9 @@ template<>
 bool decode_env::declare_field(JSONObject &object, RequestMessage &target, const FieldNameType &) {
     std::string jsonprocversion = "2.0";
     declare_field(object, jsonprocversion, "jsonrpc");
-    declare_field(object, target.id, "id");
+    if (this->dir == storage_direction::READ || target.id.is_set()) {
+        declare_field(object, target.id, "id");
+    }
     declare_field(object, target.method, "method");
 
     auto child = start_object(object, "params");
@@ -217,23 +219,35 @@ bool decode_env::declare_field(JSONObject &object, ResponseMessage &target, cons
     declare_field(object, jsonprocversion, "jsonrpc");
     declare_field(object, target.id, "id");
 
-    declare_field_optional(object, target.error, "error");
-
     if (this->dir == storage_direction::READ) {
         //target.use_result = false;
-        //target.raw_result = object.ref(); // (already done during cosntruction)
+        //target.raw_result = object.ref(); // (already done during construction)
+
+        if (object.ref().find("error") != object.ref().end()) {
+            auto errorchild = start_object(object, "error");
+            declare_field_optional(errorchild, target.error, "error");
+        }
+
     } else {
         if (target.use_result && target.result) {
 //            assert(target.result);
-            auto child = start_object(object, "result");
-            target.result->decode(*this, child, "result");
+            auto resultchild = start_object(object, "result");
+            target.result->decode(*this, resultchild, "result");
         }
+        auto errorchild = start_object(object, "error");
+        declare_field_optional(errorchild, target.error, "error");
     }
 
     if (!target.error && !(target.result || !target.use_result)) {
         std::cerr << "Having a message with neither error nor result\n";
     }
 
+    return true;
+}
+
+template<>
+bool decode_env::declare_field(JSONObject &object, SuccessResponse &target, const FieldNameType &) {
+    declare_field(object, target.success, "success");
     return true;
 }
 
@@ -359,6 +373,12 @@ bool decode_env::declare_field(JSONObject &object, PublishDiagnosticsParams &tar
     return true;
 }
 
+template<>
+bool decode_env::declare_field(JSONObject &object, ShowMessageParams &target, const FieldNameType &) {
+    declare_field(object, target.type, "type");
+    declare_field(object, target.message, "message");
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////
@@ -405,6 +425,7 @@ void ConnectionHandler::register_messages() {
     MAP("shutdown", ShutdownRequest);
     MAP("textDocument/didOpen", DidOpenTextDocument);
     MAP("textDocument/didChange", DidChangeTextDocument);
+    MAP("textDocument/didClose", DidCloseTextDocument);
     MAP("textDocument/hover", TextDocumentHover);
 
     MAP("$openscad/render", OpenSCADRender);

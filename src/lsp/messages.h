@@ -221,6 +221,7 @@ struct MESSAGETYPE
 
 
 
+
 struct RequestMessage {
     RequestMessage() {
         this->id.type = RequestId::AUTO_INCREMENT;
@@ -235,6 +236,12 @@ struct RequestMessage {
 };
 template<>
 bool decode_env::declare_field(JSONObject &object, RequestMessage &target, const FieldNameType &field);
+
+struct OutgoingNotificationMessage : public RequestMessage {
+    OutgoingNotificationMessage() {
+        this->id.type = RequestId::UNSET;
+    }
+};
 
 // Base Class for Results
 MESSAGE_CLASS(ResponseResult) {
@@ -288,6 +295,12 @@ MESSAGE_CLASS(ResponseMessage) {
 ///////////////////////////////////////////////////////////
 // Begin Interaction Messages
 ///////////////////////////////////////////////////////////
+MESSAGE_CLASS(SuccessResponse) : public ResponseResult {
+    MAKE_DECODEABLE;
+    SuccessResponse(bool success) : success(success) {};
+    bool success;
+};
+
 MESSAGE_CLASS(InitializeRequest) : public RequestMessage {
     MAKE_DECODEABLE;
     virtual void process(Connection *, project *, const RequestId &id);
@@ -406,6 +419,23 @@ MESSAGE_CLASS(ShowDocumentParams) : public RequestMessage {
     OptionalType<bool> takeFocus;
     OptionalType<lsRange> selection;
 
+    // Is only sent
+    virtual void process(Connection *, project *, const RequestId &){ assert(false); };
+};
+
+MESSAGE_CLASS(ShowMessageParams) : public OutgoingNotificationMessage {
+    MAKE_DECODEABLE;
+    enum MessageType {
+        Error = 1,
+        Warning = 2,
+        Info = 3,
+        Debug = 4
+    };
+    int type;
+
+    std::string message;
+
+    // Is only sent
     virtual void process(Connection *, project *, const RequestId &){ assert(false); };
 };
 

@@ -17,13 +17,17 @@
 
 // Forward declare Connection in order to speed up compile times
 class Connection;
+class project;
 
 class ConnectionHandler : public QObject {
 	Q_OBJECT
     /** This is the listener class which creates threads with Connections* running */
+
     friend class Connection;
 public:
-    ConnectionHandler(QObject *parent, uint16_t port=23725); // 0x5CAD = 23725
+    using project_initializer = std::function<std::unique_ptr<project>()>;
+
+    ConnectionHandler(QObject *parent, const project_initializer &initializer, uint16_t port=23725); // 0x5CAD = 23725
     virtual ~ConnectionHandler();
 
     void send(RequestMessage &message,
@@ -46,7 +50,7 @@ private:
     RequestId active_id;
     std::unordered_map<std::string, std::function<std::unique_ptr<RequestMessage>(decode_env &)>> typemap;
 
-    bool running = true;
+    project_initializer project_init_callback;
 
 	QTcpServer server;
     std::list<std::unique_ptr<Connection>> connections;

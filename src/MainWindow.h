@@ -354,10 +354,6 @@ private:
 	int last_parser_error_pos; // last highlighted error position
 	int tabCount = 0;
 
-#ifdef ENABLE_LANGUAGESERVER
-    LanguageServerInterface *languageserver;
-#endif
-
 signals:
 	void highlightError(int);
 	void unhighlightLastError();

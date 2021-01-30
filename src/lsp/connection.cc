@@ -9,11 +9,17 @@
 #include <memory>
 
 
-// #define DEBUG_MESSAGETRAFFIC
+// Print raw message traffic (in & out) to stdout
+#define DEBUG_MESSAGETRAFFIC
 
-Connection::Connection(ConnectionHandler *handler, QTcpSocket *client) :
+// Print remotely sent log messages locally
+#define LOCAL_LOG_MESSAGES
+
+
+Connection::Connection(ConnectionHandler *handler, QTcpSocket *client, std::unique_ptr<project> &&project) :
         handler(handler),
-        socket(client)
+        socket(client),
+        active_project(std::move(project))
 {
    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 
@@ -67,7 +73,7 @@ void Connection::read_header() {
                 std::cerr << "unexpected content type " << field.second << "\n";
             }
         } else {
-            std::cerr << "Unknown header field " << field.first << "\n";
+            this->warn(std::string("Unknown header field ") + field.first);
         }
     }
 }
@@ -126,15 +132,16 @@ void Connection::clean_pending_messages(const std::chrono::system_clock::duratio
         }
     }
 
-    if (cnt > 0)
+    if (cnt > 0) {
         std::cout << "Cleared " << cnt << "stale messages with a missing response\n";
+    }
 }
 
 void Connection::default_reporting_message_handler(const ResponseMessage &msg, Connection *, project *) {
     std::cout << "Unhandled message (TODO add more info)\n" << msg.id.value_int << "\n";
 }
 
-void Connection::no_reponse_expected(const ResponseMessage &msg, Connection *, project *) {
+void Connection::no_response_expected(const ResponseMessage &msg, Connection *, project *) {
     if (msg.error) {
         std::cout << "The Request with ID " << msg.id.value_int << " has failed with error code " << static_cast<int>(msg.error->code) << ": \n"
             << msg.error->message << "\n";
@@ -149,7 +156,7 @@ void Connection::handle_pending_response(const ResponseMessage &msg) {
 
     auto it = pending_messages.find(msg.id.value_int);
     if (it != pending_messages.end()) {
-        it->second.callback(msg, this, &this->active_project);
+        it->second.callback(msg, this, this->active_project.get());
         pending_messages.erase(it);
     }
 }
@@ -209,7 +216,9 @@ void Connection::send(RequestMessage &msg, const std::string &method, const Requ
         msg.method = method;
     }
 
-    pending_messages.emplace(std::make_pair(msg.id.value_int, pending_message(callback)));
+    if (msg.id.is_set()) {
+        pending_messages.emplace(std::make_pair(msg.id.value_int, pending_message(callback)));
+    }
 
     QByteArray responsebuffer;
     decode_env env(storage_direction::WRITE);
@@ -239,4 +248,16 @@ void Connection::send(ResponseError &&error, const RequestId &id) {
     ResponseMessage msg(nullptr);
     msg.error = error;
     this->send(msg, id);
+}
+
+void Connection::log(int type, const std::string &message) {
+#ifdef LOCAL_LOG_MESSAGES
+    std::cout << "Sending Log of severeness " << type << ": " << message << "\n";
+#endif
+
+    ShowMessageParams msg;
+    msg.type = type;
+    msg.message = message;
+
+    this->send(msg, "window/showMessage", {}, &Connection::no_response_expected); // No ID set
 }

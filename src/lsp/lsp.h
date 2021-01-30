@@ -26,8 +26,8 @@ struct RequestId {
     std::string value_str;
     int value_int = 0;
 
-    bool is_set() { return type != UNSET; }
-    std::string value() {
+    bool is_set() const { return type != UNSET; }
+    std::string value() const {
         switch(type) {
         case STRING:
             return value_str;

@@ -813,7 +813,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_LANGUAGESERVER
 	if(languageserver_port > 0) {
-		languageserver = new LanguageServerInterface(languageserver_port, firstwin);
+		languageserver = new LanguageServerInterface(firstwin, languageserver_port);
 	}
 #endif
 #ifdef ENABLE_HIDAPI

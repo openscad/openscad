@@ -8,6 +8,7 @@
 #include <chrono>
 #include <unordered_map>
 #include <functional>
+#include <memory>
 
 class QTcpSocket;
 
@@ -22,16 +23,18 @@ using request_callback_t = std::function<void(const ResponseMessage &, Connectio
 
 class Connection : public QObject {
     Q_OBJECT
+
+    friend class ConnectionHandler;
 public:
 
-    Connection(ConnectionHandler *handler, QTcpSocket *client);
+    Connection(ConnectionHandler *handler, QTcpSocket *client, std::unique_ptr<project> &&project);
 
     virtual ~Connection() {};
 public:
     static void default_reporting_message_handler(const ResponseMessage &, Connection *, project *);
 
     // Indicating that "result" should be ignored, but "error" should be printed
-    static void no_reponse_expected(const ResponseMessage &, Connection *, project *);
+    static void no_response_expected(const ResponseMessage &, Connection *, project *);
 
 public:
     void send(RequestMessage &message,
@@ -54,7 +57,13 @@ public:
     void close();
     bool is_done();
 
-    project active_project;
+    std::unique_ptr<project> active_project;
+
+    void log(int type, const std::string &message);
+    void error(const std::string &message) { log(1, message); }
+    void warn(const std::string &message) { log(2, message); }
+    void info(const std::string &message) { log(3, message); }
+    void debug(const std::string &message) { log(4, message); }
 
 private slots:
     void onReadyRead();

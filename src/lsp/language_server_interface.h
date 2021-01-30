@@ -6,8 +6,11 @@
 #include <string>
 #include <memory>
 
+#define LSP_ON_MAINTHREAD
+
 class MainWindow;
 class ConnectionHandler;
+class project;
 /**
  * To interact with the openscad language server you should use this interface.
  *
@@ -19,11 +22,16 @@ class LanguageServerInterface : public QObject {
 
 public:
     // This constructor will connect all the neccessary slots and signals with the main window
-    LanguageServerInterface(int port, MainWindow *mainWindow);
-
+    LanguageServerInterface(MainWindow *mainWindow, int port);
     virtual ~LanguageServerInterface();
 
     void stop();
+
+    std::unique_ptr<project> init_project();
+
+    void requestPreview() {
+        emit viewModePreview();
+    }
 
 signals:
     // Request a preview
@@ -37,7 +45,10 @@ private slots:
 
 private:
     int port;
-    QThread workerthread;
     std::unique_ptr<ConnectionHandler> handler;
+    MainWindow *mainWindow;
+#ifndef LSP_ON_MAINTHREAD
+    QThread workerthread;
+#endif
 };
 

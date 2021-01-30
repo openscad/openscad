@@ -33,26 +33,46 @@ void ExitRequest::process(Connection *conn, project *proj, const RequestId &id) 
 
 
 void DidOpenTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
-    UNUSED(proj);
-    UNUSED(conn);
-    // Called when a document is opened
-    std::cout << "\nOpened Text document with contents: " << this->textDocument.text << "\n\n";
+    // Called when a document is opened in the editor
+    proj->open_files.emplace_back(textDocument);
+
+    if (id.is_set()) {
+        conn->send(SuccessResponse(true), id);
+    }
 }
 
 void DidChangeTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
     // Called when a document is opened
     std::cout << "Changed Text document with new contents: " << this->textDocument.text << "\n\n";
+
+    auto file = proj->getFile(textDocument.uri);
+    if (file) {
+        file->document = this->textDocument; // move assign and overwrite
+    }
+    if (id.is_set()) {
+        conn->send(SuccessResponse(true), id);
+    }
 }
 
 void DidCloseTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
-    UNUSED(proj);
     UNUSED(conn);
-    // Called when a document is opened
+
     std::cout << "Closed Text document " << this->textDocument.uri.getPath() << "\n\n";
+
+    proj->open_files.remove_if([this](const auto &item) { \
+        return item.document.uri == this->textDocument.uri;
+    });
+    if (id.is_set()) {
+        conn->send(SuccessResponse(true), id);
+    }
 }
 
 void TextDocumentHover::process(Connection *conn, project *proj, const RequestId &id) {
     UNUSED(proj);
+
+    conn->info("Hello world! This is OpenSCAD!");
+
+    // TODO look into the AST of the open document?
     // Called when a document is opened
     std::cout << "Hover over : " << this->textDocument.uri.getPath() << " at " << this->position.line << ":"<< this->position.character << "\n";
 
@@ -63,13 +83,3 @@ void TextDocumentHover::process(Connection *conn, project *proj, const RequestId
 
     conn->send(hover, id);
 }
-
-///////////////////////////////////////////////////////////
-// OpenSCAD Extensions
-///////////////////////////////////////////////////////////
-
-void OpenSCADRender::process(Connection *conn, project *proj, const RequestId &id) {
-    UNUSED(proj);
-    std::cout << "Starting rendering\n";
-}
-
