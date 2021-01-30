@@ -208,27 +208,6 @@ namespace CGALUtils {
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
-#ifdef FAST_UNION_LINEAR_UNION
-		LazyGeometry result;
-
-		progress_tick();
-		for (auto it = chbegin; it != chend; ++it) {
-			auto &chgeom = it->second;
-			auto &chnode = it->first;
-			if (!dynamic_pointer_cast<const PolySet>(chgeom) &&
-				 !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
-				continue;
-			}
-			if (chgeom && !chgeom->isEmpty()) {
-				auto location = chnode && chnode->modinst ? chnode->modinst->location() : Location::NONE;
-				auto cacheKey = chnode && tree ? tree->getIdString(*chnode) : "";
-				result = result + LazyGeometry(chgeom, location, cacheKey);
-			}
-
-			progress_tick();
-		}
-		return make_shared<LazyGeometry>(result);
-#else
 		try {
 			typedef std::pair<shared_ptr<const LazyGeometry>, int> QueueConstItem;
 			struct QueueItemGreater {
@@ -274,7 +253,6 @@ namespace CGALUtils {
 			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DFast: %1$s", e.what());
 		}
 		return nullptr;
-#endif
 	}
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &result)
