@@ -48,6 +48,7 @@ std::unique_ptr<project> LanguageServerInterface::init_project() {
     auto new_project = std::make_unique<project>();
 
     new_project->interface = this;
+    new_project->mainWindow = mainWindow;
     // Add more initialization magic here - if needed
 
     // Guaranteed NRVO is comes with C++20! - then we wont need the move any more

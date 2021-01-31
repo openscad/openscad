@@ -345,13 +345,6 @@ MESSAGE_CLASS(ExitRequest) : public RequestMessage {
 
 ///////////////////////////////////////////////////////////
 // LSP Messages based on capabilities
-/// capability: hoverProvider
-MESSAGE_CLASS(TextDocumentPositionParams) : public RequestMessage {
-    MAKE_DECODEABLE;
-
-    Position position;
-    TextDocumentIdentifier textDocument;
-};
 
 /// capability: textDocumentSync
 MESSAGE_CLASS(DidOpenTextDocument) : public RequestMessage {

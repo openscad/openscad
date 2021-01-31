@@ -66,20 +66,3 @@ void DidCloseTextDocument::process(Connection *conn, project *proj, const Reques
         conn->send(SuccessResponse(true), id);
     }
 }
-
-void TextDocumentHover::process(Connection *conn, project *proj, const RequestId &id) {
-    UNUSED(proj);
-
-    conn->info("Hello world! This is OpenSCAD!");
-
-    // TODO look into the AST of the open document?
-    // Called when a document is opened
-    std::cout << "Hover over : " << this->textDocument.uri.getPath() << " at " << this->position.line << ":"<< this->position.character << "\n";
-
-    HoverResponse hover;
-    hover.contents = "Hello VSCode! I Am Alive, you are at line " + std::to_string(this->position.line);
-    hover.range.start = this->position;
-    hover.range.end = this->position;
-
-    conn->send(hover, id);
-}

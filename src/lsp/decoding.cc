@@ -270,7 +270,7 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &, const F
 
 
     object[field] = QJsonObject {
-        {"hoverProvider", true},
+        //{"hoverProvider", true}, // Future
         {"textDocumentSync", QJsonObject {
                 {"openClose", true },
                 {"change", 1 }, // None = 0, Full = 1, Incremental = 2
@@ -331,19 +331,6 @@ template<>
 bool decode_env::declare_field(JSONObject &object, TextDocumentPositionParams &target, const FieldNameType &) {
     declare_field(object, target.textDocument, "textDocument");
     declare_field(object, target.position, "position");
-    return true;
-}
-
-template<>
-bool decode_env::declare_field(JSONObject &object, TextDocumentHover &target, const FieldNameType &field) {
-    declare_field(object, (TextDocumentPositionParams &)target, field);
-    return true;
-}
-
-template<>
-bool decode_env::declare_field(JSONObject &object, HoverResponse &target, const FieldNameType &) {
-    declare_field(object, target.contents, "contents");
-    declare_field(object, target.range, "range");
     return true;
 }
 

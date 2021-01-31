@@ -252,7 +252,7 @@ void Connection::send(ResponseError &&error, const RequestId &id) {
 
 void Connection::log(int type, const std::string &message) {
 #ifdef LOCAL_LOG_MESSAGES
-    std::cout << "Sending Log of severeness " << type << ": " << message << "\n";
+    std::cout << "LOG " << type << ": " << message << "\n";
 #endif
 
     ShowMessageParams msg;
