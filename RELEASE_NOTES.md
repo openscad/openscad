@@ -40,7 +40,7 @@
     * Duplicate passed argument
     * Children passed to module not accepting children
     * Reference to inknown $special_variables
-    * Duplicate assigment
+    * Duplicate assignment
 * New translations: Ukrainian, Polish
 # OpenSCAD 2015.03
 

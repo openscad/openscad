@@ -41,6 +41,8 @@ namespace UIUtils {
     
     QFileInfoList exampleFiles(const QString &category);
 
+    void openURL(const QString& url);
+
     void openHomepageURL();
 
     void openUserManualURL();

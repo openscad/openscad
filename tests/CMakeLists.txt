@@ -509,28 +509,36 @@ list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATE
 list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES} ${SCAD_NEF3_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
-                           )
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+            )
+
+# test importing unparseable files, result will be an empty image
+list(APPEND STL_IMPORT_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/stl/stl-import-invalidvertex.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/stl/stl-import-toomanyvertices.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/stl/stl-import-unparseable.scad
+            )
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(SUBLIST CGALPNGTEST_FILES 0 1 CGALPNGSTDIOTEST_FILES)
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/intersection-prune-test.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
+list(APPEND OPENCSGTEST_FILES ${STL_IMPORT_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 

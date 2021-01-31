@@ -30,5 +30,5 @@ std::string lookup_file(const std::string &filename,
 	else {
 		resultfile = filename;
 	}
-	return std::move(resultfile);
+	return resultfile;
 }

@@ -28,7 +28,6 @@ void ErrorLog::initGUI()
 
 void ErrorLog::toErrorLog(const Message &log_msg)
 {
-	if(log_msg.group==message_group::None || log_msg.group==message_group::Echo) return;
 	lastMessages.push_back(std::forward<const Message>(log_msg));
 	QString currGroup = errorLogComboBox->currentText();
 	//handle combobox

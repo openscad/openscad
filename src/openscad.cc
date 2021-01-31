@@ -463,14 +463,11 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 {
 	const std::string filename_str = fs::path(cmd.output_file).generic_string();
 
-	auto fpath = fs::absolute(fs::path(cmd.filename));
-	auto fparent = fpath.parent_path();
-
   unique_ptr<OffscreenView> glview;
 	ModuleInstantiation root_inst("group");
 	ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 	AbstractNode *absolute_root_node = root_module->instantiateWithFileContext(filectx.ctx, &root_inst, nullptr);
-	camera.updateView(filectx.ctx);
+	camera.updateView(filectx.ctx, true);
 
 	const AbstractNode *root_node;
 	shared_ptr<const Geometry> root_geom;
@@ -485,6 +482,8 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 		LOG(message_group::Warning,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
 	}
 	fs::current_path(cmd.original_path);
+	auto fpath = fs::absolute(fs::path(cmd.filename));
+	auto fparent = fpath.parent_path();
 
 	if (cmd.deps_output_file) {
 		fs::current_path(cmd.original_path);

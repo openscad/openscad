@@ -56,7 +56,7 @@ public:
     // iterator_traits required types:
     using iterator_category = std::forward_iterator_tag ;
     using value_type        = double;
-    using difference_type   = void;       // type used by operator-(iterator), not implemented for forward interator
+    using difference_type   = void;       // type used by operator-(iterator), not implemented for forward iterator
     using reference         = value_type; // type used by operator*(), not actually a reference
     using pointer           = void;       // type used by operator->(), not implemented
     iterator(const RangeType &range, type_t type);
@@ -340,7 +340,7 @@ public:
    * It holds only a shared_ptr to its VectorObject type, and provides a convenient
    * interface for various operations needed on the vector.
    *
-   * EmbeddedVectorType class derives from VectorType and enables O(1) concatentation of vectors
+   * EmbeddedVectorType class derives from VectorType and enables O(1) concatenation of vectors
    * by treating their elements as elements of their parent, traversable via VectorType's custom iterator.
    * -- An embedded vector should never exist "in the wild", only as a pseudo-element of a parent vector.
    *    Eg "Lc*" Expressions return Embedded Vectors but they are necessairly child expressions of a Vector expression.
@@ -381,7 +381,7 @@ public:
       void operator()(VectorObject* vec);
     };
     void flatten() const; // flatten replaces VectorObject::vec with a new vector
-                          // where any embedded elements are copied direclty into the top level vec,
+                          // where any embedded elements are copied directly into the top level vec,
                           // leaving only true elements for straightforward indexing by operator[].
     explicit VectorType(const shared_ptr<VectorObject> &copy) : ptr(copy) { } // called by clone()
   public:

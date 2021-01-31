@@ -86,7 +86,7 @@ inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
 if args.format == 'csg':
         # Must export to same folder for include/use/import to work
-        exportfile = inputfile + '.' + args.format
+        exportfile = os.path.abspath(inputfile + '.' + args.format)
 else:
         exportfile = os.path.join(outputdir, inputfilename)
         if args.format != inputsuffix[1:]: exportfile += '.' + args.format

@@ -97,7 +97,6 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
-#define QT_HTML_ESCAPE(qstring) (qstring).toHtmlEscaped()
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
@@ -133,11 +132,11 @@ static const int autoReloadPollingPeriodMS = 200;
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"Copyright (C) 2009-2020 The OpenSCAD Developers\n\n"
-	"This program is free software; you can redistribute it and/or modify "
+	"<p>Copyright (C) 2009-2021 The OpenSCAD Developers</p>"
+	"<p>This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
-	"(at your option) any later version.\n";
+	"(at your option) any later version.<p>";
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
@@ -164,6 +163,14 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
    return nullptr;
 }
 
+const QString htmlEscape(const QString& str) {
+	return str.toHtmlEscaped();
+}
+
+const QString htmlEscape(const std::string& str) {
+	return htmlEscape(QString::fromStdString(str));
+}
+
 void fileExportedMessage(const char *format, const QString &filename) {
 	LOG(message_group::None,Location::NONE,"","%1$s export finished: %2$s",format,filename.toUtf8().constData());
 }
@@ -176,11 +183,17 @@ MainWindow::MainWindow(const QStringList &filenames)
 {
 	setupUi(this);
 
+	consoleUpdater = new QTimer(this);
+	consoleUpdater->setSingleShot(true);
+	connect(consoleUpdater, SIGNAL(timeout()), this->console, SLOT(update()));
+
 	editorDockTitleWidget = new QWidget();
 	consoleDockTitleWidget = new QWidget();
 	parameterDockTitleWidget = new QWidget();
 	errorLogDockTitleWidget = new QWidget();
-	
+
+	// actions not included in menu
+	this->addAction(editActionInsertTemplate);
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->windowActionHideEditor);
@@ -220,11 +233,27 @@ MainWindow::MainWindow(const QStringList &filenames)
 						this, SLOT(actionOpenRecent()));
 	}
 
+	// Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
+	// Any code dependent on Preferences must come after the TabManager instantiation
 	tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
 	connect(tabManager, SIGNAL(tabCountChanged(int)), this, SLOT(setTabToolBarVisible(int)));
 	this->setTabToolBarVisible(tabManager->count());
 	tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
 	editorDockContents->layout()->addWidget(tabManager->getTabContent());
+
+	connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&, uint)), this->console, SLOT(setFont(const QString&, uint)));
+
+	const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+	const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
+	this->console->setFont(
+	  Preferences::inst()->getValue("advanced/consoleFontFamily").toString(),
+	  Preferences::inst()->getValue("advanced/consoleFontSize").toUInt()
+	);
+
+	consoleOutputRaw(version);
+	consoleOutputRaw(weblink);
+	consoleOutputRaw(copyrighttext);
+	this->consoleUpdater->start(0); // Show "Loaded Design" message from TabManager
 
 	connect(this->errorLogWidget,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
 	connect(this->console,SIGNAL(openFile(QString,int)),this,SLOT(openFileFromPath(QString,int)));
@@ -436,12 +465,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
 
-	setCurrentOutput();
-
-	std::string helptitle = "OpenSCAD " + openscad_versionnumber +  "\nhttps://www.openscad.org/\n";
-
-	LOG(message_group::None,Location::NONE,"",std::string(helptitle));
-	LOG(message_group::None,Location::NONE,"",std::string(copyrighttext));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 	connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
@@ -583,6 +606,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	viewModeThrownTogether();
 	show();
 
+	setCurrentOutput();
+
 #ifdef ENABLE_OPENCSG
 	viewModePreview();
 #else
@@ -594,14 +619,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 	setAcceptDrops(true);
 	clearCurrentOutput();
 
-	this->console->setMaximumBlockCount(5000);
-
 	for(int i = 1; i < filenames.size(); ++i)
 		tabManager->createTab(filenames[i]);
 
 	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
 	if (!editorDock->isVisible()) {
-		QAction *beforeAction = viewerToolBar->actions().at(2); //a seperator, not a part of the class
+		QAction *beforeAction = viewerToolBar->actions().at(2); //a separator, not a part of the class
 		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	}
 
@@ -1162,8 +1185,8 @@ void MainWindow::instantiateRoot()
 
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
-		this->qglview->cam.updateView(filectx.ctx);
-
+		this->qglview->cam.updateView(filectx.ctx, false);
+		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
 			const Location *nextLocation = nullptr;
@@ -1528,6 +1551,8 @@ void MainWindow::hideFind()
 {
 	find_panel->hide();
 	activeEditor->findState = TabManager::FIND_HIDDEN;
+	editActionFindNext->setEnabled(false);
+	editActionFindPrevious->setEnabled(false);
 	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text(), false));
 	this->processEvents();
 }
@@ -1543,6 +1568,8 @@ void MainWindow::showFind()
 	//replaceLabel->setVisible(false);
 	find_panel->show();
 	activeEditor->findState = TabManager::FIND_VISIBLE;
+	editActionFindNext->setEnabled(true);
+	editActionFindPrevious->setEnabled(true);
 	if (!activeEditor->selectedText().isEmpty()) {
 		findInputField->setText(activeEditor->selectedText());
 	}
@@ -1568,6 +1595,8 @@ void MainWindow::showFindAndReplace()
 	//replaceLabel->setVisible(true);
 	find_panel->show();
 	activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
+	editActionFindNext->setEnabled(true);
+	editActionFindPrevious->setEnabled(true);
 	if (!activeEditor->selectedText().isEmpty()) {
 		findInputField->setText(activeEditor->selectedText());
 	}
@@ -1711,6 +1740,7 @@ bool MainWindow::fileChangedOnDisk()
 */
 void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 {
+	bool reloadSettings = customizerEditor != activeEditor;
 	customizerEditor = nullptr;
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
@@ -1727,6 +1757,9 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 
 	if (this->root_module!=nullptr) {
+		if (reloadSettings && !activeEditor->filepath.isEmpty()) {
+			this->parameterWidget->readFile(activeEditor->filepath);
+		}
 		//add parameters as annotation in AST
 		CommentParser::collectParameters(fulltext,this->root_module);
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
@@ -2086,9 +2119,9 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
 	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
+	RenderStatistic::printCacheStatistic();
+	RenderStatistic::printRenderingTime(ms);
 	if (root_geom) {
-		RenderStatistic::printCacheStatistic();
-		RenderStatistic::printRenderingTime(ms);
 		if (!root_geom->isEmpty()) {
 			RenderStatistic().print(*root_geom);
 		}
@@ -2102,7 +2135,6 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	}
 	else {
 		LOG(message_group::UI_Warning,Location::NONE,"","No top level geometry to render");
-		LOG(message_group::None,Location::NONE,""," ");
 	}
 
 	updateStatusBar(nullptr);
@@ -2350,7 +2382,7 @@ void MainWindow::actionCheckValidity()
 		N.reset(CGALUtils::createNefPolyhedronFromGeometry(*ps));
 	}
 	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
-		valid = N->p3 ? N->p3->is_valid() : false;
+		valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
 	}
 	LOG(message_group::None,Location::NONE,"","Valid:      %1$6s",(valid ? "yes" : "no"));
 	clearCurrentOutput();
@@ -2547,6 +2579,9 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
+    
+    setCurrentOutput();
+    LOG(message_group::None,Location::NONE,"","Caches Flushed");
 }
 
 void MainWindow::viewModeActionsUncheck()
@@ -2929,19 +2964,11 @@ void MainWindow::hideEditor()
 		// may eventually get resolved at which point this bit and the stuff in
 		// the else should be removed. Currently known to affect 5.14.1 and 5.15.0
 		e->qsci->setReadOnly(true);
-		if (e->qsci->isListActive()) {
-			e->qsci->cancelList();
-		}
-		e->qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
-		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
-		if (e->qsci->isCallTipActive()) {
-		 	e->cancelCallTip();
-		}
+		e->setupAutoComplete(true);
 		editorDock->close();
-	}else {
+	} else {
 		e->qsci->setReadOnly(false);
-		e->qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
-		e->qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+		e->setupAutoComplete(false);
 		editorDock->show();
 	}
 }
@@ -3027,6 +3054,11 @@ void MainWindow::on_windowActionNextWindow_triggered()
 void MainWindow::on_windowActionPreviousWindow_triggered()
 {
 	activateWindow(-1);
+}
+
+void MainWindow::on_editActionInsertTemplate_triggered()
+{
+	activeEditor->displayTemplates();
 }
 
 void MainWindow::activateWindow(int offset)
@@ -3133,6 +3165,10 @@ void MainWindow::helpFontInfo()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (tabManager->shouldClose()) {
+		// Disable invokeMethod calls for consoleOutput during shutdown,
+		// otherwise will segfault if echos are in progress.
+		hideCurrentOutput(); 
+
 		QSettingsCached settings;
 		settings.setValue("window/size", size());
 		settings.setValue("window/position", pos());
@@ -3195,29 +3231,23 @@ void MainWindow::consoleOutput(const Message &msgObj, void *userdata)
 
 void MainWindow::consoleOutput(const Message &msgObj)
 {
-	auto c = this->console->textCursor();
-	c.movePosition(QTextCursor::End);
-	this->console->setTextCursor(c);
-	// trailing space needed otherwise cursor gets set inside previous span, and highlighting never goes away.
-	std::string hyperlinkedData = std::to_string(msgObj.loc.firstLine())+","+msgObj.loc.fileName();
-
+	this->console->addMessage(msgObj);
 	if (msgObj.group==message_group::Warning || msgObj.group==message_group::Deprecated) {
-		this->compileWarnings++;
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::UI_Warning || msgObj.group==message_group::Font_Warning || msgObj.group==message_group::Font_Warning) {
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffffb0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
+		++this->compileWarnings;
 	} else if (msgObj.group==message_group::Error) {
-		this->compileErrors++;
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+", "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::Export_Error || msgObj.group==message_group::UI_Error || msgObj.group==message_group::Parser_Error) {
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #ffb0b0;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if (msgObj.group==message_group::Trace) {
-		this->console->appendHtml("<a href=\""+QString::fromStdString(hyperlinkedData)+"\"><span style=\"color: black; background-color: #d0d0ff;\">" + QT_HTML_ESCAPE(QString::fromStdString(getGroupName(msgObj.group)))+": "+ QT_HTML_ESCAPE(QString::fromStdString(msgObj.msg))+" "+QT_HTML_ESCAPE(QString::fromStdString(msgObj.loc.toRelativeString(msgObj.docPath)))+ "</span></a>&nbsp;");
-	} else if(msgObj.group==message_group::Echo) {
-		this->console->appendPlainText(QString::fromStdString(getGroupName(msgObj.group)+":")+QString::fromStdString(msgObj.msg));
-	} else {
-		this->console->appendPlainText(QString::fromStdString(msgObj.msg));
+		++this->compileErrors;
 	}
+	// FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
+	// Then processEvents should no longer be needed here.
+	this->processEvents(); 
+	if (consoleUpdater && !consoleUpdater->isActive()) {
+		consoleUpdater->start(50); // Limit console updates to 20 FPS
+	}
+}
+
+void MainWindow::consoleOutputRaw(const QString& html)
+{
+	this->console->addHtml(html);
 	this->processEvents();
 }
 

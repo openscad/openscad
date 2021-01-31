@@ -155,9 +155,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	c = qsci->standardCommands()->find(QsciCommand::Redo);
 	c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
 	c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
-	// Ctrl-Ins displays templates
-	c = qsci->standardCommands()->boundTo(Qt::Key_Insert | Qt::CTRL);
-	c->setAlternateKey(0);
 
 #ifdef Q_OS_MAC
 	const unsigned long modifier = Qt::META;
@@ -213,6 +210,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 #if QSCINTILLA_VERSION >= 0x020b00
 	connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
 #endif
+
+    // Disabling buffered drawing resolves non-integer HiDPI scaling.
+    qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint &pos)
@@ -296,16 +296,29 @@ void ScintillaEditor::applySettings()
 	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
 	onTextChanged();
 
-	if(Preferences::inst()->getValue("editor/enableAutocomplete").toBool())
-	{
+	setupAutoComplete(false);
+}
+
+void ScintillaEditor::setupAutoComplete(const bool forceOff)
+{
+	if (qsci->isListActive()) {
+		qsci->cancelList();
+	}
+
+	if (qsci->isCallTipActive()) {
+		qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
+	}
+
+	const bool configValue = Preferences::inst()->getValue("editor/enableAutocomplete").toBool();
+	const bool enable = configValue && !forceOff;
+
+	if (enable) {
 		qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
 		qsci->setAutoCompletionFillupsEnabled(false);
- 		qsci->setAutoCompletionFillups("(");		
+		qsci->setAutoCompletionFillups("(");
 		qsci->setCallTipsVisible(10);
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
-	}
-	else
-	{
+	} else {
 		qsci->setAutoCompletionSource(QsciScintilla::AcsNone);
 		qsci->setAutoCompletionFillupsEnabled(false);
 		qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
@@ -313,7 +326,6 @@ void ScintillaEditor::applySettings()
 
 	int val = Preferences::inst()->getValue("editor/characterThreshold").toInt();
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
-
 }
 
 void ScintillaEditor::fireModificationChanged(bool b)
@@ -1328,9 +1340,4 @@ void ScintillaEditor::setFocus()
 {
 	qsci->setFocus();
 	qsci->SendScintilla(QsciScintilla::SCI_SETFOCUS, true);
-}
-
-void ScintillaEditor::cancelCallTip()
-{
-	qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
 }

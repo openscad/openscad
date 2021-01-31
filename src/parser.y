@@ -274,7 +274,7 @@ ifelse_statement
             }
         | if_statement TOK_ELSE
             {
-                scope_stack.push(&$1->else_scope);
+                scope_stack.push($1->makeElseScope());
             }
           child_statement
             {
