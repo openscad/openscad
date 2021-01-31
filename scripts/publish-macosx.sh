@@ -4,9 +4,6 @@
 #   ./scripts/publish-macosx.sh [buildonly]
 #
 
-VERSION=2021.01-RC6
-VERSIONDATE=2021.01.14
-
 export NUMCPU=$(sysctl -n hw.ncpu)
 
 human_filesize()
