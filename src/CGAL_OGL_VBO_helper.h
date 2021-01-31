@@ -1,34 +1,37 @@
-// Copyright (c) 1997-2002  Max-Planck-Institute Saarbruecken (Germany).
-// All rights reserved.
-//
-// This file is part of CGAL (www.cgal.org); you may redistribute it under
-// the terms of the Q Public License version 1.0.
-// See the file LICENSE.QPL distributed with CGAL.
-//
-// Licensees holding a valid commercial license may use this file in
-// accordance with the commercial license agreement provided with the software.
-//
-// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-//
-// $URL: svn+ssh://scm.gforge.inria.fr/svn/cgal/trunk/Nef_3/include/CGAL/Nef_3/OGL_helper.h $
-// $Id: OGL_helper.h 56667 2010-06-09 07:37:13Z sloriot $
-// 
-//
-// Author(s)     : Peter Hachenberger <hachenberger@mpi-sb.mpg.de>
-
-// Modified for OpenSCAD
+/*
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  As a special exception, you have permission to link this program
+ *  with the CGAL library and distribute executables, as long as you
+ *  follow the requirements of the GNU GPL in regard to all of the
+ *  software in the executable aside from CGAL.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 
 #pragma once
 
 #include "system-gl.h"
 #include "VBORenderer.h"
-#include "OGL_helper.h"
+#include "ext/CGAL/OGL_helper.h"
 #include <cstdlib>
 
-namespace CGAL {
-
-namespace OGL {
+using namespace CGAL::OGL;
 
 // ----------------------------------------------------------------------------
 // OGL Drawable Polyhedron:
@@ -367,7 +370,3 @@ protected:
 	VertexStates points_edges_states;
 	VertexStates halffacets_states;
 }; // Polyhedron
-
-} // namespace OGL
-
-} //namespace CGAL

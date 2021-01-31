@@ -31,15 +31,15 @@
 #include "colormap.h"
 #include "rendersettings.h"
 #include "CGAL_OGL_Polyhedron.h"
-#include "ext/CGAL/OGL_VBO_helper.h"
+#include "CGAL_OGL_VBO_helper.h"
 #include "printutils.h"
 
-class CGAL_OGL_VBOPolyhedron : public CGAL::OGL::VBOPolyhedron, public CGAL_OGL_Polyhedron
+class CGAL_OGL_VBOPolyhedron : public VBOPolyhedron, public CGAL_OGL_Polyhedron
 {
 public:
 
 	CGAL_OGL_VBOPolyhedron(const ColorScheme &cs)
-		: CGAL::OGL::VBOPolyhedron(), CGAL_OGL_Polyhedron(cs) {
+		: VBOPolyhedron(), CGAL_OGL_Polyhedron(cs) {
 		PRINTD("CGAL_OGL_VBOPolyhedron()");
 		PRINTD("CGAL_OGL_VBOPolyhedron() end");
 	}
