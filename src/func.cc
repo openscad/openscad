@@ -34,6 +34,8 @@
 #include "memory.h"
 #include "UserModule.h"
 #include "degree_trig.h"
+#include "FreetypeRenderer.h"
+#include "parameters.h"
 
 #include <cmath>
 #include <sstream>
@@ -59,38 +61,6 @@ int process_id = getpid();
 
 std::mt19937 deterministic_rng( std::time(nullptr) + process_id );
 #include <array>
-static void print_argCnt_warning(
-	const char *name,
-	int found,
-	const std::string& expected,
-	const Location& loc,
-	const std::string& documentRoot
-){
-	LOG(message_group::Warning,loc,documentRoot,"%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found),name);
-}
-static void print_argConvert_warning(
-	const char *name,
-	const std::string& where,
-	Value::Type found,
-	std::vector<Value::Type> expected,
-	const Location& loc,
-	const std::string& documentRoot
-){
-	std::stringstream message;
-	message << name << "() parameter could not be converted: " << where << ": expected ";
-	if (expected.size() == 1) {
-		message << Value::typeName(expected[0]);
-	} else {
-		assert(expected.size() > 0);
-		message << "one of (" << Value::typeName(expected[0]);
-		for (size_t i = 1; i < expected.size(); i++) {
-			message << ", " << Value::typeName(expected[i]);
-		}
-		message << ")";
-	}
-	message << ", found " << Value::typeName(found);
-	LOG(message_group::Warning,loc,documentRoot,"%1$s",message.str());
-}
 
 static inline bool check_arguments(const char* function_name, const Arguments& arguments, const Location& loc, int expected_count, bool warn = true)
 {
@@ -812,6 +782,94 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 	return VectorType(arguments.session(), x, y, z);
 }
 
+Value builtin_textmetrics(Arguments arguments, const Location& loc)
+{
+    Parameters parameters = Parameters::parse(std::move(arguments), loc,
+        { "text", "size", "font" },
+        { "direction", "language", "script", "halign", "valign", "spacing" }
+    );
+    parameters.set_caller("textmetrics");
+
+    FreetypeRenderer::Params ftparams;
+    ftparams.set_loc(loc);
+    ftparams.set_documentPath(arguments.documentRoot());
+    ftparams.set(parameters);
+    ftparams.detect_properties();
+
+    FreetypeRenderer::TextMetrics metrics(ftparams);
+    if (!metrics.ok) {
+        return Value::undefined.clone();
+    }
+
+    // The bounding box, ascent/descent, and offset values will be zero
+    // if the text consists of nothing but whitespace.
+    VectorType bbox_pos(arguments.session());
+    bbox_pos.emplace_back(metrics.bbox_x);
+    bbox_pos.emplace_back(metrics.bbox_y);
+
+    VectorType bbox_dims(arguments.session());
+    bbox_dims.emplace_back(metrics.bbox_w);
+    bbox_dims.emplace_back(metrics.bbox_h);
+
+    VectorType offset(arguments.session());
+    offset.emplace_back(metrics.x_offset);
+    offset.emplace_back(metrics.y_offset);
+
+    // The advance values are valid whether or not the text
+    // is whitespace.
+    VectorType advance(arguments.session());
+    advance.emplace_back(metrics.advance_x);
+    advance.emplace_back(metrics.advance_y);
+
+    ObjectType text_metrics(arguments.session());
+    text_metrics.set("position", std::move(bbox_pos));
+    text_metrics.set("size", std::move(bbox_dims));
+    text_metrics.set("ascent", metrics.ascent);
+    text_metrics.set("descent", metrics.descent);
+    text_metrics.set("offset", std::move(offset));
+    text_metrics.set("advance", std::move(advance));
+    return std::move(text_metrics);
+}
+
+Value builtin_fontmetrics(Arguments arguments, const Location& loc)
+{
+    Parameters parameters = Parameters::parse(std::move(arguments), loc,
+        { "size", "font" }
+    );
+    parameters.set_caller("fontmetrics");
+
+    FreetypeRenderer::Params ftparams;
+    ftparams.set_loc(loc);
+    ftparams.set_documentPath(arguments.documentRoot());
+    ftparams.set(parameters);
+    ftparams.detect_properties();
+
+    FreetypeRenderer::FontMetrics metrics(ftparams);
+    if (!metrics.ok) {
+        return Value::undefined.clone();
+    }
+
+    ObjectType nominal(arguments.session());
+    nominal.set("ascent", metrics.nominal_ascent);
+    nominal.set("descent", metrics.nominal_descent);
+
+    ObjectType max(arguments.session());
+    max.set("ascent", metrics.max_ascent);
+    max.set("descent", metrics.max_descent);
+
+    ObjectType font(arguments.session());
+    font.set("family", metrics.family_name);
+    font.set("style", metrics.style_name);
+
+    ObjectType font_metrics(arguments.session());
+    font_metrics.set("nominal", nominal);
+    font_metrics.set("max", max);
+    font_metrics.set("interline", metrics.interline);
+    font_metrics.set("font", font);
+
+    return std::move(font_metrics);
+}
+
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall* call)
 {
 	if (call->arguments.size() != 1) {
@@ -864,6 +922,14 @@ Value builtin_is_function(Arguments arguments, const Location& loc)
 		return Value::undefined.clone();
 	}
 	return Value(arguments[0]->isDefinedAs(Value::Type::FUNCTION));
+}
+
+Value builtin_is_object(Arguments arguments, const Location& loc)
+{
+    if (!check_arguments("is_object", arguments, loc, 1)) {
+        return Value::undefined.clone();
+    }
+    return Value(arguments[0]->isDefinedAs(Value::Type::OBJECT));
 }
 
 void register_builtin_functions()
@@ -989,6 +1055,20 @@ void register_builtin_functions()
 					"chr(range) -> string",
 				});
 
+    Builtins::init("textmetrics",
+        new BuiltinFunction(&builtin_textmetrics,
+        &Feature::ExperimentalTextMetricsFunctions),
+                {
+                    "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
+                });
+
+    Builtins::init("fontmetrics",
+        new BuiltinFunction(&builtin_fontmetrics,
+        &Feature::ExperimentalTextMetricsFunctions),
+                {
+                    "fontmetrics(size, font) -> object",
+                });
+
 	Builtins::init("ord", new BuiltinFunction(&builtin_ord),
 				{
 					"ord(string) -> number",
@@ -1062,5 +1142,11 @@ void register_builtin_functions()
 	Builtins::init("is_function", new BuiltinFunction(&builtin_is_function),
 				{
 					"is_function(arg) -> boolean",
+				});
+
+	Builtins::init("is_object", new BuiltinFunction(&builtin_is_object,
+        &Feature::ExperimentalTextMetricsFunctions),
+				{
+					"is_object(arg) -> boolean",
 				});
 }

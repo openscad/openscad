@@ -29,6 +29,7 @@
 #include <vector>
 #include <ostream>
 
+#include "parameters.h"
 #include <hb.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -77,6 +78,15 @@ public:
         void set_valign(const std::string &valign) {
             this->valign = valign;
         }
+        void set_loc(const Location &loc) {
+            this->loc = loc;
+        }
+        void set_documentPath(const std::string &path) {
+            this->documentPath = path;
+        }
+        void set(Parameters &parameters);
+        FT_Face get_font_face() const;
+        void detect_properties();
         friend std::ostream & operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
 		return stream
 			<< "text = \"" << params.text
@@ -95,29 +105,70 @@ public:
     private:
         double size, spacing, fn, fa, fs, segments;
 	std::string text, font, direction, language, script, halign, valign;
+        Location loc = Location::NONE;
+        std::string documentPath = "";
+        static bool is_ignored_script(const hb_script_t script);
+        hb_script_t detect_script(hb_glyph_info_t *glyph_info,
+            unsigned int glyph_count) const;
+        hb_direction_t detect_direction(const hb_script_t script) const;
         
         friend class FreetypeRenderer;
     };
     
+    class TextMetrics {
+    public:
+        bool ok;    // true if object is valid
+        // The values here are all at their final size; they have been
+        // descaled down from the 1e5 size used for Freetype, and rescaled
+        // up to the specified size.
+        double bbox_x;
+        double bbox_y;
+        double bbox_w;
+        double bbox_h;
+        double advance_x;
+        double advance_y;
+        double ascent;
+        double descent;
+        double x_offset;
+        double y_offset;
+        TextMetrics(const FreetypeRenderer::Params &params);
+    };
+    class FontMetrics {
+    public:
+        bool ok;    // true if object is valid
+        // The values here are all at their final size; they have been
+        // descaled down from the 1e5 size used for Freetype, and rescaled
+        // up to the specified size.
+        double nominal_ascent;
+        double nominal_descent;
+        double max_ascent;
+        double max_descent;
+        double interline;
+        std::string family_name;
+        std::string style_name;
+        FontMetrics(const FreetypeRenderer::Params &params);
+    };
     FreetypeRenderer();
     virtual ~FreetypeRenderer();
 
-        void detect_properties(FreetypeRenderer::Params &params) const;
 	std::vector<const class Geometry *> render(const FreetypeRenderer::Params &params) const;
 private:
-	  const static double scale;
-	  const static double unscale;
+    const static double scale;
     FT_Outline_Funcs funcs;
-    
+
+    // The GlyphData assumes responsibility for "glyph" and will ensure
+    // that it is freed when the GlyphData is destroyed.
+    // However, glyph_pos points to data that the caller must ensure
+    // remains valid until the GlyphData is destroyed.
     class GlyphData {
     public:
         GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos) {}
         unsigned int get_idx() const { return idx; };
         FT_Glyph get_glyph() const { return glyph; };
-        double get_x_offset() const { return glyph_pos->x_offset * unscale; };
-        double get_y_offset() const { return glyph_pos->y_offset * unscale; };
-        double get_x_advance() const { return glyph_pos->x_advance * unscale; };
-        double get_y_advance() const { return glyph_pos->y_advance * unscale; };
+        double get_x_offset() const { return glyph_pos->x_offset / scale; };
+        double get_y_offset() const { return glyph_pos->y_offset / scale; };
+        double get_x_advance() const { return glyph_pos->x_advance / scale; };
+        double get_y_advance() const { return glyph_pos->y_advance / scale; };
     private:
         FT_Glyph glyph;
         unsigned int idx;
@@ -138,13 +189,33 @@ private:
         }
     };
 
-    bool is_ignored_script(const hb_script_t script) const;
-    hb_script_t get_script(const FreetypeRenderer::Params &params, hb_glyph_info_t *glyph_info, unsigned int glyph_count) const;
-    hb_direction_t get_direction(const FreetypeRenderer::Params &params, const hb_script_t script) const;
+    class ShapeResults {
+    public:
+        bool ok;    // true if object is valid
+        // The values here are all in fractions of the specified size.
+        // They have been downscaled from the 1e+5 unit size used for
+        // when rendering from Freetype, and have not yet been scaled
+        // back up to the desired font size.
+        GlyphArray glyph_array;
+        double x_offset;
+        double y_offset;
+        double left;
+        double right;
+        double top;
+        double bottom;
+        double advance_x;
+        double advance_y;
+        double ascent;
+        double descent;
+        ShapeResults(const FreetypeRenderer::Params &params);
+        virtual ~ShapeResults();
+    private:
+        void calc_offsets_horiz(const FreetypeRenderer::Params &params);
+        void calc_offsets_vert(const FreetypeRenderer::Params &params);
+        hb_font_t *hb_ft_font;
+        hb_buffer_t *hb_buf;
+    };
 
-    double calc_x_offset(std::string halign, double width) const;
-    double calc_y_offset(std::string valign, double ascend, double descend) const;
-    
     static int outline_move_to_func(const FT_Vector *to, void *user);
     static int outline_line_to_func(const FT_Vector *to, void *user);
     static int outline_conic_to_func(const FT_Vector *c1, const FT_Vector *to, void *user);

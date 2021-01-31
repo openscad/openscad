@@ -8,10 +8,10 @@ multmatrix([[1, 0, 0, 0], [0, 0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 }
 linear_extrude(height = 2, $fn = 10, $fa = 12, $fs = 2) {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		text(text = "Welcome to...", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 10, $fa = 12, $fs = 2);
+		text(text = "Welcome to...", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 10, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, -16], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		text(text = "Parametric Designs", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 10, $fa = 12, $fs = 2);
+		text(text = "Parametric Designs", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 10, $fa = 12, $fs = 2);
 	}
 }
 

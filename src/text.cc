@@ -24,7 +24,6 @@
  *
  */
 
-#include "calc.h"
 #include "children.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
@@ -41,49 +40,26 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 static AbstractNode* builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	if (!children.empty()) {
-		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
-			"module %1$s() does not support child modules",inst->name());
-	}
+    if (!children.empty()) {
+        LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+            "module %1$s() does not support child modules",inst->name());
+    }
 
-	auto node = new TextNode(inst);
+    auto node = new TextNode(inst);
 
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-		{"text", "size", "font"},
-		{"direction", "language", "script", "halign", "valign", "spacing"}
-	);
+    Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+        {"text", "size", "font"},
+        {"direction", "language", "script", "halign", "valign", "spacing"}
+    );
+    parameters.set_caller("text");
 
-	const auto &fn = parameters["$fn"].toDouble();
-	const auto &fa = parameters["$fa"].toDouble();
-	const auto &fs = parameters["$fs"].toDouble();
+    node->params.set_loc(inst->location());
+    node->params.set_documentPath(arguments.documentRoot());
 
-	node->params.set_fn(fn);
-	node->params.set_fa(fa);
-	node->params.set_fs(fs);
+    node->params.set(parameters);
+    node->params.detect_properties();
 
-	auto size = parameters.get("size", 10.0);
-	auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
-	// The curved segments of most fonts are relatively short, so
-	// by using a fraction of the number of full circle segments
-	// the resolution will be better matching the detail level of
-	// other objects.
-	auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
-
-	node->params.set_size(size);
-	node->params.set_segments(text_segments);
-	node->params.set_text(parameters.get("text", ""));
-	node->params.set_spacing(parameters.get("spacing", 1.0));
-	node->params.set_font(parameters.get("font", ""));
-	node->params.set_direction(parameters.get("direction", ""));
-	node->params.set_language(parameters.get("language", "en"));
-	node->params.set_script(parameters.get("script", ""));
-	node->params.set_halign(parameters.get("halign", "left"));
-	node->params.set_valign(parameters.get("valign", "baseline"));
-
-	FreetypeRenderer renderer;
-	renderer.detect_properties(node->params);
-
-	return node;
+    return node;
 }
 
 std::vector<const Geometry *> TextNode::createGeometryList() const
