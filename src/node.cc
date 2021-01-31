@@ -70,6 +70,16 @@ const AbstractNode *AbstractNode::getNodeByID(int idx, std::deque<const Abstract
   return nullptr;
 }
 
+void AbstractNode::getNodesByLocation(const Location &search_location, std::deque<const AbstractNode *> &nodes) const
+{
+  if (this->location.overlap(search_location)) {
+    nodes.push_back(this);
+  }
+  for (const auto &node : this->children) {
+    node->getNodesByLocation(search_location, nodes);
+  }
+}
+
 std::string GroupNode::name() const
 {
   return "group";

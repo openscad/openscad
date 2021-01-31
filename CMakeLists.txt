@@ -42,7 +42,7 @@ option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
-option(LANGUAGESERVER "Build with languageserver support " ON)
+option(LANGUAGESERVER "Build with languageserver support" ON)
 
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 
