@@ -44,7 +44,9 @@ debug {
     message("If you're building a development binary, consider adding CONFIG+=experimental")
   }
 }
-  
+
+VERSION=2021.01
+VERSIONDATE=2021.01.31
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
