@@ -372,16 +372,23 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
 {
 	const Value &v = this->expr->evaluate(context);
 
-	if (v.type() == Value::Type::VECTOR) {
+    switch(v.type()) {
+	case Value::Type::VECTOR:
 		if (this->member == "x") return v[0];
 		if (this->member == "y") return v[1];
 		if (this->member == "z") return v[2];
-	} else if (v.type() == Value::Type::RANGE) {
+        break;
+	case Value::Type::RANGE:
 		if (this->member == "begin") return v[0];
 		if (this->member == "step") return v[1];
 		if (this->member == "end") return v[2];
-	}
-	return Value::undefined.clone();
+        break;
+	case Value::Type::OBJECT:
+        return v[this->member];
+    default:
+        break;
+    }
+    return Value::undefined.clone();
 }
 
 void MemberLookup::print(std::ostream &stream, const std::string &) const
@@ -842,6 +849,12 @@ static void doForEach(
 				*forContext(context, variable_name, value.clone())
 			);
 		}
+    } else if (variable_values.type() == Value::Type::OBJECT) {
+        for (auto key : variable_values.toObject().keys()) {
+			doForEach(assignments, location, operation, assignment_index + 1,
+				*forContext(context, variable_name, key)
+            );
+        }
 	} else if (variable_values.type() == Value::Type::STRING) {
 		for (auto value : variable_values.toStrUtf8Wrapper()) {
 			doForEach(assignments, location, operation, assignment_index + 1,
