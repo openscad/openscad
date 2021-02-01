@@ -221,3 +221,9 @@ struct WorkspaceFolder {
   std::string name;
 };
 
+enum class MessageType {
+    Error = 1,
+    Warning = 2,
+    Info = 3,
+    Log = 4,
+};

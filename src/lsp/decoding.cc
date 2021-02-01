@@ -309,6 +309,11 @@ bool decode_env::declare_field(JSONObject &, ExitRequest &, const FieldNameType 
 // LSP General Messages
 ///////////////////////////////////////////////////////////
 template<>
+bool decode_env::declare_field(JSONObject &object, MessageType &target, const FieldNameType &field) {
+    return declare_field(object, (int&)target, field);
+}
+
+template<>
 bool decode_env::declare_field(JSONObject &object, DidOpenTextDocument &target, const FieldNameType &) {
     declare_field(object, target.textDocument, "textDocument");
     return true;
@@ -335,6 +340,13 @@ bool decode_env::declare_field(JSONObject &object, TextDocumentPositionParams &t
 }
 
 template<>
+bool decode_env::declare_field(JSONObject &object, LogMessageNotification &target, const FieldNameType &) {
+    declare_field(object, target.type, "type");
+    declare_field(object, target.message, "message");
+    return true;
+}
+
+template<>
 bool decode_env::declare_field(JSONObject &object, ShowDocumentParams &target, const FieldNameType &) {
     declare_field(object, target.uri, "uri");
     declare_field_optional(object, target.external, "external");
@@ -344,11 +356,14 @@ bool decode_env::declare_field(JSONObject &object, ShowDocumentParams &target, c
 }
 
 template<>
-bool decode_env::declare_field(JSONObject &parent, Diagnostic &target, const FieldNameType &field) {
-    auto object = start_object(parent, field);
+bool decode_env::declare_field(JSONObject &object, Diagnostic &target, const FieldNameType &field) {
+    //auto object = start_object(parent, field);
     declare_field(object, target.range, "range");
     declare_field(object, target.severity, "severity");
+    declare_field_optional(object, target.code, "code");
+    declare_field_optional(object, target.source, "source");
     declare_field(object, target.message, "message");
+
     return true;
 }
 
@@ -366,6 +381,7 @@ bool decode_env::declare_field(JSONObject &object, ShowMessageParams &target, co
     declare_field(object, target.message, "message");
     return true;
 }
+
 
 
 ///////////////////////////////////////////////////////////
@@ -413,7 +429,7 @@ void ConnectionHandler::register_messages() {
     MAP("textDocument/didOpen", DidOpenTextDocument);
     MAP("textDocument/didChange", DidChangeTextDocument);
     MAP("textDocument/didClose", DidCloseTextDocument);
-    MAP("textDocument/hover", TextDocumentHover);
+    //MAP("textDocument/hover", TextDocumentHover);
 
     MAP("$openscad/render", OpenSCADRender);
 

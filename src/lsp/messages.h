@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lsp.h"
-#include "project.h"
+#include "lsp/lsp.h"
+#include "lsp/project.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -102,10 +102,11 @@ struct decode_env {
     template<typename value_type>
     bool declare_field(JSONObject &parent, value_type &dst, const FieldNameType &field) {
         //assert(parent.isObject());
+        auto object = parent.ref();
+        auto it = object.find(field);
         if (this->dir == storage_direction::READ)  {
-            auto object = parent.ref();
-            auto it = object.find(field);
             if (it != object.end()) {
+/*#if __cplusplus > 201402L
                 if constexpr (std::is_integral<value_type>::value) {
                     dst = it->toInt();
                 } else if constexpr(std::is_floating_point<value_type>::value) {
@@ -121,19 +122,82 @@ struct decode_env {
                     printf("%i<- If this is part of your error message, you have messed up something in the decoding if your message - maybe you have forgotton to declare it as MAKE_DECODEABLE?", dst);
                     //static_assert(std::is_same<value_type, bool>::value);
                 }
+#else */
+                dst = retrieve_value<value_type>(it);
+//#endif
                 return true;
             } else {
                 return false;
             }
         } else {
+/*            if (it == object.end()) {
+                object.insert(field, false);
+                it = object.find(field);
+            }
+            assign_value(it, dst);
+*/
             if constexpr(std::is_convertible<value_type, std::string>::value) {
                 parent[field] = QString::fromStdString(dst);
             } else {
                 parent[field] = dst;
             }
+
             return true;
         }
     }
+    // The following is required to hack against C++14's lack of `if constexpr`
+    template <class value_type,
+    typename std::enable_if_t<std::is_integral<value_type>::value>* = nullptr>
+    value_type retrieve_value(QJsonObject::iterator &it) {
+        return it->toInt();
+    }
+
+    template <class value_type,
+    typename std::enable_if_t<std::is_floating_point<value_type>::value>* = nullptr>
+    value_type retrieve_value(QJsonObject::iterator &it) {
+        return it->toDouble();
+    }
+
+    /*template <class value_type,
+    typename std::enable_if_t<std::is_same<value_type, bool>::value>* = nullptr>
+    value_type retrieve_value(QJsonObject::iterator &it) {
+        return it->toBool();
+    }*/
+
+    template <class value_type,
+    typename std::enable_if_t<std::is_convertible<value_type, std::string>::value>* = nullptr>
+    value_type retrieve_value(QJsonObject::iterator &it) {
+        return it->toString().toStdString();
+    }
+
+    template <class value_type,
+    typename std::enable_if_t<std::is_convertible<value_type, QString>::value>* = nullptr>
+    value_type retrieve_value(QJsonObject::iterator &it) {
+        return it->toString();
+    }
+
+    // The following is required to hack against C++14's lack of `if constexpr`
+    /*template <class value_type>
+    value_type retrieve_value(QJsonObject::iterator &it) {
+        // This is a hack for better error messages if you forgot to define a overload.
+        value_type dst;
+        printf("%s<- If this is part of your error message, you have messed up something in the decoding if your message - maybe you have forgotton to declare it as MAKE_DECODEABLE?", dst);
+        static_assert(std::is_same<value_type, bool>::value);
+        return dst;
+    }*/
+
+    template <class value_type,
+    typename std::enable_if_t<!std::is_convertible<value_type, std::string>::value>* = nullptr>
+    void assign_value(QJsonObject::iterator &it, const value_type &dst) {
+        *it = dst;
+    }
+
+    template <class value_type,
+    typename std::enable_if_t<std::is_convertible<value_type, std::string>::value>* = nullptr>
+    void assign_value(QJsonObject::iterator &it, const value_type &dst) {
+        *it = QString::fromStdString(dst);
+    }
+
 
     template <typename value_type>
     bool declare_field_optional(JSONObject &object, OptionalType<value_type> &target, const FieldNameType &field) {
@@ -241,6 +305,8 @@ struct OutgoingNotificationMessage : public RequestMessage {
     OutgoingNotificationMessage() {
         this->id.type = RequestId::UNSET;
     }
+
+    virtual void process(Connection *conn, project *project, const RequestId &id) { assert(false); }
 };
 
 // Base Class for Results
@@ -346,6 +412,10 @@ MESSAGE_CLASS(ExitRequest) : public RequestMessage {
 ///////////////////////////////////////////////////////////
 // LSP Messages based on capabilities
 
+template<>
+bool decode_env::declare_field(JSONObject &, MessageType &, const FieldNameType &);
+
+
 /// capability: textDocumentSync
 MESSAGE_CLASS(DidOpenTextDocument) : public RequestMessage {
     MAKE_DECODEABLE;
@@ -372,11 +442,11 @@ MESSAGE_CLASS(DidCloseTextDocument) : public RequestMessage {
     virtual void process(Connection *, project *, const RequestId &id);
 };
 
-/// capability: hoverProvider
-MESSAGE_CLASS(TextDocumentHover) : public TextDocumentPositionParams {
+MESSAGE_CLASS(TextDocumentPositionParams) : public RequestMessage {
     MAKE_DECODEABLE;
 
-    virtual void process(Connection *, project *, const RequestId &id);
+    Position position;
+    TextDocumentIdentifier textDocument;
 };
 
 MESSAGE_CLASS(HoverResponse) : public ResponseResult {
@@ -386,16 +456,25 @@ MESSAGE_CLASS(HoverResponse) : public ResponseResult {
     lsRange range;
 };
 
+MESSAGE_CLASS(LogMessageNotification) : public OutgoingNotificationMessage {
+    MAKE_DECODEABLE;
+
+    MessageType type;
+    std::string message;
+};
+
 MESSAGE_CLASS(Diagnostic) {
     MAKE_DECODEABLE;
 
     lsRange range;
-    int severity;
+    MessageType severity;
+    OptionalType<std::string> code;
+    // OptionalType CodeDescription
+    OptionalType<std::string> source;
     std::string message;
-    // And many more...
 };
 
-MESSAGE_CLASS(PublishDiagnosticsParams) : RequestMessage {
+MESSAGE_CLASS(PublishDiagnosticsParams) : public OutgoingNotificationMessage {
     MAKE_DECODEABLE;
 
     DocumentUri uri;
@@ -418,19 +497,11 @@ MESSAGE_CLASS(ShowDocumentParams) : public RequestMessage {
 
 MESSAGE_CLASS(ShowMessageParams) : public OutgoingNotificationMessage {
     MAKE_DECODEABLE;
-    enum MessageType {
-        Error = 1,
-        Warning = 2,
-        Info = 3,
-        Debug = 4
-    };
-    int type;
 
+    MessageType type;
     std::string message;
-
-    // Is only sent
-    virtual void process(Connection *, project *, const RequestId &){ assert(false); };
 };
+
 
 ///////////////////////////////////////////////////////////
 // OpenSCAD extensions
