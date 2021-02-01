@@ -37,6 +37,8 @@ signals:
     // Request a preview
     void viewModePreview();
 
+    void starting();
+
 public slots:
     void sendCursor(QString file, int line, int column);
 

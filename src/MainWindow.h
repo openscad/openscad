@@ -179,8 +179,6 @@ private slots:
     void hideEditorToolbar();
     void hide3DViewToolbar();
 	void showLink(const QString);
-	void showEditor();
-	void hideEditor();
 	void showConsole();
 	void hideConsole();
 	void showErrorLog();
@@ -199,6 +197,8 @@ public slots:
 	void hideFind();
 	void showFind();
 	void showFindAndReplace();
+	void showEditor(bool force=false);
+	void hideEditor(bool force=false);
 
 private slots:
 	void selectFindType(int);

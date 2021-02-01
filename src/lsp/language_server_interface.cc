@@ -9,7 +9,6 @@ LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, int por
         port(port),
         mainWindow(mainWindow)
 {
-
     // Connect signals
     connect(mainWindow, SIGNAL(externallySetCursor(QString, int, int)),
             this, SLOT(sendCursor(QString, int, int)));
@@ -39,9 +38,14 @@ void LanguageServerInterface::stop() {
 
 void LanguageServerInterface::start() {
     std::cout << "Starting handler \n";
+
+
     this->handler = std::make_unique<ConnectionHandler>(this,
         [this]() {return init_project();},
         port);
+
+    mainWindow->windowActionHideEditor->setChecked(true);
+    mainWindow->hideEditor(true);
 }
 
 std::unique_ptr<project> LanguageServerInterface::init_project() {
@@ -51,8 +55,7 @@ std::unique_ptr<project> LanguageServerInterface::init_project() {
     new_project->mainWindow = mainWindow;
     // Add more initialization magic here - if needed
 
-    // Guaranteed NRVO is comes with C++20! - then we wont need the move any more
-    return std::move(new_project);
+    return new_project;
 }
 
 

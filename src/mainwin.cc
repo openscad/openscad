@@ -2162,7 +2162,7 @@ void MainWindow::selectObject(QPoint mouse)
 	if (!this->qglview->renderer) {
 		return;
 	}
-	
+
 	// selecting without select object?!
 	if (!this->selector) {
 		return;
@@ -2948,18 +2948,19 @@ void MainWindow::showLink(const QString link)
 	}
 }
 
-void MainWindow::showEditor()
+void MainWindow::showEditor(bool force)
 {
-	windowActionHideEditor->setChecked(false);
-	hideEditor();
+    if (!force)
+    	windowActionHideEditor->setChecked(false);
+	hideEditor(force);
 	editorDock->raise();
 	tabManager->setFocus();
 }
 
-void MainWindow::hideEditor()
+void MainWindow::hideEditor(bool force)
 {
 	auto e = (ScintillaEditor *) this->activeEditor;
-	if (windowActionHideEditor->isChecked()) {
+	if (windowActionHideEditor->isChecked() || force) {
 		// Workaround manually disabling interactions with editor by setting it
 		// to read-only when not being shown.  This is an upstream bug from Qt
 		// (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
