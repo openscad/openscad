@@ -563,6 +563,8 @@ else()
     src/render.cc
     src/renderer.cc
     src/system-gl.cc
+    src/VertexArray.cc
+    src/VBORenderer.cc
     src/CGALRenderer.cc
     src/GLView.cc
     src/OffscreenView.cc

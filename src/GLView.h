@@ -72,37 +72,12 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	/// Shader attribute identifiers
-	struct shaderinfo_t {
-		enum shader_type_t {
-			NONE,
-			CSG_RENDERING,
-			SELECT_RENDERING,
-		};
-		int progid = 0;
-		shader_type_t type;
-		union {
-			struct {
-				int color_area;
-				int color_edge;
-				// barycentric coordinates of the current vertex
-				int barycentric;
-			} csg_rendering;
-			struct {
-				int identifier;
-			} select_rendering;
-		} data;
-
-	};
-
-	shaderinfo_t shaderinfo;
 	bool is_opencsg_capable;
 	bool has_shaders;
 	void enable_opencsg_shaders();
 	virtual void display_opencsg_warning() = 0;
 	bool opencsg_support;
 	int opencsg_id;
-
 #endif
 private:
 	void showCrosshairs(const Color4f &col);

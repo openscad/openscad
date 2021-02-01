@@ -18,6 +18,10 @@ public:
 	static const Feature ExperimentalFastDifference;
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
+	static const Feature ExperimentalVxORenderers;
+	static const Feature ExperimentalVxORenderersIndexing;
+	static const Feature ExperimentalVxORenderersDirect;
+	static const Feature ExperimentalVxORenderersPrealloc;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;
