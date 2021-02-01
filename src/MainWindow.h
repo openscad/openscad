@@ -106,8 +106,10 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const Message& msgObj);
 	void errorLogOutput(const Message &log_msg);
+
+public slots:
+	void consoleOutput(const Message& msgObj);
 	void setCursor();
 
 signals:

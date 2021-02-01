@@ -4,6 +4,7 @@
 #include "lsp/messages.h"
 #include "lsp/project.h"
 #include "MainWindow.h"
+#include "AutoUpdater.h"
 
 LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, int port) :
         port(port),
@@ -16,6 +17,10 @@ LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, int por
     // Connect slots
     connect(this, SIGNAL(viewModePreview()),
             mainWindow, SLOT(viewModePreview()));
+
+    mainWindow->consoleOutput(Message(
+        std::string("The language server is enabled in this window on TCP port ") + std::to_string(port) + ".",
+        Location::NONE, "", message_group::None));
 
 #ifndef LSP_ON_MAINTHREAD
     connect(&workerthread, SIGNAL(started()), this, SLOT(start()));
@@ -37,13 +42,13 @@ void LanguageServerInterface::stop() {
 }
 
 void LanguageServerInterface::start() {
-    std::cout << "Starting handler \n";
-
-
     this->handler = std::make_unique<ConnectionHandler>(this,
         [this]() {return init_project();},
         port);
 
+    // Things interfering with LSP
+    mainWindow->designActionAutoReload->setChecked(false);
+    mainWindow->autoReloadSet(false);
     mainWindow->windowActionHideEditor->setChecked(true);
     mainWindow->hideEditor(true);
 }
