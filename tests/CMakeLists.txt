@@ -275,6 +275,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-union")
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-difference")
 
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL)
