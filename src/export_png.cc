@@ -66,7 +66,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& op
 	}
 
 #ifdef ENABLE_OPENCSG
-	OpenCSGRenderer openCSGRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products, &glview->shaderinfo);
+	OpenCSGRenderer openCSGRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #endif
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 

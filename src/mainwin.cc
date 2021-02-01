@@ -324,7 +324,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	progressThrottle->start();
 
 	animate_panel->hide();
-	this->hideFind(); 
+	this->hideFind();
 	frameCompileResult->hide();
 	this->labelCompileResultMessage->setOpenExternalLinks(false);
 	connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showLink(QString)));
@@ -553,8 +553,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideEditor = settings.value("view/hideEditor").toBool();
 	bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
 	bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
-    bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
-    bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
+	bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
+	bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 	
 	// make sure it looks nice..
 	auto windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -656,12 +656,12 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 		if (action->toolTip().contains("&nbsp;")) {
 	    continue;
 		}
-		
+
 		const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
 		if (shortCut.isEmpty()) {
 	    continue;
 		}
-		
+
 		const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
 		action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
 	}
@@ -702,7 +702,7 @@ void MainWindow::onButtonChanged(InputEventButtonChanged *)
 void MainWindow::onTranslateEvent(InputEventTranslate *event)
 {
     double zoomFactor = 0.001 * qglview->cam.zoomValue();
-    
+
     if(event->viewPortRelative){
 		qglview->translate(event->x, event->y, event->z, event->relative, true);
 	}else{
@@ -951,7 +951,7 @@ void MainWindow::updateTVal()
 	if (windowActionHideCustomizer->isVisible()) {
 		if (this->parameterWidget->childHasFocus()) return;
 	}
-	
+
 	if (this->anim_numsteps > 1) {
 		this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
 		this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
@@ -972,6 +972,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
 	OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
+
 	try{
 		bool shouldcompiletoplevel = false;
 		bool didcompile = false;
@@ -1259,7 +1260,7 @@ void MainWindow::compileCSG()
 
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
 		CSGTreeNormalizer normalizer(normalizelimit);
-	
+
 		if (this->csgRoot) {
 			this->normalizedRoot = normalizer.normalize(this->csgRoot);
 			if (this->normalizedRoot) {
@@ -1277,7 +1278,7 @@ void MainWindow::compileCSG()
 		if (highlight_terms.size() > 0) {
 			LOG(message_group::None,Location::NONE,"","Compiling highlights (%1$d CSG Trees)...",highlight_terms.size());
 			this->processEvents();
-		
+
 			this->highlights_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < highlight_terms.size(); ++i) {
 				auto nterm = normalizer.normalize(highlight_terms[i]);
@@ -1289,12 +1290,12 @@ void MainWindow::compileCSG()
 		else {
 			this->highlights_products.reset();
 		}
-	
+
 		const auto &background_terms = csgrenderer.getBackgroundNodes();
 		if (background_terms.size() > 0) {
 			LOG(message_group::None,Location::NONE,"","Compiling background (%1$d CSG Trees)...",background_terms.size());
 			this->processEvents();
-		
+
 			this->background_products.reset(new CSGProducts());
 			for (unsigned int i = 0; i < background_terms.size(); ++i) {
 				auto nterm = normalizer.normalize(background_terms[i]);
@@ -1319,8 +1320,7 @@ void MainWindow::compileCSG()
 						(this->root_products ? this->root_products->size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
 																								this->highlights_products,
-																								this->background_products,
-																								&this->qglview->shaderinfo);
+																								this->background_products);
 		}
 #endif
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
@@ -1382,7 +1382,7 @@ void MainWindow::clearRecentFiles()
 void MainWindow::updateRecentFileActions()
 {
 	auto files = UIUtils::recentFiles();
-	
+
 	for (int i = 0; i < files.size(); ++i) {
 		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName().replace("&", "&&"));
 		this->actionRecentFile[i]->setData(files[i]);
@@ -1396,11 +1396,11 @@ void MainWindow::updateRecentFileActions()
 void MainWindow::show_examples()
 {
 	bool found_example = false;
-	
+
 	for (const auto &cat : UIUtils::exampleCategories()) {
 		auto examples = UIUtils::exampleFiles(cat);
 		auto menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
-		
+
 		for (const auto &ex : examples) {
 			auto openAct = new QAction(ex.fileName().replace("&", "&&"), this);
 			connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
@@ -1433,7 +1433,7 @@ void MainWindow::writeBackup(QFile *file)
 	writer.setCodec("UTF-8");
 	writer << activeEditor->toPlainText();
 	this->parameterWidget->writeBackupFile(file->fileName());
-	
+
 	LOG(message_group::None,Location::NONE,"","Saved backup file: %1$s", file->fileName().toUtf8().constData());
 }
 
@@ -1565,7 +1565,7 @@ void MainWindow::showFind()
 	replaceInputField->hide();
 	replaceButton->hide();
 	replaceAllButton->hide();
-	//replaceLabel->setVisible(false); 
+	//replaceLabel->setVisible(false);
 	find_panel->show();
 	activeEditor->findState = TabManager::FIND_VISIBLE;
 	editActionFindNext->setEnabled(true);
@@ -1586,13 +1586,13 @@ void MainWindow::findString(QString textToFind)
 
 void MainWindow::showFindAndReplace()
 {
-	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));	
+	this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));
 	this->processEvents();
-	findTypeComboBox->setCurrentIndex(1); 
+	findTypeComboBox->setCurrentIndex(1);
 	replaceInputField->show();
 	replaceButton->show();
 	replaceAllButton->show();
-	//replaceLabel->setVisible(true); 
+	//replaceLabel->setVisible(true);
 	find_panel->show();
 	activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
 	editActionFindNext->setEnabled(true);
@@ -1624,9 +1624,9 @@ void MainWindow::replaceAll()
 void MainWindow::convertTabsToSpaces()
 {
 	const auto text = activeEditor->toPlainText();
-	
+
 	QString converted;
-  
+
 	int cnt = 4;
 	for (int idx = 0; idx < text.length(); ++idx) {
 		auto c = text.at(idx);
@@ -2030,17 +2030,17 @@ void MainWindow::sendToPrintService()
 {
 #ifdef ENABLE_3D_PRINTING
 	//Keeps track of how many times we've exported and tries to create slightly unique filenames.
-	//Not mission critical, since non-unique file names are fine for the API, just harder to 
+	//Not mission critical, since non-unique file names are fine for the API, just harder to
 	//differentiate between in customer support later.
 	static unsigned int printCounter = 0;
-	
+
 	QTemporaryFile exportFile;
 	if (!exportFile.open()) {
 		LOG(message_group::Error,Location::NONE,"","Could not open temporary file.");
 		return;
 	}
 	const QString exportFilename = exportFile.fileName();
-	
+
 	//Render the stl to a temporary file:
     ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFilename, activeEditor->filepath);
     exportFileByName(this->root_geom, exportInfo);
@@ -2065,7 +2065,7 @@ void MainWindow::sendToPrintService()
 		LOG(message_group::Error,Location::NONE,"","%1$s",msg.toStdString());
 		return;
 	}
-	
+
 	//Upload the file to the 3D Printing server and get the corresponding url to see it.
 	//The result is put in partUrl.
 	try
@@ -2139,7 +2139,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
-	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() && 
+	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() &&
 		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
 	{
 		QSound::play(":sounds/complete.wav");
@@ -2163,11 +2163,18 @@ void MainWindow::selectObject(QPoint mouse)
 	if (!this->qglview->renderer) {
 		return;
 	}
+	
+	// selecting without select object?!
+	if (!this->selector) {
+		return;
+	}
 
 	// Nothing to select
 	if (!this->root_products) {
 		return;
 	}
+
+	this->qglview->renderer->prepare(true, false, &this->selector->shaderinfo);
 
 	// Update the selector with the right image size
 	this->selector->reset(this->qglview);
@@ -2338,7 +2345,7 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-									
+
 	.arg(QString::fromStdString(this->csgRoot ? this->csgRoot->dump() : NA),
 		QString::fromStdString(this->normalizedRoot ? this->normalizedRoot->dump() : NA),
 		QString::fromStdString(this->root_products ? this->root_products->dump() : NA),
@@ -2430,7 +2437,7 @@ bool MainWindow::canExport(unsigned int dim)
 	if (N && !N->p3->is_simple()) {
 		LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
-	
+
 	return true;
 }
 
@@ -2441,12 +2448,12 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 #endif
 {
     //Setting filename skips the file selection dialog and uses the path provided instead.
-    
+
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
 #ifdef ENABLE_CGAL
 	setCurrentOutput();
-	
+
 	//Return if something is wrong and we can't export.
 	if (! canExport(dim))
 		return;
@@ -2694,7 +2701,7 @@ bool MainWindow::isEmpty()
 
 void MainWindow::animateUpdateDocChanged()
 {
-	auto current_doc = activeEditor->toPlainText(); 
+	auto current_doc = activeEditor->toPlainText();
 	if (current_doc != last_compiled_doc) {
 		animateUpdate();
 	}
@@ -2807,13 +2814,13 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 {
 	changedTopLevelEditor(editorDock->isFloating());
 	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
-	
+
 	if (editorDock->isVisible()) viewerToolBar->removeAction(this->fileActionExportSTL);
 	else{
 		 QAction *beforeAction = viewerToolBar->actions().at(2);
 		 viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
 	 }
-	 
+
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
