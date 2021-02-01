@@ -80,8 +80,27 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
+	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree, bool allowFastDifference)
 	{
+		if (op == OpenSCADOperator::DIFFERENCE && allowFastDifference && Feature::ExperimentalFastDifference.is_enabled()) {
+			auto size = children.size();
+			if (size > 2) {
+				auto it = children.begin();
+				auto &firstChild = *it++;
+
+				Geometry::Geometries new_children;
+				new_children.insert(new_children.end(), it, children.end());
+
+				if (reduceFastUnionableGeometries(new_children, tree)) {
+					if (new_children.empty()) return firstChild.second;
+
+					LOG(message_group::Echo,Location::NONE,"","Reduced difference terms using fast-union");
+					new_children.push_front(firstChild);
+					return applyOperator3D(new_children, op, tree, /* allowFastDifference= */ false);
+				}
+			}
+		}
+
 		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
@@ -140,7 +159,7 @@ namespace CGALUtils {
 
 		}
 		CGAL::set_error_behaviour(old_behaviour);
-		return N;
+		return shared_ptr<Geometry>(N);
 	}
 
 	shared_ptr<const Geometry> applyUnion3D(
@@ -219,40 +238,26 @@ namespace CGALUtils {
 		};
 
 		try {
-			UnionAnalysis analysis;
-			{
-				analysis = analyzeUnion(chbegin, chend, tree);
-			}
-			// The geometries we'll need nefs of.
-			std::vector<Geometry::GeometryItem> remainingGeometries;
-			remainingGeometries.insert(remainingGeometries.end(), analysis.otherGeometries.begin(), analysis.otherGeometries.end());
+			Geometry::Geometries children;
+			children.insert(children.end(), chbegin, chend);
 
-			if (!analysis.nonIntersectingGeometries.empty()) {
-				for (auto &cluster : analysis.nonIntersectingGeometries) {
-					assert(!cluster.empty());
-					auto fastConcat = unionNonIntersecting(cluster, tree);
-					if (fastConcat) {
-						// Geometry::GeometryItem fakeItem = ;
-						remainingGeometries.emplace_back(std::make_pair(nullptr, fastConcat));
-					} else {
-						remainingGeometries.insert(remainingGeometries.end(), cluster.begin(), cluster.end());
-						LOG(message_group::Warning, getLocation(cluster.begin()->first),
-								"", "fast-union of %1$lu solids failed, doing slower nef unions", cluster.size());
-					}
-				}
-			}
+			// We could move the feature check around this call and make this the only
+			// applyUnion3D method (only other meaningful change should be the faster
+			// queue creation).
+			reduceFastUnionableGeometries(children, tree);
 
-			if (remainingGeometries.empty()) return nullptr;
-			if (remainingGeometries.size() == 1) {
-				// Avoid useless conversion to nef.
-				return remainingGeometries[0].second;
+			if (children.empty()) return nullptr;
+			if (children.size() == 1) {
+				// Fast-skip to avoid useless conversion to nef.
+				return children.begin()->second;
 			}
 
 			// We'll fill the queue in one go to get linear time construction.
 			std::vector<QueueConstItem> queueItems;
-			queueItems.reserve(remainingGeometries.size());
+			queueItems.reserve(children.size());
 
-			for (auto &item : remainingGeometries) {
+			for (auto &item : children) {
+				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
 				auto curChild = getGeometryAs<const CGAL_Nef_polyhedron>(item, tree);
 				assert((curChild == nullptr) == (item.second == nullptr));
 				if (curChild && !curChild->isEmpty()) {
@@ -262,7 +267,7 @@ namespace CGALUtils {
 			}
 
 			LOG(message_group::Warning, getLocation(chbegin->first),
-				"", "Doing full union of %1$lu geometries", remainingGeometries.size());
+				"", "Doing full union of %1$lu geometries", children.size());
 
 			// Build the queue in linear time (don't add items one by one!).
 			std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater>

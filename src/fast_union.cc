@@ -15,6 +15,31 @@
 
 #include "fast_union.h"
 
+bool reduceFastUnionableGeometries(Geometry::Geometries &children, const Tree* tree)
+{
+  auto analysis = analyzeUnion(children.begin(), children.end(), tree);
+
+  std::vector<Geometry::GeometryItem> remainingGeometries;
+  remainingGeometries.insert(remainingGeometries.end(), analysis.otherGeometries.begin(), analysis.otherGeometries.end());
+
+  if (analysis.nonIntersectingGeometries.empty()) return false;
+
+  for (auto &cluster : analysis.nonIntersectingGeometries) {
+    assert(!cluster.empty());
+    auto fastConcat = unionNonIntersecting(cluster, tree);
+    if (fastConcat) {
+      remainingGeometries.emplace_back(std::make_pair(nullptr, fastConcat));
+    } else {
+      remainingGeometries.insert(remainingGeometries.end(), cluster.begin(), cluster.end());
+      LOG(message_group::Warning, getLocation(cluster.begin()->first),
+          "", "fast-union of %1$lu solids failed, doing slower nef unions", cluster.size());
+    }
+  }
+
+  children.clear();
+  children.insert(children.end(), remainingGeometries.begin(), remainingGeometries.end());
+  return true;
+}
 
 // This bugdet controls the overlap detection logic.
 // We do up to this amound of unsuccessful tests to find "easy" unions for each

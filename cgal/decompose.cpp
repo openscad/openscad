@@ -285,7 +285,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
   }
 }
 
-Geometry const * minkowskitest(const Geometry::Geometries &children)
+shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
 {
   CGAL::Timer t,t_tot;
   assert(children.size() >= 2);
@@ -455,8 +455,8 @@ Geometry const * minkowskitest(const Geometry::Geometries &children)
   catch (...) {
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
-    
-    CGAL_Nef_polyhedron *N = applyOperator3D(children, OPENSCAD_MINKOWSKI);
+
+    auto N = applyOperator3D(children, OPENSCAD_MINKOWSKI);
     return N;
   }
 }

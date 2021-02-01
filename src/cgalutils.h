@@ -39,7 +39,7 @@ namespace CGALUtils {
 	};
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
-	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
+	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree = nullptr, bool allowFastDifference = true);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree = nullptr);
 	shared_ptr<const Geometry> applyUnion3DFast(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,

@@ -22,6 +22,7 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalFastUnion("fast-union", "Enable acceleration of unions of disjoint bodies.");
+const Feature Feature::ExperimentalFastDifference("fast-difference", "Enable acceleration of difference with disjoint bodies.");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 

@@ -14,6 +14,8 @@ struct UnionAnalysis {
 	Geometry::Geometries otherGeometries;
 };
 
+bool reduceFastUnionableGeometries(Geometry::Geometries &children, const Tree* tree);
+
 UnionAnalysis analyzeUnion(Geometry::Geometries::iterator chbegin,
 													 Geometry::Geometries::iterator chend, const Tree *tree);
 
