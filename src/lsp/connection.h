@@ -1,7 +1,7 @@
 #pragma once
 
-#include "project.h"
-#include "lsp.h"
+#include "lsp/project.h"
+#include "lsp/lsp.h"
 
 #include <QObject>
 
@@ -59,11 +59,11 @@ public:
 
     std::unique_ptr<project> active_project;
 
-    void log(int type, const std::string &message);
-    void error(const std::string &message) { log(1, message); }
-    void warn(const std::string &message) { log(2, message); }
-    void info(const std::string &message) { log(3, message); }
-    void debug(const std::string &message) { log(4, message); }
+    void log(MessageType type, const std::string &message);
+    void error(const std::string &message) { log(MessageType::Error, message); }
+    void warn(const std::string &message) { log(MessageType::Warning, message); }
+    void info(const std::string &message) { log(MessageType::Info, message); }
+    void debug(const std::string &message) { log(MessageType::Log, message); }
 
 private slots:
     void onReadyRead();

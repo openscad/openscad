@@ -250,9 +250,9 @@ void Connection::send(ResponseError &&error, const RequestId &id) {
     this->send(msg, id);
 }
 
-void Connection::log(int type, const std::string &message) {
+void Connection::log(MessageType type, const std::string &message) {
 #ifdef LOCAL_LOG_MESSAGES
-    std::cout << "LOG " << type << ": " << message << "\n";
+    std::cout << "LOG " << message << "\n";
 #endif
 
     ShowMessageParams msg;
