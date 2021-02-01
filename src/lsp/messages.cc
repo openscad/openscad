@@ -35,10 +35,13 @@ void ExitRequest::process(Connection *conn, project *proj, const RequestId &id) 
 void DidOpenTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
     // Called when a document is opened in the editor
     proj->open_files.emplace_back(textDocument);
+    auto file = proj->getFile(textDocument.uri);
 
     if (id.is_set()) {
         conn->send(SuccessResponse(true), id);
     }
+
+    file->update(conn);
 }
 
 void DidChangeTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
@@ -51,6 +54,10 @@ void DidChangeTextDocument::process(Connection *conn, project *proj, const Reque
     }
     if (id.is_set()) {
         conn->send(SuccessResponse(true), id);
+    }
+
+    if (file) {
+        file->update(conn);
     }
 }
 

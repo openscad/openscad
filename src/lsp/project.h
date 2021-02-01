@@ -1,19 +1,42 @@
 #pragma once
 
 #include "lsp/lsp.h"
+#include "node.h"
+#include "context.h"
+#include "builtincontext.h"
+#include "ModuleInstantiation.h"
+
 #include <list>
 
+class FileModule;
+class AbstractNode;
+
+
+class Connection;
 class LanguageServerInterface;
 class MainWindow;
 
-struct openFile {
+class openFile {
+public:
     openFile(const TextDocumentItem &doc) :
-        document(doc)
+        document(doc), rootInst("group"), top_ctx(Context::create<BuiltinContext>())
     {}
+
+    ~openFile();
 
     TextDocumentItem document;
 
     // TODO link the AST tree?
+    AbstractNode *rootNode = nullptr;
+    FileModule *rootModule = nullptr;
+
+    // parse the connection and update rootNode. Do not send to a renderer!
+    void update(Connection *conn);
+
+private:
+    ModuleInstantiation rootInst;
+	ContextHandle<BuiltinContext> top_ctx;
+
 };
 
 struct project {
