@@ -201,6 +201,9 @@ experimental {
   DEFINES += ENABLE_EXPERIMENTAL
 }
 
+  DEFINES += ENABLE_LANGUAGESERVER
+
+
 nogui {
   DEFINES += OPENSCAD_NOGUI
 }
@@ -404,7 +407,14 @@ HEADERS += src/version_check.h \
            src/input/InputDriverManager.h \
            src/input/AxisConfigWidget.h \
            src/input/ButtonConfigWidget.h \
-           src/input/WheelIgnorer.h
+           src/input/WheelIgnorer.h \
+           src/lsp/connection_handler.h \
+           src/lsp/connection.h \
+           src/lsp/language_server_interface.h \
+           src/lsp/lsp.h \
+           src/lsp/messages.h \
+           src/lsp/project.h
+
 
 SOURCES += \
            src/libsvg/libsvg.cc \
