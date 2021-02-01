@@ -41,7 +41,7 @@
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
-#include "lazy_geometry.h"
+#include "mixed_cache.h"
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");
@@ -272,10 +272,12 @@ PolySet * AmfImporter::read(const std::string filename)
 		for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)nullptr,  shared_ptr<const Geometry>(*it)));
 		}
-		if (auto geom = CGALUtils::applyUnion3DFast(children.begin(), children.end())) {
-			p = new PolySet(*geom->getPolySet());
-		} else {
+
+		if (auto ps = getGeometryAs<PolySet>(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+      p = new PolySet(*ps);
+    } else {
 			LOG(message_group::Error,Location::NONE,"","Error importing multi-object AMF file '%1$s', import() at line %2$d",filename,this->loc.firstLine());
+      p = new PolySet(3);
 		}
 	}
 #endif

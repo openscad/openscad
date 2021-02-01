@@ -42,12 +42,17 @@ namespace CGALUtils {
 	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree = nullptr);
-	shared_ptr<const LazyGeometry> applyUnion3DFast(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+	shared_ptr<const Geometry> applyUnion3DFast(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree = nullptr);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+	CGAL_Iso_cuboid_3 boundingBox(const shared_ptr<const Geometry> &geom);
+	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid);
+	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
+	size_t getNumberOfFacets(const shared_ptr<const Geometry> &geom);
+	void spatialSort(std::vector<Geometry::GeometryItem>& geometries);
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 

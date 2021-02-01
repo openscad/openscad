@@ -18,6 +18,8 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
+#include <CGAL/Union_find.h>
+#include <CGAL/spatial_sort.h>
 
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
@@ -128,6 +130,104 @@ namespace CGALUtils {
 		CGAL_forall_vertices(vi, N) points.push_back(vi->point());
 		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
 		return result;
+	}
+
+	CGAL_Iso_cuboid_3 boundingBox(const shared_ptr<const Geometry> &geom) {
+		if (auto polyset = dynamic_pointer_cast<const PolySet>(geom)) {
+			return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
+		} else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			return CGALUtils::boundingBox(*nef->p3);
+		} else {
+			assert(!"Unsupported geometry type in boundingBox");
+			return CGAL_Iso_cuboid_3(0,0,0,0,0,0);
+		}
+	}
+
+	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid) {
+		CGAL_Vector_3 d(cuboid.min(), cuboid.max());
+		return cuboid.min() + d * NT3(0.5);
+	}
+
+	CGAL_Point_3 vector3dToPoint3(const Eigen::Vector3d& v) {
+		return CGAL_Point_3(NT3(v.x()), NT3(v.y()), NT3(v.z()));
+	}
+
+	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
+	{
+		return CGAL_Iso_cuboid_3(vector3dToPoint3(bbox.min()), vector3dToPoint3(bbox.max()));
+	}
+
+	/*! Sort the geometries so those nearby in 3D (by center of their bbox)
+	 * are nearby in the 1D vector too. */
+	void spatialSort(std::vector<Geometry::GeometryItem>& geometries)
+	{
+		struct SortableGeometry {
+			Geometry::GeometryItem item;
+			CGAL_Point_3 centroid;
+		};
+		struct SortableGeometryLessX {
+			bool operator()(const SortableGeometry& p, const SortableGeometry& q) const
+			{
+				return p.centroid.x() < q.centroid.x();
+			}
+		};
+		struct SortableGeometryLessY {
+			bool operator()(const SortableGeometry& p, const SortableGeometry& q) const
+			{
+				return p.centroid.y() < q.centroid.y();
+			}
+		};
+		struct SortableGeometryLessZ {
+			bool operator()(const SortableGeometry& p, const SortableGeometry& q) const
+			{
+				return p.centroid.z() < q.centroid.z();
+			}
+		};
+		struct SortableGeometryTraits {
+			typedef SortableGeometry Point_3;
+			typedef SortableGeometryLessX Less_x_3;
+			typedef SortableGeometryLessY Less_y_3;
+			typedef SortableGeometryLessZ Less_z_3;
+			Less_x_3 less_x_3_object() const
+			{
+				return Less_x_3();
+			}
+			Less_y_3 less_y_3_object() const
+			{
+				return Less_y_3();
+			}
+			Less_z_3 less_z_3_object() const
+			{
+				return Less_z_3();
+			}
+		};
+
+		// https://doc.cgal.org/latest/Spatial_sorting/index.html
+		std::vector<SortableGeometry> sortedGeometries;
+		for (auto &item : geometries) {
+			sortedGeometries.push_back({item, center(boundingBox(item.second))});
+		}
+		// TODO(ochafik): Benchmark against CGAL::hilbert_sort.
+		CGAL::spatial_sort<CGAL::Parallel_if_available_tag>(sortedGeometries.begin(), sortedGeometries.end(), SortableGeometryTraits());
+
+		geometries.clear();
+		for (auto &sgeom : sortedGeometries) {
+			geometries.push_back(sgeom.item);
+		}
+	}
+
+	size_t getNumberOfFacets(const shared_ptr<const Geometry> &geom)
+	{
+		if (auto polyset = dynamic_pointer_cast<const PolySet>(geom)) {
+			return polyset->numFacets();
+		}
+		else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			return nef->p3->number_of_facets();
+		}
+		else {
+			if (geom) assert(!"Unsupported geom type");
+			return 0;
+		}
 	}
 
 	namespace {

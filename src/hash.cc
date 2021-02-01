@@ -11,6 +11,12 @@ namespace std {
 	std::size_t hash<Vector3l>::operator()(const Vector3l &s) const {
 		return Eigen::hash_value(s);
 	}
+	std::size_t hash<Geometry::GeometryItem>::operator()(Geometry::GeometryItem const& s) const {
+    size_t seed = 0;
+    boost::hash_combine(seed, s.first);
+    boost::hash_combine(seed, s.second);
+    return seed;
+  }
 }
 
 namespace Eigen {

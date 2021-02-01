@@ -74,3 +74,4 @@ OpenSCAD_autogen
 testdata/scad/issues/issue2342.scad
 testdata/python/gen_issue2342.py
 testdata/python/gen_svg_viewbox_tests.py
+benchmark_results/

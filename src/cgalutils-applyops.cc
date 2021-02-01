@@ -11,6 +11,7 @@
 #include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
+#include "mixed_cache.h"
 
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
@@ -29,8 +30,7 @@
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
-#include "lazy_geometry.h"
-#include "bounding_boxes.h"
+#include "fast_union.h"
 #include "Tree.h"
 #include "ModuleInstantiation.h"
 
@@ -148,8 +148,7 @@ namespace CGALUtils {
 		const Tree* tree)
 	{
 		if (Feature::ExperimentalFastUnion.is_enabled()) {
-		  auto lazyGeom = applyUnion3DFast(chbegin, chend, tree);
-		  return lazyGeom ? lazyGeom->getGeom() : nullptr;
+			return applyUnion3DFast(chbegin, chend, tree);
 		}
 
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
@@ -204,50 +203,88 @@ namespace CGALUtils {
 		return nullptr;
 	}
 
-	shared_ptr<const LazyGeometry> applyUnion3DFast(
+	shared_ptr<const Geometry> applyUnion3DFast(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
+		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
+		struct QueueItemGreater {
+			// stable sort for priority_queue by facets, then progress mark
+			bool operator()(const QueueConstItem &lhs, const QueueConstItem& rhs) const
+			{
+				size_t l = lhs.first->p3->number_of_facets();
+				size_t r = rhs.first->p3->number_of_facets();
+				return (l > r) || (l == r && lhs.second > rhs.second);
+			}
+		};
+
 		try {
-			typedef std::pair<shared_ptr<const LazyGeometry>, int> QueueConstItem;
-			struct QueueItemGreater {
-				// stable sort for priority_queue by facets, then progress mark
-				bool operator()(const QueueConstItem &lhs, const QueueConstItem& rhs) const
-				{
-					size_t l = lhs.first->getNumberOfFacets();
-					size_t r = rhs.first->getNumberOfFacets();
-					return (l > r) || (l == r && lhs.second > rhs.second);
-				}
-			};
-			std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
+			UnionAnalysis analysis;
+			{
+				analysis = analyzeUnion(chbegin, chend, tree);
+			}
+			// The geometries we'll need nefs of.
+			std::vector<Geometry::GeometryItem> remainingGeometries;
+			remainingGeometries.insert(remainingGeometries.end(), analysis.otherGeometries.begin(), analysis.otherGeometries.end());
 
-			for (auto it = chbegin; it != chend; ++it) {
-				auto chgeom = it->second;
-				auto &chnode = it->first;
-				if (!dynamic_pointer_cast<const PolySet>(chgeom) &&
-					!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
-					continue;
-				}
-				if (chgeom && !chgeom->isEmpty()) {
-					auto progress_mark = chnode ? chnode->progress_mark : -1;
-					auto location = chnode && chnode->modinst ? chnode->modinst->location() : Location::NONE;
-					auto cacheKey = chnode && tree ? tree->getIdString(*chnode) : "";
-					q.emplace(make_shared<LazyGeometry>(chgeom, location, cacheKey), progress_mark);
+			if (!analysis.nonIntersectingGeometries.empty()) {
+				for (auto &cluster : analysis.nonIntersectingGeometries) {
+					assert(!cluster.empty());
+					auto fastConcat = unionNonIntersecting(cluster, tree);
+					if (fastConcat) {
+						// Geometry::GeometryItem fakeItem = ;
+						remainingGeometries.emplace_back(std::make_pair(nullptr, fastConcat));
+					} else {
+						remainingGeometries.insert(remainingGeometries.end(), cluster.begin(), cluster.end());
+						LOG(message_group::Warning, getLocation(cluster.begin()->first),
+								"", "fast-union of %1$lu solids failed, doing slower nef unions", cluster.size());
+					}
 				}
 			}
 
-			progress_tick();
-			while (q.size() > 1) {
-				auto p1 = q.top();
-				q.pop();
-				assert(!q.empty());
-				auto p2 = q.top();
-				q.pop();
-				q.emplace(make_shared<LazyGeometry>(*p1.first + *p2.first), -1);
+			if (remainingGeometries.empty()) return nullptr;
+			if (remainingGeometries.size() == 1) {
+				// Avoid useless conversion to nef.
+				return remainingGeometries[0].second;
+			}
+
+			// We'll fill the queue in one go to get linear time construction.
+			std::vector<QueueConstItem> queueItems;
+			queueItems.reserve(remainingGeometries.size());
+
+			for (auto &item : remainingGeometries) {
+				auto curChild = getGeometryAs<const CGAL_Nef_polyhedron>(item, tree);
+				assert((curChild == nullptr) == (item.second == nullptr));
+				if (curChild && !curChild->isEmpty()) {
+					auto node_mark = item.first ? item.first->progress_mark : -1;
+					queueItems.emplace_back(curChild, node_mark);
+				}
+			}
+
+			LOG(message_group::Warning, getLocation(chbegin->first),
+				"", "Doing full union of %1$lu geometries", remainingGeometries.size());
+
+			// Build the queue in linear time (don't add items one by one!).
+			std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater>
+				 q(queueItems.begin(), queueItems.end());
+
+			{
 				progress_tick();
+				while (q.size() > 1) {
+					auto p1 = q.top();
+					q.pop();
+					auto p2 = q.top();
+					q.pop();
+					q.emplace(make_shared<const CGAL_Nef_polyhedron>(*p1.first + *p2.first), -1);
+					progress_tick();
+				}
 			}
-			assert(q.size() <= 1);
-			return q.empty() ? nullptr : q.top().first;
+
+			if (q.size() == 1) {
+				return shared_ptr<const Geometry>(new CGAL_Nef_polyhedron(q.top().first->p3));
+			} else {
+				return nullptr;
+			}
 		}
 		catch (const CGAL::Failure_exception &e) {
 			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DFast: %1$s", e.what());

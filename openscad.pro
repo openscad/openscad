@@ -666,7 +666,7 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/cgalworker.cc \
-           src/lazy_geometry.cc \
+           src/fast_union.cc \
            src/Polygon2d-CGAL.cc \
            src/import_nef.cc
 }
