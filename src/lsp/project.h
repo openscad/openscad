@@ -41,7 +41,7 @@ private:
 
 struct project {
     // Interface towards OpenSCAD
-    LanguageServerInterface *interface = nullptr;
+    LanguageServerInterface *lspinterface = nullptr;
     MainWindow *mainWindow;
 
     // Interface towards the editor
