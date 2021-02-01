@@ -657,8 +657,7 @@ HEADERS += src/cgal.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
            src/cgalworker.h \
-           src/bounding_boxes.h \
-           src/lazy_geometry.h \
+           src/fast_union.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
