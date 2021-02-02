@@ -136,7 +136,7 @@ void openFile::update(Connection *conn) {
     std::cout << "Updating document...\n";
     // grab all the logging data
     set_output_handler(consoleOutput, errorlogOutput, &ctx);
-	bool parse_result = parse(rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
+	bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
 
     if (parse_result && this->rootModule) {
         // parse successful - create the modules
@@ -144,8 +144,10 @@ void openFile::update(Connection *conn) {
 
         //this->top_ctx = Context::create<BuiltinContext>();
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(this->top_ctx.ctx)};
-		this->rootNode = this->rootModule->instantiateWithFileContext(filectx.ctx, &this->rootInst, nullptr);
+		top_ctx->setDocumentPath(this->document.uri.getPath());
+        this->rootNode = this->rootModule->instantiateWithFileContext(filectx.ctx, &this->rootInst, nullptr);
         //LOG(message_group::Echo, Location::NONE, "", "Updated");
+        this->tree.setRoot(this->root_node);
     } else {
         // parse failed - try to get some error log?
         // we do have parser_error_pos as the character offset (qscintillaeditor might help convert it?)

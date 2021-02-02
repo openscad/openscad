@@ -276,6 +276,7 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &, const F
                 {"change", 1 }, // None = 0, Full = 1, Incremental = 2
             },
         },
+        {"implementationProvider", true }, // "Go To implementation"
         {"window", QJsonObject {
                 {"showDocument", QJsonObject {
                         { "support", true } // This allows click to code
@@ -383,6 +384,12 @@ bool decode_env::declare_field(JSONObject &object, ShowMessageParams &target, co
 }
 
 
+template<>
+bool decode_env::declare_field(JSONObject &object, ImplementationRequest &target, const FieldNameType &field) {
+    return declare_field(object, (TextDocumentPositionParams &)target, field);
+}
+
+
 
 ///////////////////////////////////////////////////////////
 // OpenSCAD extensions
@@ -429,6 +436,7 @@ void ConnectionHandler::register_messages() {
     MAP("textDocument/didOpen", DidOpenTextDocument);
     MAP("textDocument/didChange", DidChangeTextDocument);
     MAP("textDocument/didClose", DidCloseTextDocument);
+    MAP("textDocument/implementation", ImplementationRequest);
     //MAP("textDocument/hover", TextDocumentHover);
 
     MAP("$openscad/render", OpenSCADRender);

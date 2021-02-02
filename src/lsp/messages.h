@@ -275,15 +275,12 @@ struct decode_env {
 #define MAKE_DECODEABLE \
 virtual void decode(decode_env &env, JSONObject &object, const FieldNameType &field) { env.declare_field(object, *this, field); } \
 
+// This one is used to declare a decodeable type
 #define MESSAGE_CLASS(MESSAGETYPE) \
 struct MESSAGETYPE; \
 template<> \
 bool decode_env::declare_field(JSONObject &object, MESSAGETYPE &target, const FieldNameType &field); \
 struct MESSAGETYPE
-
-
-
-
 
 
 struct RequestMessage {
@@ -500,6 +497,11 @@ MESSAGE_CLASS(ShowMessageParams) : public OutgoingNotificationMessage {
 
     MessageType type;
     std::string message;
+};
+
+
+MESSAGE_CLASS(ImplementationRequest) : public TextDocumentPositionParams {
+    void process(Connection *, project *, const RequestId &);
 };
 
 
