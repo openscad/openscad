@@ -447,11 +447,11 @@ void ConnectionHandler::register_messages() {
 }
 
 
-decode_env::decode_env(const QByteArray &buffer, storage_direction dir) :
+decode_env::decode_env(const QString &buffer, storage_direction dir) :
         dir(dir)
 {
     QJsonParseError err;
-    this->document = QJsonDocument::fromJson(buffer, &err);
+    this->document = QJsonDocument::fromJson(buffer.toUtf8(), &err);
 
     if (this->document.isNull()) {
         ResponseError msg(ErrorCode::InvalidRequest,

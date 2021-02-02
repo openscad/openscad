@@ -93,7 +93,7 @@ struct decode_env {
     const storage_direction dir;
     QJsonDocument document;
 
-    decode_env(const QByteArray &, storage_direction dir=storage_direction::READ);
+    decode_env(const QString &, storage_direction dir=storage_direction::READ);
     decode_env(storage_direction dir);
 
     void store(QByteArray *, ResponseMessage &);

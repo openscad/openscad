@@ -11,6 +11,9 @@
 #include <memory>
 
 class QTcpSocket;
+class QSocketNotifier;
+class QTextStream;
+class QFile;
 
 class ConnectionHandler;
 class ResponseMessage;
@@ -26,17 +29,16 @@ class Connection : public QObject {
 
     friend class ConnectionHandler;
 public:
-
-    Connection(ConnectionHandler *handler, QTcpSocket *client, std::unique_ptr<project> &&project);
+    Connection(ConnectionHandler *handler, std::unique_ptr<project> &&project,
+            std::unique_ptr<QTextStream> &&in_stream, std::unique_ptr<QTextStream> &&out_stream);
 
     virtual ~Connection() {};
-public:
+
     static void default_reporting_message_handler(const ResponseMessage &, Connection *, project *);
 
     // Indicating that "result" should be ignored, but "error" should be printed
     static void no_response_expected(const ResponseMessage &, Connection *, project *);
 
-public:
     void send(RequestMessage &message,
             const std::string &method,
             const RequestId &id,
@@ -54,8 +56,9 @@ public:
     void clean_pending_messages(const std::chrono::system_clock::duration &max_age);
     void handle_pending_response(const ResponseMessage &msg);
 
-    void close();
-    bool is_done();
+    virtual void close() = 0;
+    virtual bool is_done() = 0;
+    virtual std::string peerName() = 0;
 
     std::unique_ptr<project> active_project;
 
@@ -65,15 +68,11 @@ public:
     void info(const std::string &message) { log(MessageType::Info, message); }
     void debug(const std::string &message) { log(MessageType::Log, message); }
 
-private slots:
-    void onReadyRead();
-
 private:
     enum class PACKET_EXPECT {
         HEADER,
         BODY,
     } packet_state = PACKET_EXPECT::HEADER;
-    QByteArray pending_data;
 
     struct connection_header {
         size_t content_length = 0;
@@ -82,13 +81,16 @@ private:
     void read_header();
     void read_body();
 
+protected slots:
+    void onReadyRead();
+
 protected:
     ConnectionHandler *handler;
-    QTcpSocket *socket;
+    std::unique_ptr<QTextStream> in_stream;
+    std::unique_ptr<QTextStream> out_stream;
 
 protected:
     virtual void send(const QByteArray &buffer);
-
 
     struct pending_message {
         pending_message(const request_callback_t &callback) :
@@ -101,4 +103,31 @@ protected:
 
     // Used for outgoing requests
     int next_request_id = 0;
+};
+
+class TCPLSPConnection : public Connection {
+public:
+    TCPLSPConnection(ConnectionHandler *handler, QTcpSocket *client, std::unique_ptr<project> &&project);
+
+    virtual void close();
+    virtual bool is_done();
+    virtual std::string peerName();
+
+protected:
+    QTcpSocket *socket;
+};
+
+class StdioLSPConnection : public Connection {
+public:
+    StdioLSPConnection(ConnectionHandler *handler, std::unique_ptr<project> &&project);
+    virtual ~StdioLSPConnection();
+
+    virtual void close() { active = false; }
+    virtual bool is_done() { return !active; }
+    virtual std::string peerName() { return "stdio"; }
+
+protected:
+    std::unique_ptr<QSocketNotifier> notifier;
+
+    bool active = true;
 };

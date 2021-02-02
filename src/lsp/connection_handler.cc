@@ -2,6 +2,8 @@
 #include "connection.h"
 #include "messages.h"
 
+#include <QTcpSocket>
+
 ConnectionHandler::ConnectionHandler(QObject *parent, const ConnectionHandler::project_initializer &project_init,  uint16_t port) :
         QObject(parent),
         project_init_callback(project_init)
@@ -53,21 +55,20 @@ void ConnectionHandler::send(RequestMessage &message,
 void ConnectionHandler::onNewConnection() {
     QTcpSocket *clientSocket = this->server.nextPendingConnection();
 
-    std::cout << "Received connection from "
-              << clientSocket->peerName().toStdString() << ":" << clientSocket->peerPort() << "\n";
+    this->connections.emplace_back(std::make_unique<TCPLSPConnection>(this, clientSocket, this->project_init_callback()));
 
     connect(clientSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
 
-    this->connections.emplace_back(std::make_unique<Connection>(this, clientSocket, this->project_init_callback()));
+
+    std::cout << "Received connection from " << this->connections.back()->peerName()  << "\n";
 }
 
 void ConnectionHandler::onSocketStateChanged(QAbstractSocket::SocketState socketState) {
     if (socketState == QAbstractSocket::UnconnectedState) {
         this->connections.remove_if([](const std::unique_ptr<Connection> &c) {
-            if (c)
-                std::cout << "closing connection to "
-                  << c->socket->peerName().toStdString() << ":" << c->socket->peerPort() << "\n";
+            if (c && !c->is_done())
+                std::cout << "closing connection to " << c->peerName() << "\n";
             return !c || c->is_done();
         });
     }
@@ -77,7 +78,7 @@ void ConnectionHandler::onSocketStateChanged(QAbstractSocket::SocketState socket
 template <>
 bool decode_env::declare_field(JSONObject &object, RequestId &target, const FieldNameType &field);
 
-void ConnectionHandler::handle_message(const QByteArray &buffer, Connection *conn) {
+void ConnectionHandler::handle_message(const QString &buffer, Connection *conn) {
     // Convert to json and construct the message from it
     RequestId id;
     std::string method;

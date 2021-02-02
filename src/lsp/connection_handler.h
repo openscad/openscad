@@ -12,8 +12,7 @@
 
 #include <QObject>
 #include <QTcpServer>
-#include <QList>
-#include <QTcpSocket>
+#include <QString>
 
 // Forward declare Connection in order to speed up compile times
 class Connection;
@@ -39,11 +38,11 @@ private slots:
     void onNewConnection();
     void onSocketStateChanged(QAbstractSocket::SocketState socketState);
 
-private:
+protected:
     // Implemented in decoding.cc - needed for scoping of the decoding template magic.
     void register_messages();
     // Implemented in decoding.cc - needed for scoping of the decoding template magic.
-    void handle_message(const QByteArray &, Connection *);
+    void handle_message(const QString &, Connection *);
 
 private:
 	// Since the message handling is single threaded

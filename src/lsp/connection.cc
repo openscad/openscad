@@ -3,6 +3,9 @@
 #include "messages.h"
 
 #include <QTcpSocket>
+#include <QTextStream>
+#include <QSocketNotifier>
+#include <QFile>
 
 #include <iostream>
 #include <list>
@@ -16,21 +19,20 @@
 #define LOCAL_LOG_MESSAGES
 
 
-Connection::Connection(ConnectionHandler *handler, QTcpSocket *client, std::unique_ptr<project> &&project) :
+
+Connection::Connection(ConnectionHandler *handler, std::unique_ptr<project> &&project,
+    std::unique_ptr<QTextStream> &&in_stream, std::unique_ptr<QTextStream> &&out_stream) :
         handler(handler),
-        socket(client),
+        in_stream(std::move(in_stream)),
+        out_stream(std::move(out_stream)),
         active_project(std::move(project))
 {
-   connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-
-    // start a qtimer every 10 seconds to run:
-    //this->clean_pending_messages(std::chrono::seconds(10));
-
 }
 
 
-static bool is_strip_empty(const QByteArray &data) {
-    for(const auto &b : data) {
+
+static bool is_strip_empty(const QString &data) {
+    for(const auto &b : data.toStdString()) {
         if (!std::isspace(b)) {
             return false;
         }
@@ -38,8 +40,8 @@ static bool is_strip_empty(const QByteArray &data) {
     return true;
 }
 
-static std::pair<std::string, std::string> read_header_line(QByteArray &data) {
-    std::string str = data.data();
+static std::pair<std::string, std::string> read_header_line(QString &data) {
+    std::string str = data.toStdString();
      // Separate the header
     size_t sep_pos = str.find(": ");
     if (sep_pos == std::string::npos) {
@@ -52,8 +54,8 @@ static std::pair<std::string, std::string> read_header_line(QByteArray &data) {
 }
 
 void Connection::read_header() {
-    while (this->socket->canReadLine()) {
-        pending_data = this->socket->readLine();
+    while (!this->in_stream->atEnd()) {
+        QString pending_data = this->in_stream->readLine();
         if(is_strip_empty(pending_data)) {
             this->packet_state = PACKET_EXPECT::BODY;
             return;
@@ -85,9 +87,9 @@ void Connection::read_body() {
         return;
     }
 
-    pending_data = this->socket->read(this->header.content_length);
+    QString pending_data = this->in_stream->read(this->header.content_length);
 #ifdef DEBUG_MESSAGETRAFFIC
-    std::cout << "RECEIVED: [" << pending_data.size() << "]: " << pending_data.data() << "\n";
+    std::cout << "RECEIVED: [" << pending_data.size() << "]: " << pending_data.toStdString() << "\n";
     std::cout << "\n";
 #endif
 
@@ -95,14 +97,10 @@ void Connection::read_body() {
 
     // Reset to receive header
     packet_state = PACKET_EXPECT::HEADER;
-    pending_data.clear();
     this->header = connection_header();
 }
 
 void Connection::onReadyRead() {
-    QTcpSocket* sender = static_cast<QTcpSocket*>(QObject::sender());
-    assert(sender == this->socket);
-
     switch(packet_state) {
     case PACKET_EXPECT::HEADER:
         this->read_header();
@@ -161,15 +159,6 @@ void Connection::handle_pending_response(const ResponseMessage &msg) {
     }
 }
 
-void Connection::close() {
-    this->socket->close();
-    assert(!this->socket->isOpen());
-}
-
-bool Connection::is_done() {
-    return !this->socket->isOpen();
-}
-
 void Connection::send(const QByteArray &data) {
     // Send headers
     {
@@ -177,17 +166,15 @@ void Connection::send(const QByteArray &data) {
         headerbuf.append("Content-Length: ")
             .append(QString::number(data.size()).toUtf8())
             .append("\r\n\r\n");
-        this->socket->write(headerbuf);
+        *this->out_stream << headerbuf;
     }
 
     // Send payload
-    size_t cnt_send = this->socket->write(data);
+    *this->out_stream << data;
 #ifdef DEBUG_MESSAGETRAFFIC
-    std::cout << "SENDING: [" << cnt_send << "]: "
+    std::cout << "SENDING: [" << data.size() << "]: "
         << data.data();
     std::cout << "\n";
-#else
-    (void)cnt_send;
 #endif
 }
 
@@ -261,3 +248,38 @@ void Connection::log(MessageType type, const std::string &message) {
 
     this->send(msg, "window/showMessage", {}, &Connection::no_response_expected); // No ID set
 }
+
+
+TCPLSPConnection::TCPLSPConnection(ConnectionHandler *handler, QTcpSocket *client, std::unique_ptr<project> &&project) :
+        Connection(handler, std::move(project),
+            std::make_unique<QTextStream>(client),
+            std::make_unique<QTextStream>(client)),
+        socket(client)
+{
+   connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+}
+
+void TCPLSPConnection::close() {
+    this->socket->close();
+    assert(!this->socket->isOpen());
+}
+
+bool TCPLSPConnection::is_done() {
+    return !this->socket->isOpen();
+}
+
+std::string TCPLSPConnection::peerName() {
+    return this->socket->peerName().toStdString() + ":" + std::to_string(this->socket->peerPort());
+}
+
+
+StdioLSPConnection::StdioLSPConnection(ConnectionHandler *handler, std::unique_ptr<project> &&project) :
+    Connection(handler, std::move(project),
+        std::make_unique<QTextStream>(stdin, QIODevice::ReadOnly),
+        std::make_unique<QTextStream>(stdout, QIODevice::WriteOnly)),
+    notifier(std::make_unique<QSocketNotifier>(STDIN_FILENO, QSocketNotifier::Read, this))
+{
+    connect(notifier.get(), SIGNAL(activated()), this, SLOT(onReadyRead()));
+}
+
+StdioLSPConnection::~StdioLSPConnection() {}
