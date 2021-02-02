@@ -22,7 +22,7 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable 10x faster CSG operations.");
-const Feature Feature::ExperimentalTrustManifold("trust-manifold", "Trust that all polyhedral meshes are manifold. Can speed up CSG operations with large STL files very detailed spheres.");
+const Feature Feature::ExperimentalTrustManifold("trust-manifold", "Trust that polyhedral meshes are manifold. Can speed up CSG operations on large imported STL files.");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");

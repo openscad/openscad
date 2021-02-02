@@ -254,9 +254,6 @@ namespace /* anonymous */ {
       for (Vertex_const_iterator
             vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
           vi != end ; ++vi) {
-        // typename Polyhedron_output::Point_3 p(::CGAL::to_double(vi->point().x()),
-        //                     ::CGAL::to_double(vi->point().y()),
-        //                     ::CGAL::to_double(vi->point().z()));
         builder.add_vertex(vi->point());
       }
 

@@ -157,16 +157,12 @@ namespace CGALUtils {
 
 		try {
 			for(const auto &item : children) {
-				shared_ptr<const CGAL_Nef_polyhedron> chN;
-				if (Feature::ExperimentalCacheConversions.is_enabled()) {
-					chN = getGeometryAs<CGAL_Nef_polyhedron>(item, tree);
-				} else {
-					const shared_ptr<const Geometry> &chgeom = item.second;
-					chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-					if (!chN) {
-						auto chps = dynamic_pointer_cast<const PolySet>(chgeom);
-						if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-					}
+				const shared_ptr<const Geometry> &chgeom = item.second;
+				shared_ptr<const CGAL_Nef_polyhedron> chN =
+					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				if (!chN) {
+					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 				}
 				// Initialize N with first expected geometric object
 				if (!foundFirst) {
@@ -318,16 +314,11 @@ namespace CGALUtils {
 		try {
 			// sort children by fewest faces
 			for (auto it = chbegin; it != chend; ++it) {
-				shared_ptr<const CGAL_Nef_polyhedron> curChild;
-				if (Feature::ExperimentalCacheConversions.is_enabled()) {
-					curChild = getGeometryAs<CGAL_Nef_polyhedron>(*it, tree);
-				} else {
-					const shared_ptr<const Geometry> &chgeom = it->second;
-					curChild = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-					if (!curChild) {
-						const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-						if (chps) curChild.reset(createNefPolyhedronFromGeometry(*chps));
-					}
+				const shared_ptr<const Geometry> &chgeom = it->second;
+				shared_ptr<const CGAL_Nef_polyhedron> curChild = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+				if (!curChild) {
+					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+					if (chps) curChild.reset(createNefPolyhedronFromGeometry(*chps));
 				}
 				if (curChild && !curChild->isEmpty()) {
 					int node_mark = -1;
