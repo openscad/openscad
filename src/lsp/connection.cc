@@ -89,8 +89,8 @@ void Connection::read_body() {
 
     QString pending_data = this->in_stream->read(this->header.content_length);
 #ifdef DEBUG_MESSAGETRAFFIC
-    std::cout << "RECEIVED: [" << pending_data.size() << "]: " << pending_data.toStdString() << "\n";
-    std::cout << "\n";
+    std::cerr << "RECEIVED: [" << pending_data.size() << "]: " << pending_data.toStdString() << "\n";
+    std::cerr << "\n";
 #endif
 
     this->handler->handle_message(pending_data, this);
@@ -131,24 +131,24 @@ void Connection::clean_pending_messages(const std::chrono::system_clock::duratio
     }
 
     if (cnt > 0) {
-        std::cout << "Cleared " << cnt << "stale messages with a missing response\n";
+        std::cerr << "Cleared " << cnt << "stale messages with a missing response\n";
     }
 }
 
 void Connection::default_reporting_message_handler(const ResponseMessage &msg, Connection *, project *) {
-    std::cout << "Unhandled message (TODO add more info)\n" << msg.id.value_int << "\n";
+    std::cerr << "Unhandled message (TODO add more info)\n" << msg.id.value_int << "\n";
 }
 
 void Connection::no_response_expected(const ResponseMessage &msg, Connection *, project *) {
     if (msg.error) {
-        std::cout << "The Request with ID " << msg.id.value_int << " has failed with error code " << static_cast<int>(msg.error->code) << ": \n"
+        std::cerr << "The Request with ID " << msg.id.value_int << " has failed with error code " << static_cast<int>(msg.error->code) << ": \n"
             << msg.error->message << "\n";
     }
 }
 
 void Connection::handle_pending_response(const ResponseMessage &msg) {
     if (msg.id.type != RequestId::INT) {
-        std::cout << "Received data without a handle-able ID " << msg.id.value_str << "\n";
+        std::cerr << "Received data without a handle-able ID " << msg.id.value_str << "\n";
         return;
     }
 
@@ -170,11 +170,10 @@ void Connection::send(const QByteArray &data) {
     }
 
     // Send payload
-    *this->out_stream << data;
+    *this->out_stream << data << "\r\n\r\n";
+    this->out_stream->flush();
 #ifdef DEBUG_MESSAGETRAFFIC
-    std::cout << "SENDING: [" << data.size() << "]: "
-        << data.data();
-    std::cout << "\n";
+    std::cerr << "SENDING: [" << data.size() << "]: " << data.data() << "\n";
 #endif
 }
 
@@ -185,7 +184,6 @@ void Connection::send(ResponseMessage &msg, const RequestId &id) {
     QByteArray responsebuffer;
     decode_env env(storage_direction::WRITE);
     env.store(&responsebuffer, msg);
-
     this->send(responsebuffer);
 }
 
@@ -239,7 +237,7 @@ void Connection::send(ResponseError &&error, const RequestId &id) {
 
 void Connection::log(MessageType type, const std::string &message) {
 #ifdef LOCAL_LOG_MESSAGES
-    std::cout << "LOG " << message << "\n";
+    std::cerr << "LOG " << message << "\n";
 #endif
 
     ShowMessageParams msg;

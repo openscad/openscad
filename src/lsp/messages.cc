@@ -9,7 +9,7 @@
 void InitializeRequest::process(Connection *conn, project *proj, const RequestId &id) {
     UNUSED(proj);
     InitializeResult msg;
-    std::cout << "Processing InitializeRequest\n";
+    std::cerr << "Processing InitializeRequest\n";
     // TODO fill in the initialize Result (Capabilities are automatically encoded)
 
     // TODO initialize the project from the initalization parameters
@@ -46,7 +46,7 @@ void DidOpenTextDocument::process(Connection *conn, project *proj, const Request
 
 void DidChangeTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
     // Called when a document is opened
-    std::cout << "Changed Text document with new contents: " << this->textDocument.text << "\n\n";
+    //std::cerr << "Changed Text document with new contents: " << this->textDocument.text << "\n\n";
 
     auto file = proj->getFile(textDocument.uri);
     if (file) {
@@ -63,8 +63,6 @@ void DidChangeTextDocument::process(Connection *conn, project *proj, const Reque
 
 void DidCloseTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
     UNUSED(conn);
-
-    std::cout << "Closed Text document " << this->textDocument.uri.getPath() << "\n\n";
 
     proj->open_files.remove_if([this](const auto &item) { \
         return item.document.uri == this->textDocument.uri;

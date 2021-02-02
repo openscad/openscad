@@ -1,6 +1,8 @@
-#include "connection_handler.h"
-#include "connection.h"
-#include "messages.h"
+#include "lsp/connection_handler.h"
+#include "lsp/connection.h"
+#include "lsp/messages.h"
+
+#include "printutils.h"
 
 #include <QTcpSocket>
 
@@ -10,15 +12,20 @@ ConnectionHandler::ConnectionHandler(QObject *parent, const ConnectionHandler::p
 {
     register_messages();
 
-    if (!this->server.listen(QHostAddress::LocalHost, port)) {
-        std::cout << "Problem to listen on port " << port << ":"
-                << this->server.errorString().toStdString() << "\n";
-        // TODO: Terminate horribly!
+    if (port == 0) {
+        this->connections.emplace_back(
+            std::make_unique<StdioLSPConnection>(this, this->project_init_callback()));
+        std::cerr << "Stdio interface ready\n";
+    } else {
+        if (!this->server.listen(QHostAddress::LocalHost, port)) {
+            std::cerr << "Problem to listen on port " << port << ":"
+                    << this->server.errorString().toStdString() << "\n";
+            // TODO: Terminate horribly!
+        }
+        connect(&this->server, SIGNAL(newConnection()),
+                this, SLOT(onNewConnection()));
+        std::cerr << "Listening on port " << port << "\n";
     }
-    connect(&this->server, SIGNAL(newConnection()),
-            this, SLOT(onNewConnection()));
-    std::cout << "Listening on port " << port << "\n";
-
 
     // TODO: Timer to remove pending connections and unresolved requests
 }
@@ -43,16 +50,14 @@ void ConnectionHandler::send(RequestMessage &message,
 
     assert(this->connections.front());
     for (auto &conn : this->connections) {
-        if(conn) {
-            conn->send(message, method, id, callback);
-        } else {
-            std::cout << "There is buggy information in the connections queue\n";
-        }
+        assert(conn);
+        conn->send(message, method, id, callback);
     }
 }
 
 
 void ConnectionHandler::onNewConnection() {
+    assert(this->server.isListening());
     QTcpSocket *clientSocket = this->server.nextPendingConnection();
 
     this->connections.emplace_back(std::make_unique<TCPLSPConnection>(this, clientSocket, this->project_init_callback()));
@@ -61,14 +66,14 @@ void ConnectionHandler::onNewConnection() {
             this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
 
 
-    std::cout << "Received connection from " << this->connections.back()->peerName()  << "\n";
+    std::cerr << "Received connection from " << this->connections.back()->peerName()  << "\n";
 }
 
 void ConnectionHandler::onSocketStateChanged(QAbstractSocket::SocketState socketState) {
     if (socketState == QAbstractSocket::UnconnectedState) {
         this->connections.remove_if([](const std::unique_ptr<Connection> &c) {
             if (c && !c->is_done())
-                std::cout << "closing connection to " << c->peerName() << "\n";
+                std::cerr << "closing connection to " << c->peerName() << "\n";
             return !c || c->is_done();
         });
     }
@@ -106,14 +111,14 @@ void ConnectionHandler::handle_message(const QString &buffer, Connection *conn) 
                     conn->handle_pending_response(msg);
                     return;
                 } else {
-                    std::cout << "ERROR: No Method!\n";
+                    std::cerr << "ERROR: No Method!\n";
                     conn->send(ResponseError(ErrorCode::InvalidRequest, "No Method given"), id);
                     return;
                 }
             }
         }
 
-        std::cout << "Handling Message [id " << id.value()  << "] with method " << method << "\n";
+        std::cerr << "Handling Message [id " << id.value()  << "] with method " << method << "\n";
         auto it = this->typemap.find(method);
         if (it == this->typemap.end()) {
             std::cerr << "Not defined method requested " << method << "\n";
@@ -125,19 +130,19 @@ void ConnectionHandler::handle_message(const QString &buffer, Connection *conn) 
         }
     }
     catch (std::unique_ptr<ResponseMessage> &msg) {
-        std::cout << "Caught response message\n";
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught response message: id: %1\n", msg->id);
         conn->send(*msg, id);
     }
     catch (std::unique_ptr<ResponseError> &msg) {
-        std::cout << "Caught error ptr message: " << msg->message << "\n";
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught error* message: %1\n", msg->message);
         conn->send(*msg, id);
     }
     catch (ResponseError &msg) {
-        std::cout << "Caught error message: " << msg.message << "\n";
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught error message: %1\n", msg.message);
         conn->send(msg, id);
     }
     catch(std::exception &err) {
-        std::cerr << "Caught std::exception during message handling: " << err.what() << "\n";
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught std::exception: %1\n", err.what());
         conn->send(ResponseError(ErrorCode::InternalError, err.what()), {});
     }
     /*catch(...) {

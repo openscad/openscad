@@ -66,7 +66,7 @@ std::unique_ptr<project> LanguageServerInterface::init_project() {
 
 void LanguageServerInterface::sendCursor(QString file, int line, int column) {
     assert(handler.get());
-    std::cout << "Sending window/showDocument to " << file.toStdString() << "\n";
+    std::cerr << "Sending window/showDocument to " << file.toStdString() << "\n";
     ShowDocumentParams showdoc;
     showdoc.uri = DocumentUri::fromPath(file.toStdString());
     showdoc.external = false;

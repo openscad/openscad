@@ -812,7 +812,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_LANGUAGESERVER
-	if(languageserver_port > 0) {
+	if(languageserver_port >= 0) {
 		languageserver = new LanguageServerInterface(firstwin, languageserver_port);
 	}
 #endif
@@ -997,6 +997,7 @@ int main(int argc, char **argv)
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_LANGUAGESERVER
         ("lsp-port", po::value<int>(), "expose a languageserver interface on the given port (1-65535), suggested is 23725 (0x5CAD)")
+        ("lsp-stdio", po::value<int>(), "expose a languageserver interface on stdio")
 #endif
 		;
 
@@ -1037,13 +1038,18 @@ int main(int argc, char **argv)
 
 #ifdef ENABLE_LANGUAGESERVER
 	if (vm.count("lsp-port")) {
-        languageserver_port = vm["lsp-port"].as<int>();
+		languageserver_port = vm["lsp-port"].as<int>();
 
-        if (languageserver_port < 0 || languageserver_port > 65535) {
-            LOG(message_group::None,Location::NONE,"","given Language server port %1d out of range  (1-65535)", languageserver_port);
-            languageserver_port = -1;
-        }
-    }
+		if (languageserver_port < 0 || languageserver_port > 65535) {
+			LOG(message_group::None,Location::NONE,"","given Language server port %1d out of range  (1-65535)", languageserver_port);
+			languageserver_port = -1;
+		}
+	}
+	if (vm.count("lsp-stdio")) {
+		// 0 is a invalid port number and reserved for stdio operation
+		languageserver_port = 0;
+	}
+
 #endif
 
 	std::map<std::string, bool*> flags;

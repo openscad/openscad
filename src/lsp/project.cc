@@ -11,7 +11,7 @@
 struct LogContext {
     std::list<PublishDiagnosticsParams> diagnostics;
 
-    Connection *const conn;
+    Connection *conn;
 
 };
 
@@ -24,6 +24,12 @@ OptionalType<openFile &> project::getFile(const DocumentUri &uri) {
     return {};
 }
 
+openFile::openFile(const TextDocumentItem &doc) :
+    document(doc),
+    rootInst("group"),
+    top_ctx(Context::create<BuiltinContext>()),
+    log_ctx(std::make_unique<LogContext>())
+{}
 
 openFile::~openFile() {
     delete rootNode;
@@ -33,7 +39,7 @@ openFile::~openFile() {
 static void consoleOutput(const Message &msg,void *userdata) {
     auto ctx = (LogContext*)userdata;
 
-    std::cout << msg.msg << "\n";
+    std::cerr << "MSG" << msg.msg << "\n";
 
     LogMessageNotification logmsg;
     switch(msg.group) {
@@ -66,7 +72,7 @@ static void consoleOutput(const Message &msg,void *userdata) {
     logmsg.message = msg.msg;
 
     // send as log message
-    ctx->conn->send(logmsg, "window/logMessage", {}, Connection::no_response_expected);
+    //ctx->conn->send(logmsg, "window/logMessage", {}, Connection::no_response_expected);
 }
 
 static void errorlogOutput(const Message &msg, void *userdata) {
@@ -74,7 +80,7 @@ static void errorlogOutput(const Message &msg, void *userdata) {
     // all at once after we are done parsing and rendering
     auto ctx = (LogContext*)userdata;
     // send as diagnostic message
-    std::cout << "ERROR: " << msg.msg << "\n";
+    std::cerr << "ERROR: " << msg.msg << "\n";
 
     Diagnostic diag;
     diag.range.start.line = msg.loc.firstLine() > 0 ? msg.loc.firstLine() - 1 : 0;
@@ -82,11 +88,11 @@ static void errorlogOutput(const Message &msg, void *userdata) {
 
     if (msg.loc.lastLine() == 0 || msg.loc.lastLine() < msg.loc.firstLine()) {
         // full line == till beginning of next line
-        diag.range.end.line = msg.loc.firstLine() - 1;
-        diag.range.end.character = std::numeric_limits<int>::max();
+        diag.range.end.line = msg.loc.firstLine() - 1 + 1;
+        diag.range.end.character = 0;
     } else {
         diag.range.end.line = msg.loc.lastLine() > 0 ? msg.loc.lastLine() -1 : 0;
-        diag.range.end.line = msg.loc.lastColumn() > 0 ? msg.loc.lastColumn() - 1 : 0;
+        diag.range.end.character = msg.loc.lastColumn() > 0 ? msg.loc.lastColumn() - 1 : 0;
     }
     diag.source = "openscad";
 
@@ -119,7 +125,7 @@ static void errorlogOutput(const Message &msg, void *userdata) {
 
     // Find if there is already a diagnostic for this file
     auto it = std::find_if(ctx->diagnostics.begin(), ctx->diagnostics.end(), [&](const PublishDiagnosticsParams &diag) {
-        return msg.loc.isNone() || DocumentUri::fromPath(msg.loc.fileName()) == diag.uri;
+        return !msg.loc.isNone() && DocumentUri::fromPath(msg.loc.fileName()) == diag.uri;
     });
     if (it == ctx->diagnostics.end()) {
         it = ctx->diagnostics.insert(ctx->diagnostics.end(), PublishDiagnosticsParams());
@@ -131,11 +137,12 @@ static void errorlogOutput(const Message &msg, void *userdata) {
 
 
 void openFile::update(Connection *conn) {
-    LogContext ctx = { { {} }, conn };
-
-    std::cout << "Updating document...\n";
     // grab all the logging data
-    set_output_handler(consoleOutput, errorlogOutput, &ctx);
+    log_ctx->conn = conn;
+    set_output_handler(consoleOutput, errorlogOutput, log_ctx.get());
+
+    delete this->rootModule;
+    this->rootModule = nullptr;
 	bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
 
     if (parse_result && this->rootModule) {
@@ -151,12 +158,28 @@ void openFile::update(Connection *conn) {
         // parse failed - try to get some error log?
         // we do have parser_error_pos as the character offset (qscintillaeditor might help convert it?)
     }
-    std::cout << "Sending diagnostics...\n";
 
-    for (auto &diag : ctx.diagnostics) {
+    for (auto &diag : log_ctx->diagnostics) {
+        // We have the ""-uri - find the "document.uri" element
         if (diag.uri.raw_uri.empty()) {
-            diag.uri = this->document.uri;
+            auto it = std::find_if(log_ctx->diagnostics.begin(), log_ctx->diagnostics.end(), [&](const PublishDiagnosticsParams &diag) {
+                return diag.uri == this->document.uri;
+            });
+            if (it == log_ctx->diagnostics.end()) {
+                // diag.uri = this->document.uri;
+            } else {
+                it->diagnostics.insert(it->diagnostics.end(), diag.diagnostics.begin(), diag.diagnostics.end());
+            }
+            break;
+        }
+    }
+
+    for (auto &diag : log_ctx->diagnostics) {
+        if (diag.uri.raw_uri.empty()) {
+            // Skip the empty entry
+            continue;
         }
         conn->send(diag, "textDocument/publishDiagnostics", {}, Connection::no_response_expected);
+        std::cerr << "uri " << diag.uri.raw_uri << "messages: " << diag.diagnostics.size() << "\n";
     }
 }

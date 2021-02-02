@@ -412,7 +412,7 @@ bool decode_env::declare_field(JSONObject &object, OpenSCADRender &target, const
  * upon startup.
  */
 void ConnectionHandler::register_messages() {
-    std::cout << "Method mapping:\n";
+    std::cerr << "Method mapping:\n";
 
     // This has to be a macro for the "symbol to string conversion" lovelyness
     #define MAP(method, messagetype) do {\
@@ -426,7 +426,7 @@ void ConnectionHandler::register_messages() {
             } \
             return resp; \
         }); \
-        std::cout << "\t" << method << " \t --> " << #messagetype "\n"; \
+        std::cerr << "\t" << method << " \t --> " << #messagetype "\n"; \
     } while (0)
 
     // Define Messages here

@@ -8,8 +8,6 @@
 #include "ModuleInstantiation.h"
 
 void OpenSCADRender::process(Connection *conn, project *proj, const RequestId &id) {
-    std::cout << "Starting rendering\n";
-
     proj->lspinterface->requestPreview();
 }
 

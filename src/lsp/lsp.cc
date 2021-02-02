@@ -54,9 +54,7 @@ void DocumentUri::setPath(const std::string &path) {
 
 std::string DocumentUri::getPath() const {
   if (raw_uri.compare(0, 7, "file://")) {
-    std::cout
-        << "Received potentially bad URI (not starting with file://): "
-        << raw_uri;
+    std::cerr << "Received potentially bad URI (not starting with file://): " << raw_uri;
     return raw_uri;
   }
   std::string ret;

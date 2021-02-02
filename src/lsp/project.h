@@ -15,13 +15,11 @@ class AbstractNode;
 class Connection;
 class LanguageServerInterface;
 class MainWindow;
+struct LogContext;
 
 class openFile {
 public:
-    openFile(const TextDocumentItem &doc) :
-        document(doc), rootInst("group"), top_ctx(Context::create<BuiltinContext>())
-    {}
-
+    openFile(const TextDocumentItem &doc);
     ~openFile();
 
     TextDocumentItem document;
@@ -36,6 +34,8 @@ public:
 private:
     ModuleInstantiation rootInst;
 	ContextHandle<BuiltinContext> top_ctx;
+
+    std::unique_ptr<LogContext> log_ctx;
 
 };
 
