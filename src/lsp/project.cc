@@ -147,7 +147,6 @@ void openFile::update(Connection *conn) {
 		top_ctx->setDocumentPath(this->document.uri.getPath());
         this->rootNode = this->rootModule->instantiateWithFileContext(filectx.ctx, &this->rootInst, nullptr);
         //LOG(message_group::Echo, Location::NONE, "", "Updated");
-        this->tree.setRoot(this->root_node);
     } else {
         // parse failed - try to get some error log?
         // we do have parser_error_pos as the character offset (qscintillaeditor might help convert it?)

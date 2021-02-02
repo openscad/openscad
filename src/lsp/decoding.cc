@@ -276,7 +276,7 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &, const F
                 {"change", 1 }, // None = 0, Full = 1, Incremental = 2
             },
         },
-        {"implementationProvider", true }, // "Go To implementation"
+        // {"implementationProvider", true }, // "Go To implementation"
         {"window", QJsonObject {
                 {"showDocument", QJsonObject {
                         { "support", true } // This allows click to code

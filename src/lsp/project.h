@@ -26,10 +26,9 @@ public:
 
     TextDocumentItem document;
 
-    // TODO link the AST tree?
+    // TODO Add Tree of Contextes to evaluate what is ok where
     AbstractNode *rootNode = nullptr;
     FileModule *rootModule = nullptr;
-    Tree tree;
 
     // parse the connection and update rootNode. Do not send to a renderer!
     void update(Connection *conn);
