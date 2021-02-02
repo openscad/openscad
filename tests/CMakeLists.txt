@@ -274,6 +274,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL)
         if (${TESTCMD_EXE} MATCHES "^.*openscad$")

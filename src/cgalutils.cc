@@ -130,6 +130,30 @@ namespace CGALUtils {
 		return result;
 	}
 
+	CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
+		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
+			return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
+		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
+      return boundingBox(*nef->p3);
+		} else {
+			assert(!"Unsupported geometry type in boundingBox");
+			return CGAL_Iso_cuboid_3(0,0,0,0,0,0);
+		}
+	}
+
+	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid) {
+		CGAL_Vector_3 d(cuboid.min(), cuboid.max());
+		return cuboid.min() + d * NT3(0.5);
+	}
+
+	CGAL_Point_3 vector3dToPoint3(const Eigen::Vector3d& v) {
+		return CGAL_Point_3(NT3(v.x()), NT3(v.y()), NT3(v.z()));
+	}
+
+	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
+	{
+		return CGAL_Iso_cuboid_3(vector3dToPoint3(bbox.min()), vector3dToPoint3(bbox.max()));
+	}
 	namespace {
 
 		// lexicographic comparison
@@ -261,7 +285,8 @@ namespace CGALUtils {
 	formats) do not allow for holes in their faces. The function documents 
 	the method used to deal with this
 */
-	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	template <typename K>
+	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps)
 	{
 		// 1. Build Indexed PolyMesh
 		// 2. Validate mesh (manifoldness)
@@ -270,15 +295,17 @@ namespace CGALUtils {
 		// 4. Validate mesh (manifoldness)
 		// 5. Create PolySet
 
+		typedef CGAL::Nef_polyhedron_3<K> Nef;
+
 		bool err = false;
 
 		// 1. Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
 		std::vector<std::vector<IndexedFace>> polygons;
 
-		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		typename Nef::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {
-			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			CGAL::Plane_3<K> plane(hfaceti->plane());
 			// Since we're downscaling to float, vertices might merge during this conversion.
 			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
 			// vertices.
@@ -286,14 +313,14 @@ namespace CGALUtils {
 			auto &faces = polygons.back();
 			// the 0-mark-volume is the 'empty' volume of space. skip it.
 			if (!hfaceti->incident_volume()->mark()) {
-				CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+				typename Nef::Halffacet_cycle_const_iterator cyclei;
 				CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
-					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
-					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+					typename Nef::SHalfedge_around_facet_const_circulator c1(cyclei);
+					typename Nef::SHalfedge_around_facet_const_circulator c2(c1);
 					faces.push_back(IndexedFace());
 					auto &currface = faces.back();
 					CGAL_For_all(c1, c2) {
-						CGAL_Point_3 p = c1->source()->center_vertex()->point();
+						auto p = c1->source()->center_vertex()->point();
 						// Create vertex indices and remove consecutive duplicate vertices
 						auto idx = allVertices.lookup(vector_convert<Vector3f>(p));
 						if (currface.empty() || idx != currface.back()) currface.push_back(idx);
@@ -391,6 +418,9 @@ namespace CGALUtils {
 
 		return err;
 	}
+
+	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &N, PolySet &ps);
 }; // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */

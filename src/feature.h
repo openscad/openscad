@@ -14,6 +14,8 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
+	static const Feature ExperimentalFastCsg;
+	static const Feature ExperimentalTrustManifold;
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
 	static const Feature ExperimentalVxORenderers;

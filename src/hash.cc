@@ -11,6 +11,17 @@ namespace std {
 	std::size_t hash<Vector3l>::operator()(const Vector3l &s) const {
 		return Eigen::hash_value(s);
 	}
+	std::size_t hash<Geometry::GeometryItem>::operator()(Geometry::GeometryItem const& s) const {
+    size_t seed = 0;
+    boost::hash_combine(seed, s.first);
+    boost::hash_combine(seed, s.second);
+    return seed;
+  }
+	std::size_t hash<CGAL::Point_3<CGAL::Epeck>>::operator()(const CGAL::Point_3<CGAL::Epeck> &s) const {
+    hash<Vector3d> vh;
+    // Very slow?
+    return vh(Vector3d(CGAL::to_double(s.x()), CGAL::to_double(s.y()), CGAL::to_double(s.z())));
+	}
 }
 
 namespace Eigen {

@@ -458,6 +458,7 @@ set(CORE_SOURCES
   src/parsersettings.cc
   src/polyset.cc
   src/polyset-utils.cc
+  src/polyhedron.cc
   src/primitives.cc
   src/printutils.cc
   src/progress.cc
@@ -532,6 +533,7 @@ set(CGAL_SOURCES
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
+  src/polyhedron.cc
   src/export_nef.cc
   src/import_nef.cc
   src/CGAL_Nef_polyhedron.cc

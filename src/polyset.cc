@@ -49,7 +49,7 @@ PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(con
 {
 }
 
-PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
+PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(origin.is_convex() ? convex : unknown), dirty(false)
 {
 }
 
@@ -152,6 +152,7 @@ void PolySet::append(const PolySet &ps)
 	if (!dirty && !this->bbox.isNull()) {
 		this->bbox.extend(ps.getBoundingBox());
 	}
+	if (convex) convex = unknown;
 }
 
 void PolySet::transform(const Transform3d &mat)

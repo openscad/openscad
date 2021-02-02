@@ -10,6 +10,7 @@
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #pragma pop_macro("NDEBUG")
 
 #include <boost/range/adaptor/reversed.hpp>
@@ -231,6 +232,57 @@ namespace /* anonymous */ {
 		const Polyhedron_input& in_poly;
 	}; // end Copy_polyhedron_to<>
 
+  template <class Polyhedron_input, class Polyhedron_output>
+  struct Append_polyhedron_to : public CGAL::Modifier_base<typename Polyhedron_output::HalfedgeDS>
+  {
+    Append_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
+
+    void operator()(typename Polyhedron_output::HalfedgeDS& out_hds) override
+    {
+      typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
+
+      CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
+
+      typedef typename Polyhedron_input::Vertex_const_iterator Vertex_const_iterator;
+      typedef typename Polyhedron_input::Facet_const_iterator  Facet_const_iterator;
+      typedef typename Polyhedron_input::Halfedge_around_facet_const_circulator HFCC;
+
+      builder.begin_surface(in_poly.size_of_vertices(),
+                            in_poly.size_of_facets(),
+                            in_poly.size_of_halfedges());
+
+      for (Vertex_const_iterator
+            vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
+          vi != end ; ++vi) {
+        // typename Polyhedron_output::Point_3 p(::CGAL::to_double(vi->point().x()),
+        //                     ::CGAL::to_double(vi->point().y()),
+        //                     ::CGAL::to_double(vi->point().z()));
+        builder.add_vertex(vi->point());
+      }
+
+      typedef CGAL::Inverse_index<Vertex_const_iterator> Index;
+      Index index(in_poly.vertices_begin(), in_poly.vertices_end());
+
+      for (Facet_const_iterator
+              fi = in_poly.facets_begin(), end = in_poly.facets_end();
+            fi != end; ++fi) {
+        HFCC hc = fi->facet_begin();
+        HFCC hc_end = hc;
+        //     std::size_t n = circulator_size(hc);
+        //     CGAL_assertion(n >= 3);
+        builder.begin_facet ();
+        do {
+          builder.add_vertex_to_facet(index[hc->vertex()]);
+          ++hc;
+        } while(hc != hc_end);
+        builder.end_facet();
+      }
+      builder.end_surface();
+    } // end operator()(..)
+  private:
+    const Polyhedron_input& in_poly;
+  }; // end Append_polyhedron_to<>
+
 }
 
 namespace CGALUtils {
@@ -243,7 +295,23 @@ namespace CGALUtils {
 	}
 
 	template void copyPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL_Polyhedron &);
+	template void copyPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL_Polyhedron &);
 	template void copyPolyhedron(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
+	template void copyPolyhedron(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epeck> &);
+
+	template <class Polyhedron_A, class Polyhedron_B>
+	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b)
+	{
+		poly_b.reserve(
+			poly_b.size_of_vertices() + poly_a.size_of_vertices(),
+			poly_b.size_of_halfedges() + poly_a.size_of_halfedges(),
+			poly_b.size_of_facets() + poly_a.size_of_facets());
+
+		Append_polyhedron_to<Polyhedron_A, Polyhedron_B> modifier(poly_a);
+		poly_b.delegate(modifier);
+	}
+
+	template void appendToPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
 
 	template <typename Polyhedron>
 	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p)
@@ -264,6 +332,7 @@ namespace CGALUtils {
 
 	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
 	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epick> &p);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epeck> &p);
 
 	template <typename Polyhedron>
 	bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)
