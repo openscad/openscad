@@ -9,7 +9,6 @@
 void InitializeRequest::process(Connection *conn, project *proj, const RequestId &id) {
     UNUSED(proj);
     InitializeResult msg;
-    std::cerr << "Processing InitializeRequest\n";
     // TODO fill in the initialize Result (Capabilities are automatically encoded)
 
     // TODO initialize the project from the initalization parameters
@@ -44,7 +43,6 @@ void DidChangeTextDocument::process(Connection *conn, project *proj, const Reque
         proj->open_files.emplace_back(textDocument);
         file = proj->getFile(textDocument.uri);
     }
-    std::cout << "Updating file (" << this->contentChanges[0].text.size() << ") " << this->contentChanges[0].text << "\n";
 
     file->document.text = std::move(this->contentChanges[0].text);
     file->update(conn);

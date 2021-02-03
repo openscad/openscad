@@ -80,7 +80,7 @@ static void errorlogOutput(const Message &msg, void *userdata) {
     // all at once after we are done parsing and rendering
     auto ctx = (LogContext*)userdata;
     // send as diagnostic message
-    std::cerr << "ERROR: " << msg.msg << "\n";
+    //std::cerr << "ERROR: " << msg.msg << "\n";
 
     Diagnostic diag;
     diag.range.start.line = msg.loc.firstLine() > 0 ? msg.loc.firstLine() - 1 : 0;
@@ -147,7 +147,6 @@ void openFile::update(Connection *conn) {
 
     delete this->rootModule;
     this->rootModule = nullptr;
-    std::cerr << "parsing document " << this->document.text << "\n\n";
 	bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
 
     if (parse_result && this->rootModule) {
@@ -185,6 +184,6 @@ void openFile::update(Connection *conn) {
             continue;
         }
         conn->send(diag, "textDocument/publishDiagnostics", {}, Connection::no_response_expected);
-        std::cerr << "uri " << diag.uri.raw_uri << "messages: " << diag.diagnostics.size() << "\n";
+        //std::cerr << "uri " << diag.uri.raw_uri << "messages: " << diag.diagnostics.size() << "\n";
     }
 }

@@ -136,10 +136,8 @@ void Connection::read_body() {
         return;
     }
 
-    std::cerr << "Reading " << this->header.content_length - pending_data.size() << "bytes\n";
     pending_data += this->in_stream->read(this->header.content_length - pending_data.size());
     if (pending_data.size() < this->header.content_length) {
-        std::cerr << "Not enogh data: have: " << pending_data.size() << " have " << this->header.content_length << "\n";
         return;
     }
 
