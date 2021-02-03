@@ -45,7 +45,8 @@ static std::pair<std::string, std::string> read_header_line(QString &data) {
      // Separate the header
     size_t sep_pos = str.find(": ");
     if (sep_pos == std::string::npos) {
-        return {"", "no sep"};
+        std::cerr << "Bad Header: " << str << "\n";
+        return {"", ""};
     }
     size_t end_pos = str.find("\r\n");
 
@@ -53,29 +54,54 @@ static std::pair<std::string, std::string> read_header_line(QString &data) {
     return {str.substr(0, sep_pos), str.substr(sep_pos + 2, end_pos)};
 }
 
+boost::optional<QString> Connection::real_read_line() {
+    while(true) {
+        QString next_char = in_stream->read(1);
+        if (next_char.isEmpty()) {
+            return {};
+        }
+        pending_data += next_char;
+
+        if (pending_data.endsWith("\r\n")) {
+            QString tmp = pending_data;
+            pending_data = "";
+            return tmp.trimmed();
+        }
+    }
+}
+
 void Connection::read_header() {
-    while (!this->in_stream->atEnd()) {
-        QString pending_data = this->in_stream->readLine();
-        if(is_strip_empty(pending_data)) {
-            this->packet_state = PACKET_EXPECT::BODY;
-            return;
+    while (true) {
+        boost::optional<QString> optmp = real_read_line();
+        if (!optmp.has_value()) {
+            std::cout << "No data available\n";
+            break;
         }
 
-        auto field = read_header_line(pending_data);
+        if(is_strip_empty(optmp.value())) {
+            this->packet_state = PACKET_EXPECT::BODY;
+            break;
+        }
+
+        auto field = read_header_line(optmp.value());
 
         // EXTEND: List Accepted header options here
-        if (field.first == "Content-Length") {
+        if (field.first.empty() && field.second.empty()) {
+            continue;
+        } else if (field.first == "Content-Length") {
             size_t l = std::atoi(field.second.c_str());
             //if (l < 1024 * 1024 * 5)  { // TODO: Try to trust a remote network connection?!?!
             if (l > 0) {
                 this->header.content_length = l;
             }
         } else if (field.first == "Content-Type") {
+            std::cout << "got content-type" << field.second << "\n";
             if (field.second != "application/vscode-jsonrpc; charset=utf-8") {
                 std::cerr << "unexpected content type " << field.second << "\n";
             }
         } else {
-            this->warn(std::string("Unknown header field ") + field.first);
+            std::cerr << std::string("Unknown header field [") << field.first
+            << ": " << field.second << "]\n";
         }
     }
 }
@@ -86,15 +112,25 @@ void Connection::read_body() {
         packet_state = PACKET_EXPECT::HEADER;
         return;
     }
+    if (in_stream->atEnd()) {
+        //std::cerr << "Stream is somehow bad " << in_stream->status() << "\n";
+        return;
+    }
 
-    QString pending_data = this->in_stream->read(this->header.content_length);
+    std::cerr << "Reading " << this->header.content_length - pending_data.size() << "bytes\n";
+    pending_data += this->in_stream->read(this->header.content_length - pending_data.size());
+    if (pending_data.size() < this->header.content_length) {
+        std::cerr << "Not enogh data: have: " << pending_data.size() << " have " << this->header.content_length << "\n";
+        return;
+    }
+
 #ifdef DEBUG_MESSAGETRAFFIC
     std::cerr << "RECEIVED: [" << pending_data.size() << "]: " << pending_data.toStdString() << "\n";
     std::cerr << "\n";
 #endif
 
     this->handler->handle_message(pending_data, this);
-
+    pending_data = "";
     // Reset to receive header
     packet_state = PACKET_EXPECT::HEADER;
     this->header = connection_header();
@@ -104,7 +140,9 @@ void Connection::onReadyRead() {
     switch(packet_state) {
     case PACKET_EXPECT::HEADER:
         this->read_header();
-        break;
+        if (packet_state != PACKET_EXPECT::BODY)
+            break;
+        /* falls through */ // if we expect a body
     case PACKET_EXPECT::BODY:
         this->read_body();
         break;
@@ -164,13 +202,16 @@ void Connection::send(const QByteArray &data) {
     {
         QByteArray headerbuf;
         headerbuf.append("Content-Length: ")
-            .append(QString::number(data.size()).toUtf8())
-            .append("\r\n\r\n");
+            .append(QString::number(data.size()).toUtf8()).append("\r\n")
+            // Doubling it up for lulz?
+            .append("Content-Length: ")
+            .append(QString::number(data.size()).toUtf8()).append("\r\n")
+            //.append("Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n")
+            .append("\r\n");
         *this->out_stream << headerbuf;
     }
-
     // Send payload
-    *this->out_stream << data << "\r\n\r\n";
+    *this->out_stream << data;// << "\r\n\r\n";
     this->out_stream->flush();
 #ifdef DEBUG_MESSAGETRAFFIC
     std::cerr << "SENDING: [" << data.size() << "]: " << data.data() << "\n";

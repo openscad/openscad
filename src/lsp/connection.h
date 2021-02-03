@@ -4,6 +4,7 @@
 #include "lsp/lsp.h"
 
 #include <QObject>
+#include <QTextStream>
 
 #include <chrono>
 #include <unordered_map>
@@ -73,7 +74,6 @@ private:
         HEADER,
         BODY,
     } packet_state = PACKET_EXPECT::HEADER;
-
     struct connection_header {
         size_t content_length = 0;
     } header;
@@ -88,6 +88,14 @@ protected:
     ConnectionHandler *handler;
     std::unique_ptr<QTextStream> in_stream;
     std::unique_ptr<QTextStream> out_stream;
+
+    // Since QTextStream's readline returns even before the line has been read,
+    // this method will actually read a line. (including the \r\n!)
+    // Will return an empty string, if no line has been
+    boost::optional<QString> real_read_line();
+private:
+    QString pending_data; // buffer for real_read_line;
+
 
 protected:
     virtual void send(const QByteArray &buffer);

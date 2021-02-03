@@ -130,7 +130,7 @@ void ConnectionHandler::handle_message(const QString &buffer, Connection *conn) 
         }
     }
     catch (std::unique_ptr<ResponseMessage> &msg) {
-        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught response message: id: %1\n", msg->id);
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught response message: id: %1\n", msg->id.value());
         conn->send(*msg, id);
     }
     catch (std::unique_ptr<ResponseError> &msg) {
