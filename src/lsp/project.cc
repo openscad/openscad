@@ -141,8 +141,13 @@ void openFile::update(Connection *conn) {
     log_ctx->conn = conn;
     set_output_handler(consoleOutput, errorlogOutput, log_ctx.get());
 
+    for (auto &diagfile : log_ctx->diagnostics) {
+        diagfile.diagnostics.clear();
+    }
+
     delete this->rootModule;
     this->rootModule = nullptr;
+    std::cerr << "parsing document " << this->document.text << "\n\n";
 	bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
 
     if (parse_result && this->rootModule) {

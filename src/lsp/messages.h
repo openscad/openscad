@@ -364,6 +364,10 @@ MESSAGE_CLASS(SuccessResponse) : public ResponseResult {
     bool success;
 };
 
+MESSAGE_CLASS(NullResponse) : public ResponseResult {
+    MAKE_DECODEABLE;
+};
+
 MESSAGE_CLASS(InitializeRequest) : public RequestMessage {
     MAKE_DECODEABLE;
     virtual void process(Connection *, project *, const RequestId &id);
@@ -399,7 +403,7 @@ MESSAGE_CLASS(ShutdownRequest) : public RequestMessage {
     virtual void process(Connection *, project *, const RequestId &id);
 };
 
-MESSAGE_CLASS(ExitRequest) : public RequestMessage {
+MESSAGE_CLASS(ExitNotification) : public RequestMessage {
     MAKE_DECODEABLE;
 
     virtual void process(Connection *, project *, const RequestId &id);
@@ -426,8 +430,7 @@ MESSAGE_CLASS(DidChangeTextDocument) : public RequestMessage {
 
     TextDocumentItem textDocument;
 
-    // Todo handle lists?
-    TextDocumentContentChangeEvent contentChanges;
+    std::vector<TextDocumentContentChangeEvent> contentChanges;
 
     virtual void process(Connection *, project *, const RequestId &id);
 };

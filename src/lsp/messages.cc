@@ -18,47 +18,36 @@ void InitializeRequest::process(Connection *conn, project *proj, const RequestId
 }
 
 void ShutdownRequest::process(Connection *conn, project *proj, const RequestId &id) {
-    UNUSED(proj);
-    UNUSED(conn);
-    UNUSED(id);
-    // TODO : Shutdown response
+    proj->open_files.clear();
+    conn->send(NullResponse(), id);
 }
 
-void ExitRequest::process(Connection *conn, project *proj, const RequestId &id) {
-    UNUSED(proj);
-    UNUSED(id);
-    // TODO do i need a shutdown response?
+void ExitNotification::process(Connection *conn, project *, const RequestId &) {
     conn->close();
 }
-
 
 void DidOpenTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
     // Called when a document is opened in the editor
     proj->open_files.emplace_back(textDocument);
     auto file = proj->getFile(textDocument.uri);
 
-    if (id.is_set()) {
-        conn->send(SuccessResponse(true), id);
-    }
-
     file->update(conn);
 }
 
 void DidChangeTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
-    // Called when a document is opened
-    //std::cerr << "Changed Text document with new contents: " << this->textDocument.text << "\n\n";
+    if (this->contentChanges.size() == 0) {
+        return;
+    }
 
     auto file = proj->getFile(textDocument.uri);
-    if (file) {
-        file->document = this->textDocument; // move assign and overwrite
+    if (!file) {
+        proj->open_files.emplace_back(textDocument);
+        file = proj->getFile(textDocument.uri);
     }
-    if (id.is_set()) {
-        conn->send(SuccessResponse(true), id);
-    }
+    std::cout << "Updating file (" << this->contentChanges[0].text.size() << ") " << this->contentChanges[0].text << "\n";
 
-    if (file) {
-        file->update(conn);
-    }
+    file->document.text = std::move(this->contentChanges[0].text);
+    file->update(conn);
 }
 
 void DidCloseTextDocument::process(Connection *conn, project *proj, const RequestId &id) {
@@ -67,7 +56,4 @@ void DidCloseTextDocument::process(Connection *conn, project *proj, const Reques
     proj->open_files.remove_if([this](const auto &item) { \
         return item.document.uri == this->textDocument.uri;
     });
-    if (id.is_set()) {
-        conn->send(SuccessResponse(true), id);
-    }
 }
