@@ -1,11 +1,15 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include <CGAL/Polygon_mesh_processing/manifoldness.h>
 #include <CGAL/Polygon_mesh_processing/orient_polygon_soup_extension.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,1,0)
+  #include <CGAL/Polygon_mesh_processing/repair.h>
+#else
+  #include <CGAL/Polygon_mesh_processing/manifoldness.h>
+#endif
 #include <unordered_set>
 
 #include "feature.h"
