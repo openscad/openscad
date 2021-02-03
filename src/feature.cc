@@ -8,6 +8,7 @@
 
 #include "feature.h"
 #include "printutils.h"
+#include "polyhedron.h" // Only for FAST_POLYHEDRON_AVAILABLE
 
 /**
  * Feature registration map/list for later lookup. This must be initialized
@@ -21,8 +22,10 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
+#ifdef FAST_POLYHEDRON_AVAILABLE
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable 10x faster CSG operations.");
 const Feature Feature::ExperimentalTrustManifold("trust-manifold", "Trust that polyhedral meshes are manifold. Can speed up CSG operations on large imported STL files.");
+#endif
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");

@@ -1,4 +1,6 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
+#include "polyhedron.h"
+#ifdef FAST_POLYHEDRON_AVAILABLE
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/orient_polygon_soup_extension.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
@@ -14,7 +16,6 @@
 
 #include "feature.h"
 #include "hash.h"
-#include "polyhedron.h"
 #include "polyset.h"
 #include "cgalutils.h"
 #include "scoped_timer.h"
@@ -43,7 +44,7 @@ Polyhedron::Polyhedron(const PolySet &ps)
 			LOG(message_group::Warning, Location::NONE, "",
 					"This polyhedron's %1$lu faces were oriented inwards and need inversion.",
 					polyhedron->size_of_facets());
-			PMP::reverse_face_orientations(polyhedron->facet_handles(), *polyhedron);
+			PMP::reverse_face_orientations(*polyhedron);
 		}
 	}
 
@@ -350,3 +351,5 @@ Polyhedron::polyhedron_t &Polyhedron::convertToPolyhedron()
 		throw "Bad data state";
 	}
 }
+
+#endif // FAST_POLYHEDRON_AVAILABLE

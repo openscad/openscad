@@ -5,6 +5,12 @@
 #include "bounding_boxes.h"
 #include "cgal.h"
 
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,0,0)
+#define FAST_POLYHEDRON_AVAILABLE
+#endif
+
+#ifdef FAST_POLYHEDRON_AVAILABLE
+
 class Geometry;
 class PolySet;
 
@@ -95,3 +101,5 @@ private:
 	nef_polyhedron_t &convertToNefPolyhedron();
 	polyhedron_t &convertToPolyhedron();
 };
+
+#endif // FAST_POLYHEDRON_AVAILABLE

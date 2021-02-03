@@ -76,6 +76,7 @@ namespace CGALUtils {
 		return visited.size() == p.size_of_facets();
 	}
 
+#ifdef FAST_POLYHEDRON_AVAILABLE
 /*!
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
@@ -137,6 +138,7 @@ namespace CGALUtils {
 		CGAL::set_error_behaviour(old_behaviour);
 		return N;
 	}
+#endif // FAST_POLYHEDRON_AVAILABLE
 
 /*!
 	Applies op to all children and returns the result.
@@ -144,10 +146,12 @@ namespace CGALUtils {
 */
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
 	{
+#ifdef FAST_POLYHEDRON_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			auto result = applyOperator3DPolyhedron(children, op, tree);
 			return result ? result->toGeometry() : nullptr;
 		}
+#endif // FAST_POLYHEDRON_AVAILABLE
 
 		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -210,6 +214,7 @@ namespace CGALUtils {
 		return shared_ptr<Geometry>(N);
 	}
 
+#ifdef FAST_POLYHEDRON_AVAILABLE
 	shared_ptr<const Polyhedron> applyUnion3DPolyhedron(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
@@ -289,15 +294,18 @@ namespace CGALUtils {
 		}
 		return nullptr;
 	}
+#endif // FAST_POLYHEDRON_AVAILABLE
 
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
+#ifdef FAST_POLYHEDRON_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			auto result = applyUnion3DPolyhedron(chbegin, chend, tree);
 			return result ? result->toGeometry() : nullptr;
 		}
+#endif // FAST_POLYHEDRON_AVAILABLE
 
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
