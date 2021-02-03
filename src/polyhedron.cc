@@ -2,16 +2,11 @@
 #include "polyhedron.h"
 #ifdef FAST_POLYHEDRON_AVAILABLE
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include <CGAL/Polygon_mesh_processing/orient_polygon_soup_extension.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,1,0)
-  #include <CGAL/Polygon_mesh_processing/manifoldness.h>
-#else
-  #include <CGAL/Polygon_mesh_processing/repair.h>
-#endif
+#include <CGAL/Polygon_mesh_processing/manifoldness.h>
 #include <unordered_set>
 
 #include "feature.h"
@@ -175,8 +170,7 @@ void Polyhedron::operator+=(Polyhedron &other)
 		}
 		else {
 			polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-				PMP::corefine_and_compute_union(destinationPoly, otherPoly, destinationPoly,
-																				params::all_default(), params::all_default());
+				PMP::corefine_and_compute_union(destinationPoly, otherPoly, destinationPoly);
 			});
 		}
 	}
@@ -199,8 +193,7 @@ void Polyhedron::operator*=(Polyhedron &other)
 	}
 	else {
 		polyBinOp("intersection", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-			PMP::corefine_and_compute_intersection(destinationPoly, otherPoly, destinationPoly,
-																						 params::all_default(), params::all_default());
+			PMP::corefine_and_compute_intersection(destinationPoly, otherPoly, destinationPoly);
 		});
 	}
 	bboxes *= other.bboxes;
@@ -222,8 +215,7 @@ void Polyhedron::operator-=(Polyhedron &other)
 	}
 	else {
 		polyBinOp("difference", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-			PMP::corefine_and_compute_difference(destinationPoly, otherPoly, destinationPoly,
-																					 params::all_default(), params::all_default());
+			PMP::corefine_and_compute_difference(destinationPoly, otherPoly, destinationPoly);
 		});
 	}
 }

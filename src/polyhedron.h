@@ -5,7 +5,7 @@
 #include "bounding_boxes.h"
 #include "cgal.h"
 
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,0,0)
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,1,0)
 #define FAST_POLYHEDRON_AVAILABLE
 #endif
 
