@@ -102,9 +102,9 @@ struct decode_env {
     template<typename value_type>
     bool declare_field(JSONObject &parent, value_type &dst, const FieldNameType &field) {
         //assert(parent.isObject());
-        auto object = parent.ref();
-        auto it = object.find(field);
         if (this->dir == storage_direction::READ)  {
+            auto object = parent.ref();
+            auto it = object.find(field);
             if (it != object.end()) {
 /*#if __cplusplus > 201402L
                 if constexpr (std::is_integral<value_type>::value) {
@@ -130,18 +130,15 @@ struct decode_env {
                 return false;
             }
         } else {
-/*            if (it == object.end()) {
-                object.insert(field, false);
-                it = object.find(field);
-            }
-            assign_value(it, dst);
-*/
+/*#if __cplusplus > 201402L
             if constexpr(std::is_convertible<value_type, std::string>::value) {
                 parent[field] = QString::fromStdString(dst);
             } else {
                 parent[field] = dst;
             }
-
+#else */
+            assign_value(parent, field, dst);
+/* #endif */
             return true;
         }
     }
@@ -176,26 +173,18 @@ struct decode_env {
         return it->toString();
     }
 
-    // The following is required to hack against C++14's lack of `if constexpr`
-    /*template <class value_type>
-    value_type retrieve_value(QJsonObject::iterator &it) {
-        // This is a hack for better error messages if you forgot to define a overload.
-        value_type dst;
-        printf("%s<- If this is part of your error message, you have messed up something in the decoding if your message - maybe you have forgotton to declare it as MAKE_DECODEABLE?", dst);
-        static_assert(std::is_same<value_type, bool>::value);
-        return dst;
-    }*/
-
     template <class value_type,
-    typename std::enable_if_t<!std::is_convertible<value_type, std::string>::value>* = nullptr>
-    void assign_value(QJsonObject::iterator &it, const value_type &dst) {
-        *it = dst;
+              std::enable_if_t<!std::is_convertible<value_type, std::string>::value>* = nullptr
+    >
+    void assign_value(QJsonObject &parent, const QString &field, const value_type &dst) {
+        parent[field] = dst;
     }
 
     template <class value_type,
-    typename std::enable_if_t<std::is_convertible<value_type, std::string>::value>* = nullptr>
-    void assign_value(QJsonObject::iterator &it, const value_type &dst) {
-        *it = QString::fromStdString(dst);
+              std::enable_if_t<std::is_convertible<value_type, std::string>::value>* = nullptr
+    >
+    void assign_value(QJsonObject &parent, const QString &field, const value_type &dst) {
+        parent[field] = QString::fromStdString(dst);
     }
 
 
