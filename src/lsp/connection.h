@@ -53,10 +53,6 @@ public:
     void send(ResponseResult &&result, const RequestId &id);
     void send(ResponseError &&error, const RequestId &id);
 
-    // to be called on a regular basis to avoid overfilling the pending messages buffer
-    void clean_pending_messages(const std::chrono::system_clock::duration &max_age);
-    void handle_pending_response(const ResponseMessage &msg);
-
     virtual void close() = 0;
     virtual bool is_done() = 0;
     virtual std::string peerName() = 0;
@@ -68,6 +64,10 @@ public:
     void warn(const std::string &message) { log(MessageType::Warning, message); }
     void info(const std::string &message) { log(MessageType::Info, message); }
     void debug(const std::string &message) { log(MessageType::Log, message); }
+
+    // to be called on a regular basis to avoid overfilling the pending messages buffer
+    void clean_pending_messages(const std::chrono::system_clock::duration &max_age);
+    void handle_pending_response(const ResponseMessage &msg);
 
 private:
     enum class PACKET_EXPECT {
@@ -101,9 +101,13 @@ protected:
     virtual void send(const QByteArray &buffer);
 
     struct pending_message {
-        pending_message(const request_callback_t &callback) :
-            callback(callback), pending_since(std::chrono::system_clock::now())
+        pending_message(const std::string &method, const request_callback_t &callback) :
+            method(method),
+            callback(callback),
+            pending_since(std::chrono::system_clock::now())
         {}
+
+        std::string method;
         request_callback_t callback;
         std::chrono::system_clock::time_point pending_since;
     };

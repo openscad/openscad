@@ -32,8 +32,8 @@ Connection::Connection(ConnectionHandler *handler, std::unique_ptr<project> &&pr
 
 
 static bool is_strip_empty(const QString &data) {
-    for(const auto &b : data.toStdString()) {
-        if (!std::isspace(b)) {
+    for(const auto &b : data) {
+        if (!b.isSpace()) {
             return false;
         }
     }
@@ -41,19 +41,21 @@ static bool is_strip_empty(const QString &data) {
 }
 
 static std::pair<std::string, std::string> read_header_line(QString &data) {
-    std::string str = data.toStdString();
-     // Separate the header
-    size_t sep_pos = str.find(": ");
-    if (sep_pos == std::string::npos) {
-        std::cerr << "Bad Header: " << str << "\n";
+    auto sep_pos = data.indexOf(": ");
+    if (sep_pos == -1) {
+        std::cerr << "Bad Header: " << data.toStdString() << "\n";
         return {"", ""};
     }
-    size_t end_pos = str.find("\r\n");
-
-    // +2 because of ": " as header separator
-    return {str.substr(0, sep_pos), str.substr(sep_pos + 2, end_pos)};
+    return {data.left(sep_pos).toStdString(),
+            data.right(data.size() - sep_pos - 2).toStdString()};
 }
 
+/**
+ * This lovely contraption is necessary, because QTextStream::readLine() will not read lines.
+ * Qt's readline will read to _either_ any newline character _or_ the end of the stream.
+ *
+ * That means we get a lot of single-character lines, which have to be constructed.
+ */
 boost::optional<QString> Connection::real_read_line() {
     while(true) {
         QString next_char = in_stream->read(1);
@@ -70,10 +72,18 @@ boost::optional<QString> Connection::real_read_line() {
     }
 }
 
+/**
+ * Reentrant method to read the header until an empty line (\r\n\r\n).
+ *
+ * Will set the `this->packet_state` to BODY upon an empty line.
+ * This will use the `this->pending_char` (through real_read_line) to construct lines.
+ *
+ * After this method is done, `this->header` is set.
+ */
 void Connection::read_header() {
     while (true) {
         boost::optional<QString> optmp = real_read_line();
-        if (!optmp.has_value()) {
+        if (!optmp) { // casting optional to bool is a .has_value() check
             std::cout << "No data available\n";
             break;
         }
@@ -83,14 +93,14 @@ void Connection::read_header() {
             break;
         }
 
-        auto field = read_header_line(optmp.value());
+        std::pair<std::string, std::string> field = read_header_line(optmp.value());
+        // From here on we only use std::string, no more qstrings!
 
-        // EXTEND: List Accepted header options here
         if (field.first.empty() && field.second.empty()) {
             continue;
         } else if (field.first == "Content-Length") {
             size_t l = std::atoi(field.second.c_str());
-            //if (l < 1024 * 1024 * 5)  { // TODO: Try to trust a remote network connection?!?!
+            //if (l < 1024 * 1024 * 5)  { // We are trusting the "Content-Length" header here!
             if (l > 0) {
                 this->header.content_length = l;
             }
@@ -106,6 +116,15 @@ void Connection::read_header() {
     }
 }
 
+/**
+ * Reentrant method to read the body.
+ *
+ * This will read data from the in_stream until the content length specified in the header
+ * is reached.
+ * It will then call ConnectionHandler::handle_message to continue parsing.
+ *
+ * This will reset the header when its done and wait for the next header.
+ */
 void Connection::read_body() {
     if (header.content_length == 0) {
         std::cerr << "No Content-Length given\n";
@@ -136,6 +155,9 @@ void Connection::read_body() {
     this->header = connection_header();
 }
 
+/**
+ * Slot called when the socket is ready for read
+ */
 void Connection::onReadyRead() {
     switch(packet_state) {
     case PACKET_EXPECT::HEADER:
@@ -149,11 +171,14 @@ void Connection::onReadyRead() {
     }
 }
 
-
+/**
+ * Remove requests without a response that are older than max_age from the list of pending
+ * messages.
+ */
 void Connection::clean_pending_messages(const std::chrono::system_clock::duration &max_age) {
     auto now = std::chrono::system_clock::now();
 
-    // There is no support for remove_if in associative containers. sometimes I love you C++.
+    // There is no support for remove_if in associative containers. Sometimes I love you C++.
     // If it were, we could say something like
     //pending_messages.erase(std::remove_if(pending_messages.begin(), pending_messages.end(), [&](const std::pair<int, pending_message> &msg) {
     //    return (now - msg.second.pending_since) > max_age;
@@ -161,7 +186,8 @@ void Connection::clean_pending_messages(const std::chrono::system_clock::duratio
     int cnt = 0;
     for(auto it = pending_messages.begin(); it != pending_messages.end();){
         if ((now - it->second.pending_since) > max_age) {
-            it = pending_messages.erase(it); // previously this was something like m_map.erase(it++);
+            std::cerr << "Request to " << it->second.method << "[id=" << it->first << "] has timed out\n";
+            it = pending_messages.erase(it);
             cnt ++;
         } else {
             ++it;
@@ -203,7 +229,7 @@ void Connection::send(const QByteArray &data) {
         QByteArray headerbuf;
         headerbuf.append("Content-Length: ")
             .append(QString::number(data.size()).toUtf8()).append("\r\n")
-            // Doubling it up for lulz?
+            // Doubling it up for lulz? - helps netbeans, does not hurt anybody else.
             .append("Content-Length: ")
             .append(QString::number(data.size()).toUtf8()).append("\r\n")
             //.append("Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n")
@@ -243,7 +269,7 @@ void Connection::send(RequestMessage &msg, const std::string &method, const Requ
     }
 
     if (msg.id.is_set()) {
-        pending_messages.emplace(std::make_pair(msg.id.value_int, pending_message(callback)));
+        pending_messages.emplace(std::make_pair(msg.id.value_int, pending_message(method, callback)));
     }
 
     QByteArray responsebuffer;

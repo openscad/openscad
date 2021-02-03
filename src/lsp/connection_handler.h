@@ -14,13 +14,15 @@
 #include <QTcpServer>
 #include <QString>
 
-// Forward declare Connection in order to speed up compile times
 class Connection;
 class project;
 
+/**
+ * The connection handler is single instance, keeping track of available RPC-methods
+ * and active connections.
+ */
 class ConnectionHandler : public QObject {
 	Q_OBJECT
-    /** This is the listener class which creates threads with Connections* running */
 
     friend class Connection;
 public:

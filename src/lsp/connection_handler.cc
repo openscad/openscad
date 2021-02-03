@@ -26,8 +26,6 @@ ConnectionHandler::ConnectionHandler(QObject *parent, const ConnectionHandler::p
                 this, SLOT(onNewConnection()));
         std::cerr << "Listening on port " << port << "\n";
     }
-
-    // TODO: Timer to remove pending connections and unresolved requests
 }
 
 ConnectionHandler::~ConnectionHandler() {

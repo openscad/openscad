@@ -148,11 +148,10 @@ bool decode_env::declare_field(JSONObject &parent, TextDocumentItem &target, con
 }
 
 template <>
-bool decode_env::declare_field(JSONObject &parent, TextDocumentContentChangeEvent &target, const FieldNameType &field) {
-    auto object = start_object(parent, field);
-    //declare_field_optional(object, target.range, "range");
-    //declare_field_optional(object, target.rangeLength, "rangeLength");
+bool decode_env::declare_field(JSONObject &object, TextDocumentContentChangeEvent &target, const FieldNameType &field) {
     declare_field(object, target.text, "text");
+    declare_field_optional(object, target.range, "range");
+    declare_field_optional(object, target.rangeLength, "rangeLength");
     return true;
 }
 
@@ -237,17 +236,20 @@ bool decode_env::declare_field(JSONObject &object, ResponseMessage &target, cons
         auto errorchild = start_object(object, "error");
         declare_field_optional(errorchild, target.error, "error");
     }
-
     if (!target.error && !(target.result || !target.use_result)) {
         std::cerr << "Having a message with neither error nor result\n";
     }
-
     return true;
 }
 
 template<>
 bool decode_env::declare_field(JSONObject &object, SuccessResponse &target, const FieldNameType &) {
     declare_field(object, target.success, "success");
+    return true;
+}
+
+template<>
+bool decode_env::declare_field(JSONObject &object, NullResponse &target, const FieldNameType &) {
     return true;
 }
 
@@ -270,13 +272,13 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &, const F
 
 
     object[field] = QJsonObject {
-        //{"hoverProvider", true}, // Future
+        //{"hoverProvider", true}, // When hovering over characters
+        //{"implementationProvider", true }, // "Go To implementation"
         {"textDocumentSync", QJsonObject {
                 {"openClose", true },
                 {"change", 1 }, // None = 0, Full = 1, Incremental = 2
             },
         },
-        // {"implementationProvider", true }, // "Go To implementation"
         {"window", QJsonObject {
                 {"showDocument", QJsonObject {
                         { "support", true } // This allows click to code
@@ -301,7 +303,7 @@ bool decode_env::declare_field(JSONObject &, ShutdownRequest &, const FieldNameT
 }
 
 template<>
-bool decode_env::declare_field(JSONObject &, ExitRequest &, const FieldNameType &) {
+bool decode_env::declare_field(JSONObject &, ExitNotification &, const FieldNameType &) {
     // Does not have fields
     return true;
 }
@@ -323,7 +325,7 @@ bool decode_env::declare_field(JSONObject &object, DidOpenTextDocument &target, 
 template<>
 bool decode_env::declare_field(JSONObject &object, DidChangeTextDocument &target, const FieldNameType &) {
     declare_field(object, target.textDocument, "textDocument");
-    declare_field(object, target.contentChanges, "contentChanges");
+    declare_field_array(object, target.contentChanges, "contentChanges");
     return true;
 }
 
@@ -364,7 +366,6 @@ bool decode_env::declare_field(JSONObject &object, Diagnostic &target, const Fie
     declare_field_optional(object, target.code, "code");
     declare_field_optional(object, target.source, "source");
     declare_field(object, target.message, "message");
-
     return true;
 }
 
@@ -433,10 +434,11 @@ void ConnectionHandler::register_messages() {
     MAP("initialize", InitializeRequest);
     MAP("initialized", InitializedNotifiy);
     MAP("shutdown", ShutdownRequest);
+    MAP("exit", ExitNotification);
     MAP("textDocument/didOpen", DidOpenTextDocument);
     MAP("textDocument/didChange", DidChangeTextDocument);
     MAP("textDocument/didClose", DidCloseTextDocument);
-    MAP("textDocument/implementation", ImplementationRequest);
+    //MAP("textDocument/implementation", ImplementationRequest);
     //MAP("textDocument/hover", TextDocumentHover);
 
     MAP("$openscad/render", OpenSCADRender);

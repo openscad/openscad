@@ -49,6 +49,7 @@ private:
     int port;
     std::unique_ptr<ConnectionHandler> handler;
     MainWindow *mainWindow;
+
 #ifndef LSP_ON_MAINTHREAD
     QThread workerthread;
 #endif

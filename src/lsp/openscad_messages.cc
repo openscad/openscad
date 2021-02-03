@@ -7,10 +7,10 @@
 #include "node.h"
 #include "ModuleInstantiation.h"
 
+/* Redirect the call to the LSP interface, which knows the mainWindow */
 void OpenSCADRender::process(Connection *conn, project *proj, const RequestId &id) {
     proj->lspinterface->requestPreview();
 }
-
 
 void ImplementationRequest::process(Connection *conn, project *proj, const RequestId &id) {
     auto file = proj->getFile(this->textDocument.uri);
