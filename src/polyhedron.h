@@ -4,6 +4,7 @@
 #include <boost/variant.hpp>
 #include "bounding_boxes.h"
 #include "cgal.h"
+#include <CGAL/version.h>
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,1,0)
 #define FAST_POLYHEDRON_AVAILABLE
