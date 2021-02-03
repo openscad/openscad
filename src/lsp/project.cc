@@ -72,6 +72,7 @@ static void consoleOutput(const Message &msg,void *userdata) {
     logmsg.message = msg.msg;
 
     // send as log message
+    // TODO: Currently these are sent twice, so the LSP gets a log and diagnostics...
     //ctx->conn->send(logmsg, "window/logMessage", {}, Connection::no_response_expected);
 }
 
@@ -147,15 +148,16 @@ void openFile::update(Connection *conn) {
 
     delete this->rootModule;
     this->rootModule = nullptr;
-	bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
+    bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
 
     if (parse_result && this->rootModule) {
         // parse successful - create the modules
+        this->rootModule->handleDependencies();
         this->rootInst = ModuleInstantiation("group");
 
         //this->top_ctx = Context::create<BuiltinContext>();
-		ContextHandle<FileContext> filectx{Context::create<FileContext>(this->top_ctx.ctx)};
-		top_ctx->setDocumentPath(this->document.uri.getPath());
+        ContextHandle<FileContext> filectx{Context::create<FileContext>(this->top_ctx.ctx)};
+        top_ctx->setDocumentPath(this->document.uri.getPath());
         this->rootNode = this->rootModule->instantiateWithFileContext(filectx.ctx, &this->rootInst, nullptr);
         //LOG(message_group::Echo, Location::NONE, "", "Updated");
     } else {
