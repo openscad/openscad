@@ -21,12 +21,20 @@ template <>
 bool decode_env::declare_field(JSONObject &object, RequestId &target, const FieldNameType &field) {
     auto data = object.ref()[field];
     if (dir == storage_direction::READ) {
-        if (data.type() == QJsonValue::String) {
+        switch(data.type()) {
+        case QJsonValue::String:
             declare_field(object, target.value_str, field);
             target.type = RequestId::STRING;
-        } else if (data.type() == QJsonValue::Double) {
+            break;
+        case QJsonValue::Double:
             declare_field(object, target.value_int, field);
             target.type = RequestId::INT;
+            break;
+        case QJsonValue::Null:
+            target.type = RequestId::UNSET;
+            break;
+        default:
+            throw ResponseError(ErrorCode::InvalidRequest, "invalid message id type");
         }
     } else {
         switch(target.type) {

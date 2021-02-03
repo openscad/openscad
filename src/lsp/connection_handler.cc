@@ -128,19 +128,19 @@ void ConnectionHandler::handle_message(const QString &buffer, Connection *conn) 
         }
     }
     catch (std::unique_ptr<ResponseMessage> &msg) {
-        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught response message: id: %1\n", msg->id.value());
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught response message: %1$s", msg->id.value());
         conn->send(*msg, id);
     }
     catch (std::unique_ptr<ResponseError> &msg) {
-        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught error* message: %1\n", msg->message);
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught error* message: %1$s", msg->message);
         conn->send(*msg, id);
     }
     catch (ResponseError &msg) {
-        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught error message: %1\n", msg.message);
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught error message: %1$s", msg.message);
         conn->send(msg, id);
     }
     catch(std::exception &err) {
-        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught std::exception: %1\n", err.what());
+        LOG(message_group::Error, Location::NONE, {}, "LSP: Caught std::exception: %1$s", err.what());
         conn->send(ResponseError(ErrorCode::InternalError, err.what()), {});
     }
     /*catch(...) {

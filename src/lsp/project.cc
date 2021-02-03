@@ -146,16 +146,26 @@ void openFile::update(Connection *conn) {
         diagfile.diagnostics.clear();
     }
 
+    // ensure that the root document is contained in here - otherwise it might not be sent if there are no errors
+    {
+        auto it = std::find_if(log_ctx->diagnostics.begin(), log_ctx->diagnostics.end(), [&](const PublishDiagnosticsParams &diag) {
+            return this->document.uri == diag.uri;
+        });
+        if (it == log_ctx->diagnostics.end()) {
+            PublishDiagnosticsParams rootDiag;
+            rootDiag.uri = this->document.uri;
+            log_ctx->diagnostics.push_back(rootDiag);
+        }
+    }
+
     delete this->rootModule;
     this->rootModule = nullptr;
     bool parse_result = parse(this->rootModule, this->document.text.c_str(), this->document.uri.getPath().c_str(), this->document.uri.getPath().c_str(), false);
-
     if (parse_result && this->rootModule) {
         // parse successful - create the modules
         this->rootModule->handleDependencies();
         this->rootInst = ModuleInstantiation("group");
 
-        //this->top_ctx = Context::create<BuiltinContext>();
         ContextHandle<FileContext> filectx{Context::create<FileContext>(this->top_ctx.ctx)};
         top_ctx->setDocumentPath(this->document.uri.getPath());
         this->rootNode = this->rootModule->instantiateWithFileContext(filectx.ctx, &this->rootInst, nullptr);
@@ -164,16 +174,13 @@ void openFile::update(Connection *conn) {
         // parse failed - try to get some error log?
         // we do have parser_error_pos as the character offset (qscintillaeditor might help convert it?)
     }
-
     for (auto &diag : log_ctx->diagnostics) {
         // We have the ""-uri - find the "document.uri" element
         if (diag.uri.raw_uri.empty()) {
             auto it = std::find_if(log_ctx->diagnostics.begin(), log_ctx->diagnostics.end(), [&](const PublishDiagnosticsParams &diag) {
                 return diag.uri == this->document.uri;
             });
-            if (it == log_ctx->diagnostics.end()) {
-                // diag.uri = this->document.uri;
-            } else {
+            if (it != log_ctx->diagnostics.end()) {
                 it->diagnostics.insert(it->diagnostics.end(), diag.diagnostics.begin(), diag.diagnostics.end());
             }
             break;
@@ -186,6 +193,5 @@ void openFile::update(Connection *conn) {
             continue;
         }
         conn->send(diag, "textDocument/publishDiagnostics", {}, Connection::no_response_expected);
-        //std::cerr << "uri " << diag.uri.raw_uri << "messages: " << diag.diagnostics.size() << "\n";
     }
 }
