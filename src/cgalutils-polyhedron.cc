@@ -46,21 +46,20 @@ namespace /* anonymous */ {
 #if 1 // Use Grid
 		void operator()(HDS& hds) override {
 			CGAL_Polybuilder B(hds, true);
-		
+
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
 			std::vector<std::vector<size_t>> indices;
 
 			// Align all vertices to grid and build vertex array in vertices
 			for(const auto &p : ps.polygons) {
-				indices.push_back(std::vector<size_t>());
+				indices.emplace_back(std::initializer_list<size_t>{});
 				indices.back().reserve(p.size());
-				for (auto v : boost::adaptors::reverse(p)) {
+				for (auto v : p) {
 					// align v to the grid; the CGALPoint will receive the aligned vertex
 					size_t idx = grid.align(v);
 					if (idx == vertices.size()) {
-						CGALPoint p(v[0], v[1], v[2]);
-						vertices.push_back(p);
+						vertices.emplace_back(v[0], v[1], v[2]);
 					}
 					indices.back().push_back(idx);
 				}
@@ -91,7 +90,7 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				for (auto i : boost::adaptors::reverse(pindices)) {
+				for (auto i : pindices) {
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
 				}
@@ -130,7 +129,7 @@ namespace /* anonymous */ {
 					if (pidx++ > 0) printf(",");
 #endif
 					indices.clear();
-					for (const auto &v, boost::adaptors::reverse(p)) {
+					for (const auto &v, p) {
 						size_t s = vertices.size();
 						size_t idx = vertices.lookup(v);
 						// If we added a vertex, also add it to the CGAL builder
@@ -199,7 +198,7 @@ namespace /* anonymous */ {
 			builder.begin_surface(in_poly.size_of_vertices(),
 														in_poly.size_of_facets(),
 														in_poly.size_of_halfedges());
-			
+
 			for (Vertex_const_iterator
 						vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
 					vi != end ; ++vi) {
@@ -338,7 +337,7 @@ namespace CGALUtils {
 		typedef typename Polyhedron::Vertex                                 Vertex;
 		typedef typename Polyhedron::Facet_const_iterator                   FCI;
 		typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
-		
+
 		for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
 			HFCC hc = fi->facet_begin();
 			HFCC hc_end = hc;
@@ -410,7 +409,7 @@ namespace CGALUtils {
 
     Polyhedron_writer writer;
     generic_print_polyhedron(sstream, p, writer);
-		
+
 		return sstream.str();
 	}
 
