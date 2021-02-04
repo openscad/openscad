@@ -101,6 +101,13 @@ private:
 
 	nef_polyhedron_t &convertToNefPolyhedron();
 	polyhedron_t &convertToPolyhedron();
+
+  /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
+   * Do NOT make this public. */
+	nef_polyhedron_t* getNefPolyhedron() const;
+	/*! Returns the polyhedron if that's what's in the current data, or else nullptr.
+   * Do NOT make this public. */
+	polyhedron_t* getPolyhedron() const;
 };
 
 #endif // FAST_POLYHEDRON_AVAILABLE
