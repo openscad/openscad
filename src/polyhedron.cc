@@ -43,7 +43,7 @@ FastPolyhedron::FastPolyhedron(const PolySet &ps)
 		}
 	}
 
-	if (!Feature::ExperimentalTrustManifold.is_enabled() && !ps.is_convex()) {
+	if (!ps.is_manifold() && !ps.is_convex() && !Feature::ExperimentalTrustManifold.is_enabled()) {
 		LOG(message_group::Echo, Location::NONE, "",
 				"Checking this polyhedron is manifold. Use --enable=trust-manifold to skip and speed up.");
 
@@ -135,13 +135,14 @@ bool FastPolyhedron::isManifold() const
 shared_ptr<const Geometry> FastPolyhedron::toGeometry() const
 {
 	if (auto poly = getPolyhedron()) {
-		auto ps = make_shared<PolySet>(3);
+		auto ps = make_shared<PolySet>(3, /* convex */ unknown, /* manifold */ false);
 		auto err = CGALUtils::createPolySetFromPolyhedron(*poly, *ps);
 		assert(!err);
 		return ps;
 	}
 	else if (auto nef = getNefPolyhedron()) {
-		auto ps = make_shared<PolySet>(3);
+		// TODO(ochafik): Convert to CGAL_Nef_polyhedron to keep things exact.
+		auto ps = make_shared<PolySet>(3, /* convex */ unknown, /* manifold */ nef->is_simple());
 		auto err = CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps);
 		assert(!err);
 		return ps;

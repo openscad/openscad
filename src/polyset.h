@@ -15,7 +15,7 @@ public:
 	VISITABLE_GEOMETRY();
 	Polygons polygons;
 
-	PolySet(unsigned int dim, boost::tribool convex = unknown);
+	PolySet(unsigned int dim, boost::tribool convex = unknown, boost::tribool manifold = unknown);
 	PolySet(const Polygon2d &origin);
 	~PolySet();
 
@@ -44,12 +44,14 @@ public:
 	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
 	bool is_convex() const;
+	bool is_manifold() const;
 	boost::tribool convexValue() const { return this->convex; }
 
 private:
 	Polygon2d polygon;
 	unsigned int dim;
 	mutable boost::tribool convex;
+	mutable boost::tribool manifold;
 	mutable BoundingBox bbox;
 	mutable bool dirty;
 };

@@ -131,7 +131,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OpenSCADOperator::HULL) {
-		PolySet *ps = new PolySet(3, true);
+		PolySet *ps = new PolySet(3, /* convex */ true, /* manifold */ true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
 			return ps;
