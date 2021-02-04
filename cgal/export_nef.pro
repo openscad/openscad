@@ -88,6 +88,7 @@ HEADERS += ../src/cgal.h \
            ../src/cgalutils.h \
            ../src/linalg.h \
            ../src/grid.h \
+           ../src/polyhedron.h \
            ../src/polyset.h \
            ../src/polyset-utils.h \
            ../src/printutils.h \
@@ -115,6 +116,7 @@ SOURCES += export_nef.cpp \
            ../src/svg.cc \
            ../src/node.cc \
            ../src/export.cc \
+           ../src/polyhedron.cc \
            ../src/polyset-utils.cc \
            ../src/progress.cc \
            ../src/printutils.cc \

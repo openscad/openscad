@@ -92,6 +92,7 @@ include(../common.pri)
 HEADERS += ../src/cgal.h \
            ../src/cgalutils.h \
            ../src/linalg.h \
+           ../src/polyhedron.h \
            ../src/grid.h \
            ../src/hash.h \
            ../src/polyset.h \
@@ -115,6 +116,7 @@ SOURCES += decompose.cpp \
            ../src/cgalutils-applyops.cc \
            ../src/cgalutils-tess.cc \
            ../src/cgalutils-polyhedron.cc \
+           ../src/polyhedron.cc \
            ../src/polyset.cc \
            ../src/polyset-gl.cc \
            ../src/GeometryUtils.cc \

@@ -29,7 +29,7 @@ class PolySet;
  * TODO(ochafik): Turn this into a regular Geometry and handle it everywhere
  * the CGAL_Nef_polyhedron is handled.
  */
-class Polyhedron
+class FastPolyhedron
 {
 	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
 	// TODO(ochafik): Try other kernels, e.g. typedef CGAL::Simple_cartesian<CGAL::Gmpq> kernel_t;
@@ -55,13 +55,13 @@ public:
 	 * triangulated (requirement of Polygon Mesh Processing functions),
 	 * and we check manifoldness (we use a nef polyhedra for non-manifold cases).
 	 */
-	Polyhedron(const PolySet &ps);
+	FastPolyhedron(const PolySet &ps);
 
 	/*! Builds a polyhedron using a legacy nef polyhedron object.
-	 * This transitional method will disappear when this Polyhedron object is
+	 * This transitional method will disappear when this FastPolyhedron object is
 	 * fully integrated and replaces all of CGAL_Nef_polyhedron's uses.
 	 */
-	Polyhedron(const CGAL_Nef_polyhedron3 &nef);
+	FastPolyhedron(const CGAL_Nef_polyhedron3 &nef);
 
 	bool isEmpty() const;
 	size_t numFacets() const;
@@ -72,31 +72,31 @@ public:
 	std::shared_ptr<const Geometry> toGeometry() const;
 
 	/*! In-place union (this may also mutate/corefine the other polyhedron). */
-	void operator+=(Polyhedron &other);
+	void operator+=(FastPolyhedron &other);
 	/*! In-place intersection (this may also mutate/corefine the other polyhedron). */
-	void operator*=(Polyhedron &other);
+	void operator*=(FastPolyhedron &other);
 	/*! In-place difference (this may also mutate/corefine the other polyhedron). */
-	void operator-=(Polyhedron &other);
+	void operator-=(FastPolyhedron &other);
 	/*! In-place minkowksi operation. If the other polyhedron is non-convex,
 	 * it is also modified during the computation, i.e., it is decomposed into convex pieces.
 	 */
-	void minkowski(Polyhedron &other);
+	void minkowski(FastPolyhedron &other);
 
 private:
 	/*! Iterate over all vertices' points until the function returns true (for done). */
 	void foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const;
-	bool sharesAnyVertexWith(const Polyhedron &other) const;
+	bool sharesAnyVertexWith(const FastPolyhedron &other) const;
 
 	/*! Runs a binary operation that operates on nef polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
-	void nefPolyBinOp(const std::string &opName, Polyhedron &other,
+	void nefPolyBinOp(const std::string &opName, FastPolyhedron &other,
 										const std::function<void(nef_polyhedron_t &destinationNef,
 																						 nef_polyhedron_t &otherNef)> &operation);
 
 	/*! Runs a binary operation that operates on polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
 	void polyBinOp(
-			const std::string &opName, Polyhedron &other,
+			const std::string &opName, FastPolyhedron &other,
 			const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
 
 	nef_polyhedron_t &convertToNefPolyhedron();

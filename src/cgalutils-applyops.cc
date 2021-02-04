@@ -81,9 +81,9 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	shared_ptr<const Polyhedron> applyOperator3DPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
+	shared_ptr<const FastPolyhedron> applyOperator3DFastPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
 	{
-		shared_ptr<Polyhedron> N;
+		shared_ptr<FastPolyhedron> N;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
@@ -92,7 +92,7 @@ namespace CGALUtils {
 		try {
 			for(const auto &item : children) {
 				auto ps = getGeometryAs<PolySet>(item, tree);
-				auto chN = ps ? make_shared<Polyhedron>(*ps) : nullptr;
+				auto chN = ps ? make_shared<FastPolyhedron>(*ps) : nullptr;
 				// Initialize N with first expected geometric object
 				if (!foundFirst) {
 					if (chN) {
@@ -132,7 +132,7 @@ namespace CGALUtils {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DPolyhedron %1$s: %2$s",opstr,e.what());
+			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DFastPolyhedron %1$s: %2$s",opstr,e.what());
 
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -148,7 +148,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_POLYHEDRON_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			auto result = applyOperator3DPolyhedron(children, op, tree);
+			auto result = applyOperator3DFastPolyhedron(children, op, tree);
 			return result ? result->toGeometry() : nullptr;
 		}
 #endif // FAST_POLYHEDRON_AVAILABLE
@@ -215,11 +215,11 @@ namespace CGALUtils {
 	}
 
 #ifdef FAST_POLYHEDRON_AVAILABLE
-	shared_ptr<const Polyhedron> applyUnion3DPolyhedron(
+	shared_ptr<const FastPolyhedron> applyUnion3DFastPolyhedron(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
-		typedef std::pair<shared_ptr<Polyhedron>, int> QueueItem;
+		typedef std::pair<shared_ptr<FastPolyhedron>, int> QueueItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark
 			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
@@ -245,14 +245,14 @@ namespace CGALUtils {
 					continue;
 				}
 				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
-				shared_ptr<Polyhedron> poly;
+				shared_ptr<FastPolyhedron> poly;
 				if (auto ps = dynamic_pointer_cast<const PolySet>(chgeom)) {
-					poly = make_shared<Polyhedron>(*ps);
+					poly = make_shared<FastPolyhedron>(*ps);
 				} else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
 					// assert(!"Unsupported: CGAL_Nef_polyhedron!");
 					assert(nef->p3);
 					if (!nef->p3) continue;
-					poly = make_shared<Polyhedron>(*nef->p3);
+					poly = make_shared<FastPolyhedron>(*nef->p3);
 				} else {
 					assert(!"Unsupported format");
 					continue;
@@ -290,7 +290,7 @@ namespace CGALUtils {
 			}
 		}
 		catch (const CGAL::Failure_exception &e) {
-			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DPolyhedron: %1$s", e.what());
+			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DFastPolyhedron: %1$s", e.what());
 		}
 		return nullptr;
 	}
@@ -302,7 +302,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_POLYHEDRON_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			auto result = applyUnion3DPolyhedron(chbegin, chend, tree);
+			auto result = applyUnion3DFastPolyhedron(chbegin, chend, tree);
 			return result ? result->toGeometry() : nullptr;
 		}
 #endif // FAST_POLYHEDRON_AVAILABLE

@@ -18,13 +18,13 @@
 namespace PMP = CGAL::Polygon_mesh_processing;
 namespace params = PMP::parameters;
 
-Polyhedron::Polyhedron(const PolySet &ps)
+FastPolyhedron::FastPolyhedron(const PolySet &ps)
 {
 	SCOPED_PERFORMANCE_TIMER("Polyhedron(PolySet)")
 
 	auto polyhedron = make_shared<polyhedron_t>();
 	auto err = CGALUtils::createPolyhedronFromPolySet(ps, *polyhedron);
-	assert(!err && "createPolyhedronFromPolySet failed in Polyhedron ctor");
+	assert(!err && "createPolyhedronFromPolySet failed in FastPolyhedron ctor");
 	data = polyhedron;
 	bboxes.add(CGALUtils::boundingBox(ps));
 
@@ -45,7 +45,7 @@ Polyhedron::Polyhedron(const PolySet &ps)
 
 	if (!Feature::ExperimentalTrustManifold.is_enabled() && !ps.is_convex()) {
 		LOG(message_group::Echo, Location::NONE, "",
-				"This polyhedron isn't know to be convex, checking for its manifoldness out of precaution. "
+				"This Fastpolyhedron isn't know to be convex, checking for its manifoldness out of precaution. "
 				"Use --enable=trust-manifold to skip and speed up rendering.");
 		size_t nonManifoldVertexCount = 0;
 		{
@@ -59,14 +59,14 @@ Polyhedron::Polyhedron(const PolySet &ps)
 
 		if (nonManifoldVertexCount) {
 			LOG(message_group::Warning, Location::NONE, "",
-					"PolySet had %1$lu non-manifold vertices. Converting polyhedron to nef polyhedron.",
+					"PolySet had %1$lu non-manifold vertices. Converting Fastpolyhedron to nef polyhedron.",
 					nonManifoldVertexCount);
 			convertToNefPolyhedron();
 		}
 	}
 }
 
-Polyhedron::Polyhedron(const CGAL_Nef_polyhedron3 &nef)
+FastPolyhedron::FastPolyhedron(const CGAL_Nef_polyhedron3 &nef)
 {
 	SCOPED_PERFORMANCE_TIMER("Polyhedron(CGAL_Nef_polyhedron3)")
 
@@ -78,12 +78,12 @@ Polyhedron::Polyhedron(const CGAL_Nef_polyhedron3 &nef)
 	bboxes.add(CGALUtils::boundingBox(nef));
 }
 
-bool Polyhedron::isEmpty() const
+bool FastPolyhedron::isEmpty() const
 {
 	return numFacets() == 0;
 }
 
-size_t Polyhedron::numFacets() const
+size_t FastPolyhedron::numFacets() const
 {
 	if (auto pPoly = boost::get<shared_ptr<polyhedron_t>>(&data)) {
 		auto &poly = *pPoly;
@@ -97,7 +97,7 @@ size_t Polyhedron::numFacets() const
 	return false;
 }
 
-size_t Polyhedron::numVertices() const
+size_t FastPolyhedron::numVertices() const
 {
 	if (auto pPoly = boost::get<shared_ptr<polyhedron_t>>(&data)) {
 		auto &poly = *pPoly;
@@ -111,7 +111,7 @@ size_t Polyhedron::numVertices() const
 	return false;
 }
 
-bool Polyhedron::isManifold() const
+bool FastPolyhedron::isManifold() const
 {
 	if (auto pPoly = boost::get<shared_ptr<polyhedron_t>>(&data)) {
 		auto &poly = *pPoly;
@@ -126,7 +126,7 @@ bool Polyhedron::isManifold() const
 	return false;
 }
 
-shared_ptr<const Geometry> Polyhedron::toGeometry() const
+shared_ptr<const Geometry> FastPolyhedron::toGeometry() const
 {
 	if (auto pNef = boost::get<shared_ptr<nef_polyhedron_t>>(&data)) {
 		auto &nef = *pNef;
@@ -148,13 +148,13 @@ shared_ptr<const Geometry> Polyhedron::toGeometry() const
 	}
 }
 
-void Polyhedron::clear()
+void FastPolyhedron::clear()
 {
 	data = make_shared<polyhedron_t>();
 	bboxes.clear();
 }
 
-void Polyhedron::operator+=(Polyhedron &other)
+void FastPolyhedron::operator+=(FastPolyhedron &other)
 {
 	if (!bboxes.intersects(other.bboxes)) {
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
@@ -177,7 +177,7 @@ void Polyhedron::operator+=(Polyhedron &other)
 	bboxes += other.bboxes;
 }
 
-void Polyhedron::operator*=(Polyhedron &other)
+void FastPolyhedron::operator*=(FastPolyhedron &other)
 {
 	if (!bboxes.intersects(other.bboxes)) {
 		printf("Empty intersection difference!\n");
@@ -199,7 +199,7 @@ void Polyhedron::operator*=(Polyhedron &other)
 	bboxes *= other.bboxes;
 }
 
-void Polyhedron::operator-=(Polyhedron &other)
+void FastPolyhedron::operator-=(FastPolyhedron &other)
 {
 	if (!bboxes.intersects(other.bboxes)) {
 		printf("Non intersecting difference!\n");
@@ -220,7 +220,7 @@ void Polyhedron::operator-=(Polyhedron &other)
 	}
 }
 
-void Polyhedron::minkowski(Polyhedron &other)
+void FastPolyhedron::minkowski(FastPolyhedron &other)
 {
 	nefPolyBinOp("minkowski", other,
 							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
@@ -228,7 +228,7 @@ void Polyhedron::minkowski(Polyhedron &other)
 							 });
 }
 
-void Polyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const
+void FastPolyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const
 {
 	if (auto pPoly = boost::get<shared_ptr<polyhedron_t>>(&data)) {
 		auto &poly = *pPoly;
@@ -251,7 +251,7 @@ void Polyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &
 	}
 }
 
-bool Polyhedron::sharesAnyVertexWith(const Polyhedron &other) const
+bool FastPolyhedron::sharesAnyVertexWith(const FastPolyhedron &other) const
 {
 	if (other.numVertices() < numVertices()) {
 		// The other has less vertices to index!
@@ -273,7 +273,7 @@ bool Polyhedron::sharesAnyVertexWith(const Polyhedron &other) const
 	return foundCollision;
 }
 
-void Polyhedron::nefPolyBinOp(const std::string &opName, Polyhedron &other,
+void FastPolyhedron::nefPolyBinOp(const std::string &opName, FastPolyhedron &other,
 															const std::function<void(nef_polyhedron_t &destinationNef,
 																											 nef_polyhedron_t &otherNef)> &operation)
 {
@@ -293,8 +293,8 @@ void Polyhedron::nefPolyBinOp(const std::string &opName, Polyhedron &other,
 	}
 }
 
-void Polyhedron::polyBinOp(
-		const std::string &opName, Polyhedron &other,
+void FastPolyhedron::polyBinOp(
+		const std::string &opName, FastPolyhedron &other,
 		const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation)
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("mesh ") + opName)
@@ -305,7 +305,7 @@ void Polyhedron::polyBinOp(
 	operation(destinationPoly, otherPoly);
 }
 
-Polyhedron::nef_polyhedron_t &Polyhedron::convertToNefPolyhedron()
+FastPolyhedron::nef_polyhedron_t &FastPolyhedron::convertToNefPolyhedron()
 {
 	if (auto pPoly = boost::get<shared_ptr<polyhedron_t>>(&data)) {
 		auto &poly = *pPoly;
@@ -324,7 +324,7 @@ Polyhedron::nef_polyhedron_t &Polyhedron::convertToNefPolyhedron()
 	}
 }
 
-Polyhedron::polyhedron_t &Polyhedron::convertToPolyhedron()
+FastPolyhedron::polyhedron_t &FastPolyhedron::convertToPolyhedron()
 {
 	if (auto pNef = boost::get<shared_ptr<nef_polyhedron_t>>(&data)) {
 		auto &nef = *pNef;
