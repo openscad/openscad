@@ -20,7 +20,7 @@ namespace params = PMP::parameters;
 
 FastPolyhedron::FastPolyhedron(const PolySet &ps)
 {
-	SCOPED_PERFORMANCE_TIMER("Polyhedron(PolySet)")
+	SCOPED_PERFORMANCE_TIMER("Polyhedron(PolySet)");
 
 	auto polyhedron = make_shared<polyhedron_t>();
 	auto err = CGALUtils::createPolyhedronFromPolySet(ps, *polyhedron);
@@ -29,12 +29,12 @@ FastPolyhedron::FastPolyhedron(const PolySet &ps)
 	bboxes.add(CGALUtils::boundingBox(ps));
 
 	{
-		SCOPED_PERFORMANCE_TIMER("Polyhedron(): triangulate_faces")
+		SCOPED_PERFORMANCE_TIMER("Polyhedron(): triangulate_faces");
 		PMP::triangulate_faces(*polyhedron);
 	}
 
 	{
-		SCOPED_PERFORMANCE_TIMER("Polyhedron(): orientation switch")
+		SCOPED_PERFORMANCE_TIMER("Polyhedron(): orientation switch");
 		if (!PMP::is_outward_oriented(*polyhedron, params::all_default())) {
 			LOG(message_group::Warning, Location::NONE, "",
 					"This polyhedron's %1$lu faces were oriented inwards and need inversion.",
@@ -49,7 +49,7 @@ FastPolyhedron::FastPolyhedron(const PolySet &ps)
 				"Use --enable=trust-manifold to skip and speed up rendering.");
 		size_t nonManifoldVertexCount = 0;
 		{
-			SCOPED_PERFORMANCE_TIMER("Polyhedron(): manifoldness checks")
+			SCOPED_PERFORMANCE_TIMER("Polyhedron(): manifoldness checks");
 			for (auto &v : CGAL::vertices(*polyhedron)) {
 				if (PMP::is_non_manifold_vertex(v, *polyhedron)) {
 					nonManifoldVertexCount++;
@@ -68,7 +68,7 @@ FastPolyhedron::FastPolyhedron(const PolySet &ps)
 
 FastPolyhedron::FastPolyhedron(const CGAL_Nef_polyhedron3 &nef)
 {
-	SCOPED_PERFORMANCE_TIMER("Polyhedron(CGAL_Nef_polyhedron3)")
+	SCOPED_PERFORMANCE_TIMER("Polyhedron(CGAL_Nef_polyhedron3)");
 
 	auto polyhedron = make_shared<polyhedron_t>();
 	CGAL_Polyhedron poly;
@@ -130,6 +130,7 @@ bool FastPolyhedron::isManifold() const
 		return true;
 	}
 	else if (auto nef = getNefPolyhedron()) {
+    SCOPED_PERFORMANCE_TIMER("FastPolyhedron(nef)::isManifold");
 		return nef->is_simple();
 	}
 	assert(!"Invalid Polyhedron.data state");
@@ -264,7 +265,7 @@ bool FastPolyhedron::sharesAnyVertexWith(const FastPolyhedron &other) const
 		return other.sharesAnyVertexWith(*this);
 	}
 
-	SCOPED_PERFORMANCE_TIMER("sharesAnyVertexWith")
+	SCOPED_PERFORMANCE_TIMER("sharesAnyVertexWith");
 
 	std::unordered_set<polyhedron_t::Point_3> vertices;
 	foreachVertexUntilTrue([&](const auto &p) {
@@ -283,7 +284,7 @@ void FastPolyhedron::nefPolyBinOp(const std::string &opName, FastPolyhedron &oth
 															const std::function<void(nef_polyhedron_t &destinationNef,
 																											 nef_polyhedron_t &otherNef)> &operation)
 {
-	SCOPED_PERFORMANCE_TIMER(std::string("nef ") + opName)
+	SCOPED_PERFORMANCE_TIMER(std::string("nef ") + opName);
 
 	auto &destinationNef = convertToNefPolyhedron();
 	auto &otherNef = other.convertToNefPolyhedron();
@@ -303,7 +304,7 @@ void FastPolyhedron::polyBinOp(
 		const std::string &opName, FastPolyhedron &other,
 		const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation)
 {
-	SCOPED_PERFORMANCE_TIMER(std::string("mesh ") + opName)
+	SCOPED_PERFORMANCE_TIMER(std::string("mesh ") + opName);
 
 	auto &destinationPoly = convertToPolyhedron();
 	auto &otherPoly = other.convertToPolyhedron();
@@ -314,7 +315,7 @@ void FastPolyhedron::polyBinOp(
 FastPolyhedron::nef_polyhedron_t &FastPolyhedron::convertToNefPolyhedron()
 {
 	if (auto poly = getPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Polyhedron -> Nef")
+		SCOPED_PERFORMANCE_TIMER("Polyhedron -> Nef");
 
 		auto nef = make_shared<nef_polyhedron_t>(*poly);
 		data = nef;
@@ -334,7 +335,7 @@ FastPolyhedron::polyhedron_t &FastPolyhedron::convertToPolyhedron()
 		return *poly;
 	}
 	else if (auto nef = getNefPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Nef -> Polyhedron")
+		SCOPED_PERFORMANCE_TIMER("Nef -> Polyhedron");
 
 		auto poly = make_shared<polyhedron_t>();
 		nef->convert_to_polyhedron(*poly);
