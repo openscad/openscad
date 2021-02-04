@@ -8,7 +8,7 @@
 
 #include "feature.h"
 #include "printutils.h"
-#include "polyhedron.h" // Only for FAST_POLYHEDRON_AVAILABLE
+#include "CGALPolyhedron.h" // Only for FAST_POLYHEDRON_AVAILABLE
 
 /**
  * Feature registration map/list for later lookup. This must be initialized

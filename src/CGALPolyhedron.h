@@ -6,7 +6,7 @@
 #include "cgal.h"
 #include <CGAL/version.h>
 
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5,1,0)
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
 #define FAST_POLYHEDRON_AVAILABLE
 #endif
 
@@ -29,7 +29,7 @@ class PolySet;
  * TODO(ochafik): Turn this into a regular Geometry and handle it everywhere
  * the CGAL_Nef_polyhedron is handled.
  */
-class FastPolyhedron
+class CGALPolyhedron
 {
 	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
 	// TODO(ochafik): Try other kernels, e.g. typedef CGAL::Simple_cartesian<CGAL::Gmpq> kernel_t;
@@ -45,8 +45,8 @@ class FastPolyhedron
 	// algorithms of Polygon Mesh Processing library that operate on normal
 	// (non-nef) polyhedra.
 	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
-  // Keeps track of the bounding boxes of the solid components of this polyhedron.
-  // This allows fast unions with disjoint polyhedra.
+	// Keeps track of the bounding boxes of the solid components of this polyhedron.
+	// This allows fast unions with disjoint polyhedra.
 	BoundingBoxes bboxes;
 
 public:
@@ -55,59 +55,59 @@ public:
 	 * triangulated (requirement of Polygon Mesh Processing functions),
 	 * and we check manifoldness (we use a nef polyhedra for non-manifold cases).
 	 */
-	FastPolyhedron(const PolySet &ps);
+	CGALPolyhedron(const PolySet &ps);
 
 	/*! Builds a polyhedron using a legacy nef polyhedron object.
-	 * This transitional method will disappear when this FastPolyhedron object is
+	 * This transitional method will disappear when this CGALPolyhedron object is
 	 * fully integrated and replaces all of CGAL_Nef_polyhedron's uses.
 	 */
-	FastPolyhedron(const CGAL_Nef_polyhedron3 &nef);
+	CGALPolyhedron(const CGAL_Nef_polyhedron3 &nef);
 
 	bool isEmpty() const;
 	size_t numFacets() const;
 	size_t numVertices() const;
 	bool isManifold() const;
 	void clear();
-  /*! TODO(ochafik): Make this class inherit Geometry, plug the gaps and drop this method. */
+	/*! TODO(ochafik): Make this class inherit Geometry, plug the gaps and drop this method. */
 	std::shared_ptr<const Geometry> toGeometry() const;
 
 	/*! In-place union (this may also mutate/corefine the other polyhedron). */
-	void operator+=(FastPolyhedron &other);
+	void operator+=(CGALPolyhedron &other);
 	/*! In-place intersection (this may also mutate/corefine the other polyhedron). */
-	void operator*=(FastPolyhedron &other);
+	void operator*=(CGALPolyhedron &other);
 	/*! In-place difference (this may also mutate/corefine the other polyhedron). */
-	void operator-=(FastPolyhedron &other);
+	void operator-=(CGALPolyhedron &other);
 	/*! In-place minkowksi operation. If the other polyhedron is non-convex,
 	 * it is also modified during the computation, i.e., it is decomposed into convex pieces.
 	 */
-	void minkowski(FastPolyhedron &other);
+	void minkowski(CGALPolyhedron &other);
 
 private:
 	/*! Iterate over all vertices' points until the function returns true (for done). */
 	void foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const;
-	bool sharesAnyVertexWith(const FastPolyhedron &other) const;
+	bool sharesAnyVertexWith(const CGALPolyhedron &other) const;
 
 	/*! Runs a binary operation that operates on nef polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
-	void nefPolyBinOp(const std::string &opName, FastPolyhedron &other,
+	void nefPolyBinOp(const std::string &opName, CGALPolyhedron &other,
 										const std::function<void(nef_polyhedron_t &destinationNef,
 																						 nef_polyhedron_t &otherNef)> &operation);
 
 	/*! Runs a binary operation that operates on polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
 	void polyBinOp(
-			const std::string &opName, FastPolyhedron &other,
+			const std::string &opName, CGALPolyhedron &other,
 			const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
 
 	nef_polyhedron_t &convertToNefPolyhedron();
 	polyhedron_t &convertToPolyhedron();
 
-  /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
-   * Do NOT make this public. */
-	nef_polyhedron_t* getNefPolyhedron() const;
+	/*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
+	 * Do NOT make this public. */
+	nef_polyhedron_t *getNefPolyhedron() const;
 	/*! Returns the polyhedron if that's what's in the current data, or else nullptr.
-   * Do NOT make this public. */
-	polyhedron_t* getPolyhedron() const;
+	 * Do NOT make this public. */
+	polyhedron_t *getPolyhedron() const;
 };
 
 #endif // FAST_POLYHEDRON_AVAILABLE
