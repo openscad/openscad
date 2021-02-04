@@ -102,7 +102,7 @@ static std::string arg_colorscheme;
 
 #ifdef ENABLE_LANGUAGESERVER
     #include "lsp/language_server_interface.h"
-    int languageserver_port = -1;
+    LanguageServerInterface::Settings lsp_settings;
     LanguageServerInterface *languageserver;
 #endif
 
@@ -812,8 +812,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_LANGUAGESERVER
-	if(languageserver_port >= 0) {
-		languageserver = new LanguageServerInterface(firstwin, languageserver_port);
+	if(lsp_settings.mode != LanguageServerInterface::OperationMode::NONE) {
+		languageserver = new LanguageServerInterface(firstwin, lsp_settings);
 	}
 #endif
 #ifdef ENABLE_HIDAPI
@@ -996,7 +996,8 @@ int main(int argc, char **argv)
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_LANGUAGESERVER
-        ("lsp-port", po::value<int>(), "expose a languageserver interface on the given port (1-65535), suggested is 23725 (0x5CAD)")
+        ("lsp-listen", po::value<int>(), "expose a languageserver interface listening on the given port (1024-65535), suggested is 23725 (0x5CAD) (use this when starting openscad first and your editor later)")
+        ("lsp-connect", po::value<int>(), "connect to a languageserver client on the given port (1024-65535) (use this when starting openscad from your editor)")
         ("lsp-stdio", po::value<int>(), "expose a languageserver interface on stdio")
 #endif
 		;
@@ -1037,19 +1038,26 @@ int main(int argc, char **argv)
 	}
 
 #ifdef ENABLE_LANGUAGESERVER
-	if (vm.count("lsp-port")) {
-		languageserver_port = vm["lsp-port"].as<int>();
-
-		if (languageserver_port < 0 || languageserver_port > 65535) {
-			LOG(message_group::None,Location::NONE,"","given Language server port %1d out of range  (1-65535)", languageserver_port);
-			languageserver_port = -1;
-		}
+	if (((vm.count("lsp-listen")?1:0) + (vm.count("lsp-connect")?1:0) + (vm.count("lsp-stdio")?1:0)) > 1) {
+		LOG(message_group::Error,Location::NONE,"","Ambiguous language server configuration: more than one of --lsp-connect --lsp-listen --lsp-stdio specified!");
+	} else if (vm.count("lsp-listen")) {
+		lsp_settings.mode = LanguageServerInterface::OperationMode::LISTEN;
+		lsp_settings.port = vm["lsp-listen"].as<int>();
+	} else if (vm.count("lsp-connect")) {
+		lsp_settings.mode = LanguageServerInterface::OperationMode::CONNECT;
+		lsp_settings.port = vm["lsp-connect"].as<int>();
+	} else if (vm.count("lsp-stdio")) {
+		lsp_settings.mode = LanguageServerInterface::OperationMode::STDIO;
+		lsp_settings.port = 0;
 	}
-	if (vm.count("lsp-stdio")) {
-		// 0 is a invalid port number and reserved for stdio operation
-		languageserver_port = 0;
-	}
 
+	if (lsp_settings.mode != LanguageServerInterface::OperationMode::NONE && (
+			lsp_settings.port < 0 || lsp_settings.port > 65535))
+	{
+		LOG(message_group::Error,Location::NONE,"","given Language server port %1d out of range  (1-65535)", lsp_settings.port);
+		lsp_settings.port = -1;
+		lsp_settings.mode = LanguageServerInterface::OperationMode::NONE;
+	}
 #endif
 
 	std::map<std::string, bool*> flags;

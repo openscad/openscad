@@ -6,8 +6,10 @@
 #include "MainWindow.h"
 #include "AutoUpdater.h"
 
-LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, int port) :
-        port(port),
+#include <QTcpSocket>
+
+LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, const LanguageServerInterface::Settings &settings) :
+        settings(settings),
         mainWindow(mainWindow)
 {
     // Connect signals
@@ -19,7 +21,7 @@ LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, int por
             mainWindow, SLOT(viewModePreview()));
 
     mainWindow->consoleOutput(Message(
-        std::string("The language server is enabled in this window on TCP port ") + std::to_string(port) + ".",
+        std::string("The language server is enabled in this window on TCP port ") + std::to_string(settings.port) + ".",
         Location::NONE, "", message_group::None));
 
 #ifndef LSP_ON_MAINTHREAD
@@ -42,9 +44,32 @@ void LanguageServerInterface::stop() {
 }
 
 void LanguageServerInterface::start() {
+
+    int port = (settings.mode == OperationMode::LISTEN)?settings.port : 0;
+
     this->handler = std::make_unique<ConnectionHandler>(this,
         [this]() {return init_project();},
         port);
+
+    switch(settings.mode) {
+    case OperationMode::CONNECT:
+        {
+            // TODO this leaks memory!
+            QTcpSocket *socket = new QTcpSocket(this);
+            socket->connectToHost("localhost", settings.port);
+            this->handler->add_connection(
+                std::make_unique<TCPLSPConnection>(this->handler.get(), socket, this->handler->make_project()));
+
+        }
+        break;
+    case OperationMode::STDIO:
+        this->handler->add_connection(
+            std::make_unique<StdioLSPConnection>(this->handler.get(), this->handler->make_project()));
+        break;
+    case OperationMode::LISTEN:
+    case OperationMode::NONE:
+        break;
+    }
 
     // Things interfering with LSP
     mainWindow->designActionAutoReload->setChecked(false);

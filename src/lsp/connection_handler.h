@@ -28,12 +28,20 @@ class ConnectionHandler : public QObject {
 public:
     using project_initializer = std::function<std::unique_ptr<project>()>;
 
-    ConnectionHandler(QObject *parent, const project_initializer &initializer, uint16_t port=23725); // 0x5CAD = 23725
+    ConnectionHandler(QObject *parent, const project_initializer &initializer, uint16_t listen_port=23725); // 0x5CAD = 23725
     virtual ~ConnectionHandler();
 
     void send(RequestMessage &message,
             const std::string &method,
             request_callback_t = &Connection::default_reporting_message_handler);
+
+    void add_connection(std::unique_ptr<Connection> &&conn) {
+        connections.push_back(std::move(conn));
+    }
+
+    std::unique_ptr<project> make_project() {
+        return this->project_init_callback();
+    }
 
 private slots:
 	// Networking magic

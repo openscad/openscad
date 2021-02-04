@@ -21,8 +21,16 @@ class LanguageServerInterface : public QObject {
     Q_OBJECT
 
 public:
+    enum class OperationMode {
+        NONE, STDIO, LISTEN, CONNECT
+    };
+    struct Settings {
+        OperationMode mode = OperationMode::NONE;
+        int port = 0;
+    };
+
     // This constructor will connect all the neccessary slots and signals with the main window
-    LanguageServerInterface(MainWindow *mainWindow, int port);
+    LanguageServerInterface(MainWindow *mainWindow, const Settings &settings);
     virtual ~LanguageServerInterface();
 
     void stop();
@@ -46,7 +54,7 @@ private slots:
     void start();
 
 private:
-    int port;
+    Settings settings;
     std::unique_ptr<ConnectionHandler> handler;
     MainWindow *mainWindow;
 
