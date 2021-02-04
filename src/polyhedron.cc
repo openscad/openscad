@@ -45,22 +45,18 @@ FastPolyhedron::FastPolyhedron(const PolySet &ps)
 
 	if (!Feature::ExperimentalTrustManifold.is_enabled() && !ps.is_convex()) {
 		LOG(message_group::Echo, Location::NONE, "",
-				"This Fastpolyhedron isn't know to be convex, checking for its manifoldness out of precaution. "
-				"Use --enable=trust-manifold to skip and speed up rendering.");
-		size_t nonManifoldVertexCount = 0;
+				"Checking this polyhedron is manifold. Use --enable=trust-manifold to skip and speed up.");
+
+		size_t duplicatedNonManifoldVertexCount = 0;
 		{
 			SCOPED_PERFORMANCE_TIMER("Polyhedron(): manifoldness checks");
-			for (auto &v : CGAL::vertices(*polyhedron)) {
-				if (PMP::is_non_manifold_vertex(v, *polyhedron)) {
-					nonManifoldVertexCount++;
-				}
-			}
+			duplicatedNonManifoldVertexCount = PMP::duplicate_non_manifold_vertices(*polyhedron);
 		}
 
-		if (nonManifoldVertexCount) {
+		if (duplicatedNonManifoldVertexCount) {
 			LOG(message_group::Warning, Location::NONE, "",
 					"PolySet had %1$lu non-manifold vertices. Converting Fastpolyhedron to nef polyhedron.",
-					nonManifoldVertexCount);
+					duplicatedNonManifoldVertexCount);
 			convertToNefPolyhedron();
 		}
 	}
@@ -78,7 +74,7 @@ FastPolyhedron::FastPolyhedron(const CGAL_Nef_polyhedron3 &nef)
 	bboxes.add(CGALUtils::boundingBox(nef));
 }
 
-FastPolyhedron::nef_polyhedron_t* FastPolyhedron::getNefPolyhedron() const
+FastPolyhedron::nef_polyhedron_t *FastPolyhedron::getNefPolyhedron() const
 {
 	if (auto pNef = boost::get<shared_ptr<nef_polyhedron_t>>(&data)) {
 		return pNef->get();
@@ -86,12 +82,12 @@ FastPolyhedron::nef_polyhedron_t* FastPolyhedron::getNefPolyhedron() const
 	return nullptr;
 }
 
-FastPolyhedron::polyhedron_t* FastPolyhedron::getPolyhedron() const
+FastPolyhedron::polyhedron_t *FastPolyhedron::getPolyhedron() const
 {
 	if (auto pPoly = boost::get<shared_ptr<polyhedron_t>>(&data)) {
 		return pPoly->get();
 	}
-  return nullptr;
+	return nullptr;
 }
 
 bool FastPolyhedron::isEmpty() const
@@ -130,7 +126,6 @@ bool FastPolyhedron::isManifold() const
 		return true;
 	}
 	else if (auto nef = getNefPolyhedron()) {
-    SCOPED_PERFORMANCE_TIMER("FastPolyhedron(nef)::isManifold");
 		return nef->is_simple();
 	}
 	assert(!"Invalid Polyhedron.data state");
@@ -281,8 +276,8 @@ bool FastPolyhedron::sharesAnyVertexWith(const FastPolyhedron &other) const
 }
 
 void FastPolyhedron::nefPolyBinOp(const std::string &opName, FastPolyhedron &other,
-															const std::function<void(nef_polyhedron_t &destinationNef,
-																											 nef_polyhedron_t &otherNef)> &operation)
+																	const std::function<void(nef_polyhedron_t &destinationNef,
+																													 nef_polyhedron_t &otherNef)> &operation)
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("nef ") + opName);
 
