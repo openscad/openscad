@@ -56,7 +56,7 @@ namespace CGALUtils {
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry&geom);
 	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid);
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
-	void spatialSort(Geometry::Geometries& geometries);
+	size_t getNumFacets(const Geometry& geom);
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 

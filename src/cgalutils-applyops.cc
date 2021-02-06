@@ -76,13 +76,102 @@ namespace CGALUtils {
 		return visited.size() == p.size_of_facets();
 	}
 
-#ifdef FAST_POLYHEDRON_AVAILABLE
+#ifdef FAST_CSG_AVAILABLE
+	shared_ptr<CGALPolyhedron> applyUnion3DCGALPolyhedron(
+		const Geometry::Geometries::const_iterator &chbegin,
+		const Geometry::Geometries::const_iterator &chend,
+		const Tree* tree)
+	{
+		typedef std::pair<shared_ptr<CGALPolyhedron>, int> QueueItem;
+		struct QueueItemGreater {
+			// stable sort for priority_queue by facets, then progress mark
+			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
+			{
+				size_t l = lhs.first->numFacets();
+				size_t r = rhs.first->numFacets();
+				return (l > r) || (l == r && lhs.second > rhs.second);
+			}
+		};
+
+		try {
+			Geometry::Geometries children;
+			children.insert(children.end(), chbegin, chend);
+
+			// We'll fill the queue in one go to get linear time construction.
+			std::vector<QueueItem> queueItems;
+			queueItems.reserve(children.size());
+
+			size_t total_facets = 0;
+			for (auto &item : children) {
+				auto chgeom = item.second;
+				if (!chgeom || chgeom->isEmpty()) {
+					continue;
+				}
+				auto poly = CGALPolyhedron::fromGeometry(*chgeom);
+				if (!poly) continue;
+
+				total_facets += poly->numFacets();
+				auto node_mark = item.first ? item.first->progress_mark : -1;
+				queueItems.emplace_back(poly, node_mark);
+			}
+			// Build the queue in linear time (don't add items one by one!).
+			std::priority_queue<QueueItem, std::vector<QueueItem>, QueueItemGreater>
+				 q(queueItems.begin(), queueItems.end());
+
+			LOG(message_group::Echo, getLocation(chbegin->first),
+				"", "Union of %1$lu geometries (%2$lu total facets)", q.size(), total_facets);
+
+			progress_tick();
+			while (q.size() > 1) {
+				auto p1 = q.top();
+				q.pop();
+				auto p2 = q.top();
+				q.pop();
+				assert(p1.first->numFacets() <= p2.first->numFacets());
+				// Modify in-place the biggest polyhedron.
+				*p2.first += *p1.first;
+				q.emplace(p2.first, -1);
+				progress_tick();
+			}
+
+			if (q.size() == 1) {
+				return q.top().first;
+			} else {
+				return nullptr;
+			}
+		}
+		catch (const CGAL::Failure_exception &e) {
+			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DPolyhedron: %1$s", e.what());
+		}
+		return nullptr;
+	}
+
 /*!
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	shared_ptr<const CGALPolyhedron> applyOperator3DCGALPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
+	shared_ptr<CGALPolyhedron> applyOperator3DCGALPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
 	{
+		if (op == OpenSCADOperator::DIFFERENCE) {
+			auto size = children.size();
+			if (size > 2) {
+				auto it = children.begin();
+				auto &firstChild = *it++;
+
+				auto firstPoly = firstChild.second ? CGALPolyhedron::fromGeometry(*firstChild.second) : nullptr;
+				if (!firstPoly || firstPoly->isEmpty()) return firstPoly;
+
+				LOG(message_group::Echo, getLocation(it->first), "",
+					"Reducing %1$d difference terms using fast-union", size - 1);
+				auto unionSubtracted = applyUnion3DCGALPolyhedron(it, children.end(), tree);
+				if (!unionSubtracted || unionSubtracted->isEmpty()) return firstPoly;
+
+				*firstPoly -= *unionSubtracted;
+
+				return firstPoly;
+			}
+		}
+
 		shared_ptr<CGALPolyhedron> N;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
@@ -91,8 +180,7 @@ namespace CGALUtils {
 
 		try {
 			for(const auto &item : children) {
-				auto ps = getGeometryAs<PolySet>(item, tree);
-				auto chN = ps ? make_shared<CGALPolyhedron>(*ps) : nullptr;
+				auto chN = item.second ? CGALPolyhedron::fromGeometry(*item.second) : nullptr;
 				// Initialize N with first expected geometric object
 				if (!foundFirst) {
 					if (chN) {
@@ -138,7 +226,7 @@ namespace CGALUtils {
 		CGAL::set_error_behaviour(old_behaviour);
 		return N;
 	}
-#endif // FAST_POLYHEDRON_AVAILABLE
+#endif // FAST_CSG_AVAILABLE
 
 /*!
 	Applies op to all children and returns the result.
@@ -146,12 +234,12 @@ namespace CGALUtils {
 */
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
 	{
-#ifdef FAST_POLYHEDRON_AVAILABLE
+#ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			auto result = applyOperator3DCGALPolyhedron(children, op, tree);
 			return result ? result->toGeometry() : nullptr;
 		}
-#endif // FAST_POLYHEDRON_AVAILABLE
+#endif // FAST_CSG_AVAILABLE
 
 		CGAL_Nef_polyhedron *N = nullptr;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -214,98 +302,16 @@ namespace CGALUtils {
 		return shared_ptr<Geometry>(N);
 	}
 
-#ifdef FAST_POLYHEDRON_AVAILABLE
-	shared_ptr<const CGALPolyhedron> applyUnion3DCGALPolyhedron(
-		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const Tree* tree)
-	{
-		typedef std::pair<shared_ptr<CGALPolyhedron>, int> QueueItem;
-		struct QueueItemGreater {
-			// stable sort for priority_queue by facets, then progress mark
-			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
-			{
-				size_t l = lhs.first->numFacets();
-				size_t r = rhs.first->numFacets();
-				return (l > r) || (l == r && lhs.second > rhs.second);
-			}
-		};
-
-		try {
-			Geometry::Geometries children;
-			children.insert(children.end(), chbegin, chend);
-
-			// We'll fill the queue in one go to get linear time construction.
-			std::vector<QueueItem> queueItems;
-			queueItems.reserve(children.size());
-
-			size_t total_facets = 0;
-			for (auto &item : children) {
-				auto chgeom = item.second;
-				if (!chgeom || chgeom->isEmpty()) {
-					continue;
-				}
-				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
-				shared_ptr<CGALPolyhedron> poly;
-				if (auto ps = dynamic_pointer_cast<const PolySet>(chgeom)) {
-					poly = make_shared<CGALPolyhedron>(*ps);
-				} else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
-					// assert(!"Unsupported: CGAL_Nef_polyhedron!");
-					assert(nef->p3);
-					if (!nef->p3) continue;
-					poly = make_shared<CGALPolyhedron>(*nef->p3);
-				} else {
-					assert(!"Unsupported format");
-					continue;
-				}
-
-
-				total_facets += poly->numFacets();
-				auto node_mark = item.first ? item.first->progress_mark : -1;
-				queueItems.emplace_back(poly, node_mark);
-			}
-			// Build the queue in linear time (don't add items one by one!).
-			std::priority_queue<QueueItem, std::vector<QueueItem>, QueueItemGreater>
-				 q(queueItems.begin(), queueItems.end());
-
-			LOG(message_group::Warning, getLocation(chbegin->first),
-				"", "Union of %1$lu geometries (%2$lu total facets)", q.size(), total_facets);
-
-			progress_tick();
-			while (q.size() > 1) {
-				auto p1 = q.top();
-				q.pop();
-				auto p2 = q.top();
-				q.pop();
-				assert(p1.first->numFacets() <= p2.first->numFacets());
-				// Modify in-place the biggest polyhedron.
-				*p2.first += *p1.first;
-				q.emplace(p2.first, -1);
-				progress_tick();
-			}
-
-			if (q.size() == 1) {
-				return q.top().first;
-			} else {
-				return nullptr;
-			}
-		}
-		catch (const CGAL::Failure_exception &e) {
-			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DCGALPolyhedron: %1$s", e.what());
-		}
-		return nullptr;
-	}
-#endif // FAST_POLYHEDRON_AVAILABLE
-
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
-#ifdef FAST_POLYHEDRON_AVAILABLE
+#ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			auto result = applyUnion3DCGALPolyhedron(chbegin, chend, tree);
 			return result ? result->toGeometry() : nullptr;
 		}
-#endif // FAST_POLYHEDRON_AVAILABLE
+#endif // FAST_CSG_AVAILABLE
 
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {

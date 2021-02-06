@@ -10,6 +10,7 @@
  * A set of bounding boxes. Useful during unions of many geometries to know
  * if a new geometry intersects with any of the previously unioned ones.
  */
+template <typename K>
 class BoundingBoxes
 {
 public:
@@ -17,7 +18,7 @@ public:
     cuboids.clear();
   }
 
-	void add(const CGAL_Iso_cuboid_3 &c)
+	void add(const CGAL::Iso_cuboid_3<K> &c)
 	{
     cuboids.push_back(c);
 	}
@@ -31,7 +32,7 @@ public:
 	}
 	BoundingBoxes &operator*=(const BoundingBoxes &other)
 	{
-    std::vector<CGAL_Iso_cuboid_3> survivors;
+    std::vector<CGAL::Iso_cuboid_3<K>> survivors;
 		for (auto &cuboid : cuboids) {
 			if (other.intersects(cuboid)) survivors.push_back(cuboid);
 		}
@@ -43,7 +44,7 @@ public:
 	 * Beware: currently implemented in linear time! (CGAL has ways to improve
 	 * that)
 	 */
-	bool intersects(const CGAL_Iso_cuboid_3 &c) const
+	bool intersects(const CGAL::Iso_cuboid_3<K> &c) const
 	{
 		for (auto &cuboid : cuboids) {
 			if (CGAL::intersection(c, cuboid) != boost::none) {
@@ -67,5 +68,5 @@ public:
 
 private:
 
-	std::vector<CGAL_Iso_cuboid_3> cuboids;
+	std::vector<CGAL::Iso_cuboid_3<K>> cuboids;
 };

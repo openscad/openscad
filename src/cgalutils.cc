@@ -29,6 +29,7 @@
 #include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"
+#include "CGALPolyhedron.h"
 
 #include <map>
 #include <queue>
@@ -144,6 +145,19 @@ namespace CGALUtils {
 	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid) {
 		CGAL_Vector_3 d(cuboid.min(), cuboid.max());
 		return cuboid.min() + d * NT3(0.5);
+	}
+
+	size_t getNumFacets(const Geometry& geom) {
+		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
+			return ps->numFacets();
+		} else if (auto constpoly = dynamic_cast<const CGALPolyhedron*>(&geom)) {
+			return constpoly->numFacets();
+		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
+			return nef->numFacets();
+		} else {
+			assert(!"Unsupported format");
+			return 0;
+		}
 	}
 
 	CGAL_Point_3 vector3dToPoint3(const Eigen::Vector3d& v) {

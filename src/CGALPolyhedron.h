@@ -1,19 +1,27 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include <boost/variant.hpp>
-#include "bounding_boxes.h"
-#include "cgal.h"
 #include <CGAL/version.h>
+#include "cgal.h"
+
+#define STRING2(x) #x
+#define STRING(x) STRING2(x)
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
-#define FAST_POLYHEDRON_AVAILABLE
+#define FAST_CSG_AVAILABLE
+#else
+#pragma message("[fast-csg] No support for fast-csg with CGAL " STRING( \
+		CGAL_VERSION) ". Please compile against CGAL 5.1 or later to test the feature.")
 #endif
 
-#ifdef FAST_POLYHEDRON_AVAILABLE
+#ifdef FAST_CSG_AVAILABLE
+
+#include <boost/variant.hpp>
+#include "bounding_boxes.h"
 
 class Geometry;
 class PolySet;
+class CGAL_Nef_polyhedron;
 
 /*! A mutable polyhedron backed by a CGAL::Polyhedron_3 and fast Polygon Mesh
  * Processing (PMP) CSG functions when possible (manifold cases), or by a
@@ -32,11 +40,10 @@ class PolySet;
 class CGALPolyhedron
 {
 	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
-	// TODO(ochafik): Try other kernels, e.g. typedef CGAL::Simple_cartesian<CGAL::Gmpq> kernel_t;
 	typedef CGAL::Epeck kernel_t;
 	typedef CGAL::Point_3<kernel_t> point_t;
-	typedef CGAL::Polyhedron_3<kernel_t> polyhedron_t;
 	typedef CGAL::Nef_polyhedron_3<kernel_t> nef_polyhedron_t;
+	typedef CGAL::Polyhedron_3<kernel_t> polyhedron_t;
 
 	// This contains data either as a polyhedron, or as a nef polyhedron.
 	//
@@ -47,7 +54,8 @@ class CGALPolyhedron
 	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
 	// Keeps track of the bounding boxes of the solid components of this polyhedron.
 	// This allows fast unions with disjoint polyhedra.
-	BoundingBoxes bboxes;
+	// TODO(ochafik): Switch to our kernel!
+	BoundingBoxes<CGAL_Kernel3> bboxes;
 
 public:
 	/*! Builds a polyhedron using the provided, untrusted PolySet.
@@ -70,6 +78,8 @@ public:
 	void clear();
 	/*! TODO(ochafik): Make this class inherit Geometry, plug the gaps and drop this method. */
 	std::shared_ptr<const Geometry> toGeometry() const;
+	std::shared_ptr<const PolySet> toPolySet() const;
+	std::shared_ptr<const CGAL_Nef_polyhedron> toNefPolyhedron() const;
 
 	/*! In-place union (this may also mutate/corefine the other polyhedron). */
 	void operator+=(CGALPolyhedron &other);
@@ -82,10 +92,13 @@ public:
 	 */
 	void minkowski(CGALPolyhedron &other);
 
+	static std::shared_ptr<CGALPolyhedron> fromGeometry(const Geometry &geom);
+
 private:
 	/*! Iterate over all vertices' points until the function returns true (for done). */
 	void foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const;
 	bool sharesAnyVertexWith(const CGALPolyhedron &other) const;
+	bool needsNefForOperationWith(const CGALPolyhedron &other) const;
 
 	/*! Runs a binary operation that operates on nef polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
@@ -99,15 +112,15 @@ private:
 			const std::string &opName, CGALPolyhedron &other,
 			const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
 
-	nef_polyhedron_t &convertToNefPolyhedron();
 	polyhedron_t &convertToPolyhedron();
+	nef_polyhedron_t &convertToNefPolyhedron();
 
-	/*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
-	 * Do NOT make this public. */
-	nef_polyhedron_t *getNefPolyhedron() const;
 	/*! Returns the polyhedron if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
 	polyhedron_t *getPolyhedron() const;
+	/*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
+	 * Do NOT make this public. */
+	nef_polyhedron_t *getNefPolyhedron() const;
 };
 
-#endif // FAST_POLYHEDRON_AVAILABLE
+#endif // FAST_CSG_AVAILABLE
