@@ -17,6 +17,13 @@ typedef std::vector<PolygonK> PolyholeK;
 
 class Tree;
 
+namespace CGAL {
+  template <typename Point>
+  class Surface_mesh;
+  template <class A, class B, class C>
+  class Cartesian_converter;
+}
+
 namespace /* anonymous */ {
         template<typename Result, typename V>
         Result vector_convert(V const& v) {
@@ -56,14 +63,20 @@ namespace CGALUtils {
 	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
-	template <class Polyhedron_A, class Polyhedron_B>
-	void copyPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
+	template <class InputKernel, class OutputKernel>
+	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b);
+	template <class InputKernel, class OutputKernel>
+	void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input, CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> &output);
 	template <class Polyhedron_A, class Polyhedron_B>
 	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 	template <typename K>
 	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
+	template <typename K>
+	bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps);
+	template <typename K>
+	bool createMeshFromPolySet(const PolySet &ps, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
 	bool tessellatePolygon(const PolygonK &polygon,
 												 Polygons &triangles,
 												 const K::Vector_3 *normal = nullptr);
@@ -73,4 +86,19 @@ namespace CGALUtils {
 	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);
+
+	template <typename FromKernel, typename ToKernel>
+	struct KernelConverter {
+		// Note: we could have this return `CGAL::to_double(n)` by default, but
+		// that would mean that failure to provide a proper specialization would
+		// default to lossy conversion.
+		typename ToKernel::FT operator()(const typename FromKernel::FT &n) const;
+	};
+	template <typename FromKernel, typename ToKernel>
+	CGAL::Cartesian_converter<FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>
+	getCartesianConverter()
+	{
+		return CGAL::Cartesian_converter<
+      FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
+  }
 };

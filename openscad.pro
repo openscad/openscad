@@ -664,6 +664,8 @@ SOURCES += src/cgalutils.cc \
            src/cgalutils-applyops.cc \
            src/cgalutils-project.cc \
            src/cgalutils-tess.cc \
+           src/cgalutils-kernel.cc \
+           src/cgalutils-mesh.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \

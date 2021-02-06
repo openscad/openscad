@@ -109,6 +109,8 @@ SOURCES += export_nef.cpp \
            ../src/cgalutils.cc \
            ../src/cgalutils-applyops.cc \
            ../src/cgalutils-tess.cc \
+           ../src/cgalutils-kernel.cc \
+           ../src/cgalutils-mesh.cc \
            ../src/cgalutils-polyhedron.cc \
            ../src/polyset.cc \
            ../src/polyset-gl.cc \
