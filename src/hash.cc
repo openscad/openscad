@@ -17,11 +17,12 @@ namespace std {
     boost::hash_combine(seed, s.second);
     return seed;
   }
+#ifdef ENABLE_CGAL
 	std::size_t hash<CGAL::Point_3<CGAL::Epeck>>::operator()(const CGAL::Point_3<CGAL::Epeck> &s) const {
     hash<Vector3d> vh;
-    // Very slow?
     return vh(Vector3d(CGAL::to_double(s.x()), CGAL::to_double(s.y()), CGAL::to_double(s.z())));
 	}
+#endif
 }
 
 namespace Eigen {
