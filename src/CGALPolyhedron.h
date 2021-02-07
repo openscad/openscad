@@ -107,9 +107,10 @@ public:
 
 	static std::shared_ptr<CGALPolyhedron> fromGeometry(const Geometry &geom);
 
-private:
 	/*! Iterate over all vertices' points until the function returns true (for done). */
 	void foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const;
+
+private:
 	bool sharesAnyVertexWith(const CGALPolyhedron &other) const;
 	bool needsNefForOperationWith(const CGALPolyhedron &other) const;
 

@@ -449,15 +449,21 @@ namespace CGALUtils {
 		std::list<K::Point_3> points;
 
 		for(const auto &item : children) {
-			const shared_ptr<const Geometry> &chgeom = item.second;
-			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
-			if (N) {
+			auto &chgeom = item.second;
+			if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
 				if (!N->isEmpty()) {
 					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
 						points.push_back(vector_convert<K::Point_3>(i->point()));
 					}
 				}
-			} else {
+			}
+			else if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(chgeom)) {
+				poly->foreachVertexUntilTrue([&](auto &p) {
+					points.push_back(vector_convert<K::Point_3>(p));
+					return false;
+				});
+			}
+			else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
 					for(const auto &p : ps->polygons) {
