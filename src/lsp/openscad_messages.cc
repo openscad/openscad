@@ -16,7 +16,7 @@ void OpenSCADRender::process(Connection *conn, project *proj, const RequestId &i
         return;
     }
 
-    proj->lspinterface->viewModePreview(file->document.text);
+    proj->lspinterface->viewModePreview(file->document.uri.getPath(), file->document.text);
     conn->send(SuccessResponse(true), id);
 }
 

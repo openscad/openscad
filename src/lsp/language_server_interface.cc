@@ -17,8 +17,8 @@ LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, const L
             this, SLOT(sendCursor(QString, int, int)));
 
     // Connect slots
-    connect(this, SIGNAL(viewModePreview(const std::string &)),
-            mainWindow, SLOT(compileDocument(const std::string &)));
+    connect(this, SIGNAL(viewModePreview(const std::string &, const std::string &)),
+            mainWindow, SLOT(compileDocument(const std::string &, const std::string &)));
 
     mainWindow->consoleOutput(Message(
         std::string("The language server is enabled in this window on TCP port ") + std::to_string(settings.port) + ".",

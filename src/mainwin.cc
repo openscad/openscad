@@ -966,7 +966,7 @@ void MainWindow::updateTVal()
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
-void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_fulltext)
+void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_filename, const std::string &override_fulltext)
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
@@ -1018,7 +1018,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		if (shouldcompiletoplevel) {
 			 this->errorLogWidget->clearModel();
 			if (activeEditor->isContentModified()) saveBackup();
-			parseTopLevelDocument(rebuildParameterWidget, override_fulltext);
+			parseTopLevelDocument(rebuildParameterWidget, override_filename, override_fulltext);
 			didcompile = true;
 		}
 
@@ -1737,7 +1737,7 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget, const std::string &override_fulltext)
+void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget, const std::string &filename_override, const std::string &override_fulltext)
 {
 	bool reloadSettings = customizerEditor != activeEditor;
 	customizerEditor = nullptr;
@@ -1757,9 +1757,9 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget, const std::s
 		delete this->parsed_module;
 		this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
 	} else {
-		this->last_compiled_doc = "";
+		this->last_compiled_doc = QString::fromStdString(override_fulltext);
 		delete this->parsed_module;
-		this->root_module = parse(this->parsed_module, override_fulltext, "", "", false) ? this->parsed_module : nullptr;
+		this->root_module = parse(this->parsed_module, override_fulltext, filename_override, filename_override, false) ? this->parsed_module : nullptr;
 	}
 
 	if (this->root_module!=nullptr) {
@@ -1879,21 +1879,22 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	}
 }
 
-void MainWindow::compileDocument(const std::string &file_content) {
+void MainWindow::compileDocument(const std::string &filename, const std::string &file_content) {
 	// If there is temporary file contents, like a modified editor or languageserver modifications
 	// this method can preview it.
 
 	if (GuiLocker::isLocked()) {
-		std::cerr << "GUI IS LOCKED!!\n";
 		// forwarding an external reference might be problematic - lets hope the file isnt changed or closed until we are done?
-		QTimer::singleShot(1, [&]() { compileDocument(file_content); });
+		// the filename at least has to be copied
+		std::string local_filename = filename;
+		QTimer::singleShot(0, [&]() { this->compileDocument(local_filename, file_content); });
 		return;
 	}
 
 	GuiLocker::lock();
 	prepareCompile("csgRender", false, true);
 	// compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_fulltext);
-	compile(true, true, false, file_content);
+	compile(false, true, false, filename, file_content);
 }
 
 
@@ -2267,22 +2268,21 @@ void MainWindow::setCursor()
 			!action->property("column").isValid()) {
 		return;
 	}
-    if (!editorDock->isVisible()) {
-        return;
-    }
 
 	auto file = action->property("file").toString();
 	auto line = action->property("line").toInt();
 	auto column = action->property("column").toInt();
 
-	// Unsaved files do have the pwd as current path, therefore we will not open a new
-	// tab on click
-	if (!fs::is_directory(fs::path(file.toStdString()))) {
-		this->tabManager->open(file);
-	}
+    if (editorDock->isVisible()) {
+		// Unsaved files do have the pwd as current path, therefore we will not open a new
+		// tab on click
+		if (!fs::is_directory(fs::path(file.toStdString()))) {
+			this->tabManager->open(file);
+		}
 
-	// move the cursor, the editor is 0 based whereby location is 1 based
-	this->activeEditor->setCursorPosition(line - 1, column - 1);
+		// move the cursor, the editor is 0 based whereby location is 1 based
+		this->activeEditor->setCursorPosition(line - 1, column - 1);
+    }
 
     emit externallySetCursor(file, line, column);
 }

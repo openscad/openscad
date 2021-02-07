@@ -46,7 +46,7 @@ public:
 
 signals:
     // Request a preview
-    void viewModePreview(const std::string &fileContent);
+    void viewModePreview(const std::string &filename, const std::string &fileContent);
 
     void starting();
 
