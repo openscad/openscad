@@ -228,8 +228,6 @@ void Connection::send(const QByteArray &data) {
         headerbuf.append("Content-Length: ")
             .append(QString::number(data.size()).toUtf8()).append("\r\n")
             // Doubling it up for lulz? - helps netbeans, does not hurt anybody else.
-            .append("Content-Length: ")
-            .append(QString::number(data.size()).toUtf8()).append("\r\n")
             //.append("Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n")
             .append("\r\n");
         *this->out_stream << headerbuf;

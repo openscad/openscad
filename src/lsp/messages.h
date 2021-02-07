@@ -493,6 +493,7 @@ MESSAGE_CLASS(ShowMessageParams) : public OutgoingNotificationMessage {
 
 
 MESSAGE_CLASS(ImplementationRequest) : public TextDocumentPositionParams {
+    // MAKE_DECODEABLE // No local fields => TextDocumentPositionParams takes care of decoding
     void process(Connection *, project *, const RequestId &);
 };
 

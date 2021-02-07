@@ -122,14 +122,14 @@ public:
 	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
-	void parseTopLevelDocument(bool rebuildParameterWidget);
+	void parseTopLevelDocument(bool rebuildParameterWidget, const std::string &override_fulltext = std::string());
 	void exceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void updateTemporalVariables();
 	void updateCompileResult();
-	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
+	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true, const std::string &override_fulltext = std::string());
 	void compileCSG();
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
@@ -285,6 +285,7 @@ public slots:
 	void processEvents();
 	void jumpToLine(int,int);
 	void openFileFromPath(QString,int);
+	void compileDocument(const std::string &file_content);
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();

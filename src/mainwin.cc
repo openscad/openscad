@@ -966,7 +966,7 @@ void MainWindow::updateTVal()
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
-void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
+void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_fulltext)
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
@@ -1018,7 +1018,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		if (shouldcompiletoplevel) {
 			 this->errorLogWidget->clearModel();
 			if (activeEditor->isContentModified()) saveBackup();
-			parseTopLevelDocument(rebuildParameterWidget);
+			parseTopLevelDocument(rebuildParameterWidget, override_fulltext);
 			didcompile = true;
 		}
 
@@ -1737,30 +1737,41 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
+void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget, const std::string &override_fulltext)
 {
 	bool reloadSettings = customizerEditor != activeEditor;
 	customizerEditor = nullptr;
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
-	this->last_compiled_doc = activeEditor->toPlainText();
+	std::string fulltext;
+	if (override_fulltext.empty()) {
+		this->last_compiled_doc = activeEditor->toPlainText();
 
-	auto fulltext =
-		std::string(this->last_compiled_doc.toUtf8().constData()) +
-		"\n\x03\n" + commandline_commands;
+		fulltext =
+			std::string(this->last_compiled_doc.toUtf8().constData()) +
+			"\n\x03\n" + commandline_commands;
 
-	auto fnameba = activeEditor->filepath.toLocal8Bit();
-	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
+		auto fnameba = activeEditor->filepath.toLocal8Bit();
+		const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+		delete this->parsed_module;
+		this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
+	} else {
+		this->last_compiled_doc = "";
+		delete this->parsed_module;
+		this->root_module = parse(this->parsed_module, override_fulltext, "", "", false) ? this->parsed_module : nullptr;
+	}
 
 	if (this->root_module!=nullptr) {
 		if (reloadSettings && !activeEditor->filepath.isEmpty()) {
 			this->parameterWidget->readFile(activeEditor->filepath);
 		}
 		//add parameters as annotation in AST
-		CommentParser::collectParameters(fulltext,this->root_module);
+		if (override_fulltext.empty()) {
+			CommentParser::collectParameters(fulltext,this->root_module);
+		} else {
+			CommentParser::collectParameters(override_fulltext,this->root_module);
+		}
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 		this->parameterWidget->applyParameters(this->root_module);
 		customizerEditor = activeEditor;
@@ -1867,6 +1878,24 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
 	}
 }
+
+void MainWindow::compileDocument(const std::string &file_content) {
+	// If there is temporary file contents, like a modified editor or languageserver modifications
+	// this method can preview it.
+
+	if (GuiLocker::isLocked()) {
+		std::cerr << "GUI IS LOCKED!!\n";
+		// forwarding an external reference might be problematic - lets hope the file isnt changed or closed until we are done?
+		QTimer::singleShot(1, [&]() { compileDocument(file_content); });
+		return;
+	}
+
+	GuiLocker::lock();
+	prepareCompile("csgRender", false, true);
+	// compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_fulltext);
+	compile(true, true, false, file_content);
+}
+
 
 void MainWindow::csgRender()
 {

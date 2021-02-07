@@ -10,7 +10,14 @@
 
 class MainWindow;
 class ConnectionHandler;
+class Connection;
 class project;
+
+class RequestId;
+class DocumentUri;
+class ExecuteCommandRequest;
+
+
 /**
  * To interact with the openscad language server you should use this interface.
  *
@@ -37,13 +44,9 @@ public:
 
     std::unique_ptr<project> init_project();
 
-    void requestPreview() {
-        emit viewModePreview();
-    }
-
 signals:
     // Request a preview
-    void viewModePreview();
+    void viewModePreview(const std::string &fileContent);
 
     void starting();
 
@@ -61,5 +64,7 @@ private:
 #ifndef LSP_ON_MAINTHREAD
     QThread workerthread;
 #endif
+private:
+    void preview_command(project *, ExecuteCommandRequest *, Connection *, const RequestId &);
 };
 

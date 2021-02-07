@@ -275,19 +275,21 @@ bool decode_env::declare_field(JSONObject &object, InitializeResult &target, con
 }
 
 template<>
-bool decode_env::declare_field(JSONObject &object, ServerCapabilities &, const FieldNameType &field) {
+bool decode_env::declare_field(JSONObject &object, ServerCapabilities &target, const FieldNameType &field) {
     assert(this->dir != storage_direction::READ); // The following assignment code does not allow reading!
 
 
     object[field] = QJsonObject {
         //{"hoverProvider", true}, // When hovering over characters
         //{"implementationProvider", true }, // "Go To implementation"
-        {"textDocumentSync", QJsonObject {
+        {"textDocumentSync",
+            QJsonObject {
                 {"openClose", true },
                 {"change", 1 }, // None = 0, Full = 1, Incremental = 2
             },
         },
-        {"window", QJsonObject {
+        {"window",
+            QJsonObject {
                 {"showDocument", QJsonObject {
                         { "support", true } // This allows click to code
                     },
@@ -449,7 +451,7 @@ void ConnectionHandler::register_messages() {
     //MAP("textDocument/implementation", ImplementationRequest);
     //MAP("textDocument/hover", TextDocumentHover);
 
-    MAP("$openscad/render", OpenSCADRender);
+    MAP("$openscad/preview", OpenSCADRender);
 
 
 

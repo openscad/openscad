@@ -15,13 +15,14 @@ struct LogContext {
 
 };
 
-OptionalType<openFile &> project::getFile(const DocumentUri &uri) {
+openFile *project::getFile(const DocumentUri &uri) {
     for (auto &file : this->open_files) {
-        if (file.document.uri == uri)
-            return file;
+        if (file.document.uri == uri) {
+            return &file;
+        }
     }
 
-    return {};
+    return nullptr;
 }
 
 openFile::openFile(const TextDocumentItem &doc) :
@@ -135,8 +136,6 @@ static void errorlogOutput(const Message &msg, void *userdata) {
     it->diagnostics.push_back(diag);
 }
 
-
-
 void openFile::update(Connection *conn) {
     // grab all the logging data
     log_ctx->conn = conn;
@@ -174,6 +173,8 @@ void openFile::update(Connection *conn) {
         // parse failed - try to get some error log?
         // we do have parser_error_pos as the character offset (qscintillaeditor might help convert it?)
     }
+
+
     for (auto &diag : log_ctx->diagnostics) {
         // We have the ""-uri - find the "document.uri" element
         if (diag.uri.raw_uri.empty()) {

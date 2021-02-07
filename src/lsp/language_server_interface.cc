@@ -17,8 +17,8 @@ LanguageServerInterface::LanguageServerInterface(MainWindow *mainWindow, const L
             this, SLOT(sendCursor(QString, int, int)));
 
     // Connect slots
-    connect(this, SIGNAL(viewModePreview()),
-            mainWindow, SLOT(viewModePreview()));
+    connect(this, SIGNAL(viewModePreview(const std::string &)),
+            mainWindow, SLOT(compileDocument(const std::string &)));
 
     mainWindow->consoleOutput(Message(
         std::string("The language server is enabled in this window on TCP port ") + std::to_string(settings.port) + ".",
@@ -102,4 +102,3 @@ void LanguageServerInterface::sendCursor(QString file, int line, int column) {
     showdoc.selection->end = showdoc.selection->start;
     handler->send(showdoc, "window/showDocument", &Connection::no_response_expected);
 }
-

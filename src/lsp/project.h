@@ -15,6 +15,7 @@ class AbstractNode;
 class Connection;
 class LanguageServerInterface;
 class MainWindow;
+class ExecuteCommandRequest;
 struct LogContext;
 
 class openFile {
@@ -46,9 +47,10 @@ struct project {
 
     // Interface towards the editor
     WorkspaceFolder workspace;
-    std::list<openFile> open_files;
-    // store project status information
 
-    OptionalType<openFile &> getFile(const DocumentUri &uri);
+    // File Management
+    std::list<openFile> open_files;
+
+    openFile *getFile(const DocumentUri &uri);
 };
 

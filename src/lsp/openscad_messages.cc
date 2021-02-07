@@ -9,7 +9,15 @@
 
 /* Redirect the call to the LSP interface, which knows the mainWindow */
 void OpenSCADRender::process(Connection *conn, project *proj, const RequestId &id) {
-    proj->lspinterface->requestPreview();
+    auto file = proj->getFile(this->uri);
+
+    if (!file) {
+        conn->send(ResponseError(ErrorCode::InvalidParams, "File was not opened!"), id);
+        return;
+    }
+
+    proj->lspinterface->viewModePreview(file->document.text);
+    conn->send(SuccessResponse(true), id);
 }
 
 void ImplementationRequest::process(Connection *conn, project *proj, const RequestId &id) {
