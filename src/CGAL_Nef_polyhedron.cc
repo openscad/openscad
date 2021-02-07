@@ -126,11 +126,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 		}
 		else {
 			auto N = new CGAL_Nef_polyhedron3(*this->p3);
-			CGAL_Aff_transformation t(
-				matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
-				matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
-				matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
-			N->transform(t);
+			CGALUtils::transform(*N, matrix);
 			this->p3.reset(N);
 		}
 	}

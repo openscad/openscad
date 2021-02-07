@@ -15,6 +15,7 @@
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
+#include <CGAL/Aff_transformation_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -135,7 +136,7 @@ namespace CGALUtils {
 		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
 			return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
 		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
-      return boundingBox(*nef->p3);
+			return boundingBox(*nef->p3);
 		} else {
 			assert(!"Unsupported geometry type in boundingBox");
 			return CGAL_Iso_cuboid_3(0,0,0,0,0,0);
@@ -189,7 +190,7 @@ namespace CGALUtils {
 	};
 
 
-  /*!
+	/*!
 		Check if all faces of a polyset is within 0.1 degree of being convex.
 		
 		NB! This function can give false positives if the polyset contains
@@ -284,6 +285,9 @@ namespace CGALUtils {
 	{
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return createNefPolyhedronFromPolySet(*ps);
+		}
+		else if (auto poly = dynamic_cast<const CGALPolyhedron*>(&geom)) {
+			return new CGAL_Nef_polyhedron(*poly->toNefPolyhedron());
 		}
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
 			return createNefPolyhedronFromPolygon2d(*poly2d);
@@ -435,6 +439,68 @@ namespace CGALUtils {
 
 	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
 	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &N, PolySet &ps);
+
+	template <typename K>
+	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix) {
+		return CGAL::Aff_transformation_3<K>(
+			matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+			matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+			matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+	}
+
+	template <typename K>
+	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		N.transform(createAffineTransformFromMatrix<K>(matrix));
+	}
+
+	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
+	template void transform(CGAL::Nef_polyhedron_3<CGAL::Epeck> &N, const Transform3d &matrix);
+
+	template <typename K>
+	void transform(CGAL::Polyhedron_3<K> &poly, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		auto t = createAffineTransformFromMatrix<K>(matrix);
+
+		typename CGAL::Polyhedron_3<K>::Vertex_handle vi;
+		CGAL_forall_vertices(vi, poly) t(vi->point());
+	}
+
+	template void transform(CGAL::Polyhedron_3<CGAL::Epeck> &N, const Transform3d &matrix);
+
+	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+			return ps;
+		}
+		if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			auto ps = make_shared<PolySet>(3);
+			ps->setConvexity(N->getConvexity());
+			if (!N->isEmpty()) {
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");
+				}
+			}
+			return ps;
+		}
+		if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(geom)) {
+			return poly->toPolySet();
+		}
+	}
+
+	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			return nef;
+		}
+		if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+			return shared_ptr<const CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromGeometry(*ps));
+		}
+		return nullptr;
+	}
 }; // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */

@@ -71,8 +71,16 @@ namespace CGALUtils {
 	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
+
+  shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
+  shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
+
 	template <typename K>
 	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
+  template <typename K>
+	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix);
+  template <typename K>
+	void transform(CGAL::Polyhedron_3<K> &N, const Transform3d &matrix);
 	template <typename K>
 	bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps);
 	template <typename K>
