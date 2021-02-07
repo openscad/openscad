@@ -13,6 +13,8 @@ void InitializeRequest::process(Connection *conn, project *proj, const RequestId
 
     // TODO initialize the project from the initalization parameters
 
+    boost::filesystem::current_path() = boost::filesystem::path(this->rootPath);
+
     conn->send(msg, id);
 }
 

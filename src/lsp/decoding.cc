@@ -263,7 +263,13 @@ bool decode_env::declare_field(JSONObject &object, NullResponse &target, const F
 
 template<>
 bool decode_env::declare_field(JSONObject &object, InitializeRequest &target, const FieldNameType &) {
-    // TODO
+    declare_field(object, target.rootUri, "rootUri");
+    declare_field(object, target.rootPath, "rootPath");
+    declare_field_array(object, target.workspaceFolders, "workspaceFolders");
+
+    if (this->dir == storage_direction::READ) {
+        target.capabilities = object.ref()["capabilities"].toObject();
+    }
 
     return true;
 }

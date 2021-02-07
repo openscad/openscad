@@ -7,6 +7,7 @@
 #include "ModuleInstantiation.h"
 
 #include <list>
+#include <QJsonObject>
 
 class FileModule;
 class AbstractNode;
@@ -41,6 +42,9 @@ private:
 };
 
 struct project {
+    // Initialisation options
+    QJsonObject clientCapabilities;
+
     // Interface towards OpenSCAD
     LanguageServerInterface *lspinterface = nullptr;
     MainWindow *mainWindow;

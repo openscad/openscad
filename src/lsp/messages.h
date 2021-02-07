@@ -361,7 +361,9 @@ MESSAGE_CLASS(InitializeRequest) : public RequestMessage {
     MAKE_DECODEABLE;
     virtual void process(Connection *, project *, const RequestId &id);
 
-    std::string rootUri;
+    QJsonObject capabilities;
+
+    DocumentUri rootUri;
     std::string rootPath;
 
     // Not used, here for completion
