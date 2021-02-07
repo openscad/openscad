@@ -1265,6 +1265,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 				auto editablegeom = res.asMutableGeometry();
 				geom = editablegeom;
 				if (editablegeom) {
+					editablegeom->setConvexity(node.convexity);
 					editablegeom->resize(node.newsize, node.autosize);
 				}
 				break;
