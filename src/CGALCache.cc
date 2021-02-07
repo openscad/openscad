@@ -1,6 +1,7 @@
 #include "CGALCache.h"
 #include "printutils.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "CGALPolyhedron.h"
 
 CGALCache *CGALCache::inst = nullptr;
 
@@ -8,7 +9,7 @@ CGALCache::CGALCache(size_t limit) : cache(limit)
 {
 }
 
-shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) const
+shared_ptr<const Geometry> CGALCache::get(const std::string &id) const
 {
 	const auto &N = this->cache[id]->N;
 #ifdef DEBUG
@@ -17,8 +18,15 @@ shared_ptr<const CGAL_Nef_polyhedron> CGALCache::get(const std::string &id) cons
 	return N;
 }
 
-bool CGALCache::insert(const std::string &id, const shared_ptr<const CGAL_Nef_polyhedron> &N)
+bool CGALCache::acceptsGeometry(const shared_ptr<const Geometry> &geom) {
+  return
+    dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) ||
+    dynamic_pointer_cast<const CGALPolyhedron>(geom);
+}
+
+bool CGALCache::insert(const std::string &id, const shared_ptr<const Geometry> &N)
 {
+  assert(acceptsGeometry(N));
 	auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
 #ifdef DEBUG
 	if (inserted) LOG(message_group::None,Location::NONE,"","CGAL Cache insert: %1$s (%2$d bytes)",id.substr(0, 40), (N ? N->memsize() : 0));
@@ -48,7 +56,7 @@ void CGALCache::print()
 	LOG(message_group::None,Location::NONE,"","CGAL cache size in bytes: %1$d",this->cache.totalCost());
 }
 
-CGALCache::cache_entry::cache_entry(const shared_ptr<const CGAL_Nef_polyhedron> &N)
+CGALCache::cache_entry::cache_entry(const shared_ptr<const Geometry> &N)
 	: N(N)
 {
 	if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();

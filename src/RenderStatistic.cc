@@ -31,6 +31,7 @@
 #include "boost-utils.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
+#include "CGALPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #include "RenderStatistic.h"
@@ -96,6 +97,17 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
     if (!simple) {
       LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
     }
+  }
+}
+void RenderStatistic::visit(const CGALPolyhedron& poly)
+{
+  bool simple = poly.isManifold();
+  LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object (fast-csg):");
+  LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
+  LOG(message_group::None,Location::NONE,"","   Vertices:   %1$6d",poly.numVertices());
+  LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",poly.numFacets());
+  if (!simple) {
+    LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
   }
 }
 #endif // ENABLE_CGAL

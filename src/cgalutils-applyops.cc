@@ -11,7 +11,6 @@
 #include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
-#include "mixed_cache.h"
 #include "CGALPolyhedron.h"
 
 #include "cgal.h"
@@ -37,6 +36,11 @@
 #include <map>
 #include <queue>
 #include <unordered_set>
+
+Location getLocation(const AbstractNode *node)
+{
+	return node && node->modinst ? node->modinst->location() : Location::NONE;
+}
 
 namespace CGALUtils {
 
@@ -236,8 +240,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			auto result = applyOperator3DCGALPolyhedron(children, op, tree);
-			return result ? result->toGeometry() : nullptr;
+			return applyOperator3DCGALPolyhedron(children, op, tree);
 		}
 #endif // FAST_CSG_AVAILABLE
 
@@ -266,16 +269,16 @@ namespace CGALUtils {
 					foundFirst = true;
 					continue;
 				}
-				
+
 				// Intersecting something with nothing results in nothing
 				if (!chN || chN->isEmpty()) {
 					if (op == OpenSCADOperator::INTERSECTION) N = nullptr;
 					continue;
 				}
-				
+
 				// empty op <something> => empty
 				if (!N || N->isEmpty()) continue;
-				
+
 				switch (op) {
 				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;
@@ -302,14 +305,84 @@ namespace CGALUtils {
 		return shared_ptr<Geometry>(N);
 	}
 
+#ifdef FAST_POLYHEDRON_AVAILABLE
+	shared_ptr<const CGALPolyhedron> applyUnion3DPolyhedron(
+		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
+		const Tree* tree)
+	{
+		typedef std::pair<shared_ptr<CGALPolyhedron>, int> QueueItem;
+		struct QueueItemGreater {
+			// stable sort for priority_queue by facets, then progress mark
+			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
+			{
+				size_t l = lhs.first->numFacets();
+				size_t r = rhs.first->numFacets();
+				return (l > r) || (l == r && lhs.second > rhs.second);
+			}
+		};
+
+		try {
+			Geometry::Geometries children;
+			children.insert(children.end(), chbegin, chend);
+
+			// We'll fill the queue in one go to get linear time construction.
+			std::vector<QueueItem> queueItems;
+			queueItems.reserve(children.size());
+
+			size_t total_facets = 0;
+			for (auto &item : children) {
+				auto chgeom = item.second;
+				if (!chgeom || chgeom->isEmpty()) {
+					continue;
+				}
+				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
+				auto poly = CGALPolyhedron::fromGeometry(*chgeom);
+				if (!poly) continue;
+
+				total_facets += poly->numFacets();
+				auto node_mark = item.first ? item.first->progress_mark : -1;
+				queueItems.emplace_back(poly, node_mark);
+			}
+			// Build the queue in linear time (don't add items one by one!).
+			std::priority_queue<QueueItem, std::vector<QueueItem>, QueueItemGreater>
+				 q(queueItems.begin(), queueItems.end());
+
+			LOG(message_group::Warning, getLocation(chbegin->first),
+				"", "Union of %1$lu geometries (%2$lu total facets)", q.size(), total_facets);
+
+			progress_tick();
+			while (q.size() > 1) {
+				auto p1 = q.top();
+				q.pop();
+				auto p2 = q.top();
+				q.pop();
+				assert(p1.first->numFacets() <= p2.first->numFacets());
+				// Modify in-place the biggest polyhedron.
+				*p2.first += *p1.first;
+				q.emplace(p2.first, -1);
+				progress_tick();
+			}
+
+			if (q.size() == 1) {
+				return q.top().first;
+			} else {
+				return nullptr;
+			}
+		}
+		catch (const CGAL::Failure_exception &e) {
+			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DPolyhedron: %1$s", e.what());
+		}
+		return nullptr;
+	}
+#endif // FAST_POLYHEDRON_AVAILABLE
+
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			auto result = applyUnion3DCGALPolyhedron(chbegin, chend, tree);
-			return result ? result->toGeometry() : nullptr;
+			return applyUnion3DCGALPolyhedron(chbegin, chend, tree);
 		}
 #endif // FAST_CSG_AVAILABLE
 

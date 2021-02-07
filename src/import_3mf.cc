@@ -32,7 +32,6 @@
 #include "version_helper.h"
 #include "AST.h"
 #include "boost-utils.h"
-#include "mixed_cache.h"
 
 #ifdef ENABLE_LIB3MF
 #ifndef LIB3MF_API_2
@@ -200,7 +199,7 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 		for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)NULL, shared_ptr<const Geometry>(*it)));
 		}
-		if (auto ps = getGeometryAs<PolySet>(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+		if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
 			p = new PolySet(*ps);
 		} else {
 			p = new PolySet(3);

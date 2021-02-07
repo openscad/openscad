@@ -117,17 +117,6 @@ bool CGALPolyhedron::isManifold() const
 	return false;
 }
 
-shared_ptr<const Geometry> CGALPolyhedron::toGeometry() const
-{
-  // TODO(ochafik): Make this class a geometry to avoid having to do super-costly conversions.
-	if (Feature::ExperimentalFastCsgExact.is_enabled()) {
-		return toNefPolyhedron();
-	}
-	else {
-		return toPolySet();
-	}
-}
-
 shared_ptr<const PolySet> CGALPolyhedron::toPolySet() const
 {
 	if (auto poly = getPolyhedron()) {
@@ -260,6 +249,46 @@ void CGALPolyhedron::minkowski(CGALPolyhedron &other)
 							 });
 }
 
+void CGALPolyhedron::transform(const Transform3d &mat)
+{
+	if (auto poly = getPolyhedron()) {
+		CGALUtils::transform(*poly, mat);
+	}
+	else if (auto nef = getNefPolyhedron()) {
+		CGALUtils::transform(*nef, mat);
+	}
+	else {
+		assert(!"Invalid Polyhedron.data state");
+	}
+}
+
+void CGALPolyhedron::resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize)
+{
+	if (this->isEmpty()) return;
+
+	assert(!"TODO: implement CGALPolyhedron::resize");
+}
+
+std::string CGALPolyhedron::dump() const
+{
+	assert(!"TODO: implement CGALPolyhedron::dump!");
+	return "?";
+	// return OpenSCAD::dump_svg(toPolySet());
+}
+
+size_t CGALPolyhedron::memsize() const
+{
+	size_t total = sizeof(CGALPolyhedron);
+	total += bboxes.memsize();
+	if (auto poly = getPolyhedron()) {
+		total += poly->bytes();
+	}
+	else if (auto nef = getNefPolyhedron()) {
+		total += nef->bytes();
+	}
+	return total;
+}
+
 void CGALPolyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const
 {
 	if (auto poly = getPolyhedron()) {
@@ -381,7 +410,7 @@ std::shared_ptr<CGALPolyhedron> CGALPolyhedron::fromGeometry(const Geometry &geo
 		return nef->p3 ? make_shared<CGALPolyhedron>(*nef->p3) : nullptr;
 	}
 	else {
-		assert(!"Unsupported geometry format");
+		LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
 		return nullptr;
 	}
 }

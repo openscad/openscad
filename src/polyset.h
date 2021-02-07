@@ -41,8 +41,8 @@ public:
 	void insert_vertex(const Vector3f &v);
 	void append(const PolySet &ps);
 
-	void transform(const Transform3d &mat);
-	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
+	virtual void transform(const Transform3d &mat) override;
+	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize) override;
 
 	bool is_convex() const;
 	bool is_manifold() const;

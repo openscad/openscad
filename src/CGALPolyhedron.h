@@ -18,8 +18,8 @@
 
 #include <boost/variant.hpp>
 #include "bounding_boxes.h"
+#include "Geometry.h"
 
-class Geometry;
 class PolySet;
 class CGAL_Nef_polyhedron;
 
@@ -37,7 +37,7 @@ class CGAL_Nef_polyhedron;
  * TODO(ochafik): Turn this into a regular Geometry and handle it everywhere
  * the CGAL_Nef_polyhedron is handled.
  */
-class CGALPolyhedron
+class CGALPolyhedron : public Geometry
 {
 	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
 	typedef CGAL::Epeck kernel_t;
@@ -58,6 +58,7 @@ class CGALPolyhedron
 	BoundingBoxes<CGAL_Kernel3> bboxes;
 
 public:
+	VISITABLE_GEOMETRY();
 	/*! Builds a polyhedron using the provided, untrusted PolySet.
 	 * Face orientation is checked (and reversed if needed), faces are
 	 * triangulated (requirement of Polygon Mesh Processing functions),
@@ -76,8 +77,18 @@ public:
 	size_t numVertices() const;
 	bool isManifold() const;
 	void clear();
-	/*! TODO(ochafik): Make this class inherit Geometry, plug the gaps and drop this method. */
-	std::shared_ptr<const Geometry> toGeometry() const;
+
+	size_t memsize() const override;
+	// FIXME: Implement, but we probably want a high-resolution BBox..
+	BoundingBox getBoundingBox() const override
+	{
+		assert(false && "not implemented");
+		return BoundingBox();
+	}
+	std::string dump() const override;
+	unsigned int getDimension() const override { return 3; }
+	Geometry *copy() const override { return new CGALPolyhedron(*this); }
+
 	std::shared_ptr<const PolySet> toPolySet() const;
 	std::shared_ptr<const CGAL_Nef_polyhedron> toNefPolyhedron() const;
 
@@ -91,6 +102,8 @@ public:
 	 * it is also modified during the computation, i.e., it is decomposed into convex pieces.
 	 */
 	void minkowski(CGALPolyhedron &other);
+	virtual void transform(const Transform3d &mat) override;
+	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize) override;
 
 	static std::shared_ptr<CGALPolyhedron> fromGeometry(const Geometry &geom);
 

@@ -14,14 +14,13 @@ template <typename K>
 class BoundingBoxes
 {
 public:
-  void clear() {
-    cuboids.clear();
-  }
-
-	void add(const CGAL::Iso_cuboid_3<K> &c)
+	void clear() { cuboids.clear(); }
+	size_t memsize() const
 	{
-    cuboids.push_back(c);
+		return sizeof(BoundingBoxes) + cuboids.size() * sizeof(CGAL::Iso_cuboid_3<K>);
 	}
+
+	void add(const CGAL::Iso_cuboid_3<K> &c) { cuboids.push_back(c); }
 
 	bool empty() const { return cuboids.empty(); }
 
@@ -32,11 +31,11 @@ public:
 	}
 	BoundingBoxes &operator*=(const BoundingBoxes &other)
 	{
-    std::vector<CGAL::Iso_cuboid_3<K>> survivors;
+		std::vector<CGAL::Iso_cuboid_3<K>> survivors;
 		for (auto &cuboid : cuboids) {
 			if (other.intersects(cuboid)) survivors.push_back(cuboid);
 		}
-    cuboids = survivors;
+		cuboids = survivors;
 		return *this;
 	}
 
@@ -67,6 +66,5 @@ public:
 	}
 
 private:
-
 	std::vector<CGAL::Iso_cuboid_3<K>> cuboids;
 };
