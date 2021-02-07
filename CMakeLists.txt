@@ -675,6 +675,9 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+add_custom_command(TARGET OpenSCAD POST_BUILD
+    COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
+    COMMENT "Compiling language files")
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
