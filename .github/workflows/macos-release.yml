@@ -1,0 +1,119 @@
+name: macos-release
+
+on:
+  push:
+    branches:
+      - macos-release-build
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout OpenSCAD
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Setup MacPorts, Libraries & Build
+      run: |
+        CI_BASEDIR="$(pwd)"
+        export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+        export COLUMNS=80 # needed by some macports tool
+        export OPENSCAD_LIBRARIES=/Users/runner/work/openscad/libraries/install/
+        echo "PWD = $CI_BASEDIR"
+        echo "PATH = $PATH"
+        system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
+        MACPORTS=MacPorts-2.6.4
+        MACPORTS_FILE="$MACPORTS".tar.gz
+        MACPORTS_CACHE=macports-gh.tar.gz
+        LIBRARIES_CACHE=libraries-gh.tar.gz
+        MACPORTS_SHA512=bc3b53de684eb1b5e493f5f6ff163ccd65930918292f19c593fd19eefea676a6f1832bd1563273034e37e7d7aca5153fcd3d56206d86374603d25becc9773e41
+        MACPORTS_CACHE_SHA512=a2e50ac2840ab579e7d76cc88fea54c834c1d35df28bd0b3113bd36bbd172530b709f299f9ad8ed13f351169399e602eb2a26a83fcea66e1bd59cf67e1b25c34
+        LIBRARIES_CACHE_SHA512=905112c0c0ccd183cb3b922e938d25b5d7cae31fed9c1991cc0e0774b57ba067c7b64ec5afbdeeb1fbeb9528d3f189174a639816f40f6802b788b8eef4cd340d
+        ( echo "Loading macports cache..." ; cd /tmp && wget -q https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" && ls -la "$MACPORTS_CACHE") || true
+        ( echo "Loading libraries cache..." ; cd /tmp && wget -q https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" && ls -la "$LIBRARIES_CACHE") || true
+        mkdir /tmp/out
+        sudo mkdir -p /opt/local
+        sudo tar -x -z -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
+        if [ -f /opt/local/bin/port ]; then
+            echo "MacPorts found: $(port version)"
+            if [ "$(shasum -a 512 /tmp/$MACPORTS_CACHE | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
+                echo "Failed to match sha512 for $MACPORTS_CACHE"
+                exit 1
+            fi
+            mkdir -p "$OPENSCAD_LIBRARIES"
+            if [ -f /tmp/"$LIBRARIES_CACHE" ]; then
+                tar -x -z -C "$OPENSCAD_LIBRARIES" -f /tmp/"$LIBRARIES_CACHE" || true
+                if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
+                    echo "Failed to match sha512 for $LIBRARIES_CACHE"
+                    exit 1
+                fi
+            fi
+            echo "Start building dependencies: $(date)"
+            export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
+            export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
+            export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
+            echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
+            # Our own Qt
+            export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
+            unset QMAKESPEC
+            ./scripts/macosx-build-dependencies.sh double_conversion
+            ./scripts/macosx-build-dependencies.sh eigen
+            ./scripts/macosx-build-dependencies.sh gmp
+            ./scripts/macosx-build-dependencies.sh mpfr
+            ./scripts/macosx-build-dependencies.sh glew
+            ./scripts/macosx-build-dependencies.sh gettext
+            ./scripts/macosx-build-dependencies.sh libffi
+            ./scripts/macosx-build-dependencies.sh freetype
+            ./scripts/macosx-build-dependencies.sh ragel
+            ./scripts/macosx-build-dependencies.sh harfbuzz
+            ./scripts/macosx-build-dependencies.sh libzip
+            ./scripts/macosx-build-dependencies.sh libxml2
+            ./scripts/macosx-build-dependencies.sh fontconfig || true
+            ./scripts/macosx-build-dependencies.sh hidapi
+            ./scripts/macosx-build-dependencies.sh libuuid
+            ./scripts/macosx-build-dependencies.sh lib3mf
+            ./scripts/macosx-build-dependencies.sh poppler
+            ./scripts/macosx-build-dependencies.sh pixman
+            ./scripts/macosx-build-dependencies.sh cairo
+            ./scripts/macosx-build-dependencies.sh glib2
+            ./scripts/macosx-build-dependencies.sh boost
+            ./scripts/macosx-build-dependencies.sh cgal
+            ./scripts/macosx-build-dependencies.sh qt5
+            ./scripts/macosx-build-dependencies.sh opencsg
+            ./scripts/macosx-build-dependencies.sh qscintilla
+            ./scripts/macosx-build-dependencies.sh -d sparkle
+            tar -c -z -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
+            shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+            echo "Start building OpenSCAD: $(date)"
+            export NUMCPU=4
+            time ./scripts/release-common.sh
+            OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
+            shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
+            shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
+            cp -v "$OPENSCAD_NAME"* /tmp/out/
+            echo "Finished building OpenSCAD: $(date)"
+        else
+            echo "MacPorts not found, installing $MACPORTS"
+            wget https://distfiles.macports.org/MacPorts/"$MACPORTS_FILE"
+            if [ "$(shasum -a 512 "$MACPORTS_FILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
+                echo "Failed to match sha512 for $MACPORTS_FILE"
+                exit 1
+            fi
+            tar -x -z -f "$MACPORTS_FILE"
+            cd "$MACPORTS"
+            ./configure
+            make
+            sudo make install
+            sudo port -v selfupdate
+            sudo port install cmake curl pkgconfig autoconf automake libtool
+            tar -c -z -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
+            shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
+        fi
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: Build Artifacts
+        path: /tmp/out/

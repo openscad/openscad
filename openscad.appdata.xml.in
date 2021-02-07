@@ -35,10 +35,15 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2021-01-31" version="2021.01"/>
+    <release date="2019-05-16" version="2019.05"/>
     <release date="2016-02-22" version="2015.03-3"/>
     <release date="2015-11-15" version="2015.03-2"/>
     <release date="2015-04-21" version="2015.03-1"/>
     <release date="2015-03-10" version="2015.03"/>
-    <release date="2019-05-16" version="2019.05"/>
+    <release date="2014-03-09" version="2014.03"/>
+    <release date="2013-06-18" version="2013.06"/>
+    <release date="2013-01-17" version="2013.01"/>
+    <release date="2011-12-29" version="2011.12"/>
   </releases>
 </component>

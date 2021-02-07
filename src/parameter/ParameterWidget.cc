@@ -63,6 +63,9 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	connect(comboBoxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(onSetChanged(int)));
 	connect(comboBoxPreset->lineEdit(), SIGNAL(editingFinished()), this, SLOT(onSetNameChanged()));
 	connect(reset, SIGNAL(clicked()), this, SLOT(resetParameter()));
+	connect(addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
+	connect(deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+	connect(presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
 
 	comboBoxPreset->setInsertPolicy(QComboBox::InsertAtCurrent);
 
@@ -142,20 +145,17 @@ void ParameterWidget::readFile(QString scadFile)
 	bool writeable = false;
 	bool readable = false;
 
-	if(exists){
+	this->setMgr->clear();
+	if (exists) {
 		readable = this->setMgr->readParameterSet(this->jsonFile);
-
 		//check whether file is writeable or not
 		if (std::fstream(this->jsonFile, std::ios::app)) writeable = true;
 	}
 
 	if(writeable || !exists){
-		connect(this->addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
-		this->addButton->setToolTip(_("add new preset"));
-		connect(this->deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
-		this->deleteButton->setToolTip(_("remove current preset"));
-		connect(this->presetSaveButton, SIGNAL(clicked()), this, SLOT(onSetSaveButton()));
-		this->presetSaveButton->setToolTip(_("save current preset"));
+		this->addButton->setToolTip(_("Add new preset"));
+		this->deleteButton->setToolTip(_("Remove current preset"));
+		this->presetSaveButton->setToolTip(_("Save current preset"));
 	}else{
 		this->addButton->setToolTip(_("JSON file read only"));
 		this->deleteButton->setToolTip(_("JSON file read only"));
@@ -174,7 +174,7 @@ void ParameterWidget::readFile(QString scadFile)
 }
 
 //Write the json file if the parameter sets are not empty.
-//This prevents creating unnecessary json filess.
+//This prevents creating unnecessary json files.
 //This method also updates the UI state (change indicator, file name, ...)
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {
@@ -212,6 +212,7 @@ void ParameterWidget::applyParameters(FileModule *fileModule)
 
 void ParameterWidget::setComboBoxPresetForSet()
 {
+	this->lastComboboxIndex = -1;
 	this->comboBoxPreset->addItem(_("design default values"), QVariant(QString::fromStdString(_("design default values"))));
 	if (this->setMgr->isEmpty()) return;
 	for (const auto &name : this->setMgr->getParameterNames()) {

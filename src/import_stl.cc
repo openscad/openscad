@@ -94,12 +94,17 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 	f.read(data, 5);
 	if (!binary && !f.eof() && f.good() && !memcmp(data, "solid", 5)) {
 		int i = 0;
+		int lineno = 1;
 		double vdata[3][3];
 		std::string line;
 		std::getline(f, line);
 		while (!f.eof()) {
+			lineno++;
 			std::getline(f, line);
 			boost::trim(line);
+			if (line.length() == 0) {
+				continue;
+			}
 			if (boost::regex_search(line, ex_sfe)) {
 				continue;
 			}
@@ -107,23 +112,27 @@ PolySet *import_stl(const std::string &filename, const Location &loc)
 				i = 0;
 				continue;
 			}
+			if (i >= 3) {
+				LOG(message_group::Error, loc, "", "STL line %1$s, extra vertex line '%2$s' importing file '%3$s'", lineno, line, filename);
+				delete p;
+				return new PolySet(3);
+			}
 			boost::smatch results;
 			if (boost::regex_search(line, results, ex_vertices)) {
 				try {
-					for (int v=0; v<3; ++v) {
-						vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
+					for (int v = 0; v < 3; ++v) {
+						vdata[i][v] = boost::lexical_cast<double>(results[v + 1]);
 					}
-				}
-				catch (const boost::bad_lexical_cast &blc) {
-					LOG(message_group::Warning,Location::NONE,"","Can't parse vertex line '%1$s', import() at line %2$d",line,loc.firstLine());
-					i = 10;
-					continue;
-				}
-				if (++i == 3) {
-					p->append_poly();
-					p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
-					p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
-					p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
+					if (++i == 3) {
+						p->append_poly();
+						p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
+						p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
+						p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
+					}
+				} catch (const boost::bad_lexical_cast& blc) {
+					LOG(message_group::Error, loc, "", "STL line %1$s, can't parse vertex line '%2$s' importing file '%3$s'", lineno, line, filename);
+					delete p;
+					return new PolySet(3);
 				}
 			}
 		}

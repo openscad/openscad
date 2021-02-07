@@ -32,6 +32,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 public:
 	class Preferences *prefs;
 
+	QTimer *consoleUpdater;
 	QTimer *animate_timer;
 	int anim_step;
 	int anim_numsteps;
@@ -81,6 +82,9 @@ public:
 	MainWindow(const QStringList &filenames);
 	~MainWindow();
 
+private:
+	void consoleOutputRaw(const QString& msg);
+
 protected:
 	void closeEvent(QCloseEvent *event) override;
 
@@ -97,7 +101,7 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const Message &msgObj);
+	void consoleOutput(const Message& msgObj);
 	void setCursor();
 	void errorLogOutput(const Message &log_msg);
 
@@ -181,6 +185,7 @@ private slots:
 	void on_windowActionSelectErrorLog_triggered();
 	void on_windowActionNextWindow_triggered();
 	void on_windowActionPreviousWindow_triggered();
+	void on_editActionInsertTemplate_triggered();
 
 public slots:
 	void hideFind();

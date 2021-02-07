@@ -57,15 +57,21 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
 	ModuleInstantiation::print(stream, indent, inlined);
-	if (else_scope.numElements() > 0) {
-		stream << indent << "else ";
-		if (else_scope.numElements() == 1) {
-			else_scope.print(stream, indent, true);
+	if (else_scope) {
+		auto num_elements = else_scope->numElements();
+		if (num_elements == 0) {
+			stream << indent << "else;";
 		}
 		else {
-			stream << "{\n";
-			else_scope.print(stream, indent + "\t", false);
-			stream << indent << "}\n";
+			stream << indent << "else ";
+			if (num_elements == 1) {
+				else_scope->print(stream, indent, true);
+			}
+			else {
+				stream << "{\n";
+				else_scope->print(stream, indent + "\t", false);
+				stream << indent << "}\n";
+			}
 		}
 	}
 }
@@ -106,8 +112,14 @@ std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const std::s
 	return this->scope.instantiateChildren(evalctx);
 }
 
+LocalScope* IfElseModuleInstantiation::makeElseScope()
+{
+	this->else_scope = std::make_unique<LocalScope>();
+	return this->else_scope.get();
+}
+
 std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const std::shared_ptr<Context> evalctx) const
 {
-	return this->else_scope.instantiateChildren(evalctx);
+	return this->else_scope->instantiateChildren(evalctx);
 }
 
