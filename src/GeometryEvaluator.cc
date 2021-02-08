@@ -1210,7 +1210,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
 				if (newgeom) {
 					auto Nptr = CGALUtils::getGeometryAsNefPolyhedron(newgeom);
-					if (!Nptr->isEmpty()) {
+					if (Nptr && !Nptr->isEmpty()) {
 						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
 						if (poly) {
 							poly->setConvexity(node.convexity);

@@ -676,6 +676,7 @@ SOURCES += src/cgalutils.cc \
            src/import_nef.cc
 }
 
+QMAKE_CXXFLAGS+=-DCGAL_USE_GMPXX
 macx {
   HEADERS += src/AppleEvents.h \
              src/EventFilter.h \

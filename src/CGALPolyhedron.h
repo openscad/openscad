@@ -17,7 +17,6 @@
 #ifdef FAST_CSG_AVAILABLE
 
 #include <boost/variant.hpp>
-#include "bounding_boxes.h"
 #include "Geometry.h"
 
 class PolySet;
@@ -39,11 +38,19 @@ class CGAL_Nef_polyhedron;
  */
 class CGALPolyhedron : public Geometry
 {
+	// Notes on kernels:
+	// - CGAL::Epeck has some pathological explosions of numerical computation time
+	//   (e.g. testdata/scad/3D/issues/issue911.scad never seems to finish: maybe some weird
+	//   interaction w/ minkowski)
+	// - CGAL::Epick isn't exact and gives errors with some algorithms on some models.
+	// - CGAL_Kernel3 (CGAL::Cartesian<CGAL::Gmpq>) doesn't work with PMP's corefinement
+	//   functions that seem to make assumptions of CGAL::Epeck or CGAL::Epick.
 	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
 	typedef CGAL::Epeck kernel_t;
 	typedef CGAL::Point_3<kernel_t> point_t;
 	typedef CGAL::Nef_polyhedron_3<kernel_t> nef_polyhedron_t;
 	typedef CGAL::Polyhedron_3<kernel_t> polyhedron_t;
+	typedef CGAL::Iso_cuboid_3<kernel_t> bbox_t;
 
 	// This contains data either as a polyhedron, or as a nef polyhedron.
 	//
@@ -54,8 +61,7 @@ class CGALPolyhedron : public Geometry
 	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
 	// Keeps track of the bounding boxes of the solid components of this polyhedron.
 	// This allows fast unions with disjoint polyhedra.
-	// TODO(ochafik): Switch to our kernel!
-	BoundingBoxes<CGAL_Kernel3> bboxes;
+	std::vector<bbox_t> bboxes;
 
 public:
 	VISITABLE_GEOMETRY();
@@ -72,6 +78,10 @@ public:
 	 */
 	CGALPolyhedron(const CGAL_Nef_polyhedron3 &nef);
 
+	CGALPolyhedron(const CGALPolyhedron &other);
+
+	CGALPolyhedron() = delete;
+
 	bool isEmpty() const;
 	size_t numFacets() const;
 	size_t numVertices() const;
@@ -79,12 +89,8 @@ public:
 	void clear();
 
 	size_t memsize() const override;
-	// FIXME: Implement, but we probably want a high-resolution BBox..
-	BoundingBox getBoundingBox() const override
-	{
-		assert(false && "not implemented");
-		return BoundingBox();
-	}
+	BoundingBox getBoundingBox() const override;
+
 	std::string dump() const override;
 	unsigned int getDimension() const override { return 3; }
 	Geometry *copy() const override { return new CGALPolyhedron(*this); }
@@ -135,6 +141,22 @@ private:
 	/*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
 	nef_polyhedron_t *getNefPolyhedron() const;
+
+	bbox_t getExactBoundingBox() const;
+
+	bool intersects(const CGALPolyhedron &other) const
+	{
+		for (auto &bbox : bboxes)
+			if (other.intersects(bbox)) return true;
+		return false;
+	}
+
+	bool intersects(const bbox_t &c) const
+	{
+		for (auto &bbox : bboxes)
+			if (CGAL::intersection(c, bbox) != boost::none) return true;
+		return false;
+	}
 };
 
 #endif // FAST_CSG_AVAILABLE

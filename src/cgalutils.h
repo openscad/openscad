@@ -52,10 +52,17 @@ namespace CGALUtils {
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
-	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N);
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Polyhedron_3<K> &poly);
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry&geom);
 	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid);
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
+  template <typename K>
+	CGAL::Point_3<K> vector3dToPoint3(const Eigen::Vector3d& v);
+  template <typename K>
+	BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<K> &bbox);
 	size_t getNumFacets(const Geometry& geom);
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
@@ -72,15 +79,22 @@ namespace CGALUtils {
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 
-  shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
-  shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
+	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
+	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
 
 	template <typename K>
 	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
-  template <typename K>
+	template <typename K>
+	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix);
+	template <typename K>
 	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix);
-  template <typename K>
+	template <typename K>
 	void transform(CGAL::Polyhedron_3<K> &N, const Transform3d &matrix);
+	template <typename K>
+	Transform3d computeResizeTransform(
+		const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize);
+
 	template <typename K>
 	bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps);
 	template <typename K>

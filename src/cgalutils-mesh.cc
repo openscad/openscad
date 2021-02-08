@@ -52,6 +52,8 @@ bool createMeshFromPolySet(const PolySet &ps, CGAL::Surface_mesh<CGAL::Point_3<K
 
 template bool createMeshFromPolySet(const PolySet &ps,
 																		CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>> &mesh);
+template bool createMeshFromPolySet(const PolySet &ps,
+																		CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &mesh);
 
 template <typename K>
 bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps)
@@ -76,6 +78,8 @@ bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, Pol
 }
 
 template bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>> &mesh,
+																		PolySet &ps);
+template bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &mesh,
 																		PolySet &ps);
 
 template <class InputKernel, class OutputKernel>
@@ -104,9 +108,15 @@ void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
 
 template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3> &input,
 											 CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>> &output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3> &input,
+											 CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>> &input,
+											 CGAL::Surface_mesh<CGAL_Point_3> &output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &input,
 											 CGAL::Surface_mesh<CGAL_Point_3> &output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>> &input,
 											 CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>> &output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &input,
+											 CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &output);
 } // namespace CGALUtils
 

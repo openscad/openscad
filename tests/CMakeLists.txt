@@ -274,8 +274,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
-
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL)
         if (${TESTCMD_EXE} MATCHES "^.*openscad$")
@@ -283,6 +281,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
           #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
           #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
           #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
+        endif()
+        if (not ${FILE_BASENAME} MATCHES ".*issue911.*"
+            and not ${TESTCMD_EXE} MATCHES ".*openscad-viewoptions-wireframe$")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
         endif()
       endif()
 

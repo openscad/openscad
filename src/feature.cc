@@ -23,8 +23,7 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 #ifdef FAST_CSG_AVAILABLE
-const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations (converts to polysets instead of nefs for inaccurate results, unless fast-csg-accurate is set).");
-const Feature Feature::ExperimentalFastCsgExact("fast-csg-exact", "Enable faster but exact CSG operations (WIP, still incurs costly conversions to legacy nefs).");
+const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations.");
 #endif
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");

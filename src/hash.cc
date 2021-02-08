@@ -1,5 +1,8 @@
 #include "hash.h"
 #include <boost/functional/hash.hpp>
+#ifdef ENABLE_CGAL
+#include "cgalutils.h"
+#endif
 
 namespace std {
 	std::size_t hash<Vector3f>::operator()(const Vector3f &s) const {
@@ -12,15 +15,23 @@ namespace std {
 		return Eigen::hash_value(s);
 	}
 	std::size_t hash<Geometry::GeometryItem>::operator()(Geometry::GeometryItem const& s) const {
-    size_t seed = 0;
-    boost::hash_combine(seed, s.first);
-    boost::hash_combine(seed, s.second);
-    return seed;
-  }
+		size_t seed = 0;
+		boost::hash_combine(seed, s.first);
+		boost::hash_combine(seed, s.second);
+		return seed;
+	}
 #ifdef ENABLE_CGAL
+	std::size_t hash<CGAL::Point_3<CGAL_Kernel3>>::operator()(const CGAL::Point_3<CGAL_Kernel3> &s) const {
+		hash<Vector3d> vh;
+		return vh(vector_convert<Vector3d>(s));
+	}
 	std::size_t hash<CGAL::Point_3<CGAL::Epeck>>::operator()(const CGAL::Point_3<CGAL::Epeck> &s) const {
-    hash<Vector3d> vh;
-    return vh(Vector3d(CGAL::to_double(s.x()), CGAL::to_double(s.y()), CGAL::to_double(s.z())));
+		hash<Vector3d> vh;
+		return vh(vector_convert<Vector3d>(s));
+	}
+	std::size_t hash<CGAL::Point_3<CGAL::Epick>>::operator()(const CGAL::Point_3<CGAL::Epick> &s) const {
+		hash<Vector3d> vh;
+		return vh(vector_convert<Vector3d>(s));
 	}
 #endif
 }

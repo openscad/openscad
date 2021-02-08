@@ -74,6 +74,11 @@ namespace /* anonymous */ {
 				B.add_vertex(p);
 			}
 			for(auto &pindices : indices) {
+				if (pindices.empty()) {
+					// Example: testdata/scad/3D/features/polyhedron-tests.scad + fast-csg
+					continue;
+				}
+
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
@@ -251,6 +256,7 @@ namespace CGALUtils {
 	}
 
 	template void copyPolyhedron<CGAL::Epeck, CGAL::Epeck>(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
+	template void copyPolyhedron<CGAL::Epick, CGAL::Epick>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL::Polyhedron_3<CGAL::Epick> &);
 	template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL_Polyhedron &);
 	template void copyPolyhedron<CGAL::Epeck, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL_Polyhedron &);
 	template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
