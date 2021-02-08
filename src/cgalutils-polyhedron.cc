@@ -27,7 +27,8 @@ namespace /* anonymous */ {
 		typedef typename CGAL_Polybuilder::Point_3 CGALPoint;
 
 		const PolySet &ps;
-		CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
+		bool invert_orientation;
+		CGAL_Build_PolySet(const PolySet &ps, bool invert_orientation) : ps(ps), invert_orientation(invert_orientation) { }
 
 /*
 	Using Grid here is important for performance reasons. See following model.
@@ -55,13 +56,24 @@ namespace /* anonymous */ {
 			for(const auto &p : ps.polygons) {
 				indices.emplace_back(std::initializer_list<size_t>{});
 				indices.back().reserve(p.size());
-				for (auto v : p) {
-					// align v to the grid; the CGALPoint will receive the aligned vertex
-					size_t idx = grid.align(v);
-					if (idx == vertices.size()) {
-						vertices.emplace_back(v[0], v[1], v[2]);
+				if (invert_orientation) {
+					for (auto v : boost::adaptors::reverse(p)) {
+						// align v to the grid; the CGALPoint will receive the aligned vertex
+						size_t idx = grid.align(v);
+						if (idx == vertices.size()) {
+							vertices.emplace_back(v[0], v[1], v[2]);
+						}
+						indices.back().push_back(idx);
 					}
-					indices.back().push_back(idx);
+				} else {
+					for (auto v : p) {
+						// align v to the grid; the CGALPoint will receive the aligned vertex
+						size_t idx = grid.align(v);
+						if (idx == vertices.size()) {
+							vertices.emplace_back(v[0], v[1], v[2]);
+						}
+						indices.back().push_back(idx);
+					}
 				}
 			}
 
@@ -95,9 +107,16 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				for (auto i : pindices) {
-					if (fidx++ > 0) printf(",");
-					printf("%ld", i);
+				if (invert_orientation) {
+					for (auto i : boost::adaptors::reverse(pindices)) {
+						if (fidx++ > 0) printf(",");
+						printf("%ld", i);
+					}
+				} else {
+					for (auto i : pindices) {
+						if (fidx++ > 0) printf(",");
+						printf("%ld", i);
+					}
 				}
 				printf("]");
 #endif
@@ -134,12 +153,22 @@ namespace /* anonymous */ {
 					if (pidx++ > 0) printf(",");
 #endif
 					indices.clear();
-					for (const auto &v, p) {
-						size_t s = vertices.size();
-						size_t idx = vertices.lookup(v);
-						// If we added a vertex, also add it to the CGAL builder
-						if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
-						indices.push_back(idx);
+					if (invert_orientation) {
+						for (const auto &v, boost::adaptors::reverse(p)) {
+							size_t s = vertices.size();
+							size_t idx = vertices.lookup(v);
+							// If we added a vertex, also add it to the CGAL builder
+							if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
+							indices.push_back(idx);
+						}
+					} else {
+						for (const auto &v, p) {
+							size_t s = vertices.size();
+							size_t idx = vertices.lookup(v);
+							// If we added a vertex, also add it to the CGAL builder
+							if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
+							indices.push_back(idx);
+						}
 					}
 					// We perform this test since there is a bug in CGAL's
 					// Polyhedron_incremental_builder_3::test_facet() which
@@ -271,12 +300,12 @@ namespace CGALUtils {
   template void appendToPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
 
 	template <typename Polyhedron>
-	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p)
+	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation)
 	{
 		bool err = false;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
-			CGAL_Build_PolySet<Polyhedron> builder(ps);
+			CGAL_Build_PolySet<Polyhedron> builder(ps, invert_orientation);
 			p.delegate(builder);
 		}
 		catch (const CGAL::Assertion_exception &e) {
@@ -287,9 +316,9 @@ namespace CGALUtils {
 		return err;
 	}
 
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epick> &p);
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epeck> &p);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epick> &p, bool invert_orientation);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epeck> &p, bool invert_orientation);
 
 	template <typename Polyhedron>
 	bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)

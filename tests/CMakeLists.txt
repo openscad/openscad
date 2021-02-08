@@ -224,18 +224,23 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(TESTCMD_EXE ${CMAKE_CURRENT_BINARY_DIR}/${TESTCMD_BASENAME})
   endif()
 
+  # Tests for which fast-csg cannot be enabled yet.
   # TODO(ochafik): fix these with --enable=fast-csg!
   list(APPEND FAST_CSG_DISABLED_TESTS
     3mfexport_3mf-export
     cgalpngtest_issue1246 csgpngtest_issue1246
     cgalpngtest_polyhedron-tests csgpngtest_polyhedron-tests monotonepngtest_polyhedron-tests stlcgalpngtest_polyhedron-tests
-    cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
     cgalstlsanitytest_normal-nan
     opencsgtest_internal-cavity
     opencsgtest_issue913
     opencsgtest_render-tests
+    # No wireframe rendering yet.
     openscad-viewoptions-wireframe_view-options-tests
-    throwntogethertest_resize-convexity-tests)
+    # Resize issues that need investigation.
+    throwntogethertest_resize-convexity-tests
+    cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
+    # Hangs forever: issue with arbitrary precision numbers
+    opencsgtest_issue911 cgalpngtest_issue911 csgpngtest_issue911)
 
   # Add tests from args
   foreach (SCADFILE ${TESTCMD_FILES})

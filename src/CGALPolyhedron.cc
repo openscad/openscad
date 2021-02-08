@@ -31,7 +31,7 @@ CGALPolyhedron::CGALPolyhedron(const PolySet &ps)
 	auto polyhedron = make_shared<polyhedron_t>();
 	data = polyhedron;
 
-	auto err = CGALUtils::createPolyhedronFromPolySet(ps, *polyhedron);
+	auto err = CGALUtils::createPolyhedronFromPolySet(ps, *polyhedron, /* invert_orientation */ false);
 	assert(!err);
 	bboxes.push_back(CGALUtils::boundingBox(*polyhedron));
 	PMP::triangulate_faces(*polyhedron);
