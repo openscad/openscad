@@ -245,6 +245,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     lazyunion-monotonepng_lazyunion-children
     lazyunion-stlpngtest_lazyunion-children
     lazyunion-offpngtest_lazyunion-children
+    lazyunion-cgalpng_lazyunion-difference-for
     # No wireframe rendering yet.
     openscad-viewoptions-wireframe_view-options-tests
     # Resize issues that need investigation.
