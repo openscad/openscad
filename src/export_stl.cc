@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALPolyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
 
@@ -68,7 +67,7 @@ void write_vector(std::ostream &output, const Vector3f& v) {
     }
 }
 
-	
+
 size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
 {
     size_t triangle_count = 0;
@@ -158,29 +157,6 @@ size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
 	PolySet ps(3);
 	if (!CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps)) {
 		triangle_count += append_stl(ps, output, binary);
-	}
-	else {
-		LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
-	}
-
-  return triangle_count;
-}
-
-/*!
-	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-	The file must be open.
- */
-size_t append_stl(const CGALPolyhedron &poly, std::ostream &output,
-		bool binary)
-{
-  size_t triangle_count = 0;
-	if (!poly.isManifold()) {
-		LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
-	}
-
-  auto ps = poly.toPolySet();
-	if (ps) {
-		triangle_count += append_stl(*ps, output, binary);
 	}
 	else {
 		LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
