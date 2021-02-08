@@ -27,7 +27,7 @@ PARALLEL=-j2
 
 travis_start qmake "Building OpenSCAD using qmake"
 export PATH="/usr/local/opt/gettext/bin:$PATH"
-qmake CONFIG+=experimental CONFIG+=nogui QMAKE_CXXFLAGS+=-I$PWD/libraries/src/CGAL-5.2/include && make $PARALLEL
+qmake CONFIG+=experimental CONFIG+=nogui QMAKE_CXXFLAGS+=-I$PWD/libraries/include && make $PARALLEL
 travis_finish qmake
 
 travis_start cmake "Building tests using cmake"

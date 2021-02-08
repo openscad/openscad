@@ -13,6 +13,8 @@ TESTDIR=tests
 do_build() {
 	echo "do_build()"
 
+	export CMAKE_PREFIX_PATH="$PWD/libraries/lib/cmake/CGAL:$CMAKE_PREFIX_PATH"
+
 	rm -rf "$BUILDDIR"
 	mkdir "$BUILDDIR"
 	(
