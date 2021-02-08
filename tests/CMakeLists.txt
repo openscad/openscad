@@ -8,6 +8,8 @@ if(POLICY CMP0017)
   # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
+# Interpret IN_LIST
+cmake_policy(SET CMP0057 NEW)
 
 project(tests)
 
@@ -222,6 +224,19 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(TESTCMD_EXE ${CMAKE_CURRENT_BINARY_DIR}/${TESTCMD_BASENAME})
   endif()
 
+  # TODO(ochafik): fix these with --enable=fast-csg!
+  list(APPEND FAST_CSG_DISABLED_TESTS
+    3mfexport_3mf-export
+    cgalpngtest_issue1246 csgpngtest_issue1246
+    cgalpngtest_polyhedron-tests csgpngtest_polyhedron-tests monotonepngtest_polyhedron-tests stlcgalpngtest_polyhedron-tests
+    cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
+    cgalstlsanitytest_normal-nan
+    opencsgtest_internal-cavity
+    opencsgtest_issue913
+    opencsgtest_render-tests
+    openscad-viewoptions-wireframe_view-options-tests
+    throwntogethertest_resize-convexity-tests)
+
   # Add tests from args
   foreach (SCADFILE ${TESTCMD_FILES})
     get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
@@ -237,7 +252,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union --enable=fast-csg")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -274,6 +289,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
+      if (NOT TEST_FULLNAME IN_LIST FAST_CSG_DISABLED_TESTS)
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+      endif()
+
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL)
         if (${TESTCMD_EXE} MATCHES "^.*openscad$")
@@ -281,10 +300,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
           #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
           #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
           #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
-        endif()
-        if (not ${FILE_BASENAME} MATCHES ".*issue911.*"
-            and not ${TESTCMD_EXE} MATCHES ".*openscad-viewoptions-wireframe$")
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
         endif()
       endif()
 
