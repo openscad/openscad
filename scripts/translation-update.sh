@@ -110,13 +110,13 @@ updatemo()
   cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
  fi
 
- cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
  if test -n "$SUFFIX"
  then
-  echo "adding suffix '$SUFFIX'"
-  sed -ie "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
-  sed -ie "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
+  echo "using suffix '$SUFFIX'"
  fi
+ cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
+ sed -i -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
+ sed -i -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
 GETTEXT_PATH=""
