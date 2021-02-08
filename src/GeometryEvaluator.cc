@@ -64,9 +64,11 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		}
 
 		// TODO(ochafik): option to allow CGALPolyhedron?
+#if FAST_CSG_AVAILABLE
 		if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(this->root)) {
 			this->root = CGALUtils::getGeometryAsPolySet(this->root);
 		}
+#endif
 
 		if (!allownef) {
 			// We cannot render concave polygons, so tessellate any 3D PolySets
