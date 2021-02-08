@@ -234,6 +234,17 @@ function(add_cmdline_test TESTCMD_BASENAME)
     opencsgtest_internal-cavity
     opencsgtest_issue913
     opencsgtest_render-tests
+    cgalstlsanitytest_normal-nan
+    # Weird interaction w/ lazy union
+    lazyunion-dump_lazyunion-children
+    lazyunion-dump_lazyunion-hull
+    lazyunion-dump_lazyunion-difference
+    lazyunion-dump_lazyunion-transform
+    lazyunion-opencsg_lazyunion-children
+    lazyunion-cgalpng_lazyunion-children
+    lazyunion-monotonepng_lazyunion-children
+    lazyunion-stlpngtest_lazyunion-children
+    lazyunion-offpngtest_lazyunion-children
     # No wireframe rendering yet.
     openscad-viewoptions-wireframe_view-options-tests
     # Resize issues that need investigation.
