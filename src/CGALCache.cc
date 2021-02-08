@@ -20,8 +20,10 @@ shared_ptr<const Geometry> CGALCache::get(const std::string &id) const
 
 bool CGALCache::acceptsGeometry(const shared_ptr<const Geometry> &geom) {
   return
-    dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) ||
-    dynamic_pointer_cast<const CGALPolyhedron>(geom);
+#ifdef FAST_CSG_AVAILABLE
+    dynamic_pointer_cast<const CGALPolyhedron>(geom) ||
+#endif
+    dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 }
 
 bool CGALCache::insert(const std::string &id, const shared_ptr<const Geometry> &N)

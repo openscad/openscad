@@ -181,8 +181,10 @@ namespace CGALUtils {
 	size_t getNumFacets(const Geometry& geom) {
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return ps->numFacets();
+#ifdef FAST_CSG_AVAILABLE
 		} else if (auto constpoly = dynamic_cast<const CGALPolyhedron*>(&geom)) {
 			return constpoly->numFacets();
+#endif
 		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
 			return nef->numFacets();
 		} else {
@@ -326,9 +328,11 @@ namespace CGALUtils {
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return createNefPolyhedronFromPolySet(*ps);
 		}
+#ifdef FAST_CSG_AVAILABLE
 		else if (auto poly = dynamic_cast<const CGALPolyhedron*>(&geom)) {
 			return new CGAL_Nef_polyhedron(*poly->toNefPolyhedron());
 		}
+#endif
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
 			return createNefPolyhedronFromPolygon2d(*poly2d);
 		}
@@ -590,9 +594,11 @@ namespace CGALUtils {
 			}
 			return ps;
 		}
+#ifdef FAST_CSG_AVAILABLE
 		if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(geom)) {
 			return poly->toPolySet();
 		}
+#endif
 		return nullptr;
 	}
 

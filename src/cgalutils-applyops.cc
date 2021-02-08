@@ -457,12 +457,14 @@ namespace CGALUtils {
 					}
 				}
 			}
+#ifdef FAST_CSG_AVAILABLE
 			else if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(chgeom)) {
 				poly->foreachVertexUntilTrue([&](auto &p) {
 					points.push_back(vector_convert<K::Point_3>(p));
 					return false;
 				});
 			}
+#endif
 			else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
