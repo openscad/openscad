@@ -101,6 +101,7 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
 }
 void RenderStatistic::visit(const CGALPolyhedron& poly)
 {
+#ifdef FAST_CSG_AVAILABLE
   bool simple = poly.isManifold();
   LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object (fast-csg):");
   LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
@@ -109,5 +110,8 @@ void RenderStatistic::visit(const CGALPolyhedron& poly)
   if (!simple) {
     LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
   }
+#else
+  assert(false);
+#endif
 }
 #endif // ENABLE_CGAL
