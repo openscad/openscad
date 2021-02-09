@@ -3,7 +3,7 @@ jobs:
   openscad-mxe-32bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/mxe-i686-deps:latest
+      - image: ochafik/openscad-mxe-i686-deps-fast-csg:latest
     steps:
       - checkout
       - run:
@@ -34,7 +34,7 @@ jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/mxe-x86_64-deps:latest
+      - image: ochafik/openscad-mxe-x86_64-deps-fast-csg:latest
     steps:
       - checkout
       - run:
@@ -65,7 +65,7 @@ jobs:
   openscad-appimage-64bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/appimage-x86_64-base:latest
+      - image: ochafik/openscad-appimage-x86_64-base-fast-csg:latest
     steps:
       - checkout
       - run:
@@ -136,7 +136,7 @@ jobs:
                           echo "Failed to match sha512 for $LIBRARIES_CACHE"
                           exit 1
                       fi
-                  fi    
+                  fi
                   echo "Start building dependencies: $(date)"
                   export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
                   export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
