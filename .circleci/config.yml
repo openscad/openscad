@@ -11,9 +11,9 @@ jobs:
           no_output_timeout: 18000
           command: |
               export NUMCPU=2
-              export MXEDIR=/root/openscad_deps/mxe
-              export LIB3MF_INCLUDEPATH=/root/openscad_deps/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
-              export LIB3MF_LIBPATH=/root/openscad_deps/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
+              export MXEDIR=/mxe
+              export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
+              export LIB3MF_LIBPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               ./scripts/release-common.sh -snapshot -mingw32 -v "$OPENSCAD_VERSION"
@@ -42,9 +42,9 @@ jobs:
           no_output_timeout: 18000
           command: |
               export NUMCPU=2
-              export MXEDIR=/root/openscad_deps/mxe
-              export LIB3MF_INCLUDEPATH=/root/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
-              export LIB3MF_LIBPATH=/root/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
+              export MXEDIR=/mxe
+              export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
+              export LIB3MF_LIBPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
@@ -78,12 +78,8 @@ jobs:
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
-              export CGAL_VERSION=5.2
-              curl -L --insecure https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.tar.xz --output CGAL-${CGAL_VERSION}.tar.xz
-              xz -f -d CGAL-${CGAL_VERSION}.tar.xz
-              ( cd CGAL-${CGAL_VERSION} && cmake . )
               qmake -v
-              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT" QMAKE_CXXFLAGS+=-I$PWD/CGAL-${CGAL_VERSION}/include
+              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j2
               make install INSTALL_ROOT=AppDir
               export PATH=/appimage/usr/bin:"$PATH"
