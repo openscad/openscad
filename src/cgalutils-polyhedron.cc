@@ -293,9 +293,9 @@ namespace CGALUtils {
 
 	template <class Polyhedron_A, class Polyhedron_B>
 	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b)
-  {
-    copyPolyhedron(poly_a, poly_b);
-  }
+	{
+		copyPolyhedron(poly_a, poly_b);
+	}
 
   template void appendToPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
 
