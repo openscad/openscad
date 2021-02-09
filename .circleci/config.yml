@@ -3,7 +3,7 @@ jobs:
   openscad-mxe-32bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/openscad-mxe-i686-deps:latest
+      - image: openscad/mxe-i686-deps:latest
     steps:
       - checkout
       - run:
@@ -35,7 +35,7 @@ jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/openscad-mxe-x86_64-deps:latest
+      - image: openscad/mxe-x86_64-deps:latest
     steps:
       - checkout
       - run:
@@ -67,7 +67,7 @@ jobs:
   openscad-appimage-64bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/openscad-appimage-x86_64-base:latest
+      - image: openscad/appimage-x86_64-base:latest
     steps:
       - checkout
       - run:
