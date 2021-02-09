@@ -296,6 +296,7 @@ struct OutgoingNotificationMessage : public RequestMessage {
 };
 
 // Base Class for Results
+
 MESSAGE_CLASS(ResponseResult) {
     //MAKE_DECODEABLE;
     virtual void decode(decode_env &env, JSONObject &object, const FieldNameType &field) = 0;
@@ -303,6 +304,9 @@ MESSAGE_CLASS(ResponseResult) {
     virtual ~ResponseResult() {}
 };
 
+MESSAGE_CLASS(ResponseArray) : public ResponseResult {
+    // This class is to be used as a tag that "result" should not be an object
+};
 
 MESSAGE_CLASS(ResponseError) {
     MAKE_DECODEABLE;
@@ -493,12 +497,43 @@ MESSAGE_CLASS(ShowMessageParams) : public OutgoingNotificationMessage {
     std::string message;
 };
 
-
 MESSAGE_CLASS(ImplementationRequest) : public TextDocumentPositionParams {
     // MAKE_DECODEABLE // No local fields => TextDocumentPositionParams takes care of decoding
-    void process(Connection *, project *, const RequestId &);
+    void process(Connection *, project *, const RequestId &) override;
 };
 
+MESSAGE_CLASS(DocumentSymbolRequest) : public RequestMessage {
+    MAKE_DECODEABLE;
+
+    TextDocumentIdentifier textDocument;
+
+    virtual void process(Connection *, project *, const RequestId &) override;
+};
+
+MESSAGE_CLASS(DocumentSymbol) {
+    MAKE_DECODEABLE;
+
+    std::string name;
+    OptionalType<std::string> detail;
+
+    // TODO enum class: SymbolKind
+    // SymbolKind kind;
+
+    // TODO SymbolTag
+    // std::vector<SymbolTag> tags;
+
+    bool deprecated;
+
+    lsRange range;
+    lsRange selectionRange;
+
+    std::vector<DocumentSymbol> children;
+};
+
+MESSAGE_CLASS(DocumentSymbolResponse) : public ResponseArray {
+    MAKE_DECODEABLE;
+    std::vector<DocumentSymbol> children;
+};
 
 ///////////////////////////////////////////////////////////
 // OpenSCAD extensions
@@ -510,7 +545,6 @@ MESSAGE_CLASS(OpenSCADRender) : public RequestMessage {
     // load (if needed) and start the rendering of the given document
     virtual void process(Connection *, project *, const RequestId &id);
 };
-
 
 #undef MESSAGE_CLASS
 #undef MAKE_DECODEABLE

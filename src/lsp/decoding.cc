@@ -238,8 +238,13 @@ bool decode_env::declare_field(JSONObject &object, ResponseMessage &target, cons
     } else {
         if (target.use_result && target.result) {
 //            assert(target.result);
-            auto resultchild = start_object(object, "result");
-            target.result->decode(*this, resultchild, "result");
+            if (auto resp_array = dynamic_cast<ResponseArray*>(target.result)) {
+                // An array response must not have a new object
+                declare_field(object, *resp_array, "result");
+            } else {
+                auto resultchild = start_object(object, "result");
+                target.result->decode(*this, resultchild, "result");
+            }
         }
         auto errorchild = start_object(object, "error");
         declare_field_optional(errorchild, target.error, "error");
@@ -248,6 +253,13 @@ bool decode_env::declare_field(JSONObject &object, ResponseMessage &target, cons
         std::cerr << "Having a message with neither error nor result\n";
     }
     return true;
+}
+
+template<>
+bool decode_env::declare_field(JSONObject &object, ResponseArray &target, const FieldNameType &field) {
+    // By the power of - polymorphism!
+    target.decode(*this, object, field);
+    return  true;
 }
 
 template<>
@@ -301,6 +313,11 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &target, c
                     },
                 }
             },
+        },
+        {"documentSymbolProvider", true // netbeans does not support the labeled version...
+            /*QJsonObject {
+                {"label", "OpenSCAD"},
+            },*/
         },
     };
     return true;
@@ -406,6 +423,30 @@ bool decode_env::declare_field(JSONObject &object, ImplementationRequest &target
     return declare_field(object, (TextDocumentPositionParams &)target, field);
 }
 
+template<>
+bool decode_env::declare_field(JSONObject &object, DocumentSymbolRequest &target, const FieldNameType &) {
+    declare_field(object, target.textDocument, "textDocument");
+    return true;
+}
+
+template<>
+bool decode_env::declare_field(JSONObject &object, DocumentSymbol &target, const FieldNameType &) {
+    declare_field(object, target.name, "name");
+    declare_field_optional(object, target.detail, "detail");
+    //declare_field(object, target.kind, "kind");
+    //declare_field_array(object, target.tags, "tags");
+    declare_field(object, target.deprecated, "deprecated");
+    declare_field(object, target.range, "range");
+    declare_field(object, target.selectionRange, "selectionRange");
+    return true;
+}
+
+template<>
+bool decode_env::declare_field(JSONObject &object, DocumentSymbolResponse &target, const FieldNameType &field) {
+    declare_field_array(object, target.children, field);
+    return true;
+}
+
 
 
 ///////////////////////////////////////////////////////////
@@ -456,6 +497,7 @@ void ConnectionHandler::register_messages() {
     MAP("textDocument/didClose", DidCloseTextDocument);
     //MAP("textDocument/implementation", ImplementationRequest);
     //MAP("textDocument/hover", TextDocumentHover);
+    MAP("textDocument/documentSymbol", DocumentSymbolRequest);
 
     MAP("$openscad/preview", OpenSCADRender);
 

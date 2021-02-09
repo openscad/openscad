@@ -53,3 +53,18 @@ void ImplementationRequest::process(Connection *conn, project *proj, const Reque
     }
     conn->send(ResponseError(ErrorCode::ParseError, "Referenced element does not have a module"), id);
 }
+
+
+void DocumentSymbolRequest::process(Connection *conn, project *proj, const RequestId &id) {
+    auto file = proj->getFile(this->textDocument.uri);
+    if (!file) {
+        conn->send(ResponseError(ErrorCode::InvalidParams, "No associated document found"), id);
+        return;
+    }
+
+    DocumentSymbolResponse resp;
+    // TODO: Get all Document Symbols (from AST?)
+
+
+    conn->send(resp, id);
+}
