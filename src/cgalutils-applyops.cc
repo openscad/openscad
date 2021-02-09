@@ -524,10 +524,14 @@ namespace CGALUtils {
 				for (size_t i = 0; i < 2; ++i) {
 					CGAL_Polyhedron poly;
 
-
 					auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
-
 					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
+#ifdef FAST_CSG_AVAILABLE
+					// TODO(ochafik): Avoid this conversion / do computations with CGALPolyhedron::kernel_t.
+					if (auto fastCsgPoly = dynamic_pointer_cast<const CGALPolyhedron>(operands[i])) {
+						nef = fastCsgPoly->toNefPolyhedron();
+					}
+#endif
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) nef->p3->convert_to_polyhedron(poly);

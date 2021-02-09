@@ -227,15 +227,17 @@ function(add_cmdline_test TESTCMD_BASENAME)
   # Tests for which fast-csg cannot be enabled yet.
   # TODO(ochafik): fix these with --enable=fast-csg!
   list(APPEND FAST_CSG_DISABLED_TESTS
-    3mfexport_3mf-export
-    cgalpngtest_issue1246 csgpngtest_issue1246
-    cgalpngtest_polyhedron-tests csgpngtest_polyhedron-tests monotonepngtest_polyhedron-tests stlcgalpngtest_polyhedron-tests
-    cgalstlsanitytest_normal-nan
+    # Resize issues that need investigation.
+    throwntogethertest_resize-convexity-tests
+    cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
+    # Face orientation issue (createPolyhedronFromPolySet no longer flips face orientations)
+    opencsgtest_issue911
+    opencsgtest_render-tests
     opencsgtest_internal-cavity
     opencsgtest_issue913
-    opencsgtest_render-tests
-    cgalstlsanitytest_normal-nan
-    # Weird interaction w/ lazy union
+    # Different order of vertices
+    3mfexport_3mf-export
+    # Weird interaction w/ lazy union only on some platforms (not mac): deps version issue?
     lazyunion-dump_lazyunion-children
     lazyunion-dump_lazyunion-hull
     lazyunion-dump_lazyunion-difference
@@ -246,13 +248,14 @@ function(add_cmdline_test TESTCMD_BASENAME)
     lazyunion-stlpngtest_lazyunion-children
     lazyunion-offpngtest_lazyunion-children
     lazyunion-cgalpng_lazyunion-difference-for
+    # Needs investigation:
+    cgalpngtest_issue1246 csgpngtest_issue1246
+    # Test script argument passing issue
+    cgalstlsanitytest_normal-nan
     # No wireframe rendering yet.
     openscad-viewoptions-wireframe_view-options-tests
-    # Resize issues that need investigation.
-    throwntogethertest_resize-convexity-tests
-    cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
-    # Hangs forever: issue with arbitrary precision numbers
-    opencsgtest_issue911 cgalpngtest_issue911 csgpngtest_issue911)
+    # Arguably, doing a better job salvaging invalid polygons than the current code (could just update goldens)
+    cgalpngtest_polyhedron-tests csgpngtest_polyhedron-tests monotonepngtest_polyhedron-tests stlcgalpngtest_polyhedron-tests)
 
   # Add tests from args
   foreach (SCADFILE ${TESTCMD_FILES})
