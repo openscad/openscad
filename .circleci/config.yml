@@ -3,7 +3,7 @@ jobs:
   openscad-mxe-32bit:
     working_directory: ~/workspace
     docker:
-      - image: ochafik/openscad-mxe-i686-deps-fast-csg:latest
+      - image: openscad/openscad-mxe-i686-deps:latest
     steps:
       - checkout
       - run:
@@ -12,6 +12,7 @@ jobs:
           command: |
               export NUMCPU=2
               export MXEDIR=/mxe
+              ( cd $MXEDIR && git remote set-url origin https://github.com/ochafik/mxe.git && git pull && git checkout openscad-cgal-5.2 && make MXE_PLUGIN_DIRS=plugins/gcc7 cgal MXE_TARGETS=i686-w64-mingw32.static.posix -j 4 JOBS=4 )
               export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
@@ -34,7 +35,7 @@ jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
     docker:
-      - image: ochafik/openscad-mxe-x86_64-deps-fast-csg:latest
+      - image: openscad/openscad-mxe-x86_64-deps:latest
     steps:
       - checkout
       - run:
@@ -43,6 +44,7 @@ jobs:
           command: |
               export NUMCPU=2
               export MXEDIR=/mxe
+              ( cd $MXEDIR && git remote set-url origin https://github.com/ochafik/mxe.git && git pull && git checkout openscad-cgal-5.2 && make MXE_PLUGIN_DIRS=plugins/gcc7 cgal MXE_TARGETS=x86_64-w64-mingw32.static.posix -j 4 JOBS=4 )
               export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
@@ -65,13 +67,14 @@ jobs:
   openscad-appimage-64bit:
     working_directory: ~/workspace
     docker:
-      - image: ochafik/openscad-appimage-x86_64-base-fast-csg:latest
+      - image: openscad/openscad-appimage-x86_64-base:latest
     steps:
       - checkout
       - run:
           name: Build OpenSCAD AppImage (64bit)
           no_output_timeout: 18000
           command: |
+              ( export CGAL_VERSION=5.2 && curl -L --insecure https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.tar.xz --output CGAL-${CGAL_VERSION}.tar.xz && xz -f -d CGAL-${CGAL_VERSION}.tar.xz && tar -xf CGAL-${CGAL_VERSION}.tar && cd CGAL-${CGAL_VERSION} && cmake . -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release && make install && cd .. && rm -fR CGAL-* )
               set +e
               . /opt/qt5*/bin/qt5*-env.sh
               set -e
