@@ -15,4 +15,4 @@ then
 fi
 
 echo "Compiling language files (CWD = `pwd`)..."
-"$SCRIPT" updatemo
+"$SCRIPT" updatemo "$@"
