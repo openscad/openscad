@@ -70,7 +70,8 @@ if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
 	cd $MXEDIR/..
 	echo "Downloading MXE into " $PWD
-	git clone https://github.com/openscad/mxe.git $MXEDIR
+	git clone https://github.com/ochafik/mxe.git $MXEDIR
+	# git clone https://github.com/openscad/mxe.git $MXEDIR
 fi
 
 echo "entering" $MXEDIR
@@ -78,6 +79,10 @@ cd $MXEDIR
 if [ "`git config --get remote.origin.url | grep github.com.openscad`" ]; then
  echo 'checkout openscad-snapshot-build branch'
  git checkout openscad-snapshot-build
+fi
+if [ "`git config --get remote.origin.url | grep github.com.ochafik`" ]; then
+ echo 'checkout openscad-cgal-5.2 branch'
+ git checkout openscad-cgal-5.2
 fi
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32.static.posix'
