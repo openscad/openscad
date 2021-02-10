@@ -504,7 +504,6 @@ namespace CGALUtils {
 
 	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
 	template void transform(CGAL::Nef_polyhedron_3<CGAL::Epeck> &N, const Transform3d &matrix);
-	template void transform(CGAL::Nef_polyhedron_3<CGAL::Epick> &N, const Transform3d &matrix);
 
 	template <typename K>
 	void transform(CGAL::Polyhedron_3<K> &poly, const Transform3d &matrix)
