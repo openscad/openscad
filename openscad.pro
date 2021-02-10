@@ -666,7 +666,7 @@ SOURCES += src/cgalutils.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-hybrid.cc \
            src/cgalutils-kernel.cc \
-           src/cgalutils-mesh.cc \
+           src/cgalutils-corefinement.cc \
            src/cgalutils-polyhedron.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \

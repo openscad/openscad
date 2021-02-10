@@ -531,7 +531,7 @@ set(CGAL_SOURCES
   src/cgalutils-applyops.cc
   src/cgalutils-hybrid.cc
   src/cgalutils-kernel.cc
-  src/cgalutils-mesh.cc
+  src/cgalutils-corefinement.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc

@@ -111,7 +111,7 @@ SOURCES += export_nef.cpp \
            ../src/cgalutils-tess.cc \
            ../src/cgalutils-hybrid.cc \
            ../src/cgalutils-kernel.cc \
-           ../src/cgalutils-mesh.cc \
+           ../src/cgalutils-corefinement.cc \
            ../src/cgalutils-polyhedron.cc \
            ../src/polyset.cc \
            ../src/polyset-gl.cc \

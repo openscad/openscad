@@ -10,9 +10,6 @@
 #include "polyset.h"
 #include "scoped_timer.h"
 
-namespace PMP = CGAL::Polygon_mesh_processing;
-namespace params = PMP::parameters;
-
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef)
 {
 	assert(nef);
@@ -161,7 +158,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 									 });
 		else
 			polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-				PMP::corefine_and_compute_union(destinationPoly, otherPoly, destinationPoly);
+				CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
 			});
 	}
 	bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
@@ -182,7 +179,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 								 });
 	else
 		polyBinOp("intersection", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-			PMP::corefine_and_compute_intersection(destinationPoly, otherPoly, destinationPoly);
+			CGALUtils::corefineAndComputeIntersection(destinationPoly, otherPoly);
 		});
 
 	std::vector<bbox_t> new_bboxes;
@@ -206,7 +203,7 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 								 });
 	else
 		polyBinOp("difference", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-			PMP::corefine_and_compute_difference(destinationPoly, otherPoly, destinationPoly);
+			CGALUtils::corefineAndComputeDifference(destinationPoly, otherPoly);
 		});
 }
 
