@@ -8,18 +8,18 @@
 
 namespace CGALUtils {
 
-void corefineAndComputeUnion(CGALHybridPolyhedron::polyhedron_t &destination,
-														 CGALHybridPolyhedron::polyhedron_t &other)
+void corefineAndComputeUnion(CGAL::Polyhedron_3<CGAL::Epeck> &destination,
+														 CGAL::Polyhedron_3<CGAL::Epeck> &other)
 {
 	CGAL::Polygon_mesh_processing::corefine_and_compute_union(destination, other, destination);
 }
-void corefineAndComputeIntersection(CGALHybridPolyhedron::polyhedron_t &destination,
-																		CGALHybridPolyhedron::polyhedron_t &other)
+void corefineAndComputeIntersection(CGAL::Polyhedron_3<CGAL::Epeck> &destination,
+																		CGAL::Polyhedron_3<CGAL::Epeck> &other)
 {
 	CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(destination, other, destination);
 }
-void corefineAndComputeDifference(CGALHybridPolyhedron::polyhedron_t &destination,
-																	CGALHybridPolyhedron::polyhedron_t &other)
+void corefineAndComputeDifference(CGAL::Polyhedron_3<CGAL::Epeck> &destination,
+																	CGAL::Polyhedron_3<CGAL::Epeck> &other)
 {
 	CGAL::Polygon_mesh_processing::corefine_and_compute_difference(destination, other, destination);
 }

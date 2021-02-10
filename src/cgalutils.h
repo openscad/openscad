@@ -16,6 +16,7 @@ typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
 class Tree;
+class CGALHybridPolyhedron;
 
 namespace CGAL {
   template <typename Point>
@@ -123,17 +124,15 @@ namespace CGALUtils {
 		return CGAL::Cartesian_converter<
 			FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 	}
-#ifdef FAST_CSG_AVAILABLE
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron &hybrid);
 	std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom);
 	void corefineAndComputeUnion(
-		CGALHybridPolyhedron::polyhedron_t &destination,
-		CGALHybridPolyhedron::polyhedron_t &other);
+		CGAL::Polyhedron_3<CGAL::Epeck> &destination,
+		CGAL::Polyhedron_3<CGAL::Epeck> &other);
 	void corefineAndComputeIntersection(
-		CGALHybridPolyhedron::polyhedron_t &destination,
-		CGALHybridPolyhedron::polyhedron_t &other);
+		CGAL::Polyhedron_3<CGAL::Epeck> &destination,
+		CGAL::Polyhedron_3<CGAL::Epeck> &other);
 	void corefineAndComputeDifference(
-		CGALHybridPolyhedron::polyhedron_t &destination,
-		CGALHybridPolyhedron::polyhedron_t &other);
-#endif
+		CGAL::Polyhedron_3<CGAL::Epeck> &destination,
+		CGAL::Polyhedron_3<CGAL::Epeck> &other);
 };
