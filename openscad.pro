@@ -657,7 +657,7 @@ HEADERS += src/cgal.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
            src/cgalworker.h \
-           src/CGALPolyhedron.h \
+           src/CGALHybridPolyhedron.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
@@ -671,7 +671,7 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/cgalworker.cc \
-           src/CGALPolyhedron.cc \
+           src/CGALHybridPolyhedron.cc \
            src/Polygon2d-CGAL.cc \
            src/import_nef.cc
 }

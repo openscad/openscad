@@ -30,7 +30,7 @@
 #include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"
-#include "CGALPolyhedron.h"
+#include "CGALHybridPolyhedron.h"
 
 #include <map>
 #include <queue>
@@ -182,7 +182,7 @@ namespace CGALUtils {
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return ps->numFacets();
 #ifdef FAST_CSG_AVAILABLE
-		} else if (auto constpoly = dynamic_cast<const CGALPolyhedron*>(&geom)) {
+		} else if (auto constpoly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
 			return constpoly->numFacets();
 #endif
 		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
@@ -329,7 +329,7 @@ namespace CGALUtils {
 			return createNefPolyhedronFromPolySet(*ps);
 		}
 #ifdef FAST_CSG_AVAILABLE
-		else if (auto poly = dynamic_cast<const CGALPolyhedron*>(&geom)) {
+		else if (auto poly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
 			return new CGAL_Nef_polyhedron(*poly->toNefPolyhedron());
 		}
 #endif
@@ -594,7 +594,7 @@ namespace CGALUtils {
 			return ps;
 		}
 #ifdef FAST_CSG_AVAILABLE
-		if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(geom)) {
+		if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
 			return poly->toPolySet();
 		}
 #endif

@@ -11,7 +11,7 @@
 #include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
-#include "CGALPolyhedron.h"
+#include "CGALHybridPolyhedron.h"
 
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
@@ -81,12 +81,12 @@ namespace CGALUtils {
 	}
 
 #ifdef FAST_CSG_AVAILABLE
-	shared_ptr<CGALPolyhedron> applyUnion3DCGALPolyhedron(
+	shared_ptr<CGALHybridPolyhedron> applyUnion3DCGALHybridPolyhedron(
 		const Geometry::Geometries::const_iterator &chbegin,
 		const Geometry::Geometries::const_iterator &chend,
 		const Tree* tree)
 	{
-		typedef std::pair<shared_ptr<CGALPolyhedron>, int> QueueItem;
+		typedef std::pair<shared_ptr<CGALHybridPolyhedron>, int> QueueItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark
 			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
@@ -111,7 +111,7 @@ namespace CGALUtils {
 				if (!chgeom || chgeom->isEmpty()) {
 					continue;
 				}
-				auto poly = CGALPolyhedron::fromGeometry(*chgeom);
+				auto poly = CGALHybridPolyhedron::fromGeometry(*chgeom);
 				if (!poly) continue;
 
 				total_facets += poly->numFacets();
@@ -154,7 +154,7 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	shared_ptr<CGALPolyhedron> applyOperator3DCGALPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
 	{
 		if (op == OpenSCADOperator::DIFFERENCE) {
 			auto size = children.size();
@@ -162,12 +162,12 @@ namespace CGALUtils {
 				auto it = children.begin();
 				auto &firstChild = *it++;
 
-				auto firstPoly = firstChild.second ? CGALPolyhedron::fromGeometry(*firstChild.second) : nullptr;
+				auto firstPoly = firstChild.second ? CGALHybridPolyhedron::fromGeometry(*firstChild.second) : nullptr;
 				if (!firstPoly || firstPoly->isEmpty()) return firstPoly;
 
 				LOG(message_group::Echo, getLocation(it->first), "",
 					"Reducing %1$d difference terms using fast-union", size - 1);
-				auto unionSubtracted = applyUnion3DCGALPolyhedron(it, children.end(), tree);
+				auto unionSubtracted = applyUnion3DCGALHybridPolyhedron(it, children.end(), tree);
 				if (!unionSubtracted || unionSubtracted->isEmpty()) return firstPoly;
 
 				*firstPoly -= *unionSubtracted;
@@ -176,7 +176,7 @@ namespace CGALUtils {
 			}
 		}
 
-		shared_ptr<CGALPolyhedron> N;
+		shared_ptr<CGALHybridPolyhedron> N;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
@@ -184,7 +184,7 @@ namespace CGALUtils {
 
 		try {
 			for(const auto &item : children) {
-				auto chN = item.second ? CGALPolyhedron::fromGeometry(*item.second) : nullptr;
+				auto chN = item.second ? CGALHybridPolyhedron::fromGeometry(*item.second) : nullptr;
 				// Initialize N with first expected geometric object
 				if (!foundFirst) {
 					if (chN) {
@@ -224,7 +224,7 @@ namespace CGALUtils {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DCGALPolyhedron %1$s: %2$s",opstr,e.what());
+			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DCGALHybridPolyhedron %1$s: %2$s",opstr,e.what());
 
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -240,7 +240,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			return applyOperator3DCGALPolyhedron(children, op, tree);
+			return applyOperator3DCGALHybridPolyhedron(children, op, tree);
 		}
 #endif // FAST_CSG_AVAILABLE
 
@@ -306,11 +306,11 @@ namespace CGALUtils {
 	}
 
 #ifdef FAST_POLYHEDRON_AVAILABLE
-	shared_ptr<const CGALPolyhedron> applyUnion3DPolyhedron(
+	shared_ptr<const CGALHybridPolyhedron> applyUnion3DPolyhedron(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree)
 	{
-		typedef std::pair<shared_ptr<CGALPolyhedron>, int> QueueItem;
+		typedef std::pair<shared_ptr<CGALHybridPolyhedron>, int> QueueItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark
 			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
@@ -336,7 +336,7 @@ namespace CGALUtils {
 					continue;
 				}
 				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
-				auto poly = CGALPolyhedron::fromGeometry(*chgeom);
+				auto poly = CGALHybridPolyhedron::fromGeometry(*chgeom);
 				if (!poly) continue;
 
 				total_facets += poly->numFacets();
@@ -382,7 +382,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			return applyUnion3DCGALPolyhedron(chbegin, chend, tree);
+			return applyUnion3DCGALHybridPolyhedron(chbegin, chend, tree);
 		}
 #endif // FAST_CSG_AVAILABLE
 
@@ -458,7 +458,7 @@ namespace CGALUtils {
 				}
 			}
 #ifdef FAST_CSG_AVAILABLE
-			else if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(chgeom)) {
+			else if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
 				poly->foreachVertexUntilTrue([&](auto &p) {
 					points.push_back(vector_convert<K::Point_3>(p));
 					return false;
@@ -527,8 +527,8 @@ namespace CGALUtils {
 					auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
 					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
 #ifdef FAST_CSG_AVAILABLE
-					// TODO(ochafik): Avoid this conversion / do computations with CGALPolyhedron::kernel_t.
-					if (auto fastCsgPoly = dynamic_pointer_cast<const CGALPolyhedron>(operands[i])) {
+					// TODO(ochafik): Avoid this conversion / do computations with CGALHybridPolyhedron::kernel_t.
+					if (auto fastCsgPoly = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
 						nef = fastCsgPoly->toNefPolyhedron();
 					}
 #endif

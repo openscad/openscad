@@ -31,7 +31,7 @@
 #include "boost-utils.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALPolyhedron.h"
+#include "CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #include "RenderStatistic.h"
@@ -99,7 +99,7 @@ void RenderStatistic::visit(const CGAL_Nef_polyhedron& Nef)
     }
   }
 }
-void RenderStatistic::visit(const CGALPolyhedron& poly)
+void RenderStatistic::visit(const CGALHybridPolyhedron& poly)
 {
 #ifdef FAST_CSG_AVAILABLE
   bool simple = poly.isManifold();

@@ -36,7 +36,7 @@ class CGAL_Nef_polyhedron;
  * TODO(ochafik): Turn this into a regular Geometry and handle it everywhere
  * the CGAL_Nef_polyhedron is handled.
  */
-class CGALPolyhedron : public Geometry
+class CGALHybridPolyhedron : public Geometry
 {
 	// Notes on kernels:
 	// - CGAL::Epeck has some pathological explosions of numerical computation time
@@ -70,17 +70,17 @@ public:
 	 * triangulated (requirement of Polygon Mesh Processing functions),
 	 * and we check manifoldness (we use a nef polyhedra for non-manifold cases).
 	 */
-	CGALPolyhedron(const PolySet &ps);
+	CGALHybridPolyhedron(const PolySet &ps);
 
 	/*! Builds a polyhedron using a legacy nef polyhedron object.
-	 * This transitional method will disappear when this CGALPolyhedron object is
+	 * This transitional method will disappear when this CGALHybridPolyhedron object is
 	 * fully integrated and replaces all of CGAL_Nef_polyhedron's uses.
 	 */
-	CGALPolyhedron(const CGAL_Nef_polyhedron3 &nef);
+	CGALHybridPolyhedron(const CGAL_Nef_polyhedron3 &nef);
 
-	CGALPolyhedron(const CGALPolyhedron &other);
+	CGALHybridPolyhedron(const CGALHybridPolyhedron &other);
 
-	CGALPolyhedron() = delete;
+	CGALHybridPolyhedron() = delete;
 
 	bool isEmpty() const;
 	size_t numFacets() const;
@@ -93,43 +93,43 @@ public:
 
 	std::string dump() const override;
 	unsigned int getDimension() const override { return 3; }
-	Geometry *copy() const override { return new CGALPolyhedron(*this); }
+	Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
 
 	std::shared_ptr<const PolySet> toPolySet() const;
 	std::shared_ptr<const CGAL_Nef_polyhedron> toNefPolyhedron() const;
 
 	/*! In-place union (this may also mutate/corefine the other polyhedron). */
-	void operator+=(CGALPolyhedron &other);
+	void operator+=(CGALHybridPolyhedron &other);
 	/*! In-place intersection (this may also mutate/corefine the other polyhedron). */
-	void operator*=(CGALPolyhedron &other);
+	void operator*=(CGALHybridPolyhedron &other);
 	/*! In-place difference (this may also mutate/corefine the other polyhedron). */
-	void operator-=(CGALPolyhedron &other);
+	void operator-=(CGALHybridPolyhedron &other);
 	/*! In-place minkowksi operation. If the other polyhedron is non-convex,
 	 * it is also modified during the computation, i.e., it is decomposed into convex pieces.
 	 */
-	void minkowski(CGALPolyhedron &other);
+	void minkowski(CGALHybridPolyhedron &other);
 	virtual void transform(const Transform3d &mat) override;
 	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize) override;
 
-	static std::shared_ptr<CGALPolyhedron> fromGeometry(const Geometry &geom);
+	static std::shared_ptr<CGALHybridPolyhedron> fromGeometry(const Geometry &geom);
 
 	/*! Iterate over all vertices' points until the function returns true (for done). */
 	void foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const;
 
 private:
-	bool sharesAnyVertexWith(const CGALPolyhedron &other) const;
-	bool needsNefForOperationWith(const CGALPolyhedron &other) const;
+	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
+	bool needsNefForOperationWith(const CGALHybridPolyhedron &other) const;
 
 	/*! Runs a binary operation that operates on nef polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
-	void nefPolyBinOp(const std::string &opName, CGALPolyhedron &other,
+	void nefPolyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
 										const std::function<void(nef_polyhedron_t &destinationNef,
 																						 nef_polyhedron_t &otherNef)> &operation);
 
 	/*! Runs a binary operation that operates on polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
 	void polyBinOp(
-			const std::string &opName, CGALPolyhedron &other,
+			const std::string &opName, CGALHybridPolyhedron &other,
 			const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
 
 	polyhedron_t &convertToPolyhedron();
@@ -144,7 +144,7 @@ private:
 
 	bbox_t getExactBoundingBox() const;
 
-	bool intersects(const CGALPolyhedron &other) const
+	bool intersects(const CGALHybridPolyhedron &other) const
 	{
 		for (auto &bbox : bboxes)
 			if (other.intersects(bbox)) return true;

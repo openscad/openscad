@@ -15,7 +15,7 @@
 #include "projectionnode.h"
 #include "csgops.h"
 #include "textnode.h"
-#include "CGALPolyhedron.h"
+#include "CGALHybridPolyhedron.h"
 #include "cgalutils.h"
 #include "rendernode.h"
 #include "clipper-utils.h"
@@ -63,9 +63,9 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->traverse(node);
 		}
 
-		// TODO(ochafik): option to allow CGALPolyhedron?
+		// TODO(ochafik): option to allow CGALHybridPolyhedron?
 #ifdef FAST_CSG_AVAILABLE
-		if (auto poly = dynamic_pointer_cast<const CGALPolyhedron>(this->root)) {
+		if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
 			this->root = CGALUtils::getGeometryAsPolySet(this->root);
 		}
 #endif

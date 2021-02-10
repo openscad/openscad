@@ -31,7 +31,7 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALPolyhedron.h"
+#include "CGALHybridPolyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
 
@@ -171,7 +171,7 @@ size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
  */
-size_t append_stl(const CGALPolyhedron &poly, std::ostream &output,
+size_t append_stl(const CGALHybridPolyhedron &poly, std::ostream &output,
 		bool binary)
 {
   size_t triangle_count = 0;
@@ -207,7 +207,7 @@ size_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
 		triangle_count += append_stl(*ps, output, binary);
 	}
 #ifdef FAST_CSG_AVAILABLE
-	else if (const auto poly = dynamic_pointer_cast<const CGALPolyhedron>(geom)) {
+	else if (const auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
 		triangle_count += append_stl(*poly, output, binary);
 	}
 #endif

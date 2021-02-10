@@ -1,5 +1,5 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
-#include "CGALPolyhedron.h"
+#include "CGALHybridPolyhedron.h"
 
 #ifdef FAST_CSG_AVAILABLE
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
@@ -16,7 +16,6 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #include "feature.h"
-#include "grid.h"
 #include "hash.h"
 #include "polyset.h"
 #include "scoped_timer.h"
@@ -24,9 +23,9 @@
 namespace PMP = CGAL::Polygon_mesh_processing;
 namespace params = PMP::parameters;
 
-CGALPolyhedron::CGALPolyhedron(const PolySet &ps)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const PolySet &ps)
 {
-	SCOPED_PERFORMANCE_TIMER("CGALPolyhedron(PolySet)");
+	SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron(PolySet)");
 
 	auto polyhedron = make_shared<polyhedron_t>();
 	data = polyhedron;
@@ -41,7 +40,7 @@ CGALPolyhedron::CGALPolyhedron(const PolySet &ps)
 	// 	PMP::reverse_face_orientations(*polyhedron);
 	// }
 	if (!ps.is_manifold() && !ps.is_convex()) {
-		SCOPED_PERFORMANCE_TIMER("CGALPolyhedron::buildPolyhedron: manifoldness checks");
+		SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron::buildPolyhedron: manifoldness checks");
 
 		if (PMP::duplicate_non_manifold_vertices(*polyhedron)) {
 			LOG(message_group::Warning, Location::NONE, "",
@@ -51,7 +50,8 @@ CGALPolyhedron::CGALPolyhedron(const PolySet &ps)
 	}
 }
 
-CGALPolyhedron::CGALPolyhedron(const CGAL_Nef_polyhedron3 &nef)
+//
+CGALHybridPolyhedron::CGALHybridPolyhedron(const CGAL_Nef_polyhedron3 &nef)
 {
 	SCOPED_PERFORMANCE_TIMER("Polyhedron(CGAL_Nef_polyhedron3)");
 
@@ -63,7 +63,7 @@ CGALPolyhedron::CGALPolyhedron(const CGAL_Nef_polyhedron3 &nef)
 	bboxes.push_back(CGALUtils::boundingBox(*polyhedron));
 }
 
-CGALPolyhedron::CGALPolyhedron(const CGALPolyhedron &other) : bboxes(other.bboxes)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron &other) : bboxes(other.bboxes)
 {
 	if (auto poly = other.getPolyhedron()) {
 		data = make_shared<polyhedron_t>(*poly);
@@ -76,24 +76,24 @@ CGALPolyhedron::CGALPolyhedron(const CGALPolyhedron &other) : bboxes(other.bboxe
 	}
 }
 
-CGALPolyhedron::nef_polyhedron_t *CGALPolyhedron::getNefPolyhedron() const
+CGALHybridPolyhedron::nef_polyhedron_t *CGALHybridPolyhedron::getNefPolyhedron() const
 {
 	auto pp = boost::get<shared_ptr<nef_polyhedron_t>>(&data);
 	return pp ? pp->get() : nullptr;
 }
 
-CGALPolyhedron::polyhedron_t *CGALPolyhedron::getPolyhedron() const
+CGALHybridPolyhedron::polyhedron_t *CGALHybridPolyhedron::getPolyhedron() const
 {
 	auto pp = boost::get<shared_ptr<polyhedron_t>>(&data);
 	return pp ? pp->get() : nullptr;
 }
 
-BoundingBox CGALPolyhedron::getBoundingBox() const
+BoundingBox CGALHybridPolyhedron::getBoundingBox() const
 {
 	return CGALUtils::createBoundingBoxFromIsoCuboid(getExactBoundingBox());
 }
 
-CGALPolyhedron::bbox_t CGALPolyhedron::getExactBoundingBox() const
+CGALHybridPolyhedron::bbox_t CGALHybridPolyhedron::getExactBoundingBox() const
 {
 	bbox_t result(0, 0, 0, 0, 0, 0);
 	std::vector<point_t> points;
@@ -105,12 +105,12 @@ CGALPolyhedron::bbox_t CGALPolyhedron::getExactBoundingBox() const
 	return result;
 }
 
-bool CGALPolyhedron::isEmpty() const
+bool CGALHybridPolyhedron::isEmpty() const
 {
 	return numFacets() == 0;
 }
 
-size_t CGALPolyhedron::numFacets() const
+size_t CGALHybridPolyhedron::numFacets() const
 {
 	if (auto poly = getPolyhedron()) {
 		return poly->size_of_facets();
@@ -122,7 +122,7 @@ size_t CGALPolyhedron::numFacets() const
 	return 0;
 }
 
-size_t CGALPolyhedron::numVertices() const
+size_t CGALHybridPolyhedron::numVertices() const
 {
 	if (auto poly = getPolyhedron()) {
 		return poly->size_of_vertices();
@@ -134,7 +134,7 @@ size_t CGALPolyhedron::numVertices() const
 	return 0;
 }
 
-bool CGALPolyhedron::isManifold() const
+bool CGALHybridPolyhedron::isManifold() const
 {
 	if (getPolyhedron()) {
 		// We don't keep simple polyhedra if they're not manifold (see contructor)
@@ -147,7 +147,7 @@ bool CGALPolyhedron::isManifold() const
 	return false;
 }
 
-shared_ptr<const PolySet> CGALPolyhedron::toPolySet() const
+shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
 	if (auto poly = getPolyhedron()) {
 		SCOPED_PERFORMANCE_TIMER("Polyhedron -> PolySet");
@@ -171,7 +171,7 @@ shared_ptr<const PolySet> CGALPolyhedron::toPolySet() const
 	}
 }
 
-shared_ptr<const CGAL_Nef_polyhedron> CGALPolyhedron::toNefPolyhedron() const
+shared_ptr<const CGAL_Nef_polyhedron> CGALHybridPolyhedron::toNefPolyhedron() const
 {
 	if (auto poly = getPolyhedron()) {
 		SCOPED_PERFORMANCE_TIMER("Polyhedron -> Nef");
@@ -199,18 +199,18 @@ shared_ptr<const CGAL_Nef_polyhedron> CGALPolyhedron::toNefPolyhedron() const
 	}
 }
 
-void CGALPolyhedron::clear()
+void CGALHybridPolyhedron::clear()
 {
 	data = make_shared<polyhedron_t>();
 	bboxes.clear();
 }
 
-bool CGALPolyhedron::needsNefForOperationWith(const CGALPolyhedron &other) const
+bool CGALHybridPolyhedron::needsNefForOperationWith(const CGALHybridPolyhedron &other) const
 {
 	return !isManifold() || !other.isManifold() || sharesAnyVertexWith(other);
 }
 
-void CGALPolyhedron::operator+=(CGALPolyhedron &other)
+void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
 	if (!intersects(other) && isManifold() && other.isManifold()) {
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
@@ -231,7 +231,7 @@ void CGALPolyhedron::operator+=(CGALPolyhedron &other)
 	bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
 }
 
-void CGALPolyhedron::operator*=(CGALPolyhedron &other)
+void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 {
 	if (!intersects(other)) {
 		LOG(message_group::Warning, Location::NONE, "", "Empty intersection");
@@ -255,7 +255,7 @@ void CGALPolyhedron::operator*=(CGALPolyhedron &other)
 	bboxes = new_bboxes;
 }
 
-void CGALPolyhedron::operator-=(CGALPolyhedron &other)
+void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 {
 	if (!intersects(other)) {
 		LOG(message_group::Warning, Location::NONE, "", "Difference with non-intersecting geometry");
@@ -274,7 +274,7 @@ void CGALPolyhedron::operator-=(CGALPolyhedron &other)
 		});
 }
 
-void CGALPolyhedron::minkowski(CGALPolyhedron &other)
+void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron &other)
 {
 	nefPolyBinOp("minkowski", other,
 							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
@@ -282,7 +282,7 @@ void CGALPolyhedron::minkowski(CGALPolyhedron &other)
 							 });
 }
 
-void CGALPolyhedron::transform(const Transform3d &mat)
+void CGALHybridPolyhedron::transform(const Transform3d &mat)
 {
 	if (mat.matrix().determinant() == 0) {
 		LOG(message_group::Warning, Location::NONE, "", "Scaling a 3D object with 0 - removing object");
@@ -304,7 +304,7 @@ void CGALPolyhedron::transform(const Transform3d &mat)
 	}
 }
 
-void CGALPolyhedron::resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize)
+void CGALHybridPolyhedron::resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize)
 {
 	if (this->isEmpty()) return;
 
@@ -312,16 +312,16 @@ void CGALPolyhedron::resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3
 			CGALUtils::computeResizeTransform(getExactBoundingBox(), getDimension(), newsize, autosize));
 }
 
-std::string CGALPolyhedron::dump() const
+std::string CGALHybridPolyhedron::dump() const
 {
-	assert(!"TODO: implement CGALPolyhedron::dump!");
+	assert(!"TODO: implement CGALHybridPolyhedron::dump!");
 	return "?";
 	// return OpenSCAD::dump_svg(toPolySet());
 }
 
-size_t CGALPolyhedron::memsize() const
+size_t CGALHybridPolyhedron::memsize() const
 {
-	size_t total = sizeof(CGALPolyhedron);
+	size_t total = sizeof(CGALHybridPolyhedron);
 	total += bboxes.size() * sizeof(bbox_t);
 	if (auto poly = getPolyhedron()) {
 		total += poly->bytes();
@@ -332,7 +332,7 @@ size_t CGALPolyhedron::memsize() const
 	return total;
 }
 
-void CGALPolyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const
+void CGALHybridPolyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const
 {
 	if (auto poly = getPolyhedron()) {
 		polyhedron_t::Vertex_const_iterator vi;
@@ -353,7 +353,7 @@ void CGALPolyhedron::foreachVertexUntilTrue(const std::function<bool(const point
 	}
 }
 
-bool CGALPolyhedron::sharesAnyVertexWith(const CGALPolyhedron &other) const
+bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other) const
 {
 	if (other.numVertices() < numVertices()) {
 		// The other has less vertices to index!
@@ -376,7 +376,7 @@ bool CGALPolyhedron::sharesAnyVertexWith(const CGALPolyhedron &other) const
 	return foundCollision;
 }
 
-void CGALPolyhedron::nefPolyBinOp(const std::string &opName, CGALPolyhedron &other,
+void CGALHybridPolyhedron::nefPolyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
 																	const std::function<void(nef_polyhedron_t &destinationNef,
 																													 nef_polyhedron_t &otherNef)> &operation)
 {
@@ -396,8 +396,8 @@ void CGALPolyhedron::nefPolyBinOp(const std::string &opName, CGALPolyhedron &oth
 	}
 }
 
-void CGALPolyhedron::polyBinOp(
-		const std::string &opName, CGALPolyhedron &other,
+void CGALHybridPolyhedron::polyBinOp(
+		const std::string &opName, CGALHybridPolyhedron &other,
 		const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation)
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("polyhedron ") + opName);
@@ -405,7 +405,7 @@ void CGALPolyhedron::polyBinOp(
 	operation(convertToPolyhedron(), other.convertToPolyhedron());
 }
 
-CGALPolyhedron::nef_polyhedron_t &CGALPolyhedron::convertToNefPolyhedron()
+CGALHybridPolyhedron::nef_polyhedron_t &CGALHybridPolyhedron::convertToNefPolyhedron()
 {
 	if (auto poly = getPolyhedron()) {
 		SCOPED_PERFORMANCE_TIMER("Polyhedron -> Nef");
@@ -422,7 +422,7 @@ CGALPolyhedron::nef_polyhedron_t &CGALPolyhedron::convertToNefPolyhedron()
 	}
 }
 
-CGALPolyhedron::polyhedron_t &CGALPolyhedron::convertToPolyhedron()
+CGALHybridPolyhedron::polyhedron_t &CGALHybridPolyhedron::convertToPolyhedron()
 {
 	if (auto poly = getPolyhedron()) {
 		return *poly;
@@ -440,17 +440,17 @@ CGALPolyhedron::polyhedron_t &CGALPolyhedron::convertToPolyhedron()
 	}
 }
 
-std::shared_ptr<CGALPolyhedron> CGALPolyhedron::fromGeometry(const Geometry &geom)
+std::shared_ptr<CGALHybridPolyhedron> CGALHybridPolyhedron::fromGeometry(const Geometry &geom)
 {
-	if (auto poly = dynamic_cast<const CGALPolyhedron *>(&geom)) {
-		return make_shared<CGALPolyhedron>(*poly);
+	if (auto poly = dynamic_cast<const CGALHybridPolyhedron *>(&geom)) {
+		return make_shared<CGALHybridPolyhedron>(*poly);
 	}
 	else if (auto ps = dynamic_cast<const PolySet *>(&geom)) {
-		return make_shared<CGALPolyhedron>(*ps);
+		return make_shared<CGALHybridPolyhedron>(*ps);
 	}
 	else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
 		assert(nef->p3);
-		return nef->p3 ? make_shared<CGALPolyhedron>(*nef->p3) : nullptr;
+		return nef->p3 ? make_shared<CGALHybridPolyhedron>(*nef->p3) : nullptr;
 	}
 	else {
 		LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
