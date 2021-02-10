@@ -4,7 +4,6 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-i686-deps:latest
-    resource_class: medium+
     steps:
       - checkout
       - run:
@@ -37,7 +36,6 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-deps:latest
-    resource_class: medium+
     steps:
       - checkout
       - run:
@@ -70,7 +68,6 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/appimage-x86_64-base:latest
-    resource_class: medium+
     steps:
       - checkout
       - run:
