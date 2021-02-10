@@ -3,19 +3,9 @@
 
 #ifdef FAST_CSG_AVAILABLE
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include <CGAL/Polygon_mesh_processing/orientation.h>
-#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
-#include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
-#include <CGAL/Polygon_mesh_processing/manifoldness.h>
-#else
-#include <CGAL/Polygon_mesh_processing/repair.h>
-#endif
 #include <unordered_set>
 
-#include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
-#include "feature.h"
 #include "hash.h"
 #include "polyset.h"
 #include "scoped_timer.h"
@@ -23,42 +13,16 @@
 namespace PMP = CGAL::Polygon_mesh_processing;
 namespace params = PMP::parameters;
 
-CGALHybridPolyhedron::CGALHybridPolyhedron(const PolySet &ps)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef)
 {
-	SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron(PolySet)");
-
-	auto polyhedron = make_shared<polyhedron_t>();
-	data = polyhedron;
-
-	auto err = CGALUtils::createPolyhedronFromPolySet(ps, *polyhedron, /* invert_orientation */ false);
-	assert(!err);
-	bboxes.push_back(CGALUtils::boundingBox(*polyhedron));
-	PMP::triangulate_faces(*polyhedron);
-
-	// if (!PMP::is_outward_oriented(*polyhedron, params::all_default())) {
-	// 	LOG(message_group::Warning, Location::NONE, "", "Fixing inverted faces orientation.");
-	// 	PMP::reverse_face_orientations(*polyhedron);
-	// }
-	if (!ps.is_manifold() && !ps.is_convex()) {
-		SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron::buildPolyhedron: manifoldness checks");
-
-		if (PMP::duplicate_non_manifold_vertices(*polyhedron)) {
-			LOG(message_group::Warning, Location::NONE, "",
-					"Non-manifold, converting to nef polyhedron.");
-			convertToNefPolyhedron();
-		}
-	}
+	assert(nef);
+	data = nef;
+	bboxes.push_back(CGALUtils::boundingBox(*nef));
 }
 
-//
-CGALHybridPolyhedron::CGALHybridPolyhedron(const CGAL_Nef_polyhedron3 &nef)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<polyhedron_t> &polyhedron)
 {
-	SCOPED_PERFORMANCE_TIMER("Polyhedron(CGAL_Nef_polyhedron3)");
-
-	auto polyhedron = make_shared<polyhedron_t>();
-	CGAL_Polyhedron poly;
-	nef.convert_to_polyhedron(poly);
-	CGALUtils::copyPolyhedron(poly, *polyhedron);
+	assert(polyhedron);
 	data = polyhedron;
 	bboxes.push_back(CGALUtils::boundingBox(*polyhedron));
 }
@@ -72,7 +36,7 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron &other) : 
 		data = make_shared<nef_polyhedron_t>(*nef);
 	}
 	else {
-		assert(!"Invalid Polyhedron.data state");
+		assert(!"Bad hybrid polyhedron state");
 	}
 }
 
@@ -118,7 +82,7 @@ size_t CGALHybridPolyhedron::numFacets() const
 	if (auto nef = getNefPolyhedron()) {
 		return nef->number_of_facets();
 	}
-	assert(!"Invalid Polyhedron.data state");
+	assert(!"Bad hybrid polyhedron state");
 	return 0;
 }
 
@@ -130,7 +94,7 @@ size_t CGALHybridPolyhedron::numVertices() const
 	else if (auto nef = getNefPolyhedron()) {
 		return nef->number_of_vertices();
 	}
-	assert(!"Invalid Polyhedron.data state");
+	assert(!"Bad hybrid polyhedron state");
 	return 0;
 }
 
@@ -143,7 +107,7 @@ bool CGALHybridPolyhedron::isManifold() const
 	else if (auto nef = getNefPolyhedron()) {
 		return nef->is_simple();
 	}
-	assert(!"Invalid Polyhedron.data state");
+	assert(!"Bad hybrid polyhedron state");
 	return false;
 }
 
@@ -166,35 +130,7 @@ shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 		return ps;
 	}
 	else {
-		assert(!"Invalid Polyhedron.data state");
-		return nullptr;
-	}
-}
-
-shared_ptr<const CGAL_Nef_polyhedron> CGALHybridPolyhedron::toNefPolyhedron() const
-{
-	if (auto poly = getPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Polyhedron -> Nef");
-
-		CGAL_Polyhedron alien_poly;
-		CGALUtils::copyPolyhedron(*poly, alien_poly);
-		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_poly));
-	}
-	else if (auto nef = getNefPolyhedron()) {
-		assert(nef);
-		if (!nef) return nullptr;
-		SCOPED_PERFORMANCE_TIMER("Nef -> Nef (through polyhedron: costly!)");
-
-		polyhedron_t poly;
-		nef->convert_to_polyhedron(poly);
-
-		CGAL_Polyhedron alien_poly;
-		CGALUtils::copyPolyhedron(poly, alien_poly);
-
-		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_poly));
-	}
-	else {
-		assert(!"Invalid Polyhedron.data state");
+		assert(!"Bad hybrid polyhedron state");
 		return nullptr;
 	}
 }
@@ -297,14 +233,15 @@ void CGALHybridPolyhedron::transform(const Transform3d &mat)
 			CGALUtils::transform(*nef, mat);
 		}
 		else {
-			assert(!"Invalid Polyhedron.data state");
+			assert(!"Bad hybrid polyhedron state");
 		}
 
 		for (auto &bbox : bboxes) bbox.transform(t);
 	}
 }
 
-void CGALHybridPolyhedron::resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize)
+void CGALHybridPolyhedron::resize(const Vector3d &newsize,
+																	const Eigen::Matrix<bool, 3, 1> &autosize)
 {
 	if (this->isEmpty()) return;
 
@@ -332,7 +269,8 @@ size_t CGALHybridPolyhedron::memsize() const
 	return total;
 }
 
-void CGALHybridPolyhedron::foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const
+void CGALHybridPolyhedron::foreachVertexUntilTrue(
+		const std::function<bool(const point_t &pt)> &f) const
 {
 	if (auto poly = getPolyhedron()) {
 		polyhedron_t::Vertex_const_iterator vi;
@@ -349,7 +287,7 @@ void CGALHybridPolyhedron::foreachVertexUntilTrue(const std::function<bool(const
 		}
 	}
 	else {
-		assert(!"Invalid Polyhedron.data state");
+		assert(!"Bad hybrid polyhedron state");
 	}
 }
 
@@ -376,9 +314,10 @@ bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other
 	return foundCollision;
 }
 
-void CGALHybridPolyhedron::nefPolyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
-																	const std::function<void(nef_polyhedron_t &destinationNef,
-																													 nef_polyhedron_t &otherNef)> &operation)
+void CGALHybridPolyhedron::nefPolyBinOp(
+		const std::string &opName, CGALHybridPolyhedron &other,
+		const std::function<void(nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef)>
+				&operation)
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("nef ") + opName);
 
@@ -437,24 +376,6 @@ CGALHybridPolyhedron::polyhedron_t &CGALHybridPolyhedron::convertToPolyhedron()
 	}
 	else {
 		throw "Bad data state";
-	}
-}
-
-std::shared_ptr<CGALHybridPolyhedron> CGALHybridPolyhedron::fromGeometry(const Geometry &geom)
-{
-	if (auto poly = dynamic_cast<const CGALHybridPolyhedron *>(&geom)) {
-		return make_shared<CGALHybridPolyhedron>(*poly);
-	}
-	else if (auto ps = dynamic_cast<const PolySet *>(&geom)) {
-		return make_shared<CGALHybridPolyhedron>(*ps);
-	}
-	else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
-		assert(nef->p3);
-		return nef->p3 ? make_shared<CGALHybridPolyhedron>(*nef->p3) : nullptr;
-	}
-	else {
-		LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
-		return nullptr;
 	}
 }
 

@@ -19,8 +19,13 @@
 #include <boost/variant.hpp>
 #include "Geometry.h"
 
-class PolySet;
 class CGAL_Nef_polyhedron;
+class CGALHybridPolyhedron;
+class PolySet;
+namespace CGALUtils {
+std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(
+		const CGALHybridPolyhedron &hybrid);
+}
 
 /*! A mutable polyhedron backed by a CGAL::Polyhedron_3 and fast Polygon Mesh
  * Processing (PMP) CSG functions when possible (manifold cases), or by a
@@ -38,6 +43,9 @@ class CGAL_Nef_polyhedron;
  */
 class CGALHybridPolyhedron : public Geometry
 {
+public:
+	VISITABLE_GEOMETRY();
+
 	// Notes on kernels:
 	// - CGAL::Epeck has some pathological explosions of numerical computation time
 	//   (e.g. testdata/scad/3D/issues/issue911.scad never seems to finish: maybe some weird
@@ -52,34 +60,9 @@ class CGALHybridPolyhedron : public Geometry
 	typedef CGAL::Polyhedron_3<kernel_t> polyhedron_t;
 	typedef CGAL::Iso_cuboid_3<kernel_t> bbox_t;
 
-	// This contains data either as a polyhedron, or as a nef polyhedron.
-	//
-	// We stick to nef polyhedra in presence of non-manifold geometry (detected in
-	// operations where the operands share any vertex), which breaks the
-	// algorithms of Polygon Mesh Processing library that operate on normal
-	// (non-nef) polyhedra.
-	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
-	// Keeps track of the bounding boxes of the solid components of this polyhedron.
-	// This allows fast unions with disjoint polyhedra.
-	std::vector<bbox_t> bboxes;
-
-public:
-	VISITABLE_GEOMETRY();
-	/*! Builds a polyhedron using the provided, untrusted PolySet.
-	 * Face orientation is checked (and reversed if needed), faces are
-	 * triangulated (requirement of Polygon Mesh Processing functions),
-	 * and we check manifoldness (we use a nef polyhedra for non-manifold cases).
-	 */
-	CGALHybridPolyhedron(const PolySet &ps);
-
-	/*! Builds a polyhedron using a legacy nef polyhedron object.
-	 * This transitional method will disappear when this CGALHybridPolyhedron object is
-	 * fully integrated and replaces all of CGAL_Nef_polyhedron's uses.
-	 */
-	CGALHybridPolyhedron(const CGAL_Nef_polyhedron3 &nef);
-
+	CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef);
+	CGALHybridPolyhedron(const shared_ptr<polyhedron_t> &polyhedron);
 	CGALHybridPolyhedron(const CGALHybridPolyhedron &other);
-
 	CGALHybridPolyhedron() = delete;
 
 	bool isEmpty() const;
@@ -96,7 +79,6 @@ public:
 	Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
 
 	std::shared_ptr<const PolySet> toPolySet() const;
-	std::shared_ptr<const CGAL_Nef_polyhedron> toNefPolyhedron() const;
 
 	/*! In-place union (this may also mutate/corefine the other polyhedron). */
 	void operator+=(CGALHybridPolyhedron &other);
@@ -111,12 +93,16 @@ public:
 	virtual void transform(const Transform3d &mat) override;
 	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool, 3, 1> &autosize) override;
 
-	static std::shared_ptr<CGALHybridPolyhedron> fromGeometry(const Geometry &geom);
-
 	/*! Iterate over all vertices' points until the function returns true (for done). */
 	void foreachVertexUntilTrue(const std::function<bool(const point_t &pt)> &f) const;
 
 private:
+	// Old GCC versions used to build releases have object file limitations.
+	// This conversion function could have been in the class but it requires knowledge
+	// of polyhedra of two different kernels, which instantiates huge amounts of templates.
+	friend std::shared_ptr<CGAL_Nef_polyhedron> CGALUtils::createNefPolyhedronFromHybrid(
+			const CGALHybridPolyhedron &hybrid);
+
 	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
 	bool needsNefForOperationWith(const CGALHybridPolyhedron &other) const;
 
@@ -157,6 +143,17 @@ private:
 			if (CGAL::intersection(c, bbox) != boost::none) return true;
 		return false;
 	}
+
+	// This contains data either as a polyhedron, or as a nef polyhedron.
+	//
+	// We stick to nef polyhedra in presence of non-manifold geometry (detected in
+	// operations where the operands share any vertex), which breaks the
+	// algorithms of Polygon Mesh Processing library that operate on normal
+	// (non-nef) polyhedra.
+	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
+	// Keeps track of the bounding boxes of the solid components of this polyhedron.
+	// This allows fast unions with disjoint polyhedra.
+	std::vector<bbox_t> bboxes;
 };
 
 #endif // FAST_CSG_AVAILABLE

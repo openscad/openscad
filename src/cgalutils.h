@@ -77,7 +77,7 @@ namespace CGALUtils {
 	template <class Polyhedron_A, class Polyhedron_B>
 	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 
-	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
+	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
 
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
@@ -121,6 +121,9 @@ namespace CGALUtils {
 	getCartesianConverter()
 	{
 		return CGAL::Cartesian_converter<
-      FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
-  }
+			FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
+	}
+
+	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron &hybrid);
+	std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom);
 };

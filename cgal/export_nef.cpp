@@ -151,15 +151,15 @@ int main(int argc, char *argv[])
 {
 
   OpenSCAD::debug = "export_nef";
-  CGAL_Nef_polyhedron *N = NULL;
+  shared_ptr<CGAL_Nef_polyhedron> N;
 
-  PolySet *ps = NULL;
+  shared_ptr<PolySet> ps;
   if (argc == 2) {
     std::string filename(argv[1]);
     std::string suffix = filename.extension().generic_string();
     boost::algorithm::to_lower(suffix);
     if (suffix == ".stl") {
-      if (!(ps = import_stl(filename))) {
+      if (!(ps = shared_ptr<PolySet>(import_stl(filename)))) {
         std::cerr << "Error importing STL " << argv[1] << std::endl;
         exit(1);
       }

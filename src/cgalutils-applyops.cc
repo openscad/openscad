@@ -111,7 +111,7 @@ namespace CGALUtils {
 				if (!chgeom || chgeom->isEmpty()) {
 					continue;
 				}
-				auto poly = CGALHybridPolyhedron::fromGeometry(*chgeom);
+				auto poly = CGALUtils::createHybridPolyhedronFromGeometry(*chgeom);
 				if (!poly) continue;
 
 				total_facets += poly->numFacets();
@@ -162,7 +162,7 @@ namespace CGALUtils {
 				auto it = children.begin();
 				auto &firstChild = *it++;
 
-				auto firstPoly = firstChild.second ? CGALHybridPolyhedron::fromGeometry(*firstChild.second) : nullptr;
+				auto firstPoly = firstChild.second ? CGALUtils::createHybridPolyhedronFromGeometry(*firstChild.second) : nullptr;
 				if (!firstPoly || firstPoly->isEmpty()) return firstPoly;
 
 				LOG(message_group::Echo, getLocation(it->first), "",
@@ -184,7 +184,7 @@ namespace CGALUtils {
 
 		try {
 			for(const auto &item : children) {
-				auto chN = item.second ? CGALHybridPolyhedron::fromGeometry(*item.second) : nullptr;
+				auto chN = item.second ? CGALUtils::createHybridPolyhedronFromGeometry(*item.second) : nullptr;
 				// Initialize N with first expected geometric object
 				if (!foundFirst) {
 					if (chN) {
@@ -257,7 +257,7 @@ namespace CGALUtils {
 					dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 				if (!chN) {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-					if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+					if (chps) chN = createNefPolyhedronFromGeometry(*chps);
 				}
 				// Initialize N with first expected geometric object
 				if (!foundFirst) {
@@ -336,7 +336,7 @@ namespace CGALUtils {
 					continue;
 				}
 				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
-				auto poly = CGALHybridPolyhedron::fromGeometry(*chgeom);
+				auto poly = CGALUtils::createHybridPolyhedronFromGeometry(*chgeom);
 				if (!poly) continue;
 
 				total_facets += poly->numFacets();
@@ -405,7 +405,7 @@ namespace CGALUtils {
 				shared_ptr<const CGAL_Nef_polyhedron> curChild = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 				if (!curChild) {
 					const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-					if (chps) curChild.reset(createNefPolyhedronFromGeometry(*chps));
+					if (chps) curChild = createNefPolyhedronFromGeometry(*chps);
 				}
 				if (curChild && !curChild->isEmpty()) {
 					int node_mark = -1;
@@ -458,8 +458,8 @@ namespace CGALUtils {
 				}
 			}
 #ifdef FAST_CSG_AVAILABLE
-			else if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
-				poly->foreachVertexUntilTrue([&](auto &p) {
+			else if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
+				hybrid->foreachVertexUntilTrue([&](auto &p) {
 					points.push_back(vector_convert<K::Point_3>(p));
 					return false;
 				});
@@ -528,8 +528,8 @@ namespace CGALUtils {
 					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
 #ifdef FAST_CSG_AVAILABLE
 					// TODO(ochafik): Avoid this conversion / do computations with CGALHybridPolyhedron::kernel_t.
-					if (auto fastCsgPoly = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
-						nef = fastCsgPoly->toNefPolyhedron();
+					if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
+						nef = CGALUtils::createNefPolyhedronFromHybrid(*hybrid);
 					}
 #endif
 
@@ -546,9 +546,8 @@ namespace CGALUtils {
 
 						if (ps) {
 							PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
-							CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(*ps);
+							auto p = createNefPolyhedronFromGeometry(*ps);
 							if (!p->isEmpty()) decomposed_nef = *p->p3;
-							delete p;
 						} else {
 							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...",i);
 							decomposed_nef = *nef->p3;
@@ -685,7 +684,7 @@ namespace CGALUtils {
 						PolySet ps(3,true);
 						createPolySetFromPolyhedron(part, ps);
 						fake_children.push_back(std::make_pair((const AbstractNode*)nullptr,
-						shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
+						createNefPolyhedronFromGeometry(ps)));
 					}
 					auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
 					// FIXME: This should really never throw.

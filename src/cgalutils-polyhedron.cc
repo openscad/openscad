@@ -285,10 +285,8 @@ namespace CGALUtils {
 	}
 
 	template void copyPolyhedron<CGAL::Epeck, CGAL::Epeck>(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
-	template void copyPolyhedron<CGAL::Epick, CGAL::Epick>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL::Polyhedron_3<CGAL::Epick> &);
 	template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL_Polyhedron &);
 	template void copyPolyhedron<CGAL::Epeck, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL_Polyhedron &);
-	template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
 	template void copyPolyhedron<CGAL_Kernel3, CGAL::Epeck>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epeck> &);
 
 	template <class Polyhedron_A, class Polyhedron_B>
@@ -317,7 +315,6 @@ namespace CGALUtils {
 	}
 
 	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation);
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epick> &p, bool invert_orientation);
 	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epeck> &p, bool invert_orientation);
 
 	template <typename Polyhedron>

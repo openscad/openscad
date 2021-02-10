@@ -2379,7 +2379,7 @@ void MainWindow::actionCheckValidity()
 	bool valid = false;
 	shared_ptr<const CGAL_Nef_polyhedron> N;
 	if (auto ps = dynamic_cast<const PolySet *>(this->root_geom.get())) {
-		N.reset(CGALUtils::createNefPolyhedronFromGeometry(*ps));
+		N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
 	}
 	if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
 		valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;

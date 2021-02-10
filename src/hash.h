@@ -19,7 +19,6 @@ namespace std {
 #ifdef ENABLE_CGAL
   template<> struct hash<CGAL::Point_3<CGAL_Kernel3>> { std::size_t operator()(const CGAL::Point_3<CGAL_Kernel3> &s) const; };
   template<> struct hash<CGAL::Point_3<CGAL::Epeck>> { std::size_t operator()(const CGAL::Point_3<CGAL::Epeck> &s) const; };
-  template<> struct hash<CGAL::Point_3<CGAL::Epick>> { std::size_t operator()(const CGAL::Point_3<CGAL::Epick> &s) const; };
 #endif
 }
 

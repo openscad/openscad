@@ -115,6 +115,7 @@ SOURCES += decompose.cpp \
            ../src/cgalutils.cc \
            ../src/cgalutils-applyops.cc \
            ../src/cgalutils-tess.cc \
+           ../src/cgalutils-hybrid.cc \
            ../src/cgalutils-kernel.cc \
            ../src/cgalutils-mesh.cc \
            ../src/cgalutils-polyhedron.cc \

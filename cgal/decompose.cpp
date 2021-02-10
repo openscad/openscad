@@ -312,7 +312,7 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
           }
           else {
             PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef", i);
-            N.reset(createNefPolyhedronFromGeometry(*ps));
+            N = createNefPolyhedronFromGeometry(*ps);
           }
         }
         else if (const CGAL_Nef_polyhedron *n = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i])) {
@@ -434,7 +434,7 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
           PolySet ps(3,true);
           createPolySetFromPolyhedron(polyhedron, ps);
           fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
-                                                 shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
+                                                 createNefPolyhedronFromGeometry(ps)));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         t.stop();
@@ -640,13 +640,13 @@ int main(int argc, char *argv[])
 
   OpenSCAD::debug = "decompose";
 
-  PolySet *ps = NULL;
-  CGAL_Nef_polyhedron *N = NULL;
+  shared_ptr<PolySet> ps;
+  shared_ptr<CGAL_Nef_polyhedron> N;
   if (argc == 2) {
     std::string filename(argv[1]);
     std::string suffix = fs::path(filename).extension().generic_string();
     if (suffix == ".stl") {
-      if (!(ps = import_stl(filename))) {
+      if (!(ps = shared_ptr<PolySet>(import_stl(filename)))) {
         std::cerr << "Error importing STL " << filename << std::endl;
         exit(1);
       }
@@ -673,14 +673,14 @@ int main(int argc, char *argv[])
 
   int idx = 0;
   for(const PolyhedronK &P : result) {
-    PolySet *result_ps = new PolySet(3);
+    auto result_ps = make_shared<PolySet>(3);
     if (CGALUtils::createPolySetFromPolyhedron(P, *result_ps)) {
       std::cerr << "Error converting to PolySet\n";
     }
     else {
       std::stringstream ss;
       ss << "out" << idx++ << ".stl";
-      exportFileByName(shared_ptr<const Geometry>(result_ps), OPENSCAD_STL, ss.str().c_str(), ss.str().c_str());
+      exportFileByName(result_ps, OPENSCAD_STL, ss.str().c_str(), ss.str().c_str());
       std::cout << "color([" << colors[idx%147][0] << "," << colors[idx%147][1] << "," << colors[idx%147][2] << "]) " << "import(\"" << ss.str() << "\");\n";
     }
   }

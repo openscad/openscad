@@ -29,10 +29,6 @@ namespace std {
 		hash<Vector3d> vh;
 		return vh(vector_convert<Vector3d>(s));
 	}
-	std::size_t hash<CGAL::Point_3<CGAL::Epick>>::operator()(const CGAL::Point_3<CGAL::Epick> &s) const {
-		hash<Vector3d> vh;
-		return vh(vector_convert<Vector3d>(s));
-	}
 #endif
 }
 
