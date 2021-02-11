@@ -58,6 +58,7 @@ endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
 set(SUFFIX_WITH_DASH "-${SUFFIX}")
+add_definitions(-DOPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
