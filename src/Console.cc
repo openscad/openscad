@@ -93,6 +93,8 @@ void Console::update()
 	this->setMaximumBlockCount(0);
 	for (const auto &line : this->msgBuffer) {
 		QTextCharFormat charFormat;
+		if (line.group != message_group::None && line.group != message_group::Echo)
+			charFormat.setForeground(QBrush(QColor("#000000")));
 		charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
 		if (!line.link.isEmpty()) {
 			charFormat.setAnchor(true);
