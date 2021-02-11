@@ -78,12 +78,13 @@ jobs:
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
-              qmake -v
-              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+              mkdir build && cd build
+              cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j2
-              make install INSTALL_ROOT=AppDir
+              make install DESTDIR=../AppDir
+              cd ..
               export PATH=/appimage/usr/bin:"$PATH"
-              linuxdeploy --plugin qt --output appimage --appdir AppDir
+              VERSION="$OPENSCAD_VERSION" linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
               if [ -n "${CODE_SIGNING_KEY}" ]; then
