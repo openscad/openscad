@@ -4,7 +4,6 @@
 
 #ifdef FAST_CSG_AVAILABLE
 
-#include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
 #include <CGAL/Polygon_mesh_processing/manifoldness.h>
@@ -35,13 +34,10 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 		assert(!err);
 		PMP::triangulate_faces(*polyhedron);
 
-		// Badly oriented faces will just do horrible things to corefinement results, so we fix them straight away.
-		// TODO(ochafik): pass some "trusted orientation" flag through PolySet to vet primitives and
-		// results of hull operations.
-		// TODO(ochafik): ship each PMP calls to its own .cc file
-    // TODO(ochafik): add test cases
-		PMP::orient(*polyhedron);
-
+		// if (!PMP::is_outward_oriented(*polyhedron, PMP::parameters::all_default())) {
+		// 	LOG(message_group::Warning, Location::NONE, "", "Fixing inverted faces orientation.");
+		// 	PMP::reverse_face_orientations(*polyhedron);
+		// }
 		if (!ps->is_manifold() && !ps->is_convex()) {
 			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry: manifoldness checks");
 
