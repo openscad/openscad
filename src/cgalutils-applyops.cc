@@ -112,7 +112,9 @@ namespace CGALUtils {
 					continue;
 				}
 				auto poly = CGALUtils::createHybridPolyhedronFromGeometry(*chgeom);
-				if (!poly) continue;
+				if (!poly) {
+					continue;
+				}
 
 				total_facets += poly->numFacets();
 				auto node_mark = item.first ? item.first->progress_mark : -1;
@@ -163,12 +165,16 @@ namespace CGALUtils {
 				auto &firstChild = *it++;
 
 				auto firstPoly = firstChild.second ? CGALUtils::createHybridPolyhedronFromGeometry(*firstChild.second) : nullptr;
-				if (!firstPoly || firstPoly->isEmpty()) return firstPoly;
+				if (!firstPoly || firstPoly->isEmpty()) {
+					return firstPoly;
+				}
 
 				LOG(message_group::Echo, getLocation(it->first), "",
 					"Reducing %1$d difference terms using fast-union", size - 1);
 				auto unionSubtracted = applyUnion3DCGALHybridPolyhedron(it, children.end(), tree);
-				if (!unionSubtracted || unionSubtracted->isEmpty()) return firstPoly;
+				if (!unionSubtracted || unionSubtracted->isEmpty()) {
+					return firstPoly;
+				}
 
 				*firstPoly -= *unionSubtracted;
 
@@ -304,77 +310,6 @@ namespace CGALUtils {
 		CGAL::set_error_behaviour(old_behaviour);
 		return shared_ptr<Geometry>(N);
 	}
-
-#ifdef FAST_POLYHEDRON_AVAILABLE
-	shared_ptr<const CGALHybridPolyhedron> applyUnion3DPolyhedron(
-		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const Tree* tree)
-	{
-		typedef std::pair<shared_ptr<CGALHybridPolyhedron>, int> QueueItem;
-		struct QueueItemGreater {
-			// stable sort for priority_queue by facets, then progress mark
-			bool operator()(const QueueItem &lhs, const QueueItem& rhs) const
-			{
-				size_t l = lhs.first->numFacets();
-				size_t r = rhs.first->numFacets();
-				return (l > r) || (l == r && lhs.second > rhs.second);
-			}
-		};
-
-		try {
-			Geometry::Geometries children;
-			children.insert(children.end(), chbegin, chend);
-
-			// We'll fill the queue in one go to get linear time construction.
-			std::vector<QueueItem> queueItems;
-			queueItems.reserve(children.size());
-
-			size_t total_facets = 0;
-			for (auto &item : children) {
-				auto chgeom = item.second;
-				if (!chgeom || chgeom->isEmpty()) {
-					continue;
-				}
-				// TODO(ochafik): Have that helper return futures, and wait for them in batch.
-				auto poly = CGALUtils::createHybridPolyhedronFromGeometry(*chgeom);
-				if (!poly) continue;
-
-				total_facets += poly->numFacets();
-				auto node_mark = item.first ? item.first->progress_mark : -1;
-				queueItems.emplace_back(poly, node_mark);
-			}
-			// Build the queue in linear time (don't add items one by one!).
-			std::priority_queue<QueueItem, std::vector<QueueItem>, QueueItemGreater>
-				 q(queueItems.begin(), queueItems.end());
-
-			LOG(message_group::Warning, getLocation(chbegin->first),
-				"", "Union of %1$lu geometries (%2$lu total facets)", q.size(), total_facets);
-
-			progress_tick();
-			while (q.size() > 1) {
-				auto p1 = q.top();
-				q.pop();
-				auto p2 = q.top();
-				q.pop();
-				assert(p1.first->numFacets() <= p2.first->numFacets());
-				// Modify in-place the biggest polyhedron.
-				*p2.first += *p1.first;
-				q.emplace(p2.first, -1);
-				progress_tick();
-			}
-
-			if (q.size() == 1) {
-				return q.top().first;
-			} else {
-				return nullptr;
-			}
-		}
-		catch (const CGAL::Failure_exception &e) {
-			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DPolyhedron: %1$s", e.what());
-		}
-		return nullptr;
-	}
-#endif // FAST_POLYHEDRON_AVAILABLE
 
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,

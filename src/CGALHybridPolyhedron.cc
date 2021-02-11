@@ -2,12 +2,10 @@
 #include "CGALHybridPolyhedron.h"
 
 #ifdef FAST_CSG_AVAILABLE
-#include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <unordered_set>
 
 #include "cgalutils.h"
 #include "hash.h"
-#include "polyset.h"
 #include "scoped_timer.h"
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef)
@@ -111,7 +109,7 @@ bool CGALHybridPolyhedron::isManifold() const
 shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
 	if (auto poly = getPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Polyhedron -> PolySet");
+		SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron(Polyhedron) -> PolySet");
 
 		auto ps = make_shared<PolySet>(3, /* convex */ unknown, /* manifold */ false);
 		auto err = CGALUtils::createPolySetFromPolyhedron(*poly, *ps);
@@ -119,7 +117,7 @@ shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 		return ps;
 	}
 	else if (auto nef = getNefPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Nef -> PolySet");
+		SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron(Nef) -> PolySet");
 
 		auto ps = make_shared<PolySet>(3, /* convex */ unknown, /* manifold */ nef->is_simple());
 		auto err = CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps);
