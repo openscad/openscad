@@ -205,7 +205,7 @@ void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron &other)
 {
 	nefPolyBinOp("minkowski", other,
 							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-								 destinationNef = CGAL::minkowski_sum_3(destinationNef, otherNef);
+								 CGALUtils::inPlaceNefMinkowski(destinationNef, otherNef);
 							 });
 }
 

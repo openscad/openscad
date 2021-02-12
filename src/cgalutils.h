@@ -24,10 +24,10 @@ namespace CGAL {
 }
 
 namespace /* anonymous */ {
-        template<typename Result, typename V>
-        Result vector_convert(V const& v) {
-                return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
-       	}
+	template<typename Result, typename V>
+	Result vector_convert(V const& v) {
+		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
+	}
 }
 
 namespace CGALUtils {
@@ -48,6 +48,11 @@ namespace CGALUtils {
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree = nullptr);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
 		const Tree* tree = nullptr);
+	shared_ptr<CGALHybridPolyhedron> applyUnion3DCGALHybridPolyhedron(
+		const Geometry::Geometries::const_iterator &chbegin,
+		const Geometry::Geometries::const_iterator &chend,
+		const Tree* tree);
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
@@ -58,9 +63,9 @@ namespace CGALUtils {
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry&geom);
 	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid);
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
-  template <typename K>
+	template <typename K>
 	CGAL::Point_3<K> vector3dToPoint3(const Eigen::Vector3d& v);
-  template <typename K>
+	template <typename K>
 	BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<K> &bbox);
 	size_t getNumFacets(const Geometry& geom);
 	bool is_approximately_convex(const PolySet &ps);
@@ -124,6 +129,7 @@ namespace CGALUtils {
 	void inPlaceNefUnion(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
 	void inPlaceNefDifference(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
 	void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
+	void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
 	void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron);
 	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef, CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
 	void corefineAndComputeUnion(

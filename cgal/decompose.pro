@@ -114,11 +114,18 @@ SOURCES += decompose.cpp \
            ../src/CGAL_Nef_polyhedron.cc \
            ../src/cgalutils.cc \
            ../src/cgalutils-applyops.cc \
-           ../src/cgalutils-tess.cc \
+           ../src/cgalutils-applyops-hybrid.cc \
+           ../src/cgalutils-closed.cc \
+           ../src/cgalutils-corefine.cc \
            ../src/cgalutils-hybrid.cc \
            ../src/cgalutils-kernel.cc \
-           ../src/cgalutils-corefinement.cc \
+           ../src/cgalutils-minkowski.cc \
+           ../src/cgalutils-nef.cc \
+           ../src/cgalutils-orient.cc \
            ../src/cgalutils-polyhedron.cc \
+           ../src/cgalutils-project.cc \
+           ../src/cgalutils-tess.cc \
+           ../src/cgalutils-triangulate.cc \
            ../src/CGALHybridPolyhedron.cc \
            ../src/polyset.cc \
            ../src/polyset-gl.cc \

@@ -196,11 +196,11 @@ bool is_weakly_convex(Polyhedron const& p) {
   boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
   // c++11
   // visited.reserve(p.size_of_facets());
-  
+
   std::queue<typename Polyhedron::Facet_const_handle> to_explore;
   to_explore.push(p.facets_begin()); // One arbitrary facet
   visited.insert(to_explore.front());
-  
+
   while (!to_explore.empty()) {
     typename Polyhedron::Facet_const_handle f = to_explore.front();
     to_explore.pop();
@@ -208,14 +208,14 @@ bool is_weakly_convex(Polyhedron const& p) {
     end = he = f->facet_begin();
     CGAL_For_all(he,end) {
       typename Polyhedron::Facet_const_handle o = he->opposite()->facet();
-      
+
       if (!visited.count(o)) {
         visited.insert(o);
         to_explore.push(o);
       }
     }
   }
-  
+
   return visited.size() == p.size_of_facets();
 }
 
@@ -257,7 +257,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
     PRINTD("Minkowski: Object is nonconvex Nef, decomposing...");
     CGAL_Nef_polyhedron3 decomposed_nef = *N;
     CGAL::convex_decomposition_3(decomposed_nef);
-    
+
     // the first volume is the outer volume, which ignored in the decomposition
     CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
     // Convert each convex volume to a Polyhedron
@@ -280,7 +280,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
         parts++;
       }
     }
-    
+
     PRINTDB("Minkowski: decomposed into %d convex parts", parts);
   }
 }
@@ -298,7 +298,7 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
     while (++minkowski_ch_it != children.end()) {
       operands[1] = minkowski_ch_it->second.get();
 
-      std::vector<PolyhedronK> convexP[2]; // Stores decomposed operands 
+      std::vector<PolyhedronK> convexP[2]; // Stores decomposed operands
       std::list<PolyhedronK> result_parts;
 
       for (int i = 0; i < 2; ++i) {
@@ -318,7 +318,7 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
         else if (const CGAL_Nef_polyhedron *n = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i])) {
           CGAL_Polyhedron poly;
           if (n->p3->is_simple()) {
-            n->p3->convert_to_polyhedron(poly);
+            CGALUtils::convertNefToPolyhedron(*n->p3, poly);
             // FIXME: Can we calculate weakly_convex on a PolyhedronK instead?
             if (is_weakly_convex(poly)) {
               PRINTDB("Minkowski: child %d is convex and Nef", i);
@@ -343,12 +343,12 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
         PRINTD("Hulling convex parts...");
         std::vector<K::Point_3> points[2];
         std::vector<K::Point_3> minkowski_points;
-        
+
         // For each permutation of convex operands..
         for(const PolyhedronK &p0 : convexP[0]) {
           for(const PolyhedronK &p1 : convexP[1]) {
             t.start();
-            
+
             // Create minkowski pointcloud
             minkowski_points.clear();
             minkowski_points.reserve(p0.size_of_vertices() * p0.size_of_vertices());
@@ -357,12 +357,12 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
                 minkowski_points.push_back(p0p+(p1p-CGAL::ORIGIN));
               }
             }
-            
+
             t.stop();
-            
+
             // Ignore empty volumes
             if (minkowski_points.size() <= 3) continue;
-            
+
             // Hull point cloud
             PolyhedronK result;
             PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms",
@@ -370,19 +370,19 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
             t.reset();
             t.start();
             CGAL::convex_hull_3(minkowski_points.begin(), minkowski_points.end(), result);
-            
+
             std::vector<K::Point_3> strict_points;
             strict_points.reserve(minkowski_points.size());
-            
+
             for (PolyhedronK::Vertex_iterator i = result.vertices_begin(); i != result.vertices_end(); ++i) {
               K::Point_3 const &p = i->point();
-              
+
               PolyhedronK::Vertex::Halfedge_handle h,e;
               h = i->halfedge();
               e = h;
               bool collinear = false;
               bool coplanar = true;
-              
+
               do {
                 K::Point_3 const& q = h->opposite()->vertex()->point();
                 if (coplanar && !CGAL::coplanar(p,q,
@@ -390,37 +390,37 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
                                                 h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
                   coplanar = false;
                 }
-                
-                
+
+
                 for (PolyhedronK::Vertex::Halfedge_handle j = h->next_on_vertex();
                      j != h && !collinear && ! coplanar;
                      j = j->next_on_vertex()) {
-                  
+
                   K::Point_3 const& r = j->opposite()->vertex()->point();
                   if (CGAL::collinear(p,q,r)) {
                     collinear = true;
                   }
                 }
-                
+
                 h = h->next_on_vertex();
               } while (h != e && !collinear);
-              
+
               if (!collinear && !coplanar) strict_points.push_back(p);
             }
-            
+
             result.clear();
             CGAL::convex_hull_3(strict_points.begin(), strict_points.end(), result);
-            
+
             t.stop();
             PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
             t.reset();
-            
+
             result_parts.push_back(result);
           }
         }
       }
-      
-      
+
+
       if (minkowski_ch_it != std::next(children.begin())) operands[0].reset();
       if (result_parts.size() == 1) {
         PolySet *ps = new PolySet(3,true);
@@ -446,7 +446,7 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
         operands[0] = new CGAL_Nef_polyhedron();
       }
     }
-    
+
     t_tot.stop();
     PRINTDB("Minkowski: Total execution time %f s", t_tot.time());
     t_tot.reset();
@@ -590,8 +590,8 @@ PolySet *import_stl(const std::string &filename)
 }
 
 /*!
-  file format: 
-  1. polygon coordinates (x,y,z) are comma separated (+/- spaces) and 
+  file format:
+  1. polygon coordinates (x,y,z) are comma separated (+/- spaces) and
   each coordinate is on a separate line
   2. each polygon is separated by one or more blank lines
 */
@@ -606,12 +606,12 @@ bool import_polygon(PolyholeK &polyhole, const std::string &filename)
     std::stringstream ss(line);
     double X = 0.0, Y = 0.0, Z = 0.0;
     if (!(ss >> X)) {
-      //ie blank lines => flag start of next polygon 
+      //ie blank lines => flag start of next polygon
       if (polygon.size() > 0) polyhole.push_back(polygon);
       polygon.clear();
       continue;
     }
-    char c = ss.peek();  
+    char c = ss.peek();
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces before comma
     if (c == ',') {ss.read(&c, 1); c = ss.peek();} //gobble comma
     while (c == ' ') {ss.read(&c, 1); c = ss.peek();} //gobble spaces after comma

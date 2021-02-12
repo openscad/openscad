@@ -297,6 +297,17 @@ namespace CGALUtils {
 
   template void appendToPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
 
+	void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron)
+	{
+		nef.convert_to_polyhedron(polyhedron);
+	}
+
+	void convertNefToPolyhedron(
+		const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef, CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron)
+	{
+		nef.convert_to_polyhedron(polyhedron);
+	}
+
 	template <typename Polyhedron>
 	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation)
 	{
