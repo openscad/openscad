@@ -230,11 +230,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # Resize issues that need investigation.
     throwntogethertest_resize-convexity-tests
     cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
-    # Face orientation issue (createPolyhedronFromPolySet no longer flips face orientations)
+    # Face orientation issue
     opencsgtest_issue911
+    opencsgtest_issue913
     opencsgtest_render-tests
     opencsgtest_internal-cavity
-    opencsgtest_issue913
     # Different order of vertices
     3mfexport_3mf-export
     # Weird interaction w/ lazy union only on some platforms (not mac): deps version issue?
@@ -249,13 +249,12 @@ function(add_cmdline_test TESTCMD_BASENAME)
     lazyunion-offpngtest_lazyunion-children
     lazyunion-cgalpng_lazyunion-difference-for
     # Needs investigation:
+    stlcgalpngtest_polyhedron-tests
     cgalpngtest_issue1246 csgpngtest_issue1246
     # Test script argument passing issue
     cgalstlsanitytest_normal-nan
     # No wireframe rendering yet.
-    openscad-viewoptions-wireframe_view-options-tests
-    # Arguably, doing a better job salvaging invalid polygons than the current code (could just update goldens)
-    cgalpngtest_polyhedron-tests csgpngtest_polyhedron-tests monotonepngtest_polyhedron-tests stlcgalpngtest_polyhedron-tests)
+    openscad-viewoptions-wireframe_view-options-tests)
 
   # Add tests from args
   foreach (SCADFILE ${TESTCMD_FILES})
