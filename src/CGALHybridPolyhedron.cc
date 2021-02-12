@@ -351,7 +351,7 @@ CGALHybridPolyhedron::polyhedron_t &CGALHybridPolyhedron::convertToPolyhedron()
 		SCOPED_PERFORMANCE_TIMER("nef -> polyhedron");
 
 		auto poly = make_shared<polyhedron_t>();
-    CGALUtils::convertNefToPolyhedron(*nef, *poly);
+		CGALUtils::convertNefToPolyhedron(*nef, *poly);
 		data = poly;
 		return *poly;
 	}

@@ -540,12 +540,16 @@ set(CORE_SOURCES
 set(CGAL_SOURCES
   src/cgalutils.cc
   src/cgalutils-applyops.cc
+  src/cgalutils-closed.cc
+  src/cgalutils-corefine.cc
   src/cgalutils-hybrid.cc
   src/cgalutils-kernel.cc
-  src/cgalutils-corefinement.cc
+  src/cgalutils-nef.cc
+  src/cgalutils-orient.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
+  src/cgalutils-triangulate.cc
   src/export_nef.cc
   src/CGALHybridPolyhedron.cc
   src/import_nef.cc

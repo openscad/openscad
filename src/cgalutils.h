@@ -118,6 +118,14 @@ namespace CGALUtils {
 	}
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron &hybrid);
 	std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom);
+	void triangulateFaces(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
+	bool isClosed(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
+	void orientToBoundAVolume(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
+	void inPlaceNefUnion(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
+	void inPlaceNefDifference(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
+	void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
+	void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron);
+	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef, CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
 	void corefineAndComputeUnion(
 		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
 	void corefineAndComputeIntersection(

@@ -45,11 +45,11 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex, boost::tribool manifold) : dim(dim), convex(convex), manifold(manifold), dirty(false)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(false)
 {
 }
 
-PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown), manifold(unknown), dirty(false)
+PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
 {
 }
 
@@ -89,7 +89,6 @@ void PolySet::append_poly(const Polygon &poly)
 {
 	polygons.push_back(poly);
 	this->dirty = true;
-  this->manifold = unknown;
 }
 
 void PolySet::append_vertex(double x, double y, double z)
@@ -101,7 +100,6 @@ void PolySet::append_vertex(const Vector3d &v)
 {
 	polygons.back().push_back(v);
 	this->dirty = true;
-  this->manifold = unknown;
 }
 
 void PolySet::append_vertex(const Vector3f &v)
@@ -118,7 +116,6 @@ void PolySet::insert_vertex(const Vector3d &v)
 {
 	polygons.back().insert(polygons.back().begin(), v);
 	this->dirty = true;
-  this->manifold = unknown;
 }
 
 void PolySet::insert_vertex(const Vector3f &v)
@@ -170,18 +167,12 @@ void PolySet::transform(const Transform3d &mat)
 		if (mirrored) std::reverse(p.begin(), p.end());
 	}
 	this->dirty = true;
-  // Note: manifoldness is preserved by transforms.
 }
 
 bool PolySet::is_convex() const {
 	if (convex || this->isEmpty()) return true;
 	if (!convex) return false;
 	return PolysetUtils::is_approximately_convex(*this);
-}
-
-bool PolySet::is_manifold() const {
-	if (manifold || convex) return true;
-  return false;
 }
 
 void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize)

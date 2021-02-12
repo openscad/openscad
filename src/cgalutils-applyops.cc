@@ -105,7 +105,6 @@ namespace CGALUtils {
 			std::vector<QueueItem> queueItems;
 			queueItems.reserve(children.size());
 
-			size_t total_facets = 0;
 			for (auto &item : children) {
 				auto chgeom = item.second;
 				if (!chgeom || chgeom->isEmpty()) {
@@ -116,16 +115,12 @@ namespace CGALUtils {
 					continue;
 				}
 
-				total_facets += poly->numFacets();
 				auto node_mark = item.first ? item.first->progress_mark : -1;
 				queueItems.emplace_back(poly, node_mark);
 			}
 			// Build the queue in linear time (don't add items one by one!).
 			std::priority_queue<QueueItem, std::vector<QueueItem>, QueueItemGreater>
 				 q(queueItems.begin(), queueItems.end());
-
-			LOG(message_group::Echo, getLocation(chbegin->first),
-				"", "Union of %1$lu geometries (%2$lu total facets)", q.size(), total_facets);
 
 			progress_tick();
 			while (q.size() > 1) {
@@ -469,7 +464,7 @@ namespace CGALUtils {
 #endif
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
-					else if (nef && nef->p3->is_simple()) nef->p3->convert_to_polyhedron(poly);
+					else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);
 					else throw 0;
 
 					if ((ps && ps->is_convex()) ||
