@@ -1,5 +1,6 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include "cgalutils.h"
+#include "CGALHybridPolyhedron.h" // For FAST_CSG_AVAILABLE
 #include <CGAL/Cartesian_converter.h>
 #include <CGAL/gmpxx.h>
 
@@ -19,6 +20,8 @@ CGAL::Gmpq KernelConverter<CGAL::Epick, CGAL::Cartesian<CGAL::Gmpq>>::operator()
 	return n;
 }
 
+#ifdef FAST_CSG_AVAILABLE
+
 template <>
 CGAL::Lazy_exact_nt<mpq_class> KernelConverter<CGAL::Cartesian<CGAL::Gmpq>,
 																							 CGAL::Epeck>::operator()(const CGAL::Gmpq &n) const
@@ -33,5 +36,7 @@ CGAL::Gmpq KernelConverter<CGAL::Epeck, CGAL::Cartesian<CGAL::Gmpq>>::operator()
 	auto &e = n.exact();
 	return CGAL::Gmpq(CGAL::Gmpz(e.get_num().get_mpz_t()), CGAL::Gmpz(e.get_den().get_mpz_t()));
 }
+
+#endif
 
 } // namespace CGALUtils

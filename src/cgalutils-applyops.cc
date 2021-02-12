@@ -11,6 +11,7 @@
 #include "polyset-utils.h"
 #include "grid.h"
 #include "node.h"
+#include "CGALHybridPolyhedron.h" // For FAST_CSG_AVAILABLE
 
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
