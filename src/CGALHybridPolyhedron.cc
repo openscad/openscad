@@ -143,7 +143,7 @@ bool CGALHybridPolyhedron::needsNefForOperationWith(const CGALHybridPolyhedron &
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
-	if (!intersects(other) && isManifold() && other.isManifold()) {
+	if (!boundingBoxesIntersect(other) && isManifold() && other.isManifold()) {
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
 			CGALUtils::copyPolyhedron(otherPoly, destinationPoly);
 		});
@@ -164,7 +164,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 {
-	if (!intersects(other)) {
+	if (!boundingBoxesIntersect(other)) {
 		LOG(message_group::Warning, Location::NONE, "", "Empty intersection");
 		clear();
 		return;
@@ -182,13 +182,13 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 
 	std::vector<bbox_t> new_bboxes;
 	for (auto &bbox : bboxes)
-		if (other.intersects(bbox)) new_bboxes.push_back(bbox);
+		if (other.boundingBoxesIntersect(bbox)) new_bboxes.push_back(bbox);
 	bboxes = new_bboxes;
 }
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 {
-	if (!intersects(other)) {
+	if (!boundingBoxesIntersect(other)) {
 		LOG(message_group::Warning, Location::NONE, "", "Difference with non-intersecting geometry");
 		return;
 	}
@@ -319,15 +319,7 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 	auto &destinationNef = convertToNefPolyhedron();
 	auto &otherNef = other.convertToNefPolyhedron();
 
-	auto manifoldBefore = isManifold() && other.isManifold();
 	operation(destinationNef, otherNef);
-
-	auto manifoldNow = isManifold();
-	if (manifoldNow != manifoldBefore) {
-		LOG(message_group::Echo, Location::NONE, "",
-				"Nef operation got %1$s operands and produced a %2$s result",
-				manifoldBefore ? "manifold" : "non-manifold", manifoldNow ? "manifold" : "non-manifold");
-	}
 }
 
 void CGALHybridPolyhedron::polyBinOp(

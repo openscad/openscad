@@ -130,14 +130,14 @@ private:
 
 	bbox_t getExactBoundingBox() const;
 
-	bool intersects(const CGALHybridPolyhedron &other) const
+	bool boundingBoxesIntersect(const CGALHybridPolyhedron &other) const
 	{
 		for (auto &bbox : bboxes)
-			if (other.intersects(bbox)) return true;
+			if (other.boundingBoxesIntersect(bbox)) return true;
 		return false;
 	}
 
-	bool intersects(const bbox_t &c) const
+	bool boundingBoxesIntersect(const bbox_t &c) const
 	{
 		for (auto &bbox : bboxes)
 			if (CGAL::intersection(c, bbox) != boost::none) return true;

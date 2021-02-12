@@ -19,10 +19,8 @@ class Tree;
 class CGALHybridPolyhedron;
 
 namespace CGAL {
-  template <typename Point>
-  class Surface_mesh;
-  template <class A, class B, class C>
-  class Cartesian_converter;
+	template <class A, class B, class C>
+	class Cartesian_converter;
 }
 
 namespace /* anonymous */ {
@@ -73,8 +71,6 @@ namespace CGALUtils {
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation = true);
 	template <class InputKernel, class OutputKernel>
 	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b);
-	template <class InputKernel, class OutputKernel>
-	void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input, CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> &output);
 	template <class Polyhedron_A, class Polyhedron_B>
 	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 
@@ -96,10 +92,6 @@ namespace CGALUtils {
 		const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d &newsize,
 		const Eigen::Matrix<bool,3,1> &autosize);
 
-	template <typename K>
-	bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps);
-	template <typename K>
-	bool createMeshFromPolySet(const PolySet &ps, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
 	bool tessellatePolygon(const PolygonK &polygon,
 												 Polygons &triangles,
 												 const K::Vector_3 *normal = nullptr);
@@ -127,12 +119,9 @@ namespace CGALUtils {
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron &hybrid);
 	std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom);
 	void corefineAndComputeUnion(
-		CGAL::Polyhedron_3<CGAL::Epeck> &destination,
-		CGAL::Polyhedron_3<CGAL::Epeck> &other);
+		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
 	void corefineAndComputeIntersection(
-		CGAL::Polyhedron_3<CGAL::Epeck> &destination,
-		CGAL::Polyhedron_3<CGAL::Epeck> &other);
+		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
 	void corefineAndComputeDifference(
-		CGAL::Polyhedron_3<CGAL::Epeck> &destination,
-		CGAL::Polyhedron_3<CGAL::Epeck> &other);
+		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
 };

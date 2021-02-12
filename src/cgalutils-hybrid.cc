@@ -4,6 +4,8 @@
 
 #ifdef FAST_CSG_AVAILABLE
 
+#include <CGAL/boost/graph/helpers.h>
+#include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
 #include <CGAL/Polygon_mesh_processing/manifoldness.h>
@@ -32,20 +34,15 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 		auto err =
 				CGALUtils::createPolyhedronFromPolySet(*ps, *polyhedron, /* invert_orientation */ false);
 		assert(!err);
+
 		PMP::triangulate_faces(*polyhedron);
 
-		// if (!PMP::is_outward_oriented(*polyhedron, PMP::parameters::all_default())) {
-		// 	LOG(message_group::Warning, Location::NONE, "", "Fixing inverted faces orientation.");
-		// 	PMP::reverse_face_orientations(*polyhedron);
-		// }
 		if (!ps->is_manifold() && !ps->is_convex()) {
-			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry: manifoldness checks");
-
-			if (PMP::duplicate_non_manifold_vertices(*polyhedron)) {
-				LOG(message_group::Warning, Location::NONE, "",
-						"Non-manifold, converting to nef polyhedron.");
-				return make_shared<CGALHybridPolyhedron>(
-						make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*polyhedron));
+			if (CGAL::is_closed(*polyhedron)) {
+				// Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
+				// (try testdata/scad/3D/issues/issue1105d.scad for instance), but
+				// PMP::orient_to_bound_a_volume seems just fine.
+				PMP::orient_to_bound_a_volume(*polyhedron);
 			}
 		}
 
