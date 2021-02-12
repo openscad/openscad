@@ -109,17 +109,13 @@ bool CGALHybridPolyhedron::isManifold() const
 shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
 	if (auto poly = getPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron(Polyhedron) -> PolySet");
-
-		auto ps = make_shared<PolySet>(3, /* convex */ unknown, /* manifold */ false);
+		auto ps = make_shared<PolySet>(3, /* convex */ unknown);
 		auto err = CGALUtils::createPolySetFromPolyhedron(*poly, *ps);
 		assert(!err);
 		return ps;
 	}
 	else if (auto nef = getNefPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("CGALHybridPolyhedron(Nef) -> PolySet");
-
-		auto ps = make_shared<PolySet>(3, /* convex */ unknown, /* manifold */ nef->is_simple());
+		auto ps = make_shared<PolySet>(3, /* convex */ unknown);
 		auto err = CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps);
 		assert(!err);
 		return ps;
@@ -152,7 +148,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 		if (needsNefForOperationWith(other))
 			nefPolyBinOp("union", other,
 									 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-										 destinationNef += otherNef;
+										 CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
 									 });
 		else
 			polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
@@ -173,7 +169,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 	if (needsNefForOperationWith(other))
 		nefPolyBinOp("intersection", other,
 								 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-									 destinationNef *= otherNef;
+									 CGALUtils::inPlaceNefIntersection(destinationNef, otherNef);
 								 });
 	else
 		polyBinOp("intersection", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
@@ -197,7 +193,7 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 	if (needsNefForOperationWith(other))
 		nefPolyBinOp("intersection", other,
 								 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-									 destinationNef -= otherNef;
+									 CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
 								 });
 	else
 		polyBinOp("difference", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
@@ -293,8 +289,6 @@ bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other
 		return other.sharesAnyVertexWith(*this);
 	}
 
-	SCOPED_PERFORMANCE_TIMER("sharesAnyVertexWith");
-
 	std::unordered_set<point_t> vertices;
 	foreachVertexUntilTrue([&](const auto &p) {
 		vertices.insert(p);
@@ -334,7 +328,7 @@ void CGALHybridPolyhedron::polyBinOp(
 CGALHybridPolyhedron::nef_polyhedron_t &CGALHybridPolyhedron::convertToNefPolyhedron()
 {
 	if (auto poly = getPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Polyhedron -> Nef");
+		SCOPED_PERFORMANCE_TIMER("polyhedron -> nef");
 
 		auto nef = make_shared<nef_polyhedron_t>(*poly);
 		data = nef;
@@ -354,10 +348,10 @@ CGALHybridPolyhedron::polyhedron_t &CGALHybridPolyhedron::convertToPolyhedron()
 		return *poly;
 	}
 	else if (auto nef = getNefPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("Nef -> Polyhedron");
+		SCOPED_PERFORMANCE_TIMER("nef -> polyhedron");
 
 		auto poly = make_shared<polyhedron_t>();
-		nef->convert_to_polyhedron(*poly);
+    CGALUtils::convertNefToPolyhedron(*nef, *poly);
 		data = poly;
 		return *poly;
 	}
