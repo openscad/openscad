@@ -1,0 +1,34 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  analyze:
+    name: Compile w/ CGAL 4.x
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['cpp']
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        # We must fetch at least the immediate parents so that if this is
+        # a pull request then we can checkout the head.
+        fetch-depth: 2
+
+    - name: Submodules
+      run: git submodule update --init --recursive
+    - name: Install dependencies
+      run: CGAL_VERSION=4.11 ./scripts/travis-ci-before-install-linux.sh bionic
+    - name: Dependency fixup
+      run: sudo apt-get install qt5-default gettext
+    - name: Build
+      run: ./scripts/github-ci.sh build
