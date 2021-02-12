@@ -249,7 +249,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     lazyunion-offpngtest_lazyunion-children
     lazyunion-cgalpng_lazyunion-difference-for
     # Needs investigation:
-    stlcgalpngtest_polyhedron-tests
+    stlcgalpngtest_polyhedron-tests monotonepngtest_polyhedron-tests
     cgalpngtest_issue1246 csgpngtest_issue1246
     # Test script argument passing issue
     cgalstlsanitytest_normal-nan
