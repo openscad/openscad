@@ -4,8 +4,8 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
 
-#ifdef INSTALL_SUFFIX
-#define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
+#ifdef OPENSCAD_SUFFIX
+#define RESOURCE_FOLDER(path) path OPENSCAD_SUFFIX
 #else
 #define RESOURCE_FOLDER(path) path
 #endif

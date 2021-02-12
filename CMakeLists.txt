@@ -15,6 +15,8 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 cmake_minimum_required(VERSION 3.3)
+# GNUInstallDirs must be done before BuildParameters
+include(GNUInstallDirs)
 
 if(POLICY CMP0071)
   cmake_policy(SET CMP0071 OLD)
@@ -29,6 +31,7 @@ option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
+set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -51,6 +54,11 @@ if(EXPERIMENTAL)
 endif()
 if(IDPREFIX)
   add_definitions(-DIDPREFIX)
+endif()
+
+if (NOT "${SUFFIX}" STREQUAL "")
+set(SUFFIX_WITH_DASH "-${SUFFIX}")
+add_definitions(-DOPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
@@ -345,8 +353,10 @@ endif()
 #
 # Version
 #
-string(TIMESTAMP VERSION "%Y.%m.%d")
-string(REPLACE "-" ";" SPLITVERSION ${VERSION})
+if ("${OPENSCAD_VERSION}" STREQUAL "")
+string(TIMESTAMP OPENSCAD_VERSION "%Y.%m.%d")
+endif()
+string(REPLACE "-" ";" SPLITVERSION ${OPENSCAD_VERSION})
 list(GET SPLITVERSION 0 OPENSCAD_SHORTVERSION)
 string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" VERSIONLIST "${OPENSCAD_SHORTVERSION}")
 list(GET VERSIONLIST 0 OPENSCAD_YEAR)
@@ -358,7 +368,7 @@ if (${VERSIONLEN} EQUAL 3)
   math(EXPR OPENSCAD_DAY ${OPENSCAD_DAY}) # get rid of leading zero
 endif()
 
-add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
+add_definitions(-DOPENSCAD_VERSION=${OPENSCAD_VERSION} -DOPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
 if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
@@ -672,6 +682,9 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+add_custom_command(TARGET OpenSCAD POST_BUILD
+    COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
+    COMMENT "Compiling language files")
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
@@ -684,7 +697,7 @@ if(APPLE)
   )
 elseif(UNIX)
   set_target_properties(OpenSCAD PROPERTIES
-    OUTPUT_NAME openscad
+    OUTPUT_NAME openscad${SUFFIX_WITH_DASH}
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
@@ -700,6 +713,23 @@ target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
 if(NOT HEADLESS)
   target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
 endif()
+
+install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME openscad${SUFFIX_WITH_DASH})
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME openscad${SUFFIX_WITH_DASH}.xml)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".uuid" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*.json")
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
 
 if(INFO)
   include(info)

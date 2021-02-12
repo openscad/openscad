@@ -81,18 +81,20 @@ jobs:
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
-              qmake -v
-              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
-              make
-              make install INSTALL_ROOT=AppDir
+              git submodule update --init
+              mkdir build && cd build
+              cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+              make -j2
+              make install DESTDIR=../AppDir
+              cd ..
               export PATH=/appimage/usr/bin:"$PATH"
-              linuxdeploy --plugin qt --output appimage --appdir AppDir
+              VERSION="$OPENSCAD_VERSION" linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
-                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
-                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --detach-sign --armor"
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
                   for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
                   rm -rf ~/.gnupg
               else

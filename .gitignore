@@ -51,6 +51,7 @@ testdata/svg/viewbox/viewbox_*.svg
 /openscad.appdata.xml
 /openscad.pro.user
 /openscad
+/icons/openscad.desktop
 /locale/*/*/*.mo
 /locale/*.mo
 /locale/POTFILES

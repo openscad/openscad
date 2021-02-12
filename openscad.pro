@@ -82,7 +82,7 @@ else {
 }
 FULLNAME = openscad$${SUFFIX}
 APPLICATIONID = org.openscad.OpenSCAD
-!isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
+!isEmpty(SUFFIX): DEFINES += OPENSCAD_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
   snapshot {
