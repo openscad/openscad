@@ -3,9 +3,20 @@
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 
+namespace CGALUtils {
+
+void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron)
+{
+	nef.convert_to_polyhedron(polyhedron);
+}
+
 #ifdef FAST_CSG_AVAILABLE
 
-namespace CGALUtils {
+void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef,
+														CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron)
+{
+	nef.convert_to_polyhedron(polyhedron);
+}
 
 void inPlaceNefUnion(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs,
 										 const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs)
@@ -25,17 +36,6 @@ void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs,
 	lhs *= rhs;
 }
 
-void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron)
-{
-	nef.convert_to_polyhedron(polyhedron);
-}
-
-void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef,
-														CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron)
-{
-	nef.convert_to_polyhedron(polyhedron);
-}
+#endif // FAST_CSG_AVAILABLE
 
 } // namespace CGALUtils
-
-#endif // FAST_CSG_AVAILABLE
