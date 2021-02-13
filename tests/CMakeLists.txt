@@ -294,7 +294,14 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union --enable=fast-csg")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+      endif()
+
+      # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
+      if (FAST_CSG_AVAILABLE
+          AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+          AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -330,13 +337,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
-
-      # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
-      if (FAST_CSG_AVAILABLE
-          AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-          AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
-      endif()
 
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL)
