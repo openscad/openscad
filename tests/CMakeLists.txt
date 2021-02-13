@@ -187,6 +187,61 @@ function(is_2d FULLNAME RESULT)
   endif()
 endfunction()
 
+# See CGALPolyhedron.h for CGAL version needed for this feature.
+if(NOT DEFINED FAST_CSG_AVAILABLE)
+  set(FAST_CSG_AVAILABLE 1)
+endif()
+
+# Tests for which fast-csg cannot be enabled yet.
+list(APPEND FAST_CSG_FAILING_TESTS
+  # Resize issues that need investigation.
+  throwntogethertest_resize-convexity-tests
+  cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
+  # Face orientation issue
+  opencsgtest_issue911
+  opencsgtest_issue913
+  opencsgtest_render-tests
+  opencsgtest_internal-cavity
+  # Different order of vertices
+  3mfexport_3mf-export
+  # Needs investigation:
+  stlcgalpngtest_polyhedron-tests monotonepngtest_polyhedron-tests
+  cgalpngtest_issue1246 csgpngtest_issue1246
+  # Test script argument passing issue
+  cgalstlsanitytest_normal-nan
+  # No wireframe rendering yet.
+  openscad-viewoptions-wireframe_view-options-tests)
+
+# Tests for which fast-csg works but produces different expectation files.
+# These tests are run twice (w/ and without fast-csg).
+list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-difference-for.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier2.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/difference-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/render-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue913.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1165.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue3158.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue835.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue911.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1803.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/features/highlight-modifier-2d.scad
+)
+
 #
 # This functions adds cmd-line tests given files.
 #
@@ -223,38 +278,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # If no executable was specified, assume it was built by us and resides here
     set(TESTCMD_EXE ${CMAKE_CURRENT_BINARY_DIR}/${TESTCMD_BASENAME})
   endif()
-
-  # Tests for which fast-csg cannot be enabled yet.
-  # TODO(ochafik): fix these with --enable=fast-csg!
-  list(APPEND FAST_CSG_DISABLED_TESTS
-    # Resize issues that need investigation.
-    throwntogethertest_resize-convexity-tests
-    cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
-    # Face orientation issue
-    opencsgtest_issue911
-    opencsgtest_issue913
-    opencsgtest_render-tests
-    opencsgtest_internal-cavity
-    # Different order of vertices
-    3mfexport_3mf-export
-    # Weird interaction w/ lazy union only on some platforms (not mac): deps version issue?
-    lazyunion-dump_lazyunion-children
-    lazyunion-dump_lazyunion-hull
-    lazyunion-dump_lazyunion-difference
-    lazyunion-dump_lazyunion-transform
-    lazyunion-opencsg_lazyunion-children
-    lazyunion-cgalpng_lazyunion-children
-    lazyunion-monotonepng_lazyunion-children
-    lazyunion-stlpngtest_lazyunion-children
-    lazyunion-offpngtest_lazyunion-children
-    lazyunion-cgalpng_lazyunion-difference-for
-    # Needs investigation:
-    stlcgalpngtest_polyhedron-tests monotonepngtest_polyhedron-tests
-    cgalpngtest_issue1246 csgpngtest_issue1246
-    # Test script argument passing issue
-    cgalstlsanitytest_normal-nan
-    # No wireframe rendering yet.
-    openscad-viewoptions-wireframe_view-options-tests)
 
   # Add tests from args
   foreach (SCADFILE ${TESTCMD_FILES})
@@ -308,7 +331,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
-      if (NOT TEST_FULLNAME IN_LIST FAST_CSG_DISABLED_TESTS)
+      # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
+      if (FAST_CSG_AVAILABLE
+          AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+          AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
       endif()
 
@@ -1051,6 +1077,19 @@ add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CU
 add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-monotonepng SUFFIX png FILES ${LAZYUNION_3D_FILES})
 add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
+
+# fast-csg
+if (FAST_CSG_AVAILABLE)
+  # Note that fast-csg was also enabled on most other tests. Here we only re-run
+  # those that produce different visual outputs and had fast-csg disabled.
+  foreach(SCADFILE ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS})
+    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
+    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
+    experimental_tests(fastcsg-cgalpng_${FILE_BASENAME})
+  endforeach()
+
+  add_cmdline_test(fastcsg-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=fast-csg --render -o SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS})
+endif()
 
 #
 # Trivial Export/Import files
