@@ -220,7 +220,6 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-difference-for.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier2.scad
@@ -292,16 +291,15 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
       if (${EXPERIMENTAL_TEST} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
+        # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
+        if (FAST_CSG_AVAILABLE
+            AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+            AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+        endif()
       else()
         # add global experimental options here
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
-      endif()
-
-      # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
-      if (FAST_CSG_AVAILABLE
-          AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-          AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -1078,16 +1076,7 @@ add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CU
 add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 
-# fast-csg
 if (FAST_CSG_AVAILABLE)
-  # Note that fast-csg was also enabled on most other tests. Here we only re-run
-  # those that produce different visual outputs and had fast-csg disabled.
-  foreach(SCADFILE ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS})
-    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
-    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
-    experimental_tests(fastcsg-cgalpng_${FILE_BASENAME})
-  endforeach()
-
   add_cmdline_test(fastcsg-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=fast-csg --render -o SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS})
 endif()
 

@@ -39,3 +39,32 @@ jobs:
       with:
         name: Code Coverage Report (${{ matrix.os }})
         path: c/coverage*.html
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-18.04 ]
+
+    runs-on: ${{ matrix.os }}
+
+    name: CGAL 4.x (no fast-csg) on ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Submodules
+      run: git submodule update --init --recursive
+    - name: Install dependencies
+      run: CGAL_VERSION=4.11 ./scripts/travis-ci-before-install-linux.sh bionic
+    - name: Dependency fixup
+      run: sudo apt-get install qt5-default gettext gcovr
+    - name: Build and test
+      run: FAST_CSG_AVAILABLE=0 ./scripts/github-ci.sh build test coverage
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: Test Result Report - CGAL 4.x (no fast-csg)
+        path: b/tests/Testing/Temporary/*_report.html
+
