@@ -749,4 +749,7 @@ if(INFO)
   include(info)
 endif()
 
-add_subdirectory(tests)
+option(ENABLE_TESTS "Run testsuite after building." ON)
+if(ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
