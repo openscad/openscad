@@ -720,7 +720,7 @@ elseif(MSVC)
 endif()
 
 if(ENABLE_SPNAV)
-  target_link_libraries(OpenSCAD spnav)
+  target_link_libraries(OpenSCAD PRIVATE spnav)
 endif()
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
