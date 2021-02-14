@@ -319,6 +319,11 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &target, c
                 {"label", "OpenSCAD"},
             },*/
         },
+        {"openscad",
+            QJsonObject {
+                {"preview", true}, // We do support preview
+            },
+        }
     };
     return true;
 }

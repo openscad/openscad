@@ -780,7 +780,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	auto showOnStartup = settings.value("launcher/showOnStartup");
-	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
+	if (lsp_settings.mode == LanguageServerInterface::OperationMode::NONE
+		&& noInputFiles
+		&& (showOnStartup.isNull() || showOnStartup.toBool())) {
 		auto launcher = new LaunchingScreen();
 		auto dialogResult = launcher->exec();
 		if (dialogResult == QDialog::Accepted) {
