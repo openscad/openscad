@@ -47,12 +47,12 @@ public:
 	VISITABLE_GEOMETRY();
 
 	// Notes on kernels:
-	// - CGAL::Epeck has some pathological explosions of numerical computation time
-	//   (e.g. testdata/scad/3D/issues/issue911.scad never seems to finish: maybe some weird
-	//   interaction w/ minkowski)
 	// - CGAL::Epick isn't exact and gives errors with some algorithms on some models.
 	// - CGAL_Kernel3 (CGAL::Cartesian<CGAL::Gmpq>) doesn't work with PMP's corefinement
 	//   functions that seem to make assumptions of CGAL::Epeck or CGAL::Epick.
+	// - It's relatively straightfoward to convert between CGAL::Epeck and CGAL_Kernel3
+  //   (see cgalutils-kernel.cc). However we may want to migrate CGAL_Nef_polyhedron
+  //   to CGAL::Epeck (and possibly, retire it).
 	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
 	typedef CGAL::Epeck kernel_t;
 	typedef CGAL::Point_3<kernel_t> point_t;

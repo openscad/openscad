@@ -160,12 +160,12 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 			}
 			if (actualchildren.empty()) return ResultObject();
 			if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-			return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end(), &tree));
+			return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end()));
 			break;
 		}
 		default:
 		{
-			return ResultObject(CGALUtils::applyOperator3D(children, op, &tree));
+			return ResultObject(CGALUtils::applyOperator3D(children, op));
 			break;
 		}
 	}

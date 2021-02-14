@@ -30,7 +30,6 @@
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
-#include "Tree.h"
 #include "ModuleInstantiation.h"
 
 #include <map>
@@ -79,11 +78,11 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
+	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			return applyOperator3DCGALHybridPolyhedron(children, op, tree);
+			return applyOperator3DCGALHybridPolyhedron(children, op);
 		}
 #endif // FAST_CSG_AVAILABLE
 
@@ -149,12 +148,11 @@ namespace CGALUtils {
 	}
 
 	shared_ptr<const Geometry> applyUnion3D(
-		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const Tree* tree)
+		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			return applyUnion3DCGALHybridPolyhedron(chbegin, chend, tree);
+			return applyUnion3DCGALHybridPolyhedron(chbegin, chend);
 		}
 #endif // FAST_CSG_AVAILABLE
 

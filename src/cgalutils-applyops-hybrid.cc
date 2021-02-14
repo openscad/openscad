@@ -33,7 +33,6 @@
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
-#include "Tree.h"
 #include "ModuleInstantiation.h"
 
 #include <map>
@@ -49,8 +48,7 @@ namespace CGALUtils {
 
 	shared_ptr<CGALHybridPolyhedron> applyUnion3DCGALHybridPolyhedron(
 		const Geometry::Geometries::const_iterator &chbegin,
-		const Geometry::Geometries::const_iterator &chend,
-		const Tree* tree)
+		const Geometry::Geometries::const_iterator &chend)
 	{
 		typedef std::pair<shared_ptr<CGALHybridPolyhedron>, int> QueueItem;
 		struct QueueItemGreater {
@@ -117,7 +115,7 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree)
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		if (op == OpenSCADOperator::DIFFERENCE) {
 			auto size = children.size();
@@ -132,7 +130,7 @@ namespace CGALUtils {
 
 				LOG(message_group::Echo, getLocation(it->first), "",
 					"Reducing %1$d difference terms using fast-union", size - 1);
-				auto unionSubtracted = applyUnion3DCGALHybridPolyhedron(it, children.end(), tree);
+				auto unionSubtracted = applyUnion3DCGALHybridPolyhedron(it, children.end());
 				if (!unionSubtracted || unionSubtracted->isEmpty()) {
 					return firstPoly;
 				}
@@ -203,11 +201,3 @@ namespace CGALUtils {
 #endif // FAST_CSG_AVAILABLE
 
 #endif // ENABLE_CGAL
-
-
-
-
-
-
-
-

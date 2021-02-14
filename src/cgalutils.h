@@ -15,7 +15,6 @@ typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
-class Tree;
 class CGALHybridPolyhedron;
 
 namespace CGAL {
@@ -45,14 +44,12 @@ namespace CGALUtils {
 	};
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
-	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree = nullptr);
-	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend,
-		const Tree* tree = nullptr);
+	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
+	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 	shared_ptr<CGALHybridPolyhedron> applyUnion3DCGALHybridPolyhedron(
 		const Geometry::Geometries::const_iterator &chbegin,
-		const Geometry::Geometries::const_iterator &chend,
-		const Tree* tree);
-	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op, const Tree* tree);
+		const Geometry::Geometries::const_iterator &chend);
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);

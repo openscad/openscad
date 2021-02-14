@@ -14,12 +14,6 @@ namespace std {
 	std::size_t hash<Vector3l>::operator()(const Vector3l &s) const {
 		return Eigen::hash_value(s);
 	}
-	std::size_t hash<Geometry::GeometryItem>::operator()(Geometry::GeometryItem const& s) const {
-		size_t seed = 0;
-		boost::hash_combine(seed, s.first);
-		boost::hash_combine(seed, s.second);
-		return seed;
-	}
 #ifdef ENABLE_CGAL
 	std::size_t hash<CGAL::Point_3<CGAL_Kernel3>>::operator()(const CGAL::Point_3<CGAL_Kernel3> &s) const {
 		hash<Vector3d> vh;
