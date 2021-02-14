@@ -233,6 +233,7 @@ else()
 endif()
 
 find_package(LibZip REQUIRED QUIET)
+message(STATUS "libzip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 list(APPEND COMMON_LIBRARIES ${LIBZIP_LIBRARY})
