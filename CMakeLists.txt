@@ -272,6 +272,7 @@ message(STATUS "Bison: ${BISON_VERSION}")
 
 if(NOT MSVC)
   find_package(Lib3MF REQUIRED QUIET)
+  message(STATUS "lib3mf: ${LIB3MF_VERSION}")
   add_definitions(${LIB3MF_CFLAGS})
   include_directories(${LIB3MF_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
