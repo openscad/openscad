@@ -359,10 +359,13 @@ endif()
 # Setup ccache (if available) to speed up recompiles. It's especially useful
 # when switching back and forth between branches where large numbers of files
 # would otherwise need to be re-compiled each time.
-find_program(CCACHE_PATH ccache)
-if (CCACHE_PATH)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+option(USE_CCACHE "Use ccache to speed up compilation." ON)
+if(USE_CCACHE)
+  find_program(CCACHE_PATH ccache)
+  if (CCACHE_PATH)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+  endif()
 endif()
 
 #
