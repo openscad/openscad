@@ -197,11 +197,12 @@ list(APPEND FAST_CSG_FAILING_TESTS
   # Resize issues that need investigation.
   throwntogethertest_resize-convexity-tests
   cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
-  # Face orientation issue
+  # Face orientation issue with OpenCSG?
   opencsgtest_issue911
   opencsgtest_issue913
   opencsgtest_render-tests
   opencsgtest_internal-cavity
+  opencsgtest_minkowski3-erosion
   # Different order of vertices
   3mfexport_3mf-export
   # Needs investigation:
@@ -215,6 +216,7 @@ list(APPEND FAST_CSG_FAILING_TESTS
 # Tests for which fast-csg works but produces different expectation files.
 # These tests are run twice (w/ and without fast-csg).
 list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
@@ -224,6 +226,7 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier2.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/difference-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/minkowski3-erosion.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/render-tests.scad
@@ -770,6 +773,7 @@ set_test_config(Heavy
   csgpngtest_resize-tests
   csgpngtest_minkowski3-erosion
   cgalpngtest_minkowski3-erosion
+  fastcsg-cgalpng_minkowski3-erosion
   opencsgtest_minkowski3-erosion
   cgalpngtest_camera-tests
   csgpngtest_camera-tests
