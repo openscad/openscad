@@ -219,7 +219,7 @@ statement
 
 inner_input
         : /* empty */
-        | statement inner_input
+        | inner_input statement
         ;
 
 assignment
