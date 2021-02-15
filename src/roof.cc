@@ -27,9 +27,9 @@ AbstractNode *RoofModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	c->setVariables(evalctx, args);
 	inst->scope.apply(evalctx);
 
-	node->fa = c->lookup_variable("$fa")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fn = c->lookup_variable("$fn")->toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
 
 	node->fa = std::max(node->fa, 0.01);
 	node->fs = std::max(node->fs, 0.01);
