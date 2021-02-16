@@ -255,9 +255,6 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		}
 	}
 	s << "  vars:\n";
-	for(const auto &v : constants) {
-		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
-	}
 	for(const auto &v : variables) {
 		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
 	}
