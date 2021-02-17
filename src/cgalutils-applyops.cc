@@ -10,8 +10,8 @@
 #include "Polygon2d.h"
 #include "polyset-utils.h"
 #include "grid.h"
+#include "CGALHybridPolyhedron.h"
 #include "node.h"
-#include "CGALHybridPolyhedron.h" // For FAST_CSG_AVAILABLE
 
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
@@ -82,7 +82,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			return applyOperator3DCGALHybridPolyhedron(children, op);
+			return applyOperator3DHybrid(children, op);
 		}
 #endif // FAST_CSG_AVAILABLE
 
@@ -152,7 +152,7 @@ namespace CGALUtils {
 	{
 #ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
-			return applyUnion3DCGALHybridPolyhedron(chbegin, chend);
+			return applyUnion3DHybrid(chbegin, chend);
 		}
 #endif // FAST_CSG_AVAILABLE
 
@@ -297,7 +297,6 @@ namespace CGALUtils {
 					auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
 					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
 #ifdef FAST_CSG_AVAILABLE
-					// TODO(ochafik): Avoid this conversion / do computations with CGALHybridPolyhedron::kernel_t.
 					if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
 						nef = CGALUtils::createNefPolyhedronFromHybrid(*hybrid);
 					}

@@ -3,11 +3,12 @@
 
 #ifdef ENABLE_CGAL
 
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "cgal.h"
 
 #ifdef FAST_CSG_AVAILABLE
 
+#include "cgalutils.h"
+#include "CGALHybridPolyhedron.h"
 #include "polyset.h"
 #include "printutils.h"
 #include "progress.h"
@@ -16,7 +17,6 @@
 #include "grid.h"
 #include "node.h"
 
-#include "cgal.h"
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -46,7 +46,7 @@ Location getLocation(const AbstractNode *node)
 
 namespace CGALUtils {
 
-	shared_ptr<CGALHybridPolyhedron> applyUnion3DCGALHybridPolyhedron(
+	shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
 		const Geometry::Geometries::const_iterator &chbegin,
 		const Geometry::Geometries::const_iterator &chend)
 	{
@@ -115,7 +115,7 @@ namespace CGALUtils {
 	Applies op to all children and returns the result.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op)
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		if (op == OpenSCADOperator::DIFFERENCE) {
 			auto size = children.size();
@@ -189,7 +189,7 @@ namespace CGALUtils {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DCGALHybridPolyhedron %1$s: %2$s",opstr,e.what());
+			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DHybrid %1$s: %2$s",opstr,e.what());
 
 		}
 		CGAL::set_error_behaviour(old_behaviour);

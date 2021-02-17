@@ -1,18 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include <CGAL/version.h>
 #include "cgal.h"
-
-#define STRING2(x) #x
-#define STRING(x) STRING2(x)
-
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
-#define FAST_CSG_AVAILABLE
-#else
-#pragma message("[fast-csg] No support for fast-csg with CGAL " STRING( \
-		CGAL_VERSION) ". Please compile against CGAL 5.1 or later to test the feature.")
-#endif
 
 #ifdef FAST_CSG_AVAILABLE
 
@@ -46,19 +35,10 @@ class CGALHybridPolyhedron : public Geometry
 public:
 	VISITABLE_GEOMETRY();
 
-	// Notes on kernels:
-	// - CGAL::Epick isn't exact and gives errors with some algorithms on some models.
-	// - CGAL_Kernel3 (CGAL::Cartesian<CGAL::Gmpq>) doesn't work with PMP's corefinement
-	//   functions that seem to make assumptions of CGAL::Epeck or CGAL::Epick.
-	// - It's relatively straightfoward to convert between CGAL::Epeck and CGAL_Kernel3
-  //   (see cgalutils-kernel.cc). However we may want to migrate CGAL_Nef_polyhedron
-  //   to CGAL::Epeck (and possibly, retire it).
-	// https://doc.cgal.org/latest/Kernel_d/structCGAL_1_1Epeck__d.html
-	typedef CGAL::Epeck kernel_t;
-	typedef CGAL::Point_3<kernel_t> point_t;
-	typedef CGAL::Nef_polyhedron_3<kernel_t> nef_polyhedron_t;
-	typedef CGAL::Polyhedron_3<kernel_t> polyhedron_t;
-	typedef CGAL::Iso_cuboid_3<kernel_t> bbox_t;
+	typedef CGAL::Point_3<CGAL_HybridKernel3> point_t;
+	typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> nef_polyhedron_t;
+	typedef CGAL::Polyhedron_3<CGAL_HybridKernel3> polyhedron_t;
+	typedef CGAL::Iso_cuboid_3<CGAL_HybridKernel3> bbox_t;
 
 	CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef);
 	CGALHybridPolyhedron(const shared_ptr<polyhedron_t> &polyhedron);
@@ -103,8 +83,8 @@ private:
 	friend std::shared_ptr<CGAL_Nef_polyhedron> CGALUtils::createNefPolyhedronFromHybrid(
 			const CGALHybridPolyhedron &hybrid);
 
-	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
-	bool needsNefForOperationWith(const CGALHybridPolyhedron &other) const;
+	friend std::shared_ptr<const Geometry> CGALUtils::applyMinkowskiCGALHybridPolyhedron(
+			const Geometry::Geometries &children);
 
 	/*! Runs a binary operation that operates on nef polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
@@ -113,10 +93,13 @@ private:
 																						 nef_polyhedron_t &otherNef)> &operation);
 
 	/*! Runs a binary operation that operates on polyhedra, stores the result in
-	 * the first one and potentially mutates (e.g. corefines) the second. */
-	void polyBinOp(
+	 * the first one and potentially mutates (e.g. corefines) the second.
+	 * Returns false if the operation failed (e.g. because of shared edges), in
+	 * which case it may still have corefined the polyhedron, but it reverts the
+	 * original nef if there was one. */
+	bool polyBinOp(
 			const std::string &opName, CGALHybridPolyhedron &other,
-			const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
+			const std::function<bool(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
 
 	polyhedron_t &convertToPolyhedron();
 	nef_polyhedron_t &convertToNefPolyhedron();
@@ -146,10 +129,9 @@ private:
 
 	// This contains data either as a polyhedron, or as a nef polyhedron.
 	//
-	// We stick to nef polyhedra in presence of non-manifold geometry (detected in
-	// operations where the operands share any vertex), which breaks the
-	// algorithms of Polygon Mesh Processing library that operate on normal
-	// (non-nef) polyhedra.
+	// We stick to nef polyhedra in presence of non-manifold geometry or literal
+	// edge-cases of the Polygon Mesh Processing corefinement functions (it does not
+	// like shared edges, but tells us so politely).
 	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
 	// Keeps track of the bounding boxes of the solid components of this polyhedron.
 	// This allows fast unions with disjoint polyhedra.

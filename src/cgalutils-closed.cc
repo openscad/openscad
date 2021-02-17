@@ -8,10 +8,13 @@
 
 namespace CGALUtils {
 
-bool isClosed(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron)
+template <typename Polyhedron>
+bool isClosed(Polyhedron &polyhedron)
 {
 	return CGAL::is_closed(polyhedron);
 }
+
+template bool isClosed(CGAL::Polyhedron_3<CGAL_HybridKernel3> &polyhedron);
 
 } // namespace CGALUtils
 

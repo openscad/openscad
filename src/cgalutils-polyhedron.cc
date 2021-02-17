@@ -271,7 +271,7 @@ namespace /* anonymous */ {
 
 namespace CGALUtils {
 
-  template <class InputKernel, class OutputKernel>
+	template <class InputKernel, class OutputKernel>
 	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b)
 	{
 		// Copy is also used in "append" cases.
@@ -284,10 +284,15 @@ namespace CGALUtils {
 		poly_b.delegate(modifier);
 	}
 
-	template void copyPolyhedron<CGAL::Epeck, CGAL::Epeck>(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
 	template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL_Polyhedron &);
-	template void copyPolyhedron<CGAL::Epeck, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL_Polyhedron &);
-	template void copyPolyhedron<CGAL_Kernel3, CGAL::Epeck>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epeck> &);
+	template void copyPolyhedron<CGAL_HybridKernel3, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &, CGAL_Polyhedron &);
+	template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template void copyPolyhedron<CGAL_Kernel3, CGAL_HybridKernel3>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL_HybridKernel3> &);
+	template void copyPolyhedron<CGAL_HybridKernel3, CGAL_HybridKernel3>(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &, CGAL::Polyhedron_3<CGAL_HybridKernel3> &);
+	template void copyPolyhedron<CGAL::Epick, CGAL_HybridKernel3>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL::Polyhedron_3<CGAL_HybridKernel3> &);
+	template void copyPolyhedron<CGAL_HybridKernel3, CGAL::Epick>(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &, CGAL::Polyhedron_3<CGAL::Epick> &);
+#endif
 
 	template <class Polyhedron_A, class Polyhedron_B>
 	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b)
@@ -295,18 +300,20 @@ namespace CGALUtils {
 		copyPolyhedron(poly_a, poly_b);
 	}
 
-  template void appendToPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &, CGAL::Polyhedron_3<CGAL::Epeck> &);
+	template void appendToPolyhedron(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &, CGAL::Polyhedron_3<CGAL_HybridKernel3> &);
 
-	void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron)
-	{
-		nef.convert_to_polyhedron(polyhedron);
-	}
-
+	template <typename K>
 	void convertNefToPolyhedron(
-		const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef, CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron)
+		const CGAL::Nef_polyhedron_3<K> &nef, CGAL::Polyhedron_3<K> &polyhedron)
 	{
 		nef.convert_to_polyhedron(polyhedron);
 	}
+
+	template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template void convertNefToPolyhedron(
+		const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &nef, CGAL::Polyhedron_3<CGAL_HybridKernel3> &polyhedron);
+#endif
 
 	template <typename Polyhedron>
 	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation)
@@ -326,7 +333,9 @@ namespace CGALUtils {
 	}
 
 	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation);
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epeck> &p, bool invert_orientation);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL_HybridKernel3> &p, bool invert_orientation);
+#endif
 
 	template <typename Polyhedron>
 	bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)
@@ -353,7 +362,9 @@ namespace CGALUtils {
 
 	template bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &p, PolySet &ps);
-	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &p, PolySet &ps);
+#endif
 	template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>> &p, PolySet &ps);
 
 	class Polyhedron_writer {

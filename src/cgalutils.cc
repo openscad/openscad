@@ -133,7 +133,9 @@ namespace CGALUtils {
 		return result;
 	}
 	template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
-	template CGAL::Iso_cuboid_3<CGAL::Epeck> boundingBox(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &N);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N);
+#endif
 
 	template <typename K>
 	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Polyhedron_3<K> &poly)
@@ -147,7 +149,7 @@ namespace CGALUtils {
 		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
 		return result;
 	}
-	template CGAL::Iso_cuboid_3<CGAL::Epeck> boundingBox(const CGAL::Polyhedron_3<CGAL::Epeck> &N);
+	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &N);
 
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
 	{
@@ -194,19 +196,21 @@ namespace CGALUtils {
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
 	{
 		return CGAL_Iso_cuboid_3(
-      vector_convert<CGAL_Point_3>(bbox.min()),
-      vector_convert<CGAL_Point_3>(bbox.max()));
+			vector_convert<CGAL_Point_3>(bbox.min()),
+			vector_convert<CGAL_Point_3>(bbox.max()));
 	}
 
-  template <typename K>
+	template <typename K>
 	BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<K> &bbox)
 	{
 		return BoundingBox(
-      vector_convert<Vector3d>(bbox.min()),
-      vector_convert<Vector3d>(bbox.max()));
+			vector_convert<Vector3d>(bbox.min()),
+			vector_convert<Vector3d>(bbox.max()));
 	}
-  template BoundingBox createBoundingBoxFromIsoCuboid(const CGAL_Iso_cuboid_3 &bbox);
-  template BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<CGAL::Epeck> &bbox);
+	template BoundingBox createBoundingBoxFromIsoCuboid(const CGAL_Iso_cuboid_3 &bbox);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<CGAL_HybridKernel3> &bbox);
+#endif
 
 	namespace {
 
@@ -479,7 +483,9 @@ namespace CGALUtils {
 	}
 
 	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
-	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &N, PolySet &ps);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, PolySet &ps);
+#endif
 
 	template <typename K>
 	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix) {
@@ -488,7 +494,7 @@ namespace CGALUtils {
 			matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
 			matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
 	}
-  template CGAL::Aff_transformation_3<CGAL::Epeck> createAffineTransformFromMatrix(const Transform3d &matrix);
+	template CGAL::Aff_transformation_3<CGAL_HybridKernel3> createAffineTransformFromMatrix(const Transform3d &matrix);
 
 	template <typename K>
 	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix)
@@ -498,7 +504,9 @@ namespace CGALUtils {
 	}
 
 	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
-	template void transform(CGAL::Nef_polyhedron_3<CGAL::Epeck> &N, const Transform3d &matrix);
+#ifndef HYBRID_USES_EXISTING_KERNEL
+	template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
+#endif
 
 	template <typename K>
 	void transform(CGAL::Polyhedron_3<K> &poly, const Transform3d &matrix)
@@ -511,7 +519,7 @@ namespace CGALUtils {
 		// TODO(ochafik): invert faces when mirroring as PolySet::transform does.
 	}
 
-	template void transform(CGAL::Polyhedron_3<CGAL::Epeck> &N, const Transform3d &matrix);
+	template void transform(CGAL::Polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
 
 
 	// Copied from CGAL_Nef_Polyhedron verbatim. Should put in common.
@@ -564,9 +572,11 @@ namespace CGALUtils {
 	template Transform3d computeResizeTransform(
 		const CGAL_Iso_cuboid_3& bb, int dimension, const Vector3d &newsize,
 		const Eigen::Matrix<bool,3,1> &autosize);
+#ifndef HYBRID_USES_EXISTING_KERNEL
 	template Transform3d computeResizeTransform(
-		const CGAL::Iso_cuboid_3<CGAL::Epeck>& bb, int dimension, const Vector3d &newsize,
+		const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, int dimension, const Vector3d &newsize,
 		const Eigen::Matrix<bool,3,1> &autosize);
+#endif
 
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
 	{

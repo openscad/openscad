@@ -46,10 +46,10 @@ namespace CGALUtils {
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
-	shared_ptr<CGALHybridPolyhedron> applyUnion3DCGALHybridPolyhedron(
+	shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
 		const Geometry::Geometries::const_iterator &chbegin,
 		const Geometry::Geometries::const_iterator &chend);
-	shared_ptr<CGALHybridPolyhedron> applyOperator3DCGALHybridPolyhedron(const Geometry::Geometries &children, OpenSCADOperator op);
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries &children, OpenSCADOperator op);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
@@ -120,19 +120,26 @@ namespace CGALUtils {
 	}
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron &hybrid);
 	std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom);
-	void triangulateFaces(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
-	bool isClosed(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
-	void orientToBoundAVolume(CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
-	void inPlaceNefUnion(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
-	void inPlaceNefDifference(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
-	void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
-	void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs, CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs);
-	void convertNefToPolyhedron(const CGAL_Nef_polyhedron3 &nef, CGAL_Polyhedron &polyhedron);
-	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL::Epeck> &nef, CGAL::Polyhedron_3<CGAL::Epeck> &polyhedron);
-	void corefineAndComputeUnion(
-		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
-	void corefineAndComputeIntersection(
-		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
-	void corefineAndComputeDifference(
-		CGAL::Polyhedron_3<CGAL::Epeck> &destination, CGAL::Polyhedron_3<CGAL::Epeck> &other);
+	template <typename Polyhedron>
+	void triangulateFaces(Polyhedron &polyhedron);
+	template <typename Polyhedron>
+	bool isClosed(Polyhedron &polyhedron);
+	template <typename Polyhedron>
+	void orientToBoundAVolume(Polyhedron &polyhedron);
+	template <typename K>
+	void inPlaceNefUnion(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void inPlaceNefDifference(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K> &lhs, CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K> &nef, CGAL::Polyhedron_3<K> &polyhedron);
+	template <typename K>
+	bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other);
+	template <typename K>
+	bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other);
+	template <typename K>
+	bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other);
 };

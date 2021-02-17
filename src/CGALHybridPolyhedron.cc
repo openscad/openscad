@@ -2,7 +2,6 @@
 #include "CGALHybridPolyhedron.h"
 
 #ifdef FAST_CSG_AVAILABLE
-#include <unordered_set>
 
 #include "cgalutils.h"
 #include "hash.h"
@@ -132,30 +131,27 @@ void CGALHybridPolyhedron::clear()
 	bboxes.clear();
 }
 
-bool CGALHybridPolyhedron::needsNefForOperationWith(const CGALHybridPolyhedron &other) const
-{
-	return !isManifold() || !other.isManifold() || sharesAnyVertexWith(other);
-}
-
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
 	if (!boundingBoxesIntersect(other) && isManifold() && other.isManifold()) {
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
 			CGALUtils::copyPolyhedron(otherPoly, destinationPoly);
+			return true;
 		});
+		return;
 	}
-	else {
-		if (needsNefForOperationWith(other))
-			nefPolyBinOp("union", other,
-									 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-										 CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
-									 });
-		else
-			polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-				CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
-			});
-	}
+
 	bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
+
+	if (isManifold() && other.isManifold() &&
+			polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+				return CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
+			})) {
+		return;
+	}
+	nefPolyBinOp("union", other, [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
+		CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
+	});
 }
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
@@ -166,20 +162,22 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 		return;
 	}
 
-	if (needsNefForOperationWith(other))
-		nefPolyBinOp("intersection", other,
-								 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-									 CGALUtils::inPlaceNefIntersection(destinationNef, otherNef);
-								 });
-	else
-		polyBinOp("intersection", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-			CGALUtils::corefineAndComputeIntersection(destinationPoly, otherPoly);
-		});
-
 	std::vector<bbox_t> new_bboxes;
 	for (auto &bbox : bboxes)
 		if (other.boundingBoxesIntersect(bbox)) new_bboxes.push_back(bbox);
 	bboxes = new_bboxes;
+
+	if (isManifold() && other.isManifold() &&
+			polyBinOp("intersection", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+				return CGALUtils::corefineAndComputeIntersection(destinationPoly, otherPoly);
+			})) {
+		return;
+	}
+
+	nefPolyBinOp("intersection", other,
+							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
+								 CGALUtils::inPlaceNefIntersection(destinationNef, otherNef);
+							 });
 }
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
@@ -190,15 +188,18 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 	}
 
 	// Note: we don't need to change the bbox.
-	if (needsNefForOperationWith(other))
-		nefPolyBinOp("intersection", other,
-								 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-									 CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
-								 });
-	else
-		polyBinOp("difference", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-			CGALUtils::corefineAndComputeDifference(destinationPoly, otherPoly);
-		});
+
+	if (isManifold() && other.isManifold() &&
+			polyBinOp("difference", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+				return CGALUtils::corefineAndComputeDifference(destinationPoly, otherPoly);
+			})) {
+		return;
+	}
+
+	nefPolyBinOp("difference", other,
+							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
+								 CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
+							 });
 }
 
 void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron &other)
@@ -216,7 +217,7 @@ void CGALHybridPolyhedron::transform(const Transform3d &mat)
 		clear();
 	}
 	else {
-		auto t = CGALUtils::createAffineTransformFromMatrix<kernel_t>(mat);
+		auto t = CGALUtils::createAffineTransformFromMatrix<CGAL_HybridKernel3>(mat);
 		if (auto poly = getPolyhedron()) {
 			CGALUtils::transform(*poly, mat);
 		}
@@ -282,27 +283,6 @@ void CGALHybridPolyhedron::foreachVertexUntilTrue(
 	}
 }
 
-bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other) const
-{
-	if (other.numVertices() < numVertices()) {
-		// The other has less vertices to index!
-		return other.sharesAnyVertexWith(*this);
-	}
-
-	std::unordered_set<point_t> vertices;
-	foreachVertexUntilTrue([&](const auto &p) {
-		vertices.insert(p);
-		return false;
-	});
-
-	auto foundCollision = false;
-	other.foreachVertexUntilTrue(
-			[&](const auto &p) { return foundCollision = vertices.find(p) != vertices.end(); });
-
-	// printf("foundCollision: %s (%lu vertices)\n", foundCollision ? "yes" : "no", vertices.size());
-	return foundCollision;
-}
-
 void CGALHybridPolyhedron::nefPolyBinOp(
 		const std::string &opName, CGALHybridPolyhedron &other,
 		const std::function<void(nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef)>
@@ -310,19 +290,38 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("nef ") + opName);
 
-	auto &destinationNef = convertToNefPolyhedron();
-	auto &otherNef = other.convertToNefPolyhedron();
-
-	operation(destinationNef, otherNef);
+	operation(convertToNefPolyhedron(), other.convertToNefPolyhedron());
 }
 
-void CGALHybridPolyhedron::polyBinOp(
+bool CGALHybridPolyhedron::polyBinOp(
 		const std::string &opName, CGALHybridPolyhedron &other,
-		const std::function<void(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation)
+		const std::function<bool(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation)
 {
-	SCOPED_PERFORMANCE_TIMER(std::string("polyhedron ") + opName);
+	SCOPED_PERFORMANCE_TIMER(std::string("corefinement ") + opName + " on polyhedron");
 
-	operation(convertToPolyhedron(), other.convertToPolyhedron());
+	auto previousData = data;
+	auto previousOtherData = other.data;
+
+	auto success = false;
+	CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
+	try {
+		if (!(success = operation(convertToPolyhedron(), other.convertToPolyhedron()))) {
+			LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed", opName.c_str());
+		}
+	} catch (const CGAL::Failure_exception &e) {
+		success = false;
+		LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed with an error %2$s",
+				opName.c_str(), e.what());
+	}
+
+	if (!success) {
+		// In case we converted nef polyedra to polyhedra, avoid loosing them as most likely
+		// the caller will now try nef operations instead.
+		data = previousData;
+		other.data = previousOtherData;
+	}
+
+	return success;
 }
 
 CGALHybridPolyhedron::nef_polyhedron_t &CGALHybridPolyhedron::convertToNefPolyhedron()

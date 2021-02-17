@@ -9,6 +9,7 @@
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 
 #include "CGAL_Nef_polyhedron.h"
+#include "polyset-utils.h"
 
 namespace CGALUtils {
 
@@ -19,10 +20,20 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 	}
 	else if (auto ps = dynamic_cast<const PolySet *>(&geom)) {
 		auto polyhedron = make_shared<CGALHybridPolyhedron::polyhedron_t>();
+
+#ifdef FAST_CSG_LEGACY_TESSELATION
+		PolySet ps_tri(3, ps->convexValue());
+		ps_tri.setConvexity(ps->getConvexity());
+		PolysetUtils::tessellate_faces(*ps, ps_tri);
+
+		auto err = createPolyhedronFromPolySet(ps_tri, *polyhedron, /* invert_orientation */ false);
+		assert(!err);
+#else
 		auto err = createPolyhedronFromPolySet(*ps, *polyhedron, /* invert_orientation */ false);
 		assert(!err);
 
 		triangulateFaces(*polyhedron);
+#endif // FAST_CSG_LEGACY_TESSELATION
 
 		if (!ps->is_convex()) {
 			if (isClosed(*polyhedron)) {
@@ -38,12 +49,17 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 	else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
 		assert(nef->p3);
 
+#ifdef HYBRID_USES_EXISTING_KERNEL
+		return make_shared<CGALHybridPolyhedron>(
+				make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*nef->p3));
+#else
 		auto polyhedron = make_shared<CGALHybridPolyhedron::polyhedron_t>();
 		CGAL_Polyhedron poly;
 		convertNefToPolyhedron(*nef->p3, poly);
 		copyPolyhedron(poly, *polyhedron);
 
 		return make_shared<CGALHybridPolyhedron>(polyhedron);
+#endif // HYBRID_USES_EXISTING_KERNEL
 	}
 	else {
 		LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
@@ -63,6 +79,9 @@ shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPo
 		assert(nef);
 		if (!nef) return nullptr;
 
+#ifdef HYBRID_USES_EXISTING_KERNEL
+		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(*nef));
+#else
 		CGALHybridPolyhedron::polyhedron_t poly;
 		convertNefToPolyhedron(*nef, poly);
 
@@ -70,6 +89,7 @@ shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPo
 		copyPolyhedron(poly, alien_poly);
 
 		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_poly));
+#endif // HYBRID_USES_EXISTING_KERNEL
 	}
 	else {
 		assert(!"Invalid hybrid polyhedron state");

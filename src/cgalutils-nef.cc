@@ -7,23 +7,30 @@ namespace CGALUtils {
 
 #ifdef FAST_CSG_AVAILABLE
 
-void inPlaceNefUnion(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs,
-										 const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs)
+template <typename K>
+void inPlaceNefUnion(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs)
 {
 	lhs += rhs;
 }
 
-void inPlaceNefDifference(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs,
-													const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs)
+template <typename K>
+void inPlaceNefDifference(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs)
 {
 	lhs -= rhs;
 }
 
-void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs,
-														const CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs)
+template <typename K>
+void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs)
 {
 	lhs *= rhs;
 }
+
+template void inPlaceNefUnion(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &lhs,
+															const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &rhs);
+template void inPlaceNefDifference(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &lhs,
+																	 const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &rhs);
+template void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &lhs,
+																		 const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &rhs);
 
 #endif // FAST_CSG_AVAILABLE
 

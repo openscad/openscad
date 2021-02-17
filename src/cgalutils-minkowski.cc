@@ -7,11 +7,15 @@ namespace CGALUtils {
 
 #ifdef FAST_CSG_AVAILABLE
 
-void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<CGAL::Epeck> &lhs,
-												 CGAL::Nef_polyhedron_3<CGAL::Epeck> &rhs)
+template <typename K>
+void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K> &lhs,
+												 CGAL::Nef_polyhedron_3<K> &rhs)
 {
 	lhs = CGAL::minkowski_sum_3(lhs, rhs);
 }
+
+template void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &lhs,
+												 CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &rhs);
 
 #endif // FAST_CSG_AVAILABLE
 
