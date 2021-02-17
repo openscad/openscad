@@ -2835,7 +2835,7 @@ void MainWindow::on_parameterDock_visibilityChanged(bool)
 
 void MainWindow::on_errorLogDock_visibilityChanged(bool)
 {
-    errorLogTopLevelChanged(parameterDock->isFloating());
+    errorLogTopLevelChanged(errorLogDock->isFloating());
 }
 
 void MainWindow::changedTopLevelEditor(bool topLevel)
