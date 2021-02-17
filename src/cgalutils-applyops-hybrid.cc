@@ -117,30 +117,6 @@ namespace CGALUtils {
 */
 	shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-		if (op == OpenSCADOperator::DIFFERENCE) {
-			auto size = children.size();
-			if (size > 2) {
-				auto it = children.begin();
-				auto &firstChild = *it++;
-
-				auto firstPoly = firstChild.second ? CGALUtils::createHybridPolyhedronFromGeometry(*firstChild.second) : nullptr;
-				if (!firstPoly || firstPoly->isEmpty()) {
-					return firstPoly;
-				}
-
-				LOG(message_group::Echo, getLocation(it->first), "",
-					"Reducing %1$d difference terms using fast-union", size - 1);
-				auto unionSubtracted = applyUnion3DCGALHybridPolyhedron(it, children.end());
-				if (!unionSubtracted || unionSubtracted->isEmpty()) {
-					return firstPoly;
-				}
-
-				*firstPoly -= *unionSubtracted;
-
-				return firstPoly;
-			}
-		}
-
 		shared_ptr<CGALHybridPolyhedron> N;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
