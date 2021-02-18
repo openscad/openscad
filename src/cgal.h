@@ -30,6 +30,10 @@
 #include <CGAL/exceptions.h>
 #pragma pop_macro("NDEBUG")
 
+// Stringification macro helpers
+#define FAST_CSG_STRING2(x) #x
+#define FAST_CSG_STRING(x) FAST_CSG_STRING2(x)
+
 typedef CGAL::Gmpq NT2;
 typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
@@ -61,10 +65,6 @@ typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
-
-// Stringification macro helpers
-#define FAST_CSG_STRING2(x) #x
-#define FAST_CSG_STRING(x) FAST_CSG_STRING2(x)
 
 #define FAST_CSG_AVAILABLE
 // Some notes about kernels for CGALHybridPolyhedron:
