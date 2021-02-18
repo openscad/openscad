@@ -216,31 +216,32 @@ list(APPEND FAST_CSG_FAILING_TESTS
 # These tests are run twice (w/ and without fast-csg).
 list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/features/highlight-modifier-2d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/difference-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier2.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/difference-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/minkowski3-erosion.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/render-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue913.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1165.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue3158.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue835.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue911.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue913.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1165.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1223.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1803.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/features/highlight-modifier-2d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue3158.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
 )
 
 #

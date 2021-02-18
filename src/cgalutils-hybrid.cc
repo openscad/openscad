@@ -26,10 +26,12 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 		ps_tri.setConvexity(ps->getConvexity());
 		PolysetUtils::tessellate_faces(*ps, ps_tri);
 
-		auto err = createPolyhedronFromPolySet(ps_tri, *polyhedron, /* invert_orientation */ false);
+		auto err = createPolyhedronFromPolySet(ps_tri, *polyhedron, /* invert_orientation */ false,
+																					 /* use_grid */ false);
 		assert(!err);
 #else
-		auto err = createPolyhedronFromPolySet(*ps, *polyhedron, /* invert_orientation */ false);
+		auto err = createPolyhedronFromPolySet(*ps, *polyhedron, /* invert_orientation */ false,
+																					 /* use_grid */ false);
 		assert(!err);
 
 		triangulateFaces(*polyhedron);

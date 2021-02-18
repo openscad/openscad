@@ -4,6 +4,7 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "polyset-utils.h"
+#include "Reindexer.h"
 #include "grid.h"
 
 #include "cgal.h"
@@ -28,7 +29,9 @@ namespace /* anonymous */ {
 
 		const PolySet &ps;
 		bool invert_orientation;
-		CGAL_Build_PolySet(const PolySet &ps, bool invert_orientation) : ps(ps), invert_orientation(invert_orientation) { }
+		bool use_grid;
+		CGAL_Build_PolySet(const PolySet &ps, bool invert_orientation, bool use_grid)
+			: ps(ps), invert_orientation(invert_orientation), use_grid(use_grid) { }
 
 /*
 	Using Grid here is important for performance reasons. See following model.
@@ -44,8 +47,8 @@ namespace /* anonymous */ {
 	rotate([0,90,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
   }
 */
-#if 1 // Use Grid
 		void operator()(HDS& hds) override {
+			if (use_grid) {
 			CGAL_Polybuilder B(hds, true);
 
 			Grid3d<int> grid(GRID_FINE);
@@ -134,10 +137,8 @@ namespace /* anonymous */ {
 			}
 			printf("]);\n");
 #endif
-		}
-#else // Don't use Grid
-		void operator()(HDS& hds)
-			{
+		} else {
+			// Don't use Grid
 				CGAL_Polybuilder B(hds, true);
 				Reindexer<Vector3d> vertices;
 				std::vector<size_t> indices(3);
@@ -154,7 +155,7 @@ namespace /* anonymous */ {
 #endif
 					indices.clear();
 					if (invert_orientation) {
-						for (const auto &v, boost::adaptors::reverse(p)) {
+						for (const auto &v : boost::adaptors::reverse(p)) {
 							size_t s = vertices.size();
 							size_t idx = vertices.lookup(v);
 							// If we added a vertex, also add it to the CGAL builder
@@ -162,7 +163,7 @@ namespace /* anonymous */ {
 							indices.push_back(idx);
 						}
 					} else {
-						for (const auto &v, p) {
+						for (const auto &v : p) {
 							size_t s = vertices.size();
 							size_t idx = vertices.lookup(v);
 							// If we added a vertex, also add it to the CGAL builder
@@ -209,7 +210,7 @@ namespace /* anonymous */ {
 				printf("]);\n");
 #endif
 			}
-#endif
+		}
 	};
 
 	template <class InputKernel, class OutputKernel>
@@ -310,12 +311,12 @@ namespace CGALUtils {
 #endif
 
 	template <typename Polyhedron>
-	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation)
+	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation, bool use_grid)
 	{
 		bool err = false;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
-			CGAL_Build_PolySet<Polyhedron> builder(ps, invert_orientation);
+			CGAL_Build_PolySet<Polyhedron> builder(ps, invert_orientation, use_grid);
 			p.delegate(builder);
 		}
 		catch (const CGAL::Assertion_exception &e) {
@@ -326,9 +327,9 @@ namespace CGALUtils {
 		return err;
 	}
 
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation, bool use_grid);
 #ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL_HybridKernel3> &p, bool invert_orientation);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL_HybridKernel3> &p, bool invert_orientation, bool use_grid);
 #endif
 
 	template <typename Polyhedron>
