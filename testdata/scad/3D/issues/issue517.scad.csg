@@ -1,0 +1,19 @@
+render(convexity = 1) {
+	difference() {
+		cube(size = [10, 10, 10], center = true);
+		multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+			cube(size = [10, 10, 10], center = true);
+		}
+	}
+}
+render(convexity = 1) {
+	multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		difference() {
+			cube(size = [10, 10, 10], center = true);
+			multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+				cube(size = [10, 10, 10], center = true);
+			}
+		}
+	}
+}
+

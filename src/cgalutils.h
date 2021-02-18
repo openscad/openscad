@@ -82,8 +82,6 @@ namespace CGALUtils {
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation = true);
 	template <class InputKernel, class OutputKernel>
 	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b);
-	template <class Polyhedron_A, class Polyhedron_B>
-	void appendToPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
 

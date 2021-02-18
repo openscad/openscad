@@ -1,0 +1,15 @@
+difference() {
+	cube(size = [20, 20, 3], center = true);
+	linear_extrude(height = 10, center = true, convexity = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 0, $fa = 12, $fs = 2, r = 3);
+		}
+		multmatrix([[1, 0, 0, -5], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 0, $fa = 12, $fs = 2, r = 3);
+		}
+		multmatrix([[1, 0, 0, -5], [0, 1, 0, -5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 0, $fa = 12, $fs = 2, r = 3);
+		}
+	}
+}
+

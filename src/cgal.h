@@ -76,9 +76,9 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 // - Conversions between CGAL::Epeck and CGAL_Kernel3 are relatively cheap
 //   (see cgalutils-kernel.cc) and require -DCGAL_USE_GMPXX.
 #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(5, 2, 0)
-#define HYBRID_USES_EXISTING_KERNEL
 typedef CGAL_Kernel3 CGAL_HybridKernel3;
 #else
+#define FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
 #pragma message( \
 		"Using CGAL::Epeck as kernel for fast-csg. Compile with CGAL >5.2.0 for smaller memory footprint.")
 typedef CGAL::Epeck CGAL_HybridKernel3;

@@ -298,6 +298,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("corefinement ") + opName + " on polyhedron");
 
+#ifndef FAST_CSG_TRUST_COREFINEMENT
 	if (sharesAnyVertexWith(other)) {
 		// Looks like corefinement functions can leave the polyhedron with degenerate
 		// faces or other invalid state when they bail out (returning false or after
@@ -310,6 +311,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 				"[fast-csg] Operands share vertices, opting out of corefinement out of precaution.");
 		return false;
 	}
+#endif // FAST_CSG_TRUST_COREFINEMENT
 
 	auto previousData = data;
 	auto previousOtherData = other.data;
