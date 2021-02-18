@@ -22,6 +22,13 @@ namespace CGAL {
 	class Cartesian_converter;
 }
 
+namespace CGAL {
+	inline std::size_t hash_value(const CGAL_HybridKernel3::FT &x) {
+		std::hash<double> dh;
+		return dh(CGAL::to_double(x));
+	}
+}
+
 namespace /* anonymous */ {
 	template<typename Result, typename V>
 	Result vector_convert(V const& v) {

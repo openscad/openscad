@@ -87,7 +87,7 @@ namespace CGALUtils {
 #endif // FAST_CSG_AVAILABLE
 
 		CGAL_Nef_polyhedron *N = nullptr;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
 		bool foundFirst = false;
@@ -143,7 +143,6 @@ namespace CGALUtils {
 			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s",opstr,e.what());
 
 		}
-		CGAL::set_error_behaviour(old_behaviour);
 		return shared_ptr<Geometry>(N);
 	}
 
@@ -168,6 +167,7 @@ namespace CGALUtils {
 		};
 		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
+		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			// sort children by fewest faces
 			for (auto it = chbegin; it != chend; ++it) {

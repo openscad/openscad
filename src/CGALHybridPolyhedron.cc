@@ -299,6 +299,17 @@ bool CGALHybridPolyhedron::polyBinOp(
 {
 	SCOPED_PERFORMANCE_TIMER(std::string("corefinement ") + opName + " on polyhedron");
 
+	if (sharesAnyVertexWith(other)) {
+		// Looks like corefinement functions can leave the polyhedron with degenerate
+		// faces or other invalid state when they bail out (returning false or after
+		// some of precondition failure (examples: testdata/scad/3D/features/mirror-tests.scad
+		// and testdata/scad/3D/features/polyhedron-tests.scad).
+		// This makes it impossible to build a nef out of the resulting polyhedron,
+		// so this check aims to avoid some of those cases.
+		// It's probably the wrong check to do, but this fixes 2 tests.
+		return false;
+	}
+
 	auto previousData = data;
 	auto previousOtherData = other.data;
 
@@ -315,13 +326,34 @@ bool CGALHybridPolyhedron::polyBinOp(
 	}
 
 	if (!success) {
-		// In case we converted nef polyedra to polyhedra, avoid loosing them as most likely
-		// the caller will now try nef operations instead.
+		// Nef polyhedron is a costly object to create. Revert back to whatever we had
+		// in case we converted an existing nef to a polyhedron.
 		data = previousData;
 		other.data = previousOtherData;
 	}
 
 	return success;
+}
+
+bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other) const
+{
+	if (other.numVertices() < numVertices()) {
+		// The other has less vertices to index!
+		return other.sharesAnyVertexWith(*this);
+	}
+
+	std::unordered_set<point_t> vertices;
+	foreachVertexUntilTrue([&](const auto &p) {
+		vertices.insert(p);
+		return false;
+	});
+
+	auto foundCollision = false;
+	other.foreachVertexUntilTrue(
+			[&](const auto &p) { return foundCollision = vertices.find(p) != vertices.end(); });
+
+	// printf("foundCollision: %s (%lu vertices)\n", foundCollision ? "yes" : "no", vertices.size());
+	return foundCollision;
 }
 
 CGALHybridPolyhedron::nef_polyhedron_t &CGALHybridPolyhedron::convertToNefPolyhedron()

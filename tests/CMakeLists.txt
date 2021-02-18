@@ -206,7 +206,6 @@ list(APPEND FAST_CSG_FAILING_TESTS
   # Different order of vertices
   3mfexport_3mf-export
   # Needs investigation:
-  stlcgalpngtest_polyhedron-tests monotonepngtest_polyhedron-tests
   cgalpngtest_issue1246 csgpngtest_issue1246
   # Test script argument passing issue
   cgalstlsanitytest_normal-nan

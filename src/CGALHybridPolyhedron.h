@@ -14,7 +14,9 @@ class PolySet;
 namespace CGALUtils {
 std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(
 		const CGALHybridPolyhedron &hybrid);
-}
+std::shared_ptr<const Geometry> applyMinkowskiCGALHybridPolyhedron(
+		const Geometry::Geometries &children);
+} // namespace CGALUtils
 
 /*! A mutable polyhedron backed by a CGAL::Polyhedron_3 and fast Polygon Mesh
  * Processing (PMP) CSG functions when possible (manifold cases), or by a
@@ -100,6 +102,8 @@ private:
 	bool polyBinOp(
 			const std::string &opName, CGALHybridPolyhedron &other,
 			const std::function<bool(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
+
+	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
 
 	polyhedron_t &convertToPolyhedron();
 	nef_polyhedron_t &convertToNefPolyhedron();

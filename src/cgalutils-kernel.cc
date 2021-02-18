@@ -36,17 +36,18 @@ CGAL::Epick::FT KernelConverter<CGAL_HybridKernel3, CGAL::Epick>::operator()(
 }
 
 template <>
-CGAL_HybridKernel3::FT KernelConverter<CGAL::Cartesian<CGAL::Gmpq>, CGAL_HybridKernel3>::operator()(
+CGAL_HybridKernel3::FT KernelConverter<CGAL_Kernel3, CGAL_HybridKernel3>::operator()(
 		const CGAL::Gmpq &n) const
 {
-	return n;
+	return mpq_class(mpz_class(n.numerator().mpz()), mpz_class(n.denominator().mpz()));
 }
 
 template <>
-CGAL::Gmpq KernelConverter<CGAL_HybridKernel3, CGAL::Cartesian<CGAL::Gmpq>>::operator()(
-		const CGAL::Gmpq &n) const
+CGAL::Gmpq KernelConverter<CGAL_HybridKernel3, CGAL_Kernel3>::operator()(
+		const CGAL_HybridKernel3::FT &n) const
 {
-	return n;
+	auto &e = n.exact();
+	return CGAL::Gmpq(CGAL::Gmpz(e.get_num().get_mpz_t()), CGAL::Gmpz(e.get_den().get_mpz_t()));
 }
 
 #endif // HYBRID_USES_EXISTING_KERNEL

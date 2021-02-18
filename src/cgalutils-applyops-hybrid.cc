@@ -61,6 +61,7 @@ namespace CGALUtils {
 			}
 		};
 
+		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			Geometry::Geometries children;
 			children.insert(children.end(), chbegin, chend);
@@ -118,11 +119,11 @@ namespace CGALUtils {
 	shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		shared_ptr<CGALHybridPolyhedron> N;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
 		bool foundFirst = false;
 
+		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			for(const auto &item : children) {
 				auto chN = item.second ? CGALUtils::createHybridPolyhedronFromGeometry(*item.second) : nullptr;
@@ -168,7 +169,6 @@ namespace CGALUtils {
 			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyOperator3DHybrid %1$s: %2$s",opstr,e.what());
 
 		}
-		CGAL::set_error_behaviour(old_behaviour);
 		return N;
 	}
 
