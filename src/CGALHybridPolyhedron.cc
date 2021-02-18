@@ -134,19 +134,20 @@ void CGALHybridPolyhedron::clear()
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
 	if (!boundingBoxesIntersect(other) && isManifold() && other.isManifold()) {
-		LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Fast unioning disjoint bodies");
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
 			CGALUtils::copyPolyhedron(otherPoly, destinationPoly);
 			return true;
 		});
 	}
 	else if (!isManifold() || !other.isManifold() ||
-					 !polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-						 return CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
-					 })) {
-		nefPolyBinOp("union", other, [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-			CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
-		});
+					 !polyBinOp("corefinement union", other,
+											[&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+												return CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
+											})) {
+		nefPolyBinOp("nef union", other,
+								 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
+									 CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
+								 });
 	}
 
 	bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
@@ -166,13 +167,14 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 	bboxes = new_bboxes;
 
 	if (isManifold() && other.isManifold() &&
-			polyBinOp("intersection", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-				return CGALUtils::corefineAndComputeIntersection(destinationPoly, otherPoly);
-			})) {
+			polyBinOp("corefinement intersection", other,
+								[&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+									return CGALUtils::corefineAndComputeIntersection(destinationPoly, otherPoly);
+								})) {
 		return;
 	}
 
-	nefPolyBinOp("intersection", other,
+	nefPolyBinOp("nef intersection", other,
 							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
 								 CGALUtils::inPlaceNefIntersection(destinationNef, otherNef);
 							 });
@@ -189,13 +191,14 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 	// Note: we don't need to change the bbox.
 
 	if (isManifold() && other.isManifold() &&
-			polyBinOp("difference", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-				return CGALUtils::corefineAndComputeDifference(destinationPoly, otherPoly);
-			})) {
+			polyBinOp("corefinement difference", other,
+								[&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+									return CGALUtils::corefineAndComputeDifference(destinationPoly, otherPoly);
+								})) {
 		return;
 	}
 
-	nefPolyBinOp("difference", other,
+	nefPolyBinOp("nef difference", other,
 							 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
 								 CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
 							 });
@@ -287,7 +290,10 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 		const std::function<void(nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef)>
 				&operation)
 {
-	SCOPED_PERFORMANCE_TIMER(std::string("nef ") + opName);
+	SCOPED_PERFORMANCE_TIMER(opName);
+
+	LOG(message_group::Echo, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
+			opName.c_str(), numFacets(), other.numFacets());
 
 	operation(convertToNefPolyhedron(), other.convertToNefPolyhedron());
 }
@@ -296,7 +302,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 		const std::string &opName, CGALHybridPolyhedron &other,
 		const std::function<bool(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation)
 {
-	SCOPED_PERFORMANCE_TIMER(std::string("corefinement ") + opName + " on polyhedron");
+	SCOPED_PERFORMANCE_TIMER(opName);
 
 #ifndef FAST_CSG_TRUST_COREFINEMENT
 	if (sharesAnyVertexWith(other)) {
@@ -312,6 +318,9 @@ bool CGALHybridPolyhedron::polyBinOp(
 		return false;
 	}
 #endif // FAST_CSG_TRUST_COREFINEMENT
+
+	LOG(message_group::Echo, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
+			opName.c_str(), numFacets(), other.numFacets());
 
 	auto previousData = data;
 	auto previousOtherData = other.data;
