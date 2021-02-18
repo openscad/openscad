@@ -80,7 +80,7 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 typedef CGAL_Kernel3 CGAL_HybridKernel3;
 #else
 #pragma message( \
-		"Using CGAL::Epeck as kernel for fast-csg. Use latest CGAL >5.2.0 for smaller memory footprint.")
+		"Using CGAL::Epeck as kernel for fast-csg. Compile with CGAL >5.2.0 for smaller memory footprint.")
 typedef CGAL::Epeck CGAL_HybridKernel3;
 #endif
 

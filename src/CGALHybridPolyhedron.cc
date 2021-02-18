@@ -138,20 +138,17 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 			CGALUtils::copyPolyhedron(otherPoly, destinationPoly);
 			return true;
 		});
-		return;
+	}
+	else if (!isManifold() || !other.isManifold() ||
+					 !polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+						 return CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
+					 })) {
+		nefPolyBinOp("union", other, [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
+			CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
+		});
 	}
 
 	bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
-
-	if (isManifold() && other.isManifold() &&
-			polyBinOp("union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-				return CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
-			})) {
-		return;
-	}
-	nefPolyBinOp("union", other, [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
-		CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
-	});
 }
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
@@ -319,15 +316,18 @@ bool CGALHybridPolyhedron::polyBinOp(
 		if (!(success = operation(convertToPolyhedron(), other.convertToPolyhedron()))) {
 			LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed", opName.c_str());
 		}
-	} catch (const CGAL::Failure_exception &e) {
+	} catch (const std::exception &e) {
+		// This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
+		// knows what else...
 		success = false;
-		LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed with an error %2$s",
+		LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed with an error: %2$s",
 				opName.c_str(), e.what());
 	}
 
 	if (!success) {
-		// Nef polyhedron is a costly object to create. Revert back to whatever we had
-		// in case we converted an existing nef to a polyhedron.
+		// Nef polyhedron is a costly object to create, and maybe we've just ditched some
+    // to create our polyhedra. Revert back to whatever we had in case we already
+    // had nefs.
 		data = previousData;
 		other.data = previousOtherData;
 	}
