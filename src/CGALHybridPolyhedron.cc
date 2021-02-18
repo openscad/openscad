@@ -134,6 +134,7 @@ void CGALHybridPolyhedron::clear()
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
 	if (!boundingBoxesIntersect(other) && isManifold() && other.isManifold()) {
+		LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Fast unioning disjoint bodies");
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
 			CGALUtils::copyPolyhedron(otherPoly, destinationPoly);
 			return true;
@@ -154,7 +155,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 {
 	if (!boundingBoxesIntersect(other)) {
-		LOG(message_group::Warning, Location::NONE, "", "Empty intersection");
+		LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Empty intersection");
 		clear();
 		return;
 	}
@@ -180,7 +181,8 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 {
 	if (!boundingBoxesIntersect(other)) {
-		LOG(message_group::Warning, Location::NONE, "", "Difference with non-intersecting geometry");
+		LOG(message_group::Warning, Location::NONE, "",
+				"[fast-csg] Difference with non-intersecting geometry");
 		return;
 	}
 
@@ -304,6 +306,8 @@ bool CGALHybridPolyhedron::polyBinOp(
 		// This makes it impossible to build a nef out of the resulting polyhedron,
 		// so this check aims to avoid some of those cases.
 		// It's probably the wrong check to do, but this fixes 2 tests.
+		LOG(message_group::Warning, Location::NONE, "",
+				"[fast-csg] Operands share vertices, opting out of corefinement out of precaution.");
 		return false;
 	}
 
@@ -314,20 +318,21 @@ bool CGALHybridPolyhedron::polyBinOp(
 	CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 	try {
 		if (!(success = operation(convertToPolyhedron(), other.convertToPolyhedron()))) {
-			LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed", opName.c_str());
+			LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s failed",
+					opName.c_str());
 		}
 	} catch (const std::exception &e) {
 		// This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
 		// knows what else...
 		success = false;
-		LOG(message_group::Warning, Location::NONE, "", "Corefinement %1$s failed with an error: %2$s",
-				opName.c_str(), e.what());
+		LOG(message_group::Warning, Location::NONE, "",
+				"[fast-csg] Corefinement %1$s failed with an error: %2$s", opName.c_str(), e.what());
 	}
 
 	if (!success) {
 		// Nef polyhedron is a costly object to create, and maybe we've just ditched some
-    // to create our polyhedra. Revert back to whatever we had in case we already
-    // had nefs.
+		// to create our polyhedra. Revert back to whatever we had in case we already
+		// had nefs.
 		data = previousData;
 		other.data = previousOtherData;
 	}
