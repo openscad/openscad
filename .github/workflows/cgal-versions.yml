@@ -21,9 +21,6 @@ jobs:
           - os: ubuntu-18.04
             cgal-version: 5.1
             fast-csg-available: true
-          - os: ubuntu-18.04
-            cgal-version: 5.2.x
-            fast-csg-available: true
 
     runs-on: ${{ matrix.os }}
 
