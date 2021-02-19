@@ -94,9 +94,8 @@ size_t CGALHybridPolyhedron::numVertices() const
 
 bool CGALHybridPolyhedron::isManifold() const
 {
-	if (getPolyhedron()) {
-		// We don't keep simple polyhedra if they're not manifold (see contructor)
-		return true;
+	if (auto poly = getPolyhedron()) {
+		return poly->is_closed();
 	}
 	else if (auto nef = getNefPolyhedron()) {
 		return nef->is_simple();
