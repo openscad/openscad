@@ -103,7 +103,9 @@ private:
 			const std::string &opName, CGALHybridPolyhedron &other,
 			const std::function<bool(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
 
+#ifdef FAST_CSG_TEST_SHARED_VERTICES
 	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
+#endif
 
 	polyhedron_t &convertToPolyhedron();
 	nef_polyhedron_t &convertToNefPolyhedron();

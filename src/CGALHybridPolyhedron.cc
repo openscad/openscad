@@ -304,7 +304,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 {
 	SCOPED_PERFORMANCE_TIMER(opName);
 
-#ifndef FAST_CSG_TRUST_COREFINEMENT
+#ifdef FAST_CSG_TEST_SHARED_VERTICES
 	if (sharesAnyVertexWith(other)) {
 		// Looks like corefinement functions can leave the polyhedron with degenerate
 		// faces or other invalid state when they bail out (returning false or after
@@ -351,6 +351,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 	return success;
 }
 
+#ifdef FAST_CSG_TEST_SHARED_VERTICES
 bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other) const
 {
 	if (other.numVertices() < numVertices()) {
@@ -368,9 +369,9 @@ bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other
 	other.foreachVertexUntilTrue(
 			[&](const auto &p) { return foundCollision = vertices.find(p) != vertices.end(); });
 
-	// printf("foundCollision: %s (%lu vertices)\n", foundCollision ? "yes" : "no", vertices.size());
 	return foundCollision;
 }
+#endif // FAST_CSG_TEST_SHARED_VERTICES
 
 CGALHybridPolyhedron::nef_polyhedron_t &CGALHybridPolyhedron::convertToNefPolyhedron()
 {
