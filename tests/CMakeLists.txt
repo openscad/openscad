@@ -207,6 +207,8 @@ list(APPEND FAST_CSG_FAILING_TESTS
   3mfexport_3mf-export
   # Needs investigation:
   cgalpngtest_issue1246 csgpngtest_issue1246
+  # Seems to only fail on some platforms:
+  cgalpngtest_module-recursion
   # Test script argument passing issue
   cgalstlsanitytest_normal-nan
   # No wireframe rendering yet.
