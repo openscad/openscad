@@ -400,7 +400,9 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver5_2_x="git clone --depth 1 http://github.com/CGAL/cgal --branch 5.2.x-branch --single-branch CGAL-5.2.x"
   ver5_2="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.2/CGAL-5.2-library.tar.xz --output CGAL-5.2.tar.xz"
+  ver5_1="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.1/CGAL-5.1-library.tar.xz --output CGAL-5.1.tar.xz"
   ver4_11="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.11/CGAL-4.11.tar.xz"
   ver4_8="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8/CGAL-4.8.tar.xz"
   ver4_7="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.7/CGAL-4.7.tar.gz"
@@ -424,6 +426,9 @@ build_cgal()
   if [ -e CGAL-$version.tar.xz ]; then
     download_cmd=vernull;
   fi
+  if [ -d CGAL-$version ]; then
+    download_cmd=vernull;
+  fi
 
   eval echo "$"$download_cmd
   `eval echo "$"$download_cmd`
@@ -439,8 +444,10 @@ build_cgal()
     suffix=xz
   fi
 
-  $zipper -f -d CGAL-$version.tar.$suffix;
-  tar xf CGAL-$version.tar
+  if [ ! -d CGAL-$version ]; then
+    $zipper -f -d CGAL-$version.tar.$suffix;
+    tar xf CGAL-$version.tar
+  fi
 
   cd CGAL-$version
 
