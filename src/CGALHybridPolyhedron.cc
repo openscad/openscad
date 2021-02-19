@@ -132,17 +132,18 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
-	if (!boundingBoxesIntersect(other) && isManifold() && other.isManifold()) {
+	auto bothManifold = isManifold() && other.isManifold();
+	if (bothManifold && !boundingBoxesIntersect(other)) {
 		polyBinOp("fast union", other, [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
 			CGALUtils::copyPolyhedron(otherPoly, destinationPoly);
 			return true;
 		});
 	}
-	else if (!isManifold() || !other.isManifold() ||
-					 !polyBinOp("corefinement union", other,
-											[&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
-												return CGALUtils::corefineAndComputeUnion(destinationPoly, otherPoly);
-											})) {
+	else if (!bothManifold || !polyBinOp("corefinement union", other,
+																			 [&](polyhedron_t &destinationPoly, polyhedron_t &otherPoly) {
+																				 return CGALUtils::corefineAndComputeUnion(destinationPoly,
+																																									 otherPoly);
+																			 })) {
 		nefPolyBinOp("nef union", other,
 								 [&](nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef) {
 									 CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
