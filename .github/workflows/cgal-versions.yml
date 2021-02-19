@@ -1,4 +1,4 @@
-name: Legacy CGAL
+name: CGAL Versions
 
 on:
   push:
@@ -11,14 +11,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        cgal-version: [5.2]
+        fast-csg-available: [true]
         include:
           - cgal-version: 4.11
             fast-csg-available: false
         include:
           - cgal-version: 5.1
-            fast-csg-available: true
-        include:
-          - cgal-version: 5.2
             fast-csg-available: true
         include:
           - cgal-version: 5.2.x
@@ -43,6 +42,6 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
-        name: Test Result Report - CGAL 4.x (no fast-csg)
+        name: Test Result Report - CGAL ${{ matrix.cgal-version }} - fast-csg=${{ matrix.fast-csg-available }}
         path: b/tests/Testing/Temporary/*_report.html
 
