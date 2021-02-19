@@ -17,16 +17,14 @@ jobs:
         include:
           - cgal-version: 4.11
             fast-csg-available: false
-        include:
           - cgal-version: 5.1
             fast-csg-available: true
-        include:
           - cgal-version: 5.2.x
             fast-csg-available: true
 
     runs-on: ${{ matrix.os }}
 
-    name: CGAL ${{ matrix.cgal-version }} (fast-csg: ${{ matrix.fast-csg-available }})
+    name: "CGAL ${{ matrix.cgal-version }} (fast-csg: ${{ matrix.fast-csg-available }})"
 
     steps:
     - name: Checkout
