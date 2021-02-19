@@ -11,6 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ ubuntu-18.04 ]
         cgal-version: [5.2]
         fast-csg-available: [true]
         include:
@@ -23,7 +24,7 @@ jobs:
           - cgal-version: 5.2.x
             fast-csg-available: true
 
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
 
     name: CGAL ${{ matrix.cgal-version }} (fast-csg: ${{ matrix.fast-csg-available }})
 
