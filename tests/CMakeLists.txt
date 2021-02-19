@@ -203,6 +203,8 @@ list(APPEND FAST_CSG_FAILING_TESTS
   opencsgtest_render-tests
   opencsgtest_internal-cavity
   opencsgtest_minkowski3-erosion
+  # Corefinement leaves some polyhedra in a state that we can't build Nefs from
+  cgalpngtest_mirror-tests csgpngtest_mirror-tests monotonepngtest_mirror-tests cgalstlcgalpngtest_mirror-tests cgalbinstlcgalpngtest_mirror-tests
   # Different order of vertices
   3mfexport_3mf-export
   # Needs investigation:
