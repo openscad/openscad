@@ -11,11 +11,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04 ]
+        include:
+          - cgal-version: 4.11
+            fast-csg-available: false
+        include:
+          - cgal-version: 5.1
+            fast-csg-available: true
+        include:
+          - cgal-version: 5.2
+            fast-csg-available: true
+        include:
+          - cgal-version: 5.2.x
+            fast-csg-available: true
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-18.04
 
-    name: CGAL 4.x (no fast-csg) on ${{ matrix.os }}
+    name: CGAL ${{ matrix.cgal-version }} (fast-csg: ${{ matrix.fast-csg-available }})
 
     steps:
     - name: Checkout
@@ -23,11 +34,11 @@ jobs:
     - name: Submodules
       run: git submodule update --init --recursive
     - name: Install dependencies
-      run: CGAL_VERSION=4.11 ./scripts/travis-ci-before-install-linux.sh bionic
+      run: CGAL_VERSION=${{ matrix.cgal-version }} ./scripts/travis-ci-before-install-linux.sh bionic
     - name: Dependency fixup
       run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
-      run: FAST_CSG_AVAILABLE=0 ./scripts/github-ci.sh build test coverage
+      run: FAST_CSG_AVAILABLE=${{ matrix.fast-csg-available }} ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
