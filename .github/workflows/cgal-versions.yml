@@ -15,11 +15,14 @@ jobs:
         cgal-version: [5.2]
         fast-csg-available: [true]
         include:
-          - cgal-version: 4.11
+          - os: ubuntu-18.04
+            cgal-version: 4.11
             fast-csg-available: false
-          - cgal-version: 5.1
+          - os: ubuntu-18.04
+            cgal-version: 5.1
             fast-csg-available: true
-          - cgal-version: 5.2.x
+          - os: ubuntu-18.04
+            cgal-version: 5.2.x
             fast-csg-available: true
 
     runs-on: ${{ matrix.os }}
