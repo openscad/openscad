@@ -363,16 +363,8 @@ bool CGALHybridPolyhedron::polyBinOp(
 #ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 		static std::map<std::string, size_t> opCount;
 		auto opNumber = opCount[opName]++;
-		std::ofstream((std::ostringstream()
-									 << opName << " " << opNumber << " lhs (" << numFacets() << " facets).off")
-											.str()
-											.c_str())
-				<< convertToPolyhedron();
-		std::ofstream((std::ostringstream()
-									 << opName << " " << opNumber << " rhs (" << other.numFacets() << " facets).off")
-											.str()
-											.c_str())
-				<< other.convertToPolyhedron();
+		std::ofstream(opName + "_lhs.off") << convertToPolyhedron();
+		std::ofstream(opName + "_rhs.off") << other.convertToPolyhedron();
 #endif
 
 		if ((success = operation(lhs, rhs, *out))) {
