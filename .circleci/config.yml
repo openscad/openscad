@@ -12,7 +12,6 @@ jobs:
           command: |
               export NUMCPU=2
               export MXEDIR=/mxe
-              ( cd $MXEDIR && git remote set-url origin https://github.com/ochafik/mxe.git && git pull && git checkout openscad-cgal-5.2 && make MXE_PLUGIN_DIRS=plugins/gcc7 cgal MXE_TARGETS=i686-w64-mingw32.static.posix -j 4 JOBS=4 )
               export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
@@ -44,7 +43,6 @@ jobs:
           command: |
               export NUMCPU=2
               export MXEDIR=/mxe
-              ( cd $MXEDIR && git remote set-url origin https://github.com/ochafik/mxe.git && git pull && git checkout openscad-cgal-5.2 && make MXE_PLUGIN_DIRS=plugins/gcc7 cgal MXE_TARGETS=x86_64-w64-mingw32.static.posix -j 4 JOBS=4 )
               export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
