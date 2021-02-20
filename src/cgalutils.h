@@ -144,9 +144,9 @@ namespace CGALUtils {
 	template <typename K>
 	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K> &nef, CGAL::Polyhedron_3<K> &polyhedron);
 	template <typename K>
-	bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other);
+	bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
 	template <typename K>
-	bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other);
+	bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
 	template <typename K>
-	bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other);
+	bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
 };

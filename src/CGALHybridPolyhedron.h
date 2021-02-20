@@ -101,7 +101,7 @@ private:
 	 * original nef if there was one. */
 	bool polyBinOp(
 			const std::string &opName, CGALHybridPolyhedron &other,
-			const std::function<bool(polyhedron_t &destinationPoly, polyhedron_t &otherPoly)> &operation);
+			const std::function<bool(polyhedron_t &lhs, polyhedron_t &rhs, polyhedron_t &out)> &operation);
 
 #ifdef FAST_CSG_TEST_SHARED_VERTICES
 	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;

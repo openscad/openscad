@@ -9,30 +9,35 @@
 namespace CGALUtils {
 
 template <typename K>
-bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other)
+bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs,
+														 CGAL::Polyhedron_3<K> &out)
 {
-	return CGAL::Polygon_mesh_processing::corefine_and_compute_union(destination, other, destination);
+	return CGAL::Polygon_mesh_processing::corefine_and_compute_union(lhs, rhs, out);
 }
 
 template <typename K>
-bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &destination,
-																		CGAL::Polyhedron_3<K> &other)
+bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs,
+																		CGAL::Polyhedron_3<K> &out)
 {
-	return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(destination, other, destination);
+	return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(lhs, rhs, out);
 }
 
 template <typename K>
-bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &destination, CGAL::Polyhedron_3<K> &other)
+bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs,
+																	CGAL::Polyhedron_3<K> &out)
 {
-	return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(destination, other, destination);
+	return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(lhs, rhs, out);
 }
 
-template bool corefineAndComputeUnion(CGAL::Polyhedron_3<CGAL_HybridKernel3> &destination,
-																			CGAL::Polyhedron_3<CGAL_HybridKernel3> &other);
-template bool corefineAndComputeIntersection(CGAL::Polyhedron_3<CGAL_HybridKernel3> &destination,
-																						 CGAL::Polyhedron_3<CGAL_HybridKernel3> &other);
-template bool corefineAndComputeDifference(CGAL::Polyhedron_3<CGAL_HybridKernel3> &destination,
-																					 CGAL::Polyhedron_3<CGAL_HybridKernel3> &other);
+template bool corefineAndComputeUnion(CGAL::Polyhedron_3<CGAL_HybridKernel3> &lhs,
+																			CGAL::Polyhedron_3<CGAL_HybridKernel3> &rhs,
+																			CGAL::Polyhedron_3<CGAL_HybridKernel3> &out);
+template bool corefineAndComputeIntersection(CGAL::Polyhedron_3<CGAL_HybridKernel3> &lhs,
+																						 CGAL::Polyhedron_3<CGAL_HybridKernel3> &rhs,
+																						 CGAL::Polyhedron_3<CGAL_HybridKernel3> &out);
+template bool corefineAndComputeDifference(CGAL::Polyhedron_3<CGAL_HybridKernel3> &lhs,
+																					 CGAL::Polyhedron_3<CGAL_HybridKernel3> &rhs,
+																					 CGAL::Polyhedron_3<CGAL_HybridKernel3> &out);
 
 } // namespace CGALUtils
 
