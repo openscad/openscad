@@ -375,7 +375,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 				<< other.convertToPolyhedron();
 #endif
 
-		if ((success = operation(lhs, rhs, *out)) {
+		if ((success = operation(lhs, rhs, *out))) {
 #ifdef FAST_CSG_KERNEL_IS_LAZY
 			forceLazyToExact(*out);
 #endif
