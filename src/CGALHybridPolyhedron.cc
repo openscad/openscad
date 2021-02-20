@@ -7,6 +7,11 @@
 #include "hash.h"
 #include "scoped_timer.h"
 
+#ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
+#include <sstream>
+#include <fstream>
+#endif
+
 #ifdef FAST_CSG_KERNEL_IS_LAZY
 void forceLazyToExact(CGALHybridPolyhedron::polyhedron_t &p)
 {
@@ -354,6 +359,21 @@ bool CGALHybridPolyhedron::polyBinOp(
 	try {
 		auto &lhs = convertToPolyhedron();
 		auto &rhs = other.convertToPolyhedron();
+
+#ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
+		static std::map<std::string, size_t> opCount;
+		auto opNumber = opCount[opName]++;
+		std::ofstream((std::ostringstream()
+									 << opName << " " << opNumber << " lhs (" << numFacets() << " facets).off")
+											.str()
+											.c_str())
+				<< convertToPolyhedron();
+		std::ofstream((std::ostringstream()
+									 << opName << " " << opNumber << " rhs (" << other.numFacets() << " facets).off")
+											.str()
+											.c_str())
+				<< other.convertToPolyhedron();
+#endif
 
 		if ((success = operation(lhs, rhs, *out)) {
 #ifdef FAST_CSG_KERNEL_IS_LAZY
