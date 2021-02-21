@@ -70,6 +70,8 @@ add_definitions(-DGLEW_STATIC)
 add_definitions(-DLIBXML_STATIC)
 add_definitions(-DUNICODE -D_UNICODE)
 list(APPEND PLATFORM_LIBS -lbcrypt)
+add_subdirectory(winconsole)
+set(CMAKE_WIN32_EXECUTABLE ON)
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")

@@ -57,6 +57,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 
 CONFIG=deploy
+CMAKE_CONFIG=
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
@@ -90,7 +91,6 @@ fi
 case $OS in
     LINUX|MACOSX) 
         TARGET=
-        # for QT4 set QT_SELECT=4
         export QT_SELECT=5
     ;;
     WIN)
@@ -108,15 +108,17 @@ case $OS in
         fi
         MINGWCONFIG=mingw-cross-env$SHARED
         . ./scripts/setenv-mingw-xbuild.sh $ARCH $SHARED
-        TARGET=release
+        TARGET=
         ZIP="zip"
         ZIPARGS="-r -q"
         echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
+        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON"
     ;;
 esac
 
 if [ "`echo $* | grep snapshot`" ]; then
   CONFIG="$CONFIG snapshot experimental"
+  CMAKE_CONFIG="$CMAKE_CONFIG -DSNAPSHOT=ON -DEXPERIMENTAL=ON"
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 fi
 
@@ -199,7 +201,10 @@ echo "NUMCPU: " $NUMCPU
 case $OS in
     UNIX_CROSS_WIN)
         cd $DEPLOYDIR
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug $OPENSCADDIR/openscad.pro
+	$MXE_TARGETS-cmake .. $CMAKE_CONFIG \
+                -DCMAKE_BUILD_TYPE="Release" \
+                -DOPENSCAD_VERSION="$VERSION" \
+                -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
         cd $OPENSCADDIR
     ;;
     *)
@@ -247,21 +252,20 @@ case $OS in
         # make main openscad.exe
         cd $DEPLOYDIR
         if [ $FAKEMAKE ]; then
-            echo "notexe. debugging build process" > $TARGET/openscad.exe
+            echo "notexe. debugging build process" > OpenSCAD.exe
         else
-            make $TARGET -j$NUMCPU
+            make -j$NUMCPU
         fi
-        if [ ! -e $TARGET/openscad.exe ]; then
-            echo "can't find $TARGET/openscad.exe. build failed. stopping."
+        if [ ! -e OpenSCAD.exe ]; then
+            echo "can't find OpenSCAD.exe. build failed. stopping."
             exit
         fi
-        # make console pipe-able openscad.com - see winconsole.pro for info
-        qmake ../winconsole/winconsole.pro
-        make
-        if [ ! -e $TARGET/openscad.com ]; then
-            echo "can't find $TARGET/openscad.com. build failed. stopping."
+        if [ ! -e winconsole/OpenSCAD.com ]; then
+            echo "can't find OpenSCAD.com. build failed. stopping."
             exit
         fi
+	mv -v OpenSCAD.exe openscad.exe
+	mv -v winconsole/OpenSCAD.com openscad.com
         cd $OPENSCADDIR
     ;;
     LINUX)
@@ -390,20 +394,16 @@ case $OS in
         echo "Binary created: openscad-$VERSION.zip"
     ;;
     UNIX_CROSS_WIN)
-        cd $OPENSCADDIR
         cd $DEPLOYDIR
         BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
+	fl=
         if [ "`echo $* | grep shared`" ]; then
           flprefix=$DEPLOYDIR/mingw-cross-env/bin
           echo Copying dlls for shared library build
           echo from $flprefix
-          echo to $DEPLOYDIR/$TARGET
-          flist=
-          # fl="$fl opengl.dll" # use Windows version?
-          # fl="$fl libmpfr.dll" # does not exist
           fl="$fl libgmp-10.dll"
           fl="$fl libgmpxx-4.dll"
           fl="$fl libboost_filesystem-mt.dll"
@@ -418,7 +418,6 @@ case $OS in
           fl="$fl libglib-2.0-0.dll"
           fl="$fl libopencsg-1.dll"
           fl="$fl libharfbuzz-0.dll"
-          # fl="$fl libharfbuzz-gobject-0.dll" # ????
           fl="$fl libfontconfig-1.dll"
           fl="$fl libexpat-1.dll"
           fl="$fl libbz2.dll"
@@ -437,14 +436,13 @@ case $OS in
           fl="$fl ../qt5/bin/Qt5Core.dll"
           fl="$fl ../qt5/bin/Qt5Gui.dll"
           fl="$fl ../qt5/bin/Qt5OpenGL.dll"
-          #  fl="$fl ../qt5/bin/QtSvg4.dll" # why is this here?
           fl="$fl ../qt5/bin/Qt5Widgets.dll"
           fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
           fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
           for dllfile in $fl; do
             if [ -e $flprefix/$dllfile ]; then
                 echo $flprefix/$dllfile
-                cp $flprefix/$dllfile $DEPLOYDIR/$TARGET/
+                cp $flprefix/$dllfile $DEPLOYDIR
             else
                 echo cannot find $flprefix/$dllfile
                 echo stopping build.
@@ -454,16 +452,14 @@ case $OS in
         fi
 
         echo "Copying main binary .exe, .com, and dlls"
-        echo "from $DEPLOYDIR/$TARGET"
         echo "to $DEPLOYDIR/openscad-$VERSION"
         TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
-        cd $DEPLOYDIR/$TARGET
-        tar cvf $TMPTAR --exclude=winconsole.o .
+        cd $DEPLOYDIR
+        tar cvf $TMPTAR --exclude=winconsole.o *.exe *.com *.dll
         cd $DEPLOYDIR/openscad-$VERSION
         tar xvf $TMPTAR
         cd $DEPLOYDIR
         rm -f $TMPTAR
-
 
         echo "Creating binary zip package"
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
