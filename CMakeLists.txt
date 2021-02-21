@@ -14,9 +14,9 @@
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
-cmake_minimum_required(VERSION 3.3)
-# GNUInstallDirs must be done before BuildParameters
-include(GNUInstallDirs)
+
+# Ubuntu Xenial (16.04LTS): 3.5.1, Debian 9 (stretch): 3.7.2
+cmake_minimum_required(VERSION 3.5)
 
 if(POLICY CMP0071)
   cmake_policy(SET CMP0071 OLD)
