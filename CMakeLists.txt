@@ -24,6 +24,9 @@ endif()
 
 project(openscad)
 
+# GNUInstallDirs must be done before BuildParameters
+include(GNUInstallDirs)
+
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
