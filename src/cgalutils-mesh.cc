@@ -2,6 +2,7 @@
 
 #ifdef FAST_CSG_AVAILABLE
 
+#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Surface_mesh.h>
 #include "grid.h"
@@ -128,6 +129,17 @@ template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3> &input,
 											 CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
 											 CGAL::Surface_mesh<CGAL_Point_3> &output);
+#endif
+
+template <typename K>
+void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh)
+{
+  CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, /* triangulate_all_faces */ true);
+}
+
+template void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> &mesh);
+#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+template void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
 #endif
 
 } // namespace CGALUtils
