@@ -311,8 +311,8 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 			else {
 				polyBinOp<polyhedron_t>("fast polyhedron union", other,
 																[&](polyhedron_t &lhs, polyhedron_t &rhs, polyhedron_t &out) {
-																	CGALUtils::copyPolyhedron(lhs, out);
-																	CGALUtils::copyPolyhedron(rhs, out);
+																	if (&lhs != &out) CGALUtils::copyPolyhedron(lhs, out);
+																	if (&rhs != &out) CGALUtils::copyPolyhedron(rhs, out);
 																	return true;
 																});
 			}
