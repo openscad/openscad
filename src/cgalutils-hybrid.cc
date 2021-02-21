@@ -29,36 +29,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 	const auto invert_orientation = false;
 
 	if (auto ps = dynamic_cast<const PolySet *>(&geom)) {
-		if (!Feature::ExperimentalFastCsgMesh.is_enabled()) {
-			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry(PolySet -> polyhedron)");
-			auto polyhedron = make_shared<CGALHybridPolyhedron::polyhedron_t>();
-
-#ifdef FAST_CSG_LEGACY_TESSELATION
-			PolySet ps_tri(3, ps->convexValue());
-			ps_tri.setConvexity(ps->getConvexity());
-			PolysetUtils::tessellate_faces(*ps, ps_tri);
-
-			auto err = createPolyhedronFromPolySet(ps_tri, *polyhedron, invert_orientation, use_grid);
-			assert(!err);
-#else
-			auto err = createPolyhedronFromPolySet(*ps, *polyhedron, invert_orientation, use_grid);
-			assert(!err);
-
-			triangulateFaces(*polyhedron);
-#endif // FAST_CSG_LEGACY_TESSELATION
-
-			if (!ps->is_convex()) {
-				if (isClosed(*polyhedron)) {
-					// Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
-					// (try testdata/scad/3D/issues/issue1105d.scad for instance), but
-					// PMP::orient_to_bound_a_volume seems just fine.
-					orientToBoundAVolume(*polyhedron);
-				}
-			}
-
-			return make_shared<CGALHybridPolyhedron>(polyhedron);
-		}
-		else {
+		if (Feature::ExperimentalFastCsgMesh.is_enabled()) {
 			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry(PolySet -> mesh)");
 			auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
 
@@ -87,26 +58,40 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 
 			return make_shared<CGALHybridPolyhedron>(mesh);
 		}
+		else {
+			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry(PolySet -> polyhedron)");
+			auto polyhedron = make_shared<CGALHybridPolyhedron::polyhedron_t>();
+
+#ifdef FAST_CSG_LEGACY_TESSELATION
+			PolySet ps_tri(3, ps->convexValue());
+			ps_tri.setConvexity(ps->getConvexity());
+			PolysetUtils::tessellate_faces(*ps, ps_tri);
+
+			auto err = createPolyhedronFromPolySet(ps_tri, *polyhedron, invert_orientation, use_grid);
+			assert(!err);
+#else
+			auto err = createPolyhedronFromPolySet(*ps, *polyhedron, invert_orientation, use_grid);
+			assert(!err);
+
+			triangulateFaces(*polyhedron);
+#endif // FAST_CSG_LEGACY_TESSELATION
+
+			if (!ps->is_convex()) {
+				if (isClosed(*polyhedron)) {
+					// Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
+					// (try testdata/scad/3D/issues/issue1105d.scad for instance), but
+					// PMP::orient_to_bound_a_volume seems just fine.
+					orientToBoundAVolume(*polyhedron);
+				}
+			}
+
+			return make_shared<CGALHybridPolyhedron>(polyhedron);
+		}
 	}
 	if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
 		assert(nef->p3);
 
-		if (!Feature::ExperimentalFastCsgMesh.is_enabled()) {
-			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry(nef -> polyhedron)");
-
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-			auto polyhedron = make_shared<CGALHybridPolyhedron::polyhedron_t>();
-			CGAL_Polyhedron poly;
-			convertNefToPolyhedron(*nef->p3, poly);
-			copyPolyhedron(poly, *polyhedron);
-
-			return make_shared<CGALHybridPolyhedron>(polyhedron);
-#else
-			return make_shared<CGALHybridPolyhedron>(
-					make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*nef->p3));
-#endif // FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-		}
-		else {
+		if (Feature::ExperimentalFastCsgMesh.is_enabled()) {
 			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry(nef -> mesh)");
 
 #ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
@@ -117,6 +102,21 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 			copyMesh(alien_mesh, *mesh);
 
 			return make_shared<CGALHybridPolyhedron>(mesh);
+#else
+			return make_shared<CGALHybridPolyhedron>(
+					make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*nef->p3));
+#endif // FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+		}
+		else {
+			SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromGeometry(nef -> polyhedron)");
+
+#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+			auto polyhedron = make_shared<CGALHybridPolyhedron::polyhedron_t>();
+			CGAL_Polyhedron poly;
+			convertNefToPolyhedron(*nef->p3, poly);
+			copyPolyhedron(poly, *polyhedron);
+
+			return make_shared<CGALHybridPolyhedron>(polyhedron);
 #else
 			return make_shared<CGALHybridPolyhedron>(
 					make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*nef->p3));
