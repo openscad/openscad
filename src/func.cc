@@ -149,7 +149,7 @@ Value builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 				vec.emplace_back(distributor(deterministic_rng));
 			}
 		}
-		return std::move(vec);
+		return vec;
 	} else {
 		print_argCnt_warning("rands", ctx, evalctx);
 	}
@@ -541,7 +541,7 @@ Value builtin_concat(const std::shared_ptr<Context>, const std::shared_ptr<EvalC
 			result.emplace_back(std::move(val));
 		}
 	}
-	return std::move(result);
+	return result;
 }
 
 Value builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
@@ -787,7 +787,7 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 	} else {
 		return Value::undefined.clone();
 	}
-	return std::move(returnvec);
+	return returnvec;
 }
 
 #define QUOTE(x__) # x__
@@ -801,7 +801,7 @@ Value builtin_version(const std::shared_ptr<Context>, const std::shared_ptr<Eval
 #ifdef OPENSCAD_DAY
 	vec.emplace_back(double(OPENSCAD_DAY));
 #endif
-	return std::move(vec);
+	return vec;
 }
 
 Value builtin_version_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
