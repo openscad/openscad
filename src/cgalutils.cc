@@ -165,8 +165,9 @@ namespace CGALUtils {
 		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
 		return result;
 	}
-
+#ifdef FAST_CSG_AVAILABLE
 	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
+#endif
 
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
 		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
@@ -545,8 +546,9 @@ namespace CGALUtils {
 			pt = t(pt);
 		}
 	}
-
+#ifdef FAST_CSG_AVAILABLE
 	template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, const Transform3d &matrix);
+#endif
 
 	// Copied from CGAL_Nef_Polyhedron verbatim. Should put in common.
 	template <typename K>
