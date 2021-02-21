@@ -329,7 +329,7 @@ namespace CGALUtils {
 
 	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation, bool use_grid);
 #ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL_HybridKernel3> &p, bool invert_orientation, bool use_grid);
+template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL_HybridKernel3> &p, bool invert_orientation, bool use_grid);
 #endif
 
 	template <typename Polyhedron>

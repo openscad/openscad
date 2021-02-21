@@ -67,29 +67,50 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
 
 #define FAST_CSG_AVAILABLE
-// Some notes about kernels for CGALHybridPolyhedron:
-// - CGAL::Epick isn't exact and gives errors with some algorithms on some models.
-// - CGAL_Kernel3 (CGAL::Cartesian<CGAL::Gmpq>) uses much less memory than CGAL::Epeck
-//   (see https://github.com/openscad/openscad/issues/481) so ideally we'd always
-//   use it, but CGAL's corefinement functions cannot use it before 5.2.1
-//   (see https://github.com/CGAL/cgal/issues/5322).
-// - Conversions between CGAL::Epeck and CGAL_Kernel3 are relatively cheap
-//   (see cgalutils-kernel.cc) and require -DCGAL_USE_GMPXX.
-#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(5, 2, 0)
-typedef CGAL_Kernel3 CGAL_HybridKernel3;
-#else
-#define FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-#define FAST_CSG_KERNEL_IS_LAZY
-#pragma message( \
-		"Using CGAL::Epeck as kernel for fast-csg. Compile with CGAL >5.2.0 for smaller memory footprint.")
-typedef CGAL::Epeck CGAL_HybridKernel3;
+
+#ifndef FAST_CSG_USE_GRID
+#define FAST_CSG_USE_GRID 0
 #endif
 
-#else
+// CGAL::Epeck is faster than CGAL::Cartesian<CGAL::Gmpq> (because of filtering)...
+// except in some pathological cases. It can also use a lot or memory (because
+// of laziness, see https://github.com/openscad/openscad/issues/481).
+// For both reasons, we regularly force its numbers to exact values (either after
+// each fast-csg operation, and/or inside corefinement callbacks, see
+// FAST_CSG_EXACT_COREFINEMENT_CALLBACKS).
+//
+// Conversions between CGAL::Epeck and CGAL_Kernel3 are cheap
+// (see cgalutils-kernel.cc) and require -DCGAL_USE_GMPXX.
+//
+// Ideally we'll want to use a filtered but non-lazy kernel for all our code.
+#ifdef FAST_CSG_USE_SAME_KERNEL
+
+#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(5, 2, 0)
+#pragma error("Cannot use the same kernel for corefinement before CGAL 5.2.1 "
+              "(see https://github.com/CGAL/cgal/issues/5322)")
+#endif
+typedef CGAL_Kernel3 CGAL_HybridKernel3;
+
+#else // not FAST_CSG_USE_SAME_KERNEL
+
+#define FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#define FAST_CSG_KERNEL_IS_LAZY
+
+#ifndef FAST_CSG_EXACT_COREFINEMENT_CALLBACKS
+// By default, force numbers to exact values from within corefinement callbacks
+// as soon as faces are split.
+#define FAST_CSG_EXACT_COREFINEMENT_CALLBACKS 1
+#endif
+
+typedef CGAL::Epeck CGAL_HybridKernel3;
+
+#endif // FAST_CSG_USE_SAME_KERNEL
+
+#else // not FAST_CSG_AVAILABLE
 
 #pragma message("[fast-csg] No support for fast-csg with CGAL " FAST_CSG_STRING( \
 		CGAL_VERSION) ". Please compile against CGAL 5.1 or later to use the feature.")
 
-#endif
+#endif // FAST_CSG_AVAILABLE
 
 #endif /* ENABLE_CGAL */

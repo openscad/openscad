@@ -545,6 +545,7 @@ set(CGAL_SOURCES
   src/cgalutils-corefine.cc
   src/cgalutils-hybrid.cc
   src/cgalutils-kernel.cc
+  src/cgalutils-mesh.cc
   src/cgalutils-minkowski.cc
   src/cgalutils-nef.cc
   src/cgalutils-orient.cc

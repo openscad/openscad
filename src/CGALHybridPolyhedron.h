@@ -11,6 +11,11 @@
 class CGAL_Nef_polyhedron;
 class CGALHybridPolyhedron;
 class PolySet;
+
+namespace CGAL {
+template <typename P>
+class Surface_mesh;
+}
 namespace CGALUtils {
 std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(
 		const CGALHybridPolyhedron &hybrid);
@@ -41,9 +46,11 @@ public:
 	typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> nef_polyhedron_t;
 	typedef CGAL::Polyhedron_3<CGAL_HybridKernel3> polyhedron_t;
 	typedef CGAL::Iso_cuboid_3<CGAL_HybridKernel3> bbox_t;
+	typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> mesh_t;
 
 	CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef);
 	CGALHybridPolyhedron(const shared_ptr<polyhedron_t> &polyhedron);
+	CGALHybridPolyhedron(const shared_ptr<mesh_t> &mesh);
 	CGALHybridPolyhedron(const CGALHybridPolyhedron &other);
 	CGALHybridPolyhedron() = delete;
 
@@ -99,20 +106,22 @@ private:
 	 * Returns false if the operation failed (e.g. because of shared edges), in
 	 * which case it may still have corefined the polyhedron, but it reverts the
 	 * original nef if there was one. */
-	bool polyBinOp(
-			const std::string &opName, CGALHybridPolyhedron &other,
-			const std::function<bool(polyhedron_t &lhs, polyhedron_t &rhs, polyhedron_t &out)> &operation);
+	template <typename TriangleMesh>
+	bool polyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
+								 const std::function<bool(TriangleMesh &lhs, TriangleMesh &rhs, TriangleMesh &out)>
+										 &operation);
 
 #ifdef FAST_CSG_TEST_SHARED_VERTICES
 	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
 #endif
 
-	polyhedron_t &convertToPolyhedron();
-	nef_polyhedron_t &convertToNefPolyhedron();
+	template <typename T>
+	T &convert();
 
 	/*! Returns the polyhedron if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
 	polyhedron_t *getPolyhedron() const;
+	mesh_t *getMesh() const;
 	/*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
 	nef_polyhedron_t *getNefPolyhedron() const;
@@ -136,9 +145,11 @@ private:
 	// This contains data either as a polyhedron, or as a nef polyhedron.
 	//
 	// We stick to nef polyhedra in presence of non-manifold geometry or literal
-	// edge-cases of the Polygon Mesh Processing corefinement functions (it does not
-	// like shared edges, but tells us so politely).
-	boost::variant<std::shared_ptr<polyhedron_t>, std::shared_ptr<nef_polyhedron_t>> data;
+	// edge-cases of the Polygon Mesh Processing corefinement functions (e.g. it
+  // does not like shared edges, but tells us so politely).
+	boost::variant<std::shared_ptr<mesh_t>, std::shared_ptr<polyhedron_t>,
+								 std::shared_ptr<nef_polyhedron_t>>
+			data;
 	// Keeps track of the bounding boxes of the solid components of this polyhedron.
 	// This allows fast unions with disjoint polyhedra.
 	std::vector<bbox_t> bboxes;

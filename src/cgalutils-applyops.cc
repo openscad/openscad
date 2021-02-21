@@ -81,7 +81,7 @@ namespace CGALUtils {
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 #ifdef FAST_CSG_AVAILABLE
-		if (Feature::ExperimentalFastCsg.is_enabled()) {
+		if (Feature::ExperimentalFastCsg.is_enabled() || Feature::ExperimentalFastCsgMesh.is_enabled()) {
 			return applyOperator3DHybrid(children, op);
 		}
 #endif // FAST_CSG_AVAILABLE
@@ -150,7 +150,7 @@ namespace CGALUtils {
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
 #ifdef FAST_CSG_AVAILABLE
-		if (Feature::ExperimentalFastCsg.is_enabled()) {
+		if (Feature::ExperimentalFastCsg.is_enabled() || Feature::ExperimentalFastCsgMesh.is_enabled()) {
 			return applyUnion3DHybrid(chbegin, chend);
 		}
 #endif // FAST_CSG_AVAILABLE

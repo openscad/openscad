@@ -5,6 +5,7 @@
 #ifdef FAST_CSG_AVAILABLE
 
 #include <CGAL/Polygon_mesh_processing/orientation.h>
+#include <CGAL/Surface_mesh.h>
 
 namespace CGALUtils {
 
@@ -15,6 +16,7 @@ void orientToBoundAVolume(Polyhedron &polyhedron)
 }
 
 template void orientToBoundAVolume(CGAL::Polyhedron_3<CGAL_HybridKernel3> &polyhedron);
+template void orientToBoundAVolume(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &polyhedron);
 
 } // namespace CGALUtils
 

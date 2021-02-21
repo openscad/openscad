@@ -16,9 +16,6 @@ jobs:
         fast-csg-available: [true]
         include:
           - os: ubuntu-20.04
-            cgal-version: 5.2.x
-            fast-csg-available: true
-          - os: ubuntu-20.04
             cgal-version: 5.1
             fast-csg-available: true
           - os: ubuntu-20.04

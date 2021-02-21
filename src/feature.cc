@@ -23,7 +23,8 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 #ifdef FAST_CSG_AVAILABLE
-const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations.");
+const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement and disjoint union optimization.");
+const Feature Feature::ExperimentalFastCsgMesh("fast-csg-mesh", "Same as fast-csg but w/ Surface_mesh and w/o disjoint union optimization.");
 #endif
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");

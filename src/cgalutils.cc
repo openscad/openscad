@@ -19,6 +19,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
+#include <CGAL/Surface_mesh.h>
 
 #include <CGAL/config.h>
 #include <CGAL/version.h>
@@ -153,16 +154,19 @@ namespace CGALUtils {
 	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &N);
 #endif
 
-	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh)
 	{
-		CGAL_Iso_cuboid_3 result(0,0,0,0,0,0);
-		CGAL_Nef_polyhedron3::Vertex_const_iterator vi;
-		std::vector<CGAL_Nef_polyhedron3::Point_3> points;
-		// can be optimized by rewriting bounding_box to accept vertices
-		CGAL_forall_vertices(vi, N) points.push_back(vi->point());
+		CGAL::Iso_cuboid_3<K> result(0,0,0,0,0,0);
+		std::vector<typename CGAL::Point_3<K>> points;
+		for (auto v : mesh.vertices()) {
+			points.push_back(mesh.point(v));
+		}
 		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
 		return result;
 	}
+
+	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
 
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
 		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
@@ -519,13 +523,30 @@ namespace CGALUtils {
 		auto t = createAffineTransformFromMatrix<K>(matrix);
 
 		typename CGAL::Polyhedron_3<K>::Vertex_handle vi;
-		CGAL_forall_vertices(vi, poly) vi->point() = t(vi->point());
-		// TODO(ochafik): invert faces when mirroring as PolySet::transform does.
+		CGAL_forall_vertices(vi, poly)
+		{
+			auto &pt = vi->point();
+			pt = t(pt);
+		}
 	}
 #ifdef FAST_CSG_AVAILABLE
 	template void transform(CGAL::Polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
 #endif
 
+	template <typename K>
+	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		auto t = createAffineTransformFromMatrix<K>(matrix);
+
+		for (auto v : mesh.vertices())
+		{
+			auto &pt = mesh.point(v);
+			pt = t(pt);
+		}
+	}
+
+	template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, const Transform3d &matrix);
 
 	// Copied from CGAL_Nef_Polyhedron verbatim. Should put in common.
 	template <typename K>

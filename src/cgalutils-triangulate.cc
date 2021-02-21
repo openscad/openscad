@@ -5,6 +5,7 @@
 #ifdef FAST_CSG_AVAILABLE
 
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
+#include <CGAL/Surface_mesh.h>
 
 namespace PMP = CGAL::Polygon_mesh_processing;
 
@@ -17,6 +18,7 @@ void triangulateFaces(Polyhedron &polyhedron)
 }
 
 template void triangulateFaces(CGAL::Polyhedron_3<CGAL_HybridKernel3> &polyhedron);
+template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &polyhedron);
 
 } // namespace CGALUtils
 

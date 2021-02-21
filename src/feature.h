@@ -15,6 +15,7 @@ public:
 	typedef list_t::iterator iterator;
 
 	static const Feature ExperimentalFastCsg;
+	static const Feature ExperimentalFastCsgMesh;
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
 	static const Feature ExperimentalVxORenderers;
