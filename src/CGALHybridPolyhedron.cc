@@ -26,15 +26,15 @@ void cleanupMesh(CGALHybridPolyhedron::polyhedron_t &poly, bool is_corefinement_
 	SCOPED_PERFORMANCE_TIMER("cleanup polyhedron");
 
 #ifdef FAST_CSG_KERNEL_IS_LAZY
-  // TODO(ochafik): Support FAST_CSG_EXACT_COREFINEMENT_CALLBACKS for polyhedron?
-  CGALHybridPolyhedron::polyhedron_t::Vertex_iterator vi;
-  CGAL_forall_vertices(vi, poly)
-  {
-    auto &pt = vi->point();
-    CGAL::exact(pt.x());
-    CGAL::exact(pt.y());
-    CGAL::exact(pt.z());
-  }
+	// TODO(ochafik): Support ExperimentalFastCsgExactCallback for polyhedron?
+	CGALHybridPolyhedron::polyhedron_t::Vertex_iterator vi;
+	CGAL_forall_vertices(vi, poly)
+	{
+		auto &pt = vi->point();
+		CGAL::exact(pt.x());
+		CGAL::exact(pt.y());
+		CGAL::exact(pt.z());
+	}
 #endif // FAST_CSG_KERNEL_IS_LAZY
 }
 
@@ -46,11 +46,9 @@ void cleanupMesh(CGALHybridPolyhedron::mesh_t &mesh, bool is_corefinement_result
 	mesh.collect_garbage();
 
 #ifdef FAST_CSG_KERNEL_IS_LAZY
-#if FAST_CSG_EXACT_COREFINEMENT_CALLBACKS
 	// Coordinates of new vertices would have already been forced to exact in the
 	// corefinement callbacks called whenever new faces are created.
-	if (!is_corefinement_result)
-#endif
+	if (!Feature::ExperimentalFastCsgExactCallback.is_enabled() || !is_corefinement_result)
 	{
 		for (auto v : mesh.vertices()) {
 			auto &pt = mesh.point(v);
@@ -290,8 +288,8 @@ void CGALHybridPolyhedron::clear()
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
 	auto bothManifold = isManifold() && other.isManifold();
-	auto fastUnion = bothManifold && !Feature::ExperimentalFastCsgMesh.is_enabled() &&
-									 !boundingBoxesIntersect(other);
+	auto disjointUnion = bothManifold && Feature::ExperimentalFastCsgDisjointOpt.is_enabled() &&
+											 !boundingBoxesIntersect(other);
 	// Mesh doesn't play well with fast union yet, because `cube(1); translate([1, 1, 1]) cube(1);`
 	// doesn't count as a intersection but means the two bodies share a vertex, which
 	// makes it impossible to do a dumb concatenation (need to keep vertices unique
@@ -300,7 +298,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 	bboxes.insert(bboxes.end(), other.bboxes.begin(), other.bboxes.end());
 
 	if (bothManifold) {
-		if (fastUnion) {
+		if (disjointUnion) {
 			if (Feature::ExperimentalFastCsgMesh.is_enabled()) {
 				polyBinOp<mesh_t>("fast mesh union", other, [&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 					CGALUtils::copyMesh(lhs, out);
@@ -344,16 +342,18 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 {
-	if (!boundingBoxesIntersect(other)) {
-		LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Empty intersection");
-		clear();
-		return;
-	}
+	if (Feature::ExperimentalFastCsgDisjointOpt.is_enabled()) {
+		if (!boundingBoxesIntersect(other)) {
+			LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Empty intersection");
+			clear();
+			return;
+		}
 
-	std::vector<bbox_t> new_bboxes;
-	for (auto &bbox : bboxes)
-		if (other.boundingBoxesIntersect(bbox)) new_bboxes.push_back(bbox);
-	bboxes = new_bboxes;
+		std::vector<bbox_t> new_bboxes;
+		for (auto &bbox : bboxes)
+			if (other.boundingBoxesIntersect(bbox)) new_bboxes.push_back(bbox);
+		bboxes = new_bboxes;
+	}
 
 	if (isManifold() && other.isManifold()) {
 		if (Feature::ExperimentalFastCsgMesh.is_enabled()) {
@@ -380,7 +380,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 {
-	if (!boundingBoxesIntersect(other)) {
+	if (Feature::ExperimentalFastCsgDisjointOpt.is_enabled() && !boundingBoxesIntersect(other)) {
 		LOG(message_group::Warning, Location::NONE, "",
 				"[fast-csg] Difference with non-intersecting geometry");
 		return;

@@ -25,7 +25,11 @@ Feature::list_t Feature::feature_list;
 #ifdef FAST_CSG_AVAILABLE
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement and disjoint union optimization.");
 const Feature Feature::ExperimentalFastCsgMesh("fast-csg-mesh", "Same as fast-csg but w/ Surface_mesh and w/o disjoint union optimization.");
-#endif
+const Feature Feature::ExperimentalFastCsgDisjointOpt("fast-csg-disjoint", "When fast-csg is on, fast-track operations on disjoint solids.");
+#ifdef FAST_CSG_KERNEL_IS_LAZY
+const Feature Feature::ExperimentalFastCsgExactCallback("fast-csg-exact-callbacks", "Force lazy numbers to exact during corefinement using callbacks rather than at the end of each operation. Only works with fast-csg-mesh for now.");
+#endif // FAST_CSG_KERNEL_IS_LAZY
+#endif // FAST_CSG_AVAILABLE
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");

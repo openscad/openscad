@@ -16,6 +16,8 @@ public:
 
 	static const Feature ExperimentalFastCsg;
 	static const Feature ExperimentalFastCsgMesh;
+	static const Feature ExperimentalFastCsgExactCallback;
+	static const Feature ExperimentalFastCsgDisjointOpt;
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
 	static const Feature ExperimentalVxORenderers;

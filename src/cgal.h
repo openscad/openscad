@@ -77,7 +77,7 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 // of laziness, see https://github.com/openscad/openscad/issues/481).
 // For both reasons, we regularly force its numbers to exact values (either after
 // each fast-csg operation, and/or inside corefinement callbacks, see
-// FAST_CSG_EXACT_COREFINEMENT_CALLBACKS).
+// Feature::ExperimentalFastCsgExactCallback).
 //
 // Conversions between CGAL::Epeck and CGAL_Kernel3 are cheap
 // (see cgalutils-kernel.cc) and require -DCGAL_USE_GMPXX.
@@ -95,12 +95,6 @@ typedef CGAL_Kernel3 CGAL_HybridKernel3;
 
 #define FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
 #define FAST_CSG_KERNEL_IS_LAZY
-
-#ifndef FAST_CSG_EXACT_COREFINEMENT_CALLBACKS
-// By default, force numbers to exact values from within corefinement callbacks
-// as soon as faces are split.
-#define FAST_CSG_EXACT_COREFINEMENT_CALLBACKS 1
-#endif
 
 typedef CGAL::Epeck CGAL_HybridKernel3;
 
