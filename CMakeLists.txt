@@ -27,6 +27,13 @@ project(openscad)
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
 
+# Strict c++14, e.g. no GNU extensions
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
@@ -89,7 +96,6 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
@@ -291,8 +297,6 @@ if(NOT MSVC)
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 endif()
 
-# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
-set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
