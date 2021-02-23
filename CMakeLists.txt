@@ -542,6 +542,7 @@ set(CGAL_SOURCES
   src/cgalutils-applyops.cc
   src/cgalutils-applyops-hybrid.cc
   src/cgalutils-closed.cc
+  src/cgalutils-convex.cc
   src/cgalutils-corefine.cc
   src/cgalutils-hybrid.cc
   src/cgalutils-kernel.cc

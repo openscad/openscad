@@ -55,6 +55,8 @@ namespace CGALUtils {
 	};
 
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
+	template<typename K>
+	bool is_weakly_convex(const CGAL::Polyhedron_3<K> & p);
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 	shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(

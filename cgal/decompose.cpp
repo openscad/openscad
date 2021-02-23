@@ -183,42 +183,6 @@ std::vector<Color4f> colors = boost::assign::list_of
 #include <CGAL/convex_hull_3.h>
 #pragma pop_macro("NDEBUG")
 
-template<typename Polyhedron>
-bool is_weakly_convex(Polyhedron const& p) {
-  for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
-    typename Polyhedron::Plane_3 p(i->opposite()->vertex()->point(), i->vertex()->point(), i->next()->vertex()->point());
-    if (p.has_on_positive_side(i->opposite()->next()->vertex()->point()) &&
-        CGAL::squared_distance(p, i->opposite()->next()->vertex()->point()) > 1e-8) {
-      return false;
-    }
-  }
-  // Also make sure that there is only one shell:
-  boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
-  // c++11
-  // visited.reserve(p.size_of_facets());
-
-  std::queue<typename Polyhedron::Facet_const_handle> to_explore;
-  to_explore.push(p.facets_begin()); // One arbitrary facet
-  visited.insert(to_explore.front());
-
-  while (!to_explore.empty()) {
-    typename Polyhedron::Facet_const_handle f = to_explore.front();
-    to_explore.pop();
-    typename Polyhedron::Facet::Halfedge_around_facet_const_circulator he, end;
-    end = he = f->facet_begin();
-    CGAL_For_all(he,end) {
-      typename Polyhedron::Facet_const_handle o = he->opposite()->facet();
-
-      if (!visited.count(o)) {
-        visited.insert(o);
-        to_explore.push(o);
-      }
-    }
-  }
-
-  return visited.size() == p.size_of_facets();
-}
-
 class Shell_explorer
 {
 public:
@@ -246,7 +210,7 @@ void decompose(const CGAL_Nef_polyhedron3 *N, Output out_iter)
   if (N->is_simple()) {
     N->convert_to_polyhedron(poly);
   }
-  if (is_weakly_convex(poly)) {
+  if (CGALUtils::is_weakly_convex(poly)) {
     PRINTD("Minkowski: Object is convex and Nef");
     PolyhedronK poly2;
     CGALUtils::copyPolyhedron(poly, poly2);
@@ -320,7 +284,7 @@ shared_ptr<const Geometry> minkowskitest(const Geometry::Geometries &children)
           if (n->p3->is_simple()) {
             CGALUtils::convertNefToPolyhedron(*n->p3, poly);
             // FIXME: Can we calculate weakly_convex on a PolyhedronK instead?
-            if (is_weakly_convex(poly)) {
+            if (CGALUtils::is_weakly_convex(poly)) {
               PRINTDB("Minkowski: child %d is convex and Nef", i);
               PolyhedronK poly2;
               CGALUtils::copyPolyhedron(poly, poly2);
