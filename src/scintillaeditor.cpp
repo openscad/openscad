@@ -23,6 +23,10 @@ namespace fs=boost::filesystem;
 
 const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
+// In setCursorPosition, how many lines should be visible above and below the curser
+const int setCursorPositionVisibleLines = 3;
+
+
 class SettingsConverter {
 public:
 	QsciScintilla::WrapMode toWrapMode(const Value &val);
@@ -1278,6 +1282,9 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 
 void ScintillaEditor::setCursorPosition(int line, int col)
 {
+	qsci->ensureLineVisible(std::max(line - setCursorPositionVisibleLines, 0));
+	qsci->ensureLineVisible(std::min(line + setCursorPositionVisibleLines, qsci->lines() - 1));
+
 	qsci->setCursorPosition(line, col);
 }
 
