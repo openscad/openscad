@@ -27,6 +27,13 @@ project(openscad)
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
 
+# Strict c++14, e.g. no GNU extensions
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
@@ -61,15 +68,16 @@ if(IDPREFIX)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
-set(SUFFIX_WITH_DASH "-${SUFFIX}")
-add_definitions(-DOPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
+  set(SUFFIX_WITH_DASH "-${SUFFIX}")
+  add_definitions(-DOPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
 endif()
 
 if (MXECROSS)
-add_definitions(-DGLEW_STATIC)
-add_definitions(-DLIBXML_STATIC)
-add_definitions(-DUNICODE -D_UNICODE)
-list(APPEND PLATFORM_LIBS -lbcrypt)
+  add_definitions(-DGLEW_STATIC)
+  add_definitions(-DLIBXML_STATIC)
+  list(APPEND PLATFORM_LIBS -lbcrypt)
+  add_subdirectory(winconsole)
+  set(CMAKE_WIN32_EXECUTABLE ON)
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
@@ -87,7 +95,6 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
 # Stack size 8MB; github issue 116
 add_definitions(-DSTACKSIZE=8388608)
@@ -158,7 +165,6 @@ if (CGAL_MODULE_PATH_IS_SET)
   set(CMAKE_MODULE_PATH ORIGINAL_CMAKE_MODULE_PATH)
 endif()
 
-
 if (MSVC)
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
@@ -198,7 +204,6 @@ if (MSVC)
 
   # needed for Qt5QScintilla, maybe others
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
 else()
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
   set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
@@ -272,7 +277,7 @@ if(ENABLE_CAIRO)
     message(STATUS "Cairo: disabled")
   endif()
 else()
-  message(STATUS "Cairo: disableb per user request")
+  message(STATUS "Cairo: disabled per user request")
 endif()
 
 find_package(FLEX REQUIRED QUIET)
@@ -289,8 +294,6 @@ if(NOT MSVC)
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 endif()
 
-# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
-set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
@@ -349,25 +352,24 @@ if(NOT HEADLESS)
       message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
     endif()
   else()
-    message(STATUS "DBus input driver disable per user request.")
+    message(STATUS "DBus input driver disabled per user request.")
   endif()
 
   option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON)
   if(ENABLE_GAMEPAD)
     find_package(Qt5Gamepad QUIET)
     if (Qt5Gamepad_FOUND)
-      message(STATUS "Gamepad input driver enabled")
+      message(STATUS "Qt5Gamepad input driver enabled")
       set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
       add_definitions(-DENABLE_QGAMEPAD)
     else()
-      message(STATUS "Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+      message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
     endif()
   else()
     message(STATUS "Qt5Gamepad input driver disabled per user request.")
   endif()
 
 endif()
-
 
 # Setup ccache (if available) to speed up recompiles. It's especially useful
 # when switching back and forth between branches where large numbers of files
