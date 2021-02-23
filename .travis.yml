@@ -8,6 +8,7 @@ matrix:
       dist: xenial
       env:
         - DIST="Ubuntu 16.04 (Xenial)"
+        - PARALLEL=-j2
         - PARALLEL_CTEST=-j4
       before_install:
         # Fix for "write error" build failures  ( https://github.com/travis-ci/travis-ci/issues/8920 )
@@ -23,6 +24,7 @@ matrix:
       dist: bionic
       env:
         - DIST="Ubuntu 18.04 (Bionic)"
+        - PARALLEL=-j2
         - PARALLEL_CTEST=-j4
       before_install:
         - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
@@ -36,6 +38,7 @@ matrix:
       dist: focal
       env:
         - DIST="Ubuntu 20.04 (Focal)"
+        - PARALLEL=-j2
         - PARALLEL_CTEST=-j4
       before_install:
         - ./scripts/travis-ci-before-install-linux.sh "$TRAVIS_DIST"
@@ -48,6 +51,7 @@ matrix:
       osx_image: xcode12.2
       compiler: clang
       env:
+        - PARALLEL=-j2
         - PARALLEL_CTEST=-j4
         - HOMEBREW_NO_AUTO_UPDATE=1
         - ENV_SPECIFIC_DISABLE="|edges_view-options-tests"
