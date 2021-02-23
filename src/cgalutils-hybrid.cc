@@ -98,7 +98,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const G
 			auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
 
 			CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> alien_mesh;
-			convertNefPolyhedronToMesh(*nef->p3, alien_mesh);
+			convertNefPolyhedronToTriangleMesh(*nef->p3, alien_mesh);
 			copyMesh(alien_mesh, *mesh);
 
 			return make_shared<CGALHybridPolyhedron>(mesh);

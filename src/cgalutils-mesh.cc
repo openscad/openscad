@@ -132,14 +132,14 @@ template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3
 #endif
 
 template <typename K>
-void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh)
+void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh)
 {
   CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, /* triangulate_all_faces */ true);
 }
 
-template void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> &mesh);
+template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> &mesh);
 #ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-template void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
+template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
 #endif
 
 } // namespace CGALUtils

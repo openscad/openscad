@@ -7,6 +7,7 @@
 #include "hash.h"
 #include "scoped_timer.h"
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/boost/graph/helpers.h>
 
 #ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 #include <sstream>
@@ -91,6 +92,12 @@ CGALHybridPolyhedron::polyhedron_t &CGALHybridPolyhedron::convert()
 	if (auto poly = getPolyhedron()) {
 		return *poly;
 	}
+	else if (auto mesh = getMesh()) {
+		auto poly = make_shared<polyhedron_t>();
+		CGAL::copy_face_graph(*mesh, *poly);
+		data = poly;
+		return *poly;
+	}
 	else if (auto nef = getNefPolyhedron()) {
 		SCOPED_PERFORMANCE_TIMER("nef -> polyhedron");
 
@@ -111,11 +118,18 @@ CGALHybridPolyhedron::mesh_t &CGALHybridPolyhedron::convert()
 	if (auto mesh = getMesh()) {
 		return *mesh;
 	}
+	else if (auto poly = getPolyhedron()) {
+		auto mesh = make_shared<mesh_t>();
+		CGAL::copy_face_graph(*poly, *mesh);
+		CGALUtils::triangulateFaces(*mesh);
+		data = mesh;
+		return *mesh;
+	}
 	else if (auto nef = getNefPolyhedron()) {
 		SCOPED_PERFORMANCE_TIMER("nef -> polyhedron");
 
 		auto mesh = make_shared<mesh_t>();
-		CGALUtils::convertNefPolyhedronToMesh(*nef, *mesh);
+		CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, *mesh);
 		cleanupMesh(*mesh, /* is_corefinement_result */ false);
 		data = mesh;
 		return *mesh;
@@ -159,6 +173,16 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron &other) : 
 	}
 	else {
 		assert(!"Bad hybrid polyhedron state");
+	}
+}
+
+CGALHybridPolyhedron::CGALHybridPolyhedron()
+{
+	if (Feature::ExperimentalFastCsgMesh.is_enabled()) {
+		data = make_shared<CGALHybridPolyhedron::mesh_t>();
+	}
+	else {
+		data = make_shared<CGALHybridPolyhedron::polyhedron_t>();
 	}
 }
 

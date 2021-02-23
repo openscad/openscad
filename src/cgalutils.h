@@ -173,5 +173,5 @@ namespace CGALUtils {
 	bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &out);
 
 	template <typename K>
-	void convertNefPolyhedronToMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
+	void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
 };

@@ -52,7 +52,7 @@ public:
 	CGALHybridPolyhedron(const shared_ptr<polyhedron_t> &polyhedron);
 	CGALHybridPolyhedron(const shared_ptr<mesh_t> &mesh);
 	CGALHybridPolyhedron(const CGALHybridPolyhedron &other);
-	CGALHybridPolyhedron() = delete;
+	CGALHybridPolyhedron();
 
 	bool isEmpty() const;
 	size_t numFacets() const;
@@ -146,7 +146,7 @@ private:
 	//
 	// We stick to nef polyhedra in presence of non-manifold geometry or literal
 	// edge-cases of the Polygon Mesh Processing corefinement functions (e.g. it
-  // does not like shared edges, but tells us so politely).
+	// does not like shared edges, but tells us so politely).
 	boost::variant<std::shared_ptr<mesh_t>, std::shared_ptr<polyhedron_t>,
 								 std::shared_ptr<nef_polyhedron_t>>
 			data;
