@@ -243,7 +243,8 @@ else()
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
 
-  list(APPEND COMMON_LIBRARIES double-conversion)
+  find_package(DoubleConversion REQUIRED QUIET)
+  list(APPEND COMMON_LIBRARIES ${DoubleConversion_LIBRARIES})
 
   find_graphics()
 endif()
