@@ -21,8 +21,8 @@
 #include <CGAL/Handle_hash_function.h>
 #include <CGAL/Surface_mesh.h>
 
-#include <CGAL/config.h>
-#include <CGAL/version.h>
+#include <CGAL/config.h> 
+#include <CGAL/version.h> 
 
 #include <CGAL/convex_hull_3.h>
 #pragma pop_macro("NDEBUG")
@@ -179,9 +179,9 @@ namespace CGALUtils {
 	};
 
 
-	/*!
+  /*!
 		Check if all faces of a polyset is within 0.1 degree of being convex.
-
+		
 		NB! This function can give false positives if the polyset contains
 		non-planar faces. To be on the safe side, consider passing a tessellated polyset.
 		See issue #1061.
@@ -373,7 +373,7 @@ namespace CGALUtils {
 		std::cerr.precision(20);
 		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}
+		}		
 #endif // debug
 
 			/* at this stage, we have a sequence of polygons. the first
@@ -422,7 +422,7 @@ namespace CGALUtils {
 		std::cerr.precision(20);
 		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}
+		}		
 #endif // debug
 
 		return err;

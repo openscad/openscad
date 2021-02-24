@@ -41,25 +41,25 @@ public:
    * Construct a statistic printer for the given geometry
    */
   RenderStatistic() {};
-
+  
   /**
    * Print some statistic on cache usage. Namely, stats on the @ref GeometryCache
    * and @ref CGALCache (if enabled).
    */
   static void printCacheStatistic();
-
+  
   /**
    * Format and print time elapsed by rendering.
    * @arg time elapsed by rendering in seconds
    */
   static void printRenderingTime(std::chrono::milliseconds ms);
-
+  
   /**
-   * Actually print the statistic based on the given Geometry
+   * Actaully print the statistic based on the given Geometry
    * @arg geom A Geometry-derived object statistic for which we should print.
    */
   void print(const Geometry &geom);
-
+  
 protected:
   void visit(const class GeometryList &node) override;
   void visit(const class PolySet &node) override;

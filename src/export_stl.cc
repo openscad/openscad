@@ -68,7 +68,7 @@ void write_vector(std::ostream &output, const Vector3f& v) {
     }
 }
 
-
+	
 size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
 {
     size_t triangle_count = 0;

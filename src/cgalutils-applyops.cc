@@ -20,8 +20,8 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h>
-#include <CGAL/version.h>
+#include <CGAL/config.h> 
+#include <CGAL/version.h> 
 
 #include <CGAL/convex_hull_3.h>
 #pragma pop_macro("NDEBUG")
@@ -75,16 +75,16 @@ namespace CGALUtils {
 					foundFirst = true;
 					continue;
 				}
-
+				
 				// Intersecting something with nothing results in nothing
 				if (!chN || chN->isEmpty()) {
 					if (op == OpenSCADOperator::INTERSECTION) N = nullptr;
 					continue;
 				}
-
+				
 				// empty op <something> => empty
 				if (!N || N->isEmpty()) continue;
-
+				
 				switch (op) {
 				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;

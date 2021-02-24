@@ -187,13 +187,13 @@ void PolySet::resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &aut
 	Vector3d scale(1,1,1);
 	for (int i=0; i<3; ++i) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
 
-  // Autoscale where applicable
+  // Autoscale where applicable 
 	double autoscale = scale[maxdim];
 	Vector3d newscale;
 	for (int i=0; i<3; ++i) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
-
+	
 	Transform3d t;
-	t.matrix() <<
+	t.matrix() << 
     newscale[0], 0, 0, 0,
     0, newscale[1], 0, 0,
     0, 0, newscale[2], 0,

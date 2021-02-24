@@ -50,7 +50,7 @@ namespace /* anonymous */ {
 		void operator()(HDS& hds) override {
 			if (use_grid) {
 			CGAL_Polybuilder B(hds, true);
-
+		
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
 			std::vector<std::vector<size_t>> indices;
@@ -323,7 +323,7 @@ namespace CGALUtils {
 		typedef typename Polyhedron::Vertex                                 Vertex;
 		typedef typename Polyhedron::Facet_const_iterator                   FCI;
 		typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
-
+		
 		for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
 			HFCC hc = fi->facet_begin();
 			HFCC hc_end = hc;
@@ -394,7 +394,7 @@ namespace CGALUtils {
 
     Polyhedron_writer writer;
     generic_print_polyhedron(sstream, p, writer);
-
+		
 		return sstream.str();
 	}
 
