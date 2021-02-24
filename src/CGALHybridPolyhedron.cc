@@ -48,9 +48,15 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<mesh_t> &mesh)
 {
 	assert(mesh);
 	data = mesh;
+
 }
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron &other)
+{
+  *this = other;
+}
+
+CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron &other)
 {
 	if (auto nef = other.getNefPolyhedron()) {
 		data = make_shared<nef_polyhedron_t>(*nef);
@@ -61,6 +67,7 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron &other)
 	else {
 		assert(!"Bad hybrid polyhedron state");
 	}
+  return *this;
 }
 
 CGALHybridPolyhedron::CGALHybridPolyhedron()

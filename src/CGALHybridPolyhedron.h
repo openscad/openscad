@@ -49,6 +49,7 @@ public:
 	CGALHybridPolyhedron(const shared_ptr<mesh_t> &mesh);
 	CGALHybridPolyhedron(const CGALHybridPolyhedron &other);
 	CGALHybridPolyhedron();
+	CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron &other);
 
 	bool isEmpty() const;
 	size_t numFacets() const;
