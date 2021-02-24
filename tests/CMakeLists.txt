@@ -236,7 +236,6 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   # No more green faces from differences.
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/LetterBlock.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/text_on_cube.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example001.scad
