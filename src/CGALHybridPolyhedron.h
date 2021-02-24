@@ -19,8 +19,6 @@ class Surface_mesh;
 namespace CGALUtils {
 std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(
 		const CGALHybridPolyhedron &hybrid);
-std::shared_ptr<const Geometry> applyMinkowskiCGALHybridPolyhedron(
-		const Geometry::Geometries &children);
 } // namespace CGALUtils
 
 /*! A mutable polyhedron backed by a CGAL::Polyhedron_3 and fast Polygon Mesh
@@ -44,12 +42,10 @@ public:
 
 	typedef CGAL::Point_3<CGAL_HybridKernel3> point_t;
 	typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> nef_polyhedron_t;
-	typedef CGAL::Polyhedron_3<CGAL_HybridKernel3> polyhedron_t;
 	typedef CGAL::Iso_cuboid_3<CGAL_HybridKernel3> bbox_t;
-	typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> mesh_t;
+	typedef CGAL::Surface_mesh<point_t> mesh_t;
 
 	CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t> &nef);
-	CGALHybridPolyhedron(const shared_ptr<polyhedron_t> &polyhedron);
 	CGALHybridPolyhedron(const shared_ptr<mesh_t> &mesh);
 	CGALHybridPolyhedron(const CGALHybridPolyhedron &other);
 	CGALHybridPolyhedron();
@@ -61,7 +57,11 @@ public:
 	void clear();
 
 	size_t memsize() const override;
-	BoundingBox getBoundingBox() const override;
+	BoundingBox getBoundingBox() const override
+	{
+		assert(false && "not implemented");
+		return BoundingBox();
+	}
 
 	std::string dump() const override;
 	unsigned int getDimension() const override { return 3; }
@@ -92,9 +92,6 @@ private:
 	friend std::shared_ptr<CGAL_Nef_polyhedron> CGALUtils::createNefPolyhedronFromHybrid(
 			const CGALHybridPolyhedron &hybrid);
 
-	friend std::shared_ptr<const Geometry> CGALUtils::applyMinkowskiCGALHybridPolyhedron(
-			const Geometry::Geometries &children);
-
 	/*! Runs a binary operation that operates on nef polyhedra, stores the result in
 	 * the first one and potentially mutates (e.g. corefines) the second. */
 	void nefPolyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
@@ -106,21 +103,14 @@ private:
 	 * Returns false if the operation failed (e.g. because of shared edges), in
 	 * which case it may still have corefined the polyhedron, but it reverts the
 	 * original nef if there was one. */
-	template <typename TriangleMesh>
 	bool polyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
-								 const std::function<bool(TriangleMesh &lhs, TriangleMesh &rhs, TriangleMesh &out)>
-										 &operation);
+								 const std::function<bool(mesh_t &lhs, mesh_t &rhs, mesh_t &out)> &operation);
 
-#ifdef FAST_CSG_TEST_SHARED_VERTICES
-	bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
-#endif
+	nef_polyhedron_t &convertToNef();
+  mesh_t &convertToMesh();
 
-	template <typename T>
-	T &convert();
-
-	/*! Returns the polyhedron if that's what's in the current data, or else nullptr.
+	/*! Returns the mesh if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
-	polyhedron_t *getPolyhedron() const;
 	mesh_t *getMesh() const;
 	/*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
@@ -128,31 +118,12 @@ private:
 
 	bbox_t getExactBoundingBox() const;
 
-	bool boundingBoxesIntersect(const CGALHybridPolyhedron &other) const
-	{
-		for (auto &bbox : bboxes)
-			if (other.boundingBoxesIntersect(bbox)) return true;
-		return false;
-	}
-
-	bool boundingBoxesIntersect(const bbox_t &c) const
-	{
-		for (auto &bbox : bboxes)
-			if (CGAL::intersection(c, bbox) != boost::none) return true;
-		return false;
-	}
-
 	// This contains data either as a polyhedron, or as a nef polyhedron.
 	//
 	// We stick to nef polyhedra in presence of non-manifold geometry or literal
 	// edge-cases of the Polygon Mesh Processing corefinement functions (e.g. it
 	// does not like shared edges, but tells us so politely).
-	boost::variant<std::shared_ptr<mesh_t>, std::shared_ptr<polyhedron_t>,
-								 std::shared_ptr<nef_polyhedron_t>>
-			data;
-	// Keeps track of the bounding boxes of the solid components of this polyhedron.
-	// This allows fast unions with disjoint polyhedra.
-	std::vector<bbox_t> bboxes;
+	boost::variant<std::shared_ptr<mesh_t>, std::shared_ptr<nef_polyhedron_t>> data;
 };
 
 #endif // FAST_CSG_AVAILABLE

@@ -30,10 +30,6 @@
 #include <CGAL/exceptions.h>
 #pragma pop_macro("NDEBUG")
 
-// Stringification macro helpers
-#define FAST_CSG_STRING2(x) #x
-#define FAST_CSG_STRING(x) FAST_CSG_STRING2(x)
-
 typedef CGAL::Gmpq NT2;
 typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
@@ -68,10 +64,6 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 
 #define FAST_CSG_AVAILABLE
 
-#ifndef FAST_CSG_USE_GRID
-#define FAST_CSG_USE_GRID 0
-#endif
-
 // CGAL::Epeck is faster than CGAL::Cartesian<CGAL::Gmpq> (because of filtering)...
 // except in some pathological cases. It can also use a lot or memory (because
 // of laziness, see https://github.com/openscad/openscad/issues/481).
@@ -102,8 +94,8 @@ typedef CGAL::Epeck CGAL_HybridKernel3;
 
 #else // not FAST_CSG_AVAILABLE
 
-#pragma message("[fast-csg] No support for fast-csg with CGAL " FAST_CSG_STRING( \
-		CGAL_VERSION) ". Please compile against CGAL 5.1 or later to use the feature.")
+#pragma message("[fast-csg] No support for fast-csg with this version of CGAL. "
+		            "Please compile against CGAL 5.1 or later to use the feature.")
 
 #endif // FAST_CSG_AVAILABLE
 

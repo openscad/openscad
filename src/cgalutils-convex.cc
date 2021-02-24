@@ -49,9 +49,6 @@ namespace CGALUtils {
 	}
 
   template bool is_weakly_convex(const CGAL::Polyhedron_3<CGAL_Kernel3> & p);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-  template bool is_weakly_convex(const CGAL::Polyhedron_3<CGAL_HybridKernel3> & p);
-#endif
 
 }; // namespace CGALUtils
 

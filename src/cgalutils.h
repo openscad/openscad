@@ -77,9 +77,6 @@ namespace CGALUtils {
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
 	template <typename K>
 	CGAL::Point_3<K> vector3dToPoint3(const Eigen::Vector3d& v);
-	template <typename K>
-	BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<K> &bbox);
-	size_t getNumFacets(const Geometry& geom);
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 
@@ -146,7 +143,7 @@ namespace CGALUtils {
 	template <typename Polyhedron>
 	void triangulateFaces(Polyhedron &polyhedron);
 	template <typename Polyhedron>
-	bool isClosed(Polyhedron &polyhedron);
+	bool isClosed(const Polyhedron &polyhedron);
 	template <typename Polyhedron>
 	void orientToBoundAVolume(Polyhedron &polyhedron);
 	template <typename K>

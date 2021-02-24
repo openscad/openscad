@@ -134,40 +134,6 @@ namespace CGALUtils {
 		return result;
 	}
 	template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N);
-#endif
-
-	template <typename K>
-	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Polyhedron_3<K> &poly)
-	{
-		CGAL::Iso_cuboid_3<K> result(0,0,0,0,0,0);
-		typename CGAL::Polyhedron_3<K>::Vertex_const_iterator vi;
-		std::vector<typename CGAL::Point_3<K>> points;
-		// can be optimized by rewriting bounding_box to accept vertices
-		CGAL_forall_vertices(vi, poly) points.push_back(vi->point());
-		// if (poly.size_of_vertices()) result = CGAL::bounding_box(poly.vertices_begin(), poly.vertices_end());
-		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
-		return result;
-	}
-#ifdef FAST_CSG_AVAILABLE
-	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Polyhedron_3<CGAL_HybridKernel3> &N);
-#endif
-
-	template <typename K>
-	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh)
-	{
-		CGAL::Iso_cuboid_3<K> result(0,0,0,0,0,0);
-		std::vector<typename CGAL::Point_3<K>> points;
-		for (auto v : mesh.vertices()) {
-			points.push_back(mesh.point(v));
-		}
-		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
-		return result;
-	}
-#ifdef FAST_CSG_AVAILABLE
-	template CGAL::Iso_cuboid_3<CGAL_HybridKernel3> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
-#endif
 
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
 		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
@@ -185,39 +151,12 @@ namespace CGALUtils {
 		return cuboid.min() + d * NT3(0.5);
 	}
 
-	size_t getNumFacets(const Geometry& geom) {
-		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
-			return ps->numFacets();
-#ifdef FAST_CSG_AVAILABLE
-		} else if (auto constpoly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
-			return constpoly->numFacets();
-#endif
-		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
-			return nef->numFacets();
-		} else {
-			assert(!"Unsupported format");
-			return 0;
-		}
-	}
-
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
 	{
 		return CGAL_Iso_cuboid_3(
 			vector_convert<CGAL_Point_3>(bbox.min()),
 			vector_convert<CGAL_Point_3>(bbox.max()));
 	}
-
-	template <typename K>
-	BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<K> &bbox)
-	{
-		return BoundingBox(
-			vector_convert<Vector3d>(bbox.min()),
-			vector_convert<Vector3d>(bbox.max()));
-	}
-	template BoundingBox createBoundingBoxFromIsoCuboid(const CGAL_Iso_cuboid_3 &bbox);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-	template BoundingBox createBoundingBoxFromIsoCuboid(const CGAL::Iso_cuboid_3<CGAL_HybridKernel3> &bbox);
-#endif
 
 	namespace {
 
@@ -515,23 +454,6 @@ namespace CGALUtils {
 	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
 #ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
 	template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
-#endif
-
-	template <typename K>
-	void transform(CGAL::Polyhedron_3<K> &poly, const Transform3d &matrix)
-	{
-		assert(matrix.matrix().determinant() != 0);
-		auto t = createAffineTransformFromMatrix<K>(matrix);
-
-		typename CGAL::Polyhedron_3<K>::Vertex_handle vi;
-		CGAL_forall_vertices(vi, poly)
-		{
-			auto &pt = vi->point();
-			pt = t(pt);
-		}
-	}
-#ifdef FAST_CSG_AVAILABLE
-	template void transform(CGAL::Polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
 #endif
 
 	template <typename K>

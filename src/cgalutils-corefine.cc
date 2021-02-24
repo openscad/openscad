@@ -10,7 +10,7 @@
 
 namespace CGALUtils {
 
-typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> CGAL_SurfaceMesh;
+typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> CGAL_HybridSurfaceMesh;
 
 /*! Visitor that forces exact numbers for the vertices of all the faces created during corefinement.
  */
@@ -44,37 +44,6 @@ struct ExactNumbersVisitor
 	}
 	void after_subface_created(face_descriptor fi, TriangleMesh &tm) { created_faces.push_back(fi); }
 };
-
-template <typename K>
-bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs,
-														 CGAL::Polyhedron_3<K> &out)
-{
-	return CGAL::Polygon_mesh_processing::corefine_and_compute_union(lhs, rhs, out);
-}
-
-template <typename K>
-bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs,
-																		CGAL::Polyhedron_3<K> &out)
-{
-	return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(lhs, rhs, out);
-}
-
-template <typename K>
-bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs,
-																	CGAL::Polyhedron_3<K> &out)
-{
-	return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(lhs, rhs, out);
-}
-
-template bool corefineAndComputeUnion(CGAL::Polyhedron_3<CGAL_HybridKernel3> &lhs,
-																			CGAL::Polyhedron_3<CGAL_HybridKernel3> &rhs,
-																			CGAL::Polyhedron_3<CGAL_HybridKernel3> &out);
-template bool corefineAndComputeIntersection(CGAL::Polyhedron_3<CGAL_HybridKernel3> &lhs,
-																						 CGAL::Polyhedron_3<CGAL_HybridKernel3> &rhs,
-																						 CGAL::Polyhedron_3<CGAL_HybridKernel3> &out);
-template bool corefineAndComputeDifference(CGAL::Polyhedron_3<CGAL_HybridKernel3> &lhs,
-																					 CGAL::Polyhedron_3<CGAL_HybridKernel3> &rhs,
-																					 CGAL::Polyhedron_3<CGAL_HybridKernel3> &out);
 
 template <typename K>
 bool corefineAndComputeUnion(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
@@ -139,12 +108,12 @@ bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 	}
 }
 
-template bool corefineAndComputeUnion(CGAL_SurfaceMesh &lhs, CGAL_SurfaceMesh &rhs,
-																			CGAL_SurfaceMesh &out);
-template bool corefineAndComputeIntersection(CGAL_SurfaceMesh &lhs, CGAL_SurfaceMesh &rhs,
-																						 CGAL_SurfaceMesh &out);
-template bool corefineAndComputeDifference(CGAL_SurfaceMesh &lhs, CGAL_SurfaceMesh &rhs,
-																					 CGAL_SurfaceMesh &out);
+template bool corefineAndComputeUnion(CGAL_HybridSurfaceMesh &lhs, CGAL_HybridSurfaceMesh &rhs,
+																			CGAL_HybridSurfaceMesh &out);
+template bool corefineAndComputeIntersection(CGAL_HybridSurfaceMesh &lhs, CGAL_HybridSurfaceMesh &rhs,
+																						 CGAL_HybridSurfaceMesh &out);
+template bool corefineAndComputeDifference(CGAL_HybridSurfaceMesh &lhs, CGAL_HybridSurfaceMesh &rhs,
+																					 CGAL_HybridSurfaceMesh &out);
 
 } // namespace CGALUtils
 

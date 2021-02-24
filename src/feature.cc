@@ -8,7 +8,9 @@
 
 #include "feature.h"
 #include "printutils.h"
-#include "cgal.h" // Only for FAST_CSG_AVAILABLE
+#ifdef ENABLE_CGAL
+#include "cgal.h" // For FAST_CSG_AVAILABLE and FAST_CSG_KERNEL_IS_LAZY
+#endif
 
 /**
  * Feature registration map/list for later lookup. This must be initialized
@@ -24,12 +26,10 @@ Feature::list_t Feature::feature_list;
  */
 #ifdef FAST_CSG_AVAILABLE
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
-const Feature Feature::ExperimentalFastCsgMesh("fast-csg-mesh", "Same as fast-csg but w/ Surface_mesh.");
-const Feature Feature::ExperimentalFastCsgDisjointOpt("fast-csg-disjoint", "Fast-track operations on disjoint solids when fast-csg is on.");
 #ifdef FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgExactCallback("fast-csg-exact-callbacks", "Force lazy numbers to exact during corefinement using callbacks rather than at the end of each operation. Only works with fast-csg-mesh for now.");
 #endif // FAST_CSG_KERNEL_IS_LAZY
-#endif // FAST_CSG_AVAILABLE
+#endif
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");

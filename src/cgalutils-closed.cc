@@ -1,4 +1,5 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
+#include "cgal.h"
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 
@@ -11,18 +12,14 @@
 namespace CGALUtils {
 
 template <typename Polyhedron>
-bool isClosed(Polyhedron &polyhedron)
+bool isClosed(const Polyhedron &p)
 {
   SCOPED_PERFORMANCE_TIMER("isClosed");
 
-	return CGAL::is_closed(polyhedron);
+	return CGAL::is_closed(p);
 }
 
-template bool isClosed(CGAL::Polyhedron_3<CGAL_HybridKernel3> &polyhedron);
-template bool isClosed(CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> &polyhedron);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
-template bool isClosed(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &polyhedron);
-#endif
+template bool isClosed(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &p);
 
 } // namespace CGALUtils
 
