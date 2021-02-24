@@ -38,7 +38,3 @@ echo yes | sudo add-apt-repository "deb $LIBCGAL_REPO ./"
 sudo apt-get update -qq
 sudo apt-get purge -qq fglrx || true
 sudo apt-get install -qq $PACKAGES1 $PACKAGES2 $PACKAGES3 $PACKAGES4 $PACKAGES5
-
-export BASEDIR=$PWD/libraries
-. ./scripts/setenv-unibuild.sh
-./scripts/uni-build-dependencies.sh cgal

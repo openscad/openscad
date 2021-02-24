@@ -61,6 +61,7 @@ typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 1, 0)
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4, 7, 0)
 
 #define FAST_CSG_AVAILABLE
 
@@ -93,10 +94,7 @@ typedef CGAL::Epeck CGAL_HybridKernel3;
 #endif // FAST_CSG_USE_SAME_KERNEL
 
 #else // not FAST_CSG_AVAILABLE
-
-#pragma message("[fast-csg] No support for fast-csg with this version of CGAL. "
-		            "Please compile against CGAL 5.1 or later to use the feature.")
-
+#pragma message("[fast-csg] No support for fast-csg with this version of CGAL.")
 #endif // FAST_CSG_AVAILABLE
 
 #endif /* ENABLE_CGAL */

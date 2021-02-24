@@ -72,7 +72,6 @@ jobs:
           name: Build OpenSCAD AppImage (64bit)
           no_output_timeout: 18000
           command: |
-              ( export CGAL_VERSION=5.2 && curl -L --insecure https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.tar.xz --output CGAL-${CGAL_VERSION}.tar.xz && xz -f -d CGAL-${CGAL_VERSION}.tar.xz && tar -xf CGAL-${CGAL_VERSION}.tar && cd CGAL-${CGAL_VERSION} && cmake . -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release && make install && cd .. && rm -fR CGAL-* )
               set +e
               . /opt/qt5*/bin/qt5*-env.sh
               set -e

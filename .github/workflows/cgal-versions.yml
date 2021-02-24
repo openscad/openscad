@@ -16,10 +16,13 @@ jobs:
         fast-csg-available: [true]
         include:
           - os: ubuntu-18.04
-            cgal-version: 5.1
+            cgal-version: 4.11
             fast-csg-available: true
           - os: ubuntu-18.04
-            cgal-version: 4.11
+            cgal-version: 4.7
+            fast-csg-available: true
+          - os: ubuntu-18.04
+            cgal-version: 4.4
             fast-csg-available: false
 
     runs-on: ${{ matrix.os }}
