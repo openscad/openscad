@@ -203,8 +203,9 @@ list(APPEND FAST_CSG_FAILING_TESTS
   opencsgtest_minkowski3-erosion
   # Different order of vertices
   3mfexport_3mf-export
-  # Seems to only fail on some platforms:
+  # Seems to only fail on some CI platforms:
   cgalpngtest_module-recursion
+  fastcsg-cgalpng_LetterBlock # Different font on github{mac,windows} builds
   # Test script argument passing issue
   cgalstlsanitytest_normal-nan
   # No wireframe rendering yet.
