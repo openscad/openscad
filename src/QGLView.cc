@@ -203,7 +203,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
-
+	this->makeCurrent();
 	setupCamera();
 
 	int viewport[4];
@@ -223,6 +223,11 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 	auto glError = glGetError();
 	if (glError != GL_NO_ERROR) {
+		if (statusLabel) {
+			auto status = QString("Center View: OpenGL Error reading Pixel: %s")
+				.arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
+			statusLabel->setText(status);
+		}
 		return;
 	}
 

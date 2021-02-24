@@ -109,17 +109,6 @@ void Context::set_variable(const std::string &name, Value&& value)
 	}
 }
 
-// sink for value takes &&
-void Context::set_constant(const std::string &name, Value&& value)
-{
-	if (this->constants.contains(name)) {
-		LOG(message_group::Warning,Location::NONE,"","Attempt to modify constant '%1$s'.",name);
-	}
-	else {
-		this->constants.emplace(name, std::move(value));
-	}
-}
-
 void Context::apply_variables(const std::shared_ptr<Context> &other)
 {
 	this->variables.applyFrom(other->variables);
@@ -156,11 +145,6 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 			LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
 		}
 		return Value::undefined;
-	}
-	if (!this->parent) {
-			if ((result = this->constants.find(name)) != this->constants.end()) {
-				return result->second;
-			}
 	}
 	if ((result = this->variables.find(name)) != this->variables.end()) {
 		return result->second;
@@ -202,9 +186,6 @@ bool Context::has_local_variable(const std::string &name) const
 {
 	if (is_config_variable(name)) {
 		return config_variables.find(name) != config_variables.end();
-	}
-	if (!parent && constants.find(name) != constants.end()) {
-		return true;
 	}
 	return variables.find(name) != variables.end();
 }
@@ -274,9 +255,6 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		}
 	}
 	s << "  vars:\n";
-	for(const auto &v : constants) {
-		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
-	}
 	for(const auto &v : variables) {
 		s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();
 	}

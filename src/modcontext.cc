@@ -153,9 +153,6 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		}
 	}
 	s << "  vars:";
-	for(const auto &v : constants) {
-		s << boost::format("    %s = %s") % v.first % v.second;
-	}
 	for(const auto &v : variables) {
 		s << boost::format("    %s = %s") % v.first % v.second;
 	}

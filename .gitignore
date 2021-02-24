@@ -8,7 +8,11 @@
 *.new
 out.*
 Makefile
+Makefile.Debug
+Makefile.Release
 objects
+object_script.openscad.Debug
+object_script.openscad.Release
 .gdbinit
 .qmake.stash
 .tags*
@@ -51,6 +55,7 @@ testdata/svg/viewbox/viewbox_*.svg
 /openscad.appdata.xml
 /openscad.pro.user
 /openscad
+/openscad-nightly
 /icons/openscad.desktop
 /locale/*/*/*.mo
 /locale/*.mo
@@ -65,6 +70,7 @@ src/*.debug
 /Testing
 .DS_Store
 /build
+/release
 tests/DartConfiguration.tcl
 tests/__pycache__/
 CMakeCache.txt
