@@ -110,6 +110,8 @@ private:
 	nef_polyhedron_t &convertToNef();
   mesh_t &convertToMesh();
 
+  bool sharesAnyVertexWith(const CGALHybridPolyhedron &other) const;
+
 	/*! Returns the mesh if that's what's in the current data, or else nullptr.
 	 * Do NOT make this public. */
 	mesh_t *getMesh() const;

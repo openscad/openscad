@@ -156,7 +156,7 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
-	if (isManifold() && other.isManifold()) {
+	if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
 		if (polyBinOp("corefinement mesh union", other, [&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 					return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
 				}))
@@ -171,7 +171,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 {
-	if (isManifold() && other.isManifold()) {
+	if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
 		if (polyBinOp("corefinement mesh intersection", other,
 									[&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 										return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
@@ -187,7 +187,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 {
-	if (isManifold() && other.isManifold()) {
+	if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
 		if (polyBinOp("corefinement mesh difference", other,
 									[&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 										return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);
@@ -393,6 +393,26 @@ CGALHybridPolyhedron::mesh_t &CGALHybridPolyhedron::convertToMesh()
 	else {
 		throw "Bad data state";
 	}
+}
+
+bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other) const
+{
+	if (other.numVertices() < numVertices()) {
+		// The other has less vertices to index!
+		return other.sharesAnyVertexWith(*this);
+	}
+
+	std::unordered_set<point_t> vertices;
+	foreachVertexUntilTrue([&](const auto &p) {
+		vertices.insert(p);
+		return false;
+	});
+
+	auto foundCollision = false;
+	other.foreachVertexUntilTrue(
+			[&](const auto &p) { return foundCollision = vertices.find(p) != vertices.end(); });
+
+	return foundCollision;
 }
 
 #endif // FAST_CSG_AVAILABLE
