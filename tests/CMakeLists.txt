@@ -192,45 +192,70 @@ if(NOT DEFINED FAST_CSG_AVAILABLE)
   set(FAST_CSG_AVAILABLE 1)
 endif()
 
-# Tests for which fast-csg cannot be enabled yet.
+# Specific tests for which fast-csg cannot be enabled yet. If fast-csg fails in
+# all the tests on a file, add it to FAST_CSG_FAILING_SCADFILES instead.
 list(APPEND FAST_CSG_FAILING_TESTS
-  # Resize issues that need investigation.
-  throwntogethertest_resize-convexity-tests
-  cgalpngtest_resize-convexity-tests csgpngtest_resize-convexity-tests opencsgtest_resize-convexity-tests
   # Face orientation issue with OpenCSG?
   opencsgtest_issue911
   opencsgtest_issue913
   opencsgtest_render-tests
   opencsgtest_internal-cavity
   opencsgtest_minkowski3-erosion
-  # Corefinement leaves some polyhedra in a state that we can't build Nefs from
-  cgalpngtest_mirror-tests csgpngtest_mirror-tests monotonepngtest_mirror-tests cgalstlcgalpngtest_mirror-tests cgalbinstlcgalpngtest_mirror-tests
   # Different order of vertices
   3mfexport_3mf-export
-  # Needs investigation:
-  cgalpngtest_issue1246 csgpngtest_issue1246
   # Seems to only fail on some platforms:
   cgalpngtest_module-recursion
   # Test script argument passing issue
   cgalstlsanitytest_normal-nan
   # No wireframe rendering yet.
-  openscad-viewoptions-wireframe_view-options-tests)
+  openscad-viewoptions-wireframe_view-options-tests
+)
+
+# Tests for which fast-csg works but produces different expectation files.
+# These tests are run twice (w/ and without fast-csg).
+list(APPEND FAST_CSG_FAILING_SCADFILES
+  # Corefinement leaves some polyhedra in a state that we can't build Nefs from
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/mirror-tests.scad
+  # Resize issue!
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/resize-convexity-tests.scad
+  # Needs investigation:
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1246.scad
+)
 
 # Tests for which fast-csg works but produces different expectation files.
 # These tests are run twice (w/ and without fast-csg).
 list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+  # This one no longer crashes, yay!
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad
+  # These are less broken than before:
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+
+  # No more green faces from differences.
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/LetterBlock.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/text_on_cube.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example001.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example002.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example003.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example004.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example005.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example006.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example009.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example012.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example016.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example024.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Parametric/sign.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/features/highlight-modifier-2d.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/difference-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier2.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/minkowski3-erosion.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/render-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue835.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue911.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue913.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
@@ -240,6 +265,9 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1223.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1803.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue3158.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue835.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue911.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue913.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
@@ -301,6 +329,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
         if (FAST_CSG_AVAILABLE
             AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+            AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
           set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
         endif()
