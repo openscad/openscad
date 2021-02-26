@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-08 17:20+0100\n"
-"PO-Revision-Date: 2019-12-25 16:10+0800\n"
+"PO-Revision-Date: 2021-02-26 14:17+0800\n"
 "Last-Translator: 玉堂白鹤 <yjwork@qq.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: objects/ui_AboutDialog.h:100 src/AboutDialog.h:13
 msgid "About OpenSCAD"
@@ -186,12 +186,11 @@ msgstr "坐标轴映射:"
 
 #: objects/ui_AxisConfigWidget.h:900
 msgid "Status:"
-msgstr ""
+msgstr "状态:"
 
 #: objects/ui_AxisConfigWidget.h:901
-#, fuzzy
 msgid "TextLabel"
-msgstr "紧跟文字"
+msgstr "文本标签"
 
 #: objects/ui_AxisConfigWidget.h:902 objects/ui_Preferences.h:1544
 msgid "Update"
@@ -270,31 +269,28 @@ msgid "Clear console"
 msgstr "清除控制台"
 
 #: objects/ui_Console.h:46
-#, fuzzy
 msgid "Save As..."
-msgstr "另存为(&A)..."
+msgstr "另存为..."
 
 #: objects/ui_Console.h:48
 msgid "Save console content to file"
 msgstr "保存控制台内容至文件"
 
 #: objects/ui_ErrorLog.h:93
-#, fuzzy
 msgid "Error Log"
-msgstr "错误"
+msgstr "错误日志"
 
 #: objects/ui_ErrorLog.h:94
 msgid "RowSelected"
-msgstr ""
+msgstr "选定行"
 
 #: objects/ui_ErrorLog.h:96
 msgid "Return"
-msgstr ""
+msgstr "返回"
 
 #: objects/ui_ErrorLog.h:98
-#, fuzzy
 msgid "&Show"
-msgstr "显示"
+msgstr "显示(&S)"
 
 #: objects/ui_ErrorLog.h:99 objects/ui_MainWindow.h:1326
 msgid "All"
@@ -302,27 +298,27 @@ msgstr "全部"
 
 #: objects/ui_ErrorLog.h:100
 msgid "ERROR"
-msgstr ""
+msgstr "错误"
 
 #: objects/ui_ErrorLog.h:101
 msgid "WARNING"
-msgstr ""
+msgstr "警告"
 
 #: objects/ui_ErrorLog.h:102
 msgid "UI-WARNING"
-msgstr ""
+msgstr "用户界面警告"
 
 #: objects/ui_ErrorLog.h:103
 msgid "FONT-WARNING"
-msgstr ""
+msgstr "字体警告"
 
 #: objects/ui_ErrorLog.h:104
 msgid "EXPORT-WARNING"
-msgstr ""
+msgstr "导出警告"
 
 #: objects/ui_ErrorLog.h:105
 msgid "EXPORT-ERROR"
-msgstr ""
+msgstr "导出错误"
 
 #: objects/ui_ErrorLog.h:106
 msgid "TRACE"
@@ -330,7 +326,7 @@ msgstr ""
 
 #: objects/ui_ErrorLog.h:107
 msgid "DEPRECATED"
-msgstr ""
+msgstr "已弃用"
 
 #: objects/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
@@ -420,9 +416,8 @@ msgid "OpenSCAD Detailed Library and Build Information"
 msgstr "OpenSCAD 库和编译信息明细"
 
 #: objects/ui_MainWindow.h:1027
-#, fuzzy
 msgid "&New File"
-msgstr "文件(&F)"
+msgstr "新建文件(&N)"
 
 #: objects/ui_MainWindow.h:1029
 msgid "Ctrl+N"
@@ -430,12 +425,11 @@ msgstr "Ctrl+N"
 
 #: objects/ui_MainWindow.h:1031
 msgid "New Window"
-msgstr ""
+msgstr "新窗口"
 
 #: objects/ui_MainWindow.h:1032
-#, fuzzy
 msgid "&Open File"
-msgstr "文件(&F)"
+msgstr "打开文件(&O)"
 
 #: objects/ui_MainWindow.h:1034
 msgid "Ctrl+O"
@@ -443,7 +437,7 @@ msgstr "Ctrl+O"
 
 #: objects/ui_MainWindow.h:1036
 msgid "Open in New Window"
-msgstr ""
+msgstr "在新窗口中打开"
 
 #: objects/ui_MainWindow.h:1037
 msgid "&Save"
@@ -462,9 +456,8 @@ msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
 #: objects/ui_MainWindow.h:1045
-#, fuzzy
 msgid "Save All"
-msgstr "另存为"
+msgstr "全部保存"
 
 #: objects/ui_MainWindow.h:1046
 msgid "&Reload"
@@ -551,23 +544,20 @@ msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
 #: objects/ui_MainWindow.h:1089
-#, fuzzy
 msgid "Show Next Tab"
-msgstr "显示详细信息"
+msgstr "显示下一个标签"
 
 #: objects/ui_MainWindow.h:1091
-#, fuzzy
 msgid "Ctrl+Tab"
-msgstr "Ctrl+T"
+msgstr "Ctrl+Tab"
 
 #: objects/ui_MainWindow.h:1093
 msgid "Show Previous Tab"
-msgstr ""
+msgstr "显示上一个标签"
 
 #: objects/ui_MainWindow.h:1095
-#, fuzzy
 msgid "Ctrl+Shift+Tab"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+Tab"
 
 #: objects/ui_MainWindow.h:1097
 msgid "Copy viewport ima&ge"
@@ -594,9 +584,8 @@ msgid "Copy vie&wport distance"
 msgstr "复制三维视图距离状态(&W)"
 
 #: objects/ui_MainWindow.h:1107
-#, fuzzy
 msgid "Copy vie&wport fov"
-msgstr "复制三维视图图像(&G)"
+msgstr "复制三维视图视角(&w)"
 
 #: objects/ui_MainWindow.h:1108
 msgid "Increase Font &Size"
@@ -615,9 +604,8 @@ msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
 #: objects/ui_MainWindow.h:1116
-#, fuzzy
 msgid "Hide Editor"
-msgstr "隐藏编辑器(&I)"
+msgstr "隐藏编辑器"
 
 #: objects/ui_MainWindow.h:1117
 msgid "&Reload and Preview"
@@ -804,9 +792,8 @@ msgid "Ce&nter"
 msgstr "原点居中(&N)"
 
 #: objects/ui_MainWindow.h:1202
-#, fuzzy
 msgid "Ctrl+Shift+0"
-msgstr "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+0"
 
 #: objects/ui_MainWindow.h:1204
 msgid "&Perspective"
@@ -817,9 +804,8 @@ msgid "&Orthogonal"
 msgstr "正交画法(&O)"
 
 #: objects/ui_MainWindow.h:1206
-#, fuzzy
 msgid "Hide Console"
-msgstr "隐藏控制台(&I)"
+msgstr "隐藏控制台"
 
 #: objects/ui_MainWindow.h:1207
 msgid "&About"
@@ -891,12 +877,11 @@ msgstr "Ctrl+E"
 
 #: objects/ui_MainWindow.h:1236
 msgid "Jump to next error"
-msgstr ""
+msgstr "跳转到下一个错误"
 
 #: objects/ui_MainWindow.h:1238
-#, fuzzy
 msgid "Ctrl+Alt+E"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+E"
 
 #: objects/ui_MainWindow.h:1240
 msgid "&Flush Caches"
@@ -976,35 +961,31 @@ msgstr "将制表符转换为空格(&E)"
 
 #: objects/ui_MainWindow.h:1265
 msgid "Toggle Bookmark"
-msgstr ""
+msgstr "切换书签"
 
 #: objects/ui_MainWindow.h:1267
-#, fuzzy
 msgid "Ctrl+F2"
-msgstr "Ctrl+F"
+msgstr "Ctrl+F2"
 
 #: objects/ui_MainWindow.h:1269
 msgid "Jump to next bookmark"
-msgstr ""
+msgstr "跳转到下一个书签"
 
 #: objects/ui_MainWindow.h:1271
-#, fuzzy
 msgid "F2"
-msgstr "F12"
+msgstr "F2"
 
 #: objects/ui_MainWindow.h:1273
 msgid "Jump to previous bookmark"
-msgstr ""
+msgstr "跳转到上一个书签"
 
 #: objects/ui_MainWindow.h:1275
-#, fuzzy
 msgid "Shift+F2"
-msgstr "Ctrl+Shift+S"
+msgstr "Shift+F2"
 
 #: objects/ui_MainWindow.h:1277
-#, fuzzy
 msgid "Hide Editor toolbar"
-msgstr "隐藏工具栏"
+msgstr "隐藏编辑工具栏"
 
 #: objects/ui_MainWindow.h:1278
 msgid "U&nindent"
@@ -1023,61 +1004,52 @@ msgid "Hide Customizer"
 msgstr "隐藏定制器"
 
 #: objects/ui_MainWindow.h:1284
-#, fuzzy
 msgid "Export as PDF..."
-msgstr "导出为 DXF(&D)..."
+msgstr "导出为 PDF..."
 
 #: objects/ui_MainWindow.h:1285
-#, fuzzy
 msgid "Hide 3D View toolbar"
-msgstr "隐藏工具栏"
+msgstr "隐藏 3D 视图工具栏"
 
 #: objects/ui_MainWindow.h:1286
-#, fuzzy
 msgid "Hide Error Log"
-msgstr "隐藏工具栏"
+msgstr "隐藏错误日志"
 
 #: objects/ui_MainWindow.h:1288
 msgid "Hide ErrorLog"
-msgstr ""
+msgstr "隐藏错误日志"
 
 #: objects/ui_MainWindow.h:1290
-#, fuzzy
 msgid "&Editor"
-msgstr "编辑器"
+msgstr "编辑器(&E)"
 
 #: objects/ui_MainWindow.h:1291
-#, fuzzy
 msgid "&Console"
-msgstr "控制台"
+msgstr "控制台(&C)"
 
 #: objects/ui_MainWindow.h:1292
-#, fuzzy
 msgid "C&ustomizer"
-msgstr "定制"
+msgstr "定制器(&U)"
 
 #: objects/ui_MainWindow.h:1293
-#, fuzzy
 msgid "Error &Log"
-msgstr "错误"
+msgstr "错误日志(&L)"
 
 #: objects/ui_MainWindow.h:1294
 msgid "&Next Window"
-msgstr ""
+msgstr "下一个窗口(&N)"
 
 #: objects/ui_MainWindow.h:1295
-#, fuzzy
 msgid "&Previous Window"
-msgstr "查找上一个(&V)"
+msgstr "上一个窗口(&P)"
 
 #: objects/ui_MainWindow.h:1296
-#, fuzzy
 msgid "Insert Template"
-msgstr "插入制表符"
+msgstr "插入模板"
 
 #: objects/ui_MainWindow.h:1298
 msgid "Alt+Ins"
-msgstr ""
+msgstr "Alt+Ins"
 
 #: objects/ui_MainWindow.h:1300
 msgid "Message"
@@ -1133,12 +1105,13 @@ msgstr "帮助(&H)"
 
 #: objects/ui_MainWindow.h:1315
 msgid "&Window"
-msgstr ""
+msgstr "窗口(&W)"
 
+# 同时应用在两个位置。一个表示标签页，一个表示 TAB 键。
 #: objects/ui_MainWindow.h:1316 objects/ui_Preferences.h:1610
 #: src/settings.cc:180
 msgid "Tabs"
-msgstr "制表符"
+msgstr "Tab 标签"
 
 #: objects/ui_MainWindow.h:1317
 msgid "Find"
@@ -1153,9 +1126,8 @@ msgid "Search string"
 msgstr "搜索字符串"
 
 #: objects/ui_MainWindow.h:1321
-#, fuzzy
 msgid "Previous"
-msgstr "查找上一个(&V)"
+msgstr "上一个"
 
 #: objects/ui_MainWindow.h:1322
 msgid "Next"
@@ -1215,7 +1187,7 @@ msgstr "关闭"
 
 #: objects/ui_ParameterEntryWidget.h:339 objects/ui_ParameterWidget.h:169
 msgid "Form"
-msgstr ""
+msgstr "表格"
 
 #: objects/ui_ParameterEntryWidget.h:341
 msgid "Parameter"
@@ -1335,22 +1307,20 @@ msgid "Number Scroll"
 msgstr ""
 
 #: objects/ui_Preferences.h:1562 src/settings.cc:186
-#, fuzzy
 msgid "Alt"
-msgstr "全部"
+msgstr "Alt"
 
 #: objects/ui_Preferences.h:1563 src/settings.cc:186
 msgid "Left Mouse Button"
-msgstr ""
+msgstr "鼠标左键"
 
 #: objects/ui_Preferences.h:1564 src/settings.cc:186
 msgid "Either"
-msgstr ""
+msgstr "任一"
 
 #: objects/ui_Preferences.h:1566
-#, fuzzy
 msgid "Step Size"
-msgstr "尺寸"
+msgstr "步长"
 
 #: objects/ui_Preferences.h:1567
 msgid "Number Scroll Via Mouse Wheel"
@@ -1362,11 +1332,11 @@ msgstr ""
 
 #: objects/ui_Preferences.h:1569
 msgid "Autocomplete"
-msgstr ""
+msgstr "自动完成"
 
 #: objects/ui_Preferences.h:1570
 msgid "Enable Autocompletion"
-msgstr ""
+msgstr "启用自动完成"
 
 #: objects/ui_Preferences.h:1571
 msgid "Character Threshold"
@@ -1496,7 +1466,7 @@ msgstr "缩进宽度"
 
 #: objects/ui_Preferences.h:1613
 msgid "Tab width"
-msgstr "Tab 值"
+msgstr "Tab 宽度"
 
 #: objects/ui_Preferences.h:1614
 msgid "Tab key function"
@@ -1544,7 +1514,7 @@ msgstr "上次检查: "
 
 #: objects/ui_Preferences.h:1629 objects/ui_PrintInitDialog.h:114
 msgid "OctoPrint"
-msgstr ""
+msgstr "OctoPrint 打印服务"
 
 #: objects/ui_Preferences.h:1630
 msgid "URL"
@@ -1564,11 +1534,11 @@ msgstr "检查"
 
 #: objects/ui_Preferences.h:1636
 msgid "Slicing Profile"
-msgstr ""
+msgstr "切片配置"
 
 #: objects/ui_Preferences.h:1637
 msgid "Slicing Engine"
-msgstr ""
+msgstr "切片引擎"
 
 #: objects/ui_Preferences.h:1638
 msgid "File Format"
@@ -1655,13 +1625,12 @@ msgid "Play sound notification on render complete"
 msgstr "渲染完成时播放声音通知"
 
 #: objects/ui_Preferences.h:1660
-#, fuzzy
 msgid "Play sound when render completion time is at least"
-msgstr "渲染完成时播放声音通知"
+msgstr "播放声音，当渲染完成时间至少需要"
 
 #: objects/ui_Preferences.h:1661
 msgid "sec"
-msgstr ""
+msgstr "秒时"
 
 #: objects/ui_Preferences.h:1662
 msgid "OpenSCAD Language Features"
@@ -1676,27 +1645,24 @@ msgid "Stop on the first warning"
 msgstr "在第一个警告时停止"
 
 #: objects/ui_Preferences.h:1665
-#, fuzzy
 msgid "Check the parameter range for builtin modules"
 msgstr "检查内置模块的参数范围"
 
 #: objects/ui_Preferences.h:1666
-#, fuzzy
 msgid "Export Features"
-msgstr "特性"
+msgstr "导出功能"
 
 #: objects/ui_Preferences.h:1667
 msgid "Default to ASCII STL export"
-msgstr ""
+msgstr "默认为 ASCII STL 导出"
 
 #: objects/ui_Preferences.h:1668
 msgid "Debugging"
-msgstr ""
+msgstr "调试"
 
 #: objects/ui_Preferences.h:1669
-#, fuzzy
 msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
-msgstr "启用用户界面本地化 (重启 OpenSCAD 后生效)"
+msgstr "启用 HIDAPI 事件跟踪 (重启 OpenSCAD 后生效)"
 
 #: objects/ui_PrintInitDialog.h:111
 msgid "Cancel"
@@ -1712,39 +1678,38 @@ msgstr "%v / %m"
 
 #: objects/ui_ShortcutConfigurator.h:67
 msgid "Shortcut"
-msgstr ""
+msgstr "快捷方式"
 
 #: objects/ui_ShortcutConfigurator.h:70
-#, fuzzy
 msgid "Search"
-msgstr "搜索字符串"
+msgstr "搜索"
 
 #: src/Network.h:116
 msgid "Timeout error"
-msgstr ""
+msgstr "超时错误"
 
 #: src/Camera.cc:198
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f, fov = %.2f"
 msgstr ""
 "三维视图状态: 平移 = [ %.2f %.2f %.2f ], 旋转 = [ %.2f %.2f %.2f ], 距离 = "
-"%.2f"
+"%.2f, 视角 = %.2f"
 
 #: src/Console.cc:61
 msgid "Save console content"
 msgstr "保存控制台内容"
 
 #: src/export.cc:104
-#, fuzzy, c-format
+#, c-format
 msgid "Can't open file \"%1$s\" for export"
 msgstr "无法打开文件 \"%1$s\" 进行导出"
 
 #: src/export.cc:119
-#, fuzzy, c-format
+#, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "错误:\"%1$s\" 写入错误。(磁盘已满?)"
+msgstr "\"%1$s\" 写入错误。(磁盘已满?)"
 
 #: src/mainwin.cc:1085
 msgid "Compile error."
@@ -1760,11 +1725,12 @@ msgid_plural "Compilation generated %1 warnings."
 msgstr[0] "编译生成 %1 个告警。"
 
 #: src/mainwin.cc:1102
-#, fuzzy
 msgid ""
 " For details see the <a href=\"#errorlog\">error log</a> and <a href="
 "\"#console\">console window</a>."
-msgstr " 详见<a href=\"#console\">控制台窗口</a>。"
+msgstr ""
+" 详见 <a href=\"#errorlog\">错误日志</a>和<a href=\"#console\">控制台窗口</"
+"a>。"
 
 #: src/mainwin.cc:1788
 msgid "Application"
@@ -1780,7 +1746,7 @@ msgstr ""
 
 #: src/mainwin.cc:2052
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr ""
+msgstr "导出的设计超出服务上载限制 (%1 MB)。"
 
 #: src/mainwin.cc:2053
 msgid "Upload Error"
@@ -1819,9 +1785,8 @@ msgid "Customizer"
 msgstr "定制"
 
 #: src/mainwin.cc:2868 src/mainwin.cc:2873
-#, fuzzy
 msgid "Error-Log"
-msgstr "错误"
+msgstr "错误日志"
 
 #: src/mainwin.cc:2888 src/tabmanager.cc:221 src/tabmanager.cc:454
 #: src/tabmanager.cc:512 src/tabmanager.cc:681
@@ -1829,9 +1794,8 @@ msgid "Untitled.scad"
 msgstr "未命名.scad"
 
 #: src/mainwin.cc:3283 src/mainwin.cc:3290
-#, fuzzy
 msgid "Untitled"
-msgstr "/未命名"
+msgstr "未命名"
 
 #: src/OpenSCADApp.cc:63
 msgid "Unknown error"
@@ -1846,6 +1810,8 @@ msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
+"发现一个严重错误。应用程序可能变得不稳定：\n"
+"%1"
 
 #: src/OpenSCADApp.cc:90
 msgid ""
@@ -1932,28 +1898,27 @@ msgstr "仅上传"
 
 #: src/settings.cc:192
 msgid "Upload & Slice"
-msgstr ""
+msgstr "上传和切片"
 
 #: src/settings.cc:192
 msgid "Upload, Slice & Select for printing"
-msgstr ""
+msgstr "上传，切片及选择打印"
 
 #: src/settings.cc:192
 msgid "Upload, Slice & Start printing"
-msgstr ""
+msgstr "上传，切片和开始打印"
 
 #: src/tabmanager.cc:401
 msgid "Copy file name"
-msgstr ""
+msgstr "复制文件名"
 
 #: src/tabmanager.cc:407
 msgid "Copy full path"
-msgstr ""
+msgstr "复制完整路径"
 
 #: src/tabmanager.cc:412
-#, fuzzy
 msgid "Close Tab"
-msgstr "关闭"
+msgstr "关闭标签"
 
 #: src/tabmanager.cc:558
 msgid "The document has been modified."
@@ -1965,12 +1930,11 @@ msgstr "要保存更改吗？"
 
 #: src/tabmanager.cc:591
 msgid "Some tabs have unsaved changes."
-msgstr ""
+msgstr "某些标签有未保存的更改。"
 
 #: src/tabmanager.cc:592
-#, fuzzy
 msgid "Do you want to save all your changes?"
-msgstr "要保存更改吗？"
+msgstr "是否要保存所有更改？"
 
 #: src/tabmanager.cc:653
 msgid "Failed to open file for writing"
@@ -1978,7 +1942,7 @@ msgstr "无法打开文件进行写入"
 
 #: src/tabmanager.cc:672
 msgid "Error saving design"
-msgstr ""
+msgstr "保存设计时出错"
 
 #: src/tabmanager.cc:682
 msgid "Save File"
@@ -2007,17 +1971,14 @@ msgid ""
 msgstr "当前预设 %1 上的更改尚未保存。 您真的要重置此预设并丢失更改吗？"
 
 #: src/parameter/ParameterWidget.cc:156
-#, fuzzy
 msgid "Add new preset"
 msgstr "添加新预设"
 
 #: src/parameter/ParameterWidget.cc:157
-#, fuzzy
 msgid "Remove current preset"
 msgstr "移除当前预设"
 
 #: src/parameter/ParameterWidget.cc:158
-#, fuzzy
 msgid "Save current preset"
 msgstr "保存当前预设"
 
@@ -2028,7 +1989,7 @@ msgstr "只读 JSON 文件"
 
 #: src/parameter/ParameterWidget.cc:216
 msgid "design default values"
-msgstr ""
+msgstr "设计默认值"
 
 #: src/parameter/ParameterWidget.cc:234
 msgid ""
@@ -2050,18 +2011,15 @@ msgstr ""
 
 #: src/parameter/ParameterWidget.cc:516
 msgid "Enter name of the parameter set"
-msgstr ""
+msgstr "输入参数设置的名称"
 
 #: src/parameter/ParameterWidget.cc:527
 msgid "Set Name %1 already exists"
-msgstr ""
+msgstr "设置名称 %1 已经存在。"
 
 #: src/parameter/ParameterWidget.cc:528
-#, fuzzy
 msgid "The set name  %1 already exists. Do you want overwrite it?"
-msgstr ""
-"%1 已经存在。\n"
-"您要替换它么？"
+msgstr "设置名称  %1 已经存在。是否要覆盖它？"
 
 #: src/parameter/ParameterWidget.cc:572
 msgid "Saving presets"
@@ -2069,7 +2027,7 @@ msgstr "保存预设"
 
 #: src/parameter/ParameterWidget.cc:573
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr ""
+msgstr "找到 %1，但无法读取。是否要覆盖 %1?"
 
 #: src/input/AxisConfigWidget.h:84
 msgid ""
@@ -2224,3 +2182,4 @@ msgstr ""
 
 #~ msgid "Untitled.csg"
 #~ msgstr "未命名.csg"
+
