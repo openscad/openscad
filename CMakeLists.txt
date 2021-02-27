@@ -19,7 +19,12 @@ endif()
 cmake_minimum_required(VERSION 3.5)
 
 if(POLICY CMP0071)
+  # Let AUTOMOC and AUTOUIC process GENERATED files.
   cmake_policy(SET CMP0071 OLD)
+endif()
+if(POLICY CMP0072)
+  # FindOpenGL prefers GLVND by default when available.
+  cmake_policy(SET CMP0072 NEW)
 endif()
 
 project(openscad)
@@ -139,9 +144,9 @@ macro(find_graphics)
       include_directories("${OPENCSG_INCLUDE_DIRS}")
     endif()
 
-    set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED QUIET)
     list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
+    message(STATUS "OpenGL: ${OPENGL_LIBRARIES}")
   endif()
 endmacro(find_graphics)
 
