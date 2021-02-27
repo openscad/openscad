@@ -140,7 +140,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarni
 	}
 
 	if (enableWarning && (viewall || autocenter) && noauto) {
-		LOG(message_group::Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
+		LOG(message_group::UI_Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
 		viewall = false;
 		autocenter = false;
 	}
