@@ -25,7 +25,7 @@ update_www_download_links()
     webdir=../openscad.github.com
     # FIXME: release vs. snapshot
     incfile=inc/mac_snapshot_links.js
-    BASEURL='http://files.openscad.org/snapshots'
+    BASEURL='http://openscad.thisistheremix.dev/snapshots'
     DATECODE=`date +"%Y.%m.%d"`
     
     if [ -f $webdir/$incfile ]; then
@@ -57,6 +57,15 @@ if test -z "$VERSION"; then
   SNAPSHOT=snapshot
 fi
 SHORTVERSION=${VERSION%%-*}
+
+
+if test -z "$AWSPROFILE"; then
+  AWS_PROFILE="openscad-files"
+fi
+if test -z "$S3BUCKET"; then
+  S3_BUCKET="openscad-files"
+fi
+
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
@@ -101,19 +110,19 @@ fi
 
 echo "Uploading..."
 if [[ $VERSION == $VERSIONDATE ]]; then
-  scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www/snapshots
+  aws --profile $AWSPROFILE s3 cp OpenSCAD-$VERSION.dmg s3://$S3BUCKET/snapshots/
 else
-  scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www
+  aws --profile $AWSPROFILE s3 cp OpenSCAD-$VERSION.dmg s3://$S3BUCKET/
 fi
 if [[ $? != 0 ]]; then
   exit 1
 fi
-scp $APPCASTFILE openscad@files.openscad.org:www/
+aws --profile $AWSPROFILE s3 cp $APPCASTFILE s3://$S3BUCKET/
 if [[ $? != 0 ]]; then
   exit 1
 fi
 if [[ $VERSION == $VERSIONDATE ]]; then
-  scp $APPCASTFILE openscad@files.openscad.org:www/appcast-snapshots.xml
+  aws --profile $AWSPROFILE s3 cp $APPCASTFILE s3://$S3BUCKET/appcast-snapshots.xml
   if [[ $? != 0 ]]; then
     exit 1
   fi

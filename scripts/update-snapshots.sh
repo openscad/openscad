@@ -15,7 +15,7 @@ do
 	FILE="$(ls -t ${NAME[$n]} | head -n 1)"
         DATE="$(echo "$FILE" | cut -b 1-19)"
 	SIZE="$((($(stat --format=%s "$FILE") / 1024 + 512) / 1024)) MB"
-	echo "setSnapshotFileInfo('${KEY[$n]}', '$DATE', '$SIZE', 'https://files.openscad.org/snapshots/$FILE');" >> "${OUT[$n]}".tmp
+	echo "setSnapshotFileInfo('${KEY[$n]}', '$DATE', '$SIZE', 'https://openscad.thisistheremix.dev/snapshots/$FILE');" >> "${OUT[$n]}".tmp
 done
 
 for o in ${OUT[*]}

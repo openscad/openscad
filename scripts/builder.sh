@@ -50,13 +50,13 @@ init_variables()
 	#BRANCH_TO_BUILD=unstable
 	BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
-	# kilobit (not kilobyte!) per second for scp upload
-	RATELIMIT=420
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
 	DOSNAPSHOT=1
 	DOLOOP=
+	AWSPROFILE=openscad-files
+	S3BUCKET=openscad-files
 	#solar day
 	LOOPSLEEP=86400
 	DATECODE=`date +"%Y.%m.%d"`
@@ -90,8 +90,9 @@ init_variables()
 	export DATECODE
 	export DOSNAPSHOT
 	export DOLOOP
+	export AWSPROFILE
+	export S3BUCKET
 	export LOOPSLEEP
-	export RATELIMIT
 	export DATECODE
 }
 
@@ -246,15 +247,15 @@ upload_win_common()
 	opts="$opts -p openscad"
 	opts="$opts -u $username"
 	opts="$opts $filename"
-	remotepath=www/
+	remotepath=/
 	if [ $DOSNAPSHOT ]; then
-		remotepath=www/snapshots/
+		remotepath=snapshots/
 	fi
 	if [ $DRYRUN ]; then
-		echo dry run, not uploading to files.openscad.org
-		echo scp -v -l $RATELIMIT $filename openscad@files.openscad.org:$remotepath
+		echo dry run, not uploading to openscad.thisistheremix.dev
+		echo aws --profile $AWSPROFILE s3 cp $filename s3://$S3BUCKET/$remotepath
 	else
-		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:$remotepath
+		aws --profile $AWSPROFILE s3 cp $filename s3://$S3BUCKET/$remotepath
 	fi
 }
 
@@ -354,10 +355,10 @@ update_win_www_download_links()
 	cd openscad.github.com
 	cd inc
 	echo `pwd`
-	# BASEURL='https://openscad.googlecode.com/files/'
-	BASEURL='http://files.openscad.org/'
+	# BASEURL='https://openscad.thisistheremix.dev/files/'
+	BASEURL='https://openscad.thisistheremix.dev/'
 	if [ $DOSNAPSHOT ]; then
-		BASEURL='http://files.openscad.org/snapshots/'
+		BASEURL='https://openscad.thisistheremix.dev/snapshots/'
 	fi
 
 	mv win_snapshot_links.js win_snapshot_links.js.backup

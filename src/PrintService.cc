@@ -62,7 +62,7 @@ PrintService * PrintService::inst()
 
 void PrintService::init()
 {
-	auto networkRequest = NetworkRequest<void>{QUrl{"https://files.openscad.org/print-service.json"}, { 200 }, 30};
+	auto networkRequest = NetworkRequest<void>{QUrl{"https://openscad.thisistheremix.dev/print-service.json"}, { 200 }, 30};
 	return networkRequest.execute(
 			[](QNetworkRequest& request) {
 				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

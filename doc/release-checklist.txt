@@ -42,7 +42,7 @@ o Sanity check; build a binary or two and manually run some tests
 o git push --tags master
 
 o Upload Source package
-  $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
+  $ aws --profile openscad-files s3 cp openscad-$VERSION.src.tar.gz s3://openscad-files/
 
 o Build binaries for all platforms and wait for upload
 
@@ -83,7 +83,7 @@ Linux:
 
     $ ./scripts/release-common.sh -> openscad-$VERSION.x86-ARCH.tar.gz
     (where ARCH will be detected and set to 32 or 64)
-    $ scp openscad-$VERSION.x86-ARCH.tar.gz openscad@files.openscad.org:www
+    $ aws --profile openscad-files s3 cp openscad-$VERSION.x86-ARCH.tar.gz s3://openscad-files/
     o Update web page with download links
 
 Windows mingw cross-build:

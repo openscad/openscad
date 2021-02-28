@@ -48,6 +48,8 @@ except:
     from urllib2 import urlopen
     from urllib import urlencode
 
+UPLOADS_BASE_URL = "https://openscad.thisistheremix.dev"
+
 def tryread(filename):
     data = None
     try:
@@ -483,6 +485,16 @@ def main():
         upload = True
         debug('will upload test report')
 
+        aws_profile = ezsearch('--profile=(.*?) ', ' '.join(sys.argv) + ' ')
+        if not aws_profile:
+            aws_profile = 'openscad-files'
+        debug('will load the "%s" profile from ~/.aws/credentials' % (aws_profile,))
+
+        s3_bucket = ezsearch('--bucket=(.*?) ', ' '.join(sys.argv) + ' ')
+        if not aws_profile:
+            s3_bucket = 'openscad-files'
+        debug('will use the "%s" bucket' % (s3_bucket,))
+
     # Workaround for old cmake's not being able to pass parameters
     # to CTEST_CUSTOM_POST_TEST
     if bool(os.getenv("OPENSCAD_UPLOAD_TESTS")):
@@ -513,9 +525,9 @@ def main():
         build = os.getenv("TRAVIS_BUILD_NUMBER")
         if build: filename = 'travis-' + build + '_report.html'
         else: filename = html_basename
-        os.system('scp "%s" "%s:%s"' %
-                  (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
-        share_url = 'http://files.openscad.org/tests/' + filename;
+        os.system('aws --profile "%s" s3 cp "s3://%s/%s"' %
+                  (aws_profile, html_filename, s3_bucket, 'tests/' + filename) )
+        share_url = UPLOADS_BASE_URL + '/tests/' + filename;
         print('html report uploaded:')
         print(share_url)
 

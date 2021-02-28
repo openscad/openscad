@@ -17,7 +17,7 @@ o git tag "openscad-$VERSION"
 o ./scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
 o git push --tags
 o Upload Source package
-  $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
+  $ aws --profile openscad-files s3 cp openscad-$VERSION.src.tar.gz s3://openscad-files/
 
 o Revert VERSION and VERSIONDATE in openscad.pro scripts/publish-macosx.sh scripts/release-common.sh scripts/publish-mingw-x.sh tests/CMakeLists.txt
 
