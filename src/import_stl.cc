@@ -45,6 +45,10 @@ static void uint32_byte_swap(unsigned char *p) {
     std::swap(*(p+1), *(p+2));
 # endif
 }
+
+static void uint32_byte_swap(uint32_t& x) {
+    uint32_byte_swap(reinterpret_cast<unsigned char*>(&x));
+}
 #endif
 
 static void read_stl_facet(std::ifstream &f, stl_facet &facet) {
