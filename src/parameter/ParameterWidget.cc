@@ -174,7 +174,7 @@ void ParameterWidget::readFile(QString scadFile)
 }
 
 //Write the json file if the parameter sets are not empty.
-//This prevents creating unnecessary json filess.
+//This prevents creating unnecessary json files.
 //This method also updates the UI state (change indicator, file name, ...)
 void ParameterWidget::writeFileIfNotEmpty(QString scadFile)
 {

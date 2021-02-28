@@ -217,7 +217,7 @@ std::string getGroupColor(const enum message_group& group)
 	case message_group::Trace:
 		return "#d0d0ff";
 	default:
-		return "#ffffff";
+		return "transparent";
 	}
 }
 

@@ -42,6 +42,7 @@ GLView::GLView()
 void GLView::setRenderer(Renderer* r)
 {
   renderer = r;
+	if (this->renderer) { this->renderer->resize(cam.pixel_width,cam.pixel_height); }
 }
 
 /* update the color schemes of the Renderer attached to this GLView
@@ -76,6 +77,7 @@ void GLView::resizeGL(int w, int h)
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
   aspectratio = 1.0*w/h;
+	if (this->renderer) { this->renderer->resize(cam.pixel_width,cam.pixel_height); }
 }
 
 void GLView::setCamera(const Camera &cam)
@@ -143,6 +145,7 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
+    this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
   }
 
@@ -200,103 +203,6 @@ void GLView::enable_opencsg_shaders()
 
   if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
     display_opencsg_warning();
-  }
-
-  if (opencsg_support && this->has_shaders) {
-
-    const char *vs_source = R"VS_PROG(
-      #version 110
-
-      uniform vec4 color1;        // face color
-      uniform vec4 color2;        // edge color
-      attribute vec3 barycentric; // barycentric form of vertex coord
-                                  // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
-      varying vec3 vBC;           // varying barycentric coords
-      varying float shading;      // multiplied by color1. color2 is without lighting
-
-      void main(void) {
-        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-        vBC = barycentric;
-        vec3 normal, lightDir;
-        normal = normalize(gl_NormalMatrix * gl_Normal);
-        lightDir = normalize(vec3(gl_LightSource[0].position));
-        shading = 0.2 + abs(dot(normal, lightDir));
-      }
-    )VS_PROG";
-
-    const char *fs_source = R"FS_PROG(
-      #version 110
-
-      uniform vec4 color1, color2;
-      varying vec3 vBC;
-      varying float shading;
-
-      vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
-        vec3 t;
-        t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-        return t * t * (3.0 - 2.0 * t);
-      }
-
-      float edgeFactor() {
-        const float th = 1.414; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
-        const float fade = 1.414; // thickness of fade (antialiasing) in screen pixels
-        vec3 d = fwidth(vBC);
-        vec3 a3 = smoothstep((th-fade)*d, th*d, vBC);
-        return min(min(a3.x, a3.y), a3.z);
-      }
-
-      void main(void) {
-        gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
-      }
-    )FS_PROG";
-
-    auto vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
-    glCompileShader(vs);
-    glCompileCheck(vs);
-    glErrorCheck();
-
-    auto fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
-    glCompileShader(fs);
-    glCompileCheck(fs);
-    glErrorCheck();
-
-    auto edgeshader_prog = glCreateProgram();
-    glAttachShader(edgeshader_prog, vs);
-    glAttachShader(edgeshader_prog, fs);
-    glLinkProgram(edgeshader_prog);
-    glErrorCheck();
-
-    shaderinfo.progid = edgeshader_prog; // 0
-    shaderinfo.type = GLView::shaderinfo_t::CSG_RENDERING;
-    shaderinfo.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
-    glErrorCheck();
-    shaderinfo.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-    glErrorCheck();
-    shaderinfo.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric");
-    glErrorCheck();
-
-    GLint status;
-    glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE) {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
-    } else {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      if (loglen > 0) {
-        fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
-      }
-      glValidateProgram(edgeshader_prog);
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      if (loglen > 0) {
-        fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
-      }
-    }
   }
 }
 #endif
@@ -828,4 +734,3 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		}
 	}
 }
-

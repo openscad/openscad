@@ -9,8 +9,6 @@
 # LIB3MF_LIBRARIES
 # 
 
-message(STATUS "Searching for lib3mf.")
-
 # Don't specify REQUIRED here in case pkg-config fails.
 # We still fall back to the rest of detection code here.
 # Travis CI Ubuntu Trusty environment has some issue with pkg-config
@@ -27,12 +25,12 @@ if (LIB3MF_VERSION STREQUAL "" AND LIB3MF_FOUND)
   endif()
 endif()
 
-if (LIB3MF_VERSION VERSION_GREATER_EQUAL 1.8.1)
-  message("lib3MF ${LIB3MF_VERSION} found: ${LIB3MF_INCLUDE_DIRS}")
+if (LIB3MF_VERSION VERSION_EQUAL 1.8.1 OR LIB3MF_VERSION VERSION_GREATER 1.8.1)
+  set(LIB3MF_API "API 1.x")
 endif()
 
-if (LIB3MF_VERSION VERSION_GREATER_EQUAL 2.0.0)
-  set(LIB3MF_API_2)
+if (LIB3MF_VERSION VERSION_EQUAL 2.0.0 OR LIB3MF_VERSION VERSION_GREATER 2.0.0)
+  set(LIB3MF_API "API 2.x")
   set(LIB3MF_LIB "3mf")
   add_definitions(-DLIB3MF_API_2)
 endif()
@@ -63,10 +61,12 @@ if ("${LIB3MF_LIBDIR}" STREQUAL "")
 endif()
 
 if (NOT ${LIB3MF_LIBDIR} STREQUAL "")
-  set(LIB3MF_LIBRARIES "-L${LIB3MF_LIBDIR}" "-l${LIB3MF_LIB} -lzip -lz")
+  find_library(LIBZ_LIBRARY NAMES z)
+  find_library(LIBZIP_LIBRARY NAMES zip)
+  set(LIB3MF_LIBRARIES "-L${LIB3MF_LIBDIR}" "-l${LIB3MF_LIB} ${LIBZIP_LIBRARY} ${LIBZ_LIBRARY}")
   set(LIB3MF_CFLAGS "-D__GCC -DENABLE_LIB3MF")
   set(LIB3MF_FOUND TRUE)
-  message(STATUS "Found lib3mf in ${LIB3MF_LIBDIR}.")
 else()
+  set(LIB3MF_API "disabled")
   message(STATUS "Could not find lib3mf.")
 endif()

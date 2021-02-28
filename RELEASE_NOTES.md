@@ -1,4 +1,127 @@
 
+# OpenSCAD 2021.01
+
+**Language Features**
+
+* New
+  * Add function literals
+  * Add exponent function (e.g. 2^3)
+  * Add convexity parameter to resize()
+  * Add support for generic tail recursion
+  * Add $vpf for viewport field of view
+  * Add support for line-cap and line-join in SVG import
+  * Add support stroke-linejoin in SVG import
+  * Add warnings for ranges with begin < end
+  * Add warnings for matrix structure problems
+
+* Changed
+  * Allow random seeds to stick between rands() calls
+  * Make comparison operators on mixed types return undef
+  * Track reason for values turning undef
+
+* Fixed
+  * Fix Range precision
+  * Fix empty geometry handling
+  * Fix search order for imported modules
+  * Improve internal handling of data values
+  * Improve performance of array concatenation
+  * Improve float accuracy of mirror matrix calculation
+  * Improve polygon and polyhedron warnings/errors
+
+**Program Features**
+
+* GUI
+  * Add PDF export (single page only)
+  * Add jump to source code from 3D preview
+  * Add Error-Log window for tracking errors and warnings
+  * Add window menu to allow keyboard access to all docked windows
+  * Enable default binary stl output, and ascii option
+  * Show message in console when caches are flushed
+  * Disable HTML rendering in console
+  * Enable color scheme for CGAL 2D render
+  * Simplified OpenCSG edge shader, with added smoothing
+  * New and updated translations: Chinese, Armenian, French, Russian, Polish, German
+
+* Editor
+  * Edit multiple files in tabs
+  * Switch tabs via Ctrl+Tab / Ctrl+Shift+Tab
+  * Modify numbers via mouse scroll (when holding ALT)
+  * Add auto-complete & call-tips for built-ins
+  * Add configurable code snippets
+  * Add (line) bookmarks
+  * Add jump to error
+  * Add support for line/block copy and move
+  * Add convenience context menu to tab header
+  * Open include<>/use<> files via inline link
+  * Fix search highlight for utf8 text
+  * Fix display of matches in search field
+  * Add Find/Find Next/Find Previous to editor context menu
+
+* Command line
+  * Support reading scripts from STDIN
+  * Support export to STDOUT
+  * Add multi-export on command line
+  * Add --animate command line option
+  * Add --export-format command line option
+  * Allow view-port variables in command-line mode
+  * Allow export to .ast, .csg, .echo and .term in preview mode
+  * Print statistics in cmdline mode as in GUI
+
+* General
+  * Change CGAL Union to join least complex geometries first
+  * Install start shortcut for all users on Windows
+  * Install icons with defined sizes (e.g. required by flathub)
+  * Switch to C++14 and allow usage of header-only CGAL
+  * Add support for lib3MF v2.0 API
+  * Update AppStream release info
+
+**Bug Fixes**
+* Raise error when export folder does not exist (fixes #432)
+* Fixes for linear_extrude with scale and/or twist
+* Avoid undefined behavior for `convexity' parameter to linear_extrude
+* Fix echo() formating error (fixes #2950)
+* Fix search order for use<>
+* Fix large text (fixes #3262)
+* Fix initial editor focus (fixes #3471)
+* Fix save error handling (fixes #3582)
+* Don't show autocomplete in strings (fixes #3563)
+* Don't crash with empty CSG normalizer result (fixes #3085)
+* Don't crash if 2D hull fails
+* Only enable 30ms joystick timer when needed
+* Fix 3MF export to produce correct winding order for internal cavities (fixes #3133)
+* Fix parent module handling (fixes #3264)
+* Fix search highlight with multi-byte utf8 characters (fixes #3068)
+* Make editor visible for new file and examples in launching screen (fixes #3401)
+* Handle SCN_URIDROPPED introduced in QScintilla 2.11 (fixes #3536)
+* Fix Background Modifier (fixes #2978)
+* Use std::string as storage (fixes #3057)
+* Setting minimum size of search label (fixes #2962)
+* Use a relative import() path for svg viewbox tests
+* Fix interpretation of '&' in title bar of undocked widget
+* Fix Recent-files handling with '&' in filename (fixes #2988)
+* Handle empty first geometry in 2D Minkowski (fixes #3527)
+* Fix HiDPI non-integer scaling issue (fixes #3614)
+* Fix template action shortcut to not clash with Copy&Paste (fixes #3558)
+* Abort Nef conversion early on invalid input, to avoid segfault (fixes #2847)
+* Have Reindexer return a const ref instead of a pointer into value array
+* Set value after min/max so it's not limited to wrong range (fixes #2995)
+* Set keyboard shortcut for "reset translation" as Ctrl+Shift+0 (fixes #3488)
+* Ensure experimental features are disabled in release mode (fixes #3517)
+* Fix handling of file links with spaces or comma characters (fixes #3609)
+* Fix customizer presets (fixes #3522)
+* Don't crash customizer with saved vector parameters with >4 values
+* Fix crash if non-integer in [max] customizer comment
+* Fix warning when using deprecated parameter triangles with polyhedron
+* Fix reconnect to Xvfb when running tests in parallel
+* Fix dangling pointer in "--export-format"
+* Fix root modifier warning
+* Fix export format name handling
+* Fix handling of editor margins
+* Fix icon size and location
+* Fix build with Boost 1.72
+* Build fixes for older systems (Ubuntu 16.04, Debian 8)
+* Add work-around for test failures on MIPS
+
 # OpenSCAD 2019.05
 
 **Language Features:**
@@ -40,7 +163,7 @@
     * Duplicate passed argument
     * Children passed to module not accepting children
     * Reference to inknown $special_variables
-    * Duplicate assigment
+    * Duplicate assignment
 * New translations: Ukrainian, Polish
 # OpenSCAD 2015.03
 

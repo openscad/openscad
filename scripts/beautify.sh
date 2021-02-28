@@ -13,7 +13,7 @@ FORMAT_CMD=$FORMAT_CMD_UNCRUSTIFY
 
 # Filter out any files that shouldn't be auto-formatted.
 # note: -v flag inverts selection - this tells grep to *filter out* anything
-#       that matches the pattern. For testing, you can remove the -v to ssee
+#       that matches the pattern. For testing, you can remove the -v to see
 #       which files would have been excluded.
 FILTER_CMD="grep -v -E ext/"
 

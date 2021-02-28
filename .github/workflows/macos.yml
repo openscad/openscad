@@ -23,14 +23,13 @@ jobs:
         ./scripts/macosx-build-homebrew.sh
     - name: Build OpenSCAD
       run: |
-        qmake openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info
-        make -j2
-        cd tests
-        cmake .
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
         make -j2
     - name: Run Test Suite
       run: |
-        cd tests
+        cd build/tests
         ctest -j2 -E 'edges_view-options-tests'
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2

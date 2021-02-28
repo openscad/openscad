@@ -23,7 +23,7 @@ public:
 
 	int select(const Renderer *renderer, int x, int y);
 
-	GLView::shaderinfo_t shaderinfo;
+	Renderer::shaderinfo_t shaderinfo;
 
 private:
 	void init_shader();
