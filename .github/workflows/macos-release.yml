@@ -57,7 +57,6 @@ jobs:
             echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
             # Our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-            unset QMAKESPEC
             ./scripts/macosx-build-dependencies.sh double_conversion
             ./scripts/macosx-build-dependencies.sh eigen
             ./scripts/macosx-build-dependencies.sh gmp

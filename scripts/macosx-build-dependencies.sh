@@ -50,7 +50,7 @@ PACKAGES=(
     "poppler 21.01.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
-    "cgal 4.14.3"
+    "cgal 5.2"
     "qt5 5.9.9"
     "opencsg 1.4.2"
     "qscintilla 2.11.6"
@@ -278,16 +278,22 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.xz ]; then
-    curl -LO https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz
+    if [[ ! $version =~ 4.* ]]; then
+      curl -L https://github.com/CGAL/cgal/releases/download/v${version}/CGAL-${version}-library.tar.xz --output CGAL-${version}.tar.xz
+    else
+      curl -LO https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz
+    fi
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
-  install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
-  install_name_tool -id @rpath/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
-  install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  if [[ $version =~ 4.* ]]; then
+    install_name_tool -id @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
+    install_name_tool -id @rpath/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+    install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  fi
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/cgal.version
 }
 
