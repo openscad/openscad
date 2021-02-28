@@ -76,10 +76,13 @@ PolySet *import_stl(const std::string &filename, const Location &loc) {
         return p.release();
     }
     
-    boost::regex ex_sfe("solid|facet|endloop");
-    boost::regex ex_outer("outer loop");
-    boost::regex ex_vertex("vertex");
-    boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
+    boost::regex ex_sfe("^\\s*solid|^\\s*facet|^\\s*endfacet");
+    boost::regex ex_outer("^\\s*outer loop$");
+    boost::regex ex_loopend("^\\s*endloop$");
+    boost::regex ex_vertex("^\\s*vertex");
+    boost::regex ex_vertices(
+        "^\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s*$");
+    boost::regex ex_endsolid("^\\s*endsolid");
     
     bool binary = false;
     std::streampos file_size = f.tellg();
@@ -111,26 +114,38 @@ PolySet *import_stl(const std::string &filename, const Location &loc) {
         };
 
         std::getline(f, line);
+        bool reached_end = false;
         while (!f.eof()) {
             lineno++;
             std::getline(f, line);
             boost::trim(line);
+            boost::smatch results;
+
             if (line.length() == 0) {
                 continue;
             }
-            if (boost::regex_search(line, ex_sfe)) {
+            else if (boost::regex_search(line, ex_sfe)) {
                 continue;
             }
-            if (boost::regex_search(line, ex_outer)) {
+            else if (boost::regex_search(line, ex_outer)) {
                 i = 0;
                 continue;
             }
-            if (i >= 3) {
+            else if (boost::regex_search(line, ex_loopend)) {
+                if (i < 3) {
+                    AsciiError("missing vertex");
+                }
+                continue;
+            }
+            else if (boost::regex_search(line, ex_endsolid)) {
+                reached_end = true;
+                break;
+            }
+            else if (i >= 3) {
                 AsciiError("extra vertex");
                 return new PolySet(3);
             }
-            boost::smatch results;
-            if (boost::regex_search(line, results, ex_vertices) &&
+            else if (boost::regex_search(line, results, ex_vertices) &&
                 results.size() >= 4) {
                 try {
                     for (int v = 0; v < 3; ++v) {
@@ -148,6 +163,9 @@ PolySet *import_stl(const std::string &filename, const Location &loc) {
                     return new PolySet(3);
                 }
             }
+        }
+        if ( ! reached_end ) {
+            AsciiError("file incomplete");
         }
     }
     else if (binary && !f.eof() && f.good()) {
