@@ -1188,7 +1188,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 		if (!isSmartCached(node)) {
 
 			if (!node.cut_mode) {
-				ClipperLib::Clipper sumclipper;
+				ClipperLib::Clipper sumclipper{ ClipperLib::InitOptions::ioPreserveCollinear };
 				for(const auto &item : this->visitedchildren[node.index()]) {
 					const AbstractNode *chnode = item.first;
 					const shared_ptr<const Geometry> &chgeom = item.second;
