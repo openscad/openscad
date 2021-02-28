@@ -167,9 +167,16 @@ PolySet *import_stl(const std::string &filename, const Location &loc) {
         catch (const std::ios_base::failure& ex) {
             int64_t offset = -1;
             try { offset = f.tellg(); } catch(...) {}
-            LOG(message_group::Error, loc, "",
-                "Binary STL '%1$s' error at byte %2$s: %3$s",
-                filename, offset, ex.what());
+            if (offset < 0) {
+                LOG(message_group::Error, loc, "",
+                    "Binary STL '%1$s' error: %3$s",
+                    filename, ex.what());
+            }
+            else {
+                LOG(message_group::Error, loc, "",
+                    "Binary STL '%1$s' error at byte %2$s: %3$s",
+                    filename, offset, ex.what());
+            }
             return new PolySet(3);
         }
     }
