@@ -41,8 +41,8 @@ architectures:
 apps:
   openscad-nightly:
     command: usr/bin/openscad-nightly
-    plugs: [desktop, x11, wayland, opengl, home, audio-playback, pulseaudio, network, removable-media, joystick]
     command-chain: [ bin/desktop-launch ]
+    plugs: [desktop, desktop-legacy, x11, wayland, opengl, home, audio-playback, pulseaudio, network, removable-media, joystick]
     desktop: usr/share/applications/openscad-nightly.desktop
     environment:
       DISABLE_WAYLAND: 1
