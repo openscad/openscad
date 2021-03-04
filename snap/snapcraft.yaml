@@ -109,6 +109,7 @@ parts:
     - bison
     - flex
     - libglew-dev
+    - libglvnd-dev
     - libgmp-dev
     - libmpfr-dev
     - libcairo2-dev
@@ -142,6 +143,7 @@ parts:
     - libflac8
     - libglew2.1
     - libglu1-mesa
+    - libglvnd0
     - libmpfr6
     - libogg0
     - libpulse0
