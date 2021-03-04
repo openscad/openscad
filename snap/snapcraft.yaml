@@ -87,15 +87,11 @@ parts:
     disable-parallel: true
     source: .
     plugin: cmake
-    build-environment:
-    - PKG_CONFIG_PATH: "$SNAPCRAFT_STAGE/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmake-parameters: [
+        "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
         "-DCMAKE_INSTALL_PREFIX=/usr",
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DENABLE_QTDBUS=OFF",
         "-DSUFFIX=nightly",
-        "-DOPENCSG_DIR=${SNAPCRAFT_STAGE}/usr",
-        "-DOPENCSG_INCLUDE_DIRS=${SNAPCRAFT_STAGE}/usr/include",
         "-DEXPERIMENTAL=ON",
         "-DSNAPSHOT=ON"
     ]
