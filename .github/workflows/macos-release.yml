@@ -30,10 +30,11 @@ jobs:
         LIBRARIES_CACHE=libraries-gh.tar.gz
         MACPORTS_SHA512=bc3b53de684eb1b5e493f5f6ff163ccd65930918292f19c593fd19eefea676a6f1832bd1563273034e37e7d7aca5153fcd3d56206d86374603d25becc9773e41
         MACPORTS_CACHE_SHA512=a2e50ac2840ab579e7d76cc88fea54c834c1d35df28bd0b3113bd36bbd172530b709f299f9ad8ed13f351169399e602eb2a26a83fcea66e1bd59cf67e1b25c34
-        LIBRARIES_CACHE_SHA512=905112c0c0ccd183cb3b922e938d25b5d7cae31fed9c1991cc0e0774b57ba067c7b64ec5afbdeeb1fbeb9528d3f189174a639816f40f6802b788b8eef4cd340d
+        LIBRARIES_CACHE_SHA512=3317f3ef7eacf01bbed7207a30497ba2f56115d5a393ffc11a13da2c3027e72e165aceb4a73314c49a405a0096edb6c77b1097ac18aa6bfe2743dba8ba3ff9cc
         ( echo "Loading macports cache..." ; cd /tmp && wget -q https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" && ls -la "$MACPORTS_CACHE") || true
         ( echo "Loading libraries cache..." ; cd /tmp && wget -q https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" && ls -la "$LIBRARIES_CACHE") || true
         mkdir /tmp/out
+        sudo mv -iv /usr/local/Cellar /usr/local/.Cellar. || true
         sudo mkdir -p /opt/local
         sudo tar -x -z -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
         if [ -f /opt/local/bin/port ]; then
@@ -51,13 +52,12 @@ jobs:
                 fi
             fi
             echo "Start building dependencies: $(date)"
-            export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
-            export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
-            export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
+            export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
+            export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
+            export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
             echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
             # Our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-            unset QMAKESPEC
             ./scripts/macosx-build-dependencies.sh double_conversion
             ./scripts/macosx-build-dependencies.sh eigen
             ./scripts/macosx-build-dependencies.sh gmp
@@ -86,9 +86,12 @@ jobs:
             ./scripts/macosx-build-dependencies.sh -d sparkle
             tar -c -z -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
             shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+            export GMP_DIR="$OPENSCAD_LIBRARIES"
+            export MPFR_DIR="$OPENSCAD_LIBRARIES"
             echo "Start building OpenSCAD: $(date)"
             export NUMCPU=4
             time ./scripts/release-common.sh
+            cd build
             OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
             shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
             shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
