@@ -140,13 +140,11 @@ jobs:
                       fi
                   fi    
                   echo "Start building dependencies: $(date)"
-                  export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
-                  export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
-                  export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
+                  export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
+                  export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
+                  export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
                   echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-                  # Our own Qt
                   export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-                  unset QMAKESPEC
                   ./scripts/macosx-build-dependencies.sh double_conversion
                   ./scripts/macosx-build-dependencies.sh eigen
                   ./scripts/macosx-build-dependencies.sh gmp
@@ -175,9 +173,12 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh -d sparkle
                   tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
                   shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+                  export GMP_DIR="$OPENSCAD_LIBRARIES"
+                  export MPFR_DIR="$OPENSCAD_LIBRARIES"
                   echo "Start building OpenSCAD: $(date)"
                   export NUMCPU=4
                   time ./scripts/release-common.sh -snapshot
+                  cd build
                   OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
                   shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
                   shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
