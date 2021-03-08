@@ -13,6 +13,7 @@ namespace fs = boost::filesystem;
 
 enum class RenderColor {
 	BACKGROUND_COLOR,
+	HIGHLIGHT_COLOR,
 	AXES_COLOR,
 	OPENCSG_FACE_FRONT_COLOR,
 	OPENCSG_FACE_BACK_COLOR,
@@ -81,6 +82,8 @@ public:
 	static Color4f getColor(const ColorScheme &cs, const RenderColor rc);
         static Color4f getContrastColor(const Color4f &col);
 	static Color4f getColorHSV(const Color4f &col);
+  static Color4f anaglyphColor(const Color4f &col);
+  static void setAnaglyphMode(bool enabled) { anaglyphmode = enabled; };
 	
 private:
 	ColorMap();
@@ -89,4 +92,5 @@ private:
         colorscheme_set_t enumerateColorSchemes();
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t colorSchemeSet;
+        static bool anaglyphmode;
 };

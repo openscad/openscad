@@ -1,0 +1,22 @@
+{
+    "name" : "3D Glasses",
+    "index" : 2001,
+    "show-in-gui" : true,
+    "description" : "3d anaglyph",
+    "_comment" : "created by colorscheme.scad, light scheme, light hue 75, dark hue 290, saturation 95",
+
+    "colors" : {
+        "background" :         "#FFFFFF",
+        "highlight" :          "#D60CFF80",
+        "axes-color" :         "#D60CFF",
+        "opencsg-face-front" : "#C2FF0C",
+        "opencsg-face-back" :  "#D60CFF",
+        "cgal-face-front" :    "#C2FF0C",
+        "cgal-face-back" :     "#D60CFF",
+        "cgal-face-2d" :       "#C2FF0C",
+        "cgal-edge-front" :    "#D60CFF",
+        "cgal-edge-back" :     "#D60CFF",
+        "cgal-edge-2d" :       "#D60CFF",
+        "crosshair" :          "#D60CFF"
+    }
+}

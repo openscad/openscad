@@ -445,6 +445,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
+	connect(this->viewActionAnaglyph, SIGNAL(triggered()), this, SLOT(viewAnaglyph()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
 	connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
@@ -476,6 +477,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
 					this, SLOT(setColorScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(anaglyphSettingsChanged()), this, SLOT(updateAnaglyph()));
 
 	Preferences::inst()->apply_win(); // not sure if to be commented, checked must not be commented(done some changes in apply())
 
@@ -530,6 +532,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
 	initActionIcon(viewActionPerspective, ":/images/perspective1.png", ":/images/perspective1white.png");
 	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
+	initActionIcon(viewActionAnaglyph, ":/images/Anaglyph.png", ":/images/Anaglyph-white.png");
 	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
 	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
 	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
@@ -755,7 +758,9 @@ void MainWindow::loadViewSettings(){
         viewActionShowScaleProportional->setChecked(true);
         viewModeShowScaleProportional();
     }
-	if (settings.value("view/orthogonalProjection").toBool()) {
+	if (settings.value("view/anaglyphProjection").toBool()) {
+		viewAnaglyph();
+	} else if (settings.value("view/orthogonalProjection").toBool()) {
 		viewOrthogonal();
 	} else {
 		viewPerspective();
@@ -2772,9 +2777,12 @@ void MainWindow::viewCenter()
 void MainWindow::viewPerspective()
 {
 	QSettingsCached settings;
+	ColorMap::setAnaglyphMode(false);
 	settings.setValue("view/orthogonalProjection",false);
+	settings.setValue("view/anaglyphProjection",false);
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
+	viewActionAnaglyph->setChecked(false);
 	this->qglview->setOrthoMode(false);
 	this->qglview->updateGL();
 }
@@ -2782,10 +2790,26 @@ void MainWindow::viewPerspective()
 void MainWindow::viewOrthogonal()
 {
 	QSettingsCached settings;
+	ColorMap::setAnaglyphMode(false);
 	settings.setValue("view/orthogonalProjection",true);
+	settings.setValue("view/anaglyphProjection",false);
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
+	viewActionAnaglyph->setChecked(false);
 	this->qglview->setOrthoMode(true);
+	this->qglview->updateGL();
+}
+
+void MainWindow::viewAnaglyph()
+{
+	QSettingsCached settings;
+	ColorMap::setAnaglyphMode(true);
+	settings.setValue("view/orthogonalProjection",false);
+	settings.setValue("view/anaglyphProjection",true);
+	viewActionPerspective->setChecked(false);
+	viewActionOrthogonal->setChecked(false);
+	viewActionAnaglyph->setChecked(true);
+	this->qglview->setAnaglyphMode(true);
 	this->qglview->updateGL();
 }
 
@@ -3208,6 +3232,14 @@ void MainWindow::setFont(const QString &family, uint size)
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
 	activeEditor->setFont(font);
+}
+
+void MainWindow::updateAnaglyph() {
+	auto s = Settings::Settings::inst();
+	this->qglview->setEyeSeparation(s->get(Settings::Settings::eyeSeparation).toDouble() * 0.1);
+	this->qglview->setOutOfScreen(s->get(Settings::Settings::outOfScreen).toDouble() * 0.1);
+	this->qglview->setNearClippingPlane(s->get(Settings::Settings::nearClippingPlane).toDouble() * 0.1);
+	this->qglview->updateGL();
 }
 
 void MainWindow::quit()

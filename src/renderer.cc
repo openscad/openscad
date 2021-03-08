@@ -186,12 +186,13 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
 	PRINTD("setColor a");
 	Color4f col;
 	getColor(ColorMode::MATERIAL,col);
-	float c[4] = {color[0], color[1], color[2], color[3]};
+	Color4f c(color[0], color[1], color[2], color[3]);
+	c = ColorMap::anaglyphColor(c);
 	if (c[0] < 0) c[0] = col[0];
 	if (c[1] < 0) c[1] = col[1];
 	if (c[2] < 0) c[2] = col[2];
 	if (c[3] < 0) c[3] = col[3];
-	glColor4fv(c);
+	glColor4f(c[0], c[1], c[2], c[3]);
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
 		glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
@@ -241,6 +242,7 @@ void Renderer::setColorScheme(const ColorScheme &cs) {
 	colormap[ColorMode::MATERIAL_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR);
 	colormap[ColorMode::CUTOUT_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR);
 	colormap[ColorMode::EMPTY_SPACE] = ColorMap::getColor(cs, RenderColor::BACKGROUND_COLOR);
+	colormap[ColorMode::HIGHLIGHT] = ColorMap::getColor(cs, RenderColor::HIGHLIGHT_COLOR);
 	this->colorscheme = &cs;
 }
 

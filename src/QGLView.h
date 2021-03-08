@@ -29,6 +29,7 @@ class QGLView :
 	Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
 	Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
 	Q_PROPERTY(bool orthoMode READ orthoMode WRITE setOrthoMode);
+	Q_PROPERTY(bool anaglyphMode READ anaglyphMode WRITE setAnaglyphMode);
 	Q_PROPERTY(double showScaleProportional READ showScaleProportional WRITE setShowScaleProportional);
 
 public:
@@ -39,6 +40,8 @@ public:
 	// Properties
 	bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
 	void setOrthoMode(bool enabled);
+	bool anaglyphMode() const { return (this->cam.projection == Camera::ProjectionType::ANAGLYPH); }
+	void setAnaglyphMode(bool enabled);
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
 	std::string getRendererInfo() const override;

@@ -39,6 +39,10 @@ public:
 	void setCamera(const Camera &cam);
 	void setupCamera() const;
 
+	void setup3dCamera(bool leftCamera);
+	void paintOnce();
+	void paint3dAnaglyph();
+
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
@@ -53,6 +57,9 @@ public:
 	void setShowFaces(bool enabled) { this->showfaces = enabled; }
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
+	void setEyeSeparation(double val) { this->eyeSeparation = val; }
+	void setOutOfScreen(double val) { this->outOfScreen = val; }
+	void setNearClippingPlane(double val) { this->nearClippingPlane = val; }
 
 	virtual bool save(const char *filename) const = 0;
 	virtual std::string getRendererInfo() const = 0;
@@ -70,6 +77,9 @@ public:
 	bool showedges;
 	bool showcrosshairs;
 	bool showscale;
+	double eyeSeparation; // in % of convergence distance / 30.0. Rule of thumb: convergence distance / 30.0
+	double outOfScreen;   // in % of screen width. Ought to be: in % of body depth. Rule of thumb: 18%
+	double nearClippingPlane; // in % of convergence distance. Rule of thumb: begin with 20-30%
 
 #ifdef ENABLE_OPENCSG
 	bool is_opencsg_capable;

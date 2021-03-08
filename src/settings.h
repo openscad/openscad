@@ -37,6 +37,9 @@ class Settings
 public:
     static SettingsEntry showWarningsIn3dView;
     static SettingsEntry mouseCentricZoom;
+    static SettingsEntry eyeSeparation;
+    static SettingsEntry outOfScreen;
+    static SettingsEntry nearClippingPlane;
     static SettingsEntry indentationWidth;
     static SettingsEntry tabWidth;
     static SettingsEntry lineWrap;

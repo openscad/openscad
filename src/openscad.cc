@@ -239,8 +239,11 @@ Camera get_camera(const po::variables_map &vm)
 		else if (proj=="p" || proj=="perspective") {
 			camera.projection = Camera::ProjectionType::PERSPECTIVE;
 		}
+		else if (proj=="a" || proj=="anaglyph") {
+			camera.projection = Camera::ProjectionType::ANAGLYPH;
+		}
 		else {
-			LOG(message_group::None,Location::NONE,"","projection needs to be 'o' or 'p' for ortho or perspective\n");
+			LOG(message_group::None,Location::NONE,"","projection needs to be 'o', 'p' or 'a' for ortho, perspective or anaglyph\n");
 			exit(1);
 		}
 	}
@@ -965,7 +968,7 @@ int main(int argc, char **argv)
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
 		("animate", po::value<unsigned>(), "export N animated frames")
 		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
-		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
+		("projection", po::value<string>(), "=(o)rtho, (p)erspective or (a)naglyph when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
 		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",

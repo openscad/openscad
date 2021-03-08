@@ -8,6 +8,7 @@
 namespace fs = boost::filesystem;
 
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
+bool ColorMap::anaglyphmode = false;
 
 // See http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
 static void rgbtohsv(float r, float g, float b, float &h, float &s, float &v)
@@ -37,6 +38,7 @@ RenderColorScheme::RenderColorScheme() : _path("")
   _show_in_gui = true;
 
   _color_scheme.insert(ColorScheme::value_type(RenderColor::BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
+  _color_scheme.insert(ColorScheme::value_type(RenderColor::HIGHLIGHT_COLOR, Color4f(0xff, 0x51, 0x51, 0x80))); // 50% transparencency
   _color_scheme.insert(ColorScheme::value_type(RenderColor::AXES_COLOR, Color4f(0x00, 0x00, 0x00)));
   _color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
   _color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
@@ -58,6 +60,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 	_show_in_gui = pt.get<bool>("show-in-gui");
 	
 	addColor(RenderColor::BACKGROUND_COLOR, "background");
+	addColor(RenderColor::HIGHLIGHT_COLOR, "highlight");
 	addColor(RenderColor::AXES_COLOR, "axes-color");
 	addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
 	addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
@@ -132,6 +135,14 @@ void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
     int g = (val >> 8) & 0xff;
     int b = val & 0xff;
     _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
+  } else if ((color.length() == 9) && (color.at(0) == '#')) {
+    char *endptr;
+    unsigned long int val = strtoul(color.substr(1).c_str(), &endptr, 16);
+    int r = (val >> 24) & 0xff;
+    int g = (val >> 16) & 0xff;
+    int b = (val >> 8) & 0xff;
+    int a = val & 0xff;
+    _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b, a)));
   }
   else {
     throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
@@ -217,9 +228,10 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 
 Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
 {
-  if (cs.count(rc)) return cs.at(rc);
-  if (ColorMap::inst()->defaultColorScheme().count(rc)) return ColorMap::inst()->defaultColorScheme().at(rc);
-  return Color4f(0, 0, 0, 127);
+  Color4f c(0, 0, 0, 127);
+  if (cs.count(rc)) c =  cs.at(rc);
+  else if (ColorMap::inst()->defaultColorScheme().count(rc)) c = ColorMap::inst()->defaultColorScheme().at(rc);
+  return ColorMap::anaglyphColor(c);
 }
 
 Color4f ColorMap::getColorHSV(const Color4f &col)
@@ -305,4 +317,28 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
   enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
 
   return result_set;
+}
+
+/* Given rgb color, calculate closest color suitable for anaglyph.
+   This is the Dubois algorithm, with left and right pixel the same color.
+   https://www.site.uottawa.ca/~edubois/icassp01/anaglyphdubois.pdf
+ */
+
+Color4f ColorMap::anaglyphColor(const Color4f &c_in) {
+  Color4f c_out;
+  if (anaglyphmode) {
+    // Numbers are for lcd and red/cyan glasses, from "Producing Anaglyphs from Synthetic Images",
+    // https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.7.6968&rep=rep1&type=pdf#page=4
+    c_out[0] = (0.4561   -.0434706)*c_in[0]+ ( .500484 -.0879388)*c_in[1]+( .176381  -0.00155529)*c_in[2];
+    c_out[1] = (-.0400822+.378476) *c_in[0]+ (-.0378246+.73364)  *c_in[1]+(-.0157589  -.0184503) *c_in[2];
+    c_out[2] = (-.0152161-.0721527)*c_in[0]+ (-.0205971-.112961) *c_in[1]+(-.00546856+1.2264)    *c_in[2];
+    c_out[3] = c_in[3];
+    for (int i = 0; i < 3; i++) {
+      if (c_out[i] < 0.0) c_out[i] = 0.0;
+      else if (c_out[i] > 1.0) c_out[i] = 1.0;
+    }
+  } else {
+    c_out = c_in;
+  }
+  return c_out;
 }

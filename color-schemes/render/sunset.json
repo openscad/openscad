@@ -5,6 +5,7 @@
 
     "colors" : {
         "background" :         "#aa4444",
+        "highlight" :          "#ff515180",
         "axes-color" :         "#220d0d",
         "opencsg-face-front" : "#ffaaaa",
         "opencsg-face-back" :  "#882233",

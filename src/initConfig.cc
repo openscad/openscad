@@ -21,6 +21,19 @@ void InitConfigurator::initComboBox(QComboBox *comboBox, const Settings::Setting
 	}
 }
 
+void InitConfigurator::initSliderRange(const BlockSignals<QSlider *> &spinBox,const Settings::SettingsEntry &entry)
+{
+	const RangeType &range = entry.range().toRange();
+	spinBox->setMinimum(range.begin_value());
+	spinBox->setMaximum(range.end_value());
+}
+
+void InitConfigurator::initSliderDouble(const BlockSignals<QSlider *> &spinBox,const Settings::SettingsEntry &entry)
+{
+	const Settings::Settings *s = Settings::Settings::inst();
+	spinBox->setValue(s->get(entry).toDouble());
+}
+
 void InitConfigurator::initSpinBoxRange(const BlockSignals<QSpinBox *> &spinBox,const Settings::SettingsEntry &entry)
 {
 	const RangeType &range = entry.range().toRange();

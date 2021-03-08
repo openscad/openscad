@@ -1227,6 +1227,18 @@ add_cmdline_test(openscad-camvp-override EXE ${OPENSCAD_BINPATH}
                  SUFFIX png
                  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/camera-vp.scad)
 
+# anaglyph
+
+add_cmdline_test(openscad-anaglyph-preview EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=3D\ Glasses --projection=a --preview -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
+
+add_cmdline_test(openscad-anaglyph-render EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=3D\ Glasses --projection=a --render -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
+
 # View Options tests
 add_cmdline_test(openscad-viewoptions-axes EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
 add_cmdline_test(openscad-viewoptions-axes-scales EXE ${OPENSCAD_BINPATH} ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --view axes,scales -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad)
@@ -1260,6 +1272,11 @@ add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic --render -o 
                  SUFFIX png 
                  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad)
+
+add_cmdline_test(openscad-colorscheme-3dglasses EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme 3D\ Glasses -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
