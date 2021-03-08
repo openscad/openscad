@@ -22,6 +22,19 @@ struct LogContext;
 class openFile {
 public:
     openFile(const TextDocumentItem &doc);
+
+    openFile &operator=(const openFile &rhs) {
+        document = rhs.document;
+        rootNode = nullptr;
+        rootModule = nullptr;
+        return *this;
+    }
+    openFile &operator=(openFile &&rhs) {
+        document = std::move(rhs.document);
+        rootNode = nullptr;
+        rootModule = nullptr;
+        return *this;
+    }
     ~openFile();
 
     TextDocumentItem document;
@@ -56,5 +69,7 @@ struct project {
     std::list<openFile> open_files;
 
     openFile *getFile(const DocumentUri &uri);
+
+    openFile *openFileFromDisk(const DocumentUri &uri);
 };
 

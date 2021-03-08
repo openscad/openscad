@@ -323,7 +323,7 @@ bool decode_env::declare_field(JSONObject &object, ServerCapabilities &target, c
             QJsonObject {
                 {"preview", true}, // We do support preview
             },
-        }
+        },
     };
     return true;
 }

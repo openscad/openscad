@@ -12,8 +12,14 @@ void OpenSCADRender::process(Connection *conn, project *proj, const RequestId &i
     auto file = proj->getFile(this->uri);
 
     if (!file) {
-        conn->send(ResponseError(ErrorCode::InvalidParams, "File was not opened!"), id);
-        return;
+        std::cerr << "File " << this->uri.raw_uri << " was not opened, will open from disk\n";
+        file = proj->openFileFromDisk(this->uri);
+
+        if (!file) {
+            conn->send(ResponseError(ErrorCode::InvalidParams,
+                       "File was not opened! (uri: " + this->uri.raw_uri + ")" ), id);
+            return;
+        }
     }
 
     proj->lspinterface->viewModePreview(file->document.uri.getPath(), file->document.text);

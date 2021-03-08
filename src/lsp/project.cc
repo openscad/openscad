@@ -8,6 +8,8 @@
 #include "FileModule.h"
 #include "modcontext.h"         // for FileContext
 
+#include <iostream>
+
 struct LogContext {
     std::list<PublishDiagnosticsParams> diagnostics;
 
@@ -23,6 +25,26 @@ openFile *project::getFile(const DocumentUri &uri) {
     }
 
     return nullptr;
+}
+
+openFile *project::openFileFromDisk(const DocumentUri &uri) {
+    // Create a TextDocumentItem from the given URI
+    TextDocumentItem document;
+
+    auto file = std::ifstream(uri.getPath());
+    if (!file.is_open()) return nullptr;
+    document.text = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    document.uri = uri;
+    document.languageId = "openscad";
+
+    auto existing_file = this->getFile(uri);
+    if (!existing_file) {
+        this->open_files.emplace_back(document);
+    } else {
+        (*existing_file) = openFile(document);
+    }
+    return this->getFile(uri);
 }
 
 openFile::openFile(const TextDocumentItem &doc) :
