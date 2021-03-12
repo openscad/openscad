@@ -45,6 +45,7 @@ option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will br
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
+set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -98,8 +99,9 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
+
 # Stack size 8MB; github issue 116
-add_definitions(-DSTACKSIZE=8388608)
+add_definitions("-DSTACKSIZE=${STACKSIZE}") # used as default in src/PlatformUtils.h
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -732,13 +734,17 @@ if(APPLE)
     MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
     RESOURCE "${RESOURCE_FILES}"
   )
+elseif(MINGW)
+  set_target_properties(OpenSCAD PROPERTIES
+    LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
+  )
 elseif(UNIX)
   set_target_properties(OpenSCAD PROPERTIES
     OUTPUT_NAME openscad${SUFFIX_WITH_DASH}
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
-    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:8388608"
+    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"
   )
 endif()
 
