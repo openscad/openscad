@@ -83,7 +83,6 @@ extern FILE *lexerin;
 const char *parser_input_buffer;
 static fs::path mainFilePath;
 static bool parsingMainFile;
-static std::string sourcefile_folder;
 
 bool fileEnded=false;
 %}
@@ -286,7 +285,7 @@ ifelse_statement
 if_statement
         : TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), sourcefile_folder, LOCD("if", @$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -324,7 +323,7 @@ module_id
 single_module_instantiation
         : module_id '(' arguments_call ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, sourcefile_folder, LOCD("modulecall", @$));
+                $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
             }
@@ -763,7 +762,6 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   parsingMainFile = mainFilePath == filepath;
 
   fs::path parser_sourcefile = fs::path(filepath).generic_string();
-  sourcefile_folder = parser_sourcefile.parent_path().string();
   lexer_set_parser_sourcefile(parser_sourcefile);
 
   lexerin = NULL;
@@ -771,7 +769,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   parser_input_buffer = text.c_str();
   fileEnded = false;
 
-  rootmodule = new FileModule(sourcefile_folder, parser_sourcefile.filename().string());
+  rootmodule = new FileModule(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
   scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

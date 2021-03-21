@@ -85,13 +85,13 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	const auto &v = c->lookup_variable("file", true);
 	std::string filename;
 	if (v.isDefined()) {
-		filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->path(), ctx->documentPath());
+		filename = lookup_file(v.isUndefined() ? "" : v.toString(), evalctx->loc.filePath().parent_path().string(), ctx->documentPath());
 	} else {
 		const auto &filename_val = c->lookup_variable("filename", true);
 		if (!filename_val.isUndefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
-		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->path(), ctx->documentPath());
+		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), evalctx->loc.filePath().parent_path().string(), ctx->documentPath());
 	}
 	if (!filename.empty()) handle_dep(filename);
 	ImportType actualtype = this->type;
