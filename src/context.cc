@@ -245,19 +245,6 @@ AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const
 	return nullptr;
 }
 
-/*!
-	Returns the absolute path to the given filename, unless it's empty.
- */
-std::string Context::getAbsolutePath(const std::string &filename) const
-{
-	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(*this->document_path) / filename).string();
-	}
-	else {
-		return filename;
-	}
-}
-
 #ifdef DEBUG
 std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {

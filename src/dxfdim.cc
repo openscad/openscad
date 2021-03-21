@@ -54,16 +54,12 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 	double yorigin = 0;
 	double scale = 1;
 
-	// FIXME: We don't lookup the file relative to where this function was instantiated
-	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		const std::string &n = evalctx->getArgName(i);
 		Value v = evalctx->getArgValue(i);
 		if (n == "file") {
 			rawFilename = v.toString();
-			filename = lookup_file(rawFilename, 
-			evalctx->documentPath(), ctx->documentPath());
+			filename = lookup_file(rawFilename, evalctx->loc.filePath().parent_path().string(), ctx->documentPath());
 		}else if (n == "layer") {
 			layername = v.toString();
 		}else if (n == "origin"){
@@ -162,15 +158,12 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 	double yorigin = 0;
 	double scale = 1;
 
-	// FIXME: We don't lookup the file relative to where this function was instantiated
-	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 		const std::string &n = evalctx->getArgName(i);
 		Value v = evalctx->getArgValue(i);
 		if (n == "file"){
 			rawFilename = v.toString();
-			filename = ctx->getAbsolutePath(rawFilename);
+			filename = lookup_file(rawFilename, evalctx->loc.filePath().parent_path().string(), ctx->documentPath());
 		}else if (n == "layer"){
 			layername = v.toString();
 		}else if (n == "origin"){
