@@ -89,8 +89,8 @@ public:
 
 	bool has_local_variable(const std::string &name) const;
 
-	void setDocumentPath(const std::string &path) { this->document_path = std::make_shared<std::string>(path); }
-	const std::string &documentPath() const { return *this->document_path; }
+	void setDocumentRoot(const std::string &path) { this->document_root = std::make_shared<std::string>(path); }
+	const std::string &documentRoot() const { return *this->document_root; }
 
 public:
 
@@ -100,7 +100,7 @@ protected:
 	ValueMap variables;
 	ValueMap config_variables;
 
-	std::shared_ptr<std::string> document_path;
+	std::shared_ptr<std::string> document_root;
 
 public:
 #ifdef DEBUG

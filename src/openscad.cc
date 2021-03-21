@@ -421,7 +421,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 	auto fpath = fs::absolute(fs::path(cmd.filename));
 	auto fparent = fpath.parent_path();
 	fs::current_path(fparent);
-	top_ctx->setDocumentPath(fparent.string());
+	top_ctx->setDocumentRoot(fparent.string());
 
 	AbstractNode::resetIndexCounter();
 
@@ -479,7 +479,7 @@ int do_export(const CommandLine &cmd, Tree &tree, Camera& camera, ContextHandle<
 	}
 	tree.setRoot(root_node);
 	if (nextLocation) {
-		LOG(message_group::Warning,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
+		LOG(message_group::Warning,*nextLocation,top_ctx->documentRoot(),"More than one Root Modifier (!)");
 	}
 	fs::current_path(cmd.original_path);
 	auto fpath = fs::absolute(fs::path(cmd.filename));

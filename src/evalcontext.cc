@@ -54,18 +54,18 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
           if (arg->getName() == name) found = true;
         }
         if (!found) {
-		  LOG(message_group::Warning,this->loc,this->documentPath(),"variable %1$s not specified as parameter",name);
+		  LOG(message_group::Warning,this->loc,this->documentRoot(),"variable %1$s not specified as parameter",name);
         }
       }
       if (resolvedArgs.find(name) != resolvedArgs.end()) {
-          LOG(message_group::Warning,this->loc,this->documentPath(),"argument %1$s supplied more than once",name);
+          LOG(message_group::Warning,this->loc,this->documentRoot(),"argument %1$s supplied more than once",name);
       }
       resolvedArgs[name] = expr;
     }
     // If positional, find name of arg with this position
     else if (posarg < args.size()) resolvedArgs[args[posarg++]->getName()] = expr;
     else if (!silent && !tooManyWarned){
-      LOG(message_group::Warning,this->loc,this->documentPath(),"Too many unnamed arguments supplied");
+      LOG(message_group::Warning,this->loc,this->documentRoot(),"Too many unnamed arguments supplied");
       tooManyWarned=true;
     }
   }
@@ -89,9 +89,9 @@ void EvalContext::assignTo(std::shared_ptr<Context> target) const
 		Value v = (assignment->getExpr()) ? assignment->getExpr()->evaluate(target) : Value::undefined.clone();
 		
 		if (assignment->getName().empty()) {
-			LOG(message_group::Warning,this->loc,target->documentPath(),"Assignment without variable name %1$s",v.toEchoString());
+			LOG(message_group::Warning,this->loc,target->documentRoot(),"Assignment without variable name %1$s",v.toEchoString());
 		} else if (seen.find(assignment->getName()) != seen.end()) {
-			LOG(message_group::Warning,this->loc,target->documentPath(),"Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),v.toEchoString());
+			LOG(message_group::Warning,this->loc,target->documentRoot(),"Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),v.toEchoString());
 		} else {
 			target->set_variable(assignment->getName(), std::move(v));
 			seen.insert(assignment->getName());
@@ -118,7 +118,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
 	else
 		s << boost::format("Context: %p (%p)") % this % this->parent;
-	s << boost::format("  document path: %s") % *this->document_path;
+	s << boost::format("  document root: %s") % *this->document_root;
 
 	s << boost::format("  eval args:");
 	for (size_t i=0; i<this->eval_arguments.size(); ++i) {

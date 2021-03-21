@@ -270,7 +270,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 		for (size_t i = 0; i < 4; ++i) {
 			node->color[i] = i < v.toVector().size() ? (float)v.toVector()[i].toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range",node->color[i]);
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range",node->color[i]);
 			}
 		}
 	} else if (v.type() == Value::Type::STRING) {
@@ -284,7 +284,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 			if (hexColor) {
 				node->color = *hexColor;
 			} else {
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to parse color \"%1$s\"",colorname);
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to parse color \"%1$s\"",colorname);
 				LOG(message_group::None,Location::NONE,"","Please see https://en.wikipedia.org/wiki/Web_colors");
 			}
 		}

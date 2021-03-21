@@ -55,11 +55,11 @@ Context::Context(const std::shared_ptr<Context> parent) : parent(parent)
 	if (parent) {
 		assert(parent->ctx_stack && "Parent context stack was null!");
 		this->ctx_stack = parent->ctx_stack;
-		this->document_path = parent->document_path;
+		this->document_root = parent->document_root;
 	}
 	else {
 		this->ctx_stack = new Stack;
-		this->document_path = std::make_shared<std::string>();
+		this->document_root = std::make_shared<std::string>();
 	}
 }
 
@@ -131,7 +131,7 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 			}
 		}
 		if (!silent) {
-			LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
+			LOG(message_group::Warning,loc,this->documentRoot(),"Ignoring unknown variable '%1$s'",name);
 		}
 		return Value::undefined;
 	}
@@ -142,7 +142,7 @@ const Value& Context::lookup_variable(const std::string &name, bool silent, cons
 		return this->parent->lookup_variable(name, silent, loc);
 	}
 	if (!silent) {
-		LOG(message_group::Warning,loc,this->documentPath(),"Ignoring unknown variable '%1$s'",name);
+		LOG(message_group::Warning,loc,this->documentRoot(),"Ignoring unknown variable '%1$s'",name);
 	}
 	return Value::undefined;
 }
@@ -241,7 +241,7 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string &na
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
-	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath().c_str());
+	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentRoot().c_str());
 	return nullptr;
 }
 
@@ -255,7 +255,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	else {
 		s << boost::format("Context: %p (%p)\n") % this % this->parent;
 	}
-	s << boost::format("  document path: %s\n") % *this->document_path;
+	s << boost::format("  document root: %s\n") % *this->document_root;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {

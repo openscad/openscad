@@ -76,7 +76,6 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setDocumentPath(evalctx->documentPath());
 	c->setVariables(evalctx, args, optargs);
 #if 0 && DEBUG
 	c.dump(this, inst);
@@ -85,13 +84,13 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	const auto &v = c->lookup_variable("file", true);
 	std::string filename;
 	if (v.isDefined()) {
-		filename = lookup_file(v.isUndefined() ? "" : v.toString(), evalctx->loc.filePath().parent_path().string(), ctx->documentPath());
+		filename = lookup_file(v.isUndefined() ? "" : v.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 	} else {
 		const auto &filename_val = c->lookup_variable("filename", true);
 		if (!filename_val.isUndefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
-		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), evalctx->loc.filePath().parent_path().string(), ctx->documentPath());
+		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 	}
 	if (!filename.empty()) handle_dep(filename);
 	ImportType actualtype = this->type;
@@ -135,7 +134,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin.isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
+		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 
 	const auto &center = c->lookup_variable("center", true);
@@ -149,7 +148,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	if (dpi.type() == Value::Type::NUMBER) {
 		double val = dpi.toDouble();
 		if (val < 0.001) {
-		std::string filePath = boostfs_uncomplete(inst->location().filePath(),ctx->documentPath()).generic_string();
+		std::string filePath = boostfs_uncomplete(inst->location().filePath(),evalctx->documentRoot()).generic_string();
 		LOG(message_group::Warning,Location::NONE,"",
 			"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
 			origin.toEchoString(),filePath,filePath,inst->location().firstLine());

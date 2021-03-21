@@ -72,7 +72,7 @@ namespace /* anonymous*/ {
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& context) const {
 	if (val.isUncheckedUndef())
-		LOG(message_group::Warning,loc,context->documentPath(),"%1$s",val.toUndefString());
+		LOG(message_group::Warning,loc,context->documentRoot(),"%1$s",val.toUndefString());
 	return std::move(val);
 }
 
@@ -252,12 +252,12 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	LOG(message_group::Deprecated,loc,ctx->documentPath(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
+	std::string locs = loc.toRelativeString(ctx->documentRoot());
+	LOG(message_group::Deprecated,loc,ctx->documentRoot(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
 
 static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s",begin,step);
+	LOG(message_group::Warning,loc,ctx->documentRoot(),"begin %1$s than the end, but step %2$s",begin,step);
 }
 
 Value Range::evaluate(const std::shared_ptr<Context>& context) const
@@ -438,7 +438,7 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
+	LOG(message_group::Error,loc,ctx->documentRoot(),"Recursion detected calling function '%1$s'",name);
 }
 
 /**
@@ -449,7 +449,7 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * during normal operating, not runtime during error handling.
 */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Trace,val->location(),ctx->documentPath(),"called by '%1$s'",val->get_name());
+	LOG(message_group::Trace,val->location(),ctx->documentRoot(),"called by '%1$s'",val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
@@ -474,7 +474,7 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(con
 	if (isLookup) {
 		auto f = context->lookup_function(name);
 		if (!f) {
-			LOG(message_group::Warning,loc,context->documentPath(),"Ignoring unknown function '%1$s'",name);
+			LOG(message_group::Warning,loc,context->documentRoot(),"Ignoring unknown function '%1$s'",name);
 		}
 		return f;
 	} else {
@@ -482,7 +482,7 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(con
 		if (v.type() == Value::Type::FUNCTION) {
 			return CallableFunction{std::move(v)};
 		} else {
-			LOG(message_group::Warning,loc,context->documentPath(),"Can't call function on %1$s",v.typeName());
+			LOG(message_group::Warning,loc,context->documentRoot(),"Can't call function on %1$s",v.typeName());
 			return boost::none;
 		}
 	}
@@ -673,7 +673,7 @@ Value LcEach::evalRecur(Value &&v, const std::shared_ptr<Context>& context) cons
 		const RangeType &range = v.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
+           LOG(message_group::Warning,loc,context->documentRoot(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
 			EmbeddedVectorType vec;
 			for (double d : range) vec.emplace_back(d);
@@ -728,7 +728,7 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
 		const RangeType &range = it_values.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
+           LOG(message_group::Warning,loc,context->documentRoot(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
 			EmbeddedVectorType vec;
 			for (double d : range) {
@@ -781,7 +781,7 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
         vec.emplace_back(this->expr->evaluate(c.ctx));
 
         if (counter++ == 1000000) {
-			LOG(message_group::Error,loc,context->documentPath(),"For loop counter exceeded limit");
+			LOG(message_group::Error,loc,context->documentRoot(),"For loop counter exceeded limit");
             throw LoopCntException::create("for", loc);
         }
 
@@ -841,9 +841,9 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 
 		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
 		if (message.isDefined()) {
-			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed: %2$s",exprText,message.toEchoString());
+			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed: %2$s",exprText,message.toEchoString());
 		} else {
-			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed",exprText);
+			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed",exprText);
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}
@@ -938,7 +938,7 @@ Value evaluate_user_function(
 			}
 			
 			if (counter++ == 1000000) {
-				LOG(message_group::Error,loc,context.ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
+				LOG(message_group::Error,loc,context.ctx->documentRoot(),"Recursion detected calling function '%1$s'",name);
 				throw RecursionException::create("function", name,loc);
 			}
 			

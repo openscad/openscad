@@ -80,7 +80,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 			const RangeType &range = it_values.toRange();
 			uint32_t steps = range.numValues();
 			if (steps >= RangeType::MAX_RANGE_STEPS) {
-				LOG(message_group::Warning,inst.location(),ctx->documentPath(),
+				LOG(message_group::Warning,inst.location(),evalctx->documentRoot(),
 					"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 			} else {
 				for (double d : range) {
@@ -184,7 +184,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			if (evalctx->getArgValue(0).getDouble(v)) {
 				n = trunc(v);
 				if (n < 0) {
-					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+					LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),
 						"Negative child index (%1$d) not allowed",n);
 					return nullptr; // Disallow negative child indices
 				}
@@ -204,7 +204,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		else {
 			// How to deal with negative objects in this case?
 			// (e.g. first child of difference is invalid)
-			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),
 				"Child index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
 		}
 		return node;
@@ -252,7 +252,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				const RangeType &range = value.toRange();
 				uint32_t steps = range.numValues();
 				if (steps >= RangeType::MAX_RANGE_STEPS) {
-					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),
+					LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),
 						"Bad range parameter for children: too many elements (%1$lu)",steps);
 					return nullptr;
 				}
@@ -269,7 +269,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			else {
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
-				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",value.toEchoString());
+				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",value.toEchoString());
 				return nullptr;
 			}
 		}

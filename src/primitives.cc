@@ -69,7 +69,7 @@ class PrimitiveNode : public LeafNode
 public:
 	VISITABLE();
 	PrimitiveNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, primitive_type_e type, const std::string &docPath) : LeafNode(mi, ctx),
-			document_path(docPath), type(type), points(Value::undefined.clone()), paths(Value::undefined.clone()), faces(Value::undefined.clone()) { }
+			document_root(docPath), type(type), points(Value::undefined.clone()), paths(Value::undefined.clone()), faces(Value::undefined.clone()) { }
 	std::string toString() const override;
 	std::string name() const override {
 		switch (this->type) {
@@ -84,7 +84,7 @@ public:
 		}
 		return "unknown";
 	}
-	const std::string document_path;
+	const std::string document_root;
 
 	bool center;
 	double x, y, z, h, r1, r2;
@@ -114,7 +114,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 
 	if (d.type() == Value::Type::NUMBER) {
 		if (r_defined) {
-			LOG(message_group::Warning,loc,ctx->documentPath(),
+			LOG(message_group::Warning,loc,ctx->documentRoot(),
 				"Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.",radius_var,diameter_var);
 		}
 		return d.toDouble() / 2.0;
@@ -127,7 +127,7 @@ Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const L
 
 AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	auto node = new PrimitiveNode(inst, evalctx, this->type, ctx->documentPath());
+	auto node = new PrimitiveNode(inst, evalctx, this->type, evalctx->documentRoot());
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -135,7 +135,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	AssignmentList args;
 	AssignmentList optargs;
 	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
@@ -177,12 +177,12 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	node->fa = c->lookup_variable("$fa").toDouble();
 
 	if (node->fs < F_MINIMUM) {
-		LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 			"$fs too small - clamping to %1$f",F_MINIMUM);
 		node->fs = F_MINIMUM;
 	}
 	if (node->fa < F_MINIMUM) {
-		LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 			"$fa too small - clamping to %1$f",F_MINIMUM);
 		node->fa = F_MINIMUM;
 	}
@@ -198,12 +198,12 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			converted |= size.getDouble(node->z);
 			converted |= size.getVec3(node->x, node->y, node->z);
 			if (!converted) {
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
 			} else if(OpenSCAD::rangeCheck) {
 				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 				if(!ok){
-					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"cube(size=%1$s, ...)",size.toEchoString());
+					LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cube(size=%1$s, ...)",size.toEchoString());
 				}
 			}
 		}
@@ -217,7 +217,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 					"sphere(r=%1$s)",r.toEchoString());
 			}
 		}
@@ -235,7 +235,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if(r.type() == Value::Type::NUMBER &&
 			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 			){
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 					"Cylinder parameters ambiguous");
 		}
 
@@ -252,10 +252,10 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 		if(OpenSCAD::rangeCheck){
 			if (node->h <= 0 || !std::isfinite(node->h)){
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"cylinder(h=%1$s, ...)",h.toEchoString());
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cylinder(h=%1$s, ...)",h.toEchoString());
 			}
 			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 					"cylinder(r1=%1$s, r2=%2$s, ...)",
 					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()),
 					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()));
@@ -289,13 +289,13 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			converted |= size.getDouble(node->y);
 			converted |= size.getVec2(node->x, node->y);
 			if (!converted) {
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
 			} else if (OpenSCAD::rangeCheck) {
 				bool ok = true;
 				ok &= (node->x > 0) && (node->y > 0);
 				ok &= std::isfinite(node->x) && std::isfinite(node->y);
 				if(!ok){
-					LOG(message_group::Warning,inst->location(),ctx->documentPath(),"square(size=%1$s, ...)",size.toEchoString());
+					LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"square(size=%1$s, ...)",size.toEchoString());
 				}
 			}
 		}
@@ -309,7 +309,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
-				LOG(message_group::Warning,inst->location(),ctx->documentPath(),
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 					"circle(r=%1$s)",r.toEchoString());
 			}
 		}
@@ -550,12 +550,12 @@ const Geometry *PrimitiveNode::createGeometry() const
 					double px, py, pz;
 					if (!pts[pt_i].getVec3(px, py, pz, 0.0) ||
 					    !std::isfinite(px) || !std::isfinite(py) || !std::isfinite(pz)) {
-						LOG(message_group::Error,this->modinst->location(),this->document_path,"Unable to convert points[%1$d] = %2$s to a vec3 of numbers",pt_i,pts[pt_i].toEchoString());
+						LOG(message_group::Error,this->modinst->location(),this->document_root,"Unable to convert points[%1$d] = %2$s to a vec3 of numbers",pt_i,pts[pt_i].toEchoString());
 						return p;
 					}
 					p->insert_vertex(px, py, pz);
 				} else {
-					LOG(message_group::Warning,this->modinst->location(),this->document_path,"Point index %1$d is out of bounds (from faces[%2$d][%3$d])",pt_i,face_i,fp_i);
+					LOG(message_group::Warning,this->modinst->location(),this->document_root,"Point index %1$d is out of bounds (from faces[%2$d][%3$d])",pt_i,face_i,fp_i);
 				}
 				++fp_i;
 			}
@@ -607,7 +607,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 			size_t i = 0;
 			for (const auto &val : this->points.toVector()) {
 				if (!val.getVec2(x, y) || std::isinf(x) || std::isinf(y)) {
-					LOG(message_group::Error,this->modinst->location(),this->document_path,"Unable to convert points[%1$d] = %2$s to a vec2 of numbers",i,val.toEchoString());
+					LOG(message_group::Error,this->modinst->location(),this->document_root,"Unable to convert points[%1$d] = %2$s to a vec2 of numbers",i,val.toEchoString());
 					return p;
 				}
 				outline.vertices.emplace_back(x, y);
@@ -627,7 +627,7 @@ const Geometry *PrimitiveNode::createGeometry() const
 						if (idx < outline.vertices.size()) {
 							curroutline.vertices.push_back(outline.vertices[idx]);
 						} else {
-							LOG(message_group::Warning,this->modinst->location(),this->document_path,"Point index %1$d is out of bounds (from paths[%2$d][%3$d])",idx , path_i , path_pt_i);
+							LOG(message_group::Warning,this->modinst->location(),this->document_root,"Point index %1$d is out of bounds (from paths[%2$d][%3$d])",idx , path_i , path_pt_i);
 						}
 						++path_pt_i;
 					}

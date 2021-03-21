@@ -1170,7 +1170,7 @@ void MainWindow::instantiateRoot()
 	this->tree.setRoot(nullptr);
 
 	boost::filesystem::path doc(activeEditor->filepath.toStdString());
-	this->tree.setDocumentPath(doc.remove_filename().string());
+	this->tree.setDocumentPath(doc.parent_path().string());
 
 	if (this->root_module) {
 		// Evaluate CSG tree
@@ -1183,6 +1183,7 @@ void MainWindow::instantiateRoot()
 		auto mi = ModuleInstantiation( "group" );
 		this->root_inst = mi;
 
+		top_ctx->setDocumentRoot(doc.parent_path().string());
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
 		this->qglview->cam.updateView(filectx.ctx, false);
@@ -1194,7 +1195,7 @@ void MainWindow::instantiateRoot()
 				this->root_node = this->absolute_root_node;
 			}
 			if (nextLocation) {
-				LOG(message_group::None,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
+				LOG(message_group::None,*nextLocation,top_ctx->documentRoot(),"More than one Root Modifier (!)");
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers

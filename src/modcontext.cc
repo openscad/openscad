@@ -75,7 +75,7 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
 		if (assignment->getExpr()->isLiteral() && this->variables.find(assignment->getName()) != this->variables.end()) {
-			LOG(message_group::Warning,assignment->location(),this->documentPath(),"Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName());
+			LOG(message_group::Warning,assignment->location(),this->documentRoot(),"Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName());
 		}
 		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
@@ -131,7 +131,7 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	else {
 		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
 	}
-	s << boost::format("  document path: %s") % *this->document_path;
+	s << boost::format("  document root: %s") % *this->document_root;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
@@ -201,7 +201,6 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, c
 
 void FileContext::initializeModule(const class FileModule &module)
 {
-	if (!module.modulePath().empty()) this->document_path = std::make_shared<std::string>(module.modulePath());
 	// FIXME: Don't access module members directly
 	this->usedlibs_p = &module.usedlibs;
 	this->functions_p = &module.scope.functions;

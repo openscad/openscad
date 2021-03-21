@@ -44,11 +44,11 @@ class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstant
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			LOG(message_group::Warning,evalctx->loc,this->documentPath(),"Experimental builtin module '%1$s' is not enabled",name);
+			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"Experimental builtin module '%1$s' is not enabled",name);
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			LOG(message_group::Deprecated,evalctx->loc,this->documentPath(),"The %1$s() module will be removed in future releases. Use %2$s instead.", std::string(name),std::string(replacement));
+			LOG(message_group::Deprecated,evalctx->loc,evalctx->documentRoot(),"The %1$s() module will be removed in future releases. Use %2$s instead.", std::string(name),std::string(replacement));
 		}
 		return m->instantiate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), &inst, evalctx);
 	}
