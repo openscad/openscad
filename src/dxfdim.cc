@@ -44,7 +44,7 @@ ValueMap dxf_dim_cache;
 ValueMap dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_dxf_dim(const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string rawFilename;
 	std::string filename;
@@ -149,7 +149,7 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 	return Value::undefined.clone();
 }
 
-Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_dxf_cross(const std::shared_ptr<EvalContext> evalctx)
 {
 	std::string filename;
 	std::string rawFilename;

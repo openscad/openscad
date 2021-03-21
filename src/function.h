@@ -13,7 +13,7 @@ class EvalContext;
 class BuiltinFunction
 {
 public:
-	typedef Value (*eval_func_t)(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx);
+	typedef Value (*eval_func_t)(const std::shared_ptr<EvalContext> evalctx);
 	eval_func_t evaluate;
 
 private:
@@ -40,14 +40,9 @@ public:
 };
 
 
-struct CallableBuiltinFunction
-{
-	std::shared_ptr<Context> containing_context;
-	BuiltinFunction const* function;
-};
 struct CallableUserFunction
 {
 	std::shared_ptr<Context> defining_context;
-	UserFunction const* function;
+	const UserFunction* function;
 };
-typedef boost::variant<CallableBuiltinFunction, CallableUserFunction, Value, const Value*> CallableFunction;
+typedef boost::variant<const BuiltinFunction*, CallableUserFunction, Value, const Value*> CallableFunction;

@@ -502,8 +502,8 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 	try {
 		if (!f) {
 			return Value::undefined.clone();
-		} else if (CallableBuiltinFunction* callable = boost::get<CallableBuiltinFunction>(&*f)) {
-			return callable->function->evaluate(callable->containing_context, evalCtx.ctx);
+		} else if (const BuiltinFunction** function = boost::get<const BuiltinFunction*>(&*f)) {
+			return (*function)->evaluate(evalCtx.ctx);
 		} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
 			return evaluate_user_function(
 				name,
@@ -906,8 +906,8 @@ Value evaluate_user_function(
 				auto f = call->evaluate_function_expression(context.ctx);
 				if (!f) {
 					return Value::undefined.clone();
-				} else if (CallableBuiltinFunction* callable = boost::get<CallableBuiltinFunction>(&*f)) {
-					return callable->function->evaluate(callable->containing_context, call_evalCtx.ctx);
+				} else if (const BuiltinFunction ** function = boost::get<const BuiltinFunction*>(&*f)) {
+					return (*function)->evaluate(call_evalCtx.ctx);
 				} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
 					name = callable->function->name;
 					expr = callable->function->expr;

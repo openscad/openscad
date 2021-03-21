@@ -29,7 +29,7 @@ boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const st
 	if (search != Builtins::instance()->getFunctions().end()) {
 		BuiltinFunction *f = search->second;
 		if (f->is_enabled()) {
-			return CallableFunction{CallableBuiltinFunction{(const_cast<BuiltinContext *>(this))->get_shared_ptr(), f}};
+			return CallableFunction{f};
 		}
 		
 		LOG(message_group::Warning,Location::NONE,"","Experimental builtin function '%1$s' is not enabled",name);
