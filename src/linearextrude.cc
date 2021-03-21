@@ -56,11 +56,11 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 {
 	auto node = new LinearExtrudeNode(inst, evalctx);
 
-	AssignmentList args{assignment("file"), assignment("layer"), assignment("height"), assignment("origin"), assignment("scale"), assignment("center"), assignment("twist"), assignment("slices")};
-	AssignmentList optargs{assignment("convexity")};
+	AssignmentList parameters{assignment("file"), assignment("layer"), assignment("height"), assignment("origin"), assignment("scale"), assignment("center"), assignment("twist"), assignment("slices")};
+	AssignmentList optional_parameters{assignment("convexity")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 	inst->scope.apply(evalctx);
 
 	node->fn = c->lookup_variable("$fn").toDouble();

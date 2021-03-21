@@ -1245,10 +1245,10 @@ std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
 {
   stream << "function(";
   bool first = true;
-  for (const auto& arg : *(f.getArgs())) {
-    stream << (first ? "" : ", ") << arg->getName();
-    if (arg->getExpr()) {
-      stream << " = " << *arg->getExpr();
+  for (const auto& parameter : *(f.getParameters())) {
+    stream << (first ? "" : ", ") << parameter->getName();
+    if (parameter->getExpr()) {
+      stream << " = " << *parameter->getExpr();
     }
     first = false;
   }

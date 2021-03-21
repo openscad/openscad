@@ -47,18 +47,18 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 {
 	auto node = new CgaladvNode(inst, evalctx, type);
 
-	AssignmentList args;
+	AssignmentList parameters;
 
 	if (type == CgaladvType::MINKOWSKI) {
-		args += assignment("convexity");
+		parameters += assignment("convexity");
 	}
 
 	if (type == CgaladvType::RESIZE) {
-		args += assignment("newsize"), assignment("auto"), assignment("convexity");
+		parameters += assignment("newsize"), assignment("auto"), assignment("convexity");
 	}
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args);
+	c->setVariables(evalctx, parameters);
 	inst->scope.apply(evalctx);
 
 	if (type == CgaladvType::MINKOWSKI) {

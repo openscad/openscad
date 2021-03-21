@@ -173,12 +173,12 @@ public:
 class FunctionDefinition : public Expression
 {
 public:
-	FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc);
+	FunctionDefinition(Expression *expr, const AssignmentList &parameters, const Location &loc);
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 public:
 	shared_ptr<Context> ctx;
-	AssignmentList definition_arguments;
+	AssignmentList parameters;
 	shared_ptr<Expression> expr;
 };
 
@@ -288,7 +288,7 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 Value evaluate_user_function(
 	std::string name,
 	std::shared_ptr<Expression> expr,
-	AssignmentList const* definition_arguments,
+	AssignmentList const* parameters,
 	std::shared_ptr<Context> defining_context,
 	const std::shared_ptr<EvalContext>& evalctx,
 	Location loc

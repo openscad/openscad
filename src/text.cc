@@ -48,14 +48,14 @@ AbstractNode *TextModule::instantiate(const std::shared_ptr<Context>& ctx, const
 {
 	auto node = new TextNode(inst, evalctx);
 
-	AssignmentList args{assignment("text"), assignment("size"), assignment("font")};
-	AssignmentList optargs{
+	AssignmentList parameters{assignment("text"), assignment("size"), assignment("font")};
+	AssignmentList optional_parameters{
 		assignment("direction"), assignment("language"), assignment("script"),
 		assignment("halign"), assignment("valign"), assignment("spacing")
 	};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 
 	const auto &fn = c->lookup_variable("$fn").toDouble();
 	const auto &fa = c->lookup_variable("$fa").toDouble();

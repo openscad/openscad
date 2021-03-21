@@ -31,27 +31,26 @@ Value EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) con
 }
 
 /*!
-  Resolves arguments specified by evalctx, using args to lookup positional arguments.
-  optargs is for optional arguments that are not positional arguments.
+  Matches arguments with parameters.
   Returns an AssignmentMap (string -> Expression*)
 */
-AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const AssignmentList &optargs, bool silent) const
+AssignmentMap EvalContext::resolveArguments(const AssignmentList &parameters, const AssignmentList &optional_parameters, bool silent) const
 {
   AssignmentMap resolvedArgs;
-  size_t posarg = 0;
+  size_t parameter_position = 0;
   bool tooManyWarned=false;
-  // Iterate over positional args
+
   for (size_t i=0; i<this->numArgs(); ++i) {
     const auto &name = this->getArgName(i); // name is optional
     const auto expr = this->getArgs()[i]->getExpr().get();
     if (!name.empty()) {
       if (name.at(0)!='$' && !silent) {
         bool found=false;
-        for (auto const& arg: args) {
-          if (arg->getName() == name) found = true;
+        for (auto const& parameter: parameters) {
+          if (parameter->getName() == name) found = true;
         }
-        for (auto const& arg: optargs) {
-          if (arg->getName() == name) found = true;
+        for (auto const& parameter: optional_parameters) {
+          if (parameter->getName() == name) found = true;
         }
         if (!found) {
 		  LOG(message_group::Warning,this->loc,this->documentRoot(),"variable %1$s not specified as parameter",name);
@@ -62,8 +61,8 @@ AssignmentMap EvalContext::resolveArguments(const AssignmentList &args, const As
       }
       resolvedArgs[name] = expr;
     }
-    // If positional, find name of arg with this position
-    else if (posarg < args.size()) resolvedArgs[args[posarg++]->getName()] = expr;
+    // If positional, find name of parameter with this position
+    else if (parameter_position < parameters.size()) resolvedArgs[parameters[parameter_position++]->getName()] = expr;
     else if (!silent && !tooManyWarned){
       LOG(message_group::Warning,this->loc,this->documentRoot(),"Too many unnamed arguments supplied");
       tooManyWarned=true;
@@ -134,9 +133,8 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
 			s << boost::format("  module args:");
-			for(const auto &arg : m->definition_arguments) {
-				auto result = variables.find(arg->getName());
-				s << boost::format("    %s = %s") % arg->getName() % variables.get(arg->getName());
+			for(const auto &parameter : m->parameters) {
+				s << boost::format("    %s = %s") % parameter->getName() % variables.get(parameter->getName());
 			}
 		}
 	}

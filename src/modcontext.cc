@@ -69,7 +69,7 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 
 void ModuleContext::initializeModule(const UserModule &module)
 {
-	this->setVariables(evalctx, module.definition_arguments, {}, true);
+	this->setVariables(evalctx, module.parameters, {}, true);
 	// FIXME: Don't access module members directly
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
@@ -135,9 +135,9 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
-			s << "  module args:";
-			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s") % arg->getName() % variables.get(arg->getName());
+			s << "  module parameters:";
+			for(const auto &parameter : m->parameters) {
+				s << boost::format("    %s = %s") % parameter->getName() % variables.get(parameter->getName());
 			}
 		}
 	}

@@ -406,24 +406,24 @@ void MemberLookup::print(std::ostream &stream, const std::string &) const
 	stream << *this->expr << "." << this->member;
 }
 
-FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc)
-	: Expression(loc), ctx(nullptr), definition_arguments(definition_arguments), expr(expr)
+FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &parameters, const Location &loc)
+	: Expression(loc), ctx(nullptr), parameters(parameters), expr(expr)
 {
 }
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{definition_arguments}}}};
+	return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{parameters}}}};
 }
 
 void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function(";
 	bool first = true;
-	for (const auto& assignment : definition_arguments) {
-		stream << (first ? "" : ", ") << assignment->getName();
-		if (assignment->getExpr()) {
-			stream << " = " << *assignment->getExpr();
+	for (const auto& parameter : parameters) {
+		stream << (first ? "" : ", ") << parameter->getName();
+		if (parameter->getExpr()) {
+			stream << " = " << *parameter->getExpr();
 		}
 		first = false;
 	}
@@ -508,7 +508,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 			return evaluate_user_function(
 				name,
 				callable->function->expr,
-				&callable->function->definition_arguments,
+				&callable->function->parameters,
 				callable->defining_context,
 				evalCtx.ctx,
 				loc
@@ -526,7 +526,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 			return evaluate_user_function(
 				name,
 				function.getExpr(),
-				function.getArgs().get(),
+				function.getParameters().get(),
 				function.getCtx(),
 				evalCtx.ctx,
 				loc
@@ -820,16 +820,16 @@ void LcLet::print(std::ostream &stream, const std::string &) const
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
 {
-	AssignmentList args;
-	args += assignment("condition"), assignment("message");
+	AssignmentList parameters;
+	parameters += assignment("condition"), assignment("message");
 
 	ContextHandle<Context> c{Context::create<Context>(context)};
 
-	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
-	for (const auto &arg : args) {
-		auto it = assignments.find(arg->getName());
+	AssignmentMap assignments = evalctx->resolveArguments(parameters, {}, false);
+	for (const auto &parameter : parameters) {
+		auto it = assignments.find(parameter->getName());
 		if (it != assignments.end()) {
-			c->set_variable(arg->getName(), assignments[arg->getName()]->evaluate(evalctx));
+			c->set_variable(parameter->getName(), assignments[parameter->getName()]->evaluate(evalctx));
 		}
 	}
 
@@ -852,13 +852,13 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 Value evaluate_user_function(
 	std::string name,
 	std::shared_ptr<Expression> expr,
-	AssignmentList const* definition_arguments,
+	AssignmentList const* parameters,
 	std::shared_ptr<Context> defining_context,
 	const std::shared_ptr<EvalContext>& evalctx,
 	Location loc
 ) {
 	ContextHandle<Context> context{Context::create<Context>(defining_context)};
-	context->setVariables(evalctx, *definition_arguments);
+	context->setVariables(evalctx, *parameters);
 
 	// Repeatedly simplify expr until it reduces to either a tail call,
 	// or an expression that cannot be simplified in-place. If the latter,
@@ -911,7 +911,7 @@ Value evaluate_user_function(
 				} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
 					name = callable->function->name;
 					expr = callable->function->expr;
-					definition_arguments = &callable->function->definition_arguments;
+					parameters = &callable->function->parameters;
 					defining_context = callable->defining_context;
 				} else {
 					const Value* function_value;
@@ -925,7 +925,7 @@ Value evaluate_user_function(
 					const auto &function = function_value->toFunction();
 					name = call->name;
 					expr = function.getExpr();
-					definition_arguments = function.getArgs().get();
+					parameters = function.getParameters().get();
 					defining_context = function.getCtx();
 				}
 				
@@ -933,7 +933,7 @@ Value evaluate_user_function(
 				
 				ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
 				body_context->apply_config_variables(context.ctx);
-				body_context->setVariables(call_evalCtx.ctx, *definition_arguments);
+				body_context->setVariables(call_evalCtx.ctx, *parameters);
 				new_context = body_context.ctx;
 			}
 			

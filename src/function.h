@@ -31,10 +31,10 @@ class UserFunction : public ASTNode
 {
 public:
 	std::string name;
-	AssignmentList definition_arguments;
+	AssignmentList parameters;
 	shared_ptr<Expression> expr;
 
-	UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc);
+	UserFunction(const char *name, AssignmentList &parameters, shared_ptr<Expression> expr, const Location &loc);
 
 	void print(std::ostream &stream, const std::string &indent) const override;
 };

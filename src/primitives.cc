@@ -132,8 +132,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
-	AssignmentList args;
-	AssignmentList optargs;
+	AssignmentList parameters;
+	AssignmentList optional_parameters;
 	if(inst->scope.hasChildren()){
 		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 			"module %1$s() does not support child modules",node->name());
@@ -141,36 +141,36 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 	switch (this->type) {
 	case primitive_type_e::CUBE:
-		args += assignment("size"), assignment("center");
+		parameters += assignment("size"), assignment("center");
 		break;
 	case primitive_type_e::SPHERE:
-		args += assignment("r");
-		optargs += assignment("d");
+		parameters += assignment("r");
+		optional_parameters += assignment("d");
 		break;
 	case primitive_type_e::CYLINDER:
-		args += assignment("h"), assignment("r1"), assignment("r2"), assignment("center");
-		optargs += assignment("r"),  assignment("d"), assignment("d1"),  assignment("d2");
+		parameters += assignment("h"), assignment("r1"), assignment("r2"), assignment("center");
+		optional_parameters += assignment("r"),  assignment("d"), assignment("d1"),  assignment("d2");
 		break;
 	case primitive_type_e::POLYHEDRON:
-		args += assignment("points"), assignment("faces"), assignment("convexity");
-		optargs += assignment("triangles");
+		parameters += assignment("points"), assignment("faces"), assignment("convexity");
+		optional_parameters += assignment("triangles");
 		break;
 	case primitive_type_e::SQUARE:
-		args += assignment("size"), assignment("center");
+		parameters += assignment("size"), assignment("center");
 		break;
 	case primitive_type_e::CIRCLE:
-		args += assignment("r");
-		optargs += assignment("d");
+		parameters += assignment("r");
+		optional_parameters += assignment("d");
 		break;
 	case primitive_type_e::POLYGON:
-		args += assignment("points"), assignment("paths"), assignment("convexity");
+		parameters += assignment("points"), assignment("paths"), assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
 	}
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 
 	node->fn = c->lookup_variable("$fn").toDouble();
 	node->fs = c->lookup_variable("$fs").toDouble();

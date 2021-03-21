@@ -258,10 +258,10 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 {
 	auto node = new ColorNode(inst, evalctx);
 
-	AssignmentList args{assignment("c"), assignment("alpha")};
+	AssignmentList parameters{assignment("c"), assignment("alpha")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args);
+	c->setVariables(evalctx, parameters);
 	inst->scope.apply(evalctx);
 
 	const auto &v = c->lookup_variable("c");

@@ -80,19 +80,19 @@ void Context::pop()
 }
 
 /*!
-	Initialize context from a module argument list and a evaluation context
+	Initialize context from a module parameter list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
+void Context::setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &parameters, const AssignmentList &optional_parameters, bool usermodule)
 {
 	// Set any default values
-	for (const auto &arg : args) {
-		// FIXME should we just not set value if arg.expr is false?
-		set_variable(arg->getName(), arg->getExpr() ? arg->getExpr()->evaluate(this->parent) : Value::undefined.clone());
+	for (const auto &parameter : parameters) {
+		// FIXME should we just not set value if parameter.expr is false?
+		set_variable(parameter->getName(), parameter->getExpr() ? parameter->getExpr()->evaluate(this->parent) : Value::undefined.clone());
 	}
 	
 	if (evalctx) {
-		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
+		auto assignments = evalctx->resolveArguments(parameters, optional_parameters, usermodule && !OpenSCAD::parameterCheck);
 		for (const auto &ass : assignments) {
 			this->set_variable(ass.first, ass.second->evaluate(evalctx));
 		}
@@ -259,9 +259,9 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {
-			s << "  module args:";
-			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s\n") % arg->getName() % variables.get(arg->getName());
+			s << "  module parameters:";
+			for(const auto &parameter: m->parameters) {
+				s << boost::format("    %s = %s\n") % parameter->getName() % variables.get(parameter->getName());
 			}
 		}
 	}

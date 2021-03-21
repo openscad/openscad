@@ -47,11 +47,11 @@ AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx,
 {
 	auto node = new ProjectionNode(inst, evalctx);
 
-	AssignmentList args{assignment("cut")};
-	AssignmentList optargs{assignment("convexity")};
+	AssignmentList parameters{assignment("cut")};
+	AssignmentList optional_parameters{assignment("convexity")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 	inst->scope.apply(evalctx);
 
 	const auto& convexity = c->lookup_variable("convexity", true);

@@ -62,30 +62,30 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 {
 	auto node = new TransformNode(inst, evalctx, verbose_name);
 
-	AssignmentList args;
+	AssignmentList parameters;
 
 	switch (this->type) {
 	case transform_type_e::SCALE:
-		args += assignment("v");
+		parameters += assignment("v");
 		break;
 	case transform_type_e::ROTATE:
-		args += assignment("a"), assignment("v");
+		parameters += assignment("a"), assignment("v");
 		break;
 	case transform_type_e::MIRROR:
-		args += assignment("v");
+		parameters += assignment("v");
 		break;
 	case transform_type_e::TRANSLATE:
-		args += assignment("v");
+		parameters += assignment("v");
 		break;
 	case transform_type_e::MULTMATRIX:
-		args += assignment("m");
+		parameters += assignment("m");
 		break;
 	default:
 		assert(false);
 	}
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args);
+	c->setVariables(evalctx, parameters);
 	inst->scope.apply(evalctx);
 
 	if (this->type == transform_type_e::SCALE) {

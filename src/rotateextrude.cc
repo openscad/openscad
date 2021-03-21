@@ -52,11 +52,11 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 {
 	auto node = new RotateExtrudeNode(inst, evalctx);
 
-	AssignmentList args{assignment("file"), assignment("layer"), assignment("origin"), assignment("scale")};
-	AssignmentList optargs{assignment("convexity"), assignment("angle")};
+	AssignmentList parameters{assignment("file"), assignment("layer"), assignment("origin"), assignment("scale")};
+	AssignmentList optional_parameters{assignment("convexity"), assignment("angle")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 	inst->scope.apply(evalctx);
 
 	node->fn = c->lookup_variable("$fn").toDouble();

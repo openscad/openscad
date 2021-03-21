@@ -157,11 +157,11 @@ bool fileEnded=false;
 %type <ifelse> ifelse_statement
 %type <inst> single_module_instantiation
 
-%type <args> arguments_call
-%type <args> arguments_decl
+%type <args> arguments
+%type <args> parameters
 
-%type <arg> argument_call
-%type <arg> argument_decl
+%type <arg> argument
+%type <arg> parameter
 %type <text> module_id
 
 %debug
@@ -188,10 +188,10 @@ statement
               if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
-        | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
+        | TOK_MODULE TOK_ID '(' parameters optional_commas ')'
             {
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
-              newmodule->definition_arguments = *$4;
+              newmodule->parameters = *$4;
               auto top = scope_stack.top();
               scope_stack.push(&newmodule->scope);
               top->addChild(shared_ptr<UserModule>(newmodule));
@@ -202,7 +202,7 @@ statement
             {
                 scope_stack.pop();
             }
-        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
+        | TOK_FUNCTION TOK_ID '(' parameters optional_commas ')' '=' expr ';'
             {
               scope_stack.top()->addChild(
                 make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$))
@@ -321,7 +321,7 @@ module_id
         ;
 
 single_module_instantiation
-        : module_id '(' arguments_call ')'
+        : module_id '(' arguments ')'
             {
                 $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
                 free($1);
@@ -331,7 +331,7 @@ single_module_instantiation
 
 expr
         : logic_or
-        | TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
+        | TOK_FUNCTION '(' parameters optional_commas ')' expr %prec NO_ELSE
             {
               $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               delete $3;
@@ -340,17 +340,17 @@ expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
             }
-        | TOK_LET '(' arguments_call ')' expr
+        | TOK_LET '(' arguments ')' expr
             {
               $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
               delete $3;
             }
-        | TOK_ASSERT '(' arguments_call ')' expr_or_empty
+        | TOK_ASSERT '(' arguments ')' expr_or_empty
             {
               $$ = FunctionCall::create("assert", *$3, $5, LOCD("assert", @$));
               delete $3;
             }
-        | TOK_ECHO '(' arguments_call ')' expr_or_empty
+        | TOK_ECHO '(' arguments ')' expr_or_empty
             {
               $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
               delete $3;
@@ -460,7 +460,7 @@ exponent
 
 call
         : primary
-        | call '(' arguments_call ')'
+        | call '(' arguments ')'
             {
               $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
               delete $3;
@@ -539,7 +539,7 @@ expr_or_empty
 /* The last set element may not be a "let" (as that would instead
    be parsed as an expression) */
 list_comprehension_elements
-        : TOK_LET '(' arguments_call ')' list_comprehension_elements_p
+        : TOK_LET '(' arguments ')' list_comprehension_elements_p
             {
               $$ = new LcLet(*$3, $5, LOCD("lclet", @$));
               delete $3;
@@ -548,7 +548,7 @@ list_comprehension_elements
             {
               $$ = new LcEach($2, LOCD("lceach", @$));
             }
-        | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' arguments ')' list_comprehension_elements_or_expr
             {
                 $$ = $5;
 
@@ -561,7 +561,7 @@ list_comprehension_elements
                 }
                 delete $3;
             }
-        | TOK_FOR '(' arguments_call ';' expr ';' arguments_call ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' arguments ';' expr ';' arguments ')' list_comprehension_elements_or_expr
             {
               $$ = new LcForC(*$3, *$7, $5, $9, LOCD("lcforc", @$));
                 delete $3;
@@ -614,24 +614,24 @@ vector_expr
             }
         ;
 
-arguments_decl
+parameters
         : /* empty */
             {
                 $$ = new AssignmentList();
             }
-        | argument_decl
+        | parameter
             {
                 $$ = new AssignmentList();
                 $$->emplace_back($1);
             }
-        | arguments_decl ',' optional_commas argument_decl
+        | parameters ',' optional_commas parameter
             {
                 $$ = $1;
                 $$->emplace_back($4);
             }
         ;
 
-argument_decl
+parameter
         : TOK_ID
             {
                 $$ = new Assignment($1, LOCD("assignment", @$));
@@ -644,24 +644,24 @@ argument_decl
             }
         ;
 
-arguments_call
+arguments
         : /* empty */
             {
                 $$ = new AssignmentList();
             }
-        | argument_call
+        | argument
             {
                 $$ = new AssignmentList();
                 $$->emplace_back($1);
             }
-        | arguments_call ',' optional_commas argument_call
+        | arguments ',' optional_commas argument
             {
                 $$ = $1;
                 $$->emplace_back($4);
             }
         ;
 
-argument_call
+argument
         : expr
             {
                 $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));

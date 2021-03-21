@@ -29,19 +29,19 @@
 #include "expression.h"
 #include "printutils.h"
 
-UserFunction::UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc)
-	: ASTNode(loc), name(name), definition_arguments(definition_arguments), expr(expr)
+UserFunction::UserFunction(const char *name, AssignmentList &parameters, shared_ptr<Expression> expr, const Location &loc)
+	: ASTNode(loc), name(name), parameters(parameters), expr(expr)
 {
 }
 
 void UserFunction::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function " << name << "(";
-	for (size_t i=0; i < definition_arguments.size(); ++i) {
-		const auto &arg = definition_arguments[i];
+	for (size_t i=0; i < parameters.size(); ++i) {
+		const auto &parameter = parameters[i];
 		if (i > 0) stream << ", ";
-		stream << arg->getName();
-		if (arg->getExpr()) stream << " = " << *arg->getExpr();
+		stream << parameter->getName();
+		if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
 	}
 	stream << ") = " << *expr << ";\n";
 }

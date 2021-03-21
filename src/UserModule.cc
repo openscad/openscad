@@ -78,11 +78,11 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 	std::string tab;
 	if (!this->name.empty()) {
 		stream << indent << "module " << this->name << "(";
-		for (size_t i=0; i < this->definition_arguments.size(); ++i) {
-			const auto &arg = this->definition_arguments[i];
+		for (size_t i=0; i < this->parameters.size(); ++i) {
+			const auto &parameter = this->parameters[i];
 			if (i > 0) stream << ", ";
-			stream << arg->getName();
-			if (arg->getExpr()) stream << " = " << *arg->getExpr();
+			stream << parameter->getName();
+			if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
 		}
 		stream << ") {\n";
 		tab = "\t";

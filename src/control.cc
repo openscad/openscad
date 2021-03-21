@@ -142,7 +142,7 @@ const std::shared_ptr<EvalContext> ControlModule::getLastModuleCtx(const std::sh
 AbstractNode* ControlModule::getChild(const Value &value, const std::shared_ptr<EvalContext> &modulectx)
 {
 	if (value.type() != Value::Type::NUMBER) {
-		// Invalid parameter
+		// Invalid argument
 		// (e.g. first child of difference is invalid)
 		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
 		return nullptr;
@@ -219,7 +219,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 		// This will trigger if trying to invoke child from the root of any file
 		// assert(filectx->evalctx);
 		if (evalctx->numArgs()<=0) {
-			// no parameters => all children
+			// no arguments => all children
 			AbstractNode* node;
 			if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst, evalctx);
 			else node = new GroupNode(inst, evalctx);
@@ -232,7 +232,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			return node;
 		}
 		else if (evalctx->numArgs()>0) {
-			// one (or more ignored) parameter
+			// one (or more ignored) argument
 			Value value = evalctx->getArgValue(0);
 			if (value.type() == Value::Type::NUMBER) {
 				return getChild(value, modulectx);
@@ -267,7 +267,7 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 				return node;
 			}
 			else {
-				// Invalid parameter
+				// Invalid argument
 				// (e.g. first child of difference is invalid)
 				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",value.toEchoString());
 				return nullptr;
@@ -316,14 +316,14 @@ AbstractNode *ControlModule::instantiate(const std::shared_ptr<Context>& ctx, co
 
 	case Type::ASSIGN: {
 		node = new GroupNode(inst, evalctx);
-		// We create a new context to avoid parameters from influencing each other
+		// We create a new context to avoid arguments from influencing each other
 		// -> parallel evaluation. This is to be backwards compatible.
 		ContextHandle<Context> c{Context::create<Context>(evalctx)};
 		for (size_t i = 0; i < evalctx->numArgs(); ++i) {
 			if (!evalctx->getArgName(i).empty())
 				c->set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
-		// Let any local variables override the parameters
+		// Let any local variables override the arguments
 		inst->scope.apply(c.ctx);
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(c.ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());

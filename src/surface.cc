@@ -85,11 +85,11 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 {
 	auto node = new SurfaceNode(inst, evalctx);
 
-	AssignmentList args{assignment("file"), assignment("center"), assignment("convexity")};
-	AssignmentList optargs{assignment("center"),assignment("invert")};
+	AssignmentList parameters{assignment("file"), assignment("center"), assignment("convexity")};
+	AssignmentList optional_parameters{assignment("center"), assignment("invert")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 
 	const auto &fileval = c->lookup_variable("file");
 	auto filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());

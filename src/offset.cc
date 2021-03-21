@@ -53,11 +53,11 @@ AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, con
 {
 	auto node = new OffsetNode(inst, evalctx);
 
-	AssignmentList args{assignment("r")};
-	AssignmentList optargs{assignment("delta"),assignment("chamfer")};
+	AssignmentList parameters{assignment("r")};
+	AssignmentList optional_parameters{assignment("delta"),assignment("chamfer")};
 
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	c->setVariables(evalctx, parameters, optional_parameters);
 	inst->scope.apply(evalctx);
 
 	node->fn = c->lookup_variable("$fn").toDouble();

@@ -76,7 +76,7 @@ public:
 	boost::optional<CallableFunction> lookup_function(const std::string &name) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
-	void setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
+	void setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &parameters, const AssignmentList &optional_parameters={}, bool usermodule=false);
 
 	void set_variable(const std::string &name, Value&& value);
 

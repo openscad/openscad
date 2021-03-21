@@ -35,6 +35,6 @@ public:
 	static int stack_size() { return StaticModuleNameStack::size(); };
 
 	std::string name;
-	AssignmentList definition_arguments;
+	AssignmentList parameters;
 	LocalScope scope;
 };
