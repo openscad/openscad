@@ -9,13 +9,13 @@
 class Builtins
 {
 public:
-	using FunctionContainer = std::unordered_map<std::string, class AbstractFunction*>;
+	using FunctionContainer = std::unordered_map<std::string, class BuiltinFunction*>;
 	using ModuleContainer = std::unordered_map<std::string, class AbstractModule*>;
 
 	static Builtins *instance(bool erase = false);
 	static void init(const std::string &name, class AbstractModule *module);
 	static void init(const std::string &name, class AbstractModule *module, const std::vector<std::string> &calltipList);
-	static void init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList);
+	static void init(const std::string &name, class BuiltinFunction *function, const std::vector<std::string> &calltipList);
 	void initialize();
 	std::string isDeprecated(const std::string &name) const;
 

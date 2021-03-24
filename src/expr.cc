@@ -451,9 +451,6 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
 	LOG(message_group::Trace,val->location(),ctx->documentPath(),"called by '%1$s'",val->get_name());
 }
-static void NOINLINE print_invalid_function_call(const std::string& name, const std::shared_ptr<Context>& ctx, const Location& loc){
-	LOG(message_group::Warning,loc,ctx->documentPath(),"Can't call function on %1$s",name);
-}
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
 	: Expression(loc), expr(expr), arguments(args)
@@ -471,6 +468,26 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 		name = s.str();
 	}
 }
+
+boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(const std::shared_ptr<Context>& context) const
+{
+	if (isLookup) {
+		auto f = context->lookup_function(name);
+		if (!f) {
+			LOG(message_group::Warning,loc,context->documentPath(),"Ignoring unknown function '%1$s'",name);
+		}
+		return f;
+	} else {
+		auto v = expr->evaluate(context);
+		if (v.type() == Value::Type::FUNCTION) {
+			return CallableFunction{std::move(v)};
+		} else {
+			LOG(message_group::Warning,loc,context->documentPath(),"Can't call function on %1$s",name);
+			return boost::none;
+		}
+	}
+}
+
 Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 {
 	const auto& name = get_name();
@@ -478,23 +495,42 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 		print_err(name.c_str(), loc, context);
 		throw RecursionException::create("function", name, this->loc);
 	}
-	try {
-		auto v = isLookup ? static_pointer_cast<Lookup>(expr)->evaluateSilently(context).clone() : expr->evaluate(context);
-		ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
 
-		if (v.type() == Value::Type::FUNCTION) {
-			if (name.size() > 0 && name.at(0) == '$') {
-				print_invalid_function_call("dynamically scoped variable", context, loc);
-				return Value::undefined.clone();
-			} else {
-				const auto &func = v.toFunction();
-				return evaluate_function(name, func.getExpr(), *(func.getArgs()), func.getCtx(), evalCtx.ctx, this->loc);
-			}
-		} else if (isLookup) {
-			return context->evaluate_function(name, evalCtx.ctx);
-		} else {
-			print_invalid_function_call(v.typeName(), context, loc);
+	auto f = evaluate_function_expression(context);
+	ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
+
+	try {
+		if (!f) {
 			return Value::undefined.clone();
+		} else if (CallableBuiltinFunction* callable = boost::get<CallableBuiltinFunction>(&*f)) {
+			return callable->function->evaluate(callable->containing_context, evalCtx.ctx);
+		} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
+			return evaluate_user_function(
+				name,
+				callable->function->expr,
+				callable->function->definition_arguments,
+				callable->defining_context,
+				evalCtx.ctx,
+				loc
+			);
+		} else {
+			const Value* function_value;
+			if (Value* callable = boost::get<Value>(&*f)) {
+				function_value = callable;
+			} else if (const Value** callable = boost::get<const Value*>(&*f)) {
+				function_value = *callable;
+			} else {
+				assert(false);
+			}
+			const auto &function = function_value->toFunction();
+			return evaluate_user_function(
+				name,
+				function.getExpr(),
+				*(function.getArgs()),
+				function.getCtx(),
+				evalCtx.ctx,
+				loc
+			);
 		}
 	} catch (EvaluationException &e) {
 		if (e.traceDepth > 0) {
@@ -813,7 +849,7 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 	}
 }
 
-Value evaluate_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
+Value evaluate_user_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
 		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
 {
 	ContextHandle<Context> context{Context::create<Context>(ctx)};

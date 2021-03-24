@@ -23,15 +23,18 @@ void BuiltinContext::init()
 	this->set_variable("PI", M_PI);
 }
 
-Value BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
+boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const std::string &name) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
-		AbstractFunction *f = search->second;
-		if (f->is_enabled()) return f->evaluate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), evalctx);
-		else LOG(message_group::Warning,evalctx->loc,this->documentPath(),"Experimental builtin function '%1$s' is not enabled",name);
+		BuiltinFunction *f = search->second;
+		if (f->is_enabled()) {
+			return CallableFunction{CallableBuiltinFunction{(const_cast<BuiltinContext *>(this))->get_shared_ptr(), f}};
+		}
+		
+		LOG(message_group::Warning,Location::NONE,"","Experimental builtin function '%1$s' is not enabled",name);
 	}
-	return Context::evaluate_function(name, evalctx);
+	return Context::lookup_local_function(name);
 }
 
 class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const

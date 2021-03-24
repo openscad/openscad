@@ -84,17 +84,15 @@ void ModuleContext::initializeModule(const UserModule &module)
 //	evaluateAssignments(module.scope.assignments);
 }
 
-shared_ptr<const UserFunction> ModuleContext::findLocalFunction(const std::string &name) const
+boost::optional<CallableFunction> ModuleContext::lookup_local_function(const std::string &name) const
 {
- 	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
-		auto f = this->functions_p->find(name)->second;
-		if (!f->is_enabled()) {
-			LOG(message_group::Warning,Location::NONE,"","Experimental builtin function '%1$s' is not enabled.",name);
-			return nullptr;
+	if (functions_p) {
+		const auto& search = functions_p->find(name);
+		if (search != functions_p->end()) {
+			return CallableFunction{CallableUserFunction{(const_cast<ModuleContext *>(this))->get_shared_ptr(), search->second.get()}};
 		}
-		return f;
 	}
-	return nullptr;
+	return boost::none;
 }
 
 shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &name) const
@@ -112,15 +110,6 @@ shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &n
 		return m;
 	}
 	return nullptr;
-}
-
-Value ModuleContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	const auto foundf = findLocalFunction(name);
-	std::shared_ptr<Context> self = (const_cast<ModuleContext *>(this))->get_shared_ptr();
-	if (foundf) return foundf->evaluate(self, evalctx);
-
-	return Context::evaluate_function(name, evalctx);
 }
 
 AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
@@ -163,32 +152,27 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-Value FileContext::sub_evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx, FileModule *usedmod) const
+boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string &name) const
 {
-	ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
-	ctx->initializeModule(*usedmod);
-	// FIXME: Set document path
-#ifdef DEBUG
-	PRINTDB("New lib Context for %s func:", name);
-	PRINTDB("%s",ctx->dump(nullptr, nullptr));
-#endif
-	return usedmod->scope.functions[name]->evaluate(ctx.ctx, evalctx);
-}
-
-Value FileContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	const auto foundf = findLocalFunction(name);
-	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
-	if (foundf) return foundf->evaluate(self, evalctx);
-
+	auto result = ModuleContext::lookup_local_function(name);
+	if (result) {
+		return result;
+	}
+	
 	for (const auto &m : *this->usedlibs_p) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = ModuleCache::instance()->lookup(m);
-		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
-			return sub_evaluate_function(name, evalctx, usedmod);
+		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
+			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
+			ctx->initializeModule(*usedmod);
+#ifdef DEBUG
+			PRINTDB("New lib Context for %s func:", name);
+			PRINTDB("%s",ctx->dump(nullptr, nullptr));
+#endif
+			return CallableFunction{CallableUserFunction{ctx.ctx, usedmod->scope.functions[name].get()}};
+		}
 	}
-
-	return ModuleContext::evaluate_function(name, evalctx);
+	return boost::none;
 }
 
 AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const

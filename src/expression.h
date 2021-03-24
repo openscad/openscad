@@ -2,10 +2,11 @@
 
 #include <string>
 #include <vector>
-#include "value.h"
-#include "memory.h"
-#include "boost-utils.h"
 #include "Assignment.h"
+#include "boost-utils.h"
+#include "function.h"
+#include "memory.h"
+#include "value.h"
 
 class Expression : public ASTNode
 {
@@ -157,6 +158,7 @@ class FunctionCall : public Expression
 {
 public:
 	FunctionCall(Expression *expr, const AssignmentList &arglist, const Location &loc);
+	boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	const std::string& get_name() const { return name; }
@@ -283,7 +285,7 @@ private:
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
 
-Value evaluate_function(const std::string& name,
+Value evaluate_user_function(const std::string& name,
 		const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
 		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
 		const Location& loc);
