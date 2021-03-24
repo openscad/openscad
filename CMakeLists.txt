@@ -728,8 +728,10 @@ endif()
 if (SNAPSHOT)
   add_definitions(-DOPENSCAD_SNAPSHOT)
   set(RESOURCE_FILES icons/icon-nightly.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32-nightly.rc)
 else()
   set(RESOURCE_FILES icons/OpenSCAD.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32.rc)
 endif()
 
 if(ENABLE_SPNAV)
@@ -737,7 +739,7 @@ if(ENABLE_SPNAV)
   list(APPEND Sources src/input/SpaceNavInputDriver.cc)
 endif()
 
-add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
 add_custom_command(TARGET OpenSCAD POST_BUILD
     COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
