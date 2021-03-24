@@ -114,19 +114,8 @@ void Context::apply_variables(const std::shared_ptr<Context> &other)
 	this->variables.applyFrom(other->variables);
 }
 
-/*!
-  Apply config variables of 'other' to this context, from the full context stack of 'other', bottom-up.
-*/
 void Context::apply_config_variables(const std::shared_ptr<Context> &other)
 {
-	if (other.get() == this) {
-		// Anything in 'other' and its ancestors is already part of this context, no need to descend any further.
-		return;
-	}
-	if (other->parent) {
-		// Assign parent's variables first, since they might be overridden by a child
-		apply_config_variables(other->parent);
-	}
 	this->config_variables.applyFrom(other->config_variables);
 }
 

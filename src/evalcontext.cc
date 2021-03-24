@@ -84,15 +84,17 @@ shared_ptr<ModuleInstantiation> EvalContext::getChild(size_t i) const
 
 void EvalContext::assignTo(std::shared_ptr<Context> target) const
 {
+	std::set<std::string> seen;
 	for (const auto &assignment : this->eval_arguments) {
 		Value v = (assignment->getExpr()) ? assignment->getExpr()->evaluate(target) : Value::undefined.clone();
 		
 		if (assignment->getName().empty()) {
 			LOG(message_group::Warning,this->loc,target->documentPath(),"Assignment without variable name %1$s",v.toEchoString());
-		} else if (target->has_local_variable(assignment->getName())) {
+		} else if (seen.find(assignment->getName()) != seen.end()) {
 			LOG(message_group::Warning,this->loc,target->documentPath(),"Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),v.toEchoString());
 		} else {
 			target->set_variable(assignment->getName(), std::move(v));
+			seen.insert(assignment->getName());
 		}
 	}
 }
