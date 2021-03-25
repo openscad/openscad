@@ -73,7 +73,7 @@ class TernaryOp : public Expression
 {
 public:
 	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -186,7 +186,7 @@ class Assert : public Expression
 {
 public:
 	Assert(const AssignmentList &args, Expression *expr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -198,7 +198,7 @@ class Echo : public Expression
 {
 public:
 	Echo(const AssignmentList &args, Expression *expr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -210,7 +210,7 @@ class Let : public Expression
 {
 public:
 	Let(const AssignmentList &args, Expression *expr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -284,12 +284,3 @@ private:
 };
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
-
-Value evaluate_user_function(
-	std::string name,
-	std::shared_ptr<Expression> expr,
-	AssignmentList const* parameters,
-	std::shared_ptr<Context> defining_context,
-	const std::shared_ptr<EvalContext>& evalctx,
-	Location loc
-);
