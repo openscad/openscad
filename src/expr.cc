@@ -508,7 +508,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 			return evaluate_user_function(
 				name,
 				callable->function->expr,
-				callable->function->definition_arguments,
+				&callable->function->definition_arguments,
 				callable->defining_context,
 				evalCtx.ctx,
 				loc
@@ -526,7 +526,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 			return evaluate_user_function(
 				name,
 				function.getExpr(),
-				*(function.getArgs()),
+				function.getArgs().get(),
 				function.getCtx(),
 				evalCtx.ctx,
 				loc
@@ -849,77 +849,105 @@ void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_
 	}
 }
 
-Value evaluate_user_function(const std::string& name, const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
-		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx, const Location& loc)
-{
-	ContextHandle<Context> context{Context::create<Context>(ctx)};
-	context->setVariables(evalctx, definition_arguments);
+Value evaluate_user_function(
+	std::string name,
+	std::shared_ptr<Expression> expr,
+	AssignmentList const* definition_arguments,
+	std::shared_ptr<Context> defining_context,
+	const std::shared_ptr<EvalContext>& evalctx,
+	Location loc
+) {
+	ContextHandle<Context> context{Context::create<Context>(defining_context)};
+	context->setVariables(evalctx, *definition_arguments);
 
-	std::shared_ptr<Expression> subExpr = expr;
-
-	// Repeatedly simplify subExpr until it reduces to either a tail call,
+	// Repeatedly simplify expr until it reduces to either a tail call,
 	// or an expression that cannot be simplified in-place. If the latter,
-	// recurse. If the former, substitute the function body for subExpr,
+	// recurse. If the former, substitute the function body for expr,
 	// thereby implementing tail recursion optimization.
 	unsigned int counter = 0;
 	while (true) {
-		if (!subExpr) {
+		if (!expr) {
 			return Value::undefined.clone();
 		}
 		
-		const auto& subExprRef = *subExpr;
-		if (typeid(subExprRef) == typeid(TernaryOp)) {
-			const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(subExpr);
-			subExpr = ternary->evaluateStep(context.ctx);
+		const auto& exprRef = *expr;
+		if (typeid(exprRef) == typeid(TernaryOp)) {
+			const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(expr);
+			expr = ternary->evaluateStep(context.ctx);
 		}
-		else if (typeid(subExprRef) == typeid(Assert)) {
-			const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(subExpr);
-			subExpr = assertion->evaluateStep(context.ctx);
+		else if (typeid(exprRef) == typeid(Assert)) {
+			const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(expr);
+			expr = assertion->evaluateStep(context.ctx);
 		}
-		else if (typeid(subExprRef) == typeid(Echo)) {
-			const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(subExpr);
-			subExpr = echo->evaluateStep(context.ctx);
+		else if (typeid(exprRef) == typeid(Echo)) {
+			const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(expr);
+			expr = echo->evaluateStep(context.ctx);
 		}
-		else if (typeid(subExprRef) == typeid(Let)) {
-			const shared_ptr<Let> &let = static_pointer_cast<Let>(subExpr);
+		else if (typeid(exprRef) == typeid(Let)) {
+			const shared_ptr<Let> &let = static_pointer_cast<Let>(expr);
 			std::shared_ptr<Context> new_context;
 			{
 				ContextHandle<Context> let_context{Context::create<Context>(context.ctx)};
 				let_context->apply_config_variables(context.ctx);
-				subExpr = let->evaluateStep(let_context.ctx);
+				expr = let->evaluateStep(let_context.ctx);
 				new_context = let_context.ctx;
 			}
 			// The $let_context handle must be popped off the stack,
 			// making $context the top of the stack, before $context can be modified.
 			context = std::move(new_context);
 		}
-		else if (typeid(subExprRef) == typeid(FunctionCall)) {
-			const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(subExpr);
-			if (name == call->get_name()) {
-				if (counter++ == 1000000) {
-					LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
-					throw RecursionException::create("function", name,loc);
+		else if (typeid(exprRef) == typeid(FunctionCall)) {
+			const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(expr);
+			
+			std::shared_ptr<Context> new_context;
+			{
+				ContextHandle<EvalContext> call_evalCtx{Context::create<EvalContext>(context.ctx, call->arguments, call->location())};
+				
+				auto f = call->evaluate_function_expression(context.ctx);
+				if (!f) {
+					return Value::undefined.clone();
+				} else if (CallableBuiltinFunction* callable = boost::get<CallableBuiltinFunction>(&*f)) {
+					return callable->function->evaluate(callable->containing_context, call_evalCtx.ctx);
+				} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
+					name = callable->function->name;
+					expr = callable->function->expr;
+					definition_arguments = &callable->function->definition_arguments;
+					defining_context = callable->defining_context;
+				} else {
+					const Value* function_value;
+					if (Value* callable = boost::get<Value>(&*f)) {
+						function_value = callable;
+					} else if (const Value** callable = boost::get<const Value*>(&*f)) {
+						function_value = *callable;
+					} else {
+						assert(false);
+					}
+					const auto &function = function_value->toFunction();
+					name = call->name;
+					expr = function.getExpr();
+					definition_arguments = function.getArgs().get();
+					defining_context = function.getCtx();
 				}
 				
-				std::shared_ptr<Context> new_context;
-				{
-					ContextHandle<EvalContext> call_evalCtx{Context::create<EvalContext>(context.ctx, call->arguments, call->location())};
-					ContextHandle<Context> body_context{Context::create<Context>(ctx)};
-					body_context->apply_config_variables(context.ctx);
-					body_context->setVariables(call_evalCtx.ctx, definition_arguments);
-					new_context = body_context.ctx;
-				}
-				// The $call_evalCtx and $body_context handles must be popped off the stack,
-				// making $context the top of the stack, before $context can be modified.
-				context = std::move(new_context);
-				subExpr = expr;
+				loc = call->location();
+				
+				ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+				body_context->apply_config_variables(context.ctx);
+				body_context->setVariables(call_evalCtx.ctx, *definition_arguments);
+				new_context = body_context.ctx;
 			}
-			else {
-				return subExpr->evaluate(context.ctx);
+			
+			if (counter++ == 1000000) {
+				LOG(message_group::Error,loc,context.ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
+				throw RecursionException::create("function", name,loc);
 			}
+			
+			// The $call_evalCtx and $body_context handles must be popped off the stack,
+			// making $context the top of the stack, before $context can be modified.
+			context = std::move(new_context);
 		}
 		else {
-			return subExpr->evaluate(context.ctx);
+			return expr->evaluate(context.ctx);
 		}
 	}
 }

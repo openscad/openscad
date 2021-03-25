@@ -285,7 +285,11 @@ private:
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
 
-Value evaluate_user_function(const std::string& name,
-		const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
-		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
-		const Location& loc);
+Value evaluate_user_function(
+	std::string name,
+	std::shared_ptr<Expression> expr,
+	AssignmentList const* definition_arguments,
+	std::shared_ptr<Context> defining_context,
+	const std::shared_ptr<EvalContext>& evalctx,
+	Location loc
+);
