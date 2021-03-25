@@ -482,7 +482,7 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(con
 		if (v.type() == Value::Type::FUNCTION) {
 			return CallableFunction{std::move(v)};
 		} else {
-			LOG(message_group::Warning,loc,context->documentPath(),"Can't call function on %1$s",name);
+			LOG(message_group::Warning,loc,context->documentPath(),"Can't call function on %1$s",v.typeName());
 			return boost::none;
 		}
 	}

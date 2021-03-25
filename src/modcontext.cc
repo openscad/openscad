@@ -92,7 +92,7 @@ boost::optional<CallableFunction> ModuleContext::lookup_local_function(const std
 			return CallableFunction{CallableUserFunction{(const_cast<ModuleContext *>(this))->get_shared_ptr(), search->second.get()}};
 		}
 	}
-	return boost::none;
+	return Context::lookup_local_function(name);
 }
 
 shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &name) const
