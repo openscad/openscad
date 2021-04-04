@@ -22,7 +22,7 @@ public:
     void createTab(const QString &filename);
     void openTabFile(const QString &filename);
     void setTabName(const QString &filename, EditorInterface *edt = nullptr);
-    void refreshDocument();
+    bool refreshDocument();
     bool shouldClose();
     bool save(EditorInterface *edt);
     bool saveAs(EditorInterface *edt);
