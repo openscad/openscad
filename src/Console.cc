@@ -25,33 +25,100 @@
  */
 
 #include <QMenu>
+#include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
-
+#include <QRegularExpression>
+#include <QString>
 #include "Console.h"
 #include "printutils.h"
-
-
-#include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
-#include <boost/algorithm/string/split.hpp> // Include for boost::split
-
-#include <boost/filesystem.hpp>
+#include "Preferences.h"
+#include "UIUtils.h"
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
 	setupUi(this);
 	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
 	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
-	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(QString)));
+	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
+	this->setUndoRedoEnabled(false);
+	this->appendCursor = this->textCursor();
 }
 
 Console::~Console()
 {
 }
 
+void Console::addMessage(const Message& msg)
+{
+	// Messages with links to source must be inserted separately,
+	// since anchor href is set via the "format" argument of:
+	//    QTextCursor::insertText(const QString &text, const QTextCharFormat &format)
+	// But if no link, and matching colors, then concat message strings with newline inbetween.
+	// This results in less calls to insertText in Console::update(), and much better performance.
+	if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() && 
+	    (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group)) )
+	{
+		auto &lastmsg = this->msgBuffer.back().message;
+		lastmsg += QChar('\n');
+		lastmsg += QString::fromStdString(msg.str());
+	} else {
+		this->msgBuffer.push_back(
+			{
+				QString::fromStdString(msg.str()), 
+				(getGroupTextPlain(msg.group) || msg.loc.isNone()) ? 
+					QString() : 
+					QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName())),
+				msg.group
+			}
+		);
+	}
+}
+
+// Slow due to HTML parsing required, only used for initial Console header.
+void Console::addHtml(const QString& html)
+{
+	this->appendHtml(html+QStringLiteral("&nbsp;"));
+	this->appendCursor.movePosition(QTextCursor::End);
+	this->setTextCursor(this->appendCursor);
+}
+
+void Console::setFont(const QString &fontFamily, uint ptSize) {
+	this->document()->setDefaultFont(QFont(fontFamily, ptSize));
+}
+
+void Console::update()
+{
+	// Faster to ignore block count until group of messages are done inserting.
+	this->setMaximumBlockCount(0);
+	for (const auto &line : this->msgBuffer) {
+		QTextCharFormat charFormat;
+		if (line.group != message_group::None && line.group != message_group::Echo)
+			charFormat.setForeground(QBrush(QColor("#000000")));
+		charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
+		if (!line.link.isEmpty()) {
+			charFormat.setAnchor(true);
+			charFormat.setAnchorHref(line.link);
+			charFormat.setFontUnderline(true);
+		}
+		// TODO insert timestamp as tooltip? (see #3570)
+		//   may have to get rid of concatenation feature of Console::addMessage,
+		//   or just live with grouped messages using the same timestamp
+		//charFormat.setToolTip(timestr);
+
+		appendCursor.insertBlock();
+		appendCursor.insertText(line.message, charFormat);
+	}
+	msgBuffer.clear();
+	this->setTextCursor(appendCursor);
+	this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
+}
+
 void Console::actionClearConsole_triggered()
 {
+	this->msgBuffer.clear();
 	this->document()->clear();
+	this->appendCursor = this->textCursor();
 }
 
 void Console::actionSaveAs_triggered()
@@ -77,26 +144,29 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
 	menu->insertAction(menu->actions().at(0), this->actionClear);
 	menu->addSeparator();
 	menu->addAction(this->actionSaveAs);
-    menu->exec(event->globalPos());
+	menu->exec(event->globalPos());
 	delete menu;
 }
 
-void Console::hyperlinkClicked(QString loc) //non const because of manipulation
+void Console::hyperlinkClicked(const QString& url)
 {
-	// for error jumps
-	std::string s = loc.toStdString();
-	std::vector<std::string> words;
-	boost::split(words, s, boost::is_any_of(", "), boost::token_compress_on);
-
-	if(words.size()!=2) return;
-	if(words[0].empty() || words[1].empty()) return;  //for empty locations
-	int line = std::stoi(words[0]);
-	boost::filesystem::path p = boost::filesystem::path(words[1]);
-	if(boost::filesystem::is_regular_file(p)) 
-	{
-		QString path = QString::fromStdString(words[1]);
-		emit openFile(path,line-1);
+	if (url.startsWith("http://") || url.startsWith("https://")) {
+		UIUtils::openURL(url);
+		return;
 	}
-	else openFile(QString(),line-1);
-	
+
+	const QRegularExpression regEx("^(\\d+),(.*)$");
+	const auto match = regEx.match(url);
+	if (match.hasMatch()) {
+		const auto line = match.captured(1).toInt();
+		const auto file = match.captured(2);
+		const auto info = QFileInfo(file);
+		if (info.isFile()) {
+			if (info.isReadable()) {
+				emit openFile(file, line - 1);
+			}
+		} else {
+			openFile(QString(), line - 1);
+		}
+	}
 }

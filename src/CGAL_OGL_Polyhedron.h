@@ -36,7 +36,7 @@
 using CGAL::OGL::SNC_BOUNDARY;
 using CGAL::OGL::SNC_SKELETON;
 
-class CGAL_OGL_Polyhedron : public CGAL::OGL::Polyhedron
+class CGAL_OGL_Polyhedron : public virtual CGAL::OGL::Polyhedron
 {
 public:
 

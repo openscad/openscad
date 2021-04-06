@@ -30,16 +30,6 @@
 #include "printutils.h"
 
 #ifdef ENABLE_LIB3MF
-#ifdef ENABLE_CGAL
-#include <Model/COM/NMR_DLLInterfaces.h>
-#undef BOOL
-using namespace NMR;
-
-#include <algorithm>
-
-#include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
-#include "cgalutils.h"
 
 static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
@@ -52,6 +42,19 @@ static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 	stream->seekp(pos);
 	return !(*stream);
 }
+
+#ifndef LIB3MF_API_2
+#include <Model/COM/NMR_DLLInterfaces.h>
+#undef BOOL
+using namespace NMR;
+
+#include <algorithm>
+
+#ifdef ENABLE_CGAL
+
+#include "CGAL_Nef_polyhedron.h"
+#include "cgal.h"
+#include "cgalutils.h"
 
 static void export_3mf_error(const std::string msg, PLib3MFModel *&model)
 {
@@ -201,6 +204,194 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 }
 
 #endif // ENABLE_CGAL
+
+#else // LIB3MF_API_2
+
+#include "lib3mf_implicit.hpp"
+
+#include <algorithm>
+
+#ifdef ENABLE_CGAL
+
+#include "CGAL_Nef_polyhedron.h"
+#include "cgal.h"
+#include "cgalutils.h"
+
+static void export_3mf_error(const std::string msg)
+{
+	LOG(message_group::Export_Error,Location::NONE,"",std::string(msg));
+}
+
+/*
+ * PolySet must be triangulated.
+ */
+static bool append_polyset(const PolySet &ps, Lib3MF::PWrapper &wrapper, Lib3MF::PModel &model)
+{
+	try {
+		auto mesh = model->AddMeshObject();
+		if (!mesh) return false;
+		mesh->SetName("OpenSCAD Model");
+
+		auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
+			try {
+				Lib3MF::sPosition v{(Lib3MF_single)coords[0], (Lib3MF_single)coords[1], (Lib3MF_single)coords[2]};
+				mesh->AddVertex(v);
+			} catch (Lib3MF::ELib3MFException &e) {
+				export_3mf_error(e.what());
+				return false;
+			}
+			return true;
+		};
+
+		auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
+			try {
+				Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
+				mesh->AddTriangle(t);
+			} catch (Lib3MF::ELib3MFException &e) {
+				export_3mf_error(e.what());
+				return false;
+			}
+			return true;
+		};
+
+		Export::ExportMesh exportMesh{ps};
+
+		if (!exportMesh.foreach_vertex(vertexFunc)) {
+			export_3mf_error("Can't add vertex to 3MF model.");
+			return false;
+		}
+
+		if (!exportMesh.foreach_triangle(triangleFunc)) {
+			export_3mf_error("Can't add triangle to 3MF model.");
+			return false;
+		}
+
+		Lib3MF::PBuildItem builditem;
+		try {
+			model->AddBuildItem(mesh.get(), wrapper->GetIdentityTransform());
+		} catch (Lib3MF::ELib3MFException &e) {
+			export_3mf_error(e.what());
+		}
+	} catch (Lib3MF::ELib3MFException &e) {
+		export_3mf_error(e.what());
+		return false;
+	}
+	return true;
+}
+
+static bool append_nef(const CGAL_Nef_polyhedron &root_N, Lib3MF::PWrapper &wrapper, Lib3MF::PModel &model)
+{
+	if (!root_N.p3) {
+		LOG(message_group::Export_Error,Location::NONE,"","Export failed, empty geometry.");
+		return false;
+	}
+
+	if (!root_N.p3->is_simple()) {
+		LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
+	}
+
+	PolySet ps{3};
+	const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3, ps);
+	if (err) {
+		export_3mf_error("Error converting NEF Polyhedron.");
+		return false;
+	}
+
+	return append_polyset(ps, wrapper, model);
+}
+
+static bool append_3mf(const shared_ptr<const Geometry> &geom, Lib3MF::PWrapper &wrapper, Lib3MF::PModel &model)
+{
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const auto &item : geomlist->getChildren()) {
+			if (!append_3mf(item.second, wrapper, model)) return false;
+		}
+	}
+	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+		return append_nef(*N, wrapper, model);
+	}
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+		PolySet triangulated(3);
+		PolysetUtils::tessellate_faces(*ps, triangulated);
+		return append_polyset(triangulated, wrapper, model);
+	}
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+		assert(false && "Unsupported file format");
+	} else {
+		assert(false && "Not implemented");
+	}
+
+	return true;
+}
+
+/*!
+    Saves the current 3D Geometry as 3MF to the given file.
+    The file must be open.
+ */
+
+void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
+{
+	Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
+	Lib3MF::PWrapper wrapper;
+	
+	try {
+		wrapper = Lib3MF::CWrapper::loadLibrary();
+		wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
+		if (interfaceVersionMajor != LIB3MF_VERSION_MAJOR) {
+			LOG(message_group::Error,Location::NONE,"","Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+				interfaceVersionMajor,interfaceVersionMinor,interfaceVersionMicro,
+				LIB3MF_VERSION_MAJOR,LIB3MF_VERSION_MINOR,LIB3MF_VERSION_MICRO);
+			return;
+		}
+	} catch (Lib3MF::ELib3MFException &e) {
+		LOG(message_group::Export_Error,Location::NONE,"",e.what());
+		return;
+	}
+
+	if ((interfaceVersionMajor != LIB3MF_VERSION_MAJOR)) {
+		LOG(message_group::Export_Error,Location::NONE,"","Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",interfaceVersionMajor,interfaceVersionMinor,interfaceVersionMicro,LIB3MF_VERSION_MAJOR,LIB3MF_VERSION_MINOR,LIB3MF_VERSION_MICRO);
+		return;
+	}
+
+	Lib3MF::PModel model;
+	try {
+		model = wrapper->CreateModel();
+		if (!model) {
+			LOG(message_group::Export_Error,Location::NONE,"","Can't create 3MF model.");
+			return;
+		}
+	} catch (Lib3MF::ELib3MFException &e) {
+		LOG(message_group::Export_Error,Location::NONE,"",e.what());
+		return;
+	}
+	
+	if (!append_3mf(geom, wrapper, model)) {
+		return;
+	}
+
+	Lib3MF::PWriter writer;
+	try {
+		writer = model->QueryWriter("3mf");
+		if (!writer) {
+			export_3mf_error("Can't get writer for 3MF model.");
+			return;
+		}
+	} catch (Lib3MF::ELib3MFException &e) {
+		export_3mf_error("Can't get writer for 3MF model.");
+		return;
+	}
+
+	try {
+		writer->WriteToCallback((Lib3MF::WriteCallback)lib3mf_write_callback, (Lib3MF::SeekCallback)lib3mf_seek_callback, &output);
+	} catch (Lib3MF::ELib3MFException &e) {
+		LOG(message_group::Export_Error,Location::NONE,"",e.what());
+	}
+	output.flush();
+}
+
+#endif // ENABLE_CGAL
+
+#endif // LIB3MF_API_2
 
 #else // ENABLE_LIB3MF
 

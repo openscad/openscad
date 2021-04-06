@@ -1,6 +1,6 @@
 name: openscad-nightly
 title: OpenSCAD-Nightly
-base: core
+base: core20
 version: "git"
 summary: OpenSCAD - Design. Code. Create.
 description: >
@@ -29,8 +29,6 @@ grade: stable
 architectures:
   - build-on: amd64
     run-on: amd64
-  - build-on: i386
-    run-on: i386
   - build-on: arm64
     run-on: arm64
   - build-on: s390x
@@ -40,8 +38,9 @@ architectures:
 
 apps:
   openscad-nightly:
-    command: desktop-launch openscad-nightly
-    plugs: [desktop, x11, wayland, opengl, home, audio-playback, pulseaudio, network, removable-media, joystick]
+    command: usr/bin/openscad-nightly
+    command-chain: [ bin/desktop-launch ]
+    plugs: [desktop, desktop-legacy, x11, wayland, opengl, home, audio-playback, pulseaudio, network, removable-media, joystick]
     desktop: usr/share/applications/openscad-nightly.desktop
     environment:
       DISABLE_WAYLAND: 1
@@ -50,66 +49,70 @@ parts:
   opencsg:
     disable-parallel: true
     source: http://www.opencsg.org/OpenCSG-1.4.2.tar.gz
-    plugin: qmake
+    plugin: make
     override-build: |
       ( cd src && qmake INSTALLDIR=/usr && sed -i 's,-isystem /usr/include,,' Makefile )
       make -C src
       make -C src INSTALL_ROOT="${SNAPCRAFT_PART_INSTALL}" install
-    qt-version: qt5
     build-packages:
+    - libglew-dev
     - freeglut3-dev
     stage-packages:
-    - libglew1.13
+    - libglew2.1
 
   cgal:
     disable-parallel: true
-    source: https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.14.3/CGAL-4.14.3.tar.xz
+    source: https://github.com/CGAL/cgal/releases/download/v5.2/CGAL-5.2-library.tar.xz
     plugin: cmake
-    configflags: [ "-DCMAKE_BUILD_TYPE=Release" ]
+    cmake-parameters: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=/usr" ]
     build-packages:
     - cmake
     - libboost-dev
     - libboost-thread-dev
-    stage-packages:
-    - libboost-system1.58.0
-    - libboost-thread1.58.0
 
   lib3mf:
     source: https://github.com/3MFConsortium/lib3mf/archive/v1.8.1.tar.gz
     plugin: cmake
-    configflags: [ "-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DLIB3MF_TESTS=OFF" ]
-    override-pull: |
-        snapcraftctl pull
-        sed -i -e 's/\<DESCRIPTION.*/LANGUAGES CXX)/' CMakeLists.txt
-        cat -n CMakeLists.txt
+    cmake-parameters: [
+        "-DCMAKE_INSTALL_PREFIX=/usr",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DLIB3MF_TESTS=OFF"
+    ]
     build-packages:
     - uuid-dev
 
   openscad-nightly:
     disable-parallel: true
     source: .
-    plugin: qmake
-    qt-version: qt5
+    plugin: cmake
+    cmake-parameters: [
+        "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
+        "-DCMAKE_INSTALL_PREFIX=/usr",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DSUFFIX=nightly",
+        "-DEXPERIMENTAL=ON",
+        "-DSNAPSHOT=ON"
+    ]
     after: [ desktop-qt5, opencsg, cgal, lib3mf ]
-    project-files: [ "openscad.pro" ]
-    options: [ "PREFIX=/usr", "CONFIG+=experimental", "CONFIG-=debug", "SUFFIX=-nightly" ]
     build-packages:
     - git
     - qt5-default
     - qtbase5-dev
     - qtmultimedia5-dev
     - libqt5opengl5-dev
+    - libqt5gamepad5-dev
     - qt5-qmake
     - libeigen3-dev
     - libglib2.0-dev
     - bison
     - flex
     - libglew-dev
+    - libglvnd-dev
     - libgmp-dev
     - libmpfr-dev
+    - libcairo2-dev
     - python
     - cmake
-    - libcairo2-dev
     - libboost-dev
     - libboost-regex-dev
     - libboost-system-dev
@@ -126,28 +129,31 @@ parts:
     - libharfbuzz-dev
     - libfreetype6-dev
     - libfontconfig1-dev
-    - libqt5scintilla2-dev
+    - libqscintilla2-qt5-dev
     stage-packages:
     - qtwayland5
     - libasyncns0
-    - libboost-filesystem1.58.0
-    - libboost-regex1.58.0
-    - libboost-system1.58.0
-    - libboost-program-options1.58.0
-    - libdouble-conversion1v5
+    - libboost-filesystem1.71.0
+    - libboost-regex1.71.0
+    - libboost-system1.71.0
+    - libboost-program-options1.71.0
+    - libdouble-conversion3
     - libflac8
-    - libglew1.13
+    - libglew2.1
     - libglu1-mesa
-    - libmpfr4
+    - libglvnd0
+    - libopengl0
+    - libmpfr6
     - libogg0
     - libpulse0
-    - libqt5scintilla2-12v5
+    - libqt5gamepad5
     - libqt5multimedia5
     - libqt5printsupport5
+    - libqscintilla2-qt5-15
     - libsndfile1
     - libvorbis0a
     - libvorbisenc2
-    - libzip4
+    - libzip5
 
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
   desktop-qt5:

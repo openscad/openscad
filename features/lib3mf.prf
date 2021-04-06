@@ -14,15 +14,9 @@ isEmpty(LIB3MF_LIBPATH) {
   LIB3MF_LIBPATH = $$(LIB3MF_LIBPATH)
 }
 
-exists($$LIB3MF_INCLUDEPATH/Model/COM/NMR_DLLInterfaces.h) {
-  ENABLE_LIB3MF=yes
-} else {
-  LIB3MF_INCLUDEPATH =
-  LIB3MF_LIBPATH =
-}
-
 isEmpty(LIB3MF_INCLUDEPATH) {
   LIB3MF_CFLAGS = $$system("$$PKG_CONFIG --cflags lib3MF")
+  LIB3MF_INCLUDEPATH = $$system("$$PKG_CONFIG --variable=includedir lib3MF")
   !isEmpty(LIB3MF_CFLAGS) {
     ENABLE_LIB3MF=yes
   }
@@ -32,6 +26,7 @@ isEmpty(LIB3MF_INCLUDEPATH) {
 
 isEmpty(LIB3MF_LIBPATH) {
   LIB3MF_LIBS = $$system("$$PKG_CONFIG --libs lib3MF")
+  LIB3MF_LIBPATH = $$system("$$PKG_CONFIG --variable=libdir lib3MF")
   !isEmpty(LIB3MF_LIBS) {
     ENABLE_LIB3MF=yes
   }
@@ -39,11 +34,25 @@ isEmpty(LIB3MF_LIBPATH) {
   LIB3MF_LIBS = -L$$LIB3MF_LIBPATH -l3MF
 }
 
+exists($$LIB3MF_INCLUDEPATH/Model/COM/NMR_DLLInterfaces.h) {
+  ENABLE_LIB3MF=yes
+  LIB3MF_API="API 1.0"
+} else:exists($$LIB3MF_INCLUDEPATH/lib3mf_implicit.hpp) {
+  ENABLE_LIB3MF=yes
+  LIB3MF_API="API 2.0"
+  DEFINES += LIB3MF_API_2
+  LIB3MF_LIBS = -L$$LIB3MF_LIBPATH -l3mf
+} else {
+  ENABLE_LIB3MF=
+  LIB3MF_INCLUDEPATH =
+  LIB3MF_LIBPATH =
+}
+
 !isEmpty(ENABLE_LIB3MF) {
   DEFINES += ENABLE_LIB3MF
   QMAKE_CXXFLAGS += $$LIB3MF_CFLAGS
   LIBS += $$LIB3MF_LIBS
-  message("3MF Import/Export enabled")
+  message("3MF Import/Export enabled $$LIB3MF_API")
 } else {
   message("3MF Import/Export disabled")
 }

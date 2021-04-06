@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# This is used to verify that all the dependant libraries of a Mac OS X executable
+# This is used to verify that all the dependent libraries of a Mac OS X executable
 # are present and that they are backwards compatible with at least 10.9.
 # Run with an executable as parameter
 # Will return 0 if the executable an all libraries are OK

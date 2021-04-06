@@ -416,10 +416,6 @@
     <addaction name="separator"/>
     <addaction name="viewActionHideEditorToolBar"/>
     <addaction name="viewActionHide3DViewToolBar"/>
-    <addaction name="viewActionHideEditor"/>
-    <addaction name="viewActionHideConsole"/>
-    <addaction name="viewActionHideParameters"/>
-    <addaction name="viewActionHideErrorLog"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -432,10 +428,28 @@
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="windowActionSelectEditor"/>
+    <addaction name="windowActionSelectConsole"/>
+    <addaction name="windowActionSelectErrorLog"/>
+    <addaction name="windowActionSelectCustomizer"/>
+    <addaction name="separator"/>
+    <addaction name="windowActionNextWindow"/>
+    <addaction name="windowActionPreviousWindow"/>
+    <addaction name="separator"/>
+    <addaction name="windowActionHideEditor"/>
+    <addaction name="windowActionHideConsole"/>
+    <addaction name="windowActionHideErrorLog"/>
+    <addaction name="windowActionHideCustomizer"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_Design"/>
    <addaction name="menu_View"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="tabToolBar">
@@ -632,6 +646,9 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <property name="leftMargin">
       <number>0</number>
@@ -654,7 +671,7 @@
         </size>
        </property>
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::StrongFocus</enum>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -699,6 +716,9 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="errorLogDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <property name="leftMargin">
       <number>0</number>
@@ -968,12 +988,12 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="viewActionHideEditor">
+  <action name="windowActionHideEditor">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>H&amp;ide editor</string>
+    <string>Hide Editor</string>
    </property>
   </action>
   <action name="designActionReloadAndPreview">
@@ -1254,6 +1274,9 @@
    <property name="text">
     <string>Ce&amp;nter</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+0</string>
+   </property>
   </action>
   <action name="viewActionPerspective">
    <property name="checkable">
@@ -1279,12 +1302,12 @@
     <string>&amp;Orthogonal</string>
    </property>
   </action>
-  <action name="viewActionHideConsole">
+  <action name="windowActionHideConsole">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>H&amp;ide console</string>
+    <string>Hide Console</string>
    </property>
   </action>
   <action name="helpActionAbout">
@@ -1558,7 +1581,7 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="viewActionHideParameters">
+  <action name="windowActionHideCustomizer">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1569,7 +1592,6 @@
     <string>Hide Customizer</string>
    </property>
   </action>
-
   <action name="fileActionExportPDF">
    <property name="icon">
     <iconset resource="../openscad.qrc">
@@ -1579,16 +1601,15 @@
     <string>Export as PDF...</string>
    </property>
   </action>
-  
   <action name="viewActionHide3DViewToolBar">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide 3D view toolbar</string>
+    <string>Hide 3D View toolbar</string>
    </property>
   </action>
-  <action name="viewActionHideErrorLog">
+  <action name="windowActionHideErrorLog">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1596,10 +1617,48 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide ErrorLog</string>
+    <string>Hide Error Log</string>
    </property>
    <property name="toolTip">
     <string>Hide ErrorLog</string>
+   </property>
+  </action>
+  <action name="windowActionSelectEditor">
+   <property name="text">
+    <string>&amp;Editor</string>
+   </property>
+  </action>
+  <action name="windowActionSelectConsole">
+   <property name="text">
+    <string>&amp;Console</string>
+   </property>
+  </action>
+  <action name="windowActionSelectCustomizer">
+   <property name="text">
+    <string>C&amp;ustomizer</string>
+   </property>
+  </action>
+  <action name="windowActionSelectErrorLog">
+   <property name="text">
+    <string>Error &amp;Log</string>
+   </property>
+  </action>
+  <action name="windowActionNextWindow">
+   <property name="text">
+    <string>&amp;Next Window</string>
+   </property>
+  </action>
+  <action name="windowActionPreviousWindow">
+   <property name="text">
+    <string>&amp;Previous Window</string>
+   </property>
+  </action>
+  <action name="editActionInsertTemplate">
+   <property name="text">
+    <string>Insert Template</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Ins</string>
    </property>
   </action>
  </widget>

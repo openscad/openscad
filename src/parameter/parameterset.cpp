@@ -10,6 +10,11 @@ std::string ParameterSet::parameterSetsKey("parameterSets");
 std::string ParameterSet::fileFormatVersionKey("fileFormatVersion");
 std::string ParameterSet::fileFormatVersionValue("1");
 
+void ParameterSet::clear()
+{
+	root.clear();
+}
+
 bool ParameterSet::isEmpty() const
 {
 	const boost::optional<const pt::ptree &> sets{root.get_child_optional(ParameterSet::parameterSetsKey)};
@@ -109,17 +114,17 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 		for (auto &assignment : fileModule->scope.assignments) {
 			for (auto &v : set.get()) {
 				if (v.first == assignment->getName()) {
-					const ValuePtr defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
-					if (defaultValue->type() == Value::Type::STRING) {
-						assignment->setExpr(make_shared<Literal>(ValuePtr(v.second.data())));
+					const Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+					if (defaultValue.type() == Value::Type::STRING) {
+						assignment->setExpr(make_shared<Literal>(v.second.data()));
 					}
-					else if (defaultValue->type() == Value::Type::BOOL) {
-						assignment->setExpr(make_shared<Literal>(ValuePtr(v.second.get_value<bool>())));
+					else if (defaultValue.type() == Value::Type::BOOL) {
+						assignment->setExpr(make_shared<Literal>(Value(v.second.get_value<bool>())));
 					} else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 						if (!params) continue;
 						ContextHandle<Context> ctx{Context::create<Context>()};
-						if (defaultValue->type() == params->evaluate(ctx.ctx)->type()) {
+						if (defaultValue.type() == params->evaluate(ctx.ctx).type()) {
 							assignment->setExpr(params);
 						}
 					}

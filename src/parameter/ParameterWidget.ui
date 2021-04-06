@@ -91,6 +91,9 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
        <property name="toolTip">
         <string>preset selection</string>
        </property>
@@ -153,6 +156,9 @@
      </item>
      <item>
       <widget class="QComboBox" name="comboBoxDetails">
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
        <item>
         <property name="text">
          <string>Show Details</string>
@@ -190,7 +196,7 @@
    <item row="12" column="0" colspan="3">
     <widget class="QScrollArea" name="scrollArea">
      <property name="focusPolicy">
-      <enum>Qt::NoFocus</enum>
+      <enum>Qt::StrongFocus</enum>
      </property>
      <property name="horizontalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -204,7 +210,7 @@
         <x>0</x>
         <y>0</y>
         <width>413</width>
-        <height>522</height>
+        <height>518</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -229,6 +235,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>checkBoxAutoPreview</tabstop>
+  <tabstop>comboBoxDetails</tabstop>
+  <tabstop>reset</tabstop>
+  <tabstop>comboBoxPreset</tabstop>
+  <tabstop>addButton</tabstop>
+  <tabstop>deleteButton</tabstop>
+  <tabstop>presetSaveButton</tabstop>
+  <tabstop>scrollArea</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

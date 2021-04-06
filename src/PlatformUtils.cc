@@ -4,8 +4,8 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
 
-#ifdef INSTALL_SUFFIX
-#define RESOURCE_FOLDER(path) path INSTALL_SUFFIX
+#ifdef OPENSCAD_SUFFIX
+#define RESOURCE_FOLDER(path) path OPENSCAD_SUFFIX
 #else
 #define RESOURCE_FOLDER(path) path
 #endif
@@ -30,7 +30,8 @@ static std::string lookupResourcesPath()
 	const char *searchpath[] = {
 	    "../Resources", 	// Resources can be bundled on Mac.
 	    "../../..",       // Dev location
-	    "..",          // Test location
+	    "../../../..",    // Test location (cmake)
+	    "..",             // Test location
 	    nullptr
 	};
 #else

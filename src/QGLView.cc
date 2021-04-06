@@ -203,7 +203,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
-
+	this->makeCurrent();
 	setupCamera();
 
 	int viewport[4];
@@ -223,6 +223,11 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 	auto glError = glGetError();
 	if (glError != GL_NO_ERROR) {
+		if (statusLabel) {
+			auto status = QString("Center View: OpenGL Error reading Pixel: %s")
+				.arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
+			statusLabel->setText(status);
+		}
 		return;
 	}
 
@@ -298,7 +303,8 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  if (!mouse_drag_moved) {
+  if (!mouse_drag_moved
+      && (event->button() == Qt::RightButton)) {
     QPoint point = event->pos();
     //point.setY(this->height() - point.y());
     emit doSelectObject(point);
@@ -351,7 +357,7 @@ void QGLView::zoomCursor(int x, int y, int zoom)
   const auto old_dist = cam.zoomValue();
   this->cam.zoom(zoom, true);
   const auto dist = cam.zoomValue();
-  const auto ratio = old_dist / dist - 1.0; 
+  const auto ratio = old_dist / dist - 1.0;
   // screen coordinates from -1 to 1
   const auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
   const auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;

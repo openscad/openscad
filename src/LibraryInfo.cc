@@ -33,6 +33,15 @@
 #define LIBZIP_VERSION "<not enabled>"
 #endif
 
+#ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+#ifndef OPENCSG_VERSION_STRING
+#define OPENCSG_VERSION_STRING "unknown, < 1.3.2"
+#endif
+#else
+#define OPENCSG_VERSION_STRING "<not enabled>"
+#endif
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 extern const std::string get_cairo_version();
@@ -76,10 +85,6 @@ std::string LibraryInfo::info()
 	std::string debugstatus("Yes");
 #else
 	std::string debugstatus("No");
-#endif
-
-#ifndef OPENCSG_VERSION_STRING
-#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
 
 #ifdef QT_VERSION
@@ -133,8 +138,10 @@ std::string LibraryInfo::info()
 	  << "\nharfbuzz version: " << get_harfbuzz_version()
 	  << "\ncairo version: " << get_cairo_version()
 	  << "\nlib3mf version: " << get_lib3mf_version()
+#ifdef ENABLE_EXPERIMENTAL
 	  << "\nFeatures: " << Feature::features()
-	  << "\nApplication Path: " << PlatformUtils::applicationPath()
+#endif	  
+		<< "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nUser Documents Path: " << PlatformUtils::userDocumentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()

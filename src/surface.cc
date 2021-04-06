@@ -91,24 +91,24 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 	ContextHandle<Context> c{Context::create<Context>(ctx)};
 	c->setVariables(evalctx, args, optargs);
 
-	auto fileval = c->lookup_variable("file");
-	auto filename = lookup_file(fileval->isUndefined() ? "" : fileval->toString(), inst->path(), c->documentPath());
+	const auto &fileval = c->lookup_variable("file");
+	auto filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c->documentPath());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 
-	auto center = c->lookup_variable("center", true);
-	if (center->type() == Value::Type::BOOL) {
-		node->center = center->toBool();
+	const auto &center = c->lookup_variable("center", true);
+	if (center.type() == Value::Type::BOOL) {
+		node->center = center.toBool();
 	}
 
-	auto convexity = c->lookup_variable("convexity", true);
-	if (convexity->type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(convexity->toDouble());
+	const auto &convexity = c->lookup_variable("convexity", true);
+	if (convexity.type() == Value::Type::NUMBER) {
+		node->convexity = static_cast<int>(convexity.toDouble());
 	}
 
-	auto invert = c->lookup_variable("invert", true);
-	if (invert->type() == Value::Type::BOOL) {
-		node->invert = invert->toBool();
+	const auto &invert = c->lookup_variable("invert", true);
+	if (invert.type() == Value::Type::BOOL) {
+		node->invert = invert.toBool();
 	}
 
 	return node;

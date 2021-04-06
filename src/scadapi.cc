@@ -19,6 +19,24 @@ ScadApi::~ScadApi()
 
 void ScadApi::updateAutoCompletionList(const QStringList &context, QStringList &list)
 {
+    //first see if we are in a string literal. if so, don't allow auto complete
+    bool lastWasEscape=false;
+    bool inString=false;
+    int line, col;
+    qsci->getCursorPosition(&line, &col);
+    std::u32string sLine = qsci->text(line).toStdU32String();
+    int dx = 0;
+    while (col-- > 0) {
+        const char32_t ch = sLine.at(dx++);
+        if (ch == '\\')
+            lastWasEscape = true;   //next character will be literal handle \"
+        else if (lastWasEscape)
+            lastWasEscape = false;
+        else if (ch == '"')        //string toggle
+            inString = !inString;
+    }
+    if (inString) return;  //we are in string literal, don't return autocomplete list
+    //not in string literal, proceed as normal
 	const QString c = context.last();
 	for (int a = 0; a < funcs.size(); ++a) {
 		const ApiFunc &func = funcs.at(a);

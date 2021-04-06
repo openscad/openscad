@@ -26,6 +26,9 @@ public:
 
 	std::string toRelativeString(const std::string &docPath) const;
 
+        bool operator == (Location const& rhs);
+        bool operator != (Location const& rhs);
+
 	static const Location NONE;
 private:
 	int first_line;
@@ -34,9 +37,6 @@ private:
 	int last_col;
 	std::shared_ptr<fs::path> path;
 };
-
-bool operator == (Location const& lhs, Location const& rhs);
-bool operator != (Location const& lhs, Location const& rhs);
 
 class ASTNode
 {

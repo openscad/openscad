@@ -115,7 +115,7 @@ void MouseSelector::init_shader() {
   }
 
   this->shaderinfo.progid = selecthader_prog;
-  this->shaderinfo.type = GLView::shaderinfo_t::SELECT_RENDERING;
+  this->shaderinfo.type = Renderer::SELECT_RENDERING;
   GLint identifier = glGetUniformLocation(selecthader_prog, "frag_idcolor");
   if (identifier < 0) {
     fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);
@@ -182,8 +182,8 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glEnable(GL_DEPTH_TEST);
 
   // call the renderer with the selector shader
-  renderer->draw_with_shader(&this->shaderinfo);
-  OPENGL_TEST("renderer->draw_with_shader");
+  renderer->draw(true, false, &this->shaderinfo);
+  OPENGL_TEST("renderer->draw");
 
   // Not strictly necessary, but a nop if not required.
   glFlush();

@@ -84,7 +84,9 @@ void PRINT(const Message& msgObj)
 	PRINT_NOCACHE(msgObj);
 
 	//to error log
-	if (outputhandler2) {
+	if (outputhandler2 && 
+	    !(msgObj.group==message_group::None || msgObj.group==message_group::Echo || msgObj.group==message_group::Trace)) {
+		
 		outputhandler2(msgObj, outputhandler_data);
 	}
 }
@@ -168,45 +170,58 @@ void resetSuppressedMessages()
 	lastmessages.clear();
 }
 
-
-std::string getGroupName(const enum message_group &groupName)
+std::string getGroupName(const enum message_group& group)
 {
-	std::string group="";
-	switch (groupName)
+	switch (group)
 	{
 	case message_group::None:
 	case message_group::Warning:
-		return group="WARNING";
-		break;
-	case message_group::Error:
-		return group="ERROR";
-		break;
 	case message_group::UI_Warning:
-		return group="UI-WARNING";
-		break;
+		return "WARNING";
+	case message_group::Error:
+	case message_group::UI_Error:
+		return "ERROR";
 	case message_group::Font_Warning:
-		return group="FONT-WARNING";
-		break;
+		return "FONT-WARNING";
 	case message_group::Export_Warning:
-		return group="EXPORT-WARNING";
-		break;
+		return "EXPORT-WARNING";
 	case message_group::Export_Error:
-		return group="EXPORT-ERROR";
-		break;
+		return "EXPORT-ERROR";
 	case message_group::Parser_Error:
-		return group="PARSER-ERROR";
-		break;
+		return "PARSER-ERROR";
 	case message_group::Trace:
-		return group="TRACE";
-		break;
+		return "TRACE";
 	case message_group::Deprecated:
-		return group="DEPRECATED";
-		break;
+		return "DEPRECATED";
 	case message_group::Echo:
-		return group="ECHO";
-		break;
+		return "ECHO";
 	default:
-		break;
+		assert(false && "Unhandled message group name");
+		return "";
 	}
-	return group;
+}
+
+std::string getGroupColor(const enum message_group& group)
+{
+	switch (group) {
+	case message_group::Warning:
+	case message_group::Deprecated:
+	case message_group::UI_Warning:
+	case message_group::Font_Warning:
+		return "#ffffb0";
+	case message_group::Error:
+	case message_group::UI_Error:
+	case message_group::Export_Error:
+	case message_group::Parser_Error:
+		return "#ffb0b0";
+	case message_group::Trace:
+		return "#d0d0ff";
+	default:
+		return "transparent";
+	}
+}
+
+bool getGroupTextPlain(const enum message_group& group)
+{
+	return group == message_group::None || group == message_group::Echo;
 }

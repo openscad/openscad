@@ -7,12 +7,13 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 {
 	setValue();
 
-	double max=32767;
-	if(object->values->toVector().size() == 1) { // [max] format from makerbot customizer
-        try {
-            max = std::stoi(object->values->toVector()[0]->toString(),nullptr,0);
-        }
-        catch(...) { } // If not a valid value, fall back to the default.
+	double max = 32767;
+	const auto &values = object->values.toVector();
+	if(values.size() == 1) { // [max] format from makerbot customizer
+		try {
+			max = std::stoi(values[0].toString(), nullptr, 0);
+		}
+		catch(...) { } // If not a valid value, fall back to the default.
 	}
 	this->lineEdit->setMaxLength(max);
 
@@ -24,14 +25,14 @@ void ParameterText::onChanged(QString)
 {
 	if(!this->suppressUpdate){
 		if (object->dvt == Value::Type::STRING) {
-			object->value = ValuePtr(lineEdit->text().toStdString());
+			object->value = Value(lineEdit->text().toStdString());
 		}else{
 			ContextHandle<Context> ctx{Context::create<Context>()};
 			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
 			if (!params) return;
-			ValuePtr newValue = params->evaluate(ctx.ctx);
-			if (object->dvt == newValue->type()) {
-				object->value = newValue;
+			Value newValue = params->evaluate(ctx.ctx);
+			if (object->dvt == newValue.type()) {
+				object->value = std::move(newValue);
 			}
 		}
 	}
@@ -48,9 +49,9 @@ void ParameterText::setValue()
 	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
 	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->stackedWidgetRight->hide();
-	this->lineEdit->setText(QString::fromStdString(object->value->toString()));
-	if (object->values->toDouble() > 0) {
-		this->lineEdit->setMaxLength(object->values->toDouble());
+	this->lineEdit->setText(QString::fromStdString(object->value.toString()));
+	if (object->values.toDouble() > 0) {
+		this->lineEdit->setMaxLength(object->values.toDouble());
 	}
 	this->suppressUpdate=false;
 }

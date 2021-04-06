@@ -77,7 +77,7 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
 
     if(!fileInfoList.isEmpty())
     {
-	    QDir last_dir = fileInfoList[fileInfoList.size() - 1].dir(); // last_dir is set to directory of last choosen valid file
+	    QDir last_dir = fileInfoList[fileInfoList.size() - 1].dir(); // last_dir is set to directory of last chosen valid file
 	    last_dirname = last_dir.path();
 	    settings.setValue("lastOpenDirName", last_dirname);
 	}
@@ -154,6 +154,11 @@ QFileInfoList UIUtils::exampleFiles(const QString &category)
 		}
 	}
 	return examples;
+}
+
+void UIUtils::openURL(const QString& url)
+{
+    QDesktopServices::openUrl(QUrl(url));
 }
 
 void UIUtils::openHomepageURL()

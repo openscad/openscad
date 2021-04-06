@@ -219,7 +219,7 @@ statement
 
 inner_input
         : /* empty */
-        | statement inner_input
+        | inner_input statement
         ;
 
 assignment
@@ -274,7 +274,7 @@ ifelse_statement
             }
         | if_statement TOK_ELSE
             {
-                scope_stack.push(&$1->else_scope);
+                scope_stack.push($1->makeElseScope());
             }
           child_statement
             {
@@ -334,13 +334,7 @@ expr
         : logic_or
         | TOK_FUNCTION '(' arguments_decl optional_commas ')' expr %prec NO_ELSE
             {
-              if (Feature::ExperimentalFunctionLiterals.is_enabled()) {
-                $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
-              } else {
-                LOG(message_group::Warning,LOCD("literal", @$),mainFilePath.parent_path().generic_string(),
-                "Support for function literals is disabled");
-                $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
-              }
+              $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
               delete $3;
             }
         | logic_or '?' expr ':' expr
@@ -486,23 +480,23 @@ call
 primary
         : TOK_TRUE
             {
-              $$ = new Literal(ValuePtr(true), LOCD("literal", @$));
+              $$ = new Literal(true, LOCD("literal", @$));
             }
         | TOK_FALSE
             {
-              $$ = new Literal(ValuePtr(false), LOCD("literal", @$));
+              $$ = new Literal(false, LOCD("literal", @$));
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(ValuePtr::undefined, LOCD("literal", @$));
+              $$ = new Literal(Value::undefined.clone(), LOCD("literal", @$));
             }
         | TOK_NUMBER
             {
-              $$ = new Literal(ValuePtr($1), LOCD("literal", @$));
+              $$ = new Literal(Value($1), LOCD("literal", @$));
             }
         | TOK_STRING
             {
-              $$ = new Literal(ValuePtr(std::string($1)), LOCD("string", @$));
+              $$ = new Literal(Value(std::string($1)), LOCD("string", @$));
               free($1);
             }
         | TOK_ID
@@ -524,7 +518,7 @@ primary
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(ValuePtr(VectorType()), LOCD("vector", @$));
+              $$ = new Literal(VectorType::Empty(), LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {

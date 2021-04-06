@@ -6,8 +6,8 @@ namespace Settings {
 
 static std::list<SettingsEntry *> entries;
 
-SettingsEntry::SettingsEntry(const std::string category, const std::string name, const Value range, const Value def)
-	: _category(category), _name(name), _value(def), _range(range), _default(def)
+SettingsEntry::SettingsEntry(const std::string category, const std::string name, const Value &range, const Value &def)
+	: _category(category), _name(name), _value(def.clone()), _range(range.clone()), _default(def.clone())
 {
 	entries.push_back(this);
 }
@@ -38,21 +38,21 @@ const Value & SettingsEntry::range() const
 
 bool SettingsEntry::is_default() const
 {
-	return _value == _default;
+	return (_value == _default).toBool();
 }
 
 static Value value(std::string s1, std::string s2) {
 	VectorType v;
 	v.emplace_back(s1);
 	v.emplace_back(s2);
-	return v;
+	return Value(std::move(v));
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
 	VectorType v;
 	v.emplace_back(value(s1, s1disp));
 	v.emplace_back(value(s2, s2disp));
-	return v;
+	return Value(std::move(v));
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
@@ -60,7 +60,7 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 	v.emplace_back(value(s1, s1disp));
 	v.emplace_back(value(s2, s2disp));
 	v.emplace_back(value(s3, s3disp));
-	return v;
+	return Value(std::move(v));
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
@@ -69,7 +69,7 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 	v.emplace_back(value(s2, s2disp));
 	v.emplace_back(value(s3, s3disp));
 	v.emplace_back(value(s4, s4disp));
-	return v;
+	return Value(std::move(v));
 }
 
 static Value axisValues() {
@@ -85,20 +85,20 @@ static Value axisValues() {
 		text = (boost::format(_("Axis %d (inverted)")) % i).str();
 		v.emplace_back(value(userData, text));
 	}
-	return v;
+	return Value(std::move(v));
 }
 
 static Value buttonValues() {
 	VectorType v;
 	v.emplace_back(value("None", _("None")));
 	v.emplace_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
-	return v;
+	return Value(std::move(v));
 }
 
 Settings *Settings::inst(bool erase)
 {
 	static Settings *instance = new Settings;
-	
+
 	if (erase) {
 		delete instance;
 		instance = nullptr;
@@ -142,9 +142,9 @@ const Value &Settings::get(const SettingsEntry& entry) const
 	return entry._value;
 }
 
-void Settings::set(SettingsEntry& entry, const Value &val)
+void Settings::set(SettingsEntry& entry, Value val)
 {
-	entry._value = val;
+	entry._value = std::move(val);
 }
 
 SettingsVisitor::SettingsVisitor()

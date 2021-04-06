@@ -88,7 +88,7 @@ elseif(APPLE)
 elseif (MINGW_CROSS_ENV_DIR) 
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../mingw32/release/openscad.exe")
 elseif(WIN32)
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../Release/openscad.exe")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../openscad.exe")
 elseif(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../bin/openscad")
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../bin/openscad")
 else()
@@ -231,13 +231,12 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     if (${DISABLED} EQUAL -1)
 
-      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL)
+      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
 
-      if (${EXPERIMENTAL} EQUAL -1)
+      if (${EXPERIMENTAL_TEST} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=function-literals")
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
       endif()
 
@@ -275,10 +274,23 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=multi-processing")
 
+      # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
+      if (EXPERIMENTAL)
+        if (${TESTCMD_EXE} MATCHES "^.*openscad$")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
+          #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
+          #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
+          #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
+        endif()
+      endif()
+
       # debug message
       #message("${TEST_FULLNAME} ${CONFVAL} ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
-      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+      # only add test if it is not experimental or if it is and experimental option is enabled
+      if (${EXPERIMENTAL_TEST} EQUAL -1 OR EXPERIMENTAL)
+      	add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
+      	set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+      endif()
     endif()
   endforeach()
 endfunction()
@@ -471,6 +483,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue1851-each-fail-on-scalar.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue2342.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue3118-recur-limit.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue3541.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/function-scope.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/root-modifiers.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/root-modifier-for.scad
@@ -496,28 +509,36 @@ list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATE
 list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES} ${SCAD_NEF3_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
-                           )
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/assert-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/preview_variable.scad
+            )
+
+# test importing unparseable files, result will be an empty image
+list(APPEND STL_IMPORT_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/stl/stl-import-invalidvertex.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/stl/stl-import-toomanyvertices.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/stl/stl-import-unparseable.scad
+            )
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
-list(SUBLIST CGALPNGTEST_FILES 0 1 CGALPNGSTDIOTEST_FILES)
+list(GET CGALPNGTEST_FILES 0 1 2 CGALPNGSTDIOTEST_FILES)
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/intersection-prune-test.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
+list(APPEND OPENCSGTEST_FILES ${STL_IMPORT_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
@@ -634,6 +655,24 @@ disable_tests(
   csgpngtest_issue1258
 
 )
+
+# Disable LIB3MF tests if library was disabled in build
+if(NOT LIB3MF_FOUND)
+  # check for package again in case this is qmake build ctest
+  if(NOT MSVC)
+    pkg_check_modules(LIB3MF lib3MF)
+  endif()
+  if (NOT LIB3MF_FOUND)
+    disable_tests(
+      opencsgtest_import_3mf-tests
+      cgalpngtest_import_3mf-tests
+      csgpngtest_import_3mf-tests
+      throwntogethertest_import_3mf-tests
+      3mfpngtest_cube10
+      3mfexport_3mf-export
+    )
+  endif()
+endif()
 
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
@@ -824,7 +863,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 #
 
 add_cmdline_test(astdumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES ${ASTDUMPTEST_FILES})
-add_cmdline_test(astdumpstdiotest EXE ${OPENSCAD_BINPATH} ARGS --enable=function-literals --export-format ast -o SUFFIX ast STDOUT true STDIN true EXPECTEDDIR astdumptest FILES
+add_cmdline_test(astdumpstdiotest EXE ${OPENSCAD_BINPATH} ARGS --export-format ast -o SUFFIX ast STDOUT true STDIN true EXPECTEDDIR astdumptest FILES
                                   ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
 
 
@@ -875,8 +914,6 @@ endforeach()
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/svg/extruded/box-w-holes.scad)
 add_cmdline_test(svgimport EXE ${OPENSCAD_BINPATH} ARGS --imgsize 600,600 -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/svg/extruded/simple-center.scad)
 
-# TODO: use experimental_tests macro?
-
 # lazy-union
 list(APPEND LAZYUNION_3D_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-objects.scad
@@ -895,6 +932,78 @@ list(APPEND LAZYUNION_2D_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-2dobjects.scad)
 
 list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
+
+experimental_tests(lazyunion-dump_lazyunion-toplevel-2dobjects)
+experimental_tests(lazyunion-dump_lazyunion-toplevel-objects)
+experimental_tests(lazyunion-dump_lazyunion-toplevel-for)
+experimental_tests(lazyunion-dump_lazyunion-nested-for)
+experimental_tests(lazyunion-dump_lazyunion-children)
+experimental_tests(lazyunion-dump_lazyunion-hull-for)
+experimental_tests(lazyunion-dump_lazyunion-root-for)
+experimental_tests(lazyunion-dump_lazyunion-intersection-for)
+experimental_tests(lazyunion-dump_lazyunion-difference-for)
+experimental_tests(lazyunion-dump_lazyunion-minkowski-for)
+experimental_tests(lazyunion-dump_lazyunion-transform-for)
+experimental_tests(lazyunion-dump_2d-3d)
+experimental_tests(lazyunion-opencsg_lazyunion-toplevel-2dobjects)
+experimental_tests(lazyunion-opencsg_lazyunion-toplevel-objects)
+experimental_tests(lazyunion-opencsg_lazyunion-toplevel-for)
+experimental_tests(lazyunion-opencsg_lazyunion-nested-for)
+experimental_tests(lazyunion-opencsg_lazyunion-children)
+experimental_tests(lazyunion-opencsg_lazyunion-hull-for)
+experimental_tests(lazyunion-opencsg_lazyunion-root-for)
+experimental_tests(lazyunion-opencsg_lazyunion-intersection-for)
+experimental_tests(lazyunion-opencsg_lazyunion-difference-for)
+experimental_tests(lazyunion-opencsg_lazyunion-minkowski-for)
+experimental_tests(lazyunion-opencsg_lazyunion-transform-for)
+experimental_tests(lazyunion-opencsg_2d-3d)
+experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-2dobjects)
+experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-objects)
+experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-nested-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-children)
+experimental_tests(lazyunion-cgalpng_lazyunion-hull-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-root-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-intersection-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-difference-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-minkowski-for)
+experimental_tests(lazyunion-cgalpng_lazyunion-transform-for)
+experimental_tests(lazyunion-cgalpng_2d-3d)
+experimental_tests(lazyunion-monotonepng_lazyunion-toplevel-objects)
+experimental_tests(lazyunion-monotonepng_lazyunion-toplevel-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-nested-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-children)
+experimental_tests(lazyunion-monotonepng_lazyunion-hull-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-root-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-intersection-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-difference-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-minkowski-for)
+experimental_tests(lazyunion-monotonepng_lazyunion-transform-for)
+experimental_tests(lazyunion-monotonepng_2d-3d)
+experimental_tests(lazyunion-stlpngtest_lazyunion-toplevel-objects)
+experimental_tests(lazyunion-stlpngtest_lazyunion-toplevel-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-nested-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-children)
+experimental_tests(lazyunion-stlpngtest_lazyunion-hull-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-root-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-intersection-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-difference-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-minkowski-for)
+experimental_tests(lazyunion-stlpngtest_lazyunion-transform-for)
+experimental_tests(lazyunion-stlpngtest_2d-3d)
+experimental_tests(lazyunion-offpngtest_lazyunion-toplevel-objects)
+experimental_tests(lazyunion-offpngtest_lazyunion-toplevel-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-nested-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-children)
+experimental_tests(lazyunion-offpngtest_lazyunion-hull-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-root-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-intersection-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-difference-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-minkowski-for)
+experimental_tests(lazyunion-offpngtest_lazyunion-transform-for)
+experimental_tests(lazyunion-offpngtest_2d-3d)
+experimental_tests(lazyunion-dxfpngtest_lazyunion-toplevel-2dobjects)
+experimental_tests(lazyunion-svgpngtest_lazyunion-toplevel-2dobjects)
 
 add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_FILES})
 add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})

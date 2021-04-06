@@ -77,6 +77,7 @@ updatepo()
 
 updatemo()
 {
+ SUFFIX="$1"
  for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
   mkdir -p ./locale/$LANGCODE/LC_MESSAGES
   OPTS='-c -v'
@@ -108,6 +109,14 @@ updatemo()
   fi
   cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
  fi
+
+ if test -n "$SUFFIX"
+ then
+  echo "using suffix '$SUFFIX'"
+ fi
+ cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
+ sed -i -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
+ sed -i -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
 GETTEXT_PATH=""
@@ -121,10 +130,10 @@ TOPDIR="`dirname \"$SCRIPTDIR\"`"
 cd "$TOPDIR" || exit 1
 
 if [ "x$1" = xupdatemo ]; then
- updatemo
+ updatemo "$2"
 else
  echo "Generating POTFILES..."
  ./scripts/generate-potfiles.sh > locale/POTFILES
- updatepot && updatepo && updatemo
+ updatepot && updatepo && updatemo ""
 fi
 

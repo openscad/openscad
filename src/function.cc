@@ -42,7 +42,7 @@ UserFunction::~UserFunction()
 {
 }
 
-ValuePtr UserFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
+Value UserFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	return evaluate_function(name, expr, definition_arguments, ctx, evalctx, loc);
 }
@@ -63,7 +63,7 @@ BuiltinFunction::~BuiltinFunction()
 {
 }
 
-ValuePtr BuiltinFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
+Value BuiltinFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
 {
 	return eval_func(ctx, evalctx);
 }

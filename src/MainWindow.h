@@ -32,6 +32,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 public:
 	class Preferences *prefs;
 
+	QTimer *consoleUpdater;
 	QTimer *animate_timer;
 	int anim_step;
 	int anim_numsteps;
@@ -81,6 +82,9 @@ public:
 	MainWindow(const QStringList &filenames);
 	~MainWindow();
 
+private:
+	void consoleOutputRaw(const QString& msg);
+
 protected:
 	void closeEvent(QCloseEvent *event) override;
 
@@ -97,7 +101,7 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-	void consoleOutput(const Message &msgObj);
+	void consoleOutput(const Message& msgObj);
 	void setCursor();
 	void errorLogOutput(const Message &log_msg);
 
@@ -113,7 +117,6 @@ public:
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void handleFileDrop(const QString &filename);
 	void updateTemporalVariables();
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
@@ -123,6 +126,7 @@ private:
 
 	void loadViewSettings();
 	void loadDesignSettings();
+	void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
     void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar);
 	void saveBackup();
 	void writeBackup(class QFile *file);
@@ -130,6 +134,7 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 	void addKeyboardShortCut(const QList<QAction *> &actions);
 	void updateStatusBar(class ProgressWidget *progressWidget);
+	void activateWindow(int);
 
   class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
@@ -137,6 +142,7 @@ private:
 public slots:
 	void updateRecentFiles(EditorInterface *edt);
 	void updateRecentFileActions();
+	void handleFileDrop(const QUrl& url);
 
 private slots:
 	void actionOpen();
@@ -164,13 +170,22 @@ private slots:
 	void preferences();
     void hideEditorToolbar();
     void hide3DViewToolbar();
-	void hideEditor();
-	void hideConsole();
-	void hideErrorLog();
 	void showLink(const QString);
+	void showEditor();
+	void hideEditor();
 	void showConsole();
+	void hideConsole();
 	void showErrorLog();
+	void hideErrorLog();
+	void showParameters();
 	void hideParameters();
+	void on_windowActionSelectEditor_triggered();
+	void on_windowActionSelectConsole_triggered();
+	void on_windowActionSelectCustomizer_triggered();
+	void on_windowActionSelectErrorLog_triggered();
+	void on_windowActionNextWindow_triggered();
+	void on_windowActionPreviousWindow_triggered();
+	void on_editActionInsertTemplate_triggered();
 
 public slots:
 	void hideFind();

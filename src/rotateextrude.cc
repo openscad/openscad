@@ -59,35 +59,34 @@ AbstractNode *RotateExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	c->setVariables(evalctx, args, optargs);
 	inst->scope.apply(evalctx);
 
-	node->fn = c->lookup_variable("$fn")->toDouble();
-	node->fs = c->lookup_variable("$fs")->toDouble();
-	node->fa = c->lookup_variable("$fa")->toDouble();
+	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fs = c->lookup_variable("$fs").toDouble();
+	node->fa = c->lookup_variable("$fa").toDouble();
 
+	const auto &file = c->lookup_variable("file");
+	const auto &layer = c->lookup_variable("layer", true);
+	const auto &convexity = c->lookup_variable("convexity", true);
+	const auto &origin = c->lookup_variable("origin", true);
+	const auto &scale = c->lookup_variable("scale", true);
+	const auto &angle = c->lookup_variable("angle", true);
 
-	auto file = c->lookup_variable("file");
-	auto layer = c->lookup_variable("layer", true);
-	auto convexity = c->lookup_variable("convexity", true);
-	auto origin = c->lookup_variable("origin", true);
-	auto scale = c->lookup_variable("scale", true);
-	auto angle = c->lookup_variable("angle", true);
-
-	if (!file->isUndefined()) {
+	if (!file.isUndefined()) {
 		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file->toString(), inst->path(), c->documentPath());
+		auto filename = lookup_file(file.toString(), inst->path(), c->documentPath());
 		node->filename = filename;
 		handle_dep(filename);
 	}
 
-	node->layername = layer->isUndefined() ? "" : layer->toString();
-	node->convexity = static_cast<int>(convexity->toDouble());
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->convexity = static_cast<int>(convexity.toDouble());
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin->isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rotate_extrude(..., origin=%1$s) could not be converted",origin->toEchoString());
+	if(origin.isDefined() && !originOk){
+		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rotate_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
-	node->scale = scale->toDouble();
+	node->scale = scale.toDouble();
 	node->angle = 360;
-	angle->getFiniteDouble(node->angle);
+	angle.getFiniteDouble(node->angle);
 
 	if (node->convexity <= 0)
 		node->convexity = 2;

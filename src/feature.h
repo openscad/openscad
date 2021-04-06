@@ -15,10 +15,12 @@ public:
 	typedef list_t::iterator iterator;
 
 	static const Feature ExperimentalInputDriverDBus;
-	static const Feature ExperimentalFunctionLiterals;
 	static const Feature ExperimentalLazyUnion;
-	static const Feature ExperimentalMouseSelection;
 	static const Feature ExperimentalMultiProcessing;
+	static const Feature ExperimentalVxORenderers;
+	static const Feature ExperimentalVxORenderersIndexing;
+	static const Feature ExperimentalVxORenderersDirect;
+	static const Feature ExperimentalVxORenderersPrealloc;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

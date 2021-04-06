@@ -75,4 +75,4 @@ for formula in gettext qt5 qscintilla2; do
   time brew link --force $formula
 done
 
-$TAP untap openscad/homebrew-tap
+$TAP untap openscad/homebrew-tap || true

@@ -10,8 +10,8 @@ class CGAL_Nef_polyhedron : public Geometry
 {
 public:
 	VISITABLE_GEOMETRY();
-	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p = nullptr);
-	CGAL_Nef_polyhedron(shared_ptr<CGAL_Nef_polyhedron3> p) : p3(p) {}
+	CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p = nullptr);
+	CGAL_Nef_polyhedron(shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(p) {}
 	CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src);
 	~CGAL_Nef_polyhedron() {}
 
@@ -31,8 +31,8 @@ public:
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
-	void transform( const Transform3d &matrix );
+	void transform(const Transform3d &matrix);
 	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
-	shared_ptr<CGAL_Nef_polyhedron3> p3;
+	shared_ptr<const CGAL_Nef_polyhedron3> p3;
 };

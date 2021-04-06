@@ -65,7 +65,7 @@ public:
 
 	void setCursorPosition(int line, int col) override;
 	void setFocus() override;
-	void cancelCallTip();
+	void setupAutoComplete(const bool forceOff = false);
 
 private:
 	void getRange(int *lineFrom, int *lineTo);
@@ -97,6 +97,7 @@ private:
 signals:
 	void previewRequest(void);
 	void hyperlinkIndicatorClicked(int val);
+	void uriDropped(const QUrl&);
 
 public slots:
 	void zoomIn() override;

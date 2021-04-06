@@ -5,11 +5,9 @@
 #include "GeometryUtils.h"
 #include "Polygon2d.h"
 #include "GLView.h"
+#include "boost-utils.h"
 #include <vector>
 #include <string>
-
-#include <boost/logic/tribool.hpp>
-BOOST_TRIBOOL_THIRD_STATE(unknown)
 
 class PolySet : public Geometry
 {

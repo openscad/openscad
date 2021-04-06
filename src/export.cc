@@ -31,7 +31,7 @@
 
 #include <fstream>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
@@ -87,7 +87,7 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 
 void exportFileByNameStdout(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	_setmode(_fileno(stdout), _O_BINARY);
 #endif
 	exportFile(root_geom, std::cout, exportInfo);

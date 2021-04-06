@@ -92,7 +92,7 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<FileContext> ctx)
+void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarning)
 {
 	if (locked)
 		return;
@@ -100,47 +100,47 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx)
 	bool noauto = false;
 	double x, y, z;
 	const auto vpr = ctx->lookup_local_config_variable("$vpr");
-	if (vpr != ValuePtr::undefined) {
-		if (vpr->getVec3(x, y, z, 0.0)) {
+	if (vpr.isDefined()) {
+		if (vpr.getVec3(x, y, z, 0.0)) {
 			setVpr(x, y, z);
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr.toEchoString());
 		}
 	}
 
 	const auto vpt = ctx->lookup_local_config_variable("$vpt");
-	if (vpt != ValuePtr::undefined) {
-		if (vpt->getVec3(x, y, z, 0.0)) {
+	if (vpt.isDefined()) {
+		if (vpt.getVec3(x, y, z, 0.0)) {
 			setVpt(x, y, z);
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt.toEchoString());
 		}
 	}
 
 	const auto vpd = ctx->lookup_local_config_variable("$vpd");
-	if (vpd != ValuePtr::undefined) {
-		if (vpd->type() == Value::Type::NUMBER) {
-			setVpd(vpd->toDouble());
+	if (vpd.isDefined()) {
+		if (vpd.type() == Value::Type::NUMBER) {
+			setVpd(vpd.toDouble());
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd.toEchoString());
 		}
 	}
 
 	const auto vpf = ctx->lookup_local_config_variable("$vpf");
-	if (vpf != ValuePtr::undefined) {
-		if (vpf->type() == Value::Type::NUMBER) {
-			setVpf(vpf->toDouble());
+	if (vpf.isDefined()) {
+		if (vpf.type() == Value::Type::NUMBER) {
+			setVpf(vpf.toDouble());
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf->toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf.toEchoString());
 		}
 	}
 
-	if ((viewall || autocenter) && noauto) {
-		LOG(message_group::Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
+	if (enableWarning && (viewall || autocenter) && noauto) {
+		LOG(message_group::UI_Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
 		viewall = false;
 		autocenter = false;
 	}

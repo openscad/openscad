@@ -209,8 +209,8 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 
 	for (const auto &v : entry.range().toVector()) {
 		const auto icon = emptyIcon;
-		const auto desc = QString::fromStdString(gettext(v[1]->toString().c_str()));
-		const auto actionName = QString::fromStdString(v[0]->toString());
+		const auto desc = QString::fromStdString(gettext(v[1].toString().c_str()));
+		const auto actionName = QString::fromStdString(v[0].toString());
 		comboBox->addItem(icon, desc, actionName);
 	}
 

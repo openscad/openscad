@@ -29,12 +29,24 @@
 #include <QPlainTextEdit>
 #include <QMouseEvent>
 #include <QString>
+#include <vector>
 #include "qtgettext.h"
 #include "ui_Console.h"
+
+struct ConsoleMessageBlock {
+	QString message;
+	QString link;
+	message_group group;
+};
 
 class Console : public QPlainTextEdit, public Ui::Console
 {
 	Q_OBJECT
+
+private:
+	static constexpr int MAX_LINES = 5000;
+	std::vector<ConsoleMessageBlock> msgBuffer;
+	QTextCursor appendCursor; // keep a cursor always at the end of document.
 
 public:
 	Console(QWidget *parent = nullptr);
@@ -42,13 +54,13 @@ public:
 	QString clickedAnchor;
 	void contextMenuEvent(QContextMenuEvent *event) override;
 	
-	void mousePressEvent(QMouseEvent *e)
+	void mousePressEvent(QMouseEvent *e) override
 	{
 		clickedAnchor = (e->button() & Qt::LeftButton) ? anchorAt(e->pos()) : QString();
 		QPlainTextEdit::mousePressEvent(e);
 	}
 
-	void mouseReleaseEvent(QMouseEvent *e)
+	void mouseReleaseEvent(QMouseEvent *e) override
 	{
 		if (e->button() & Qt::LeftButton && !clickedAnchor.isEmpty() &&
 				anchorAt(e->pos()) == clickedAnchor) {
@@ -58,6 +70,9 @@ public:
 		QPlainTextEdit::mouseReleaseEvent(e);
 	}
 
+	void addMessage(const Message &msg);
+	void addHtml(const QString &html);
+
 signals:
 	void linkActivated(QString);
 	void openFile(QString,int);
@@ -65,6 +80,7 @@ signals:
 public slots:
 	void actionClearConsole_triggered();
 	void actionSaveAs_triggered();
-	void hyperlinkClicked(QString loc);
-
+	void hyperlinkClicked(const QString& loc);
+	void setFont(const QString &fontFamily, uint ptSize);
+	void update();
 };

@@ -11,7 +11,7 @@
 
 /**
  * Feature registration map/list for later lookup. This must be initialized
- * before the static feature instances as those register with this map. 
+ * before the static feature instances as those register with this map.
  */
 Feature::map_t Feature::feature_map;
 Feature::list_t Feature::feature_list;
@@ -22,10 +22,12 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
-const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
-const Feature Feature::ExperimentalMouseSelection("mouse-selection", "Enable mouse selector");
 const Feature Feature::ExperimentalMultiProcessing("multi-processing", "Enable parallel GCAL rendering");
+const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");
+const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing", "Enable indexing in vertex object renderers");
+const Feature Feature::ExperimentalVxORenderersDirect("vertex-object-renderers-direct", "Enable direct buffer writes in vertex object renderers");
+const Feature Feature::ExperimentalVxORenderersPrealloc("vertex-object-renderers-prealloc", "Enable preallocating buffers in vertex object renderers");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -42,22 +44,26 @@ const std::string &Feature::get_name() const
 {
 	return name;
 }
-    
+
 const std::string &Feature::get_description() const
 {
 	return description;
 }
-    
+
 bool Feature::is_enabled() const
 {
+#ifdef ENABLE_EXPERIMENTAL
 	return enabled;
+#else
+	return false;
+#endif
 }
 
 void Feature::enable(bool status)
 {
 	enabled = status;
 }
-    
+
 void Feature::enable_feature(const std::string &feature_name, bool status)
 {
 	auto it = feature_map.find(feature_name);
@@ -69,7 +75,7 @@ void Feature::enable_feature(const std::string &feature_name, bool status)
 }
 
 Feature::iterator Feature::begin()
-{	
+{
 	return feature_list.begin();
 }
 

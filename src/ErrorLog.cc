@@ -7,16 +7,6 @@ ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
 	setupUi(this);
 	initGUI();
-	connect(logTable, SIGNAL(clicked(const QModelIndex &)), this, SLOT(onTableCellClicked(const QModelIndex &)));
-	this->errorLogComboBox->installEventFilter(this);
-}
-
-bool ErrorLog::eventFilter(QObject *obj, QEvent *event)
-{
-	if (event->type() == QEvent::Wheel) {
-		return true;
-	}
-	return QObject::eventFilter(obj, event);
 }
 
 void ErrorLog::initGUI()
@@ -28,15 +18,16 @@ void ErrorLog::initGUI()
 	errorLogModel->setHorizontalHeaderLabels(labels);
 	logTable->verticalHeader()->hide();
 	logTable->setModel(errorLogModel);
+	logTable->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 	logTable->setColumnWidth(COLUMN_GROUP, 80);
 	logTable->setColumnWidth(COLUMN_FILE, 200);
 	logTable->setColumnWidth(COLUMN_LINENO, 80);
+	logTable->addAction(actionRowSelected);
 	//last column will stretch itself
 }
 
 void ErrorLog::toErrorLog(const Message &log_msg)
 {
-	if(log_msg.group==message_group::None || log_msg.group==message_group::Echo) return;
 	lastMessages.push_back(std::forward<const Message>(log_msg));
 	QString currGroup = errorLogComboBox->currentText();
 	//handle combobox
@@ -83,6 +74,10 @@ void ErrorLog::showtheErrorInGUI(const Message &log_msg)
 	msg->setEditable(false);
 	errorLogModel->setItem(row, COLUMN_MESSAGE, msg);
 	errorLogModel->setRowCount(++row);
+
+	if (!logTable->selectionModel()->hasSelection()) {
+		logTable->selectRow(0);
+	}
 }
 
 void ErrorLog::clearModel()
@@ -97,16 +92,6 @@ int ErrorLog::getLine(int row,int col)
 	return logTable->model()->index(row,col).data().toInt();
 }
 
-void ErrorLog::onTableCellClicked(const QModelIndex & index)
-{
-	if (index.isValid() && index.column() != 0) {
-		const int r = index.row();
-		const int line = getLine(r, COLUMN_LINENO);
-		const auto path = logTable->model()->index(r, COLUMN_FILE).data(Qt::UserRole).toString();
-		emit openFile(path, line - 1);
-	}
-}
-
 void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString &group)
 {
 	errorLogModel->clear();
@@ -118,5 +103,28 @@ void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString &group)
 		{
 			showtheErrorInGUI(*itr);
 		}
+	}
+}
+
+void ErrorLog::on_logTable_doubleClicked(const QModelIndex & index)
+{
+	onIndexSelected(index);
+}
+
+void ErrorLog::on_actionRowSelected_triggered(bool)
+{
+	const auto indexes = logTable->selectionModel()->selectedRows(0);
+	if (indexes.size() == 1) {
+		onIndexSelected(indexes.first());
+	}
+}
+
+void ErrorLog::onIndexSelected(const QModelIndex& index)
+{
+	if (index.isValid()) {
+		const int r = index.row();
+		const int line = getLine(r, COLUMN_LINENO);
+		const auto path = logTable->model()->index(r, COLUMN_FILE).data(Qt::UserRole).toString();
+		emit openFile(path, line - 1);
 	}
 }

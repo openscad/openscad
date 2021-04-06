@@ -36,7 +36,7 @@ void QWordSearchField::updateFieldLabel()
 {
 	if (findcount > 0) {
 		fieldLabel->setText(QString::number(findcount));
-		//Fixes issue #2962 : Due to that fieldLabel->setText above does not seem to change the size of the field correct (seems to always be to short field to accomodate all digits)
+		//Fixes issue #2962 : Due to that fieldLabel->setText above does not seem to change the size of the field correct (seems to always be to short field to accommodate all digits)
 		//when the field changes many times during several searches, we need to work around that by setting minimum size.
 		fieldLabel->setMinimumSize(fieldLabel->minimumSizeHint());
 		fieldLabel->setVisible(true);

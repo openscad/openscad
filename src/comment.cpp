@@ -19,7 +19,7 @@ typedef std::vector <GroupInfo> GroupList;
 /*
   Finds line to break stop parsing parsing parameters
 
-*/ 
+*/
 
 static int getLineToStop( const std::string &fulltext){
 	int lineNo=1;
@@ -259,7 +259,7 @@ static GroupList collectGroups(const std::string &fulltext)
 */
 void CommentParser::collectParameters(const std::string& fulltext, FileModule *root_module)
 {
-	static auto EmptyStringLiteral(std::make_shared<Literal>(ValuePtr(std::string(""))));
+	static auto EmptyStringLiteral(std::make_shared<Literal>(Value(std::string(""))));
 
 	// Get all groups of parameters
 	GroupList groupList = collectGroups(fulltext);
@@ -279,7 +279,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 		}
 		// making list to add annotations
 		AnnotationList *annotationList = new AnnotationList();
- 
+
 		// Extracting the parameter comment
 		std::string comment = getComment(fulltext, firstLine);
 		// getting the node for parameter annotation
@@ -295,7 +295,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 		std::string descr = getDescription(fulltext, firstLine - 1);
 		if (descr != "") {
 			//creating node for description
-			shared_ptr<Expression> expr(new Literal(ValuePtr(std::string(descr.c_str()))));
+			shared_ptr<Expression> expr(new Literal(Value(descr)));
 			annotationList->push_back(Annotation("Description", expr));
 		}
 
@@ -303,7 +303,7 @@ void CommentParser::collectParameters(const std::string& fulltext, FileModule *r
 		for (const auto &groupInfo :boost::adaptors::reverse(groupList)){
 			if (groupInfo.lineNo < firstLine) {
 				//creating node for description
-				shared_ptr<Expression> expr(new Literal(ValuePtr(groupInfo.commentString)));
+				shared_ptr<Expression> expr(new Literal(Value(groupInfo.commentString)));
 				annotationList->push_back(Annotation("Group", expr));
 				break;
 			}

@@ -24,8 +24,8 @@ public:
     void setTabName(const QString &filename, EditorInterface *edt = nullptr);
     void refreshDocument();
     bool shouldClose();
-    void save(EditorInterface *edt);
-    void saveAs(EditorInterface *edt);
+    bool save(EditorInterface *edt);
+    bool saveAs(EditorInterface *edt);
     void open(const QString &filename);
     int count();
 
@@ -42,7 +42,8 @@ private:
     TabWidget *tabWidget;
 
     bool maybeSave(int);
-    void saveError(const QIODevice &file, const std::string &msg, EditorInterface *edt);
+    bool save(EditorInterface *edt, const QString path);
+    void saveError(const QIODevice &file, const std::string &msg, const QString filepath);
 	void applyAction(QObject *object, std::function<void(int, EditorInterface *)> func);
 
 private slots:
@@ -82,8 +83,9 @@ public slots:
     void actionNew();
     void setContentRenderState(); // since last render
     void setTabModified(bool, EditorInterface *);
-    void saveAll();
+    bool saveAll();
     void closeCurrentTab();
     void nextTab();
     void prevTab();
+    void setFocus();
 };

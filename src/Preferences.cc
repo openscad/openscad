@@ -52,50 +52,54 @@ Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
 {
-    QSettingsCached settings;
-    Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const {
-	std::string trimmed_value(value);
-	boost::trim(trimmed_value);
+  QSettingsCached settings;
 
-	if (trimmed_value.empty()) {
-		return entry.defaultValue();
-	}
+	Value getValue(const Settings::SettingsEntry& entry, const std::string& value) const
+	{
+		std::string trimmed_value(value);
+		boost::trim(trimmed_value);
 
-	try {
-		switch (entry.defaultValue().type()) {
-		case Value::Type::STRING:
-			return Value(trimmed_value);
-		case Value::Type::NUMBER: 
-			if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
-				return Value(boost::lexical_cast<double>(trimmed_value));
-			}
-			return Value(boost::lexical_cast<int>(trimmed_value));
-		case Value::Type::BOOL:
-			boost::to_lower(trimmed_value);
-			if ("false" == trimmed_value) {
-				return Value(false);
-			} else if ("true" == trimmed_value) {
-				return Value(true);
-			}
-			return Value(boost::lexical_cast<bool>(trimmed_value));
-		default:
-			assert(false && "invalid value type for settings");
-			return entry.defaultValue();
+		if (trimmed_value.empty()) {
+			return entry.defaultValue().clone();
 		}
-	} catch (const boost::bad_lexical_cast& e) {
-		return entry.defaultValue();
+
+		try {
+			switch (entry.defaultValue().type()) {
+			case Value::Type::STRING:
+				return Value(trimmed_value);
+			case Value::Type::NUMBER: 
+				if(entry.range().toRange().step_value()<1 && entry.range().toRange().step_value()>0){
+					return Value(boost::lexical_cast<double>(trimmed_value));
+				}
+				return Value(boost::lexical_cast<int>(trimmed_value));
+			case Value::Type::BOOL:
+				boost::to_lower(trimmed_value);
+				if ("false" == trimmed_value) {
+					return Value(false);
+				} else if ("true" == trimmed_value) {
+					return Value(true);
+				}
+				return Value(boost::lexical_cast<bool>(trimmed_value));
+			default:
+				assert(false && "invalid value type for settings");
+				return entry.defaultValue().clone();
+			}
+		} catch (const boost::bad_lexical_cast& e) {
+			return entry.defaultValue().clone();
+		}
 	}
-    }
 
-    void handle(Settings::SettingsEntry& entry) const override {
-	Settings::Settings *s = Settings::Settings::inst();
+	void handle(Settings::SettingsEntry& entry) const override
+	{
+		Settings::Settings *s = Settings::Settings::inst();
 
-	std::string key = entry.category() + "/" + entry.name();
-	std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-	const Value v = getValue(entry, value);
-	PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
-	s->set(entry, v);
-    }
+		std::string key = entry.category() + "/" + entry.name();
+		std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
+		Value v = getValue(entry, value);
+		PRINTDB("SettingsReader R: %s = '%s' => '%s'", key.c_str() % value.c_str() % v.toString());
+		s->set(entry, std::move(v));
+	}
+
 };
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
@@ -107,11 +111,16 @@ void Preferences::init() {
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-
 	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
+
+	// Leave Console font with default if user has not chosen another.
+	const QFont font2 = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+	const QString found_family2{QFontInfo{font2}.family()};
+	this->defaultmap["advanced/consoleFontFamily"] = found_family2;
+	this->defaultmap["advanced/consoleFontSize"] = 10;
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -128,10 +137,19 @@ void Preferences::init() {
 			fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}
-
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
-	
+
+	uint consavedsize = getValue("advanced/consoleFontSize").toUInt();
+	BlockSignals<QComboBox *> consoleFontSize{this->consoleFontSize};
+	for(auto size : db.standardSizes()) {
+		consoleFontSize->addItem(QString::number(size));
+		if (static_cast<uint>(size) == savedsize) {
+			consoleFontSize->setCurrentIndex(this->consoleFontSize->count()-1);
+		}
+	}
+	this->consoleFontSize->setEditText( QString("%1").arg( consavedsize ) );
+
 	// Setup default settings
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
@@ -150,6 +168,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/autoReloadRaise"] = false;
 	this->defaultmap["advanced/enableSoundNotification"] = true;
 	this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
+	this->defaultmap["advanced/consoleMaxLines"] = 5000;
 	this->defaultmap["advanced/enableHardwarnings"] = false;
 	this->defaultmap["advanced/enableParameterCheck"] = true;
 	this->defaultmap["advanced/enableParameterRangeCheck"] = false;
@@ -188,14 +207,16 @@ void Preferences::init() {
 	// Advanced pane	
 	const int absolute_max = (sizeof(void*) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
 	QValidator *memvalidator = new QIntValidator(1,absolute_max,this);
-	QValidator *validator = new QIntValidator(this);
+	auto *uintValidator = new QIntValidator(this);
+	uintValidator->setBottom(0);
 	QValidator *validator1 = new QRegExpValidator(QRegExp("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
 #ifdef ENABLE_CGAL
 	this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
 	this->polysetCacheSizeMBEdit->setValidator(memvalidator);
-	this->opencsgLimitEdit->setValidator(validator);
-	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(validator);
+	this->opencsgLimitEdit->setValidator(uintValidator);
+	this->timeThresholdOnRenderCompleteSoundEdit->setValidator(uintValidator);
+	this->consoleMaxLinesEdit->setValidator(uintValidator);
 	this->lineEditCharacterThreshold->setValidator(validator1);
 	this->lineEditStepSize->setValidator(validator1);
 
@@ -540,7 +561,7 @@ void Preferences::on_comboBoxLineWrap_activated(int val)
 
 void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 {
-	//Next Line disables the Indent Spin-Box when 'Same' or 'Indented' is choosen from LineWrapIndentationStyle Combo-Box.
+	//Next Line disables the Indent Spin-Box when 'Same' or 'Indented' is chosen from LineWrapIndentationStyle Combo-Box.
 	spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
 	
 	applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
@@ -633,6 +654,27 @@ void Preferences::on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QS
 {
 	QSettingsCached settings;
 	settings.setValue("advanced/timeThresholdOnRenderCompleteSound", text);
+}
+
+void Preferences::on_consoleMaxLinesEdit_textChanged(const QString &text)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/consoleMaxLines", text);
+}
+
+void Preferences::on_consoleFontChooser_activated(const QString &family)
+{
+	QSettingsCached settings;
+	settings.setValue("advanced/consoleFontFamily", family);
+	emit consoleFontChanged(family, getValue("advanced/consoleFontSize").toUInt());
+}
+
+void Preferences::on_consoleFontSize_currentIndexChanged(const QString &size)
+{
+	uint intsize = size.toUInt();
+	QSettingsCached settings;
+	settings.setValue("advanced/consoleFontSize", intsize);
+	emit consoleFontChanged(getValue("advanced/consoleFontFamily").toString(), intsize);
 }
 
 void Preferences::on_checkBoxEnableAutocomplete_toggled(bool state)
@@ -912,11 +954,26 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->launcherBox)->setChecked(getValue("launcher/showOnStartup").toBool());
 	BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)->setChecked(getValue("advanced/enableSoundNotification").toBool());
 	BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
+	BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)->setText(getValue("advanced/consoleMaxLines").toString());
+	{
+		const auto fontfamily = getValue("advanced/consoleFontFamily").toString();
+		const auto fidx = this->consoleFontChooser->findText(fontfamily, Qt::MatchContains);
+		if (fidx >= 0) {
+			BlockSignals<QFontComboBox *>(this->consoleFontChooser)->setCurrentIndex(fidx);
+		}
+		const auto fontsize = getValue("advanced/consoleFontSize").toString();
+		const auto sidx = this->consoleFontSize->findText(fontsize);
+		if (sidx >= 0) {
+			BlockSignals<QComboBox *>(this->consoleFontSize)->setCurrentIndex(sidx);
+		} else {
+			BlockSignals<QComboBox *>(this->consoleFontSize)->setEditText(fontsize);
+		}
+	}
 	BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
-	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL));
-	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog));
+	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(s->get(Settings::Settings::exportUseAsciiSTL).toBool());
+	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool());
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
 	BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
@@ -953,7 +1010,7 @@ void Preferences::updateGUI()
 	
 
 	/* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from LineWrapIndentationStyle Combo-box, just after launching the openscad application.
-	Removing this line will cause misbehaviour, and will not disable the Indent spin-box untill you interact with the LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled.
+	Removing this line will cause misbehaviour, and will not disable the Indent spin-box until you interact with the LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled.
 	For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
 	*/
 	this->spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
