@@ -28,7 +28,7 @@
 class PHIO : public CGAL_Nef_polyhedron3{
 
 public:
-	static void custom_ph_print(std::ostream &ps, CGAL_Nef_polyhedron3 &ph)
+	static void custom_ph_print(std::ostream &ps, const CGAL_Nef_polyhedron3 &ph)
 	{
 		// TODO: sort
 		auto &obj = (PHIO &)ph;
@@ -37,7 +37,7 @@ public:
 		O.print();
 	}
 
-	static void custom_ph_read(std::istream &is, CGAL_Nef_polyhedron3 &ph)
+	static void custom_ph_read(std::istream &is, const CGAL_Nef_polyhedron3 &ph)
 	{
 		auto &obj = (PHIO &)ph;
 		typedef std::remove_reference<decltype(obj)>::type::SNC_structure SNC_structure;
