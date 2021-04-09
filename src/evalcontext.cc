@@ -25,7 +25,7 @@ Value EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) con
 	assert(i < this->eval_arguments.size());
 	const auto &arg = this->eval_arguments[i];
 	if (arg->getExpr()) {
-		return arg->getExpr()->evaluate(ctx ? ctx : (const_cast<EvalContext *>(this))->get_shared_ptr());
+		return arg->getExpr()->evaluate(ctx ? ctx : get_shared_ptr());
 	}
 	return Value::undefined.clone();
 }

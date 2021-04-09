@@ -16,10 +16,8 @@ public:
 	~ModuleContext();
 
 	void initializeModule(const class UserModule &m);
-	boost::optional<CallableFunction> lookup_local_function(const std::string &name) const override;
-	AbstractNode *instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-
-	shared_ptr<const UserModule> findLocalModule(const std::string &name) const;
+	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
+	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
 	const LocalScope::FunctionContainer *functions_p;
 	const LocalScope::ModuleContainer *modules_p;
@@ -46,8 +44,8 @@ class FileContext : public ModuleContext
 public:
 	~FileContext() {}
 	void initializeModule(const FileModule &module);
-	boost::optional<CallableFunction> lookup_local_function(const std::string &name) const override;
-	AbstractNode *instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const override;
+	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
+	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
 protected:
 	FileContext(const std::shared_ptr<Context> parent) : ModuleContext(parent), usedlibs_p(nullptr) {}

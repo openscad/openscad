@@ -479,7 +479,7 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(const std::shared_ptr<Context>& context) const
 {
 	if (isLookup) {
-		auto f = context->lookup_function(name);
+		auto f = context->lookup_function(name, location());
 		if (!f) {
 			LOG(message_group::Warning,loc,context->documentRoot(),"Ignoring unknown function '%1$s'",name);
 		}

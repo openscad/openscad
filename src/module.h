@@ -16,3 +16,11 @@ public:
 	virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
 	virtual class AbstractNode *instantiate(const std::shared_ptr<class Context>& ctx, const class ModuleInstantiation *inst, const std::shared_ptr<class EvalContext>& evalctx = {}) const = 0;
 };
+
+class Context;
+
+struct InstantiableModule
+{
+	std::shared_ptr<Context> defining_context;
+	const AbstractModule* module;
+};

@@ -73,14 +73,20 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
 
 AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
 {
-	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 
+	boost::optional<InstantiableModule> module = ctx->lookup_module(this->name(), this->loc);
+	if (!module) {
+		return nullptr;
+	}
+
+	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
 #if 0 && DEBUG
 	LOG(message_group::None,Location::NONE,"","New eval ctx:");
 	c.dump(nullptr, this);
 #endif
+
 	try{
-		AbstractNode *node = ctx->instantiate_module(*this, c.ctx); // Passes c as evalctx
+		AbstractNode *node = module->module->instantiate(module->defining_context, this, c.ctx);
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){

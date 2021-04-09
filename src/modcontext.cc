@@ -84,41 +84,24 @@ void ModuleContext::initializeModule(const UserModule &module)
 //	evaluateAssignments(module.scope.assignments);
 }
 
-boost::optional<CallableFunction> ModuleContext::lookup_local_function(const std::string &name) const
+boost::optional<CallableFunction> ModuleContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
 	if (functions_p) {
 		const auto& search = functions_p->find(name);
 		if (search != functions_p->end()) {
-			return CallableFunction{CallableUserFunction{(const_cast<ModuleContext *>(this))->get_shared_ptr(), search->second.get()}};
+			return CallableFunction{CallableUserFunction{get_shared_ptr(), search->second.get()}};
 		}
 	}
-	return Context::lookup_local_function(name);
+	return Context::lookup_local_function(name, loc);
 }
 
-shared_ptr<const UserModule> ModuleContext::findLocalModule(const std::string &name) const
+boost::optional<InstantiableModule> ModuleContext::lookup_local_module(const std::string &name, const Location &loc) const
 {
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		auto m = this->modules_p->find(name)->second;
-		if (!m->is_enabled()) {
-			LOG(message_group::Warning,Location::NONE,"","Experimental builtin module '%1$s' is not enabled.",name);
-			return nullptr;
-		}
-		auto replacement = Builtins::instance()->isDeprecated(name);
-		if (!replacement.empty()) {
-			LOG(message_group::Deprecated,Location::NONE,"","The %1$s() module will be removed in future releases. Use %2$s instead.",std::string(name),std::string(replacement));
-		}
-		return m;
+		return InstantiableModule{get_shared_ptr(), m.get()};
 	}
-	return nullptr;
-}
-
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	const auto foundm = this->findLocalModule(inst.name());
-	std::shared_ptr<Context> self = (const_cast<ModuleContext *>(this))->get_shared_ptr();
-	if (foundm) return foundm->instantiate(self, &inst, evalctx);
-
-	return Context::instantiate_module(inst, evalctx);
+	return Context::lookup_local_module(name, loc);
 }
 
 #ifdef DEBUG
@@ -151,9 +134,9 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
-boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string &name) const
+boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
-	auto result = ModuleContext::lookup_local_function(name);
+	auto result = ModuleContext::lookup_local_function(name, loc);
 	if (result) {
 		return result;
 	}
@@ -174,28 +157,27 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
 	return boost::none;
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
+boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::string &name, const Location &loc) const
 {
-	const auto foundm = this->findLocalModule(inst.name());
-	std::shared_ptr<Context> self = (const_cast<FileContext *>(this))->get_shared_ptr();
-	if (foundm) return foundm->instantiate(self, &inst, evalctx);
-
+	auto result = ModuleContext::lookup_local_module(name, loc);
+	if (result) {
+		return result;
+	}
+	
 	for (const auto &m : *this->usedlibs_p) {
-		auto usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-		if (usedmod && usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
+		auto usedmod = ModuleCache::instance()->lookup(m);
+		if (usedmod && usedmod->scope.modules.find(name) != usedmod->scope.modules.end()) {
 			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
 			ctx->initializeModule(*usedmod);
-			// FIXME: Set document path
 #ifdef DEBUG
-			PRINTD("New file Context:");
-			PRINTDB("%s",ctx->dump(nullptr, &inst));
+			PRINTDB("New lib Context for %s module:", name);
+			PRINTDB("%s",ctx->dump(nullptr, nullptr));
 #endif
-			return usedmod->scope.modules[inst.name()]->instantiate(ctx.ctx, &inst, evalctx);
+			return InstantiableModule{ctx.ctx, usedmod->scope.modules[name].get()};
 		}
 	}
-
-	return ModuleContext::instantiate_module(inst, evalctx);
+	return boost::none;
 }
 
 void FileContext::initializeModule(const class FileModule &module)

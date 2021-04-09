@@ -23,7 +23,7 @@ void BuiltinContext::init()
 	this->set_variable("PI", M_PI);
 }
 
-boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const std::string &name) const
+boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
@@ -32,26 +32,26 @@ boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const st
 			return CallableFunction{f};
 		}
 		
-		LOG(message_group::Warning,Location::NONE,"","Experimental builtin function '%1$s' is not enabled",name);
+		LOG(message_group::Warning,loc,documentRoot(),"Experimental builtin function '%1$s' is not enabled",name);
 	}
-	return Context::lookup_local_function(name);
+	return Context::lookup_local_function(name, loc);
 }
 
-class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
+boost::optional<InstantiableModule> BuiltinContext::lookup_local_module(const std::string &name, const Location &loc) const
 {
-	const std::string &name = inst.name();
 	const auto &search = Builtins::instance()->getModules().find(name);
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"Experimental builtin module '%1$s' is not enabled",name);
+			LOG(message_group::Warning,loc,documentRoot(),"Experimental builtin module '%1$s' is not enabled",name);
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			LOG(message_group::Deprecated,evalctx->loc,evalctx->documentRoot(),"The %1$s() module will be removed in future releases. Use %2$s instead.", std::string(name),std::string(replacement));
+			LOG(message_group::Deprecated,loc,documentRoot(),"The %1$s() module will be removed in future releases. Use %2$s instead.",name,replacement);
 		}
-		return m->instantiate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), &inst, evalctx);
+		if (m->is_enabled()) {
+			return InstantiableModule{get_shared_ptr(), m};
+		}
 	}
-	return Context::instantiate_module(inst, evalctx);
+	return Context::lookup_local_module(name, loc);
 }
-

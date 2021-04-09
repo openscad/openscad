@@ -9,6 +9,7 @@
 #include "evaluationsession.h"
 #include "function.h"
 #include "memory.h"
+#include "module.h"
 #include "value.h"
 #include "valuemap.h"
 
@@ -57,7 +58,7 @@ protected:
 	Context(const std::shared_ptr<Context> parent);
 
 public:
-	std::shared_ptr<Context> get_shared_ptr() { return shared_from_this(); }
+	std::shared_ptr<Context> get_shared_ptr() const { return const_cast<Context*>(this)->shared_from_this(); }
 
     template<typename C, typename ... T>
     static ContextHandle<C> create(T&& ... t) {
@@ -69,9 +70,10 @@ public:
 
 	const std::shared_ptr<Context> &getParent() const { return this->parent; }
 
-	virtual boost::optional<CallableFunction> lookup_local_function(const std::string &name) const;
-	boost::optional<CallableFunction> lookup_function(const std::string &name) const;
-	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const;
+	virtual boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const;
+	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;
+	virtual boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const;
+	boost::optional<InstantiableModule> lookup_module(const std::string &name, const Location &loc) const;
 
 	void setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &parameters, const AssignmentList &optional_parameters={}, bool usermodule=false);
 

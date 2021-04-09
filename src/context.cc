@@ -182,7 +182,7 @@ static void NOINLINE print_ignore_warning(const char *what, const char *name, co
 	LOG(message_group::Warning,loc,docPath,"Ignoring unknown %1$s '%2$s'",what,name);
 }
 
-boost::optional<CallableFunction> Context::lookup_local_function(const std::string &name) const
+boost::optional<CallableFunction> Context::lookup_local_function(const std::string &name, const Location &loc) const
 {
 	if (is_config_variable(name)) {
 		ValueMap::const_iterator result = config_variables.find(name);
@@ -202,20 +202,20 @@ boost::optional<CallableFunction> Context::lookup_local_function(const std::stri
 	return boost::none;
 }
 
-boost::optional<CallableFunction> Context::lookup_function(const std::string &name) const
+boost::optional<CallableFunction> Context::lookup_function(const std::string &name, const Location &loc) const
 {
 	if (is_config_variable(name)) {
 		const auto& stack = session()->getStack();
 		for (int i = stack.size()-1; i >= 0; i--) {
-			auto result = stack.at(i)->lookup_local_function(name);
+			auto result = stack.at(i)->lookup_local_function(name, loc);
 			if (result) {
 				return result;
 			}
 		}
 	} else {
-		std::shared_ptr<Context> context = (const_cast<Context *>(this))->get_shared_ptr();
+		std::shared_ptr<Context> context = get_shared_ptr();
 		while (context) {
-			auto result = context->lookup_local_function(name);
+			auto result = context->lookup_local_function(name, loc);
 			if (result) {
 				return result;
 			}
@@ -225,11 +225,33 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string &na
 	return boost::none;
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
+boost::optional<InstantiableModule> Context::lookup_local_module(const std::string &name, const Location &loc) const
 {
-	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
-	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentRoot().c_str());
-	return nullptr;
+	return boost::none;
+}
+
+boost::optional<InstantiableModule> Context::lookup_module(const std::string &name, const Location &loc) const
+{
+	if (is_config_variable(name)) {
+		const auto& stack = session()->getStack();
+		for (int i = stack.size()-1; i >= 0; i--) {
+			auto result = stack.at(i)->lookup_local_module(name, loc);
+			if (result) {
+				return result;
+			}
+		}
+	} else {
+		std::shared_ptr<Context> context = get_shared_ptr();
+		while (context) {
+			auto result = context->lookup_local_module(name, loc);
+			if (result) {
+				return result;
+			}
+			context = context->parent;
+		}
+	}
+	LOG(message_group::Warning,loc,this->documentRoot(),"Ignoring unknown module '%1$s'",name);
+	return boost::none;
 }
 
 #ifdef DEBUG
