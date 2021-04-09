@@ -1,5 +1,4 @@
 #include "parameterextractor.h"
-#include "modcontext.h"
 
 ParameterExtractor::ParameterExtractor()
 {
@@ -29,17 +28,15 @@ void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& ent
 {
   if (!module) return;
 
-  ContextHandle<Context> ctx{Context::create<Context>()};
-
   ParameterPos.clear();
   for (auto &assignment : module->scope.assignments) {
     const Annotation *param = assignment->annotation("Parameter");
     if (!param) continue;
 
-    Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+    Value defaultValue = assignment->getExpr()->evaluateLiteral();
     if (defaultValue.type() == Value::Type::UNDEFINED) continue;
 
-    ParameterObject *entryObject = new ParameterObject(ctx.ctx, assignment, std::move(defaultValue));
+    ParameterObject *entryObject = new ParameterObject(assignment, std::move(defaultValue));
 
     //check whether object exist or not previously
     if (entries.find(assignment->getName()) == entries.end()) {

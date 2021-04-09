@@ -22,6 +22,7 @@ class tostring_visitor;
 class tostream_visitor;
 class Context;
 class Expression;
+class Value;
 
 class QuotedString : public std::string
 {

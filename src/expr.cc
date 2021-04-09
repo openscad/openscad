@@ -76,6 +76,13 @@ Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& contex
 	return std::move(val);
 }
 
+Value Expression::evaluateLiteral() const
+{
+	EvaluationSession session{""};
+	ContextHandle<Context> ctx{Context::create<Context>(&session)};
+	return evaluate(ctx.ctx);
+}
+
 bool Expression::isLiteral() const
 {
     return false;

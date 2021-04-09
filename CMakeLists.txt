@@ -479,6 +479,7 @@ set(CORE_SOURCES
   src/dxfdata.cc
   src/dxfdim.cc
   src/evalcontext.cc
+  src/evaluationsession.cc
   src/export.cc
   src/export_3mf.cc
   src/export_amf.cc

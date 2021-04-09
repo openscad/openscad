@@ -4,6 +4,8 @@
 #include "Assignment.h"
 #include <unordered_map>
 
+class Context;
+
 class LocalScope
 {
 public:

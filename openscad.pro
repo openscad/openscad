@@ -303,6 +303,7 @@ HEADERS += src/version_check.h \
            src/scadapi.h \
            src/builtin.h \
            src/calc.h \
+           src/evaluationsession.h \
            src/context.h \
            src/builtincontext.h \
            src/modcontext.h \
@@ -437,6 +438,7 @@ SOURCES += \
            src/localscope.cc \
            src/feature.cc \
            src/node.cc \
+           src/evaluationsession.cc \
            src/context.cc \
            src/builtincontext.cc \
            src/modcontext.cc \

@@ -16,6 +16,7 @@ public:
 	virtual bool isLiteral() const;
 	virtual Value evaluate(const std::shared_ptr<Context>& context) const = 0;
 	Value checkUndef(Value&& val, const std::shared_ptr<Context>& context) const;
+	Value evaluateLiteral() const;
 };
 
 class UnaryOp : public Expression

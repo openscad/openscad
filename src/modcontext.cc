@@ -131,7 +131,6 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 	else {
 		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
 	}
-	s << boost::format("  document root: %s") % *this->document_root;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {

@@ -24,17 +24,14 @@
  *
  */
 
+#include "evaluationsession.h"
 
-#include "annotation.h"
-#include "expression.h"
-#include "context.h"
-
-Annotation::Annotation(const std::string &name, shared_ptr<Expression> expr)
-	: name(name), expr(expr)
+void EvaluationSession::push_context(Context* context)
 {
+	stack.push_back(context);
 }
 
-void Annotation::print(std::ostream &stream, const std::string &indent) const
+void EvaluationSession::pop_context()
 {
-	stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
+	stack.pop_back();
 }

@@ -10,7 +10,7 @@
 #include "evalcontext.h"
 #include "boost-utils.h"
 
-BuiltinContext::BuiltinContext() : Context()
+BuiltinContext::BuiltinContext(EvaluationSession* session) : Context(session)
 {
 }
 

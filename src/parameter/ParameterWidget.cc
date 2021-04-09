@@ -34,7 +34,6 @@
 #include "parametertext.h"
 #include "parametervector.h"
 
-#include "modcontext.h"
 #include "comment.h"
 
 #include <boost/filesystem.hpp>
@@ -491,8 +490,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 				
-				ContextHandle<Context> ctx{Context::create<Context>()};
-				Value newValue = params->evaluate(ctx.ctx);
+				Value newValue = params->evaluateLiteral();
 				if (entry->second->dvt == newValue.type()) {
 					entry->second->value = std::move(newValue);
 				}

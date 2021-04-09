@@ -45,39 +45,18 @@ static bool is_config_variable(const std::string &name)
 	return name[0] == '$' && name != "$children";
 }
 
-/*!
-	Initializes this context. Optionally initializes a context for an 
-	external library. Note that if parent is null, a new stack will be
-	created, and all children will share the root parent's stack.
-*/
-Context::Context(const std::shared_ptr<Context> parent) : parent(parent)
-{
-	if (parent) {
-		assert(parent->ctx_stack && "Parent context stack was null!");
-		this->ctx_stack = parent->ctx_stack;
-		this->document_root = parent->document_root;
-	}
-	else {
-		this->ctx_stack = new Stack;
-		this->document_root = std::make_shared<std::string>();
-	}
-}
+Context::Context(EvaluationSession* session):
+	parent(nullptr),
+	evaluation_session(session)
+{}
+
+Context::Context(const std::shared_ptr<Context> parent):
+	parent(parent),
+	evaluation_session(parent->evaluation_session)
+{}
 
 Context::~Context()
-{
-	if (!parent) delete this->ctx_stack;
-}
-
-void Context::push(std::shared_ptr<Context> ctx)
-{
-	this->ctx_stack->push_back(ctx);
-}
-
-void Context::pop()
-{
-	assert(this->ctx_stack && "Context stack was null at destruction!");
-	this->ctx_stack->pop_back();
-}
+{}
 
 /*!
 	Initialize context from a module parameter list and a evaluation context
@@ -109,6 +88,13 @@ void Context::set_variable(const std::string &name, Value&& value)
 	}
 }
 
+void Context::apply_variables(const ValueMap& variables)
+{
+	for (const auto& variable : variables) {
+		set_variable(variable.first, variable.second.clone());
+	}
+}
+
 void Context::apply_variables(const std::shared_ptr<Context> &other)
 {
 	this->variables.applyFrom(other->variables);
@@ -121,11 +107,11 @@ void Context::apply_config_variables(const std::shared_ptr<Context> &other)
 
 const Value& Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
-	assert(this->ctx_stack && "Context had null stack in lookup_variable()!!");
 	ValueMap::const_iterator result;
 	if (is_config_variable(name)) {
-		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
-			const auto &confvars = ctx_stack->at(i)->config_variables;
+		const auto& stack = session()->getStack();
+		for (int i = stack.size()-1; i >= 0; i--) {
+			const auto &confvars = stack.at(i)->config_variables;
 			if ((result = confvars.find(name)) != confvars.end()) {
 				return result->second;
 			}
@@ -219,8 +205,9 @@ boost::optional<CallableFunction> Context::lookup_local_function(const std::stri
 boost::optional<CallableFunction> Context::lookup_function(const std::string &name) const
 {
 	if (is_config_variable(name)) {
-		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
-			auto result = ctx_stack->at(i)->lookup_local_function(name);
+		const auto& stack = session()->getStack();
+		for (int i = stack.size()-1; i >= 0; i--) {
+			auto result = stack.at(i)->lookup_local_function(name);
 			if (result) {
 				return result;
 			}
@@ -255,7 +242,6 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 	else {
 		s << boost::format("Context: %p (%p)\n") % this % this->parent;
 	}
-	s << boost::format("  document root: %s\n") % *this->document_root;
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
 		if (m) {

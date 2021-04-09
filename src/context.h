@@ -4,9 +4,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include <boost/optional.hpp>
 #include "Assignment.h"
+#include "evaluationsession.h"
 #include "function.h"
 #include "memory.h"
 #include "value.h"
@@ -22,10 +22,10 @@ struct ContextHandle
 {
     ContextHandle(std::shared_ptr<T>&& sp) : ctx(std::move(sp)) {
 		ctx->init();
-		ctx->push(ctx);
+		ctx->session()->push_context(ctx.get());
     }
     ~ContextHandle() {
-		ctx->pop();
+		ctx->session()->pop_context();
     }
 
 	ContextHandle(const ContextHandle&) = delete;
@@ -36,9 +36,9 @@ struct ContextHandle
 	// Valid only if ctx is on the top of the stack.
 	ContextHandle& operator=(std::shared_ptr<T>&& sp)
 	{
-		ctx->pop();
+		ctx->session()->pop_context();
 		ctx = std::move(sp);
-		ctx->push(ctx);
+		ctx->session()->push_context(ctx.get());
 		return *this;
 	}
 
@@ -53,14 +53,11 @@ class EvalContext;
 class Context : public std::enable_shared_from_this<Context>
 {
 protected:
-	Context(const std::shared_ptr<Context> parent = std::shared_ptr<Context>());
+	Context(EvaluationSession* session);
+	Context(const std::shared_ptr<Context> parent);
 
 public:
-	typedef std::vector<std::shared_ptr<Context>> Stack;
-
 	std::shared_ptr<Context> get_shared_ptr() { return shared_from_this(); }
-	void push(std::shared_ptr<Context> ctx);
-	void pop();
 
     template<typename C, typename ... T>
     static ContextHandle<C> create(T&& ... t) {
@@ -80,6 +77,7 @@ public:
 
 	void set_variable(const std::string &name, Value&& value);
 
+	void apply_variables(const ValueMap& variables);
 	void apply_variables(const std::shared_ptr<Context> &other);
 	void apply_config_variables(const std::shared_ptr<Context> &other);
 	const Value& lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
@@ -89,18 +87,17 @@ public:
 
 	bool has_local_variable(const std::string &name) const;
 
-	void setDocumentRoot(const std::string &path) { this->document_root = std::make_shared<std::string>(path); }
-	const std::string &documentRoot() const { return *this->document_root; }
+	EvaluationSession* session() const { return evaluation_session; }
+	const std::string &documentRoot() const { return evaluation_session->documentRoot(); }
 
 public:
 
 protected:
 	const std::shared_ptr<Context> parent;
-	Stack *ctx_stack;
 	ValueMap variables;
 	ValueMap config_variables;
 
-	std::shared_ptr<std::string> document_root;
+	EvaluationSession* evaluation_session;
 
 public:
 #ifdef DEBUG

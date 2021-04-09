@@ -25,6 +25,7 @@
  */
 #include <iostream>
 #include "boost-utils.h"
+#include "builtincontext.h"
 #include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
@@ -178,7 +179,7 @@ void fileExportedMessage(const char *format, const QString &filename) {
 } // namespace
 
 MainWindow::MainWindow(const QStringList &filenames)
-	: top_ctx(Context::create<BuiltinContext>()), root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr),
+	: root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr),
 	  procevents(false), tempFile(nullptr), progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
@@ -1179,14 +1180,13 @@ void MainWindow::instantiateRoot()
 
 		AbstractNode::resetIndexCounter();
 
-		// split these two lines - gcc 4.7 bug
-		auto mi = ModuleInstantiation( "group" );
-		this->root_inst = mi;
-
-		top_ctx->setDocumentRoot(doc.parent_path().string());
-		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
-		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
-		this->qglview->cam.updateView(filectx.ctx, false);
+		EvaluationSession session{doc.parent_path().string()};
+		ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+		builtin_context->apply_variables(this->render_variables);
+		
+		ContextHandle<FileContext> file_context{Context::create<FileContext>(builtin_context.ctx)};
+		this->absolute_root_node = this->root_module->instantiateWithFileContext(file_context.ctx, &this->root_inst, nullptr);
+		this->qglview->cam.updateView(file_context.ctx, false);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -1195,7 +1195,7 @@ void MainWindow::instantiateRoot()
 				this->root_node = this->absolute_root_node;
 			}
 			if (nextLocation) {
-				LOG(message_group::None,*nextLocation,top_ctx->documentRoot(),"More than one Root Modifier (!)");
+				LOG(message_group::None,*nextLocation,builtin_context->documentRoot(),"More than one Root Modifier (!)");
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1704,13 +1704,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx->set_variable("$t", Value(this->anim_tval));
+	render_variables.insert_or_assign("$t", Value(this->anim_tval));
 	auto camVpt = qglview->cam.getVpt();
-	this->top_ctx->set_variable("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
+	render_variables.insert_or_assign("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
 	auto camVpr = qglview->cam.getVpr();
-	top_ctx->set_variable("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
-	top_ctx->set_variable("$vpd", Value(qglview->cam.zoomValue()));
-	top_ctx->set_variable("$vpf", Value(qglview->cam.fovValue()));
+	render_variables.insert_or_assign("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
+	render_variables.insert_or_assign("$vpd", Value(qglview->cam.zoomValue()));
+	render_variables.insert_or_assign("$vpf", Value(qglview->cam.fovValue()));
 }
 
 	/*!
@@ -1817,7 +1817,7 @@ void MainWindow::actionReloadRenderPreview()
 
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
-	this->top_ctx->set_variable("$preview", Value(true));
+	render_variables.insert_or_assign("$preview", Value(true));
 	compile(true);
 }
 
@@ -1848,7 +1848,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 	this->processEvents();
 	this->afterCompileSlot = afterCompileSlot;
 	this->procevents = procevents;
-	this->top_ctx->set_variable("$preview", Value(preview));
+	render_variables.insert_or_assign("$preview", Value(preview));
 }
 
 void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
