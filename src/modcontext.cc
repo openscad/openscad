@@ -74,7 +74,7 @@ void ModuleContext::initializeModule(const UserModule &module)
 	this->functions_p = &module.scope.functions;
 	this->modules_p = &module.scope.modules;
 	for (const auto &assignment : module.scope.assignments) {
-		if (assignment->getExpr()->isLiteral() && this->variables.find(assignment->getName()) != this->variables.end()) {
+		if (assignment->getExpr()->isLiteral() && lookup_local_variable(assignment->getName())) {
 			LOG(message_group::Warning,assignment->location(),this->documentRoot(),"Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName());
 		}
 		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
@@ -119,17 +119,11 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 		if (m) {
 			s << "  module parameters:";
 			for(const auto &parameter : m->parameters) {
-				s << boost::format("    %s = %s") % parameter->getName() % variables.get(parameter->getName());
+				s << boost::format("    %s = %s") % parameter->getName() % lexical_variables.get(parameter->getName());
 			}
 		}
 	}
-	s << "  vars:";
-	for(const auto &v : variables) {
-		s << boost::format("    %s = %s") % v.first % v.second;
-	}
-	for(const auto &v : config_variables) {
-		s << boost::format("    %s = %s") % v.first % v.second;
-	}
+	s << ContextFrame::dump();
 	return s.str();
 }
 #endif

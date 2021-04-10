@@ -24,14 +24,54 @@
  *
  */
 
+#include "contextframe.h"
 #include "evaluationsession.h"
+#include "printutils.h"
 
-void EvaluationSession::push_context(Context* context)
+void EvaluationSession::push_frame(ContextFrame* frame)
 {
-	stack.push_back(context);
+	stack.push_back(frame);
 }
 
-void EvaluationSession::pop_context()
+void EvaluationSession::pop_frame()
 {
 	stack.pop_back();
+}
+
+const Value& EvaluationSession::lookup_special_variable(const std::string &name, bool silent, const Location &loc) const
+{
+	for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
+		boost::optional<const Value&> result = (*it)->lookup_local_variable(name);
+		if (result) {
+			return *result;
+		}
+	}
+	if (!silent) {
+		LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown variable '%1$s'",name);
+	}
+	return Value::undefined;
+}
+
+boost::optional<CallableFunction> EvaluationSession::lookup_special_function(const std::string &name, const Location &loc) const
+{
+	for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
+		boost::optional<CallableFunction> result = (*it)->lookup_local_function(name, loc);
+		if (result) {
+			return result;
+		}
+	}
+	LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown function '%1$s'",name);
+	return boost::none;
+}
+
+boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(const std::string &name, const Location &loc) const
+{
+	for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
+		boost::optional<InstantiableModule> result = (*it)->lookup_local_module(name, loc);
+		if (result) {
+			return result;
+		}
+	}
+	LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown module '%1$s'",name);
+	return boost::none;
 }

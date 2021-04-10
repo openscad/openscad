@@ -305,6 +305,7 @@ HEADERS += src/version_check.h \
            src/calc.h \
            src/evaluationsession.h \
            src/context.h \
+           src/contextframe.h \
            src/builtincontext.h \
            src/modcontext.h \
            src/evalcontext.h \
@@ -440,6 +441,7 @@ SOURCES += \
            src/node.cc \
            src/evaluationsession.cc \
            src/context.cc \
+           src/contextframe.cc \
            src/builtincontext.cc \
            src/modcontext.cc \
            src/evalcontext.cc \

@@ -99,43 +99,43 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarni
 
 	bool noauto = false;
 	double x, y, z;
-	const auto vpr = ctx->lookup_local_config_variable("$vpr");
-	if (vpr.isDefined()) {
-		if (vpr.getVec3(x, y, z, 0.0)) {
+	const auto vpr = ctx->lookup_local_variable("$vpr");
+	if (vpr) {
+		if (vpr->getVec3(x, y, z, 0.0)) {
 			setVpr(x, y, z);
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr.toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr->toEchoString());
 		}
 	}
 
-	const auto vpt = ctx->lookup_local_config_variable("$vpt");
-	if (vpt.isDefined()) {
-		if (vpt.getVec3(x, y, z, 0.0)) {
+	const auto vpt = ctx->lookup_local_variable("$vpt");
+	if (vpt) {
+		if (vpt->getVec3(x, y, z, 0.0)) {
 			setVpt(x, y, z);
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt.toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt->toEchoString());
 		}
 	}
 
-	const auto vpd = ctx->lookup_local_config_variable("$vpd");
-	if (vpd.isDefined()) {
-		if (vpd.type() == Value::Type::NUMBER) {
-			setVpd(vpd.toDouble());
+	const auto vpd = ctx->lookup_local_variable("$vpd");
+	if (vpd) {
+		if (vpd->type() == Value::Type::NUMBER) {
+			setVpd(vpd->toDouble());
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd.toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd->toEchoString());
 		}
 	}
 
-	const auto vpf = ctx->lookup_local_config_variable("$vpf");
-	if (vpf.isDefined()) {
-		if (vpf.type() == Value::Type::NUMBER) {
-			setVpf(vpf.toDouble());
+	const auto vpf = ctx->lookup_local_variable("$vpf");
+	if (vpf) {
+		if (vpf->type() == Value::Type::NUMBER) {
+			setVpf(vpf->toDouble());
 			noauto = true;
 		}else{
-			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf.toEchoString());
+			LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf->toEchoString());
 		}
 	}
 

@@ -133,7 +133,7 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 		if (m) {
 			s << boost::format("  module args:");
 			for(const auto &parameter : m->parameters) {
-				s << boost::format("    %s = %s") % parameter->getName() % variables.get(parameter->getName());
+				s << boost::format("    %s = %s") % parameter->getName() % lookup_variable(parameter->getName());
 			}
 		}
 	}

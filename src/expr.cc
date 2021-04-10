@@ -479,11 +479,7 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(const std::shared_ptr<Context>& context) const
 {
 	if (isLookup) {
-		auto f = context->lookup_function(name, location());
-		if (!f) {
-			LOG(message_group::Warning,loc,context->documentRoot(),"Ignoring unknown function '%1$s'",name);
-		}
-		return f;
+		return context->lookup_function(name, location());
 	} else {
 		auto v = expr->evaluate(context);
 		if (v.type() == Value::Type::FUNCTION) {
@@ -522,7 +518,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 	else if (typeid(*expression) == typeid(Let)) {
 		const Let *let = static_cast<const Let*>(expression);
 		ContextHandle<Context> let_context{Context::create<Context>(context)};
-		let_context->apply_config_variables(context);
+		let_context->apply_config_variables(*context);
 		return SimplifiedExpression{let->evaluateStep(let_context.ctx), let_context.ctx};
 	}
 	else if (typeid(*expression) == typeid(FunctionCall)) {
@@ -558,7 +554,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 		}
 		
 		ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
-		body_context->apply_config_variables(context);
+		body_context->apply_config_variables(*context);
 		body_context->setVariables(evalctx.ctx, *parameters);
 		
 		return SimplifiedExpression{function_body, body_context.ctx, call};
@@ -862,7 +858,7 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 
         ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
         evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
-        c->apply_variables(tmp.ctx);
+        c->apply_variables(*tmp.ctx);
     }
     return std::move(vec);
 }
