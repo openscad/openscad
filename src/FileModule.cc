@@ -181,24 +181,22 @@ AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const
 {
 	assert(!evalctx);
 
-	ContextHandle<FileContext> context{Context::create<FileContext>(ctx)};
-	return this->instantiateWithFileContext(context.ctx, inst, evalctx);
+	std::shared_ptr<FileContext> dummy;
+	return instantiate(ctx, inst, &dummy);
 }
 
-AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, std::shared_ptr<FileContext>* resulting_file_context) const
 {
-	assert(!evalctx);
-
-	auto node = new RootNode(inst, evalctx);
+	auto node = new RootNode(inst, nullptr);
 	try {
-		ctx->initializeModule(*this); // May throw an ExperimentalFeatureException
-		// FIXME: Set document path to the path of the module
-		auto instantiatednodes = this->scope.instantiateChildren(ctx);
+		ContextHandle<FileContext> file_context{Context::create<FileContext>(ctx, this)};
+		*resulting_file_context = file_context.ctx;
+		auto instantiatednodes = this->scope.instantiateChildren(file_context.ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	} catch (EvaluationException &e) {
 		// LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
+		*resulting_file_context = nullptr;
 	}
-
 	return node;
 }
 

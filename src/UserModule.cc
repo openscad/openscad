@@ -55,13 +55,8 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	// passed to this instance, so we can populate the context
 	inst->scope.apply(evalctx);
 
-	ContextHandle<ModuleContext> c{Context::create<ModuleContext>(ctx, evalctx)};
-	// set $children first since we might have variables depending on it
-	c->set_variable("$children", Value(double(inst->scope.children_inst.size())));
 	StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
-	c->set_variable("$parent_modules", Value(double(StaticModuleNameStack::size())));
-	c->initializeModule(*this);
-	// FIXME: Set document path to the path of the module
+	ContextHandle<ModuleContext> c{Context::create<ModuleContext>(ctx, this, evalctx)};
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif

@@ -12,8 +12,8 @@ template<typename T>
 struct ContextHandle
 {
     ContextHandle(std::shared_ptr<T>&& sp) : ctx(std::move(sp)) {
-		ctx->init();
 		ctx->session()->push_frame(ctx.get());
+		ctx->init();
     }
     ~ContextHandle() {
 		ctx->session()->pop_frame();

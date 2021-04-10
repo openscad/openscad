@@ -1184,9 +1184,11 @@ void MainWindow::instantiateRoot()
 		ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
 		builtin_context->apply_variables(this->render_variables);
 		
-		ContextHandle<FileContext> file_context{Context::create<FileContext>(builtin_context.ctx)};
-		this->absolute_root_node = this->root_module->instantiateWithFileContext(file_context.ctx, &this->root_inst, nullptr);
-		this->qglview->cam.updateView(file_context.ctx, false);
+		std::shared_ptr<FileContext> file_context;
+		this->absolute_root_node = this->root_module->instantiate(builtin_context.ctx, &this->root_inst, &file_context);
+		if (file_context) {
+			this->qglview->cam.updateView(file_context, false);
+		}
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?

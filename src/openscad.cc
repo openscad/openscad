@@ -462,10 +462,12 @@ int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileForm
 
 	AbstractNode::resetIndexCounter();
 	ModuleInstantiation root_inst("group");
-	ContextHandle<FileContext> file_context{Context::create<FileContext>(builtin_context.ctx)};
-	AbstractNode *absolute_root_node = root_module->instantiateWithFileContext(file_context.ctx, &root_inst, nullptr);
+	std::shared_ptr<FileContext> file_context;
+	AbstractNode *absolute_root_node = root_module->instantiate(builtin_context.ctx, &root_inst, &file_context);
 	Camera camera = cmd.camera;
-	camera.updateView(file_context.ctx, true);
+	if (file_context) {
+		camera.updateView(file_context, true);
+	}
 
 	// Do we have an explicit root node (! modifier)?
 	const AbstractNode *root_node;

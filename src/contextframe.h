@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include "evaluationsession.h"
 #include "valuemap.h"
 

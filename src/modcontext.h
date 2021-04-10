@@ -3,55 +3,70 @@
 #include <memory>
 #include "context.h"
 #include "FileModule.h"
+#include "UserModule.h"
 
-/*!
-	This holds the context for a UserModule definition; keeps track of
-	global variables, submodules and functions defined inside a module.
-
-	NB! every .scad file defines a FileModule holding the contents of the file.
-*/
-class ModuleContext : public Context
+class ScopeContext : public Context
 {
 public:
-	~ModuleContext();
-
-	void initializeModule(const class UserModule &m);
+	void init() override;
 	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
 	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
-
-	const LocalScope::FunctionContainer *functions_p;
-	const LocalScope::ModuleContainer *modules_p;
-
-  // FIXME: Points to the eval context for the call to this module. Not sure where it belongs
-	std::shared_ptr<EvalContext> evalctx;
 
 #ifdef DEBUG
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst) override;
 #endif
 
 protected:
-	ModuleContext(const std::shared_ptr<Context> parent, const std::shared_ptr<EvalContext> evalctx = {});
+	ScopeContext(const std::shared_ptr<Context> parent, const LocalScope* scope):
+		Context(parent),
+		scope(scope)
+	{}
 
 private:
 // Experimental code. See issue #399
 //	void evaluateAssignments(const AssignmentList &assignments);
 
+	const LocalScope* scope;
+};
+
+class ModuleContext : public ScopeContext
+{
+public:
+	void init() override;
+
+  // FIXME: Points to the eval context for the call to this module. Not sure where it belongs
+	std::shared_ptr<EvalContext> evalctx;
+
+protected:
+	ModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const std::shared_ptr<EvalContext> evalctx = {}):
+		ScopeContext(parent, &module->scope),
+		evalctx(evalctx),
+		module(module)
+	{}
+
+private:
+// Experimental code. See issue #399
+//	void evaluateAssignments(const AssignmentList &assignments);
+
+	const UserModule* module;
+
 	friend class Context;
 };
 
-class FileContext : public ModuleContext
+class FileContext : public ScopeContext
 {
 public:
-	~FileContext() {}
-	void initializeModule(const FileModule &module);
 	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
 	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
 protected:
-	FileContext(const std::shared_ptr<Context> parent) : ModuleContext(parent), usedlibs_p(nullptr) {}
+	FileContext(const std::shared_ptr<Context> parent, const FileModule* file_module):
+		ScopeContext(parent, &file_module->scope),
+		file_module(file_module)
+	{}
 
 private:
-	const FileModule::ModuleContainer *usedlibs_p;
+	const FileModule* file_module;
 
 	friend class Context;
 };

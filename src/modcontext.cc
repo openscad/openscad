@@ -1,30 +1,19 @@
 #include "modcontext.h"
-#include "UserModule.h"
 #include "ModuleInstantiation.h"
+#include "evalcontext.h"
 #include "expression.h"
-#include "function.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "ModuleCache.h"
 #include <cmath>
-#include <memory>
 #include "boost-utils.h"
 #ifdef DEBUG
 #include <boost/format.hpp>
 #endif
 
-ModuleContext::ModuleContext(const std::shared_ptr<Context> parent, const std::shared_ptr<EvalContext> evalctx)
-	: Context(parent), functions_p(nullptr), modules_p(nullptr), evalctx(evalctx)
-{
-}
-
-ModuleContext::~ModuleContext()
-{
-}
-
 // Experimental code. See issue #399
 #if 0
-void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
+void ScopeContext::evaluateAssignments(const AssignmentList &assignments)
 {
 	// First, assign all simple variables
 	std::list<std::string> undefined_vars;
@@ -67,46 +56,41 @@ void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
 }
 #endif
 
-void ModuleContext::initializeModule(const UserModule &module)
+void ScopeContext::init()
 {
-	this->setVariables(evalctx, module.parameters, {}, true);
-	// FIXME: Don't access module members directly
-	this->functions_p = &module.scope.functions;
-	this->modules_p = &module.scope.modules;
-	for (const auto &assignment : module.scope.assignments) {
+	for (const auto &assignment : scope->assignments) {
 		if (assignment->getExpr()->isLiteral() && lookup_local_variable(assignment->getName())) {
-			LOG(message_group::Warning,assignment->location(),this->documentRoot(),"Module %1$s: Parameter %2$s is overwritten with a literal",module.name,assignment->getName());
+			LOG(message_group::Warning,assignment->location(),this->documentRoot(),"Parameter %1$s is overwritten with a literal",assignment->getName());
 		}
-		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
+		set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
 	}
 
 // Experimental code. See issue #399
 //	evaluateAssignments(module.scope.assignments);
 }
 
-boost::optional<CallableFunction> ModuleContext::lookup_local_function(const std::string &name, const Location &loc) const
+boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
-	if (functions_p) {
-		const auto& search = functions_p->find(name);
-		if (search != functions_p->end()) {
-			return CallableFunction{CallableUserFunction{get_shared_ptr(), search->second.get()}};
-		}
+	const auto& search = scope->functions.find(name);
+	if (search != scope->functions.end()) {
+		return CallableFunction{CallableUserFunction{get_shared_ptr(), search->second.get()}};
 	}
 	return Context::lookup_local_function(name, loc);
 }
 
-boost::optional<InstantiableModule> ModuleContext::lookup_local_module(const std::string &name, const Location &loc) const
+boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std::string &name, const Location &loc) const
 {
-	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
-		auto m = this->modules_p->find(name)->second;
-		return InstantiableModule{get_shared_ptr(), m.get()};
+	const auto& search = scope->modules.find(name);
+	if (search != scope->modules.end()) {
+		return InstantiableModule{get_shared_ptr(), search->second.get()};
 	}
 	return Context::lookup_local_module(name, loc);
 }
 
 #ifdef DEBUG
-std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
+std::string ScopeContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
+
 	std::ostringstream s;
 	if (inst) {
 		s << boost::format("ModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
@@ -128,19 +112,26 @@ std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantia
 }
 #endif
 
+void ModuleContext::init()
+{
+	set_variable("$children", Value(double(evalctx->numChildren())));
+	set_variable("$parent_modules", Value(double(StaticModuleNameStack::size())));
+	setVariables(evalctx, module->parameters, {}, true);
+	ScopeContext::init();
+}
+
 boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
-	auto result = ModuleContext::lookup_local_function(name, loc);
+	auto result = ScopeContext::lookup_local_function(name, loc);
 	if (result) {
 		return result;
 	}
 	
-	for (const auto &m : *this->usedlibs_p) {
+	for (const auto &m : file_module->usedlibs) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
-			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
-			ctx->initializeModule(*usedmod);
+			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
 			PRINTDB("New lib Context for %s func:", name);
 			PRINTDB("%s",ctx->dump(nullptr, nullptr));
@@ -153,17 +144,16 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
 
 boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::string &name, const Location &loc) const
 {
-	auto result = ModuleContext::lookup_local_module(name, loc);
+	auto result = ScopeContext::lookup_local_module(name, loc);
 	if (result) {
 		return result;
 	}
 	
-	for (const auto &m : *this->usedlibs_p) {
+	for (const auto &m : file_module->usedlibs) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = ModuleCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.modules.find(name) != usedmod->scope.modules.end()) {
-			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent)};
-			ctx->initializeModule(*usedmod);
+			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
 			PRINTDB("New lib Context for %s module:", name);
 			PRINTDB("%s",ctx->dump(nullptr, nullptr));
@@ -172,15 +162,4 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
 		}
 	}
 	return boost::none;
-}
-
-void FileContext::initializeModule(const class FileModule &module)
-{
-	// FIXME: Don't access module members directly
-	this->usedlibs_p = &module.usedlibs;
-	this->functions_p = &module.scope.functions;
-	this->modules_p = &module.scope.modules;
-	for (const auto &assignment : module.scope.assignments) {
-		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
-	}
 }
