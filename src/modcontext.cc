@@ -2,6 +2,7 @@
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "expression.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "ModuleCache.h"
@@ -116,7 +117,7 @@ void ModuleContext::init()
 {
 	set_variable("$children", Value(double(evalctx->numChildren())));
 	set_variable("$parent_modules", Value(double(StaticModuleNameStack::size())));
-	setVariables(evalctx, module->parameters, {}, true);
+	apply_variables(Parameters::parse(evalctx, module->parameters, getParent()).to_context_frame());
 	ScopeContext::init();
 }
 

@@ -38,6 +38,7 @@
 #include "stackcheck.h"
 #include "exceptions.h"
 #include "feature.h"
+#include "parameters.h"
 #include "printutils.h"
 #include <boost/bind.hpp>
 #include "boost-utils.h"
@@ -526,7 +527,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 		ContextHandle<EvalContext> evalctx{Context::create<EvalContext>(context, call->arguments, call->location())};
 		
 		const Expression* function_body;
-		const AssignmentList* parameters;
+		const AssignmentList* required_parameters;
 		std::shared_ptr<Context> defining_context;
 		
 		auto f = call->evaluate_function_expression(context);
@@ -536,7 +537,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 			return (*function)->evaluate(evalctx.ctx);
 		} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
 			function_body = callable->function->expr.get();
-			parameters = &callable->function->parameters;
+			required_parameters = &callable->function->parameters;
 			defining_context = callable->defining_context;
 		} else {
 			const Value* function_value;
@@ -549,13 +550,13 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 			}
 			const auto &function = function_value->toFunction();
 			function_body = function.getExpr().get();
-			parameters = function.getParameters().get();
+			required_parameters = function.getParameters().get();
 			defining_context = function.getCtx();
 		}
 		
 		ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
 		body_context->apply_config_variables(*context);
-		body_context->setVariables(evalctx.ctx, *parameters);
+		body_context->apply_variables(Parameters::parse(evalctx.ctx, *required_parameters, defining_context).to_context_frame());
 		
 		return SimplifiedExpression{function_body, body_context.ctx, call};
 	}
@@ -891,30 +892,23 @@ void LcLet::print(std::ostream &stream, const std::string &) const
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
 {
-	AssignmentList parameters;
-	parameters += assignment("condition"), assignment("message");
-
-	ContextHandle<Context> c{Context::create<Context>(context)};
-
-	AssignmentMap assignments = evalctx->resolveArguments(parameters, {}, false);
-	for (const auto &parameter : parameters) {
-		auto it = assignments.find(parameter->getName());
-		if (it != assignments.end()) {
-			c->set_variable(parameter->getName(), assignments[parameter->getName()]->evaluate(evalctx));
+	Parameters parameters = Parameters::parse(evalctx, {"condition", "message"});
+	
+	const Expression* condition = nullptr;
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if (evalctx->getArgName(i) == "condition" || (evalctx->getArgName(i).empty() && !condition)) {
+			condition = evalctx->getArgs()[i]->getExpr().get();
 		}
 	}
-
-	const Value &condition = c->lookup_variable("condition", false, evalctx->loc);
-
-	if (!condition.toBool()) {
-		const Expression *expr = assignments["condition"];
-		const Value &message = c->lookup_variable("message", true);
-
-		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
+	
+	if (!parameters["condition"].toBool()) {
+		const Value &message = parameters["message"];
+		
+		const auto conditionText = condition ? STR(" '" << *condition << "'") : "";
 		if (message.isDefined()) {
-			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed: %2$s",exprText,message.toEchoString());
+			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed: %2$s",conditionText,message.toEchoString());
 		} else {
-			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed",exprText);
+			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed",conditionText);
 		}
 		throw AssertionFailedException("Assertion Failed", evalctx->loc);
 	}

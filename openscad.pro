@@ -309,6 +309,7 @@ HEADERS += src/version_check.h \
            src/builtincontext.h \
            src/modcontext.h \
            src/evalcontext.h \
+           src/parameters.h \
            src/csgops.h \
            src/CSGTreeNormalizer.h \
            src/CSGTreeEvaluator.h \
@@ -445,6 +446,7 @@ SOURCES += \
            src/builtincontext.cc \
            src/modcontext.cc \
            src/evalcontext.cc \
+           src/parameters.cc \
            src/csgnode.cc \
            src/CSGTreeNormalizer.cc \
            src/CSGTreeEvaluator.cc \

@@ -29,6 +29,7 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
@@ -53,25 +54,21 @@ AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, con
 {
 	auto node = new OffsetNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("r")};
-	AssignmentList optional_parameters{assignment("delta"),assignment("chamfer")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
+	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"delta", "chamfer"});
 	inst->scope.apply(evalctx);
 
-	node->fn = c->lookup_variable("$fn").toDouble();
-	node->fs = c->lookup_variable("$fs").toDouble();
-	node->fa = c->lookup_variable("$fa").toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
 	// default with no argument at all is (r = 1, chamfer = false)
 	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const auto &r = c->lookup_variable("r", true);
-	const auto &delta = c->lookup_variable("delta", true);
-	const auto &chamfer = c->lookup_variable("chamfer", true);
+	const auto &r = parameters["r"];
+	const auto &delta = parameters["delta"];
+	const auto &chamfer = parameters["chamfer"];
 
 	if (r.isDefinedAs(Value::Type::NUMBER)) {
 		r.getDouble(node->delta);

@@ -37,6 +37,7 @@
 #include "evalcontext.h"
 #include "builtin.h"
 #include "dxfdata.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "feature.h"
@@ -65,28 +66,17 @@ public:
 
 AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
 {
-	AssignmentList parameters{
-		assignment("file"), assignment("layer"), assignment("convexity"),
-		assignment("origin"), assignment("scale")
-	};
+	Parameters parameters = Parameters::parse(evalctx,
+		{"file", "layer", "convexity", "origin", "scale"},
+		{"width", "height", "filename", "layername", "center", "dpi"}
+	);
 
-	AssignmentList optional_parameters{
-		assignment("width"), assignment("height"),
-		assignment("filename"), assignment("layername"), assignment("center"), assignment("dpi")
-	};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
-#if 0 && DEBUG
-	c.dump(this, inst);
-#endif
-
-	const auto &v = c->lookup_variable("file", true);
+	const auto &v = parameters["file"];
 	std::string filename;
 	if (v.isDefined()) {
 		filename = lookup_file(v.isUndefined() ? "" : v.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 	} else {
-		const auto &filename_val = c->lookup_variable("filename", true);
+		const auto &filename_val = parameters["filename"];
 		if (!filename_val.isUndefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
@@ -108,16 +98,16 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 
 	auto node = new ImportNode(inst, evalctx, actualtype);
 
-	node->fn = c->lookup_variable("$fn").toDouble();
-	node->fs = c->lookup_variable("$fs").toDouble();
-	node->fa = c->lookup_variable("$fa").toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
 	node->filename = filename;
-	const auto &layerval = c->lookup_variable("layer", true);
+	const auto &layerval = parameters["layer"];
 	if (layerval.isDefined()) {
 		node->layername = layerval.toString();
 	} else {
-		const auto &layername = c->lookup_variable("layername", true);
+		const auto &layername = parameters["layername"];
 		if (layername.isDefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","layername= is deprecated. Please use layer=");
 			node->layername = layername.toString();
@@ -125,11 +115,11 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 			node->layername = "";
 		}
 	}
-	node->convexity = (int)c->lookup_variable("convexity", true).toDouble();
+	node->convexity = (int)parameters["convexity"].toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	const auto &origin = c->lookup_variable("origin", true);
+	const auto &origin = parameters["origin"];
 	node->origin_x = node->origin_y = 0;
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
@@ -137,30 +127,29 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 
-	const auto &center = c->lookup_variable("center", true);
+	const auto &center = parameters["center"];
 	node->center = center.type() == Value::Type::BOOL ? center.toBool() : false;
 
-	node->scale = c->lookup_variable("scale", true).toDouble();
+	node->scale = parameters["scale"].toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	node->dpi = ImportNode::SVG_DEFAULT_DPI;
-	const auto &dpi = c->lookup_variable("dpi", true);
+	const auto &dpi = parameters["dpi"];
 	if (dpi.type() == Value::Type::NUMBER) {
 		double val = dpi.toDouble();
 		if (val < 0.001) {
-		std::string filePath = boostfs_uncomplete(inst->location().filePath(),evalctx->documentRoot()).generic_string();
-		LOG(message_group::Warning,Location::NONE,"",
-			"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
-			origin.toEchoString(),filePath,filePath,inst->location().firstLine());
+			std::string filePath = boostfs_uncomplete(inst->location().filePath(),evalctx->documentRoot()).generic_string();
+			LOG(message_group::Warning,Location::NONE,"",
+				"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
+				origin.toEchoString(),filePath,filePath,inst->location().firstLine()
+			);
 		} else {
 			node->dpi = val;
 		}
 	}
 
-	const auto &width = c->lookup_variable("width", true);
-	const auto &height = c->lookup_variable("height", true);
-	node->width = (width.type() == Value::Type::NUMBER) ? width.toDouble() : -1;
-	node->height = (height.type() == Value::Type::NUMBER) ? height.toDouble() : -1;
+	node->width = parameters.get("width", -1);
+	node->height = parameters.get("height", -1);
 
 	return node;
 }

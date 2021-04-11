@@ -28,6 +28,7 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "polyset.h"
@@ -47,15 +48,11 @@ AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx,
 {
 	auto node = new ProjectionNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("cut")};
-	AssignmentList optional_parameters{assignment("convexity")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
+	Parameters parameters = Parameters::parse(evalctx, {"cut"}, {"convexity"});
 	inst->scope.apply(evalctx);
 
-	const auto& convexity = c->lookup_variable("convexity", true);
-	const auto& cut = c->lookup_variable("cut", true);
+	const auto& convexity = parameters["convexity"];
+	const auto& cut = parameters["cut"];
 
 	node->convexity = static_cast<int>(convexity.toDouble());
 

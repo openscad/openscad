@@ -30,47 +30,6 @@ Value EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) con
 	return Value::undefined.clone();
 }
 
-/*!
-  Matches arguments with parameters.
-  Returns an AssignmentMap (string -> Expression*)
-*/
-AssignmentMap EvalContext::resolveArguments(const AssignmentList &parameters, const AssignmentList &optional_parameters, bool silent) const
-{
-  AssignmentMap resolvedArgs;
-  size_t parameter_position = 0;
-  bool tooManyWarned=false;
-
-  for (size_t i=0; i<this->numArgs(); ++i) {
-    const auto &name = this->getArgName(i); // name is optional
-    const auto expr = this->getArgs()[i]->getExpr().get();
-    if (!name.empty()) {
-      if (name.at(0)!='$' && !silent) {
-        bool found=false;
-        for (auto const& parameter: parameters) {
-          if (parameter->getName() == name) found = true;
-        }
-        for (auto const& parameter: optional_parameters) {
-          if (parameter->getName() == name) found = true;
-        }
-        if (!found) {
-		  LOG(message_group::Warning,this->loc,this->documentRoot(),"variable %1$s not specified as parameter",name);
-        }
-      }
-      if (resolvedArgs.find(name) != resolvedArgs.end()) {
-          LOG(message_group::Warning,this->loc,this->documentRoot(),"argument %1$s supplied more than once",name);
-      }
-      resolvedArgs[name] = expr;
-    }
-    // If positional, find name of parameter with this position
-    else if (parameter_position < parameters.size()) resolvedArgs[parameters[parameter_position++]->getName()] = expr;
-    else if (!silent && !tooManyWarned){
-      LOG(message_group::Warning,this->loc,this->documentRoot(),"Too many unnamed arguments supplied");
-      tooManyWarned=true;
-    }
-  }
-  return resolvedArgs;
-}
-
 size_t EvalContext::numChildren() const
 {
 	return this->scope ? this->scope->children_inst.size() : 0;

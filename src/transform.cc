@@ -30,6 +30,7 @@
 #include "polyset.h"
 #include "builtin.h"
 #include "value.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "degree_trig.h"
 #include <sstream>
@@ -62,35 +63,34 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 {
 	auto node = new TransformNode(inst, evalctx, verbose_name);
 
-	AssignmentList parameters;
+	std::vector<std::string> required_parameters;
 
 	switch (this->type) {
 	case transform_type_e::SCALE:
-		parameters += assignment("v");
+		required_parameters = {"v"};
 		break;
 	case transform_type_e::ROTATE:
-		parameters += assignment("a"), assignment("v");
+		required_parameters = {"a", "v"};
 		break;
 	case transform_type_e::MIRROR:
-		parameters += assignment("v");
+		required_parameters = {"v"};
 		break;
 	case transform_type_e::TRANSLATE:
-		parameters += assignment("v");
+		required_parameters = {"v"};
 		break;
 	case transform_type_e::MULTMATRIX:
-		parameters += assignment("m");
+		required_parameters = {"m"};
 		break;
 	default:
 		assert(false);
 	}
 
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters);
+	Parameters parameters = Parameters::parse(evalctx, required_parameters);
 	inst->scope.apply(evalctx);
 
 	if (this->type == transform_type_e::SCALE) {
 		Vector3d scalevec(1, 1, 1);
-		const auto &v = c->lookup_variable("v");
+		const auto &v = parameters["v"];
 		if (!v.getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
 			double num;
 			if (v.getDouble(num)){
@@ -107,8 +107,8 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == transform_type_e::ROTATE) {
-		const auto &val_a = c->lookup_variable("a");
-		const auto &val_v = c->lookup_variable("v");
+		const auto &val_a = parameters["a"];
+		const auto &val_v = parameters["v"];
 		if (val_a.type() == Value::Type::VECTOR) {
 			double sx = 0, sy = 0, sz = 0;
 			double cx = 1, cy = 1, cz = 1;
@@ -179,7 +179,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		}
 	}
 	else if (this->type == transform_type_e::MIRROR) {
-		const auto &val_v = c->lookup_variable("v");
+		const auto &val_v = parameters["v"];
 		double x = 1.0, y = 0.0, z = 0.0;
 
 		if (!val_v.getVec3(x, y, z, 0.0)) {
@@ -204,7 +204,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		}
 	}
 	else if (this->type == transform_type_e::TRANSLATE)	{
-		const auto &v = c->lookup_variable("v");
+		const auto &v = parameters["v"];
 		Vector3d translatevec(0,0,0);
 		bool ok = v.getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
 		ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]) ;
@@ -215,7 +215,7 @@ AbstractNode *TransformModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		}
 	}
 	else if (this->type == transform_type_e::MULTMATRIX) {
-		const auto &v = c->lookup_variable("m");
+		const auto &v = parameters["m"];
 		if (v.type() == Value::Type::VECTOR) {
 			Matrix4d rawmatrix{Matrix4d::Identity()};
 			const auto &mat = v.toVector();

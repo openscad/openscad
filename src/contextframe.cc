@@ -79,6 +79,22 @@ void ContextFrame::apply_config_variables(const ContextFrame& other)
 	config_variables.applyFrom(other.config_variables);
 }
 
+void ContextFrame::apply_lexical_variables(ContextFrame&& other)
+{
+	lexical_variables.applyFrom(std::move(other.lexical_variables));
+}
+
+void ContextFrame::apply_config_variables(ContextFrame&& other)
+{
+	config_variables.applyFrom(std::move(other.config_variables));
+}
+
+void ContextFrame::apply_variables(ContextFrame&& other)
+{
+	lexical_variables.applyFrom(std::move(other.lexical_variables));
+	config_variables.applyFrom(std::move(other.config_variables));
+}
+
 void ContextFrame::apply_variables(const ValueMap& variables)
 {
 	for (const auto& variable : variables) {

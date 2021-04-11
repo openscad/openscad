@@ -29,6 +29,7 @@
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include <cctype>
 #include <sstream>
@@ -258,13 +259,10 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 {
 	auto node = new ColorNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("c"), assignment("alpha")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters);
+	Parameters parameters = Parameters::parse(evalctx, {"c", "alpha"});
 	inst->scope.apply(evalctx);
 
-	const auto &v = c->lookup_variable("c");
+	const auto &v = parameters["c"];
 	if (v.type() == Value::Type::VECTOR) {
 		const auto &vec = v.toVector();
 		for (size_t i = 0; i < 4; ++i) {
@@ -289,7 +287,7 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 			}
 		}
 	}
-	const auto &alpha = c->lookup_variable("alpha");
+	const auto &alpha = parameters["alpha"];
 	if (alpha.type() == Value::Type::NUMBER) {
 		node->color[3] = alpha.toDouble();
 	}

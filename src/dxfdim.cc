@@ -29,6 +29,7 @@
 #include "function.h"
 #include "dxfdata.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "evalcontext.h"
@@ -46,36 +47,26 @@ namespace fs = boost::filesystem;
 
 Value builtin_dxf_dim(const std::shared_ptr<EvalContext> evalctx)
 {
+	Parameters parameters = Parameters::parse(evalctx, {}, {"file", "layer", "origin", "scale", "name"});
+
 	std::string rawFilename;
 	std::string filename;
-	std::string layername;
-	std::string name;
+	if (parameters.contains("file")) {
+		rawFilename = parameters["file"].toString();
+		filename = lookup_file(rawFilename, evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+	}
 	double xorigin = 0;
 	double yorigin = 0;
-	double scale = 1;
-
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		const std::string &n = evalctx->getArgName(i);
-		Value v = evalctx->getArgValue(i);
-		if (n == "file") {
-			rawFilename = v.toString();
-			filename = lookup_file(rawFilename, evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
-		}else if (n == "layer") {
-			layername = v.toString();
-		}else if (n == "origin"){
-			bool originOk = v.getVec2(xorigin, yorigin);
-			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
-			if(!originOk){
-				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"dxf_dim(..., origin=%1$s) could not be converted",v.toEchoString());
-			}
-		}else if (n == "scale"){
-			v.getDouble(scale);
-		} else if (n == "name") {
-			name = v.toString();
-		}else{
-			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"dxf_dim(..., %1$s=...) is not supported",n);
+	if (parameters.contains("origin")) {
+		bool originOk = parameters["origin"].getVec2(xorigin, yorigin);
+		originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+		if(!originOk){
+			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"dxf_dim(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 		}
 	}
+	std::string layername = parameters.get("layer", "");
+	double scale = parameters.get("scale", 1);
+	std::string name = parameters.get("name", "");
 
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
@@ -151,33 +142,25 @@ Value builtin_dxf_dim(const std::shared_ptr<EvalContext> evalctx)
 
 Value builtin_dxf_cross(const std::shared_ptr<EvalContext> evalctx)
 {
-	std::string filename;
+	Parameters parameters = Parameters::parse(evalctx, {}, {"file", "layer", "origin", "scale", "name"});
+
 	std::string rawFilename;
-	std::string layername;
+	std::string filename;
+	if (parameters.contains("file")) {
+		rawFilename = parameters["file"].toString();
+		filename = lookup_file(rawFilename, evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+	}
 	double xorigin = 0;
 	double yorigin = 0;
-	double scale = 1;
-
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		const std::string &n = evalctx->getArgName(i);
-		Value v = evalctx->getArgValue(i);
-		if (n == "file"){
-			rawFilename = v.toString();
-			filename = lookup_file(rawFilename, evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
-		}else if (n == "layer"){
-			layername = v.toString();
-		}else if (n == "origin"){
-			bool originOk = v.getVec2(xorigin, yorigin);
-			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
-			if(!originOk){
-				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"dxf_cross(..., origin=%1$s) could not be converted",v.toEchoString());
-			}
-		}else if (n == "scale"){
-			v.getDouble(scale);
-		}else{
-			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"dxf_cross(..., %1$s=...) is not supported",n);
+	if (parameters.contains("origin")) {
+		bool originOk = parameters["origin"].getVec2(xorigin, yorigin);
+		originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+		if(!originOk){
+			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"dxf_cross(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 		}
 	}
+	std::string layername = parameters.get("layer", "");
+	double scale = parameters.get("scale", 1);
 
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;

@@ -30,6 +30,7 @@
 #include "polyset.h"
 #include "evalcontext.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h"
@@ -85,28 +86,24 @@ AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, co
 {
 	auto node = new SurfaceNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("file"), assignment("center"), assignment("convexity")};
-	AssignmentList optional_parameters{assignment("center"), assignment("invert")};
+	Parameters parameters = Parameters::parse(evalctx, {"file", "center", "convexity"}, {"invert"});
 
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
-
-	const auto &fileval = c->lookup_variable("file");
+	const auto &fileval = parameters["file"];
 	auto filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 
-	const auto &center = c->lookup_variable("center", true);
+	const auto &center = parameters["center"];
 	if (center.type() == Value::Type::BOOL) {
 		node->center = center.toBool();
 	}
 
-	const auto &convexity = c->lookup_variable("convexity", true);
+	const auto &convexity = parameters["convexity"];
 	if (convexity.type() == Value::Type::NUMBER) {
 		node->convexity = static_cast<int>(convexity.toDouble());
 	}
 
-	const auto &invert = c->lookup_variable("invert", true);
+	const auto &invert = parameters["invert"];
 	if (invert.type() == Value::Type::BOOL) {
 		node->invert = invert.toBool();
 	}

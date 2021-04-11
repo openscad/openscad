@@ -27,6 +27,7 @@
 #include "calc.h"
 #include "module.h"
 #include "evalcontext.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "builtin.h"
 
@@ -48,24 +49,20 @@ AbstractNode *TextModule::instantiate(const std::shared_ptr<Context>& ctx, const
 {
 	auto node = new TextNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("text"), assignment("size"), assignment("font")};
-	AssignmentList optional_parameters{
-		assignment("direction"), assignment("language"), assignment("script"),
-		assignment("halign"), assignment("valign"), assignment("spacing")
-	};
+	Parameters parameters = Parameters::parse(evalctx,
+		{"text", "size", "font"},
+		{"direction", "language", "script", "halign", "valign", "spacing"}
+	);
 
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
-
-	const auto &fn = c->lookup_variable("$fn").toDouble();
-	const auto &fa = c->lookup_variable("$fa").toDouble();
-	const auto &fs = c->lookup_variable("$fs").toDouble();
+	const auto &fn = parameters["$fn"].toDouble();
+	const auto &fa = parameters["$fa"].toDouble();
+	const auto &fs = parameters["$fs"].toDouble();
 
 	node->params.set_fn(fn);
 	node->params.set_fa(fa);
 	node->params.set_fs(fs);
 
-	auto size = c->lookup_variable_with_default("size", 10.0);
+	auto size = parameters.get("size", 10.0);
 	auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
 	// The curved segments of most fonts are relatively short, so
 	// by using a fraction of the number of full circle segments
@@ -75,14 +72,14 @@ AbstractNode *TextModule::instantiate(const std::shared_ptr<Context>& ctx, const
 
 	node->params.set_size(size);
 	node->params.set_segments(text_segments);
-	node->params.set_text(c->lookup_variable_with_default("text", ""));
-	node->params.set_spacing(c->lookup_variable_with_default("spacing", 1.0));
-	node->params.set_font(c->lookup_variable_with_default("font", ""));
-	node->params.set_direction(c->lookup_variable_with_default("direction", ""));
-	node->params.set_language(c->lookup_variable_with_default("language", "en"));
-	node->params.set_script(c->lookup_variable_with_default("script", ""));
-	node->params.set_halign(c->lookup_variable_with_default("halign", "left"));
-	node->params.set_valign(c->lookup_variable_with_default("valign", "baseline"));
+	node->params.set_text(parameters.get("text", ""));
+	node->params.set_spacing(parameters.get("spacing", 1.0));
+	node->params.set_font(parameters.get("font", ""));
+	node->params.set_direction(parameters.get("direction", ""));
+	node->params.set_language(parameters.get("language", "en"));
+	node->params.set_script(parameters.get("script", ""));
+	node->params.set_halign(parameters.get("halign", "left"));
+	node->params.set_valign(parameters.get("valign", "baseline"));
 
 	FreetypeRenderer renderer;
 	renderer.detect_properties(node->params);

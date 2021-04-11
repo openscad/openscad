@@ -29,6 +29,7 @@
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "polyset.h"
 #include <sstream>
 #include <assert.h>
@@ -47,27 +48,23 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 {
 	auto node = new CgaladvNode(inst, evalctx, type);
 
-	AssignmentList parameters;
-
+	std::vector<std::string> required_parameters;
 	if (type == CgaladvType::MINKOWSKI) {
-		parameters += assignment("convexity");
+		required_parameters = {"convexity"};
 	}
-
 	if (type == CgaladvType::RESIZE) {
-		parameters += assignment("newsize"), assignment("auto"), assignment("convexity");
+		required_parameters = {"newsize", "auto", "convexity"};
 	}
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters);
+	Parameters parameters = Parameters::parse(evalctx, required_parameters);
 	inst->scope.apply(evalctx);
 
 	if (type == CgaladvType::MINKOWSKI) {
-		const auto &convexity = c->lookup_variable("convexity", true);
+		const auto &convexity = parameters["convexity"];
 		node->convexity = static_cast<int>(convexity.toDouble());
 	} else if (type == CgaladvType::RESIZE) {
-		const auto &convexity = c->lookup_variable("convexity", true);
+		const auto &convexity = parameters["convexity"];
 		node->convexity = static_cast<int>(convexity.toDouble());
-		const auto &ns = c->lookup_variable("newsize");
+		const auto &ns = parameters["newsize"];
 		node->newsize << 0,0,0;
 		if ( ns.type() == Value::Type::VECTOR ) {
 			const auto &vs = ns.toVector();
@@ -75,7 +72,7 @@ AbstractNode *CgaladvModule::instantiate(const std::shared_ptr<Context>& ctx, co
 			if ( vs.size() >= 2 ) node->newsize[1] = vs[1].toDouble();
 			if ( vs.size() >= 3 ) node->newsize[2] = vs[2].toDouble();
 		}
-		const auto &autosize = c->lookup_variable("auto");
+		const auto &autosize = parameters["auto"];
 		node->autosize << false, false, false;
 		if (autosize.type() == Value::Type::VECTOR) {
 			const auto &va = autosize.toVector();

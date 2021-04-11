@@ -29,6 +29,7 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
@@ -56,26 +57,25 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 {
 	auto node = new LinearExtrudeNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("file"), assignment("layer"), assignment("height"), assignment("origin"), assignment("scale"), assignment("center"), assignment("twist"), assignment("slices")};
-	AssignmentList optional_parameters{assignment("convexity")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
+	Parameters parameters = Parameters::parse(evalctx,
+		{"file", "layer", "height", "origin", "scale", "center", "twist", "slices"},
+		{"convexity"}
+	);
 	inst->scope.apply(evalctx);
 
-	node->fn = c->lookup_variable("$fn").toDouble();
-	node->fs = c->lookup_variable("$fs").toDouble();
-	node->fa = c->lookup_variable("$fa").toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
-	const auto &file = c->lookup_variable("file");
-	const auto &layer = c->lookup_variable("layer", true);
-	const auto &height = c->lookup_variable("height", true);
-	const auto &convexity = c->lookup_variable("convexity", true);
-	const auto &origin = c->lookup_variable("origin", true);
-	const auto &scale = c->lookup_variable("scale", true);
-	const auto &center = c->lookup_variable("center", true);
-	const auto &twist = c->lookup_variable("twist", true);
-	const auto &slices = c->lookup_variable("slices", true);
+	const auto &file = parameters["file"];
+	const auto &layer = parameters["layer"];
+	const auto &height = parameters["height"];
+	const auto &convexity = parameters["convexity"];
+	const auto &origin = parameters["origin"];
+	const auto &scale = parameters["scale"];
+	const auto &center = parameters["center"];
+	const auto &twist = parameters["twist"];
+	const auto &slices = parameters["slices"];
 
 	if (!file.isUndefined() && file.type() == Value::Type::STRING) {
 		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");

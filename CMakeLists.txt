@@ -510,6 +510,7 @@ set(CORE_SOURCES
   src/node.cc
   src/nodedumper.cc
   src/offset.cc
+  src/parameters.cc
   src/parsersettings.cc
   src/polyset.cc
   src/polyset-utils.cc

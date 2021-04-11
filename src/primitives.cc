@@ -30,6 +30,7 @@
 #include "evalcontext.h"
 #include "Polygon2d.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "context.h"
 #include "calc.h"
@@ -61,7 +62,7 @@ public:
 	PrimitiveModule(primitive_type_e type) : type(type) { }
 	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
 private:
-	Value lookup_radius(const std::shared_ptr<Context> ctx, const Location &loc, const std::string &radius_var, const std::string &diameter_var) const;
+	Value lookup_radius(const Parameters& parameters, const std::shared_ptr<EvalContext> ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
 
 class PrimitiveNode : public LeafNode
@@ -106,15 +107,15 @@ public:
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
-Value PrimitiveModule::lookup_radius(const std::shared_ptr<Context> ctx, const Location &loc, const std::string &diameter_var, const std::string &radius_var) const
+Value PrimitiveModule::lookup_radius(const Parameters& parameters, const std::shared_ptr<EvalContext> ctx, const std::string &diameter_var, const std::string &radius_var) const
 {
-	const auto &d = ctx->lookup_variable(diameter_var, true);
-	const auto &r = ctx->lookup_variable(radius_var, true);
+	const auto &d = parameters[diameter_var];
+	const auto &r = parameters[radius_var];
 	const auto r_defined = (r.type() == Value::Type::NUMBER);
 
 	if (d.type() == Value::Type::NUMBER) {
 		if (r_defined) {
-			LOG(message_group::Warning,loc,ctx->documentRoot(),
+			LOG(message_group::Warning,ctx->loc,ctx->documentRoot(),
 				"Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.",radius_var,diameter_var);
 		}
 		return d.toDouble() / 2.0;
@@ -132,49 +133,48 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
-	AssignmentList parameters;
-	AssignmentList optional_parameters;
 	if(inst->scope.hasChildren()){
 		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
+	std::vector<std::string> required_parameters;
+	std::vector<std::string> optional_parameters;
 
 	switch (this->type) {
 	case primitive_type_e::CUBE:
-		parameters += assignment("size"), assignment("center");
+		required_parameters = {"size", "center"};
 		break;
 	case primitive_type_e::SPHERE:
-		parameters += assignment("r");
-		optional_parameters += assignment("d");
+		required_parameters = {"r"};
+		optional_parameters = {"d"};
 		break;
 	case primitive_type_e::CYLINDER:
-		parameters += assignment("h"), assignment("r1"), assignment("r2"), assignment("center");
-		optional_parameters += assignment("r"),  assignment("d"), assignment("d1"),  assignment("d2");
+		required_parameters = {"h", "r1", "r2", "center"};
+		optional_parameters = {"r", "d", "d1", "d2"};
 		break;
 	case primitive_type_e::POLYHEDRON:
-		parameters += assignment("points"), assignment("faces"), assignment("convexity");
-		optional_parameters += assignment("triangles");
+		required_parameters = {"points", "faces", "convexity"};
+		optional_parameters = {"triangles"};
 		break;
 	case primitive_type_e::SQUARE:
-		parameters += assignment("size"), assignment("center");
+		required_parameters = {"size", "center"};
 		break;
 	case primitive_type_e::CIRCLE:
-		parameters += assignment("r");
-		optional_parameters += assignment("d");
+		required_parameters = {"r"};
+		optional_parameters = {"d"};
 		break;
 	case primitive_type_e::POLYGON:
-		parameters += assignment("points"), assignment("paths"), assignment("convexity");
+		required_parameters = {"points", "paths", "convexity"};
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
 	}
 
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters, optional_parameters);
+	Parameters parameters = Parameters::parse(evalctx, required_parameters, optional_parameters);
 
-	node->fn = c->lookup_variable("$fn").toDouble();
-	node->fs = c->lookup_variable("$fs").toDouble();
-	node->fa = c->lookup_variable("$fa").toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
 	if (node->fs < F_MINIMUM) {
 		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
@@ -189,8 +189,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 
 	switch (this->type)  {
 	case primitive_type_e::CUBE: {
-		const auto &size = c->lookup_variable("size");
-		const auto &center = c->lookup_variable("center");
+		const auto &size = parameters["size"];
+		const auto &center = parameters["center"];
 		if (size.isDefined()) {
 			bool converted=false;
 			converted |= size.getDouble(node->x);
@@ -213,7 +213,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::SPHERE: {
-		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
+		const auto r = lookup_radius(parameters, evalctx, "d", "r");
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
@@ -224,14 +224,14 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::CYLINDER: {
-		const auto &h = c->lookup_variable("h");
+		const auto &h = parameters["h"];
 		if (h.type() == Value::Type::NUMBER) {
 			node->h = h.toDouble();
 		}
 
-		auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
-		auto r1 = lookup_radius(c.ctx, inst->location(), "d1", "r1");
-		auto r2 = lookup_radius(c.ctx, inst->location(), "d2", "r2");
+		auto r = lookup_radius(parameters, evalctx, "d", "r");
+		auto r1 = lookup_radius(parameters, evalctx, "d1", "r1");
+		auto r2 = lookup_radius(parameters, evalctx, "d2", "r2");
 		if(r.type() == Value::Type::NUMBER &&
 			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 			){
@@ -262,18 +262,18 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			}
 		}
 
-		const auto &center = c->lookup_variable("center");
+		const auto &center = parameters["center"];
 		if (center.type() == Value::Type::BOOL) {
 			node->center = center.toBool();
 		}
 		break;
 	}
 	case primitive_type_e::POLYHEDRON: {
-		node->points = c->lookup_variable("points").clone();
-		node->faces = c->lookup_variable("faces").clone();
+		node->points = parameters["points"].clone();
+		node->faces = parameters["faces"].clone();
 		if (node->faces.type() == Value::Type::UNDEFINED) {
 			// backwards compatible
-			node->faces = c->lookup_variable("triangles", true).clone();
+			node->faces = parameters["triangles"].clone();
 			if (node->faces.type() != Value::Type::UNDEFINED) {
 				LOG(message_group::Deprecated,Location::NONE,"","polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
@@ -281,8 +281,8 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::SQUARE: {
-		const auto &size = c->lookup_variable("size");
-		const auto &center = c->lookup_variable("center");
+		const auto &size = parameters["size"];
+		const auto &center = parameters["center"];
 		if (size.isDefined()) {
 			bool converted=false;
 			converted |= size.getDouble(node->x);
@@ -305,7 +305,7 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::CIRCLE: {
-		const auto r = lookup_radius(c.ctx, inst->location(), "d", "r");
+		const auto r = lookup_radius(parameters, evalctx, "d", "r");
 		if (r.type() == Value::Type::NUMBER) {
 			node->r1 = r.toDouble();
 			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
@@ -316,13 +316,13 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 		break;
 	}
 	case primitive_type_e::POLYGON: {
-		node->points = c->lookup_variable("points").clone();
-		node->paths = c->lookup_variable("paths").clone();
+		node->points = parameters["points"].clone();
+		node->paths = parameters["paths"].clone();
 		break;
 	}
 	}
 
-	node->convexity = (int)c->lookup_variable("convexity", true).toDouble();
+	node->convexity = (int)parameters["convexity"].toDouble();
 	if (node->convexity < 1) node->convexity = 1;
 
 	return node;

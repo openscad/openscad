@@ -29,6 +29,7 @@
 #include "ModuleInstantiation.h"
 #include "evalcontext.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "polyset.h"
 
 #include <sstream>
@@ -46,13 +47,10 @@ AbstractNode *RenderModule::instantiate(const std::shared_ptr<Context>& ctx, con
 {
 	auto node = new RenderNode(inst, evalctx);
 
-	AssignmentList parameters{assignment("convexity")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, parameters);
+	Parameters parameters = Parameters::parse(evalctx, {"convexity"});
 	inst->scope.apply(evalctx);
 
-	const auto &v = c->lookup_variable("convexity");
+	const auto &v = parameters["convexity"];
 	if (v.type() == Value::Type::NUMBER) {
 		node->convexity = static_cast<int>(v.toDouble());
 	}

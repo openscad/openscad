@@ -9,16 +9,15 @@
  * The Context objects can hang around for longer, e.g. in case of closures.
  */
 template<typename T>
-struct ContextHandle
+struct ContextHandle : ContextFrameHandle
 {
-    ContextHandle(std::shared_ptr<T>&& sp) : ctx(std::move(sp)) {
-		ctx->session()->push_frame(ctx.get());
+	ContextHandle(std::shared_ptr<T>&& sp):
+		ContextFrameHandle(sp.get()),
+		ctx(std::move(sp))
+	{
 		ctx->init();
-    }
-    ~ContextHandle() {
-		ctx->session()->pop_frame();
-    }
-
+	}
+	
 	ContextHandle(const ContextHandle&) = delete;
 	ContextHandle& operator=(const ContextHandle&) = delete;
 	ContextHandle(ContextHandle&&) = default;
@@ -27,16 +26,15 @@ struct ContextHandle
 	// Valid only if ctx is on the top of the stack.
 	ContextHandle& operator=(std::shared_ptr<T>&& sp)
 	{
-		ctx->session()->pop_frame();
 		ctx = std::move(sp);
-		ctx->session()->push_frame(ctx.get());
+		ContextFrameHandle::operator=(ctx.get());
 		return *this;
 	}
-
+	
 	const T* operator->() const { return ctx.get(); }
-    T* operator->() { return ctx.get(); }
-
-    std::shared_ptr<T> ctx;
+	T* operator->() { return ctx.get(); }
+	
+	std::shared_ptr<T> ctx;
 };
 
 class Context : public ContextFrame, public std::enable_shared_from_this<Context>
@@ -59,11 +57,6 @@ public:
 	const Value& lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
 	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;
 	boost::optional<InstantiableModule> lookup_module(const std::string &name, const Location &loc) const;
-
-	double lookup_variable_with_default(const std::string &variable, const double &def) const;
-	const std::string& lookup_variable_with_default(const std::string &variable, const std::string &def) const;
-
-	void setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &parameters, const AssignmentList &optional_parameters={}, bool usermodule=false);
 
 protected:
 	const std::shared_ptr<Context> parent;
