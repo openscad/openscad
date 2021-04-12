@@ -46,47 +46,29 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-class LinearExtrudeModule : public AbstractModule
+static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-public:
-	LinearExtrudeModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new LinearExtrudeNode(inst, evalctx);
+	auto node = new LinearExtrudeNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx,
 		{"file", "layer", "height", "origin", "scale", "center", "twist", "slices"},
 		{"convexity"}
 	);
-	inst->scope.apply(evalctx);
 
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
 	node->fa = parameters["$fa"].toDouble();
 
-	const auto &file = parameters["file"];
-	const auto &layer = parameters["layer"];
-	const auto &height = parameters["height"];
-	const auto &convexity = parameters["convexity"];
-	const auto &origin = parameters["origin"];
-	const auto &scale = parameters["scale"];
-	const auto &center = parameters["center"];
-	const auto &twist = parameters["twist"];
-	const auto &slices = parameters["slices"];
-
-	if (!file.isUndefined() && file.type() == Value::Type::STRING) {
+	if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
 		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(file.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+		auto filename = lookup_file(parameters["file"].toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 		node->filename = filename;
 		handle_dep(filename);
 	}
 
 	node->height = 100;
-	if (height.isDefined()) {
-		height.getFiniteDouble(node->height);
+	if (parameters["height"].isDefined()) {
+		parameters["height"].getFiniteDouble(node->height);
 	} else {
 		// if height not given, and first argument is a number,
 		// then assume it should be the height.
@@ -96,27 +78,27 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 		}
 	}
 
-	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
 
 	double tmp_convexity = 0.0;
-	convexity.getFiniteDouble(tmp_convexity);
+	parameters["convexity"].getFiniteDouble(tmp_convexity);
 	node->convexity = static_cast<int>(tmp_convexity);
 
-	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
+	bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin.isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
+	if(parameters["origin"].isDefined() && !originOk){
+		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 	}
 	node->scale_x = node->scale_y = 1;
-	bool scaleOK = scale.getFiniteDouble(node->scale_x);
-	scaleOK &= scale.getFiniteDouble(node->scale_y);
-	scaleOK |= scale.getVec2(node->scale_x, node->scale_y, true);
-	if((origin.isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., scale=%1$s) could not be converted",scale.toEchoString());
+	bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
+	scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
+	scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
+	if((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., scale=%1$s) could not be converted",parameters["scale"].toEchoString());
 	}
 
-	if (center.type() == Value::Type::BOOL)
-		node->center = center.toBool();
+	if (parameters["center"].type() == Value::Type::BOOL)
+		node->center = parameters["center"].toBool();
 
 	if (node->height <= 0) node->height = 0;
 
@@ -127,19 +109,20 @@ AbstractNode *LinearExtrudeModule::instantiate(const std::shared_ptr<Context>& c
 	if (node->scale_y < 0) node->scale_y = 0;
 
 	double slicesVal = 0;
-	slices.getFiniteDouble(slicesVal);
+	parameters["slices"].getFiniteDouble(slicesVal);
 	node->slices = static_cast<int>(slicesVal);
 	if (node->slices > 0) {
 		node->has_slices = true;
 	} 
 
 	node->twist = 0.0;
-	twist.getFiniteDouble(node->twist);
+	parameters["twist"].getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
 		node->has_twist = true;
 	}
 
 	if (node->filename.empty()) {
+		inst->scope.apply(evalctx);
 		auto instantiatednodes = inst->instantiateChildren(evalctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
@@ -182,9 +165,9 @@ std::string LinearExtrudeNode::toString() const
 
 void register_builtin_dxf_linear_extrude()
 {
-	Builtins::init("dxf_linear_extrude", new LinearExtrudeModule());
+	Builtins::init("dxf_linear_extrude", new BuiltinModule(builtin_linear_extrude));
 
-	Builtins::init("linear_extrude", new LinearExtrudeModule(),
+	Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
 				{
 					"linear_extrude(number, center = true, convexity = 10, twist, slices = 20, scale = 1.0 [, $fn])",
 				});

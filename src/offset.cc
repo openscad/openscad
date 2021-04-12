@@ -43,19 +43,11 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-class OffsetModule : public AbstractModule
+static AbstractNode* builtin_offset(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-public:
-	OffsetModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new OffsetNode(inst, evalctx);
+	auto node = new OffsetNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"delta", "chamfer"});
-	inst->scope.apply(evalctx);
 
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
@@ -66,21 +58,18 @@ AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, con
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const auto &r = parameters["r"];
-	const auto &delta = parameters["delta"];
-	const auto &chamfer = parameters["chamfer"];
-
-	if (r.isDefinedAs(Value::Type::NUMBER)) {
-		r.getDouble(node->delta);
-	} else if (delta.isDefinedAs(Value::Type::NUMBER)) {
-		delta.getDouble(node->delta);
+	if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
+		node->delta = parameters["r"].toDouble();
+	} else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
+		node->delta = parameters["delta"].toDouble();
 		node->join_type = ClipperLib::jtMiter;
-		if (chamfer.isDefinedAs(Value::Type::BOOL) && chamfer.toBool()) {
+		if (parameters["chamfer"].isDefinedAs(Value::Type::BOOL) && parameters["chamfer"].toBool()) {
 			node->chamfer = true;
 			node->join_type = ClipperLib::jtSquare;
 		}
 	}
 
+	inst->scope.apply(evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -107,7 +96,7 @@ std::string OffsetNode::toString() const
 
 void register_builtin_offset()
 {
-	Builtins::init("offset", new OffsetModule(),
+	Builtins::init("offset", new BuiltinModule(builtin_offset),
 				{
 					"offset(r = number)",
 					"offset(delta = number)",

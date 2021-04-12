@@ -52,20 +52,13 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-class SurfaceModule : public AbstractModule
-{
-public:
-	SurfaceModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
 typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {
 public:
 	VISITABLE();
-	SurfaceNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : LeafNode(mi, ctx), center(false), invert(false), convexity(1) { }
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
 	std::string toString() const override;
 	std::string name() const override { return "surface"; }
 
@@ -82,30 +75,27 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+static AbstractNode* builtin_surface(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	auto node = new SurfaceNode(inst, evalctx);
+	auto node = new SurfaceNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx, {"file", "center", "convexity"}, {"invert"});
 
-	const auto &fileval = parameters["file"];
-	auto filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+	std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
+	auto filename = lookup_file(fileval, evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 
-	const auto &center = parameters["center"];
-	if (center.type() == Value::Type::BOOL) {
-		node->center = center.toBool();
+	if (parameters["center"].type() == Value::Type::BOOL) {
+		node->center = parameters["center"].toBool();
 	}
 
-	const auto &convexity = parameters["convexity"];
-	if (convexity.type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(convexity.toDouble());
+	if (parameters["convexity"].type() == Value::Type::NUMBER) {
+		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 	}
 
-	const auto &invert = parameters["invert"];
-	if (invert.type() == Value::Type::BOOL) {
-		node->invert = invert.toBool();
+	if (parameters["invert"].type() == Value::Type::BOOL) {
+		node->invert = parameters["invert"].toBool();
 	}
 
 	return node;
@@ -323,7 +313,7 @@ std::string SurfaceNode::toString() const
 
 void register_builtin_surface()
 {
-	Builtins::init("surface", new SurfaceModule(),
+	Builtins::init("surface", new BuiltinModule(builtin_surface),
 				{
 					"surface(string, center = false, invert = false, number)",
 				});

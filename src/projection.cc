@@ -37,29 +37,17 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-class ProjectionModule : public AbstractModule
+static AbstractNode* builtin_projection(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-public:
-	ProjectionModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new ProjectionNode(inst, evalctx);
+	auto node = new ProjectionNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx, {"cut"}, {"convexity"});
-	inst->scope.apply(evalctx);
-
-	const auto& convexity = parameters["convexity"];
-	const auto& cut = parameters["cut"];
-
-	node->convexity = static_cast<int>(convexity.toDouble());
-
-	if (cut.type() == Value::Type::BOOL) {
-		node->cut_mode = cut.toBool();
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+	if (parameters["cut"].type() == Value::Type::BOOL) {
+		node->cut_mode = parameters["cut"].toBool();
 	}
 
+	inst->scope.apply(evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -74,7 +62,7 @@ std::string ProjectionNode::toString() const
 
 void register_builtin_projection()
 {
-	Builtins::init("projection", new ProjectionModule(),
+	Builtins::init("projection", new BuiltinModule(builtin_projection),
 				{
 					"projection(cut = false)",
 				});

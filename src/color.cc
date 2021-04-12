@@ -33,7 +33,6 @@
 #include "printutils.h"
 #include <cctype>
 #include <sstream>
-#include <assert.h>
 #include <iterator>
 #include <unordered_map>
 #include <boost/algorithm/string/case_conv.hpp>
@@ -41,20 +40,9 @@
 #include <boost/assign/list_of.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-class ColorModule : public AbstractModule
-{
-public:
-	ColorModule();
-	~ColorModule();
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-
-private:
-	static std::unordered_map<std::string, Color4f> webcolors;
-};
-
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
-std::unordered_map<std::string, Color4f> ColorModule::webcolors{
+static std::unordered_map<std::string, Color4f> webcolors{
 	{"aliceblue", {240, 248, 255}},
 	{"antiquewhite", {250, 235, 215}},
 	{"aqua", {0, 255, 255}},
@@ -208,14 +196,6 @@ std::unordered_map<std::string, Color4f> ColorModule::webcolors{
 	{"transparent", {0, 0, 0, 0}}
 };
 
-ColorModule::ColorModule()
-{
-}
-
-ColorModule::~ColorModule()
-{
-}
-
 // Parses hex colors according to: https://drafts.csswg.org/css-color/#typedef-hex-color.
 // If the input is invalid, returns boost::none.
 // Supports the following formats:
@@ -223,7 +203,7 @@ ColorModule::~ColorModule()
 // * "#rrggbbaa"
 // * "#rgb"
 // * "#rgba"
-boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	// validate size. short syntax uses one hex digit per color channel instead of 2.
 	const bool short_syntax = hex.size() == 4 || hex.size() == 5;
 	const bool long_syntax = hex.size() == 7 || hex.size() == 9;
@@ -255,24 +235,21 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	return rgba;
 }
 
-AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+static AbstractNode* builtin_color(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	auto node = new ColorNode(inst, evalctx);
+	auto node = new ColorNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx, {"c", "alpha"});
-	inst->scope.apply(evalctx);
-
-	const auto &v = parameters["c"];
-	if (v.type() == Value::Type::VECTOR) {
-		const auto &vec = v.toVector();
+	if (parameters["c"].type() == Value::Type::VECTOR) {
+		const auto &vec = parameters["c"].toVector();
 		for (size_t i = 0; i < 4; ++i) {
-			node->color[i] = i < v.toVector().size() ? (float)v.toVector()[i].toDouble() : 1.0f;
+			node->color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
 				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range",node->color[i]);
 			}
 		}
-	} else if (v.type() == Value::Type::STRING) {
-		auto colorname = v.toString();
+	} else if (parameters["c"].type() == Value::Type::STRING) {
+		auto colorname = parameters["c"].toString();
 		boost::algorithm::to_lower(colorname);
 		if (webcolors.find(colorname) != webcolors.end())	{
 			node->color = webcolors.at(colorname);
@@ -287,11 +264,11 @@ AbstractNode *ColorModule::instantiate(const std::shared_ptr<Context>& ctx, cons
 			}
 		}
 	}
-	const auto &alpha = parameters["alpha"];
-	if (alpha.type() == Value::Type::NUMBER) {
-		node->color[3] = alpha.toDouble();
+	if (parameters["alpha"].type() == Value::Type::NUMBER) {
+		node->color[3] = parameters["alpha"].toDouble();
 	}
 
+	inst->scope.apply(evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -310,7 +287,7 @@ std::string ColorNode::name() const
 
 void register_builtin_color()
 {
-	Builtins::init("color", new ColorModule(),
+	Builtins::init("color", new BuiltinModule(builtin_color),
 				{
 					"color(c = [r, g, b, a])",
 					"color(c = [r, g, b], alpha = 1.0)",

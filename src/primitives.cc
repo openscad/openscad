@@ -55,21 +55,11 @@ enum class primitive_type_e {
 	POLYGON
 };
 
-class PrimitiveModule : public AbstractModule
-{
-public:
-	primitive_type_e type;
-	PrimitiveModule(primitive_type_e type) : type(type) { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-private:
-	Value lookup_radius(const Parameters& parameters, const std::shared_ptr<EvalContext> ctx, const std::string &radius_var, const std::string &diameter_var) const;
-};
-
 class PrimitiveNode : public LeafNode
 {
 public:
 	VISITABLE();
-	PrimitiveNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx, primitive_type_e type, const std::string &docPath) : LeafNode(mi, ctx),
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type, const std::string &docPath) : LeafNode(mi),
 			document_root(docPath), type(type), points(Value::undefined.clone()), paths(Value::undefined.clone()), faces(Value::undefined.clone()) { }
 	std::string toString() const override;
 	std::string name() const override {
@@ -87,11 +77,11 @@ public:
 	}
 	const std::string document_root;
 
-	bool center;
-	double x, y, z, h, r1, r2;
+	bool center = false;
+	double x = 1, y = 1, z = 1, h = 1, r1 = 1, r2 = 1;
 	double fn, fs, fa;
 	primitive_type_e type;
-	int convexity;
+	int convexity = 1;
 	Value points, paths, faces;
 	const Geometry *createGeometry() const override;
 };
@@ -107,7 +97,7 @@ public:
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
-Value PrimitiveModule::lookup_radius(const Parameters& parameters, const std::shared_ptr<EvalContext> ctx, const std::string &diameter_var, const std::string &radius_var) const
+static Value lookup_radius(const Parameters& parameters, const std::shared_ptr<EvalContext> ctx, const std::string &diameter_var, const std::string &radius_var)
 {
 	const auto &d = parameters[diameter_var];
 	const auto &r = parameters[radius_var];
@@ -126,52 +116,8 @@ Value PrimitiveModule::lookup_radius(const Parameters& parameters, const std::sh
 	}
 }
 
-AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+static void set_fragments(PrimitiveNode* node, const Parameters& parameters, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	auto node = new PrimitiveNode(inst, evalctx, this->type, evalctx->documentRoot());
-
-	node->center = false;
-	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
-
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
-			"module %1$s() does not support child modules",node->name());
-	}
-	std::vector<std::string> required_parameters;
-	std::vector<std::string> optional_parameters;
-
-	switch (this->type) {
-	case primitive_type_e::CUBE:
-		required_parameters = {"size", "center"};
-		break;
-	case primitive_type_e::SPHERE:
-		required_parameters = {"r"};
-		optional_parameters = {"d"};
-		break;
-	case primitive_type_e::CYLINDER:
-		required_parameters = {"h", "r1", "r2", "center"};
-		optional_parameters = {"r", "d", "d1", "d2"};
-		break;
-	case primitive_type_e::POLYHEDRON:
-		required_parameters = {"points", "faces", "convexity"};
-		optional_parameters = {"triangles"};
-		break;
-	case primitive_type_e::SQUARE:
-		required_parameters = {"size", "center"};
-		break;
-	case primitive_type_e::CIRCLE:
-		required_parameters = {"r"};
-		optional_parameters = {"d"};
-		break;
-	case primitive_type_e::POLYGON:
-		required_parameters = {"points", "paths", "convexity"};
-		break;
-	default:
-		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
-	}
-
-	Parameters parameters = Parameters::parse(evalctx, required_parameters, optional_parameters);
-
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
 	node->fa = parameters["$fa"].toDouble();
@@ -186,147 +132,231 @@ AbstractNode *PrimitiveModule::instantiate(const std::shared_ptr<Context>& ctx, 
 			"$fa too small - clamping to %1$f",F_MINIMUM);
 		node->fa = F_MINIMUM;
 	}
+}
 
-	switch (this->type)  {
-	case primitive_type_e::CUBE: {
-		const auto &size = parameters["size"];
-		const auto &center = parameters["center"];
-		if (size.isDefined()) {
-			bool converted=false;
-			converted |= size.getDouble(node->x);
-			converted |= size.getDouble(node->y);
-			converted |= size.getDouble(node->z);
-			converted |= size.getVec3(node->x, node->y, node->z);
-			if (!converted) {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
-			} else if(OpenSCAD::rangeCheck) {
-				bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
-				ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
-				if(!ok){
-					LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cube(size=%1$s, ...)",size.toEchoString());
-				}
-			}
-		}
-		if (center.type() == Value::Type::BOOL) {
-			node->center = center.toBool();
-		}
-		break;
-	}
-	case primitive_type_e::SPHERE: {
-		const auto r = lookup_radius(parameters, evalctx, "d", "r");
-		if (r.type() == Value::Type::NUMBER) {
-			node->r1 = r.toDouble();
-			if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
-					"sphere(r=%1$s)",r.toEchoString());
-			}
-		}
-		break;
-	}
-	case primitive_type_e::CYLINDER: {
-		const auto &h = parameters["h"];
-		if (h.type() == Value::Type::NUMBER) {
-			node->h = h.toDouble();
-		}
+static AbstractNode* builtin_cube(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::CUBE, evalctx->documentRoot());
 
-		auto r = lookup_radius(parameters, evalctx, "d", "r");
-		auto r1 = lookup_radius(parameters, evalctx, "d1", "r1");
-		auto r2 = lookup_radius(parameters, evalctx, "d2", "r2");
-		if(r.type() == Value::Type::NUMBER &&
-			(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
-			){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
-					"Cylinder parameters ambiguous");
-		}
-
-		if (r.type() == Value::Type::NUMBER) {
-			node->r1 = r.toDouble();
-			node->r2 = r.toDouble();
-		}
-		if (r1.type() == Value::Type::NUMBER) {
-			node->r1 = r1.toDouble();
-		}
-		if (r2.type() == Value::Type::NUMBER) {
-			node->r2 = r2.toDouble();
-		}
-
-		if(OpenSCAD::rangeCheck){
-			if (node->h <= 0 || !std::isfinite(node->h)){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cylinder(h=%1$s, ...)",h.toEchoString());
-			}
-			if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
-					"cylinder(r1=%1$s, r2=%2$s, ...)",
-					(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()),
-					(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()));
-			}
-		}
-
-		const auto &center = parameters["center"];
-		if (center.type() == Value::Type::BOOL) {
-			node->center = center.toBool();
-		}
-		break;
-	}
-	case primitive_type_e::POLYHEDRON: {
-		node->points = parameters["points"].clone();
-		node->faces = parameters["faces"].clone();
-		if (node->faces.type() == Value::Type::UNDEFINED) {
-			// backwards compatible
-			node->faces = parameters["triangles"].clone();
-			if (node->faces.type() != Value::Type::UNDEFINED) {
-				LOG(message_group::Deprecated,Location::NONE,"","polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
-			}
-		}
-		break;
-	}
-	case primitive_type_e::SQUARE: {
-		const auto &size = parameters["size"];
-		const auto &center = parameters["center"];
-		if (size.isDefined()) {
-			bool converted=false;
-			converted |= size.getDouble(node->x);
-			converted |= size.getDouble(node->y);
-			converted |= size.getVec2(node->x, node->y);
-			if (!converted) {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
-			} else if (OpenSCAD::rangeCheck) {
-				bool ok = true;
-				ok &= (node->x > 0) && (node->y > 0);
-				ok &= std::isfinite(node->x) && std::isfinite(node->y);
-				if(!ok){
-					LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"square(size=%1$s, ...)",size.toEchoString());
-				}
-			}
-		}
-		if (center.type() == Value::Type::BOOL) {
-			node->center = center.toBool();
-		}
-		break;
-	}
-	case primitive_type_e::CIRCLE: {
-		const auto r = lookup_radius(parameters, evalctx, "d", "r");
-		if (r.type() == Value::Type::NUMBER) {
-			node->r1 = r.toDouble();
-			if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
-					"circle(r=%1$s)",r.toEchoString());
-			}
-		}
-		break;
-	}
-	case primitive_type_e::POLYGON: {
-		node->points = parameters["points"].clone();
-		node->paths = parameters["paths"].clone();
-		break;
-	}
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
 	}
 
+	Parameters parameters = Parameters::parse(evalctx, {"size", "center"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	const auto &size = parameters["size"];
+	if (size.isDefined()) {
+		bool converted=false;
+		converted |= size.getDouble(node->x);
+		converted |= size.getDouble(node->y);
+		converted |= size.getDouble(node->z);
+		converted |= size.getVec3(node->x, node->y, node->z);
+		if (!converted) {
+			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
+		} else if(OpenSCAD::rangeCheck) {
+			bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
+			ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
+			if(!ok){
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cube(size=%1$s, ...)",size.toEchoString());
+			}
+		}
+	}
+	if (parameters["center"].type() == Value::Type::BOOL) {
+		node->center = parameters["center"].toBool();
+	}
+
+	return node;
+}
+
+static AbstractNode* builtin_sphere(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::SPHERE, evalctx->documentRoot());
+
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
+	}
+
+	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"d"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	const auto r = lookup_radius(parameters, evalctx, "d", "r");
+	if (r.type() == Value::Type::NUMBER) {
+		node->r1 = r.toDouble();
+		if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
+			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+				"sphere(r=%1$s)",r.toEchoString());
+		}
+	}
+
+	return node;
+}
+
+static AbstractNode* builtin_cylinder(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::CYLINDER, evalctx->documentRoot());
+
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
+	}
+
+	Parameters parameters = Parameters::parse(evalctx, {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	if (parameters["h"].type() == Value::Type::NUMBER) {
+		node->h = parameters["h"].toDouble();
+	}
+
+	auto r = lookup_radius(parameters, evalctx, "d", "r");
+	auto r1 = lookup_radius(parameters, evalctx, "d1", "r1");
+	auto r2 = lookup_radius(parameters, evalctx, "d2", "r2");
+	if (r.type() == Value::Type::NUMBER &&
+		(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
+	) {
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Cylinder parameters ambiguous");
+	}
+
+	if (r.type() == Value::Type::NUMBER) {
+		node->r1 = r.toDouble();
+		node->r2 = r.toDouble();
+	}
+	if (r1.type() == Value::Type::NUMBER) {
+		node->r1 = r1.toDouble();
+	}
+	if (r2.type() == Value::Type::NUMBER) {
+		node->r2 = r2.toDouble();
+	}
+
+	if(OpenSCAD::rangeCheck){
+		if (node->h <= 0 || !std::isfinite(node->h)){
+			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cylinder(h=%1$s, ...)",parameters["h"].toEchoString());
+		}
+		if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
+			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+				"cylinder(r1=%1$s, r2=%2$s, ...)",
+				(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()),
+				(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()));
+		}
+	}
+
+	if (parameters["center"].type() == Value::Type::BOOL) {
+		node->center = parameters["center"].toBool();
+	}
+
+	return node;
+}
+
+static AbstractNode* builtin_polyhedron(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::POLYHEDRON, evalctx->documentRoot());
+
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
+	}
+
+	Parameters parameters = Parameters::parse(evalctx, {"points", "faces", "convexity"}, {"triangles"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	node->points = parameters["points"].clone();
+	node->faces = parameters["faces"].clone();
+	if (node->faces.type() == Value::Type::UNDEFINED) {
+		// backwards compatible
+		node->faces = parameters["triangles"].clone();
+		if (node->faces.type() != Value::Type::UNDEFINED) {
+			LOG(message_group::Deprecated,Location::NONE,"","polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+		}
+	}
 	node->convexity = (int)parameters["convexity"].toDouble();
 	if (node->convexity < 1) node->convexity = 1;
 
 	return node;
 }
+
+static AbstractNode* builtin_square(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::SQUARE, evalctx->documentRoot());
+
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
+	}
+
+	Parameters parameters = Parameters::parse(evalctx, {"size", "center"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	const auto &size = parameters["size"];
+	if (size.isDefined()) {
+		bool converted=false;
+		converted |= size.getDouble(node->x);
+		converted |= size.getDouble(node->y);
+		converted |= size.getVec2(node->x, node->y);
+		if (!converted) {
+			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
+		} else if (OpenSCAD::rangeCheck) {
+			bool ok = true;
+			ok &= (node->x > 0) && (node->y > 0);
+			ok &= std::isfinite(node->x) && std::isfinite(node->y);
+			if(!ok){
+				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"square(size=%1$s, ...)",size.toEchoString());
+			}
+		}
+	}
+	if (parameters["center"].type() == Value::Type::BOOL) {
+		node->center = parameters["center"].toBool();
+	}
+
+	return node;
+}
+
+static AbstractNode* builtin_circle(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::CIRCLE, evalctx->documentRoot());
+
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
+	}
+
+	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"d"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	const auto r = lookup_radius(parameters, evalctx, "d", "r");
+	if (r.type() == Value::Type::NUMBER) {
+		node->r1 = r.toDouble();
+		if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
+			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+				"circle(r=%1$s)",r.toEchoString());
+		}
+	}
+
+	return node;
+}
+
+static AbstractNode* builtin_polygon(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+{
+	auto node = new PrimitiveNode(inst, primitive_type_e::POLYGON, evalctx->documentRoot());
+
+	if(inst->scope.hasChildren()){
+		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			"module %1$s() does not support child modules",node->name());
+	}
+
+	Parameters parameters = Parameters::parse(evalctx, {"points", "paths", "convexity"});
+	set_fragments(node, parameters, inst, evalctx);
+
+	node->points = parameters["points"].clone();
+	node->paths = parameters["paths"].clone();
+	node->convexity = (int)parameters["convexity"].toDouble();
+	if (node->convexity < 1) node->convexity = 1;
+
+	return node;
+}
+
+
 
 struct point2d {
 	double x, y;
@@ -696,21 +726,21 @@ std::string PrimitiveNode::toString() const
 
 void register_builtin_primitives()
 {
-	Builtins::init("cube" , new PrimitiveModule(primitive_type_e::CUBE),
+	Builtins::init("cube", new BuiltinModule(builtin_cube),
 				{
 					"cube(size)",
 					"cube([width, depth, height])",
 					"cube([width, depth, height], center = true)",
 				});
 
-	Builtins::init("sphere", new PrimitiveModule(primitive_type_e::SPHERE),
+	Builtins::init("sphere", new BuiltinModule(builtin_sphere),
 				{
 					"sphere(radius)",
 					"sphere(r = radius)",
 					"sphere(d = diameter)",
 				});
 
-	Builtins::init("cylinder", new PrimitiveModule(primitive_type_e::CYLINDER),
+	Builtins::init("cylinder", new BuiltinModule(builtin_cylinder),
 				{
 					"cylinder(h, r1, r2)",
 					"cylinder(h = height, r = radius, center = true)",
@@ -719,25 +749,25 @@ void register_builtin_primitives()
 					"cylinder(h = height, d1 = bottom, d2 = top, center = true)",
 				});
 
-	Builtins::init("polyhedron", new PrimitiveModule(primitive_type_e::POLYHEDRON),
+	Builtins::init("polyhedron", new BuiltinModule(builtin_polyhedron),
 				{
 					"polyhedron(points, faces, convexity)",
 				});
 
-	Builtins::init("square", new PrimitiveModule(primitive_type_e::SQUARE),
+	Builtins::init("square", new BuiltinModule(builtin_square),
 				{
 					"square(size, center = true)",
 					"square([width,height], center = true)",
 				});
 
-	Builtins::init("circle", new PrimitiveModule(primitive_type_e::CIRCLE),
+	Builtins::init("circle", new BuiltinModule(builtin_circle),
 				{
 					"circle(radius)",
 					"circle(r = radius)",
 					"circle(d = diameter)",
 				});
 
-	Builtins::init("polygon", new PrimitiveModule(primitive_type_e::POLYGON),
+	Builtins::init("polygon", new BuiltinModule(builtin_polygon),
 				{
 					"polygon([points])",
 					"polygon([points], [paths])",

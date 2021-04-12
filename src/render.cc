@@ -36,25 +36,16 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-class RenderModule : public AbstractModule
+static AbstractNode* builtin_render(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-public:
-	RenderModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *RenderModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new RenderNode(inst, evalctx);
+	auto node = new RenderNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx, {"convexity"});
-	inst->scope.apply(evalctx);
-
-	const auto &v = parameters["convexity"];
-	if (v.type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(v.toDouble());
+	if (parameters["convexity"].type() == Value::Type::NUMBER) {
+		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 	}
 
+	inst->scope.apply(evalctx);
 	auto instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
@@ -68,7 +59,7 @@ std::string RenderNode::toString() const
 
 void register_builtin_render()
 {
-	Builtins::init("render", new RenderModule(),
+	Builtins::init("render", new BuiltinModule(builtin_render),
 				{
 					"render(convexity = 1)",
 				});

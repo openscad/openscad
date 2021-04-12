@@ -38,16 +38,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-class TextModule : public AbstractModule
+static AbstractNode* builtin_text(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-public:
-	TextModule() : AbstractModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *TextModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new TextNode(inst, evalctx);
+	auto node = new TextNode(inst);
 
 	Parameters parameters = Parameters::parse(evalctx,
 		{"text", "size", "font"},
@@ -105,7 +98,7 @@ std::string TextNode::toString() const
 
 void register_builtin_text()
 {
-	Builtins::init("text", new TextModule(),
+	Builtins::init("text", new BuiltinModule(builtin_text),
 				{
 					"text(string, size = 10, string, halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
 				});

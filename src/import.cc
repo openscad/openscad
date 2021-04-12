@@ -56,15 +56,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 extern PolySet * import_amf(std::string, const Location &loc);
 extern Geometry * import_3mf(const std::string &, const Location &loc);
 
-class ImportModule : public AbstractModule
-{
-public:
-	ImportType type;
-	ImportModule(ImportType type = ImportType::UNKNOWN) : type(type) { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+static AbstractNode* do_import(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx, ImportType type)
 {
 	Parameters parameters = Parameters::parse(evalctx,
 		{"file", "layer", "convexity", "origin", "scale"},
@@ -83,7 +75,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
 	}
 	if (!filename.empty()) handle_dep(filename);
-	ImportType actualtype = this->type;
+	ImportType actualtype = type;
 	if (actualtype == ImportType::UNKNOWN) {
 		std::string extraw = fs::path(filename).extension().generic_string();
 		std::string ext = boost::algorithm::to_lower_copy(extraw);
@@ -96,7 +88,7 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 		else if (ext == ".svg") actualtype = ImportType::SVG;
 	}
 
-	auto node = new ImportNode(inst, evalctx, actualtype);
+	auto node = new ImportNode(inst, actualtype);
 
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
@@ -153,6 +145,20 @@ AbstractNode *ImportModule::instantiate(const std::shared_ptr<Context>& ctx, con
 
 	return node;
 }
+
+static AbstractNode* builtin_import(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+	{ return do_import(inst, evalctx, ImportType::UNKNOWN); }
+
+static AbstractNode* builtin_import_stl(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+	{ return do_import(inst, evalctx, ImportType::STL); }
+
+static AbstractNode* builtin_import_off(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+	{ return do_import(inst, evalctx, ImportType::OFF); }
+
+static AbstractNode* builtin_import_dxf(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+	{ return do_import(inst, evalctx, ImportType::DXF); }
+
+
 
 /*!
 	Will return an empty geometry if the import failed, but not nullptr
@@ -232,11 +238,11 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-	Builtins::init("import_stl", new ImportModule(ImportType::STL));
-	Builtins::init("import_off", new ImportModule(ImportType::OFF));
-	Builtins::init("import_dxf", new ImportModule(ImportType::DXF));
+	Builtins::init("import_stl", new BuiltinModule(builtin_import_stl));
+	Builtins::init("import_off", new BuiltinModule(builtin_import_off));
+	Builtins::init("import_dxf", new BuiltinModule(builtin_import_dxf));
 
-	Builtins::init("import", new ImportModule(),
+	Builtins::init("import", new BuiltinModule(builtin_import),
 				{
 					"import(string, [number, [number]])",
 				});

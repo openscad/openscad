@@ -28,6 +28,13 @@
 #include "context.h"
 #include "value.h"
 
-AbstractModule::~AbstractModule()
+BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<class EvalContext>&), const Feature* feature):
+	AbstractModule(feature),
+	do_instantiate(instantiate)
+{}
+
+AbstractNode *BuiltinModule::instantiate(const std::shared_ptr<class Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<class EvalContext>& evalctx) const
 {
+	return do_instantiate(inst, evalctx);
 }
+

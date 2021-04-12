@@ -2197,7 +2197,7 @@ void MainWindow::selectObject(QPoint mouse)
 				continue;
 			}
 
-			auto location = step->location;
+			auto location = step->modinst->location();
 			ss.str("");
 
 			// Check if the path is contained in a library (using parsersettings.h)

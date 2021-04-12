@@ -187,7 +187,7 @@ AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const
 
 AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, std::shared_ptr<FileContext>* resulting_file_context) const
 {
-	auto node = new RootNode(inst, nullptr);
+	auto node = new RootNode(inst);
 	try {
 		ContextHandle<FileContext> file_context{Context::create<FileContext>(ctx, this)};
 		*resulting_file_context = file_context.ctx;
