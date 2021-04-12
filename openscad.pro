@@ -310,6 +310,7 @@ HEADERS += src/version_check.h \
            src/modcontext.h \
            src/evalcontext.h \
            src/arguments.h \
+           src/children.h \
            src/parameters.h \
            src/csgops.h \
            src/CSGTreeNormalizer.h \
@@ -448,6 +449,7 @@ SOURCES += \
            src/modcontext.cc \
            src/evalcontext.cc \
            src/arguments.cc \
+           src/children.cc \
            src/parameters.cc \
            src/csgnode.cc \
            src/CSGTreeNormalizer.cc \

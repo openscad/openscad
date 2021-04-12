@@ -28,7 +28,7 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
+#include "children.h"
 #include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
@@ -43,11 +43,11 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static AbstractNode* builtin_offset(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_offset(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new OffsetNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"delta", "chamfer"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
 
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
@@ -69,11 +69,7 @@ static AbstractNode* builtin_offset(const ModuleInstantiation *inst, const std::
 		}
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string OffsetNode::toString() const

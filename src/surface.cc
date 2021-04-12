@@ -28,8 +28,8 @@
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "polyset.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
 #include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
@@ -75,14 +75,14 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-static AbstractNode* builtin_surface(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_surface(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new SurfaceNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx, {"file", "center", "convexity"}, {"invert"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
 
 	std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-	auto filename = lookup_file(fileval, evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+	auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 

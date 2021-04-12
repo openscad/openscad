@@ -27,7 +27,7 @@
 #include "module.h"
 #include "node.h"
 #include "polyset.h"
-#include "evalcontext.h"
+#include "children.h"
 #include "Polygon2d.h"
 #include "builtin.h"
 #include "parameters.h"
@@ -97,7 +97,7 @@ public:
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
-static Value lookup_radius(const Parameters& parameters, const std::shared_ptr<EvalContext> ctx, const std::string &diameter_var, const std::string &radius_var)
+static Value lookup_radius(const Parameters& parameters, const ModuleInstantiation *inst, const std::string &diameter_var, const std::string &radius_var)
 {
 	const auto &d = parameters[diameter_var];
 	const auto &r = parameters[radius_var];
@@ -105,7 +105,7 @@ static Value lookup_radius(const Parameters& parameters, const std::shared_ptr<E
 
 	if (d.type() == Value::Type::NUMBER) {
 		if (r_defined) {
-			LOG(message_group::Warning,ctx->loc,ctx->documentRoot(),
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 				"Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.",radius_var,diameter_var);
 		}
 		return d.toDouble() / 2.0;
@@ -116,35 +116,35 @@ static Value lookup_radius(const Parameters& parameters, const std::shared_ptr<E
 	}
 }
 
-static void set_fragments(PrimitiveNode* node, const Parameters& parameters, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static void set_fragments(PrimitiveNode* node, const Parameters& parameters, const ModuleInstantiation *inst)
 {
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
 	node->fa = parameters["$fa"].toDouble();
 
 	if (node->fs < F_MINIMUM) {
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 			"$fs too small - clamping to %1$f",F_MINIMUM);
 		node->fs = F_MINIMUM;
 	}
 	if (node->fa < F_MINIMUM) {
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 			"$fa too small - clamping to %1$f",F_MINIMUM);
 		node->fa = F_MINIMUM;
 	}
 }
 
-static AbstractNode* builtin_cube(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_cube(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::CUBE, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::CUBE, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"size", "center"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"size", "center"});
+	set_fragments(node, parameters, inst);
 
 	const auto &size = parameters["size"];
 	if (size.isDefined()) {
@@ -154,12 +154,12 @@ static AbstractNode* builtin_cube(const ModuleInstantiation *inst, const std::sh
 		converted |= size.getDouble(node->z);
 		converted |= size.getVec3(node->x, node->y, node->z);
 		if (!converted) {
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",size.toEchoString());
 		} else if(OpenSCAD::rangeCheck) {
 			bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
 			ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
 			if(!ok){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cube(size=%1$s, ...)",size.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"cube(size=%1$s, ...)",size.toEchoString());
 			}
 		}
 	}
@@ -170,23 +170,23 @@ static AbstractNode* builtin_cube(const ModuleInstantiation *inst, const std::sh
 	return node;
 }
 
-static AbstractNode* builtin_sphere(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::SPHERE, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::SPHERE, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"d"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+	set_fragments(node, parameters, inst);
 
-	const auto r = lookup_radius(parameters, evalctx, "d", "r");
+	const auto r = lookup_radius(parameters, inst, "d", "r");
 	if (r.type() == Value::Type::NUMBER) {
 		node->r1 = r.toDouble();
 		if (OpenSCAD::rangeCheck && (node->r1 <= 0 || !std::isfinite(node->r1))){
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 				"sphere(r=%1$s)",r.toEchoString());
 		}
 	}
@@ -194,29 +194,29 @@ static AbstractNode* builtin_sphere(const ModuleInstantiation *inst, const std::
 	return node;
 }
 
-static AbstractNode* builtin_cylinder(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::CYLINDER, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::CYLINDER, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
+	set_fragments(node, parameters, inst);
 
 	if (parameters["h"].type() == Value::Type::NUMBER) {
 		node->h = parameters["h"].toDouble();
 	}
 
-	auto r = lookup_radius(parameters, evalctx, "d", "r");
-	auto r1 = lookup_radius(parameters, evalctx, "d1", "r1");
-	auto r2 = lookup_radius(parameters, evalctx, "d2", "r2");
+	auto r = lookup_radius(parameters, inst, "d", "r");
+	auto r1 = lookup_radius(parameters, inst, "d1", "r1");
+	auto r2 = lookup_radius(parameters, inst, "d2", "r2");
 	if (r.type() == Value::Type::NUMBER &&
 		(r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
 	) {
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Cylinder parameters ambiguous");
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Cylinder parameters ambiguous");
 	}
 
 	if (r.type() == Value::Type::NUMBER) {
@@ -232,10 +232,10 @@ static AbstractNode* builtin_cylinder(const ModuleInstantiation *inst, const std
 
 	if(OpenSCAD::rangeCheck){
 		if (node->h <= 0 || !std::isfinite(node->h)){
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"cylinder(h=%1$s, ...)",parameters["h"].toEchoString());
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"cylinder(h=%1$s, ...)",parameters["h"].toEchoString());
 		}
 		if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)){
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 				"cylinder(r1=%1$s, r2=%2$s, ...)",
 				(r1.type() == Value::Type::NUMBER ? r1.toEchoString() : r.toEchoString()),
 				(r2.type() == Value::Type::NUMBER ? r2.toEchoString() : r.toEchoString()));
@@ -249,17 +249,17 @@ static AbstractNode* builtin_cylinder(const ModuleInstantiation *inst, const std
 	return node;
 }
 
-static AbstractNode* builtin_polyhedron(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::POLYHEDRON, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::POLYHEDRON, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"points", "faces", "convexity"}, {"triangles"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"points", "faces", "convexity"}, {"triangles"});
+	set_fragments(node, parameters, inst);
 
 	node->points = parameters["points"].clone();
 	node->faces = parameters["faces"].clone();
@@ -276,17 +276,17 @@ static AbstractNode* builtin_polyhedron(const ModuleInstantiation *inst, const s
 	return node;
 }
 
-static AbstractNode* builtin_square(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_square(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::SQUARE, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::SQUARE, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"size", "center"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"size", "center"});
+	set_fragments(node, parameters, inst);
 
 	const auto &size = parameters["size"];
 	if (size.isDefined()) {
@@ -295,13 +295,13 @@ static AbstractNode* builtin_square(const ModuleInstantiation *inst, const std::
 		converted |= size.getDouble(node->y);
 		converted |= size.getVec2(node->x, node->y);
 		if (!converted) {
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",size.toEchoString());
 		} else if (OpenSCAD::rangeCheck) {
 			bool ok = true;
 			ok &= (node->x > 0) && (node->y > 0);
 			ok &= std::isfinite(node->x) && std::isfinite(node->y);
 			if(!ok){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"square(size=%1$s, ...)",size.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"square(size=%1$s, ...)",size.toEchoString());
 			}
 		}
 	}
@@ -312,23 +312,23 @@ static AbstractNode* builtin_square(const ModuleInstantiation *inst, const std::
 	return node;
 }
 
-static AbstractNode* builtin_circle(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_circle(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::CIRCLE, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::CIRCLE, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"r"}, {"d"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+	set_fragments(node, parameters, inst);
 
-	const auto r = lookup_radius(parameters, evalctx, "d", "r");
+	const auto r = lookup_radius(parameters, inst, "d", "r");
 	if (r.type() == Value::Type::NUMBER) {
 		node->r1 = r.toDouble();
 		if (OpenSCAD::rangeCheck && ((node->r1 <= 0) || !std::isfinite(node->r1))){
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 				"circle(r=%1$s)",r.toEchoString());
 		}
 	}
@@ -336,17 +336,17 @@ static AbstractNode* builtin_circle(const ModuleInstantiation *inst, const std::
 	return node;
 }
 
-static AbstractNode* builtin_polygon(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new PrimitiveNode(inst, primitive_type_e::POLYGON, evalctx->documentRoot());
+	auto node = new PrimitiveNode(inst, primitive_type_e::POLYGON, arguments.documentRoot());
 
-	if(inst->scope.hasChildren()){
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 			"module %1$s() does not support child modules",node->name());
 	}
 
-	Parameters parameters = Parameters::parse(evalctx, {"points", "paths", "convexity"});
-	set_fragments(node, parameters, inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"points", "paths", "convexity"});
+	set_fragments(node, parameters, inst);
 
 	node->points = parameters["points"].clone();
 	node->paths = parameters["paths"].clone();

@@ -28,7 +28,7 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
+#include "children.h"
 #include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
@@ -46,14 +46,24 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new LinearExtrudeNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx,
-		{"file", "layer", "height", "origin", "scale", "center", "twist", "slices"},
-		{"convexity"}
-	);
+	// if height not given, and first argument is a number,
+	// then assume it should be the height.
+	bool first_argument_is_height = (arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER);
+	Parameters parameters = first_argument_is_height ?
+		Parameters::parse(std::move(arguments), inst->location(),
+			{"height", "file", "layer", "origin", "scale", "center", "twist", "slices"},
+			{"convexity"}
+		)
+	:
+		Parameters::parse(std::move(arguments), inst->location(),
+			{"file", "layer", "height", "origin", "scale", "center", "twist", "slices"},
+			{"convexity"}
+		)
+	;
 
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();
@@ -61,7 +71,7 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, con
 
 	if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
 		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(parameters["file"].toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+		auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
 		node->filename = filename;
 		handle_dep(filename);
 	}
@@ -69,13 +79,6 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, con
 	node->height = 100;
 	if (parameters["height"].isDefined()) {
 		parameters["height"].getFiniteDouble(node->height);
-	} else {
-		// if height not given, and first argument is a number,
-		// then assume it should be the height.
-		if (evalctx->numArgs() > 0 && evalctx->getArgName(0) == "") {
-			auto val = evalctx->getArgValue(0);
-			if (val.type() == Value::Type::NUMBER) val.getFiniteDouble(node->height);
-		}
 	}
 
 	node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
@@ -87,14 +90,14 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, con
 	bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(parameters["origin"].isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 	}
 	node->scale_x = node->scale_y = 1;
 	bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
 	scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
 	scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
 	if((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., scale=%1$s) could not be converted",parameters["scale"].toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"linear_extrude(..., scale=%1$s) could not be converted",parameters["scale"].toEchoString());
 	}
 
 	if (parameters["center"].type() == Value::Type::BOOL)
@@ -122,9 +125,7 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, con
 	}
 
 	if (node->filename.empty()) {
-		inst->scope.apply(evalctx);
-		auto instantiatednodes = inst->instantiateChildren(evalctx);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		children.instantiate(node);
 	}
 
 	return node;

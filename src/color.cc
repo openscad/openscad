@@ -27,8 +27,8 @@
 #include "colornode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
 #include "parameters.h"
 #include "printutils.h"
 #include <cctype>
@@ -235,17 +235,17 @@ static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
 	return rgba;
 }
 
-static AbstractNode* builtin_color(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_color(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new ColorNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx, {"c", "alpha"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha"});
 	if (parameters["c"].type() == Value::Type::VECTOR) {
 		const auto &vec = parameters["c"].toVector();
 		for (size_t i = 0; i < 4; ++i) {
 			node->color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
 			if (node->color[i] > 1 || node->color[i] < 0){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range",node->color[i]);
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range",node->color[i]);
 			}
 		}
 	} else if (parameters["c"].type() == Value::Type::STRING) {
@@ -259,7 +259,7 @@ static AbstractNode* builtin_color(const ModuleInstantiation *inst, const std::s
 			if (hexColor) {
 				node->color = *hexColor;
 			} else {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to parse color \"%1$s\"",colorname);
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Unable to parse color \"%1$s\"",colorname);
 				LOG(message_group::None,Location::NONE,"","Please see https://en.wikipedia.org/wiki/Web_colors");
 			}
 		}
@@ -268,11 +268,7 @@ static AbstractNode* builtin_color(const ModuleInstantiation *inst, const std::s
 		node->color[3] = parameters["alpha"].toDouble();
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string ColorNode::toString() const

@@ -24,39 +24,24 @@
  *
  */
 
-#include "rendernode.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "builtin.h"
 #include "children.h"
-#include "parameters.h"
-#include "polyset.h"
+#include "node.h"
 
-#include <sstream>
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+Children::Children(const LocalScope* children_scope, const std::shared_ptr<Context>& context):
+	children_scope(children_scope),
+	context(context)
+{}
 
-static AbstractNode* builtin_render(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::vector<AbstractNode*> Children::instantiate()
 {
-	auto node = new RenderNode(inst);
-
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
-	if (parameters["convexity"].type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
-	}
-
-	return children.instantiate(node);
+	ContextHandle<Context> scope_context{Context::create<Context>(context)};
+	children_scope->apply(scope_context.ctx);
+	return children_scope->instantiateChildren(scope_context.ctx);
 }
 
-std::string RenderNode::toString() const
+AbstractNode* Children::instantiate(AbstractNode* target)
 {
-	return STR(this->name() << "(convexity = " << convexity << ")");
-}
-
-void register_builtin_render()
-{
-	Builtins::init("render", new BuiltinModule(builtin_render),
-				{
-					"render(convexity = 1)",
-				});
+	std::vector<AbstractNode*> children{instantiate()};
+	target->children.insert(target->children.end(), children.begin(), children.end());
+	return target;
 }

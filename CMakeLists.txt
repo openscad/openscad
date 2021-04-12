@@ -468,6 +468,7 @@ set(CORE_SOURCES
   src/builtincontext.cc
   src/calc.cc
   src/cgaladv.cc
+  src/children.cc
   src/clipper-utils.cc
   src/color.cc
   src/colormap.cc

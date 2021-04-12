@@ -24,14 +24,26 @@
  *
  */
 
-#include "module.h"
+#include "arguments.h"
+#include "children.h"
 #include "context.h"
+#include "evalcontext.h"
+#include "module.h"
+#include "ModuleInstantiation.h"
 #include "value.h"
 
 BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<class EvalContext>&), const Feature* feature):
 	AbstractModule(feature),
 	do_instantiate(instantiate)
 {}
+
+BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature* feature):
+	AbstractModule(feature)
+{
+	do_instantiate = [instantiate](const class ModuleInstantiation *inst, const std::shared_ptr<class EvalContext>& evalctx) {
+		return instantiate(inst, Arguments(evalctx->getArgs(), evalctx->get_shared_ptr()), Children(&inst->scope, evalctx->get_shared_ptr()));
+	};
+}
 
 AbstractNode *BuiltinModule::instantiate(const std::shared_ptr<class Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<class EvalContext>& evalctx) const
 {

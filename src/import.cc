@@ -34,8 +34,8 @@
 #include "CGAL_Nef_polyhedron.h"
 #endif
 #include "Polygon2d.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
 #include "dxfdata.h"
 #include "parameters.h"
 #include "printutils.h"
@@ -56,9 +56,9 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 extern PolySet * import_amf(std::string, const Location &loc);
 extern Geometry * import_3mf(const std::string &, const Location &loc);
 
-static AbstractNode* do_import(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx, ImportType type)
+static AbstractNode* do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
 {
-	Parameters parameters = Parameters::parse(evalctx,
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
 		{"file", "layer", "convexity", "origin", "scale"},
 		{"width", "height", "filename", "layername", "center", "dpi"}
 	);
@@ -66,13 +66,13 @@ static AbstractNode* do_import(const ModuleInstantiation *inst, const std::share
 	const auto &v = parameters["file"];
 	std::string filename;
 	if (v.isDefined()) {
-		filename = lookup_file(v.isUndefined() ? "" : v.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+		filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
 	} else {
 		const auto &filename_val = parameters["filename"];
 		if (!filename_val.isUndefined()) {
 			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
 		}
-		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
 	}
 	if (!filename.empty()) handle_dep(filename);
 	ImportType actualtype = type;
@@ -116,7 +116,7 @@ static AbstractNode* do_import(const ModuleInstantiation *inst, const std::share
 	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if(origin.isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 
 	const auto &center = parameters["center"];
@@ -130,7 +130,7 @@ static AbstractNode* do_import(const ModuleInstantiation *inst, const std::share
 	if (dpi.type() == Value::Type::NUMBER) {
 		double val = dpi.toDouble();
 		if (val < 0.001) {
-			std::string filePath = boostfs_uncomplete(inst->location().filePath(),evalctx->documentRoot()).generic_string();
+			std::string filePath = boostfs_uncomplete(inst->location().filePath(),parameters.documentRoot()).generic_string();
 			LOG(message_group::Warning,Location::NONE,"",
 				"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
 				origin.toEchoString(),filePath,filePath,inst->location().firstLine()
@@ -146,17 +146,17 @@ static AbstractNode* do_import(const ModuleInstantiation *inst, const std::share
 	return node;
 }
 
-static AbstractNode* builtin_import(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_import(inst, evalctx, ImportType::UNKNOWN); }
+static AbstractNode* builtin_import(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::UNKNOWN); }
 
-static AbstractNode* builtin_import_stl(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_import(inst, evalctx, ImportType::STL); }
+static AbstractNode* builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::STL); }
 
-static AbstractNode* builtin_import_off(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_import(inst, evalctx, ImportType::OFF); }
+static AbstractNode* builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::OFF); }
 
-static AbstractNode* builtin_import_dxf(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_import(inst, evalctx, ImportType::DXF); }
+static AbstractNode* builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::DXF); }
 
 
 

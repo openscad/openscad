@@ -26,7 +26,7 @@
 
 #include "transformnode.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
+#include "children.h"
 #include "polyset.h"
 #include "builtin.h"
 #include "value.h"
@@ -48,11 +48,11 @@ enum class transform_type_e {
 	MULTMATRIX
 };
 
-AbstractNode* builtin_scale(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+AbstractNode* builtin_scale(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new TransformNode(inst, "scale");
 
-	Parameters parameters = Parameters::parse(evalctx, {"v"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
 	Vector3d scalevec(1, 1, 1);
 	if (!parameters["v"].getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
@@ -60,28 +60,24 @@ AbstractNode* builtin_scale(const ModuleInstantiation *inst, const std::shared_p
 		if (parameters["v"].getDouble(num)){
 			scalevec.setConstant(num);
 		}else{
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",parameters["v"].toEchoString());
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",parameters["v"].toEchoString());
 		}
 	}
 	if(OpenSCAD::rangeCheck){
 		if(scalevec[0]==0 || scalevec[1]==0 || scalevec[2]==0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])){
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"scale(%1$s)",parameters["v"].toEchoString());
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"scale(%1$s)",parameters["v"].toEchoString());
 		}
 	}
 	node->matrix.scale(scalevec);
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
-AbstractNode* builtin_rotate(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+AbstractNode* builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new TransformNode(inst, "rotate");
 
-	Parameters parameters = Parameters::parse(evalctx, {"a", "v"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"a", "v"});
 
 	const auto &val_a = parameters["a"];
 	const auto &val_v = parameters["v"];
@@ -121,13 +117,13 @@ AbstractNode* builtin_rotate(const ModuleInstantiation *inst, const std::shared_
 		bool v_supplied = val_v.isDefined();
 		if (ok) {
 			if(v_supplied){
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)",val_a.toEchoString(),val_v.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)",val_a.toEchoString(),val_v.toEchoString());
 			}
 		} else {
 			if (v_supplied) {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a.toEchoString(),val_v.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a.toEchoString(),val_v.toEchoString());
 			} else {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Problem converting rotate(a=%1$s) parameter",val_a.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Problem converting rotate(a=%1$s) parameter",val_a.toEchoString());
 			}
 		}
 		Matrix3d M;
@@ -145,31 +141,27 @@ AbstractNode* builtin_rotate(const ModuleInstantiation *inst, const std::shared_
 		node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
 		if (val_v.isDefined() && !vConverted) {
 			if (aConverted) {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Problem converting rotate(..., v=%1$s) parameter",val_v.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Problem converting rotate(..., v=%1$s) parameter",val_v.toEchoString());
 			} else {
-				LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a.toEchoString(),val_v.toEchoString());
+				LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Problem converting rotate(a=%1$s, v=%2$s) parameter",val_a.toEchoString(),val_v.toEchoString());
 			}
 		} else if (!aConverted) {
-			LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Problem converting rotate(a=%1$s) parameter",val_a.toEchoString());
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Problem converting rotate(a=%1$s) parameter",val_a.toEchoString());
 		}
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
-AbstractNode* builtin_mirror(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+AbstractNode* builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new TransformNode(inst, "mirror");
 
-	Parameters parameters = Parameters::parse(evalctx, {"v"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
 	double x = 1.0, y = 0.0, z = 0.0;
 	if (!parameters["v"].getVec3(x, y, z, 0.0)) {
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",parameters["v"].toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",parameters["v"].toEchoString());
 	}
 
 	// x /= sqrt(x*x + y*y + z*z)
@@ -189,18 +181,14 @@ AbstractNode* builtin_mirror(const ModuleInstantiation *inst, const std::shared_
 		node->matrix = m;
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
-AbstractNode* builtin_translate(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+AbstractNode* builtin_translate(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new TransformNode(inst, "translate");
 
-	Parameters parameters = Parameters::parse(evalctx, {"v"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
 	Vector3d translatevec(0,0,0);
 	bool ok = parameters["v"].getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
@@ -208,21 +196,17 @@ AbstractNode* builtin_translate(const ModuleInstantiation *inst, const std::shar
 	if (ok) {
 		node->matrix.translate(translatevec);
 	} else {
-		LOG(message_group::Warning,inst->location(),evalctx->documentRoot(),"Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers",parameters["v"].toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers",parameters["v"].toEchoString());
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
-AbstractNode* builtin_multmatrix(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+AbstractNode* builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new TransformNode(inst, "multmatrix");
 
-	Parameters parameters = Parameters::parse(evalctx, {"m"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"m"});
 
 	if (parameters["m"].type() == Value::Type::VECTOR) {
 		Matrix4d rawmatrix{Matrix4d::Identity()};
@@ -238,11 +222,7 @@ AbstractNode* builtin_multmatrix(const ModuleInstantiation *inst, const std::sha
 		else node->matrix = rawmatrix;
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string TransformNode::toString() const

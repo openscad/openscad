@@ -6,6 +6,8 @@
 #include "feature.h"
 
 class AbstractNode;
+class Arguments;
+class Children;
 class EvalContext;
 class ModuleInstantiation;
 
@@ -27,6 +29,7 @@ class BuiltinModule : public AbstractModule
 {
 public:
 	BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<class EvalContext>&), const Feature* feature = nullptr);
+	BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature* feature = nullptr);
 	AbstractNode *instantiate(const std::shared_ptr<class Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<class EvalContext>& evalctx) const override;
 
 private:

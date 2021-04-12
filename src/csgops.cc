@@ -26,33 +26,32 @@
 
 #include "csgops.h"
 
-#include "evalcontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "csgnode.h"
 #include "builtin.h"
+#include "children.h"
 #include "parameters.h"
 #include <sstream>
 #include <assert.h>
 
-static AbstractNode* do_csg(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx, OpenSCADOperator op)
+static AbstractNode* builtin_union(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new CsgOpNode(inst, op);
-	Parameters parameters = Parameters::parse(evalctx, {});
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	return node;
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new CsgOpNode(inst, OpenSCADOperator::UNION));
 }
 
-static AbstractNode* builtin_union(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_csg(inst, evalctx, OpenSCADOperator::UNION); }
+static AbstractNode* builtin_difference(const ModuleInstantiation *inst, Arguments arguments, Children children)
+{
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new CsgOpNode(inst, OpenSCADOperator::DIFFERENCE));
+}
 
-static AbstractNode* builtin_difference(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_csg(inst, evalctx, OpenSCADOperator::DIFFERENCE); }
-
-static AbstractNode* builtin_intersection(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
-	{ return do_csg(inst, evalctx, OpenSCADOperator::INTERSECTION); }
+static AbstractNode* builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, Children children)
+{
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new CsgOpNode(inst, OpenSCADOperator::INTERSECTION));
+}
 
 std::string CsgOpNode::toString() const
 {

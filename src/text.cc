@@ -25,8 +25,9 @@
  */
 
 #include "calc.h"
+#include "children.h"
 #include "module.h"
-#include "evalcontext.h"
+#include "ModuleInstantiation.h"
 #include "parameters.h"
 #include "printutils.h"
 #include "builtin.h"
@@ -38,11 +39,11 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode* builtin_text(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new TextNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx,
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
 		{"text", "size", "font"},
 		{"direction", "language", "script", "halign", "valign", "spacing"}
 	);

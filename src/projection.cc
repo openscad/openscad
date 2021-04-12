@@ -27,9 +27,8 @@
 #include "projectionnode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
+#include "children.h"
 #include "parameters.h"
-#include "printutils.h"
 #include "builtin.h"
 #include "polyset.h"
 
@@ -37,21 +36,17 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode* builtin_projection(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_projection(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new ProjectionNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx, {"cut"}, {"convexity"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"cut"}, {"convexity"});
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 	if (parameters["cut"].type() == Value::Type::BOOL) {
 		node->cut_mode = parameters["cut"].toBool();
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string ProjectionNode::toString() const

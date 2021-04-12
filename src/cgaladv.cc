@@ -27,8 +27,8 @@
 #include "cgaladvnode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
 #include "parameters.h"
 #include "polyset.h"
 #include <sstream>
@@ -36,39 +36,31 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode* builtin_minkowski(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new CgaladvNode(inst, CgaladvType::MINKOWSKI);
 	
-	Parameters parameters = Parameters::parse(evalctx, {"convexity"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
-static AbstractNode* builtin_hull(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_hull(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new CgaladvNode(inst, CgaladvType::HULL);
 
-	Parameters parameters = Parameters::parse(evalctx, {});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
 	node->convexity = 0;
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
-static AbstractNode* builtin_resize(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_resize(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new CgaladvNode(inst, CgaladvType::RESIZE);
 
-	Parameters parameters = Parameters::parse(evalctx, {"newsize", "auto", "convexity"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"newsize", "auto", "convexity"});
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 	node->newsize << 0,0,0;
 	if ( parameters["newsize"].type() == Value::Type::VECTOR ) {
@@ -88,11 +80,7 @@ static AbstractNode* builtin_resize(const ModuleInstantiation *inst, const std::
 		node->autosize << autosize.toBool(),autosize.toBool(),autosize.toBool();
 	}
 
-	inst->scope.apply(evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string CgaladvNode::name() const

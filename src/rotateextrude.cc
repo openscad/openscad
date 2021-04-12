@@ -27,7 +27,7 @@
 #include "rotateextrudenode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
+#include "children.h"
 #include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
@@ -42,11 +42,11 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new RotateExtrudeNode(inst);
 
-	Parameters parameters = Parameters::parse(evalctx,
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
 		{"file", "layer", "origin", "scale"},
 		{"convexity", "angle"}
 	);
@@ -57,7 +57,7 @@ static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, con
 
 	if (!parameters["file"].isUndefined()) {
 		LOG(message_group::Deprecated,Location::NONE,"","Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		auto filename = lookup_file(parameters["file"].toString(), evalctx->loc.filePath().parent_path().string(), evalctx->documentRoot());
+		auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
 		node->filename = filename;
 		handle_dep(filename);
 	}
@@ -67,7 +67,7 @@ static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, con
 	bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if (parameters["origin"].isDefined() && !originOk){
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"rotate_extrude(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"rotate_extrude(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 	}
 	node->scale = parameters["scale"].toDouble();
 	node->angle = 360;
@@ -83,9 +83,7 @@ static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, con
 		node->angle = 360;
 
 	if (node->filename.empty()) {
-		inst->scope.apply(evalctx);
-		auto instantiatednodes = inst->instantiateChildren(evalctx);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		children.instantiate(node);
 	}
 
 	return node;
