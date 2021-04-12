@@ -195,7 +195,9 @@ AbstractNode *FileModule::instantiateWithFileContext(const std::shared_ptr<FileC
 		// FIXME: Set document path to the path of the module
 		auto instantiatednodes = this->scope.instantiateChildren(ctx);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	} catch (EvaluationException &e) {
+	} catch (HardWarningException &e) {
+            throw;
+        } catch (EvaluationException &e) {
 		// LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
 	}
 
