@@ -524,7 +524,6 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 	}
 	else if (typeid(*expression) == typeid(FunctionCall)) {
 		const FunctionCall* call = static_cast<const FunctionCall*>(expression);
-		ContextHandle<EvalContext> evalctx{Context::create<EvalContext>(context, call->arguments, call->location())};
 		
 		const Expression* function_body;
 		const AssignmentList* required_parameters;
@@ -534,7 +533,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 		if (!f) {
 			return Value::undefined.clone();
 		} else if (const BuiltinFunction** function = boost::get<const BuiltinFunction*>(&*f)) {
-			return (*function)->evaluate(evalctx.ctx);
+			return (*function)->evaluate(context, call);
 		} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
 			function_body = callable->function->expr.get();
 			required_parameters = &callable->function->parameters;
@@ -554,9 +553,11 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 			defining_context = function.getCtx();
 		}
 		
+		Arguments arguments{call->arguments, context};
+		Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
 		ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
 		body_context->apply_config_variables(*context);
-		body_context->apply_variables(Parameters::parse(evalctx.ctx, *required_parameters, defining_context).to_context_frame());
+		body_context->apply_variables(std::move(parameters).to_context_frame());
 		
 		return SimplifiedExpression{function_body, body_context.ctx, call};
 	}

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Assignment.h"
+#include "arguments.h"
 #include "contextframe.h"
 
 /*
@@ -26,6 +27,12 @@ public:
 	 * Optional parameters are not set at all.
 	 */
 	static Parameters parse(
+		Arguments arguments,
+		const Location& loc,
+		const std::vector<std::string>& required_parameters,
+		const std::vector<std::string>& optional_parameters = {}
+	);
+	static Parameters parse(
 		const std::shared_ptr<EvalContext>& evalctx,
 		const std::vector<std::string>& required_parameters,
 		const std::vector<std::string>& optional_parameters = {}
@@ -35,6 +42,12 @@ public:
 	 * Supports default arguments, and requires a context in which to interpret them.
 	 * Absent parameters without defaults are set to undefined.
 	 */
+	static Parameters parse(
+		Arguments arguments,
+		const Location& loc,
+		const AssignmentList& required_parameters,
+		const std::shared_ptr<Context>& defining_context
+	);
 	static Parameters parse(
 		const std::shared_ptr<EvalContext>& evalctx,
 		const AssignmentList& required_parameters,
@@ -51,6 +64,8 @@ public:
 	const Value& operator[](const std::string& name) const { return get(name); }
 	
 	ContextFrame to_context_frame() &&;
+	
+	const std::string &documentRoot() const { return frame.documentRoot(); }
 
 private:
 	ContextFrame frame;

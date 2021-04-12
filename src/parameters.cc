@@ -73,26 +73,28 @@ ContextFrame Parameters::to_context_frame() &&
 
 template<class T, class F>
 static ContextFrame parse_without_defaults(
-	const std::shared_ptr<EvalContext>& evalctx,
+	Arguments arguments,
+	const Location& loc,
 	const std::vector<T>& required_parameters,
 	const std::vector<T>& optional_parameters,
 	bool warn_for_unexpected_arguments,
 	F parameter_name
 ) {
-	ContextFrame output{evalctx->session()};
+	ContextFrame output{arguments.session()};
 	
 	std::set<std::string> named_arguments;
 	
 	size_t parameter_position = 0;
 	bool warned_for_extra_arguments = false;
 	
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		std::string name = evalctx->getArgName(i);
-		if (!name.empty()) {
+	for (auto& argument : arguments) {
+		std::string name;
+		if (argument.name) {
+			name = *argument.name;
 			if (named_arguments.count(name)) {
-				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"argument %1$s supplied more than once",name);
+				LOG(message_group::Warning,loc,arguments.documentRoot(),"argument %1$s supplied more than once",name);
 			} else if (output.lookup_local_variable(name)) {
-				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"argument %1$s overrides positional argument",name);
+				LOG(message_group::Warning,loc,arguments.documentRoot(),"argument %1$s overrides positional argument",name);
 			} else if (warn_for_unexpected_arguments && !ContextFrame::is_config_variable(name)) {
 				bool found = false;
 				for (const auto& parameter : required_parameters) {
@@ -108,7 +110,7 @@ static ContextFrame parse_without_defaults(
 					}
 				}
 				if (!found) {
-					LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"variable %1$s not specified as parameter",name);
+					LOG(message_group::Warning,loc,arguments.documentRoot(),"variable %1$s not specified as parameter",name);
 				}
 			}
 			named_arguments.insert(name);
@@ -126,24 +128,25 @@ static ContextFrame parse_without_defaults(
 			}
 			if (name.empty()) {
 				if (warn_for_unexpected_arguments && !warned_for_extra_arguments) {
-					LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),"Too many unnamed arguments supplied");
+					LOG(message_group::Warning,loc,arguments.documentRoot(),"Too many unnamed arguments supplied");
 					warned_for_extra_arguments = true;
 				}
 				continue;
 			}
 		}
 		
-		output.set_variable(name, evalctx->getArgValue(i));
+		output.set_variable(name, std::move(argument.value));
 	}
 	return output;
 }
 
 Parameters Parameters::parse(
-	const std::shared_ptr<EvalContext>& evalctx,
+	Arguments arguments,
+	const Location& loc,
 	const std::vector<std::string>& required_parameters,
 	const std::vector<std::string>& optional_parameters
 ) {
-	ContextFrame frame{parse_without_defaults(evalctx, required_parameters, optional_parameters, true,
+	ContextFrame frame{parse_without_defaults(std::move(arguments), loc, required_parameters, optional_parameters, true,
 		[](const std::string& s) -> std::string { return s; }
 	)};
 	
@@ -158,10 +161,19 @@ Parameters Parameters::parse(
 
 Parameters Parameters::parse(
 	const std::shared_ptr<EvalContext>& evalctx,
+	const std::vector<std::string>& required_parameters,
+	const std::vector<std::string>& optional_parameters
+) {
+	return parse(Arguments(evalctx->getArgs(), evalctx->get_shared_ptr()), evalctx->loc, required_parameters, optional_parameters);
+}
+
+Parameters Parameters::parse(
+	Arguments arguments,
+	const Location& loc,
 	const AssignmentList& required_parameters,
 	const std::shared_ptr<Context>& defining_context
 ) {
-	ContextFrame frame{parse_without_defaults(evalctx, required_parameters, {}, OpenSCAD::parameterCheck,
+	ContextFrame frame{parse_without_defaults(std::move(arguments), loc, required_parameters, {}, OpenSCAD::parameterCheck,
 		[](const std::shared_ptr<Assignment>& assignment) { return assignment->getName(); }
 	)};
 	
@@ -176,4 +188,12 @@ Parameters Parameters::parse(
 	}
 	
 	return Parameters{std::move(frame)};
+}
+
+Parameters Parameters::parse(
+	const std::shared_ptr<EvalContext>& evalctx,
+	const AssignmentList& required_parameters,
+	const std::shared_ptr<Context>& defining_context
+) {
+	return parse(Arguments(evalctx->getArgs(), evalctx->get_shared_ptr()), evalctx->loc, required_parameters, defining_context);
 }

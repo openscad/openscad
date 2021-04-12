@@ -1,27 +1,28 @@
 #pragma once
 
 #include "AST.h"
-#include "value.h"
 #include "Assignment.h"
 #include "feature.h"
+#include "value.h"
 
+#include <functional>
 #include <string>
 #include <vector>
 
-class EvalContext;
+class Arguments;
+class FunctionCall;
 
 class BuiltinFunction
 {
 public:
-	typedef Value (*eval_func_t)(const std::shared_ptr<EvalContext> evalctx);
-	eval_func_t evaluate;
+	std::function<Value(const std::shared_ptr<Context>&, const FunctionCall*)> evaluate;
 
 private:
 	const Feature *feature;
 
 public:
-	BuiltinFunction(eval_func_t f) : evaluate(f), feature(nullptr) { }
-	BuiltinFunction(eval_func_t f, const Feature& feature) : evaluate(f), feature(&feature) { }
+	BuiltinFunction(Value (*f)(const std::shared_ptr<Context>&, const FunctionCall*), const Feature* feature = nullptr);
+	BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature* feature = nullptr);
 
 	bool is_experimental() const { return feature != nullptr; }
 	bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }

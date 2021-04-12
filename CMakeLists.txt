@@ -462,6 +462,7 @@ include_directories("src/ext/libtess2/Include")
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
   src/annotation.cc
+  src/arguments.cc
   src/boost-utils.cc
   src/builtin.cc
   src/builtincontext.cc

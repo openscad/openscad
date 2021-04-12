@@ -25,37 +25,15 @@
  */
 
 #include "arguments.h"
-#include "evalcontext.h"
 #include "expression.h"
-#include "function.h"
-#include "printutils.h"
 
-BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<Context>&, const FunctionCall*), const Feature* feature):
-	evaluate(f),
-	feature(feature)
-{}
-
-BuiltinFunction::BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature* feature):
-	feature(feature)
+Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<Context>& context):
+	evaluation_session(context->session())
 {
-	evaluate = [f] (const std::shared_ptr<Context>& context, const FunctionCall* call) {
-		return f(Arguments(call->arguments, context), call->location());
-	};
-}
-
-UserFunction::UserFunction(const char *name, AssignmentList &parameters, shared_ptr<Expression> expr, const Location &loc)
-	: ASTNode(loc), name(name), parameters(parameters), expr(expr)
-{
-}
-
-void UserFunction::print(std::ostream &stream, const std::string &indent) const
-{
-	stream << indent << "function " << name << "(";
-	for (size_t i=0; i < parameters.size(); ++i) {
-		const auto &parameter = parameters[i];
-		if (i > 0) stream << ", ";
-		stream << parameter->getName();
-		if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
+	for (const auto& argument_expression : argument_expressions) {
+		emplace_back(
+			argument_expression->getName().empty() ? boost::none : boost::optional<std::string>(argument_expression->getName()),
+			argument_expression->getExpr()->evaluate(context)
+		);
 	}
-	stream << ") = " << *expr << ";\n";
 }
