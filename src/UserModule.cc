@@ -56,7 +56,7 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
 	inst->scope.apply(evalctx);
 
 	StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
-	ContextHandle<ModuleContext> c{Context::create<ModuleContext>(ctx, this, evalctx)};
+	ContextHandle<UserModuleContext> c{Context::create<UserModuleContext>(ctx, this, evalctx)};
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif

@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "context.h"
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "UserModule.h"
 
 class ScopeContext : public Context
@@ -29,7 +29,7 @@ private:
 	const LocalScope* scope;
 };
 
-class ModuleContext : public ScopeContext
+class UserModuleContext : public ScopeContext
 {
 public:
 	void init() override;
@@ -38,7 +38,7 @@ public:
 	std::shared_ptr<EvalContext> evalctx;
 
 protected:
-	ModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const std::shared_ptr<EvalContext> evalctx = {}):
+	UserModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const std::shared_ptr<EvalContext> evalctx = {}):
 		ScopeContext(parent, &module->scope),
 		evalctx(evalctx),
 		module(module)
@@ -60,13 +60,13 @@ public:
 	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
 protected:
-	FileContext(const std::shared_ptr<Context> parent, const FileModule* file_module):
-		ScopeContext(parent, &file_module->scope),
-		file_module(file_module)
+	FileContext(const std::shared_ptr<Context> parent, const SourceFile* source_file):
+		ScopeContext(parent, &source_file->scope),
+		source_file(source_file)
 	{}
 
 private:
-	const FileModule* file_module;
+	const SourceFile* source_file;
 
 	friend class Context;
 };

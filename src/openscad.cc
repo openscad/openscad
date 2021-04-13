@@ -27,7 +27,7 @@
 #include "openscad.h"
 #include "comment.h"
 #include "node.h"
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "ModuleInstantiation.h"
 #include "builtincontext.h"
 #include "value.h"
@@ -331,7 +331,7 @@ struct CommandLine
 	unsigned animate_frames;
 };
 
-int do_export(const CommandLine& cmd, const ValueMap& render_variables, FileFormat curFormat, FileModule *root_module);
+int do_export(const CommandLine& cmd, const ValueMap& render_variables, FileFormat curFormat, SourceFile *root_file);
 
 int cmdline(const CommandLine& cmd)
 {
@@ -388,32 +388,32 @@ int cmdline(const CommandLine& cmd)
 
 	text += "\n\x03\n" + commandline_commands;
 
-	FileModule *root_module = nullptr;
-	if (!parse(root_module, text, cmd.filename, cmd.filename, false)) {
-		delete root_module;  // parse failed
-		root_module = nullptr;
+	SourceFile *root_file = nullptr;
+	if (!parse(root_file, text, cmd.filename, cmd.filename, false)) {
+		delete root_file;  // parse failed
+		root_file = nullptr;
 	}
-	if (!root_module) {
+	if (!root_file) {
 		LOG(message_group::None, Location::NONE, "", "Can't parse file '%1$s'!\n", cmd.filename);
 		return 1;
 	}
 
 	// add parameter to AST
-	CommentParser::collectParameters(text.c_str(), root_module);
+	CommentParser::collectParameters(text.c_str(), root_file);
 	if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
 		ParameterSet param;
 		param.readParameterSet(cmd.parameterFile);
-		param.applyParameterSet(root_module, cmd.setName);
+		param.applyParameterSet(root_file, cmd.setName);
 	}
 
-	root_module->handleDependencies();
+	root_file->handleDependencies();
 
 	ValueMap render_variables;
 	const bool preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	render_variables.insert_or_assign("$preview", Value(preview));
 	
 	if (cmd.animate_frames == 0) {
-		return do_export(cmd, render_variables, export_format, root_module);
+		return do_export(cmd, render_variables, export_format, root_file);
 	}
 	else {
 		// export the requested number of animated frames
@@ -436,7 +436,7 @@ int cmdline(const CommandLine& cmd)
 			CommandLine frame_cmd = cmd;
 			frame_cmd.output_file = frame_str;
 
-			int r = do_export(frame_cmd, render_variables, export_format, root_module);
+			int r = do_export(frame_cmd, render_variables, export_format, root_file);
 			if (r != 0) {
 				return r;
 			}
@@ -446,7 +446,7 @@ int cmdline(const CommandLine& cmd)
 	}
 }
 
-int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileFormat curFormat, FileModule *root_module)
+int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileFormat curFormat, SourceFile *root_file)
 {
 	auto filename_str = fs::path(cmd.output_file).generic_string();
 	auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -461,9 +461,8 @@ int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileForm
 #endif
 
 	AbstractNode::resetIndexCounter();
-	ModuleInstantiation root_inst("group");
 	std::shared_ptr<FileContext> file_context;
-	AbstractNode *absolute_root_node = root_module->instantiate(builtin_context.ctx, &root_inst, &file_context);
+	AbstractNode *absolute_root_node = root_file->instantiate(builtin_context.ctx, &file_context);
 	Camera camera = cmd.camera;
 	if (file_context) {
 		camera.updateView(file_context, true);
@@ -500,8 +499,8 @@ int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileForm
 	}
 	else if (curFormat == FileFormat::AST) {
 		fs::current_path(fparent); // Force exported filenames to be relative to document path
-		with_output(cmd.is_stdout, filename_str, [root_module](std::ostream &stream) {
-			stream << root_module->dump("");
+		with_output(cmd.is_stdout, filename_str, [root_file](std::ostream &stream) {
+			stream << root_file->dump("");
 		});
 		fs::current_path(cmd.original_path);
 	}

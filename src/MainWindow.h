@@ -44,10 +44,9 @@ public:
 	QTime renderingTime;
 	EditorInterface *customizerEditor;
 
-	FileModule *root_module;      // Result of parsing
-	FileModule *parsed_module;		// Last parse for include list
+	SourceFile *root_file;      // Result of parsing
+	SourceFile *parsed_file;		// Last parse for include list
 	ValueMap render_variables;		// Render setting special variables -- $preview, $vp*, $t
-	ModuleInstantiation root_inst;	// Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;

@@ -5,6 +5,7 @@
 #include <deque>
 #include "BaseVisitable.h"
 #include "AST.h"
+#include "ModuleInstantiation.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const class AbstractNode*, void*, int);
@@ -29,7 +30,7 @@ class AbstractNode : public BaseVisitable
 	static size_t idx_counter;   // Node instantiation index
 public:
 	VISITABLE();
-	AbstractNode(const class ModuleInstantiation *mi);
+	AbstractNode(const ModuleInstantiation *mi);
 	~AbstractNode();
 	virtual std::string toString() const;
 	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be
@@ -95,7 +96,7 @@ class ListNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	ListNode(const class ModuleInstantiation *mi) : AbstractNode(mi) { }
+	ListNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
 	std::string name() const override;
 };
 
@@ -107,7 +108,7 @@ class GroupNode : public AbstractNode
 {
 public:
 	VISITABLE();
-	GroupNode(const class ModuleInstantiation *mi, const std::string &name="") : AbstractNode(mi), _name(name) { }
+	GroupNode(const ModuleInstantiation *mi, const std::string &name="") : AbstractNode(mi), _name(name) { }
 	std::string name() const override;
   std::string verbose_name() const override;
 private:
@@ -121,9 +122,10 @@ class RootNode : public GroupNode
 {
 public:
 	VISITABLE();
-
-	RootNode(const class ModuleInstantiation *mi) : GroupNode(mi) { }
+	RootNode() : GroupNode(&mi), mi("group") { }
 	std::string name() const override;
+private:
+	ModuleInstantiation mi;
 };
 
 class LeafNode : public AbstractPolyNode

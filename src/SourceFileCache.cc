@@ -1,6 +1,6 @@
-#include "ModuleCache.h"
+#include "SourceFileCache.h"
 #include "StatCache.h"
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "printutils.h"
 #include "openscad.h"
 #include "boost-utils.h"
@@ -12,37 +12,37 @@
 #include <algorithm>
 
 /*!
-	FIXME: Implement an LRU scheme to avoid having an ever-growing module cache
+	FIXME: Implement an LRU scheme to avoid having an ever-growing source file cache
 */
 
-ModuleCache *ModuleCache::inst = nullptr;
+SourceFileCache *SourceFileCache::inst = nullptr;
 
 /*!
 	Reevaluate the given file and all its dependencies and recompile anything
 	needing reevaluation. Updates the cache if necessary.
 	The given filename must be absolute.
 
-	Sets the given module reference to the new module, or nullptr on any error (e.g. compile
+	Sets the given source file reference to the new file, or nullptr on any error (e.g. compile
 	error or file not found).
 
-	Returns the latest modification time of the module, its dependencies or includes.
+	Returns the latest modification time of the file, its dependencies or includes.
 */
-std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string &filename, FileModule *&module)
+std::time_t SourceFileCache::evaluate(const std::string &mainFile,const std::string &filename, SourceFile *&sourceFile)
 {
-	module = nullptr;
+	sourceFile = nullptr;
 	auto entry = this->entries.find(filename);
 	bool found{entry != this->entries.end()};
-	FileModule *lib_mod{found ? entry->second.module : nullptr};
+	SourceFile *file{found ? entry->second.file : nullptr};
   
 	// Don't try to recursively evaluate - if the file changes
 	// during evaluation, that would be really bad.
-	if (lib_mod && lib_mod->isHandlingDependencies()) return 0;
+	if (file && file->isHandlingDependencies()) return 0;
 
 	// Create cache ID
 	struct stat st;
 	bool valid = (StatCache::stat(filename.c_str(), st) == 0);
 
-	// If file isn't there, just return and let the cache retain the old module
+	// If file isn't there, just return and let the cache retain the old file
 	if (!valid) return 0;
 
 	// If the file is present, we'll always cache some result
@@ -51,8 +51,8 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 	cache_entry &cacheEntry = this->entries[filename];
 	// Initialize entry, if new
 	if (!found) {
-		cacheEntry.module = nullptr;
-		cacheEntry.parsed_module = nullptr;
+		cacheEntry.file = nullptr;
+		cacheEntry.parsed_file = nullptr;
 		cacheEntry.cache_id = cache_id;
 		cacheEntry.includes_mtime = st.st_mtime;
 	}
@@ -64,8 +64,8 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		if (cacheEntry.cache_id == cache_id) {
 			shouldCompile = false;
 			// Recompile if includes changed
-			if (cacheEntry.parsed_module) {
-				std::time_t mtime = cacheEntry.parsed_module->includesChanged();
+			if (cacheEntry.parsed_file) {
+				std::time_t mtime = cacheEntry.parsed_file->includesChanged();
 				if (mtime > cacheEntry.includes_mtime) {
 					cacheEntry.includes_mtime = mtime;
 					shouldCompile = true;
@@ -76,10 +76,10 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 
 #ifdef DEBUG
 	// Causes too much debug output
-	//if (!shouldCompile) LOG(message_group::None,Location::NONE,"","Using cached library: %1$s (%2$p)",filename,lib_mod);
+	//if (!shouldCompile) LOG(message_group::None,Location::NONE,"","Using cached library: %1$s (%2$p)",filename,file);
 #endif
 
-	// If cache lookup failed (non-existing or old timestamp), compile module
+	// If cache lookup failed (non-existing or old timestamp), compile file
 	if (shouldCompile) {
 #ifdef DEBUG
 		if (found) {
@@ -102,37 +102,37 @@ std::time_t ModuleCache::evaluate(const std::string &mainFile,const std::string 
 		
 		print_messages_push();
 		
-		delete cacheEntry.parsed_module;
-		lib_mod = parse(cacheEntry.parsed_module, text, filename, mainFile, false) ? cacheEntry.parsed_module : nullptr;
-		PRINTDB("compiled module: %s", filename);
-		cacheEntry.module = lib_mod;
+		delete cacheEntry.parsed_file;
+		file = parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
+		PRINTDB("compiled file: %s", filename);
+		cacheEntry.file = file;
 		cacheEntry.cache_id = cache_id;
-		auto mod = lib_mod ? lib_mod : cacheEntry.parsed_module;
+		auto mod = file ? file : cacheEntry.parsed_file;
 		if(!found && mod)
 			cacheEntry.includes_mtime = mod->includesChanged();
 		print_messages_pop();
 	}
 	
-	module = lib_mod;
+	sourceFile = file;
 	// FIXME: Do we need to handle include-only cases?
-	std::time_t deps_mtime = lib_mod ? lib_mod->handleDependencies(false) : 0;
+	std::time_t deps_mtime = file ? file->handleDependencies(false) : 0;
 
 	return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }
 
-void ModuleCache::clear()
+void SourceFileCache::clear()
 {
 	this->entries.clear();
 }
 
-FileModule *ModuleCache::lookup(const std::string &filename)
+SourceFile *SourceFileCache::lookup(const std::string &filename)
 {
 	auto it = this->entries.find(filename);
-	return it != this->entries.end() ? it->second.module : nullptr;
+	return it != this->entries.end() ? it->second.file : nullptr;
 }
 
-void ModuleCache::clear_markers() {
+void SourceFileCache::clear_markers() {
 	for (auto entry : instance()->entries)
-        if(auto lib = entry.second.module)
+        if(auto lib = entry.second.file)
             lib->clearHandlingDependencies();
 }

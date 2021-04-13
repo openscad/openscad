@@ -256,6 +256,8 @@ HEADERS += src/AST.h \
            src/function.h \
            src/module.h \           
            src/UserModule.h \
+           src/SourceFile.h \
+           src/SourceFileCache.h
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
@@ -265,7 +267,9 @@ SOURCES += src/AST.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc
+           src/annotation.cc \
+           src/SourceFile.cc \
+           src/SourceFileCache.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
@@ -298,7 +302,6 @@ HEADERS += src/version_check.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
            src/GroupModule.h \
-           src/FileModule.h \
            src/StatCache.h \
            src/scadapi.h \
            src/builtin.h \
@@ -355,7 +358,6 @@ HEADERS += src/version_check.h \
            src/state.h \
            src/nodecache.h \
            src/nodedumper.h \
-           src/ModuleCache.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
            src/Tree.h \
@@ -487,7 +489,6 @@ SOURCES += \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
            src/GeometryEvaluator.cc \
-           src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
 	       src/DrawingCallback.cc \
@@ -507,7 +508,6 @@ SOURCES += \
            \
            src/hash.cc \
            src/GroupModule.cc \
-           src/FileModule.cc \
            src/StatCache.cc \
            src/scadapi.cc \
            src/builtin.cc \

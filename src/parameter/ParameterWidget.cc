@@ -194,9 +194,9 @@ void ParameterWidget::writeBackupFile(QString scadFile)
 	}
 }
 
-void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
+void ParameterWidget::setParameters(const SourceFile* sourceFile,bool rebuildParameterWidget)
 {
-	this->extractor->setParameters(module,this->entries,ParameterPos,rebuildParameterWidget);
+	this->extractor->setParameters(sourceFile,this->entries,ParameterPos,rebuildParameterWidget);
 	if(rebuildParameterWidget){
 		connectWidget();
 	}else{
@@ -204,9 +204,9 @@ void ParameterWidget::setParameters(const FileModule* module,bool rebuildParamet
 	}
 }
 
-void ParameterWidget::applyParameters(FileModule *fileModule)
+void ParameterWidget::applyParameters(SourceFile *sourceFile)
 {
-	this->extractor->applyParameters(fileModule,entries);
+	this->extractor->applyParameters(sourceFile,entries);
 }
 
 void ParameterWidget::setComboBoxPresetForSet()

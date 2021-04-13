@@ -5,7 +5,7 @@
 #include "parameters.h"
 #include "printutils.h"
 #include "builtin.h"
-#include "ModuleCache.h"
+#include "SourceFileCache.h"
 #include <cmath>
 #include "boost-utils.h"
 #ifdef DEBUG
@@ -94,10 +94,10 @@ std::string ScopeContext::dump(const AbstractModule *mod, const ModuleInstantiat
 
 	std::ostringstream s;
 	if (inst) {
-		s << boost::format("ModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
+		s << boost::format("UserModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
 	}
 	else {
-		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
+		s << boost::format("UserModuleContext: %p (%p)") % this % this->parent;
 	}
 	if (mod) {
 		const UserModule *m = dynamic_cast<const UserModule*>(mod);
@@ -113,7 +113,7 @@ std::string ScopeContext::dump(const AbstractModule *mod, const ModuleInstantiat
 }
 #endif
 
-void ModuleContext::init()
+void UserModuleContext::init()
 {
 	set_variable("$children", Value(double(evalctx->numChildren())));
 	set_variable("$parent_modules", Value(double(StaticModuleNameStack::size())));
@@ -128,9 +128,9 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
 		return result;
 	}
 	
-	for (const auto &m : file_module->usedlibs) {
+	for (const auto &m : source_file->usedlibs) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-		auto usedmod = ModuleCache::instance()->lookup(m);
+		auto usedmod = SourceFileCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
 			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
@@ -150,9 +150,9 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
 		return result;
 	}
 	
-	for (const auto &m : file_module->usedlibs) {
+	for (const auto &m : source_file->usedlibs) {
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-		auto usedmod = ModuleCache::instance()->lookup(m);
+		auto usedmod = SourceFileCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.modules.find(name) != usedmod->scope.modules.end()) {
 			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG

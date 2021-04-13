@@ -104,12 +104,12 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 	}
 }
 
-void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &setName)
+void ParameterSet::applyParameterSet(SourceFile *sourceFile, const std::string &setName)
 {
-	if (fileModule == nullptr || this->root.empty()) return;
+	if (sourceFile == nullptr || this->root.empty()) return;
 	try {
 		boost::optional<pt::ptree &> set = getParameterSet(setName);
-		for (auto &assignment : fileModule->scope.assignments) {
+		for (auto &assignment : sourceFile->scope.assignments) {
 			for (auto &v : set.get()) {
 				if (v.first == assignment->getName()) {
 					const Value defaultValue = assignment->getExpr()->evaluateLiteral();

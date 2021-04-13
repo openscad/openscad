@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "parametervirtualwidget.h"
 #include <map>
 #include <string>
@@ -13,6 +13,6 @@ class ParameterExtractor
 public:
 	ParameterExtractor();
 	virtual ~ParameterExtractor();
-	void setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>&,bool&);
-	void applyParameters(FileModule *fileModule,entry_map_t&);
+	void setParameters(const SourceFile* file,entry_map_t& entries,std::vector<std::string>&,bool&);
+	void applyParameters(SourceFile *file,entry_map_t&);
 };

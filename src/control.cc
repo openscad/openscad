@@ -42,7 +42,7 @@ static const std::shared_ptr<EvalContext> getLastModuleCtx(const std::shared_ptr
 	// an eval context with the children of the module invocation
 	std::shared_ptr<Context> ctx = evalctx;
 	while (ctx->getParent()) {
-		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(ctx->getParent().get());
+		const UserModuleContext *modulectx = dynamic_cast<const UserModuleContext*>(ctx->getParent().get());
 		if (modulectx) {
 			// This will trigger if trying to invoke child from the root of any file
 			// assert(filectx->evalctx);

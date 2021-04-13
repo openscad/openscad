@@ -98,7 +98,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 {
 	std::ostringstream s;
 	if (inst) {
-		s << boost::format("ModuleContext %p (%p) for %s inst (%p)\n") % this % this->parent % inst->name() % inst;
+		s << boost::format("UserModuleContext %p (%p) for %s inst (%p)\n") % this % this->parent % inst->name() % inst;
 	}
 	else {
 		s << boost::format("Context: %p (%p)\n") % this % this->parent;

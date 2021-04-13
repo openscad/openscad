@@ -535,7 +535,6 @@ set(CORE_SOURCES
   src/Camera.cc
   src/CSGTreeNormalizer.cc
   src/DrawingCallback.cc
-  src/FileModule.cc
   src/FontCache.cc
   src/FreetypeRenderer.cc
   src/Geometry.cc
@@ -544,11 +543,12 @@ set(CORE_SOURCES
   src/GroupModule.cc
   src/LibraryInfo.cc
   src/ModuleInstantiation.cc
-  src/ModuleCache.cc
   src/NodeVisitor.cc
   src/PlatformUtils.cc
   src/Polygon2d.cc
   src/RenderStatistic.cc
+  src/SourceFile.cc
+  src/SourceFileCache.cc
   src/StatCache.cc
   src/UserModule.cc
   src/Tree.cc

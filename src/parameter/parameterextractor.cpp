@@ -9,11 +9,11 @@ ParameterExtractor::~ParameterExtractor()
 {
 }
 
-void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& entries)
+void ParameterExtractor::applyParameters(SourceFile *sourceFile, entry_map_t& entries)
 {
-  if (!fileModule) return;
+  if (!sourceFile) return;
 
-  for (auto &assignment : fileModule->scope.assignments) {
+  for (auto &assignment : sourceFile->scope.assignments) {
     auto entry = entries.find(assignment->getName());
     if (entry != entries.end()) {
       if (entry->second->groupName != "Hidden") {
@@ -24,12 +24,12 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
+void ParameterExtractor::setParameters(const SourceFile* sourceFile,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
 {
-  if (!module) return;
+  if (!sourceFile) return;
 
   ParameterPos.clear();
-  for (auto &assignment : module->scope.assignments) {
+  for (auto &assignment : sourceFile->scope.assignments) {
     const Annotation *param = assignment->annotation("Parameter");
     if (!param) continue;
 

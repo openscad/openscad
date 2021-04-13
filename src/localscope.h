@@ -32,11 +32,9 @@ public:
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
 	// FIXME: Should we split this class into an ASTNode and a run-time support class?
-	typedef std::unordered_map<std::string, shared_ptr<UserFunction>> FunctionContainer;
-	FunctionContainer functions;
+	std::unordered_map<std::string, shared_ptr<UserFunction>> functions;
 	std::vector<std::pair<std::string, shared_ptr<UserFunction>>> astFunctions;
 
-	typedef std::unordered_map<std::string, shared_ptr<UserModule>> ModuleContainer;
-	ModuleContainer	modules;
+	std::unordered_map<std::string, shared_ptr<UserModule>> modules;
 	std::vector<std::pair<std::string, shared_ptr<UserModule>>> astModules;
 };

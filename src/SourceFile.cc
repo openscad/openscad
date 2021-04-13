@@ -24,8 +24,8 @@
  *
  */
 
-#include "FileModule.h"
-#include "ModuleCache.h"
+#include "SourceFile.h"
+#include "SourceFileCache.h"
 #include "node.h"
 #include "printutils.h"
 #include "exceptions.h"
@@ -40,21 +40,21 @@ namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
-FileModule::FileModule(const std::string &path, const std::string &filename)
+SourceFile::SourceFile(const std::string &path, const std::string &filename)
 	: ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
 {
 }
 
-FileModule::~FileModule()
+SourceFile::~SourceFile()
 {
 }
 
-void FileModule::print(std::ostream &stream, const std::string &indent) const
+void SourceFile::print(std::ostream &stream, const std::string &indent) const
 {
 	scope.print(stream, indent);
 }
 
-void FileModule::registerUse(const std::string path, const Location &loc)
+void SourceFile::registerUse(const std::string path, const Location &loc)
 {
 	PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
 			loc.firstLine() % loc.firstColumn() %
@@ -81,7 +81,7 @@ void FileModule::registerUse(const std::string path, const Location &loc)
 	}
 }
 
-void FileModule::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
+void SourceFile::registerInclude(const std::string &localpath, const std::string &fullpath, const Location &loc)
 {
 	PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
 			loc.firstLine() % loc.firstColumn() %
@@ -89,13 +89,13 @@ void FileModule::registerInclude(const std::string &localpath, const std::string
 			localpath %
 			fullpath);
 
-	this->includes[localpath] = {fullpath};
+	this->includes[localpath] = fullpath;
 	if (!loc.isNone()) {
 		indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
 	}
 }
 
-time_t FileModule::includesChanged() const
+time_t SourceFile::includesChanged() const
 {
 	time_t latest = 0;
 	for (const auto &item : this->includes) {
@@ -105,11 +105,11 @@ time_t FileModule::includesChanged() const
 	return latest;
 }
 
-time_t FileModule::include_modified(const IncludeFile &inc) const
+time_t SourceFile::include_modified(const std::string &filename) const
 {
 	struct stat st;
 
-	if (StatCache::stat(inc.filename.c_str(), st) == 0) {
+	if (StatCache::stat(filename.c_str(), st) == 0) {
 		return st.st_mtime;
 	}
 
@@ -120,10 +120,10 @@ time_t FileModule::include_modified(const IncludeFile &inc) const
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
 */
-time_t FileModule::handleDependencies(bool is_root)
+time_t SourceFile::handleDependencies(bool is_root)
 {
 	if(is_root)
-		ModuleCache::clear_markers();
+		SourceFileCache::clear_markers();
 	else
 		if (this->is_handling_dependencies) return 0;
 	this->is_handling_dependencies = true;
@@ -152,9 +152,9 @@ time_t FileModule::handleDependencies(bool is_root)
 		}
 
 		if (found) {
-			auto oldmodule = ModuleCache::instance()->lookup(filename);
-			FileModule *newmodule;
-			auto mtime = ModuleCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
+			auto oldmodule = SourceFileCache::instance()->lookup(filename);
+			SourceFile *newmodule;
+			auto mtime = SourceFileCache::instance()->evaluate(this->getFullpath(),filename, newmodule);
 			if (mtime > latest) latest = mtime;
 			auto changed = newmodule && newmodule != oldmodule;
 			// Detect appearance but not removal of files, and keep old module
@@ -177,17 +177,9 @@ time_t FileModule::handleDependencies(bool is_root)
 	return latest;
 }
 
-AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+AbstractNode *SourceFile::instantiate(const std::shared_ptr<Context>& ctx, std::shared_ptr<FileContext>* resulting_file_context) const
 {
-	assert(!evalctx);
-
-	std::shared_ptr<FileContext> dummy;
-	return instantiate(ctx, inst, &dummy);
-}
-
-AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, std::shared_ptr<FileContext>* resulting_file_context) const
-{
-	auto node = new RootNode(inst);
+	auto node = new RootNode();
 	try {
 		ContextHandle<FileContext> file_context{Context::create<FileContext>(ctx, this)};
 		*resulting_file_context = file_context.ctx;
@@ -203,7 +195,7 @@ AbstractNode *FileModule::instantiate(const std::shared_ptr<Context>& ctx, const
 //please preferably use getFilename
 //if you compare filenames (which is the origin of this method),
 //please call getFilename first and use this method only as a fallback
-const std::string FileModule::getFullpath() const {
+const std::string SourceFile::getFullpath() const {
 	if(fs::path(this->filename).is_absolute()){
 		return this->filename;
 	}else if(!this->path.empty()){

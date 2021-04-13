@@ -36,7 +36,7 @@
 #include <unistd.h>
 #endif
 
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
@@ -76,7 +76,7 @@ int lexerlex(void);
 static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
 std::stack<LocalScope *> scope_stack;
-FileModule *rootmodule;
+SourceFile *rootfile;
 
 extern void lexerdestroy();
 extern FILE *lexerin;
@@ -174,7 +174,7 @@ input
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
+              rootfile->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
               free($2);
             }
         | input statement
@@ -755,7 +755,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 	}
 }
 
-bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
+bool parse(SourceFile *&file, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
   fs::path filepath = fs::absolute(fs::path(filename));
   mainFilePath = fs::absolute(fs::path(mainFile));
@@ -769,9 +769,9 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   parser_input_buffer = text.c_str();
   fileEnded = false;
 
-  rootmodule = new FileModule(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
-  scope_stack.push(&rootmodule->scope);
-  //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
+  rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+  scope_stack.push(&rootfile->scope);
+  //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
   int parserretval = -1;
@@ -784,7 +784,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   lexerdestroy();
   lexerlex_destroy();
 
-  module = rootmodule;
+  file = rootfile;
   if (parserretval != 0) return false;
 
   parser_error_pos = -1;
