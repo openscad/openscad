@@ -65,8 +65,13 @@ public:
 	
 	ContextFrameHandle(const ContextFrameHandle&) = delete;
 	ContextFrameHandle& operator=(const ContextFrameHandle&) = delete;
-	ContextFrameHandle(ContextFrameHandle&&) = default;
 	ContextFrameHandle& operator=(ContextFrameHandle&&) = delete;
+	
+	ContextFrameHandle(ContextFrameHandle&& other):
+		session(other.session)
+	{
+		other.session = nullptr;
+	}
 	
 	// Valid only if handle is on the top of the stack.
 	ContextFrameHandle& operator=(ContextFrame* frame)

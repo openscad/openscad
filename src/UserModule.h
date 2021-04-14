@@ -36,5 +36,5 @@ public:
 
 	std::string name;
 	AssignmentList parameters;
-	LocalScope scope;
+	LocalScope body;
 };

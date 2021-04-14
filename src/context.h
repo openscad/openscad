@@ -53,6 +53,7 @@ public:
 
 	std::shared_ptr<Context> get_shared_ptr() const { return const_cast<Context*>(this)->shared_from_this(); }
 	const std::shared_ptr<Context> &getParent() const { return this->parent; }
+	virtual const class Children* user_module_children() const;
 
 	const Value& lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
 	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;

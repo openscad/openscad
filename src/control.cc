@@ -36,202 +36,148 @@
 #include <cstdint>
 #include "boost-utils.h"
 
-static const std::shared_ptr<EvalContext> getLastModuleCtx(const std::shared_ptr<EvalContext> evalctx)
+static AbstractNode* lazyUnionNode(const ModuleInstantiation *inst)
 {
-	// Find the last custom module invocation, which will contain
-	// an eval context with the children of the module invocation
-	std::shared_ptr<Context> ctx = evalctx;
-	while (ctx->getParent()) {
-		const UserModuleContext *modulectx = dynamic_cast<const UserModuleContext*>(ctx->getParent().get());
-		if (modulectx) {
-			// This will trigger if trying to invoke child from the root of any file
-			// assert(filectx->evalctx);
-			if (modulectx->evalctx) {
-				return modulectx->evalctx;
-			}
-			return nullptr;
-		}
-		ctx = ctx->getParent();
+	if (Feature::ExperimentalLazyUnion.is_enabled()) {
+		return new ListNode(inst);
+	} else {
+		return new GroupNode(inst);
 	}
-	return nullptr;
 }
 
-static AbstractNode* getChild(int n, const std::shared_ptr<EvalContext> &modulectx)
+static boost::optional<size_t> validChildIndex(int n, const Children* children)
 {
-	if (n < 0) {
-		LOG(message_group::Warning,Location::NONE,"","Negative children index (%1$d) not allowed",n);
-		return nullptr; // Disallow negative child indices
+	if (n < 0 || n >= static_cast<int>(children->size())) {
+		LOG(message_group::Warning,Location::NONE,"","Children index (%1$d) out of bounds (%2$d children)",n,children->size());
+		return boost::none;
 	}
-	if (n >= static_cast<int>(modulectx->numChildren())) {
-		// How to deal with negative objects in this case?
-		// (e.g. first child of difference is invalid)
-		LOG(message_group::Warning,Location::NONE,"","Children index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
-		return nullptr;
-	}
-	// OK
-	return modulectx->getChild(n)->evaluate(modulectx);
+	return size_t(n);
 }
 
-static AbstractNode* getChild(const Value &value, const std::shared_ptr<EvalContext> &modulectx)
+static boost::optional<size_t> validChildIndex(const Value &value, const Children* children)
 {
 	if (value.type() != Value::Type::NUMBER) {
-		// Invalid argument
-		// (e.g. first child of difference is invalid)
 		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
-		return nullptr;
+		return boost::none;
 	}
-	double v;
-	if (!value.getDouble(v)) {
-		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
-		return nullptr;
-	}
-	return getChild(static_cast<int>(trunc(v)), modulectx);
+	return validChildIndex(static_cast<int>(trunc(value.toDouble())), children);
 }
 
 static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
 	LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
-	int n = 0;
-	if (evalctx->numArgs() > 0) {
-		double v;
-		if (evalctx->getArgValue(0).getDouble(v)) {
-			n = trunc(v);
-			if (n < 0) {
-				LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),
-					"Negative child index (%1$d) not allowed",n);
-				return nullptr; // Disallow negative child indices
-			}
-		}
-	}
-
-	// Find the last custom module invocation, which will contain
-	// an eval context with the children of the module invocation
-	const std::shared_ptr<EvalContext> modulectx = getLastModuleCtx(evalctx);
-	if (!modulectx) {
+	
+	Arguments arguments{evalctx->getArgs(), evalctx->get_shared_ptr()};
+	const Children* children = evalctx->user_module_children();
+	if (!children) {
+		// child() called outside any user module
 		return nullptr;
 	}
-	// This will trigger if trying to invoke child from the root of any file
-	if (n < (int)modulectx->numChildren()) {
-		return modulectx->getChild(n)->evaluate(modulectx);
+	
+	boost::optional<size_t> index;
+	if (arguments.size() == 0) {
+		index = validChildIndex(0, children);
+	} else {
+		index = validChildIndex(arguments[0].value, children);
 	}
-	// How to deal with negative objects in this case?
-	// (e.g. first child of difference is invalid)
-	LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),
-		"Child index (%1$d) out of bounds (%2$d children)",n,modulectx->numChildren());
-	return nullptr;
+	if (!index) {
+		return nullptr;
+	}
+	return children->instantiate(*index);
 }
 
 static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	const std::shared_ptr<EvalContext> modulectx = getLastModuleCtx(evalctx);
-	if (!modulectx) {
+	Arguments arguments{evalctx->getArgs(), evalctx->get_shared_ptr()};
+	const Children* children = evalctx->user_module_children();
+	if (!children) {
+		// children() called outside any user module
 		return nullptr;
 	}
 	
-	// This will trigger if trying to invoke child from the root of any file
-	// assert(filectx->evalctx);
-	if (evalctx->numArgs()<=0) {
+	if (arguments.size() == 0) {
 		// no arguments => all children
-		AbstractNode* node;
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-		else node = new GroupNode(inst);
-
-		for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
-			AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
-			if (childnode==nullptr) continue; // error
-			node->children.push_back(childnode);
-		}
-		return node;
+		return children->instantiate(lazyUnionNode(inst));
 	}
 	
 	// one (or more ignored) argument
-	Value value = evalctx->getArgValue(0);
-	if (value.type() == Value::Type::NUMBER) {
-		return getChild(value, modulectx);
-	}
-	else if (value.type() == Value::Type::VECTOR) {
-		AbstractNode* node;
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-		else node = new GroupNode(inst);
-		for(const auto& val : value.toVector()) {
-			AbstractNode* childnode = getChild(val, modulectx);
-			if (childnode==nullptr) continue; // error
-			node->children.push_back(childnode);
+	if (arguments[0]->type() == Value::Type::NUMBER) {
+		auto index = validChildIndex(arguments[0].value, children);
+		if (!index) {
+			return nullptr;
 		}
-		return node;
+		return children->instantiate(*index);
 	}
-	else if (value.type() == Value::Type::RANGE) {
-		const RangeType &range = value.toRange();
+	else if (arguments[0]->type() == Value::Type::VECTOR) {
+		std::vector<size_t> indices;
+		for (const auto& val : arguments[0]->toVector()) {
+			auto index = validChildIndex(val, children);
+			if (index) {
+				indices.push_back(*index);
+			}
+		}
+		return children->instantiate(lazyUnionNode(inst), indices);
+	}
+	else if (arguments[0]->type() == Value::Type::RANGE) {
+		const RangeType &range = arguments[0]->toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= RangeType::MAX_RANGE_STEPS) {
-			LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(),
+			LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
 				"Bad range parameter for children: too many elements (%1$lu)",steps);
 			return nullptr;
 		}
-		AbstractNode* node;
-		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-		else node = new GroupNode(inst);
+		std::vector<size_t> indices;
 		for (double d : range) {
-			AbstractNode* childnode = getChild(static_cast<int>(trunc(d)), modulectx); // with error cases
-			if (childnode==nullptr) continue; // error
-			node->children.push_back(childnode);
+			auto index = validChildIndex(static_cast<int>(trunc(d)), children);
+			if (index) {
+				indices.push_back(*index);
+			}
 		}
-		return node;
+		return children->instantiate(lazyUnionNode(inst), indices);
 	}
 	else {
 		// Invalid argument
-		// (e.g. first child of difference is invalid)
-		LOG(message_group::Warning,evalctx->loc,evalctx->documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",value.toEchoString());
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",arguments[0]->toEchoString());
 		return nullptr;
 	}
 }
 
 static AbstractNode* builtin_echo(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	AbstractNode *node;
-	if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-	else node = new GroupNode(inst);
 	LOG(message_group::Echo,Location::NONE,"",STR(*evalctx));
-	ContextHandle<Context> c{Context::create<Context>(evalctx)};
-	inst->scope.apply(c.ctx);
-	node->children = inst->instantiateChildren(c.ctx);
+	
+	AbstractNode* node = Children(&inst->scope, evalctx->get_shared_ptr()).instantiate(lazyUnionNode(inst));
 	// echo without child geometries should not count as valid CSGNode
-	if (node->children.empty()) return nullptr;
+	if (node->children.empty()) {
+		delete node;
+		return nullptr;
+	}
 	return node;
 }
 
 static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	AbstractNode *node;
-	if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-	else node = new GroupNode(inst);
-	ContextHandle<Context> c{Context::create<Context>(evalctx)};
-	evaluate_assert(c.ctx, evalctx);
-	inst->scope.apply(c.ctx);
-	node->children = inst->instantiateChildren(c.ctx);
+	evaluate_assert(evalctx, evalctx);
+	
+	AbstractNode* node = Children(&inst->scope, evalctx->get_shared_ptr()).instantiate(lazyUnionNode(inst));
 	// assert without child geometries should not count as valid CSGNode
-	if (node->children.empty()) return nullptr;
+	if (node->children.empty()) {
+		delete node;
+		return nullptr;
+	}
 	return node;
 }
 
 static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	AbstractNode *node = nullptr;
-	if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-	else node = new GroupNode(inst);
 	ContextHandle<Context> c{Context::create<Context>(evalctx)};
-
 	evalctx->assignTo(c.ctx);
-
-	inst->scope.apply(c.ctx);
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(c.ctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	return node;
+	
+	return Children(&inst->scope, c.ctx).instantiate(lazyUnionNode(inst));
 }
 
 static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	AbstractNode *node = new GroupNode(inst);
 	// We create a new context to avoid arguments from influencing each other
 	// -> parallel evaluation. This is to be backwards compatible.
 	ContextHandle<Context> c{Context::create<Context>(evalctx)};
@@ -239,14 +185,11 @@ static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::
 		if (!evalctx->getArgName(i).empty())
 			c->set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 	}
-	// Let any local variables override the arguments
-	inst->scope.apply(c.ctx);
-	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(c.ctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	return node;
+	
+	return Children(&inst->scope, c.ctx).instantiate(lazyUnionNode(inst));
 }
 
-static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
+static void for_eval(AbstractNode *node, const ModuleInstantiation &inst, size_t l,
 							const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
 {
 	if (evalctx->numArgs() > l) {
@@ -286,50 +229,37 @@ static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t
 		// At this point, the for loop variables have been set and we can initialize
 		// the local scope (as they may depend on the for loop variables
 		ContextHandle<Context> c{Context::create<Context>(ctx)};
-		for (const auto &assignment : inst.scope.assignments) {
-			c->set_variable(assignment->getName(), assignment->getExpr()->evaluate(c.ctx));
-		}
-
-		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(c.ctx);
-		node.children.insert(node.children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		Children(&inst.scope, c.ctx).instantiate(node);
 	}
 }
 
 static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	AbstractNode *node;
-	if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-	else node = new GroupNode(inst);
-	for_eval(*node, *inst, 0, evalctx, evalctx);
+	AbstractNode* node = lazyUnionNode(inst);
+	for_eval(node, *inst, 0, evalctx, evalctx);
 	return node;
 }
 
 static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
 	AbstractNode *node = new AbstractIntersectionNode(inst);
-	for_eval(*node, *inst, 0, evalctx, evalctx);
+	for_eval(node, *inst, 0, evalctx, evalctx);
 	return node;
 }
 
 static AbstractNode* builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
 {
-	AbstractNode *node;
-	if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
-	else node = new GroupNode(inst);
+	AbstractNode* node = lazyUnionNode(inst);
 	const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 	if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
-		inst->scope.apply(evalctx);
-		std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateChildren(evalctx);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		Children(&inst->scope, evalctx->get_shared_ptr()).instantiate(node);
 	}
 	else {
-		LocalScope* else_scope = ifelse->getElseScope();
-		if (else_scope) {
-			else_scope->apply(evalctx);
-			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
-			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		if (ifelse->getElseScope()) {
+			Children(ifelse->getElseScope(), evalctx->get_shared_ptr()).instantiate(node);
 		} else {
 			// "if" with failed condition, and no "else" should not count as valid CSGNode
+			delete node;
 			return nullptr;
 		}
 	}

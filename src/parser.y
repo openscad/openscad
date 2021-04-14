@@ -185,7 +185,7 @@ statement
         | '{' inner_input '}'
         | module_instantiation
             {
-              if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
+              if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
         | TOK_MODULE TOK_ID '(' parameters optional_commas ')'
@@ -193,8 +193,8 @@ statement
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->parameters = *$4;
               auto top = scope_stack.top();
-              scope_stack.push(&newmodule->scope);
-              top->addChild(shared_ptr<UserModule>(newmodule));
+              scope_stack.push(&newmodule->body);
+              top->addModule(shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
             }
@@ -204,7 +204,7 @@ statement
             }
         | TOK_FUNCTION TOK_ID '(' parameters optional_commas ')' '=' expr ';'
             {
-              scope_stack.top()->addChild(
+              scope_stack.top()->addFunction(
                 make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$))
               );
               free($2);
@@ -306,7 +306,7 @@ child_statement
         | '{' child_statements '}'
         | module_instantiation
             {
-                if ($1) scope_stack.top()->addChild(shared_ptr<ModuleInstantiation>($1));
+                if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
             }
         ;
 
@@ -751,7 +751,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 		}
 	}
 	if (!found) {
-		scope_stack.top()->addChild(assignment(token, shared_ptr<Expression>(expr), loc));
+		scope_stack.top()->addAssignment(assignment(token, shared_ptr<Expression>(expr), loc));
 	}
 }
 

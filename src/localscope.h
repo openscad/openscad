@@ -4,31 +4,25 @@
 #include "Assignment.h"
 #include <unordered_map>
 
+class AbstractNode;
 class Context;
 
 class LocalScope
 {
 public:
-	LocalScope();
-	~LocalScope();
-
-	size_t numElements() const { return assignments.size() + children.size(); }
+	size_t numElements() const { return assignments.size() + moduleInstantiations.size(); }
 	void print(std::ostream &stream, const std::string &indent, const bool inlined = false) const;
-	std::vector<class AbstractNode*> instantiateChildren(const std::shared_ptr<Context> &evalctx) const;
-	void addChild(shared_ptr<ASTNode> astnode);
-private:
-	void addModuleInst(shared_ptr<class ModuleInstantiation> &&astnode);
-	void addModule(shared_ptr<class UserModule> &&module);
-	void addFunction(shared_ptr<class UserFunction> &&function);
-	void addAssignment(shared_ptr<class Assignment> &&assignment);
-public:
-	void apply(const std::shared_ptr<Context> &ctx) const;
-	bool hasChildren() const {return !(children.empty());};
-
-	std::vector<shared_ptr<ASTNode>> children;
+	AbstractNode* instantiateModules(const std::shared_ptr<Context>& context, AbstractNode* target) const;
+	AbstractNode* instantiateModules(const std::shared_ptr<Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const;
+	AbstractNode* instantiateModule(const std::shared_ptr<Context>& context, size_t index) const;
+	void addModuleInst(const shared_ptr<class ModuleInstantiation>& modinst);
+	void addModule(const shared_ptr<class UserModule>& module);
+	void addFunction(const shared_ptr<class UserFunction>& function);
+	void addAssignment(const shared_ptr<class Assignment>& assignment);
+	bool hasChildren() const {return !(moduleInstantiations.empty());};
 
 	AssignmentList assignments;
-	std::vector<shared_ptr<ModuleInstantiation>> children_inst;
+	std::vector<shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
 	// FIXME: Should we split this class into an ASTNode and a run-time support class?

@@ -113,12 +113,13 @@ std::string ScopeContext::dump(const AbstractModule *mod, const ModuleInstantiat
 }
 #endif
 
-void UserModuleContext::init()
+UserModuleContext::UserModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const Location &loc, Arguments arguments, Children children):
+	ScopeContext(parent, &module->body),
+	children(std::move(children))
 {
-	set_variable("$children", Value(double(evalctx->numChildren())));
+	set_variable("$children", Value(double(this->children.size())));
 	set_variable("$parent_modules", Value(double(StaticModuleNameStack::size())));
-	apply_variables(Parameters::parse(evalctx, module->parameters, getParent()).to_context_frame());
-	ScopeContext::init();
+	apply_variables(Parameters::parse(std::move(arguments), loc, module->parameters, parent).to_context_frame());
 }
 
 boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string &name, const Location &loc) const

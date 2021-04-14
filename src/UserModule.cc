@@ -51,21 +51,19 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const
 		return nullptr;
 	}
 
-	// At this point we know that nobody will modify the dependencies of the local scope
-	// passed to this instance, so we can populate the context
-	inst->scope.apply(evalctx);
-
 	StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
-	ContextHandle<UserModuleContext> c{Context::create<UserModuleContext>(ctx, this, evalctx)};
+	ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
+		ctx,
+		this,
+		inst->location(),
+		Arguments(inst->arguments, evalctx->get_shared_ptr()),
+		Children(&inst->scope, evalctx->get_shared_ptr())
+	)};
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new GroupNode(inst, std::string("module ") + this->name);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(c.ctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return this->body.instantiateModules(module_context.ctx, new GroupNode(inst, std::string("module ") + this->name));
 }
 
 void UserModule::print(std::ostream &stream, const std::string &indent) const
@@ -82,7 +80,7 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 		stream << ") {\n";
 		tab = "\t";
 	}
-	scope.print(stream, indent + tab);
+	body.print(stream, indent + tab);
 	if (!this->name.empty()) {
 		stream << indent << "}\n";
 	}

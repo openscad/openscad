@@ -32,12 +32,12 @@ Value EvalContext::getArgValue(size_t i, const std::shared_ptr<Context> ctx) con
 
 size_t EvalContext::numChildren() const
 {
-	return this->scope ? this->scope->children_inst.size() : 0;
+	return this->scope ? this->scope->moduleInstantiations.size() : 0;
 }
 
 shared_ptr<ModuleInstantiation> EvalContext::getChild(size_t i) const
 {
-	return this->scope ? this->scope->children_inst[i] : nullptr;
+	return this->scope ? this->scope->moduleInstantiations[i] : nullptr;
 }
 
 void EvalContext::assignTo(std::shared_ptr<Context> target) const
@@ -81,9 +81,9 @@ std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiati
 	for (size_t i=0; i<this->eval_arguments.size(); ++i) {
 		s << boost::format("    %s = %s") % this->eval_arguments[i]->getName() % this->eval_arguments[i]->getExpr();
 	}
-	if (this->scope && this->scope->children_inst.size() > 0) {
+	if (this->scope && this->scope->moduleInstantiations.size() > 0) {
 		s << boost::format("    children:");
-		for(const auto &ch : this->scope->children_inst) {
+		for(const auto &ch : this->scope->moduleInstantiations) {
 			s << boost::format("      %s") % ch->name();
 		}
 	}

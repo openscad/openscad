@@ -16,7 +16,6 @@ public:
 	virtual void print(std::ostream &stream, const std::string &indent, const bool inlined) const;
 	void print(std::ostream &stream, const std::string &indent) const override { print(stream, indent, false); };
 	class AbstractNode *evaluate(const std::shared_ptr<Context> ctx) const;
-	std::vector<AbstractNode*> instantiateChildren(const std::shared_ptr<Context> evalctx) const;
 
 	const std::string &name() const { return this->modname; }
 	bool isBackground() const { return this->tag_background; }
@@ -40,7 +39,6 @@ public:
 	~IfElseModuleInstantiation();
 	LocalScope* makeElseScope();
 	LocalScope* getElseScope() const { return this->else_scope.get(); };
-	std::vector<AbstractNode*> instantiateElseChildren(const std::shared_ptr<Context> evalctx) const;
 	void print(std::ostream &stream, const std::string &indent, const bool inlined) const final;
 private:
 	std::unique_ptr<LocalScope> else_scope;

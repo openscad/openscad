@@ -183,8 +183,7 @@ AbstractNode *SourceFile::instantiate(const std::shared_ptr<Context>& ctx, std::
 	try {
 		ContextHandle<FileContext> file_context{Context::create<FileContext>(ctx, this)};
 		*resulting_file_context = file_context.ctx;
-		auto instantiatednodes = this->scope.instantiateChildren(file_context.ctx);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		this->scope.instantiateModules(file_context.ctx, node);
 	} catch (EvaluationException &e) {
 		// LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
 		*resulting_file_context = nullptr;

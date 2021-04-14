@@ -97,19 +97,8 @@ AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) 
 	}
 }
 
-std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const std::shared_ptr<Context> evalctx) const
-{
-	return this->scope.instantiateChildren(evalctx);
-}
-
 LocalScope* IfElseModuleInstantiation::makeElseScope()
 {
 	this->else_scope = std::make_unique<LocalScope>();
 	return this->else_scope.get();
 }
-
-std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const std::shared_ptr<Context> evalctx) const
-{
-	return this->else_scope->instantiateChildren(evalctx);
-}
-

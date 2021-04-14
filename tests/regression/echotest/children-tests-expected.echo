@@ -10,7 +10,7 @@ ECHO: "child1"
 ECHO: "child5"
 ECHO: "child3"
 WARNING: Children index (5) out of bounds (5 children)
-WARNING: Negative children index (-1) not allowed
+WARNING: Children index (-1) out of bounds (5 children)
 ECHO: "Children scalar: end"
 ECHO: "Children vector: begin"
 ECHO: "child5"
@@ -18,7 +18,7 @@ ECHO: "child1"
 ECHO: "child4"
 ECHO: "child2"
 WARNING: Children index (5) out of bounds (5 children)
-WARNING: Negative children index (-1) not allowed
+WARNING: Children index (-1) out of bounds (5 children)
 ECHO: "Children vector: end"
 ECHO: "Children range: begin"
 ECHO: "child1"

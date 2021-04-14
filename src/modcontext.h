@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include "arguments.h"
+#include "children.h"
 #include "context.h"
 #include "SourceFile.h"
 #include "UserModule.h"
@@ -27,28 +29,20 @@ private:
 //	void evaluateAssignments(const AssignmentList &assignments);
 
 	const LocalScope* scope;
+
+	friend class Context;
 };
 
 class UserModuleContext : public ScopeContext
 {
 public:
-	void init() override;
-
-  // FIXME: Points to the eval context for the call to this module. Not sure where it belongs
-	std::shared_ptr<EvalContext> evalctx;
+	const Children* user_module_children() const override { return &children; }
 
 protected:
-	UserModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const std::shared_ptr<EvalContext> evalctx = {}):
-		ScopeContext(parent, &module->scope),
-		evalctx(evalctx),
-		module(module)
-	{}
+	UserModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const Location &loc, Arguments arguments, Children children);
 
 private:
-// Experimental code. See issue #399
-//	void evaluateAssignments(const AssignmentList &assignments);
-
-	const UserModule* module;
+	Children children;
 
 	friend class Context;
 };

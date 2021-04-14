@@ -46,6 +46,15 @@ Context::Context(const std::shared_ptr<Context>& parent):
 	parent(parent)
 {}
 
+const Children* Context::user_module_children() const
+{
+	if (parent) {
+		return parent->user_module_children();
+	} else {
+		return nullptr;
+	}
+}
+
 const Value& Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
 {
 	if (is_config_variable(name)) {
