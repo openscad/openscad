@@ -91,7 +91,8 @@ public:
  * The diameter has higher priority, so if found an additionally set radius
  * value is ignored.
  *
- * @param ctx data context with variable values.
+ * @param parameters parameters with variable values.
+ * @param inst containing instantiation.
  * @param radius_var name of the variable to lookup for the radius value.
  * @param diameter_var name of the variable to lookup for the diameter value.
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both

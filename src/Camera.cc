@@ -92,14 +92,14 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarning)
+void Camera::updateView(const std::shared_ptr<FileContext> context, bool enableWarning)
 {
 	if (locked)
 		return;
 
 	bool noauto = false;
 	double x, y, z;
-	const auto vpr = ctx->lookup_local_variable("$vpr");
+	const auto vpr = context->lookup_local_variable("$vpr");
 	if (vpr) {
 		if (vpr->getVec3(x, y, z, 0.0)) {
 			setVpr(x, y, z);
@@ -109,7 +109,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarni
 		}
 	}
 
-	const auto vpt = ctx->lookup_local_variable("$vpt");
+	const auto vpt = context->lookup_local_variable("$vpt");
 	if (vpt) {
 		if (vpt->getVec3(x, y, z, 0.0)) {
 			setVpt(x, y, z);
@@ -119,7 +119,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarni
 		}
 	}
 
-	const auto vpd = ctx->lookup_local_variable("$vpd");
+	const auto vpd = context->lookup_local_variable("$vpd");
 	if (vpd) {
 		if (vpd->type() == Value::Type::NUMBER) {
 			setVpd(vpd->toDouble());
@@ -129,7 +129,7 @@ void Camera::updateView(const std::shared_ptr<FileContext> ctx, bool enableWarni
 		}
 	}
 
-	const auto vpf = ctx->lookup_local_variable("$vpf");
+	const auto vpf = context->lookup_local_variable("$vpf");
 	if (vpf) {
 		if (vpf->type() == Value::Type::NUMBER) {
 			setVpf(vpf->toDouble());

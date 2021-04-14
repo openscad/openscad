@@ -71,9 +71,14 @@ std::ostream &operator <<(std::ostream &stream, const AssignmentList& assignment
 			stream << ", ";
 		}
 		if (!assignment->getName().empty()) {
-			stream << assignment->getName() << " = ";
+			stream << assignment->getName();
 		}
-		stream << *assignment->getExpr();
+		if (!assignment->getName().empty() && assignment->getExpr()) {
+		 	stream << " = ";
+		}
+		if (assignment->getExpr()) {
+			stream << *assignment->getExpr();
+		}
 	}
 	return stream;
 }

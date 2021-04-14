@@ -87,31 +87,6 @@ boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std:
 	return Context::lookup_local_module(name, loc);
 }
 
-#ifdef DEBUG
-std::string ScopeContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
-{
-
-	std::ostringstream s;
-	if (inst) {
-		s << boost::format("UserModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
-	}
-	else {
-		s << boost::format("UserModuleContext: %p (%p)") % this % this->parent;
-	}
-	if (mod) {
-		const UserModule *m = dynamic_cast<const UserModule*>(mod);
-		if (m) {
-			s << "  module parameters:";
-			for(const auto &parameter : m->parameters) {
-				s << boost::format("    %s = %s") % parameter->getName() % lexical_variables.get(parameter->getName());
-			}
-		}
-	}
-	s << ContextFrame::dump();
-	return s.str();
-}
-#endif
-
 UserModuleContext::UserModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const Location &loc, Arguments arguments, Children children):
 	ScopeContext(parent, &module->body),
 	children(std::move(children))
@@ -132,12 +107,12 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = SourceFileCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
-			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent, usedmod)};
+			ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
-			PRINTDB("New lib Context for %s func:", name);
-			PRINTDB("%s",ctx->dump(nullptr, nullptr));
+			PRINTDB("FileContext for function %s::%s:", m % name);
+			PRINTDB("%s",context->dump());
 #endif
-			return CallableFunction{CallableUserFunction{ctx.ctx, usedmod->scope.functions[name].get()}};
+			return CallableFunction{CallableUserFunction{*context, usedmod->scope.functions[name].get()}};
 		}
 	}
 	return boost::none;
@@ -154,12 +129,12 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
 		// usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
 		auto usedmod = SourceFileCache::instance()->lookup(m);
 		if (usedmod && usedmod->scope.modules.find(name) != usedmod->scope.modules.end()) {
-			ContextHandle<FileContext> ctx{Context::create<FileContext>(this->parent, usedmod)};
+			ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
-			PRINTDB("New lib Context for %s module:", name);
-			PRINTDB("%s",ctx->dump(nullptr, nullptr));
+			PRINTDB("FileContext for module %s::%s:", m % name);
+			PRINTDB("%s",context->dump());
 #endif
-			return InstantiableModule{ctx.ctx, usedmod->scope.modules[name].get()};
+			return InstantiableModule{*context, usedmod->scope.modules[name].get()};
 		}
 	}
 	return boost::none;

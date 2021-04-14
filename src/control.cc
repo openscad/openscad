@@ -169,7 +169,7 @@ static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::
 
 static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
-	return Children(&inst->scope, Let::sequentialAssignmentContext(inst->arguments, inst->location(), context).ctx).instantiate(lazyUnionNode(inst));
+	return Children(&inst->scope, *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
 }
 
 static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
@@ -182,14 +182,14 @@ static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::
 		if (!argument.name) {
 			LOG(message_group::Warning,inst->location(),context->documentRoot(),"Assignment without variable name %1$s",argument->toEchoString());
 		} else {
-			if (assignContext.ctx->lookup_local_variable(*argument.name)) {
+			if (assignContext->lookup_local_variable(*argument.name)) {
 				LOG(message_group::Warning,inst->location(),context->documentRoot(),"Duplicate variable assignment %1$s = %2$s",*argument.name,argument->toEchoString());
 			}
 			assignContext->set_variable(*argument.name, std::move(argument.value));
 		}
 	}
 	
-	return Children(&inst->scope, assignContext.ctx).instantiate(lazyUnionNode(inst));
+	return Children(&inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
 }
 
 static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)

@@ -29,17 +29,17 @@
 
 AbstractNode* Children::instantiate(AbstractNode* target) const
 {
-	return children_scope->instantiateModules(scopeContext().ctx, target);
+	return children_scope->instantiateModules(*scopeContext(), target);
 }
 
 AbstractNode* Children::instantiate(AbstractNode* target, const std::vector<size_t>& indices) const
 {
-	return children_scope->instantiateModules(scopeContext().ctx, target, indices);
+	return children_scope->instantiateModules(*scopeContext(), target, indices);
 }
 
 AbstractNode* Children::instantiate(size_t index) const
 {
-	return children_scope->instantiateModule(scopeContext().ctx, index);
+	return children_scope->instantiateModule(*scopeContext(), index);
 }
 
 ContextHandle<ScopeContext> Children::scopeContext() const

@@ -55,7 +55,7 @@ Value Expression::evaluateLiteral() const
 {
 	EvaluationSession session{""};
 	ContextHandle<Context> context{Context::create<Context>(&session)};
-	return evaluate(context.ctx);
+	return evaluate(*context);
 }
 
 bool Expression::isLiteral() const
@@ -233,13 +233,13 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
-	std::string locs = loc.toRelativeString(ctx->documentRoot());
-	LOG(message_group::Deprecated,loc,ctx->documentRoot(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
+static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& context){
+	std::string locs = loc.toRelativeString(context->documentRoot());
+	LOG(message_group::Deprecated,loc,context->documentRoot(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
 
-static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Warning,loc,ctx->documentRoot(),"begin %1$s than the end, but step %2$s",begin,step);
+static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& context){
+	LOG(message_group::Warning,loc,context->documentRoot(),"begin %1$s than the end, but step %2$s",begin,step);
 }
 
 Value Range::evaluate(const std::shared_ptr<Context>& context) const
@@ -384,7 +384,7 @@ void MemberLookup::print(std::ostream &stream, const std::string &) const
 }
 
 FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &parameters, const Location &loc)
-	: Expression(loc), ctx(nullptr), parameters(parameters), expr(expr)
+	: Expression(loc), context(nullptr), parameters(parameters), expr(expr)
 {
 }
 
@@ -414,8 +414,8 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Error,loc,ctx->documentRoot(),"Recursion detected calling function '%1$s'",name);
+static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& context){
+	LOG(message_group::Error,loc,context->documentRoot(),"Recursion detected calling function '%1$s'",name);
 }
 
 /**
@@ -425,8 +425,8 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Trace,val->location(),ctx->documentRoot(),"called by '%1$s'",val->get_name());
+static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& context){
+	LOG(message_group::Trace,val->location(),context->documentRoot(),"called by '%1$s'",val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
@@ -489,7 +489,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 		const Let *let = static_cast<const Let*>(expression);
 		ContextHandle<Context> let_context{Context::create<Context>(context)};
 		let_context->apply_config_variables(*context);
-		return SimplifiedExpression{let->evaluateStep(let_context.ctx), let_context.ctx};
+		return SimplifiedExpression{let->evaluateStep(*let_context), *let_context};
 	}
 	else if (typeid(*expression) == typeid(FunctionCall)) {
 		const FunctionCall* call = static_cast<const FunctionCall*>(expression);
@@ -519,7 +519,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 			const auto &function = function_value->toFunction();
 			function_body = function.getExpr().get();
 			required_parameters = function.getParameters().get();
-			defining_context = function.getCtx();
+			defining_context = function.getContext();
 		}
 		
 		Arguments arguments{call->arguments, context};
@@ -528,7 +528,7 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 		body_context->apply_config_variables(*context);
 		body_context->apply_variables(std::move(parameters).to_context_frame());
 		
-		return SimplifiedExpression{function_body, body_context.ctx, call};
+		return SimplifiedExpression{function_body, *body_context, call};
 	}
 	else {
 		return expression->evaluate(context);
@@ -554,7 +554,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 	const Expression* expression = this;
 	while (true) {
 		try {
-			auto result = simplify_function_body(expression, expression_context.ctx);
+			auto result = simplify_function_body(expression, *expression_context);
 			if (Value* value = boost::get<Value>(&result)) {
 				return std::move(*value);
 			}
@@ -569,13 +569,13 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 			if (simplified_expression->new_active_function_call) {
 				current_call = *simplified_expression->new_active_function_call;
 				if (recursion_depth++ == 1000000) {
-					LOG(message_group::Error,expression->location(),expression_context.ctx->documentRoot(),"Recursion detected calling function '%1$s'",current_call->name);
+					LOG(message_group::Error,expression->location(),expression_context->documentRoot(),"Recursion detected calling function '%1$s'",current_call->name);
 					throw RecursionException::create("function", current_call->name, current_call->location());
 				}
 			}
 		} catch (EvaluationException &e) {
 			if (e.traceDepth > 0) {
-				print_trace(current_call, expression_context.ctx);
+				print_trace(current_call, *expression_context);
 				e.traceDepth--;
 			}
 			throw;
@@ -694,7 +694,7 @@ void Let::doSequentialAssignment(const AssignmentList& assignments, const Locati
 ContextHandle<Context> Let::sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& context)
 {
 	ContextHandle<Context> letContext{Context::create<Context>(context)};
-	doSequentialAssignment(assignments, location, letContext.ctx);
+	doSequentialAssignment(assignments, location, *letContext);
 	return letContext;
 }
 
@@ -707,7 +707,7 @@ const Expression* Let::evaluateStep(const std::shared_ptr<Context>& targetContex
 Value Let::evaluate(const std::shared_ptr<Context>& context) const
 {
 	ContextHandle<Context> letContext{Context::create<Context>(context)};
-	return evaluateStep(letContext.ctx)->evaluate(letContext.ctx);
+	return evaluateStep(*letContext)->evaluate(*letContext);
 }
 
 void Let::print(std::ostream &stream, const std::string &) const
@@ -798,7 +798,7 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 static inline ContextHandle<Context> forContext(const std::shared_ptr<Context>& context, const std::string& name, Value value)
 {
 	ContextHandle<Context> innerContext{Context::create<Context>(context)};
-	innerContext.ctx->set_variable(name, std::move(value));
+	innerContext->set_variable(name, std::move(value));
 	return innerContext;
 }
 
@@ -826,25 +826,25 @@ static void doForEach(
 		} else {
 			for (double value : range) {
 				doForEach(assignments, location, operation, assignment_index + 1,
-					forContext(context, variable_name, value).ctx
+					*forContext(context, variable_name, value)
 				);
 			}
 		}
 	} else if (variable_values.type() == Value::Type::VECTOR) {
 		for (const auto& value : variable_values.toVector()) {
 			doForEach(assignments, location, operation, assignment_index + 1,
-				forContext(context, variable_name, value.clone()).ctx
+				*forContext(context, variable_name, value.clone())
 			);
 		}
 	} else if (variable_values.type() == Value::Type::STRING) {
 		for (auto value : variable_values.toStrUtf8Wrapper()) {
 			doForEach(assignments, location, operation, assignment_index + 1,
-				forContext(context, variable_name, Value(std::move(value))).ctx
+				*forContext(context, variable_name, Value(std::move(value)))
 			);
 		}
 	} else if (variable_values.type() != Value::Type::UNDEFINED) {
 		doForEach(assignments, location, operation, assignment_index + 1,
-			forContext(context, variable_name, std::move(variable_values)).ctx
+			*forContext(context, variable_name, std::move(variable_values))
 		);
 	}
 }
@@ -880,11 +880,11 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 	EmbeddedVectorType output;
 	
 	ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
-	ContextHandle<Context> currentContext{Context::create<Context>(initialContext.ctx)};
+	ContextHandle<Context> currentContext{Context::create<Context>(*initialContext)};
 	
 	unsigned int counter = 0;
-	while (this->cond->evaluate(currentContext.ctx).toBool()) {
-		output.emplace_back(this->expr->evaluate(currentContext.ctx));
+	while (this->cond->evaluate(*currentContext).toBool()) {
+		output.emplace_back(this->expr->evaluate(*currentContext));
 		
 		if (counter++ == 1000000) {
 			LOG(message_group::Error,loc,context->documentRoot(),"For loop counter exceeded limit");
@@ -902,9 +902,9 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 		 * captured context references in lambda functions.
 		 * So, we reparent the next context to the initial context.
 		 */
-		ContextHandle<Context> nextContext{Let::sequentialAssignmentContext(this->incr_arguments, this->location(), currentContext.ctx)};
-		currentContext = std::move(nextContext.ctx);
-		currentContext->setParent(initialContext.ctx);
+		ContextHandle<Context> nextContext{Let::sequentialAssignmentContext(this->incr_arguments, this->location(), *currentContext)};
+		currentContext = std::shared_ptr<Context>(*nextContext);
+		currentContext->setParent(*initialContext);
     }
     return output;
 }
@@ -925,7 +925,7 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 
 Value LcLet::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return this->expr->evaluate(Let::sequentialAssignmentContext(this->arguments, this->location(), context).ctx);
+	return this->expr->evaluate(*Let::sequentialAssignmentContext(this->arguments, this->location(), context));
 }
 
 void LcLet::print(std::ostream &stream, const std::string &) const

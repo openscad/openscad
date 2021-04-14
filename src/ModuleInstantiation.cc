@@ -67,8 +67,8 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
-	LOG(message_group::Trace,mod->location(),ctx->documentRoot(),"called by '%1$s'",mod->name());
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> context){
+	LOG(message_group::Trace,mod->location(),context->documentRoot(),"called by '%1$s'",mod->name());
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> context) const

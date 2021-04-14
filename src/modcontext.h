@@ -14,10 +14,6 @@ public:
 	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
 	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
-#ifdef DEBUG
-	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst) override;
-#endif
-
 protected:
 	ScopeContext(const std::shared_ptr<Context> parent, const LocalScope* scope):
 		Context(parent),

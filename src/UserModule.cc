@@ -38,8 +38,8 @@
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
-static void NOINLINE print_err(std::string name, const Location &loc,const std::shared_ptr<const Context> ctx){
-	LOG(message_group::Error,loc,ctx->documentRoot(),"Recursion detected calling module '%1$s'",name);
+static void NOINLINE print_err(std::string name, const Location &loc,const std::shared_ptr<const Context> context){
+	LOG(message_group::Error,loc,context->documentRoot(),"Recursion detected calling module '%1$s'",name);
 }
 
 AbstractNode* UserModule::instantiate(const std::shared_ptr<Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context) const
@@ -59,10 +59,11 @@ AbstractNode* UserModule::instantiate(const std::shared_ptr<Context>& defining_c
 		Children(&inst->scope, context)
 	)};
 #if 0 && DEBUG
-	c.dump(this, inst);
+	PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
+	PRINTDB("%s", module_context->dump());
 #endif
 
-	return this->body.instantiateModules(module_context.ctx, new GroupNode(inst, std::string("module ") + this->name));
+	return this->body.instantiateModules(*module_context, new GroupNode(inst, std::string("module ") + this->name));
 }
 
 void UserModule::print(std::ostream &stream, const std::string &indent) const

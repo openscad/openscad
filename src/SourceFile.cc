@@ -176,13 +176,13 @@ time_t SourceFile::handleDependencies(bool is_root)
 	return latest;
 }
 
-AbstractNode *SourceFile::instantiate(const std::shared_ptr<Context>& ctx, std::shared_ptr<FileContext>* resulting_file_context) const
+AbstractNode *SourceFile::instantiate(const std::shared_ptr<Context>& context, std::shared_ptr<FileContext>* resulting_file_context) const
 {
 	auto node = new RootNode();
 	try {
-		ContextHandle<FileContext> file_context{Context::create<FileContext>(ctx, this)};
-		*resulting_file_context = file_context.ctx;
-		this->scope.instantiateModules(file_context.ctx, node);
+		ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
+		*resulting_file_context = *file_context;
+		this->scope.instantiateModules(*file_context, node);
 	} catch (EvaluationException &e) {
 		// LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
 		*resulting_file_context = nullptr;

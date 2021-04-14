@@ -15,7 +15,7 @@ public:
 
 	virtual void print(std::ostream &stream, const std::string &indent, const bool inlined) const;
 	void print(std::ostream &stream, const std::string &indent) const override { print(stream, indent, false); };
-	class AbstractNode *evaluate(const std::shared_ptr<Context> context) const;
+	AbstractNode *evaluate(const std::shared_ptr<Context> context) const;
 
 	const std::string &name() const { return this->modname; }
 	bool isBackground() const { return this->tag_background; }

@@ -110,25 +110,15 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string &na
 }
 
 #ifdef DEBUG
-std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
+std::string Context::dump()
 {
 	std::ostringstream s;
-	if (inst) {
-		s << boost::format("UserModuleContext %p (%p) for %s inst (%p)\n") % this % this->parent % inst->name() % inst;
+	s << boost::format("Context %p:\n") % this;
+	Context* context = this;
+	while (context) {
+		s << "  " << context->dumpFrame();
+		context = context->getParent().get();
 	}
-	else {
-		s << boost::format("Context: %p (%p)\n") % this % this->parent;
-	}
-	if (mod) {
-		const UserModule *m = dynamic_cast<const UserModule*>(mod);
-		if (m) {
-			s << "  module parameters:";
-			for(const auto &parameter: m->parameters) {
-				s << boost::format("    %s = %s\n") % parameter->getName() % lookup_variable(parameter->getName(), Location::NONE);
-			}
-		}
-	}
-	s << ContextFrame::dump();
 	return s.str();
 }
 #endif

@@ -180,7 +180,7 @@ public:
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 public:
-	shared_ptr<Context> ctx;
+	shared_ptr<Context> context;
 	AssignmentList parameters;
 	shared_ptr<Expression> expr;
 };

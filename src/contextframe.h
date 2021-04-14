@@ -42,7 +42,7 @@ protected:
 
 public:
 #ifdef DEBUG
-	virtual std::string dump();
+	virtual std::string dumpFrame();
 #endif
 };
 

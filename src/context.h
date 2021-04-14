@@ -9,13 +9,14 @@
  * The Context objects can hang around for longer, e.g. in case of closures.
  */
 template<typename T>
-struct ContextHandle : ContextFrameHandle
+class ContextHandle : ContextFrameHandle
 {
-	ContextHandle(std::shared_ptr<T>&& sp):
-		ContextFrameHandle(sp.get()),
-		ctx(std::move(sp))
+public:
+	ContextHandle(std::shared_ptr<T>&& context):
+		ContextFrameHandle(context.get()),
+		context(std::move(context))
 	{
-		ctx->init();
+		this->context->init();
 	}
 	
 	ContextHandle(const ContextHandle&) = delete;
@@ -23,18 +24,20 @@ struct ContextHandle : ContextFrameHandle
 	ContextHandle(ContextHandle&&) = default;
 	ContextHandle& operator=(ContextHandle&&) = delete;
 	
-	// Valid only if ctx is on the top of the stack.
-	ContextHandle& operator=(std::shared_ptr<T>&& sp)
+	// Valid only if context is on the top of the stack.
+	ContextHandle& operator=(std::shared_ptr<T>&& other)
 	{
-		ctx = std::move(sp);
-		ContextFrameHandle::operator=(ctx.get());
+		context = std::move(other);
+		ContextFrameHandle::operator=(context.get());
 		return *this;
 	}
 	
-	const T* operator->() const { return ctx.get(); }
-	T* operator->() { return ctx.get(); }
-	
-	std::shared_ptr<T> ctx;
+	const T* operator->() const { return context.get(); }
+	T* operator->() { return context.get(); }
+	const std::shared_ptr<T>& operator*() const { return context; }
+
+private:
+	std::shared_ptr<T> context;
 };
 
 class Context : public ContextFrame, public std::enable_shared_from_this<Context>
@@ -68,6 +71,6 @@ protected:
 
 public:
 #ifdef DEBUG
-	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+	std::string dump();
 #endif
 };
