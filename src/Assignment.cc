@@ -60,3 +60,20 @@ void Assignment::print(std::ostream &stream, const std::string &indent) const
 	}
 	stream << indent << this->name << " = " << *this->expr << ";\n";
 }
+
+std::ostream &operator <<(std::ostream &stream, const AssignmentList& assignments)
+{
+	bool first = true;
+	for (const auto& assignment : assignments) {
+		if (first) {
+			first = false;
+		} else {
+			stream << ", ";
+		}
+		if (!assignment->getName().empty()) {
+			stream << assignment->getName() << " = ";
+		}
+		stream << *assignment->getExpr();
+	}
+	return stream;
+}

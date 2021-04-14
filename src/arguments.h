@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <vector>
 #include <boost/optional.hpp>
 
@@ -33,3 +34,6 @@ class Arguments : public std::vector<Argument>
 	private:
 	EvaluationSession* evaluation_session;
 };
+
+std::ostream &operator<<(std::ostream &stream, const Argument& argument);
+std::ostream &operator<<(std::ostream &stream, const Arguments& arguments);

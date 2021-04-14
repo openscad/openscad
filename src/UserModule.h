@@ -29,7 +29,7 @@ public:
 	UserModule(const char *name, const class Feature& feature, const Location &loc) : AbstractModule(feature), ASTNode(loc), name(name) { }
 	~UserModule() {}
 
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
+	AbstractNode* instantiate(const std::shared_ptr<Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	static const std::string& stack_element(int n) { return StaticModuleNameStack::at(n); };
 	static int stack_size() { return StaticModuleNameStack::size(); };

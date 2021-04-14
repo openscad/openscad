@@ -20,7 +20,8 @@ public:
 	void push_frame(ContextFrame* frame);
 	void pop_frame();
 	
-	const Value& lookup_special_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
+	boost::optional<const Value&> try_lookup_special_variable(const std::string &name) const;
+	const Value& lookup_special_variable(const std::string &name, const Location &loc) const;
 	boost::optional<CallableFunction> lookup_special_function(const std::string &name, const Location &loc) const;
 	boost::optional<InstantiableModule> lookup_special_module(const std::string &name, const Location &loc) const;
 	

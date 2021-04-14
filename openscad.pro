@@ -311,7 +311,6 @@ HEADERS += src/version_check.h \
            src/contextframe.h \
            src/builtincontext.h \
            src/modcontext.h \
-           src/evalcontext.h \
            src/arguments.h \
            src/children.h \
            src/parameters.h \
@@ -449,7 +448,6 @@ SOURCES += \
            src/contextframe.cc \
            src/builtincontext.cc \
            src/modcontext.cc \
-           src/evalcontext.cc \
            src/arguments.cc \
            src/children.cc \
            src/parameters.cc \

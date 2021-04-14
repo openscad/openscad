@@ -24,7 +24,6 @@
  *
  */
 
-#include "evalcontext.h"
 #include "node.h"
 #include "module.h"
 #include "ModuleInstantiation.h"

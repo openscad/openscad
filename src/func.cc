@@ -27,7 +27,6 @@
 #include "function.h"
 #include "arguments.h"
 #include "expression.h"
-#include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "stackcheck.h"
@@ -789,7 +788,8 @@ Value builtin_is_undef(const std::shared_ptr<Context>& context, const FunctionCa
 		return Value::undefined.clone();
 	}
 	if (auto lookup = dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
-		return lookup->evaluateSilently(context).isUndefined();
+		auto result = context->try_lookup_variable(lookup->get_name());
+		return !result || result->isUndefined();
 	} else {
 		return call->arguments[0]->getExpr()->evaluate(context).isUndefined();
 	}

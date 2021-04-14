@@ -26,7 +26,6 @@
 
 #include <set>
 
-#include "evalcontext.h"
 #include "expression.h"
 #include "parameters.h"
 
@@ -38,7 +37,7 @@ Parameters::Parameters(ContextFrame&& frame):
 boost::optional<const Value&> Parameters::lookup(const std::string& name) const
 {
 	if (ContextFrame::is_config_variable(name)) {
-		return frame.session()->lookup_special_variable(name, true);
+		return frame.session()->try_lookup_special_variable(name);
 	} else {
 		return frame.lookup_local_variable(name);
 	}
@@ -160,14 +159,6 @@ Parameters Parameters::parse(
 }
 
 Parameters Parameters::parse(
-	const std::shared_ptr<EvalContext>& evalctx,
-	const std::vector<std::string>& required_parameters,
-	const std::vector<std::string>& optional_parameters
-) {
-	return parse(Arguments(evalctx->getArgs(), evalctx->get_shared_ptr()), evalctx->loc, required_parameters, optional_parameters);
-}
-
-Parameters Parameters::parse(
 	Arguments arguments,
 	const Location& loc,
 	const AssignmentList& required_parameters,
@@ -188,12 +179,4 @@ Parameters Parameters::parse(
 	}
 	
 	return Parameters{std::move(frame)};
-}
-
-Parameters Parameters::parse(
-	const std::shared_ptr<EvalContext>& evalctx,
-	const AssignmentList& required_parameters,
-	const std::shared_ptr<Context>& defining_context
-) {
-	return parse(Arguments(evalctx->getArgs(), evalctx->get_shared_ptr()), evalctx->loc, required_parameters, defining_context);
 }

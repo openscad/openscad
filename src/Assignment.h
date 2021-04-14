@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -39,3 +40,5 @@ template<class... Args> shared_ptr<Assignment> assignment(Args... args) {
        
 typedef std::vector<shared_ptr<Assignment>> AssignmentList;
 typedef std::unordered_map<std::string, const Expression*> AssignmentMap;
+
+std::ostream &operator <<(std::ostream &stream, const AssignmentList& assignments);

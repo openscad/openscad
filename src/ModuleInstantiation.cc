@@ -1,6 +1,6 @@
 #include "compiler_specific.h"
+#include "context.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "expression.h"
 #include "exceptions.h"
 #include "printutils.h"
@@ -71,26 +71,19 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
 	LOG(message_group::Trace,mod->location(),ctx->documentRoot(),"called by '%1$s'",mod->name());
 }
 
-AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> context) const
 {
-
-	boost::optional<InstantiableModule> module = ctx->lookup_module(this->name(), this->loc);
+	boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
 	if (!module) {
 		return nullptr;
 	}
-
-	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
-#if 0 && DEBUG
-	LOG(message_group::None,Location::NONE,"","New eval ctx:");
-	c.dump(nullptr, this);
-#endif
-
+	
 	try{
-		AbstractNode *node = module->module->instantiate(module->defining_context, this, c.ctx);
+		AbstractNode *node = module->module->instantiate(module->defining_context, this, context);
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			print_trace(this, ctx);
+			print_trace(this, context);
 			e.traceDepth--;
 		}
 		throw;

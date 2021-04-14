@@ -37,3 +37,26 @@ Arguments::Arguments(const AssignmentList& argument_expressions, const std::shar
 		);
 	}
 }
+
+std::ostream &operator<<(std::ostream &stream, const Argument& argument)
+{
+	if (argument.name) {
+		stream << *argument.name << " = ";
+	}
+	stream << argument.value.toEchoString();
+	return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, const Arguments& arguments)
+{
+	bool first = true;
+	for (const auto& argument : arguments) {
+		if (first) {
+			first = false;
+		} else {
+			stream << ", ";
+		}
+		stream << argument;
+	}
+	return stream;
+}

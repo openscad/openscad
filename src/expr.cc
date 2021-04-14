@@ -26,7 +26,6 @@
 #include "compiler_specific.h"
 #include "expression.h"
 #include "value.h"
-#include "evalcontext.h"
 #include <cstdint>
 #include <cmath>
 #include <assert.h>
@@ -36,6 +35,7 @@
 #include <forward_list>
 #include "printutils.h"
 #include "stackcheck.h"
+#include "context.h"
 #include "exceptions.h"
 #include "feature.h"
 #include "parameters.h"
@@ -44,32 +44,6 @@
 #include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
-
-// unnamed namespace
-namespace {
-	bool isListComprehension(const shared_ptr<Expression> &e) {
-		return dynamic_cast<const ListComprehension *>(e.get());
-	}
-
-	void evaluate_sequential_assignment(const AssignmentList &assignment_list, std::shared_ptr<Context> context, const Location &loc) {
-		ContextHandle<EvalContext> ctx{Context::create<EvalContext>(context, assignment_list, loc)};
-		ctx->assignTo(context);
-	}
-}
-
-namespace /* anonymous*/ {
-
-	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
-		for (size_t i=0; i < l.size(); ++i) {
-			const auto &arg = l[i];
-			if (i > 0) o << ", ";
-			if (!arg->getName().empty()) o << arg->getName()  << " = ";
-			o << *arg->getExpr();
-		}
-		return o;
-	}
-
-}
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& context) const {
 	if (val.isUncheckedUndef())
@@ -80,8 +54,8 @@ Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& contex
 Value Expression::evaluateLiteral() const
 {
 	EvaluationSession session{""};
-	ContextHandle<Context> ctx{Context::create<Context>(&session)};
-	return evaluate(ctx.ctx);
+	ContextHandle<Context> context{Context::create<Context>(&session)};
+	return evaluate(context.ctx);
 }
 
 bool Expression::isLiteral() const
@@ -375,12 +349,7 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 Value Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->name,false,loc).clone();
-}
-
-const Value& Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
-{
-	return context->lookup_variable(this->name,true);
+	return context->lookup_variable(this->name,loc).clone();
 }
 
 void Lookup::print(std::ostream &stream, const std::string &) const
@@ -639,11 +608,28 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
+void Assert::performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<Context>& context)
+{
+	Parameters parameters = Parameters::parse(Arguments(arguments, context), location, {"condition"}, {"message"});
+	const Expression* conditionExpression = nullptr;
+	for (const auto& argument : arguments) {
+		if (argument->getName() == "" || argument->getName() == "condition") {
+			conditionExpression = argument->getExpr().get();
+			break;
+		}
+	}
+	
+	if (!parameters["condition"].toBool()) {
+		std::string conditionString = conditionExpression ? STR(" '" << *conditionExpression << "'") : "";
+		std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoString()) : "";
+		LOG(message_group::Error,location,context->documentRoot(),"Assertion%1$s failed%2$s",conditionString,messageString);
+		throw AssertionFailedException("Assertion Failed", location);
+	}
+}
+
 const Expression* Assert::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	ContextHandle<EvalContext> assert_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	ContextHandle<Context> c{Context::create<Context>(assert_context.ctx)};
-	evaluate_assert(c.ctx, assert_context.ctx);
+	performAssert(this->arguments, this->loc, context);
 	return expr.get();
 }
 
@@ -667,8 +653,8 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 const Expression* Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(*echo_context.ctx));
+	Arguments arguments{this->arguments, context};
+	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(arguments));
 	return expr.get();
 }
 
@@ -689,17 +675,39 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-const Expression* Let::evaluateStep(const std::shared_ptr<Context>& context) const
+void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& targetContext)
 {
-	evaluate_sequential_assignment(this->arguments, context, this->loc);
+	std::set<std::string> seen;
+	for (const auto& assignment : assignments) {
+		Value value = assignment->getExpr()->evaluate(targetContext);
+		if (assignment->getName().empty()) {
+			LOG(message_group::Warning,location,targetContext->documentRoot(),"Assignment without variable name %1$s",value.toEchoString());
+		} else if (seen.find(assignment->getName()) != seen.end()) {
+			LOG(message_group::Warning,location,targetContext->documentRoot(),"Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),value.toEchoString());
+		} else {
+			targetContext->set_variable(assignment->getName(), std::move(value));
+			seen.insert(assignment->getName());
+		}
+	}
+}
+
+ContextHandle<Context> Let::sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& context)
+{
+	ContextHandle<Context> letContext{Context::create<Context>(context)};
+	doSequentialAssignment(assignments, location, letContext.ctx);
+	return letContext;
+}
+
+const Expression* Let::evaluateStep(const std::shared_ptr<Context>& targetContext) const
+{
+	doSequentialAssignment(this->arguments, this->location(), targetContext);
 	return this->expr.get();
 }
 
 Value Let::evaluate(const std::shared_ptr<Context>& context) const
 {
-	ContextHandle<Context> c{Context::create<Context>(context)};
-	const Expression* nextexpr = evaluateStep(c.ctx);
-	return nextexpr->evaluate(c.ctx);
+	ContextHandle<Context> letContext{Context::create<Context>(context)};
+	return evaluateStep(letContext.ctx)->evaluate(letContext.ctx);
 }
 
 void Let::print(std::ostream &stream, const std::string &) const
@@ -787,49 +795,74 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
+static inline ContextHandle<Context> forContext(const std::shared_ptr<Context>& context, const std::string& name, Value value)
 {
-	ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	ContextHandle<Context> assign_context{Context::create<Context>(context)};
-	ContextHandle<Context> c{Context::create<Context>(context)};
+	ContextHandle<Context> innerContext{Context::create<Context>(context)};
+	innerContext.ctx->set_variable(name, std::move(value));
+	return innerContext;
+}
 
-	// comprehension for statements are reduced by the parser to only contain one single element
-	const std::string &it_name = for_context->getArgName(0);
-	Value it_values = for_context->getArgValue(0, assign_context.ctx);
-
-	if (it_values.type() == Value::Type::RANGE) {
-		const RangeType &range = it_values.toRange();
+static void doForEach(
+	const AssignmentList& assignments,
+	const Location& location,
+	const std::function<void(const std::shared_ptr<Context>&)>& operation,
+	size_t assignment_index,
+	const std::shared_ptr<Context>& context
+) {
+	if (assignment_index >= assignments.size()) {
+		operation(context);
+		return;
+	}
+	
+	const std::string& variable_name = assignments[assignment_index]->getName();
+	Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
+	
+	if (variable_values.type() == Value::Type::RANGE) {
+		const RangeType &range = variable_values.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-           LOG(message_group::Warning,loc,context->documentRoot(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
+			LOG(message_group::Warning,location,context->documentRoot(),
+				"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
-			EmbeddedVectorType vec;
-			for (double d : range) {
-				c->set_variable(it_name, d);
-				vec.emplace_back(this->expr->evaluate(c.ctx));
+			for (double value : range) {
+				doForEach(assignments, location, operation, assignment_index + 1,
+					forContext(context, variable_name, value).ctx
+				);
 			}
-			return Value(std::move(vec));
 		}
-	} else if (it_values.type() == Value::Type::VECTOR) {
-		EmbeddedVectorType vec;
-		for (const auto &el : it_values.toVector()) {
-			c->set_variable(it_name, el.clone());
-			vec.emplace_back(this->expr->evaluate(c.ctx));
+	} else if (variable_values.type() == Value::Type::VECTOR) {
+		for (const auto& value : variable_values.toVector()) {
+			doForEach(assignments, location, operation, assignment_index + 1,
+				forContext(context, variable_name, value.clone()).ctx
+			);
 		}
-		return std::move(vec);
-	} else if (it_values.type() == Value::Type::STRING) {
-		EmbeddedVectorType vec;
-		for (auto ch : it_values.toStrUtf8Wrapper()) {
-			c->set_variable(it_name, std::move(ch));
-			vec.emplace_back(this->expr->evaluate(c.ctx));
+	} else if (variable_values.type() == Value::Type::STRING) {
+		for (auto value : variable_values.toStrUtf8Wrapper()) {
+			doForEach(assignments, location, operation, assignment_index + 1,
+				forContext(context, variable_name, Value(std::move(value))).ctx
+			);
 		}
-		return Value(std::move(vec));
-	} else if (it_values.type() != Value::Type::UNDEFINED) {
-		c->set_variable(it_name, std::move(it_values));
-		return this->expr->evaluate(c.ctx);
+	} else if (variable_values.type() != Value::Type::UNDEFINED) {
+		doForEach(assignments, location, operation, assignment_index + 1,
+			forContext(context, variable_name, std::move(variable_values)).ctx
+		);
 	}
+}
 
-	return EmbeddedVectorType::Empty();
+void LcFor::forEach(const AssignmentList& assignments, const Location &loc, const std::shared_ptr<Context>& context, std::function<void(const std::shared_ptr<Context>&)> operation)
+{
+	doForEach(assignments, loc, operation, 0, context);
+}
+
+Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
+{
+	EmbeddedVectorType vec;
+	forEach(this->arguments, this->loc, context,
+		[&vec, expression = expr.get()] (const std::shared_ptr<Context>& iterationContext) {
+			vec.emplace_back(expression->evaluate(iterationContext));
+		}
+	);
+	return vec;
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const
@@ -844,25 +877,36 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
-	EmbeddedVectorType vec;
-
-    ContextHandle<Context> c{Context::create<Context>(context)};
-    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
-
+	EmbeddedVectorType output;
+	
+	ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
+	ContextHandle<Context> currentContext{Context::create<Context>(initialContext.ctx)};
+	
 	unsigned int counter = 0;
-    while (this->cond->evaluate(c.ctx).toBool()) {
-        vec.emplace_back(this->expr->evaluate(c.ctx));
-
-        if (counter++ == 1000000) {
+	while (this->cond->evaluate(currentContext.ctx).toBool()) {
+		output.emplace_back(this->expr->evaluate(currentContext.ctx));
+		
+		if (counter++ == 1000000) {
 			LOG(message_group::Error,loc,context->documentRoot(),"For loop counter exceeded limit");
-            throw LoopCntException::create("for", loc);
-        }
-
-        ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
-        evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
-        c->apply_variables(*tmp.ctx);
+			throw LoopCntException::create("for", loc);
+		}
+		
+		/*
+		 * The next context should be evaluated in the current context,
+		 * and replace the current context; but there is no reason for
+		 * it to _parent_ the current context, for the next context
+		 * replaces every variable in it. Keeping the next context
+		 * parented to the current context would keep the current in
+		 * memory unnecessarily, and greatly slow down variable lookup.
+		 * However, we can't just use apply_variables(), as this breaks
+		 * captured context references in lambda functions.
+		 * So, we reparent the next context to the initial context.
+		 */
+		ContextHandle<Context> nextContext{Let::sequentialAssignmentContext(this->incr_arguments, this->location(), currentContext.ctx)};
+		currentContext = std::move(nextContext.ctx);
+		currentContext->setParent(initialContext.ctx);
     }
-    return std::move(vec);
+    return output;
 }
 
 void LcForC::print(std::ostream &stream, const std::string &) const
@@ -881,36 +925,10 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 
 Value LcLet::evaluate(const std::shared_ptr<Context>& context) const
 {
-    ContextHandle<Context> c{Context::create<Context>(context)};
-    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
-    return this->expr->evaluate(c.ctx);
+	return this->expr->evaluate(Let::sequentialAssignmentContext(this->arguments, this->location(), context).ctx);
 }
 
 void LcLet::print(std::ostream &stream, const std::string &) const
 {
     stream << "let(" << this->arguments << ") (" << *this->expr << ")";
-}
-
-void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
-{
-	Parameters parameters = Parameters::parse(evalctx, {"condition", "message"});
-	
-	const Expression* condition = nullptr;
-	for (size_t i = 0; i < evalctx->numArgs(); i++) {
-		if (evalctx->getArgName(i) == "condition" || (evalctx->getArgName(i).empty() && !condition)) {
-			condition = evalctx->getArgs()[i]->getExpr().get();
-		}
-	}
-	
-	if (!parameters["condition"].toBool()) {
-		const Value &message = parameters["message"];
-		
-		const auto conditionText = condition ? STR(" '" << *condition << "'") : "";
-		if (message.isDefined()) {
-			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed: %2$s",conditionText,message.toEchoString());
-		} else {
-			LOG(message_group::Error,evalctx->loc,context->documentRoot(),"Assertion%1$s failed",conditionText);
-		}
-		throw AssertionFailedException("Assertion Failed", evalctx->loc);
-	}
 }

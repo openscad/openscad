@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "Assignment.h"
 #include "arguments.h"
 #include "contextframe.h"
 
@@ -32,11 +31,6 @@ public:
 		const std::vector<std::string>& required_parameters,
 		const std::vector<std::string>& optional_parameters = {}
 	);
-	static Parameters parse(
-		const std::shared_ptr<EvalContext>& evalctx,
-		const std::vector<std::string>& required_parameters,
-		const std::vector<std::string>& optional_parameters = {}
-	);
 	/*
 	 * Matches arguments with parameters.
 	 * Supports default arguments, and requires a context in which to interpret them.
@@ -45,11 +39,6 @@ public:
 	static Parameters parse(
 		Arguments arguments,
 		const Location& loc,
-		const AssignmentList& required_parameters,
-		const std::shared_ptr<Context>& defining_context
-	);
-	static Parameters parse(
-		const std::shared_ptr<EvalContext>& evalctx,
 		const AssignmentList& required_parameters,
 		const std::shared_ptr<Context>& defining_context
 	);

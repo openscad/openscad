@@ -27,7 +27,6 @@
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "node.h"
-#include "evalcontext.h"
 #include "exceptions.h"
 #include "stackcheck.h"
 #include "modcontext.h"
@@ -43,21 +42,21 @@ static void NOINLINE print_err(std::string name, const Location &loc,const std::
 	LOG(message_group::Error,loc,ctx->documentRoot(),"Recursion detected calling module '%1$s'",name);
 }
 
-AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+AbstractNode* UserModule::instantiate(const std::shared_ptr<Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context) const
 {
 	if (StackCheck::inst().check()) {
-		print_err(inst->name(),loc,ctx);
+		print_err(inst->name(),loc,context);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
 	}
 
 	StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
 	ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
-		ctx,
+		defining_context,
 		this,
 		inst->location(),
-		Arguments(inst->arguments, evalctx->get_shared_ptr()),
-		Children(&inst->scope, evalctx->get_shared_ptr())
+		Arguments(inst->arguments, context),
+		Children(&inst->scope, context)
 	)};
 #if 0 && DEBUG
 	c.dump(this, inst);

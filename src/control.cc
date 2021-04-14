@@ -28,7 +28,6 @@
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "arguments.h"
-#include "evalcontext.h"
 #include "modcontext.h"
 #include "expression.h"
 #include "builtin.h"
@@ -63,12 +62,12 @@ static boost::optional<size_t> validChildIndex(const Value &value, const Childre
 	return validChildIndex(static_cast<int>(trunc(value.toDouble())), children);
 }
 
-static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 	
-	Arguments arguments{evalctx->getArgs(), evalctx->get_shared_ptr()};
-	const Children* children = evalctx->user_module_children();
+	Arguments arguments{inst->arguments, context};
+	const Children* children = context->user_module_children();
 	if (!children) {
 		// child() called outside any user module
 		return nullptr;
@@ -86,10 +85,10 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	return children->instantiate(*index);
 }
 
-static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
-	Arguments arguments{evalctx->getArgs(), evalctx->get_shared_ptr()};
-	const Children* children = evalctx->user_module_children();
+	Arguments arguments{inst->arguments, context};
+	const Children* children = context->user_module_children();
 	if (!children) {
 		// children() called outside any user module
 		return nullptr;
@@ -142,11 +141,11 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	}
 }
 
-static AbstractNode* builtin_echo(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_echo(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	LOG(message_group::Echo,Location::NONE,"",STR(*evalctx));
+	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(arguments));
 	
-	AbstractNode* node = Children(&inst->scope, evalctx->get_shared_ptr()).instantiate(lazyUnionNode(inst));
+	AbstractNode* node = children.instantiate(lazyUnionNode(inst));
 	// echo without child geometries should not count as valid CSGNode
 	if (node->children.empty()) {
 		delete node;
@@ -155,11 +154,11 @@ static AbstractNode* builtin_echo(const ModuleInstantiation *inst, const std::sh
 	return node;
 }
 
-static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
-	evaluate_assert(evalctx, evalctx);
+	Assert::performAssert(inst->arguments, inst->location(), context);
 	
-	AbstractNode* node = Children(&inst->scope, evalctx->get_shared_ptr()).instantiate(lazyUnionNode(inst));
+	AbstractNode* node = Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
 	// assert without child geometries should not count as valid CSGNode
 	if (node->children.empty()) {
 		delete node;
@@ -168,102 +167,69 @@ static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::
 	return node;
 }
 
-static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
-	ContextHandle<Context> c{Context::create<Context>(evalctx)};
-	evalctx->assignTo(c.ctx);
-	
-	return Children(&inst->scope, c.ctx).instantiate(lazyUnionNode(inst));
+	return Children(&inst->scope, Let::sequentialAssignmentContext(inst->arguments, inst->location(), context).ctx).instantiate(lazyUnionNode(inst));
 }
 
-static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	// We create a new context to avoid arguments from influencing each other
 	// -> parallel evaluation. This is to be backwards compatible.
-	ContextHandle<Context> c{Context::create<Context>(evalctx)};
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		if (!evalctx->getArgName(i).empty())
-			c->set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
+	Arguments arguments{inst->arguments, context};
+	ContextHandle<Context> assignContext{Context::create<Context>(context)};
+	for (auto& argument : arguments) {
+		if (!argument.name) {
+			LOG(message_group::Warning,inst->location(),context->documentRoot(),"Assignment without variable name %1$s",argument->toEchoString());
+		} else {
+			if (assignContext.ctx->lookup_local_variable(*argument.name)) {
+				LOG(message_group::Warning,inst->location(),context->documentRoot(),"Duplicate variable assignment %1$s = %2$s",*argument.name,argument->toEchoString());
+			}
+			assignContext->set_variable(*argument.name, std::move(argument.value));
+		}
 	}
 	
-	return Children(&inst->scope, c.ctx).instantiate(lazyUnionNode(inst));
+	return Children(&inst->scope, assignContext.ctx).instantiate(lazyUnionNode(inst));
 }
 
-static void for_eval(AbstractNode *node, const ModuleInstantiation &inst, size_t l,
-							const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() > l) {
-		const std::string &it_name = evalctx->getArgName(l);
-		Value it_values = evalctx->getArgValue(l, ctx);
-		ContextHandle<Context> c{Context::create<Context>(ctx)};
-		if (it_values.type() == Value::Type::RANGE) {
-			const RangeType &range = it_values.toRange();
-			uint32_t steps = range.numValues();
-			if (steps >= RangeType::MAX_RANGE_STEPS) {
-				LOG(message_group::Warning,inst.location(),evalctx->documentRoot(),
-					"Bad range parameter in for statement: too many elements (%1$lu)",steps);
-			} else {
-				for (double d : range) {
-					c->set_variable(it_name, d);
-					for_eval(node, inst, l+1, c.ctx, evalctx);
-				}
-			}
-		}
-		else if (it_values.type() == Value::Type::VECTOR) {
-			for (const auto &el : it_values.toVector()) {
-				c->set_variable(it_name, el.clone());
-				for_eval(node, inst, l+1, c.ctx, evalctx);
-			}
-		}
-		else if (it_values.type() == Value::Type::STRING) {
-			for(auto ch : it_values.toStrUtf8Wrapper()) {
-				c->set_variable(it_name, Value(std::move(ch)));
-				for_eval(node, inst, l+1, c.ctx, evalctx);
-			}
-		}
-		else if (it_values.type() != Value::Type::UNDEFINED) {
-			c->set_variable(it_name, std::move(it_values));
-			for_eval(node, inst, l+1, c.ctx, evalctx);
-		}
-	} else if (l > 0) {
-		// At this point, the for loop variables have been set and we can initialize
-		// the local scope (as they may depend on the for loop variables
-		ContextHandle<Context> c{Context::create<Context>(ctx)};
-		Children(&inst.scope, c.ctx).instantiate(node);
-	}
-}
-
-static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	AbstractNode* node = lazyUnionNode(inst);
-	for_eval(node, *inst, 0, evalctx, evalctx);
+	if (!inst->arguments.empty()) {
+		LcFor::forEach(inst->arguments, inst->location(), context,
+			[inst, node] (const std::shared_ptr<Context>& iterationContext) {
+				Children(&inst->scope, iterationContext).instantiate(node);
+			}
+		);
+	}
 	return node;
 }
 
-static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	AbstractNode *node = new AbstractIntersectionNode(inst);
-	for_eval(node, *inst, 0, evalctx, evalctx);
+	if (!inst->arguments.empty()) {
+		LcFor::forEach(inst->arguments, inst->location(), context,
+			[inst, node] (const std::shared_ptr<Context>& iterationContext) {
+				Children(&inst->scope, iterationContext).instantiate(node);
+			}
+		);
+	}
 	return node;
 }
 
-static AbstractNode* builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx)
+static AbstractNode* builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
-	AbstractNode* node = lazyUnionNode(inst);
+	Arguments arguments{inst->arguments, context};
 	const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-	if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
-		Children(&inst->scope, evalctx->get_shared_ptr()).instantiate(node);
+	if (arguments.size() > 0 && arguments[0]->toBool()) {
+		return Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
+	} else if (ifelse->getElseScope()) {
+		return Children(ifelse->getElseScope(), context).instantiate(lazyUnionNode(inst));
+	} else {
+		// "if" with failed condition, and no "else" should not count as valid CSGNode
+		return nullptr;
 	}
-	else {
-		if (ifelse->getElseScope()) {
-			Children(ifelse->getElseScope(), evalctx->get_shared_ptr()).instantiate(node);
-		} else {
-			// "if" with failed condition, and no "else" should not count as valid CSGNode
-			delete node;
-			return nullptr;
-		}
-	}
-	return node;
 }
 
 void register_builtin_control()

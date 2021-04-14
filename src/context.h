@@ -52,15 +52,19 @@ public:
 	virtual void init() { }
 
 	std::shared_ptr<Context> get_shared_ptr() const { return const_cast<Context*>(this)->shared_from_this(); }
-	const std::shared_ptr<Context> &getParent() const { return this->parent; }
 	virtual const class Children* user_module_children() const;
 
-	const Value& lookup_variable(const std::string &name, bool silent = false, const Location &loc=Location::NONE) const;
+	boost::optional<const Value&> try_lookup_variable(const std::string &name) const;
+	const Value& lookup_variable(const std::string &name, const Location &loc) const;
 	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;
 	boost::optional<InstantiableModule> lookup_module(const std::string &name, const Location &loc) const;
 
+	const std::shared_ptr<Context> &getParent() const { return this->parent; }
+	// This modifies the semantics of the context in an error-prone way. Use with caution.
+	void setParent(const std::shared_ptr<Context>& parent) { this->parent = parent; }
+
 protected:
-	const std::shared_ptr<Context> parent;
+	std::shared_ptr<Context> parent;
 
 public:
 #ifdef DEBUG

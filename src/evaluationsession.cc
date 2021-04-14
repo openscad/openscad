@@ -38,18 +38,25 @@ void EvaluationSession::pop_frame()
 	stack.pop_back();
 }
 
-const Value& EvaluationSession::lookup_special_variable(const std::string &name, bool silent, const Location &loc) const
+boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const std::string &name) const
 {
 	for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
 		boost::optional<const Value&> result = (*it)->lookup_local_variable(name);
 		if (result) {
-			return *result;
+			return result;
 		}
 	}
-	if (!silent) {
+	return boost::none;
+}
+
+const Value& EvaluationSession::lookup_special_variable(const std::string &name, const Location &loc) const
+{
+	boost::optional<const Value&> result = try_lookup_special_variable(name);
+	if (!result) {
 		LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown variable '%1$s'",name);
+		return Value::undefined;
 	}
-	return Value::undefined;
+	return *result;
 }
 
 boost::optional<CallableFunction> EvaluationSession::lookup_special_function(const std::string &name, const Location &loc) const

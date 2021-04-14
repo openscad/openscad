@@ -550,22 +550,14 @@ list_comprehension_elements
             }
         | TOK_FOR '(' arguments ')' list_comprehension_elements_or_expr
             {
-                $$ = $5;
-
-                /* transform for(i=...,j=...) -> for(i=...) for(j=...) */
-                for (int i = $3->size()-1; i >= 0; i--) {
-                  AssignmentList arglist;
-                  arglist.push_back((*$3)[i]);
-                  Expression *e = new LcFor(arglist, $$, LOCD("lcfor", @$));
-                    $$ = e;
-                }
-                delete $3;
+              $$ = new LcFor(*$3, $5, LOCD("lcfor", @$));
+              delete $3;
             }
         | TOK_FOR '(' arguments ';' expr ';' arguments ')' list_comprehension_elements_or_expr
             {
               $$ = new LcForC(*$3, *$7, $5, $9, LOCD("lcforc", @$));
-                delete $3;
-                delete $7;
+              delete $3;
+              delete $7;
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr %prec NO_ELSE
             {

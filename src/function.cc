@@ -25,7 +25,6 @@
  */
 
 #include "arguments.h"
-#include "evalcontext.h"
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"

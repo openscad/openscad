@@ -55,21 +55,28 @@ const Children* Context::user_module_children() const
 	}
 }
 
-const Value& Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
+boost::optional<const Value&> Context::try_lookup_variable(const std::string &name) const
 {
 	if (is_config_variable(name)) {
-		return session()->lookup_special_variable(name, silent, loc);
+		return session()->try_lookup_special_variable(name);
 	}
 	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
-		boost::optional<const Value&> value = context->lookup_local_variable(name);
-		if (value) {
-			return *value;
+		boost::optional<const Value&> result = context->lookup_local_variable(name);
+		if (result) {
+			return result;
 		}
 	}
-	if (!silent) {
+	return boost::none;
+}
+
+const Value& Context::lookup_variable(const std::string &name, const Location &loc) const
+{
+	boost::optional<const Value&> result = try_lookup_variable(name);
+	if (!result) {
 		LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown variable '%1$s'",name);
+		return Value::undefined;
 	}
-	return Value::undefined;
+	return *result;
 }
 
 boost::optional<CallableFunction> Context::lookup_function(const std::string &name, const Location &loc) const
@@ -117,7 +124,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 		if (m) {
 			s << "  module parameters:";
 			for(const auto &parameter: m->parameters) {
-				s << boost::format("    %s = %s\n") % parameter->getName() % lookup_variable(parameter->getName());
+				s << boost::format("    %s = %s\n") % parameter->getName() % lookup_variable(parameter->getName(), Location::NONE);
 			}
 		}
 	}

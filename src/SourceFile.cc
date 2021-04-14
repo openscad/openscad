@@ -32,7 +32,6 @@
 #include "modcontext.h"
 #include "parsersettings.h"
 #include "StatCache.h"
-#include "evalcontext.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"

@@ -1,13 +1,12 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "builtincontext.h"
 #include "builtin.h"
+#include "builtincontext.h"
 #include "expression.h"
 #include "function.h"
 #include "ModuleInstantiation.h"
 #include "printutils.h"
-#include "evalcontext.h"
 #include "boost-utils.h"
 
 BuiltinContext::BuiltinContext(EvaluationSession* session) : Context(session)
