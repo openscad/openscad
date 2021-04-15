@@ -1180,7 +1180,7 @@ void MainWindow::instantiateRoot()
 		ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
 		setRenderVariables(builtin_context);
 		
-		std::shared_ptr<FileContext> file_context;
+		std::shared_ptr<const FileContext> file_context;
 		this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
 		if (file_context) {
 			this->qglview->cam.updateView(file_context, false);

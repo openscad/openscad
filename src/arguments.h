@@ -7,8 +7,6 @@
 #include "Assignment.h"
 #include "context.h"
 
-class Context;
-
 struct Argument {
 	boost::optional<std::string> name;
 	Value value;
@@ -24,7 +22,7 @@ struct Argument {
 class Arguments : public std::vector<Argument>
 {
 	public:
-	Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<Context>& context);
+	Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<const Context>& context);
 	Arguments(Arguments&& other) = default;
 	Arguments& operator=(Arguments&& other) = default;
 	

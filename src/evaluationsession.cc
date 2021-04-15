@@ -28,14 +28,23 @@
 #include "evaluationsession.h"
 #include "printutils.h"
 
-void EvaluationSession::push_frame(ContextFrame* frame)
+size_t EvaluationSession::push_frame(ContextFrame* frame)
 {
+	size_t index = stack.size();
 	stack.push_back(frame);
+	return index;
 }
 
-void EvaluationSession::pop_frame()
+void EvaluationSession::replace_frame(size_t index, ContextFrame* frame)
+{
+	assert(index < stack.size());
+	stack[index] = frame;
+}
+
+void EvaluationSession::pop_frame(size_t index)
 {
 	stack.pop_back();
+	assert(stack.size() == index);
 }
 
 boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const std::string &name) const

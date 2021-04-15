@@ -17,8 +17,9 @@ public:
 		document_root(documentRoot)
 	{}
 	
-	void push_frame(ContextFrame* frame);
-	void pop_frame();
+	size_t push_frame(ContextFrame* frame);
+	void replace_frame(size_t index, ContextFrame* frame);
+	void pop_frame(size_t index);
 	
 	boost::optional<const Value&> try_lookup_special_variable(const std::string &name) const;
 	const Value& lookup_special_variable(const std::string &name, const Location &loc) const;

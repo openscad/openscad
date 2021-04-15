@@ -805,7 +805,7 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 	return VectorType(x,y,z);
 }
 
-Value builtin_is_undef(const std::shared_ptr<Context>& context, const FunctionCall* call)
+Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall* call)
 {
 	if (call->arguments.size() != 1) {
 		print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());

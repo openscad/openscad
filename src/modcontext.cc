@@ -87,7 +87,7 @@ boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std:
 	return Context::lookup_local_module(name, loc);
 }
 
-UserModuleContext::UserModuleContext(const std::shared_ptr<Context> parent, const UserModule* module, const Location &loc, Arguments arguments, Children children):
+UserModuleContext::UserModuleContext(const std::shared_ptr<const Context> parent, const UserModule* module, const Location &loc, Arguments arguments, Children children):
 	ScopeContext(parent, &module->body),
 	children(std::move(children))
 {

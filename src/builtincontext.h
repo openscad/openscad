@@ -17,8 +17,5 @@ public:
 protected:
 	BuiltinContext(EvaluationSession* session);
 
-private:
-	std::shared_ptr<BuiltinContext> self;
-
 	friend class Context;
 };
