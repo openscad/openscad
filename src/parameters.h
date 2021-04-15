@@ -40,7 +40,7 @@ public:
 		Arguments arguments,
 		const Location& loc,
 		const AssignmentList& required_parameters,
-		const std::shared_ptr<Context>& defining_context
+		const std::shared_ptr<const Context>& defining_context
 	);
 	
 	boost::optional<const Value&> lookup(const std::string& name) const;

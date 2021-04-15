@@ -108,7 +108,7 @@ bool ContextFrame::is_config_variable(const std::string &name)
 }
 
 #ifdef DEBUG
-std::string ContextFrame::dumpFrame()
+std::string ContextFrame::dumpFrame() const
 {
 	std::ostringstream s;
 	s << boost::format("ContextFrame %p:\n") % this;

@@ -162,7 +162,7 @@ Parameters Parameters::parse(
 	Arguments arguments,
 	const Location& loc,
 	const AssignmentList& required_parameters,
-	const std::shared_ptr<Context>& defining_context
+	const std::shared_ptr<const Context>& defining_context
 ) {
 	ContextFrame frame{parse_without_defaults(std::move(arguments), loc, required_parameters, {}, OpenSCAD::parameterCheck,
 		[](const std::shared_ptr<Assignment>& assignment) { return assignment->getName(); }

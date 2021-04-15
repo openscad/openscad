@@ -28,7 +28,6 @@ public:
 	void apply_lexical_variables(ContextFrame&& other);
 	void apply_config_variables(ContextFrame&& other);
 	void apply_variables(ContextFrame&& other);
-	
 
 	static bool is_config_variable(const std::string &name);
 
@@ -42,7 +41,7 @@ protected:
 
 public:
 #ifdef DEBUG
-	virtual std::string dumpFrame();
+	virtual std::string dumpFrame() const;
 #endif
 };
 
@@ -56,7 +55,7 @@ public:
 	ContextFrameHandle(ContextFrame* frame):
 		session(frame->session())
 	{
-		session->push_frame(frame);
+		frame_index = session->push_frame(frame);
 	}
 	~ContextFrameHandle()
 	{
@@ -68,17 +67,16 @@ public:
 	ContextFrameHandle& operator=(ContextFrameHandle&&) = delete;
 	
 	ContextFrameHandle(ContextFrameHandle&& other):
-		session(other.session)
+		session(other.session),
+		frame_index(other.frame_index)
 	{
 		other.session = nullptr;
 	}
 	
-	// Valid only if handle is on the top of the stack.
 	ContextFrameHandle& operator=(ContextFrame* frame)
 	{
-		release();
-		session = frame->session();
-		session->push_frame(frame);
+		assert(session == frame->session());
+		session->replace_frame(frame_index, frame);
 		return *this;
 	}
 	
@@ -86,12 +84,12 @@ public:
 	void release()
 	{
 		if (session) {
-			session->pop_frame();
+			session->pop_frame(frame_index);
 			session = nullptr;
 		}
 	}
-	
 
 protected:
 	EvaluationSession* session;
+	size_t frame_index;
 };

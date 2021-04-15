@@ -21,20 +21,20 @@ public:
 	
 	ContextHandle(const ContextHandle&) = delete;
 	ContextHandle& operator=(const ContextHandle&) = delete;
-	ContextHandle(ContextHandle&&) = default;
-	ContextHandle& operator=(ContextHandle&&) = delete;
+	ContextHandle(ContextHandle&& other) = default;
 	
-	// Valid only if context is on the top of the stack.
-	ContextHandle& operator=(std::shared_ptr<T>&& other)
+	// Valid only if $other is on the top of the stack.
+	ContextHandle& operator=(ContextHandle&& other)
 	{
-		context = std::move(other);
+		other.release();
+		context = std::move(other.context);
 		ContextFrameHandle::operator=(context.get());
 		return *this;
 	}
 	
 	const T* operator->() const { return context.get(); }
 	T* operator->() { return context.get(); }
-	const std::shared_ptr<T>& operator*() const { return context; }
+	std::shared_ptr<const T> operator*() const { return context; }
 
 private:
 	std::shared_ptr<T> context;
@@ -44,17 +44,17 @@ class Context : public ContextFrame, public std::enable_shared_from_this<Context
 {
 protected:
 	Context(EvaluationSession* session);
-	Context(const std::shared_ptr<Context>& parent);
+	Context(const std::shared_ptr<const Context>& parent);
 
 public:
-    template<typename C, typename ... T>
-    static ContextHandle<C> create(T&& ... t) {
-        return ContextHandle<C>{std::shared_ptr<C>(new C(std::forward<T>(t)...))};
-    }
+	template<typename C, typename ... T>
+	static ContextHandle<C> create(T&& ... t) {
+		return ContextHandle<C>{std::shared_ptr<C>(new C(std::forward<T>(t)...))};
+	}
 
 	virtual void init() { }
 
-	std::shared_ptr<Context> get_shared_ptr() const { return const_cast<Context*>(this)->shared_from_this(); }
+	std::shared_ptr<const Context> get_shared_ptr() const { return shared_from_this(); }
 	virtual const class Children* user_module_children() const;
 
 	boost::optional<const Value&> try_lookup_variable(const std::string &name) const;
@@ -62,15 +62,15 @@ public:
 	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;
 	boost::optional<InstantiableModule> lookup_module(const std::string &name, const Location &loc) const;
 
-	const std::shared_ptr<Context> &getParent() const { return this->parent; }
+	const std::shared_ptr<const Context> &getParent() const { return this->parent; }
 	// This modifies the semantics of the context in an error-prone way. Use with caution.
-	void setParent(const std::shared_ptr<Context>& parent) { this->parent = parent; }
+	void setParent(const std::shared_ptr<const Context>& parent) { this->parent = parent; }
 
 protected:
-	std::shared_ptr<Context> parent;
+	std::shared_ptr<const Context> parent;
 
 public:
 #ifdef DEBUG
-	std::string dump();
+	std::string dump() const;
 #endif
 };

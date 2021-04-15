@@ -461,7 +461,7 @@ int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileForm
 #endif
 
 	AbstractNode::resetIndexCounter();
-	std::shared_ptr<FileContext> file_context;
+	std::shared_ptr<const FileContext> file_context;
 	AbstractNode *absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
 	Camera camera = cmd.camera;
 	if (file_context) {

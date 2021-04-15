@@ -54,7 +54,7 @@ void LocalScope::print(std::ostream &stream, const std::string &indent, const bo
 	}
 }
 
-AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<Context> &context, AbstractNode* target) const
+AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<const Context> &context, AbstractNode* target) const
 {
 	for(const auto &modinst : this->moduleInstantiations) {
 		AbstractNode *node = modinst->evaluate(context);
@@ -65,7 +65,7 @@ AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<Context> &con
 	return target;
 }
 
-AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const
+AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const
 {
 	for (size_t index : indices) {
 		AbstractNode *node = instantiateModule(context, index);
@@ -76,7 +76,7 @@ AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<Context>& con
 	return target;
 }
 
-AbstractNode* LocalScope::instantiateModule(const std::shared_ptr<Context>& context, size_t index) const
+AbstractNode* LocalScope::instantiateModule(const std::shared_ptr<const Context>& context, size_t index) const
 {
 	assert(index < this->moduleInstantiations.size());
 	return moduleInstantiations[index]->evaluate(context);

@@ -41,7 +41,7 @@ Context::Context(EvaluationSession* session):
 	parent(nullptr)
 {}
 
-Context::Context(const std::shared_ptr<Context>& parent):
+Context::Context(const std::shared_ptr<const Context>& parent):
 	ContextFrame(parent->evaluation_session),
 	parent(parent)
 {}
@@ -110,11 +110,11 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string &na
 }
 
 #ifdef DEBUG
-std::string Context::dump()
+std::string Context::dump() const
 {
 	std::ostringstream s;
 	s << boost::format("Context %p:\n") % this;
-	Context* context = this;
+	Context const* context = this;
 	while (context) {
 		s << "  " << context->dumpFrame();
 		context = context->getParent().get();

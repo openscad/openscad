@@ -31,7 +31,7 @@
 #include "ModuleInstantiation.h"
 #include "value.h"
 
-BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<Context>&), const Feature* feature):
+BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature* feature):
 	AbstractModule(feature),
 	do_instantiate(instantiate)
 {}
@@ -39,12 +39,12 @@ BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInst
 BuiltinModule::BuiltinModule(AbstractNode* (*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature* feature):
 	AbstractModule(feature)
 {
-	do_instantiate = [instantiate](const class ModuleInstantiation *inst, const std::shared_ptr<Context>& context) {
+	do_instantiate = [instantiate](const class ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) {
 		return instantiate(inst, Arguments(inst->arguments, context), Children(&inst->scope, context));
 	};
 }
 
-AbstractNode *BuiltinModule::instantiate(const std::shared_ptr<Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context) const
+AbstractNode *BuiltinModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
 	return do_instantiate(inst, context);
 }
