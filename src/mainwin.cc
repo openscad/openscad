@@ -1705,9 +1705,9 @@ void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 	context->set_variable("$preview", Value(this->is_preview));
 	context->set_variable("$t", Value(this->anim_tval));
 	auto camVpt = qglview->cam.getVpt();
-	context->set_variable("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
+	context->set_variable("$vpt", Value(VectorType(context->session(), camVpt.x(), camVpt.y(), camVpt.z())));
 	auto camVpr = qglview->cam.getVpr();
-	context->set_variable("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
+	context->set_variable("$vpr", Value(VectorType(context->session(), camVpr.x(), camVpr.y(), camVpr.z())));
 	context->set_variable("$vpd", Value(qglview->cam.zoomValue()));
 	context->set_variable("$vpf", Value(qglview->cam.fovValue()));
 }

@@ -96,6 +96,13 @@ UserModuleContext::UserModuleContext(const std::shared_ptr<const Context> parent
 	apply_variables(Parameters::parse(std::move(arguments), loc, module->parameters, parent).to_context_frame());
 }
 
+std::vector<const std::shared_ptr<const Context>*> UserModuleContext::list_referenced_contexts() const
+{
+	std::vector<const std::shared_ptr<const Context>*> output = Context::list_referenced_contexts();
+	output.push_back(&children.getContext());
+	return output;
+}
+
 boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
 	auto result = ScopeContext::lookup_local_function(name, loc);

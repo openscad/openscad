@@ -327,12 +327,12 @@ Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
 		if (val.type() == Value::Type::EMBEDDED_VECTOR) {
 			return VectorType(std::move(val.toEmbeddedVectorNonConst()));
 		} else {
-			VectorType vec;
+			VectorType vec(context->session());
 			vec.emplace_back(std::move(val));
 			return std::move(vec);
 		}
 	} else {
-		VectorType vec;
+		VectorType vec(context->session());
 		for(const auto &e : this->children) vec.emplace_back(e->evaluate(context));
 		return std::move(vec);
 	}
@@ -761,7 +761,7 @@ Value LcEach::evalRecur(Value &&v, const std::shared_ptr<const Context>& context
 		if (steps >= 1000000) {
            LOG(message_group::Warning,loc,context->documentRoot(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
-			EmbeddedVectorType vec;
+			EmbeddedVectorType vec(context->session());
 			for (double d : range) vec.emplace_back(d);
 			return Value(std::move(vec));
 		}
@@ -770,13 +770,13 @@ Value LcEach::evalRecur(Value &&v, const std::shared_ptr<const Context>& context
 		auto vec = EmbeddedVectorType(std::move(v.toVectorNonConst()));
 		return Value(std::move(vec));
 	} else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
-		EmbeddedVectorType vec;
+		EmbeddedVectorType vec(context->session());
 		// Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
 		// which should remain constant
 		for(const auto &val : v.toEmbeddedVector()) vec.emplace_back( evalRecur(val.clone(), context) );
 		return Value(std::move(vec));
 	} else if (v.type() == Value::Type::STRING) {
-		EmbeddedVectorType vec;
+		EmbeddedVectorType vec(context->session());
 		for (auto ch : v.toStrUtf8Wrapper()) vec.emplace_back(std::move(ch));
 		return Value(std::move(vec));
 	} else if (v.type() != Value::Type::UNDEFINED) {
@@ -861,7 +861,7 @@ void LcFor::forEach(const AssignmentList& assignments, const Location &loc, cons
 
 Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
 {
-	EmbeddedVectorType vec;
+	EmbeddedVectorType vec(context->session());
 	forEach(this->arguments, this->loc, context,
 		[&vec, expression = expr.get()] (const std::shared_ptr<const Context>& iterationContext) {
 			vec.emplace_back(expression->evaluate(iterationContext));
@@ -882,7 +882,7 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
 {
-	EmbeddedVectorType output;
+	EmbeddedVectorType output(context->session());
 	
 	ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
 	ContextHandle<Context> currentContext{Context::create<Context>(*initialContext)};

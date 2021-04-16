@@ -35,22 +35,11 @@ public:
   const_iterator find(const std::string& name) const {  return map.find(name); }
   const_iterator begin() const {  return map.cbegin(); }
   const_iterator end() const {  return map.cend(); }
+  iterator begin() {  return map.begin(); }
+  iterator end() {  return map.end(); }
   void clear() { map.clear(); }
   template<typename... Args> std::pair<iterator, bool> emplace(Args&&... args) {
     return map.emplace(std::forward<Args>(args)...);
-  }
-
-// Specialized functions:
-  void applyFrom(const ValueMap& other) {
-    for (const auto &var : other.map) {
-      insert_or_assign(var.first, var.second.clone());
-    }
-  }
-  void applyFrom(ValueMap&& other) {
-    for (auto &var : other.map) {
-      insert_or_assign(var.first, std::move(var.second));
-    }
-    other.map.clear();
   }
 
   // Get value by name, without possibility of default-constructing a missing name

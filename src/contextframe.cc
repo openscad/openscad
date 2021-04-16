@@ -60,6 +60,24 @@ boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std:
 	return boost::none;
 }
 
+std::vector<const Value*> ContextFrame::list_embedded_values() const
+{
+	std::vector<const Value*> output;
+	for (const auto& variable : lexical_variables) {
+		output.push_back(&variable.second);
+	}
+	for (const auto& variable : config_variables) {
+		output.push_back(&variable.second);
+	}
+	return output;
+}
+
+void ContextFrame::clear()
+{
+	lexical_variables.clear();
+	config_variables.clear();
+}
+
 void ContextFrame::set_variable(const std::string &name, Value&& value)
 {
 	if (is_config_variable(name)) {
@@ -69,30 +87,45 @@ void ContextFrame::set_variable(const std::string &name, Value&& value)
 	}
 }
 
+void ContextFrame::apply_variables(const ValueMap& variables)
+{
+	for (const auto& variable : variables) {
+		set_variable(variable.first, variable.second.clone());
+	}
+}
+
 void ContextFrame::apply_lexical_variables(const ContextFrame& other)
 {
-	lexical_variables.applyFrom(other.lexical_variables);
+	apply_variables(other.lexical_variables);
 }
 
 void ContextFrame::apply_config_variables(const ContextFrame& other)
 {
-	config_variables.applyFrom(other.config_variables);
+	apply_variables(other.config_variables);
+}
+
+void ContextFrame::apply_variables(ValueMap&& variables)
+{
+	for (auto& variable : variables) {
+		set_variable(variable.first, std::move(variable.second));
+	}
+	variables.clear();
 }
 
 void ContextFrame::apply_lexical_variables(ContextFrame&& other)
 {
-	lexical_variables.applyFrom(std::move(other.lexical_variables));
+	apply_variables(std::move(other.lexical_variables));
 }
 
 void ContextFrame::apply_config_variables(ContextFrame&& other)
 {
-	config_variables.applyFrom(std::move(other.config_variables));
+	apply_variables(std::move(other.config_variables));
 }
 
 void ContextFrame::apply_variables(ContextFrame&& other)
 {
-	lexical_variables.applyFrom(std::move(other.lexical_variables));
-	config_variables.applyFrom(std::move(other.config_variables));
+	apply_variables(std::move(other.lexical_variables));
+	apply_variables(std::move(other.config_variables));
 }
 
 bool ContextFrame::is_config_variable(const std::string &name)
