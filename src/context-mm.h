@@ -7,7 +7,7 @@ class Context;
 #include <iostream>
 /*
  * Keeps track of the approximate number of Values stored as part of an
- * EvaluationEnvironment, and in particular the number of objects that
+ * EvaluationSession, and in particular the number of objects that
  * the garbage collection algorithm needs to explore. This is used to keep
  * track of when a garbage collection run is due.
  *
