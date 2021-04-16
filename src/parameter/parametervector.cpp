@@ -23,7 +23,7 @@ void ParameterVector::onChanged(double)
 		if (object->target == ParameterObject::NUMBER) {
 			object->value = Value(doubleSpinBox1->value());
 		} else {
-			VectorType vt;
+			VectorType vt(nullptr);
 			vt.emplace_back(this->doubleSpinBox1->value());
 			if (!this->doubleSpinBox2->isReadOnly()) {
 				vt.emplace_back(this->doubleSpinBox2->value());

@@ -42,21 +42,21 @@ bool SettingsEntry::is_default() const
 }
 
 static Value value(std::string s1, std::string s2) {
-	VectorType v;
+	VectorType v(nullptr);
 	v.emplace_back(s1);
 	v.emplace_back(s2);
 	return Value(std::move(v));
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
-	VectorType v;
+	VectorType v(nullptr);
 	v.emplace_back(value(s1, s1disp));
 	v.emplace_back(value(s2, s2disp));
 	return Value(std::move(v));
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
-	VectorType v;
+	VectorType v(nullptr);
 	v.emplace_back(value(s1, s1disp));
 	v.emplace_back(value(s2, s2disp));
 	v.emplace_back(value(s3, s3disp));
@@ -64,7 +64,7 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 }
 
 static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
-	VectorType v;
+	VectorType v(nullptr);
 	v.emplace_back(value(s1, s1disp));
 	v.emplace_back(value(s2, s2disp));
 	v.emplace_back(value(s3, s3disp));
@@ -73,7 +73,7 @@ static Value values(std::string s1, std::string s1disp, std::string s2, std::str
 }
 
 static Value axisValues() {
-	VectorType v;
+	VectorType v(nullptr);
 	v.emplace_back(value("None", _("None")));
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
@@ -89,7 +89,7 @@ static Value axisValues() {
 }
 
 static Value buttonValues() {
-	VectorType v;
+	VectorType v(nullptr);
 	v.emplace_back(value("None", _("None")));
 	v.emplace_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
 	return Value(std::move(v));

@@ -55,6 +55,15 @@ const Children* Context::user_module_children() const
 	}
 }
 
+std::vector<const std::shared_ptr<const Context>*> Context::list_referenced_contexts() const
+{
+	std::vector<const std::shared_ptr<const Context>*> output;
+	if (parent) {
+		output.push_back(&parent);
+	}
+	return output;
+}
+
 boost::optional<const Value&> Context::try_lookup_variable(const std::string &name) const
 {
 	if (is_config_variable(name)) {
@@ -107,6 +116,20 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string &na
 	}
 	LOG(message_group::Warning,loc,this->documentRoot(),"Ignoring unknown module '%1$s'",name);
 	return boost::none;
+}
+
+void Context::set_variable(const std::string &name, Value&& value)
+{
+	if (!lookup_local_variable(name)) {
+		session()->accounting().addContextVariable();
+	}
+	ContextFrame::set_variable(name, std::move(value));
+}
+
+void Context::clear()
+{
+	session()->accounting().removeContextVariable(list_embedded_values().size());
+	ContextFrame::clear();
 }
 
 #ifdef DEBUG

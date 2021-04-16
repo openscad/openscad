@@ -206,7 +206,7 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			VectorType ret;
+			VectorType ret(nullptr);
 			ret.emplace_back(x);
 			ret.emplace_back(y);
 			Value val(std::move(ret));

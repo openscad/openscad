@@ -23,6 +23,7 @@ public:
 	
 	bool empty() const { return !children_scope->hasChildren(); }
 	size_t size() const { return children_scope->moduleInstantiations.size(); }
+	const std::shared_ptr<const Context>& getContext() const { return context; }
 
 private:
 	const LocalScope* children_scope;

@@ -2,6 +2,7 @@
 
 #include "Assignment.h"
 #include "contextframe.h"
+#include "context-mm.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the
@@ -16,7 +17,17 @@ public:
 		ContextFrameHandle(context.get()),
 		context(std::move(context))
 	{
+		session->contextMemoryManager().addContext(this->context);
 		this->context->init();
+	}
+	
+	~ContextHandle()
+	{
+		assert(session || !context);
+		context = nullptr;
+		if (session) {
+			session->contextMemoryManager().releaseContext();
+		}
 	}
 	
 	ContextHandle(const ContextHandle&) = delete;
@@ -56,11 +67,14 @@ public:
 
 	std::shared_ptr<const Context> get_shared_ptr() const { return shared_from_this(); }
 	virtual const class Children* user_module_children() const;
+	virtual std::vector<const std::shared_ptr<const Context>*> list_referenced_contexts() const;
 
 	boost::optional<const Value&> try_lookup_variable(const std::string &name) const;
 	const Value& lookup_variable(const std::string &name, const Location &loc) const;
 	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;
 	boost::optional<InstantiableModule> lookup_module(const std::string &name, const Location &loc) const;
+	void set_variable(const std::string &name, Value&& value) override;
+	void clear() override;
 
 	const std::shared_ptr<const Context> &getParent() const { return this->parent; }
 	// This modifies the semantics of the context in an error-prone way. Use with caution.

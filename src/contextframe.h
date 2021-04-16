@@ -15,7 +15,10 @@ public:
 	virtual boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const;
 	virtual boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const;
 
-	void set_variable(const std::string &name, Value&& value);
+	virtual std::vector<const Value*> list_embedded_values() const;
+	virtual void clear();
+
+	virtual void set_variable(const std::string &name, Value&& value);
 
 	void apply_lexical_variables(const ContextFrame &other);
 	void apply_config_variables(const ContextFrame &other);

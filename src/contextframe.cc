@@ -60,6 +60,24 @@ boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std:
 	return boost::none;
 }
 
+std::vector<const Value*> ContextFrame::list_embedded_values() const
+{
+	std::vector<const Value*> output;
+	for (const auto& variable : lexical_variables) {
+		output.push_back(&variable.second);
+	}
+	for (const auto& variable : config_variables) {
+		output.push_back(&variable.second);
+	}
+	return output;
+}
+
+void ContextFrame::clear()
+{
+	lexical_variables.clear();
+	config_variables.clear();
+}
+
 void ContextFrame::set_variable(const std::string &name, Value&& value)
 {
 	if (is_config_variable(name)) {
