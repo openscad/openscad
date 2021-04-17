@@ -101,6 +101,6 @@ void register_builtin_text()
 {
 	Builtins::init("text", new BuiltinModule(builtin_text),
 				{
-					"text(string, size = 10, string, halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
+					"text(text = \"\", size = 10, font = \"\", halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
 				});
 }

@@ -272,6 +272,22 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
+option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+if(ENABLE_HIDAPI)
+  find_package(HidAPI 0.10 QUIET)
+  if(HIDAPI_FOUND)
+    message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
+    set(INPUT_DRIVER_HIDAPI_SOURCES src/input/HidApiInputDriver.cc)
+    include_directories(${HIDAPI_INCLUDE_DIR})
+    list(APPEND COMMON_LIBRARIES ${HIDAPI_LIBRARY})
+    add_definitions(-DENABLE_HIDAPI)
+  else()
+    message(STATUS "HIDAPI: disabled")
+  endif()
+else()
+  message(STATUS "HIDAPI: disabled per user request")
+endif()
+
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 if(ENABLE_CAIRO)
   find_package(Cairo 1.14 QUIET)
@@ -637,6 +653,7 @@ endif()
 
 set(INPUT_DRIVER_SOURCES
   ${PLATFORM_INPUT_DRIVER_SOURCES}
+  ${INPUT_DRIVER_HIDAPI_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
@@ -716,8 +733,10 @@ endif()
 if (SNAPSHOT)
   add_definitions(-DOPENSCAD_SNAPSHOT)
   set(RESOURCE_FILES icons/icon-nightly.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32-nightly.rc)
 else()
   set(RESOURCE_FILES icons/OpenSCAD.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32.rc)
 endif()
 
 if(ENABLE_SPNAV)
@@ -725,7 +744,7 @@ if(ENABLE_SPNAV)
   list(APPEND Sources src/input/SpaceNavInputDriver.cc)
 endif()
 
-add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
 add_custom_command(TARGET OpenSCAD POST_BUILD
     COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
