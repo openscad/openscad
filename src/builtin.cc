@@ -32,7 +32,7 @@ void Builtins::init(const std::string &name, class AbstractModule *module, const
 	Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList)
+void Builtins::init(const std::string &name, class BuiltinFunction *function, const std::vector<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (function->is_experimental()) return;

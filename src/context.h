@@ -1,13 +1,15 @@
 #pragma once
 
 #include <map>
-#include <string>
-#include <vector>
 #include <memory>
+#include <string>
 #include <unordered_map>
-#include "value.h"
+#include <vector>
+#include <boost/optional.hpp>
 #include "Assignment.h"
+#include "function.h"
 #include "memory.h"
+#include "value.h"
 #include "valuemap.h"
 
 /**
@@ -19,22 +21,31 @@ template<typename T>
 struct ContextHandle
 {
     ContextHandle(std::shared_ptr<T>&& sp) : ctx(std::move(sp)) {
-        ctx->init();
+		ctx->init();
 		ctx->push(ctx);
     }
     ~ContextHandle() {
-        ctx->pop();
+		ctx->pop();
     }
 
 	ContextHandle(const ContextHandle&) = delete;
 	ContextHandle& operator=(const ContextHandle&) = delete;
 	ContextHandle(ContextHandle&&) = default;
-	ContextHandle& operator=(ContextHandle&&) = default;
+	ContextHandle& operator=(ContextHandle&&) = delete;
+	
+	// Valid only if ctx is on the top of the stack.
+	ContextHandle& operator=(std::shared_ptr<T>&& sp)
+	{
+		ctx->pop();
+		ctx = std::move(sp);
+		ctx->push(ctx);
+		return *this;
+	}
 
 	const T* operator->() const { return ctx.get(); }
     T* operator->() { return ctx.get(); }
 
-    const std::shared_ptr<T> ctx;
+    std::shared_ptr<T> ctx;
 };
 
 class EvalContext;
@@ -60,7 +71,9 @@ public:
 	virtual void init() { }
 
 	const std::shared_ptr<Context> &getParent() const { return this->parent; }
-	virtual Value evaluate_function(const std::string &name, const std::shared_ptr<EvalContext> &evalctx) const;
+
+	virtual boost::optional<CallableFunction> lookup_local_function(const std::string &name) const;
+	boost::optional<CallableFunction> lookup_function(const std::string &name) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setVariables(const std::shared_ptr<EvalContext> &evalctx, const AssignmentList &args, const AssignmentList &optargs={}, bool usermodule=false);
@@ -94,13 +107,4 @@ public:
 #ifdef DEBUG
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
-
-	// Making friends with evaluate_function() to allow it to call the Context
-	// constructor for creating ContextHandle objects in-place in the local
-	// context list. This is needed as ContextHandle handles the Context
-	// stack via RAII so we need to use emplace_front() to create the objects.
-	friend Value evaluate_function(const std::string& name,
-			const std::shared_ptr<Expression>& expr, const AssignmentList &definition_arguments,
-			const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
-			const Location& loc);
 };

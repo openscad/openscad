@@ -2,10 +2,11 @@
 
 #include <string>
 #include <vector>
-#include "value.h"
-#include "memory.h"
-#include "boost-utils.h"
 #include "Assignment.h"
+#include "boost-utils.h"
+#include "function.h"
+#include "memory.h"
+#include "value.h"
 
 class Expression : public ASTNode
 {
@@ -157,19 +158,16 @@ class FunctionCall : public Expression
 {
 public:
 	FunctionCall(Expression *expr, const AssignmentList &arglist, const Location &loc);
-	void prepareTailCallContext(const std::shared_ptr<Context> context, std::shared_ptr<Context> tailCallContext, const AssignmentList &definition_arguments);
+	boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	const std::string& get_name() const { return name; }
 	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
-	shared_ptr<class FunctionDefinition> getFunctionDefinition(const Value& v) const;
 public:
 	bool isLookup;
 	std::string name;
 	shared_ptr<Expression> expr;
 	AssignmentList arguments;
-	AssignmentMap resolvedArguments;
-	std::vector<std::pair<std::string, Value>> defaultArguments; // Only the ones not mentioned in 'resolvedArguments'
 };
 
 class FunctionDefinition : public Expression
@@ -287,7 +285,11 @@ private:
 
 void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
 
-Value evaluate_function(const std::string& name,
-		const std::shared_ptr<Expression>& expr, const AssignmentList& definition_arguments,
-		const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx,
-		const Location& loc);
+Value evaluate_user_function(
+	std::string name,
+	std::shared_ptr<Expression> expr,
+	AssignmentList const* definition_arguments,
+	std::shared_ptr<Context> defining_context,
+	const std::shared_ptr<EvalContext>& evalctx,
+	Location loc
+);

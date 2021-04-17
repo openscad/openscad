@@ -29,22 +29,9 @@
 #include "expression.h"
 #include "printutils.h"
 
-AbstractFunction::~AbstractFunction()
-{
-}
-
 UserFunction::UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc)
 	: ASTNode(loc), name(name), definition_arguments(definition_arguments), expr(expr)
 {
-}
-
-UserFunction::~UserFunction()
-{
-}
-
-Value UserFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	return evaluate_function(name, expr, definition_arguments, ctx, evalctx, loc);
 }
 
 void UserFunction::print(std::ostream &stream, const std::string &indent) const
@@ -57,13 +44,4 @@ void UserFunction::print(std::ostream &stream, const std::string &indent) const
 		if (arg->getExpr()) stream << " = " << *arg->getExpr();
 	}
 	stream << ") = " << *expr << ";\n";
-}
-
-BuiltinFunction::~BuiltinFunction()
-{
-}
-
-Value BuiltinFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	return eval_func(ctx, evalctx);
 }
