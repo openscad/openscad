@@ -77,3 +77,12 @@ echo(func1 = func(1)(8, 3));
 fold = function(i, v, f, off = 0) len(v) > off ? fold(f(i, v[off]), v, f, off + 1) : i;
 echo(fold1 = fold(0, v, function(x, y) x + y));
 echo(fold2 = fold(0, rands(0, 1, 100000), function(x, y) x + 1));
+
+// chained tail recursion
+chaining1 = function(x) x <= 0 ? 0 : chaining2(x - 1);
+chaining2 = function(x) x <= 0 ? 0 : chaining1(x - 1);
+echo(chaining = chaining1(500000));
+
+// function call scoping
+function scope_capture() = let(scope_capture = function() 5) scope_capture();
+echo(scope_capture = scope_capture());

@@ -15,13 +15,7 @@
 # Licence: GPL V2
 #
 
-import sys
-import io
-import hashlib
-import os
-import subprocess
-import struct
-import math
+import sys, io, hashlib, os, subprocess, struct, math
 from collections import Counter
 
 def read_stl(filename):

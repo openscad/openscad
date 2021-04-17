@@ -29,16 +29,9 @@
 
 from __future__ import print_function
 
-import string
-import sys
-import re
-import os
-import hashlib
-import subprocess
-import time
-import platform
-import html
-import base64
+import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
+
+
 try:
     from urllib.error import URLError
     from urllib.request import urlopen

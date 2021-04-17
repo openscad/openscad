@@ -27,3 +27,5 @@ ECHO: func0 = 11
 ECHO: func1 = 5
 ECHO: fold1 = 45
 ECHO: fold2 = 100000
+ECHO: chaining = 0
+ECHO: scope_capture = 5
