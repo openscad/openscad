@@ -862,7 +862,7 @@ Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
 			vec.emplace_back(expression->evaluate(iterationContext));
 		}
 	);
-	return vec;
+	return Value(std::move(vec));
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const
@@ -906,7 +906,7 @@ Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 		currentContext = std::shared_ptr<Context>(*nextContext);
 		currentContext->setParent(*initialContext);
     }
-    return output;
+    return Value(std::move(output));
 }
 
 void LcForC::print(std::ostream &stream, const std::string &) const
