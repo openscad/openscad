@@ -753,6 +753,11 @@ void ScintillaEditor::indentSelection()
 	for (int line = lineFrom; line <= lineTo; ++line) {
 		qsci->indent(line);
 	}
+	int nextLine = lineTo+1;
+	while(qsci->SendScintilla(QsciScintilla::SCI_GETLINEVISIBLE,nextLine) == 0){
+		qsci->indent(nextLine);
+		nextLine++;
+	}
 }
 
 void ScintillaEditor::unindentSelection()
@@ -761,6 +766,11 @@ void ScintillaEditor::unindentSelection()
 	getRange(&lineFrom, &lineTo);
 	for (int line = lineFrom; line <= lineTo; ++line) {
 		qsci->unindent(line);
+	}
+	int nextLine = lineTo+1;
+	while(qsci->SendScintilla(QsciScintilla::SCI_GETLINEVISIBLE,nextLine) == 0){
+		qsci->unindent(nextLine);
+		nextLine++;
 	}
 }
 
