@@ -474,6 +474,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/expression-precedence.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/builtins-calling-vec3vec2.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/leaf-module-warnings.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue1472.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/empty-stl.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/issues/issue1516.scad

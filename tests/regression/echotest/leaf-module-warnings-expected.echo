@@ -1,0 +1,11 @@
+WARNING: module children() does not support child modules in file leaf-module-warnings.scad, line 4
+DEPRECATED: child() will be removed in future releases. Use children() instead.
+WARNING: module child() does not support child modules in file leaf-module-warnings.scad, line 9
+WARNING: module import() does not support child modules in file leaf-module-warnings.scad, line 13
+DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.
+WARNING: module linear_extrude() does not support child modules when importing a file in file leaf-module-warnings.scad, line 14
+WARNING: variable height not specified as parameter in file leaf-module-warnings.scad, line 15
+DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.
+WARNING: module rotate_extrude() does not support child modules when importing a file in file leaf-module-warnings.scad, line 15
+WARNING: module surface() does not support child modules in file leaf-module-warnings.scad, line 17
+WARNING: module text() does not support child modules in file leaf-module-warnings.scad, line 19
