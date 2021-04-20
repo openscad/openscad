@@ -175,66 +175,59 @@ Value builtin_rands(Arguments arguments, const Location& loc)
 	return std::move(vec);
 }
 
-Value builtin_min(Arguments arguments, const Location& loc)
+std::vector<double> min_max_arguments(const Arguments& arguments)
 {
+	std::vector<double> output;
 	// preserve special handling of the first argument
 	// as a template for vector processing
-	if (arguments.size() >= 1) {
-		if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
-			const auto &vec = arguments[0]->toVector();
-			if (!vec.empty()) {
-				return std::min_element(vec.begin(), vec.end(), Value::cmp_less)->clone();
+	if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
+		for (const auto& element : arguments[0]->toVector()) {
+			if (element.type() != Value::Type::NUMBER) {
+				return {};
 			}
-		}
-		if (arguments[0]->type() == Value::Type::NUMBER) {
-			double val = arguments[0]->toDouble();
-			for (size_t i = 1; i < arguments.size(); ++i) {
-				// 4/20/14 semantic change per discussion:
-				// break on any non-number
-				if (arguments[i]->type() != Value::Type::NUMBER) goto quit;
-				double x = arguments[i]->toDouble();
-				if (x < val) val = x;
-			}
-			return Value(val);
+			output.push_back(element.toDouble());
 		}
 	} else {
+		for (const auto& argument : arguments) {
+			if (argument->type() != Value::Type::NUMBER) {
+				return {};
+			}
+			output.push_back(argument->toDouble());
+		}
+	}
+	return output;
+}
+
+Value builtin_min(Arguments arguments, const Location& loc)
+{
+	if (arguments.size() == 0) {
 		print_argCnt_warning("min", loc, arguments.documentRoot());
 		return Value::undefined.clone();
 	}
-quit:
-	print_argConvert_warning("min", loc, arguments.documentRoot());
-	return Value::undefined.clone();
+	std::vector<double> values = min_max_arguments(arguments);
+	if (values.empty()) {
+		// 4/20/14 semantic change per discussion:
+		// break on any non-number
+		print_argConvert_warning("min", loc, arguments.documentRoot());
+		return Value::undefined.clone();
+	}
+	return Value(*std::min_element(values.begin(), values.end()));
 }
 
 Value builtin_max(Arguments arguments, const Location& loc)
 {
-	// preserve special handling of the first argument
-	// as a template for vector processing
-	if (arguments.size() >= 1) {
-		if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
-			const auto &vec = arguments[0]->toVector();
-			if (!vec.empty()) {
-				return std::max_element(vec.begin(), vec.end(), Value::cmp_less)->clone();
-			}
-		}
-		if (arguments[0]->type() == Value::Type::NUMBER) {
-			double val = arguments[0]->toDouble();
-			for (size_t i = 1; i < arguments.size(); ++i) {
-				// 4/20/14 semantic change per discussion:
-				// break on any non-number
-				if (arguments[i]->type() != Value::Type::NUMBER) goto quit;
-				double x = arguments[i]->toDouble();
-				if (x > val) val = x;
-			}
-			return Value(val);
-		}
-	} else {
+	if (arguments.size() == 0) {
 		print_argCnt_warning("max", loc, arguments.documentRoot());
 		return Value::undefined.clone();
 	}
-quit:
-	print_argConvert_warning("max", loc, arguments.documentRoot());
-	return Value::undefined.clone();
+	std::vector<double> values = min_max_arguments(arguments);
+	if (values.empty()) {
+		// 4/20/14 semantic change per discussion:
+		// break on any non-number
+		print_argConvert_warning("max", loc, arguments.documentRoot());
+		return Value::undefined.clone();
+	}
+	return Value(*std::max_element(values.begin(), values.end()));
 }
 
 Value builtin_sin(Arguments arguments, const Location& loc)
