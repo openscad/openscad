@@ -68,6 +68,7 @@ public:
 	const Location location;
 
 	const AbstractNode *getNodeByID(int idx, std::deque<const AbstractNode *> &path) const;
+	void getNodesByLocation(const Location &location, std::deque<const AbstractNode *> &nodes) const;
 };
 
 class AbstractIntersectionNode : public AbstractNode

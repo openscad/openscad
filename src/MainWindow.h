@@ -23,6 +23,11 @@
 #include "tabmanager.h"
 #include <memory>
 
+#ifdef ENABLE_LANGUAGESERVER
+#include "lsp/language_server_interface.h"
+#endif
+
+
 class MouseSelector;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -101,9 +106,14 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
+	void errorLogOutput(const Message &log_msg);
+
+public slots:
 	void consoleOutput(const Message& msgObj);
 	void setCursor();
-	void errorLogOutput(const Message &log_msg);
+
+signals:
+    void externallySetCursor(QString file, int line, int column);
 
 public:
 	static void consoleOutput(const Message &msgObj, void *userdata);
@@ -112,14 +122,14 @@ public:
 	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
-	void parseTopLevelDocument(bool rebuildParameterWidget);
+	void parseTopLevelDocument(bool rebuildParameterWidget, const std::string &override_filename = std::string(), const std::string &override_fulltext = std::string());
 	void exceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void updateTemporalVariables();
 	void updateCompileResult();
-	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
+	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true, const std::string &override_filename = std::string(), const std::string &override_fulltext = std::string());
 	void compileCSG();
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
@@ -171,8 +181,6 @@ private slots:
     void hideEditorToolbar();
     void hide3DViewToolbar();
 	void showLink(const QString);
-	void showEditor();
-	void hideEditor();
 	void showConsole();
 	void hideConsole();
 	void showErrorLog();
@@ -191,6 +199,8 @@ public slots:
 	void hideFind();
 	void showFind();
 	void showFindAndReplace();
+	void showEditor(bool force=false);
+	void hideEditor(bool force=false);
 
 private slots:
 	void selectFindType(int);
@@ -275,6 +285,7 @@ public slots:
 	void processEvents();
 	void jumpToLine(int,int);
 	void openFileFromPath(QString,int);
+	void compileDocument(const std::string &filename, const std::string &file_content);
 
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();

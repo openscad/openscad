@@ -100,6 +100,12 @@ std::string commandline_commands;
 static bool arg_info = false;
 static std::string arg_colorscheme;
 
+#ifdef ENABLE_LANGUAGESERVER
+    #include "lsp/language_server_interface.h"
+    LanguageServerInterface::Settings lsp_settings;
+    LanguageServerInterface *languageserver;
+#endif
+
 class Echostream
 {
 public:
@@ -415,7 +421,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 		param.readParameterSet(cmd.parameterFile);
 		param.applyParameterSet(root_module, cmd.setName);
 	}
-    
+
 	root_module->handleDependencies();
 
 	auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -445,7 +451,7 @@ int cmdline(const CommandLine& cmd, Camera& camera)
 			string frame_str = frame_file.generic_string();
 
 			LOG(message_group::None, Location::NONE, "", "Exporting %1$s...", cmd.filename);
-			
+
 			CommandLine frame_cmd = cmd;
 			frame_cmd.output_file = frame_str;
 
@@ -765,7 +771,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	fmt.setSwapInterval(0);
 	QGLFormat::setDefaultFormat(fmt);
 #endif
-
 	set_render_color_scheme(arg_colorscheme, false);
 	auto noInputFiles = false;
 
@@ -775,7 +780,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	auto showOnStartup = settings.value("launcher/showOnStartup");
-	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
+	if (lsp_settings.mode == LanguageServerInterface::OperationMode::NONE
+		&& noInputFiles
+		&& (showOnStartup.isNull() || showOnStartup.toBool())) {
 		auto launcher = new LaunchingScreen();
 		auto dialogResult = launcher->exec();
 		if (dialogResult == QDialog::Accepted) {
@@ -801,11 +808,16 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	for(const auto &infile: inputFiles) {
 		inputFilesList.append(assemblePath(original_path, infile));
 	}
-	new MainWindow(inputFilesList);
+	auto firstwin = new MainWindow(inputFilesList);
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
 	auto *s = Settings::Settings::inst();
+#ifdef ENABLE_LANGUAGESERVER
+	if(lsp_settings.mode != LanguageServerInterface::OperationMode::NONE) {
+		languageserver = new LanguageServerInterface(firstwin, lsp_settings);
+	}
+#endif
 #ifdef ENABLE_HIDAPI
 	if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
 		auto hidApi = new HidApiInputDriver();
@@ -845,6 +857,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	InputDriverManager::instance()->init();
 	int rc = app.exec();
+#ifdef ENABLE_LANGUAGESERVER
+    delete languageserver;
+#endif
 	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
 	return rc;
 }
@@ -915,7 +930,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
@@ -982,6 +997,11 @@ int main(int argc, char **argv)
 		("debug", po::value<string>(), "special debug info")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+#ifdef ENABLE_LANGUAGESERVER
+        ("lsp-listen", po::value<int>(), "expose a languageserver interface listening on the given port (1024-65535), suggested is 23725 (0x5CAD) (use this when starting openscad first and your editor later)")
+        ("lsp-connect", po::value<int>(), "connect to a languageserver client on the given port (1024-65535) (use this when starting openscad from your editor)")
+        ("lsp-stdio", po::value<int>(), "expose a languageserver interface on stdio")
+#endif
 		;
 
 	po::options_description hidden("Hidden options");
@@ -1018,7 +1038,30 @@ int main(int argc, char **argv)
 	if (vm.count("hardwarnings")) {
 		OpenSCAD::hardwarnings = true;
 	}
-	
+
+#ifdef ENABLE_LANGUAGESERVER
+	if (((vm.count("lsp-listen")?1:0) + (vm.count("lsp-connect")?1:0) + (vm.count("lsp-stdio")?1:0)) > 1) {
+		LOG(message_group::Error,Location::NONE,"","Ambiguous language server configuration: more than one of --lsp-connect --lsp-listen --lsp-stdio specified!");
+	} else if (vm.count("lsp-listen")) {
+		lsp_settings.mode = LanguageServerInterface::OperationMode::LISTEN;
+		lsp_settings.port = vm["lsp-listen"].as<int>();
+	} else if (vm.count("lsp-connect")) {
+		lsp_settings.mode = LanguageServerInterface::OperationMode::CONNECT;
+		lsp_settings.port = vm["lsp-connect"].as<int>();
+	} else if (vm.count("lsp-stdio")) {
+		lsp_settings.mode = LanguageServerInterface::OperationMode::STDIO;
+		lsp_settings.port = 0;
+	}
+
+	if (lsp_settings.mode != LanguageServerInterface::OperationMode::NONE && (
+			lsp_settings.port < 0 || lsp_settings.port > 65535))
+	{
+		LOG(message_group::Error,Location::NONE,"","given Language server port %1d out of range  (1-65535)", lsp_settings.port);
+		lsp_settings.port = -1;
+		lsp_settings.mode = LanguageServerInterface::OperationMode::NONE;
+	}
+#endif
+
 	std::map<std::string, bool*> flags;
 	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
 	flags.insert(std::make_pair("check-parameter-ranges",&OpenSCAD::rangeCheck));
@@ -1033,7 +1076,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	
+
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
@@ -1111,7 +1154,7 @@ int main(int argc, char **argv)
 		}
 		parameterSet = vm["P"].as<string>().c_str();
 	}
-	
+
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string>>();

@@ -555,7 +555,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
 	bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
 	bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
-	
 	// make sure it looks nice..
 	auto windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
@@ -967,7 +966,7 @@ void MainWindow::updateTVal()
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
-void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
+void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_filename, const std::string &override_fulltext)
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
@@ -1017,9 +1016,9 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		// reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
 		no_exceptions_for_warnings();
 		if (shouldcompiletoplevel) {
-			 this->errorLogWidget->clearModel();	
+			 this->errorLogWidget->clearModel();
 			if (activeEditor->isContentModified()) saveBackup();
-			parseTopLevelDocument(rebuildParameterWidget);
+			parseTopLevelDocument(rebuildParameterWidget, override_filename, override_fulltext);
 			didcompile = true;
 		}
 
@@ -1186,7 +1185,7 @@ void MainWindow::instantiateRoot()
 		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
 		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
 		this->qglview->cam.updateView(filectx.ctx, false);
-		
+
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
 			const Location *nextLocation = nullptr;
@@ -1481,7 +1480,7 @@ void MainWindow::actionShowLibraryFolder()
 	if (!fs::exists(path)) {
 		LOG(message_group::UI_Warning,Location::NONE,"","Library path %1$s doesn't exist. Creating",path);
 		if (!PlatformUtils::createUserLibraryPath()) {
-			LOG(message_group::UI_Error,Location::NONE,"","Cannot create library path: %1$s",path);	
+			LOG(message_group::UI_Error,Location::NONE,"","Cannot create library path: %1$s",path);
 		}
 	}
 	auto url = QString::fromStdString(path);
@@ -1738,30 +1737,41 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
+void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget, const std::string &filename_override, const std::string &override_fulltext)
 {
 	bool reloadSettings = customizerEditor != activeEditor;
 	customizerEditor = nullptr;
 	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
-	this->last_compiled_doc = activeEditor->toPlainText();
+	std::string fulltext;
+	if (override_fulltext.empty()) {
+		this->last_compiled_doc = activeEditor->toPlainText();
 
-	auto fulltext =
-		std::string(this->last_compiled_doc.toUtf8().constData()) +
-		"\n\x03\n" + commandline_commands;
+		fulltext =
+			std::string(this->last_compiled_doc.toUtf8().constData()) +
+			"\n\x03\n" + commandline_commands;
 
-	auto fnameba = activeEditor->filepath.toLocal8Bit();
-	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
+		auto fnameba = activeEditor->filepath.toLocal8Bit();
+		const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+		delete this->parsed_module;
+		this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
+	} else {
+		this->last_compiled_doc = QString::fromStdString(override_fulltext);
+		delete this->parsed_module;
+		this->root_module = parse(this->parsed_module, override_fulltext, filename_override, filename_override, false) ? this->parsed_module : nullptr;
+	}
 
 	if (this->root_module!=nullptr) {
 		if (reloadSettings && !activeEditor->filepath.isEmpty()) {
 			this->parameterWidget->readFile(activeEditor->filepath);
 		}
 		//add parameters as annotation in AST
-		CommentParser::collectParameters(fulltext,this->root_module);
+		if (override_fulltext.empty()) {
+			CommentParser::collectParameters(fulltext,this->root_module);
+		} else {
+			CommentParser::collectParameters(override_fulltext,this->root_module);
+		}
 		this->parameterWidget->setParameters(this->root_module,rebuildParameterWidget);
 		this->parameterWidget->applyParameters(this->root_module);
 		customizerEditor = activeEditor;
@@ -1868,6 +1878,25 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 		QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
 	}
 }
+
+void MainWindow::compileDocument(const std::string &filename, const std::string &file_content) {
+	// If there is temporary file contents, like a modified editor or languageserver modifications
+	// this method can preview it.
+
+	if (GuiLocker::isLocked()) {
+		// forwarding an external reference might be problematic - lets hope the file isnt changed or closed until we are done?
+		// the filename at least has to be copied
+		std::string local_filename = filename;
+		QTimer::singleShot(0, [&]() { this->compileDocument(local_filename, file_content); });
+		return;
+	}
+
+	GuiLocker::lock();
+	prepareCompile("csgRender", false, true);
+	// compile(bool reload, bool forcedone, bool rebuildParameterWidget, const std::string &override_fulltext);
+	compile(false, true, false, filename, file_content);
+}
+
 
 void MainWindow::csgRender()
 {
@@ -2163,7 +2192,7 @@ void MainWindow::selectObject(QPoint mouse)
 	if (!this->qglview->renderer) {
 		return;
 	}
-	
+
 	// selecting without select object?!
 	if (!this->selector) {
 		return;
@@ -2218,13 +2247,11 @@ void MainWindow::selectObject(QPoint mouse)
 
 			// Prepare the action to be sent
 			auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
-			if (editorDock->isVisible()) {
-				action->setProperty("file", QString::fromStdString(location.fileName()));
-				action->setProperty("line", location.firstLine());
-				action->setProperty("column", location.firstColumn());
+            action->setProperty("file", QString::fromStdString(location.fileName()));
+            action->setProperty("line", location.firstLine());
+            action->setProperty("column", location.firstColumn());
 
-				connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
-			}
+            connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
 		}
 
 		tracemenu.exec(this->qglview->mapToGlobal(mouse));
@@ -2246,14 +2273,18 @@ void MainWindow::setCursor()
 	auto line = action->property("line").toInt();
 	auto column = action->property("column").toInt();
 
-	// Unsaved files do have the pwd as current path, therefore we will not open a new
-	// tab on click
-	if (!fs::is_directory(fs::path(file.toStdString()))) {
-		this->tabManager->open(file);
-	}
+    if (editorDock->isVisible()) {
+		// Unsaved files do have the pwd as current path, therefore we will not open a new
+		// tab on click
+		if (!fs::is_directory(fs::path(file.toStdString()))) {
+			this->tabManager->open(file);
+		}
 
-	// move the cursor, the editor is 0 based whereby location is 1 based
-	this->activeEditor->setCursorPosition(line - 1, column - 1);
+		// move the cursor, the editor is 0 based whereby location is 1 based
+		this->activeEditor->setCursorPosition(line - 1, column - 1);
+    }
+
+    emit externallySetCursor(file, line, column);
 }
 
 /**
@@ -2579,7 +2610,7 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
-    
+
     setCurrentOutput();
     LOG(message_group::None,Location::NONE,"","Caches Flushed");
 }
@@ -2946,18 +2977,19 @@ void MainWindow::showLink(const QString link)
 	}
 }
 
-void MainWindow::showEditor()
+void MainWindow::showEditor(bool force)
 {
-	windowActionHideEditor->setChecked(false);
-	hideEditor();
+    if (!force)
+    	windowActionHideEditor->setChecked(false);
+	hideEditor(force);
 	editorDock->raise();
 	tabManager->setFocus();
 }
 
-void MainWindow::hideEditor()
+void MainWindow::hideEditor(bool force)
 {
 	auto e = (ScintillaEditor *) this->activeEditor;
-	if (windowActionHideEditor->isChecked()) {
+	if (windowActionHideEditor->isChecked() || force) {
 		// Workaround manually disabling interactions with editor by setting it
 		// to read-only when not being shown.  This is an upstream bug from Qt
 		// (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
@@ -3167,7 +3199,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	if (tabManager->shouldClose()) {
 		// Disable invokeMethod calls for consoleOutput during shutdown,
 		// otherwise will segfault if echos are in progress.
-		hideCurrentOutput(); 
+		hideCurrentOutput();
 
 		QSettingsCached settings;
 		settings.setValue("window/size", size());
@@ -3239,7 +3271,7 @@ void MainWindow::consoleOutput(const Message &msgObj)
 	}
 	// FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
 	// Then processEvents should no longer be needed here.
-	this->processEvents(); 
+	this->processEvents();
 	if (consoleUpdater && !consoleUpdater->isActive()) {
 		consoleUpdater->start(50); // Limit console updates to 20 FPS
 	}

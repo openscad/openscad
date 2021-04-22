@@ -44,7 +44,7 @@ debug {
     message("If you're building a development binary, consider adding CONFIG+=experimental")
   }
 }
-  
+
 # If VERSION is not set, populate VERSION, VERSION_YEAR, VERSION_MONTH from system date
 include(version.pri)
 
@@ -73,7 +73,7 @@ idprefix {
   DEFINES += IDPREFIX
   message("Setting IDPREFIX for csg debugging")
   warning("Setting IDPREFIX will negatively affect cache hits")
-}  
+}
 macx {
   TARGET = OpenSCAD
 }
@@ -201,6 +201,9 @@ experimental {
   DEFINES += ENABLE_EXPERIMENTAL
 }
 
+  DEFINES += ENABLE_LANGUAGESERVER
+
+
 nogui {
   DEFINES += OPENSCAD_NOGUI
 }
@@ -245,7 +248,7 @@ FORMS   += src/MainWindow.ui \
            src/input/AxisConfigWidget.ui
 
 # AST nodes
-FLEXSOURCES += src/lexer.l 
+FLEXSOURCES += src/lexer.l
 BISONSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
@@ -254,7 +257,7 @@ HEADERS += src/AST.h \
            src/Assignment.h \
            src/expression.h \
            src/function.h \
-           src/module.h \           
+           src/module.h \
            src/UserModule.h \
 
 SOURCES += src/AST.cc \
@@ -404,7 +407,14 @@ HEADERS += src/version_check.h \
            src/input/InputDriverManager.h \
            src/input/AxisConfigWidget.h \
            src/input/ButtonConfigWidget.h \
-           src/input/WheelIgnorer.h
+           src/input/WheelIgnorer.h \
+           src/lsp/connection_handler.h \
+           src/lsp/connection.h \
+           src/lsp/language_server_interface.h \
+           src/lsp/lsp.h \
+           src/lsp/messages.h \
+           src/lsp/project.h
+
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -568,7 +578,18 @@ SOURCES += \
            src/input/InputDriverManager.cc \
            src/input/AxisConfigWidget.cc \
            src/input/ButtonConfigWidget.cc \
-           src/input/WheelIgnorer.cc
+           src/input/WheelIgnorer.cc \
+           \
+           src/lsp/connection_handler.cc \
+           src/lsp/connection.cc \
+           src/lsp/decoding.cc \
+           src/lsp/language_server_interface.cc \
+           src/lsp/lsp.cc \
+           src/lsp/messages.cc \
+           src/lsp/openscad_messages.cc \
+           src/lsp/project.cc \
+
+
 
 # CGAL
 HEADERS += src/ext/CGAL/OGL_helper.h \
@@ -577,7 +598,7 @@ HEADERS += src/ext/CGAL/OGL_helper.h \
 # LodePNG
 SOURCES += src/ext/lodepng/lodepng.cpp
 HEADERS += src/ext/lodepng/lodepng.h
-           
+
 # ClipperLib
 SOURCES += src/ext/polyclipping/clipper.cpp
 HEADERS += src/ext/polyclipping/clipper.hpp

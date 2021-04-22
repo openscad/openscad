@@ -7,16 +7,14 @@ namespace fs = boost::filesystem;
 
 #include <string>
 
+
 class Location {
 
 public:
 	Location(int firstLine, int firstCol, int lastLine, int lastCol,
-			std::shared_ptr<fs::path> path)
-		: first_line(firstLine), first_col(firstCol), last_line(lastLine),
-		last_col(lastCol), path(std::move(path)) {
-	}
+			std::shared_ptr<fs::path> path);
 
-	std::string fileName() const { return path ? path->generic_string() : ""; }
+    std::string fileName() const { return path ? path->generic_string() : ""; }
 	const fs::path& filePath() const { return *path; }
 	int firstLine() const { return first_line; }
 	int firstColumn() const { return first_col; }
@@ -30,6 +28,8 @@ public:
         bool operator != (Location const& rhs);
 
 	static const Location NONE;
+
+    bool overlap(const Location &other) const;
 private:
 	int first_line;
 	int first_col;
