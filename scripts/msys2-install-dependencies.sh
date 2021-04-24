@@ -15,13 +15,13 @@ for pkg in \
     mingw-w64-x86_64-glew \
     mingw-w64-x86_64-qscintilla \
     mingw-w64-x86_64-opencsg \
-    mingw-w64-x86_64-pkg-config \
     mingw-w64-x86_64-libzip \
     mingw-w64-x86_64-cmake \
     mingw-w64-x86_64-mesa \
     mingw-w64-x86_64-double-conversion \
     mingw-w64-x86_64-cairo \
     mingw-w64-x86_64-ghostscript \
+    mingw-w64-x86_64-imagemagick \
     make \
     cmake \
     bison \
