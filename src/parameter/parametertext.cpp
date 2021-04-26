@@ -18,7 +18,6 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 	this->lineEdit->setMaxLength(max);
 
 	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 }
 
 void ParameterText::onChanged(QString)
@@ -35,12 +34,8 @@ void ParameterText::onChanged(QString)
 				object->value = std::move(newValue);
 			}
 		}
+		emit changed();
 	}
-}
-
-void ParameterText::onEditingFinished()
-{
-	emit changed();
 }
 
 void ParameterText::setValue()

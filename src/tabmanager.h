@@ -82,7 +82,7 @@ private slots:
 public slots:
     void actionNew();
     void setContentRenderState(); // since last render
-    void setTabModified(bool, EditorInterface *);
+    void setTabModified(EditorInterface *);
     bool saveAll();
     void closeCurrentTab();
     void nextTab();

@@ -74,7 +74,7 @@ void ParameterVector::setValue()
 		}
 		boxes[i]->setValue(vec[i].toDouble());
 	}
-	for(unsigned int i = vec.size(); i < NR_OF_SPINBOXES; ++i) {
+	for(unsigned int i = object->defaultValue.toVector().size(); i < NR_OF_SPINBOXES; ++i) {
 		boxes[i]->hide();
 		boxes[i]->setReadOnly(true);
 	}

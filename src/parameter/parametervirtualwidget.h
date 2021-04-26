@@ -16,7 +16,7 @@ protected:
 
 public:
 	ParameterVirtualWidget(QWidget *parent,ParameterObject *parameterobject, DescLoD descriptionLoD);
-	~ParameterVirtualWidget();
+	ParameterObject* getObject() const { return object; }
 	virtual void setValue() = 0;
 	void resizeEvent(QResizeEvent * event) override;
 

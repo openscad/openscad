@@ -6,7 +6,6 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, ParameterObject *parameterob
 {
 	setValue();
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
-	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
@@ -16,12 +15,8 @@ void ParameterSpinBox::onChanged(double)
 {
 	if(!this->suppressUpdate){
 		object->value = Value(doubleSpinBox->value());
+		emit changed();
 	}
-}
-
-void ParameterSpinBox::onEditingFinished()
-{
-	emit changed();
 }
 
 void ParameterSpinBox::setValue()

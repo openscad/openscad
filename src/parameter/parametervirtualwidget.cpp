@@ -16,12 +16,12 @@ ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *
 	setName(QString::fromStdString(object->name));
 
 	if (descriptionLoD == DescLoD::ShowDetails || descriptionLoD == DescLoD::DescOnly) {
-		setDescription(object->description);
+		setDescription(QString::fromStdString(object->description));
 		this->labelInline->hide();
 	}else if(descriptionLoD == DescLoD::Inline){
-		addInline(object->description);
+		addInline(QString::fromStdString(object->description));
 	}else{
-		this->setToolTip(object->description);
+		this->setToolTip(QString::fromStdString(object->description));
 	}
 
 	if (descriptionLoD == DescLoD::DescOnly && object->description !=""){
@@ -30,11 +30,6 @@ ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent,ParameterObject *
 		labelParameter->show();
 	}
 }
-
-ParameterVirtualWidget::~ParameterVirtualWidget(){
-	
-}
-
 
 void ParameterVirtualWidget::setName(QString name) {
 	this->labelDescription->hide();
