@@ -63,6 +63,7 @@ public:
     InputDriverManager(void);
     virtual ~InputDriverManager(void);
 
+    void setCurrentWindow(QWidget *);
     void sendEvent(InputEvent *event);
 
     void init();

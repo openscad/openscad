@@ -189,6 +189,13 @@ QList<double> InputDriverManager::getRotation() const
     return QList<double>({0.0, 0.0, 0.0});
 }
 
+void InputDriverManager::setCurrentWindow(QWidget *current)
+{
+    if (current) {
+        currentWindow = dynamic_cast<MainWindow *>(current->window());
+    }
+}
+
 void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)
 {
     if (current) {

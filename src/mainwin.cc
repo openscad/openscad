@@ -505,6 +505,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->editortoolbar->actions());
 
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
+	InputDriverManager::instance()->setCurrentWindow(this);
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
 
