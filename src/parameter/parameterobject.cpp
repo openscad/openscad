@@ -42,8 +42,8 @@ void ParameterObject::setValue(const Value &defaultValue, const Value &values)
 
   if (dvt == Value::Type::BOOL) {
     this->target = CHECKBOX;
-  } else if ((dvt == Value::Type::VECTOR) && (defaultValue.toVector().size() <= 4)) {
-    this->target = checkVectorWidget();
+  } else if (dvt == Value::Type::VECTOR) {
+    this->target = VECTOR;
   } else if ((vt == Value::Type::RANGE || makerBotMax) && (dvt == Value::Type::NUMBER)) {
     this->target = SLIDER;
   } else if ((makerBotMax) && (dvt == Value::Type::STRING)){
@@ -57,16 +57,18 @@ void ParameterObject::setValue(const Value &defaultValue, const Value &values)
   }
 }
 
-ParameterObject::parameter_type_t ParameterObject::checkVectorWidget()
+bool ParameterObject::isVector4(const Value& defaultValue)
 {
-  const auto &vec = defaultValue.toVector();
-  if (vec.size() == 0) return TEXT;
-  for (unsigned int i = 0;i < vec.size();++i) {
-    if (vec[i].type() != Value::Type::NUMBER) {
-      return TEXT;
-    }
-  }
-  return VECTOR;
+	const auto &vec = defaultValue.toVector();
+	if (vec.size() < 1 || vec.size() > 4) {
+		return false;
+	}
+	for (size_t i = 0; i < vec.size(); ++i) {
+		if (vec[i].type() != Value::Type::NUMBER) {
+			return false;
+		}
+	}
+	return true;
 }
 
 std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment* assignment)
@@ -79,6 +81,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	ContextHandle<Context> ctx{Context::create<Context>()};
 	Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
 	if (defaultValue.type() == Value::Type::UNDEFINED) {
+		return nullptr;
+	} else if (defaultValue.type() == Value::Type::VECTOR && !isVector4(defaultValue)) {
 		return nullptr;
 	}
 

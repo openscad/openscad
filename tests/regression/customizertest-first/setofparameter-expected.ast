@@ -31,10 +31,6 @@ Variable = false;
 //Parameter(23)
 Spinbox = 35;
 //Group("Textbox")
-//Description("Text box for vector with more than 4 elements")
-//Parameter("comment")
-Vector = [2, 34, 45, 12, 3, 56];
-//Group("Textbox")
 //Description("Text box for string")
 //Parameter("comment")
 String = "hello";
@@ -45,8 +41,5 @@ Vector2 = [12, 4, 45, 23];
 //Group("Special vector")
 //Parameter("")
 nonparameter = "new";
-//Group("Special vector")
-//Parameter("")
-stringVector = ["hello", "new", 12];
 echo(String);
 

@@ -22,8 +22,8 @@ public:
 
 private:
 	Value::Type vt;
-	parameter_type_t checkVectorWidget();
 	void setValue(const Value &defaultValue, const Value &values);
+	static bool isVector4(const Value& defaultValue);
 
 public:
 	ParameterObject(std::shared_ptr<Context> context, const Assignment* assignment, const Value &defaultValue);

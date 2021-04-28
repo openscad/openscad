@@ -30,9 +30,6 @@ Spinbox = 5; //23
 
 /* [Textbox] */
 
-//Text box for vector with more than 4 elements
-Vector=[12,34,44,43,23,23];//comment
-
 // Text box for string
 String="hello"; //comment
 
@@ -42,5 +39,4 @@ Vector2=[12,34,45,23]; //any thing
 
 nonparameter="new";
 
-stringVector=["1","2"];
 echo(String);

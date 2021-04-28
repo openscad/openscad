@@ -1,6 +1,4 @@
 #include "parametertext.h"
-#include "modcontext.h"
-#include "comment.h"
 
 ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
 	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
@@ -23,17 +21,7 @@ ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, 
 void ParameterText::onChanged(QString)
 {
 	if(!this->suppressUpdate){
-		if (object->dvt == Value::Type::STRING) {
-			object->value = Value(lineEdit->text().toStdString());
-		}else{
-			ContextHandle<Context> ctx{Context::create<Context>()};
-			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
-			if (!params) return;
-			Value newValue = params->evaluate(ctx.ctx);
-			if (object->dvt == newValue.type()) {
-				object->value = std::move(newValue);
-			}
-		}
+		object->value = Value(lineEdit->text().toStdString());
 		emit changed();
 	}
 }
