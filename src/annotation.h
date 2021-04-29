@@ -13,6 +13,7 @@ public:
 	
 	virtual void print(std::ostream &stream, const std::string &indent) const;
 	const std::string &getName() const;
+	const Expression* getExpression() const { return expr.get(); }
 	virtual class Value evaluate(std::shared_ptr<class Context> ctx) const;
 	
 private:

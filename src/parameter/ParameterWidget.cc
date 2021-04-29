@@ -212,7 +212,7 @@ void ParameterWidget::onSetDelete()
 void ParameterWidget::parameterModified()
 {
 	ParameterVirtualWidget* widget = (ParameterVirtualWidget*)sender();
-	ParameterObject* parameter = widget->getObject();
+	ParameterObject* parameter = widget->getParameter();
 
 	// When attempting to modify the design default, create a new set to edit.
 	if (comboBoxPreset->currentIndex() == 0) {
@@ -233,7 +233,7 @@ void ParameterWidget::parameterModified()
 
 	size_t setIndex = comboBoxPreset->currentIndex() - 1;
 	assert(setIndex < sets.size());
-	sets[setIndex][parameter->name] = parameter->exportValue();
+	sets[setIndex][parameter->name()] = parameter->exportValue();
 
 	assert(widgets.count(parameter) == 1);
 	for (ParameterVirtualWidget* otherWidget : widgets[parameter]) {
@@ -304,12 +304,13 @@ void ParameterWidget::rebuildWidgets()
 		delete child;
 	}
 
-	DescLoD detailsStyle = static_cast<DescLoD>(comboBoxDetails->currentIndex());
+	DescriptionStyle descriptionStyle = static_cast<DescriptionStyle>(comboBoxDetails->currentIndex());
 	std::vector<ParameterGroup> parameterGroups = getParameterGroups();
 	for (const auto& group : parameterGroups) {
 		GroupWidget* groupWidget = new GroupWidget(group.name);
 		for (ParameterObject* parameter : group.parameters) {
-			ParameterVirtualWidget* parameterWidget = createParameterWidget(parameter, detailsStyle);
+			ParameterVirtualWidget* parameterWidget = createParameterWidget(parameter, descriptionStyle);
+			connect(parameterWidget, SIGNAL(changed()), this, SLOT(parameterModified()));
 			if (!widgets.count(parameter)) {
 				widgets[parameter] = {};
 			}
@@ -328,7 +329,7 @@ std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups
 	std::vector<ParameterObject*> globalParameters;
 
 	for (const std::unique_ptr<ParameterObject>& parameter : parameters) {
-		std::string group = parameter->groupName;
+		std::string group = parameter->group();
 		if (group == "Global") {
 			globalParameters.push_back(parameter.get());
 		} else if (group == "Hidden") {
@@ -356,42 +357,26 @@ std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups
 	return output;
 }
 
-ParameterVirtualWidget* ParameterWidget::createParameterWidget(ParameterObject* parameter, DescLoD detailsStyle)
+ParameterVirtualWidget* ParameterWidget::createParameterWidget(ParameterObject* parameter, DescriptionStyle descriptionStyle)
 {
-	ParameterVirtualWidget *entry = nullptr;
-	switch(parameter->target) {
-		case ParameterObject::COMBOBOX:{
-			entry = new ParameterComboBox(this, parameter, detailsStyle);
-			break;
+	if (parameter->type() == ParameterObject::ParameterType::Bool) {
+		return new ParameterCheckBox(this, static_cast<BoolParameter*>(parameter), descriptionStyle);
+	} else if (parameter->type() == ParameterObject::ParameterType::String) {
+		return new ParameterText(this, static_cast<StringParameter*>(parameter), descriptionStyle);
+	} else if (parameter->type() == ParameterObject::ParameterType::Number) {
+		NumberParameter* numberParameter = static_cast<NumberParameter*>(parameter);
+		if (numberParameter->minimum && numberParameter->maximum) {
+			return new ParameterSlider(this, numberParameter, descriptionStyle);
+		} else {
+			return new ParameterSpinBox(this, numberParameter, descriptionStyle);
 		}
-		case ParameterObject::SLIDER:{
-			entry = new ParameterSlider(this, parameter, detailsStyle);
-			break;
-		}
-		case ParameterObject::CHECKBOX:{
-			entry = new ParameterCheckBox(this, parameter, detailsStyle);
-			break;
-		}
-		case ParameterObject::TEXT:{
-			entry = new ParameterText(this, parameter, detailsStyle);
-			break;
-		}
-		case ParameterObject::NUMBER:{
-			entry = new ParameterSpinBox(this, parameter, detailsStyle);
-			break;
-		}
-		case ParameterObject::VECTOR:{
-			entry = new ParameterVector(this, parameter, detailsStyle);
-			break;
-		}
-		case ParameterObject::UNDEFINED:{
-			break;
-		}
+	} else if (parameter->type() == ParameterObject::ParameterType::Vector) {
+		return new ParameterVector(this, static_cast<VectorParameter*>(parameter), descriptionStyle);
+	} else if (parameter->type() == ParameterObject::ParameterType::Enum) {
+		return new ParameterComboBox(this, static_cast<EnumParameter*>(parameter), descriptionStyle);
+	} else {
+		assert(false);
 	}
-	if (entry) {
-		connect(entry, SIGNAL(changed()), this, SLOT(parameterModified()));
-	}
-	return entry;
 }
 
 QString ParameterWidget::getJsonFile(QString scadFile)
@@ -406,7 +391,7 @@ void ParameterWidget::cleanSets()
 {
 	std::map<std::string, ParameterObject*> namedParameters;
 	for (const auto& parameter : parameters) {
-		namedParameters[parameter->name] = parameter.get();
+		namedParameters[parameter->name()] = parameter.get();
 	}
 	
 	for (ParameterSet& set : sets) {

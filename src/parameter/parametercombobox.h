@@ -1,18 +1,19 @@
 #pragma once
 
 #include "parametervirtualwidget.h"
+#include "ui_parametercombobox.h"
 
-class ParameterComboBox : public ParameterVirtualWidget
+class ParameterComboBox : public ParameterVirtualWidget, Ui::ParameterComboBox
 {
 	Q_OBJECT
 
 public:
-	ParameterComboBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+	ParameterComboBox(QWidget *parent, EnumParameter *parameter, DescriptionStyle descriptionStyle);
 	void setValue() override;
 
 protected slots:
-	void onChanged(int idx);
+	void onChanged(int index);
 
 private:
-	bool volatile suppressUpdate; 
+	EnumParameter* parameter;
 };

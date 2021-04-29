@@ -97,6 +97,7 @@ class Literal : public Expression
 {
 public:
 	Literal(Value val, const Location &loc = Location::NONE);
+	const Value& getValue() const { return value; }
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override { return true;}
@@ -109,6 +110,9 @@ class Range : public Expression
 public:
 	Range(Expression *begin, Expression *end, const Location &loc);
 	Range(Expression *begin, Expression *step, Expression *end, const Location &loc);
+	const Expression* getBegin() const { return begin.get(); }
+	const Expression* getStep() const { return step.get(); }
+	const Expression* getEnd() const { return end.get(); }
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override;
@@ -122,6 +126,7 @@ class Vector : public Expression
 {
 public:
 	Vector(const Location &loc);
+	const std::vector<shared_ptr<Expression>>& getChildren() const { return children; }
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	void emplace_back(Expression *expr);

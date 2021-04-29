@@ -84,7 +84,7 @@ protected:
 		std::vector<ParameterObject*> parameters;
 	};
 	std::vector<ParameterGroup> getParameterGroups();
-	ParameterVirtualWidget* createParameterWidget(ParameterObject* parameter, DescLoD detailsStyle);
+	ParameterVirtualWidget* createParameterWidget(ParameterObject* parameter, DescriptionStyle descriptionStyle);
 	QString getJsonFile(QString scadFile);
 	void cleanSets();
 };

@@ -9,11 +9,11 @@ Strings = "foo";
 //Group("Drop down box:")
 //Description("labeled combo box for numbers")
 //Parameter([[10, "L"], [20, "M"], [30, "L"]])
-Labeled_values = 100;
+Labeled_values = 30;
 //Group("Drop down box:")
 //Description("labeled combo box for string")
 //Parameter([["S", "Small"], ["M", "Medium"], ["L", "Large"]])
-Labeled_value = " /*New */ ";
+Labeled_value = "L";
 //Group(" Slider ")
 //Description("slider widget for number")
 //Parameter([10 : 100])
@@ -42,4 +42,3 @@ Vector2 = [12, 4, 45, 23];
 //Parameter("")
 nonparameter = "new";
 echo(String);
-

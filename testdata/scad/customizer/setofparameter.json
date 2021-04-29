@@ -1,8 +1,8 @@
 {
     "parameterSets": {
         "firstSet": {
-            "Labeled_value": " \/*New *\/ ",
-            "Labeled_values": "100",
+            "Labeled_value": "L",
+            "Labeled_values": "30",
             "Numbers": "1",
             "Spinbox": "35",
             "String": "hello",
@@ -21,7 +21,7 @@
             "Strings": "fo",
             "Variable": "true",
             "Vector2": "[12, 34, 45, 23]",
-            "slider": "34",
+            "slider": "340",
             "stepSlider": "2"
         },
         "thirdSet": {

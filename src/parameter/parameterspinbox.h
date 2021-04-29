@@ -1,17 +1,20 @@
 #pragma once
 
 #include "parametervirtualwidget.h"
+#include "ui_parameterspinbox.h"
 
-class ParameterSpinBox :public ParameterVirtualWidget
+class ParameterSpinBox : public ParameterVirtualWidget, Ui::ParameterSpinBox
 {
 	Q_OBJECT
+
 public:
-	ParameterSpinBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+	ParameterSpinBox(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle);
 	void setValue() override;
 
 protected slots:
-	void onChanged(double);
+	void onChanged();
 
 private:
-	bool volatile suppressUpdate; 
+	NumberParameter* parameter;
+	bool inUpdate = false;
 };

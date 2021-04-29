@@ -1,40 +1,84 @@
 #include "parametervector.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterVector::ParameterVector(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
+ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, DescriptionStyle descriptionStyle):
+	ParameterVirtualWidget(parent, parameter),
+	parameter(parameter)
 {
-	setValue();
-	connect(doubleSpinBox1,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	connect(doubleSpinBox2,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	connect(doubleSpinBox3,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
-	connect(doubleSpinBox4,SIGNAL(valueChanged(double)),this,SLOT(onChanged(double)));
+	setupUi(this);
+	descriptionWidget->setDescription(parameter, descriptionStyle);
+
+	assert(parameter->defaultValue.size() >= 1);
+	assert(parameter->defaultValue.size() <= 4);
+
+	if (parameter->defaultValue.size() >= 1) {
+		spinboxes.push_back(doubleSpinBox1);
+	} else {
+		doubleSpinBox1->hide();
+	}
+	if (parameter->defaultValue.size() >= 2) {
+		spinboxes.push_back(doubleSpinBox2);
+	} else {
+		doubleSpinBox2->hide();
+	}
+	if (parameter->defaultValue.size() >= 3) {
+		spinboxes.push_back(doubleSpinBox3);
+	} else {
+		doubleSpinBox3->hide();
+	}
+	if (parameter->defaultValue.size() >= 4) {
+		spinboxes.push_back(doubleSpinBox4);
+	} else {
+		doubleSpinBox4->hide();
+	}
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-	this->doubleSpinBox1->installEventFilter(ignoreWheelWhenNotFocused);
-	this->doubleSpinBox2->installEventFilter(ignoreWheelWhenNotFocused);
-	this->doubleSpinBox3->installEventFilter(ignoreWheelWhenNotFocused);
-	this->doubleSpinBox4->installEventFilter(ignoreWheelWhenNotFocused);
+	for (auto spinbox : spinboxes) {
+		spinbox->installEventFilter(ignoreWheelWhenNotFocused);
+	}
+
+	int decimals = decimalsRequired(parameter->defaultValue);
+	double minimum;
+	if (parameter->minimum) {
+		minimum = *parameter->minimum;
+		decimals = std::max(decimals, decimalsRequired(minimum));
+	} else if (parameter->maximum && *parameter->maximum > 0) {
+		minimum = 0;
+	} else {
+		minimum = std::numeric_limits<double>::lowest();
+	}
+	double maximum;
+	if (parameter->maximum) {
+		maximum = *parameter->maximum;
+		decimals = std::max(decimals, decimalsRequired(maximum));
+	} else if (parameter->minimum && *parameter->minimum < 0) {
+		maximum = 0;
+	} else {
+		maximum = std::numeric_limits<double>::max();
+	}
+	double step;
+	if (parameter->step) {
+		step = *parameter->step;
+		decimals = std::max(decimals, decimalsRequired(step));
+	} else {
+		step = pow(0.1, decimals);
+	}
+	for (auto spinbox : spinboxes) {
+		spinbox->setDecimals(decimals);
+		spinbox->setRange(minimum, maximum);
+		spinbox->setSingleStep(step);
+		spinbox->show();
+		connect(spinbox, SIGNAL(valueChanged(double)), this, SLOT(onChanged()));
+	}
+
+	setValue();
 }
 
-void ParameterVector::onChanged(double)
+void ParameterVector::onChanged()
 {
-	if(!this->suppressUpdate){
-		if (object->target == ParameterObject::NUMBER) {
-			object->value = Value(doubleSpinBox1->value());
-		} else {
-			VectorType vt;
-			vt.emplace_back(this->doubleSpinBox1->value());
-			if (!this->doubleSpinBox2->isReadOnly()) {
-				vt.emplace_back(this->doubleSpinBox2->value());
-			}
-			if (!this->doubleSpinBox3->isReadOnly()) {
-				vt.emplace_back(this->doubleSpinBox3->value());
-			}
-			if (!this->doubleSpinBox4->isReadOnly()) {
-				vt.emplace_back(this->doubleSpinBox4->value());
-			}
-			object->value = Value(std::move(vt));
+	if (!inUpdate) {
+		for (size_t i = 0; i < spinboxes.size(); i++) {
+			parameter->value[i] = spinboxes[i]->value();
 		}
 		emit changed();
 	}
@@ -42,41 +86,9 @@ void ParameterVector::onChanged(double)
 
 void ParameterVector::setValue()
 {
-	this->suppressUpdate=true;
-	this->stackedWidgetBelow->setCurrentWidget(this->pageVector);
-	this->pageVector->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	this->stackedWidgetRight->hide();
-
-	const auto &vec = object->value.toVector();
-
-	double minV = object->values.toRange().begin_value();
-	double step = object->values.toRange().step_value();
-	double maxV = object->values.toRange().end_value();
-
-	if(step==0){
-		step=1;
-		setPrecision(vec);
-	}else{
-		setPrecision(step);
+	inUpdate = true;
+	for (size_t i = 0; i < spinboxes.size(); i++) {
+		spinboxes[i]->setValue(parameter->value[i]);
 	}
-
-	QDoubleSpinBox* boxes[NR_OF_SPINBOXES] = {this->doubleSpinBox1,this->doubleSpinBox2,this->doubleSpinBox3,this->doubleSpinBox4};
-
-	for(unsigned int i = 0; i < vec.size() && i < NR_OF_SPINBOXES; ++i) {
-		boxes[i]->show();
-		boxes[i]->setDecimals(decimalPrecision);
-		if(minV==0 && maxV ==0){
-			boxes[i]->setRange(vec[i].toDouble()-1000,vec[i].toDouble()+1000);
-		}else{
-			boxes[i]->setMinimum(minV);
-			boxes[i]->setMaximum(maxV);
-			boxes[i]->setSingleStep(step);
-		}
-		boxes[i]->setValue(vec[i].toDouble());
-	}
-	for(unsigned int i = object->defaultValue.toVector().size(); i < NR_OF_SPINBOXES; ++i) {
-		boxes[i]->hide();
-		boxes[i]->setReadOnly(true);
-	}
-	this->suppressUpdate=false;
+	inUpdate = false;
 }
