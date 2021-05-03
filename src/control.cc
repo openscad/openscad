@@ -44,22 +44,22 @@ static AbstractNode* lazyUnionNode(const ModuleInstantiation *inst)
 	}
 }
 
-static boost::optional<size_t> validChildIndex(int n, const Children* children)
+static boost::optional<size_t> validChildIndex(int n, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	if (n < 0 || n >= static_cast<int>(children->size())) {
-		LOG(message_group::Warning,Location::NONE,"","Children index (%1$d) out of bounds (%2$d children)",n,children->size());
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),"Children index (%1$d) out of bounds (%2$d children)",n,children->size());
 		return boost::none;
 	}
 	return size_t(n);
 }
 
-static boost::optional<size_t> validChildIndex(const Value &value, const Children* children)
+static boost::optional<size_t> validChildIndex(const Value &value, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	if (value.type() != Value::Type::NUMBER) {
-		LOG(message_group::Warning,Location::NONE,"","Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
 		return boost::none;
 	}
-	return validChildIndex(static_cast<int>(trunc(value.toDouble())), children);
+	return validChildIndex(static_cast<int>(trunc(value.toDouble())), children, inst, context);
 }
 
 static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
@@ -75,9 +75,9 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	
 	boost::optional<size_t> index;
 	if (arguments.size() == 0) {
-		index = validChildIndex(0, children);
+		index = validChildIndex(0, children, inst, context);
 	} else {
-		index = validChildIndex(arguments[0].value, children);
+		index = validChildIndex(arguments[0].value, children, inst, context);
 	}
 	if (!index) {
 		return nullptr;
@@ -101,7 +101,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	
 	// one (or more ignored) argument
 	if (arguments[0]->type() == Value::Type::NUMBER) {
-		auto index = validChildIndex(arguments[0].value, children);
+		auto index = validChildIndex(arguments[0].value, children, inst, context);
 		if (!index) {
 			return nullptr;
 		}
@@ -110,7 +110,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	else if (arguments[0]->type() == Value::Type::VECTOR) {
 		std::vector<size_t> indices;
 		for (const auto& val : arguments[0]->toVector()) {
-			auto index = validChildIndex(val, children);
+			auto index = validChildIndex(val, children, inst, context);
 			if (index) {
 				indices.push_back(*index);
 			}
@@ -127,7 +127,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 		}
 		std::vector<size_t> indices;
 		for (double d : range) {
-			auto index = validChildIndex(static_cast<int>(trunc(d)), children);
+			auto index = validChildIndex(static_cast<int>(trunc(d)), children, inst, context);
 			if (index) {
 				indices.push_back(*index);
 			}
