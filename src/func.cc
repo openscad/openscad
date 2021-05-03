@@ -25,8 +25,8 @@
  */
 
 #include "function.h"
+#include "arguments.h"
 #include "expression.h"
-#include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "stackcheck.h"
@@ -58,466 +58,379 @@ int process_id = getpid();
 #endif
 
 std::mt19937 deterministic_rng( std::time(nullptr) + process_id );
-
-static void print_argCnt_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){
-	LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"%1$s() number of parameters does not match",name);
+#include <array>
+static void print_argCnt_warning(
+	const char *name,
+	int found,
+	const std::string& expected,
+	const Location& loc,
+	const std::string& documentRoot
+){
+	LOG(message_group::Warning,loc,documentRoot,"%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found),name);
 }
-
-static void print_argConvert_warning(const char *name, const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx){
-	LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"%1$s() parameter could not be converted",name);
-}
-
-Value builtin_abs(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(std::fabs(v.toDouble()));
-		} else {
-			print_argConvert_warning("abs", ctx, evalctx);
-		}
+static void print_argConvert_warning(
+	const char *name,
+	const std::string& where,
+	Value::Type found,
+	std::vector<Value::Type> expected,
+	const Location& loc,
+	const std::string& documentRoot
+){
+	std::stringstream message;
+	message << name << "() parameter could not be converted: " << where << ": expected ";
+	if (expected.size() == 1) {
+		message << Value::typeName(expected[0]);
 	} else {
-		print_argCnt_warning("abs", ctx, evalctx);
+		assert(expected.size() > 0);
+		message << "one of (" << Value::typeName(expected[0]);
+		for (size_t i = 1; i < expected.size(); i++) {
+			message << ", " << Value::typeName(expected[i]);
+		}
+		message << ")";
 	}
-
-	return Value::undefined.clone();
+	message << ", found " << Value::typeName(found);
+	LOG(message_group::Warning,loc,documentRoot,"%1$s",message.str());
 }
 
-Value builtin_sign(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+static inline bool check_arguments(const char* function_name, const Arguments& arguments, const Location& loc, int expected_count, bool warn = true)
 {
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER) {
-			double x = v.toDouble();
-			return Value((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
-		} else {
-			print_argConvert_warning("sign", ctx, evalctx);
+	if (arguments.size() != expected_count) {
+		if (warn) {
+			print_argCnt_warning(function_name, arguments.size(), STR(expected_count), loc, arguments.documentRoot());
 		}
-	} else {
-		print_argCnt_warning("sign", ctx, evalctx);
+		return false;
 	}
-	return Value::undefined.clone();
+	return true;
+}
+static inline bool try_check_arguments(const Arguments& arguments, int expected_count)
+{
+	return check_arguments(nullptr, arguments, Location::NONE, expected_count, false);
 }
 
-Value builtin_rands(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+template<size_t N>
+static inline bool check_arguments(const char* function_name, const Arguments& arguments, const Location& loc, const Value::Type (&expected_types) [N], bool warn = true)
 {
-	size_t n = evalctx->numArgs();
-	if (n == 3 || n == 4) {
-		Value v0 = evalctx->getArgValue(0);
-		if (v0.type() != Value::Type::NUMBER) goto quit;
-		double min = v0.toDouble();
-
-		if (std::isinf(min) || std::isnan(min)){
-			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rands() range min cannot be infinite");
-			min = -std::numeric_limits<double>::max()/2;
-			LOG(message_group::Warning,Location::NONE,"","resetting to %1f",min);
-		}
-		Value v1 = evalctx->getArgValue(1);
-		if (v1.type() != Value::Type::NUMBER) goto quit;
-		double max = v1.toDouble();
-		if (std::isinf(max)  || std::isnan(max)) {
-			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rands() range max cannot be infinite");
-			max = std::numeric_limits<double>::max()/2;
-			LOG(message_group::Warning,Location::NONE,"","resetting to %1f",max);
-		}
-		if (max < min) {
-			double tmp = min; min = max; max = tmp;
-		}
-		Value v2 = evalctx->getArgValue(2);
-		if (v2.type() != Value::Type::NUMBER) goto quit;
-		double numresultsd = std::abs( v2.toDouble() );
-		if (std::isinf(numresultsd)  || std::isnan(numresultsd)) {
-			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"rands() cannot create an infinite number of results");
-			LOG(message_group::Warning,Location::NONE,"","resetting number of results to 1");
-			numresultsd = 1;
-		}
-		size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
-
-		if (n > 3) {
-			Value v3 = evalctx->getArgValue(3);
-			if (v3.type() != Value::Type::NUMBER) goto quit;
-			uint32_t seed = static_cast<uint32_t>(hash_floating_point( v3.toDouble() ));
-			deterministic_rng.seed( seed );
-		}
-		VectorType vec;
-		if (min>=max) { // uniform_real_distribution doesn't allow min == max
-			for (size_t i=0; i < numresults; ++i)
-				vec.emplace_back(min);
-		} else {
-			std::uniform_real_distribution<> distributor( min, max );
-			for (size_t i=0; i < numresults; ++i) {
-				vec.emplace_back(distributor(deterministic_rng));
-			}
-		}
-		return std::move(vec);
-	} else {
-		print_argCnt_warning("rands", ctx, evalctx);
+	if (!check_arguments(function_name, arguments, loc, N, warn)) {
+		return false;
 	}
-quit:
-	return Value::undefined.clone();
+	for (size_t i = 0; i < N; i++) {
+		if (arguments[i]->type() != expected_types[i]) {
+			if (warn) {
+				print_argConvert_warning(function_name, "argument " + STR(i), arguments[i]->type(), {expected_types[i]}, loc, arguments.documentRoot());
+			}
+			return false;
+		}
+	}
+	return true;
+}
+template<size_t N>
+static inline bool try_check_arguments(const Arguments& arguments, const Value::Type (&expected_types) [N])
+{
+	return check_arguments(nullptr, arguments, Location::NONE, expected_types, false);
 }
 
-Value builtin_min(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_abs(Arguments arguments, const Location& loc)
 {
-	// preserve special handling of the first argument
-	// as a template for vector processing
-	size_t n = evalctx->numArgs();
-	if (n >= 1) {
-		Value v0 = evalctx->getArgValue(0);
-
-		if (n == 1 && v0.type() == Value::Type::VECTOR) {
-			const auto &vec = v0.toVector();
-			if (!vec.empty()) {
-				return std::min_element(vec.begin(), vec.end(), Value::cmp_less)->clone();
-			}
-		}
-		if (v0.type() == Value::Type::NUMBER) {
-			double val = v0.toDouble();
-			for (size_t i = 1; i < n; ++i) {
-				Value v = evalctx->getArgValue(i);
-				// 4/20/14 semantic change per discussion:
-				// break on any non-number
-				if (v.type() != Value::Type::NUMBER) goto quit;
-				double x = v.toDouble();
-				if (x < val) val = x;
-			}
-			return Value(val);
-		}
-	} else {
-		print_argCnt_warning("min", ctx, evalctx);
+	if (!check_arguments("abs", arguments, loc, { Value::Type::NUMBER })) {
 		return Value::undefined.clone();
 	}
-quit:
-	print_argConvert_warning("min", ctx, evalctx);
-	return Value::undefined.clone();
+	return Value(std::fabs(arguments[0]->toDouble()));
 }
 
-Value builtin_max(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_sign(Arguments arguments, const Location& loc)
 {
-	// preserve special handling of the first argument
-	// as a template for vector processing
-	size_t n = evalctx->numArgs();
-	if (n >= 1) {
-		Value v0 = evalctx->getArgValue(0);
-
-		if (n == 1 && v0.type() == Value::Type::VECTOR) {
-			const auto &vec = v0.toVector();
-			if (!vec.empty()) {
-				return std::max_element(vec.begin(), vec.end(), Value::cmp_less)->clone();
-			}
-		}
-		if (v0.type() == Value::Type::NUMBER) {
-			double val = v0.toDouble();
-			for (size_t i = 1; i < n; ++i) {
-				Value v = evalctx->getArgValue(i);
-				// 4/20/14 semantic change per discussion:
-				// break on any non-number
-				if (v.type() != Value::Type::NUMBER) goto quit;
-				double x = v.toDouble();
-				if (x > val) val = x;
-			}
-			return Value(val);
-		}
-	} else {
-		print_argCnt_warning("max", ctx, evalctx);
+	if (!check_arguments("sign", arguments, loc, { Value::Type::NUMBER })) {
 		return Value::undefined.clone();
 	}
-quit:
-	print_argConvert_warning("max", ctx, evalctx);
-	return Value::undefined.clone();
+	double x = arguments[0]->toDouble();
+	return Value((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
 }
 
-Value builtin_sin(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_rands(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(sin_degrees(v.toDouble()));
-		} else {
-			print_argConvert_warning("sin", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("sin", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_cos(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(cos_degrees(v.toDouble()));
-		} else {
-			print_argConvert_warning("cos", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("cos", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_asin(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(asin_degrees(v.toDouble()));
-		} else {
-			print_argConvert_warning("asin", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("asin", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_acos(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(acos_degrees(v.toDouble()));
-		} else {
-			print_argConvert_warning("acos", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("acos", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_tan(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(tan_degrees(v.toDouble()));
-		} else {
-			print_argConvert_warning("tan", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("tan", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_atan(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(atan_degrees(v.toDouble()));
-		} else {
-			print_argConvert_warning("atan", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("atan", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_atan2(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 2) {
-		Value v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0.type() == Value::Type::NUMBER && v1.type() == Value::Type::NUMBER){
-			return Value(atan2_degrees(v0.toDouble(), v1.toDouble()));
-		} else {
-			print_argConvert_warning("atan2", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("atan2", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_pow(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 2) {
-		Value v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
-		if (v0.type() == Value::Type::NUMBER && v1.type() == Value::Type::NUMBER){
-			return Value(pow(v0.toDouble(), v1.toDouble()));
-		} else {
-			print_argConvert_warning("pow", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("pow", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_round(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(round(v.toDouble()));
-		} else {
-			print_argConvert_warning("round", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("round", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_ceil(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(ceil(v.toDouble()));
-		} else {
-			print_argConvert_warning("ceil", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("ceil", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_floor(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(floor(v.toDouble()));
-		} else {
-			print_argConvert_warning("floor", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("floor", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_sqrt(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(sqrt(v.toDouble()));
-		} else {
-			print_argConvert_warning("sqrt", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("sqrt", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_exp(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(exp(v.toDouble()));
-		} else {
-			print_argConvert_warning("exp", ctx, evalctx);
-		}
-	} else {
-		print_argCnt_warning("exp", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_length(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::VECTOR) return double(v.toVector().size());
-		if (v.type() == Value::Type::STRING) {
-			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
-			return Value(double( v.toStrUtf8Wrapper().get_utf8_strlen()));
-		}
-		print_argConvert_warning("len", ctx, evalctx);
-	} else {
-		print_argCnt_warning("len", ctx, evalctx);
-	}
-	return Value::undefined.clone();
-}
-
-Value builtin_log(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	size_t n = evalctx->numArgs();
-	if (n == 1 || n == 2) {
-		Value v0 = evalctx->getArgValue(0);
-		if (v0.type() == Value::Type::NUMBER) {
-			double x = 10.0, y = v0.toDouble();
-			if (n > 1) {
-				Value v1 = evalctx->getArgValue(1);
-				if (v1.type() != Value::Type::NUMBER) goto quit;
-				x = y; y = v1.toDouble();
-			}
-			return Value(log(y) / log(x));
-		}
-	} else {
-		print_argCnt_warning("log", ctx, evalctx);
+	if (arguments.size() < 3 || arguments.size() > 4) {
+		print_argCnt_warning("rands", arguments.size(), "3 or 4", loc, arguments.documentRoot());
 		return Value::undefined.clone();
-	}
-quit:
-	print_argConvert_warning("log", ctx, evalctx);
-	return Value::undefined.clone();
-}
-
-Value builtin_ln(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
-{
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() == Value::Type::NUMBER){
-			return Value(log(v.toDouble()));
-		} else {
-			print_argConvert_warning("ln", ctx, evalctx);
+	} else if (arguments.size() == 3) {
+		if (!check_arguments("rands", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER })) {
+			return Value::undefined.clone();
 		}
 	} else {
-		print_argCnt_warning("ln", ctx, evalctx);
+		if (!check_arguments("rands", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER })) {
+			return Value::undefined.clone();
+		}
 	}
-	return Value::undefined.clone();
-}
-
-Value builtin_str(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
-{
-	std::ostringstream stream;
-
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		stream << evalctx->getArgValue(i).toString();
-	}
-	return Value(stream.str());
-}
-
-Value builtin_chr(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
-{
-	std::ostringstream stream;
 	
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		Value v = evalctx->getArgValue(i);
-		stream << v.chrString();
+	double min = arguments[0]->toDouble();
+	if (std::isinf(min) || std::isnan(min)){
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"rands() range min cannot be infinite");
+		min = -std::numeric_limits<double>::max()/2;
+		LOG(message_group::Warning,Location::NONE,"","resetting to %1f",min);
+	}
+
+	double max = arguments[1]->toDouble();
+	if (std::isinf(max)  || std::isnan(max)) {
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"rands() range max cannot be infinite");
+		max = std::numeric_limits<double>::max()/2;
+		LOG(message_group::Warning,Location::NONE,"","resetting to %1f",max);
+	}
+	if (max < min) {
+		double tmp = min; min = max; max = tmp;
+	}
+
+	double numresultsd = std::abs( arguments[2]->toDouble() );
+	if (std::isinf(numresultsd) || std::isnan(numresultsd)) {
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"rands() cannot create an infinite number of results");
+		LOG(message_group::Warning,Location::NONE,"","resetting number of results to 1");
+		numresultsd = 1;
+	}
+	size_t numresults = boost_numeric_cast<size_t,double>( numresultsd );
+
+	if (arguments.size() > 3) {
+		uint32_t seed = static_cast<uint32_t>(hash_floating_point( arguments[3]->toDouble() ));
+		deterministic_rng.seed( seed );
+	}
+
+	VectorType vec;
+	if (min>=max) { // uniform_real_distribution doesn't allow min == max
+		for (size_t i=0; i < numresults; ++i)
+			vec.emplace_back(min);
+	} else {
+		std::uniform_real_distribution<> distributor( min, max );
+		for (size_t i=0; i < numresults; ++i) {
+			vec.emplace_back(distributor(deterministic_rng));
+		}
+	}
+	return std::move(vec);
+}
+
+static std::vector<double> min_max_arguments(const Arguments& arguments, const Location& loc, const char* function_name)
+{
+	std::vector<double> output;
+	// preserve special handling of the first argument
+	// as a template for vector processing
+	if (arguments.size() == 0) {
+		print_argCnt_warning(function_name, arguments.size(), "at least 1", loc, arguments.documentRoot());
+		return {};
+	} else if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
+		const auto& elements = arguments[0]->toVector();
+		if (elements.size() == 0) {
+			print_argCnt_warning(function_name, elements.size(), "at least 1 vector element", loc, arguments.documentRoot());
+			return {};
+		}
+		for (size_t i = 0; i < elements.size(); i++) {
+			const auto& element = elements[i];
+			// 4/20/14 semantic change per discussion:
+			// break on any non-number
+			if (element.type() != Value::Type::NUMBER) {
+				print_argConvert_warning(function_name, "vector element " + STR(i), element.type(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
+				return {};
+			}
+			output.push_back(element.toDouble());
+		}
+	} else {
+		for (size_t i = 0; i < arguments.size(); i++) {
+			const auto& argument = arguments[i];
+			// 4/20/14 semantic change per discussion:
+			// break on any non-number
+			if (argument->type() != Value::Type::NUMBER) {
+				print_argConvert_warning(function_name, "argument " + STR(i), argument->type(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
+				return {};
+			}
+			output.push_back(argument->toDouble());
+		}
+	}
+	return output;
+}
+
+Value builtin_min(Arguments arguments, const Location& loc)
+{
+	std::vector<double> values = min_max_arguments(arguments, loc, "min");
+	if (values.empty()) {
+		return Value::undefined.clone();
+	}
+	return Value(*std::min_element(values.begin(), values.end()));
+}
+
+Value builtin_max(Arguments arguments, const Location& loc)
+{
+	std::vector<double> values = min_max_arguments(arguments, loc, "max");
+	if (values.empty()) {
+		return Value::undefined.clone();
+	}
+	return Value(*std::max_element(values.begin(), values.end()));
+}
+
+Value builtin_sin(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("sin", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(sin_degrees(arguments[0]->toDouble()));
+}
+
+Value builtin_cos(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("cos", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(cos_degrees(arguments[0]->toDouble()));
+}
+
+Value builtin_asin(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("asin", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(asin_degrees(arguments[0]->toDouble()));
+}
+
+Value builtin_acos(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("acos", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(acos_degrees(arguments[0]->toDouble()));
+}
+
+Value builtin_tan(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("tan", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(tan_degrees(arguments[0]->toDouble()));
+}
+
+Value builtin_atan(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("atan", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(atan_degrees(arguments[0]->toDouble()));
+}
+
+Value builtin_atan2(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("atan2", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(atan2_degrees(arguments[0]->toDouble(), arguments[1]->toDouble()));
+}
+
+Value builtin_pow(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("pow", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(pow(arguments[0]->toDouble(), arguments[1]->toDouble()));
+}
+
+Value builtin_round(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("round", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(round(arguments[0]->toDouble()));
+}
+
+Value builtin_ceil(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("ceil", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(ceil(arguments[0]->toDouble()));
+}
+
+Value builtin_floor(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("floor", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(floor(arguments[0]->toDouble()));
+}
+
+Value builtin_sqrt(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("sqrt", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(sqrt(arguments[0]->toDouble()));
+}
+
+Value builtin_exp(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("exp", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(exp(arguments[0]->toDouble()));
+}
+
+Value builtin_length(Arguments arguments, const Location& loc)
+{
+	if (try_check_arguments(arguments, { Value::Type::VECTOR })) {
+		return Value(double(arguments[0]->toVector().size()));
+	}
+	if (!check_arguments("len", arguments, loc, { Value::Type::STRING } )) {
+		return Value::undefined.clone();
+	}
+	//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
+	return Value(double( arguments[0]->toStrUtf8Wrapper().get_utf8_strlen() ));
+}
+
+Value builtin_log(Arguments arguments, const Location& loc)
+{
+	double x, y;
+	if (arguments.size() == 1) {
+		if (!check_arguments("log", arguments, loc, { Value::Type::NUMBER })) {
+			return Value::undefined.clone();
+		}
+		x = 10.0;
+		y = arguments[0]->toDouble();
+	} else {
+		if (!check_arguments("log", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
+			return Value::undefined.clone();
+		}
+		x = arguments[0]->toDouble();
+		y = arguments[1]->toDouble();
+	}
+	return Value(log(y) / log(x));
+}
+
+Value builtin_ln(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("ln", arguments, loc, { Value::Type::NUMBER })) {
+		return Value::undefined.clone();
+	}
+	return Value(log(arguments[0]->toDouble()));
+}
+
+Value builtin_str(Arguments arguments, const Location& loc)
+{
+	std::ostringstream stream;
+	for (const auto& argument : arguments) {
+		stream << argument->toString();
 	}
 	return Value(stream.str());
 }
 
-Value builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_chr(Arguments arguments, const Location& loc)
 {
-	const size_t numArgs = evalctx->numArgs();
+	std::ostringstream stream;
+	for (const auto& argument : arguments) {
+		stream << argument->chrString();
+	}
+	return Value(stream.str());
+}
 
-	if (numArgs == 0) {
-		return Value::undefined.clone();
-	} else if (numArgs > 1) {
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"ord() called with %1$d arguments, only 1 argument expected",numArgs);
+Value builtin_ord(Arguments arguments, const Location& loc)
+{
+	if (!check_arguments("ord", arguments, loc, { Value::Type::STRING })) {
 		return Value::undefined.clone();
 	}
-
-	const Value arg = evalctx->getArgValue(0);
-	if (arg.type() != Value::Type::STRING) {
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"ord() argument %1$s is not of type string",arg.toEchoString());
-		return Value::undefined.clone();
-	}
-
-	const str_utf8_wrapper &arg_str = arg.toStrUtf8Wrapper();
+	const str_utf8_wrapper &arg_str = arguments[0]->toStrUtf8Wrapper();
 	const char *ptr = arg_str.c_str();
 	if (!g_utf8_validate(ptr, -1, NULL)) {
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"ord() argument '%1$s' is not a valid utf8 string",arg_str.toString());
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"ord() argument '%1$s' is not a valid utf8 string",arg_str.toString());
 		return Value::undefined.clone();
 	}
 
@@ -529,35 +442,32 @@ Value builtin_ord(const std::shared_ptr<Context> ctx, const std::shared_ptr<Eval
 	return Value((double)ch);
 }
 
-Value builtin_concat(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_concat(Arguments arguments, const Location& loc)
 {
 	VectorType result;
-
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		Value val = evalctx->getArgValue(i);
-		if (val.type() == Value::Type::VECTOR) {
-			result.emplace_back(EmbeddedVectorType(std::move(val.toVectorNonConst())));
+	for (auto& argument : arguments) {
+		if (argument->type() == Value::Type::VECTOR) {
+			result.emplace_back(EmbeddedVectorType(std::move(argument->toVectorNonConst())));
 		} else {
-			result.emplace_back(std::move(val));
+			result.emplace_back(std::move(argument.value));
 		}
 	}
 	return std::move(result);
 }
 
-Value builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_lookup(Arguments arguments, const Location& loc)
 {
-	double p, low_p, low_v, high_p, high_v;
-	if (evalctx->numArgs() != 2){ // Needs two args
-		print_argCnt_warning("lookup", ctx, evalctx);
+	if (!check_arguments("lookup", arguments, loc, { Value::Type::NUMBER, Value::Type::VECTOR })) {
 		return Value::undefined.clone();
 	}
-	if(!evalctx->getArgValue(0).getDouble(p) || !std::isfinite(p)){ // First arg must be a number
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"lookup(%1$s, ...) first argument is not a number",evalctx->getArgValue(0).toEchoString());
+	double p = arguments[0]->toDouble();
+	if (!std::isfinite(p)) {
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"lookup(%1$s, ...) first argument is not a number",arguments[0]->toEchoString());
 		return Value::undefined.clone();
 	}
-
-	Value v1 = evalctx->getArgValue(1);
-	const auto &vec = v1.toVector();
+	
+	double low_p, low_v, high_p, high_v;
+	const auto &vec = arguments[1]->toVector();
 
 	// Second must be a vector of vec2, with valid numbers inside
 	auto it = vec.begin();
@@ -639,8 +549,7 @@ Value builtin_lookup(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 */
 
 static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
-																unsigned int num_returns_per_match,
-																const Location &)
+																unsigned int num_returns_per_match)
 {
 	VectorType returnvec;
 	//Unicode glyph count for the length
@@ -678,7 +587,7 @@ static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &t
 
 static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 		unsigned int num_returns_per_match, unsigned int index_col_num,
-		const Location &loc, const std::shared_ptr<Context> ctx)
+		const Location &loc, const std::string& documentRoot)
 {
 	VectorType returnvec;
 	//Unicode glyph count for the length
@@ -691,7 +600,7 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 		for (size_t j = 0; j < searchTableSize; ++j) {
 			const auto &entryVec = table[j].toVector();
 			if (entryVec.size() <= index_col_num) {
-				LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s",j,(index_col_num + 1),table[j].toEchoString());
+				LOG(message_group::Warning,loc,documentRoot,"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s",j,(index_col_num + 1),table[j].toEchoString());
 				return VectorType();
 			}
 			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
@@ -711,7 +620,7 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 		if (matchCount == 0) {
 			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-			LOG(message_group::Warning,loc,ctx->documentPath(),"search term not found: \"%1$s\"",utf8_of_cp);
+			LOG(message_group::Warning,loc,documentRoot,"search term not found: \"%1$s\"",utf8_of_cp);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 			returnvec.emplace_back(std::move(resultvec));
@@ -720,17 +629,17 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 	return returnvec;
 }
 
-Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_search(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() < 2){
-		print_argCnt_warning("search", ctx, evalctx);
+	if (arguments.size() < 2 || arguments.size() > 4) {
+		print_argCnt_warning("search", arguments.size(), "between 2 and 4", loc, arguments.documentRoot());
 		return Value::undefined.clone();
 	}
 
-	Value findThis = evalctx->getArgValue(0);
-	Value searchTable = evalctx->getArgValue(1);
-	unsigned int num_returns_per_match = (evalctx->numArgs() > 2) ? (unsigned int)evalctx->getArgValue(2).toDouble() : 1;
-	unsigned int index_col_num = (evalctx->numArgs() > 3) ? (unsigned int)evalctx->getArgValue(3).toDouble() : 0;
+	const Value& findThis = arguments[0].value;
+	const Value& searchTable = arguments[1].value;
+	unsigned int num_returns_per_match = (arguments.size() > 2) ? (unsigned int)arguments[2]->toDouble() : 1;
+	unsigned int index_col_num = (arguments.size() > 3) ? (unsigned int)arguments[3]->toDouble() : 0;
 
 	VectorType returnvec;
 
@@ -749,10 +658,10 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 		}
 	} else if (findThis.type() == Value::Type::STRING) {
 		if (searchTable.type() == Value::Type::STRING) {
-			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match, evalctx->loc);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match);
 		}
 		else {
-			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVector(), num_returns_per_match, index_col_num, evalctx->loc, ctx);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVector(), num_returns_per_match, index_col_num, loc, arguments.documentRoot());
 		}
 	} else if (findThis.type() == Value::Type::VECTOR) {
 		const auto &findVec = findThis.toVector();
@@ -793,7 +702,7 @@ Value builtin_search(const std::shared_ptr<Context> ctx, const std::shared_ptr<E
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-Value builtin_version(const std::shared_ptr<Context>, const std::shared_ptr<EvalContext>)
+Value builtin_version(Arguments arguments, const Location& loc)
 {
 	VectorType vec;
 	vec.emplace_back(double(OPENSCAD_YEAR));
@@ -804,9 +713,9 @@ Value builtin_version(const std::shared_ptr<Context>, const std::shared_ptr<Eval
 	return std::move(vec);
 }
 
-Value builtin_version_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_version_num(Arguments arguments, const Location& loc)
 {
-	Value val = (evalctx->numArgs() == 0) ? builtin_version(ctx, evalctx) : evalctx->getArgValue(0);
+	Value val = (arguments.size() == 0) ? builtin_version(std::move(arguments), loc) : std::move(arguments[0].value);
 	double y, m, d;
 	if (!val.getVec3(y, m, d, 0)) {
 		return Value::undefined.clone();
@@ -814,95 +723,77 @@ Value builtin_version_num(const std::shared_ptr<Context> ctx, const std::shared_
 	return Value(y * 10000 + m * 100 + d);
 }
 
-Value builtin_parent_module(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_parent_module(Arguments arguments, const Location& loc)
 {
-	int n;
 	double d;
-	int s = UserModule::stack_size();
-	if (evalctx->numArgs() == 0)
-		d=1; // parent module
-	else if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		if (v.type() != Value::Type::NUMBER) return Value::undefined.clone();
-		v.getDouble(d);
-	} else {
-		print_argCnt_warning("parent_module", ctx, evalctx);
+	if (arguments.size() == 0) {
+		d = 1;
+	} else if (!check_arguments("parent_module", arguments, loc, { Value::Type::NUMBER })) {
 		return Value::undefined.clone();
+	} else {
+		d = arguments[0]->toDouble();
 	}
-	n=trunc(d);
+	
+	int n = trunc(d);
+	int s = UserModule::stack_size();
 	if (n < 0) {
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Negative parent module index (%1$d) not allowed",n);
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"Negative parent module index (%1$d) not allowed",n);
 		return Value::undefined.clone();
 	}
 	if (n >= s) {
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Parent module index (%1$d) greater than the number of modules on the stack",n);
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"Parent module index (%1$d) greater than the number of modules on the stack",n);
 		return Value::undefined.clone();
 	}
 	return Value(UserModule::stack_element(s - 1 - n));
 }
 
-Value builtin_norm(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_norm(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		Value val = evalctx->getArgValue(0);
-		if (val.type() == Value::Type::VECTOR) {
-			double sum = 0;
-			for (const auto &v : val.toVector()) {
-				if (v.type() == Value::Type::NUMBER) {
-					// sum += pow(v[i].toDouble(),2);
-					double x = v.toDouble();
-					sum += x*x;
-				} else {
-					LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Incorrect arguments to norm()");
-					return Value::undefined.clone();
-				}
-			}
-			return Value(sqrt(sum));
-		}
-	} else {
-		print_argCnt_warning("norm", ctx, evalctx);
+	if (!check_arguments("norm", arguments, loc, { Value::Type::VECTOR })) {
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	double sum = 0;
+	for (const auto &v : arguments[0]->toVector()) {
+		if (v.type() == Value::Type::NUMBER) {
+			double x = v.toDouble();
+			sum += x*x;
+		} else {
+			LOG(message_group::Warning,loc,arguments.documentRoot(),"Incorrect arguments to norm()");
+			return Value::undefined.clone();
+		}
+	}
+	return Value(sqrt(sum));
 }
 
-Value builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_cross(Arguments arguments, const Location& loc)
 {
-	auto loc = evalctx->loc;
-	if (evalctx->numArgs() != 2) {
-		LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid number of parameters for cross()");
+	if (!check_arguments("cross", arguments, loc, { Value::Type::VECTOR, Value::Type::VECTOR })) {
 		return Value::undefined.clone();
 	}
 	
-	Value arg0 = evalctx->getArgValue(0);
-	Value arg1 = evalctx->getArgValue(1);
-	if ((arg0.type() != Value::Type::VECTOR) || (arg1.type() != Value::Type::VECTOR)) {
-		LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid type of parameters for cross()");
-		return Value::undefined.clone();
-	}
-	
-	const auto &v0 = arg0.toVector();
-	const auto &v1 = arg1.toVector();
+	const auto &v0 = arguments[0]->toVector();
+	const auto &v1 = arguments[1]->toVector();
 	if ((v0.size() == 2) && (v1.size() == 2)) {
 		return Value(v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble());
 	}
 
 	if ((v0.size() != 3) || (v1.size() != 3)) {
-		LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid vector size of parameter for cross()");
+		LOG(message_group::Warning,loc,arguments.documentRoot(),"Invalid vector size of parameter for cross()");
 		return Value::undefined.clone();
 	}
-	for (unsigned int a = 0;a < 3; ++a) {
+	for (unsigned int a = 0; a < 3; ++a) {
 		if ((v0[a].type() != Value::Type::NUMBER) || (v1[a].type() != Value::Type::NUMBER)) {
-			LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid value in parameter vector for cross()");
+			LOG(message_group::Warning,loc,arguments.documentRoot(),"Invalid value in parameter vector for cross()");
 			return Value::undefined.clone();
 		}
 		double d0 = v0[a].toDouble();
 		double d1 = v1[a].toDouble();
 		if (std::isnan(d0) || std::isnan(d1)) {
-			LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid value (NaN) in parameter vector for cross()");
+			LOG(message_group::Warning,loc,arguments.documentRoot(),"Invalid value (NaN) in parameter vector for cross()");
 			return Value::undefined.clone();
 		}
 		if (std::isinf(d0) || std::isinf(d1)) {
-			LOG(message_group::Warning,loc,ctx->documentPath(),"Invalid value (INF) in parameter vector for cross()");
+			LOG(message_group::Warning,loc,arguments.documentRoot(),"Invalid value (INF) in parameter vector for cross()");
 			return Value::undefined.clone();
 		}
 	}
@@ -914,70 +805,58 @@ Value builtin_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<Ev
 	return VectorType(x,y,z);
 }
 
-Value builtin_is_undef(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_is_undef(const std::shared_ptr<Context>& context, const FunctionCall* call)
 {
-	if (evalctx->numArgs() == 1) {
-		const auto &arg =evalctx->getArgs()[0];
-		if (auto lookup = dynamic_pointer_cast<Lookup>(arg->getExpr())) {
-			return lookup->evaluateSilently(evalctx).isUndefined();
-		} else {
-			return evalctx->getArgValue(0).isUndefined();
-		}
-	} else {
-		print_argCnt_warning("is_undef", ctx, evalctx);
+	if (call->arguments.size() != 1) {
+		print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	if (auto lookup = dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
+		auto result = context->try_lookup_variable(lookup->get_name());
+		return !result || result->isUndefined();
+	} else {
+		return call->arguments[0]->getExpr()->evaluate(context).isUndefined();
+	}
 }
 
-Value builtin_is_list(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_is_list(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		return Value(evalctx->getArgValue(0).isDefinedAs(Value::Type::VECTOR));
-	} else {
-		print_argCnt_warning("is_list", ctx, evalctx);
+	if (!check_arguments("is_list", arguments, loc, 1)) {
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	return Value(arguments[0]->isDefinedAs(Value::Type::VECTOR));
 }
 
-Value builtin_is_num(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_is_num(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		Value v = evalctx->getArgValue(0);
-		return Value(v.isDefinedAs(Value::Type::NUMBER) && !std::isnan(v.toDouble()));
-	} else {
-		print_argCnt_warning("is_num", ctx, evalctx);
+	if (!check_arguments("is_num", arguments, loc, 1)) {
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	return Value(arguments[0]->isDefinedAs(Value::Type::NUMBER) && !std::isnan(arguments[0]->toDouble()));
 }
 
-Value builtin_is_bool(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_is_bool(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		return Value(evalctx->getArgValue(0).isDefinedAs(Value::Type::BOOL));
-	} else {
-		print_argCnt_warning("is_bool", ctx, evalctx);
+	if (!check_arguments("is_bool", arguments, loc, 1)) {
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	return Value(arguments[0]->isDefinedAs(Value::Type::BOOL));
 }
 
-Value builtin_is_string(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_is_string(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		return Value(evalctx->getArgValue(0).isDefinedAs(Value::Type::STRING));
-	} else {
-		print_argCnt_warning("is_string", ctx, evalctx);
+	if (!check_arguments("is_string", arguments, loc, 1)) {
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	return Value(arguments[0]->isDefinedAs(Value::Type::STRING));
 }
 
-Value builtin_is_function(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_is_function(Arguments arguments, const Location& loc)
 {
-	if (evalctx->numArgs() == 1) {
-		return Value(evalctx->getArgValue(0).isDefinedAs(Value::Type::FUNCTION));
-	} else {
-		print_argCnt_warning("is_function", ctx, evalctx);
+	if (!check_arguments("is_function", arguments, loc, 1)) {
+		return Value::undefined.clone();
 	}
-	return Value::undefined.clone();
+	return Value(arguments[0]->isDefinedAs(Value::Type::FUNCTION));
 }
 
 void register_builtin_functions()

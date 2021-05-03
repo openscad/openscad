@@ -72,8 +72,8 @@ public:
 	void readFile(QString scadFile);
 	void writeFileIfNotEmpty(QString scadFile);
 	void writeBackupFile(QString scadFile);
-	void setParameters(const FileModule* module,bool);
-	void applyParameters(FileModule *fileModule);
+	void setParameters(const SourceFile* sourceFile,bool);
+	void applyParameters(SourceFile *sourceFile);
 	bool childHasFocus();
 
 protected slots:

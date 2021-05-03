@@ -1,5 +1,4 @@
 #include "parametertext.h"
-#include "modcontext.h"
 #include "comment.h"
 
 ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
@@ -27,10 +26,9 @@ void ParameterText::onChanged(QString)
 		if (object->dvt == Value::Type::STRING) {
 			object->value = Value(lineEdit->text().toStdString());
 		}else{
-			ContextHandle<Context> ctx{Context::create<Context>()};
 			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
 			if (!params) return;
-			Value newValue = params->evaluate(ctx.ctx);
+			Value newValue = params->evaluateLiteral();
 			if (object->dvt == newValue.type()) {
 				object->value = std::move(newValue);
 			}

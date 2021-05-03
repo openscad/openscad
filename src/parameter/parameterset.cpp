@@ -1,6 +1,5 @@
 #include "parameterset.h"
 #include "comment.h"
-#include "modcontext.h"
 #include "expression.h"
 #include "printutils.h"
 #include <boost/property_tree/json_parser.hpp>
@@ -105,16 +104,15 @@ void ParameterSet::writeParameterSet(const std::string &filename)
 	}
 }
 
-void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &setName)
+void ParameterSet::applyParameterSet(SourceFile *sourceFile, const std::string &setName)
 {
-	if (fileModule == nullptr || this->root.empty()) return;
+	if (sourceFile == nullptr || this->root.empty()) return;
 	try {
-		ContextHandle<Context> ctx{Context::create<Context>()};
 		boost::optional<pt::ptree &> set = getParameterSet(setName);
-		for (auto &assignment : fileModule->scope.assignments) {
+		for (auto &assignment : sourceFile->scope.assignments) {
 			for (auto &v : set.get()) {
 				if (v.first == assignment->getName()) {
-					const Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+					const Value defaultValue = assignment->getExpr()->evaluateLiteral();
 					if (defaultValue.type() == Value::Type::STRING) {
 						assignment->setExpr(make_shared<Literal>(v.second.data()));
 					}
@@ -123,8 +121,7 @@ void ParameterSet::applyParameterSet(FileModule *fileModule, const std::string &
 					} else {
 						shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 						if (!params) continue;
-						ContextHandle<Context> ctx{Context::create<Context>()};
-						if (defaultValue.type() == params->evaluate(ctx.ctx).type()) {
+						if (defaultValue.type() == params->evaluateLiteral().type()) {
 							assignment->setExpr(params);
 						}
 					}

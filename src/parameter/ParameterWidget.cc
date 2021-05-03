@@ -34,7 +34,6 @@
 #include "parametertext.h"
 #include "parametervector.h"
 
-#include "modcontext.h"
 #include "comment.h"
 
 #include <boost/filesystem.hpp>
@@ -195,9 +194,9 @@ void ParameterWidget::writeBackupFile(QString scadFile)
 	}
 }
 
-void ParameterWidget::setParameters(const FileModule* module,bool rebuildParameterWidget)
+void ParameterWidget::setParameters(const SourceFile* sourceFile,bool rebuildParameterWidget)
 {
-	this->extractor->setParameters(module,this->entries,ParameterPos,rebuildParameterWidget);
+	this->extractor->setParameters(sourceFile,this->entries,ParameterPos,rebuildParameterWidget);
 	if(rebuildParameterWidget){
 		connectWidget();
 	}else{
@@ -205,9 +204,9 @@ void ParameterWidget::setParameters(const FileModule* module,bool rebuildParamet
 	}
 }
 
-void ParameterWidget::applyParameters(FileModule *fileModule)
+void ParameterWidget::applyParameters(SourceFile *sourceFile)
 {
-	this->extractor->applyParameters(fileModule,entries);
+	this->extractor->applyParameters(sourceFile,entries);
 }
 
 void ParameterWidget::setComboBoxPresetForSet()
@@ -491,8 +490,7 @@ void ParameterWidget::applyParameterSet(std::string setName)
 				shared_ptr<Expression> params = CommentParser::parser(v.second.data().c_str());
 				if (!params) continue;
 				
-				ContextHandle<Context> ctx{Context::create<Context>()};
-				Value newValue = params->evaluate(ctx.ctx);
+				Value newValue = params->evaluateLiteral();
 				if (entry->second->dvt == newValue.type()) {
 					entry->second->value = std::move(newValue);
 				}
