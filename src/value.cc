@@ -217,9 +217,9 @@ Value Value::undef(const std::string &why)
   return Value{UndefType{why}};
 }
 
-const std::string Value::typeName() const
+std::string Value::typeName(Type type)
 {
-  switch (this->type()) {
+  switch (type) {
   case Type::UNDEFINED: return "undefined";
   case Type::BOOL:      return "bool";
   case Type::NUMBER:    return "number";
@@ -229,6 +229,11 @@ const std::string Value::typeName() const
   case Type::FUNCTION:  return "function";
   default: assert(false && "unknown Value variant type"); return "<unknown>";
   }
+}
+
+const std::string Value::typeName() const
+{
+  return typeName(this->type());
 }
 
 // free functions for use by static_visitor templated functions in creating undef messages.

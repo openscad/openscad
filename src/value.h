@@ -514,6 +514,7 @@ public:
   static Value undef(const std::string &why); // creation of undef requires a reason!
 
   const std::string typeName() const;
+  static std::string typeName(Type type);
   Type type() const { return static_cast<Type>(this->value.which()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }

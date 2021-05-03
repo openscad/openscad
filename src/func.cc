@@ -59,18 +59,44 @@ int process_id = getpid();
 
 std::mt19937 deterministic_rng( std::time(nullptr) + process_id );
 #include <array>
-static void print_argCnt_warning(const char *name, const Location& loc, const std::string& documentRoot){
-	LOG(message_group::Warning,loc,documentRoot,"%1$s() number of parameters does not match",name);
+static void print_argCnt_warning(
+	const char *name,
+	int found,
+	const std::string& expected,
+	const Location& loc,
+	const std::string& documentRoot
+){
+	LOG(message_group::Warning,loc,documentRoot,"%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found),name);
 }
-static void print_argConvert_warning(const char *name, const Location& loc, const std::string& documentRoot){
-	LOG(message_group::Warning,loc,documentRoot,"%1$s() parameter could not be converted",name);
+static void print_argConvert_warning(
+	const char *name,
+	const std::string& where,
+	Value::Type found,
+	std::vector<Value::Type> expected,
+	const Location& loc,
+	const std::string& documentRoot
+){
+	std::stringstream message;
+	message << name << "() parameter could not be converted: " << where << ": expected ";
+	if (expected.size() == 1) {
+		message << Value::typeName(expected[0]);
+	} else {
+		assert(expected.size() > 0);
+		message << "one of (" << Value::typeName(expected[0]);
+		for (size_t i = 1; i < expected.size(); i++) {
+			message << ", " << Value::typeName(expected[i]);
+		}
+		message << ")";
+	}
+	message << ", found " << Value::typeName(found);
+	LOG(message_group::Warning,loc,documentRoot,"%1$s",message.str());
 }
 
 static inline bool check_arguments(const char* function_name, const Arguments& arguments, const Location& loc, int expected_count, bool warn = true)
 {
 	if (arguments.size() != expected_count) {
 		if (warn) {
-			print_argCnt_warning(function_name, loc, arguments.documentRoot());
+			print_argCnt_warning(function_name, arguments.size(), STR(expected_count), loc, arguments.documentRoot());
 		}
 		return false;
 	}
@@ -90,7 +116,7 @@ static inline bool check_arguments(const char* function_name, const Arguments& a
 	for (size_t i = 0; i < N; i++) {
 		if (arguments[i]->type() != expected_types[i]) {
 			if (warn) {
-				print_argConvert_warning(function_name, loc, arguments.documentRoot());
+				print_argConvert_warning(function_name, "argument " + STR(i), arguments[i]->type(), {expected_types[i]}, loc, arguments.documentRoot());
 			}
 			return false;
 		}
@@ -122,7 +148,10 @@ Value builtin_sign(Arguments arguments, const Location& loc)
 
 Value builtin_rands(Arguments arguments, const Location& loc)
 {
-	if (arguments.size() == 3) {
+	if (arguments.size() < 3 || arguments.size() > 4) {
+		print_argCnt_warning("rands", arguments.size(), "3 or 4", loc, arguments.documentRoot());
+		return Value::undefined.clone();
+	} else if (arguments.size() == 3) {
 		if (!check_arguments("rands", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER })) {
 			return Value::undefined.clone();
 		}
@@ -175,21 +204,37 @@ Value builtin_rands(Arguments arguments, const Location& loc)
 	return std::move(vec);
 }
 
-std::vector<double> min_max_arguments(const Arguments& arguments)
+static std::vector<double> min_max_arguments(const Arguments& arguments, const Location& loc, const char* function_name)
 {
 	std::vector<double> output;
 	// preserve special handling of the first argument
 	// as a template for vector processing
-	if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
-		for (const auto& element : arguments[0]->toVector()) {
+	if (arguments.size() == 0) {
+		print_argCnt_warning(function_name, arguments.size(), "at least 1", loc, arguments.documentRoot());
+		return {};
+	} else if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
+		const auto& elements = arguments[0]->toVector();
+		if (elements.size() == 0) {
+			print_argCnt_warning(function_name, elements.size(), "at least 1 vector element", loc, arguments.documentRoot());
+			return {};
+		}
+		for (size_t i = 0; i < elements.size(); i++) {
+			const auto& element = elements[i];
+			// 4/20/14 semantic change per discussion:
+			// break on any non-number
 			if (element.type() != Value::Type::NUMBER) {
+				print_argConvert_warning(function_name, "vector element " + STR(i), element.type(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
 				return {};
 			}
 			output.push_back(element.toDouble());
 		}
 	} else {
-		for (const auto& argument : arguments) {
+		for (size_t i = 0; i < arguments.size(); i++) {
+			const auto& argument = arguments[i];
+			// 4/20/14 semantic change per discussion:
+			// break on any non-number
 			if (argument->type() != Value::Type::NUMBER) {
+				print_argConvert_warning(function_name, "argument " + STR(i), argument->type(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
 				return {};
 			}
 			output.push_back(argument->toDouble());
@@ -200,15 +245,8 @@ std::vector<double> min_max_arguments(const Arguments& arguments)
 
 Value builtin_min(Arguments arguments, const Location& loc)
 {
-	if (arguments.size() == 0) {
-		print_argCnt_warning("min", loc, arguments.documentRoot());
-		return Value::undefined.clone();
-	}
-	std::vector<double> values = min_max_arguments(arguments);
+	std::vector<double> values = min_max_arguments(arguments, loc, "min");
 	if (values.empty()) {
-		// 4/20/14 semantic change per discussion:
-		// break on any non-number
-		print_argConvert_warning("min", loc, arguments.documentRoot());
 		return Value::undefined.clone();
 	}
 	return Value(*std::min_element(values.begin(), values.end()));
@@ -216,15 +254,8 @@ Value builtin_min(Arguments arguments, const Location& loc)
 
 Value builtin_max(Arguments arguments, const Location& loc)
 {
-	if (arguments.size() == 0) {
-		print_argCnt_warning("max", loc, arguments.documentRoot());
-		return Value::undefined.clone();
-	}
-	std::vector<double> values = min_max_arguments(arguments);
+	std::vector<double> values = min_max_arguments(arguments, loc, "max");
 	if (values.empty()) {
-		// 4/20/14 semantic change per discussion:
-		// break on any non-number
-		print_argConvert_warning("max", loc, arguments.documentRoot());
 		return Value::undefined.clone();
 	}
 	return Value(*std::max_element(values.begin(), values.end()));
@@ -600,8 +631,8 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 
 Value builtin_search(Arguments arguments, const Location& loc)
 {
-	if (arguments.size() < 2) {
-		print_argCnt_warning("search", loc, arguments.documentRoot());
+	if (arguments.size() < 2 || arguments.size() > 4) {
+		print_argCnt_warning("search", arguments.size(), "between 2 and 4", loc, arguments.documentRoot());
 		return Value::undefined.clone();
 	}
 
@@ -777,7 +808,7 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 Value builtin_is_undef(const std::shared_ptr<Context>& context, const FunctionCall* call)
 {
 	if (call->arguments.size() != 1) {
-		print_argCnt_warning("is_undef", call->location(), context->documentRoot());
+		print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());
 		return Value::undefined.clone();
 	}
 	if (auto lookup = dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
