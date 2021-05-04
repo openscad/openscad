@@ -68,7 +68,7 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 	
 	Arguments arguments{inst->arguments, context};
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"index"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
 	const Children* children = context->user_module_children();
 	if (!children) {
 		// child() called outside any user module
@@ -90,7 +90,7 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
 {
 	Arguments arguments{inst->arguments, context};
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"index"});
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
 	const Children* children = context->user_module_children();
 	if (!children) {
 		// children() called outside any user module
