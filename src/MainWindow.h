@@ -6,7 +6,6 @@
 #include "ui_MainWindow.h"
 #include "UIUtils.h"
 #include "openscad.h"
-#include "builtincontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "Tree.h"
@@ -44,10 +43,9 @@ public:
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
 
-	ContextHandle<BuiltinContext> top_ctx;
-	FileModule *root_module;      // Result of parsing
-	FileModule *parsed_module;		// Last parse for include list
-	ModuleInstantiation root_inst;	// Top level instance
+	SourceFile *root_file;      // Result of parsing
+	SourceFile *parsed_file;		// Last parse for include list
+	ValueMap render_variables;		// Render setting special variables -- $preview, $vp*, $t
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;

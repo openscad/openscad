@@ -335,7 +335,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	std::string description;
 	const Annotation* descriptionAnnotation = assignment->annotation("Description");
 	if (descriptionAnnotation) {
-		const Literal* expression = dynamic_cast<const Literal*>(descriptionAnnotation->getExpression());
+		const Literal* expression = dynamic_cast<const Literal*>(descriptionAnnotation->getExpr().get());
 		if (expression && expression->getValue().type() == Value::Type::STRING) {
 			description = expression->getValue().toString();
 		}
@@ -344,7 +344,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	std::string group = "Parameters";
 	const Annotation* groupAnnotation = assignment->annotation("Group");
 	if (groupAnnotation) {
-		const Literal* expression = dynamic_cast<const Literal*>(groupAnnotation->getExpression());
+		const Literal* expression = dynamic_cast<const Literal*>(groupAnnotation->getExpr().get());
 		if (expression && expression->getValue().type() == Value::Type::STRING) {
 			group = expression->getValue().toString();
 		}
@@ -353,7 +353,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	const Expression* parameter = nullptr;
 	const Annotation* parameterAnnotation = assignment->annotation("Parameter");
 	if (parameterAnnotation) {
-		parameter = parameterAnnotation->getExpression();
+		parameter = parameterAnnotation->getExpr().get();
 	}
 	
 	const Expression* valueExpression = assignment->getExpr().get();
@@ -418,10 +418,10 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	return nullptr;
 }
 
-ParameterObjects ParameterObjects::fromModule(const FileModule* module)
+ParameterObjects ParameterObjects::fromSourceFile(const SourceFile* sourceFile)
 {
 	ParameterObjects output;
-	for (const auto& assignment : module->scope.assignments) {
+	for (const auto& assignment : sourceFile->scope.assignments) {
 		std::unique_ptr<ParameterObject> parameter = ParameterObject::fromAssignment(assignment.get());
 		if (parameter) {
 			output.push_back(std::move(parameter));
@@ -459,14 +459,14 @@ ParameterSet ParameterObjects::exportValues(const std::string& setName)
 	return output;
 }
 
-void ParameterObjects::apply(FileModule *fileModule) const
+void ParameterObjects::apply(SourceFile* sourceFile) const
 {
 	std::map<std::string, ParameterObject*> namedParameters;
 	for (const auto& parameter : *this) {
 		namedParameters[parameter->name()] = parameter.get();
 	}
 	
-	for (auto& assignment : fileModule->scope.assignments) {
+	for (auto& assignment : sourceFile->scope.assignments) {
 		if (namedParameters.count(assignment->getName())) {
 			namedParameters[assignment->getName()]->apply(assignment.get());
 		}

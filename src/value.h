@@ -22,6 +22,7 @@ class tostring_visitor;
 class tostream_visitor;
 class Context;
 class Expression;
+class Value;
 
 class QuotedString : public std::string
 {
@@ -250,8 +251,8 @@ private:
 
 class FunctionType {
 public:
-  FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> args)
-    : ctx(ctx), expr(expr), args(args) { }
+  FunctionType(std::shared_ptr<Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
+    : context(context), expr(expr), parameters(parameters) { }
   Value operator==(const FunctionType &other) const;
   Value operator!=(const FunctionType &other) const;
   Value operator< (const FunctionType &other) const;
@@ -259,13 +260,13 @@ public:
   Value operator<=(const FunctionType &other) const;
   Value operator>=(const FunctionType &other) const;
 
-  const std::shared_ptr<Context>& getCtx() const { return ctx; }
+  const std::shared_ptr<Context>& getContext() const { return context; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
-  const std::shared_ptr<AssignmentList>& getArgs() const { return args; }
+  const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
 private:
-  std::shared_ptr<Context> ctx;
+  std::shared_ptr<Context> context;
   std::shared_ptr<Expression> expr;
-  std::shared_ptr<AssignmentList> args;
+  std::shared_ptr<AssignmentList> parameters;
 };
 
 using FunctionPtr = ValuePtr<FunctionType>;
@@ -513,6 +514,7 @@ public:
   static Value undef(const std::string &why); // creation of undef requires a reason!
 
   const std::string typeName() const;
+  static std::string typeName(Type type);
   Type type() const { return static_cast<Type>(this->value.which()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }

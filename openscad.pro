@@ -256,6 +256,8 @@ HEADERS += src/AST.h \
            src/function.h \
            src/module.h \           
            src/UserModule.h \
+           src/SourceFile.h \
+           src/SourceFileCache.h
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
@@ -265,7 +267,9 @@ SOURCES += src/AST.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc
+           src/annotation.cc \
+           src/SourceFile.cc \
+           src/SourceFileCache.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
@@ -298,15 +302,18 @@ HEADERS += src/version_check.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
            src/GroupModule.h \
-           src/FileModule.h \
            src/StatCache.h \
            src/scadapi.h \
            src/builtin.h \
            src/calc.h \
+           src/evaluationsession.h \
            src/context.h \
+           src/contextframe.h \
            src/builtincontext.h \
            src/modcontext.h \
-           src/evalcontext.h \
+           src/arguments.h \
+           src/children.h \
+           src/parameters.h \
            src/csgops.h \
            src/CSGTreeNormalizer.h \
            src/CSGTreeEvaluator.h \
@@ -350,7 +357,6 @@ HEADERS += src/version_check.h \
            src/state.h \
            src/nodecache.h \
            src/nodedumper.h \
-           src/ModuleCache.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
            src/Tree.h \
@@ -436,10 +442,14 @@ SOURCES += \
            src/localscope.cc \
            src/feature.cc \
            src/node.cc \
+           src/evaluationsession.cc \
            src/context.cc \
+           src/contextframe.cc \
            src/builtincontext.cc \
            src/modcontext.cc \
-           src/evalcontext.cc \
+           src/arguments.cc \
+           src/children.cc \
+           src/parameters.cc \
            src/csgnode.cc \
            src/CSGTreeNormalizer.cc \
            src/CSGTreeEvaluator.cc \
@@ -476,7 +486,6 @@ SOURCES += \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
            src/GeometryEvaluator.cc \
-           src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
 	       src/DrawingCallback.cc \
@@ -496,7 +505,6 @@ SOURCES += \
            \
            src/hash.cc \
            src/GroupModule.cc \
-           src/FileModule.cc \
            src/StatCache.cc \
            src/scadapi.cc \
            src/builtin.cc \

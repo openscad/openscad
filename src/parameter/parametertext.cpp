@@ -1,7 +1,5 @@
 #include "parametertext.h"
 
-#include <QVBoxLayout>
-
 ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, DescriptionStyle descriptionStyle):
 	ParameterVirtualWidget(parent, parameter),
 	parameter(parameter)

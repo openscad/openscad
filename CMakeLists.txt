@@ -478,15 +478,18 @@ include_directories("src/ext/libtess2/Include")
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
   src/annotation.cc
+  src/arguments.cc
   src/boost-utils.cc
   src/builtin.cc
   src/builtincontext.cc
   src/calc.cc
   src/cgaladv.cc
+  src/children.cc
   src/clipper-utils.cc
   src/color.cc
   src/colormap.cc
   src/context.cc
+  src/contextframe.cc
   src/control.cc
   src/comment.cpp
   src/csgnode.cc
@@ -494,7 +497,7 @@ set(CORE_SOURCES
   src/degree_trig.cc
   src/dxfdata.cc
   src/dxfdim.cc
-  src/evalcontext.cc
+  src/evaluationsession.cc
   src/export.cc
   src/export_3mf.cc
   src/export_amf.cc
@@ -524,6 +527,7 @@ set(CORE_SOURCES
   src/node.cc
   src/nodedumper.cc
   src/offset.cc
+  src/parameters.cc
   src/parsersettings.cc
   src/polyset.cc
   src/polyset-utils.cc
@@ -546,7 +550,6 @@ set(CORE_SOURCES
   src/Camera.cc
   src/CSGTreeNormalizer.cc
   src/DrawingCallback.cc
-  src/FileModule.cc
   src/FontCache.cc
   src/FreetypeRenderer.cc
   src/Geometry.cc
@@ -555,11 +558,12 @@ set(CORE_SOURCES
   src/GroupModule.cc
   src/LibraryInfo.cc
   src/ModuleInstantiation.cc
-  src/ModuleCache.cc
   src/NodeVisitor.cc
   src/PlatformUtils.cc
   src/Polygon2d.cc
   src/RenderStatistic.cc
+  src/SourceFile.cc
+  src/SourceFileCache.cc
   src/StatCache.cc
   src/UserModule.cc
   src/Tree.cc

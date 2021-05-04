@@ -37,7 +37,7 @@ class ParameterWidget : public QWidget, public Ui::ParameterWidget
 	Q_OBJECT
 private:
 	ParameterSets sets;
-	std::string moduleSource;
+	std::string source;
 	ParameterObjects parameters;
 	std::map<ParameterObject*, std::vector<ParameterVirtualWidget*>> widgets;
 
@@ -50,8 +50,8 @@ public:
 	void readFile(QString scadFile);
 	void saveFile(QString scadFile);
 	void saveBackupFile(QString scadFile);
-	void setParameters(const FileModule* module, const std::string& moduleSource);
-	void applyParameters(FileModule *fileModule);
+	void setParameters(const SourceFile* sourceFile, const std::string& source);
+	void applyParameters(SourceFile *sourceFile);
 	bool childHasFocus();
 	bool isModified() const { return modified; }
 	void setNotModified() { this->modified = false; }

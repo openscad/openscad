@@ -2,7 +2,7 @@
 
 #include "Assignment.h"
 #include "expression.h"
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "parameter/parameterset.h"
 
 class ParameterObject
@@ -158,9 +158,9 @@ public:
 class ParameterObjects : public std::vector<std::unique_ptr<ParameterObject>>
 {
 public:
-	static ParameterObjects fromModule(const FileModule* module);
+	static ParameterObjects fromSourceFile(const SourceFile* sourceFile);
 	void reset();
 	void importValues(const ParameterSet& values);
 	ParameterSet exportValues(const std::string& setName);
-	void apply(FileModule *fileModule) const;
+	void apply(SourceFile* sourceFile) const;
 };

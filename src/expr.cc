@@ -26,7 +26,6 @@
 #include "compiler_specific.h"
 #include "expression.h"
 #include "value.h"
-#include "evalcontext.h"
 #include <cstdint>
 #include <cmath>
 #include <assert.h>
@@ -36,44 +35,27 @@
 #include <forward_list>
 #include "printutils.h"
 #include "stackcheck.h"
+#include "context.h"
 #include "exceptions.h"
 #include "feature.h"
+#include "parameters.h"
 #include "printutils.h"
 #include <boost/bind.hpp>
 #include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-// unnamed namespace
-namespace {
-	bool isListComprehension(const shared_ptr<Expression> &e) {
-		return dynamic_cast<const ListComprehension *>(e.get());
-	}
-
-	void evaluate_sequential_assignment(const AssignmentList &assignment_list, std::shared_ptr<Context> context, const Location &loc) {
-		ContextHandle<EvalContext> ctx{Context::create<EvalContext>(context, assignment_list, loc)};
-		ctx->assignTo(context);
-	}
-}
-
-namespace /* anonymous*/ {
-
-	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
-		for (size_t i=0; i < l.size(); ++i) {
-			const auto &arg = l[i];
-			if (i > 0) o << ", ";
-			if (!arg->getName().empty()) o << arg->getName()  << " = ";
-			o << *arg->getExpr();
-		}
-		return o;
-	}
-
-}
-
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& context) const {
 	if (val.isUncheckedUndef())
-		LOG(message_group::Warning,loc,context->documentPath(),"%1$s",val.toUndefString());
+		LOG(message_group::Warning,loc,context->documentRoot(),"%1$s",val.toUndefString());
 	return std::move(val);
+}
+
+Value Expression::evaluateLiteral() const
+{
+	EvaluationSession session{""};
+	ContextHandle<Context> context{Context::create<Context>(&session)};
+	return evaluate(*context);
 }
 
 bool Expression::isLiteral() const
@@ -191,9 +173,9 @@ TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr,
 {
 }
 
-const shared_ptr<Expression>& TernaryOp::evaluateStep(const std::shared_ptr<Context>& context) const
+const Expression* TernaryOp::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	return this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+	return this->cond->evaluate(context).toBool() ? this->ifexpr.get() : this->elseexpr.get();
 }
 
 Value TernaryOp::evaluate(const std::shared_ptr<Context>& context) const
@@ -251,13 +233,13 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	LOG(message_group::Deprecated,loc,ctx->documentPath(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
+static void NOINLINE print_range_depr(const Location &loc, const std::shared_ptr<Context>& context){
+	std::string locs = loc.toRelativeString(context->documentRoot());
+	LOG(message_group::Deprecated,loc,context->documentRoot(),"Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
 
-static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Warning,loc,ctx->documentPath(),"begin %1$s than the end, but step %2$s",begin,step);
+static void NOINLINE print_range_err(const std::string &begin, const std::string &step, const Location &loc, const std::shared_ptr<Context>& context){
+	LOG(message_group::Warning,loc,context->documentRoot(),"begin %1$s than the end, but step %2$s",begin,step);
 }
 
 Value Range::evaluate(const std::shared_ptr<Context>& context) const
@@ -367,12 +349,7 @@ Lookup::Lookup(const std::string &name, const Location &loc) : Expression(loc), 
 
 Value Lookup::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return context->lookup_variable(this->name,false,loc).clone();
-}
-
-const Value& Lookup::evaluateSilently(const std::shared_ptr<Context>& context) const
-{
-	return context->lookup_variable(this->name,true);
+	return context->lookup_variable(this->name,loc).clone();
 }
 
 void Lookup::print(std::ostream &stream, const std::string &) const
@@ -406,24 +383,24 @@ void MemberLookup::print(std::ostream &stream, const std::string &) const
 	stream << *this->expr << "." << this->member;
 }
 
-FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc)
-	: Expression(loc), ctx(nullptr), definition_arguments(definition_arguments), expr(expr)
+FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList &parameters, const Location &loc)
+	: Expression(loc), context(nullptr), parameters(parameters), expr(expr)
 {
 }
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<Context>& context) const
 {
-	return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{definition_arguments}}}};
+	return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{parameters}}}};
 }
 
 void FunctionDefinition::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function(";
 	bool first = true;
-	for (const auto& assignment : definition_arguments) {
-		stream << (first ? "" : ", ") << assignment->getName();
-		if (assignment->getExpr()) {
-			stream << " = " << *assignment->getExpr();
+	for (const auto& parameter : parameters) {
+		stream << (first ? "" : ", ") << parameter->getName();
+		if (parameter->getExpr()) {
+			stream << " = " << *parameter->getExpr();
 		}
 		first = false;
 	}
@@ -437,8 +414,8 @@ void FunctionDefinition::print(std::ostream &stream, const std::string &indent) 
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Error,loc,ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
+static void NOINLINE print_err(const char *name, const Location &loc, const std::shared_ptr<Context>& context){
+	LOG(message_group::Error,loc,context->documentRoot(),"Recursion detected calling function '%1$s'",name);
 }
 
 /**
@@ -448,8 +425,8 @@ static void NOINLINE print_err(const char *name, const Location &loc, const std:
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& ctx){
-	LOG(message_group::Trace,val->location(),ctx->documentPath(),"called by '%1$s'",val->get_name());
+static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<Context>& context){
+	LOG(message_group::Trace,val->location(),context->documentRoot(),"called by '%1$s'",val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
@@ -472,47 +449,64 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const L
 boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(const std::shared_ptr<Context>& context) const
 {
 	if (isLookup) {
-		auto f = context->lookup_function(name);
-		if (!f) {
-			LOG(message_group::Warning,loc,context->documentPath(),"Ignoring unknown function '%1$s'",name);
-		}
-		return f;
+		return context->lookup_function(name, location());
 	} else {
 		auto v = expr->evaluate(context);
 		if (v.type() == Value::Type::FUNCTION) {
 			return CallableFunction{std::move(v)};
 		} else {
-			LOG(message_group::Warning,loc,context->documentPath(),"Can't call function on %1$s",v.typeName());
+			LOG(message_group::Warning,loc,context->documentRoot(),"Can't call function on %1$s",v.typeName());
 			return boost::none;
 		}
 	}
 }
 
-Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
+struct SimplifiedExpression {
+	const Expression* expression;
+	boost::optional<std::shared_ptr<Context>> new_context = boost::none;
+	boost::optional<const FunctionCall*> new_active_function_call = boost::none;
+};
+typedef boost::variant<SimplifiedExpression, Value> SimplificationResult;
+
+static SimplificationResult simplify_function_body(const Expression* expression, const std::shared_ptr<Context>& context)
 {
-	const auto& name = get_name();
-	if (StackCheck::inst().check()) {
-		print_err(name.c_str(), loc, context);
-		throw RecursionException::create("function", name, this->loc);
+	if (!expression) {
+		return Value::undefined.clone();
 	}
-
-	auto f = evaluate_function_expression(context);
-	ContextHandle<EvalContext> evalCtx{Context::create<EvalContext>(context, this->arguments, this->loc)};
-
-	try {
+	else if (typeid(*expression) == typeid(TernaryOp)) {
+		const TernaryOp* ternary = static_cast<const TernaryOp*>(expression);
+		return SimplifiedExpression{ternary->evaluateStep(context)};
+	}
+	else if (typeid(*expression) == typeid(Assert)) {
+		const Assert* assertion = static_cast<const Assert*>(expression);
+		return SimplifiedExpression{assertion->evaluateStep(context)};
+	}
+	else if (typeid(*expression) == typeid(Echo)) {
+		const Echo* echo = static_cast<const Echo*>(expression);
+		return SimplifiedExpression{echo->evaluateStep(context)};
+	}
+	else if (typeid(*expression) == typeid(Let)) {
+		const Let *let = static_cast<const Let*>(expression);
+		ContextHandle<Context> let_context{Context::create<Context>(context)};
+		let_context->apply_config_variables(*context);
+		return SimplifiedExpression{let->evaluateStep(*let_context), *let_context};
+	}
+	else if (typeid(*expression) == typeid(FunctionCall)) {
+		const FunctionCall* call = static_cast<const FunctionCall*>(expression);
+		
+		const Expression* function_body;
+		const AssignmentList* required_parameters;
+		std::shared_ptr<Context> defining_context;
+		
+		auto f = call->evaluate_function_expression(context);
 		if (!f) {
 			return Value::undefined.clone();
-		} else if (CallableBuiltinFunction* callable = boost::get<CallableBuiltinFunction>(&*f)) {
-			return callable->function->evaluate(callable->containing_context, evalCtx.ctx);
+		} else if (const BuiltinFunction** function = boost::get<const BuiltinFunction*>(&*f)) {
+			return (*function)->evaluate(context, call);
 		} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
-			return evaluate_user_function(
-				name,
-				callable->function->expr,
-				&callable->function->definition_arguments,
-				callable->defining_context,
-				evalCtx.ctx,
-				loc
-			);
+			function_body = callable->function->expr.get();
+			required_parameters = &callable->function->parameters;
+			defining_context = callable->defining_context;
 		} else {
 			const Value* function_value;
 			if (Value* callable = boost::get<Value>(&*f)) {
@@ -523,21 +517,69 @@ Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
 				assert(false);
 			}
 			const auto &function = function_value->toFunction();
-			return evaluate_user_function(
-				name,
-				function.getExpr(),
-				function.getArgs().get(),
-				function.getCtx(),
-				evalCtx.ctx,
-				loc
-			);
+			function_body = function.getExpr().get();
+			required_parameters = function.getParameters().get();
+			defining_context = function.getContext();
 		}
-	} catch (EvaluationException &e) {
-		if (e.traceDepth > 0) {
-			print_trace(this, context);
-			e.traceDepth--;
+		
+		Arguments arguments{call->arguments, context};
+		Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
+		ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+		body_context->apply_config_variables(*context);
+		body_context->apply_variables(std::move(parameters).to_context_frame());
+		
+		return SimplifiedExpression{function_body, *body_context, call};
+	}
+	else {
+		return expression->evaluate(context);
+	}
+}
+
+Value FunctionCall::evaluate(const std::shared_ptr<Context>& context) const
+{
+	const auto& name = get_name();
+	if (StackCheck::inst().check()) {
+		print_err(name.c_str(), loc, context);
+		throw RecursionException::create("function", name, this->loc);
+	}
+	
+	// Repeatedly simplify expr until it reduces to either a tail call,
+	// or an expression that cannot be simplified in-place. If the latter,
+	// recurse. If the former, substitute the function body for expr,
+	// thereby implementing tail recursion optimization.
+	unsigned int recursion_depth = 0;
+	const FunctionCall* current_call = this;
+	
+	ContextHandle<Context> expression_context{Context::create<Context>(context)};
+	const Expression* expression = this;
+	while (true) {
+		try {
+			auto result = simplify_function_body(expression, *expression_context);
+			if (Value* value = boost::get<Value>(&result)) {
+				return std::move(*value);
+			}
+			
+			SimplifiedExpression* simplified_expression = boost::get<SimplifiedExpression>(&result);
+			assert(simplified_expression);
+			
+			expression = simplified_expression->expression;
+			if (simplified_expression->new_context) {
+				expression_context = std::move(*simplified_expression->new_context);
+			}
+			if (simplified_expression->new_active_function_call) {
+				current_call = *simplified_expression->new_active_function_call;
+				if (recursion_depth++ == 1000000) {
+					LOG(message_group::Error,expression->location(),expression_context->documentRoot(),"Recursion detected calling function '%1$s'",current_call->name);
+					throw RecursionException::create("function", current_call->name, current_call->location());
+				}
+			}
+		} catch (EvaluationException &e) {
+			if (e.traceDepth > 0) {
+				print_trace(current_call, *expression_context);
+				e.traceDepth--;
+			}
+			throw;
 		}
-		throw;
 	}
 }
 
@@ -566,17 +608,34 @@ Assert::Assert(const AssignmentList &args, Expression *expr, const Location &loc
 
 }
 
-const shared_ptr<Expression>& Assert::evaluateStep(const std::shared_ptr<Context>& context) const
+void Assert::performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<Context>& context)
 {
-	ContextHandle<EvalContext> assert_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	ContextHandle<Context> c{Context::create<Context>(assert_context.ctx)};
-	evaluate_assert(c.ctx, assert_context.ctx);
-	return expr;
+	Parameters parameters = Parameters::parse(Arguments(arguments, context), location, {"condition"}, {"message"});
+	const Expression* conditionExpression = nullptr;
+	for (const auto& argument : arguments) {
+		if (argument->getName() == "" || argument->getName() == "condition") {
+			conditionExpression = argument->getExpr().get();
+			break;
+		}
+	}
+	
+	if (!parameters["condition"].toBool()) {
+		std::string conditionString = conditionExpression ? STR(" '" << *conditionExpression << "'") : "";
+		std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoString()) : "";
+		LOG(message_group::Error,location,context->documentRoot(),"Assertion%1$s failed%2$s",conditionString,messageString);
+		throw AssertionFailedException("Assertion Failed", location);
+	}
+}
+
+const Expression* Assert::evaluateStep(const std::shared_ptr<Context>& context) const
+{
+	performAssert(this->arguments, this->loc, context);
+	return expr.get();
 }
 
 Value Assert::evaluate(const std::shared_ptr<Context>& context) const
 {
-	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+	const Expression* nextexpr = evaluateStep(context);
 	return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
 
@@ -592,16 +651,16 @@ Echo::Echo(const AssignmentList &args, Expression *expr, const Location &loc)
 
 }
 
-const shared_ptr<Expression>& Echo::evaluateStep(const std::shared_ptr<Context>& context) const
+const Expression* Echo::evaluateStep(const std::shared_ptr<Context>& context) const
 {
-	ContextHandle<EvalContext> echo_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(*echo_context.ctx));
-	return expr;
+	Arguments arguments{this->arguments, context};
+	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(arguments));
+	return expr.get();
 }
 
 Value Echo::evaluate(const std::shared_ptr<Context>& context) const
 {
-	const shared_ptr<Expression>& nextexpr = evaluateStep(context);
+	const Expression* nextexpr = evaluateStep(context);
 	return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
 
@@ -616,17 +675,39 @@ Let::Let(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-const shared_ptr<Expression>& Let::evaluateStep(const std::shared_ptr<Context>& context) const
+void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& targetContext)
 {
-	evaluate_sequential_assignment(this->arguments, context, this->loc);
-	return this->expr;
+	std::set<std::string> seen;
+	for (const auto& assignment : assignments) {
+		Value value = assignment->getExpr()->evaluate(targetContext);
+		if (assignment->getName().empty()) {
+			LOG(message_group::Warning,location,targetContext->documentRoot(),"Assignment without variable name %1$s",value.toEchoString());
+		} else if (seen.find(assignment->getName()) != seen.end()) {
+			LOG(message_group::Warning,location,targetContext->documentRoot(),"Ignoring duplicate variable assignment %1$s = %2$s",assignment->getName(),value.toEchoString());
+		} else {
+			targetContext->set_variable(assignment->getName(), std::move(value));
+			seen.insert(assignment->getName());
+		}
+	}
+}
+
+ContextHandle<Context> Let::sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& context)
+{
+	ContextHandle<Context> letContext{Context::create<Context>(context)};
+	doSequentialAssignment(assignments, location, *letContext);
+	return letContext;
+}
+
+const Expression* Let::evaluateStep(const std::shared_ptr<Context>& targetContext) const
+{
+	doSequentialAssignment(this->arguments, this->location(), targetContext);
+	return this->expr.get();
 }
 
 Value Let::evaluate(const std::shared_ptr<Context>& context) const
 {
-	ContextHandle<Context> c{Context::create<Context>(context)};
-	const shared_ptr<Expression>& nextexpr = evaluateStep(c.ctx);
-	return nextexpr->evaluate(c.ctx);
+	ContextHandle<Context> letContext{Context::create<Context>(context)};
+	return evaluateStep(*letContext)->evaluate(*letContext);
 }
 
 void Let::print(std::ostream &stream, const std::string &) const
@@ -673,7 +754,7 @@ Value LcEach::evalRecur(Value &&v, const std::shared_ptr<Context>& context) cons
 		const RangeType &range = v.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
+           LOG(message_group::Warning,loc,context->documentRoot(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
 			EmbeddedVectorType vec;
 			for (double d : range) vec.emplace_back(d);
@@ -714,49 +795,74 @@ LcFor::LcFor(const AssignmentList &args, Expression *expr, const Location &loc)
 {
 }
 
-Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
+static inline ContextHandle<Context> forContext(const std::shared_ptr<Context>& context, const std::string& name, Value value)
 {
-	ContextHandle<EvalContext> for_context{Context::create<EvalContext>(context, this->arguments, this->loc)};
-	ContextHandle<Context> assign_context{Context::create<Context>(context)};
-	ContextHandle<Context> c{Context::create<Context>(context)};
+	ContextHandle<Context> innerContext{Context::create<Context>(context)};
+	innerContext->set_variable(name, std::move(value));
+	return innerContext;
+}
 
-	// comprehension for statements are reduced by the parser to only contain one single element
-	const std::string &it_name = for_context->getArgName(0);
-	Value it_values = for_context->getArgValue(0, assign_context.ctx);
-
-	if (it_values.type() == Value::Type::RANGE) {
-		const RangeType &range = it_values.toRange();
+static void doForEach(
+	const AssignmentList& assignments,
+	const Location& location,
+	const std::function<void(const std::shared_ptr<Context>&)>& operation,
+	size_t assignment_index,
+	const std::shared_ptr<Context>& context
+) {
+	if (assignment_index >= assignments.size()) {
+		operation(context);
+		return;
+	}
+	
+	const std::string& variable_name = assignments[assignment_index]->getName();
+	Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
+	
+	if (variable_values.type() == Value::Type::RANGE) {
+		const RangeType &range = variable_values.toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= 1000000) {
-           LOG(message_group::Warning,loc,context->documentPath(),"Bad range parameter in for statement: too many elements (%1$lu)",steps);
+			LOG(message_group::Warning,location,context->documentRoot(),
+				"Bad range parameter in for statement: too many elements (%1$lu)",steps);
 		} else {
-			EmbeddedVectorType vec;
-			for (double d : range) {
-				c->set_variable(it_name, d);
-				vec.emplace_back(this->expr->evaluate(c.ctx));
+			for (double value : range) {
+				doForEach(assignments, location, operation, assignment_index + 1,
+					*forContext(context, variable_name, value)
+				);
 			}
-			return Value(std::move(vec));
 		}
-	} else if (it_values.type() == Value::Type::VECTOR) {
-		EmbeddedVectorType vec;
-		for (const auto &el : it_values.toVector()) {
-			c->set_variable(it_name, el.clone());
-			vec.emplace_back(this->expr->evaluate(c.ctx));
+	} else if (variable_values.type() == Value::Type::VECTOR) {
+		for (const auto& value : variable_values.toVector()) {
+			doForEach(assignments, location, operation, assignment_index + 1,
+				*forContext(context, variable_name, value.clone())
+			);
 		}
-		return std::move(vec);
-	} else if (it_values.type() == Value::Type::STRING) {
-		EmbeddedVectorType vec;
-		for (auto ch : it_values.toStrUtf8Wrapper()) {
-			c->set_variable(it_name, std::move(ch));
-			vec.emplace_back(this->expr->evaluate(c.ctx));
+	} else if (variable_values.type() == Value::Type::STRING) {
+		for (auto value : variable_values.toStrUtf8Wrapper()) {
+			doForEach(assignments, location, operation, assignment_index + 1,
+				*forContext(context, variable_name, Value(std::move(value)))
+			);
 		}
-		return Value(std::move(vec));
-	} else if (it_values.type() != Value::Type::UNDEFINED) {
-		c->set_variable(it_name, std::move(it_values));
-		return this->expr->evaluate(c.ctx);
+	} else if (variable_values.type() != Value::Type::UNDEFINED) {
+		doForEach(assignments, location, operation, assignment_index + 1,
+			*forContext(context, variable_name, std::move(variable_values))
+		);
 	}
+}
 
-	return EmbeddedVectorType::Empty();
+void LcFor::forEach(const AssignmentList& assignments, const Location &loc, const std::shared_ptr<Context>& context, std::function<void(const std::shared_ptr<Context>&)> operation)
+{
+	doForEach(assignments, loc, operation, 0, context);
+}
+
+Value LcFor::evaluate(const std::shared_ptr<Context>& context) const
+{
+	EmbeddedVectorType vec;
+	forEach(this->arguments, this->loc, context,
+		[&vec, expression = expr.get()] (const std::shared_ptr<Context>& iterationContext) {
+			vec.emplace_back(expression->evaluate(iterationContext));
+		}
+	);
+	return Value(std::move(vec));
 }
 
 void LcFor::print(std::ostream &stream, const std::string &) const
@@ -771,25 +877,36 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 
 Value LcForC::evaluate(const std::shared_ptr<Context>& context) const
 {
-	EmbeddedVectorType vec;
-
-    ContextHandle<Context> c{Context::create<Context>(context)};
-    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
-
+	EmbeddedVectorType output;
+	
+	ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
+	ContextHandle<Context> currentContext{Context::create<Context>(*initialContext)};
+	
 	unsigned int counter = 0;
-    while (this->cond->evaluate(c.ctx).toBool()) {
-        vec.emplace_back(this->expr->evaluate(c.ctx));
-
-        if (counter++ == 1000000) {
-			LOG(message_group::Error,loc,context->documentPath(),"For loop counter exceeded limit");
-            throw LoopCntException::create("for", loc);
-        }
-
-        ContextHandle<Context> tmp{Context::create<Context>(c.ctx)};
-        evaluate_sequential_assignment(this->incr_arguments, tmp.ctx, this->loc);
-        c->apply_variables(tmp.ctx);
+	while (this->cond->evaluate(*currentContext).toBool()) {
+		output.emplace_back(this->expr->evaluate(*currentContext));
+		
+		if (counter++ == 1000000) {
+			LOG(message_group::Error,loc,context->documentRoot(),"For loop counter exceeded limit");
+			throw LoopCntException::create("for", loc);
+		}
+		
+		/*
+		 * The next context should be evaluated in the current context,
+		 * and replace the current context; but there is no reason for
+		 * it to _parent_ the current context, for the next context
+		 * replaces every variable in it. Keeping the next context
+		 * parented to the current context would keep the current in
+		 * memory unnecessarily, and greatly slow down variable lookup.
+		 * However, we can't just use apply_variables(), as this breaks
+		 * captured context references in lambda functions.
+		 * So, we reparent the next context to the initial context.
+		 */
+		ContextHandle<Context> nextContext{Let::sequentialAssignmentContext(this->incr_arguments, this->location(), *currentContext)};
+		currentContext = std::shared_ptr<Context>(*nextContext);
+		currentContext->setParent(*initialContext);
     }
-    return std::move(vec);
+    return Value(std::move(output));
 }
 
 void LcForC::print(std::ostream &stream, const std::string &) const
@@ -808,146 +925,10 @@ LcLet::LcLet(const AssignmentList &args, Expression *expr, const Location &loc)
 
 Value LcLet::evaluate(const std::shared_ptr<Context>& context) const
 {
-    ContextHandle<Context> c{Context::create<Context>(context)};
-    evaluate_sequential_assignment(this->arguments, c.ctx, this->loc);
-    return this->expr->evaluate(c.ctx);
+	return this->expr->evaluate(*Let::sequentialAssignmentContext(this->arguments, this->location(), context));
 }
 
 void LcLet::print(std::ostream &stream, const std::string &) const
 {
     stream << "let(" << this->arguments << ") (" << *this->expr << ")";
-}
-
-void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<EvalContext> evalctx)
-{
-	AssignmentList args;
-	args += assignment("condition"), assignment("message");
-
-	ContextHandle<Context> c{Context::create<Context>(context)};
-
-	AssignmentMap assignments = evalctx->resolveArguments(args, {}, false);
-	for (const auto &arg : args) {
-		auto it = assignments.find(arg->getName());
-		if (it != assignments.end()) {
-			c->set_variable(arg->getName(), assignments[arg->getName()]->evaluate(evalctx));
-		}
-	}
-
-	const Value &condition = c->lookup_variable("condition", false, evalctx->loc);
-
-	if (!condition.toBool()) {
-		const Expression *expr = assignments["condition"];
-		const Value &message = c->lookup_variable("message", true);
-
-		const auto exprText = expr ? STR(" '" << *expr << "'") : "";
-		if (message.isDefined()) {
-			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed: %2$s",exprText,message.toEchoString());
-		} else {
-			LOG(message_group::Error,evalctx->loc,context->documentPath(),"Assertion%1$s failed",exprText);
-		}
-		throw AssertionFailedException("Assertion Failed", evalctx->loc);
-	}
-}
-
-Value evaluate_user_function(
-	std::string name,
-	std::shared_ptr<Expression> expr,
-	AssignmentList const* definition_arguments,
-	std::shared_ptr<Context> defining_context,
-	const std::shared_ptr<EvalContext>& evalctx,
-	Location loc
-) {
-	ContextHandle<Context> context{Context::create<Context>(defining_context)};
-	context->setVariables(evalctx, *definition_arguments);
-
-	// Repeatedly simplify expr until it reduces to either a tail call,
-	// or an expression that cannot be simplified in-place. If the latter,
-	// recurse. If the former, substitute the function body for expr,
-	// thereby implementing tail recursion optimization.
-	unsigned int counter = 0;
-	while (true) {
-		if (!expr) {
-			return Value::undefined.clone();
-		}
-		
-		const auto& exprRef = *expr;
-		if (typeid(exprRef) == typeid(TernaryOp)) {
-			const shared_ptr<TernaryOp> &ternary = static_pointer_cast<TernaryOp>(expr);
-			expr = ternary->evaluateStep(context.ctx);
-		}
-		else if (typeid(exprRef) == typeid(Assert)) {
-			const shared_ptr<Assert> &assertion = static_pointer_cast<Assert>(expr);
-			expr = assertion->evaluateStep(context.ctx);
-		}
-		else if (typeid(exprRef) == typeid(Echo)) {
-			const shared_ptr<Echo> &echo = static_pointer_cast<Echo>(expr);
-			expr = echo->evaluateStep(context.ctx);
-		}
-		else if (typeid(exprRef) == typeid(Let)) {
-			const shared_ptr<Let> &let = static_pointer_cast<Let>(expr);
-			std::shared_ptr<Context> new_context;
-			{
-				ContextHandle<Context> let_context{Context::create<Context>(context.ctx)};
-				let_context->apply_config_variables(context.ctx);
-				expr = let->evaluateStep(let_context.ctx);
-				new_context = let_context.ctx;
-			}
-			// The $let_context handle must be popped off the stack,
-			// making $context the top of the stack, before $context can be modified.
-			context = std::move(new_context);
-		}
-		else if (typeid(exprRef) == typeid(FunctionCall)) {
-			const shared_ptr<FunctionCall> &call = static_pointer_cast<FunctionCall>(expr);
-			
-			std::shared_ptr<Context> new_context;
-			{
-				ContextHandle<EvalContext> call_evalCtx{Context::create<EvalContext>(context.ctx, call->arguments, call->location())};
-				
-				auto f = call->evaluate_function_expression(context.ctx);
-				if (!f) {
-					return Value::undefined.clone();
-				} else if (CallableBuiltinFunction* callable = boost::get<CallableBuiltinFunction>(&*f)) {
-					return callable->function->evaluate(callable->containing_context, call_evalCtx.ctx);
-				} else if (CallableUserFunction* callable = boost::get<CallableUserFunction>(&*f)) {
-					name = callable->function->name;
-					expr = callable->function->expr;
-					definition_arguments = &callable->function->definition_arguments;
-					defining_context = callable->defining_context;
-				} else {
-					const Value* function_value;
-					if (Value* callable = boost::get<Value>(&*f)) {
-						function_value = callable;
-					} else if (const Value** callable = boost::get<const Value*>(&*f)) {
-						function_value = *callable;
-					} else {
-						assert(false);
-					}
-					const auto &function = function_value->toFunction();
-					name = call->name;
-					expr = function.getExpr();
-					definition_arguments = function.getArgs().get();
-					defining_context = function.getCtx();
-				}
-				
-				loc = call->location();
-				
-				ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
-				body_context->apply_config_variables(context.ctx);
-				body_context->setVariables(call_evalCtx.ctx, *definition_arguments);
-				new_context = body_context.ctx;
-			}
-			
-			if (counter++ == 1000000) {
-				LOG(message_group::Error,loc,context.ctx->documentPath(),"Recursion detected calling function '%1$s'",name);
-				throw RecursionException::create("function", name,loc);
-			}
-			
-			// The $call_evalCtx and $body_context handles must be popped off the stack,
-			// making $context the top of the stack, before $context can be modified.
-			context = std::move(new_context);
-		}
-		else {
-			return expr->evaluate(context.ctx);
-		}
-	}
 }

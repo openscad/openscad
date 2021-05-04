@@ -25,10 +25,11 @@
  */
 #include <iostream>
 #include "boost-utils.h"
+#include "builtincontext.h"
 #include "comment.h"
 #include "openscad.h"
 #include "GeometryCache.h"
-#include "ModuleCache.h"
+#include "SourceFileCache.h"
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
 #include "parsersettings.h"
@@ -178,7 +179,7 @@ void fileExportedMessage(const char *format, const QString &filename) {
 } // namespace
 
 MainWindow::MainWindow(const QStringList &filenames)
-	: top_ctx(Context::create<BuiltinContext>()), root_inst("group"), library_info_dialog(nullptr), font_list_dialog(nullptr),
+	: library_info_dialog(nullptr), font_list_dialog(nullptr),
 	  procevents(false), tempFile(nullptr), progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
 	setupUi(this);
@@ -220,8 +221,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
 
-	root_module = nullptr;
-	parsed_module = nullptr;
+	root_file = nullptr;
+	parsed_file = nullptr;
 	absolute_root_node = nullptr;
 
 	// Open Recent
@@ -817,9 +818,9 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-	// If root_module is not null then it will be the same as parsed_module,
+	// If root_file is not null then it will be the same as parsed_file,
 	// so no need to delete it.
-	delete parsed_module;
+	delete parsed_file;
 	delete root_node;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
@@ -1005,8 +1006,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 			shouldcompiletoplevel = true;
 		}
 
-		if (this->parsed_module) {
-			auto mtime = this->parsed_module->includesChanged();
+		if (this->parsed_file) {
+			auto mtime = this->parsed_file->includesChanged();
 			if (mtime > this->includes_mtime) {
 				this->includes_mtime = mtime;
 				shouldcompiletoplevel = true;
@@ -1030,11 +1031,11 @@ void MainWindow::compile(bool reload, bool forcedone)
 			last_parser_error_pos = parser_error_pos;
 		}
 
-		if (this->root_module) {
-			auto mtime = this->root_module->handleDependencies();
+		if (this->root_file) {
+			auto mtime = this->root_file->handleDependencies();
 			if (mtime > this->deps_mtime) {
 				this->deps_mtime = mtime;
-				LOG(message_group::None,Location::NONE,"","Used file cache size: %1$d files",ModuleCache::instance()->size());
+				LOG(message_group::None,Location::NONE,"","Used file cache size: %1$d files",SourceFileCache::instance()->size());
 				didcompile = true;
 			}
 		}
@@ -1044,8 +1045,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 			throw HardWarningException("");
 		// If we're auto-reloading, listen for a cascade of changes by starting a timer
 		// if something changed _and_ there are any external dependencies
-		if (reload && didcompile && this->root_module) {
-			if (this->root_module->hasIncludes() ||	this->root_module->usesLibraries()) {
+		if (reload && didcompile && this->root_file) {
+			if (this->root_file->hasIncludes() || this->root_file->usesLibraries()) {
 				this->waitAfterReloadTimer->start();
 				this->procevents = false;
 				return;
@@ -1061,7 +1062,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 void MainWindow::waitAfterReload()
 {
 	no_exceptions_for_warnings();
-	auto mtime = this->root_module->handleDependencies();
+	auto mtime = this->root_file->handleDependencies();
 	auto stop = would_have_thrown();
 	if (mtime > this->deps_mtime)
 		this->deps_mtime = mtime;
@@ -1169,22 +1170,24 @@ void MainWindow::instantiateRoot()
 	this->tree.setRoot(nullptr);
 
 	boost::filesystem::path doc(activeEditor->filepath.toStdString());
-	this->tree.setDocumentPath(doc.remove_filename().string());
+	this->tree.setDocumentPath(doc.parent_path().string());
 
-	if (this->root_module) {
+	if (this->root_file) {
 		// Evaluate CSG tree
 		LOG(message_group::None,Location::NONE,"","Compiling design (CSG Tree generation)...");
 		this->processEvents();
 
 		AbstractNode::resetIndexCounter();
 
-		// split these two lines - gcc 4.7 bug
-		auto mi = ModuleInstantiation( "group" );
-		this->root_inst = mi;
-
-		ContextHandle<FileContext> filectx{Context::create<FileContext>(top_ctx.ctx)};
-		this->absolute_root_node = this->root_module->instantiateWithFileContext(filectx.ctx, &this->root_inst, nullptr);
-		this->qglview->cam.updateView(filectx.ctx, false);
+		EvaluationSession session{doc.parent_path().string()};
+		ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+		builtin_context->apply_variables(this->render_variables);
+		
+		std::shared_ptr<FileContext> file_context;
+		this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+		if (file_context) {
+			this->qglview->cam.updateView(file_context, false);
+		}
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -1193,7 +1196,7 @@ void MainWindow::instantiateRoot()
 				this->root_node = this->absolute_root_node;
 			}
 			if (nextLocation) {
-				LOG(message_group::None,*nextLocation,top_ctx->documentPath(),"More than one Root Modifier (!)");
+				LOG(message_group::None,*nextLocation,builtin_context->documentRoot(),"More than one Root Modifier (!)");
 			}
 
 			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1702,13 +1705,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx->set_variable("$t", Value(this->anim_tval));
+	render_variables.insert_or_assign("$t", Value(this->anim_tval));
 	auto camVpt = qglview->cam.getVpt();
-	this->top_ctx->set_variable("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
+	render_variables.insert_or_assign("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
 	auto camVpr = qglview->cam.getVpr();
-	top_ctx->set_variable("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
-	top_ctx->set_variable("$vpd", Value(qglview->cam.zoomValue()));
-	top_ctx->set_variable("$vpf", Value(qglview->cam.fovValue()));
+	render_variables.insert_or_assign("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
+	render_variables.insert_or_assign("$vpd", Value(qglview->cam.zoomValue()));
+	render_variables.insert_or_assign("$vpf", Value(qglview->cam.fovValue()));
 }
 
 	/*!
@@ -1749,16 +1752,16 @@ void MainWindow::parseTopLevelDocument()
 
 	auto fnameba = activeEditor->filepath.toLocal8Bit();
 	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-	delete this->parsed_module;
-	this->root_module = parse(this->parsed_module, fulltext, fname, fname, false) ? this->parsed_module : nullptr;
+	delete this->parsed_file;
+	this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
-	if (this->root_module!=nullptr) {
+	if (this->root_file!=nullptr) {
 		//add parameters as annotation in AST
-		CommentParser::collectParameters(fulltext, this->root_module);
-		this->activeEditor->parameterWidget->setParameters(this->root_module, fulltext);
-		this->activeEditor->parameterWidget->applyParameters(this->root_module);
+		CommentParser::collectParameters(fulltext, this->root_file);
+		this->activeEditor->parameterWidget->setParameters(this->root_file, fulltext);
+		this->activeEditor->parameterWidget->applyParameters(this->root_file);
 		this->activeEditor->parameterWidget->setEnabled(true);
-		this->activeEditor->setIndicator(this->root_module->indicatorData);
+		this->activeEditor->setIndicator(this->root_file->indicatorData);
 	} else {
 		this->activeEditor->parameterWidget->setEnabled(false);
 	}
@@ -1810,7 +1813,7 @@ void MainWindow::actionReloadRenderPreview()
 
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
-	this->top_ctx->set_variable("$preview", Value(true));
+	render_variables.insert_or_assign("$preview", Value(true));
 	compile(true);
 }
 
@@ -1841,7 +1844,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 	this->processEvents();
 	this->afterCompileSlot = afterCompileSlot;
 	this->procevents = procevents;
-	this->top_ctx->set_variable("$preview", Value(preview));
+	render_variables.insert_or_assign("$preview", Value(preview));
 }
 
 void MainWindow::actionRenderPreview()
@@ -2089,7 +2092,7 @@ void MainWindow::actionRender()
 
 void MainWindow::cgalRender()
 {
-	if (!this->root_module || !this->root_node) {
+	if (!this->root_file || !this->root_node) {
 		compileEnded();
 		return;
 	}
@@ -2188,7 +2191,7 @@ void MainWindow::selectObject(QPoint mouse)
 				continue;
 			}
 
-			auto location = step->location;
+			auto location = step->modinst->location();
 			ss.str("");
 
 			// Check if the path is contained in a library (using parsersettings.h)
@@ -2299,8 +2302,8 @@ void MainWindow::actionDisplayAST()
 	e->setTabStopWidth(tabStopWidth);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
-	if (root_module) {
-		e->setPlainText(QString::fromStdString(root_module->dump("")));
+	if (root_file) {
+		e->setPlainText(QString::fromStdString(root_file->dump("")));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
@@ -2572,7 +2575,7 @@ void MainWindow::actionFlushCaches()
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
-	ModuleCache::instance()->clear();
+	SourceFileCache::instance()->clear();
     
     setCurrentOutput();
     LOG(message_group::None,Location::NONE,"","Caches Flushed");
