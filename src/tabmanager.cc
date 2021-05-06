@@ -77,15 +77,7 @@ void TabManager::tabSwitched(int x)
     assert(tabWidget != nullptr);
     editor = (EditorInterface *)tabWidget->widget(x);
     par->activeEditor = editor;
-
-    if(editor == par->customizerEditor)
-    {
-        par->parameterWidget->setEnabled(true);
-    }
-    else
-    {
-        par->parameterWidget->setEnabled(false);
-    }
+    par->parameterDock->setWidget(editor->parameterWidget);
 
     par->editActionUndo->setEnabled(editor->canUndo());
     par->changedTopLevelEditor(par->editorDock->isFloating());
@@ -116,11 +108,12 @@ void TabManager::closeTabRequested(int x)
     if(!maybeSave(x))
         return;
 
-    QWidget *temp = tabWidget->widget(x);
-    editorList.remove((EditorInterface *)temp);
+    EditorInterface *temp = (EditorInterface *)tabWidget->widget(x);
+    editorList.remove(temp);
     tabWidget->removeTab(x);
     tabWidget->fireTabCountChanged();
 
+    delete temp->parameterWidget;
     delete temp;
 }
 
@@ -166,7 +159,7 @@ void TabManager::open(const QString &filename)
         }
     }
 
-    if(editor->filepath.isEmpty() && !editor->isContentModified())
+    if(editor->filepath.isEmpty() && !editor->isContentModified() && !editor->parameterWidget->isModified())
     {
         openTabFile(filename);
     }
@@ -182,6 +175,9 @@ void TabManager::createTab(const QString &filename)
 
     editor = new ScintillaEditor(tabWidget);
     par->activeEditor = editor;
+    editor->parameterWidget = new ParameterWidget(par->parameterDock);
+    connect(editor->parameterWidget, SIGNAL(parametersChanged()), par, SLOT(actionRenderPreview()));
+    par->parameterDock->setWidget(editor->parameterWidget);
 
     // clearing default mapping of keyboard shortcut for font size
     QsciCommandSet *qcmdset = ((ScintillaEditor *)editor)->qsci->standardCommands();
@@ -207,7 +203,8 @@ void TabManager::createTab(const QString &filename)
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState())); 
     connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged())); 
     connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentRenderState()));
-    connect(editor, SIGNAL(modificationChanged(bool, EditorInterface *)), this, SLOT(setTabModified(bool, EditorInterface *)));
+    connect(editor, SIGNAL(modificationChanged(EditorInterface *)), this, SLOT(setTabModified(EditorInterface *)));
+    connect(editor->parameterWidget, &ParameterWidget::modificationChanged, [editor = this->editor, this] { setTabModified(editor); });
 
     connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
                     editor, SLOT(initFont(const QString&,uint)));
@@ -425,11 +422,7 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 void TabManager::setContentRenderState() //since last render
 {
     editor->contentsRendered = false; //since last render
-    if(editor == par->customizerEditor)
-    {
-        par->customizerEditor = nullptr;
-        par->parameterWidget->setEnabled(false);
-    }
+    editor->parameterWidget->setEnabled(false);
 }
 
 void TabManager::stopAnimation()
@@ -449,7 +442,7 @@ void TabManager::updateFindState()
         par->hideFind();
 }
 
-void TabManager::setTabModified(bool mod, EditorInterface *edt)
+void TabManager::setTabModified(EditorInterface *edt)
 {
     QString fname = _("Untitled.scad");
     QString fpath = fname;
@@ -459,7 +452,8 @@ void TabManager::setTabModified(bool mod, EditorInterface *edt)
         fname = fileinfo.fileName();
         fpath = fileinfo.filePath();
     }
-    if(mod)
+
+    if(edt->isContentModified() || edt->parameterWidget->isModified())
     {
         fname += "*";
     }
@@ -492,7 +486,7 @@ void TabManager::openTabFile(const QString &filename)
 
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
     try {
-        par->parseTopLevelDocument(true);
+        par->parseTopLevelDocument();
     } catch (const HardWarningException&) {
         par->exceptionCleanup();
     }
@@ -518,7 +512,7 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
         fname = fileinfo.fileName();
         tabWidget->setTabText(tabWidget->indexOf(edt), QString(fname).replace("&", "&&"));
         tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
-        par->parameterWidget->readFile(edt->filepath);
+        edt->parameterWidget->readFile(edt->filepath);
         QDir::setCurrent(fileinfo.dir().absolutePath());
     }
     par->editorTopLevelChanged(par->editorDock->isFloating());
@@ -553,7 +547,7 @@ void TabManager::refreshDocument()
 bool TabManager::maybeSave(int x)
 {
 	EditorInterface *edt = (EditorInterface *) tabWidget->widget(x);
-	if (edt->isContentModified()) {
+	if (edt->isContentModified() || edt->parameterWidget->isModified()) {
 		QMessageBox box(par);
 		box.setText(_("The document has been modified."));
 		box.setInformativeText(_("Do you want to save your changes?"));
@@ -584,7 +578,7 @@ bool TabManager::maybeSave(int x)
 bool TabManager::shouldClose()
 {
 	foreach (EditorInterface *edt, editorList) {
-		if (!edt->isContentModified())
+		if (!(edt->isContentModified() || edt->parameterWidget->isModified()))
 			continue;
 
 		QMessageBox box(par);
@@ -666,7 +660,9 @@ bool TabManager::save(EditorInterface *edt, const QString path)
 	}
 	if (saveOk) {
 		LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", path.toLocal8Bit().constData());
+		edt->parameterWidget->saveFile(path);
 		edt->setContentModified(false);
+		edt->parameterWidget->setNotModified();
 		par->updateRecentFiles(edt);
 	} else {
 		saveError(file, _("Error saving design"), path);
@@ -700,7 +696,6 @@ bool TabManager::saveAs(EditorInterface *edt)
 
 	bool saveOk = save(edt, filename);
 	if (saveOk) {
-		par->parameterWidget->writeFileIfNotEmpty(filename);
 		setTabName(filename, edt);
 	}
 	return saveOk;
@@ -709,7 +704,7 @@ bool TabManager::saveAs(EditorInterface *edt)
 bool TabManager::saveAll()
 {
 	foreach (EditorInterface *edt, editorList) {
-		if (edt->isContentModified()) {
+		if (edt->isContentModified() || edt->parameterWidget->isModified()) {
 			if (!save(edt)) {
 				return false;
 			}

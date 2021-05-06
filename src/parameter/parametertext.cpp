@@ -1,55 +1,27 @@
 #include "parametertext.h"
-#include "comment.h"
 
-ParameterText::ParameterText(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
+ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, DescriptionStyle descriptionStyle):
+	ParameterVirtualWidget(parent, parameter),
+	parameter(parameter)
 {
+	setupUi(this);
+	descriptionWidget->setDescription(parameter, descriptionStyle);
+
+	if (parameter->maximumSize) {
+		lineEdit->setMaxLength(*parameter->maximumSize);
+	}
+
+	connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onChanged()));
 	setValue();
-
-	double max = 32767;
-	const auto &values = object->values.toVector();
-	if(values.size() == 1) { // [max] format from makerbot customizer
-		try {
-			max = std::stoi(values[0].toString(), nullptr, 0);
-		}
-		catch(...) { } // If not a valid value, fall back to the default.
-	}
-	this->lineEdit->setMaxLength(max);
-
-	connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(onChanged(QString)));
-	connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 }
 
-void ParameterText::onChanged(QString)
+void ParameterText::onChanged()
 {
-	if(!this->suppressUpdate){
-		if (object->dvt == Value::Type::STRING) {
-			object->value = Value(lineEdit->text().toStdString());
-		}else{
-			shared_ptr<Expression> params = CommentParser::parser(lineEdit->text().toStdString().c_str());
-			if (!params) return;
-			Value newValue = params->evaluateLiteral();
-			if (object->dvt == newValue.type()) {
-				object->value = std::move(newValue);
-			}
-		}
-	}
-}
-
-void ParameterText::onEditingFinished()
-{
+	parameter->value = lineEdit->text().toStdString();
 	emit changed();
 }
 
 void ParameterText::setValue()
 {
-	this->suppressUpdate=true;
-	this->stackedWidgetBelow->setCurrentWidget(this->pageText);
-	this->pageText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	this->stackedWidgetRight->hide();
-	this->lineEdit->setText(QString::fromStdString(object->value.toString()));
-	if (object->values.toDouble() > 0) {
-		this->lineEdit->setMaxLength(object->values.toDouble());
-	}
-	this->suppressUpdate=false;
+	lineEdit->setText(QString::fromStdString(parameter->value));
 }

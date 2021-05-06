@@ -592,6 +592,7 @@ set(CORE_SOURCES
   src/libsvg/transformation.cc
   src/libsvg/tspan.cc
   src/libsvg/util.cc
+  src/parameter/parameterobject.cpp
   src/parameter/parameterset.cpp
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
@@ -694,8 +695,6 @@ set(GUI_SOURCES
   src/parameter/ignoreWheelWhenNotFocused.cpp
   src/parameter/parametercheckbox.cpp
   src/parameter/parametercombobox.cpp
-  src/parameter/parameterextractor.cpp
-  src/parameter/parameterobject.cpp
   src/parameter/parameterslider.cpp
   src/parameter/parameterspinbox.cpp
   src/parameter/parametertext.cpp

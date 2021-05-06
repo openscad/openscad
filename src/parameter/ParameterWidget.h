@@ -27,73 +27,64 @@
 
 #include <QTimer>
 
-#include "parameterextractor.h"
 #include "ui_ParameterWidget.h"
-#include "groupwidget.h"
+#include "parameterobject.h"
 #include "parameterset.h"
+#include "parametervirtualwidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
 	Q_OBJECT
 private:
-	struct groupInst {
-		std::vector<std::string> parameterVector;
-		bool show;
-		bool inList;
-	};
-	std::vector<std::string> groupPos;
-	typedef std::map<std::string,groupInst > group_map;
-	group_map groupMap;
+	ParameterSets sets;
+	std::string source;
+	ParameterObjects parameters;
+	std::map<ParameterObject*, std::vector<ParameterVirtualWidget*>> widgets;
+
+	QString invalidJsonFile; // set if a json file was read that could not be parsed
 	QTimer autoPreviewTimer;
-	DescLoD descriptionLoD; //configuration if and how much of the description is shown
-	std::string jsonFile;
-	bool valueChanged;
-	int lastComboboxIndex = 0;
-
-	void connectWidget();
-	void updateWidget();
-	void cleanScrollArea();
-	void rebuildGroupMap();
-	ParameterVirtualWidget* CreateParameterWidget(std::string parameterName);
-	void setComboBoxPresetForSet();
-	void removeChangeIndicator();
-
-	void setFile(QString File);
-
-	bool unreadableFileExists=false;
-	entry_map_t entries;
-	std::vector<std::string> ParameterPos;
-	ParameterExtractor *extractor;
-	ParameterSet *setMgr;
+	bool modified = false;
 
 public:
 	ParameterWidget(QWidget *parent = nullptr);
-	~ParameterWidget();
 	void readFile(QString scadFile);
-	void writeFileIfNotEmpty(QString scadFile);
-	void writeBackupFile(QString scadFile);
-	void setParameters(const SourceFile* sourceFile,bool);
+	void saveFile(QString scadFile);
+	void saveBackupFile(QString scadFile);
+	void setParameters(const SourceFile* sourceFile, const std::string& source);
 	void applyParameters(SourceFile *sourceFile);
 	bool childHasFocus();
+	bool isModified() const { return modified; }
+	void setNotModified() { this->modified = false; }
 
 protected slots:
-	void onValueChanged();
-	void onPreviewTimerElapsed();
-	void onDescriptionLoDChanged();
-	void onSetChanged(int idx);
+	void autoPreview();
+	void setModified();
+	void onSetChanged(int index);
 	void onSetNameChanged();
 	void onSetAdd();
-	void onSetSaveButton();
 	void onSetDelete();
-	void resetParameter();
-	void defaultParameter();
+	void parameterModified();
+	void loadSet(int index);
+	void createSet(QString name);
+	void updateSetEditability();
+	void rebuildWidgets();
 
 signals:
-	void previewRequested(bool rebuildParameterUI=true);
+	// emitted when the effective values of the parameters have changed,
+	// and the model view can be updated
+	void parametersChanged();
+	// emitted when the sets that would be saved to the json file have changed,
+	// and the parameter sets should be saved before closing
+	void modificationChanged();
 
 protected:
-	void applyParameterSet(std::string setName);
-	void updateParameterSet(std::string setName, bool newSet=false);
-	void writeParameterSets();
+	struct ParameterGroup
+	{
+		QString name;
+		std::vector<ParameterObject*> parameters;
+	};
+	std::vector<ParameterGroup> getParameterGroups();
+	ParameterVirtualWidget* createParameterWidget(ParameterObject* parameter, DescriptionStyle descriptionStyle);
+	QString getJsonFile(QString scadFile);
+	void cleanSets();
 };
-

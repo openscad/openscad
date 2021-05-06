@@ -43,7 +43,6 @@ public:
 	QTimer *autoReloadTimer;
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
-	EditorInterface *customizerEditor;
 
 	SourceFile *root_file;      // Result of parsing
 	SourceFile *parsed_file;		// Last parse for include list
@@ -110,14 +109,14 @@ public:
 	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
-	void parseTopLevelDocument(bool rebuildParameterWidget);
+	void parseTopLevelDocument();
 	void exceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
 	void setRenderVariables(ContextHandle<class BuiltinContext>& context);
 	void updateCompileResult();
-	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
+	void compile(bool reload, bool forcedone = false);
 	void compileCSG();
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
@@ -206,8 +205,9 @@ private slots:
 protected:
 	bool eventFilter(QObject* obj, QEvent *event) override;
 
+public slots:
+	void actionRenderPreview();
 private slots:
-	void actionRenderPreview(bool rebuildParameterWidget=true);
 	void csgRender();
 	void csgReloadRender();
 	void action3DPrint();

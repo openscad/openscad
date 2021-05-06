@@ -13,7 +13,7 @@ public:
 	void print(std::ostream &stream, const std::string &indent) const;
 	const std::string &getName() const { return name; }
 	const shared_ptr<Expression>& getExpr() const { return expr; }
-	
+
 private:
 	std::string name;
 	shared_ptr<Expression> expr;

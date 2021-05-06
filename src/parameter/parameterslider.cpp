@@ -1,10 +1,46 @@
 #include "parameterslider.h"
 #include "ignoreWheelWhenNotFocused.h"
 
-ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD), suppressUpdate(false)
+ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle):
+	ParameterVirtualWidget(parent, parameter),
+	parameter(parameter)
 {
-	setValue();
+	setupUi(this);
+	descriptionWidget->setDescription(parameter, descriptionStyle);
+
+	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+	slider->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
+
+	assert(parameter->minimum);
+	assert(parameter->maximum);
+
+	int decimals;
+	this->minimum = *parameter->minimum;
+	if (parameter->step) {
+		this->step = *parameter->step;
+		decimals = decimalsRequired({
+			this->minimum,
+			parameter->defaultValue,
+			this->step
+		});
+	} else {
+		decimals = decimalsRequired({
+			this->minimum,
+			parameter->defaultValue
+		});
+		this->step = pow(0.1, decimals);
+	}
+	// Truncate end value to full steps, same as Thingiverse customizer.
+	// This also makes sure the step size of the spin box does not go to
+	// invalid values.
+	int maximumSliderPosition = sliderPosition(*parameter->maximum);
+	double maximumValue = parameterValue(maximumSliderPosition);
+
+	slider->setRange(0, maximumSliderPosition);
+	doubleSpinBox->setDecimals(decimals);
+	doubleSpinBox->setRange(this->minimum, maximumValue);
+	doubleSpinBox->setSingleStep(this->step);
 
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
@@ -12,89 +48,50 @@ ParameterSlider::ParameterSlider(QWidget *parent, ParameterObject *parameterobje
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onEditingFinished()));
 	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 
-	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-	slider->installEventFilter(ignoreWheelWhenNotFocused);
-	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
+	setValue();
 }
 
-void ParameterSlider::onSliderChanged(int)
+void ParameterSlider::onSliderChanged(int position)
 {
-	if (!this->suppressUpdate) {
-		const double v = doubleSpinBox->minimum() + slider->value() * step;
-		PRINTDB("onSliderChanged(): %.2f (slider = %d)", v % slider->value());
-		this->suppressUpdate = true;
-		this->doubleSpinBox->setValue(v);
-		this->suppressUpdate = false;
+	if (!inUpdate) {
+		inUpdate = true;
+		double value = parameterValue(position);
+		doubleSpinBox->setValue(value);
+		inUpdate = false;
 	}
 }
 
-void ParameterSlider::onSpinBoxChanged(double v)
+void ParameterSlider::onSpinBoxChanged(double value)
 {
-	if (!this->suppressUpdate) {
-		PRINTDB("onSpinBoxChanged(): %.2f", v);
-		this->suppressUpdate = true;
-		slider->setValue(std::nextafter((v - doubleSpinBox->minimum()) / step, max_uint32));
-		this->suppressUpdate=false;
+	if (!inUpdate) {
+		inUpdate = true;
+		int position = sliderPosition(value);
+		slider->setValue(position);
+		inUpdate = false;
 	}
 }
 
 void ParameterSlider::onEditingFinished()
 {
-	const double v = doubleSpinBox->value();
-	PRINTDB("updateValue(): %.2f", v);
-	object->value = Value(v);
+	parameter->value = parameterValue(slider->value());
 	emit changed();
 }
 
 void ParameterSlider::setValue()
 {
-	this->suppressUpdate = true;
-	const double v = object->value.toDouble();
+	inUpdate = true;
+	int position = sliderPosition(parameter->value);
+	slider->setValue(position);
+	doubleSpinBox->setValue(parameterValue(position));
+	inUpdate = false;
+}
 
-	if (object->values.toRange().step_value() > 0) {
-		setPrecision(object->values.toRange().step_value());
-		step = object->values.toRange().step_value();
-	} else {
-		decimalPrecision = 1;
-		step = 1;
-	}
+int ParameterSlider::sliderPosition(double value)
+{
+	return std::nextafter((value - this->minimum) / this->step, std::numeric_limits<uint32_t>::max());
+}
 
-	double min = 0;
-	double max = 0;
-	int maxSlider = 0;
-	int curSlider = 0;
-	if (object->values.type() == Value::Type::RANGE) {
-		// [min:max] and [min:step:max] format
-		const double b = object->values.toRange().begin_value();
-		const double e = object->values.toRange().end_value();
-		maxSlider = std::nextafter((e - b) / step, max_uint32);
-		curSlider = std::nextafter((v - b) / step, max_uint32);
-		min = b;
-		// Truncate end value to full steps, same as Thingiverse customizer.
-		// This also makes sure the step size of the spin box does not go to
-		// invalid values.
-		max = b + maxSlider * step;
-	} else {
-		// [max] format from makerbot customizer
-		decimalPrecision = 0;
-		step = 1;
-		maxSlider =  std::stoi(object->values.toVector()[0].toString());
-		curSlider = v;
-		max = maxSlider;
-	}
-
-	this->stackedWidgetBelow->setCurrentWidget(this->pageSlider);
-	this->pageSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	this->slider->setRange(0, maxSlider);
-	this->slider->setValue(curSlider);
-
-	this->stackedWidgetRight->setCurrentWidget(this->pageSpin);
-	this->pageSpin->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
-	this->doubleSpinBox->setMinimum(min);
-	this->doubleSpinBox->setMaximum(max);
-	this->doubleSpinBox->setSingleStep(step);
-	this->doubleSpinBox->setDecimals(decimalPrecision);
-	this->doubleSpinBox->setValue(v);
-	this->suppressUpdate = false;
-	PRINTDB("ParameterSlider: [%.2f:%.2f:%.2f, %.2f] - (%d - %d, %d)", min % step % max % v % 0 % maxSlider % curSlider);
+double ParameterSlider::parameterValue(int sliderPosition)
+{
+	return this->minimum + sliderPosition * this->step;
 }
