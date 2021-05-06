@@ -38,6 +38,7 @@ public:
 	double anim_tval;
 	bool anim_dumping;
 	int anim_dump_start_step;
+	bool is_preview;
 
 	QTimer *autoReloadTimer;
 	QTimer *waitAfterReloadTimer;
@@ -46,7 +47,6 @@ public:
 
 	SourceFile *root_file;      // Result of parsing
 	SourceFile *parsed_file;		// Last parse for include list
-	ValueMap render_variables;		// Render setting special variables -- $preview, $vp*, $t
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;
@@ -115,7 +115,7 @@ public:
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void updateTemporalVariables();
+	void setRenderVariables(ContextHandle<class BuiltinContext>& context);
 	void updateCompileResult();
 	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
 	void compileCSG();

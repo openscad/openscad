@@ -23,7 +23,6 @@ public:
 		apply_lexical_variables(other);
 		apply_config_variables(other);
 	}
-	void apply_variables(const ValueMap& variables);
 	
 	void apply_lexical_variables(ContextFrame&& other);
 	void apply_config_variables(ContextFrame&& other);

@@ -1121,7 +1121,6 @@ void MainWindow::compileDone(bool didchange)
 	try{
 		const char *callslot;
 		if (didchange) {
-			updateTemporalVariables();
 			instantiateRoot();
 			updateCompileResult();
 			callslot = afterCompileSlot;
@@ -1180,7 +1179,7 @@ void MainWindow::instantiateRoot()
 
 		EvaluationSession session{doc.parent_path().string()};
 		ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-		builtin_context->apply_variables(this->render_variables);
+		setRenderVariables(builtin_context);
 		
 		std::shared_ptr<FileContext> file_context;
 		this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
@@ -1702,15 +1701,16 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 	return QMainWindow::eventFilter(obj, event);
 }
 
-void MainWindow::updateTemporalVariables()
+void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
-	render_variables.insert_or_assign("$t", Value(this->anim_tval));
+	context->set_variable("$preview", Value(this->is_preview));
+	context->set_variable("$t", Value(this->anim_tval));
 	auto camVpt = qglview->cam.getVpt();
-	render_variables.insert_or_assign("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
+	context->set_variable("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
 	auto camVpr = qglview->cam.getVpr();
-	render_variables.insert_or_assign("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
-	render_variables.insert_or_assign("$vpd", Value(qglview->cam.zoomValue()));
-	render_variables.insert_or_assign("$vpf", Value(qglview->cam.fovValue()));
+	context->set_variable("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
+	context->set_variable("$vpd", Value(qglview->cam.zoomValue()));
+	context->set_variable("$vpf", Value(qglview->cam.fovValue()));
 }
 
 	/*!
@@ -1817,7 +1817,7 @@ void MainWindow::actionReloadRenderPreview()
 
 	this->afterCompileSlot = "csgReloadRender";
 	this->procevents = true;
-	render_variables.insert_or_assign("$preview", Value(true));
+	this->is_preview = true;
 	compile(true);
 }
 
@@ -1848,7 +1848,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 	this->processEvents();
 	this->afterCompileSlot = afterCompileSlot;
 	this->procevents = procevents;
-	render_variables.insert_or_assign("$preview", Value(preview));
+	this->is_preview = preview;
 }
 
 void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
