@@ -35,6 +35,10 @@ protected:
 	void initSpinBoxRange(const BlockSignals<QSpinBox *> &spinBox,const Settings::SettingsEntry &entry);
 	/** Initialize spinbox double value from the settings value */
 	void initSpinBoxDouble(const BlockSignals<QSpinBox *> &spinBox, const Settings::SettingsEntry &entry);
+	/** Initialize slider min/max values from the settings range values */
+	void initSliderRange(const BlockSignals<QSlider *> &spinBox,const Settings::SettingsEntry &entry);
+	/** Initialize slider double value from the settings value */
+	void initSliderDouble(const BlockSignals<QSlider *> &spinBox, const Settings::SettingsEntry &entry);
 	/** Update combobox from current settings */
 	void updateComboBox(const BlockSignals<QComboBox *> &comboBox,const Settings::SettingsEntry &entry);
 	/** used in AxisConfigWidget class **/

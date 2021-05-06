@@ -166,6 +166,9 @@ SettingsVisitor::~SettingsVisitor()
  */
 SettingsEntry Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", Value(true), Value(true));
 SettingsEntry Settings::mouseCentricZoom("3dview", "mouseCentricZoom", Value(true), Value(true));
+SettingsEntry Settings::eyeSeparation("3dview", "eyeSeparation", Value(RangeType(0, 2000)), Value(1000)); // in 0.1%
+SettingsEntry Settings::outOfScreen("3dview", "outOfScreen", Value(RangeType(0, 1000)), Value(0)); // in 0.1 %
+SettingsEntry Settings::nearClippingPlane("3dview", "nearClippingPlane", Value(RangeType(1, 2000)), Value(300)); // in 0.1 %
 SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(RangeType(1, 16)), Value(4));
 SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(RangeType(1, 16)), Value(4));
 SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));

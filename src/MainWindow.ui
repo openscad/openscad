@@ -251,6 +251,7 @@
          <addaction name="separator"/>
          <addaction name="viewActionPerspective"/>
          <addaction name="viewActionOrthogonal"/>
+         <addaction name="viewActionAnaglyph"/>
          <addaction name="separator"/>
          <addaction name="viewActionShowAxes"/>
          <addaction name="viewActionShowScaleProportional"/>
@@ -413,6 +414,7 @@
     <addaction name="separator"/>
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
+    <addaction name="viewActionAnaglyph"/>
     <addaction name="separator"/>
     <addaction name="viewActionHideEditorToolBar"/>
     <addaction name="viewActionHide3DViewToolBar"/>
@@ -1289,6 +1291,9 @@
    <property name="text">
     <string>&amp;Perspective</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+2</string>
+   </property>
   </action>
   <action name="viewActionOrthogonal">
    <property name="checkable">
@@ -1300,6 +1305,27 @@
    </property>
    <property name="text">
     <string>&amp;Orthogonal</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+1</string>
+   </property>
+  </action>
+  <action name="viewActionAnaglyph">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Anaglyph.png</normaloff>:/images/Anaglyph.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Stereo Vision (Anaglyph)</string>
+   </property>
+   <property name="toolTip">
+    <string>Stereo Vision (Anaglyph) - requires special red-cyan glasses</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+3</string>
    </property>
   </action>
   <action name="windowActionHideConsole">

@@ -373,6 +373,12 @@ void QGLView::setOrthoMode(bool enabled)
 	else this->cam.setProjection(Camera::ProjectionType::PERSPECTIVE);
 }
 
+void QGLView::setAnaglyphMode(bool enabled)
+{
+	if (enabled) this->cam.setProjection(Camera::ProjectionType::ANAGLYPH);
+	else this->cam.setProjection(Camera::ProjectionType::PERSPECTIVE);
+}
+
 void QGLView::translate(double x, double y, double z, bool relative, bool viewPortRelative)
 {
     Matrix3d aax, aay, aaz;

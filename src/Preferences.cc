@@ -220,6 +220,10 @@ void Preferences::init() {
 	this->lineEditCharacterThreshold->setValidator(validator1);
 	this->lineEditStepSize->setValidator(validator1);
 
+	initSliderRange(this->horizontalSliderEyeSeparation, Settings::Settings::eyeSeparation);
+	initSliderRange(this->horizontalSliderOutOfScreen, Settings::Settings::outOfScreen);
+	initSliderRange(this->horizontalSliderNearClippingPlane, Settings::Settings::nearClippingPlane);
+
 	initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
 	initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -845,6 +849,27 @@ void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
 	writeSettings();
 }
 
+void Preferences::on_horizontalSliderEyeSeparation_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::eyeSeparation, Value(val));
+	writeSettings();
+	emit anaglyphSettingsChanged();
+}
+
+void Preferences::on_horizontalSliderOutOfScreen_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::outOfScreen, Value(val));
+	writeSettings();
+	emit anaglyphSettingsChanged();
+}
+
+void Preferences::on_horizontalSliderNearClippingPlane_valueChanged(int val)
+{
+	Settings::Settings::inst()->set(Settings::Settings::nearClippingPlane, Value(val));
+	writeSettings();
+	emit anaglyphSettingsChanged();
+}
+
 void Preferences::writeSettings()
 {
 	SettingsWriter settingsWriter;
@@ -985,6 +1010,10 @@ void Preferences::updateGUI()
 	this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 	this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
 	this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
+
+	initSliderDouble(this->horizontalSliderEyeSeparation, Settings::Settings::eyeSeparation);
+	initSliderDouble(this->horizontalSliderOutOfScreen, Settings::Settings::outOfScreen);
+	initSliderDouble(this->horizontalSliderNearClippingPlane, Settings::Settings::nearClippingPlane);
 
 	updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
 	updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
