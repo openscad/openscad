@@ -259,7 +259,7 @@ static GroupList collectGroups(const std::string &fulltext)
 */
 void CommentParser::collectParameters(const std::string& fulltext, SourceFile *root_file)
 {
-	static auto EmptyStringLiteral(std::make_shared<Literal>(Value(std::string(""))));
+	static auto EmptyStringLiteral(std::make_shared<Literal>(""));
 
 	// Get all groups of parameters
 	GroupList groupList = collectGroups(fulltext);
@@ -295,7 +295,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
 		std::string descr = getDescription(fulltext, firstLine - 1);
 		if (descr != "") {
 			//creating node for description
-			shared_ptr<Expression> expr(new Literal(Value(descr)));
+			shared_ptr<Expression> expr(new Literal(descr));
 			annotationList->push_back(Annotation("Description", expr));
 		}
 
@@ -303,7 +303,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
 		for (const auto &groupInfo :boost::adaptors::reverse(groupList)){
 			if (groupInfo.lineNo < firstLine) {
 				//creating node for description
-				shared_ptr<Expression> expr(new Literal(Value(groupInfo.commentString)));
+				shared_ptr<Expression> expr(new Literal(groupInfo.commentString));
 				annotationList->push_back(Annotation("Group", expr));
 				break;
 			}
