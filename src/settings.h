@@ -3,154 +3,268 @@
 #include <map>
 #include <list>
 #include <string>
-
-#include "value.h"
+#include <vector>
 
 namespace Settings {
 
 class SettingsEntry
 {
-private:
-    std::string _category;
-    std::string _name;
-    Value _value;
-    Value _range;
-    Value _default;
-
 public:
-    const std::string & category() const;
-    const std::string & name() const;
-
-    virtual const Value & defaultValue() const;
-    virtual const Value & range() const;
-    virtual bool is_default() const;
+	const std::string& category() const { return _category; }
+	const std::string& name() const { return _name; }
+	
+	virtual bool isDefault() const = 0;
+	virtual std::string encode() const = 0;
+	virtual void decode(const std::string& encoded) = 0;
 
 protected:
-    SettingsEntry(const std::string category, const std::string name, const Value &range, const Value &def);
-    virtual ~SettingsEntry();
+	SettingsEntry(const std::string& category, const std::string& name);
+	virtual ~SettingsEntry() {}
 
-    friend class Settings;
+private:
+	std::string _category;
+	std::string _name;
 };
+
+class SettingsEntryBool : public SettingsEntry
+{
+public:
+	SettingsEntryBool(const std::string& category, const std::string& name, bool defaultValue):
+		SettingsEntry(category, name),
+		_value(defaultValue),
+		_defaultValue(defaultValue)
+	{}
+
+	bool value() const { return _value; }
+	void setValue(bool value) { _value = value; }
+	bool isDefault() const override { return _value == _defaultValue; }
+	std::string encode() const override;
+	void decode(const std::string& encoded) override;
+
+private:
+	bool _value;
+	bool _defaultValue;
+};
+
+class SettingsEntryInt : public SettingsEntry
+{
+public:
+	SettingsEntryInt(const std::string& category, const std::string& name, int minimum, int maximum, int defaultValue):
+		SettingsEntry(category, name),
+		_value(defaultValue),
+		_defaultValue(defaultValue),
+		_minimum(minimum),
+		_maximum(maximum)
+	{}
+
+	int value() const { return _value; }
+	void setValue(int value) { _value = value; }
+	int minimum() const { return _minimum; }
+	int maximum() const { return _maximum; }
+	bool isDefault() const override { return _value == _defaultValue; }
+	std::string encode() const override;
+	void decode(const std::string& encoded) override;
+
+private:
+	int _value;
+	int _defaultValue;
+	int _minimum;
+	int _maximum;
+};
+
+class SettingsEntryDouble : public SettingsEntry
+{
+public:
+	SettingsEntryDouble(const std::string& category, const std::string& name, double minimum, double step, double maximum, double defaultValue):
+		SettingsEntry(category, name),
+		_value(defaultValue),
+		_defaultValue(defaultValue),
+		_minimum(minimum),
+		_step(step),
+		_maximum(maximum)
+	{}
+
+	double value() const { return _value; }
+	void setValue(double value) { _value = value; }
+	double minimum() const { return _minimum; }
+	double step() const { return _step; }
+	double maximum() const { return _maximum; }
+	bool isDefault() const override { return _value == _defaultValue; }
+	std::string encode() const override;
+	void decode(const std::string& encoded) override;
+
+private:
+	double _value;
+	double _defaultValue;
+	double _minimum;
+	double _step;
+	double _maximum;
+};
+
+class SettingsEntryString : public SettingsEntry
+{
+public:
+	SettingsEntryString(const std::string& category, const std::string& name, const std::string& defaultValue):
+		SettingsEntry(category, name),
+		_value(defaultValue),
+		_defaultValue(defaultValue)
+	{}
+
+	const std::string& value() const { return _value; }
+	void setValue(const std::string& value) { _value = value; }
+	bool isDefault() const override { return _value == _defaultValue; }
+	std::string encode() const override { return value(); }
+	void decode(const std::string& encoded) override { setValue(encoded); }
+
+private:
+	std::string _value;
+	std::string _defaultValue;
+};
+
+class SettingsEntryEnum : public SettingsEntry
+{
+public:
+	struct Item {
+		std::string value;
+		std::string description;
+	};
+	SettingsEntryEnum(const std::string& category, const std::string& name, const std::vector<Item>& items, const std::string& defaultValue):
+		SettingsEntry(category, name),
+		_items(items),
+		_index(0),
+		_defaultValue(defaultValue)
+	{
+		setValue(_defaultValue);
+	}
+
+	const std::string& value() const { return _items[_index].value; }
+	int index() const { return _index; }
+	void setValue(const std::string& value);
+	void setIndex(int index) { if (index >= 0 && index < _items.size()) _index = index; }
+	const std::vector<Item>& items() const { return _items; }
+	bool isDefault() const override { return value() == _defaultValue; }
+	std::string encode() const override { return value(); }
+	void decode(const std::string& encoded) override { setValue(encoded); }
+
+private:
+	std::vector<Item> _items;
+	int _index;
+	std::string _defaultValue;
+};
+
 
 class Settings
 {
 public:
-    static SettingsEntry showWarningsIn3dView;
-    static SettingsEntry mouseCentricZoom;
-    static SettingsEntry indentationWidth;
-    static SettingsEntry tabWidth;
-    static SettingsEntry lineWrap;
-    static SettingsEntry lineWrapIndentationStyle;
-    static SettingsEntry lineWrapIndentation;
-    static SettingsEntry lineWrapVisualizationBegin;
-    static SettingsEntry lineWrapVisualizationEnd;
-    static SettingsEntry showWhitespace;
-    static SettingsEntry showWhitespaceSize;
-    static SettingsEntry autoIndent;
-    static SettingsEntry backspaceUnindents;
-    static SettingsEntry indentStyle;
-    static SettingsEntry tabKeyFunction;
-    static SettingsEntry highlightCurrentLine;
-    static SettingsEntry enableBraceMatching;
-    static SettingsEntry enableLineNumbers;
-    static SettingsEntry enableNumberScrollWheel;
-    static SettingsEntry modifierNumberScrollWheel;
-	static SettingsEntry octoPrintUrl;
-	static SettingsEntry octoPrintApiKey;
-	static SettingsEntry octoPrintFileFormat;
-	static SettingsEntry octoPrintAction;
-	static SettingsEntry octoPrintSlicerEngine;
-	static SettingsEntry octoPrintSlicerEngineDesc;
-	static SettingsEntry octoPrintSlicerProfile;
-	static SettingsEntry octoPrintSlicerProfileDesc;
+	static SettingsEntryBool   showWarningsIn3dView;
+	static SettingsEntryBool   mouseCentricZoom;
+	static SettingsEntryInt    indentationWidth;
+	static SettingsEntryInt    tabWidth;
+	static SettingsEntryEnum   lineWrap;
+	static SettingsEntryEnum   lineWrapIndentationStyle;
+	static SettingsEntryInt    lineWrapIndentation;
+	static SettingsEntryEnum   lineWrapVisualizationBegin;
+	static SettingsEntryEnum   lineWrapVisualizationEnd;
+	static SettingsEntryEnum   showWhitespace;
+	static SettingsEntryInt    showWhitespaceSize;
+	static SettingsEntryBool   autoIndent;
+	static SettingsEntryBool   backspaceUnindents;
+	static SettingsEntryEnum   indentStyle;
+	static SettingsEntryEnum   tabKeyFunction;
+	static SettingsEntryBool   highlightCurrentLine;
+	static SettingsEntryBool   enableBraceMatching;
+	static SettingsEntryBool   enableLineNumbers;
+	static SettingsEntryBool   enableNumberScrollWheel;
+	static SettingsEntryEnum   modifierNumberScrollWheel;
+	static SettingsEntryString octoPrintUrl;
+	static SettingsEntryString octoPrintApiKey;
+	static SettingsEntryEnum   octoPrintFileFormat;
+	static SettingsEntryEnum   octoPrintAction;
+	static SettingsEntryString octoPrintSlicerEngine;
+	static SettingsEntryString octoPrintSlicerEngineDesc;
+	static SettingsEntryString octoPrintSlicerProfile;
+	static SettingsEntryString octoPrintSlicerProfileDesc;
 
-    static SettingsEntry exportUseAsciiSTL;
+	static SettingsEntryBool   exportUseAsciiSTL;
 
-    static SettingsEntry inputEnableDriverHIDAPI;
-    static SettingsEntry inputEnableDriverHIDAPILog;
-    static SettingsEntry inputEnableDriverSPNAV;
-    static SettingsEntry inputEnableDriverJOYSTICK;
-    static SettingsEntry inputEnableDriverQGAMEPAD;
-    static SettingsEntry inputEnableDriverDBUS;
+	static SettingsEntryBool   inputEnableDriverHIDAPI;
+	static SettingsEntryBool   inputEnableDriverHIDAPILog;
+	static SettingsEntryBool   inputEnableDriverSPNAV;
+	static SettingsEntryBool   inputEnableDriverJOYSTICK;
+	static SettingsEntryBool   inputEnableDriverQGAMEPAD;
+	static SettingsEntryBool   inputEnableDriverDBUS;
 
-    static SettingsEntry inputTranslationX;
-    static SettingsEntry inputTranslationY;
-    static SettingsEntry inputTranslationZ;
-    static SettingsEntry inputTranslationXVPRel;
-    static SettingsEntry inputTranslationYVPRel;
-    static SettingsEntry inputTranslationZVPRel;
-    static SettingsEntry inputRotateX;
-    static SettingsEntry inputRotateY;
-    static SettingsEntry inputRotateZ;
-    static SettingsEntry inputRotateXVPRel;
-    static SettingsEntry inputRotateYVPRel;
-    static SettingsEntry inputRotateZVPRel;
-    static SettingsEntry inputZoom;
-    static SettingsEntry inputZoom2;
-    static SettingsEntry inputTranslationGain;
-    static SettingsEntry inputTranslationVPRelGain;
-    static SettingsEntry inputRotateGain;
-    static SettingsEntry inputRotateVPRelGain;
-    static SettingsEntry inputZoomGain;
-    static SettingsEntry inputButton0;
-    static SettingsEntry inputButton1;
-    static SettingsEntry inputButton2;
-    static SettingsEntry inputButton3;
-    static SettingsEntry inputButton4;
-    static SettingsEntry inputButton5;
-    static SettingsEntry inputButton6;
-    static SettingsEntry inputButton7;
-    static SettingsEntry inputButton8;
-    static SettingsEntry inputButton9;
-    static SettingsEntry inputButton10;
-    static SettingsEntry inputButton11;
-    static SettingsEntry inputButton12;
-    static SettingsEntry inputButton13;
-    static SettingsEntry inputButton14;
-    static SettingsEntry inputButton15;
-    static SettingsEntry axisTrim0;
-    static SettingsEntry axisTrim1;
-    static SettingsEntry axisTrim2;
-    static SettingsEntry axisTrim3;
-    static SettingsEntry axisTrim4;
-    static SettingsEntry axisTrim5;
-    static SettingsEntry axisTrim6;
-    static SettingsEntry axisTrim7;
-    static SettingsEntry axisTrim8;
-    static SettingsEntry axisTrim9;
-    static SettingsEntry axisDeadzone0;
-    static SettingsEntry axisDeadzone1;
-    static SettingsEntry axisDeadzone2;
-    static SettingsEntry axisDeadzone3;
-    static SettingsEntry axisDeadzone4;
-    static SettingsEntry axisDeadzone5;
-    static SettingsEntry axisDeadzone6;
-    static SettingsEntry axisDeadzone7;
-    static SettingsEntry axisDeadzone8;
-    static SettingsEntry axisDeadzone9;
-    static SettingsEntry joystickNr;
+	static SettingsEntryEnum   inputTranslationX;
+	static SettingsEntryEnum   inputTranslationY;
+	static SettingsEntryEnum   inputTranslationZ;
+	static SettingsEntryEnum   inputTranslationXVPRel;
+	static SettingsEntryEnum   inputTranslationYVPRel;
+	static SettingsEntryEnum   inputTranslationZVPRel;
+	static SettingsEntryEnum   inputRotateX;
+	static SettingsEntryEnum   inputRotateY;
+	static SettingsEntryEnum   inputRotateZ;
+	static SettingsEntryEnum   inputRotateXVPRel;
+	static SettingsEntryEnum   inputRotateYVPRel;
+	static SettingsEntryEnum   inputRotateZVPRel;
+	static SettingsEntryEnum   inputZoom;
+	static SettingsEntryEnum   inputZoom2;
+	static SettingsEntryDouble inputTranslationGain;
+	static SettingsEntryDouble inputTranslationVPRelGain;
+	static SettingsEntryDouble inputRotateGain;
+	static SettingsEntryDouble inputRotateVPRelGain;
+	static SettingsEntryDouble inputZoomGain;
+	static SettingsEntryString inputButton0;
+	static SettingsEntryString inputButton1;
+	static SettingsEntryString inputButton2;
+	static SettingsEntryString inputButton3;
+	static SettingsEntryString inputButton4;
+	static SettingsEntryString inputButton5;
+	static SettingsEntryString inputButton6;
+	static SettingsEntryString inputButton7;
+	static SettingsEntryString inputButton8;
+	static SettingsEntryString inputButton9;
+	static SettingsEntryString inputButton10;
+	static SettingsEntryString inputButton11;
+	static SettingsEntryString inputButton12;
+	static SettingsEntryString inputButton13;
+	static SettingsEntryString inputButton14;
+	static SettingsEntryString inputButton15;
+	static SettingsEntryDouble axisTrim0;
+	static SettingsEntryDouble axisTrim1;
+	static SettingsEntryDouble axisTrim2;
+	static SettingsEntryDouble axisTrim3;
+	static SettingsEntryDouble axisTrim4;
+	static SettingsEntryDouble axisTrim5;
+	static SettingsEntryDouble axisTrim6;
+	static SettingsEntryDouble axisTrim7;
+	static SettingsEntryDouble axisTrim8;
+	static SettingsEntryDouble axisTrim9;
+	static SettingsEntryDouble axisDeadzone0;
+	static SettingsEntryDouble axisDeadzone1;
+	static SettingsEntryDouble axisDeadzone2;
+	static SettingsEntryDouble axisDeadzone3;
+	static SettingsEntryDouble axisDeadzone4;
+	static SettingsEntryDouble axisDeadzone5;
+	static SettingsEntryDouble axisDeadzone6;
+	static SettingsEntryDouble axisDeadzone7;
+	static SettingsEntryDouble axisDeadzone8;
+	static SettingsEntryDouble axisDeadzone9;
+	static SettingsEntryInt    joystickNr;
 
-    static Settings *inst(bool erase = false);
+	static SettingsEntryString& inputButton(int id);
+	static SettingsEntryDouble& axisTrim(int id);
+	static SettingsEntryDouble& axisDeadzone(int id);
 
-    void visit(class SettingsVisitor& visitor);
-    SettingsEntry* getSettingEntryByName(const std::string &name);
-
-    const Value & defaultValue(const SettingsEntry& entry) const;
-    const Value & get(const SettingsEntry& entry) const;
-    void set(SettingsEntry& entry, Value val);
-
-private:
-    Settings();
-    virtual ~Settings();
+	static void visit(const class SettingsVisitor& visitor);
 };
 
 class SettingsVisitor
 {
 public:
-    SettingsVisitor();
-    virtual ~SettingsVisitor();
+	SettingsVisitor() {}
+	virtual ~SettingsVisitor() {}
 
-    virtual void handle(SettingsEntry& entry) const = 0;
+	virtual void handle(SettingsEntry& entry) const = 0;
 };
 
 }

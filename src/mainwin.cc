@@ -300,8 +300,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	statusBar()->addWidget(this->qglview->statusLabel);
 
 	QSettingsCached settings;
-	auto s = Settings::Settings::inst();
-	this->qglview->setMouseCentricZoom(s->get(Settings::Settings::mouseCentricZoom).toBool());
+	this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -1087,8 +1086,7 @@ void MainWindow::updateCompileResult()
 		return;
 	}
 
-	auto s = Settings::Settings::inst();
-	if (!s->get(Settings::Settings::showWarningsIn3dView).toBool()) {
+	if (!Settings::Settings::showWarningsIn3dView.value()) {
 		return;
 	}
 
@@ -1974,8 +1972,7 @@ void MainWindow::sendToOctoPrint()
 		return;
 	}
 
-	Settings::Settings *s = Settings::Settings::inst();
-	const QString fileFormat = QString::fromStdString(s->get(Settings::Settings::octoPrintFileFormat).toString());
+	const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
 	FileFormat exportFileFormat{FileFormat::STL};
 	if (fileFormat == "OFF") {
 		exportFileFormat = FileFormat::OFF;
@@ -2013,13 +2010,13 @@ void MainWindow::sendToOctoPrint()
 		connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 		const QString fileUrl = octoPrint.upload(exportFileName, userFileName, [this](double v) -> bool { return network_progress_func(v); });
 
-		const std::string action = s->get(Settings::Settings::octoPrintAction).toString();
+		const std::string action = Settings::Settings::octoPrintAction.value();
 		if (action == "upload") {
 			return;
 		}
 
-		const QString slicer = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerEngine).toString());
-		const QString profile = QString::fromStdString(s->get(Settings::Settings::octoPrintSlicerProfile).toString());
+		const QString slicer = QString::fromStdString(Settings::Settings::octoPrintSlicerEngine.value());
+		const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
 		octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
 	} catch (const NetworkException& e) {
 		LOG(message_group::Error,Location::NONE,"","%1$s",e.getErrorMessage());
@@ -2479,8 +2476,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportSTL()
 {
-  const auto *s = Settings::Settings::inst();
-  if (s->get(Settings::Settings::exportUseAsciiSTL).toBool()) {
+  if (Settings::Settings::exportUseAsciiSTL.value()) {
 	  actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
   }
   else {

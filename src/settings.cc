@@ -1,266 +1,227 @@
 #include "settings.h"
 #include "printutils.h"
 #include "input/InputEventMapper.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace Settings {
 
-static std::list<SettingsEntry *> entries;
+static std::vector<SettingsEntry *> entries;
 
-SettingsEntry::SettingsEntry(const std::string category, const std::string name, const Value &range, const Value &def)
-	: _category(category), _name(name), _value(def.clone()), _range(range.clone()), _default(def.clone())
-{
-	entries.push_back(this);
-}
-
-SettingsEntry::~SettingsEntry()
-{
-}
-
-const std::string & SettingsEntry::category() const
-{
-	return _category;
-}
-
-const std::string & SettingsEntry::name() const
-{
-	return _name;
-}
-
-const Value & SettingsEntry::defaultValue() const
-{
-	return _default;
-}
-
-const Value & SettingsEntry::range() const
-{
-	return _range;
-}
-
-bool SettingsEntry::is_default() const
-{
-	return (_value == _default).toBool();
-}
-
-static Value value(std::string s1, std::string s2) {
-	VectorType v;
-	v.emplace_back(s1);
-	v.emplace_back(s2);
-	return Value(std::move(v));
-}
-
-static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp) {
-	VectorType v;
-	v.emplace_back(value(s1, s1disp));
-	v.emplace_back(value(s2, s2disp));
-	return Value(std::move(v));
-}
-
-static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp) {
-	VectorType v;
-	v.emplace_back(value(s1, s1disp));
-	v.emplace_back(value(s2, s2disp));
-	v.emplace_back(value(s3, s3disp));
-	return Value(std::move(v));
-}
-
-static Value values(std::string s1, std::string s1disp, std::string s2, std::string s2disp, std::string s3, std::string s3disp, std::string s4, std::string s4disp) {
-	VectorType v;
-	v.emplace_back(value(s1, s1disp));
-	v.emplace_back(value(s2, s2disp));
-	v.emplace_back(value(s3, s3disp));
-	v.emplace_back(value(s4, s4disp));
-	return Value(std::move(v));
-}
-
-static Value axisValues() {
-	VectorType v;
-	v.emplace_back(value("None", _("None")));
-
-	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
-		auto userData = (boost::format("+%d") % (i+1)).str();
-		auto text = (boost::format(_("Axis %d")) % i).str();
-		v.emplace_back(value(userData, text));
-
-		userData = (boost::format("-%d") % (i+1)).str();
-		text = (boost::format(_("Axis %d (inverted)")) % i).str();
-		v.emplace_back(value(userData, text));
-	}
-	return Value(std::move(v));
-}
-
-static Value buttonValues() {
-	VectorType v;
-	v.emplace_back(value("None", _("None")));
-	v.emplace_back(value("viewActionTogglePerspective", _("Toggle Perspective")));
-	return Value(std::move(v));
-}
-
-Settings *Settings::inst(bool erase)
-{
-	static Settings *instance = new Settings;
-
-	if (erase) {
-		delete instance;
-		instance = nullptr;
-	}
-
-	return instance;
-}
-
-Settings::Settings()
-{
-}
-
-Settings::~Settings()
-{
-}
-
-void Settings::visit(SettingsVisitor& visitor)
+void Settings::visit(const SettingsVisitor& visitor)
 {
 	for (SettingsEntry* entry : entries) {
 		visitor.handle(*entry);
 	}
 }
 
-SettingsEntry* Settings::getSettingEntryByName(const std::string &name)
+SettingsEntry::SettingsEntry(const std::string& category, const std::string& name):
+	_category(category), _name(name)
 {
-	for (auto entry : entries) {
-		if (entry->name() == name){
-			return (entry);
+	entries.push_back(this);
+}
+
+std::string SettingsEntryBool::encode() const
+{
+	return _value ? "true" : "false";
+}
+
+void SettingsEntryBool::decode(const std::string& encoded)
+{
+	std::string trimmed = boost::algorithm::trim_copy(encoded);
+	if (trimmed == "true") {
+		_value = true;
+	} else if (trimmed == "false") {
+		_value = false;
+	} else {
+		try {
+			_value = boost::lexical_cast<bool>(trimmed);
+		} catch(boost::bad_lexical_cast) {}
+	}
+}
+
+std::string SettingsEntryInt::encode() const
+{
+	return STR(_value);
+}
+
+void SettingsEntryInt::decode(const std::string& encoded)
+{
+	try {
+		_value = boost::lexical_cast<int>(boost::algorithm::trim_copy(encoded));
+	} catch(boost::bad_lexical_cast) {}
+}
+
+std::string SettingsEntryDouble::encode() const
+{
+	return STR(_value);
+}
+
+void SettingsEntryDouble::decode(const std::string& encoded)
+{
+	try {
+		_value = boost::lexical_cast<double>(boost::algorithm::trim_copy(encoded));
+	} catch(boost::bad_lexical_cast) {}
+}
+
+void SettingsEntryEnum::setValue(const std::string& value)
+{
+	for (int i = 0; i < _items.size(); i++) {
+		if (_items[i].value == value) {
+			_index = i;
+			return;
 		}
 	}
-	return nullptr;
 }
 
-const Value &Settings::defaultValue(const SettingsEntry& entry) const
+
+
+static std::vector<SettingsEntryEnum::Item> axisValues() {
+	std::vector<SettingsEntryEnum::Item> output;
+	output.push_back({"None", _("None")});
+	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
+		auto userData = (boost::format("+%d") % (i+1)).str();
+		auto text = (boost::format(_("Axis %d")) % i).str();
+		output.push_back({userData, text});
+
+		userData = (boost::format("-%d") % (i+1)).str();
+		text = (boost::format(_("Axis %d (inverted)")) % i).str();
+		output.push_back({userData, text});
+	}
+	return output;
+}
+
+SettingsEntryBool   Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", true);
+SettingsEntryBool   Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true);
+SettingsEntryInt    Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
+SettingsEntryInt    Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
+SettingsEntryEnum   Settings::lineWrap("editor", "lineWrap", {{"None", _("None")}, {"Char", _("Wrap at character boundaries")}, {"Word", _("Wrap at word boundaries")}}, "Word");
+SettingsEntryEnum   Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", {{"Fixed", _("Fixed")}, {"Same", _("Same")}, {"Indented", _("Indented")}}, "Fixed");
+SettingsEntryInt    Settings::lineWrapIndentation("editor", "lineWrapIndentation", 0, 999, 4);
+SettingsEntryEnum   Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "None");
+SettingsEntryEnum   Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "Border");
+SettingsEntryEnum   Settings::showWhitespace("editor", "showWhitespaces", {{"Never", _("Never")}, {"Always", _("Always")}, {"AfterIndentation", _("After indentation")}}, "Never");
+SettingsEntryInt    Settings::showWhitespaceSize("editor", "showWhitespacesSize", 1, 16, 2);
+SettingsEntryBool   Settings::autoIndent("editor", "autoIndent", true);
+SettingsEntryBool   Settings::backspaceUnindents("editor", "backspaceUnindents", false);
+SettingsEntryEnum   Settings::indentStyle("editor", "indentStyle", {{"Spaces", _("Spaces")}, {"Tabs", _("Tabs")}}, "Spaces");
+SettingsEntryEnum   Settings::tabKeyFunction("editor", "tabKeyFunction", {{"Indent", _("Indent")}, {"InsertTab", _("Insert Tab")}}, "Indent");
+SettingsEntryBool   Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
+SettingsEntryBool   Settings::enableBraceMatching("editor", "enableBraceMatching", true);
+SettingsEntryBool   Settings::enableLineNumbers("editor", "enableLineNumbers", true);
+SettingsEntryBool   Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
+SettingsEntryEnum   Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
+
+
+SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
+SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
+SettingsEntryEnum   Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
+SettingsEntryEnum   Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
+SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
+SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
+SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
+SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
+
+SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
+
+SettingsEntryBool   Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", false);
+SettingsEntryBool   Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", false);
+SettingsEntryBool   Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", false);
+SettingsEntryBool   Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", false);
+SettingsEntryBool   Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", false);
+SettingsEntryBool   Settings::inputEnableDriverDBUS("input", "enableDriverDBUS", false);
+
+SettingsEntryEnum   Settings::inputTranslationX("input", "translationX", axisValues(), "+1");
+SettingsEntryEnum   Settings::inputTranslationY("input", "translationY", axisValues(), "-2");
+SettingsEntryEnum   Settings::inputTranslationZ("input", "translationZ", axisValues(), "-3");
+SettingsEntryEnum   Settings::inputTranslationXVPRel("input", "translationXVPRel", axisValues(), "None");
+SettingsEntryEnum   Settings::inputTranslationYVPRel("input", "translationYVPRel", axisValues(), "None");
+SettingsEntryEnum   Settings::inputTranslationZVPRel("input", "translationZVPRel", axisValues(), "None");
+SettingsEntryEnum   Settings::inputRotateX("input", "rotateX", axisValues(), "+4");
+SettingsEntryEnum   Settings::inputRotateY("input", "rotateY", axisValues(), "-5");
+SettingsEntryEnum   Settings::inputRotateZ("input", "rotateZ", axisValues(), "-6");
+SettingsEntryEnum   Settings::inputRotateXVPRel("input", "rotateXVPRel", axisValues(), "None");
+SettingsEntryEnum   Settings::inputRotateYVPRel("input", "rotateYVPRel", axisValues(), "None");
+SettingsEntryEnum   Settings::inputRotateZVPRel("input", "rotateZVPRel", axisValues(), "None");
+SettingsEntryEnum   Settings::inputZoom("input", "zoom", axisValues(), "None");
+SettingsEntryEnum   Settings::inputZoom2("input", "zoom2", axisValues(), "None");
+
+SettingsEntryDouble Settings::inputTranslationGain("input", "translationGain", 0.01, 0.01, 9.99, 1.00);
+SettingsEntryDouble Settings::inputTranslationVPRelGain("input", "translationVPRelGain", 0.01, 0.01, 9.99, 1.00);
+SettingsEntryDouble Settings::inputRotateGain("input", "rotateGain", 0.01, 0.01, 9.99, 1.00);
+SettingsEntryDouble Settings::inputRotateVPRelGain("input", "rotateVPRelGain", 0.01, 0.01, 9.99, 1.00);
+SettingsEntryDouble Settings::inputZoomGain("input", "zoomGain", 0.1, 0.1, 99.9, 1.0);
+
+SettingsEntryString Settings::inputButton0("input", "button0", "");
+SettingsEntryString Settings::inputButton1("input", "button1", "viewActionResetView");
+SettingsEntryString Settings::inputButton2("input", "button2", "");
+SettingsEntryString Settings::inputButton3("input", "button3", "");
+SettingsEntryString Settings::inputButton4("input", "button4", "");
+SettingsEntryString Settings::inputButton5("input", "button5", "");
+SettingsEntryString Settings::inputButton6("input", "button6", "");
+SettingsEntryString Settings::inputButton7("input", "button7", "");
+SettingsEntryString Settings::inputButton8("input", "button8", "");
+SettingsEntryString Settings::inputButton9("input", "button9", "");
+SettingsEntryString Settings::inputButton10("input", "button10", "");
+SettingsEntryString Settings::inputButton11("input", "button11", "");
+SettingsEntryString Settings::inputButton12("input", "button12", "");
+SettingsEntryString Settings::inputButton13("input", "button13", "");
+SettingsEntryString Settings::inputButton14("input", "button14", "");
+SettingsEntryString Settings::inputButton15("input", "button15", "");
+SettingsEntryDouble Settings::axisTrim0("input", "axisTrim0", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim1("input", "axisTrim1", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim2("input", "axisTrim2", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim3("input", "axisTrim3", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim4("input", "axisTrim4", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim5("input", "axisTrim5", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim6("input", "axisTrim6", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim7("input", "axisTrim7", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim8("input", "axisTrim8", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisTrim9("input", "axisTrim9", -1.0, 0.01, 1.0, 0.0);
+SettingsEntryDouble Settings::axisDeadzone0("input", "axisDeadzone0", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone1("input", "axisDeadzone1", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone2("input", "axisDeadzone2", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone3("input", "axisDeadzone3", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone4("input", "axisDeadzone4", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone5("input", "axisDeadzone5", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone6("input", "axisDeadzone6", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone7("input", "axisDeadzone7", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01, 1.0, 0.10);
+SettingsEntryDouble Settings::axisDeadzone9("input", "axisDeadzone9", 0.0, 0.01, 1.0, 0.10);
+
+SettingsEntryInt    Settings::joystickNr("input", "joystickNr", 0, 9, 0);
+
+
+SettingsEntryString& Settings::inputButton(int id)
 {
-	return entry._default;
+	SettingsEntryString* entries[] = {
+		&inputButton0 , &inputButton1 , &inputButton2 , &inputButton3 ,
+		&inputButton4 , &inputButton5 , &inputButton6 , &inputButton7 ,
+		&inputButton8 , &inputButton9 , &inputButton10, &inputButton11,
+		&inputButton12, &inputButton13, &inputButton14, &inputButton15
+	};
+	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	return *entries[id];
 }
 
-const Value &Settings::get(const SettingsEntry& entry) const
+SettingsEntryDouble& Settings::axisTrim(int id)
 {
-	return entry._value;
+	SettingsEntryDouble* entries[] = {
+		&axisTrim0, &axisTrim1, &axisTrim2, &axisTrim3, &axisTrim4,
+		&axisTrim5, &axisTrim6, &axisTrim7, &axisTrim8, &axisTrim9
+	};
+	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	return *entries[id];
 }
 
-void Settings::set(SettingsEntry& entry, Value val)
+SettingsEntryDouble& Settings::axisDeadzone(int id)
 {
-	entry._value = std::move(val);
+	SettingsEntryDouble* entries[] = {
+		&axisDeadzone0, &axisDeadzone1, &axisDeadzone2, &axisDeadzone3, &axisDeadzone4,
+		&axisDeadzone5, &axisDeadzone6, &axisDeadzone7, &axisDeadzone8, &axisDeadzone9
+	};
+	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	return *entries[id];
 }
 
-SettingsVisitor::SettingsVisitor()
-{
-}
-
-SettingsVisitor::~SettingsVisitor()
-{
-}
-
-/*
- * Supported settings entry types are: bool / int / double and string selection
- *
- * String selection is used to handle comboboxes and has two values
- * per config selection. The first value is used internally for both
- * finding the combobox selection and for storing the value in the
- * external settings file. The second value is the display value that
- * can be translated.
- */
-SettingsEntry Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", Value(true), Value(true));
-SettingsEntry Settings::mouseCentricZoom("3dview", "mouseCentricZoom", Value(true), Value(true));
-SettingsEntry Settings::indentationWidth("editor", "indentationWidth", Value(RangeType(1, 16)), Value(4));
-SettingsEntry Settings::tabWidth("editor", "tabWidth", Value(RangeType(1, 16)), Value(4));
-SettingsEntry Settings::lineWrap("editor", "lineWrap", values("None", _("None"), "Char", _("Wrap at character boundaries"), "Word", _("Wrap at word boundaries")), Value("Word"));
-SettingsEntry Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", values("Fixed", _("Fixed"), "Same", _("Same"), "Indented", _("Indented")), Value("Fixed"));
-SettingsEntry Settings::lineWrapIndentation("editor", "lineWrapIndentation", Value(RangeType(0, 999)), Value(4));
-SettingsEntry Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", values("None", _("None"), "Text", _("Text"), "Border", _("Border"), "Margin", _("Margin")), Value("None"));
-SettingsEntry Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", values("None", _("None"), "Text", _("Text"), "Border", _("Border"), "Margin", _("Margin")), Value("Border"));
-SettingsEntry Settings::showWhitespace("editor", "showWhitespaces", values("Never", _("Never"), "Always", _("Always"), "AfterIndentation", _("After indentation")), Value("Never"));
-SettingsEntry Settings::showWhitespaceSize("editor", "showWhitespacesSize", Value(RangeType(1, 16)), Value(2));
-SettingsEntry Settings::autoIndent("editor", "autoIndent", Value(true), Value(true));
-SettingsEntry Settings::backspaceUnindents("editor", "backspaceUnindents", Value(true), Value(false));
-SettingsEntry Settings::indentStyle("editor", "indentStyle", values("Spaces", _("Spaces"), "Tabs", _("Tabs")), Value("Spaces"));
-SettingsEntry Settings::tabKeyFunction("editor", "tabKeyFunction", values("Indent", _("Indent"), "InsertTab", _("Insert Tab")), Value("Indent"));
-SettingsEntry Settings::highlightCurrentLine("editor", "highlightCurrentLine", Value(true), Value(true));
-SettingsEntry Settings::enableBraceMatching("editor", "enableBraceMatching", Value(true), Value(true));
-SettingsEntry Settings::enableLineNumbers("editor", "enableLineNumbers", Value(true), Value(true));
-SettingsEntry Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", Value(true), Value(true));
-SettingsEntry Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", values("Alt", _("Alt"), "Left Mouse Button", _("Left Mouse Button"), "Either", _("Either")), Value("Alt"));
-
-
-SettingsEntry Settings::octoPrintUrl("printing", "octoPrintUrl", Value(""), Value(""));
-SettingsEntry Settings::octoPrintApiKey("printing", "octoPrintApiKey", Value(""), Value(""));
-SettingsEntry Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", values("STL", "STL", "OFF", "OFF", "AMF", "AMF", "3MF", "3MF"), Value("STL"));
-SettingsEntry Settings::octoPrintAction("printing", "octoPrintAction", values("upload", _("Upload only"), "slice", _("Upload & Slice"), "select", _("Upload, Slice & Select for printing"), "print", _("Upload, Slice & Start printing")), Value("upload"));
-SettingsEntry Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", Value(""), Value(""));
-SettingsEntry Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", Value(""), Value(""));
-SettingsEntry Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", Value(""), Value(""));
-SettingsEntry Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", Value(""), Value(""));
-
-SettingsEntry Settings::exportUseAsciiSTL("export", "useAsciiSTL", Value(true), Value(false));
-
-SettingsEntry Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", Value(true), Value(false));
-SettingsEntry Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", Value(true), Value(false));
-SettingsEntry Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", Value(true), Value(false));
-SettingsEntry Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYSTICK", Value(true), Value(false));
-SettingsEntry Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", Value(true), Value(false));
-SettingsEntry Settings::inputEnableDriverDBUS("input", "enableDriverDBUS", Value(true), Value(false));
-
-SettingsEntry Settings::inputTranslationX("input", "translationX", axisValues(), Value("+1"));
-SettingsEntry Settings::inputTranslationY("input", "translationY", axisValues(), Value("-2"));
-SettingsEntry Settings::inputTranslationZ("input", "translationZ", axisValues(), Value("-3"));
-SettingsEntry Settings::inputTranslationXVPRel("input", "translationXVPRel", axisValues(), Value(""));
-SettingsEntry Settings::inputTranslationYVPRel("input", "translationYVPRel", axisValues(), Value(""));
-SettingsEntry Settings::inputTranslationZVPRel("input", "translationZVPRel", axisValues(), Value(""));
-SettingsEntry Settings::inputRotateX("input", "rotateX", axisValues(), Value("+4"));
-SettingsEntry Settings::inputRotateY("input", "rotateY", axisValues(), Value("-5"));
-SettingsEntry Settings::inputRotateZ("input", "rotateZ", axisValues(), Value("-6"));
-SettingsEntry Settings::inputRotateXVPRel("input", "rotateXVPRel", axisValues(), Value(""));
-SettingsEntry Settings::inputRotateYVPRel("input", "rotateYVPRel", axisValues(), Value(""));
-SettingsEntry Settings::inputRotateZVPRel("input", "rotateZVPRel", axisValues(), Value(""));
-SettingsEntry Settings::inputZoom("input", "zoom", axisValues(), Value("None"));
-SettingsEntry Settings::inputZoom2("input", "zoom2", axisValues(), Value("None"));
-
-SettingsEntry Settings::inputTranslationGain("input", "translationGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
-SettingsEntry Settings::inputTranslationVPRelGain("input", "translationVPRelGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
-SettingsEntry Settings::inputRotateGain("input", "rotateGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
-SettingsEntry Settings::inputRotateVPRelGain("input", "rotateVPRelGain", Value(RangeType(0.01, 0.01, 9.99)), Value(1.00));
-SettingsEntry Settings::inputZoomGain("input", "zoomGain", Value(RangeType(0.1, 0.1, 99.9)), Value(1.00));
-
-SettingsEntry Settings::inputButton0("input", "button0", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton1("input", "button1", buttonValues(), Value("viewActionResetView"));
-SettingsEntry Settings::inputButton2("input", "button2", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton3("input", "button3", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton4("input", "button4", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton5("input", "button5", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton6("input", "button6", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton7("input", "button7", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton8("input", "button8", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton9("input", "button9", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton10("input", "button10", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton11("input", "button11", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton12("input", "button12", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton13("input", "button13", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton14("input", "button14", buttonValues(), Value("None"));
-SettingsEntry Settings::inputButton15("input", "button15", buttonValues(), Value("None"));
-SettingsEntry Settings::axisTrim0("input", "axisTrim0", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim1("input", "axisTrim1", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim2("input", "axisTrim2", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim3("input", "axisTrim3", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim4("input", "axisTrim4", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim5("input", "axisTrim5", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim6("input", "axisTrim6", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim7("input", "axisTrim7", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim8("input", "axisTrim8", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisTrim9("input", "axisTrim9", Value(RangeType(-1.0, 0.01, 1.0)), Value(0.00));
-SettingsEntry Settings::axisDeadzone0("input", "axisDeadzone0", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone1("input", "axisDeadzone1", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone2("input", "axisDeadzone2", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone3("input", "axisDeadzone3", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone4("input", "axisDeadzone4", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone5("input", "axisDeadzone5", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone6("input", "axisDeadzone6", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone7("input", "axisDeadzone7", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone8("input", "axisDeadzone8", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-SettingsEntry Settings::axisDeadzone9("input", "axisDeadzone9", Value(RangeType(0.0, 0.01, 1.0)), Value(0.10));
-
-SettingsEntry Settings::joystickNr("input", "joystickNr", Value(RangeType(0, 9)), Value(0));
 }

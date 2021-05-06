@@ -801,38 +801,37 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
-	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-	if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+	if (Settings::Settings::inputEnableDriverHIDAPI.value()) {
 		auto hidApi = new HidApiInputDriver();
 		InputDriverManager::instance()->registerDriver(hidApi);
 	}
 #endif
 #ifdef ENABLE_SPNAV
-	if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+	if (Settings::Settings::inputEnableDriverSPNAV.value()) {
 		auto spaceNavDriver = new SpaceNavInputDriver();
-		bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+		bool spaceNavDominantAxisOnly = Settings::Settings::inputEnableDriverHIDAPI.value();
 		spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
 		InputDriverManager::instance()->registerDriver(spaceNavDriver);
 	}
 #endif
 #ifdef ENABLE_JOYSTICK
-	if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
-		std::string nr = s->get(Settings::Settings::joystickNr).toString();
+	if (Settings::Settings::inputEnableDriverJOYSTICK.value()) {
+		std::string nr = STR(Settings::Settings::joystickNr.value());
 		auto joyDriver = new JoystickInputDriver();
 		joyDriver->setJoystickNr(nr);
 		InputDriverManager::instance()->registerDriver(joyDriver);
 	}
 #endif
 #ifdef ENABLE_QGAMEPAD
-	if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+	if (Settings::Settings::inputEnableDriverQGAMEPAD.value()) {
 		auto qGamepadDriver = new QGamepadInputDriver();
 		InputDriverManager::instance()->registerDriver(qGamepadDriver);
 	}
 #endif
 #ifdef ENABLE_DBUS
 	if (Feature::ExperimentalInputDriverDBus.is_enabled()) {
-		if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+		if (Settings::Settings::inputEnableDriverDBUS.value()) {
 			auto dBusDriver =new DBusInputDriver();
 			InputDriverManager::instance()->registerDriver(dBusDriver);
 		}
