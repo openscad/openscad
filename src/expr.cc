@@ -213,6 +213,7 @@ Value Literal::evaluate(const std::shared_ptr<const Context>&) const
 		return Value(UndefType());
 	} else {
 		assert(false);
+		return Value(UndefType());
 	}
 }
 

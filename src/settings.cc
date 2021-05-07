@@ -36,7 +36,7 @@ void SettingsEntryBool::decode(const std::string& encoded)
 	} else {
 		try {
 			_value = boost::lexical_cast<bool>(trimmed);
-		} catch(boost::bad_lexical_cast) {}
+		} catch(const boost::bad_lexical_cast&) {}
 	}
 }
 
@@ -49,7 +49,7 @@ void SettingsEntryInt::decode(const std::string& encoded)
 {
 	try {
 		_value = boost::lexical_cast<int>(boost::algorithm::trim_copy(encoded));
-	} catch(boost::bad_lexical_cast) {}
+	} catch(const boost::bad_lexical_cast&) {}
 }
 
 std::string SettingsEntryDouble::encode() const
@@ -61,7 +61,7 @@ void SettingsEntryDouble::decode(const std::string& encoded)
 {
 	try {
 		_value = boost::lexical_cast<double>(boost::algorithm::trim_copy(encoded));
-	} catch(boost::bad_lexical_cast) {}
+	} catch(const boost::bad_lexical_cast&) {}
 }
 
 void SettingsEntryEnum::setValue(const std::string& value)
