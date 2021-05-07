@@ -27,16 +27,16 @@ ECHO: "constants resulting in false"
 ECHO: false
 ECHO: false
 ECHO: "constants resulting in undef"
-WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 42
+WARNING: is_undef() number of parameters does not match: expected 1, found 0 in file isundef-test.scad, line 42
 ECHO: undef
-WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 43
+WARNING: is_undef() number of parameters does not match: expected 1, found 2 in file isundef-test.scad, line 43
 ECHO: undef
-WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 44
+WARNING: is_undef() number of parameters does not match: expected 1, found 2 in file isundef-test.scad, line 44
 ECHO: undef
 ECHO: "functions resulting in true"
-WARNING: len() number of parameters does not match in file isundef-test.scad, line 47
+WARNING: len() number of parameters does not match: expected 1, found 2 in file isundef-test.scad, line 47
 ECHO: true
-WARNING: is_undef() number of parameters does not match in file isundef-test.scad, line 48
+WARNING: is_undef() number of parameters does not match: expected 1, found 0 in file isundef-test.scad, line 48
 ECHO: true
 ECHO: "functions resulting in false"
 ECHO: false

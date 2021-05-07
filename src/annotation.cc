@@ -34,20 +34,6 @@ Annotation::Annotation(const std::string &name, shared_ptr<Expression> expr)
 {
 }
 
-Annotation::~Annotation()
-{
-}
-
-Value Annotation::evaluate(shared_ptr<Context> ctx) const
-{
-	return this->expr->evaluate(ctx);
-}
-
-const std::string & Annotation::getName() const
-{
-	return name;
-}
-
 void Annotation::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;

@@ -88,7 +88,7 @@ elseif(APPLE)
 elseif (MINGW_CROSS_ENV_DIR) 
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../mingw32/release/openscad.exe")
 elseif(WIN32)
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../Release/openscad.exe")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../openscad.exe")
 elseif(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../bin/openscad")
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/../bin/openscad")
 else()
@@ -1068,8 +1068,8 @@ add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_S
 add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${FAILING_FILES})
 
-# Hardwarning Test       
-add_failing_test(hardwarnings EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 --hardwarnings -o SUFFIX echo FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad)
+# Hardwarning Test
+add_failing_test(hardwarnings EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 --hardwarnings --export-format echo -o - FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/errors-warnings.scad)
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
 #add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)

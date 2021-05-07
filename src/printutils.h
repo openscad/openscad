@@ -89,8 +89,6 @@ void PRINT_NOCACHE(const Message &msgObj);
 #define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
 // #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
-void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const class ModuleInstantiation *inst);
-
 /*PRINTD: debugging/verbose output. Usage in code:
   CGAL_Point_3 p0(0,0,0),p1(1,0,0),p2(0,1,0);
   PRINTD(" Created 3 points: ");

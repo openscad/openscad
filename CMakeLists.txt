@@ -10,11 +10,6 @@
 #  TODO
 #   find packages for spnav, hidapi
 
-
-if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
-endif()
-
 # Ubuntu Xenial (16.04LTS): 3.5.1, Debian 9 (stretch): 3.7.2
 cmake_minimum_required(VERSION 3.5)
 
@@ -26,6 +21,8 @@ if(POLICY CMP0072)
   # FindOpenGL prefers GLVND by default when available.
   cmake_policy(SET CMP0072 NEW)
 endif()
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
 project(openscad)
 
@@ -48,6 +45,7 @@ option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will br
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
+set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -101,8 +99,9 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
+
 # Stack size 8MB; github issue 116
-add_definitions(-DSTACKSIZE=8388608)
+add_definitions("-DSTACKSIZE=${STACKSIZE}") # used as default in src/PlatformUtils.h
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -211,7 +210,9 @@ if (MSVC)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 else()
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-  set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+  if(NOT "$ENV{OPENSCAD_LIBRARIES}" STREQUAL "")
+    list(APPEND CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+  endif()
 
   find_package(Eigen3 QUIET)
   if (NOT Eigen3_FOUND)
@@ -271,6 +272,22 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
+option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+if(ENABLE_HIDAPI)
+  find_package(HidAPI 0.10 QUIET)
+  if(HIDAPI_FOUND)
+    message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
+    set(INPUT_DRIVER_HIDAPI_SOURCES src/input/HidApiInputDriver.cc)
+    include_directories(${HIDAPI_INCLUDE_DIR})
+    list(APPEND COMMON_LIBRARIES ${HIDAPI_LIBRARY})
+    add_definitions(-DENABLE_HIDAPI)
+  else()
+    message(STATUS "HIDAPI: disabled")
+  endif()
+else()
+  message(STATUS "HIDAPI: disabled per user request")
+endif()
+
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 if(ENABLE_CAIRO)
   find_package(Cairo 1.14 QUIET)
@@ -323,6 +340,9 @@ ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 if(NOT HEADLESS)
   if (APPLE AND EXISTS /usr/local/opt/qt)
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
+  endif()
+  if (APPLE AND EXISTS /usr/local/opt/qt@5)
+    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
   endif()
 
   set(CMAKE_AUTOMOC ON)
@@ -458,15 +478,18 @@ include_directories("src/ext/libtess2/Include")
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
   src/annotation.cc
+  src/arguments.cc
   src/boost-utils.cc
   src/builtin.cc
   src/builtincontext.cc
   src/calc.cc
   src/cgaladv.cc
+  src/children.cc
   src/clipper-utils.cc
   src/color.cc
   src/colormap.cc
   src/context.cc
+  src/contextframe.cc
   src/control.cc
   src/comment.cpp
   src/csgnode.cc
@@ -474,7 +497,7 @@ set(CORE_SOURCES
   src/degree_trig.cc
   src/dxfdata.cc
   src/dxfdim.cc
-  src/evalcontext.cc
+  src/evaluationsession.cc
   src/export.cc
   src/export_3mf.cc
   src/export_amf.cc
@@ -504,6 +527,7 @@ set(CORE_SOURCES
   src/node.cc
   src/nodedumper.cc
   src/offset.cc
+  src/parameters.cc
   src/parsersettings.cc
   src/polyset.cc
   src/polyset-utils.cc
@@ -526,7 +550,6 @@ set(CORE_SOURCES
   src/Camera.cc
   src/CSGTreeNormalizer.cc
   src/DrawingCallback.cc
-  src/FileModule.cc
   src/FontCache.cc
   src/FreetypeRenderer.cc
   src/Geometry.cc
@@ -535,11 +558,12 @@ set(CORE_SOURCES
   src/GroupModule.cc
   src/LibraryInfo.cc
   src/ModuleInstantiation.cc
-  src/ModuleCache.cc
   src/NodeVisitor.cc
   src/PlatformUtils.cc
   src/Polygon2d.cc
   src/RenderStatistic.cc
+  src/SourceFile.cc
+  src/SourceFileCache.cc
   src/StatCache.cc
   src/UserModule.cc
   src/Tree.cc
@@ -628,6 +652,7 @@ endif()
 
 set(INPUT_DRIVER_SOURCES
   ${PLATFORM_INPUT_DRIVER_SOURCES}
+  ${INPUT_DRIVER_HIDAPI_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
@@ -707,8 +732,10 @@ endif()
 if (SNAPSHOT)
   add_definitions(-DOPENSCAD_SNAPSHOT)
   set(RESOURCE_FILES icons/icon-nightly.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32-nightly.rc)
 else()
   set(RESOURCE_FILES icons/OpenSCAD.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32.rc)
 endif()
 
 if(ENABLE_SPNAV)
@@ -716,7 +743,7 @@ if(ENABLE_SPNAV)
   list(APPEND Sources src/input/SpaceNavInputDriver.cc)
 endif()
 
-add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
 add_custom_command(TARGET OpenSCAD POST_BUILD
     COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
@@ -730,13 +757,17 @@ if(APPLE)
     MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
     RESOURCE "${RESOURCE_FILES}"
   )
+elseif(MINGW)
+  set_target_properties(OpenSCAD PROPERTIES
+    LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
+  )
 elseif(UNIX)
   set_target_properties(OpenSCAD PROPERTIES
     OUTPUT_NAME openscad${SUFFIX_WITH_DASH}
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
-    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:8388608"
+    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"
   )
 endif()
 
@@ -762,7 +793,7 @@ install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-256.pn
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".git*" EXCLUDE)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".uuid" EXCLUDE)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*.json")
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")

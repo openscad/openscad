@@ -46,6 +46,12 @@ public:
       insert_or_assign(var.first, var.second.clone());
     }
   }
+  void applyFrom(ValueMap&& other) {
+    for (auto &var : other.map) {
+      insert_or_assign(var.first, std::move(var.second));
+    }
+    other.map.clear();
+  }
 
   // Get value by name, without possibility of default-constructing a missing name
   //   return Value::undefined if key missing

@@ -10,15 +10,14 @@
 #include "localscope.h"
 #include "indicatordata.h"
 
-class FileModule : public AbstractModule, public ASTNode
+class SourceFile : public ASTNode
 {
 public:
-	FileModule(const std::string &path, const std::string &filename);
-	~FileModule();
+	SourceFile(const std::string &path, const std::string &filename);
+	~SourceFile();
 
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
+	AbstractNode *instantiate(const std::shared_ptr<Context>& context, std::shared_ptr<class FileContext>* resulting_file_context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
-	AbstractNode *instantiateWithFileContext(const std::shared_ptr<class FileContext>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const;
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
@@ -33,21 +32,16 @@ public:
 	void setFilename(const std::string &filename) { this->filename = filename; }
 	const std::string &getFilename() const { return this->filename; }
 	const std::string getFullpath() const;
+	
 	LocalScope scope;
-	typedef std::vector<std::string> ModuleContainer;
-	ModuleContainer usedlibs;
+	std::vector<std::string> usedlibs;
 
 	std::vector<IndicatorData> indicatorData;
 
 private:
-	struct IncludeFile {
-		std::string filename;
-	};
+	std::time_t include_modified(const std::string &filename) const;
 
-	std::time_t include_modified(const IncludeFile &inc) const;
-
-	typedef std::unordered_map<std::string, struct IncludeFile> IncludeContainer;
-	IncludeContainer includes;
+	std::unordered_map<std::string, std::string> includes;
 	bool is_handling_dependencies;
 
 	std::string path;
