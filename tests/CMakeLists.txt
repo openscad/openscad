@@ -399,7 +399,8 @@ list(APPEND EXAMPLE_2D_FILES
 
 list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
-list(APPEND MISC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
+list(APPEND MISC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/arg-permutations.scad
+                       ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                        ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                        ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/include-overwrite-main.scad
                        ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad

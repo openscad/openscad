@@ -1,0 +1,185 @@
+ECHO: "0 args"
+ECHO: "f()", ["a", "b", "c"]
+ECHO: "1 arg, 0 named"
+ECHO: "f(1)", [1, "b", "c"]
+ECHO: "1 arg, 1 named"
+ECHO: "f(a=1)", [1, "b", "c"]
+ECHO: "f(b=2)", ["a", 2, "c"]
+ECHO: "f(c=3)", ["a", "b", 3]
+ECHO: "2 args, 0 named"
+ECHO: "f(1,2)", [1, 2, "c"]
+ECHO: "2 args, 1 named"
+ECHO: "f(a=1,2)", [1, 2, "c"]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 14
+ECHO: "f(2,a=1)", [1, "b", "c"]
+ECHO: "f(b=2,1)", [1, 2, "c"]
+ECHO: "f(1,b=2)", [1, 2, "c"]
+ECHO: "f(c=3,1)", [1, "b", 3]
+ECHO: "f(1,c=3)", [1, "b", 3]
+ECHO: "2 args, 2 named"
+ECHO: "f(a=1,b=2)", [1, 2, "c"]
+ECHO: "f(b=2,a=1)", [1, 2, "c"]
+ECHO: "f(a=1,c=3)", [1, "b", 3]
+ECHO: "f(c=3,a=1)", [1, "b", 3]
+ECHO: "f(b=2,c=3)", ["a", 2, 3]
+ECHO: "f(c=3,b=2)", ["a", 2, 3]
+ECHO: "2 args, duplicate naming"
+WARNING: argument a supplied more than once in file arg-permutations.scad, line 27
+ECHO: "f(a=1,a=1)", [1, "b", "c"]
+WARNING: argument b supplied more than once in file arg-permutations.scad, line 28
+ECHO: "f(b=2,b=2)", ["a", 2, "c"]
+WARNING: argument c supplied more than once in file arg-permutations.scad, line 29
+ECHO: "f(c=3,c=3)", ["a", "b", 3]
+ECHO: "3 args, 0 named"
+ECHO: "f(1,2,3)", [1, 2, 3]
+ECHO: "3 args, 1 named"
+ECHO: "f(a=1,2,3)", [1, 2, 3]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 34
+ECHO: "f(2,a=1,3)", [1, 3, "c"]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 35
+ECHO: "f(2,3,a=1)", [1, 3, "c"]
+ECHO: "f(b=2,1,3)", [1, 2, 3]
+ECHO: "f(1,b=2,3)", [1, 2, 3]
+WARNING: argument b overrides positional argument in file arg-permutations.scad, line 38
+ECHO: "f(1,3,b=2)", [1, 2, "c"]
+ECHO: "f(c=3,1,2)", [1, 2, 3]
+ECHO: "f(1,c=3,2)", [1, 2, 3]
+ECHO: "f(1,2,c=3)", [1, 2, 3]
+ECHO: "3 args, 2 named"
+ECHO: "f(a=1,b=2,3)", [1, 2, 3]
+WARNING: argument b overrides positional argument in file arg-permutations.scad, line 44
+ECHO: "f(a=1,3,b=2)", [1, 2, "c"]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 45
+ECHO: "f(3,a=1,b=2)", [1, 2, "c"]
+ECHO: "f(b=2,a=1,3)", [1, 2, 3]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 47
+ECHO: "f(b=2,3,a=1)", [1, 2, "c"]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 48
+ECHO: "f(3,b=2,a=1)", [1, 2, "c"]
+ECHO: "f(a=1,c=3,2)", [1, 2, 3]
+ECHO: "f(a=1,2,c=3)", [1, 2, 3]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 51
+ECHO: "f(2,a=1,c=3)", [1, "b", 3]
+ECHO: "f(c=3,a=1,2)", [1, 2, 3]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 53
+ECHO: "f(c=3,2,a=1)", [1, "b", 3]
+WARNING: argument a overrides positional argument in file arg-permutations.scad, line 54
+ECHO: "f(2,c=3,a=1)", [1, "b", 3]
+ECHO: "f(b=2,c=3,1)", [1, 2, 3]
+ECHO: "f(b=2,1,c=3)", [1, 2, 3]
+ECHO: "f(1,b=2,c=3)", [1, 2, 3]
+ECHO: "f(c=3,b=2,1)", [1, 2, 3]
+ECHO: "f(c=3,1,b=2)", [1, 2, 3]
+ECHO: "f(1,c=3,b=2)", [1, 2, 3]
+ECHO: "3 args, 3 named"
+ECHO: "f(a=1,b=2,c=3)", [1, 2, 3]
+ECHO: "f(a=1,c=3,b=2)", [1, 2, 3]
+ECHO: "f(b=2,a=1,c=3)", [1, 2, 3]
+ECHO: "f(b=2,c=3,a=1)", [1, 2, 3]
+ECHO: "f(c=3,a=1,b=2)", [1, 2, 3]
+ECHO: "f(c=3,b=2,a=1)", [1, 2, 3]
+ECHO: "3 args, duplicate naming"
+WARNING: argument a supplied more than once in file arg-permutations.scad, line 69
+ECHO: "f(a=1,b=2,a=1)", [1, 2, "c"]
+WARNING: argument a supplied more than once in file arg-permutations.scad, line 70
+ECHO: "f(a=1,a=1,b=2)", [1, 2, "c"]
+WARNING: argument b supplied more than once in file arg-permutations.scad, line 71
+ECHO: "f(b=2,a=1,b=2)", [1, 2, "c"]
+WARNING: argument b supplied more than once in file arg-permutations.scad, line 72
+ECHO: "f(b=2,b=2,a=1)", [1, 2, "c"]
+WARNING: argument a supplied more than once in file arg-permutations.scad, line 73
+ECHO: "f(a=1,c=3,a=1)", [1, "b", 3]
+WARNING: argument a supplied more than once in file arg-permutations.scad, line 74
+ECHO: "f(a=1,a=1,c=3)", [1, "b", 3]
+WARNING: argument c supplied more than once in file arg-permutations.scad, line 75
+ECHO: "f(c=3,a=1,c=3)", [1, "b", 3]
+WARNING: argument c supplied more than once in file arg-permutations.scad, line 76
+ECHO: "f(c=3,c=3,a=1)", [1, "b", 3]
+WARNING: argument b supplied more than once in file arg-permutations.scad, line 77
+ECHO: "f(b=2,c=3,b=2)", ["a", 2, 3]
+WARNING: argument b supplied more than once in file arg-permutations.scad, line 78
+ECHO: "f(b=2,b=2,c=3)", ["a", 2, 3]
+WARNING: argument c supplied more than once in file arg-permutations.scad, line 79
+ECHO: "f(c=3,b=2,c=3)", ["a", 2, 3]
+WARNING: argument c supplied more than once in file arg-permutations.scad, line 80
+ECHO: "f(c=3,c=3,b=2)", ["a", 2, 3]
+ECHO: "4 args (1 extra)"
+WARNING: Too many unnamed arguments supplied in file arg-permutations.scad, line 82
+ECHO: "f(1,2,3,4)", [1, 2, 3]
+ECHO: "f($d=4,1,2,3)", [1, 2, 3]
+ECHO: "f(1,$d=4,2,3)", [1, 2, 3]
+ECHO: "f(1,2,$d=4,3)", [1, 2, 3]
+ECHO: "f(1,2,3,$d=4)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 87
+ECHO: "f(d=4,1,2,3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 88
+ECHO: "f(1,d=4,2,3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 89
+ECHO: "f(1,2,d=4,3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 90
+ECHO: "f(1,2,3,d=4)", [1, 2, 3]
+ECHO: "f($d=4,a=1,b=2,c=3)", [1, 2, 3]
+ECHO: "f(a=1,$d=4,b=2,c=3)", [1, 2, 3]
+ECHO: "f(a=1,b=2,$d=4,c=3)", [1, 2, 3]
+ECHO: "f(a=1,b=2,c=3,$d=4)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 95
+ECHO: "f(d=4,a=1,b=2,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 96
+ECHO: "f(a=1,d=4,b=2,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 97
+ECHO: "f(a=1,b=2,d=4,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 98
+ECHO: "f(a=1,b=2,c=3,d=4)", [1, 2, 3]
+ECHO: "5 args (2 extra)"
+WARNING: Too many unnamed arguments supplied in file arg-permutations.scad, line 100
+ECHO: "f(1,2,3,4,5)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 101
+ECHO: "f($d=4,$d=4,a=1,b=2,c=3)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 102
+ECHO: "f($d=4,a=1,$d=4,b=2,c=3)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 103
+ECHO: "f($d=4,a=1,b=2,$d=4,c=3)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 104
+ECHO: "f($d=4,a=1,b=2,c=3,$d=4)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 105
+ECHO: "f(a=1,$d=4,$d=4,b=2,c=3)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 106
+ECHO: "f(a=1,$d=4,b=2,$d=4,c=3)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 107
+ECHO: "f(a=1,$d=4,b=2,c=3,$d=4)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 108
+ECHO: "f(a=1,b=2,$d=4,$d=4,c=3)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 109
+ECHO: "f(a=1,b=2,$d=4,c=3,$d=4)", [1, 2, 3]
+WARNING: argument $d supplied more than once in file arg-permutations.scad, line 110
+ECHO: "f(a=1,b=2,c=3,$d=4,$d=4)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 111
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 111
+ECHO: "f(d=4,d=4,a=1,b=2,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 112
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 112
+ECHO: "f(d=4,a=1,d=4,b=2,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 113
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 113
+ECHO: "f(d=4,a=1,b=2,d=4,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 114
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 114
+ECHO: "f(d=4,a=1,b=2,c=3,d=4)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 115
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 115
+ECHO: "f(a=1,d=4,d=4,b=2,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 116
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 116
+ECHO: "f(a=1,d=4,b=2,d=4,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 117
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 117
+ECHO: "f(a=1,d=4,b=2,c=3,d=4)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 118
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 118
+ECHO: "f(a=1,b=2,d=4,d=4,c=3)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 119
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 119
+ECHO: "f(a=1,b=2,d=4,c=3,d=4)", [1, 2, 3]
+WARNING: variable d not specified as parameter in file arg-permutations.scad, line 120
+WARNING: argument d supplied more than once in file arg-permutations.scad, line 120
+ECHO: "f(a=1,b=2,c=3,d=4,d=4)", [1, 2, 3]
