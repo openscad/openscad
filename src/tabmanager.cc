@@ -476,6 +476,7 @@ void TabManager::openTabFile(const QString &filename)
     const auto cmd = par->knownFileExtensions[suffix];
     if (knownFileType && cmd.isEmpty()) {
         setTabName(filename);
+        editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
         par->updateRecentFiles(editor);
     } else {
         setTabName(nullptr);
@@ -512,7 +513,6 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
         fname = fileinfo.fileName();
         tabWidget->setTabText(tabWidget->indexOf(edt), QString(fname).replace("&", "&&"));
         tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
-        edt->parameterWidget->readFile(edt->filepath);
         QDir::setCurrent(fileinfo.dir().absolutePath());
     }
     par->editorTopLevelChanged(par->editorDock->isFloating());
@@ -662,7 +662,7 @@ bool TabManager::save(EditorInterface *edt, const QString path)
 		LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", path.toLocal8Bit().constData());
 		edt->parameterWidget->saveFile(path);
 		edt->setContentModified(false);
-		edt->parameterWidget->setNotModified();
+		edt->parameterWidget->setModified(false);
 		par->updateRecentFiles(edt);
 	} else {
 		saveError(file, _("Error saving design"), path);
