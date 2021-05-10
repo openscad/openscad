@@ -30,6 +30,20 @@ void BoolParameter::apply(Assignment* assignment) const
 	assignment->setExpr(std::make_shared<Literal>(Value(value)));
 }
 
+StringParameter::StringParameter(
+	const std::string& name, const std::string& description, const std::string& group,
+	const std::string& defaultValue,
+	boost::optional<int> maximumSize
+):
+	ParameterObject(name, description, group, ParameterObject::ParameterType::String),
+	value(defaultValue), defaultValue(defaultValue),
+	maximumSize(maximumSize)
+{
+	if (maximumSize && defaultValue.size() > *maximumSize) {
+		maximumSize = defaultValue.size();
+	}
+}
+
 bool StringParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
 {
 	if (store) {
@@ -199,9 +213,6 @@ void EnumParameter::apply(Assignment* assignment) const
 
 
 
-
-
-
 struct EnumValues
 {
 	std::vector<EnumParameter::EnumItem> items;
@@ -293,7 +304,7 @@ struct NumericLimits
 	boost::optional<double> maximum;
 	boost::optional<double> step;
 };
-static NumericLimits parseNumericLimits(const Expression* parameter)
+static NumericLimits parseNumericLimits(const Expression* parameter, const std::vector<double> values)
 {
 	NumericLimits output;
 	
@@ -322,6 +333,14 @@ static NumericLimits parseNumericLimits(const Expression* parameter)
 			if (step && step->getValue().type() == Value::Type::NUMBER) {
 				output.step = step->getValue().toDouble();
 			}
+		}
+	}
+	for (double value : values) {
+		if (output.minimum && value < *output.minimum) {
+			output.minimum = value;
+		}
+		if (output.maximum && value > *output.maximum) {
+			output.maximum = value;
 		}
 	}
 	
@@ -392,7 +411,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 		
 		if (type == Value::Type::NUMBER) {
 			double value = expression->getValue().toDouble();
-			NumericLimits limits = parseNumericLimits(parameter);
+			NumericLimits limits = parseNumericLimits(parameter, {value});
 			return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum, limits.maximum, limits.step);
 		}
 	} else if (const Vector* expression = dynamic_cast<const Vector*>(valueExpression)) {
@@ -412,7 +431,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 			value.push_back(item->getValue().toDouble());
 		}
 		
-		NumericLimits limits = parseNumericLimits(parameter);
+		NumericLimits limits = parseNumericLimits(parameter, value);
 		return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum, limits.maximum, limits.step);
 	}
 	return nullptr;
