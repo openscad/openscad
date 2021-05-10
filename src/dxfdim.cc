@@ -29,9 +29,9 @@
 #include "function.h"
 #include "dxfdata.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
-#include "evalcontext.h"
 #include "handle_dep.h"
 #include "degree_trig.h"
 
@@ -44,42 +44,28 @@ ValueMap dxf_dim_cache;
 ValueMap dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_dxf_dim(Arguments arguments, const Location& loc)
 {
+	Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
+
 	std::string rawFilename;
 	std::string filename;
-	std::string layername;
-	std::string name;
+	if (parameters.contains("file")) {
+		rawFilename = parameters["file"].toString();
+		filename = lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
+	}
 	double xorigin = 0;
 	double yorigin = 0;
-	double scale = 1;
-
-	// FIXME: We don't lookup the file relative to where this function was instantiated
-	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See issue #217
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		const std::string &n = evalctx->getArgName(i);
-		Value v = evalctx->getArgValue(i);
-		if (n == "file") {
-			rawFilename = v.toString();
-			filename = lookup_file(rawFilename, 
-			evalctx->documentPath(), ctx->documentPath());
-		}else if (n == "layer") {
-			layername = v.toString();
-		}else if (n == "origin"){
-			bool originOk = v.getVec2(xorigin, yorigin);
-			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
-			if(!originOk){
-				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"dxf_dim(..., origin=%1$s) could not be converted",v.toEchoString());
-			}
-		}else if (n == "scale"){
-			v.getDouble(scale);
-		} else if (n == "name") {
-			name = v.toString();
-		}else{
-			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"dxf_dim(..., %1$s=...) is not supported",n);
+	if (parameters.contains("origin")) {
+		bool originOk = parameters["origin"].getVec2(xorigin, yorigin);
+		originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+		if(!originOk){
+			LOG(message_group::Warning,loc,parameters.documentRoot(),"dxf_dim(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 		}
 	}
+	std::string layername = parameters.get("layer", "");
+	double scale = parameters.get("scale", 1);
+	std::string name = parameters.get("name", "");
 
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
@@ -90,7 +76,7 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 			lastwritetime = fs::last_write_time(filepath);
 		}
 	}else{
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Can't open DXF file '%1$s'!",rawFilename);
+		LOG(message_group::Warning,loc,parameters.documentRoot(),"Can't open DXF file '%1$s'!",rawFilename);
 		return Value::undefined.clone();
 	}
 	std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
@@ -144,47 +130,36 @@ Value builtin_dxf_dim(const std::shared_ptr<Context> ctx, const std::shared_ptr<
 			return dxf_dim_cache.emplace(key, (d->type & 64) ? d->coords[3][0] : d->coords[3][1]).first->second.clone();
 		}
 
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!",name,rawFilename,layername);
+		LOG(message_group::Warning,loc,parameters.documentRoot(),"Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!",name,rawFilename,layername);
 		return Value::undefined.clone();
 	}
 
-	LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Can't find dimension '%1$s' in '%2$s', layer '%3$s'!",name,rawFilename,layername);
+	LOG(message_group::Warning,loc,parameters.documentRoot(),"Can't find dimension '%1$s' in '%2$s', layer '%3$s'!",name,rawFilename,layername);
 
 	return Value::undefined.clone();
 }
 
-Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_ptr<EvalContext> evalctx)
+Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 {
-	std::string filename;
+	Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
+
 	std::string rawFilename;
-	std::string layername;
+	std::string filename;
+	if (parameters.contains("file")) {
+		rawFilename = parameters["file"].toString();
+		filename = lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
+	}
 	double xorigin = 0;
 	double yorigin = 0;
-	double scale = 1;
-
-	// FIXME: We don't lookup the file relative to where this function was instantiated
-	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See issue #217
-	for (size_t i = 0; i < evalctx->numArgs(); ++i) {
-		const std::string &n = evalctx->getArgName(i);
-		Value v = evalctx->getArgValue(i);
-		if (n == "file"){
-			rawFilename = v.toString();
-			filename = ctx->getAbsolutePath(rawFilename);
-		}else if (n == "layer"){
-			layername = v.toString();
-		}else if (n == "origin"){
-			bool originOk = v.getVec2(xorigin, yorigin);
-			originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
-			if(!originOk){
-				LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"dxf_cross(..., origin=%1$s) could not be converted",v.toEchoString());
-			}
-		}else if (n == "scale"){
-			v.getDouble(scale);
-		}else{
-			LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"dxf_cross(..., %1$s=...) is not supported",n);
+	if (parameters.contains("origin")) {
+		bool originOk = parameters["origin"].getVec2(xorigin, yorigin);
+		originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
+		if(!originOk){
+			LOG(message_group::Warning,loc,parameters.documentRoot(),"dxf_cross(..., origin=%1$s) could not be converted",parameters["origin"].toEchoString());
 		}
 	}
+	std::string layername = parameters.get("layer", "");
+	double scale = parameters.get("scale", 1);
 
 	fs::path filepath(filename);
 	uintmax_t filesize = -1;
@@ -195,7 +170,7 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 			lastwritetime = fs::last_write_time(filepath);
 		}
 	}else{
-		LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Can't open DXF file '%1$s'!",rawFilename);
+		LOG(message_group::Warning,loc,parameters.documentRoot(),"Can't open DXF file '%1$s'!",rawFilename);
 		return Value::undefined.clone();
 	}
 
@@ -240,7 +215,7 @@ Value builtin_dxf_cross(const std::shared_ptr<Context> ctx, const std::shared_pt
 		}
 	}
 
-	LOG(message_group::Warning,evalctx->loc,ctx->documentPath(),"Can't find cross in '%1$s', layer '%2$s'!",rawFilename,layername);
+	LOG(message_group::Warning,loc,parameters.documentRoot(),"Can't find cross in '%1$s', layer '%2$s'!",rawFilename,layername);
 	return Value::undefined.clone();
 }
 

@@ -1,20 +1,19 @@
 #include "parameterobject.h"
 
 #include "module.h"
-#include "modcontext.h"
 #include "annotation.h"
 
-ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<Assignment> &assignment, const Value &defaultValue) :
+ParameterObject::ParameterObject(const shared_ptr<Assignment> &assignment, const Value &defaultValue) :
     value(Value::undefined.clone()), values(Value::undefined.clone()), defaultValue(Value::undefined.clone())
 {
   this->set = false;
   this->name = assignment->getName();
   const Annotation *param = assignment->annotation("Parameter");
-  setValue(defaultValue, param->evaluate(ctx));
+  setValue(defaultValue, param->getExpr()->evaluateLiteral());
   const Annotation *desc = assignment->annotation("Description");
 
   if (desc) {
-    Value v = desc->evaluate(ctx);
+    Value v = desc->getExpr()->evaluateLiteral();
     if (v.type() == Value::Type::STRING) {
       description=QString::fromStdString(v.toString());
     }
@@ -22,7 +21,7 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
   
   const Annotation *group = assignment->annotation("Group");
   if (group) {
-    Value v = group->evaluate(ctx);
+    Value v = group->getExpr()->evaluateLiteral();
     if (v.type() == Value::Type::STRING) {
       groupName = v.toString();
     }
@@ -33,8 +32,7 @@ ParameterObject::ParameterObject(std::shared_ptr<Context> ctx, const shared_ptr<
 
 void ParameterObject::applyParameter(const shared_ptr<Assignment> &assignment)
 {
-  ContextHandle<Context> ctx{Context::create<Context>()};
-  Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+  Value defaultValue = assignment->getExpr()->evaluateLiteral();
   
   if (defaultValue.type() == dvt) {
     assignment->setExpr(make_shared<Literal>(value.clone()));

@@ -117,10 +117,9 @@ void Preferences::init() {
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
 	// Leave Console font with default if user has not chosen another.
-	const QFont font2 = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
-	const QString found_family2{QFontInfo{font2}.family()};
-	this->defaultmap["advanced/consoleFontFamily"] = found_family2;
-	this->defaultmap["advanced/consoleFontSize"] = 10;
+	const QFont font2 = QTextDocument().defaultFont();
+	this->defaultmap["advanced/consoleFontFamily"] = font2.family();
+	this->defaultmap["advanced/consoleFontSize"] = font2.pointSize();
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -144,7 +143,7 @@ void Preferences::init() {
 	BlockSignals<QComboBox *> consoleFontSize{this->consoleFontSize};
 	for(auto size : db.standardSizes()) {
 		consoleFontSize->addItem(QString::number(size));
-		if (static_cast<uint>(size) == savedsize) {
+		if (static_cast<uint>(size) == consavedsize) {
 			consoleFontSize->setCurrentIndex(this->consoleFontSize->count()-1);
 		}
 	}

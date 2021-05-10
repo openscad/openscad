@@ -28,8 +28,9 @@
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "polyset.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h"
@@ -51,20 +52,13 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-class SurfaceModule : public AbstractModule
-{
-public:
-	SurfaceModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
 typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> img_data_t;
 
 class SurfaceNode : public LeafNode
 {
 public:
 	VISITABLE();
-	SurfaceNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : LeafNode(mi, ctx), center(false), invert(false), convexity(1) { }
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
 	std::string toString() const override;
 	std::string name() const override { return "surface"; }
 
@@ -81,34 +75,32 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-AbstractNode *SurfaceModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+static AbstractNode* builtin_surface(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new SurfaceNode(inst, evalctx);
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
 
-	AssignmentList args{assignment("file"), assignment("center"), assignment("convexity")};
-	AssignmentList optargs{assignment("center"),assignment("invert")};
+	auto node = new SurfaceNode(inst);
 
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
 
-	const auto &fileval = c->lookup_variable("file");
-	auto filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c->documentPath());
+	std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
+	auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
 	node->filename = filename;
 	handle_dep(fs::path(filename).generic_string());
 
-	const auto &center = c->lookup_variable("center", true);
-	if (center.type() == Value::Type::BOOL) {
-		node->center = center.toBool();
+	if (parameters["center"].type() == Value::Type::BOOL) {
+		node->center = parameters["center"].toBool();
 	}
 
-	const auto &convexity = c->lookup_variable("convexity", true);
-	if (convexity.type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(convexity.toDouble());
+	if (parameters["convexity"].type() == Value::Type::NUMBER) {
+		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 	}
 
-	const auto &invert = c->lookup_variable("invert", true);
-	if (invert.type() == Value::Type::BOOL) {
-		node->invert = invert.toBool();
+	if (parameters["invert"].type() == Value::Type::BOOL) {
+		node->invert = parameters["invert"].toBool();
 	}
 
 	return node;
@@ -326,7 +318,7 @@ std::string SurfaceNode::toString() const
 
 void register_builtin_surface()
 {
-	Builtins::init("surface", new SurfaceModule(),
+	Builtins::init("surface", new BuiltinModule(builtin_surface),
 				{
 					"surface(string, center = false, invert = false, number)",
 				});

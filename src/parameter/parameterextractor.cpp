@@ -1,5 +1,4 @@
 #include "parameterextractor.h"
-#include "modcontext.h"
 
 ParameterExtractor::ParameterExtractor()
 {
@@ -10,11 +9,11 @@ ParameterExtractor::~ParameterExtractor()
 {
 }
 
-void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& entries)
+void ParameterExtractor::applyParameters(SourceFile *sourceFile, entry_map_t& entries)
 {
-  if (!fileModule) return;
+  if (!sourceFile) return;
 
-  for (auto &assignment : fileModule->scope.assignments) {
+  for (auto &assignment : sourceFile->scope.assignments) {
     auto entry = entries.find(assignment->getName());
     if (entry != entries.end()) {
       if (entry->second->groupName != "Hidden") {
@@ -25,21 +24,19 @@ void ParameterExtractor::applyParameters(FileModule *fileModule, entry_map_t& en
   }
 }
 
-void ParameterExtractor::setParameters(const FileModule* module,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
+void ParameterExtractor::setParameters(const SourceFile* sourceFile,entry_map_t& entries,std::vector<std::string>& ParameterPos, bool &rebuildParameterWidget)
 {
-  if (!module) return;
-
-  ContextHandle<Context> ctx{Context::create<Context>()};
+  if (!sourceFile) return;
 
   ParameterPos.clear();
-  for (auto &assignment : module->scope.assignments) {
+  for (auto &assignment : sourceFile->scope.assignments) {
     const Annotation *param = assignment->annotation("Parameter");
     if (!param) continue;
 
-    Value defaultValue = assignment->getExpr()->evaluate(ctx.ctx);
+    Value defaultValue = assignment->getExpr()->evaluateLiteral();
     if (defaultValue.type() == Value::Type::UNDEFINED) continue;
 
-    ParameterObject *entryObject = new ParameterObject(ctx.ctx, assignment, std::move(defaultValue));
+    ParameterObject *entryObject = new ParameterObject(assignment, std::move(defaultValue));
 
     //check whether object exist or not previously
     if (entries.find(assignment->getName()) == entries.end()) {

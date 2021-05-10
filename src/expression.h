@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 #include "Assignment.h"
@@ -7,6 +8,8 @@
 #include "function.h"
 #include "memory.h"
 #include "value.h"
+
+template<class T> class ContextHandle;
 
 class Expression : public ASTNode
 {
@@ -16,6 +19,7 @@ public:
 	virtual bool isLiteral() const;
 	virtual Value evaluate(const std::shared_ptr<Context>& context) const = 0;
 	Value checkUndef(Value&& val, const std::shared_ptr<Context>& context) const;
+	Value evaluateLiteral() const;
 };
 
 class UnaryOp : public Expression
@@ -73,7 +77,7 @@ class TernaryOp : public Expression
 {
 public:
 	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -136,7 +140,6 @@ class Lookup : public Expression
 public:
 	Lookup(const std::string &name, const Location &loc);
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
-	const Value& evaluateSilently(const std::shared_ptr<Context>& context) const;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	const std::string& get_name() const { return name; }
 private:
@@ -173,12 +176,12 @@ public:
 class FunctionDefinition : public Expression
 {
 public:
-	FunctionDefinition(Expression *expr, const AssignmentList &definition_arguments, const Location &loc);
+	FunctionDefinition(Expression *expr, const AssignmentList &parameters, const Location &loc);
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 public:
-	shared_ptr<Context> ctx;
-	AssignmentList definition_arguments;
+	shared_ptr<Context> context;
+	AssignmentList parameters;
 	shared_ptr<Expression> expr;
 };
 
@@ -186,7 +189,8 @@ class Assert : public Expression
 {
 public:
 	Assert(const AssignmentList &args, Expression *expr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	static void performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<Context>& context);
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -198,7 +202,7 @@ class Echo : public Expression
 {
 public:
 	Echo(const AssignmentList &args, Expression *expr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -210,7 +214,9 @@ class Let : public Expression
 {
 public:
 	Let(const AssignmentList &args, Expression *expr, const Location &loc);
-	const shared_ptr<Expression>& evaluateStep(const std::shared_ptr<Context>& context) const;
+	static void doSequentialAssignment(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& targetContext);
+	static ContextHandle<Context> sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& context);
+	const Expression* evaluateStep(const std::shared_ptr<Context>& targetContext) const;
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -241,6 +247,7 @@ class LcFor : public ListComprehension
 {
 public:
 	LcFor(const AssignmentList &args, Expression *expr, const Location &loc);
+	static void forEach(const AssignmentList& assignments, const Location &loc, const std::shared_ptr<Context>& context, std::function<void(const std::shared_ptr<Context>&)> operation);
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
@@ -282,14 +289,3 @@ private:
 	AssignmentList arguments;
 	shared_ptr<Expression> expr;
 };
-
-void evaluate_assert(const std::shared_ptr<Context>& context, const std::shared_ptr<class EvalContext> evalctx);
-
-Value evaluate_user_function(
-	std::string name,
-	std::shared_ptr<Expression> expr,
-	AssignmentList const* definition_arguments,
-	std::shared_ptr<Context> defining_context,
-	const std::shared_ptr<EvalContext>& evalctx,
-	Location loc
-);

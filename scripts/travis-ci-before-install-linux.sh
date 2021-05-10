@@ -37,5 +37,11 @@ echo yes | sudo add-apt-repository "deb $LIB3MF_REPO ./"
 echo yes | sudo add-apt-repository "deb $LIBCGAL_REPO ./"
 sudo apt-get update -qq
 sudo apt-get purge -qq fglrx || true
-sudo apt-get install -qq $PACKAGES1 $PACKAGES2 $PACKAGES3 $PACKAGES4 $PACKAGES5
 
+# Workaround for issue installing libzip-dev on github
+# E: Unable to correct problems, you have held broken packages.
+# libzip-dev : Depends: libzip4 (= 1.1.2-1.1) but 1.7.3-1+ubuntu18.04.1+deb.sury.org+2 is to be installed
+sudo apt-cache rdepends libzip4 || true
+sudo apt-get purge -qq libzip4 $(apt-cache rdepends --installed libzip4 | tail -n+3)
+
+sudo apt-get install -qq $PACKAGES1 $PACKAGES2 $PACKAGES3 $PACKAGES4 $PACKAGES5
