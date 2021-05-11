@@ -16,9 +16,9 @@ public:
 	virtual boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const;
 
 	virtual std::vector<const Value*> list_embedded_values() const;
-	virtual void clear();
+	virtual size_t clear();
 
-	virtual void set_variable(const std::string &name, Value&& value);
+	virtual bool set_variable(const std::string &name, Value&& value);
 
 	void apply_variables(const ValueMap& variables);
 	void apply_lexical_variables(const ContextFrame &other);

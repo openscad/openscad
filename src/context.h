@@ -81,8 +81,8 @@ public:
 	const Value& lookup_variable(const std::string &name, const Location &loc) const;
 	boost::optional<CallableFunction> lookup_function(const std::string &name, const Location &loc) const;
 	boost::optional<InstantiableModule> lookup_module(const std::string &name, const Location &loc) const;
-	void set_variable(const std::string &name, Value&& value) override;
-	void clear() override;
+	bool set_variable(const std::string &name, Value&& value) override;
+	size_t clear() override;
 
 	const std::shared_ptr<const Context> &getParent() const { return this->parent; }
 	// This modifies the semantics of the context in an error-prone way. Use with caution.

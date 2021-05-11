@@ -72,18 +72,20 @@ std::vector<const Value*> ContextFrame::list_embedded_values() const
 	return output;
 }
 
-void ContextFrame::clear()
+size_t ContextFrame::clear()
 {
+	size_t removed = lexical_variables.size() + config_variables.size();
 	lexical_variables.clear();
 	config_variables.clear();
+	return removed;
 }
 
-void ContextFrame::set_variable(const std::string &name, Value&& value)
+bool ContextFrame::set_variable(const std::string &name, Value&& value)
 {
 	if (is_config_variable(name)) {
-		config_variables.insert_or_assign(name, std::move(value));
+		return config_variables.insert_or_assign(name, std::move(value));
 	} else {
-		lexical_variables.insert_or_assign(name, std::move(value));
+		return lexical_variables.insert_or_assign(name, std::move(value));
 	}
 }
 

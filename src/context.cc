@@ -123,18 +123,20 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string &na
 	return boost::none;
 }
 
-void Context::set_variable(const std::string &name, Value&& value)
+bool Context::set_variable(const std::string &name, Value&& value)
 {
-	if (!lookup_local_variable(name)) {
+	bool new_variable = ContextFrame::set_variable(name, std::move(value));
+	if (new_variable) {
 		session()->accounting().addContextVariable();
 	}
-	ContextFrame::set_variable(name, std::move(value));
+	return new_variable;
 }
 
-void Context::clear()
+size_t Context::clear()
 {
-	session()->accounting().removeContextVariable(list_embedded_values().size());
-	ContextFrame::clear();
+	size_t removed = ContextFrame::clear();
+	session()->accounting().removeContextVariable(removed);
+	return removed;
 }
 
 #ifdef DEBUG
@@ -150,4 +152,3 @@ std::string Context::dump() const
 	return s.str();
 }
 #endif
-

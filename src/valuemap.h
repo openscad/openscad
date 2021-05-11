@@ -20,12 +20,14 @@ public:
   //      but Value() is private now.
   //  - Should not be necessary once upgraded to C++17
   //  - Doesn't bother with return type
-  void insert_or_assign(const std::string &name, Value&& value) {
+  bool insert_or_assign(const std::string &name, Value&& value) {
     auto result = map.find(name);
     if (result == map.end()) {
       map.emplace(name, std::move(value));
+      return true;
     } else {
       std::swap(result->second, value);
+      return false;
     }
   }
   // Gotta have C++20 for this beast
@@ -38,6 +40,7 @@ public:
   iterator begin() {  return map.begin(); }
   iterator end() {  return map.end(); }
   void clear() { map.clear(); }
+  size_t size() const { return map.size(); }
   template<typename... Args> std::pair<iterator, bool> emplace(Args&&... args) {
     return map.emplace(std::forward<Args>(args)...);
   }
