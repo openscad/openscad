@@ -55,12 +55,12 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arg
 	bool first_argument_is_height = (arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER);
 	Parameters parameters = first_argument_is_height ?
 		Parameters::parse(std::move(arguments), inst->location(),
-			{"height", "file", "layer", "origin", "scale", "center", "twist", "slices"},
+			{"height", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
 			{"convexity"}
 		)
 	:
 		Parameters::parse(std::move(arguments), inst->location(),
-			{"file", "layer", "height", "origin", "scale", "center", "twist", "slices"},
+			{"file", "layer", "height", "origin", "scale", "center", "twist", "slices", "segments"},
 			{"convexity"}
 		)
 	;
@@ -76,7 +76,6 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arg
 		handle_dep(filename);
 	}
 
-	node->height = 100;
 	if (parameters["height"].isDefined()) {
 		parameters["height"].getFiniteDouble(node->height);
 	}
@@ -118,6 +117,12 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arg
 		node->has_slices = true;
 	} 
 
+	double segmentsVal = 0;
+	if (parameters["segments"].getFiniteDouble(segmentsVal)) {
+		node->has_segments = true;
+		node->segments = static_cast<int>(std::max(segmentsVal, 0.0));
+	}
+
 	node->twist = 0.0;
 	parameters["twist"].getFiniteDouble(node->twist);
 	if (node->twist != 0.0) {
@@ -148,20 +153,31 @@ std::string LinearExtrudeNode::toString() const
 			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
 			;
 	}
-	stream <<
-		"height = " << std::dec << this->height << ", "
-		"center = " << (this->center?"true":"false") << ", "
-		"convexity = " << this->convexity;
-
+	stream << "height = " << std::dec << this->height;
+	if (this->center)	{
+		stream << ", center = true";
+	}
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist;
 	}
 	if (this->has_slices) {
 		stream << ", slices = " << this->slices;
 	}
-	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
-	if (!this->has_slices) {
+	if (this->has_segments) {
+		stream << ", segments = " << this->segments;
+	}
+
+	if (this->scale_x != this->scale_y) {
+		stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
+	} else if (this->scale_x != 1.0) {
+		stream << ", scale = " << this->scale_x ;
+	}
+
+	if (!(this->has_slices && this->has_segments)) {
 		stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs;
+	}
+	if (this->convexity > 1) {
+		stream << ", convexity = " << this->convexity;
 	}
 	stream << ")";
 	return stream.str();

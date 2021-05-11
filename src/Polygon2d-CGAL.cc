@@ -88,7 +88,7 @@ mark_domains(CDT &cdt)
 }
 
 /*!
-	Triangulates this polygon2d and returns a 2D PolySet.
+	Triangulates this polygon2d and returns a 2D-in-3D PolySet.
 */
 PolySet *Polygon2d::tessellate() const
 {

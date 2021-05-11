@@ -1,3 +1,5 @@
+$fn = 3; // don't split triangles into segments
+
 // linear_extrude tests with scale to 0 on different axes. 
 // Test updated with additional cases for PR #3351 - Hans Loeblich
 module tri() { polygon([[20, 0],[0, 10],[0, -10]]); }
