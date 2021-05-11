@@ -392,7 +392,6 @@ HEADERS += src/version_check.h \
            \
            src/parameter/ParameterWidget.h \
            src/parameter/parameterobject.h \
-           src/parameter/parameterextractor.h \
            src/parameter/parametervirtualwidget.h \
            src/parameter/parameterspinbox.h \
            src/parameter/parametercombobox.h \
@@ -557,7 +556,6 @@ SOURCES += \
            \
            src/parameter/ParameterWidget.cc\
            src/parameter/parameterobject.cpp \
-           src/parameter/parameterextractor.cpp \
            src/parameter/parameterspinbox.cpp \
            src/parameter/parametercombobox.cpp \
            src/parameter/parameterslider.cpp \

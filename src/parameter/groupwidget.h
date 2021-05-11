@@ -1,9 +1,8 @@
 #pragma once
 
-#include <QFrame>
 #include <QGridLayout>
-#include <QScrollArea>
 #include <QToolButton>
+#include <QVBoxLayout>
 #include <QWidget>
 
 class GroupWidget : public QWidget {
@@ -12,12 +11,15 @@ private:
 	QGridLayout mainLayout;
 	QToolButton toggleButton;
 	QWidget contentArea;
-	bool *show; //pointer to the show flag in the group map
+	QVBoxLayout contentLayout;
 
 public:
-	explicit GroupWidget(bool &show,const QString & title = "", QWidget *parent = nullptr);
-	void setContentLayout(QLayout & contentLayout);
+	GroupWidget(QString title, QWidget *parent = nullptr);
+	void addWidget(QWidget* widget);
 
-private slots:
-	void onclicked(bool);
+	bool isExpanded() const { return toggleButton.isChecked(); }
+	QString title() const { return toggleButton.text(); }
+
+public slots:
+	void setExpanded(bool expanded);
 };

@@ -48,6 +48,7 @@
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
 #include "boost-utils.h"
+#include"parameter/parameterobject.h"
 #include"parameter/parameterset.h"
 #include <string>
 #include <vector>
@@ -401,9 +402,16 @@ int cmdline(const CommandLine& cmd)
 	// add parameter to AST
 	CommentParser::collectParameters(text.c_str(), root_file);
 	if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
-		ParameterSet param;
-		param.readParameterSet(cmd.parameterFile);
-		param.applyParameterSet(root_file, cmd.setName);
+		ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
+		ParameterSets sets;
+		sets.readFile(cmd.parameterFile);
+		for (const auto& set : sets) {
+			if (set.name() == cmd.setName) {
+				parameters.importValues(set);
+				parameters.apply(root_file);
+				break;
+			}
+		}
 	}
 
 	root_file->handleDependencies();

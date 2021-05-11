@@ -7,6 +7,7 @@
 #include <QScrollBar>
 #include <QTextEdit>
 #include "indicatordata.h"
+#include "parameter/ParameterWidget.h"
 
 class EditorInterface : public QWidget
 {
@@ -35,7 +36,7 @@ public:
 
 signals:
   void contentsChanged();
-  void modificationChanged(bool, EditorInterface *);
+  void modificationChanged(EditorInterface *);
   void showContextMenuEvent(const QPoint& pos);
 
 public slots:
@@ -74,4 +75,5 @@ public:
 	QString filepath;
 	std::string autoReloadId;
 	std::vector<IndicatorData> indicatorData;
+	ParameterWidget* parameterWidget;
 };

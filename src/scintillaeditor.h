@@ -132,7 +132,7 @@ private slots:
 	void applySettings();
 	void onAutocompleteChanged(bool state);
 	void onCharacterThresholdChanged(int val);
-	void fireModificationChanged(bool);
+	void fireModificationChanged();
 	void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
 
 public:

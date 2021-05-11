@@ -1,32 +1,22 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 
-namespace pt = boost::property_tree;
-
-class ParameterSet
+class ParameterSet : public std::map<std::string, boost::property_tree::ptree>
 {
 public:
-	static std::string parameterSetsKey;
-	static std::string fileFormatVersionKey;
-	static std::string fileFormatVersionValue;
+	const std::string& name() const { return _name; }
+	void setName(const std::string& name) { _name = name; }
 
 private:
-	pt::ptree root;
+	std::string _name;
+};
 
+class ParameterSets : public std::vector<ParameterSet>
+{
 public:
-	ParameterSet() {}
-	~ParameterSet() {}
-	boost::optional<pt::ptree &> parameterSets();
-	std::vector<std::string> getParameterNames();
-	bool setNameExists(const std::string &setName);
-	boost::optional<pt::ptree &> getParameterSet(const std::string &setName);
-	void addParameterSet(const std::string setName, const pt::ptree & set);
-	bool readParameterSet(const std::string &filename);
-	void writeParameterSet(const std::string &filename);
-	void applyParameterSet(class SourceFile *sourceFile, const std::string &setName);
-	void clear();
-	bool isEmpty() const;
-	void addChild(const std::string name, const pt::ptree & tree){root.add_child(name,tree);};
+	bool readFile(const std::string& filename);
+	bool writeFile(const std::string& filename) const;
 };

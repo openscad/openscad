@@ -1,18 +1,21 @@
 #pragma once
 
 #include "parametervirtualwidget.h"
+#include "ui_parametervector.h"
 
-class ParameterVector : public ParameterVirtualWidget
+class ParameterVector : public ParameterVirtualWidget, Ui::ParameterVector
 {
 	Q_OBJECT
+
 public:
-	ParameterVector(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD);
+	ParameterVector(QWidget *parent, VectorParameter *parameter, DescriptionStyle descriptionStyle);
 	void setValue() override;
 
 protected slots:
-	void onChanged(double);
+	void onChanged();
 
 private:
-	bool volatile suppressUpdate; 
-	constexpr static int NR_OF_SPINBOXES = 4;
+	VectorParameter* parameter;
+	std::vector<QDoubleSpinBox*> spinboxes;
+	bool inUpdate = false;
 };

@@ -199,7 +199,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	initMargin();
 
 	connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
-	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged(bool)));
+	connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged()));
 	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 	qsci->installEventFilter(this);
 	qsci->viewport()->installEventFilter(this);
@@ -332,9 +332,9 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
 	qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
-void ScintillaEditor::fireModificationChanged(bool b)
+void ScintillaEditor::fireModificationChanged()
 {
-	emit modificationChanged(b, this);
+	emit modificationChanged(this);
 }
 
 void ScintillaEditor::public_applySettings()

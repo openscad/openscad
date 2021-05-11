@@ -315,7 +315,6 @@ MainWindow::MainWindow(const QStringList &filenames)
 	waitAfterReloadTimer->setSingleShot(true);
 	waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
 	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
-	connect(this->parameterWidget, SIGNAL(previewRequested(bool)), this, SLOT(actionRenderPreview(bool)));
 	connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
 	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
@@ -909,7 +908,7 @@ void MainWindow::updatedAnimTval()
 	else {
 		this->anim_tval = 0.0;
 	}
-	emit actionRenderPreview(true);
+	emit actionRenderPreview();
 }
 
 void MainWindow::updatedAnimFps()
@@ -950,7 +949,7 @@ void MainWindow::updateTVal()
 	if (this->anim_numsteps == 0) return;
 
 	if (windowActionHideCustomizer->isVisible()) {
-		if (this->parameterWidget->childHasFocus()) return;
+		if (this->activeEditor->parameterWidget->childHasFocus()) return;
 	}
 
 	if (this->anim_numsteps > 1) {
@@ -968,7 +967,7 @@ void MainWindow::updateTVal()
 /*!
 	compiles the design. Calls compileDone() if anything was compiled
 */
-void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidget)
+void MainWindow::compile(bool reload, bool forcedone)
 {
 	OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
 	OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
@@ -1020,7 +1019,7 @@ void MainWindow::compile(bool reload, bool forcedone, bool rebuildParameterWidge
 		if (shouldcompiletoplevel) {
 			 this->errorLogWidget->clearModel();	
 			if (activeEditor->isContentModified()) saveBackup();
-			parseTopLevelDocument(rebuildParameterWidget);
+			parseTopLevelDocument();
 			didcompile = true;
 		}
 
@@ -1435,7 +1434,7 @@ void MainWindow::writeBackup(QFile *file)
 	QTextStream writer(file);
 	writer.setCodec("UTF-8");
 	writer << activeEditor->toPlainText();
-	this->parameterWidget->writeBackupFile(file->fileName());
+	this->activeEditor->parameterWidget->saveBackupFile(file->fileName());
 
 	LOG(message_group::None,Location::NONE,"","Saved backup file: %1$s", file->fileName().toUtf8().constData());
 }
@@ -1741,11 +1740,8 @@ bool MainWindow::fileChangedOnDisk()
 /*!
 	Returns true if anything was compiled.
 */
-void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
+void MainWindow::parseTopLevelDocument()
 {
-	bool reloadSettings = customizerEditor != activeEditor;
-	customizerEditor = nullptr;
-	this->parameterWidget->setEnabled(false);
 	resetSuppressedMessages();
 
 	this->last_compiled_doc = activeEditor->toPlainText();
@@ -1760,16 +1756,14 @@ void MainWindow::parseTopLevelDocument(bool rebuildParameterWidget)
 	this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
 	if (this->root_file!=nullptr) {
-		if (reloadSettings && !activeEditor->filepath.isEmpty()) {
-			this->parameterWidget->readFile(activeEditor->filepath);
-		}
 		//add parameters as annotation in AST
-		CommentParser::collectParameters(fulltext,this->root_file);
-		this->parameterWidget->setParameters(this->root_file,rebuildParameterWidget);
-		this->parameterWidget->applyParameters(this->root_file);
-		customizerEditor = activeEditor;
-		this->parameterWidget->setEnabled(true);
+		CommentParser::collectParameters(fulltext, this->root_file);
+		this->activeEditor->parameterWidget->setParameters(this->root_file, fulltext);
+		this->activeEditor->parameterWidget->applyParameters(this->root_file);
+		this->activeEditor->parameterWidget->setEnabled(true);
 		this->activeEditor->setIndicator(this->root_file->indicatorData);
+	} else {
+		this->activeEditor->parameterWidget->setEnabled(false);
 	}
 }
 
@@ -1853,7 +1847,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 	render_variables.insert_or_assign("$preview", Value(preview));
 }
 
-void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
+void MainWindow::actionRenderPreview()
 {
 	static bool preview_requested;
 
@@ -1863,7 +1857,7 @@ void MainWindow::actionRenderPreview(bool rebuildParameterWidget)
 	preview_requested=false;
 
 	prepareCompile("csgRender", !viewActionAnimate->isChecked(), true);
-	compile(false, false, rebuildParameterWidget);
+	compile(false, false);
 	if (preview_requested) {
 		// if the action was called when the gui was locked, we must request it one more time
 		// however, it's not possible to call it directly NOR make the loop
@@ -3017,7 +3011,7 @@ void MainWindow::showParameters()
 	windowActionHideCustomizer->setChecked(false);
 	parameterDock->show();
 	parameterDock->raise();
-	parameterWidget->scrollArea->setFocus();
+	activeEditor->parameterWidget->scrollArea->setFocus();
 }
 
 void MainWindow::hideParameters()

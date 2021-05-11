@@ -1,30 +1,28 @@
 #include "parametercheckbox.h"
 
-ParameterCheckBox::ParameterCheckBox(QWidget *parent, ParameterObject *parameterobject, DescLoD descriptionLoD)
-	: ParameterVirtualWidget(parent, parameterobject, descriptionLoD)
+ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle):
+	ParameterVirtualWidget(parent, parameter),
+	parameter(parameter)
 {
-	setValue();
-	connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
+	setupUi(this);
+	descriptionWidget->setDescription(parameter, descriptionStyle);
 
-	if (descriptionLoD == DescLoD::ShowDetails){
+	if (descriptionStyle == DescriptionStyle::ShowDetails){
 		//large checkbox, when we have the space
-		checkBox->setStyleSheet("QCheckBox::indicator {\nwidth: 20px;\nheight: 20px;\n}");
+		checkBox->setStyleSheet("QCheckBox::indicator { width: 20px; height: 20px; } QCheckBox { spacing: 0px; }");
 	}
+
+	connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
+	setValue();
 }
 
 void ParameterCheckBox::onChanged()
 {
-	if(!this->suppressUpdate){
-		object->value = Value(checkBox->isChecked());
-		emit changed();
-	}
+	parameter->value = checkBox->isChecked();
+	emit changed();
 }
 
-void ParameterCheckBox::setValue() {
-	this->suppressUpdate=true;
-	this->stackedWidgetRight->setCurrentWidget(this->pageCheckBox);
-	this->pageCheckBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
-	this->stackedWidgetBelow->hide();
-	this->checkBox->setChecked(object->value.toBool());
-	this->suppressUpdate=false;
+void ParameterCheckBox::setValue()
+{
+	checkBox->setChecked(parameter->value);
 }
