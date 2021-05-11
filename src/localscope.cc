@@ -68,16 +68,11 @@ AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<Context> &con
 AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const
 {
 	for (size_t index : indices) {
-		AbstractNode *node = instantiateModule(context, index);
+		assert(index < this->moduleInstantiations.size());
+		AbstractNode *node = moduleInstantiations[index]->evaluate(context);
 		if (node) {
 			target->children.push_back(node);
 		}
 	}
 	return target;
-}
-
-AbstractNode* LocalScope::instantiateModule(const std::shared_ptr<Context>& context, size_t index) const
-{
-	assert(index < this->moduleInstantiations.size());
-	return moduleInstantiations[index]->evaluate(context);
 }

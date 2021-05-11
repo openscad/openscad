@@ -87,7 +87,7 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	if (!index) {
 		return nullptr;
 	}
-	return children->instantiate(*index);
+	return children->instantiate(lazyUnionNode(inst), {*index});
 }
 
 static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
@@ -115,7 +115,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 		if (!index) {
 			return nullptr;
 		}
-		return children->instantiate(*index);
+		return children->instantiate(lazyUnionNode(inst), {*index});
 	}
 	else if (arguments[0]->type() == Value::Type::VECTOR) {
 		std::vector<size_t> indices;

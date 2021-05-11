@@ -19,7 +19,6 @@ public:
 	
 	AbstractNode* instantiate(AbstractNode* target) const;
 	AbstractNode* instantiate(AbstractNode* target, const std::vector<size_t>& indices) const;
-	AbstractNode* instantiate(size_t index) const;
 	
 	bool empty() const { return !children_scope->hasChildren(); }
 	size_t size() const { return children_scope->moduleInstantiations.size(); }

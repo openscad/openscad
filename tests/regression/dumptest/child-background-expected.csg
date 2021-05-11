@@ -1,6 +1,9 @@
 difference() {
 	sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
 	group() {
-		cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
+%		group() {
+			cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
+		}
 	}
 }
+
