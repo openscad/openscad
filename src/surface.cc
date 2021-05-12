@@ -77,6 +77,11 @@ private:
 
 static AbstractNode* builtin_surface(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
+
 	auto node = new SurfaceNode(inst);
 
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});

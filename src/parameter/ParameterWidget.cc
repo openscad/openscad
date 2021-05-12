@@ -142,19 +142,19 @@ bool ParameterWidget::childHasFocus()
 	return false;
 }
 
+void ParameterWidget::setModified(bool modified)
+{
+	if (this->modified != modified) {
+		this->modified = modified;
+		emit modificationChanged();
+	}
+}
+
 void ParameterWidget::autoPreview()
 {
 	autoPreviewTimer.stop();
 	if (checkBoxAutoPreview->isChecked()) {
 		autoPreviewTimer.start();
-	}
-}
-
-void ParameterWidget::setModified()
-{
-	if (!this->modified) {
-		this->modified = true;
-		emit modificationChanged();
 	}
 }
 

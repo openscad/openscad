@@ -58,6 +58,11 @@ extern Geometry * import_3mf(const std::string &, const Location &loc);
 
 static AbstractNode* do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
 {
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
+
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
 		{"file", "layer", "convexity", "origin", "scale"},
 		{"width", "height", "filename", "layername", "center", "dpi"}

@@ -1,0 +1,16 @@
+difference() {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+	group() {
+%		group() {
+			cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
+		}
+	}
+	group() {
+%		group() {
+			multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
+			}
+		}
+	}
+}
+

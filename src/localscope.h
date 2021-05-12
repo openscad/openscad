@@ -14,7 +14,6 @@ public:
 	void print(std::ostream &stream, const std::string &indent, const bool inlined = false) const;
 	AbstractNode* instantiateModules(const std::shared_ptr<Context>& context, AbstractNode* target) const;
 	AbstractNode* instantiateModules(const std::shared_ptr<Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const;
-	AbstractNode* instantiateModule(const std::shared_ptr<Context>& context, size_t index) const;
 	void addModuleInst(const shared_ptr<class ModuleInstantiation>& modinst);
 	void addModule(const shared_ptr<class UserModule>& module);
 	void addFunction(const shared_ptr<class UserFunction>& function);

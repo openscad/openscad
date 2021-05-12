@@ -60,11 +60,7 @@ public:
 		const std::string& name, const std::string& description, const std::string& group,
 		const std::string& defaultValue,
 		boost::optional<int> maximumSize
-	):
-		ParameterObject(name, description, group, ParameterObject::ParameterType::String),
-		value(defaultValue), defaultValue(defaultValue),
-		maximumSize(maximumSize)
-	{}
+	);
 	
 	void reset() override { value = defaultValue; }
 	bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
