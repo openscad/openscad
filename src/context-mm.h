@@ -35,8 +35,8 @@ class ContextMemoryManager
 public:
 	~ContextMemoryManager();
 	
-	void addContext(const std::shared_ptr<Context>& context);
-	void releaseContext();
+	void addContext(std::shared_ptr<Context> context);
+	void releaseContext() { heapSizeAccounting.removeContext(); }
 	
 	HeapSizeAccounting& accounting() { return heapSizeAccounting; }
 

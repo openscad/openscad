@@ -49,6 +49,7 @@ Context::Context(const std::shared_ptr<const Context>& parent):
 Context::~Context()
 {
 	clear();
+	session()->contextMemoryManager().releaseContext();
 }
 
 const Children* Context::user_module_children() const

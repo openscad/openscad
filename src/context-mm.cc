@@ -341,26 +341,29 @@ ContextMemoryManager::~ContextMemoryManager()
 	assert(heapSizeAccounting.size() == 0);
 }
 
-void ContextMemoryManager::addContext(const std::shared_ptr<Context>& context)
+void ContextMemoryManager::addContext(std::shared_ptr<Context> context)
 {
-	managedContexts.push_back(std::weak_ptr<Context>(context));
 	heapSizeAccounting.addContext();
-}
-
-void ContextMemoryManager::releaseContext()
-{
-	heapSizeAccounting.removeContext();
-	if (heapSizeAccounting.size() >= nextGarbageCollectSize) {
-		collectGarbage(managedContexts);
-		/*
-		 * The cost of a garbage collection run is proportional to the heap
-		 * size. By scheduling the next run at twice the *remaining* heap size,
-		 * the total processing time of garbage collection throughout an
-		 * evaluation session is at most proportional to the total heap size
-		 * accumulated during the session, while keeping the maximum memory
-		 * used at any point at most twice the amount of necessary memory usage
-		 * (i.e. waste is at most a factor 2 overhead).
-		 */
-		nextGarbageCollectSize = heapSizeAccounting.size() * 2;
+	/*
+	 * If we are holding the last copy to this context, no point in invoking
+	 * the garbage collection machinery, we can just let context get destroyed
+	 * right away.
+	 */
+	if (context.use_count() > 1) {
+		managedContexts.emplace_back(context);
+		
+		if (heapSizeAccounting.size() >= nextGarbageCollectSize) {
+			collectGarbage(managedContexts);
+			/*
+			* The cost of a garbage collection run is proportional to the heap
+			* size. By scheduling the next run at twice the *remaining* heap size,
+			* the total processing time of garbage collection throughout an
+			* evaluation session is at most proportional to the total heap size
+			* accumulated during the session, while keeping the maximum memory
+			* used at any point at most twice the amount of necessary memory usage
+			* (i.e. waste is at most a factor 2 overhead).
+			*/
+			nextGarbageCollectSize = heapSizeAccounting.size() * 2;
+		}
 	}
 }

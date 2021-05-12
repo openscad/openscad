@@ -17,16 +17,19 @@ public:
 		ContextFrameHandle(context.get()),
 		context(std::move(context))
 	{
-		this->context->init();
-		session->contextMemoryManager().addContext(this->context);
+		try {
+			this->context->init();
+		} catch(...) {
+			session->contextMemoryManager().addContext(std::move(this->context));
+			throw;
+		}
 	}
 	
 	~ContextHandle()
 	{
 		assert(!!session == !!context);
-		context = nullptr;
 		if (session) {
-			session->contextMemoryManager().releaseContext();
+			session->contextMemoryManager().addContext(std::move(this->context));
 		}
 	}
 	
@@ -42,7 +45,8 @@ public:
 		assert(other.context);
 		assert(other.session);
 		
-		session->contextMemoryManager().releaseContext();
+		//session->contextMemoryManager().releaseContext();
+		session->contextMemoryManager().addContext(std::move(this->context));
 		other.release();
 		context = std::move(other.context);
 		ContextFrameHandle::operator=(context.get());
