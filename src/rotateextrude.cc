@@ -84,7 +84,11 @@ static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, Arg
 
 	if (node->filename.empty()) {
 		children.instantiate(node);
+	} else if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
+			"module %1$s() does not support child modules when importing a file",inst->name());
 	}
+
 
 	return node;
 }

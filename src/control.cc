@@ -66,6 +66,11 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 {
 	LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 	
+	if (!inst->scope.moduleInstantiations.empty()) {
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
+	
 	Arguments arguments{inst->arguments, context};
 	const Children* children = context->user_module_children();
 	if (!children) {
@@ -82,11 +87,16 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	if (!index) {
 		return nullptr;
 	}
-	return children->instantiate(*index);
+	return children->instantiate(lazyUnionNode(inst), {*index});
 }
 
 static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
+	if (!inst->scope.moduleInstantiations.empty()) {
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
+	
 	Arguments arguments{inst->arguments, context};
 	const Children* children = context->user_module_children();
 	if (!children) {
@@ -105,7 +115,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 		if (!index) {
 			return nullptr;
 		}
-		return children->instantiate(*index);
+		return children->instantiate(lazyUnionNode(inst), {*index});
 	}
 	else if (arguments[0]->type() == Value::Type::VECTOR) {
 		std::vector<size_t> indices;

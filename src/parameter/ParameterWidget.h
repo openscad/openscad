@@ -54,11 +54,12 @@ public:
 	void applyParameters(SourceFile *sourceFile);
 	bool childHasFocus();
 	bool isModified() const { return modified; }
-	void setNotModified() { this->modified = false; }
+
+public slots:
+	void setModified(bool modified = true);
 
 protected slots:
 	void autoPreview();
-	void setModified();
 	void onSetChanged(int index);
 	void onSetNameChanged();
 	void onSetAdd();
