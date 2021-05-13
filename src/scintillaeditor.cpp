@@ -752,7 +752,7 @@ void ScintillaEditor::indentSelection()
 	qsci->beginUndoAction();
 	getRange(&lineFrom, &lineTo);
 	for (int line = lineFrom; line <= lineTo; ++line) {
-		if(qsci->SendScintilla(QsciScintilla::SCI_LINELENGTH,line) <= 1)
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,line) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,line) == 0)
 		{
 			continue;
 		}
@@ -760,7 +760,7 @@ void ScintillaEditor::indentSelection()
 	}
 	int nextLine = lineTo+1;
 	while(qsci->SendScintilla(QsciScintilla::SCI_GETLINEVISIBLE,nextLine) == 0){
-		if(qsci->SendScintilla(QsciScintilla::SCI_LINELENGTH,nextLine) <= 1)
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,nextLine) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,nextLine) == 0)
 		{
 			nextLine++;
 			continue;
@@ -777,7 +777,7 @@ void ScintillaEditor::unindentSelection()
 	qsci->beginUndoAction();
 	getRange(&lineFrom, &lineTo);
 	for (int line = lineFrom; line <= lineTo; ++line) {
-		if(qsci->SendScintilla(QsciScintilla::SCI_LINELENGTH,line) <= 1)
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,line) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,line) == 0)
 		{
 			continue;
 		}
@@ -785,7 +785,7 @@ void ScintillaEditor::unindentSelection()
 	}
 	int nextLine = lineTo+1;
 	while(qsci->SendScintilla(QsciScintilla::SCI_GETLINEVISIBLE,nextLine) == 0){
-		if(qsci->SendScintilla(QsciScintilla::SCI_LINELENGTH,nextLine) <= 1)
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,nextLine) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,nextLine) == 0)
 		{
 			nextLine++;
 			continue;
