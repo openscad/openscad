@@ -1,7 +1,6 @@
 #include "annotation.h"
 #include "module.h"
 #include "parameterobject.h"
-#include "value.h"
 
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -27,7 +26,7 @@ boost::property_tree::ptree BoolParameter::exportValue() const
 
 void BoolParameter::apply(Assignment* assignment) const
 {
-	assignment->setExpr(std::make_shared<Literal>(Value(value)));
+	assignment->setExpr(std::make_shared<Literal>(value));
 }
 
 StringParameter::StringParameter(
@@ -64,7 +63,7 @@ boost::property_tree::ptree StringParameter::exportValue() const
 
 void StringParameter::apply(Assignment* assignment) const
 {
-	assignment->setExpr(std::make_shared<Literal>(Value(value)));
+	assignment->setExpr(std::make_shared<Literal>(value));
 }
 
 bool NumberParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
@@ -94,7 +93,7 @@ boost::property_tree::ptree NumberParameter::exportValue() const
 
 void NumberParameter::apply(Assignment* assignment) const
 {
-	assignment->setExpr(std::make_shared<Literal>(Value(value)));
+	assignment->setExpr(std::make_shared<Literal>(value));
 }
 
 bool VectorParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
@@ -160,7 +159,7 @@ void VectorParameter::apply(Assignment* assignment) const
 {
 	std::shared_ptr<Vector> vector = std::make_shared<Vector>(Location::NONE);
 	for (double item : value) {
-		vector->emplace_back(new Literal(Value(item)));
+		vector->emplace_back(new Literal(item));
 	}
 	assignment->setExpr(std::move(vector));
 }
@@ -205,9 +204,9 @@ void EnumParameter::apply(Assignment* assignment) const
 	EnumValue itemValue = items[valueIndex].value;
 	double* doubleValue = boost::get<double>(&itemValue);
 	if (doubleValue) {
-		assignment->setExpr(std::make_shared<Literal>(Value(*doubleValue)));
+		assignment->setExpr(std::make_shared<Literal>(*doubleValue));
 	} else {
-		assignment->setExpr(std::make_shared<Literal>(Value(boost::get<std::string>(itemValue))));
+		assignment->setExpr(std::make_shared<Literal>(boost::get<std::string>(itemValue)));
 	}
 }
 
@@ -233,18 +232,18 @@ static EnumValues parseEnumItems(const Expression* parameter, const std::string&
 		EnumParameter::EnumItem item;
 		if (const Literal* element = dynamic_cast<const Literal*>(elementPointer.get())) {
 			// string or number literal
-			if (element->getValue().type() == Value::Type::NUMBER) {
+			if (element->isDouble()) {
 				if (elements.size() == 1) {
 					// a vector with a single numeric element is not an enum specifier,
 					// it's a range with a maximum and no minimum.
 					return output;
 				}
 				
-				item.value = element->getValue().toDouble();
-				item.key = element->getValue().toEchoString();
-			} else if (element->getValue().type() == Value::Type::STRING) {
-				item.value = element->getValue().toString();
-				item.key = element->getValue().toString();
+				item.value = *element->toDouble();
+				item.key = STR(*element->toDouble());
+			} else if (element->isString()) {
+				item.value = *element->toString();
+				item.key = *element->toString();
 			} else {
 				return output;
 			}
@@ -258,10 +257,10 @@ static EnumValues parseEnumItems(const Expression* parameter, const std::string&
 			if (!key) {
 				return output;
 			}
-			if (key->getValue().type() == Value::Type::NUMBER) {
-				item.key = key->getValue().toEchoString();
-			} else if (key->getValue().type() == Value::Type::STRING) {
-				item.key = key->getValue().toString();
+			if (key->isDouble()) {
+				item.key = STR(*key->toDouble());
+			} else if (key->isString()) {
+				item.key = *key->toString();
 			} else {
 				return output;
 			}
@@ -270,10 +269,10 @@ static EnumValues parseEnumItems(const Expression* parameter, const std::string&
 			if (!value) {
 				return output;
 			}
-			if (value->getValue().type() == Value::Type::NUMBER) {
-				item.value = value->getValue().toDouble();
-			} else if (value->getValue().type() == Value::Type::STRING) {
-				item.value = value->getValue().toString();
+			if (value->isDouble()) {
+				item.value = *value->toDouble();
+			} else if (value->isString()) {
+				item.value = *value->toString();
 			} else {
 				return output;
 			}
@@ -309,29 +308,29 @@ static NumericLimits parseNumericLimits(const Expression* parameter, const std::
 	NumericLimits output;
 	
 	if (const Literal* step = dynamic_cast<const Literal*>(parameter)) {
-		if (step->getValue().type() == Value::Type::NUMBER) {
-			output.step = step->getValue().toDouble();
+		if (step->isDouble()) {
+			output.step = *step->toDouble();
 		}
 	} else if (const Vector* maximum = dynamic_cast<const Vector*>(parameter)) {
 		if (maximum->getChildren().size() == 1) {
 			const Literal* maximumChild = dynamic_cast<const Literal*>(maximum->getChildren()[0].get());
-			if (maximumChild && maximumChild->getValue().type() == Value::Type::NUMBER) {
-				output.maximum = maximumChild->getValue().toDouble();
+			if (maximumChild && maximumChild->isDouble()) {
+				output.maximum = *maximumChild->toDouble();
 			}
 		}
 	} else if (const Range* range = dynamic_cast<const Range*>(parameter)) {
 		const Literal* minimum = dynamic_cast<const Literal*>(range->getBegin());
 		const Literal* maximum = dynamic_cast<const Literal*>(range->getEnd());
 		if (
-			   minimum && minimum->getValue().type() == Value::Type::NUMBER
-			&& maximum && maximum->getValue().type() == Value::Type::NUMBER
+			   minimum && minimum->isDouble()
+			&& maximum && maximum->isDouble()
 		) {
-			output.minimum = minimum->getValue().toDouble();
-			output.maximum = maximum->getValue().toDouble();
+			output.minimum = *minimum->toDouble();
+			output.maximum = *maximum->toDouble();
 			
 			const Literal* step = dynamic_cast<const Literal*>(range->getStep());
-			if (step && step->getValue().type() == Value::Type::NUMBER) {
-				output.step = step->getValue().toDouble();
+			if (step && step->isDouble()) {
+				output.step = *step->toDouble();
 			}
 		}
 	}
@@ -355,8 +354,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	const Annotation* descriptionAnnotation = assignment->annotation("Description");
 	if (descriptionAnnotation) {
 		const Literal* expression = dynamic_cast<const Literal*>(descriptionAnnotation->getExpr().get());
-		if (expression && expression->getValue().type() == Value::Type::STRING) {
-			description = expression->getValue().toString();
+		if (expression && expression->isString()) {
+			description = *expression->toString();
 		}
 	}
 	
@@ -364,8 +363,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	const Annotation* groupAnnotation = assignment->annotation("Group");
 	if (groupAnnotation) {
 		const Literal* expression = dynamic_cast<const Literal*>(groupAnnotation->getExpr().get());
-		if (expression && expression->getValue().type() == Value::Type::STRING) {
-			group = expression->getValue().toString();
+		if (expression && expression->isString()) {
+			group = *expression->toString();
 		}
 	}
 	
@@ -377,21 +376,19 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	
 	const Expression* valueExpression = assignment->getExpr().get();
 	if (const Literal* expression = dynamic_cast<const Literal*>(valueExpression)) {
-		Value::Type type = expression->getValue().type();
-		if (type == Value::Type::BOOL) {
-			bool value = expression->getValue().toBool();
-			return std::make_unique<BoolParameter>(name, description, group, value);
+		if (expression->isBool()) {
+			return std::make_unique<BoolParameter>(name, description, group, *expression->toBool());
 		}
 		
-		if (type == Value::Type::NUMBER || type == Value::Type::STRING) {
+		if (expression->isDouble() || expression->isString()) {
 			std::string key;
 			EnumParameter::EnumValue value;
-			if (type == Value::Type::NUMBER) {
-				value = expression->getValue().toDouble();
-				key = expression->getValue().toEchoString();
+			if (expression->isDouble()) {
+				value = *expression->toDouble();
+				key = STR(*expression->toDouble());
 			} else {
-				value = expression->getValue().toString();
-				key = expression->getValue().toString();
+				value = *expression->toString();
+				key = *expression->toString();
 			}
 			EnumValues values = parseEnumItems(parameter, key, value);
 			if (!values.items.empty()) {
@@ -399,18 +396,18 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 			}
 		}
 		
-		if (type == Value::Type::STRING) {
-			std::string value = expression->getValue().toString();
+		if (expression->isString()) {
+			std::string value = *expression->toString();
 			boost::optional<int> maximumSize = boost::none;
 			const Literal* maximumSizeExpression = dynamic_cast<const Literal*>(parameter);
-			if (maximumSizeExpression && maximumSizeExpression->getValue().type() == Value::Type::NUMBER) {
-				maximumSize = (int)(maximumSizeExpression->getValue().toDouble());
+			if (maximumSizeExpression && maximumSizeExpression->isDouble()) {
+				maximumSize = (int)(*maximumSizeExpression->toDouble());
 			}
 			return std::make_unique<StringParameter>(name, description, group, value, maximumSize);
 		}
 		
-		if (type == Value::Type::NUMBER) {
-			double value = expression->getValue().toDouble();
+		if (expression->isDouble()) {
+			double value = *expression->toDouble();
 			NumericLimits limits = parseNumericLimits(parameter, {value});
 			return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum, limits.maximum, limits.step);
 		}
@@ -425,10 +422,10 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 			if (!item) {
 				return nullptr;
 			}
-			if (item->getValue().type() != Value::Type::NUMBER) {
+			if (!item->isDouble()) {
 				return nullptr;
 			}
-			value.push_back(item->getValue().toDouble());
+			value.push_back(*item->toDouble());
 		}
 		
 		NumericLimits limits = parseNumericLimits(parameter, value);

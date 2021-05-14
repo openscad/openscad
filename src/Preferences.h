@@ -134,7 +134,7 @@ private:
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry);
+	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntryEnum& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;

@@ -41,7 +41,6 @@
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
 #include "expression.h"
-#include "value.h"
 #include "function.h"
 #include "printutils.h"
 #include "memory.h"
@@ -98,7 +97,6 @@ bool fileEnded=false;
 %union {
   char *text;
   double number;
-  class Value *value;
   class Expression *expr;
   class Vector *vec;
   class ModuleInstantiation *inst;
@@ -487,15 +485,15 @@ primary
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(Value::undefined.clone(), LOCD("literal", @$));
+              $$ = new Literal(boost::none, LOCD("literal", @$));
             }
         | TOK_NUMBER
             {
-              $$ = new Literal(Value($1), LOCD("literal", @$));
+              $$ = new Literal($1, LOCD("literal", @$));
             }
         | TOK_STRING
             {
-              $$ = new Literal(Value(std::string($1)), LOCD("string", @$));
+              $$ = new Literal(std::string($1), LOCD("string", @$));
               free($1);
             }
         | TOK_ID
@@ -517,7 +515,7 @@ primary
             }
         | '[' optional_commas ']'
             {
-              $$ = new Literal(VectorType::Empty(), LOCD("vector", @$));
+              $$ = new Vector(LOCD("vector", @$));
             }
         | '[' vector_expr optional_commas ']'
             {

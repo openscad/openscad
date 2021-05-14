@@ -233,8 +233,7 @@ std::string TransformNode::toString() const
 	for (int j=0; j<4; ++j) {
 		stream << "[";
 		for (int i=0; i<4; ++i) {
-			Value v(this->matrix(j, i));
-			stream << v;
+			stream << this->matrix(j, i);
 			if (i != 3) stream << ", ";
 		}
 		stream << "]";

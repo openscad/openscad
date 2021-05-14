@@ -29,33 +29,31 @@ const int setCursorPositionVisibleLines = 3;
 
 class SettingsConverter {
 public:
-	QsciScintilla::WrapMode toWrapMode(const Value &val);
-	QsciScintilla::WrapVisualFlag toLineWrapVisualization(const Value &val);
-	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(const Value &val);
-	QsciScintilla::WhitespaceVisibility toShowWhitespaces(const Value &val);
+	QsciScintilla::WrapMode toWrapMode(const std::string &val);
+	QsciScintilla::WrapVisualFlag toLineWrapVisualization(const std::string &val);
+	QsciScintilla::WrapIndentMode toLineWrapIndentationStyle(const std::string &val);
+	QsciScintilla::WhitespaceVisibility toShowWhitespaces(const std::string &val);
 };
 
-QsciScintilla::WrapMode SettingsConverter::toWrapMode(const Value &val)
+QsciScintilla::WrapMode SettingsConverter::toWrapMode(const std::string &val)
 {
-	auto strVal = val.toString();
-	if (strVal == "Char") {
+	if (val == "Char") {
 		return QsciScintilla::WrapCharacter;
-	} else if (strVal == "Word") {
+	} else if (val == "Word") {
 		return QsciScintilla::WrapWord;
 	} else {
 		return QsciScintilla::WrapNone;
 	}
 }
 
-QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(const Value &val)
+QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(const std::string &val)
 {
-	auto strVal = val.toString();
-	if (strVal == "Text") {
+	if (val == "Text") {
 		return QsciScintilla::WrapFlagByText;
-	} else if (strVal == "Border") {
+	} else if (val == "Border") {
 		return QsciScintilla::WrapFlagByBorder;
 #if QSCINTILLA_VERSION >= 0x020700
-	} else if (strVal == "Margin") {
+	} else if (val == "Margin") {
 		return QsciScintilla::WrapFlagInMargin;
 #endif
 	} else {
@@ -63,24 +61,22 @@ QsciScintilla::WrapVisualFlag SettingsConverter::toLineWrapVisualization(const V
 	}
 }
 
-QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(const Value &val)
+QsciScintilla::WrapIndentMode SettingsConverter::toLineWrapIndentationStyle(const std::string &val)
 {
-	auto strVal = val.toString();
-	if (strVal == "Same") {
+	if (val == "Same") {
 		return QsciScintilla::WrapIndentSame;
-	} else if (strVal == "Indented") {
+	} else if (val == "Indented") {
 		return QsciScintilla::WrapIndentIndented;
 	} else {
 		return QsciScintilla::WrapIndentFixed;
 	}
 }
 
-QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const Value &val)
+QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const std::string &val)
 {
-	auto strVal = val.toString();
-	if (strVal == "Always") {
+	if (val == "Always") {
 		return QsciScintilla::WsVisible;
-	} else if (strVal == "AfterIndentation") {
+	} else if (val == "AfterIndentation") {
 		return QsciScintilla::WsVisibleAfterIndent;
 	} else {
 		return QsciScintilla::WsInvisible;
@@ -277,27 +273,26 @@ void ScintillaEditor::displayTemplates()
 void ScintillaEditor::applySettings()
 {
 	SettingsConverter conv;
-	auto s = Settings::Settings::inst();
 
-	qsci->setIndentationWidth(s->get(Settings::Settings::indentationWidth).toDouble());
-	qsci->setTabWidth(s->get(Settings::Settings::tabWidth).toDouble());
-	qsci->setWrapMode(conv.toWrapMode(s->get(Settings::Settings::lineWrap)));
-	qsci->setWrapIndentMode(conv.toLineWrapIndentationStyle(s->get(Settings::Settings::lineWrapIndentationStyle)));
-	qsci->setWrapVisualFlags(conv.toLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationEnd)),
-		conv.toLineWrapVisualization(s->get(Settings::Settings::lineWrapVisualizationBegin)),
-		s->get(Settings::Settings::lineWrapIndentation).toDouble());
-	qsci->setWhitespaceVisibility(conv.toShowWhitespaces(s->get(Settings::Settings::showWhitespace)));
-	qsci->setWhitespaceSize(s->get(Settings::Settings::showWhitespaceSize).toDouble());
-	qsci->setAutoIndent(s->get(Settings::Settings::autoIndent).toBool());
-	qsci->setBackspaceUnindents(s->get(Settings::Settings::backspaceUnindents).toBool());
+	qsci->setIndentationWidth(Settings::Settings::indentationWidth.value());
+	qsci->setTabWidth(Settings::Settings::tabWidth.value());
+	qsci->setWrapMode(conv.toWrapMode(Settings::Settings::lineWrap.value()));
+	qsci->setWrapIndentMode(conv.toLineWrapIndentationStyle(Settings::Settings::lineWrapIndentationStyle.value()));
+	qsci->setWrapVisualFlags(conv.toLineWrapVisualization(Settings::Settings::lineWrapVisualizationEnd.value()),
+		conv.toLineWrapVisualization(Settings::Settings::lineWrapVisualizationBegin.value()),
+		Settings::Settings::lineWrapIndentation.value());
+	qsci->setWhitespaceVisibility(conv.toShowWhitespaces(Settings::Settings::showWhitespace.value()));
+	qsci->setWhitespaceSize(Settings::Settings::showWhitespaceSize.value());
+	qsci->setAutoIndent(Settings::Settings::autoIndent.value());
+	qsci->setBackspaceUnindents(Settings::Settings::backspaceUnindents.value());
 
-	auto indentStyle = s->get(Settings::Settings::indentStyle).toString();
+	auto indentStyle = Settings::Settings::indentStyle.value();
 	qsci->setIndentationsUseTabs(indentStyle == "Tabs");
-	auto tabKeyFunction = s->get(Settings::Settings::tabKeyFunction).toString();
+	auto tabKeyFunction = Settings::Settings::tabKeyFunction.value();
 	qsci->setTabIndents(tabKeyFunction == "Indent");
 
-	qsci->setBraceMatching(s->get(Settings::Settings::enableBraceMatching).toBool() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
-	qsci->setCaretLineVisible(s->get(Settings::Settings::highlightCurrentLine).toBool());
+	qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
+	qsci->setCaretLineVisible(Settings::Settings::highlightCurrentLine.value());
 	onTextChanged();
 
 	setupAutoComplete(false);
@@ -648,9 +643,7 @@ void ScintillaEditor::initMargin()
 
 void ScintillaEditor::onTextChanged()
 {
-	auto s = Settings::Settings::inst();
-	auto enableLineNumbers = s->get(Settings::Settings::enableLineNumbers).toBool();
-
+	auto enableLineNumbers = Settings::Settings::enableLineNumbers.value();
 	if (enableLineNumbers) {
 		qsci->setMarginWidth(numberMargin, QString(trunc(log10(qsci->lines()) + 2), '0'));
 	} else {
@@ -749,19 +742,51 @@ void ScintillaEditor::getRange(int *lineFrom, int *lineTo)
 void ScintillaEditor::indentSelection()
 {
 	int lineFrom, lineTo;
+	qsci->beginUndoAction();
 	getRange(&lineFrom, &lineTo);
 	for (int line = lineFrom; line <= lineTo; ++line) {
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,line) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,line) == 0)
+		{
+			continue;
+		}
 		qsci->indent(line);
 	}
+	int nextLine = lineTo+1;
+	while(qsci->SendScintilla(QsciScintilla::SCI_GETLINEVISIBLE,nextLine) == 0){
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,nextLine) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,nextLine) == 0)
+		{
+			nextLine++;
+			continue;
+		}
+		qsci->indent(nextLine);
+		nextLine++;
+	}
+	qsci->endUndoAction();
 }
 
 void ScintillaEditor::unindentSelection()
 {
 	int lineFrom, lineTo;
+	qsci->beginUndoAction();
 	getRange(&lineFrom, &lineTo);
 	for (int line = lineFrom; line <= lineTo; ++line) {
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,line) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,line) == 0)
+		{
+			continue;
+		}
 		qsci->unindent(line);
 	}
+	int nextLine = lineTo+1;
+	while(qsci->SendScintilla(QsciScintilla::SCI_GETLINEVISIBLE,nextLine) == 0){
+		if(qsci->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION,nextLine) - qsci->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE,nextLine) == 0)
+		{
+			nextLine++;
+			continue;
+		}
+		qsci->unindent(nextLine);
+		nextLine++;
+	}
+	qsci->endUndoAction();
 }
 
 void ScintillaEditor::commentSelection()
@@ -804,7 +829,7 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-	bool enableNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::enableNumberScrollWheel).toBool();
+	bool enableNumberScrollWheel = Settings::Settings::enableNumberScrollWheel.value();
 
 	if(obj == qsci->viewport() && enableNumberScrollWheel)
 	{
@@ -1008,7 +1033,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 
 bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 {
-	auto modifierNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::modifierNumberScrollWheel).toString();
+	auto modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
 	bool modifier;	
 	static bool wasChanged = false;
 	static bool previewAfterUndo = false;
@@ -1174,9 +1199,9 @@ void ScintillaEditor::onUserListSelected(const int, const QString &text)
 	}
 
 	QString tabReplace = "";
-	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Spaces")
+	if(Settings::Settings::indentStyle.value() == "Spaces")
 	{
-		auto spCount = Settings::Settings::inst()->get(Settings::Settings::indentationWidth).toDouble();
+		auto spCount = Settings::Settings::indentationWidth.value();
 		tabReplace = QString(spCount, ' ');
 	}
 
@@ -1219,7 +1244,7 @@ void ScintillaEditor::onUserListSelected(const int, const QString &text)
 
 	int lines = t.get_text().count("\n");
 	QString indent_char = " ";
-	if(Settings::Settings::inst()->get(Settings::Settings::indentStyle).toString() == "Tabs")
+	if(Settings::Settings::indentStyle.value() == "Tabs")
 		indent_char = "\t";
 
 	for (int a = 0; a < lines; ++a) {

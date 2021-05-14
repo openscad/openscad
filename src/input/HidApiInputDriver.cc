@@ -258,8 +258,7 @@ std::pair<hid_device *, const struct device_id *> HidApiInputDriver::enumerate()
 
 bool HidApiInputDriver::open()
 {
-	const auto *s = Settings::Settings::inst();
-	if (s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool()) {
+	if (Settings::Settings::inputEnableDriverHIDAPILog.value()) {
 		logtime = ch::system_clock::now();
 		logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
 	}

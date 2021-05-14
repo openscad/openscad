@@ -332,7 +332,13 @@ struct CommandLine
 	unsigned animate_frames;
 };
 
-int do_export(const CommandLine& cmd, const ValueMap& render_variables, FileFormat curFormat, SourceFile *root_file);
+struct RenderVariables
+{
+	bool preview;
+	double time;
+};
+
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
 
 int cmdline(const CommandLine& cmd)
 {
@@ -416,18 +422,17 @@ int cmdline(const CommandLine& cmd)
 
 	root_file->handleDependencies();
 
-	ValueMap render_variables;
-	const bool preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-	render_variables.insert_or_assign("$preview", Value(preview));
+	RenderVariables render_variables;
+	render_variables.preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
 	
 	if (cmd.animate_frames == 0) {
+		render_variables.time = 0;
 		return do_export(cmd, render_variables, export_format, root_file);
 	}
 	else {
 		// export the requested number of animated frames
 		for (unsigned frame = 0; frame < cmd.animate_frames; ++frame) {
-			double t = frame * (1.0 / cmd.animate_frames);
-			render_variables.insert_or_assign("$t", Value(t));
+			render_variables.time = frame * (1.0 / cmd.animate_frames);
 
 			std::ostringstream oss;
 			oss << std::setw(5) << std::setfill('0') << frame;
@@ -454,7 +459,7 @@ int cmdline(const CommandLine& cmd)
 	}
 }
 
-int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileFormat curFormat, SourceFile *root_file)
+int do_export(const CommandLine &cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
 {
 	auto filename_str = fs::path(cmd.output_file).generic_string();
 	auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -463,7 +468,8 @@ int do_export(const CommandLine &cmd, const ValueMap& render_variables, FileForm
 
 	EvaluationSession session{fparent.string()};
 	ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-	builtin_context->apply_variables(render_variables);
+	builtin_context->set_variable("$preview", Value(render_variables.preview));
+	builtin_context->set_variable("$t", Value(render_variables.time));
 #ifdef DEBUG
 	PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
 #endif
@@ -809,38 +815,37 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
-	auto *s = Settings::Settings::inst();
 #ifdef ENABLE_HIDAPI
-	if(s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool()){
+	if (Settings::Settings::inputEnableDriverHIDAPI.value()) {
 		auto hidApi = new HidApiInputDriver();
 		InputDriverManager::instance()->registerDriver(hidApi);
 	}
 #endif
 #ifdef ENABLE_SPNAV
-	if(s->get(Settings::Settings::inputEnableDriverSPNAV).toBool()){
+	if (Settings::Settings::inputEnableDriverSPNAV.value()) {
 		auto spaceNavDriver = new SpaceNavInputDriver();
-		bool spaceNavDominantAxisOnly = s->get(Settings::Settings::inputEnableDriverHIDAPI).toBool();
+		bool spaceNavDominantAxisOnly = Settings::Settings::inputEnableDriverHIDAPI.value();
 		spaceNavDriver->setDominantAxisOnly(spaceNavDominantAxisOnly);
 		InputDriverManager::instance()->registerDriver(spaceNavDriver);
 	}
 #endif
 #ifdef ENABLE_JOYSTICK
-	if(s->get(Settings::Settings::inputEnableDriverJOYSTICK).toBool()){
-		std::string nr = s->get(Settings::Settings::joystickNr).toString();
+	if (Settings::Settings::inputEnableDriverJOYSTICK.value()) {
+		std::string nr = STR(Settings::Settings::joystickNr.value());
 		auto joyDriver = new JoystickInputDriver();
 		joyDriver->setJoystickNr(nr);
 		InputDriverManager::instance()->registerDriver(joyDriver);
 	}
 #endif
 #ifdef ENABLE_QGAMEPAD
-	if(s->get(Settings::Settings::inputEnableDriverQGAMEPAD).toBool()){
+	if (Settings::Settings::inputEnableDriverQGAMEPAD.value()) {
 		auto qGamepadDriver = new QGamepadInputDriver();
 		InputDriverManager::instance()->registerDriver(qGamepadDriver);
 	}
 #endif
 #ifdef ENABLE_DBUS
 	if (Feature::ExperimentalInputDriverDBus.is_enabled()) {
-		if(s->get(Settings::Settings::inputEnableDriverDBUS).toBool()){
+		if (Settings::Settings::inputEnableDriverDBUS.value()) {
 			auto dBusDriver =new DBusInputDriver();
 			InputDriverManager::instance()->registerDriver(dBusDriver);
 		}
