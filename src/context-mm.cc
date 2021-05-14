@@ -152,28 +152,24 @@ static std::vector<Context*> findRootContexts(const std::vector<std::shared_ptr<
 	};
 	auto visitContext = [&](const std::shared_ptr<const Context>& context) {
 		if (!accountedContextReferences.count(context.get())) {
-			/*
-			 * collectGarbage() holds one reference to the context, so
-			 * start counting from 1.
-			 */
-			accountedContextReferences[context.get()] = 1;
+			accountedContextReferences[context.get()] = 0;
 		}
 		int accountedReferences = ++accountedContextReferences[context.get()];
 		int requiredReferences = context.use_count();
 		assert(accountedReferences <= requiredReferences);
 		if (accountedReferences == requiredReferences) {
 			fullyAccountedContexts.insert(context.get());
-			
-			std::vector<const std::shared_ptr<const Context>*> referencedContexts = context->list_referenced_contexts();
-			for (const auto& referencedContext : referencedContexts) {
-				contextQueue.push_back(referencedContext);
-			}
 		}
 	};
 	
 	for (const std::shared_ptr<Context>& context : managedContexts) {
 		std::vector<const Value*> values = context->list_embedded_values();
 		valueQueue.insert(valueQueue.end(), values.begin(), values.end());
+		
+		std::vector<const std::shared_ptr<const Context>*> referencedContexts = context->list_referenced_contexts();
+		contextQueue.insert(contextQueue.end(), referencedContexts.begin(), referencedContexts.end());
+		
+		accountedContextReferences[context.get()] = 1;
 	}
 	
 	while (!valueQueue.empty() || !contextQueue.empty()) {
@@ -308,12 +304,19 @@ static void collectGarbage(std::vector<std::weak_ptr<Context>>& managedContexts)
 	
 	std::unordered_set<const Context*> reachableContexts = findReachableContexts(rootContexts);
 	
+#ifdef DEBUG
+	std::vector<std::weak_ptr<Context>> removedContexts;
+#endif
+	
 	managedContexts.clear();
 	for (std::shared_ptr<Context>& context : allContexts) {
 		if (reachableContexts.count(context.get())) {
-			managedContexts.push_back(std::weak_ptr<Context>(context));
+			managedContexts.emplace_back(context);
 		} else {
 			context->clear();
+#ifdef DEBUG
+			removedContexts.emplace_back(context);
+#endif
 		}
 	}
 	
@@ -330,6 +333,12 @@ static void collectGarbage(std::vector<std::weak_ptr<Context>>& managedContexts)
 	while (!allContexts.empty()) {
 		allContexts.pop_back();
 	}
+	
+#ifdef DEBUG
+	for (const auto& context : removedContexts) {
+		assert(context.expired());
+	}
+#endif
 }
 
 
