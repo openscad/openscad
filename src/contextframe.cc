@@ -95,13 +95,6 @@ void ContextFrame::apply_variables(ContextFrame&& other)
 	config_variables.applyFrom(std::move(other.config_variables));
 }
 
-void ContextFrame::apply_variables(const ValueMap& variables)
-{
-	for (const auto& variable : variables) {
-		set_variable(variable.first, variable.second.clone());
-	}
-}
-
 bool ContextFrame::is_config_variable(const std::string &name)
 {
 	return name[0] == '$' && name != "$children";

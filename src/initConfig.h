@@ -25,19 +25,18 @@ private:
 class InitConfigurator
 {
 protected:
-	InitConfigurator();
-
-	/** Initialize checkbox from the settings value */
-	void initCheckBox(const BlockSignals<QCheckBox *> &checkBox,const Settings::SettingsEntry &entry);
-	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry &entry);
+	/** Set checkbox status from the settings value */
+	void initUpdateCheckBox(const BlockSignals<QCheckBox *> &checkBox,const Settings::SettingsEntryBool &entry);
 	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBoxRange(const BlockSignals<QSpinBox *> &spinBox,const Settings::SettingsEntry &entry);
-	/** Initialize spinbox double value from the settings value */
-	void initSpinBoxDouble(const BlockSignals<QSpinBox *> &spinBox, const Settings::SettingsEntry &entry);
+	void initIntSpinBox(const BlockSignals<QSpinBox *> &spinBox,const Settings::SettingsEntryInt &entry);
+	/** Set spinbox value from the settings value */
+	void updateIntSpinBox(const BlockSignals<QSpinBox *> &spinBox, const Settings::SettingsEntryInt &entry);
+	/** Set spinbox value and min/max/step from the settings value */
+	void initUpdateDoubleSpinBox(QDoubleSpinBox *spinBox,const Settings::SettingsEntryDouble &entry);
+	/** Initialize combobox list values from the settings range values */
+	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntryEnum &entry);
 	/** Update combobox from current settings */
-	void updateComboBox(const BlockSignals<QComboBox *> &comboBox,const Settings::SettingsEntry &entry);
-	/** used in AxisConfigWidget class **/
-	void initDoubleSpinBox(QDoubleSpinBox *spinBox,const Settings::SettingsEntry &entry);
-
+	void updateComboBox(const BlockSignals<QComboBox *> &comboBox,const Settings::SettingsEntryEnum &entry);
+	/** Update combobox from current settings */
+	void updateComboBox(const BlockSignals<QComboBox *> &comboBox,const std::string &value);
 };

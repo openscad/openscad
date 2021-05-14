@@ -38,11 +38,11 @@ signals:
   
 private:
 	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	void initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry);
 	/** Update combobox from current settings */
-	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
+	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry);
 	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryString& entry);
 	void writeSettings();
 
 	const QString EmptyString= QString("");

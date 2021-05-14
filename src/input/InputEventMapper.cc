@@ -251,86 +251,61 @@ int InputEventMapper::parseSettingValue(const std::string val)
 
 void InputEventMapper::onInputMappingUpdated()
 {
-    Settings::Settings *s = Settings::Settings::inst();
     for (int i = 0; i < max_buttons; ++i ){
-		std::string is = std::to_string(i);
-		Settings::SettingsEntry* ent =s->getSettingEntryByName("button" +is);
-		actions[i] =QString::fromStdString(s->get(*ent).toString());
+		actions[i] = QString::fromStdString(Settings::Settings::inputButton(i).value());
 	}
     
-    translate[0] = parseSettingValue(s->get(Settings::Settings::inputTranslationX).toString());
-    translate[1] = parseSettingValue(s->get(Settings::Settings::inputTranslationY).toString());
-    translate[2] = parseSettingValue(s->get(Settings::Settings::inputTranslationZ).toString());
-    translate[3] = parseSettingValue(s->get(Settings::Settings::inputTranslationXVPRel).toString());
-    translate[4] = parseSettingValue(s->get(Settings::Settings::inputTranslationYVPRel).toString());
-    translate[5] = parseSettingValue(s->get(Settings::Settings::inputTranslationZVPRel).toString());
-    rotate[0] = parseSettingValue(s->get(Settings::Settings::inputRotateX).toString());
-    rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
-    rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
-    rotate[3] = parseSettingValue(s->get(Settings::Settings::inputRotateXVPRel).toString());
-    rotate[4] = parseSettingValue(s->get(Settings::Settings::inputRotateYVPRel).toString());
-    rotate[5] = parseSettingValue(s->get(Settings::Settings::inputRotateZVPRel).toString());
-    zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
-    zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
+    translate[0] = parseSettingValue(Settings::Settings::inputTranslationX.value());
+    translate[1] = parseSettingValue(Settings::Settings::inputTranslationY.value());
+    translate[2] = parseSettingValue(Settings::Settings::inputTranslationZ.value());
+    translate[3] = parseSettingValue(Settings::Settings::inputTranslationXVPRel.value());
+    translate[4] = parseSettingValue(Settings::Settings::inputTranslationYVPRel.value());
+    translate[5] = parseSettingValue(Settings::Settings::inputTranslationZVPRel.value());
+    rotate[0] = parseSettingValue(Settings::Settings::inputRotateX.value());
+    rotate[1] = parseSettingValue(Settings::Settings::inputRotateY.value());
+    rotate[2] = parseSettingValue(Settings::Settings::inputRotateZ.value());
+    rotate[3] = parseSettingValue(Settings::Settings::inputRotateXVPRel.value());
+    rotate[4] = parseSettingValue(Settings::Settings::inputRotateYVPRel.value());
+    rotate[5] = parseSettingValue(Settings::Settings::inputRotateZVPRel.value());
+    zoom = parseSettingValue(Settings::Settings::inputZoom.value());
+    zoom2 = parseSettingValue(Settings::Settings::inputZoom2.value());
     considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputGainUpdated()
 {
-    Settings::Settings *s = Settings::Settings::inst();
-
-    translationGain = s->get(Settings::Settings::inputTranslationGain).toDouble();
-
-    translationVPRelGain = s->get(Settings::Settings::inputTranslationVPRelGain).toDouble();
-
-    rotateGain = s->get(Settings::Settings::inputRotateGain).toDouble();
-
-    rotateVPRelGain = s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
-
-    zoomGain = s->get(Settings::Settings::inputZoomGain).toDouble();
+    translationGain = Settings::Settings::inputTranslationGain.value();
+    translationVPRelGain = Settings::Settings::inputTranslationVPRelGain.value();
+    rotateGain = Settings::Settings::inputRotateGain.value();
+    rotateVPRelGain = Settings::Settings::inputRotateVPRelGain.value();
+    zoomGain = Settings::Settings::inputZoomGain.value();
 
     considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputCalibrationUpdated()
 {
-    for (int a = 0; a < max_axis; ++a) {
-        std::string s = std::to_string(a);
-        Settings::Settings *setting = Settings::Settings::inst();
-        Settings::SettingsEntry* ent;
-
-        ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" + s );
-        if(ent != nullptr){
-            axisTrimValue[a] = setting->get(*ent).toDouble();
-        }
-        ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" + s );
-        if(ent != nullptr){
-            axisDeadzone[a] = setting->get(*ent).toDouble();
-        }
+    for (int i = 0; i < max_axis; ++i) {
+        axisTrimValue[i] = Settings::Settings::axisTrim(i).value();
+        axisDeadzone[i] = Settings::Settings::axisDeadzone(i).value();
     }
     considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisAutoTrim()
 {
-    Settings::Settings *s = Settings::Settings::inst();
     for (int i = 0; i < max_axis; ++i ){ 
-        std::string is = std::to_string(i);
         axisTrimValue[i] = -axisRawValue[i];
-        Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
-        s->set(*ent, axisTrimValue[i]);
+        Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
     }
     considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisTrimReset()
 {
-    Settings::Settings *s = Settings::Settings::inst();
     for (int i = 0; i < max_axis; ++i ){ 
-        std::string is = std::to_string(i);
         axisTrimValue[i] = 0.00;
-        Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
-        s->set(*ent, axisTrimValue[i]);
+        Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
     }
     considerGeneratingDeferredEvents();
 }

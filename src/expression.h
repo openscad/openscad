@@ -3,11 +3,11 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <boost/variant.hpp>
 #include "Assignment.h"
 #include "boost-utils.h"
 #include "function.h"
 #include "memory.h"
-#include "value.h"
 
 template<class T> class ContextHandle;
 
@@ -19,7 +19,6 @@ public:
 	virtual bool isLiteral() const;
 	virtual Value evaluate(const std::shared_ptr<Context>& context) const = 0;
 	Value checkUndef(Value&& val, const std::shared_ptr<Context>& context) const;
-	Value evaluateLiteral() const;
 };
 
 class UnaryOp : public Expression
@@ -100,13 +99,24 @@ private:
 class Literal : public Expression
 {
 public:
-	Literal(Value val, const Location &loc = Location::NONE);
-	const Value& getValue() const { return value; }
+	Literal(bool val, const Location &loc = Location::NONE);
+	Literal(double val, const Location &loc = Location::NONE);
+	Literal(const std::string& val, const Location &loc = Location::NONE);
+	Literal(const char* val, const Location &loc = Location::NONE);
+	Literal(boost::none_t val, const Location &loc = Location::NONE);
+	bool isBool() const { return !!toBool(); }
+	const bool* toBool() const { return boost::get<bool>(&value); }
+	bool isDouble() const { return !!toDouble(); }
+	const double* toDouble() const { return boost::get<double>(&value); }
+	bool isString() const { return !!toString(); }
+	const std::string* toString() const { return boost::get<std::string>(&value); }
+	bool isUndefined() const { return !!boost::get<boost::none_t>(&value); }
+	
 	Value evaluate(const std::shared_ptr<Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override { return true;}
 private:
-	const Value value;
+	boost::variant<bool, double, std::string, boost::none_t> value;
 };
 
 class Range : public Expression

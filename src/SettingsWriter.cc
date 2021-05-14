@@ -23,21 +23,17 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "Preferences.h"
 #include "SettingsWriter.h"
 #include "QSettingsCached.h"
 
 void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
-	Settings::Settings *s = Settings::Settings::inst();
-
 	QSettingsCached settings;
-	QString key = QString::fromStdString(entry.category() + "/" + entry.name());
-	if (entry.is_default()) {
-	    settings.remove(key);
-	    PRINTDB("SettingsWriter D: %s", key.toStdString().c_str());
+	std::string key = entry.category() + "/" + entry.name();
+	if (entry.isDefault()) {
+	    settings.remove(QString::fromStdString(key));
+	    PRINTDB("SettingsWriter D: %s", key.c_str());
 	} else {
-	    const Value &value = s->get(entry);
-	    settings.setValue(key, QString::fromStdString(value.toString()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.toStdString().c_str() % value.toString().c_str());
+	    settings.setValue(QString::fromStdString(key), QString::fromStdString(entry.encode()));
+	    PRINTDB("SettingsWriter W: %s = '%s'", key.c_str() % entry.encode().c_str());
 	}
 }

@@ -51,13 +51,6 @@ Value Expression::checkUndef(Value&& val, const std::shared_ptr<Context>& contex
 	return std::move(val);
 }
 
-Value Expression::evaluateLiteral() const
-{
-	EvaluationSession session{""};
-	ContextHandle<Context> context{Context::create<Context>(&session)};
-	return evaluate(*context);
-}
-
 bool Expression::isLiteral() const
 {
     return false;
@@ -202,18 +195,31 @@ void ArrayLookup::print(std::ostream &stream, const std::string &) const
 	stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(Value val, const Location &loc) : Expression(loc), value(std::move(val))
-{
-}
+Literal::Literal(bool val, const Location &loc) : Expression(loc), value(val) {}
+Literal::Literal(double val, const Location &loc) : Expression(loc), value(val) {}
+Literal::Literal(const std::string& val, const Location &loc) : Expression(loc), value(val) {}
+Literal::Literal(const char* val, const Location &loc) : Expression(loc), value(std::string(val)) {}
+Literal::Literal(boost::none_t val, const Location &loc) : Expression(loc), value(val) {}
 
 Value Literal::evaluate(const std::shared_ptr<Context>&) const
 {
-	return this->value.clone();
+	if (isBool()) {
+		return Value(*toBool());
+	} else if (isDouble()) {
+		return Value(*toDouble());
+	} else if (isString()) {
+		return Value(*toString());
+	} else if (isUndefined()) {
+		return Value(UndefType());
+	} else {
+		assert(false);
+		return Value(UndefType());
+	}
 }
 
 void Literal::print(std::ostream &stream, const std::string &) const
 {
-    stream << this->value;
+    stream << evaluate(nullptr);
 }
 
 Range::Range(Expression *begin, Expression *end, const Location &loc)
