@@ -31,6 +31,7 @@
 #include "modcontext.h"
 #include "expression.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include <cstdint>
 #include "boost-utils.h"
@@ -72,6 +73,7 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	}
 	
 	Arguments arguments{inst->arguments, context};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
 	const Children* children = context->user_module_children();
 	if (!children) {
 		// child() called outside any user module
@@ -79,10 +81,10 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	}
 	
 	boost::optional<size_t> index;
-	if (arguments.size() == 0) {
+	if (!parameters.contains("index")) {
 		index = validChildIndex(0, children, inst, context);
 	} else {
-		index = validChildIndex(arguments[0].value, children, inst, context);
+		index = validChildIndex(parameters["index"], children, inst, context);
 	}
 	if (!index) {
 		return nullptr;
@@ -98,28 +100,29 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	}
 	
 	Arguments arguments{inst->arguments, context};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
 	const Children* children = context->user_module_children();
 	if (!children) {
 		// children() called outside any user module
 		return nullptr;
 	}
 	
-	if (arguments.size() == 0) {
+	if (!parameters.contains("index")) {
 		// no arguments => all children
 		return children->instantiate(lazyUnionNode(inst));
 	}
 	
 	// one (or more ignored) argument
-	if (arguments[0]->type() == Value::Type::NUMBER) {
-		auto index = validChildIndex(arguments[0].value, children, inst, context);
+	if (parameters["index"].type() == Value::Type::NUMBER) {
+		auto index = validChildIndex(parameters["index"], children, inst, context);
 		if (!index) {
 			return nullptr;
 		}
 		return children->instantiate(lazyUnionNode(inst), {*index});
 	}
-	else if (arguments[0]->type() == Value::Type::VECTOR) {
+	else if (parameters["index"].type() == Value::Type::VECTOR) {
 		std::vector<size_t> indices;
-		for (const auto& val : arguments[0]->toVector()) {
+		for (const auto& val : parameters["index"].toVector()) {
 			auto index = validChildIndex(val, children, inst, context);
 			if (index) {
 				indices.push_back(*index);
@@ -127,11 +130,11 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 		}
 		return children->instantiate(lazyUnionNode(inst), indices);
 	}
-	else if (arguments[0]->type() == Value::Type::RANGE) {
-		const RangeType &range = arguments[0]->toRange();
+	else if (parameters["index"].type() == Value::Type::RANGE) {
+		const RangeType &range = parameters["index"].toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= RangeType::MAX_RANGE_STEPS) {
-			LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 				"Bad range parameter for children: too many elements (%1$lu)",steps);
 			return nullptr;
 		}
@@ -146,7 +149,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	}
 	else {
 		// Invalid argument
-		LOG(message_group::Warning,inst->location(),arguments.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",arguments[0]->toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",parameters["index"].toEchoString());
 		return nullptr;
 	}
 }
