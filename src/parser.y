@@ -440,7 +440,14 @@ unary
             }
         | '-' unary
             {
-              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
+              Literal* argument = dynamic_cast<Literal*>($2);
+              if (argument && argument->isDouble()) {
+                double value = *argument->toDouble();
+                delete $2;
+                $$ = new Literal(-value, LOCD("literal", @$));
+              } else {
+                $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
+              }
             }
         | '!' unary
             {

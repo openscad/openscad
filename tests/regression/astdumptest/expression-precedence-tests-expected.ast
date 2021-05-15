@@ -1,5 +1,5 @@
 function f(x) = echo("-") x;
-echo(assoc_right_unary = (4 - --3));
+echo(assoc_right_unary = (4 - 3));
 echo(assoc_left_addsub = ((2 - 3) + 4));
 echo(assoc_left_subadd = ((2 + 3) - 4));
 echo(assoc_left_muldiv = ((2 * 3) / 4));
