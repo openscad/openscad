@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - macos-release-build
+      - qt5-upgrade-macos
     tags:
       - '*'
 
