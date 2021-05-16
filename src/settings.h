@@ -138,9 +138,9 @@ public:
 	}
 
 	const std::string& value() const { return _items[_index].value; }
-	int index() const { return _index; }
+	size_t index() const { return _index; }
 	void setValue(const std::string& value);
-	void setIndex(int index) { if (index >= 0 && index < _items.size()) _index = index; }
+	void setIndex(size_t index) { if (index < _items.size()) _index = index; }
 	const std::vector<Item>& items() const { return _items; }
 	bool isDefault() const override { return value() == _defaultValue; }
 	std::string encode() const override { return value(); }
@@ -148,7 +148,7 @@ public:
 
 private:
 	std::vector<Item> _items;
-	int _index;
+	size_t _index;
 	std::string _defaultValue;
 };
 

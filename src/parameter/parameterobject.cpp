@@ -32,7 +32,7 @@ void BoolParameter::apply(Assignment* assignment) const
 StringParameter::StringParameter(
 	const std::string& name, const std::string& description, const std::string& group,
 	const std::string& defaultValue,
-	boost::optional<int> maximumSize
+	boost::optional<size_t> maximumSize
 ):
 	ParameterObject(name, description, group, ParameterObject::ParameterType::String),
 	value(defaultValue), defaultValue(defaultValue),
@@ -398,10 +398,10 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 		
 		if (expression->isString()) {
 			std::string value = *expression->toString();
-			boost::optional<int> maximumSize = boost::none;
+			boost::optional<size_t> maximumSize = boost::none;
 			const Literal* maximumSizeExpression = dynamic_cast<const Literal*>(parameter);
 			if (maximumSizeExpression && maximumSizeExpression->isDouble()) {
-				maximumSize = (int)(*maximumSizeExpression->toDouble());
+				maximumSize = (size_t)(*maximumSizeExpression->toDouble());
 			}
 			return std::make_unique<StringParameter>(name, description, group, value, maximumSize);
 		}
@@ -443,7 +443,7 @@ ParameterObjects ParameterObjects::fromSourceFile(const SourceFile* sourceFile)
 			output.push_back(std::move(parameter));
 		}
 	}
-	return std::move(output);
+	return output;
 }
 
 void ParameterObjects::reset()
