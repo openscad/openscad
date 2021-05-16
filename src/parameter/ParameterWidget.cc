@@ -376,6 +376,7 @@ ParameterVirtualWidget* ParameterWidget::createParameterWidget(ParameterObject* 
 		return new ParameterComboBox(this, static_cast<EnumParameter*>(parameter), descriptionStyle);
 	} else {
 		assert(false);
+		throw std::runtime_error("Unsupported parameter widget type");
 	}
 }
 
