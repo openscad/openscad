@@ -26,6 +26,7 @@
 #pragma once
 
 #include <QTimer>
+#include <map>
 
 #include "ui_ParameterWidget.h"
 #include "parameterobject.h"

@@ -301,14 +301,10 @@ void ParameterWidget::updateSetEditability()
 
 void ParameterWidget::rebuildWidgets()
 {
-	std::set<std::string> expandedGroups;
-	QList<GroupWidget*> groupWidgets = this->findChildren<GroupWidget*>();
-	for (GroupWidget* groupWidget : groupWidgets) {
-		if (groupWidget->isExpanded()) {
-			expandedGroups.insert(groupWidget->title().toStdString());
-		}
+	std::map<QString, bool> expandedGroups;
+	for (GroupWidget* groupWidget : this->findChildren<GroupWidget*>()) {
+		expandedGroups.emplace(groupWidget->title(), groupWidget->isExpanded());
 	}
-
 	widgets.clear();
 	QLayout* layout = this->scrollAreaWidgetContents->layout();
 	while (layout->count() > 0) {
@@ -330,7 +326,8 @@ void ParameterWidget::rebuildWidgets()
 			widgets[parameter].push_back(parameterWidget);
 			groupWidget->addWidget(parameterWidget);
 		}
-		groupWidget->setExpanded(expandedGroups.count(group.name.toStdString()) > 0);
+		auto it = expandedGroups.find(group.name);
+		groupWidget->setExpanded(it == expandedGroups.end() || it->second);
 		layout->addWidget(groupWidget);
 	}
 
