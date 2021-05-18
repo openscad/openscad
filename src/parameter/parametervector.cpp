@@ -76,19 +76,15 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
 
 void ParameterVector::onChanged()
 {
-	if (!inUpdate) {
-		for (size_t i = 0; i < spinboxes.size(); i++) {
-			parameter->value[i] = spinboxes[i]->value();
-		}
-		emit changed();
+	for (size_t i = 0; i < spinboxes.size(); i++) {
+		parameter->value[i] = spinboxes[i]->value();
 	}
+	emit changed(false);
 }
 
 void ParameterVector::setValue()
 {
-	inUpdate = true;
 	for (size_t i = 0; i < spinboxes.size(); i++) {
 		spinboxes[i]->setValue(parameter->value[i]);
 	}
-	inUpdate = false;
 }

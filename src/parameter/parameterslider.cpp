@@ -10,7 +10,6 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);
-	slider->setStyle(new SliderStyleJumpTo(slider->style()));
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
 
 	assert(parameter->minimum);
@@ -43,46 +42,94 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
 	double maximumValue = parameterValue(numSteps-1);
 
 	slider->setRange(0, numSteps-1);
-	doubleSpinBox->setKeyboardTracking(false);
+	slider->setPageStep(std::ceil(0.1*numSteps));
 	doubleSpinBox->setDecimals(decimals);
 	doubleSpinBox->setRange(this->minimum, maximumValue);
 	doubleSpinBox->setSingleStep(this->step);
 
+	//connect(slider, SIGNAL(sliderPressed()), this, SLOT(onSliderPressed()));
+	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onSliderReleased()));
+	connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(onSliderMoved(int)));
 	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
-	connect(slider, SIGNAL(sliderReleased()), this, SLOT(onEditingFinished()));
 
 	connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
+	connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onSpinBoxEditingFinished()));
 
 	setValue();
 }
 
+void ParameterSlider::valueApplied() {
+	lastApplied = lastSent;
+}
+
+// slider handle grabbed
+void ParameterSlider::onSliderPressed()
+{
+}
+
+// slider handle released
+void ParameterSlider::onSliderReleased()
+{
+	this->commitChange(true);
+}
+
+// slider handle dragged
+void ParameterSlider::onSliderMoved(int position)
+{
+	double value = parameterValue(position);
+	doubleSpinBox->blockSignals(true);
+	doubleSpinBox->setValue(value);
+	doubleSpinBox->blockSignals(false);
+}
+
+// slider track clicked
+// changes by pageStep or sets absolute position, depending on platform or specific mouse button
 void ParameterSlider::onSliderChanged(int position)
 {
 	double value = parameterValue(position);
+	doubleSpinBox->blockSignals(true);
 	doubleSpinBox->setValue(value);
+	doubleSpinBox->blockSignals(false);
+	commitChange(false);
 }
 
+// spin button click or arrow keypress
 void ParameterSlider::onSpinBoxChanged(double value)
 {
 	int position = sliderPosition(value);
-	slider->setSliderPosition(position);
+	slider->blockSignals(true);
+	slider->setValue(position);
+	slider->blockSignals(false);
+	commitChange(false);
 }
 
-void ParameterSlider::onEditingFinished()
+// Enter key pressed or spinbox focus lost
+void ParameterSlider::onSpinBoxEditingFinished()
 {
-	double val = parameterValue(slider->sliderPosition());
-	if (val != parameter->value) {
-		parameter->value = val;
-		emit changed();
+	commitChange(true);
+}
+
+void ParameterSlider::commitChange(bool immediate) {
+	double value = parameterValue(slider->sliderPosition());
+#ifdef DEBUG
+	PRINTD(STR("[commit] value=" << value << ", parameter->value=" << parameter->value << ", lastSent=" << lastSent <<	", lastApplied=" << lastApplied));
+#endif
+	// emit if nothing sent OR nothing applied OR *applied != val
+	if ((immediate && lastApplied && lastApplied != value) || (!immediate && lastSent != value) ) {
+		lastSent = parameter->value = value;
+		emit changed(immediate);
 	}
 }
 
+// Called when populating parameter presets
 void ParameterSlider::setValue()
 {
+#ifdef DEBUG
+	PRINTD(STR("[setValue] parameter->value=" << parameter->value << ", lastSent=" << lastSent <<	", lastApplied=" << lastApplied));
+#endif
 	int position = sliderPosition(parameter->value);
-	slider->setSliderPosition(position);
-	doubleSpinBox->setValue(parameterValue(position));
+	lastSent = parameter->value;
+	slider->setValue(position);
 }
 
 int ParameterSlider::sliderPosition(double value)

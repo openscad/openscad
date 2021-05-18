@@ -17,5 +17,4 @@ protected slots:
 private:
 	VectorParameter* parameter;
 	std::vector<QDoubleSpinBox*> spinboxes;
-	bool inUpdate = false;
 };

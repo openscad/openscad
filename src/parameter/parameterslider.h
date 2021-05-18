@@ -4,22 +4,6 @@
 #include "parametervirtualwidget.h"
 #include "ui_parameterslider.h"
 
-class SliderStyleJumpTo : public QProxyStyle
-{
-public:
-  using QProxyStyle::QProxyStyle;
-
-  int styleHint(QStyle::StyleHint hint, const QStyleOption* option = 0, const QWidget* widget = 0, QStyleHintReturn* returnData = 0) const
-  {
-    if (hint == QStyle::SH_Slider_AbsoluteSetButtons) {
-      return Qt::LeftButton;
-    } else if (hint == QStyle::SH_Slider_PageSetButtons) {
-      return Qt::NoButton;
-    }
-    return QProxyStyle::styleHint(hint, option, widget, returnData);
-  }
-};
-
 class ParameterSlider : public ParameterVirtualWidget, Ui::ParameterSlider
 {
 	Q_OBJECT
@@ -27,17 +11,25 @@ class ParameterSlider : public ParameterVirtualWidget, Ui::ParameterSlider
 public:
 	ParameterSlider(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle);
 	void setValue() override;
+	void valueApplied() override;
 
 protected slots:
-	void onSpinBoxChanged(double);
-	void onSliderChanged(int);
-	void onEditingFinished();
+	void onSliderPressed();
+	void onSliderReleased();
+	void onSliderMoved(int position);
+	void onSliderChanged(int position);
+
+	void onSpinBoxChanged(double value);
+	void onSpinBoxEditingFinished();
 
 private:
 	NumberParameter* parameter;
+	boost::optional<double> lastSent;
+	boost::optional<double> lastApplied;
 	double minimum;
 	double step;
-	
+
 	int sliderPosition(double value);
 	double parameterValue(int sliderPosition);
+	void commitChange(bool immediate);
 };

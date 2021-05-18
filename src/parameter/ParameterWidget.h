@@ -59,12 +59,13 @@ public slots:
 	void setModified(bool modified = true);
 
 protected slots:
-	void autoPreview();
+	void autoPreview(bool immediate = false);
+	void emitParametersChanged();
 	void onSetChanged(int index);
 	void onSetNameChanged();
 	void onSetAdd();
 	void onSetDelete();
-	void parameterModified();
+	void parameterModified(bool immediate);
 	void loadSet(int index);
 	void createSet(QString name);
 	void updateSetEditability();

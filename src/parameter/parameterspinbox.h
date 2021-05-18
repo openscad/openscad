@@ -10,11 +10,15 @@ class ParameterSpinBox : public ParameterVirtualWidget, Ui::ParameterSpinBox
 public:
 	ParameterSpinBox(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle);
 	void setValue() override;
+	void valueApplied() override;
 
 protected slots:
-	void onChanged();
+	void onChanged(double);
+	void onEditingFinished();
 
 private:
 	NumberParameter* parameter;
-	bool inUpdate = false;
+	boost::optional<double> lastSent;
+	boost::optional<double> lastApplied;
+
 };

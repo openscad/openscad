@@ -11,17 +11,39 @@ ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, Descri
 		lineEdit->setMaxLength(*parameter->maximumSize);
 	}
 
-	connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onChanged()));
+	connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(onEdit(const QString &)));
+	connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 	setValue();
 }
 
-void ParameterText::onChanged()
+void ParameterText::valueApplied() {
+	lastApplied = lastSent;
+}
+
+void ParameterText::onEdit(const QString &text)
 {
-	parameter->value = lineEdit->text().toStdString();
-	emit changed();
+#ifdef DEBUG
+	PRINTD("edit");
+#endif
+	std::string value = text.toStdString();
+	if (lastSent != value) {
+		lastSent = parameter->value = value;
+		emit changed(false);
+	}
+}
+
+void ParameterText::onEditingFinished() {
+#ifdef DEBUG
+	PRINTD("editing finished");
+#endif
+	if (lastApplied && lastApplied != parameter->value) {
+		lastSent = parameter->value = lineEdit->text().toStdString();
+		emit changed(true);
+	}
 }
 
 void ParameterText::setValue()
 {
+	lastSent = parameter->value;
 	lineEdit->setText(QString::fromStdString(parameter->value));
 }

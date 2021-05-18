@@ -45,11 +45,11 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 	setupUi(this);
 	scrollAreaWidgetContents->layout()->setAlignment(Qt::AlignTop);
 
-	autoPreviewTimer.setInterval(500);
+	autoPreviewTimer.setInterval(1000);
 	autoPreviewTimer.setSingleShot(true);
 
-	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SIGNAL(parametersChanged()));
-	connect(checkBoxAutoPreview, SIGNAL(toggled(bool)), this, SLOT(autoPreview()));
+	connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(emitParametersChanged()));
+	connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() { this->autoPreview(true); } );
 	connect(comboBoxDetails, SIGNAL(currentIndexChanged(int)), this, SLOT(rebuildWidgets()));
 	connect(comboBoxPreset, SIGNAL(activated(int)), this, SLOT(onSetChanged(int)));
 	//connect(comboBoxPreset, SIGNAL(editTextChanged(const QString&)), this, SLOT(onSetNameChanged()));
@@ -63,7 +63,7 @@ void ParameterWidget::readFile(QString scadFile)
 	assert(sets.empty());
 	assert(parameters.empty());
 	assert(widgets.empty());
-	
+
 	QString jsonFile = getJsonFile(scadFile);
 	if (!boost::filesystem::exists(jsonFile.toStdString())) {
 		this->invalidJsonFile = QString();
@@ -72,7 +72,7 @@ void ParameterWidget::readFile(QString scadFile)
 	} else {
 		this->invalidJsonFile = jsonFile;
 	}
-	
+
 	for (const auto& set : this->sets) {
 		comboBoxPreset->addItem(QString::fromStdString(set.name()));
 	}
@@ -85,7 +85,7 @@ void ParameterWidget::saveFile(QString scadFile)
 	if (sets.empty()) {
 		return;
 	}
-	
+
 	QString jsonFile = getJsonFile(scadFile);
 	if (jsonFile == this->invalidJsonFile) {
 		QMessageBox msgBox;
@@ -97,7 +97,7 @@ void ParameterWidget::saveFile(QString scadFile)
 			return;
 		}
 	}
-	
+
 	cleanSets();
 	sets.writeFile(jsonFile.toStdString());
 }
@@ -107,7 +107,7 @@ void ParameterWidget::saveBackupFile(QString scadFile)
 	if (sets.empty()) {
 		return;
 	}
-	
+
 	sets.writeFile(getJsonFile(scadFile).toStdString());
 }
 
@@ -150,18 +150,31 @@ void ParameterWidget::setModified(bool modified)
 	}
 }
 
-void ParameterWidget::autoPreview()
+void ParameterWidget::emitParametersChanged() {
+	for (const auto &kvp : widgets) {
+		for (ParameterVirtualWidget* widget : kvp.second) {
+			widget->valueApplied();
+		}
+	}
+	emit parametersChanged();
+}
+
+void ParameterWidget::autoPreview(bool immediate)
 {
 	autoPreviewTimer.stop();
 	if (checkBoxAutoPreview->isChecked()) {
-		autoPreviewTimer.start();
+		if (immediate) {
+			emitParametersChanged();
+		} else {
+			autoPreviewTimer.start();
+		}
 	}
 }
 
 void ParameterWidget::onSetChanged(int index)
 {
 	loadSet(index);
-	autoPreview();
+	autoPreview(true);
 }
 
 void ParameterWidget::onSetNameChanged()
@@ -206,10 +219,10 @@ void ParameterWidget::onSetDelete()
 	comboBoxPreset->removeItem(index);
 	sets.erase(sets.begin() + (index - 1));
 	setModified();
-	autoPreview();
+	autoPreview(true);
 }
 
-void ParameterWidget::parameterModified()
+void ParameterWidget::parameterModified(bool immediate)
 {
 	ParameterVirtualWidget* widget = (ParameterVirtualWidget*)sender();
 	ParameterObject* parameter = widget->getParameter();
@@ -243,7 +256,7 @@ void ParameterWidget::parameterModified()
 	}
 
 	setModified();
-	autoPreview();
+	autoPreview(immediate);
 }
 
 void ParameterWidget::loadSet(int index)
@@ -310,7 +323,7 @@ void ParameterWidget::rebuildWidgets()
 		GroupWidget* groupWidget = new GroupWidget(group.name);
 		for (ParameterObject* parameter : group.parameters) {
 			ParameterVirtualWidget* parameterWidget = createParameterWidget(parameter, descriptionStyle);
-			connect(parameterWidget, SIGNAL(changed()), this, SLOT(parameterModified()));
+			connect(parameterWidget, SIGNAL(changed(bool)), this, SLOT(parameterModified(bool)));
 			if (!widgets.count(parameter)) {
 				widgets[parameter] = {};
 			}
@@ -320,6 +333,7 @@ void ParameterWidget::rebuildWidgets()
 		groupWidget->setExpanded(expandedGroups.count(group.name.toStdString()) > 0);
 		layout->addWidget(groupWidget);
 	}
+
 }
 
 std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups()
@@ -393,7 +407,7 @@ void ParameterWidget::cleanSets()
 	for (const auto& parameter : parameters) {
 		namedParameters[parameter->name()] = parameter.get();
 	}
-	
+
 	for (ParameterSet& set : sets) {
 		for (auto it = set.begin(); it != set.end(); ) {
 			if (!namedParameters.count(it->first)) {
