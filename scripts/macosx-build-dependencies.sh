@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
-# The libraries will be build in 64-bit mode and backwards compatible with 10.8 "Mountain Lion".
-# 
+# The libraries will be build in 64-bit mode and backwards compatible with 10.13 "High Sierra".
+#
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
@@ -24,7 +24,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.9
+MAC_OSX_VERSION_MIN=10.13
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 
@@ -51,7 +51,7 @@ PACKAGES=(
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.2"
-    "qt5 5.9.9"
+    "qt5 5.15.2"
     "opencsg 1.4.2"
     "qscintilla 2.11.6"
 )
@@ -164,17 +164,16 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-      curl -LO http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
+  rm -rf qt-everywhere-src-$version
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+      curl -LO https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  cd qt-everywhere-opensource-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.9.7-macos.patch
+  tar xzf qt-everywhere-src-$version.tar.xz
+  cd qt-everywhere-src-$version
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp -no-qml-debug \
+		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
@@ -748,23 +747,30 @@ done
 
 OPTION_PACKAGES="${@:$OPTIND}"
 
+OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 14 )); then
-  echo "Detected Mojave (10.14) or later"
-elif (( $OSX_VERSION >= 13 )); then
-  echo "Detected High Sierra (10.13) or later"
-elif (( $OSX_VERSION >= 12 )); then
-  echo "Detected Sierra (10.12) or later"
-elif (( $OSX_VERSION >= 11 )); then
-  echo "Detected El Capitan (10.11) or later"
-elif (( $OSX_VERSION >= 10 )); then
-  echo "Detected Yosemite (10.10) or later"
-elif (( $OSX_VERSION >= 9 )); then
-  echo "Detected Mavericks (10.9)"
-elif (( $OSX_VERSION >= 8 )); then
-  echo "Detected Mountain Lion (10.8)"
+if (( $OSX_MAJOR_VERSION >= 11 )); then
+  echo "Detected Big Sur (11.0) or later"
 else
-  echo "Detected Lion (10.7) or earlier"
+  if (( $OSX_VERSION >= 15 )); then
+    echo "Detected Catalina (10.15)"
+  elif (( $OSX_VERSION >= 14 )); then
+    echo "Detected Mojave (10.14)"
+  elif (( $OSX_VERSION >= 13 )); then
+    echo "Detected High Sierra (10.13)"
+  elif (( $OSX_VERSION >= 12 )); then
+    echo "Detected Sierra (10.12)"
+  elif (( $OSX_VERSION >= 11 )); then
+    echo "Detected El Capitan (10.11)"
+  elif (( $OSX_VERSION >= 10 )); then
+    echo "Detected Yosemite (10.10)"
+  elif (( $OSX_VERSION >= 9 )); then
+    echo "Detected Mavericks (10.9)"
+  elif (( $OSX_VERSION >= 8 )); then
+    echo "Detected Mountain Lion (10.8)"
+  else
+    echo "Detected Lion (10.7) or earlier"
+  fi
 fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"
