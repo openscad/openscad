@@ -350,6 +350,13 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 {
 	std::string name = assignment->getName();
 	
+	const Expression* parameter = nullptr;
+	const Annotation* parameterAnnotation = assignment->annotation("Parameter");
+	if (!parameterAnnotation) {
+		return nullptr;
+	}
+	parameter = parameterAnnotation->getExpr().get();
+	
 	std::string description;
 	const Annotation* descriptionAnnotation = assignment->annotation("Description");
 	if (descriptionAnnotation) {
@@ -366,12 +373,6 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 		if (expression && expression->isString()) {
 			group = *expression->toString();
 		}
-	}
-	
-	const Expression* parameter = nullptr;
-	const Annotation* parameterAnnotation = assignment->annotation("Parameter");
-	if (parameterAnnotation) {
-		parameter = parameterAnnotation->getExpr().get();
 	}
 	
 	const Expression* valueExpression = assignment->getExpr().get();
