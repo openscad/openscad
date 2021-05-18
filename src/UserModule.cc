@@ -42,7 +42,7 @@ static void NOINLINE print_err(std::string name, const Location &loc,const std::
 	LOG(message_group::Error,loc,context->documentRoot(),"Recursion detected calling module '%1$s'",name);
 }
 
-AbstractNode* UserModule::instantiate(const std::shared_ptr<Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context) const
+AbstractNode* UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
 	if (StackCheck::inst().check()) {
 		print_err(inst->name(),loc,context);

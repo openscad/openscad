@@ -15,13 +15,13 @@ class FunctionCall;
 class BuiltinFunction
 {
 public:
-	std::function<Value(const std::shared_ptr<Context>&, const FunctionCall*)> evaluate;
+	std::function<Value(const std::shared_ptr<const Context>&, const FunctionCall*)> evaluate;
 
 private:
 	const Feature *feature;
 
 public:
-	BuiltinFunction(Value (*f)(const std::shared_ptr<Context>&, const FunctionCall*), const Feature* feature = nullptr);
+	BuiltinFunction(Value (*f)(const std::shared_ptr<const Context>&, const FunctionCall*), const Feature* feature = nullptr);
 	BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature* feature = nullptr);
 
 	bool is_experimental() const { return feature != nullptr; }
@@ -43,7 +43,7 @@ public:
 
 struct CallableUserFunction
 {
-	std::shared_ptr<Context> defining_context;
+	std::shared_ptr<const Context> defining_context;
 	const UserFunction* function;
 };
 typedef boost::variant<const BuiltinFunction*, CallableUserFunction, Value, const Value*> CallableFunction;

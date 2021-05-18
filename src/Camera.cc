@@ -92,7 +92,7 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<FileContext> context, bool enableWarning)
+void Camera::updateView(const std::shared_ptr<const FileContext> context, bool enableWarning)
 {
 	if (locked)
 		return;
