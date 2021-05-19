@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QProxyStyle>
 #include "parametervirtualwidget.h"
 #include "ui_parameterslider.h"
 

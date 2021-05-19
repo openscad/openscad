@@ -92,14 +92,6 @@ void ParameterVector::onChanged()
 
 void ParameterVector::onEditingFinished()
 {
-#ifdef DEBUG
-	const auto& pv = parameter->value;
-	const auto& ls = lastSent;
-	const auto& la = lastApplied;
-	if (pv.size() == 4) PRINTD(STR("[finished] parameter->value = "<< "["<<pv[0]<<","<<pv[1]<<","<<pv[2]<<","<<pv[3]<<"]"));
-	if (ls.size() == 4) PRINTD(STR("[finished] sent = "            << "["<<ls[0]<<","<<ls[1]<<","<<ls[2]<<","<<ls[3]<<"]"));
-	if (la.size() == 4) PRINTD(STR("[finished] applied = "         << "["<<la[0]<<","<<la[1]<<","<<la[2]<<","<<la[3]<<"]"));
-#endif
 	if (lastApplied != parameter->value) {
 		lastSent = parameter->value;
 		emit changed(true);
