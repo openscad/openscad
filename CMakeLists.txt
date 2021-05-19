@@ -490,6 +490,7 @@ set(CORE_SOURCES
   src/colormap.cc
   src/context.cc
   src/contextframe.cc
+  src/context-mm.cc
   src/control.cc
   src/comment.cpp
   src/csgnode.cc

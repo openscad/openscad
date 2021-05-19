@@ -41,10 +41,16 @@ Context::Context(EvaluationSession* session):
 	parent(nullptr)
 {}
 
-Context::Context(const std::shared_ptr<Context>& parent):
+Context::Context(const std::shared_ptr<const Context>& parent):
 	ContextFrame(parent->evaluation_session),
 	parent(parent)
 {}
+
+Context::~Context()
+{
+	clear();
+	session()->contextMemoryManager().releaseContext();
+}
 
 const Children* Context::user_module_children() const
 {
@@ -53,6 +59,15 @@ const Children* Context::user_module_children() const
 	} else {
 		return nullptr;
 	}
+}
+
+std::vector<const std::shared_ptr<const Context>*> Context::list_referenced_contexts() const
+{
+	std::vector<const std::shared_ptr<const Context>*> output;
+	if (parent) {
+		output.push_back(&parent);
+	}
+	return output;
 }
 
 boost::optional<const Value&> Context::try_lookup_variable(const std::string &name) const
@@ -109,12 +124,28 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string &na
 	return boost::none;
 }
 
+bool Context::set_variable(const std::string &name, Value&& value)
+{
+	bool new_variable = ContextFrame::set_variable(name, std::move(value));
+	if (new_variable) {
+		session()->accounting().addContextVariable();
+	}
+	return new_variable;
+}
+
+size_t Context::clear()
+{
+	size_t removed = ContextFrame::clear();
+	session()->accounting().removeContextVariable(removed);
+	return removed;
+}
+
 #ifdef DEBUG
-std::string Context::dump()
+std::string Context::dump() const
 {
 	std::ostringstream s;
 	s << boost::format("Context %p:\n") % this;
-	Context* context = this;
+	Context const* context = this;
 	while (context) {
 		s << "  " << context->dumpFrame();
 		context = context->getParent().get();
@@ -122,4 +153,3 @@ std::string Context::dump()
 	return s.str();
 }
 #endif
-

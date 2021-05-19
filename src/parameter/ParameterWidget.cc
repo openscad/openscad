@@ -305,6 +305,7 @@ void ParameterWidget::rebuildWidgets()
 	for (GroupWidget* groupWidget : this->findChildren<GroupWidget*>()) {
 		expandedGroups.emplace(groupWidget->title(), groupWidget->isExpanded());
 	}
+
 	widgets.clear();
 	QLayout* layout = this->scrollAreaWidgetContents->layout();
 	while (layout->count() > 0) {
@@ -330,7 +331,6 @@ void ParameterWidget::rebuildWidgets()
 		groupWidget->setExpanded(it == expandedGroups.end() || it->second);
 		layout->addWidget(groupWidget);
 	}
-
 }
 
 std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups()
@@ -387,7 +387,7 @@ ParameterVirtualWidget* ParameterWidget::createParameterWidget(ParameterObject* 
 		return new ParameterComboBox(this, static_cast<EnumParameter*>(parameter), descriptionStyle);
 	} else {
 		assert(false);
-		return nullptr;
+		throw std::runtime_error("Unsupported parameter widget type");
 	}
 }
 
@@ -405,7 +405,7 @@ void ParameterWidget::cleanSets()
 	for (const auto& parameter : parameters) {
 		namedParameters[parameter->name()] = parameter.get();
 	}
-
+	
 	for (ParameterSet& set : sets) {
 		for (auto it = set.begin(); it != set.end(); ) {
 			if (!namedParameters.count(it->first)) {

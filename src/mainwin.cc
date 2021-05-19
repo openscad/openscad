@@ -1180,7 +1180,7 @@ void MainWindow::instantiateRoot()
 		ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
 		setRenderVariables(builtin_context);
 		
-		std::shared_ptr<FileContext> file_context;
+		std::shared_ptr<const FileContext> file_context;
 		this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
 		if (file_context) {
 			this->qglview->cam.updateView(file_context, false);
@@ -1705,9 +1705,9 @@ void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 	context->set_variable("$preview", Value(this->is_preview));
 	context->set_variable("$t", Value(this->anim_tval));
 	auto camVpt = qglview->cam.getVpt();
-	context->set_variable("$vpt", Value(VectorType(camVpt.x(), camVpt.y(), camVpt.z())));
+	context->set_variable("$vpt", Value(VectorType(context->session(), camVpt.x(), camVpt.y(), camVpt.z())));
 	auto camVpr = qglview->cam.getVpr();
-	context->set_variable("$vpr", Value(VectorType(camVpr.x(), camVpr.y(), camVpr.z())));
+	context->set_variable("$vpr", Value(VectorType(context->session(), camVpr.x(), camVpr.y(), camVpr.z())));
 	context->set_variable("$vpd", Value(qglview->cam.zoomValue()));
 	context->set_variable("$vpf", Value(qglview->cam.fovValue()));
 }

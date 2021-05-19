@@ -191,7 +191,7 @@ Value builtin_rands(Arguments arguments, const Location& loc)
 		deterministic_rng.seed( seed );
 	}
 
-	VectorType vec;
+	VectorType vec(arguments.session());
 	if (min>=max) { // uniform_real_distribution doesn't allow min == max
 		for (size_t i=0; i < numresults; ++i)
 			vec.emplace_back(min);
@@ -444,7 +444,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
 
 Value builtin_concat(Arguments arguments, const Location& loc)
 {
-	VectorType result;
+	VectorType result(arguments.session());
 	for (auto& argument : arguments) {
 		if (argument->type() == Value::Type::VECTOR) {
 			result.emplace_back(EmbeddedVectorType(std::move(argument->toVectorNonConst())));
@@ -548,16 +548,19 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
 
 */
 
-static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &table,
-																unsigned int num_returns_per_match)
-{
-	VectorType returnvec;
+static VectorType search(
+	const str_utf8_wrapper &find,
+	const str_utf8_wrapper &table,
+	unsigned int num_returns_per_match,
+	EvaluationSession* session
+) {
+	VectorType returnvec(session);
 	//Unicode glyph count for the length
 	size_t findThisSize = find.get_utf8_strlen();
 	size_t searchTableSize = table.get_utf8_strlen();
 	for (size_t i = 0; i < findThisSize; ++i) {
 		unsigned int matchCount = 0;
-		VectorType resultvec;
+		VectorType resultvec(session);
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; ++j) {
 			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
@@ -585,23 +588,27 @@ static VectorType search(const str_utf8_wrapper &find, const str_utf8_wrapper &t
 	return returnvec;
 }
 
-static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
-		unsigned int num_returns_per_match, unsigned int index_col_num,
-		const Location &loc, const std::string& documentRoot)
-{
-	VectorType returnvec;
+static VectorType search(
+	const str_utf8_wrapper &find,
+	const VectorType &table,
+	unsigned int num_returns_per_match,
+	unsigned int index_col_num,
+	const Location &loc,
+	EvaluationSession* session
+) {
+	VectorType returnvec(session);
 	//Unicode glyph count for the length
 	unsigned int findThisSize =  find.get_utf8_strlen();
 	unsigned int searchTableSize = table.size();
 	for (size_t i = 0; i < findThisSize; ++i) {
 		unsigned int matchCount = 0;
-		VectorType resultvec;
+		VectorType resultvec(session);
 		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; ++j) {
 			const auto &entryVec = table[j].toVector();
 			if (entryVec.size() <= index_col_num) {
-				LOG(message_group::Warning,loc,documentRoot,"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s",j,(index_col_num + 1),table[j].toEchoString());
-				return VectorType();
+				LOG(message_group::Warning,loc,session->documentRoot(),"Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s",j,(index_col_num + 1),table[j].toEchoString());
+				return VectorType(session);
 			}
 			const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
@@ -620,7 +627,7 @@ static VectorType search(const str_utf8_wrapper &find, const VectorType &table,
 		if (matchCount == 0) {
 			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-			LOG(message_group::Warning,loc,documentRoot,"search term not found: \"%1$s\"",utf8_of_cp);
+			LOG(message_group::Warning,loc,session->documentRoot(),"search term not found: \"%1$s\"",utf8_of_cp);
 		}
 		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 			returnvec.emplace_back(std::move(resultvec));
@@ -641,7 +648,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
 	unsigned int num_returns_per_match = (arguments.size() > 2) ? (unsigned int)arguments[2]->toDouble() : 1;
 	unsigned int index_col_num = (arguments.size() > 3) ? (unsigned int)arguments[3]->toDouble() : 0;
 
-	VectorType returnvec;
+	VectorType returnvec(arguments.session());
 
 	if (findThis.type() == Value::Type::NUMBER) {
 		unsigned int matchCount = 0;
@@ -658,16 +665,16 @@ Value builtin_search(Arguments arguments, const Location& loc)
 		}
 	} else if (findThis.type() == Value::Type::STRING) {
 		if (searchTable.type() == Value::Type::STRING) {
-			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match);
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match, arguments.session());
 		}
 		else {
-			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVector(), num_returns_per_match, index_col_num, loc, arguments.documentRoot());
+			returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVector(), num_returns_per_match, index_col_num, loc, arguments.session());
 		}
 	} else if (findThis.type() == Value::Type::VECTOR) {
 		const auto &findVec = findThis.toVector();
 		for (size_t i = 0; i < findVec.size(); ++i) {
 			unsigned int matchCount = 0;
-			VectorType resultvec;
+			VectorType resultvec(arguments.session());
 
 			const auto &find_value = findVec[i];
 			size_t j = 0;
@@ -704,7 +711,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
 
 Value builtin_version(Arguments arguments, const Location& loc)
 {
-	VectorType vec;
+	VectorType vec(arguments.session());
 	vec.emplace_back(double(OPENSCAD_YEAR));
 	vec.emplace_back(double(OPENSCAD_MONTH));
 #ifdef OPENSCAD_DAY
@@ -802,10 +809,10 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 	double y = v0[2].toDouble() * v1[0].toDouble() - v0[0].toDouble() * v1[2].toDouble();
 	double z = v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble();
 	
-	return VectorType(x,y,z);
+	return VectorType(arguments.session(), x, y, z);
 }
 
-Value builtin_is_undef(const std::shared_ptr<Context>& context, const FunctionCall* call)
+Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall* call)
 {
 	if (call->arguments.size() != 1) {
 		print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());
