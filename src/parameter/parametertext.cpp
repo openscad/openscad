@@ -36,7 +36,7 @@ void ParameterText::onEditingFinished() {
 #ifdef DEBUG
 	PRINTD("editing finished");
 #endif
-	if (lastApplied && lastApplied != parameter->value) {
+	if (lastApplied != parameter->value) {
 		lastSent = parameter->value = lineEdit->text().toStdString();
 		emit changed(true);
 	}
@@ -44,6 +44,6 @@ void ParameterText::onEditingFinished() {
 
 void ParameterText::setValue()
 {
-	lastSent = parameter->value;
+	lastApplied = lastSent = parameter->value;
 	lineEdit->setText(QString::fromStdString(parameter->value));
 }

@@ -76,6 +76,6 @@ void ParameterSpinBox::onEditingFinished()
 
 void ParameterSpinBox::setValue()
 {
-	lastSent = parameter->value;
+	lastApplied = lastSent = parameter->value;
 	doubleSpinBox->setValue(parameter->value);
 }

@@ -69,9 +69,14 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
 		spinbox->setSingleStep(step);
 		spinbox->show();
 		connect(spinbox, SIGNAL(valueChanged(double)), this, SLOT(onChanged()));
+		connect(spinbox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 	}
 
 	setValue();
+}
+
+void ParameterVector::valueApplied() {
+	lastApplied = lastSent;
 }
 
 void ParameterVector::onChanged()
@@ -79,12 +84,38 @@ void ParameterVector::onChanged()
 	for (size_t i = 0; i < spinboxes.size(); i++) {
 		parameter->value[i] = spinboxes[i]->value();
 	}
-	emit changed(false);
+	if (parameter->value != lastSent) {
+		lastSent = parameter->value;
+		emit changed(false);
+	}
+}
+
+void ParameterVector::onEditingFinished()
+{
+#ifdef DEBUG
+	const auto& pv = parameter->value;
+	const auto& ls = lastSent;
+	const auto& la = lastApplied;
+	if (pv.size() == 4) PRINTD(STR("[finished] parameter->value = "<< "["<<pv[0]<<","<<pv[1]<<","<<pv[2]<<","<<pv[3]<<"]"));
+	if (ls.size() == 4) PRINTD(STR("[finished] sent = "            << "["<<ls[0]<<","<<ls[1]<<","<<ls[2]<<","<<ls[3]<<"]"));
+	if (la.size() == 4) PRINTD(STR("[finished] applied = "         << "["<<la[0]<<","<<la[1]<<","<<la[2]<<","<<la[3]<<"]"));
+#endif
+	if (lastApplied != parameter->value) {
+		lastSent = parameter->value;
+		emit changed(true);
+	}
 }
 
 void ParameterVector::setValue()
 {
+#ifdef DEBUG
+	PRINTD("setValue");
+#endif
+	lastApplied = lastSent = parameter->value;
 	for (size_t i = 0; i < spinboxes.size(); i++) {
+		// don't emit valueChanged signal for initial setup
+		spinboxes[i]->blockSignals(true);
 		spinboxes[i]->setValue(parameter->value[i]);
+		spinboxes[i]->blockSignals(false);
 	}
 }

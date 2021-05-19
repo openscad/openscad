@@ -128,7 +128,7 @@ void ParameterSlider::setValue()
 	PRINTD(STR("[setValue] parameter->value=" << parameter->value << ", lastSent=" << lastSent <<	", lastApplied=" << lastApplied));
 #endif
 	int position = sliderPosition(parameter->value);
-	lastSent = parameter->value;
+	lastApplied = lastSent = parameter->value;
 	slider->setValue(position);
 }
 
