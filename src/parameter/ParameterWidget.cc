@@ -387,6 +387,7 @@ ParameterVirtualWidget* ParameterWidget::createParameterWidget(ParameterObject* 
 		return new ParameterComboBox(this, static_cast<EnumParameter*>(parameter), descriptionStyle);
 	} else {
 		assert(false);
+		return nullptr;
 	}
 }
 
