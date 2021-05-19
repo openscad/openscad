@@ -11,6 +11,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	slider->installEventFilter(ignoreWheelWhenNotFocused);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox->setKeyboardTracking(true);
 
 	assert(parameter->minimum);
 	assert(parameter->maximum);
@@ -114,8 +115,7 @@ void ParameterSlider::commitChange(bool immediate) {
 #ifdef DEBUG
 	PRINTD(STR("[commit] value=" << value << ", parameter->value=" << parameter->value << ", lastSent=" << lastSent <<	", lastApplied=" << lastApplied));
 #endif
-	// emit if nothing sent OR nothing applied OR *applied != val
-	if ((immediate && lastApplied && lastApplied != value) || (!immediate && lastSent != value) ) {
+	if ((immediate && lastApplied != value) || (!immediate && lastSent != value) ) {
 		lastSent = parameter->value = value;
 		emit changed(immediate);
 	}

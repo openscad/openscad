@@ -10,6 +10,7 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, 
 
 	IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
 	doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
+	doubleSpinBox->setKeyboardTracking(true);
 
 	int decimals = decimalsRequired(parameter->defaultValue);
 	double minimum;
@@ -67,7 +68,7 @@ void ParameterSpinBox::onEditingFinished()
 #ifdef DEBUG
 	PRINTD(STR("[finished] parameter->value=" << parameter->value << ", lastSent=" << lastSent <<	", lastApplied=" << lastApplied));
 #endif
-	if (lastApplied && lastApplied != parameter->value) {
+	if (lastApplied != parameter->value) {
 		lastSent = parameter->value;
 		emit changed(true);
 	}
