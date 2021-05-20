@@ -26,6 +26,12 @@ class Arguments : public std::vector<Argument>
 	Arguments(Arguments&& other) = default;
 	Arguments& operator=(Arguments&& other) = default;
 	
+	private:
+	Arguments(EvaluationSession* session): evaluation_session(session) {}
+	
+	public:
+	Arguments clone() const;
+	
 	EvaluationSession* session() const { return evaluation_session; }
 	const std::string &documentRoot() const { return evaluation_session->documentRoot(); }
 	

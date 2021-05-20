@@ -19,6 +19,8 @@ private:
 	Parameters(ContextFrame&& frame);
 
 public:
+	Parameters(Parameters&& other);
+	
 	/*
 	 * Matches arguments with parameters.
 	 * Does not support default arguments.

@@ -38,6 +38,15 @@ Arguments::Arguments(const AssignmentList& argument_expressions, const std::shar
 	}
 }
 
+Arguments Arguments::clone() const
+{
+	Arguments output(evaluation_session);
+	for (const Argument& argument : *this) {
+		output.emplace_back(argument.name, argument.value.clone());
+	}
+	return output;
+}
+
 std::ostream &operator<<(std::ostream &stream, const Argument& argument)
 {
 	if (argument.name) {

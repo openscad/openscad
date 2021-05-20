@@ -34,6 +34,11 @@ Parameters::Parameters(ContextFrame&& frame):
 	handle(&this->frame)
 {}
 
+Parameters::Parameters(Parameters&& other):
+	frame(std::move(other).to_context_frame()),
+	handle(&this->frame)
+{}
+
 boost::optional<const Value&> Parameters::lookup(const std::string& name) const
 {
 	if (ContextFrame::is_config_variable(name)) {
