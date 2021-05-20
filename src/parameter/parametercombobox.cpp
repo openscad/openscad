@@ -21,8 +21,10 @@ ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter* parameter, 
 
 void ParameterComboBox::onChanged(int index)
 {
-	parameter->valueIndex = index;
-	emit changed();
+	if (parameter->valueIndex != index) {
+		parameter->valueIndex	= index;
+		emit changed(true);
+	}
 }
 
 void ParameterComboBox::setValue()

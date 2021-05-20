@@ -66,7 +66,7 @@ void SettingsEntryDouble::decode(const std::string& encoded)
 
 void SettingsEntryEnum::setValue(const std::string& value)
 {
-	for (int i = 0; i < _items.size(); i++) {
+	for (size_t i = 0; i < _items.size(); ++i) {
 		if (_items[i].value == value) {
 			_index = i;
 			return;

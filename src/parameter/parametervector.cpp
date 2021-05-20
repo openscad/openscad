@@ -69,26 +69,45 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
 		spinbox->setSingleStep(step);
 		spinbox->show();
 		connect(spinbox, SIGNAL(valueChanged(double)), this, SLOT(onChanged()));
+		connect(spinbox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 	}
 
 	setValue();
 }
 
+void ParameterVector::valueApplied() {
+	lastApplied = lastSent;
+}
+
 void ParameterVector::onChanged()
 {
-	if (!inUpdate) {
-		for (size_t i = 0; i < spinboxes.size(); i++) {
-			parameter->value[i] = spinboxes[i]->value();
-		}
-		emit changed();
+	for (size_t i = 0; i < spinboxes.size(); i++) {
+		parameter->value[i] = spinboxes[i]->value();
+	}
+	if (parameter->value != lastSent) {
+		lastSent = parameter->value;
+		emit changed(false);
+	}
+}
+
+void ParameterVector::onEditingFinished()
+{
+	if (lastApplied != parameter->value) {
+		lastSent = parameter->value;
+		emit changed(true);
 	}
 }
 
 void ParameterVector::setValue()
 {
-	inUpdate = true;
+#ifdef DEBUG
+	PRINTD("setValue");
+#endif
+	lastApplied = lastSent = parameter->value;
 	for (size_t i = 0; i < spinboxes.size(); i++) {
+		// don't emit valueChanged signal for initial setup
+		spinboxes[i]->blockSignals(true);
 		spinboxes[i]->setValue(parameter->value[i]);
+		spinboxes[i]->blockSignals(false);
 	}
-	inUpdate = false;
 }

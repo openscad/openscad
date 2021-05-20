@@ -59,7 +59,7 @@ public:
 	StringParameter(
 		const std::string& name, const std::string& description, const std::string& group,
 		const std::string& defaultValue,
-		boost::optional<int> maximumSize
+		boost::optional<size_t> maximumSize
 	);
 	
 	void reset() override { value = defaultValue; }
@@ -69,7 +69,7 @@ public:
 	
 	std::string value;
 	std::string defaultValue;
-	boost::optional<int> maximumSize;
+	boost::optional<size_t> maximumSize;
 };
 
 class NumberParameter : public ParameterObject

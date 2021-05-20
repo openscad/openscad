@@ -73,6 +73,9 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
+     <property name="tracking">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
   </layout>
