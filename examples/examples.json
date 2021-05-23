@@ -6,6 +6,7 @@
     "LetterBlock.scad",
     "logo_and_text.scad",
     "linear_extrude.scad",
+    "roof.scad",
     "rotate_extrude.scad",
     "text_on_cube.scad",
     "projection.scad"

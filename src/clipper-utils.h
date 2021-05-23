@@ -7,6 +7,7 @@ namespace ClipperUtils {
 
 	static const unsigned int CLIPPER_SCALE = 1 << 16;
 
+	VectorOfVector2d fromPath(ClipperLib::Path path);
 	ClipperLib::Path fromOutline2d(const Outline2d &poly, bool keep_orientation);
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly);
 	ClipperLib::PolyTree sanitize(const ClipperLib::Paths &paths);

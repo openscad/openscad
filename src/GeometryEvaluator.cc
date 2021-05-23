@@ -9,6 +9,11 @@
 #include "offsetnode.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
+#include "roofnode.h"
+#include "roof_ss.h"
+#include "roof_vd.h"
+#include "warpnode.h"
+#include "warp.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"
@@ -1376,6 +1381,84 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 			geom = applyToChildren(node, OpenSCADOperator::INTERSECTION).constptr();
 		}
 		else {
+			geom = smartCacheGet(node, state.preferNef());
+		}
+		addToParent(state, node, geom);
+		node.progress_report();
+	}
+	return Response::ContinueTraversal;
+}
+
+static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
+{
+	PolySet *roof;
+	if (node.method == "voronoi diagram") {
+		roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+	} else if (node.method == "straight skeleton") {
+		roof = roof_ss::straight_skeleton_roof(poly);
+	} else {
+		assert(false && "Invalid roof method");
+	}
+	return roof;
+}
+
+Response GeometryEvaluator::visit(State &state, const RoofNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+			if (geometry) {
+				auto *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				Geometry *roof;
+				try {
+					roof = roofOverPolygon(node, *polygons);
+				} catch (RoofNode::roof_exception &e) {
+					LOG(message_group::Error,node.modinst->location(),this->tree.getDocumentPath(),
+							"Skeleton computation error. " + e.message());
+					roof = new PolySet(3);
+				}
+				assert(roof);
+				geom.reset(roof);
+				delete geometry;
+			}
+		}
+		else {
+			geom = smartCacheGet(node, false);
+		}
+		addToParent(state, node, geom);
+	}
+	return Response::ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State &state, const WarpNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isSmartCached(node)) {
+			// First union all children
+			ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+			if ((geom = res.constptr())) {
+				if (geom->getDimension() == 2) {
+					LOG(message_group::Warning,node.modinst->location(),this->tree.getDocumentPath(),"Warp: dimension 2 is not supported!");
+				}
+				else if (geom->getDimension() == 3) {
+					shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+					PolySet pss(3);
+					if (ps) {
+						pss = *ps;
+					} else  { // cgal nef polyhedron ?
+						shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+						assert(N);
+						CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, pss);
+					}
+					shared_ptr<PolySet> newps = warp_ns::warp(pss, node.grid_x, node.grid_y, node.grid_z, node.R, node.r);
+					geom = newps;
+				}
+			}
+		} else {
 			geom = smartCacheGet(node, state.preferNef());
 		}
 		addToParent(state, node, geom);

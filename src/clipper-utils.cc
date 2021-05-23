@@ -3,6 +3,15 @@
 
 namespace ClipperUtils {
 
+	VectorOfVector2d fromPath(ClipperLib::Path path)
+	{
+		VectorOfVector2d ret;
+		for (auto v : path) {
+		    ret.emplace_back(1.0 * v.X / CLIPPER_SCALE, 1.0 * v.Y / CLIPPER_SCALE);
+		}
+		return ret;
+	}
+
 	ClipperLib::Path fromOutline2d(const Outline2d &outline, bool keep_orientation)
 	{
 		ClipperLib::Path p;
