@@ -42,7 +42,7 @@ public:
 
 	QTimer *autoReloadTimer;
 	QTimer *waitAfterReloadTimer;
-	QTime renderingTime;
+	QElapsedTimer renderingTime;
 
 	SourceFile *root_file;      // Result of parsing
 	SourceFile *parsed_file;		// Last parse for include list
