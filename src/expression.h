@@ -17,8 +17,8 @@ public:
 	Expression(const Location &loc) : ASTNode(loc) {}
 	~Expression() {}
 	virtual bool isLiteral() const;
-	virtual Value evaluate(const std::shared_ptr<Context>& context) const = 0;
-	Value checkUndef(Value&& val, const std::shared_ptr<Context>& context) const;
+	virtual Value evaluate(const std::shared_ptr<const Context>& context) const = 0;
+	Value checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const;
 };
 
 class UnaryOp : public Expression
@@ -30,7 +30,7 @@ public:
 	};
 	bool isLiteral() const override;
 	UnaryOp(Op op, Expression *expr, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 
 private:
@@ -61,7 +61,7 @@ public:
 	};
 
 	BinaryOp(Expression *left, Op op, Expression *right, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 
 private:
@@ -76,8 +76,8 @@ class TernaryOp : public Expression
 {
 public:
 	TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
-	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	const Expression* evaluateStep(const std::shared_ptr<const Context>& context) const;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	shared_ptr<Expression> cond;
@@ -89,7 +89,7 @@ class ArrayLookup : public Expression
 {
 public:
 	ArrayLookup(Expression *array, Expression *index, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	shared_ptr<Expression> array;
@@ -112,7 +112,7 @@ public:
 	const std::string* toString() const { return boost::get<std::string>(&value); }
 	bool isUndefined() const { return !!boost::get<boost::none_t>(&value); }
 	
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override { return true;}
 private:
@@ -127,7 +127,7 @@ public:
 	const Expression* getBegin() const { return begin.get(); }
 	const Expression* getStep() const { return step.get(); }
 	const Expression* getEnd() const { return end.get(); }
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override;
 private:
@@ -141,7 +141,7 @@ class Vector : public Expression
 public:
 	Vector(const Location &loc);
 	const std::vector<shared_ptr<Expression>>& getChildren() const { return children; }
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	void emplace_back(Expression *expr);
 	bool isLiteral() const override;
@@ -154,7 +154,7 @@ class Lookup : public Expression
 {
 public:
 	Lookup(const std::string &name, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	const std::string& get_name() const { return name; }
 private:
@@ -165,7 +165,7 @@ class MemberLookup : public Expression
 {
 public:
 	MemberLookup(Expression *expr, const std::string &member, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	shared_ptr<Expression> expr;
@@ -176,8 +176,8 @@ class FunctionCall : public Expression
 {
 public:
 	FunctionCall(Expression *expr, const AssignmentList &arglist, const Location &loc);
-	boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<Context>& context) const;
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<const Context>& context) const;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	const std::string& get_name() const { return name; }
 	static Expression * create(const std::string &funcname, const AssignmentList &arglist, Expression *expr, const Location &loc);
@@ -192,10 +192,10 @@ class FunctionDefinition : public Expression
 {
 public:
 	FunctionDefinition(Expression *expr, const AssignmentList &parameters, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 public:
-	shared_ptr<Context> context;
+	shared_ptr<const Context> context;
 	AssignmentList parameters;
 	shared_ptr<Expression> expr;
 };
@@ -204,9 +204,9 @@ class Assert : public Expression
 {
 public:
 	Assert(const AssignmentList &args, Expression *expr, const Location &loc);
-	static void performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<Context>& context);
-	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	static void performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<const Context>& context);
+	const Expression* evaluateStep(const std::shared_ptr<const Context>& context) const;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	AssignmentList arguments;
@@ -217,8 +217,8 @@ class Echo : public Expression
 {
 public:
 	Echo(const AssignmentList &args, Expression *expr, const Location &loc);
-	const Expression* evaluateStep(const std::shared_ptr<Context>& context) const;
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	const Expression* evaluateStep(const std::shared_ptr<const Context>& context) const;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	AssignmentList arguments;
@@ -229,10 +229,10 @@ class Let : public Expression
 {
 public:
 	Let(const AssignmentList &args, Expression *expr, const Location &loc);
-	static void doSequentialAssignment(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& targetContext);
-	static ContextHandle<Context> sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<Context>& context);
-	const Expression* evaluateStep(const std::shared_ptr<Context>& targetContext) const;
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	static void doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext);
+	static ContextHandle<Context> sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<const Context>& context);
+	const Expression* evaluateStep(ContextHandle<Context>& targetContext) const;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	AssignmentList arguments;
@@ -250,7 +250,7 @@ class LcIf : public ListComprehension
 {
 public:
 	LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	shared_ptr<Expression> cond;
@@ -262,8 +262,8 @@ class LcFor : public ListComprehension
 {
 public:
 	LcFor(const AssignmentList &args, Expression *expr, const Location &loc);
-	static void forEach(const AssignmentList& assignments, const Location &loc, const std::shared_ptr<Context>& context, std::function<void(const std::shared_ptr<Context>&)> operation);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	static void forEach(const AssignmentList& assignments, const Location &loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation);
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	AssignmentList arguments;
@@ -274,7 +274,7 @@ class LcForC : public ListComprehension
 {
 public:
 	LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expression *cond, Expression *expr, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	AssignmentList arguments;
@@ -287,10 +287,10 @@ class LcEach : public ListComprehension
 {
 public:
 	LcEach(Expression *expr, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
-	Value evalRecur(Value &&v, const std::shared_ptr<Context>& context) const;
+	Value evalRecur(Value &&v, const std::shared_ptr<const Context>& context) const;
 	shared_ptr<Expression> expr;
 };
 
@@ -298,7 +298,7 @@ class LcLet : public ListComprehension
 {
 public:
 	LcLet(const AssignmentList &args, Expression *expr, const Location &loc);
-	Value evaluate(const std::shared_ptr<Context>& context) const override;
+	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 private:
 	AssignmentList arguments;

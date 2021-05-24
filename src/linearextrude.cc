@@ -46,24 +46,38 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+/*
+ * Historic linear_extrude argument parsing is quirky. To remain bug-compatible,
+ * try two different parses depending on conditions.
+ */
+Parameters parse_parameters(Arguments arguments, const Location& location)
+{
+	{
+		Parameters normal_parse = Parameters::parse(arguments.clone(), location,
+			{"file", "layer", "height", "origin", "scale", "center", "twist", "slices", "segments"},
+			{"convexity"}
+		);
+		if (normal_parse["height"].isDefined()) {
+			return normal_parse;
+		}
+		if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
+			return normal_parse;
+		}
+	}
+	
+	// if height not given, and first argument is a number,
+	// then assume it should be the height.
+	return Parameters::parse(std::move(arguments), location,
+		{"height", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
+		{"convexity"}
+	);
+}
+
 static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new LinearExtrudeNode(inst);
 
-	// if height not given, and first argument is a number,
-	// then assume it should be the height.
-	bool first_argument_is_height = (arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER);
-	Parameters parameters = first_argument_is_height ?
-		Parameters::parse(std::move(arguments), inst->location(),
-			{"height", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
-			{"convexity"}
-		)
-	:
-		Parameters::parse(std::move(arguments), inst->location(),
-			{"file", "layer", "height", "origin", "scale", "center", "twist", "slices", "segments"},
-			{"convexity"}
-		)
-	;
+	Parameters parameters = parse_parameters(std::move(arguments), inst->location());
 
 	node->fn = parameters["$fn"].toDouble();
 	node->fs = parameters["$fs"].toDouble();

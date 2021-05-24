@@ -189,7 +189,7 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 
 	auto result = dxf_cross_cache.find(key);
 	if (result != dxf_cross_cache.end()) {
-		VectorType ret;
+		VectorType ret(arguments.session());
 		for (auto v : result->second) {
 			ret.emplace_back(v);
 		}
@@ -223,7 +223,7 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 			
 			std::vector<double> value = {x, y};
 			dxf_cross_cache.emplace(key, value);
-			VectorType ret;
+			VectorType ret(arguments.session());
 			ret.emplace_back(x);
 			ret.emplace_back(y);
 			return Value(std::move(ret));

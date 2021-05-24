@@ -19,7 +19,7 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, 
 void ParameterCheckBox::onChanged()
 {
 	parameter->value = checkBox->isChecked();
-	emit changed();
+	emit changed(true);
 }
 
 void ParameterCheckBox::setValue()

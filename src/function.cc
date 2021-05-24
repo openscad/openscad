@@ -29,7 +29,7 @@
 #include "function.h"
 #include "printutils.h"
 
-BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<Context>&, const FunctionCall*), const Feature* feature):
+BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<const Context>&, const FunctionCall*), const Feature* feature):
 	evaluate(f),
 	feature(feature)
 {}
@@ -37,7 +37,7 @@ BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<Context>&, con
 BuiltinFunction::BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature* feature):
 	feature(feature)
 {
-	evaluate = [f] (const std::shared_ptr<Context>& context, const FunctionCall* call) {
+	evaluate = [f] (const std::shared_ptr<const Context>& context, const FunctionCall* call) {
 		return f(Arguments(call->arguments, context), call->location());
 	};
 }

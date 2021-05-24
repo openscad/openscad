@@ -27,7 +27,7 @@
 #include "arguments.h"
 #include "expression.h"
 
-Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<Context>& context):
+Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<const Context>& context):
 	evaluation_session(context->session())
 {
 	for (const auto& argument_expression : argument_expressions) {
@@ -36,6 +36,15 @@ Arguments::Arguments(const AssignmentList& argument_expressions, const std::shar
 			argument_expression->getExpr()->evaluate(context)
 		);
 	}
+}
+
+Arguments Arguments::clone() const
+{
+	Arguments output(evaluation_session);
+	for (const Argument& argument : *this) {
+		output.emplace_back(argument.name, argument.value.clone());
+	}
+	return output;
 }
 
 std::ostream &operator<<(std::ostream &stream, const Argument& argument)

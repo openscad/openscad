@@ -31,6 +31,7 @@
 #include "modcontext.h"
 #include "expression.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include <cstdint>
 #include "boost-utils.h"
@@ -44,7 +45,7 @@ static AbstractNode* lazyUnionNode(const ModuleInstantiation *inst)
 	}
 }
 
-static boost::optional<size_t> validChildIndex(int n, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static boost::optional<size_t> validChildIndex(int n, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	if (n < 0 || n >= static_cast<int>(children->size())) {
 		LOG(message_group::Warning,inst->location(),context->documentRoot(),"Children index (%1$d) out of bounds (%2$d children)",n,children->size());
@@ -53,7 +54,7 @@ static boost::optional<size_t> validChildIndex(int n, const Children* children, 
 	return size_t(n);
 }
 
-static boost::optional<size_t> validChildIndex(const Value &value, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static boost::optional<size_t> validChildIndex(const Value &value, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	if (value.type() != Value::Type::NUMBER) {
 		LOG(message_group::Warning,inst->location(),context->documentRoot(),"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
@@ -62,7 +63,7 @@ static boost::optional<size_t> validChildIndex(const Value &value, const Childre
 	return validChildIndex(static_cast<int>(trunc(value.toDouble())), children, inst, context);
 }
 
-static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 	
@@ -72,6 +73,7 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	}
 	
 	Arguments arguments{inst->arguments, context};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
 	const Children* children = context->user_module_children();
 	if (!children) {
 		// child() called outside any user module
@@ -79,10 +81,10 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	}
 	
 	boost::optional<size_t> index;
-	if (arguments.size() == 0) {
+	if (!parameters.contains("index")) {
 		index = validChildIndex(0, children, inst, context);
 	} else {
-		index = validChildIndex(arguments[0].value, children, inst, context);
+		index = validChildIndex(parameters["index"], children, inst, context);
 	}
 	if (!index) {
 		return nullptr;
@@ -90,7 +92,7 @@ static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::s
 	return children->instantiate(lazyUnionNode(inst), {*index});
 }
 
-static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	if (!inst->scope.moduleInstantiations.empty()) {
 		LOG(message_group::Warning,inst->location(),context->documentRoot(),
@@ -98,28 +100,29 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	}
 	
 	Arguments arguments{inst->arguments, context};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
 	const Children* children = context->user_module_children();
 	if (!children) {
 		// children() called outside any user module
 		return nullptr;
 	}
 	
-	if (arguments.size() == 0) {
+	if (!parameters.contains("index")) {
 		// no arguments => all children
 		return children->instantiate(lazyUnionNode(inst));
 	}
 	
 	// one (or more ignored) argument
-	if (arguments[0]->type() == Value::Type::NUMBER) {
-		auto index = validChildIndex(arguments[0].value, children, inst, context);
+	if (parameters["index"].type() == Value::Type::NUMBER) {
+		auto index = validChildIndex(parameters["index"], children, inst, context);
 		if (!index) {
 			return nullptr;
 		}
 		return children->instantiate(lazyUnionNode(inst), {*index});
 	}
-	else if (arguments[0]->type() == Value::Type::VECTOR) {
+	else if (parameters["index"].type() == Value::Type::VECTOR) {
 		std::vector<size_t> indices;
-		for (const auto& val : arguments[0]->toVector()) {
+		for (const auto& val : parameters["index"].toVector()) {
 			auto index = validChildIndex(val, children, inst, context);
 			if (index) {
 				indices.push_back(*index);
@@ -127,11 +130,11 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 		}
 		return children->instantiate(lazyUnionNode(inst), indices);
 	}
-	else if (arguments[0]->type() == Value::Type::RANGE) {
-		const RangeType &range = arguments[0]->toRange();
+	else if (parameters["index"].type() == Value::Type::RANGE) {
+		const RangeType &range = parameters["index"].toRange();
 		uint32_t steps = range.numValues();
 		if (steps >= RangeType::MAX_RANGE_STEPS) {
-			LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
 				"Bad range parameter for children: too many elements (%1$lu)",steps);
 			return nullptr;
 		}
@@ -146,7 +149,7 @@ static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std
 	}
 	else {
 		// Invalid argument
-		LOG(message_group::Warning,inst->location(),arguments.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",arguments[0]->toEchoString());
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",parameters["index"].toEchoString());
 		return nullptr;
 	}
 }
@@ -164,7 +167,7 @@ static AbstractNode* builtin_echo(const ModuleInstantiation *inst, Arguments arg
 	return node;
 }
 
-static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	Assert::performAssert(inst->arguments, inst->location(), context);
 	
@@ -177,12 +180,12 @@ static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::
 	return node;
 }
 
-static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	return Children(&inst->scope, *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
 }
 
-static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	// We create a new context to avoid arguments from influencing each other
 	// -> parallel evaluation. This is to be backwards compatible.
@@ -202,12 +205,12 @@ static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::
 	return Children(&inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
 }
 
-static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	AbstractNode* node = lazyUnionNode(inst);
 	if (!inst->arguments.empty()) {
 		LcFor::forEach(inst->arguments, inst->location(), context,
-			[inst, node] (const std::shared_ptr<Context>& iterationContext) {
+			[inst, node] (const std::shared_ptr<const Context>& iterationContext) {
 				Children(&inst->scope, iterationContext).instantiate(node);
 			}
 		);
@@ -215,12 +218,12 @@ static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::sha
 	return node;
 }
 
-static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	AbstractNode *node = new AbstractIntersectionNode(inst);
 	if (!inst->arguments.empty()) {
 		LcFor::forEach(inst->arguments, inst->location(), context,
-			[inst, node] (const std::shared_ptr<Context>& iterationContext) {
+			[inst, node] (const std::shared_ptr<const Context>& iterationContext) {
 				Children(&inst->scope, iterationContext).instantiate(node);
 			}
 		);
@@ -228,7 +231,7 @@ static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, c
 	return node;
 }
 
-static AbstractNode* builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<Context>& context)
+static AbstractNode* builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
 	Arguments arguments{inst->arguments, context};
 	const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
