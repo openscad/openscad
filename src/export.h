@@ -27,7 +27,8 @@ enum class FileFormat {
 	TERM,
 	ECHO,
     PNG,
-    PDF
+    PDF,
+	PARAM
 };
 
 struct ExportInfo {
@@ -72,6 +73,7 @@ struct ExportFileFormatOptions {
 		{"nefdbg", FileFormat::NEFDBG},
 		{"nef3", FileFormat::NEF3},
 		{"csg", FileFormat::CSG},
+		{"param", FileFormat::PARAM},
 		{"ast", FileFormat::AST},
 		{"term", FileFormat::TERM},
 		{"echo", FileFormat::ECHO},
@@ -118,6 +120,7 @@ class OffscreenView;
 std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& options, Camera camera);
 bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
 bool export_png(const OffscreenView &glview, std::ostream &output);
+bool export_param(SourceFile *root, const fs::path& path, std::ostream &output);
 
 namespace Export {
 

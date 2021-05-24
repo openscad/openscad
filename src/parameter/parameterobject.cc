@@ -5,6 +5,23 @@
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 
+namespace {
+
+bool set_enum_value(json& o, const std::string name, const EnumParameter::EnumItem& item)
+{
+	EnumParameter::EnumValue itemValue = item.value;
+	double* doubleValue = boost::get<double>(&itemValue);
+	if (doubleValue) {
+		o[name] = *doubleValue;
+		return true;
+	} else {
+		o[name] = boost::get<std::string>(itemValue);
+		return false;
+	}
+}
+
+}
+
 bool BoolParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
 {
 	boost::optional<bool> decoded = encodedValue.get_value_optional<bool>();
@@ -22,6 +39,14 @@ boost::property_tree::ptree BoolParameter::exportValue() const
 	boost::property_tree::ptree output;
 	output.put_value<bool>(value);
 	return output;
+}
+
+json BoolParameter::jsonValue() const
+{
+	json o;
+	o["type"] = "boolean";
+	o["initial"] = defaultValue;
+	return o;
 }
 
 void BoolParameter::apply(Assignment* assignment) const
@@ -61,6 +86,17 @@ boost::property_tree::ptree StringParameter::exportValue() const
 	return output;
 }
 
+json StringParameter::jsonValue() const
+{
+	json o;
+	o["type"] = "string";
+	o["initial"] = defaultValue;
+	if (maximumSize.is_initialized()) {
+		o["maxLength"] = maximumSize.get();
+	}
+	return o;
+}
+
 void StringParameter::apply(Assignment* assignment) const
 {
 	assignment->setExpr(std::make_shared<Literal>(value));
@@ -89,6 +125,20 @@ boost::property_tree::ptree NumberParameter::exportValue() const
 	boost::property_tree::ptree output;
 	output.put_value<double>(value);
 	return output;
+}
+
+json NumberParameter::jsonValue() const
+{
+	json o;
+	o["type"] = "number";
+	o["initial"] = defaultValue;
+
+	if (maximum.is_initialized()) {
+		o["max"] = maximum.get();
+		o["min"] = minimum.is_initialized() ? minimum.get() : 0.0;
+		o["step"] = step.is_initialized() ? step.get() : 1.0;
+	}
+	return o;
 }
 
 void NumberParameter::apply(Assignment* assignment) const
@@ -155,6 +205,20 @@ boost::property_tree::ptree VectorParameter::exportValue() const
 	return output;
 }
 
+json VectorParameter::jsonValue() const
+{
+	json o;
+	o["type"] = "number";
+	o["initial"] = defaultValue;
+
+	if (maximum.is_initialized()) {
+		o["max"] = maximum.get();
+		o["min"] = minimum.is_initialized() ? minimum.get() : 0.0;
+		o["step"] = step.is_initialized() ? step.get() : 1.0;
+	}
+	return o;
+}
+
 void VectorParameter::apply(Assignment* assignment) const
 {
 	std::shared_ptr<Vector> vector = std::make_shared<Vector>(Location::NONE);
@@ -197,6 +261,25 @@ boost::property_tree::ptree EnumParameter::exportValue() const
 		output.data() = boost::get<std::string>(itemValue);
 	}
 	return output;
+}
+
+json EnumParameter::jsonValue() const
+{
+	json o;
+	if (set_enum_value(o, "initial", items[defaultValueIndex])) {
+		o["type"] = "number";
+	} else {
+		o["type"] = "string";
+	}
+
+	json options;
+	for (const auto& item : items) {
+		json option;
+		option["label"] = item.key;
+		set_enum_value(option, "value", item);
+	}
+
+	return o;
 }
 
 void EnumParameter::apply(Assignment* assignment) const

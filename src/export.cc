@@ -42,6 +42,7 @@
 bool canPreview(const FileFormat format) {
 	return (format == FileFormat::AST ||
 					format == FileFormat::CSG ||
+					format == FileFormat::PARAM ||
 					format == FileFormat::ECHO ||
 					format == FileFormat::TERM ||
 					format == FileFormat::PNG);
