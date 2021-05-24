@@ -84,9 +84,7 @@ if (MXECROSS)
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
-set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
-set(AUTOGEN_TARGETS_FOLDER "${CMAKE_BINARY_DIR}/objects")
-make_directory(${AUTOGEN_BUILD_DIR})
+make_directory(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 # Default to Release build
 #if(NOT CMAKE_BUILD_TYPE)
@@ -349,6 +347,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
+  set(CMAKE_AUTOUIC_OPTIONS --tr q_)
   find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
