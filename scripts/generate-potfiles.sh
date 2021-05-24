@@ -2,29 +2,36 @@
 #
 # Generate list of files for translation. The output is saved to po/POTFILES
 # which is needed for the xgettext call.
+# Call from project root, with build directory as first parameter.
 
-for ui in objects/ui_*.h
+for ui in {.,$1,ming64,mingw32}{/OpenSCAD_autogen/include,/objects}/ui_*.h
 do
-        for d in mingw64 mingw32 .
-        do
-            if [ -f "$d/$ui" ]
-            then
-                echo "$d/$ui"
-            fi
-        done
+    if [ -f "$ui" ]
+    then
+        echo "$ui"
+    fi
 done
 
-for src in src/*.h src/*.cc src/*.cpp src/*.mm
+for src in src/*.{h,cc,cpp,mm}
 do
-	echo $src
+    if [ -f "$src" ]
+    then
+	    echo $src
+    fi
 done
 
-for src in src/parameter/*.h src/parameter/*.cc src/parameter/*.cpp
+for src in src/parameter/*.{h,cc,cpp}
 do
-	echo $src
+    if [ -f "$src" ]
+    then
+	    echo $src
+    fi
 done
 
-for src in src/input/*.h src/input/*.cc
+for src in src/input/*.{h,cc,cpp}
 do
-	echo $src
+    if [ -f "$src" ]
+    then
+	    echo $src
+    fi
 done
