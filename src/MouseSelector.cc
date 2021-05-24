@@ -1,4 +1,4 @@
-#include "mouseselector.h"
+#include "MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
 /**

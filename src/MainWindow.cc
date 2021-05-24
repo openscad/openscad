@@ -44,12 +44,12 @@
 #include "modcontext.h"
 #include "progress.h"
 #include "dxfdim.h"
-#include "settings.h"
+#include "Settings.h"
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
 #include "RenderStatistic.h"
-#include "scintillaeditor.h"
+#include "ScintillaEditor.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -59,7 +59,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
-#include "mouseselector.h"
+#include "MouseSelector.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
@@ -67,7 +67,7 @@
 #ifdef OPENSCAD_UPDATER
 #include "AutoUpdater.h"
 #endif
-#include "tabmanager.h"
+#include "TabManager.h"
 
 #include <QMenu>
 #include <QTime>
@@ -115,7 +115,7 @@
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
-#include "cgalworker.h"
+#include "CGALWorker.h"
 #include "cgalutils.h"
 
 #endif // ENABLE_CGAL

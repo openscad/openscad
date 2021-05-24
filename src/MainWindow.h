@@ -10,7 +10,7 @@
 #include "ModuleInstantiation.h"
 #include "Tree.h"
 #include "memory.h"
-#include "editor.h"
+#include "Editor.h"
 #include "export.h"
 #include <vector>
 #include <QMutex>
@@ -18,8 +18,8 @@
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
-#include "editor.h"
-#include "tabmanager.h"
+#include "Editor.h"
+#include "TabManager.h"
 #include <memory>
 
 class MouseSelector;

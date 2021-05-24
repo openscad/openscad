@@ -5,7 +5,7 @@
 #include <QTreeWidgetItem>
 
 #include "qtgettext.h"
-#include "ui_launchingscreen.h"
+#include "ui_LaunchingScreen.h"
 
 class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
 {

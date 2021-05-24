@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QFileOpenEvent>
 #include "OpenSCADApp.h"
-#include "launchingscreen.h"
+#include "LaunchingScreen.h"
 
 class SCADEventFilter : public QObject
 {

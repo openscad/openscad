@@ -1,5 +1,5 @@
-#include "parameterspinbox.h"
-#include "ignoreWheelWhenNotFocused.h"
+#include "ParameterSpinBox.h"
+#include "IgnoreWheelWhenNotFocused.h"
 
 ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle):
 	ParameterVirtualWidget(parent, parameter),

@@ -2,8 +2,8 @@
 #include <QListWidgetItem>
 
 #include "version.h"
-#include "launchingscreen.h"
-#include "ui_launchingscreen.h"
+#include "LaunchingScreen.h"
+#include "ui_LaunchingScreen.h"
 #include "QSettingsCached.h"
 
 #include "UIUtils.h"

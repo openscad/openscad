@@ -2,7 +2,7 @@
 
 #include "qtgettext.h"
 #include "ui_ButtonConfigWidget.h"
-#include "settings.h"
+#include "Settings.h"
 
 class ButtonConfigWidget: public QWidget, public Ui::Button
 {

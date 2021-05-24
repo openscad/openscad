@@ -1,6 +1,6 @@
 #include <boost/algorithm/string.hpp>
 
-#include "scadlexer.h"
+#include "ScadLexer.h"
 
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 {

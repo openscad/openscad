@@ -4,7 +4,7 @@
 #include "ui_ErrorLog.h"
 #include "printutils.h"
 #include <QStandardItemModel>
-#include "editor.h"
+#include "Editor.h"
 
 class ErrorLog : public QWidget, public Ui::errorLogWidget
 {

@@ -1,4 +1,4 @@
-#include "parametervirtualwidget.h"
+#include "ParameterVirtualWidget.h"
 
 ParameterDescriptionWidget::ParameterDescriptionWidget(QWidget *parent):
 	QWidget(parent)

@@ -1,4 +1,4 @@
-#include "scadapi.h"
+#include "ScadApi.h"
 #include "builtin.h"
 
 ScadApi::ScadApi(QsciScintilla *qsci, QsciLexer *lexer) : QsciAbstractAPIs(lexer), qsci(qsci)

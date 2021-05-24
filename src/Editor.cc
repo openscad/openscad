@@ -1,4 +1,4 @@
-#include "editor.h"
+#include "Editor.h"
 #include "Preferences.h"
 #include "QSettingsCached.h"
 

@@ -1,4 +1,4 @@
-#include "parametercheckbox.h"
+#include "ParameterCheckBox.h"
 
 ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle):
 	ParameterVirtualWidget(parent, parameter),

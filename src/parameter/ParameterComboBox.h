@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parametervirtualwidget.h"
-#include "ui_parametercombobox.h"
+#include "ParameterVirtualWidget.h"
+#include "ui_ParameterComboBox.h"
 
 class ParameterComboBox : public ParameterVirtualWidget, Ui::ParameterComboBox
 {

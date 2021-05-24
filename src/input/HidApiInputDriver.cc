@@ -38,7 +38,7 @@
 
 #include <boost/format.hpp>
 
-#include "settings.h"
+#include "Settings.h"
 #include "PlatformUtils.h"
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"

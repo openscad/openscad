@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parametervirtualwidget.h"
-#include "ui_parametervector.h"
+#include "ParameterVirtualWidget.h"
+#include "ui_ParameterVector.h"
 
 class ParameterVector : public ParameterVirtualWidget, Ui::ParameterVector
 {

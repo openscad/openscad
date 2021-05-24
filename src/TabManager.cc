@@ -10,10 +10,10 @@
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
-#include "editor.h"
-#include "tabmanager.h"
-#include "tabwidget.h"
-#include "scintillaeditor.h"
+#include "Editor.h"
+#include "TabManager.h"
+#include "TabWidget.h"
+#include "ScintillaEditor.h"
 #include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"

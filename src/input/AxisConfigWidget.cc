@@ -27,12 +27,12 @@
 #include <QWidget>
 #include "AxisConfigWidget.h"
 
-#include "settings.h"
+#include "Settings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "WheelIgnorer.h"
-#include "initConfig.h"
+#include "InitConfigurator.h"
 
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)

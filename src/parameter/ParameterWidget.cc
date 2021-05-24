@@ -27,13 +27,13 @@
 
 #include "ParameterWidget.h"
 
-#include "groupwidget.h"
-#include "parameterspinbox.h"
-#include "parametercombobox.h"
-#include "parameterslider.h"
-#include "parametercheckbox.h"
-#include "parametertext.h"
-#include "parametervector.h"
+#include "GroupWidget.h"
+#include "ParameterSpinBox.h"
+#include "ParameterComboBox.h"
+#include "ParameterSlider.h"
+#include "ParameterCheckBox.h"
+#include "ParameterText.h"
+#include "ParameterVector.h"
 
 #include <boost/filesystem.hpp>
 

@@ -1,4 +1,4 @@
-#include "cgalworker.h"
+#include "CGALWorker.h"
 #include <QThread>
 
 #include "Tree.h"

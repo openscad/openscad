@@ -1,4 +1,4 @@
-#include "settings.h"
+#include "Settings.h"
 #include "printutils.h"
 #include "input/InputEventMapper.h"
 #include <boost/algorithm/string.hpp>

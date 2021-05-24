@@ -3,8 +3,8 @@
 #include <functional>
 #include <QObject>
 #include <QSet>
-#include "editor.h"
-#include "tabwidget.h"
+#include "Editor.h"
+#include "TabWidget.h"
 
 class MainWindow; // for circular dependency
 

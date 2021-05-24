@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parametervirtualwidget.h"
-#include "ui_parameterslider.h"
+#include "ParameterVirtualWidget.h"
+#include "ui_ParameterSlider.h"
 
 class ParameterSlider : public ParameterVirtualWidget, Ui::ParameterSlider
 {

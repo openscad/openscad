@@ -1,5 +1,5 @@
-#include "parametercombobox.h"
-#include "ignoreWheelWhenNotFocused.h"
+#include "ParameterComboBox.h"
+#include "IgnoreWheelWhenNotFocused.h"
 
 ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter* parameter, DescriptionStyle descriptionStyle):
 	ParameterVirtualWidget(parent, parameter),

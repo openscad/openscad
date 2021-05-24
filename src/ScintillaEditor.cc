@@ -10,10 +10,10 @@
 #include <QShortcut>
 #include <Qsci/qscicommandset.h>
 
-#include "scintillaeditor.h"
+#include "ScintillaEditor.h"
 #include "Preferences.h"
 #include "PlatformUtils.h"
-#include "settings.h"
+#include "Settings.h"
 #include "QSettingsCached.h"
 
 #include <QWheelEvent>

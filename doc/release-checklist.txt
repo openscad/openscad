@@ -25,7 +25,7 @@ o Update releases/$VERSION.md
 o scripts/makereleasenotes.sh
 
 o Update version number in doc/openscad.1
-o Update copyright year in AboutDialog.html and mainwin.cc
+o Update copyright year in AboutDialog.html and MainWindow.cc
 o Add VERSION and VERSIONDATE in openscad.pro, scripts/publish-macosx.sh, scripts/release-common.sh tests/CMakeLists.txt
 o Add VERSION in tests/CMakeLists.txt, scripts/publish-mingw-x.sh
 

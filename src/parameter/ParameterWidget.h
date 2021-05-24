@@ -28,10 +28,11 @@
 #include <QTimer>
 #include <map>
 
+#include "qtgettext.h"
 #include "ui_ParameterWidget.h"
 #include "parameterobject.h"
 #include "parameterset.h"
-#include "parametervirtualwidget.h"
+#include "ParameterVirtualWidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {

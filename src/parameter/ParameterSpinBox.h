@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parametervirtualwidget.h"
-#include "ui_parameterspinbox.h"
+#include "ParameterVirtualWidget.h"
+#include "ui_ParameterSpinBox.h"
 
 class ParameterSpinBox : public ParameterVirtualWidget, Ui::ParameterSpinBox
 {

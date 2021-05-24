@@ -1,4 +1,4 @@
-#include "ignoreWheelWhenNotFocused.h"
+#include "IgnoreWheelWhenNotFocused.h"
 
 IgnoreWheelWhenNotFocused::IgnoreWheelWhenNotFocused(QWidget *parent) : QObject(parent)
 {

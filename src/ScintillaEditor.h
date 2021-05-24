@@ -12,10 +12,10 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 
-#include "editor.h"
+#include "Editor.h"
 #include "memory.h"
-#include "scadapi.h"
-#include "scadlexer.h"
+#include "ScadApi.h"
+#include "ScadLexer.h"
 #include "parsersettings.h"
 
 class EditorColorScheme

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parametervirtualwidget.h"
-#include "ui_parametertext.h"
+#include "ParameterVirtualWidget.h"
+#include "ui_ParameterText.h"
 
 class ParameterText : public ParameterVirtualWidget, Ui::ParameterText
 {
