@@ -424,7 +424,7 @@ int cmdline(const CommandLine& cmd)
 
 	RenderVariables render_variables;
 	render_variables.preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-	
+
 	if (cmd.animate_frames == 0) {
 		render_variables.time = 0;
 		return do_export(cmd, render_variables, export_format, root_file);
@@ -445,7 +445,7 @@ int cmdline(const CommandLine& cmd)
 			string frame_str = frame_file.generic_string();
 
 			LOG(message_group::None, Location::NONE, "", "Exporting %1$s...", cmd.filename);
-			
+
 			CommandLine frame_cmd = cmd;
 			frame_cmd.output_file = frame_str;
 
@@ -853,9 +853,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 
 	InputDriverManager::instance()->init();
-	int rc = app.exec();
-	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
-	return rc;
+	return app.exec();
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }
@@ -924,7 +922,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
@@ -1027,7 +1025,7 @@ int main(int argc, char **argv)
 	if (vm.count("hardwarnings")) {
 		OpenSCAD::hardwarnings = true;
 	}
-	
+
 	std::map<std::string, bool*> flags;
 	flags.insert(std::make_pair("check-parameters",&OpenSCAD::parameterCheck));
 	flags.insert(std::make_pair("check-parameter-ranges",&OpenSCAD::rangeCheck));
@@ -1042,7 +1040,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	
+
 	if (vm.count("help")) help(argv[0], desc);
 	if (vm.count("version")) version();
 	if (vm.count("info")) arg_info = true;
@@ -1120,7 +1118,7 @@ int main(int argc, char **argv)
 		}
 		parameterSet = vm["P"].as<string>().c_str();
 	}
-	
+
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string>>();
