@@ -203,6 +203,6 @@ void register_builtin_dxf_linear_extrude()
 
 	Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
 				{
-					"linear_extrude(number, center = true, convexity = 10, twist, slices = 20, scale = 1.0 [, $fn])",
+					"linear_extrude(height = 100, center = true, convexity = 10, twist = 0, slices = 20, scale = 1.0 [, $fn])",
 				});
 }
