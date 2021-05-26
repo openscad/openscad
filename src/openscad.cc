@@ -618,7 +618,7 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 #include <QtPlugin>
 #include "MainWindow.h"
 #include "OpenSCADApp.h"
-#include "launchingscreen.h"
+#include "LaunchingScreen.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #ifdef ENABLE_HIDAPI
@@ -645,7 +645,7 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
-#include "settings.h"
+#include "Settings.h"
 
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);

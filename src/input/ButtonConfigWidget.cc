@@ -26,7 +26,7 @@
 
 #include <QWidget>
 #include "ButtonConfigWidget.h"
-#include "settings.h"
+#include "Settings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"

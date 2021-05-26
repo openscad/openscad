@@ -84,8 +84,7 @@ if (MXECROSS)
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
-set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
-file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
+make_directory(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 # Default to Release build
 #if(NOT CMAKE_BUILD_TYPE)
@@ -348,6 +347,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
+  set(CMAKE_AUTOUIC_OPTIONS --tr q_)
   find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -492,7 +492,7 @@ set(CORE_SOURCES
   src/contextframe.cc
   src/context-mm.cc
   src/control.cc
-  src/comment.cpp
+  src/comment.cc
   src/csgnode.cc
   src/csgops.cc
   src/degree_trig.cc
@@ -593,8 +593,8 @@ set(CORE_SOURCES
   src/libsvg/transformation.cc
   src/libsvg/tspan.cc
   src/libsvg/util.cc
-  src/parameter/parameterobject.cpp
-  src/parameter/parameterset.cpp
+  src/parameter/parameterobject.cc
+  src/parameter/parameterset.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -659,26 +659,20 @@ set(INPUT_DRIVER_SOURCES
 
 set(GUI_SOURCES
   ${GUI_SOURCES}
-  src/cgalworker.cc
-  src/editor.cc
-  src/initConfig.cc
-  src/launchingscreen.cc
-  src/mainwin.cc
-  src/mouseselector.cc
-  src/scadapi.cc
-  src/scadlexer.cpp
-  src/scintillaeditor.cpp
-  src/settings.cc
-  src/tabmanager.cc
-  src/tabwidget.cc
   src/AutoUpdater.cc
+  src/CGALWorker.cc
   src/Console.cc
   src/Dock.cc
+  src/Editor.cc
   src/ErrorLog.cc
   src/EventFilter.h
   src/FontListDialog.cc
   src/FontListTableView.cc
+  src/InitConfigurator.cc
+  src/LaunchingScreen.cc
   src/LibraryInfoDialog.cc
+  src/MainWindow.cc
+  src/MouseSelector.cc
   src/OctoPrint.cc
   src/OpenCSGWarningDialog.cc
   src/OpenSCADApp.cc
@@ -689,32 +683,37 @@ set(GUI_SOURCES
   src/QGLView.cc
   src/QSettingsCached.cc
   src/QWordSearchField.cc
+  src/ScadApi.cc
+  src/ScadLexer.cc
+  src/ScintillaEditor.cc
+  src/Settings.cc
   src/SettingsWriter.cc
+  src/TabManager.cc
+  src/TabWidget.cc
   src/UIUtils.cc
   src/WindowManager.cc
-  src/parameter/groupwidget.cpp
-  src/parameter/ignoreWheelWhenNotFocused.cpp
-  src/parameter/parametercheckbox.cpp
-  src/parameter/parametercombobox.cpp
-  src/parameter/parameterslider.cpp
-  src/parameter/parameterspinbox.cpp
-  src/parameter/parametertext.cpp
-  src/parameter/parametervector.cpp
-  src/parameter/parametervirtualwidget.cpp
-  src/parameter/ParameterWidget.cc
   src/input/AxisConfigWidget.cc
   src/input/ButtonConfigWidget.cc
   src/input/InputDriver.cc
   src/input/InputDriverManager.cc
   src/input/InputEventMapper.cc
   src/input/WheelIgnorer.cc
+  src/parameter/GroupWidget.cc
+  src/parameter/IgnoreWheelWhenNotFocused.cc
+  src/parameter/ParameterCheckBox.cc
+  src/parameter/ParameterComboBox.cc
+  src/parameter/ParameterSlider.cc
+  src/parameter/ParameterSpinBox.cc
+  src/parameter/ParameterText.cc
+  src/parameter/ParameterVector.cc
+  src/parameter/ParameterVirtualWidget.cc
+  src/parameter/ParameterWidget.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
 # header-only code
 set(GUI_HEADERS
   src/AboutDialog.h
-  src/MainWindow.h
   src/Network.h
   src/NetworkSignal.h
   )

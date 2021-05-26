@@ -24,7 +24,7 @@
  *
  */
 
-#include "settings.h"
+#include "Settings.h"
 #include "OctoPrint.h"
 #include "printutils.h"
 #include "PlatformUtils.h"

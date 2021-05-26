@@ -5,8 +5,8 @@
 
 #include "qtgettext.h"
 #include "ui_Preferences.h"
-#include "settings.h"
-#include "initConfig.h"
+#include "Settings.h"
+#include "InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences,public InitConfigurator
 {

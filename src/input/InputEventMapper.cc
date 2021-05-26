@@ -25,7 +25,7 @@
  */
 #include "InputEventMapper.h"
 #include "InputDriverManager.h"
-#include "settings.h"
+#include "Settings.h"
 #include "Preferences.h"
 #include "AxisConfigWidget.h"
 #include "ButtonConfigWidget.h"
