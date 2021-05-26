@@ -171,6 +171,7 @@ build_qt5()
   fi
   tar xzf qt-everywhere-src-$version.tar.xz
   cd qt-everywhere-src-$version
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
