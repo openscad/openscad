@@ -1,0 +1,8 @@
+WARNING: undefined operation (bool * bool) in file allexpressions.scad, line 14
+WARNING: undefined operation (bool / bool) in file allexpressions.scad, line 15
+WARNING: undefined operation (bool % bool) in file allexpressions.scad, line 16
+WARNING: undefined operation (undefined < bool) in file allexpressions.scad, line 17
+WARNING: undefined operation (undefined <= bool) in file allexpressions.scad, line 18
+WARNING: undefined operation (undefined >= bool) in file allexpressions.scad, line 21
+WARNING: undefined operation (undefined > bool) in file allexpressions.scad, line 22
+ECHO: x = 2, y = 5

@@ -26,7 +26,6 @@
  
 #include "compiler_specific.h"
 #include "context.h"
-#include "evalcontext.h"
 #include "expression.h"
 #include "function.h"
 #include "UserModule.h"
@@ -34,228 +33,123 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
-// $children is not a config_variable. config_variables have dynamic scope, 
-// meaning they are passed down the call chain implicitly.
-// $children is simply misnamed and shouldn't have included the '$'.
-static bool is_config_variable(const std::string &name)
-{
-	return name[0] == '$' && name != "$children";
-}
+Context::Context(EvaluationSession* session):
+	ContextFrame(session),
+	parent(nullptr)
+{}
 
-/*!
-	Initializes this context. Optionally initializes a context for an 
-	external library. Note that if parent is null, a new stack will be
-	created, and all children will share the root parent's stack.
-*/
-Context::Context(const Context *parent)
-	: parent(parent)
-{
-	if (parent) {
-		assert(parent->ctx_stack && "Parent context stack was null!");
-		this->ctx_stack = parent->ctx_stack;
-		this->document_path = parent->document_path;
-	}
-	else {
-		this->ctx_stack = new Stack;
-	}
-
-	this->ctx_stack->push_back(this);
-}
+Context::Context(const std::shared_ptr<const Context>& parent):
+	ContextFrame(parent->evaluation_session),
+	parent(parent)
+{}
 
 Context::~Context()
 {
-	assert(this->ctx_stack && "Context stack was null at destruction!");
-	this->ctx_stack->pop_back();
-	if (!parent) delete this->ctx_stack;
+	clear();
+	session()->contextMemoryManager().releaseContext();
 }
 
-/*!
-	Initialize context from a module argument list and a evaluation context
-	which may pass variables which will be preferred over default values.
-*/
-void Context::setVariables(const EvalContext *evalctx, const AssignmentList &args, const AssignmentList &optargs, bool usermodule)
+const Children* Context::user_module_children() const
 {
-	// Set any default values
-	for (const auto &arg : args) {
-		set_variable(arg.name, arg.expr ? arg.expr->evaluate(this->parent) : ValuePtr::undefined);
-	}
-	
-	if (evalctx) {
-		auto assignments = evalctx->resolveArguments(args, optargs, usermodule && !OpenSCAD::parameterCheck);
-		for (const auto &ass : assignments) {
-			this->set_variable(ass.first, ass.second->evaluate(evalctx));
-		}
+	if (parent) {
+		return parent->user_module_children();
+	} else {
+		return nullptr;
 	}
 }
 
-void Context::set_variable(const std::string &name, const ValuePtr &value)
+std::vector<const std::shared_ptr<const Context>*> Context::list_referenced_contexts() const
 {
-	if (is_config_variable(name)) this->config_variables[name] = value;
-	else this->variables[name] = value;
+	std::vector<const std::shared_ptr<const Context>*> output;
+	if (parent) {
+		output.push_back(&parent);
+	}
+	return output;
 }
 
-void Context::set_variable(const std::string &name, const Value &value)
-{
-	set_variable(name, ValuePtr(value));
-}
-
-void Context::set_constant(const std::string &name, const ValuePtr &value)
-{
-	if (this->constants.find(name) != this->constants.end()) {
-		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
-	}
-	else {
-		this->constants[name] = value;
-	}
-}
-
-void Context::set_constant(const std::string &name, const Value &value)
-{
-	set_constant(name, ValuePtr(value));
-}
-
-void Context::apply_variables(const Context &other)
-{
-	for (const auto &var : other.variables) {
-		set_variable(var.first, var.second);
-	}
-}
-
-ValuePtr Context::lookup_variable(const std::string &name, bool silent, const Location &loc) const
-{
-	if (!this->ctx_stack) {
-		PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return ValuePtr::undefined;
-	}
-	if (is_config_variable(name)) {
-		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
-			const auto &confvars = ctx_stack->at(i)->config_variables;
-			if (confvars.find(name) != confvars.end()) {
-				return confvars.find(name)->second;
-			}
-		}
-		if (!silent) {
-			PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
-		}
-		return ValuePtr::undefined;
-	}
-	if (!this->parent && this->constants.find(name) != this->constants.end()) {
-		return this->constants.find(name)->second;
-	}
-	if (this->variables.find(name) != this->variables.end()) {
-		return this->variables.find(name)->second;
-	}
-	if (this->parent) {
-		return this->parent->lookup_variable(name, silent, loc);
-	}
-	if (!silent) {
-		PRINTB("WARNING: Ignoring unknown variable '%s', %s.", name % loc.toRelativeString(this->documentPath()));
-	}
-	return ValuePtr::undefined;
-}
-
-
-double Context::lookup_variable_with_default(const std::string &variable, const double &def, const Location &loc) const
-{
-	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::ValueType::NUMBER) ? v->toDouble() : def;
-}
-
-std::string Context::lookup_variable_with_default(const std::string &variable, const std::string &def, const Location &loc) const
-{
-	ValuePtr v = this->lookup_variable(variable, true, loc);
-	return (v->type() == Value::ValueType::STRING) ? v->toString() : def;
-}
-
-bool Context::has_local_variable(const std::string &name) const
+boost::optional<const Value&> Context::try_lookup_variable(const std::string &name) const
 {
 	if (is_config_variable(name)) {
-		return config_variables.find(name) != config_variables.end();
+		return session()->try_lookup_special_variable(name);
 	}
-	if (!parent && constants.find(name) != constants.end()) {
-		return true;
+	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
+		boost::optional<const Value&> result = context->lookup_local_variable(name);
+		if (result) {
+			return result;
+		}
 	}
-	return variables.find(name) != variables.end();
+	return boost::none;
 }
 
-/**
- * This is separated because PRINTB uses quite a lot of stack space
- * and the methods using it evaluate_function() and instantiate_module()
- * are called often when recursive functions or modules are evaluated.
- * noinline prevents compiler optimization, as we here specifically
- * optimize for stack usage during normal operating, not runtime during
- * error handling.
- * 
- * @param what what is ignored
- * @param name name of the ignored object
- * @param loc location of the function/modul call
- * @param docPath document path of the root file, used to calculate the relative path
- */
-static void NOINLINE print_ignore_warning(const char *what, const char *name, const Location &loc, const char *docPath){
-	PRINTB("WARNING: Ignoring unknown %s '%s', %s.", what % name % loc.toRelativeString(docPath));
-}
- 
-ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+const Value& Context::lookup_variable(const std::string &name, const Location &loc) const
 {
-	if (this->parent) return this->parent->evaluate_function(name, evalctx);
-	print_ignore_warning("function", name.c_str(),evalctx->loc,this->documentPath().c_str());
-	return ValuePtr::undefined;
+	boost::optional<const Value&> result = try_lookup_variable(name);
+	if (!result) {
+		LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown variable '%1$s'",name);
+		return Value::undefined;
+	}
+	return *result;
 }
 
-AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
+boost::optional<CallableFunction> Context::lookup_function(const std::string &name, const Location &loc) const
 {
-	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
-	print_ignore_warning("module", inst.name().c_str(),evalctx->loc,this->documentPath().c_str());
-	return nullptr;
+	if (is_config_variable(name)) {
+		return session()->lookup_special_function(name, loc);
+	}
+	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
+		boost::optional<CallableFunction> result = context->lookup_local_function(name, loc);
+		if (result) {
+			return result;
+		}
+	}
+	LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown function '%1$s'",name);
+	return boost::none;
 }
 
-/*!
-	Returns the absolute path to the given filename, unless it's empty.
- */
-std::string Context::getAbsolutePath(const std::string &filename) const
+boost::optional<InstantiableModule> Context::lookup_module(const std::string &name, const Location &loc) const
 {
-	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(this->document_path) / filename).string();
+	if (is_config_variable(name)) {
+		return session()->lookup_special_module(name, loc);
 	}
-	else {
-		return filename;
+	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
+		boost::optional<InstantiableModule> result = context->lookup_local_module(name, loc);
+		if (result) {
+			return result;
+		}
 	}
+	LOG(message_group::Warning,loc,this->documentRoot(),"Ignoring unknown module '%1$s'",name);
+	return boost::none;
+}
+
+bool Context::set_variable(const std::string &name, Value&& value)
+{
+	bool new_variable = ContextFrame::set_variable(name, std::move(value));
+	if (new_variable) {
+		session()->accounting().addContextVariable();
+	}
+	return new_variable;
+}
+
+size_t Context::clear()
+{
+	size_t removed = ContextFrame::clear();
+	session()->accounting().removeContextVariable(removed);
+	return removed;
 }
 
 #ifdef DEBUG
-std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
+std::string Context::dump() const
 {
 	std::ostringstream s;
-	if (inst) {
-		s << boost::format("ModuleContext %p (%p) for %s inst (%p)\n") % this % this->parent % inst->name() % inst;
-	}
-	else {
-		s << boost::format("Context: %p (%p)\n") % this % this->parent;
-	}
-	s << boost::format("  document path: %s\n") % this->document_path;
-	if (mod) {
-		const UserModule *m = dynamic_cast<const UserModule*>(mod);
-		if (m) {
-			s << "  module args:";
-			for(const auto &arg : m->definition_arguments) {
-				s << boost::format("    %s = %s\n") % arg.name % variables[arg.name];
-			}
-		}
-	}
-	typedef std::pair<std::string, ValuePtr> ValueMapType;
-	s << "  vars:\n";
-	for(const auto &v : constants) {
-		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
-	}
-	for(const auto &v : variables) {
-		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
-	}
-	for(const auto &v : config_variables) {
-		s << boost::format("    %s = %s\n") % v.first % v.second->toEchoString();
+	s << boost::format("Context %p:\n") % this;
+	Context const* context = this;
+	while (context) {
+		s << "  " << context->dumpFrame();
+		context = context->getParent().get();
 	}
 	return s.str();
 }
 #endif
-

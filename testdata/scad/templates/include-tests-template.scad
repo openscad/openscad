@@ -1,4 +1,4 @@
-//Test that the entire path is pushed onto the stack upto the last '/' 
+//Test that the entire path is pushed onto the stack up to the last '/' 
 include <sub1/sub2/sub3/sub4/include-test2.scad>
 
 //Subdir
@@ -23,7 +23,7 @@ include<test/>
 include </>
 
 //Test with absolute path
-include <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
+include <@CMAKE_CURRENT_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
 
 // Test simple MCAD include
 include <MCAD/constants.scad>

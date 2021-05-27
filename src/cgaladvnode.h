@@ -17,11 +17,9 @@ public:
 	CgaladvNode(const ModuleInstantiation *mi, CgaladvType type) : AbstractNode(mi), type(type) {
 		convexity = 1;
 	}
-	~CgaladvNode() { }
 	std::string toString() const override;
 	std::string name() const override;
 
-	ValuePtr path;
 	unsigned int convexity;
 	Vector3d newsize;
 	Eigen::Matrix<bool,3,1> autosize;

@@ -95,7 +95,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 bool create_wgl_dummy_context(OffscreenContext &ctx)
 {
   // this function alters ctx->window and ctx->openGLContext 
-  //  and ctx->dev_context if successfull
+  //  and ctx->dev_context if successful
 
   // create window
 
@@ -114,8 +114,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
     return false;
   }
 
-  wchar_t *lpClassName = L"OpenSCAD";
-  wchar_t *lpWindowName = L"OpenSCAD";
+  LPCTSTR lpClassName = L"OpenSCAD";
+  LPCTSTR lpWindowName = L"OpenSCAD";
   DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
   int x = 0;
   int y = 0;
@@ -202,7 +202,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   // Before an FBO can be setup, a WGL context must be created. 
   // This call alters ctx->window and ctx->openGLContext 
-  //  and ctx->dev_context if successfull
+  //  and ctx->dev_context if successful
   if (!create_wgl_dummy_context( *ctx )) {
     return nullptr;
   }
@@ -225,7 +225,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return false;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
 {
   if (!ctx) return false;
   wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );

@@ -48,7 +48,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENTITIES\n";
 
 	for(const auto &o : poly.outlines()) {
-		for (unsigned int i=0;i<o.vertices.size();i++) {
+		for (unsigned int i=0; i<o.vertices.size(); ++i) {
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
 			double x1 = p1[0];
@@ -94,10 +94,14 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (dynamic_cast<const PolySet *>(geom.get())) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for(const auto &item : geomlist->getChildren()) {
+			export_dxf(item.second, output);
+		}
+	} else if (dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(false && "Unsupported file format");
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		export_dxf(*poly, output);
 	} else {
 		assert(false && "Export as DXF for this geometry type is not supported");

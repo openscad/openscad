@@ -119,7 +119,7 @@ static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
    "failed to create drawable" errors, and Mesa "WARNING: Application calling 
    GLX 1.3 function when GLX 1.3 is not supported! This is an application bug!"
 
-   This function will alter ctx.openGLContext and ctx.xwindow if successfull
+   This function will alter ctx.openGLContext and ctx.xwindow if successful
  */
 bool create_glx_dummy_window(OffscreenContext &ctx)
 {
@@ -243,7 +243,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 	return false;
 }
 
-bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
 {
 	glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
 	return save_framebuffer_common(ctx, output);
@@ -252,7 +252,7 @@ bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
 #pragma GCC diagnostic ignored "-Waddress"
 bool create_glx_dummy_context(OffscreenContext &ctx)
 {
-	// This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successfull
+	// This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successful
 	int major;
 	int minor;
 	auto result = false;

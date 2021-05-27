@@ -59,18 +59,25 @@ static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 
 void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 {
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for (const Geometry::GeometryItem &item : geomlist->getChildren()) {
+			append_geometry(item.second, mesh);
+		}
+	}
+	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		if (err) { 
+			LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
+		}
 		else {
 			append_geometry(ps, mesh);
 		}
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
+	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		append_geometry(*ps, mesh);
 	}
-	else if (dynamic_cast<const Polygon2d *>(geom.get())) {
+	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
@@ -83,18 +90,18 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	append_geometry(geom, mesh);
 
 	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const Vector3d *v = mesh.vertices.getArray();
+	const auto& v = mesh.vertices.getArray();
 	size_t numverts = mesh.vertices.size();
-	for (size_t i=0;i<numverts;i++) {
+	for (size_t i=0; i<numverts; ++i) {
 		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
 	}
 	size_t cnt = 0;
-	for (size_t i=0;i<mesh.numfaces;i++) {
+	for (size_t i=0; i<mesh.numfaces; ++i) {
 		size_t nverts = 0;
 		while (mesh.indices[cnt++] != -1) nverts++;
 		output << nverts;
 		cnt -= nverts + 1;
-		for (size_t n=0;n<nverts;n++) output << " " << mesh.indices[cnt++];
+		for (size_t n=0; n<nverts; ++n) output << " " << mesh.indices[cnt++];
 		output << "\n";
         cnt++; // Skip the -1 marker
 	}

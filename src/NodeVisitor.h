@@ -9,6 +9,7 @@ class NodeVisitor :
 	public Visitor<class AbstractNode>,
 	public Visitor<class AbstractIntersectionNode>,
 	public Visitor<class AbstractPolyNode>,
+	public Visitor<class ListNode>,
 	public Visitor<class GroupNode>,
 	public Visitor<class RootNode>,
 	public Visitor<class LeafNode>,
@@ -17,7 +18,6 @@ class NodeVisitor :
 	public Visitor<class LinearExtrudeNode>,
 	public Visitor<class RotateExtrudeNode>,
 	public Visitor<class ImportNode>,
-	public Visitor<class PrimitiveNode>,
 	public Visitor<class TextNode>,
 	public Visitor<class ProjectionNode>,
 	public Visitor<class RenderNode>,
@@ -39,6 +39,10 @@ public:
   Response visit(class State &state, const class AbstractPolyNode &node) override {
 		return visit(state, (const class AbstractNode &)node);
 	}
+  Response visit(class State &state, const class ListNode &node) override {
+		return visit(state, (const class AbstractNode &)node);
+	}
+
   Response visit(class State &state, const class GroupNode &node) override {
 		return visit(state, (const class AbstractNode &)node);
 	}
@@ -61,9 +65,6 @@ public:
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
   Response visit(class State &state, const class ImportNode &node) override {
-		return visit(state, (const class LeafNode &)node);
-	}
-  Response visit(class State &state, const class PrimitiveNode &node) override {
 		return visit(state, (const class LeafNode &)node);
 	}
   Response visit(class State &state, const class TextNode &node) override {

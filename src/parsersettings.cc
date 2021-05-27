@@ -1,6 +1,5 @@
 #include "parsersettings.h"
 #include <boost/filesystem.hpp>
-#include "boosty.h"
 #include <boost/algorithm/string.hpp>
 #include "PlatformUtils.h"
 
@@ -34,19 +33,19 @@ fs::path search_libs(const fs::path &localpath)
 static bool check_valid(const fs::path &p, const std::vector<std::string> *openfilenames)
 {
 	if (p.empty()) {
-		//PRINTB("WARNING: File path is blank: %s",p);
+		// LOG(message_group::Warning,Location::NONE,"","File path is blank: %1$s",p);
 		return false;
 	}
 	if (!p.has_parent_path()) {
-		//PRINTB("WARNING: No parent path: %s",p);
+		// LOG(message_group::Warning,Location::NONE,"","No parent path: %1$s",p);
 		return false;
 	}
 	if (!fs::exists(p)) {
-		//PRINTB("WARNING: File not found: %s",p);
+		// LOG(message_group::Warning,Location::NONE,"","File not found: %1$s",p);
 		return false;
 	}
 	if (fs::is_directory(p)) {
-		//PRINTB("WARNING: %s invalid - points to a directory",p);
+		// LOG(message_group::Warning,Location::NONE,"","%1$s invalid - points to a directory",p);
 		return false;
 	}
 	std::string fullname = p.generic_string();
@@ -54,7 +53,7 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	if (openfilenames) {
 		for(const auto &s : *openfilenames) {
 			if (s == fullname) {
-//				PRINTB("WARNING: circular include file %s", fullname);
+				// LOG(message_group::Warning,Location::NONE,"","circular include file %1$s",fullname);
 				return false;
 			}
 		}
@@ -76,11 +75,11 @@ fs::path _find_valid_path(const fs::path &sourcepath,
                           const std::vector<std::string> *openfilenames)
 {
 	if (localpath.is_absolute()) {
-		if (check_valid(localpath, openfilenames)) return boosty::canonical(localpath);
+		if (check_valid(localpath, openfilenames)) return fs::canonical(localpath);
 	}
 	else {
 		fs::path fpath = sourcepath / localpath;
-		if (fs::exists(fpath)) fpath = boosty::canonical(fpath);
+		if (fs::exists(fpath)) fpath = fs::canonical(fpath);
 		if (check_valid(fpath, openfilenames)) return fpath;
 		fpath = search_libs(localpath);
 		if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
@@ -94,6 +93,40 @@ fs::path find_valid_path(const fs::path &sourcepath,
 {
     return fs::path(_find_valid_path(sourcepath, localpath, openfilenames).generic_string());
 }
+
+
+static bool path_contains_file(fs::path dir, fs::path file)
+{
+	// from https://stackoverflow.com/a/15549954/1080604
+	// If dir ends with "/" and isn't the root directory, then the final
+	// component returned by iterators will include "." and will interfere
+	// with the std::equal check below, so we strip it before proceeding.
+	if (dir.filename() == ".") dir.remove_filename();
+	// We're also not interested in the file's name.
+	assert(file.has_filename());
+	file.remove_filename();
+
+	// If dir has more components than file, then file can't possibly
+	// reside in dir.
+	auto dir_len = std::distance(dir.begin(), dir.end());
+	auto file_len = std::distance(file.begin(), file.end());
+	if (dir_len > file_len) return false;
+
+	// This stops checking when it reaches dir.end(), so it's OK if file
+	// has more directory components afterward. They won't be checked.
+	return std::equal(dir.begin(), dir.end(), file.begin());
+}
+
+fs::path get_library_for_path(const fs::path &localpath)
+{
+	for (const auto &libpath : librarypath) {
+		if (path_contains_file(fs::path(libpath), localpath)) {
+			return libpath;
+		}
+	}
+	return fs::path();
+}
+
 
 void parser_init()
 {

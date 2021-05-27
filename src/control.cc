@@ -27,325 +27,270 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "node.h"
-#include "evalcontext.h"
+#include "arguments.h"
 #include "modcontext.h"
 #include "expression.h"
 #include "builtin.h"
+#include "parameters.h"
 #include "printutils.h"
 #include <cstdint>
+#include "boost-utils.h"
 
-class ControlModule : public AbstractModule
+static AbstractNode* lazyUnionNode(const ModuleInstantiation *inst)
 {
-public: // types
-	enum class Type {
-		CHILD,
-		CHILDREN,
-		ECHO,
-		ASSERT,
-		ASSIGN,
-		FOR,
-		LET,
-		INT_FOR,
-		IF
-    };
-public: // methods
-	ControlModule(Type type) : type(type) { }
+	if (Feature::ExperimentalLazyUnion.is_enabled()) {
+		return new ListNode(inst);
+	} else {
+		return new GroupNode(inst);
+	}
+}
 
-	ControlModule(Type type, const Feature& feature) : AbstractModule(feature), type(type) { }
+static boost::optional<size_t> validChildIndex(int n, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	if (n < 0 || n >= static_cast<int>(children->size())) {
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),"Children index (%1$d) out of bounds (%2$d children)",n,children->size());
+		return boost::none;
+	}
+	return size_t(n);
+}
 
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
+static boost::optional<size_t> validChildIndex(const Value &value, const Children* children, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	if (value.type() != Value::Type::NUMBER) {
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),"Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",value.toString());
+		return boost::none;
+	}
+	return validChildIndex(static_cast<int>(trunc(value.toDouble())), children, inst, context);
+}
 
-	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
-						 const Context *ctx, const EvalContext *evalctx);
-
-	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
+static AbstractNode* builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	LOG(message_group::Deprecated,Location::NONE,"","child() will be removed in future releases. Use children() instead.");
 	
-	static AbstractNode* getChild(const ValuePtr &value, const EvalContext* modulectx);
+	if (!inst->scope.moduleInstantiations.empty()) {
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
+	
+	Arguments arguments{inst->arguments, context};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+	const Children* children = context->user_module_children();
+	if (!children) {
+		// child() called outside any user module
+		return nullptr;
+	}
+	
+	boost::optional<size_t> index;
+	if (!parameters.contains("index")) {
+		index = validChildIndex(0, children, inst, context);
+	} else {
+		index = validChildIndex(parameters["index"], children, inst, context);
+	}
+	if (!index) {
+		return nullptr;
+	}
+	return children->instantiate(lazyUnionNode(inst), {*index});
+}
 
-private: // data
-	Type type;
-
-}; // class ControlModule
-
-void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
-							const Context *ctx, const EvalContext *evalctx)
+static AbstractNode* builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
-	if (evalctx->numArgs() > l) {
-		const std::string &it_name = evalctx->getArgName(l);
-		ValuePtr it_values = evalctx->getArgValue(l, ctx);
-		Context c(ctx);
-		if (it_values->type() == Value::ValueType::RANGE) {
-			RangeType range = it_values->toRange();
-			uint32_t steps = range.numValues();
-			if (steps >= 10000) {
-				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu), %s", steps % inst.location().toRelativeString(ctx->documentPath()));
-			} else {
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					c.set_variable(it_name, ValuePtr(*it));
-					for_eval(node, inst, l+1, &c, evalctx);
-				}
+	if (!inst->scope.moduleInstantiations.empty()) {
+		LOG(message_group::Warning,inst->location(),context->documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
+	}
+	
+	Arguments arguments{inst->arguments, context};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+	const Children* children = context->user_module_children();
+	if (!children) {
+		// children() called outside any user module
+		return nullptr;
+	}
+	
+	if (!parameters.contains("index")) {
+		// no arguments => all children
+		return children->instantiate(lazyUnionNode(inst));
+	}
+	
+	// one (or more ignored) argument
+	if (parameters["index"].type() == Value::Type::NUMBER) {
+		auto index = validChildIndex(parameters["index"], children, inst, context);
+		if (!index) {
+			return nullptr;
+		}
+		return children->instantiate(lazyUnionNode(inst), {*index});
+	}
+	else if (parameters["index"].type() == Value::Type::VECTOR) {
+		std::vector<size_t> indices;
+		for (const auto& val : parameters["index"].toVector()) {
+			auto index = validChildIndex(val, children, inst, context);
+			if (index) {
+				indices.push_back(*index);
 			}
 		}
-		else if (it_values->type() == Value::ValueType::VECTOR) {
-			for (size_t i = 0; i < it_values->toVector().size(); i++) {
-				c.set_variable(it_name, it_values->toVector()[i]);
-				for_eval(node, inst, l+1, &c, evalctx);
+		return children->instantiate(lazyUnionNode(inst), indices);
+	}
+	else if (parameters["index"].type() == Value::Type::RANGE) {
+		const RangeType &range = parameters["index"].toRange();
+		uint32_t steps = range.numValues();
+		if (steps >= RangeType::MAX_RANGE_STEPS) {
+			LOG(message_group::Warning,inst->location(),parameters.documentRoot(),
+				"Bad range parameter for children: too many elements (%1$lu)",steps);
+			return nullptr;
+		}
+		std::vector<size_t> indices;
+		for (double d : range) {
+			auto index = validChildIndex(static_cast<int>(trunc(d)), children, inst, context);
+			if (index) {
+				indices.push_back(*index);
 			}
 		}
-                else if (it_values->type() == Value::ValueType::STRING) {
-                        utf8_split(it_values->toString(), [&](ValuePtr v) {
-                            c.set_variable(it_name, v);
-                            for_eval(node, inst, l+1, &c, evalctx);
-                        });
-                }
-		else if (it_values->type() != Value::ValueType::UNDEFINED) {
-			c.set_variable(it_name, it_values);
-			for_eval(node, inst, l+1, &c, evalctx);
-		}
-	} else if (l > 0) {
-		// At this point, the for loop variables have been set and we can initialize
-		// the local scope (as they may depend on the for loop variables
-		Context c(ctx);
-		for(const auto &ass : inst.scope.assignments) {
-			c.set_variable(ass.name, ass.expr->evaluate(&c));
-		}
-		
-		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(&c);
-		node.children.insert(node.children.end(), instantiatednodes.begin(), instantiatednodes.end());
+		return children->instantiate(lazyUnionNode(inst), indices);
+	}
+	else {
+		// Invalid argument
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",parameters["index"].toEchoString());
+		return nullptr;
 	}
 }
 
-const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
+static AbstractNode* builtin_echo(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	// Find the last custom module invocation, which will contain
-	// an eval context with the children of the module invokation
-	const Context *tmpc = evalctx;
-	while (tmpc->getParent()) {
-		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->getParent());
-		if (modulectx) {
-			// This will trigger if trying to invoke child from the root of any file
-			// assert(filectx->evalctx);
-			if (modulectx->evalctx) {
-				return modulectx->evalctx;
-			}
-			return nullptr;
-		}
-		tmpc = tmpc->getParent();
-	}
-	return nullptr;
-}
-
-// static
-AbstractNode* ControlModule::getChild(const ValuePtr &value, const EvalContext* modulectx)
-{
-	if (value->type()!=Value::ValueType::NUMBER) {
-		// Invalid parameter
-		// (e.g. first child of difference is invalid)
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
+	LOG(message_group::Echo,Location::NONE,"","%1$s",STR(arguments));
+	
+	AbstractNode* node = children.instantiate(lazyUnionNode(inst));
+	// echo without child geometries should not count as valid CSGNode
+	if (node->children.empty()) {
+		delete node;
 		return nullptr;
-	}
-	double v;
-	if (!value->getDouble(v)) {
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value->toString());
-		return nullptr;
-	}
-		
-	int n = static_cast<int>(trunc(v));
-	if (n < 0) {
-		PRINTB("WARNING: Negative children index (%d) not allowed", n);
-		return nullptr; // Disallow negative child indices
-	}
-	if (n >= static_cast<int>(modulectx->numChildren())) {
-		// How to deal with negative objects in this case?
-		// (e.g. first child of difference is invalid)
-		PRINTB("WARNING: Children index (%d) out of bounds (%d children)"
-			, n % modulectx->numChildren());
-		return nullptr;
-	}
-	// OK
-	return modulectx->getChild(n)->evaluate(modulectx);
-}
-
-AbstractNode *ControlModule::instantiate(const Context* ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
-{
-	AbstractNode *node = nullptr;
-
-	switch (this->type) {
-	case Type::CHILD:	{
-		printDeprecation("child() will be removed in future releases. Use children() instead.");
-		int n = 0;
-		if (evalctx->numArgs() > 0) {
-			double v;
-			if (evalctx->getArgValue(0)->getDouble(v)) {
-				n = trunc(v);
-				if (n < 0) {
-					PRINTB("WARNING: Negative child index (%d) not allowed, %s", n % evalctx->loc.toRelativeString(ctx->documentPath()));
-					return nullptr; // Disallow negative child indices
-				}
-			}
-		}
-
-		// Find the last custom module invocation, which will contain
-		// an eval context with the children of the module invokation
-		const EvalContext *modulectx = getLastModuleCtx(evalctx);
-		if (modulectx==nullptr) {
-			return nullptr;
-		}
-		// This will trigger if trying to invoke child from the root of any file
-        if (n < (int)modulectx->numChildren()) {
-			node = modulectx->getChild(n)->evaluate(modulectx);
-		}
-		else {
-			// How to deal with negative objects in this case?
-            // (e.g. first child of difference is invalid)
-			PRINTB("WARNING: Child index (%d) out of bounds (%d children), %s", 
-				   n % modulectx->numChildren() % evalctx->loc.toRelativeString(ctx->documentPath()));
-		}
-		return node;
-	}
-		break;
-
-	case Type::CHILDREN: {
-		const EvalContext *modulectx = getLastModuleCtx(evalctx);
-		if (modulectx==nullptr) {
-			return nullptr;
-		}
-		// This will trigger if trying to invoke child from the root of any file
-		// assert(filectx->evalctx);
-		if (evalctx->numArgs()<=0) {
-			// no parameters => all children
-			AbstractNode* node = new GroupNode(inst);
-			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
-				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
-				if (childnode==nullptr) continue; // error
-				node->children.push_back(childnode);
-			}
-			return node;
-		}
-		else if (evalctx->numArgs()>0) {
-			// one (or more ignored) parameter
-			ValuePtr value = evalctx->getArgValue(0);
-			if (value->type() == Value::ValueType::NUMBER) {
-				return getChild(value, modulectx);
-			}
-			else if (value->type() == Value::ValueType::VECTOR) {
-				AbstractNode* node = new GroupNode(inst);
-				const Value::VectorType& vect = value->toVector();
-				for(const auto &vectvalue : vect) {
-					AbstractNode* childnode = getChild(vectvalue,modulectx);
-					if (childnode==nullptr) continue; // error
-					node->children.push_back(childnode);
-				}
-				return node;
-			}
-			else if (value->type() == Value::ValueType::RANGE) {
-				RangeType range = value->toRange();
-				uint32_t steps = range.numValues();
-				if (steps >= 10000) {
-					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu), %s", steps  % evalctx->loc.toRelativeString(ctx->documentPath()));
-					return nullptr;
-				}
-				AbstractNode* node = new GroupNode(inst);
-				for (RangeType::iterator it = range.begin();it != range.end();it++) {
-					AbstractNode* childnode = getChild(ValuePtr(*it),modulectx); // with error cases
-					if (childnode==nullptr) continue; // error
-					node->children.push_back(childnode);
-				}
-				return node;
-			}
-			else {
-				// Invalid parameter
-				// (e.g. first child of difference is invalid)
-				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range, %s", value->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
-				return nullptr;
-			}
-		}
-		return nullptr;
-	}
-		break;
-
-	case Type::ECHO: {
-		node = new GroupNode(inst);
-		PRINTB("%s", STR("ECHO: " << *evalctx));
-	}
-		break;
-
-	case Type::ASSERT: {
-		node = new GroupNode(inst);
-
-		Context c(evalctx);
-		evaluate_assert(c, evalctx);
-		inst->scope.apply(c);
-		node->children = inst->instantiateChildren(&c);
-	}
-		break;
-
-	case Type::LET: {
-		node = new GroupNode(inst);
-		Context c(evalctx);
-
-		evalctx->assignTo(c);
-
-		inst->scope.apply(c);
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	}
-		break;
-
-	case Type::ASSIGN: {
-		node = new GroupNode(inst);
-		// We create a new context to avoid parameters from influencing each other
-		// -> parallel evaluation. This is to be backwards compatible.
-		Context c(evalctx);
-		for (size_t i = 0; i < evalctx->numArgs(); i++) {
-			if (!evalctx->getArgName(i).empty())
-				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
-		}
-		// Let any local variables override the parameters
-		inst->scope.apply(c);
-		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
-		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	}
-		break;
-
-	case Type::FOR:
-		node = new GroupNode(inst);
-		for_eval(*node, *inst, 0, evalctx, evalctx);
-		break;
-
-	case Type::INT_FOR:
-		node = new AbstractIntersectionNode(inst);
-		for_eval(*node, *inst, 0, evalctx, evalctx);
-		break;
-
-	case Type::IF: {
-		node = new GroupNode(inst);
-		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0)->toBool()) {
-			inst->scope.apply(*evalctx);
-			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateChildren(evalctx);
-			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-		}
-		else {
-			ifelse->else_scope.apply(*evalctx);
-			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
-			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-		}
-	}
-		break;
 	}
 	return node;
 }
 
+static AbstractNode* builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	Assert::performAssert(inst->arguments, inst->location(), context);
+	
+	AbstractNode* node = Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
+	// assert without child geometries should not count as valid CSGNode
+	if (node->children.empty()) {
+		delete node;
+		return nullptr;
+	}
+	return node;
+}
+
+static AbstractNode* builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	return Children(&inst->scope, *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
+}
+
+static AbstractNode* builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	// We create a new context to avoid arguments from influencing each other
+	// -> parallel evaluation. This is to be backwards compatible.
+	Arguments arguments{inst->arguments, context};
+	ContextHandle<Context> assignContext{Context::create<Context>(context)};
+	for (auto& argument : arguments) {
+		if (!argument.name) {
+			LOG(message_group::Warning,inst->location(),context->documentRoot(),"Assignment without variable name %1$s",argument->toEchoString());
+		} else {
+			if (assignContext->lookup_local_variable(*argument.name)) {
+				LOG(message_group::Warning,inst->location(),context->documentRoot(),"Duplicate variable assignment %1$s = %2$s",*argument.name,argument->toEchoString());
+			}
+			assignContext->set_variable(*argument.name, std::move(argument.value));
+		}
+	}
+	
+	return Children(&inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
+}
+
+static AbstractNode* builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	AbstractNode* node = lazyUnionNode(inst);
+	if (!inst->arguments.empty()) {
+		LcFor::forEach(inst->arguments, inst->location(), context,
+			[inst, node] (const std::shared_ptr<const Context>& iterationContext) {
+				Children(&inst->scope, iterationContext).instantiate(node);
+			}
+		);
+	}
+	return node;
+}
+
+static AbstractNode* builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	AbstractNode *node = new AbstractIntersectionNode(inst);
+	if (!inst->arguments.empty()) {
+		LcFor::forEach(inst->arguments, inst->location(), context,
+			[inst, node] (const std::shared_ptr<const Context>& iterationContext) {
+				Children(&inst->scope, iterationContext).instantiate(node);
+			}
+		);
+	}
+	return node;
+}
+
+static AbstractNode* builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+{
+	Arguments arguments{inst->arguments, context};
+	const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
+	if (arguments.size() > 0 && arguments[0]->toBool()) {
+		return Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
+	} else if (ifelse->getElseScope()) {
+		return Children(ifelse->getElseScope(), context).instantiate(lazyUnionNode(inst));
+	} else {
+		// "if" with failed condition, and no "else" should not count as valid CSGNode
+		return nullptr;
+	}
+}
+
 void register_builtin_control()
 {
-	Builtins::init("child", new ControlModule(ControlModule::Type::CHILD));
-	Builtins::init("children", new ControlModule(ControlModule::Type::CHILDREN));
-	Builtins::init("echo", new ControlModule(ControlModule::Type::ECHO));
-	Builtins::init("assert", new ControlModule(ControlModule::Type::ASSERT));
-	Builtins::init("assign", new ControlModule(ControlModule::Type::ASSIGN));
-	Builtins::init("for", new ControlModule(ControlModule::Type::FOR));
-	Builtins::init("let", new ControlModule(ControlModule::Type::LET));
-	Builtins::init("intersection_for", new ControlModule(ControlModule::Type::INT_FOR));
-	Builtins::init("if", new ControlModule(ControlModule::Type::IF));
+	Builtins::init("assign", new BuiltinModule(builtin_assign));
+	Builtins::init("child", new BuiltinModule(builtin_child));
+
+	Builtins::init("children", new BuiltinModule(builtin_children),
+				{
+					"children()",
+					"children(number)",
+					"children([start : step : end])",
+					"children([start : end])",
+					"children([vector])",
+				});
+
+	Builtins::init("echo", new BuiltinModule(builtin_echo),
+				{
+					"echo(arg, ...)",
+				});
+
+	Builtins::init("assert", new BuiltinModule(builtin_assert),
+				{
+					"assert(boolean)",
+					"assert(boolean, string)",
+				});
+
+	Builtins::init("for", new BuiltinModule(builtin_for),
+				{
+					"for([start : increment : end])",
+					"for([start : end])",
+					"for([vector])",
+				});
+
+	Builtins::init("let", new BuiltinModule(builtin_let),
+				{
+					"let(arg, ...) expression",
+				});
+
+	Builtins::init("intersection_for", new BuiltinModule(builtin_intersection_for),
+				{
+					"intersection_for([start : increment : end])",
+					"intersection_for([start : end])",
+					"intersection_for([vector])",
+				});
+
+	Builtins::init("if", new BuiltinModule(builtin_if),
+				{
+					"if(boolean)",
+				});
 }

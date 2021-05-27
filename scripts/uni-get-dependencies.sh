@@ -95,7 +95,7 @@ get_debian_deps()
  apt-get -y install \
   build-essential curl libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
-  libmpfr-dev libboost-dev libglew-dev \
+  libmpfr-dev libboost-dev libglew-dev libcairo2-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev libdouble-conversion-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel
@@ -203,6 +203,7 @@ get_solus_deps()
 	CGAL-devel gmp-devel mpfr-devel glib2-devel libboost-devel \
 	opencsg-devel glew-devel eigen3 \
 	fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
+	double-conversion-devel \
 	bison flex
 }
 
@@ -217,10 +218,12 @@ if [ -e /etc/issue ]; then
   get_ubuntu_14_deps
  elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
   get_ubuntu_16_deps
- elif [ "`grep -i KDE.neon /etc/issue`" ]; then
-  get_neon_deps
+ elif [ "`grep -i ubuntu.2[0-4] /etc/issue`" ]; then
+  get_ubuntu_16_deps
  elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
+ elif [ "`grep -i KDE.neon /etc/issue`" ]; then
+  get_neon_deps
  elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
   get_ubuntu_14_deps
  elif [ "`grep ID=.solus /etc/os-release`" ]; then

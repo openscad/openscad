@@ -96,6 +96,7 @@ shape::set_attrs(attr_map_t& attrs)
 	this->transform = attrs["transform"];
 	this->stroke_width = attrs["stroke-width"];
 	this->stroke_linecap = attrs["stroke-linecap"];
+	this->stroke_linejoin = attrs["stroke-linejoin"];
 	this->style = attrs["style"];
 }
 
@@ -148,6 +149,25 @@ shape::get_stroke_linecap() const
 		return ClipperLib::etOpenSquare;
 	}
 	return ClipperLib::etOpenSquare;
+}
+
+ClipperLib::JoinType 
+shape::get_stroke_linejoin() const
+{
+	std::string join;
+	if (this->stroke_linejoin.empty()) {
+		join = get_style("stroke-linejoin");
+	} else {
+		join = this->stroke_linejoin;
+	}
+	if (join == "bevel") {
+		return ClipperLib::jtSquare;
+	} else if (join == "round") {
+		return ClipperLib::jtRound;
+	} else if (join == "square") {
+		return ClipperLib::jtMiter;
+	}
+	return ClipperLib::jtMiter;
 }
 
 void
@@ -209,7 +229,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 		transformations.push_back(t);
 	}
 	
-	for (std::vector<transformation *>::reverse_iterator it = transformations.rbegin();it != transformations.rend();it++) {
+	for (std::vector<transformation *>::reverse_iterator it = transformations.rbegin(); it != transformations.rend(); ++it) {
 		transformation *t = *it;
 		std::vector<Eigen::Matrix3d> m = t->get_matrices();
 		matrices.insert(matrices.begin(), m.rbegin(), m.rend());
@@ -230,7 +250,7 @@ shape::apply_transform()
 		result_list.push_back(path_t());
 		for (const auto &v : p) {
 			Eigen::Vector3d result(v.x(), v.y(), 1);
-			for (std::vector<Eigen::Matrix3d>::reverse_iterator it3 = matrices.rbegin();it3 != matrices.rend();it3++) {
+			for (std::vector<Eigen::Matrix3d>::reverse_iterator it3 = matrices.rbegin(); it3 != matrices.rend(); ++it3) {
 				result = *it3 * result;
 			}
 
@@ -249,7 +269,7 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 	}
 
 	ClipperLib::ClipperOffset co;
-	co.AddPath(line, ClipperLib::jtMiter, stroke_linecap);
+	co.AddPath(line, get_stroke_linejoin(), stroke_linecap);
 	co.Execute(result, stroke_width * 5000.0);
 
 	for (const auto& p : result) {
@@ -264,7 +284,7 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 void
 shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry) {
 	unsigned long fn = 40;
-	for (unsigned long idx = 1;idx <= fn;idx++) {
+	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * 360.0 / fn;
 		const double xx = rx * sin_degrees(a) + x;
 		const double yy = ry * cos_degrees(a) + y;

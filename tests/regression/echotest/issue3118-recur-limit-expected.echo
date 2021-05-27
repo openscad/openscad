@@ -1,0 +1,3 @@
+ERROR: Recursion detected calling function 'sin' in file issue3118-recur-limit.scad, line 3
+TRACE: called by 'sin' in file issue3118-recur-limit.scad, line 3
+TRACE: called by 'echo' in file issue3118-recur-limit.scad, line 4

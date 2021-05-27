@@ -24,25 +24,22 @@
  *
  */
 
-#include "GroupModule.h"
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "builtin.h"
-#include "evalcontext.h"
+#include "children.h"
+#include "parameters.h"
 
-AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+AbstractNode* builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	(void)ctx; // avoid unusued parameter warning
-	
-	auto node = new GroupNode(inst);
-	inst->scope.apply(*evalctx);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new GroupNode(inst));
 }
 
 void register_builtin_group()
 {
-	Builtins::init("group", new GroupModule());
+	Builtins::init("group", new BuiltinModule(builtin_group),
+				{
+					"group",
+				});
 }

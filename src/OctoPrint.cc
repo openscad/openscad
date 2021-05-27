@@ -24,7 +24,7 @@
  *
  */
 
-#include "settings.h"
+#include "Settings.h"
 #include "OctoPrint.h"
 #include "printutils.h"
 #include "PlatformUtils.h"
@@ -39,12 +39,12 @@ OctoPrint::~OctoPrint()
 
 const QString OctoPrint::url() const
 {
-	return QString::fromStdString(Settings::Settings::inst()->get(Settings::Settings::octoPrintUrl).toString());
+	return QString::fromStdString(Settings::Settings::octoPrintUrl.value());
 }
 
 const std::string OctoPrint::apiKey() const
 {
-	return Settings::Settings::inst()->get(Settings::Settings::octoPrintApiKey).toString();
+	return Settings::Settings::octoPrintApiKey.value();
 }
 
 const QJsonDocument OctoPrint::getJsonData(const QString endpoint) const
@@ -139,7 +139,7 @@ const QString OctoPrint::upload(const QString exportFileName, const QString file
 				const auto doc = QJsonDocument::fromJson(reply->readAll());
 				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
 				const auto location = reply->header(QNetworkRequest::LocationHeader).toString();
-				PRINTB("Uploaded successfully to %s", location.toStdString());
+				LOG(message_group::None,Location::NONE,"","Uploaded successfully to %1$s",location.toStdString());
 				return location;
 			}
 	);
@@ -166,7 +166,7 @@ void OctoPrint::slice(const QString fileUrl, const QString slicer, const QString
 			[](QNetworkReply *reply) {
 				const auto doc = QJsonDocument::fromJson(reply->readAll());
 				PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-				PRINT("Slice command successfully executed.");
+				LOG(message_group::None,Location::NONE,"","Slice command successfully executed.");
 			}
 	);
 }

@@ -7,7 +7,7 @@
 	This class will hold 2D geometry consisting of a number of closed
 	polygons. Each polygon can contain holes and islands. Both polygons,
 	holes and island contours may intersect each other.
- 
+
 	We can store sanitized vs. unsanitized polygons. Sanitized polygons
 	will have opposite winding order for holes and is guaranteed to not
 	have intersecting geometry. The winding order will be counter-clockwise 
@@ -58,7 +58,7 @@ bool Polygon2d::isEmpty() const
 void Polygon2d::transform(const Transform2d &mat)
 {
 	if (mat.matrix().determinant() == 0) {
-		PRINT("WARNING: Scaling a 2D object with 0 - removing object");
+		LOG(message_group::Warning,Location::NONE,"","Scaling a 2D object with 0 - removing object");
 		this->theoutlines.clear();
 		return;
 	}
@@ -103,7 +103,7 @@ bool Polygon2d::is_convex() const
 	int N = pts.size();
 
 	// Check for a right turn. This assumes the polygon is simple.
-	for (int i = 0; i < N; i++) {
+	for (int i = 0; i < N; ++i) {
 		const auto &d1 = pts[(i+1)%N] - pts[i];
 		const auto &d2 = pts[(i+2)%N] - pts[(i+1)%N];
 		double zcross = d1[0] * d2[1] - d1[1] * d2[0];

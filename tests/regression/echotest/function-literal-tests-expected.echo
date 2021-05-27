@@ -1,0 +1,31 @@
+WARNING: Can't call function on undefined in file function-literal-tests.scad, line 5
+ECHO: undef
+WARNING: Can't call function on bool in file function-literal-tests.scad, line 6
+ECHO: undef
+WARNING: Can't call function on number in file function-literal-tests.scad, line 7
+ECHO: undef
+WARNING: Can't call function on string in file function-literal-tests.scad, line 8
+ECHO: undef
+WARNING: Can't call function on vector in file function-literal-tests.scad, line 9
+ECHO: undef
+WARNING: Can't call function on range in file function-literal-tests.scad, line 10
+ECHO: undef
+ECHO: is_function1 = false
+ECHO: is_function2 = true
+ECHO: "A", scope_test1 = 155.3
+ECHO: "A", scope_test2 = 177.3
+ECHO: "A", scope_test3 = 166.3
+ECHO: "B", scope_test1 = 5
+ECHO: "B", scope_test2 = 7
+ECHO: "B", scope_test3 = 6
+ECHO: specialvar1 = 5
+ECHO: specialvar2 = 1.4
+ECHO: map = [1, 4, 9, 16, 25, 36, 49, 64, 81]
+ECHO: filter = [2, 4, 6, 8]
+ECHO: immediate = 7
+ECHO: func0 = 11
+ECHO: func1 = 5
+ECHO: fold1 = 45
+ECHO: fold2 = 100000
+ECHO: chaining = 0
+ECHO: scope_capture = 5

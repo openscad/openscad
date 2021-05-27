@@ -34,14 +34,15 @@
 #include "CGAL_Nef_polyhedron.h"
 #endif
 #include "Polygon2d.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
 #include "dxfdata.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "feature.h"
 #include "handle_dep.h"
-
+#include "boost-utils.h"
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -50,49 +51,36 @@ namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/detail/endian.hpp>
 #include <cstdint>
 
 extern PolySet * import_amf(std::string, const Location &loc);
 extern Geometry * import_3mf(const std::string &, const Location &loc);
 
-class ImportModule : public AbstractModule
+static AbstractNode* do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
 {
-public:
-	ImportType type;
-	ImportModule(ImportType type = ImportType::UNKNOWN) : type(type) { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
-};
-
-AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
-{
-  AssignmentList args{
-    Assignment("file"), Assignment("layer"), Assignment("convexity"),
-		Assignment("origin"), Assignment("scale")
-	};
-	
-	AssignmentList optargs{
-		Assignment("width"), Assignment("height"),
-		Assignment("filename"), Assignment("layername"), Assignment("center"), Assignment("dpi")
-	};
-
-	Context c(ctx);
-	c.setDocumentPath(evalctx->documentPath());
-	c.setVariables(evalctx, args, optargs);
-#if 0 && DEBUG
-	c.dump(this, inst);
-#endif
-
-	auto v = c.lookup_variable("file", true);
-	if (v->isUndefined()) {
-		v = c.lookup_variable("filename", true);
-		if (!v->isUndefined()) {
-			printDeprecation("filename= is deprecated. Please use file=");
-		}
+	if (!children.empty()) {
+		LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
+			"module %1$s() does not support child modules",inst->name());
 	}
-	const std::string filename = lookup_file(v->isUndefined() ? "" : v->toString(), inst->path(), ctx->documentPath());
+
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+		{"file", "layer", "convexity", "origin", "scale"},
+		{"width", "height", "filename", "layername", "center", "dpi"}
+	);
+
+	const auto &v = parameters["file"];
+	std::string filename;
+	if (v.isDefined()) {
+		filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+	} else {
+		const auto &filename_val = parameters["filename"];
+		if (!filename_val.isUndefined()) {
+			LOG(message_group::Deprecated,Location::NONE,"","filename= is deprecated. Please use file=");
+		}
+		filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+	}
 	if (!filename.empty()) handle_dep(filename);
-	ImportType actualtype = this->type;
+	ImportType actualtype = type;
 	if (actualtype == ImportType::UNKNOWN) {
 		std::string extraw = fs::path(filename).extension().generic_string();
 		std::string ext = boost::algorithm::to_lower_copy(extraw);
@@ -107,58 +95,75 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	auto node = new ImportNode(inst, actualtype);
 
-	node->fn = c.lookup_variable("$fn")->toDouble();
-	node->fs = c.lookup_variable("$fs")->toDouble();
-	node->fa = c.lookup_variable("$fa")->toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
 	node->filename = filename;
-	auto layerval = c.lookup_variable("layer", true);
-	if (layerval->isUndefined()) {
-		layerval = c.lookup_variable("layername", true);
-		if (!layerval->isUndefined()) {
-			printDeprecation("layername= is deprecated. Please use layer=");
+	const auto &layerval = parameters["layer"];
+	if (layerval.isDefined()) {
+		node->layername = layerval.toString();
+	} else {
+		const auto &layername = parameters["layername"];
+		if (layername.isDefined()) {
+			LOG(message_group::Deprecated,Location::NONE,"","layername= is deprecated. Please use layer=");
+			node->layername = layername.toString();
+		} else {
+			node->layername = "";
 		}
 	}
-	node->layername = layerval->isUndefined() ? ""  : layerval->toString();
-	node->convexity = (int)c.lookup_variable("convexity", true)->toDouble();
+	node->convexity = (int)parameters["convexity"].toDouble();
 
 	if (node->convexity <= 0) node->convexity = 1;
 
-	const auto origin = c.lookup_variable("origin", true);
+	const auto &origin = parameters["origin"];
 	node->origin_x = node->origin_y = 0;
-	bool originOk = origin->getVec2(node->origin_x, node->origin_y);
+	bool originOk = origin.getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-	if(origin!=ValuePtr::undefined && !originOk){
-		PRINTB("WARNING: linear_extrude(..., origin=%s) could not be converted, %s", origin->toEchoString() % evalctx->loc.toRelativeString(ctx->documentPath()));
+	if(origin.isDefined() && !originOk){
+		LOG(message_group::Warning,inst->location(),parameters.documentRoot(),"linear_extrude(..., origin=%1$s) could not be converted",origin.toEchoString());
 	}
 
-	const auto center = c.lookup_variable("center", true);
-	node->center = center->type() == Value::ValueType::BOOL ? center->toBool() : false;
+	const auto &center = parameters["center"];
+	node->center = center.type() == Value::Type::BOOL ? center.toBool() : false;
 
-	node->scale = c.lookup_variable("scale", true)->toDouble();
+	node->scale = parameters["scale"].toDouble();
 	if (node->scale <= 0) node->scale = 1;
 
 	node->dpi = ImportNode::SVG_DEFAULT_DPI;
-	const auto dpi = c.lookup_variable("dpi", true);
-	if (dpi->type() == Value::ValueType::NUMBER) {
-		double val = dpi->toDouble();
+	const auto &dpi = parameters["dpi"];
+	if (dpi.type() == Value::Type::NUMBER) {
+		double val = dpi.toDouble();
 		if (val < 0.001) {
-			PRINTB("WARNING: Invalid dpi value giving, using default of %f dpi. Value must be positive and >= 0.001, file %s, import() at line %d",
-					node->dpi %
-					inst->location().toRelativeString(ctx->documentPath()) %
-					inst->location().firstLine());
+			std::string filePath = boostfs_uncomplete(inst->location().filePath(),parameters.documentRoot()).generic_string();
+			LOG(message_group::Warning,Location::NONE,"",
+				"Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
+				origin.toEchoString(),filePath,filePath,inst->location().firstLine()
+			);
 		} else {
 			node->dpi = val;
 		}
 	}
 
-	auto width = c.lookup_variable("width", true);
-	auto height = c.lookup_variable("height", true);
-	node->width = (width->type() == Value::ValueType::NUMBER) ? width->toDouble() : -1;
-	node->height = (height->type() == Value::ValueType::NUMBER) ? height->toDouble() : -1;
-	
+	node->width = parameters.get("width", -1);
+	node->height = parameters.get("height", -1);
+
 	return node;
 }
+
+static AbstractNode* builtin_import(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::UNKNOWN); }
+
+static AbstractNode* builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::STL); }
+
+static AbstractNode* builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::OFF); }
+
+static AbstractNode* builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, Children children)
+	{ return do_import(inst, std::move(arguments), std::move(children), ImportType::DXF); }
+
+
 
 /*!
 	Will return an empty geometry if the import failed, but not nullptr
@@ -201,8 +206,8 @@ const Geometry *ImportNode::createGeometry() const
 	}
 #endif
 	default:
-		PRINTB("ERROR: Unsupported file format while trying to import file '%s', import() at Line %d", this->filename % loc.firstLine());
-		g = new PolySet(0);
+		LOG(message_group::Error,Location::NONE,"","Unsupported file format while trying to import file '%1$s', import() at line %2$d",this->filename,loc.firstLine());
+		g = new PolySet(3);
 	}
 
 	if (g) g->setConvexity(this->convexity);
@@ -238,8 +243,12 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-	Builtins::init("import_stl", new ImportModule(ImportType::STL));
-	Builtins::init("import_off", new ImportModule(ImportType::OFF));
-	Builtins::init("import_dxf", new ImportModule(ImportType::DXF));
-	Builtins::init("import", new ImportModule());
+	Builtins::init("import_stl", new BuiltinModule(builtin_import_stl));
+	Builtins::init("import_off", new BuiltinModule(builtin_import_off));
+	Builtins::init("import_dxf", new BuiltinModule(builtin_import_dxf));
+
+	Builtins::init("import", new BuiltinModule(builtin_import),
+				{
+					"import(string, [number, [number]])",
+				});
 }

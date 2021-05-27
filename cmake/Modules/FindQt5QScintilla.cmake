@@ -6,7 +6,7 @@
 #  QT5QSCINTILLA_INCLUDE_DIR - where to find qsciscintilla.h
 #  QT5QSCINTILLA_INCLUDE_DIRS - qscintilla includes
 #  QT5QSCINTILLA_LIBRARY - where to find the QScintilla library
-#  QT5QSCINTILLA_LIBRARIES - aditional libraries
+#  QT5QSCINTILLA_LIBRARIES - additional libraries
 #  QT5QSCINTILLA_MAJOR_VERSION - major version
 #  QT5QSCINTILLA_MINOR_VERSION - minor version
 #  QT5QSCINTILLA_PATCH_VERSION - patch version

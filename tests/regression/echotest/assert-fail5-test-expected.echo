@@ -1,0 +1,2 @@
+ERROR: Assertion failed: "assert-message" in file assert-fail5-test.scad, line 1
+TRACE: called by 'assert' in file assert-fail5-test.scad, line 1

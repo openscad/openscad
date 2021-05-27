@@ -1,3 +1,3 @@
 ERROR: Assertion '(f(angle) > 0)' failed in file assert-fail3-test.scad, line 4
-TRACE: called by 'assert', in file assert-fail3-test.scad, line 4.
-TRACE: called by 'm', in file assert-fail3-test.scad, line 7.
+TRACE: called by 'assert' in file assert-fail3-test.scad, line 4
+TRACE: called by 'm' in file assert-fail3-test.scad, line 7

@@ -272,7 +272,7 @@
      <x>0</x>
      <y>0</y>
      <width>1118</width>
-     <height>18</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -300,6 +300,7 @@
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
+     <addaction name="fileActionExportPDF"/>
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
@@ -308,10 +309,14 @@
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
     <addaction name="fileActionReload"/>
+    <addaction name="separator"/>
+    <addaction name="fileActionNewWindow"/>
+    <addaction name="fileActionOpenWindow"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
+    <addaction name="fileActionSaveAll"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
@@ -335,17 +340,26 @@
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="editActionConvertTabsToSpaces"/>
+    <addaction name="editActionToggleBookmark"/>
+    <addaction name="editActionNextBookmark"/>
+    <addaction name="editActionPrevBookmark"/>
+    <addaction name="separator"/>
+    <addaction name="editActionNextTab"/>
+    <addaction name="editActionPrevTab"/>
     <addaction name="separator"/>
     <addaction name="editActionCopyViewport"/>
     <addaction name="editActionCopyVPT"/>
     <addaction name="editActionCopyVPR"/>
     <addaction name="editActionCopyVPD"/>
+    <addaction name="editActionCopyVPF"/>
     <addaction name="separator"/>
     <addaction name="editActionFind"/>
     <addaction name="editActionFindAndReplace"/>
     <addaction name="editActionFindNext"/>
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
+    <addaction name="separator"/>
+    <addaction name="editActionJumpToNextError"/>
     <addaction name="separator"/>
     <addaction name="editActionZoomTextIn"/>
     <addaction name="editActionZoomTextOut"/>
@@ -400,10 +414,8 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
-    <addaction name="viewActionHideToolBars"/>
-    <addaction name="viewActionHideEditor"/>
-    <addaction name="viewActionHideConsole"/>
-    <addaction name="viewActionHideParameters"/>
+    <addaction name="viewActionHideEditorToolBar"/>
+    <addaction name="viewActionHide3DViewToolBar"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -416,11 +428,71 @@
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="windowActionSelectEditor"/>
+    <addaction name="windowActionSelectConsole"/>
+    <addaction name="windowActionSelectErrorLog"/>
+    <addaction name="windowActionSelectCustomizer"/>
+    <addaction name="separator"/>
+    <addaction name="windowActionNextWindow"/>
+    <addaction name="windowActionPreviousWindow"/>
+    <addaction name="separator"/>
+    <addaction name="windowActionHideEditor"/>
+    <addaction name="windowActionHideConsole"/>
+    <addaction name="windowActionHideErrorLog"/>
+    <addaction name="windowActionHideCustomizer"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_Design"/>
    <addaction name="menu_View"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="tabToolBar">
+   <property name="windowTitle">
+    <string>Tabs</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+       <widget class="QWidget" name="tabToolBarContents">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_1">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+   </layout>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="maximumSize">
@@ -523,7 +595,7 @@
         <item row="0" column="2">
          <widget class="QPushButton" name="findPrevButton">
           <property name="text">
-           <string>Prev.</string>
+           <string>Previous</string>
           </property>
          </widget>
         </item>
@@ -574,6 +646,9 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <property name="leftMargin">
       <number>0</number>
@@ -596,7 +671,7 @@
         </size>
        </property>
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::StrongFocus</enum>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -613,8 +688,16 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QGridLayout" name="gridLayoutParameterWidget">
+  </widget>
+  <widget class="Dock" name="errorLogDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="errorLogDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -627,11 +710,15 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="ParameterWidget" name="parameterWidget" native="true"/>
+     <item>
+      <widget class="ErrorLog" name="errorLogWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -642,10 +729,15 @@
      <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;New</string>
+    <string>&amp;New File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="fileActionNewWindow">
+   <property name="text">
+    <string>New Window</string>
    </property>
   </action>
   <action name="fileActionOpen">
@@ -654,10 +746,15 @@
      <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open...</string>
+    <string>&amp;Open File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="fileActionOpenWindow">
+   <property name="text">
+    <string>Open in New Window</string>
    </property>
   </action>
   <action name="fileActionSave">
@@ -678,6 +775,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="fileActionSaveAll">
+   <property name="text">
+    <string>Save All</string>
    </property>
   </action>
   <action name="fileActionReload">
@@ -801,6 +903,22 @@
     <string>Ctrl+Shift+D</string>
    </property>
   </action>
+  <action name="editActionNextTab">
+   <property name="text">
+    <string>Show Next Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Tab</string>
+   </property>
+  </action>
+  <action name="editActionPrevTab">
+   <property name="text">
+    <string>Show Previous Tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Tab</string>
+   </property>
+  </action>
   <action name="editActionCopyViewport">
    <property name="text">
     <string>Copy viewport ima&amp;ge</string>
@@ -827,6 +945,11 @@
     <string>Copy vie&amp;wport distance</string>
    </property>
   </action>
+  <action name="editActionCopyVPF">
+   <property name="text">
+    <string>Copy vie&amp;wport fov</string>
+   </property>
+  </action>
   <action name="editActionZoomTextIn">
    <property name="text">
     <string>Increase Font &amp;Size</string>
@@ -843,12 +966,12 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="viewActionHideEditor">
+  <action name="windowActionHideEditor">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>H&amp;ide editor</string>
+    <string>Hide Editor</string>
    </property>
   </action>
   <action name="designActionReloadAndPreview">
@@ -1129,6 +1252,9 @@
    <property name="text">
     <string>Ce&amp;nter</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+0</string>
+   </property>
   </action>
   <action name="viewActionPerspective">
    <property name="checkable">
@@ -1154,12 +1280,12 @@
     <string>&amp;Orthogonal</string>
    </property>
   </action>
-  <action name="viewActionHideConsole">
+  <action name="windowActionHideConsole">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>H&amp;ide console</string>
+    <string>Hide Console</string>
    </property>
   </action>
   <action name="helpActionAbout">
@@ -1246,6 +1372,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="editActionJumpToNextError">
+   <property name="text">
+    <string>Jump to next error</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+E</string>
    </property>
   </action>
   <action name="designActionFlushCaches">
@@ -1376,12 +1510,36 @@
     <string>Conv&amp;ert Tabs to Spaces</string>
    </property>
   </action>
-  <action name="viewActionHideToolBars">
+  <action name="editActionToggleBookmark">
+   <property name="text">
+    <string>Toggle Bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F2</string>
+   </property>
+  </action>
+  <action name="editActionNextBookmark">
+   <property name="text">
+    <string>Jump to next bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="editActionPrevBookmark">
+   <property name="text">
+    <string>Jump to previous bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F2</string>
+   </property>
+  </action>
+  <action name="viewActionHideEditorToolBar">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide toolbars</string>
+    <string>Hide Editor toolbar</string>
    </property>
   </action>
   <action name="editActionUnindent">
@@ -1401,7 +1559,7 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="viewActionHideParameters">
+  <action name="windowActionHideCustomizer">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1410,6 +1568,75 @@
    </property>
    <property name="text">
     <string>Hide Customizer</string>
+   </property>
+  </action>
+  <action name="fileActionExportPDF">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/PDF.png</normaloff>:/images/PDF.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as PDF...</string>
+   </property>
+  </action>
+  <action name="viewActionHide3DViewToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide 3D View toolbar</string>
+   </property>
+  </action>
+  <action name="windowActionHideErrorLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Error Log</string>
+   </property>
+   <property name="toolTip">
+    <string>Hide ErrorLog</string>
+   </property>
+  </action>
+  <action name="windowActionSelectEditor">
+   <property name="text">
+    <string>&amp;Editor</string>
+   </property>
+  </action>
+  <action name="windowActionSelectConsole">
+   <property name="text">
+    <string>&amp;Console</string>
+   </property>
+  </action>
+  <action name="windowActionSelectCustomizer">
+   <property name="text">
+    <string>C&amp;ustomizer</string>
+   </property>
+  </action>
+  <action name="windowActionSelectErrorLog">
+   <property name="text">
+    <string>Error &amp;Log</string>
+   </property>
+  </action>
+  <action name="windowActionNextWindow">
+   <property name="text">
+    <string>&amp;Next Window</string>
+   </property>
+  </action>
+  <action name="windowActionPreviousWindow">
+   <property name="text">
+    <string>&amp;Previous Window</string>
+   </property>
+  </action>
+  <action name="editActionInsertTemplate">
+   <property name="text">
+    <string>Insert Template</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Ins</string>
    </property>
   </action>
  </widget>
@@ -1443,26 +1670,15 @@
    <extends>QPlainTextEdit</extends>
    <header>Console.h</header>
   </customwidget>
+  <customwidget>
+   <class>ErrorLog</class>
+   <extends>QWidget</extends>
+   <header>ErrorLog.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="../openscad.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>fileActionClose</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>323</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

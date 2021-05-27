@@ -47,16 +47,16 @@ printUsage()
 {
   echo "Usage: $0 -v <versionstring> -d <versiondate> -c -mingw32
   echo
-  echo "  Example: $0 -v 2010.01
+  echo "  Example: $0 -v 2021.01
 }
 
 OPENSCADDIR=$PWD
-if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+if [ ! -f $OPENSCADDIR/src/openscad.cc ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 1
 fi
 
-CONFIG=deploy
+CMAKE_CONFIG=
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
@@ -88,9 +88,11 @@ else
 fi
 
 case $OS in
-    LINUX|MACOSX) 
+    MACOSX)
+        . ./scripts/setenv-macos.sh
+    ;;
+    LINUX)
         TARGET=
-        # for QT4 set QT_SELECT=4
         export QT_SELECT=5
     ;;
     WIN)
@@ -108,15 +110,16 @@ case $OS in
         fi
         MINGWCONFIG=mingw-cross-env$SHARED
         . ./scripts/setenv-mingw-xbuild.sh $ARCH $SHARED
-        TARGET=release
+        TARGET=
         ZIP="zip"
         ZIPARGS="-r -q"
         echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
+        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON"
     ;;
 esac
 
 if [ "`echo $* | grep snapshot`" ]; then
-  CONFIG="$CONFIG snapshot experimental"
+  CMAKE_CONFIG="$CMAKE_CONFIG -DSNAPSHOT=ON -DEXPERIMENTAL=ON"
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 fi
 
@@ -157,7 +160,7 @@ case $OS in
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
         elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
-            # we cant find systems nsis so look for the MXE's version.
+            # we can't find systems nsis so look for the MXE's version.
             # MXE has its own makensis, but its only available under
             # 32-bit MXE. note that the cross-version in theory works
             # the same as the linux version so we can use them, in
@@ -171,7 +174,11 @@ case $OS in
             exit 1
         fi
         echo NSIS makensis found: $MAKENSIS
-    ;;
+        CMAKE=$MXE_TARGETS-cmake
+        ;;
+    *)
+        CMAKE=cmake
+        ;;
 esac
 
 if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
@@ -186,7 +193,8 @@ if [ -d .git ]; then
   git submodule update
 fi
 
-echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIG..."
+echo "Building openscad-$VERSION ($VERSIONDATE) $CMAKE_CONFIG..."
+echo "DEPLOYDIR: " $DEPLOYDIR
 
 if [ ! $NUMCPU ]; then
   echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
@@ -194,51 +202,12 @@ if [ ! $NUMCPU ]; then
 fi
 echo "NUMCPU: " $NUMCPU
 
-
-
-case $OS in
-    UNIX_CROSS_WIN)
-        cd $DEPLOYDIR
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=link_pkgconfig CONFIG+=$MINGWCONFIG CONFIG-=debug ../openscad.pro
-        cd $OPENSCADDIR
-    ;;
-    *)
-        QMAKE="`command -v qmake-qt5`"
-        if [ ! -x "$QMAKE" ]
-        then
-          QMAKE=qmake
-        fi
-        "$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
-    ;;
-esac
-
-case $OS in
-    UNIX_CROSS_WIN)
-        cd $DEPLOYDIR
-        make clean ## comment out for test-run
-        cd $OPENSCADDIR
-    ;;
-    *)
-        make -s clean
-    ;;
-esac
-
-case $OS in
-    MACOSX) 
-        rm -rf OpenSCAD.app
-    ;;
-    WIN)
-        #if the following files are missing their tried removal stops the build process on msys
-        touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
-    ;;
-    UNIX_CROSS_WIN)
-        # kludge to enable paralell make
-        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
-        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
-        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
-        touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
-    ;;
-esac
+cd $DEPLOYDIR
+"${CMAKE}" .. $CMAKE_CONFIG \
+        -DCMAKE_BUILD_TYPE="Release" \
+        -DOPENSCAD_VERSION="$VERSION" \
+        -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+cd $OPENSCADDIR
 
 echo "Building GUI binary..."
 
@@ -247,21 +216,20 @@ case $OS in
         # make main openscad.exe
         cd $DEPLOYDIR
         if [ $FAKEMAKE ]; then
-            echo "notexe. debugging build process" > $TARGET/openscad.exe
+            echo "notexe. debugging build process" > OpenSCAD.exe
         else
-            make $TARGET -j$NUMCPU
+            make -j$NUMCPU
         fi
-        if [ ! -e $TARGET/openscad.exe ]; then
-            echo "cant find $TARGET/openscad.exe. build failed. stopping."
+        if [ ! -e OpenSCAD.exe ]; then
+            echo "can't find OpenSCAD.exe. build failed. stopping."
             exit
         fi
-        # make console pipe-able openscad.com - see winconsole.pro for info
-        qmake ../winconsole/winconsole.pro
-        make
-        if [ ! -e $TARGET/openscad.com ]; then
-            echo "cant find $TARGET/openscad.com. build failed. stopping."
+        if [ ! -e winconsole/OpenSCAD.com ]; then
+            echo "can't find OpenSCAD.com. build failed. stopping."
             exit
         fi
+	mv -v OpenSCAD.exe openscad.exe
+	mv -v winconsole/OpenSCAD.com openscad.com
         cd $OPENSCADDIR
     ;;
     LINUX)
@@ -272,7 +240,9 @@ case $OS in
         fi
     ;;
     *)
-        make -j$NUMCPU $TARGET
+        cd $DEPLOYDIR
+        VERBOSE=1 make -j$NUMCPU $TARGET
+        cd $OPENSCADDIR
     ;;
 esac
 
@@ -285,11 +255,13 @@ echo "Creating directory structure..."
 
 case $OS in
     MACOSX)
-        EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
-        LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
-        FONTDIR=OpenSCAD.app/Contents/Resources/fonts
-        TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/locale
-        COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
+        cd $OPENSCADDIR
+        EXAMPLESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/examples
+        LIBRARYDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/libraries
+        FONTDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/fonts
+        TRANSLATIONDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/locale
+        COLORSCHEMESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/color-schemes
+        TEMPLATESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/templates
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
@@ -298,6 +270,7 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
+        TEMPLATESDIR=$DEPLOYDIR/openscad-$VERSION/templates/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
@@ -307,6 +280,7 @@ case $OS in
         FONTDIR=openscad-$VERSION/fonts/
         TRANSLATIONDIR=openscad-$VERSION/locale/
         COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
+        TEMPLATESDIR=openscad-$VERSION/templates/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -341,6 +315,11 @@ if [ -n $COLORSCHEMESDIR ]; then
   mkdir -p $COLORSCHEMESDIR
   cp -a color-schemes/* $COLORSCHEMESDIR
 fi
+if [ -n $TEMPLATESDIR ]; then
+  echo $TEMPLATESDIR
+  mkdir -p $TEMPLATESDIR
+  cp -a templates/* $TEMPLATESDIR
+fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR
     mkdir -p $LIBRARYDIR
@@ -365,11 +344,13 @@ echo "Creating archive.."
 
 case $OS in
     MACOSX)
+        cd $DEPLOYDIR
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -dmg -no-strip
         mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
         hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg
         echo "Binary created: OpenSCAD-$VERSION.dmg"
+        cd $OPENSCADDIR
     ;;
     WIN)
         #package
@@ -382,20 +363,16 @@ case $OS in
         echo "Binary created: openscad-$VERSION.zip"
     ;;
     UNIX_CROSS_WIN)
-        cd $OPENSCADDIR
         cd $DEPLOYDIR
         BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
+	fl=
         if [ "`echo $* | grep shared`" ]; then
           flprefix=$DEPLOYDIR/mingw-cross-env/bin
           echo Copying dlls for shared library build
           echo from $flprefix
-          echo to $DEPLOYDIR/$TARGET
-          flist=
-          # fl="$fl opengl.dll" # use Windows version?
-          # fl="$fl libmpfr.dll" # does not exist
           fl="$fl libgmp-10.dll"
           fl="$fl libgmpxx-4.dll"
           fl="$fl libboost_filesystem-mt.dll"
@@ -410,7 +387,6 @@ case $OS in
           fl="$fl libglib-2.0-0.dll"
           fl="$fl libopencsg-1.dll"
           fl="$fl libharfbuzz-0.dll"
-          # fl="$fl libharfbuzz-gobject-0.dll" # ????
           fl="$fl libfontconfig-1.dll"
           fl="$fl libexpat-1.dll"
           fl="$fl libbz2.dll"
@@ -429,14 +405,13 @@ case $OS in
           fl="$fl ../qt5/bin/Qt5Core.dll"
           fl="$fl ../qt5/bin/Qt5Gui.dll"
           fl="$fl ../qt5/bin/Qt5OpenGL.dll"
-          #  fl="$fl ../qt5/bin/QtSvg4.dll" # why is this here?
           fl="$fl ../qt5/bin/Qt5Widgets.dll"
           fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
           fl="$fl ../qt5/bin/Qt5PrintSupport.dll"
           for dllfile in $fl; do
             if [ -e $flprefix/$dllfile ]; then
                 echo $flprefix/$dllfile
-                cp $flprefix/$dllfile $DEPLOYDIR/$TARGET/
+                cp $flprefix/$dllfile $DEPLOYDIR
             else
                 echo cannot find $flprefix/$dllfile
                 echo stopping build.
@@ -446,16 +421,14 @@ case $OS in
         fi
 
         echo "Copying main binary .exe, .com, and dlls"
-        echo "from $DEPLOYDIR/$TARGET"
         echo "to $DEPLOYDIR/openscad-$VERSION"
         TMPTAR=$DEPLOYDIR/tmpmingw.$ARCH.$MXELIBTYPE.tar
-        cd $DEPLOYDIR/$TARGET
-        tar cvf $TMPTAR --exclude=winconsole.o .
+        cd $DEPLOYDIR
+        tar cvf $TMPTAR --exclude=winconsole.o *.exe *.com *.dll
         cd $DEPLOYDIR/openscad-$VERSION
         tar xvf $TMPTAR
         cd $DEPLOYDIR
         rm -f $TMPTAR
-
 
         echo "Creating binary zip package"
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
@@ -683,4 +656,3 @@ if [ $BUILD_TESTS ]; then
 else
   echo "Not building regression tests package"
 fi # BUILD_TESTS
-

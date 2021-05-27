@@ -1,57 +1,63 @@
 #pragma once
 
+#include <memory>
+#include "arguments.h"
+#include "children.h"
 #include "context.h"
-#include "FileModule.h"
+#include "SourceFile.h"
+#include "UserModule.h"
 
-/*!
-	This holds the context for a UserModule definition; keeps track of
-	global variables, submodules and functions defined inside a module.
-
-	NB! every .scad file defines a FileModule holding the contents of the file.
-*/
-class ModuleContext : public Context
+class ScopeContext : public Context
 {
 public:
-	ModuleContext(const Context *parent = nullptr, const EvalContext *evalctx = nullptr);
-	~ModuleContext();
+	void init() override;
+	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
+	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
-	void initializeModule(const class UserModule &m);
-	ValuePtr evaluate_function(const std::string &name, const EvalContext *evalctx) const override;
-	AbstractNode *instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const override;
+protected:
+	ScopeContext(const std::shared_ptr<const Context> parent, const LocalScope* scope):
+		Context(parent),
+		scope(scope)
+	{}
 
-	const UserModule *findLocalModule(const std::string &name) const;
-	const UserFunction *findLocalFunction(const std::string &name) const;
-
-	const LocalScope::FunctionContainer *functions_p;
-	const LocalScope::ModuleContainer *modules_p;
-
-  // FIXME: Points to the eval context for the call to this module. Not sure where it belongs
-	const class EvalContext *evalctx;
-
-#ifdef DEBUG
-	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
-#endif
 private:
 // Experimental code. See issue #399
 //	void evaluateAssignments(const AssignmentList &assignments);
+
+	const LocalScope* scope;
+
+	friend class Context;
 };
 
-class FileContext : public ModuleContext
+class UserModuleContext : public ScopeContext
 {
 public:
-	FileContext(const Context *parent);
-	~FileContext() {}
-	void initializeModule(const FileModule &module);
-	ValuePtr evaluate_function(const std::string &name, 
-																		 const EvalContext *evalctx) const override;
-	AbstractNode *instantiate_module(const ModuleInstantiation &inst, 
-																					 EvalContext *evalctx) const override;
+	const Children* user_module_children() const override { return &children; }
+	std::vector<const std::shared_ptr<const Context>*> list_referenced_contexts() const override;
+
+protected:
+	UserModuleContext(const std::shared_ptr<const Context> parent, const UserModule* module, const Location &loc, Arguments arguments, Children children);
 
 private:
-	const FileModule::ModuleContainer *usedlibs_p;
+	Children children;
 
-	// This sub_* method is needed to minimize stack usage only.
-	ValuePtr sub_evaluate_function(const std::string &name, 
-																 const EvalContext *evalctx, 
-																 FileModule *usedmod) const;
+	friend class Context;
+};
+
+class FileContext : public ScopeContext
+{
+public:
+	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
+	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
+
+protected:
+	FileContext(const std::shared_ptr<const Context> parent, const SourceFile* source_file):
+		ScopeContext(parent, &source_file->scope),
+		source_file(source_file)
+	{}
+
+private:
+	const SourceFile* source_file;
+
+	friend class Context;
 };

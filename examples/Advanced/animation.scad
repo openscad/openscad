@@ -1,10 +1,12 @@
 // animation.scad - Demo of animation usage
 
-// The animation funtionality is based simply on a variable $t
+// The animation functionality is based simply on a variable $t
 // that is changed automatically by OpenSCAD while repeatedly
 // showing the model.
-// To activate animation, select "View->Animation" from the
-// menu and enter values into the appearing FPS and Steps input
+// To activate animation, select "View->Animate" from the
+// menu; this will cause three fields to appear
+// underneath the Preview console: Time, FPS & Steps.
+// To commence animation, enter values into the FPS and Steps input
 // fields (e.g. 5 FPS and 200 Steps for this animation).
 // This is not intended to directly produce real-time animations
 // but the image sequence can be exported to generate videos of

@@ -182,11 +182,11 @@ figure out enough to find and change the rpath string.  That was fun!
 
 This program assumes (unlike your original program) that there is only
 one DT_RPATH tag in the dynamic section as even with multiple '-Wl,-rpath,'
-commands in the link this seems to occur (they all get concatonated into
+commands in the link this seems to occur (they all get concatenated into
 a : separated path).
 
 Thanks for your help.  If you want to use this on non-x86 you have to change
-the occurances of LSB back to MSB:)
+the occurrences of LSB back to MSB:)
 
 Peeter
 --
@@ -289,7 +289,7 @@ chrpath(const char *filename, const char *newpath, int convert)
     return 1;
   }
 
-  for (i = 0; i < ehdr.e_shnum; i++)
+  for (i = 0; i < ehdr.e_shnum; ++i)
   {
     if (read(fd, &shdr, sizeof(shdr)) != sizeof(shdr))
     {
@@ -490,7 +490,7 @@ elf_find_dynamic_section(int fd, Elf_Ehdr *ehdr, Elf_Phdr *phdr)
     return 1;
   }
 
-  for (i = 0; i < ehdr->e_phnum; i++)
+  for (i = 0; i < ehdr->e_phnum; ++i)
   {
     if (read(fd, phdr, sizeof(*phdr)) != sizeof(*phdr))
     {
@@ -615,13 +615,13 @@ killrpath(const char *filename)
      }
 
    dynpos = 0;
-   for (i = 0; dyns[i].d_tag != DT_NULL; i++)
+   for (i = 0; dyns[i].d_tag != DT_NULL; ++i)
      {
        dyns[dynpos] = dyns[i];
        if ( ! elf_dynpath_tag(dyns[i].d_tag) )
         dynpos++;
      }
-   for (; dynpos < i; dynpos++)
+   for (; dynpos < i; ++dynpos)
      dyns[dynpos].d_tag = DT_NULL;
 
    if (lseek(fd, phdr.p_offset, SEEK_SET) == -1

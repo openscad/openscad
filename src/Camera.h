@@ -17,6 +17,7 @@ projection, Perspective and Orthogonal.
 */
 
 #include "linalg.h"
+#include "modcontext.h"
 #include <vector>
 #include <Eigen/Geometry>
 
@@ -30,7 +31,9 @@ public:
 	void setProjection(ProjectionType type);
 	void zoom(int delta, bool relative);
 	double zoomValue() const;
+	double fovValue() const;
 	void resetView();
+	void updateView(const std::shared_ptr<const class FileContext> context, bool enableWarning);
 	void viewAll(const BoundingBox &bbox);
 	std::string statusText() const;
 
@@ -40,6 +43,7 @@ public:
 	Eigen::Vector3d getVpr() const;
 	void setVpr(double x, double y, double z);
 	void setVpd(double d);
+	void setVpf(double d);
 
 	// Gimbalcam
 	Eigen::Vector3d object_trans;
@@ -58,6 +62,10 @@ public:
 
 	unsigned int pixel_width;
 	unsigned int pixel_height;
+
+	// true if camera settings are fixed
+	// (--camera option in commandline mode)
+	bool locked;
 
 protected:
 	// Perspective settings

@@ -1,2 +1,2 @@
 ERROR: Assertion 'false' failed in file assert-fail1-test.scad, line 1
-TRACE: called by 'assert', in file assert-fail1-test.scad, line 1.
+TRACE: called by 'assert' in file assert-fail1-test.scad, line 1

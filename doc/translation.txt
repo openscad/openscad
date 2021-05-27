@@ -72,16 +72,16 @@ There is no need to add a context preemptively, please wait until a specific
 need arises.
 
 Please note that message context should follow some constrains:
-   - message context comes at some perfomance penalty
+   - message context comes at some performance penalty
    - Keep the context name short
    - try to pick a context name that is unlikely to change
      (changing the context name requires the translates to update the translation)
    - do not abuse the message context as a comment
 
-The first paramater of _(msgid, msgctxt) and q_(msgid, msgctxt) is the
+The first parameter of _(msgid, msgctxt) and q_(msgid, msgctxt) is the
 message itself.
 The second parameter of _(msgid, msgctxt) and q_(msgid, msgctxt)
-respectivly is the message context.
+respectively is the message context.
 
 Note that msgid and msgctxt are swapped compared to pgettext.
 

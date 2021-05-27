@@ -4,7 +4,6 @@
     #include "Assignment.h"
     #include "expression.h"
     #include "printutils.h"
-    #include "value.h" 
     #include "comment.h"
     #ifdef _MSC_VER
     #define strdup _strdup
@@ -74,7 +73,7 @@ expr:
 num:
     NUM
     {
-        $$ = new Literal(ValuePtr($1));
+        $$ = new Literal($1);
     }
     ;
 
@@ -97,12 +96,12 @@ values:
     value
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
+        $$->emplace_back($1);
     }
     |values ',' value
     {
         $$ = $1;
-        $$->push_back($3);
+        $$->emplace_back($3);
     }
     ;
 
@@ -110,33 +109,33 @@ labeled_vectors:
     num ':' num
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     |num ':' wordexpr
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     |wordexpr ':' num
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     |wordexpr ':' wordexpr
     {
         $$ = new Vector(Location::NONE);
-        $$->push_back($1);
-        $$->push_back($3);
+        $$->emplace_back($1);
+        $$->emplace_back($3);
     }
     ;
 
 wordexpr:
     word
     {
-        $$ = new Literal(ValuePtr(std::string($1)));
+        $$ = new Literal(std::string($1));
         free($1);
     }
     ;
@@ -151,18 +150,22 @@ word:
         std::ostringstream strs;
         strs << $1 << " " << $2;
         $$ = strdup(strs.str().c_str());
+        free($1);
     }
     | NUM word
     {
         std::ostringstream strs;
         strs << $1 << " " << $2;
         $$ = strdup(strs.str().c_str());
+        free($2);
     }
     | word WORD
     {
         std::ostringstream strs;
         strs << $1 << " " << $2;
         $$ = strdup(strs.str().c_str());
+        free($1);
+        free($2);
     }
 %%
 

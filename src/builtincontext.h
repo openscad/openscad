@@ -1,15 +1,21 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "context.h"
 
 class BuiltinContext : public Context
 {
 public:
-	BuiltinContext();
 	~BuiltinContext() {}
 
-	ValuePtr evaluate_function(const std::string &name, const EvalContext *evalctx) const override;
-	class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, EvalContext *evalctx) const override;
+	void init() override;
+	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
+	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
+
+protected:
+	BuiltinContext(EvaluationSession* session);
+
+	friend class Context;
 };

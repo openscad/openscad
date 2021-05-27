@@ -26,29 +26,31 @@
 
 #include "csgops.h"
 
-#include "evalcontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "csgnode.h"
 #include "builtin.h"
+#include "children.h"
+#include "parameters.h"
 #include <sstream>
 #include <assert.h>
 
-class CsgModule : public AbstractModule
+static AbstractNode* builtin_union(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-public:
-	OpenSCADOperator type;
-	CsgModule(OpenSCADOperator type) : type(type) { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
-};
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new CsgOpNode(inst, OpenSCADOperator::UNION));
+}
 
-AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, EvalContext *evalctx) const
+static AbstractNode* builtin_difference(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	inst->scope.apply(*evalctx);
-	auto node = new CsgOpNode(inst, type);
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	return node;
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new CsgOpNode(inst, OpenSCADOperator::DIFFERENCE));
+}
+
+static AbstractNode* builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, Children children)
+{
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+	return children.instantiate(new CsgOpNode(inst, OpenSCADOperator::INTERSECTION));
 }
 
 std::string CsgOpNode::toString() const
@@ -76,8 +78,19 @@ std::string CsgOpNode::name() const
 
 void register_builtin_csgops()
 {
-	Builtins::init("union", new CsgModule(OpenSCADOperator::UNION));
-	Builtins::init("difference", new CsgModule(OpenSCADOperator::DIFFERENCE));
-	Builtins::init("intersection", new CsgModule(OpenSCADOperator::INTERSECTION));
+	Builtins::init("union", new BuiltinModule(builtin_union),
+				{
+					"union()",
+				});
+
+	Builtins::init("difference", new BuiltinModule(builtin_difference),
+				{
+					"difference()",
+				});
+
+	Builtins::init("intersection", new BuiltinModule(builtin_intersection),
+				{
+					"intersection()",
+				});
 }
 

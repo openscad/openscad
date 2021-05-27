@@ -3,10 +3,10 @@
 ;; Author:     Len Trigg, Łukasz Stelmach
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   28 Mar 2015
+;; Modified:   28 Jun 2020
 ;; Keywords:   languages
 ;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
-;; Version:    91.0
+;; Version:    92.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -50,6 +50,14 @@
 
 (require 'cc-mode)
 
+(eval-when-compile
+  (require 'cc-langs)
+  (require 'cc-fonts)
+  (require 'cl))
+
+(eval-and-compile
+  (c-add-language 'scad-mode 'c-mode))
+
 (defcustom scad-command
   '"openscad"
   "Path to openscad executable"
@@ -72,6 +80,8 @@
     "dxf_dim" "dxf_cross"                                               ;;dxfdim.cc
     "norm" "cross"                                                      ;;2014.03
     "concat" "chr"                                                      ;;2015.03
+    "assert" "ord"                                                      ;;2019.05
+    "is_undef" "is_list" "is_num" "is_bool" "is_string"                 ;;2019.05 type test
     )
   "SCAD functions."
   :type 'list
@@ -174,9 +184,20 @@
   nil. If you want to set the style with file local variables use
   the `c-file-style' variable")
 
+(defvar scad-completions
+  (append '("module" "function" "use" "include")
+          scad-keywords scad-functions scad-modules)
+  "List of known words for completion.")
+
+(defcustom scad-mode-disable-c-mode-hook t
+  "When set to `T', do not run hooks of parent mode (`c-mode')."
+  :group 'scad-mode
+  :tag "SCAD Mode Disable C Mode Hook"
+  :type 'boolean)
+
 (put 'scad-mode 'c-mode-prefix "scad-")
 ;;;###autoload
-(define-derived-mode scad-mode prog-mode "SCAD"
+(define-derived-mode scad-mode c-mode "SCAD"
   "Major mode for editing OpenSCAD code.
 
 To see what version of CC Mode you are running, enter `\\[c-version]'.
@@ -186,15 +207,28 @@ initialization, then `scad-mode-hook'.
 
 Key bindings:
 \\{scad-mode-map}"
-  (c-initialize-cc-mode)
+  (add-hook 'completion-at-point-functions
+            'scad-completion-at-point nil 'local)
+  (when scad-mode-disable-c-mode-hook
+    (setq-local c-mode-hook nil))
+  (c-initialize-cc-mode t)
   ;; (setq local-abbrev-table scad-mode-abbrev-table
   ;; 	abbrev-mode t)
   (use-local-map scad-mode-map)
   (c-set-offset (quote cpp-macro) 0 nil)
+  (c-init-language-vars scad-mode)
   (c-basic-common-init 'scad-mode (or scad-indent-style "k&r"))
   (c-font-lock-init)
   (c-run-mode-hooks 'c-mode-common-hook 'scad-mode-hook)
   (c-update-modeline))
+
+(defun scad-completion-at-point ()
+  "Completion at point function."
+  (let ((bounds (bounds-of-thing-at-point 'word)))
+    (when bounds
+      (list (car bounds) (cdr bounds)
+            scad-completions
+            :exclusive "no"))))
 
 ;; From: http://stackoverflow.com/questions/14520073/add-words-for-dynamic-expansion-to-emacs-mode
 (defun scad-prime-dabbrev ()

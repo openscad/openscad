@@ -27,8 +27,8 @@
 # Try to find Harfbuzz include and library directories.
 #
 # After successful discovery, this will set for inclusion where needed:
-# HARFBUZZ_INCLUDE_DIRS - containg the HarfBuzz headers
-# HARFBUZZ_LIBRARIES - containg the HarfBuzz library
+# HARFBUZZ_INCLUDE_DIRS - containing the HarfBuzz headers
+# HARFBUZZ_LIBRARIES - containing the HarfBuzz library
 
 find_package(PkgConfig REQUIRED QUIET)
 
@@ -45,4 +45,4 @@ find_library(HARFBUZZ_LIBRARIES NAMES harfbuzz
 set(HARFBUZZ_VERSION ${PC_HARFBUZZ_VERSION})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(harfbuzz DEFAULT_MSG HARFBUZZ_INCLUDE_DIRS HARFBUZZ_LIBRARIES)
+find_package_handle_standard_args(HarfBuzz DEFAULT_MSG HARFBUZZ_INCLUDE_DIRS HARFBUZZ_LIBRARIES)

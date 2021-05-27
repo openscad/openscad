@@ -24,7 +24,7 @@
  *
  */
 
-%expect 2 /* Expect 2 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+%expect 0
 
 %{
 
@@ -36,51 +36,67 @@
 #include <unistd.h>
 #endif
 
-#include "FileModule.h"
+#include "SourceFile.h"
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
 #include "expression.h"
-#include "value.h"
 #include "function.h"
 #include "printutils.h"
 #include "memory.h"
 #include <sstream>
+#include <stack>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
+#include "feature.h"
 
 namespace fs = boost::filesystem;
 
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
-  
+#ifdef DEBUG
+static Location debug_location(const std::string& info, const struct YYLTYPE& loc);
+#define LOCD(str, loc) debug_location(str, loc)
+#else
+#define LOCD(str, loc) LOC(loc)
+#endif
+
 int parser_error_pos = -1;
 
 int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
+bool lexer_is_main_file();
 std::shared_ptr<fs::path> sourcefile(void);
 void lexer_set_parser_sourcefile(const fs::path& path);
 int lexerlex_destroy(void);
 int lexerlex(void);
+static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
 std::stack<LocalScope *> scope_stack;
-FileModule *rootmodule;
+SourceFile *rootfile;
 
 extern void lexerdestroy();
 extern FILE *lexerin;
 const char *parser_input_buffer;
 static fs::path mainFilePath;
-static std::string main_file_folder;
+static bool parsingMainFile;
 
 bool fileEnded=false;
 %}
 
+%initial-action
+{
+  @$.first_line = 1;
+  @$.first_column = 1;
+  @$.last_column = 1;
+  @$.last_line = 1;
+};
+
 %union {
   char *text;
   double number;
-  class Value *value;
   class Expression *expr;
   class Vector *vec;
   class ModuleInstantiation *inst;
@@ -114,31 +130,24 @@ bool fileEnded=false;
 
 %token LE GE EQ NE AND OR
 
-%right LET
-%right LOW_PRIO_RIGHT
-%left LOW_PRIO_LEFT
-
-%right '?' ':'
-
-%left OR
-%left AND
-
-%left '<' LE GE '>'
-%left EQ NE
-
-%left '!' '+' '-'
-%left '*' '/' '%'
-%left '[' ']'
-%left '.'
-
-%right HIGH_PRIO_RIGHT
-%left HIGH_PRIO_LEFT
+%nonassoc NO_ELSE
+%nonassoc TOK_ELSE
 
 %type <expr> expr
-%type <vec> vector_expr
+%type <expr> call
+%type <expr> logic_or
+%type <expr> logic_and
+%type <expr> equality
+%type <expr> comparison
+%type <expr> addition
+%type <expr> multiplication
+%type <expr> exponent
+%type <expr> unary
+%type <expr> primary
+%type <vec> vector_elements
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
-%type <expr> list_comprehension_elements_or_expr
+%type <expr> vector_element
 %type <expr> expr_or_empty
 
 %type <inst> module_instantiation
@@ -146,41 +155,46 @@ bool fileEnded=false;
 %type <ifelse> ifelse_statement
 %type <inst> single_module_instantiation
 
-%type <args> argument_list_call
-%type <args> argument_list_decl
+%type <args> arguments
+%type <args> argument_list
+%type <args> parameters
+%type <args> parameter_list
 
-%type <arg> argument_call
-%type <arg> argument_decl
+%type <arg> argument
+%type <arg> parameter
 %type <text> module_id
 
 %debug
+%locations
 
 %%
 
-input:    /* empty */
+input
+        : /* empty */
         | input
           TOK_USE
             {
-              rootmodule->registerUse(std::string($2));
+              rootfile->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
               free($2);
             }
         | input statement
         ;
 
-statement:
-          ';'
+statement
+        : ';'
         | '{' inner_input '}'
         | module_instantiation
             {
-              if ($1) scope_stack.top()->addChild($1);
+              if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
-        | TOK_MODULE TOK_ID '(' argument_list_decl optional_commas ')'
+        | TOK_MODULE TOK_ID '(' parameters ')'
             {
-              UserModule *newmodule = new UserModule($2, LOC(@$));
-              newmodule->definition_arguments = *$4; /* argument_list here */ 
-              scope_stack.top()->addModule($2, newmodule);
-              scope_stack.push(&newmodule->scope);
+              UserModule *newmodule = new UserModule($2, LOCD("module", @$));
+              newmodule->parameters = *$4;
+              auto top = scope_stack.top();
+              scope_stack.push(&newmodule->body);
+              top->addModule(shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
             }
@@ -188,79 +202,35 @@ statement:
             {
                 scope_stack.pop();
             }
-        | TOK_FUNCTION TOK_ID '(' argument_list_decl optional_commas ')' '=' expr
+        | TOK_FUNCTION TOK_ID '(' parameters ')' '=' expr ';'
             {
-              UserFunction *func = UserFunction::create($2, *$4, shared_ptr<Expression>($8), LOC(@$));
-              scope_stack.top()->addFunction(func);
+              scope_stack.top()->addFunction(
+                make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($7), LOCD("function", @$))
+              );
               free($2);
               delete $4;
             }
-          ';'
         | TOK_EOT
             {
                 fileEnded=true;
             }
         ;
 
-inner_input:
-          /* empty */
-        | statement inner_input
+inner_input
+        : /* empty */
+        | inner_input statement
         ;
 
-assignment:
-          TOK_ID '=' expr ';'
+assignment
+        : TOK_ID '=' expr ';'
             {
-                bool found = false;
-                for (auto &assignment : scope_stack.top()->assignments) {
-                    if (assignment.name == $1) {
-                        auto mainFile = mainFilePath.string();
-                        auto prevFile = assignment.location().fileName();
-                        auto currFile = LOC(@$).fileName();
-                        
-                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
-                        if(fileEnded){
-                            //assigments via commandline
-                        }else if(prevFile==mainFile && currFile == mainFile){
-                            //both assigments in the mainFile
-                            PRINTB("WARNING: %s was assigned on line %i but was overwritten on line %i",
-                                    assignment.name%
-                                    assignment.location().firstLine()%
-                                    LOC(@$).firstLine());
-                        }else if(uncPathCurr == uncPathPrev){
-                            //assigment overwritten within the same file
-                            //the line number being equal happens, when a file is included multiple times
-                            if(assignment.location().firstLine() != LOC(@$).firstLine()){
-                                PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i",
-                                        assignment.name%
-                                        assignment.location().firstLine()%
-                                        uncPathPrev%
-                                        LOC(@$).firstLine());
-                            }
-                        }else if(prevFile==mainFile && currFile != mainFile){
-                            //assigment from the mainFile overwritten by an include
-                            PRINTB("WARNING: %s was assigned on line %i of %s but was overwritten on line %i of %s",
-                                    assignment.name%
-                                    assignment.location().firstLine()%
-                                    uncPathPrev%
-                                    LOC(@$).firstLine()%
-                                    uncPathCurr);
-                        }
-                        assignment.expr = shared_ptr<Expression>($3);
-                        assignment.setLocation(LOC(@$));
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                  scope_stack.top()->addAssignment(Assignment($1, shared_ptr<Expression>($3), LOC(@$)));
-                }
+                handle_assignment($1, $3, LOCD("assignment", @$));
                 free($1);
             }
         ;
 
-module_instantiation:
-          '!' module_instantiation
+module_instantiation
+        : '!' module_instantiation
             {
                 $$ = $2;
                 if ($$) $$->tag_root = true;
@@ -296,14 +266,14 @@ module_instantiation:
             }
         ;
 
-ifelse_statement:
-          if_statement
+ifelse_statement
+        : if_statement %prec NO_ELSE
             {
                 $$ = $1;
             }
         | if_statement TOK_ELSE
             {
-                scope_stack.push(&$1->else_scope);
+                scope_stack.push($1->makeElseScope());
             }
           child_statement
             {
@@ -312,10 +282,10 @@ ifelse_statement:
             }
         ;
 
-if_statement:
-          TOK_IF '(' expr ')'
+if_statement
+        : TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), main_file_folder, LOC(@$));
+                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -325,24 +295,24 @@ if_statement:
             }
         ;
 
-child_statements:
-          /* empty */
+child_statements
+        : /* empty */
         | child_statements child_statement
         | child_statements assignment
         ;
 
-child_statement:
-          ';'
+child_statement
+        : ';'
         | '{' child_statements '}'
         | module_instantiation
             {
-                if ($1) scope_stack.top()->addChild($1);
+                if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
             }
         ;
 
 // "for", "let" and "each" are valid module identifiers
-module_id:
-          TOK_ID  { $$ = $1; }
+module_id
+        : TOK_ID  { $$ = $1; }
         | TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }
@@ -350,310 +320,357 @@ module_id:
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
-single_module_instantiation:
-          module_id '(' argument_list_call optional_commas')'
+single_module_instantiation
+        : module_id '(' arguments ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, main_file_folder, LOC(@$));
+                $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
                 free($1);
                 delete $3;
             }
         ;
 
-expr:
-          TOK_TRUE
+expr
+        : logic_or
+        | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
-              $$ = new Literal(ValuePtr(true), LOC(@$));
+              $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
+              delete $3;
             }
-        | TOK_FALSE
+        | logic_or '?' expr ':' expr
             {
-              $$ = new Literal(ValuePtr(false), LOC(@$));
+              $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
             }
-        | TOK_UNDEF
+        | TOK_LET '(' arguments ')' expr
             {
-              $$ = new Literal(ValuePtr::undefined, LOC(@$));
+              $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
+              delete $3;
             }
-        | TOK_ID
+        | TOK_ASSERT '(' arguments ')' expr_or_empty
             {
-              $$ = new Lookup($1, LOC(@$));
-                free($1);
+              $$ = FunctionCall::create("assert", *$3, $5, LOCD("assert", @$));
+              delete $3;
             }
-        | expr '.' TOK_ID
+        | TOK_ECHO '(' arguments ')' expr_or_empty
             {
-              $$ = new MemberLookup($1, $3, LOC(@$));
-              free($3);
+              $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
+              delete $3;
             }
-        | TOK_STRING
+        ;
+
+logic_or
+        : logic_and
+        | logic_or OR logic_and
             {
-              $$ = new Literal(ValuePtr(std::string($1)), LOC(@$));
-              free($1);
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOCD("or", @$));
             }
-        | TOK_NUMBER
+		;
+
+logic_and
+        : equality
+        | logic_and AND equality
             {
-              $$ = new Literal(ValuePtr($1), LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOCD("and", @$));
             }
-        | '[' expr ':' expr ']'
+		;
+
+equality
+        : comparison
+        | equality EQ comparison
             {
-              $$ = new Range($2, $4, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
             }
-        | '[' expr ':' expr ':' expr ']'
+        | equality NE comparison
             {
-              $$ = new Range($2, $4, $6, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
             }
-        | '[' optional_commas ']'
+		;
+
+comparison
+        : addition
+        | comparison '>' addition
             {
-              $$ = new Literal(ValuePtr(Value::VectorType()), LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
             }
-        | '[' vector_expr optional_commas ']'
+        | comparison GE addition
             {
-              $$ = $2;
+              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOCD("greaterequal", @$));
             }
-        | expr '*' expr
+        | comparison '<' addition
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOCD("less", @$));
             }
-        | expr '/' expr
+        | comparison LE addition
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
             }
-        | expr '%' expr
+		;
+
+addition
+        : multiplication
+        | addition '+' multiplication
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOCD("addition", @$));
             }
-        | expr '+' expr
+        | addition '-' multiplication
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Plus, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOCD("subtraction", @$));
             }
-        | expr '-' expr
+		;
+
+multiplication
+        : unary
+        | multiplication '*' unary
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Minus, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Multiply, $3, LOCD("multiply", @$));
             }
-        | expr '<' expr
+        | multiplication '/' unary
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Divide, $3, LOCD("divide", @$));
             }
-        | expr LE expr
+        | multiplication '%' unary
             {
-              $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOC(@$));
+              $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
             }
-        | expr EQ expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOC(@$));
-            }
-        | expr NE expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOC(@$));
-            }
-        | expr GE expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOC(@$));
-            }
-        | expr '>' expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOC(@$));
-            }
-        | expr AND expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalAnd, $3, LOC(@$));
-            }
-        | expr OR expr
-            {
-              $$ = new BinaryOp($1, BinaryOp::Op::LogicalOr, $3, LOC(@$));
-            }
-        | '+' expr
+		;
+
+
+unary
+        : exponent
+        | '+' unary
             {
                 $$ = $2;
             }
-        | '-' expr
+        | '-' unary
             {
-              $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOC(@$));
+              Literal* argument = dynamic_cast<Literal*>($2);
+              if (argument && argument->isDouble()) {
+                double value = *argument->toDouble();
+                delete $2;
+                $$ = new Literal(-value, LOCD("literal", @$));
+              } else {
+                $$ = new UnaryOp(UnaryOp::Op::Negate, $2, LOCD("negate", @$));
+              }
             }
-        | '!' expr
+        | '!' unary
             {
-              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOC(@$));
+              $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
+            }
+		;
+
+exponent
+       : call
+       | call '^' unary
+           {
+              $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
+           }
+       ;
+
+call
+        : primary
+        | call '(' arguments ')'
+            {
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
+              delete $3;
+            }
+        | call '[' expr ']'
+            {
+              $$ = new ArrayLookup($1, $3, LOCD("index", @$));
+            }
+        | call '.' TOK_ID
+            {
+              $$ = new MemberLookup($1, $3, LOCD("member", @$));
+              free($3);
+            }
+		;
+
+primary
+        : TOK_TRUE
+            {
+              $$ = new Literal(true, LOCD("literal", @$));
+            }
+        | TOK_FALSE
+            {
+              $$ = new Literal(false, LOCD("literal", @$));
+            }
+        | TOK_UNDEF
+            {
+              $$ = new Literal(boost::none, LOCD("literal", @$));
+            }
+        | TOK_NUMBER
+            {
+              $$ = new Literal($1, LOCD("literal", @$));
+            }
+        | TOK_STRING
+            {
+              $$ = new Literal(std::string($1), LOCD("string", @$));
+              free($1);
+            }
+        | TOK_ID
+            {
+              $$ = new Lookup($1, LOCD("variable", @$));
+              free($1);
             }
         | '(' expr ')'
             {
               $$ = $2;
             }
-        | expr '?' expr ':' expr
+        | '[' expr ':' expr ']'
             {
-              $$ = new TernaryOp($1, $3, $5, LOC(@$));
+              $$ = new Range($2, $4, LOCD("range", @$));
             }
-        | expr '[' expr ']'
+        | '[' expr ':' expr ':' expr ']'
             {
-              $$ = new ArrayLookup($1, $3, LOC(@$));
+              $$ = new Range($2, $4, $6, LOCD("range", @$));
             }
-        | TOK_ID '(' argument_list_call optional_commas')'
+        | '[' ']'
             {
-              $$ = new FunctionCall($1, *$3, LOC(@$));
-              free($1);
-              delete $3;
+              $$ = new Vector(LOCD("vector", @$));
             }
-        | TOK_LET '(' argument_list_call optional_commas')' expr %prec LET
+        | '[' vector_elements optional_trailing_comma ']'
             {
-              $$ = FunctionCall::create("let", *$3, $6, LOC(@$));
-              delete $3;
+              $$ = $2;
             }
-        | TOK_ASSERT '(' argument_list_call optional_commas')' expr_or_empty %prec LOW_PRIO_LEFT
-            {
-              $$ = FunctionCall::create("assert", *$3, $6, LOC(@$));
-              delete $3;
-            }
-        | TOK_ECHO '(' argument_list_call optional_commas')' expr_or_empty %prec LOW_PRIO_LEFT
-            {
-              $$ = FunctionCall::create("echo", *$3, $6, LOC(@$));
-              delete $3;
-            }
-        ;
+		;
 
-expr_or_empty:
-          %prec LOW_PRIO_LEFT
+expr_or_empty
+        : /* empty */
             {
               $$ = NULL;
             }
-        | expr %prec HIGH_PRIO_LEFT
+        | expr
             {
               $$ = $1;
             }
         ;
- 
- list_comprehension_elements:
-          /* The last set element may not be a "let" (as that would instead
-             be parsed as an expression) */
-          TOK_LET '(' argument_list_call optional_commas')' list_comprehension_elements_p
+
+/* The last set element may not be a "let" (as that would instead
+   be parsed as an expression) */
+list_comprehension_elements
+        : TOK_LET '(' arguments ')' list_comprehension_elements_p
             {
-              $$ = new LcLet(*$3, $6, LOC(@$));
+              $$ = new LcLet(*$3, $5, LOCD("lclet", @$));
               delete $3;
             }
-        | TOK_EACH list_comprehension_elements_or_expr
+        | TOK_EACH vector_element
             {
-              $$ = new LcEach($2, LOC(@$));
+              $$ = new LcEach($2, LOCD("lceach", @$));
             }
-        | TOK_FOR '(' argument_list_call ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' arguments ')' vector_element
             {
-                $$ = $5;
-
-                /* transform for(i=...,j=...) -> for(i=...) for(j=...) */
-                for (int i = $3->size()-1; i >= 0; i--) {
-                  AssignmentList arglist;
-                  arglist.push_back((*$3)[i]);
-                  Expression *e = new LcFor(arglist, $$, LOC(@$));
-                    $$ = e;
-                }
-                delete $3;
+              $$ = new LcFor(*$3, $5, LOCD("lcfor", @$));
+              delete $3;
             }
-        | TOK_FOR '(' argument_list_call ';' expr ';' argument_list_call ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' arguments ';' expr ';' arguments ')' vector_element
             {
-              $$ = new LcForC(*$3, *$7, $5, $9, LOC(@$));
-                delete $3;
-                delete $7;
+              $$ = new LcForC(*$3, *$7, $5, $9, LOCD("lcforc", @$));
+              delete $3;
+              delete $7;
             }
-        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
+        | TOK_IF '(' expr ')' vector_element %prec NO_ELSE
             {
-              $$ = new LcIf($3, $5, 0, LOC(@$));
+              $$ = new LcIf($3, $5, 0, LOCD("lcif", @$));
             }
-        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
+        | TOK_IF '(' expr ')' vector_element TOK_ELSE vector_element
             {
-              $$ = new LcIf($3, $5, $7, LOC(@$));
+              $$ = new LcIf($3, $5, $7, LOCD("lcifelse", @$));
             }
         ;
 
 // list_comprehension_elements with optional parenthesis
-list_comprehension_elements_p:
-          list_comprehension_elements
+list_comprehension_elements_p
+        : list_comprehension_elements
         | '(' list_comprehension_elements ')'
             {
                 $$ = $2;
             }
         ;
 
-list_comprehension_elements_or_expr:
-          list_comprehension_elements_p
+optional_trailing_comma
+        : /* empty */
+        | ','
+        ;
+
+vector_elements
+        : vector_element
+            {
+              $$ = new Vector(LOCD("vector", @$));
+              $$->emplace_back($1);
+            }
+        | vector_elements ',' vector_element
+            {
+              $$ = $1;
+              $$->emplace_back($3);
+            }
+        ;
+
+vector_element
+        : list_comprehension_elements_p
         | expr
         ;
 
-optional_commas:
-          ',' optional_commas
-        | /* empty */
-        ;
-
-vector_expr:
-          expr
-            {
-              $$ = new Vector(LOC(@$));
-              $$->push_back($1);
-            }
-        |  list_comprehension_elements
-            {
-              $$ = new Vector(LOC(@$));
-              $$->push_back($1);
-            }
-        | vector_expr ',' optional_commas list_comprehension_elements_or_expr
-            {
-              $$ = $1;
-              $$->push_back($4);
-            }
-        ;
-
-argument_list_decl:
-          /* empty */
+parameters
+        : /* empty */
             {
                 $$ = new AssignmentList();
             }
-        | argument_decl
+        | parameter_list optional_trailing_comma
+        ;
+
+parameter_list
+        : parameter
             {
                 $$ = new AssignmentList();
-                $$->push_back(*$1);
-                delete $1;
+                $$->emplace_back($1);
             }
-        | argument_list_decl ',' optional_commas argument_decl
+        | parameter_list ',' parameter
             {
                 $$ = $1;
-                $$->push_back(*$4);
-                delete $4;
+                $$->emplace_back($3);
             }
         ;
 
-argument_decl:
-          TOK_ID
+parameter
+        : TOK_ID
             {
-                $$ = new Assignment($1, LOC(@$));
+                $$ = new Assignment($1, LOCD("assignment", @$));
                 free($1);
             }
         | TOK_ID '=' expr
             {
-              $$ = new Assignment($1, shared_ptr<Expression>($3), LOC(@$));
+              $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("assignment", @$));
                 free($1);
             }
         ;
 
-argument_list_call:
-          /* empty */
+arguments
+        : /* empty */
             {
                 $$ = new AssignmentList();
             }
-        | argument_call
+        | argument_list optional_trailing_comma
+        ;
+
+argument_list
+        : argument
             {
                 $$ = new AssignmentList();
-                $$->push_back(*$1);
-                delete $1;
+                $$->emplace_back($1);
             }
-        | argument_list_call ',' optional_commas argument_call
+        | argument_list ',' argument
             {
                 $$ = $1;
-                $$->push_back(*$4);
-                delete $4;
+                $$->emplace_back($3);
             }
         ;
 
-argument_call:
-          expr
+argument
+        : expr
             {
-                $$ = new Assignment("", shared_ptr<Expression>($1), LOC(@$));
+                $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, shared_ptr<Expression>($3), LOC(@$));
+                $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("argumentcall", @$));
                 free($1);
             }
         ;
@@ -668,25 +685,95 @@ int parserlex(void)
 void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
-  PRINTB("ERROR: Parser error in file %s, line %d: %s\n",
-         (*sourcefile()) % lexerget_lineno() % s);
+	Location loc = Location(lexerget_lineno(), -1, -1, -1, sourcefile());
+	LOG(message_group::Error, loc, "", "Parser error: %1$s", s);
 }
 
-bool parse(FileModule *&module, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
+#ifdef DEBUG
+static Location debug_location(const std::string& info, const YYLTYPE& loc)
 {
-  fs::path parser_sourcefile = fs::path(fs::absolute(fs::path(filename)).generic_string());
-  main_file_folder = parser_sourcefile.parent_path().string();
-  lexer_set_parser_sourcefile(parser_sourcefile);
+	auto location = LOC(loc);
+	PRINTDB("%3d, %3d - %3d, %3d | %s", loc.first_line % loc.first_column % loc.last_line % loc.last_column % info);
+	return location;
+}
+#endif
+
+static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path)
+{
+	LOG(message_group::Warning,
+			loc,
+			path.parent_path().generic_string(),
+			"%1$s was assigned on line %2$i but was overwritten",
+			assignment->getName(),
+			assignment->location().firstLine());
+
+}
+
+static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path1, const fs::path& path2)
+{
+	LOG(message_group::Warning,
+			loc,
+			path1.parent_path().generic_string(),
+			"%1$s was assigned on line %2$i of %3$s but was overwritten",
+			assignment->getName(),
+			assignment->location().firstLine(),
+			path2);
+}
+
+void handle_assignment(const std::string token, Expression *expr, const Location loc)
+{
+	bool found = false;
+	for (auto &assignment : scope_stack.top()->assignments) {
+		if (assignment->getName() == token) {
+			auto mainFile = mainFilePath.string();
+			auto prevFile = assignment->location().fileName();
+			auto currFile = loc.fileName();
+
+			const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
+			const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+			if (fileEnded) {
+				//assignments via commandline
+			} else if (prevFile == mainFile && currFile == mainFile) {
+				//both assignments in the mainFile
+				warn_reassignment(loc, assignment, mainFilePath);
+			} else if (uncPathCurr == uncPathPrev) {
+				//assignment overwritten within the same file
+				//the line number being equal happens, when a file is included multiple times
+				if (assignment->location().firstLine() != loc.firstLine()) {
+					warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
+				}
+			} else if (prevFile == mainFile && currFile != mainFile) {
+				//assignment from the mainFile overwritten by an include
+				warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
+			}
+			assignment->setExpr(shared_ptr<Expression>(expr));
+			assignment->setLocation(loc);
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		scope_stack.top()->addAssignment(assignment(token, shared_ptr<Expression>(expr), loc));
+	}
+}
+
+bool parse(SourceFile *&file, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
+{
+  fs::path filepath = fs::absolute(fs::path(filename));
   mainFilePath = fs::absolute(fs::path(mainFile));
+  parsingMainFile = mainFilePath == filepath;
+
+  fs::path parser_sourcefile = fs::path(filepath).generic_string();
+  lexer_set_parser_sourcefile(parser_sourcefile);
 
   lexerin = NULL;
   parser_error_pos = -1;
   parser_input_buffer = text.c_str();
-  fileEnded=false;
+  fileEnded = false;
 
-  rootmodule = new FileModule(main_file_folder, parser_sourcefile.filename().string());
-  scope_stack.push(&rootmodule->scope);
-  //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
+  rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+  scope_stack.push(&rootfile->scope);
+  //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
   int parserretval = -1;
@@ -699,7 +786,7 @@ bool parse(FileModule *&module, const std::string& text, const std::string &file
   lexerdestroy();
   lexerlex_destroy();
 
-  module = rootmodule;
+  file = rootfile;
   if (parserretval != 0) return false;
 
   parser_error_pos = -1;

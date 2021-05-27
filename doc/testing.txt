@@ -21,6 +21,10 @@ $ git submodule update --init
 
 A) Building test environment
 
+NOTE: If cmake was used to build openscad itself (as opposed to the qmake build),
+      then the "cmake" and "make" commands are already automatically run for tests.
+      Only "cd tests" is needed to begin running ctest in that case.
+
 Linux, Mac:
 
     $ cd tests
@@ -202,23 +206,3 @@ Please report build errors (after double checking the instructions) in
 the github issue tracker
 
 https://github.com/openscad/openscad/issues
-
-10. Migration away from dedicated regression tests:
-
-In 2013 the test programs underwent a major change. The following notes 
-are leftover.
-
-"This test still needs an intermediate script that mangles away timestamps and
-near-zero floating point numbers:
-
-* cgalstlsanitytest
-
-Some tests are yet to be converted:
-
-* csgtexttest -- verify whether this is not redundant with dumptest
-
-These look like tests, but are not actually in use:
-
-* modulecachetest
-* cgalcachetest
-"

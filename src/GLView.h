@@ -37,7 +37,7 @@ public:
 	virtual void paintGL();
 
 	void setCamera(const Camera &cam);
-	void setupCamera();
+	void setupCamera() const;
 
 	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
@@ -54,9 +54,11 @@ public:
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
-	virtual bool save(const char *filename) = 0;
+	virtual bool save(const char *filename) const = 0;
 	virtual std::string getRendererInfo() const = 0;
 	virtual float getDPI() { return 1.0f; }
+
+	virtual ~GLView(){};
 
 	Renderer *renderer;
 	const ColorScheme *colorscheme;
@@ -70,7 +72,6 @@ public:
 	bool showscale;
 
 #ifdef ENABLE_OPENCSG
-	GLint shaderinfo[11];
 	bool is_opencsg_capable;
 	bool has_shaders;
 	void enable_opencsg_shaders();

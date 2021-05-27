@@ -10,6 +10,9 @@ fs::path boostfs_uncomplete(fs::path const p, fs::path const base);
 #include <boost/cast.hpp>
 #include <sstream>
 
+#include <boost/logic/tribool.hpp>
+BOOST_TRIBOOL_THIRD_STATE(unknown)
+
 /* Convert number types but print WARNING for failures during 
 conversion. This is useful for situations where it is important to not 
 fail silently during casting or conversion. (For example, accidentally 
@@ -35,9 +38,9 @@ template <class Tout,class Tin> Tout boost_numeric_cast( Tin input )
 		result = 0;
 	}
 	if (status.str() != "ok") {
-		PRINTB("WARNING: problem converting this number: %s", std::to_string(input));
-		PRINTB("WARNING: %s", status.str());
-		PRINTB("WARNING: setting result to %u", result);
+		LOG(message_group::Warning,Location::NONE,"","Problem converting this number: %1$s",std::to_string(input));
+		LOG(message_group::Warning,Location::NONE,"","%1$s",status.str());
+		LOG(message_group::Warning,Location::NONE,"","setting result to %1$u",result);
 	}
 	return result;
 }

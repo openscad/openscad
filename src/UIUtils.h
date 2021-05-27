@@ -32,12 +32,16 @@ namespace UIUtils {
     static const int maxRecentFiles = 10;
 
     QFileInfo openFile(QWidget *parent = nullptr);
+
+    QFileInfoList openFiles(QWidget *parent = nullptr);
     
     QStringList recentFiles();
     
     QStringList exampleCategories();
     
     QFileInfoList exampleFiles(const QString &category);
+
+    void openURL(const QString& url);
 
     void openHomepageURL();
 

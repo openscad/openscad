@@ -1,2 +1,2 @@
-WARNING: myval was assigned on line 5 but was overwritten on line 7
+WARNING: myval was assigned on line 5 but was overwritten in file value-reassignment-tests2.scad, line 7
 ECHO: 3, 3

@@ -27,40 +27,25 @@
 #include "rendernode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "builtin.h"
+#include "children.h"
+#include "parameters.h"
 #include "polyset.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-class RenderModule : public AbstractModule
-{
-public:
-	RenderModule() { }
-	AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const override;
-};
-
-AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
+static AbstractNode* builtin_render(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new RenderNode(inst);
 
-	AssignmentList args{Assignment("convexity")};
-
-	Context c(ctx);
-	c.setVariables(evalctx, args);
-	inst->scope.apply(*evalctx);
-
-	auto v = c.lookup_variable("convexity");
-	if (v->type() == Value::ValueType::NUMBER) {
-		node->convexity = static_cast<int>(v->toDouble());
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
+	if (parameters["convexity"].type() == Value::Type::NUMBER) {
+		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
 	}
 
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string RenderNode::toString() const
@@ -70,5 +55,8 @@ std::string RenderNode::toString() const
 
 void register_builtin_render()
 {
-	Builtins::init("render", new RenderModule());
+	Builtins::init("render", new BuiltinModule(builtin_render),
+				{
+					"render(convexity = 1)",
+				});
 }

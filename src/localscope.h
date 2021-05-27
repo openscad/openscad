@@ -1,33 +1,33 @@
 #pragma once
 
+#include "AST.h"
 #include "Assignment.h"
 #include <unordered_map>
+
+class AbstractNode;
+class Context;
 
 class LocalScope
 {
 public:
-	LocalScope();
-	~LocalScope();
-
-	size_t numElements() const { return assignments.size() + children.size(); }
+	size_t numElements() const { return assignments.size() + moduleInstantiations.size(); }
 	void print(std::ostream &stream, const std::string &indent, const bool inlined = false) const;
-	std::vector<class AbstractNode*> instantiateChildren(const class Context *evalctx) const;
-	void addChild(class ModuleInstantiation *astnode);
-	void addModule(const std::string &name, class UserModule *module);
-	void addFunction(class UserFunction *function);
-	void addAssignment(const class Assignment &ass);
-	void apply(Context &ctx) const;
-	bool hasChildren() const {return !(children.empty());};
+	AbstractNode* instantiateModules(const std::shared_ptr<const Context>& context, AbstractNode* target) const;
+	AbstractNode* instantiateModules(const std::shared_ptr<const Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const;
+	void addModuleInst(const shared_ptr<class ModuleInstantiation>& modinst);
+	void addModule(const shared_ptr<class UserModule>& module);
+	void addFunction(const shared_ptr<class UserFunction>& function);
+	void addAssignment(const shared_ptr<class Assignment>& assignment);
+	bool hasChildren() const {return !(moduleInstantiations.empty());};
 
 	AssignmentList assignments;
-	std::vector<ModuleInstantiation*> children;
+	std::vector<shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
 	// Modules and functions are stored twice; once for lookup and once for AST serialization
-	typedef std::unordered_map<std::string, class UserFunction*> FunctionContainer;
-	FunctionContainer functions;
-	std::vector<std::pair<std::string, UserFunction*>> astFunctions;
+	// FIXME: Should we split this class into an ASTNode and a run-time support class?
+	std::unordered_map<std::string, shared_ptr<UserFunction>> functions;
+	std::vector<std::pair<std::string, shared_ptr<UserFunction>>> astFunctions;
 
-	typedef std::unordered_map<std::string, class UserModule*> ModuleContainer;
-	ModuleContainer	modules;
-	std::vector<std::pair<std::string, UserModule*>> astModules;
+	std::unordered_map<std::string, shared_ptr<UserModule>> modules;
+	std::vector<std::pair<std::string, shared_ptr<UserModule>>> astModules;
 };

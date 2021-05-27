@@ -44,7 +44,7 @@ group() {
 					}
 					linear_extrude(height = 1.5, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 						projection(cut = false, convexity = 0) {
-							multmatrix([[0, 0, -1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]) {
+							multmatrix([[0, 0, -1, 0], [0, 1, -0, 0], [1, 0, -0, 0], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0.318198], [0, 0, 0, 1]]) {
 									cylinder($fn = 30, $fa = 12, $fs = 2, h = 0.212132, r1 = 0.212132, r2 = 0, center = true);
 								}
@@ -77,7 +77,6 @@ group() {
 									cube(size = [12, 7, 2.5], center = false);
 								}
 							}
-							group();
 							multmatrix([[1, 0, 0, -6], [0, 1, 0, 0], [0, 0, 1, 19], [0, 0, 0, 1]]) {
 								multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									group() {
@@ -93,7 +92,6 @@ group() {
 								cube(size = [12, 6.5, 4], center = false);
 							}
 						}
-						group();
 					}
 				}
 			}

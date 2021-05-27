@@ -29,7 +29,7 @@
 shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode &node)
 {
 	this->traverse(node);
-	
+
 	shared_ptr<CSGNode> t(this->stored_term[node.index()]);
 	if (t) {
 		if (t->isHighlight()) this->highlightNodes.push_back(t);
@@ -54,10 +54,16 @@ void CSGTreeEvaluator::applyBackgroundAndHighlight(State & /*state*/, const Abst
 	}
 }
 
-void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &node, OpenSCADOperator op)
+void CSGTreeEvaluator::applyToChildren(State &state, const AbstractNode &node, OpenSCADOperator op)
 {
+	const auto &vc = this->visitedchildren[node.index()];
+	if (vc.empty()) {
+		this->stored_term[node.index()] = CSGNode::createEmptySet();
+		return;
+	}
+
 	shared_ptr<CSGNode> t1;
-	for(const auto &chnode : this->visitedchildren[node.index()]) {
+	for(const auto &chnode : vc) {
 		shared_ptr<CSGNode> t2(this->stored_term[chnode->index()]);
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
@@ -66,14 +72,8 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 
 			shared_ptr<CSGNode> t;
 			// Handle background
-			if (t1->isBackground() && 
-					// For difference, we inherit the flag from the positive object
-					(t2->isBackground() || op == OpenSCADOperator::DIFFERENCE)) {
-				t = CSGOperation::createCSGNode(op, t1, t2);
-				t->setBackground(true);
-			}
 			// Background objects are simply moved to backgroundNodes
-			else if (t2->isBackground()) {
+			if (t2->isBackground()) {
 				t = t1;
 				this->backgroundNodes.push_back(t2);
 			}
@@ -85,7 +85,7 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 				t = CSGOperation::createCSGNode(op, t1, t2);
 			}
 			// Handle highlight
-				switch (op) {
+			switch (op) {
 				case OpenSCADOperator::DIFFERENCE:
 					if (t != t1 && t1->isHighlight()) {
 						t->setHighlight(true);
@@ -95,11 +95,10 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 					}
 					break;
 				case OpenSCADOperator::INTERSECTION:
-					if (t && t != t1 && t != t2 &&
+					if (t && !t->isEmptySet() && t != t1 && t != t2 &&
 							t1->isHighlight() && t2->isHighlight()) {
 						t->setHighlight(true);
-					}
-					else {
+					}	else {
 						if (t != t1 && t1->isHighlight()) {
 							this->highlightNodes.push_back(t1);
 						}
@@ -122,17 +121,17 @@ void CSGTreeEvaluator::applyToChildren(State & /*state*/, const AbstractNode &no
 						t = t1;
 					}
 					break;
-                case OpenSCADOperator::MINKOWSKI:
-                case OpenSCADOperator::HULL:
-                case OpenSCADOperator::RESIZE:
-                    break;
-				}
+				case OpenSCADOperator::MINKOWSKI:
+				case OpenSCADOperator::HULL:
+				case OpenSCADOperator::RESIZE:
+					break;
+			}
 			t1 = t;
 		}
 	}
 	if (t1) {
-		if (node.modinst->isBackground()) t1->setBackground(true);
-		if (node.modinst->isHighlight()) t1->setHighlight(true);
+		if (node.modinst->isBackground() || state.isBackground()) t1->setBackground(true);
+		if (node.modinst->isHighlight() || state.isHighlight()) t1->setHighlight(true);
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -155,6 +154,26 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractIntersectionNode &n
 	return Response::ContinueTraversal;
 }
 
+Response CSGTreeEvaluator::visit(State &state, const class ListNode &node)
+{
+	if (state.parent()) {
+		if (state.isPrefix()) {
+			if (node.modinst->isHighlight()) state.setHighlight(true);
+			if (node.modinst->isBackground()) state.setBackground(true);
+		}
+		if (state.isPostfix()) {
+			for(const AbstractNode *chnode : this->visitedchildren[node.index()]) {
+					addToParent(state, *chnode);
+			}
+		}
+		return Response::ContinueTraversal;
+	} else {
+		// Handle root modifier on ListNode just like a group
+		return visit(state, (const AbstractNode &)node);
+	}
+
+}
+
 shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 	State &state, const shared_ptr<const Geometry> &geom,
 	const ModuleInstantiation *modinst, const AbstractNode &node)
@@ -169,9 +188,9 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 		// 3D Polysets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
 	}
 
-	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index())));
-	if (modinst->isHighlight()) t->setHighlight(true);
-	else if (modinst->isBackground()) t->setBackground(true);
+	shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index()), node.index()));
+	if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
+	if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
 	return t;
 }
 
@@ -183,6 +202,8 @@ Response CSGTreeEvaluator::visit(State &state, const AbstractPolyNode &node)
 			auto geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+			} else {
+				t1 = CSGNode::createEmptySet();
 			}
 			node.progress_report();
 		}
@@ -205,7 +226,7 @@ Response CSGTreeEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix()) {
 		if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
-			PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+			LOG(message_group::Warning, Location::NONE, "", "Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 			return Response::PruneTraversal;
 		}
 		state.setMatrix(state.matrix() * node.matrix);
@@ -239,6 +260,8 @@ Response CSGTreeEvaluator::visit(State &state, const RenderNode &node)
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+			} else {
+				t1 = CSGNode::createEmptySet();
 			}
 			node.progress_report();
 		}
@@ -258,6 +281,8 @@ Response CSGTreeEvaluator::visit(State &state, const CgaladvNode &node)
 			geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluateCSGNodeFromGeometry(state, geom, node.modinst, node);
+			} else {
+				t1 = CSGNode::createEmptySet();
 			}
 			node.progress_report();
 		}

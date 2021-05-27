@@ -1,10 +1,11 @@
 #pragma once
 
 #include "qtgettext.h"
-#include "settings.h"
+#include "Settings.h"
 #include "ui_AxisConfigWidget.h"
+#include "InitConfigurator.h"
 
-class AxisConfigWidget : public QWidget, public Ui::Axis
+class AxisConfigWidget : public QWidget, public Ui::Axis,public InitConfigurator
 {
 	Q_OBJECT
 
@@ -17,22 +18,22 @@ public:
 
 public slots:
 	// Input Driver
-        void on_AxisTrim();
-        void on_AxisTrimReset();
-        void on_comboBoxTranslationX_activated(int val);
-        void on_comboBoxTranslationY_activated(int val);
-        void on_comboBoxTranslationZ_activated(int val);
-        void on_comboBoxTranslationXVPRel_activated(int val);
-        void on_comboBoxTranslationYVPRel_activated(int val);
-        void on_comboBoxTranslationZVPRel_activated(int val);
-        void on_comboBoxRotationX_activated(int val);
-        void on_comboBoxRotationY_activated(int val);
-        void on_comboBoxRotationZ_activated(int val);
-        void on_comboBoxRotationXVPRel_activated(int val);
-        void on_comboBoxRotationYVPRel_activated(int val);
-        void on_comboBoxRotationZVPRel_activated(int val);
-        void on_comboBoxZoom_activated(int val);
-        void on_comboBoxZoom2_activated(int val);
+	void on_AxisTrim();
+	void on_AxisTrimReset();
+	void on_comboBoxTranslationX_activated(int val);
+	void on_comboBoxTranslationY_activated(int val);
+	void on_comboBoxTranslationZ_activated(int val);
+	void on_comboBoxTranslationXVPRel_activated(int val);
+	void on_comboBoxTranslationYVPRel_activated(int val);
+	void on_comboBoxTranslationZVPRel_activated(int val);
+	void on_comboBoxRotationX_activated(int val);
+	void on_comboBoxRotationY_activated(int val);
+	void on_comboBoxRotationZ_activated(int val);
+	void on_comboBoxRotationXVPRel_activated(int val);
+	void on_comboBoxRotationYVPRel_activated(int val);
+	void on_comboBoxRotationZVPRel_activated(int val);
+	void on_comboBoxZoom_activated(int val);
+	void on_comboBoxZoom2_activated(int val);
 
 
 	void on_doubleSpinBoxRotateGain_valueChanged(double val);
@@ -69,23 +70,13 @@ public slots:
 	void updateStates();
 
 signals:
-        void inputMappingChanged() const;
-        void inputCalibrationChanged() const;
-        void inputGainChanged() const;
+	void inputMappingChanged() const;
+	void inputCalibrationChanged() const;
+	void inputGainChanged() const;
 
 private:
-	/** Initialize combobox list values from the settings range values */
-	void initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
-	/** Initialize spinbox min/max values from the settings range values */
-	void initSpinBox(QSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize double spinbox min/max/step values from the settings range values */
-	void initDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntry& entry);
-	/** Initialize checkbox from the settings */
-	void initCheckBox(QCheckBox *checkBox, const Settings::SettingsEntry& entry);
-	/** Update combobox from current settings */
-	void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry);
 	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry);
+	void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
 	void writeSettings();
 	
 	bool initialized = false;

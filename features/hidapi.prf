@@ -43,7 +43,16 @@ win*: {
   }
 }
 
-!isEmpty(HIDAPI_CFLAGS) {
+*-g++* {
+  GCC_VERSION = $$system("g++ -dumpversion | cut -d. -f1")
+  lessThan(GCC_VERSION, 5) {
+    DISABLE_HIDAPI="yes"
+  }
+}
+
+isEmpty(DISABLE_HIDAPI):!isEmpty(HIDAPI_CFLAGS) {
+  message("HIDAPI enabled")
+
   QMAKE_CXXFLAGS += $$HIDAPI_CFLAGS
   LIBS += $$HIDAPI_LIBS
   DEFINES += ENABLE_HIDAPI

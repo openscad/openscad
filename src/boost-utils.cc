@@ -1,4 +1,3 @@
-#include "boosty.h"
 #include "boost-utils.h"
 #include <stdio.h>
 #include <iostream>
@@ -17,7 +16,7 @@ fs::path boostfs_normalize(const fs::path &path)
 	for (;exists(result) && it != absPath.end(); ++it) {
 		result /= *it;
 	}
-	result = boosty::canonical(result.parent_path());
+	result = fs::canonical(result.parent_path());
 	if (it!=absPath.begin()) it--;
 
 	// For the rest remove ".." and "." in a path with no symlinks
@@ -74,7 +73,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
 		throw std::runtime_error("path or base was empty; couldn't generate relative path");
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	// drive letters are different; don't generate a relative path
 	if (*path_it != *base_it) return p;
 

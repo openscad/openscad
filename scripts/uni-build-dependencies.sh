@@ -618,20 +618,13 @@ build_eigen()
   echo "Building eigen" $version "..."
   cd $BASEDIR/src
   rm -rf eigen-$version
-  EIGENDIR="none"
-  if [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21; fi
-  if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
-  if [ $EIGENDIR = "none" ]; then
-    echo Unknown eigen version. Please edit script.
-    exit 1
-  fi
-  rm -rf ./$EIGENDIR
   if [ ! -f eigen-$version.tar.bz2 ]; then
-    curl --insecure -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
-    mv $version.tar.bz2 eigen-$version.tar.bz2
+    curl -LO https://gitlab.com/libeigen/eigen/-/archive/$version/eigen-$version.tar.bz2
   fi
+  EIGENDIR=`tar tjf eigen-$version.tar.bz2 | head -1 | cut -f1 -d"/"`
+  rm -rf "./$EIGENDIR"
   tar xjf eigen-$version.tar.bz2
-  ln -s ./$EIGENDIR eigen-$version
+  ln -s "./$EIGENDIR" eigen-$version || true
   cd eigen-$version
   mkdir build
   cd build
@@ -753,7 +746,7 @@ if [ "`command -v dirname`" ]; then
   cd $RUNDIR
 else
   if [ ! -f openscad.pro ]; then
-    echo "Must be run from the OpenSCAD source root directory (dont have 'dirname')"
+    echo "Must be run from the OpenSCAD source root directory (don't have 'dirname')"
     exit 1
   else
     OPENSCAD_SCRIPTDIR=$PWD
@@ -867,7 +860,7 @@ fi
 # 
 # Some of these are defined in scripts/common-build-dependencies.sh
 
-build_eigen 3.2.2
+build_eigen 3.3.7
 build_gmp 6.0.0
 build_mpfr 3.1.1
 build_boost 1.56.0

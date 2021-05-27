@@ -18,8 +18,8 @@ public:
 		double length;
 		std::string name;
 		Dim() {
-			for (int i = 0; i < 7; i++)
-			for (int j = 0; j < 2; j++)
+			for (int i = 0; i < 7; ++i)
+			for (int j = 0; j < 2; ++j)
 				coords[i][j] = 0;
 			type = 0;
 			angle = 0;

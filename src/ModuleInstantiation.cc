@@ -1,11 +1,11 @@
 #include "compiler_specific.h"
+#include "context.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "expression.h"
 #include "exceptions.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -16,31 +16,15 @@ IfElseModuleInstantiation::~IfElseModuleInstantiation()
 {
 }
 
-/*!
-	Returns the absolute path to the given filename, unless it's empty.
-
-	NB! This will actually search for the file, to be backwards compatible with <= 2013.01
-	(see issue #217)
-*/
-std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
-{
-	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(this->modpath) / filename).string();
-	}
-	else {
-		return filename;
-	}
-}
-
 void ModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
 	if (!inlined) stream << indent;
 	stream << modname + "(";
-	for (size_t i=0; i < this->arguments.size(); i++) {
-		const Assignment &arg = this->arguments[i];
+	for (size_t i=0; i < this->arguments.size(); ++i) {
+		const auto &arg = this->arguments[i];
 		if (i > 0) stream << ", ";
-		if (!arg.name.empty()) stream << arg.name << " = ";
-		stream << *arg.expr;
+		if (!arg->getName().empty()) stream << arg->getName() << " = ";
+		stream << *arg->getExpr();
 	}
 	if (scope.numElements() == 0) {
 		stream << ");\n";
@@ -57,15 +41,21 @@ void ModuleInstantiation::print(std::ostream &stream, const std::string &indent,
 void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
 {
 	ModuleInstantiation::print(stream, indent, inlined);
-	if (else_scope.numElements() > 0) {
-		stream << indent << "else ";
-		if (else_scope.numElements() == 1) {
-			else_scope.print(stream, indent, true);
+	if (else_scope) {
+		auto num_elements = else_scope->numElements();
+		if (num_elements == 0) {
+			stream << indent << "else;";
 		}
 		else {
-			stream << "{\n";
-			else_scope.print(stream, indent + "\t", false);
-			stream << indent << "}\n";
+			stream << indent << "else ";
+			if (num_elements == 1) {
+				else_scope->print(stream, indent, true);
+			}
+			else {
+				stream << "{\n";
+				else_scope->print(stream, indent + "\t", false);
+				stream << indent << "}\n";
+			}
 		}
 	}
 }
@@ -77,37 +67,31 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const Context *ctx){
-	PRINTB("TRACE: called by '%s', %s.", mod->name() % mod->location().toRelativeString(ctx->documentPath()));
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context> context){
+	LOG(message_group::Trace,mod->location(),context->documentRoot(),"called by '%1$s'",mod->name());
 }
 
-AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const
 {
-	EvalContext c(ctx, this->arguments, this->loc, &this->scope);
-
-#if 0 && DEBUG
-	PRINT("New eval ctx:");
-	c.dump(nullptr, this);
-#endif
+	boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
+	if (!module) {
+		return nullptr;
+	}
+	
 	try{
-		AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
+		AbstractNode *node = module->module->instantiate(module->defining_context, this, context);
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			print_trace(this, ctx);
+			print_trace(this, context);
 			e.traceDepth--;
 		}
 		throw;
 	}
 }
 
-std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const
+LocalScope* IfElseModuleInstantiation::makeElseScope()
 {
-	return this->scope.instantiateChildren(evalctx);
+	this->else_scope = std::make_unique<LocalScope>();
+	return this->else_scope.get();
 }
-
-std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const Context *evalctx) const
-{
-	return this->else_scope.instantiateChildren(evalctx);
-}
-

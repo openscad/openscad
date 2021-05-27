@@ -29,16 +29,9 @@
 
 from __future__ import print_function
 
-import string
-import sys
-import re
-import os
-import hashlib
-import subprocess
-import time
-import platform
-import html
-import base64
+import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
+
+
 try:
     from urllib.error import URLError
     from urllib.request import urlopen
@@ -58,7 +51,7 @@ def tryread(filename):
         debug( "couldn't open file: [" + filename + "]" )
         debug( str(type(e))+str(e) )
         if filename==None:
-            # dont write a bunch of extra errors during test output. 
+            # don't write a bunch of extra errors during test output. 
             # the reporting of test failure is sufficient to indicate a problem
             pass
     return data
@@ -475,7 +468,7 @@ def main():
     builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
-        print('warning: couldnt find --builddir, trying to use current dir:', builddir)
+        print('warning: could not find --builddir, trying to use current dir:', builddir)
     debug('build dir set to ' +  builddir)
 
     upload = False
