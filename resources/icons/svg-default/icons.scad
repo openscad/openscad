@@ -8,7 +8,8 @@ corner_size = 30;
 
 selected_icon = undef;
 
-font = "Open Sans:style=Bold";
+font = "Open Sans:style=Regular";
+export_font = "Open Sans:style=Bold";
 
 icons = [
     ["export-stl"],
@@ -19,10 +20,15 @@ icons = [
     ["export-svg"],
     ["export-csg"],
     ["export-pdf"],
+    ["export-png"],
     ["preview"],
     ["render"],
+    ["send"],
     ["zoom-in"],
     ["zoom-out"],
+    ["zoom-all"],
+    ["zoom-text-in"],
+    ["zoom-text-out"],
     ["undo"],
     ["redo"],
     ["indent"],
@@ -41,10 +47,15 @@ icon(selected_icon) {
     export("SVG");
     export("CSG");
     export("PDF");
+    export("PNG");
     preview();
     render_();
+    send();
     zoom_in();
     zoom_out();
+    zoom_all();
+    zoom_text_in();
+    zoom_text_out();
     undo();
     redo();
     indent();
@@ -59,6 +70,7 @@ for (a = [ 0 : len(icons) - 1 ]) {
 }
 
 module icon(icon) {
+    assert(len(icons) == $children, "list of icon names needs to be same length as number of child modules to icon()");
     cnt = $children;
     cols = ceil(sqrt(cnt));
     if (is_undef(icon)) {
@@ -85,6 +97,10 @@ module inset(w) {
         children();
         offset(delta = -w) children();
     }
+}
+
+module box(center = true) {
+    %square([width, height], center = center);
 }
 
 module paper() {
@@ -121,7 +137,7 @@ module export(t) {
         translate([-10, -10]) square([height, 55]);
     }
     translate([width / 2, 0])
-        text(t, 35, font = font, halign = "center");
+        text(t, 35, font = export_font, halign = "center");
 }
 
 module hourglass() {
@@ -136,8 +152,8 @@ module hourglass() {
     translate([0, 25]) square([20, 3], center = true);
 }
 
-module line() {
-    translate([-0.1, -0.1]) square([0.2, 40.2]);
+module line(l = 40.2) {
+    translate([-0.1, -0.1]) square([0.2, l]);
 }
 
 module line_dotted() {
@@ -180,15 +196,27 @@ module preview() {
     translate([18, 4]) polygon([[-18, 15], [-9, 15], [0, 0], [-9, -15], [-18, -15], [-9, 0]]);
 }
 
+module send() {
+    difference() {
+        preview_cube() line();
+        translate([0, 75]) square(40, center = true);
+    }
+    offset(2) {
+        translate([0, 90]) rotate(180) line(30);
+        translate([0, 90]) rotate(150) line(15);
+        translate([0, 90]) rotate(210) line(15);
+    }
+}
+
 module zoom() {
     children();
     difference() {
         union() {
             circle(r = 40);
-            rotate(45)
+            rotate(30)
                 translate([0, -50])
                     offset(thin)
-                        square([8, 80], center = true);
+                        square([8, 70], center = true);
         }
         circle(r = 40 - thin);
     }
@@ -207,6 +235,30 @@ module zoom_out() {
     zoom() {
         square([35, 10], center = true);
     }
+}
+
+module zoom_all() {
+    zoom() {
+        offset(rounding) difference() {
+            square(95, center = true);
+            square(85, center = true);
+            rotate(45) square(95, center = true);
+        }
+    }
+}
+
+module zoom_text(angle, z) {
+    text("A", 35, font = font);
+    translate([40, 0]) text("A", 70, font = font);
+    translate([17, z]) rotate(angle) offset(rounding) circle(14, $fn = 3);
+}
+
+module zoom_text_in() {
+    zoom_text(90, 65);
+}
+
+module zoom_text_out() {
+    translate([width, 0]) mirror([1, 0, 0]) zoom_text(-90, 71);
 }
 
 module undo() {
