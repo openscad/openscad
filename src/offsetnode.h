@@ -12,8 +12,8 @@ public:
 	std::string toString() const override;
 	std::string name() const override { return "offset"; }
 
-        bool chamfer;
+	bool chamfer;
 	double fn, fs, fa, delta;
-        double miter_limit; // currently fixed high value to disable chamfers with jtMiter
-        ClipperLib::JoinType join_type;
+	double miter_limit; // currently fixed high value to disable chamfers with jtMiter
+	ClipperLib::JoinType join_type;
 };
