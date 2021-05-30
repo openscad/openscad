@@ -6,20 +6,8 @@
     <file>icons/prefsInput.png</file>
     <file>icons/prefsInputAxis.png</file>
     <file>icons/prefsInputButtons.png</file>
-    <file>images/zoom-text-in-white.png</file>
-    <file>images/zoom-text-in.png</file>
-    <file>images/zoom-text-out-white.png</file>
-    <file>images/zoom-text-out.png</file>
-    <file>images/Command-Redo-32-white.png</file>
     <file>images/Command-Reset-32-white.png</file>
-    <file>images/Command-Undo-32-white.png</file>
-    <file>images/Decrease-Indent-32-white.png</file>
-    <file>images/Increase-Indent-32-white.png</file>
-    <file>images/Command-Redo-32.png</file>
     <file>images/Command-Reset-32.png</file>
-    <file>images/Command-Undo-32.png</file>
-    <file>images/Decrease-Indent-32.png</file>
-    <file>images/Increase-Indent-32.png</file>
     <file>icons/close.png</file>
     <file>icons/information-icons-error.png</file>
     <file>icons/information-icons-info.png</file>
@@ -40,47 +28,29 @@
     <file>images/axes.png</file>
     <file>images/export-white.png</file>
     <file>images/back.png</file>
-    <file>images/Document-New-128.png</file>
     <file>images/front.png</file>
     <file>images/grid.png</file>
-    <file>images/Open-128.png</file>
     <file>images/openscad.png</file>
     <file>images/right.png</file>
-    <file>images/Save-128.png</file>
     <file>images/up.png</file>
     <file>images/bottom.png</file>
     <file>images/left.png</file>
     <file>images/blackUp.png</file>
-    <file>images/blackNew.png</file>
     <file>images/Rotation-32.png</file>
     <file>images/Shape-Cube-32.png</file>
-    <file>images/Open-32.png</file>
-    <file>images/Save-32.png</file>
     <file>images/blackbottom.png</file>
     <file>images/rightright.png</file>
     <file>images/blackleft.png</file>
     <file>images/blackfront.png</file>
     <file>images/blackback.png</file>
     <file>images/blackaxes.png</file>
-    <file>images/zoomin.png</file>
-    <file>images/zoomout.png</file>
     <file>images/wireframe1.png</file>
     <file>images/surface.png</file>
-    <file>images/Zoom-In-32.png</file>
-    <file>images/Zoom-Out-32.png</file>
-    <file>images/zoom-all.png</file>
-    <file>images/zoom-all-white.png</file>
     <file>images/surfaceWhite.png</file>
     <file>images/wireframeWhite.png</file>
     <file>images/orthogonal.png</file>
     <file>images/cross.png</file>
     <file>images/perspective1.png</file>
-    <file>images/preview-32.png</file>
-    <file>images/preview-32-white.png</file>
-    <file>images/render-32.png</file>
-    <file>images/render-32-white.png</file>
-    <file>images/3dprint-32.png</file>
-    <file>images/3dprint-32-white.png</file>
     <file>images/animate.png</file>
     <file>images/orthogonalwhite.png</file>
     <file>images/perspective1white.png</file>
@@ -88,24 +58,54 @@
     <file>icons/background.png</file>
     <file>images/scalemarkers.png</file>
     <file>images/scalemarkers-white.png</file>
-    <file>images/AMF.png</file>
-    <file>images/AMF-white.png</file>
-    <file>images/3MF.png</file>
-    <file>images/3MF-white.png</file>
-    <file>images/CSG.png</file>
-    <file>images/CSG-white.png</file>
-    <file>images/DXF.png</file>
-    <file>images/DXF-white.png</file>
-    <file>images/OFF.png</file>
-    <file>images/OFF-white.png</file>
-    <file>images/PNG.png</file>
-    <file>images/PNG-white.png</file>
-    <file>images/STL.png</file>
-    <file>images/STL-white.png</file>
-    <file>images/SVG.png</file>
-    <file>images/SVG-white.png</file>
-    <file>images/PDF.png</file>
-    <file>images/PDF-white.png</file>
     <file>sounds/complete.wav</file>
+    <file>resources/icons/svg-default/export-3mf.svg</file>
+    <file>resources/icons/svg-default/export-3mf-white.svg</file>
+    <file>resources/icons/svg-default/export-amf.svg</file>
+    <file>resources/icons/svg-default/export-amf-white.svg</file>
+    <file>resources/icons/svg-default/export-csg.svg</file>
+    <file>resources/icons/svg-default/export-csg-white.svg</file>
+    <file>resources/icons/svg-default/export-dxf.svg</file>
+    <file>resources/icons/svg-default/export-dxf-white.svg</file>
+    <file>resources/icons/svg-default/export-off.svg</file>
+    <file>resources/icons/svg-default/export-off-white.svg</file>
+    <file>resources/icons/svg-default/export-pdf.svg</file>
+    <file>resources/icons/svg-default/export-pdf-white.svg</file>
+    <file>resources/icons/svg-default/export-png.svg</file>
+    <file>resources/icons/svg-default/export-png-white.svg</file>
+    <file>resources/icons/svg-default/export-stl.svg</file>
+    <file>resources/icons/svg-default/export-stl-white.svg</file>
+    <file>resources/icons/svg-default/export-svg.svg</file>
+    <file>resources/icons/svg-default/export-svg-white.svg</file>
+    <file>resources/icons/svg-default/indent.svg</file>
+    <file>resources/icons/svg-default/indent-white.svg</file>
+    <file>resources/icons/svg-default/new.svg</file>
+    <file>resources/icons/svg-default/new-white.svg</file>
+    <file>resources/icons/svg-default/open.svg</file>
+    <file>resources/icons/svg-default/open-white.svg</file>
+    <file>resources/icons/svg-default/preview.svg</file>
+    <file>resources/icons/svg-default/preview-white.svg</file>
+    <file>resources/icons/svg-default/redo.svg</file>
+    <file>resources/icons/svg-default/redo-white.svg</file>
+    <file>resources/icons/svg-default/render.svg</file>
+    <file>resources/icons/svg-default/render-white.svg</file>
+    <file>resources/icons/svg-default/save.svg</file>
+    <file>resources/icons/svg-default/save-white.svg</file>
+    <file>resources/icons/svg-default/send.svg</file>
+    <file>resources/icons/svg-default/send-white.svg</file>
+    <file>resources/icons/svg-default/undo.svg</file>
+    <file>resources/icons/svg-default/undo-white.svg</file>
+    <file>resources/icons/svg-default/unindent.svg</file>
+    <file>resources/icons/svg-default/unindent-white.svg</file>
+    <file>resources/icons/svg-default/zoom-in.svg</file>
+    <file>resources/icons/svg-default/zoom-in-white.svg</file>
+    <file>resources/icons/svg-default/zoom-out.svg</file>
+    <file>resources/icons/svg-default/zoom-out-white.svg</file>
+    <file>resources/icons/svg-default/zoom-all.svg</file>
+    <file>resources/icons/svg-default/zoom-all-white.svg</file>
+    <file>resources/icons/svg-default/zoom-text-in.svg</file>
+    <file>resources/icons/svg-default/zoom-text-in-white.svg</file>
+    <file>resources/icons/svg-default/zoom-text-out.svg</file>
+    <file>resources/icons/svg-default/zoom-text-out-white.svg</file>
   </qresource>
 </RCC>
