@@ -71,6 +71,9 @@ private:
 	Polygon2d *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
 	ResultObject applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	ResultObject applyToChildren(const AbstractNode &node, OpenSCADOperator op);
+	shared_ptr<const Geometry> projectionCut(const ProjectionNode &node);
+	shared_ptr<const Geometry> projectionNoCut(const ProjectionNode &node);
+
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 	Response lazyEvaluateRootNode(State &state, const AbstractNode& node);
 
