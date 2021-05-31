@@ -1,7 +1,8 @@
 $fn = 60;
-width = 70;
+width = 100;
 height = 100;
-thin = 5;
+paper_width = 80;
+thin = 4;
 thick = 10;
 rounding = 2;
 corner_size = 30;
@@ -75,8 +76,11 @@ module icon(icon) {
     cols = ceil(sqrt(cnt));
     if (is_undef(icon)) {
         for (i = [0:cnt - 1]) {
-            pos = 200 * [i % cols, floor(i / cols)];
-            translate(pos) children(i);
+            pos = 200 * [i % cols + 1, floor(i / cols) + 1];
+            translate(pos) {
+                box();
+                children(i);
+            }
         }
     } else {
         i = search([icon], icons)[0];
@@ -99,15 +103,24 @@ module inset(w) {
     }
 }
 
-module box(center = true) {
-    %square([width, height], center = center);
+module box(center = false) {
+    module b(o, border) {
+        size = width + o;
+        render() difference() {
+            translate([-border - o / 2, -border - o / 2]) square(size + 2 * border, center = center);
+            translate([-o / 2, -o / 2]) square(size, center = center);
+        }
+    }
+
+    color("black", 0.1) %b(0, rounding);
+    color("red", 0.1) %b(16, rounding);
 }
 
 module paper() {
     w = rounding + thin;
     offset(rounding)
         translate([w, w])
-            square([width - 2 * w, height - 2 * w]);
+            square([paper_width - 2 * w, height - 2 * w]);
 }
 
 module export_paper() {
@@ -133,23 +146,24 @@ module export_paper_corner() {
 
 module export(t) {
     difference() {
-        export_paper();
-        translate([-10, -10]) square([height, 55]);
+        translate([10, 0]) export_paper();
+        translate([-20, -5]) square([height, 55]);
     }
-    translate([width / 2, 0])
-        text(t, 35, font = export_font, halign = "center");
+    resize([75, 40], true)
+        text(t, 40, font = export_font);
 }
 
 module hourglass() {
-    square([20, 3], center = true);
-    translate([-5, 6]) rotate(60) square([15.6, 1], center = true);
-    translate([-5, 25 - 6]) rotate(-60) square([15.6, 1], center = true);
-    mirror([1, 0]) {
-        translate([-5, 6]) rotate(60) square([15.6, 1], center = true);
-        translate([-5, 25 - 6]) rotate(-60) square([15.6, 1], center = true);
+    module side() {
+        hull() { translate([-1, 14]) circle(d = 1); translate([-7, 3]) circle(d = 1); }
+        hull() { translate([-1, 14]) circle(d = 1); translate([-7, 24]) circle(d = 1); }
     }
-    polygon([[-5, 2.5], [5, 2.5], [0.1, 5], [0.2, 13.5], [4, 20], [-4, 20], [-0.2, 13.5], [-0.1, 5]]);
-    translate([0, 25]) square([20, 3], center = true);
+
+    side();
+    mirror([1, 0]) side();
+    translate([0, 2]) square([18, 2], center = true);
+    translate([0, 25]) square([18, 2], center = true);
+    polygon([[-5, 3.5], [5, 3.5], [0.1, 6], [0.2, 14.5], [4, 21], [-4, 21], [-0.2, 14.5], [-0.1, 6]]);
 }
 
 module line(l = 40.2) {
@@ -180,71 +194,85 @@ module preview_cube() {
 }
 
 module render_() {
-    difference() {
-        preview_cube() line();
-        polygon([[-14, 35], [14, 35], [3, 13], [30, -30], [-30, -30], [-3, 13]]);
+    translate([width / 2, 10]) {
+        difference() {
+            preview_cube() line();
+            polygon([[-15, 36], [15, 36], [9, 18], [25, -10], [-25, -10], [-9, 18]]);
+        }
+        translate([0, -10]) scale(1.6) hourglass();
     }
-    translate([0, -10]) scale(1.6) hourglass();
 }
 
 module preview() {
-    difference() {
-        preview_cube() line_dotted();
-        translate([0, 8]) square([35, 28], center = true);
+    translate([width / 2, 10]) {
+        difference() {
+            preview_cube() line_dotted();
+            translate([0, 8]) square([35, 28], center = true);
+        }
+        h = 14;
+        translate([0, 4]) polygon([[-18, h], [-9, h], [0, 0], [-9, -h], [-18, -h], [-9, 0]]);
+        translate([18, 4]) polygon([[-18, h], [-9, h], [0, 0], [-9, -h], [-18, -h], [-9, 0]]);
     }
-    translate([0, 4]) polygon([[-18, 15], [-9, 15], [0, 0], [-9, -15], [-18, -15], [-9, 0]]);
-    translate([18, 4]) polygon([[-18, 15], [-9, 15], [0, 0], [-9, -15], [-18, -15], [-9, 0]]);
 }
 
 module send() {
-    difference() {
-        preview_cube() line();
-        translate([0, 75]) square(40, center = true);
-    }
-    offset(2) {
-        translate([0, 90]) rotate(180) line(30);
-        translate([0, 90]) rotate(150) line(15);
-        translate([0, 90]) rotate(210) line(15);
+    translate([width / 2, 10]) {
+        difference() {
+            preview_cube() line();
+            translate([0, 75]) square(40, center = true);
+        }
+        translate([0, 87]) offset(2) {
+            rotate(180) line(30);
+            rotate(150) line(15);
+            rotate(210) line(15);
+        }
     }
 }
 
-module zoom() {
+module zoom(r = 30) {
     children();
     difference() {
         union() {
-            circle(r = 40);
-            rotate(30)
-                translate([0, -50])
+            circle(r = r);
+                rotate(210)
                     offset(thin)
-                        square([8, 70], center = true);
+                        translate([-thick/2, 0])
+                            square([thick, 61]);
         }
-        circle(r = 40 - thin);
+        circle(r = r - thin);
     }
 }
 
 module cross() {
-    square([thick, 35], center = true);
-    square([35, thick], center = true);
+    square([thin, 32], center = true);
+    square([32, thin], center = true);
 }
 
 module zoom_in() {
-    zoom() cross();
+    r = 30;
+    translate([r + thick, height - r - thick])
+        zoom(r)
+            cross();
 }
 
 module zoom_out() {
-    zoom() {
-        square([35, 10], center = true);
-    }
+    r = 30;
+    translate([r + thick, height - r - thick])
+        zoom(r)
+            square([35, thin], center = true);
 }
 
 module zoom_all() {
-    zoom() {
-        offset(rounding) difference() {
-            square(95, center = true);
-            square(85, center = true);
-            rotate(45) square(95, center = true);
+    r = 30;
+    translate([r + thick, height - r - thick])
+        zoom() {
+            w = 75;
+            offset(rounding) difference() {
+                square(w, center = true);
+                square(w - thin, center = true);
+                rotate(45) square(85, center = true);
+            }
         }
-    }
 }
 
 module zoom_text(angle, z) {
@@ -261,7 +289,7 @@ module zoom_text_out() {
     translate([width, 0]) mirror([1, 0, 0]) zoom_text(-90, 71);
 }
 
-module undo() {
+module curved_arrow() {
     offset(1) {
         difference() {
             circle(r = 40);
@@ -273,8 +301,15 @@ module undo() {
         polygon([[-35, 0], [0, 0], [0, 35]]);
 }
 
+module undo() {
+    translate([width / 2, height / 3])
+        mirror([1, 0, 0])
+            curved_arrow();
+}
+
 module redo() {
-    mirror([1, 0, 0]) undo();
+    translate([width / 2, , height / 3])
+        curved_arrow();
 }
 
 module indent_document() {
@@ -286,16 +321,22 @@ module indent_document() {
 }
 
 module indent() {
-    indent_document() polygon([[2, 50], [17, 35], [2, 20]]);
+    translate([thick, thick])
+        indent_document()
+            polygon([[2, 50], [17, 35], [2, 20]]);
 }
 
 module unindent() {
-    indent_document() polygon([[2, 35], [17, 50], [17, 20]]);
+    translate([thick, thick])
+        indent_document()
+            polygon([[2, 35], [17, 50], [17, 20]]);
 }
 
 module new() {
-    export_paper();
-    translate([width / 2, 2 * height / 5]) cross();
+    translate([10, 0]) {
+        export_paper();
+        translate([paper_width / 2, 2 * height / 5]) cross();
+    }
 }
 
 module open() {
