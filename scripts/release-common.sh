@@ -47,16 +47,15 @@ printUsage()
 {
   echo "Usage: $0 -v <versionstring> -d <versiondate> -c -mingw32
   echo
-  echo "  Example: $0 -v 2010.01
+  echo "  Example: $0 -v 2021.01
 }
 
 OPENSCADDIR=$PWD
-if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+if [ ! -f $OPENSCADDIR/src/openscad.cc ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 1
 fi
 
-CONFIG=deploy
 CMAKE_CONFIG=
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
@@ -89,7 +88,10 @@ else
 fi
 
 case $OS in
-    LINUX|MACOSX) 
+    MACOSX)
+        . ./scripts/setenv-macos.sh
+    ;;
+    LINUX)
         TARGET=
         export QT_SELECT=5
     ;;
@@ -117,7 +119,6 @@ case $OS in
 esac
 
 if [ "`echo $* | grep snapshot`" ]; then
-  CONFIG="$CONFIG snapshot experimental"
   CMAKE_CONFIG="$CMAKE_CONFIG -DSNAPSHOT=ON -DEXPERIMENTAL=ON"
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 fi
@@ -173,7 +174,11 @@ case $OS in
             exit 1
         fi
         echo NSIS makensis found: $MAKENSIS
-    ;;
+        CMAKE=$MXE_TARGETS-cmake
+        ;;
+    *)
+        CMAKE=cmake
+        ;;
 esac
 
 if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
@@ -188,7 +193,8 @@ if [ -d .git ]; then
   git submodule update
 fi
 
-echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIG..."
+echo "Building openscad-$VERSION ($VERSIONDATE) $CMAKE_CONFIG..."
+echo "DEPLOYDIR: " $DEPLOYDIR
 
 if [ ! $NUMCPU ]; then
   echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
@@ -196,54 +202,12 @@ if [ ! $NUMCPU ]; then
 fi
 echo "NUMCPU: " $NUMCPU
 
-
-
-case $OS in
-    UNIX_CROSS_WIN)
-        cd $DEPLOYDIR
-	$MXE_TARGETS-cmake .. $CMAKE_CONFIG \
-                -DCMAKE_BUILD_TYPE="Release" \
-                -DOPENSCAD_VERSION="$VERSION" \
-                -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
-        cd $OPENSCADDIR
-    ;;
-    *)
-        QMAKE="`command -v qmake-qt5`"
-        if [ ! -x "$QMAKE" ]
-        then
-          QMAKE=qmake
-        fi
-        "$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
-    ;;
-esac
-
-case $OS in
-    UNIX_CROSS_WIN)
-        cd $DEPLOYDIR
-        make clean ## comment out for test-run
-        cd $OPENSCADDIR
-    ;;
-    *)
-        make -s clean
-    ;;
-esac
-
-case $OS in
-    MACOSX) 
-        rm -rf OpenSCAD.app
-    ;;
-    WIN)
-        #if the following files are missing their tried removal stops the build process on msys
-        touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
-    ;;
-    UNIX_CROSS_WIN)
-        # kludge to enable parallel make
-        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
-        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
-        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
-        touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
-    ;;
-esac
+cd $DEPLOYDIR
+"${CMAKE}" .. $CMAKE_CONFIG \
+        -DCMAKE_BUILD_TYPE="Release" \
+        -DOPENSCAD_VERSION="$VERSION" \
+        -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+cd $OPENSCADDIR
 
 echo "Building GUI binary..."
 
@@ -276,7 +240,9 @@ case $OS in
         fi
     ;;
     *)
-        make -j$NUMCPU $TARGET
+        cd $DEPLOYDIR
+        VERBOSE=1 make -j$NUMCPU $TARGET
+        cd $OPENSCADDIR
     ;;
 esac
 
@@ -289,12 +255,13 @@ echo "Creating directory structure..."
 
 case $OS in
     MACOSX)
-        EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
-        LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
-        FONTDIR=OpenSCAD.app/Contents/Resources/fonts
-        TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/locale
-        COLORSCHEMESDIR=OpenSCAD.app/Contents/Resources/color-schemes
-        TEMPLATESDIR=OpenSCAD.app/Contents/Resources/templates
+        cd $OPENSCADDIR
+        EXAMPLESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/examples
+        LIBRARYDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/libraries
+        FONTDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/fonts
+        TRANSLATIONDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/locale
+        COLORSCHEMESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/color-schemes
+        TEMPLATESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/templates
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
@@ -377,11 +344,13 @@ echo "Creating archive.."
 
 case $OS in
     MACOSX)
+        cd $DEPLOYDIR
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -dmg -no-strip
         mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
         hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg
         echo "Binary created: OpenSCAD-$VERSION.dmg"
+        cd $OPENSCADDIR
     ;;
     WIN)
         #package
@@ -687,4 +656,3 @@ if [ $BUILD_TESTS ]; then
 else
   echo "Not building regression tests package"
 fi # BUILD_TESTS
-

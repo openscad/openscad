@@ -688,28 +688,6 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QGridLayout" name="gridLayoutParameterWidget">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="ParameterWidget" name="parameterWidget" native="true"/>
-     </item>
-    </layout>
-   </widget>
   </widget>
   <widget class="Dock" name="errorLogDock">
    <attribute name="dockWidgetArea">

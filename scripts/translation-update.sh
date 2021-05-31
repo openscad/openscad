@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # see doc/translation.txt for more info
+BASEDIR=$PWD
 
 updatepot()
 {
@@ -48,7 +49,7 @@ updatepot()
   echo error running xgettext
   exit 1
  fi
-
+ # Try --no-fuzzy-matching ?
  cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot ./locale/appdata-strings.pot"
  echo $cmd
  $cmd
@@ -126,6 +127,7 @@ GETTEXT_PATH=""
 
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
+CURDIR="`realpath --relative-to=\"$TOPDIR\" \"$BASEDIR\"`"
 
 cd "$TOPDIR" || exit 1
 
@@ -133,7 +135,6 @@ if [ "x$1" = xupdatemo ]; then
  updatemo "$2"
 else
  echo "Generating POTFILES..."
- ./scripts/generate-potfiles.sh > locale/POTFILES
+ ./scripts/generate-potfiles.sh "$CURDIR" > locale/POTFILES
  updatepot && updatepo && updatemo ""
 fi
-

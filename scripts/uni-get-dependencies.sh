@@ -203,6 +203,7 @@ get_solus_deps()
 	CGAL-devel gmp-devel mpfr-devel glib2-devel libboost-devel \
 	opencsg-devel glew-devel eigen3 \
 	fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
+	double-conversion-devel \
 	bison flex
 }
 

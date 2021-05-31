@@ -15,14 +15,19 @@
 /**
  * Feature registration map/list for later lookup. This must be initialized
  * before the static feature instances as those register with this map.
+ * NOTE: All features double-register pointers to themselves in these two
+ * structures, and can be accessed from either.
  */
-Feature::map_t Feature::feature_map;
-Feature::list_t Feature::feature_list;
+Feature::map_t Feature::feature_map;  // Double-listed values. ----v
+Feature::list_t Feature::feature_list;  // Double-listed values. --^
 
 /*
  * List of features, the names given here are used in both command line
  * argument to enable the option and for saving the option value in GUI
  * context.
+ * NOTE: The order of features listed in the gui is determined by the
+ * (well-defined) order of object construction, matching the order of the
+ * const Features listed below.
  */
 #ifdef FAST_CSG_AVAILABLE
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
@@ -72,6 +77,7 @@ void Feature::enable(bool status)
 	enabled = status;
 }
 
+// Note, features are also accessed by iterator with begin/end.
 void Feature::enable_feature(const std::string &feature_name, bool status)
 {
 	auto it = feature_map.find(feature_name);

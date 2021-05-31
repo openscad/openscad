@@ -33,7 +33,7 @@ public:
 	double zoomValue() const;
 	double fovValue() const;
 	void resetView();
-	void updateView(const std::shared_ptr<class FileContext> ctx, bool enableWarning);
+	void updateView(const std::shared_ptr<const class FileContext> context, bool enableWarning);
 	void viewAll(const BoundingBox &bbox);
 	std::string statusText() const;
 

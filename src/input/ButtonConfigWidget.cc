@@ -26,7 +26,7 @@
 
 #include <QWidget>
 #include "ButtonConfigWidget.h"
-#include "settings.h"
+#include "Settings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
@@ -52,11 +52,9 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const{
 
 void ButtonConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxButtons(); ++i ){
-		std::string s = std::to_string(i);
 		auto box = this->findChild<QComboBox *>(QString("comboBoxButton%1").arg(i));
-		auto ent = Settings::Settings::inst()->getSettingEntryByName("button" +s);
-		if(box && ent){
-			initComboBox(box,*ent);
+		if(box){
+			initActionComboBox(box,Settings::Settings::inputButton(i));
 		}
 	}
 
@@ -165,40 +163,30 @@ void ButtonConfigWidget::on_comboBoxButton15_activated(int val)
         emit inputMappingChanged();
 }
 
-void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntry& entry)
+void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryString& entry)
 {
-	QString s = comboBox->itemData(val).toString();
-	Settings::Settings::inst()->set(entry, Value(s.toStdString()));
+	entry.setValue(comboBox->itemData(val).toString().toStdString());
 	writeSettings();
 }
 
-void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry)
 {
-	Settings::Settings *s = Settings::Settings::inst();
-
-	const Value &value = s->get(entry);
-	QString text = QString::fromStdString(value.toString());
-	int idx = comboBox->findData(text);
-	if (idx >= 0) {
-		comboBox->setCurrentIndex(idx);
+	QString value = QString::fromStdString(entry.value());
+	int index = comboBox->findData(value);
+	if (index >= 0) {
+		comboBox->setCurrentIndex(index);
 	} else {
-		comboBox->addItem(QIcon::fromTheme("emblem-unreadable"), text + " " + _("(not supported)"), text);
-		int defIdx = comboBox->findData(text);
-		if (defIdx >= 0) {
-			comboBox->setCurrentIndex(defIdx);
-		} else {
-			comboBox->setCurrentIndex(0);
-		}
+		comboBox->addItem(QIcon::fromTheme("emblem-unreadable"), value + " " + ("(not supported)"), value);
+		comboBox->setCurrentIndex(comboBox->count() - 1);
 	}
 }
 
 void ButtonConfigWidget::writeSettings()
 {
-	SettingsWriter settingsWriter;
-	Settings::Settings::inst()->visit(settingsWriter);
+	Settings::Settings::visit(SettingsWriter());
 }
 
-void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::SettingsEntry& entry)
+void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry)
 {
 	comboBox->clear();
 
@@ -207,13 +195,9 @@ void ButtonConfigWidget::initComboBox(QComboBox *comboBox, const Settings::Setti
 	map.fill(Qt::transparent);
 	const QIcon emptyIcon = QIcon(map);
 
-	for (const auto &v : entry.range().toVector()) {
-		const auto icon = emptyIcon;
-		const auto desc = QString::fromStdString(gettext(v[1].toString().c_str()));
-		const auto actionName = QString::fromStdString(v[0].toString());
-		comboBox->addItem(icon, desc, actionName);
-	}
-
+	comboBox->addItem(emptyIcon, QString::fromStdString(_("None")), "");
+	comboBox->addItem(emptyIcon, QString::fromStdString(_("Toggle Perspective")), "viewActionTogglePerspective");
+	
 	for (const auto &action : InputDriverManager::instance()->getActions()) {
 		const auto icon = action.icon;
 		const auto effectiveIcon = icon.isNull() ? emptyIcon : icon;

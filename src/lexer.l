@@ -34,7 +34,7 @@
 #include "parsersettings.h"
 #include "Assignment.h"
 #include "parser.hxx"
-#include "FileModule.h"
+#include "SourceFile.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -58,7 +58,7 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
-extern FileModule *rootmodule;
+extern SourceFile *rootfile;
 
 #define YY_INPUT(buf,result,max_size) {   \
   if (yyin && yyin != stdin) {            \
@@ -312,10 +312,10 @@ void includefile(const Location& loc)
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcefile()->parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootmodule->registerInclude(localpath.generic_string(), fullpath.generic_string(), lexer_is_main_file() ? loc : Location::NONE);
+    rootfile->registerInclude(localpath.generic_string(), fullpath.generic_string(), lexer_is_main_file() ? loc : Location::NONE);
   }
   else {
-    rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
+    rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
     LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
     return;
   };

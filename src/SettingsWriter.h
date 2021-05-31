@@ -25,7 +25,7 @@
  */
 #pragma once
 
-#include "settings.h"
+#include "Settings.h"
 
 class SettingsWriter : public Settings::SettingsVisitor
 {

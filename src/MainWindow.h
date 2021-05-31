@@ -6,12 +6,11 @@
 #include "ui_MainWindow.h"
 #include "UIUtils.h"
 #include "openscad.h"
-#include "builtincontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "Tree.h"
 #include "memory.h"
-#include "editor.h"
+#include "Editor.h"
 #include "export.h"
 #include <vector>
 #include <QMutex>
@@ -19,8 +18,8 @@
 #include <QTime>
 #include <QIODevice>
 #include "input/InputDriver.h"
-#include "editor.h"
-#include "tabmanager.h"
+#include "Editor.h"
+#include "TabManager.h"
 #include <memory>
 
 class MouseSelector;
@@ -39,16 +38,14 @@ public:
 	double anim_tval;
 	bool anim_dumping;
 	int anim_dump_start_step;
+	bool is_preview;
 
 	QTimer *autoReloadTimer;
 	QTimer *waitAfterReloadTimer;
 	QTime renderingTime;
-	EditorInterface *customizerEditor;
 
-	ContextHandle<BuiltinContext> top_ctx;
-	FileModule *root_module;      // Result of parsing
-	FileModule *parsed_module;		// Last parse for include list
-	ModuleInstantiation root_inst;	// Top level instance
+	SourceFile *root_file;      // Result of parsing
+	SourceFile *parsed_file;		// Last parse for include list
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;		  // Root if the root modifier (!) is used
 	Tree tree;
@@ -112,14 +109,14 @@ public:
 	static void noOutputErrorLog(const Message &, void*) {};  // /dev/null
 
 	bool fileChangedOnDisk();
-	void parseTopLevelDocument(bool rebuildParameterWidget);
+	void parseTopLevelDocument();
 	void exceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-	void updateTemporalVariables();
+	void setRenderVariables(ContextHandle<class BuiltinContext>& context);
 	void updateCompileResult();
-	void compile(bool reload, bool forcedone = false, bool rebuildParameterWidget=true);
+	void compile(bool reload, bool forcedone = false);
 	void compileCSG();
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
@@ -208,8 +205,9 @@ private slots:
 protected:
 	bool eventFilter(QObject* obj, QEvent *event) override;
 
+public slots:
+	void actionRenderPreview();
 private slots:
-	void actionRenderPreview(bool rebuildParameterWidget=true);
 	void csgRender();
 	void csgReloadRender();
 	void action3DPrint();

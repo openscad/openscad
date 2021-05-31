@@ -8,7 +8,7 @@ class OffsetNode : public AbstractPolyNode
 {
 public:
 	VISITABLE();
-	OffsetNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx), chamfer(false), fn(0), fs(0), fa(0), delta(1), miter_limit(1000000.0), join_type(ClipperLib::jtRound) { }
+	OffsetNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi), chamfer(false), fn(0), fs(0), fa(0), delta(1), miter_limit(1000000.0), join_type(ClipperLib::jtRound) { }
 	std::string toString() const override;
 	std::string name() const override { return "offset"; }
 

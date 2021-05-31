@@ -1,8 +1,8 @@
 #pragma once
 
 #include <unordered_map>
-#include "value.h"
-#include "valuemap.h"
+#include <string>
+#include <vector>
 
-extern ValueMap dxf_dim_cache;
-extern ValueMap dxf_cross_cache;
+extern std::unordered_map<std::string, double> dxf_dim_cache;
+extern std::unordered_map<std::string, std::vector<double>> dxf_cross_cache;

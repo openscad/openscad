@@ -51,8 +51,8 @@ public:
 	CGALHybridPolyhedron();
 	CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron &other);
 
-	bool isEmpty() const;
-	size_t numFacets() const;
+	bool isEmpty() const override;
+	size_t numFacets() const override;
 	size_t numVertices() const;
 	bool isManifold() const;
 	void clear();

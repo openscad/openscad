@@ -30,7 +30,8 @@ static std::string lookupResourcesPath()
 	const char *searchpath[] = {
 	    "../Resources", 	// Resources can be bundled on Mac.
 	    "../../..",       // Dev location
-	    "..",          // Test location
+	    "../../../..",    // Test location (cmake)
+	    "..",             // Test location
 	    nullptr
 	};
 #else
