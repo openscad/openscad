@@ -9,10 +9,10 @@ namespace ClipperUtils {
 		for (const auto &v : outline.vertices) {
 			p.emplace_back(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE);
 		}
-		// Make sure all polygons point up, since we project also 
+		// Make sure all polygons point up, since we project also
 		// back-facing polygon in PolysetUtils::project()
 		if (!keep_orientation && !ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
-		
+
 		return p;
 	}
 
@@ -33,7 +33,7 @@ namespace ClipperUtils {
 	ClipperLib::PolyTree sanitize(const ClipperLib::Paths &paths)
 	{
 		ClipperLib::PolyTree result;
-		ClipperLib::Clipper clipper;
+		ClipperLib::Clipper clipper{ ClipperLib::InitOptions::ioPreserveCollinear };
 		try {
 			clipper.AddPaths(paths, ClipperLib::ptSubject, true);
 		}
@@ -46,7 +46,7 @@ namespace ClipperUtils {
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;
 	}
-	
+
  /*!
 	 We want to use a PolyTree to convert to Polygon2d, since only PolyTrees
 	 have an explicit notion of holes.
@@ -63,8 +63,16 @@ namespace ClipperUtils {
 			//outline.positive = !node->IsHole();
 			outline.positive = Orientation(node->Contour);
 
+		/* CleanPolygon removes co-linear vertices, which is not necessarily desirable.
+		   e.g. for linear_extrude with twist:
+		      linear_extrude(50, twist=360) polygon([for(x=[0:10]) [x,-0.1], for(x=[10:-1:0]) [x,0.1] ]);
+		*/
+		#if 0
 			ClipperLib::Path cleaned_path;
 			ClipperLib::CleanPolygon(node->Contour, cleaned_path);
+		#else
+			const auto& cleaned_path = node->Contour;
+		#endif
 
 			// CleanPolygon can in some cases reduce the polygon down to no vertices
 			if (cleaned_path.size() >= 3)  {
@@ -80,12 +88,12 @@ namespace ClipperUtils {
 		return result;
 	}
 
-	ClipperLib::Paths process(const ClipperLib::Paths &polygons, 
+	ClipperLib::Paths process(const ClipperLib::Paths &polygons,
 														ClipperLib::ClipType cliptype,
 														ClipperLib::PolyFillType polytype)
 	{
 		ClipperLib::Paths result;
-		ClipperLib::Clipper clipper;
+		ClipperLib::Clipper clipper{ ClipperLib::InitOptions::ioPreserveCollinear };
 		clipper.AddPaths(polygons, ClipperLib::ptSubject, true);
 		clipper.Execute(cliptype, result, polytype);
 		return result;
@@ -99,7 +107,7 @@ namespace ClipperUtils {
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector,
 									 ClipperLib::ClipType clipType)
 	{
-		ClipperLib::Clipper clipper;
+		ClipperLib::Clipper clipper{ ClipperLib::InitOptions::ioPreserveCollinear };
 
 		if (clipType == ClipperLib::ctIntersection && pathsvector.size() >= 2) {
 			// intersection operations must be split into a sequence of binary operations
@@ -124,18 +132,18 @@ namespace ClipperUtils {
 		}
 		ClipperLib::PolyTree sumresult;
 		clipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-		// The returned result will have outlines ordered according to whether 
-		// they're positive or negative: Positive outlines counter-clockwise and 
+		// The returned result will have outlines ordered according to whether
+		// they're positive or negative: Positive outlines counter-clockwise and
 		// negative outlines clockwise.
 		return ClipperUtils::toPolygon2d(sumresult);
 	}
 
   /*!
 		Apply the clipper operator to the given polygons.
-		
+
 		May return an empty Polygon2d, but will not return nullptr.
 	 */
-	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, 
+	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons,
 									 ClipperLib::ClipType clipType)
 	{
 		std::vector<ClipperLib::Paths> pathsvector;
@@ -198,11 +206,11 @@ namespace ClipperUtils {
 				quads.push_back(quad);
 			}
 	}
-	
+
 	// Add the polygon a translated to an arbitrary point of each separate component of b.
   // Ideally, we would translate to the midpoint of component b, but the point can
 	// be chosen arbitrarily since the translated object would always stay inside
-	// the minkowski sum. 
+	// the minkowski sum.
 	static void fill_minkowski_insides(const ClipperLib::Paths &a,
 																		 const ClipperLib::Paths &b,
 																		 ClipperLib::Paths &target)
@@ -226,7 +234,7 @@ namespace ClipperUtils {
 	{
 		if (polygons.size() == 1) return polygons[0] ? new Polygon2d(*polygons[0]) : nullptr; // Just copy
 
-		ClipperLib::Clipper c;
+		ClipperLib::Clipper c{ ClipperLib::InitOptions::ioPreserveCollinear };
 		auto lhs = ClipperUtils::fromPolygon2d(polygons[0] ? *polygons[0] : Polygon2d());
 
 		for (size_t i=1; i<polygons.size(); ++i) {
@@ -242,7 +250,7 @@ namespace ClipperUtils {
 					minkowski_terms.insert(minkowski_terms.end(), result.begin(), result.end());
 				}
 			}
-			
+
 			// Then, fill the central parts
 			fill_minkowski_insides(lhs, rhs, minkowski_terms);
 			fill_minkowski_insides(rhs, lhs, minkowski_terms);
