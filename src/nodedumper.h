@@ -41,7 +41,7 @@ public:
 
     Response visit(State &state, const AbstractNode &node) override;
     Response visit(State &state, const GroupNode &node) override;
-    Response visit(State &state, const ListNode &node);
+    Response visit(State &state, const ListNode &node) override;
     Response visit(State &state, const RootNode &node) override;
 
 private:

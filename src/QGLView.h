@@ -43,12 +43,10 @@ public:
 	bool showScaleProportional() const { return this->showscale; }
 	void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
 	std::string getRendererInfo() const override;
-#if QT_VERSION >= 0x050100
 	float getDPI() override { return this->devicePixelRatio(); }
-#endif
 
 	const QImage & grabFrame();
-	bool save(const char *filename) override;
+	bool save(const char *filename) const override;
 	void resetView();
 	void viewAll();
 
@@ -79,6 +77,7 @@ private:
 	void init();
 
 	bool mouse_drag_active;
+	bool mouse_drag_moved = true;
 	bool mouseCentricZoom=true;
 	QPoint last_mouse;
 	QImage frame; // Used by grabFrame() and save()
@@ -104,4 +103,5 @@ private slots:
 
 signals:
 	void doAnimateUpdate();
+	void doSelectObject(QPoint screen_coordinate);
 };

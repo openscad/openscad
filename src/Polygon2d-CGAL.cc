@@ -1,7 +1,7 @@
 #include "Polygon2d-CGAL.h"
 #include "polyset.h"
 #include "printutils.h"
-
+#include "boost-utils.h"
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -47,7 +47,7 @@ mark_domains(CDT &ct,
     queue.pop_front();
     if (fh->info().nesting_level == -1) {
       fh->info().nesting_level = index;
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 3; ++i) {
         CDT::Edge e(fh,i);
         auto n = fh->neighbor(i);
         if (n->info().nesting_level == -1) {
@@ -115,7 +115,7 @@ PolySet *Polygon2d::tessellate() const
 
   }
 	catch (const CGAL::Precondition_exception &e) {
-		PRINTB("CGAL error in Polygon2d::tesselate(): %s", e.what());
+		LOG(message_group::None,Location::NONE,"","CGAL error in Polygon2d::tesselate(): %1$s",e.what());
 		CGAL::set_error_behaviour(old_behaviour);
 		return nullptr;
 	}
@@ -127,7 +127,7 @@ PolySet *Polygon2d::tessellate() const
 	for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
 		if (fit->info().in_domain()) {
 			polyset->append_poly();
-			for (int i=0;i<3;i++) {
+			for (int i=0; i<3; ++i) {
 				polyset->append_vertex(fit->vertex(i)->point()[0],
 															 fit->vertex(i)->point()[1],
 															 0);

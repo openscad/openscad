@@ -1,5 +1,5 @@
-HEADERS += src/scintillaeditor.h src/scadlexer.h
-SOURCES += src/scintillaeditor.cpp src/scadlexer.cpp
+HEADERS += src/ScintillaEditor.h src/ScadLexer.h
+SOURCES += src/ScintillaEditor.cc src/ScadLexer.cc
 
 DEFINES += USE_SCINTILLA_EDITOR
 

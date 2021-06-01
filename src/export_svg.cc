@@ -38,7 +38,7 @@ static void append_svg(const Polygon2d &poly, std::ostream &output)
 		
 		const Eigen::Vector2d& p0 = o.vertices[0];
 		output << "M " << p0.x() << "," << -p0.y();
-		for (unsigned int idx = 1;idx < o.vertices.size();idx++) {
+		for (unsigned int idx = 1; idx < o.vertices.size(); ++idx) {
 			const Eigen::Vector2d& p = o.vertices[idx];
 			output << " L " << p.x() << "," << -p.y();
 			if ((idx % 6) == 5) {

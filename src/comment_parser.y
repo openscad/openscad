@@ -4,7 +4,6 @@
     #include "Assignment.h"
     #include "expression.h"
     #include "printutils.h"
-    #include "value.h" 
     #include "comment.h"
     #ifdef _MSC_VER
     #define strdup _strdup
@@ -74,7 +73,7 @@ expr:
 num:
     NUM
     {
-        $$ = new Literal(ValuePtr($1));
+        $$ = new Literal($1);
     }
     ;
 
@@ -136,7 +135,7 @@ labeled_vectors:
 wordexpr:
     word
     {
-        $$ = new Literal(ValuePtr(std::string($1)));
+        $$ = new Literal(std::string($1));
         free($1);
     }
     ;

@@ -175,8 +175,8 @@ public:
 		unsigned width = this->Width, height = this->Height;
 		vector<uint8_t> image;
 		image.resize(width * height * 4);
-		for(unsigned y = 0; y < height; y++) {
-		for(unsigned x = 0; x < width; x++) {
+		for(unsigned y = 0; y < height; ++y) {
+		for(unsigned x = 0; x < width; ++x) {
 			uint8_t red, green, blue, alpha;
 			red = Get_Red( y*width + x );
 			green = Get_Green( y*width + x );
@@ -239,12 +239,12 @@ public:
 		unsigned newwidth = Width/2;
 		unsigned newheight = Height/2;
 		RGBAImage newimg( newwidth, newheight, this->Name );
-		for (unsigned x = 0; x < newwidth; x++) {
-		for (unsigned y = 0; y < newheight; y++) {
+		for (unsigned x = 0; x < newwidth; ++x) {
+		for (unsigned y = 0; y < newheight; ++y) {
 			redsum=greensum=bluesum=alphasum=0;
 			redavg=greenavg=blueavg=alphaavg=0;
-			for (int i=-1;i<=1;i++) {
-			for (int j=-1;j<=1;j++) {
+			for (int i=-1; i<=1; ++i) {
+			for (int j=-1; j<=1; ++j) {
 	                        red = this->Get_Red(     (y*2+i)*oldwidth + (x*2+j) );
 				green = this->Get_Green( (y*2+i)*oldwidth + (x*2+j) );
 				blue = this->Get_Blue(   (y*2+i)*oldwidth + (x*2+j) );
@@ -266,7 +266,7 @@ public:
 		Height = newheight;
 		Data.clear();
 		Data.resize( newimg.Data.size() );
-		for (unsigned i=0;i<newimg.Data.size();i++) {
+		for (unsigned i=0; i<newimg.Data.size(); ++i) {
 			Data[i] = newimg.Data[i];
 		}
 	}
@@ -276,8 +276,8 @@ public:
 	{
 		RGBAImage newimg( Width, Height, this->Name );
 		uint8_t red, green, blue, alpha;
-		for (unsigned x = 0; x < Width; x++) {
-		for (unsigned y = 0; y < Height; y++) {
+		for (unsigned x = 0; x < Width; ++x) {
+		for (unsigned y = 0; y < Height; ++y) {
                         red = this->Get_Red(     (y+ypix)*Width + (x+xpix) );
 			green = this->Get_Green( (y+ypix)*Width + (x+xpix) );
 			blue = this->Get_Blue(   (y+ypix)*Width + (x+xpix) );
@@ -287,7 +287,7 @@ public:
 		}
 		Data.clear();
 		Data.resize( newimg.Data.size() );
-		for (unsigned i=0;i<newimg.Data.size();i++) {
+		for (unsigned i=0; i<newimg.Data.size(); ++i) {
 			Data[i] = newimg.Data[i];
 		}
 	}
@@ -298,12 +298,12 @@ public:
 		unsigned int redsum,greensum,bluesum,alphasum;
 		unsigned int redavg,greenavg,blueavg,alphaavg;
 		uint8_t red, green, blue, alpha;
-		for (unsigned x = 0; x < Width; x++) {
-		for (unsigned y = 0; y < Height; y++) {
+		for (unsigned x = 0; x < Width; ++x) {
+		for (unsigned y = 0; y < Height; ++y) {
 			redsum=greensum=bluesum=alphasum=0;
 			redavg=greenavg=blueavg=alphaavg=0;
-			for (int i=-1;i<=1;i++) {
-			for (int j=-1;j<=1;j++) {
+			for (int i=-1; i<=1; ++i) {
+			for (int j=-1; j<=1; ++j) {
 	                        red = this->Get_Red(     (y+i)*Width + (x+j) );
 				green = this->Get_Green( (y+i)*Width + (x+j) );
 				blue = this->Get_Blue(   (y+i)*Width + (x+j) );
@@ -423,7 +423,7 @@ public:
 		}
 		unsigned image_count = 0u;
 		const char *output_file_name = NULL;
-		for (int i = 1; i < argc; i++)
+		for (int i = 1; i < argc; ++i)
 		{
 //			try
 //			{
@@ -631,7 +631,7 @@ static vector<float> Copy(const float *img,
 {
 	const unsigned long max = width * height;
 	vector<float> out(max);
-	for (unsigned long i = 0u; i < max; i++)
+	for (unsigned long i = 0u; i < max; ++i)
 	{
 		out[i] = img[i];
 	}
@@ -648,7 +648,7 @@ public:
 		this->Levels.resize(MaxPyramidLevels);
 		// Make the Laplacian pyramid by successively
 		// copying the earlier levels and blurring them
-		for (unsigned i = 0u; i < maxlevels; i++)
+		for (unsigned i = 0u; i < maxlevels; ++i)
 		{
 			if (i == 0 or width * height <= 1)
 			{
@@ -678,15 +678,15 @@ private:
 
 		const float Kernel[] = {0.05f, 0.25f, 0.4f, 0.25f, 0.05f};
 //#pragma omp parallel for
-		for (unsigned y = 0u; y < Height; y++)
+		for (unsigned y = 0u; y < Height; ++y)
 		{
-			for (unsigned x = 0u; x < Width; x++)
+			for (unsigned x = 0u; x < Width; ++x)
 			{
 				size_t index = y * Width + x;
 				a[index] = 0.0f;
-				for (int i = -2; i <= 2; i++)
+				for (int i = -2; i <= 2; ++i)
 				{
-					for (int j = -2; j <= 2; j++)
+					for (int j = -2; j <= 2; ++j)
 					{
 						int nx = x + i;
 						int ny = y + j;
@@ -821,7 +821,7 @@ static void XYZToLAB(float x, float y, float z, float &L, float &A, float &B)
 	r[0] = x / global_white.x;
 	r[1] = y / global_white.y;
 	r[2] = z / global_white.z;
-	for (unsigned int i = 0; i < 3; i++)
+	for (unsigned int i = 0; i < 3; ++i)
 	{
 		if (r[i] > epsilon)
 		{
@@ -842,7 +842,7 @@ static unsigned int adaptation(float num_one_degree_pixels, unsigned int max_pyr
 {
 	float num_pixels = 1.f;
 	unsigned adaptation_level = 0u;
-	for (unsigned i = 0u; i < max_pyramid_levels; i++)
+	for (unsigned i = 0u; i < max_pyramid_levels; ++i)
 	{
 		adaptation_level = i;
 		if (num_pixels > num_one_degree_pixels)
@@ -866,7 +866,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 
 	const unsigned dim = args.ImgA->Get_Width() * args.ImgA->Get_Height();
 	bool identical = true;
-	for (unsigned i = 0u; i < dim; i++)
+	for (unsigned i = 0u; i < dim; ++i)
 	{
 		if (args.ImgA->Get(i) != args.ImgB->Get(i))
 		{
@@ -888,9 +888,9 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	const unsigned w = args.ImgA->Get_Width();
 	const unsigned h = args.ImgA->Get_Height();
 //#pragma omp parallel for
-	for (unsigned y = 0u; y < h; y++)
+	for (unsigned y = 0u; y < h; ++y)
 	{
-		for (unsigned x = 0u; x < w; x++)
+		for (unsigned x = 0u; x < w; ++x)
 		{
 			const unsigned i = x + y * w;
 			float r = powf(args.ImgA->Get_Red(i) / 255.0f, args.Gamma);
@@ -930,7 +930,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 
 	vector<float> cpd(args.MaxPyramidLevels);
 	cpd[0] = 0.5f * pixels_per_degree;
-	for (unsigned i = 1u; i < args.MaxPyramidLevels; i++)
+	for (unsigned i = 1u; i < args.MaxPyramidLevels; ++i)
 	{
 		cpd[i] = 0.5f * cpd[i - 1];
 	}
@@ -939,7 +939,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	assert(args.MaxPyramidLevels >= 2); // ?? >2 or >=2
 
 	float F_freq[args.MaxPyramidLevels - 2];
-	for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; i++)
+	for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; ++i)
 	{
 		F_freq[i] = csf_max / csf(cpd[i], 100.0f);
 	}
@@ -948,14 +948,14 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	unsigned total_pixels = w*h;
 	float error_sum = 0.;
 //#pragma omp parallel for reduction(+ : pixels_failed) reduction(+ : error_sum)
-	for (unsigned y = 0u; y < h; y++)
+	for (unsigned y = 0u; y < h; ++y)
 	{
-		for (unsigned x = 0u; x < w; x++)
+		for (unsigned x = 0u; x < w; ++x)
 		{
 			const unsigned index = x + y * w;
 			float contrast[args.MaxPyramidLevels - 2];
 			float sum_contrast = 0;
-			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; i++)
+			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; ++i)
 			{
 				float n1 =
 					fabsf(la.Get_Value(x, y, i) - la.Get_Value(x, y, i + 1));
@@ -984,12 +984,12 @@ bool Yee_Compare_Engine(CompareArgs &args)
 			{
 				adapt = 1e-5f;
 			}
-			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; i++)
+			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; ++i)
 			{
 				F_mask[i] = mask(contrast[i] * csf(cpd[i], adapt));
 			}
 			float factor = 0.f;
-			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; i++)
+			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; ++i)
 			{
 				factor += contrast[i] * F_freq[i] * F_mask[i] / sum_contrast;
 			}
@@ -1083,7 +1083,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 void copy( diffpng::RGBAImage &dest, diffpng::RGBAImage &src) {
 	dest.Data.clear();
 	dest.Data.resize( src.Data.size() );
-	for (unsigned i=0;i<src.Data.size();i++) {
+	for (unsigned i=0; i<src.Data.size(); ++i) {
 		dest.Data[i] = src.Data[i];
 	}
 	dest.Width = src.Width;

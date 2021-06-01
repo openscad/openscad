@@ -7,7 +7,7 @@
 #include "renderer.h"
 #include "degree_trig.h"
 #include <cmath>
-
+#include "boost-utils.h"
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -36,13 +36,13 @@ GLView::GLView()
   opencsg_support = true;
   static int sId = 0;
   this->opencsg_id = sId++;
-  for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 #endif
 }
 
 void GLView::setRenderer(Renderer* r)
 {
   renderer = r;
+	if (this->renderer) { this->renderer->resize(cam.pixel_width,cam.pixel_height); }
 }
 
 /* update the color schemes of the Renderer attached to this GLView
@@ -67,20 +67,17 @@ void GLView::setColorSchemeByName(const std::string &cs)
     setColorScheme(*colorscheme);
   }
   else {
-    PRINTB("UI-WARNING: GLView: unknown colorscheme %s", cs);
+	LOG(message_group::UI_Warning,Location::NONE,"","GLView: unknown colorscheme %1$s",cs);
   }
 }
 
 void GLView::resizeGL(int w, int h)
 {
-#ifdef ENABLE_OPENCSG
-  shaderinfo[9] = w;
-  shaderinfo[10] = h;
-#endif
   cam.pixel_width = w;
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
   aspectratio = 1.0*w/h;
+	if (this->renderer) { this->renderer->resize(cam.pixel_width,cam.pixel_height); }
 }
 
 void GLView::setCamera(const Camera &cam)
@@ -88,7 +85,7 @@ void GLView::setCamera(const Camera &cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera()
+void GLView::setupCamera() const
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -121,7 +118,6 @@ void GLView::setupCamera()
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
-
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
@@ -156,6 +152,7 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
+    this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
   }
 
@@ -164,6 +161,25 @@ void GLView::paintGL()
 }
 
 #ifdef ENABLE_OPENCSG
+
+void glErrorCheck() {
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
+  }
+}
+
+void glCompileCheck(GLuint shader) {
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status == GL_FALSE) {
+    int loglen;
+    char logbuffer[1000];
+    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
+    PRINTDB("OpenGL Shader Program Compile Error:\n%s", logbuffer);
+  }
+}
+
 void GLView::enable_opencsg_shaders()
 {
   const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
@@ -195,124 +211,33 @@ void GLView::enable_opencsg_shaders()
   if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
     display_opencsg_warning();
   }
-
-  if (opencsg_support && this->has_shaders) {
-  /*
-    Uniforms:
-      1 color1 - face color
-      2 color2 - edge color
-      7 xscale
-      8 yscale
-
-    Attributes:
-      3 trig
-      4 pos_b
-      5 pos_c
-      6 mask
-
-    Other:
-      9 width
-      10 height
-
-    Outputs:
-      tp
-      tr
-      shading
-   */
-    const char *vs_source =
-      "uniform float xscale, yscale;\n"
-      "attribute vec3 pos_b, pos_c;\n"
-      "attribute vec3 trig, mask;\n"
-      "varying vec3 tp, tr;\n"
-      "varying float shading;\n"
-      "void main() {\n"
-      "  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-      "  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n"
-      "  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n"
-      "  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-      "  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
-      "  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-      "  float s = (a + b + c) / 2.0;\n"
-      "  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
-      "  float ha = 2.0*A/a;\n"
-      "  gl_Position = p0;\n"
-      "  tp = mask * ha;\n"
-      "  tr = trig;\n"
-      "  vec3 normal, lightDir;\n"
-      "  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
-      "  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-      "  shading = 0.2 + abs(dot(normal, lightDir));\n"
-      "}\n";
-
-    /*
-      Inputs:
-        tp && tr - if any components of tp < tr, use color2 (edge color)
-        shading  - multiplied by color1. color2 is is without lighting
-		*/
-    const char *fs_source =
-      "uniform vec4 color1, color2;\n"
-      "varying vec3 tp, tr, tmp;\n"
-      "varying float shading;\n"
-      "void main() {\n"
-      "  gl_FragColor = vec4(color1.r * shading, color1.g * shading, color1.b * shading, color1.a);\n"
-      "  if (tp.x < tr.x || tp.y < tr.y || tp.z < tr.z)\n"
-      "    gl_FragColor = color2;\n"
-      "}\n";
-
-    auto vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
-    glCompileShader(vs);
-
-    auto fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
-    glCompileShader(fs);
-
-    auto edgeshader_prog = glCreateProgram();
-    glAttachShader(edgeshader_prog, vs);
-    glAttachShader(edgeshader_prog, fs);
-    glLinkProgram(edgeshader_prog);
-
-    shaderinfo[0] = edgeshader_prog;
-    shaderinfo[1] = glGetUniformLocation(edgeshader_prog, "color1");
-    shaderinfo[2] = glGetUniformLocation(edgeshader_prog, "color2");
-    shaderinfo[3] = glGetAttribLocation(edgeshader_prog, "trig");
-    shaderinfo[4] = glGetAttribLocation(edgeshader_prog, "pos_b");
-    shaderinfo[5] = glGetAttribLocation(edgeshader_prog, "pos_c");
-    shaderinfo[6] = glGetAttribLocation(edgeshader_prog, "mask");
-    shaderinfo[7] = glGetUniformLocation(edgeshader_prog, "xscale");
-    shaderinfo[8] = glGetUniformLocation(edgeshader_prog, "yscale");
-
-    auto err = glGetError();
-    if (err != GL_NO_ERROR) {
-      fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-    }
-
-    GLint status;
-    glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE) {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
-    } else {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      if (loglen > 0) {
-        fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
-      }
-      glValidateProgram(edgeshader_prog);
-      glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      if (loglen > 0) {
-        fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
-      }
-    }
-  }
 }
+#endif
+
+
+#ifdef DEBUG
+// Requires OpenGL 4.3+ 
+/*
+  void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                  GLsizei length, const GLchar* message, const void* userParam)
+  {
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%X, severity = 0x%X, message = %s\n",
+            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message);
+  }
+//*/
 #endif
 
 void GLView::initializeGL()
 {
+#ifdef DEBUG
+/*
+  // Requires OpenGL 4.3+
+  glEnable              ( GL_DEBUG_OUTPUT );
+  glDebugMessageCallback( MessageCallback, 0 );
+//*/
+#endif
+
   glEnable(GL_DEPTH_TEST);
   glDepthRange(-far_far_away, +far_far_away);
 
@@ -360,7 +285,7 @@ void GLView::showSmallaxes(const Color4f &col)
   gluLookAt(0.0, -1.0, 0.0,
 						0.0, 0.0, 0.0,
 						0.0, 0.0, 1.0);
-	 
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -426,7 +351,7 @@ void GLView::showSmallaxes(const Color4f &col)
 void GLView::showAxes(const Color4f &col)
 {
   auto l = cam.zoomValue();
-  
+
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
@@ -651,7 +576,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 		{1,0,2,3,2,4,5}};
 
 	// walk through axes
-	for (int di=0;di<6;di++){
+	for (int di=0; di<6; ++di){
 
 		// setup negative axes
 		double polarity = 1;

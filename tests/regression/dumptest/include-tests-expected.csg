@@ -1,5 +1,3 @@
-group();
-group();
 group() {
 	group() {
 		cube(size = [1, 1, 1], center = true);
@@ -60,7 +58,6 @@ group() {
 									cube(size = [12, 7, 2.5], center = false);
 								}
 							}
-							group();
 							multmatrix([[1, 0, 0, -6], [0, 1, 0, 0], [0, 0, 1, 19], [0, 0, 0, 1]]) {
 								multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									group() {
@@ -76,7 +73,6 @@ group() {
 								cube(size = [12, 6.5, 4], center = false);
 							}
 						}
-						group();
 					}
 				}
 			}

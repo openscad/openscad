@@ -12,7 +12,7 @@
 class Tree
 {
 public:
-	Tree(const AbstractNode *root = nullptr) : root_node(root) {}
+	Tree(const AbstractNode *root = nullptr, const std::string& path = {}) : root_node(root), document_path(path) {}
 	~Tree();
 
 	void setRoot(const AbstractNode *root);

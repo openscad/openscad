@@ -1,12 +1,11 @@
-group();
-%import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+%import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 color([1, 0, 0, 1]) {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -20], [0, 0, 0, 1]]) {
 		linear_extrude(height = 2, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 			difference() {
 				square(size = [30, 30], center = true);
 				projection(cut = false, convexity = 0) {
-					import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+					import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 				}
 			}
 		}
@@ -20,7 +19,7 @@ color([0, 0.501961, 0, 1]) {
 					square(size = [30, 30], center = true);
 					projection(cut = false, convexity = 0) {
 						multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
-							import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+							import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 						}
 					}
 				}
@@ -36,7 +35,7 @@ color([0, 1, 1, 1]) {
 					square(size = [30, 30], center = true);
 					projection(cut = false, convexity = 0) {
 						multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-							import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+							import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 						}
 					}
 				}
@@ -50,7 +49,7 @@ color([1, 1, 0, 0.5]) {
 			difference() {
 				square(size = [30, 30], center = true);
 				projection(cut = true, convexity = 0) {
-					import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1537974088);
+					import(file = "projection.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
 				}
 			}
 		}

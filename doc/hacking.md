@@ -34,6 +34,6 @@ See `testing.txt`
 * Document:
    * wikibooks
    * cheatsheet
-   * Modules: tooltips (editor.cc)
+   * Modules: tooltips (Editor.cc)
    * External editor modes
    * Add to RELEASE_NOTES.md

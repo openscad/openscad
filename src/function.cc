@@ -24,46 +24,37 @@
  *
  */
 
-#include "function.h"
-#include "evalcontext.h"
+#include "arguments.h"
 #include "expression.h"
+#include "function.h"
 #include "printutils.h"
 
-AbstractFunction::~AbstractFunction()
+BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<const Context>&, const FunctionCall*), const Feature* feature):
+	evaluate(f),
+	feature(feature)
+{}
+
+BuiltinFunction::BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature* feature):
+	feature(feature)
 {
+	evaluate = [f] (const std::shared_ptr<const Context>& context, const FunctionCall* call) {
+		return f(Arguments(call->arguments, context), call->location());
+	};
 }
 
-UserFunction::UserFunction(const char *name, AssignmentList &definition_arguments, shared_ptr<Expression> expr, const Location &loc)
-	: ASTNode(loc), name(name), definition_arguments(definition_arguments), expr(expr)
+UserFunction::UserFunction(const char *name, AssignmentList &parameters, shared_ptr<Expression> expr, const Location &loc)
+	: ASTNode(loc), name(name), parameters(parameters), expr(expr)
 {
-}
-
-UserFunction::~UserFunction()
-{
-}
-
-ValuePtr UserFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	return evaluate_function(name, expr, definition_arguments, ctx, evalctx, loc);
 }
 
 void UserFunction::print(std::ostream &stream, const std::string &indent) const
 {
 	stream << indent << "function " << name << "(";
-	for (size_t i=0; i < definition_arguments.size(); i++) {
-		const auto &arg = definition_arguments[i];
+	for (size_t i=0; i < parameters.size(); ++i) {
+		const auto &parameter = parameters[i];
 		if (i > 0) stream << ", ";
-		stream << arg->name;
-		if (arg->expr) stream << " = " << *arg->expr;
+		stream << parameter->getName();
+		if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
 	}
 	stream << ") = " << *expr << ";\n";
-}
-
-BuiltinFunction::~BuiltinFunction()
-{
-}
-
-ValuePtr BuiltinFunction::evaluate(const std::shared_ptr<Context>& ctx, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	return eval_func(ctx, evalctx);
 }

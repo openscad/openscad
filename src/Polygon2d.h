@@ -13,11 +13,13 @@ struct Outline2d {
 	Outline2d() : positive(true) {}
 	VectorOfVector2d vertices;
 	bool positive;
+	BoundingBox getBoundingBox() const;
 };
 
 class Polygon2d : public Geometry
 {
 public:
+	VISITABLE_GEOMETRY();
 	Polygon2d() : sanitized(false) {}
 	size_t memsize() const override;
 	BoundingBox getBoundingBox() const override;

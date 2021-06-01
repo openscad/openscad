@@ -22,9 +22,22 @@ namespace /* anonymous */ {
 }
 
 namespace CGALUtils {
+
+	class CGALErrorBehaviour {
+	public:
+		CGALErrorBehaviour(CGAL::Failure_behaviour behaviour) {
+			old_behaviour = CGAL::set_error_behaviour(behaviour);
+		}
+		~CGALErrorBehaviour() {
+			CGAL::set_error_behaviour(old_behaviour);
+		}
+	private:
+		CGAL::Failure_behaviour old_behaviour;
+	};
+
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
-	CGAL_Nef_polyhedron *applyOperator(const Geometry::Geometries &children, OpenSCADOperator op);
-	CGAL_Nef_polyhedron *applyUnion(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
+	CGAL_Nef_polyhedron *applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);

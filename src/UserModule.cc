@@ -27,7 +27,6 @@
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "node.h"
-#include "evalcontext.h"
 #include "exceptions.h"
 #include "stackcheck.h"
 #include "modcontext.h"
@@ -35,43 +34,36 @@
 #include "printutils.h"
 #include "compiler_specific.h"
 #include <sstream>
+#include "boost-utils.h"
 
-std::vector<std::string> UserModule::module_stack;
+std::vector<std::string> StaticModuleNameStack::stack;
 
-static void NOINLINE print_err(std::string name, const Location &loc,const std::shared_ptr<const Context> ctx){
-	std::string locs = loc.toRelativeString(ctx->documentPath());
-	PRINTB("ERROR: Recursion detected calling module '%s' %s", name % locs);
+static void NOINLINE print_err(std::string name, const Location &loc,const std::shared_ptr<const Context> context){
+	LOG(message_group::Error,loc,context->documentRoot(),"Recursion detected calling module '%1$s'",name);
 }
 
-AbstractNode *UserModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+AbstractNode* UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
 	if (StackCheck::inst().check()) {
-		print_err(inst->name(),loc,ctx);
+		print_err(inst->name(),loc,context);
 		throw RecursionException::create("module", inst->name(),loc);
 		return nullptr;
 	}
 
-	// At this point we know that nobody will modify the dependencies of the local scope
-	// passed to this instance, so we can populate the context
-	inst->scope.apply(evalctx);
-    
-	ContextHandle<ModuleContext> c{Context::create<ModuleContext>(ctx, evalctx)};
-	// set $children first since we might have variables depending on it
-	c->set_variable("$children", ValuePtr(double(inst->scope.children_inst.size())));
-	module_stack.push_back(inst->name());
-	c->set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
-	c->initializeModule(*this);
-	// FIXME: Set document path to the path of the module
+	StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
+	ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
+		defining_context,
+		this,
+		inst->location(),
+		Arguments(inst->arguments, context),
+		Children(&inst->scope, context)
+	)};
 #if 0 && DEBUG
-	c.dump(this, inst);
+	PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
+	PRINTDB("%s", module_context->dump());
 #endif
 
-	AbstractNode *node = new GroupNode(inst);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(c.ctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-	module_stack.pop_back();
-
-	return node;
+	return this->body.instantiateModules(*module_context, new GroupNode(inst, std::string("module ") + this->name));
 }
 
 void UserModule::print(std::ostream &stream, const std::string &indent) const
@@ -79,16 +71,16 @@ void UserModule::print(std::ostream &stream, const std::string &indent) const
 	std::string tab;
 	if (!this->name.empty()) {
 		stream << indent << "module " << this->name << "(";
-		for (size_t i=0; i < this->definition_arguments.size(); i++) {
-			const auto &arg = this->definition_arguments[i];
+		for (size_t i=0; i < this->parameters.size(); ++i) {
+			const auto &parameter = this->parameters[i];
 			if (i > 0) stream << ", ";
-			stream << arg->name;
-			if (arg->expr) stream << " = " << *arg->expr;
+			stream << parameter->getName();
+			if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
 		}
 		stream << ") {\n";
 		tab = "\t";
 	}
-	scope.print(stream, indent + tab);
+	body.print(stream, indent + tab);
 	if (!this->name.empty()) {
 		stream << indent << "}\n";
 	}

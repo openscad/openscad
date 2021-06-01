@@ -25,7 +25,7 @@
  */
 #include "InputEventMapper.h"
 #include "InputDriverManager.h"
-#include "settings.h"
+#include "Settings.h"
 #include "Preferences.h"
 #include "AxisConfigWidget.h"
 #include "ButtonConfigWidget.h"
@@ -39,12 +39,12 @@ InputEventMapper::InputEventMapper()
 {
     stopRequest=false;
 
-    for (int a = 0;a < max_axis;a++) {
+    for (int a = 0; a < max_axis; ++a) {
         axisRawValue[a] = 0.0;
         axisTrimValue[a] = 0.0;
         axisDeadzone[a] = 0.1;
     }
-    for (int a = 0;a < max_buttons;a++) {
+    for (int a = 0; a < max_buttons; ++a) {
         button_state[a]=false;
         button_state_last[a]=false;
     }
@@ -106,8 +106,9 @@ double InputEventMapper::getAxisValue(int config)
     return scale(val);
 }
 
-void InputEventMapper::onTimer()
+bool InputEventMapper::generateDeferredEvents()
 {
+    bool any = false;
     const double threshold = 0.01;
 
     double tx = getAxisValue(translate[0])*translationGain;
@@ -116,6 +117,7 @@ void InputEventMapper::onTimer()
     if ((fabs(tx) > threshold) || (fabs(ty) > threshold) || (fabs(tz) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(tx, ty, tz);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double txVPRel = getAxisValue(translate[3])*translationVPRelGain;
@@ -124,6 +126,7 @@ void InputEventMapper::onTimer()
     if ((fabs(txVPRel) > threshold) || (fabs(tyVPRel) > threshold) || (fabs(tzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true, false);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double rx = getAxisValue(rotate[0])*rotateGain;
@@ -132,6 +135,7 @@ void InputEventMapper::onTimer()
     if ((fabs(rx) > threshold) || (fabs(ry) > threshold) || (fabs(rz) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate(rx, ry, rz);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double rxVPRel = getAxisValue(rotate[3])*rotateVPRelGain;
@@ -140,30 +144,52 @@ void InputEventMapper::onTimer()
     if ((fabs(rxVPRel) > threshold) || (fabs(ryVPRel) > threshold) || (fabs(rzVPRel) > threshold)) {
         InputEvent *inputEvent = new InputEventRotate2(rxVPRel, ryVPRel, rzVPRel);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
     
     double z = (getAxisValue(zoom)+getAxisValue(zoom2))*zoomGain;
     if (fabs(z) > threshold) {
         InputEvent *inputEvent = new InputEventZoom(z);
         InputDriverManager::instance()->postEvent(inputEvent);
+        any = true;
     }
 
+    return any;
+}
+
+void InputEventMapper::considerGeneratingDeferredEvents()
+{
+    if (!timer->isActive()) {
+        QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 30));
+    }
+}
+
+void InputEventMapper::onTimer()
+{
+    bool generated_any_events = generateDeferredEvents();
+
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
-    for (int i = 0; i < max_buttons; i++ ){
+    for (int i = 0; i < max_buttons; ++i ){
         if(button_state[i] != button_state_last[i]){
             button_state_last[i] = button_state[i];
             Preferences::inst()->ButtonConfig->updateButtonState(i,button_state[i]);
         }
     }
-    for (int i = 0; i < max_axis; i++ ){ 
+    for (int i = 0; i < max_axis; ++i ){ 
        Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
 
+    if (!generated_any_events) {
+        // the current axis positions do not generate input events,
+        // so we can stop the polling which is used to to generate them
+        timer->stop();
+    }
 }
 
 void InputEventMapper::onAxisChanged(InputEventAxisChanged *event)
 {
     axisRawValue[event->axis] = event->value;
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
@@ -187,6 +213,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
             InputDriverManager::instance()->postEvent(inputEvent);
         }
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onTranslateEvent(InputEventTranslate *event)
@@ -224,82 +251,63 @@ int InputEventMapper::parseSettingValue(const std::string val)
 
 void InputEventMapper::onInputMappingUpdated()
 {
-    Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < max_buttons; i++ ){
-		std::string is = std::to_string(i);
-		Settings::SettingsEntry* ent =s->getSettingEntryByName("button" +is);
-		actions[i] =QString::fromStdString(s->get(*ent).toString());
+    for (int i = 0; i < max_buttons; ++i ){
+		actions[i] = QString::fromStdString(Settings::Settings::inputButton(i).value());
 	}
     
-    translate[0] = parseSettingValue(s->get(Settings::Settings::inputTranslationX).toString());
-    translate[1] = parseSettingValue(s->get(Settings::Settings::inputTranslationY).toString());
-    translate[2] = parseSettingValue(s->get(Settings::Settings::inputTranslationZ).toString());
-    translate[3] = parseSettingValue(s->get(Settings::Settings::inputTranslationXVPRel).toString());
-    translate[4] = parseSettingValue(s->get(Settings::Settings::inputTranslationYVPRel).toString());
-    translate[5] = parseSettingValue(s->get(Settings::Settings::inputTranslationZVPRel).toString());
-    rotate[0] = parseSettingValue(s->get(Settings::Settings::inputRotateX).toString());
-    rotate[1] = parseSettingValue(s->get(Settings::Settings::inputRotateY).toString());
-    rotate[2] = parseSettingValue(s->get(Settings::Settings::inputRotateZ).toString());
-    rotate[3] = parseSettingValue(s->get(Settings::Settings::inputRotateXVPRel).toString());
-    rotate[4] = parseSettingValue(s->get(Settings::Settings::inputRotateYVPRel).toString());
-    rotate[5] = parseSettingValue(s->get(Settings::Settings::inputRotateZVPRel).toString());
-    zoom = parseSettingValue(s->get(Settings::Settings::inputZoom).toString());
-    zoom2 = parseSettingValue(s->get(Settings::Settings::inputZoom2).toString());
+    translate[0] = parseSettingValue(Settings::Settings::inputTranslationX.value());
+    translate[1] = parseSettingValue(Settings::Settings::inputTranslationY.value());
+    translate[2] = parseSettingValue(Settings::Settings::inputTranslationZ.value());
+    translate[3] = parseSettingValue(Settings::Settings::inputTranslationXVPRel.value());
+    translate[4] = parseSettingValue(Settings::Settings::inputTranslationYVPRel.value());
+    translate[5] = parseSettingValue(Settings::Settings::inputTranslationZVPRel.value());
+    rotate[0] = parseSettingValue(Settings::Settings::inputRotateX.value());
+    rotate[1] = parseSettingValue(Settings::Settings::inputRotateY.value());
+    rotate[2] = parseSettingValue(Settings::Settings::inputRotateZ.value());
+    rotate[3] = parseSettingValue(Settings::Settings::inputRotateXVPRel.value());
+    rotate[4] = parseSettingValue(Settings::Settings::inputRotateYVPRel.value());
+    rotate[5] = parseSettingValue(Settings::Settings::inputRotateZVPRel.value());
+    zoom = parseSettingValue(Settings::Settings::inputZoom.value());
+    zoom2 = parseSettingValue(Settings::Settings::inputZoom2.value());
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputGainUpdated()
 {
-    Settings::Settings *s = Settings::Settings::inst();
+    translationGain = Settings::Settings::inputTranslationGain.value();
+    translationVPRelGain = Settings::Settings::inputTranslationVPRelGain.value();
+    rotateGain = Settings::Settings::inputRotateGain.value();
+    rotateVPRelGain = Settings::Settings::inputRotateVPRelGain.value();
+    zoomGain = Settings::Settings::inputZoomGain.value();
 
-    translationGain = s->get(Settings::Settings::inputTranslationGain).toDouble();
-
-    translationVPRelGain = s->get(Settings::Settings::inputTranslationVPRelGain).toDouble();
-
-    rotateGain = s->get(Settings::Settings::inputRotateGain).toDouble();
-
-    rotateVPRelGain = s->get(Settings::Settings::inputRotateVPRelGain).toDouble();
-
-    zoomGain = s->get(Settings::Settings::inputZoomGain).toDouble();
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onInputCalibrationUpdated()
 {
-    for (int a = 0;a < max_axis;a++) {
-        std::string s = std::to_string(a);
-        Settings::Settings *setting = Settings::Settings::inst();
-        Settings::SettingsEntry* ent;
-
-        ent = Settings::Settings::inst()->getSettingEntryByName("axisTrim" + s );
-        if(ent != nullptr){
-            axisTrimValue[a] = setting->get(*ent).toDouble();
-        }
-        ent = Settings::Settings::inst()->getSettingEntryByName("axisDeadzone" + s );
-        if(ent != nullptr){
-            axisDeadzone[a] = setting->get(*ent).toDouble();
-        }
+    for (int i = 0; i < max_axis; ++i) {
+        axisTrimValue[i] = Settings::Settings::axisTrim(i).value();
+        axisDeadzone[i] = Settings::Settings::axisDeadzone(i).value();
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisAutoTrim()
 {
-    Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < max_axis; i++ ){ 
-        std::string is = std::to_string(i);
+    for (int i = 0; i < max_axis; ++i ){ 
         axisTrimValue[i] = -axisRawValue[i];
-        Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
-        s->set(*ent, axisTrimValue[i]);
+        Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisTrimReset()
 {
-    Settings::Settings *s = Settings::Settings::inst();
-    for (int i = 0; i < max_axis; i++ ){ 
-        std::string is = std::to_string(i);
+    for (int i = 0; i < max_axis; ++i ){ 
         axisTrimValue[i] = 0.00;
-        Settings::SettingsEntry* ent =s->getSettingEntryByName("axisTrim" +is);
-        s->set(*ent, axisTrimValue[i]);
+        Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
     }
+    considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::stop(){

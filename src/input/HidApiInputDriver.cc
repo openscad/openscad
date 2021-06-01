@@ -38,7 +38,7 @@
 
 #include <boost/format.hpp>
 
-#include "settings.h"
+#include "Settings.h"
 #include "PlatformUtils.h"
 #include "input/HidApiInputDriver.h"
 #include "input/InputDriverManager.h"
@@ -95,7 +95,7 @@ static void hidapi_log_input(unsigned char *buf, int len)
 		std::ostringstream s;
 
 		s << (boost::format("R: %1$2d/%1$02x:") % len).str();
-		for (int idx = 0;idx < len;idx++) {
+		for (int idx = 0; idx < len; ++idx) {
 			s << (boost::format(" %1$02x") % (int)buf[idx]).str();
 		}
 		HIDAPI_LOG(s.str());
@@ -113,7 +113,7 @@ static std::string to_string(const wchar_t *wstr)
 
 static const device_id * match_device(const struct hid_device_info *info)
 {
-	for (int idx = 0;device_ids[idx].name != nullptr;idx++) {
+	for (int idx = 0; device_ids[idx].name != nullptr; ++idx) {
 		if ((device_ids[idx].vendor_id == info->vendor_id) && (device_ids[idx].product_id == info->product_id)) {
 			return &device_ids[idx];
 		}
@@ -161,7 +161,7 @@ void HidApiInputDriver::hidapi_decode_axis(const unsigned char *buf, unsigned in
         }
     } else if (buf[0] == 1 && len == 13) {
 		// Same as above, but all 6 axis is a single 13 byte HID message.
-		for (int a = 0;a < 6;a++) {
+		for (int a = 0; a < 6; ++a) {
 			const int16_t i = buf[2 * a + 1] | (buf[2 * a + 2] << 8);
 			double val = (double)i / 350.0;
 			if (fabs(val) > 0.01) {
@@ -182,7 +182,7 @@ void HidApiInputDriver::hidapi_decode_button(const unsigned char *buf, unsigned 
         const std::bitset<16> bits_curr{current};
         const std::bitset<16> bits_last{buttons};
 
-        for (int i = 0;i < 16;i++) {
+        for (int i = 0; i < 16; ++i) {
             if (bits_curr.test(i) != bits_last.test(i)) {
                 InputEvent *event = new InputEventButtonChanged(i, bits_curr.test(i));
                 InputDriverManager::instance()->sendEvent(event);
@@ -258,8 +258,7 @@ std::pair<hid_device *, const struct device_id *> HidApiInputDriver::enumerate()
 
 bool HidApiInputDriver::open()
 {
-	const auto *s = Settings::Settings::inst();
-	if (s->get(Settings::Settings::inputEnableDriverHIDAPILog).toBool()) {
+	if (Settings::Settings::inputEnableDriverHIDAPILog.value()) {
 		logtime = ch::system_clock::now();
 		logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
 	}

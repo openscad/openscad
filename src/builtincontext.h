@@ -11,14 +11,11 @@ public:
 	~BuiltinContext() {}
 
 	void init() override;
-	ValuePtr evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const override;
-	class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const override;
+	boost::optional<CallableFunction> lookup_local_function(const std::string &name, const Location &loc) const override;
+	boost::optional<InstantiableModule> lookup_local_module(const std::string &name, const Location &loc) const override;
 
 protected:
-	BuiltinContext();
-
-private:
-	std::shared_ptr<BuiltinContext> self;
+	BuiltinContext(EvaluationSession* session);
 
 	friend class Context;
 };

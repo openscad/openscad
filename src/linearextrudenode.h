@@ -12,7 +12,7 @@ public:
 		fn = fs = fa = height = twist = 0;
 		origin_x = origin_y = 0;
 		scale_x = scale_y = 1;
-		center = has_twist = false;
+		center = has_twist = has_slices = false;
 	}
 	std::string toString() const override;
 	std::string name() const override { return "linear_extrude"; }
@@ -20,7 +20,7 @@ public:
 	int convexity, slices;
 	double fn, fs, fa, height, twist;
 	double origin_x, origin_y, scale_x, scale_y;
-	bool center, has_twist;
+	bool center, has_twist, has_slices;
 	Filename filename;
 	std::string layername;
 };

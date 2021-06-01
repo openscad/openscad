@@ -3,7 +3,7 @@ jobs:
   openscad-mxe-32bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/mxe-i686-deps:latest
+      - image: openscad/mxe-i686-gui:latest
     steps:
       - checkout
       - run:
@@ -34,7 +34,7 @@ jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
     docker:
-      - image: openscad/mxe-x86_64-deps:latest
+      - image: openscad/mxe-x86_64-gui:latest
     steps:
       - checkout
       - run:
@@ -78,18 +78,20 @@ jobs:
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
-              qmake -v
-              qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+              git submodule update --init
+              mkdir build && cd build
+              cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j2
-              make install INSTALL_ROOT=AppDir
+              make install DESTDIR=../AppDir
+              cd ..
               export PATH=/appimage/usr/bin:"$PATH"
-              linuxdeploy --plugin qt --output appimage --appdir AppDir
+              VERSION="$OPENSCAD_VERSION" linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
-                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import
-                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --detach-sign --armor"
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
                   for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
                   rm -rf ~/.gnupg
               else
@@ -100,7 +102,7 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: "10.1.0"
+      xcode: 12.2.0
     steps:
       - checkout
       - run:
@@ -113,37 +115,36 @@ jobs:
               export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=e23669890acd05fdbd5868828f3b9f14bd390a045bdd02827a96f5cb08a42e1a44b9bd4d7e71c3e28389548281631f43e5bef4814857126020707468a6fa710d
               MACPORTS_CACHE_SHA512=8a50e1410079bcc8519017c40709dfcae77720daffdbfa217cf131da5c119386e052cf2b0afcd114b0c535c45f0dae4f227c3f60f47fe5bfcdb1f0d0436719a6
-              LIBRARIES_CACHE_SHA512=b024093094bfffb14ca3afd1c36967a2015ef79ff409685eca75ac5e2546b7ba3a899de1ac7e3e34ee961b1eb6f77d01aef8b87df752a150262cbc2bdc6ccd78
+              LIBRARIES_CACHE_SHA512=1780aed456ef3a68e0264cc0af675232637a2224cf47738dbfa303c1b89e796d6945d6a7e847d2f7976776e8a848735dd80ed81bc147cbf7193156edf3840c89
               CI_BASEDIR=/Users/distiller/project
               export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
               MACPORTS=MacPorts-2.5.4
-              MACPORTS_CACHE=macports.tar.bz2
-              LIBRARIES_CACHE=libraries.tar.bz2
+              MACPORTS_CACHE=macports-circleci.tar.bz2
+              LIBRARIES_CACHE=libraries-circleci.tar.bz2
               mkdir /tmp/out
               mkdir -p "$OPENSCAD_LIBRARIES"
-              ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/circleci/"$MACPORTS_CACHE" ) || true
-              ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/circleci/"$LIBRARIES_CACHE" ) || true
+              ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" ) || true
+              ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" ) || true
               sudo mkdir -p /opt/local
               sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
               if [ -f /opt/local/bin/port ]; then
-                  if [ "$(shasum -a 512 /tmp/$MACPORTS_CACHE | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
+                  if [ "$(shasum -a 512 /tmp/"$MACPORTS_CACHE" | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
                       echo "Failed to match sha512 for $MACPORTS_CACHE"
                       exit 1
                   fi
-                  if [ -f /tmp/libraries.tar.bz2 ]; then
-                      tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/libraries.tar.bz2 || true
-                      if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
+                  if [ -f /tmp/"$LIBRARIES_CACHE" ]; then
+                      tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/"$LIBRARIES_CACHE" || true
+                      if [ "$(shasum -a 512 /tmp/"$LIBRARIES_CACHE" | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
                           echo "Failed to match sha512 for $LIBRARIES_CACHE"
                           exit 1
                       fi
                   fi    
-                  export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig
-                  export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
-                  export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
+                  echo "Start building dependencies: $(date)"
+                  export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
+                  export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
+                  export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
                   echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-                  # Our own Qt
                   export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-                  unset QMAKESPEC
                   ./scripts/macosx-build-dependencies.sh double_conversion
                   ./scripts/macosx-build-dependencies.sh eigen
                   ./scripts/macosx-build-dependencies.sh gmp
@@ -160,6 +161,9 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh hidapi
                   ./scripts/macosx-build-dependencies.sh libuuid
                   ./scripts/macosx-build-dependencies.sh lib3mf
+                  ./scripts/macosx-build-dependencies.sh poppler
+                  ./scripts/macosx-build-dependencies.sh pixman
+                  ./scripts/macosx-build-dependencies.sh cairo
                   ./scripts/macosx-build-dependencies.sh glib2
                   ./scripts/macosx-build-dependencies.sh boost
                   ./scripts/macosx-build-dependencies.sh cgal
@@ -169,12 +173,17 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh -d sparkle
                   tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
                   shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+                  export GMP_DIR="$OPENSCAD_LIBRARIES"
+                  export MPFR_DIR="$OPENSCAD_LIBRARIES"
+                  echo "Start building OpenSCAD: $(date)"
                   export NUMCPU=4
                   time ./scripts/release-common.sh -snapshot
+                  cd build
                   OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
                   shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
                   shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
                   cp -v "$OPENSCAD_NAME"* /tmp/out/
+                  echo "Finished building OpenSCAD: $(date)"
               else
                   echo "MacPorts not found, installing $MACPORTS"
                   MACPORTSFILE="$MACPORTS".tar.bz2
@@ -199,34 +208,54 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  master-build:
     jobs:
       - openscad-mxe-32bit:
           context: secret-context
           filters:
               branches:
-                  ignore:
-                      - coverity_scan
-                      - /^(?i:continuous)$/
+                  only:
+                      - master
       - openscad-mxe-64bit:
           context: secret-context
           filters:
               branches:
-                  ignore:
-                      - coverity_scan
-                      - /^(?i:continuous)$/
+                  only:
+                      - master
       - openscad-appimage-64bit:
           context: secret-context
           filters:
               branches:
+                  only:
+                      - master
+  branch-build:
+    jobs:
+      - openscad-mxe-32bit:
+          filters:
+              branches:
                   ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-mxe-64bit:
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-appimage-64bit:
+          filters:
+              branches:
+                  ignore:
+                      - master
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-macos:
           filters:
               branches:
                   only:
-                      - circleci-macos
+                      - /.*-macos/
   scheduled:
     triggers:
       - schedule:

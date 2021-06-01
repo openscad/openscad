@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #
 # Simple tool to validate an STL.
@@ -15,50 +15,75 @@
 # Licence: GPL V2
 #
 
-import sys
-import io
-import hashlib
-import os
-import subprocess
-import math
+import sys, io, hashlib, os, subprocess, struct, math
 from collections import Counter
 
 def read_stl(filename):
     triangles = list()
-    with open(filename, "r") as fd:
-        triangle = {
-            'normal': [0, 0, 0],
-            'points': list()
-        }
-        for line in fd:
-            line = line.strip()
-            if line.startswith('solid'):
-                continue
-            elif line.startswith('endsolid'):
-                continue
-            elif line.startswith('outer'):
-                continue
-            elif line.startswith('facet'):
-                parts = line.split(' ')
-                for i in range(2, 5):
-                    triangle['normal'][i-2] = float(parts[i])
-                continue
-            elif line.startswith('vertex'):
-                parts = line.split(' ')
-                point = [0, 0, 0]
-                for i in range(1, 4):
-                    point[i-1] = float(parts[i])
-                triangle['points'].append(point)
-                continue
-            elif line.startswith('endloop'):
-                continue
-            elif line.startswith('endfacet'):
-                triangles.append(triangle)
-                triangle = {
-                    "normal": [0, 0, 0],
-                    "points": list()
-                }
-                continue
+
+    with open(filename, "rb") as fd:
+        start = fd.read(5)
+        if start == b'solid':
+            stl_type = 'ascii'
+        else:
+            stl_type = 'binary'
+  
+    print(start)
+
+    if stl_type == 'ascii':
+        with open(filename, "r") as fd:
+            triangle = {
+                'normal': [0, 0, 0],
+                'points': list()
+            }
+            for line in fd:
+                line = line.strip()
+                if line.startswith('solid'):
+                    continue
+                elif line.startswith('endsolid'):
+                    continue
+                elif line.startswith('outer'):
+                    continue
+                elif line.startswith('facet'):
+                    parts = line.split(' ')
+                    for i in range(2, 5):
+                        triangle['normal'][i-2] = float(parts[i])
+                    continue
+                elif line.startswith('vertex'):
+                    parts = line.split(' ')
+                    point = [0, 0, 0]
+                    for i in range(1, 4):
+                        point[i-1] = float(parts[i])
+                    triangle['points'].append(point)
+                    continue
+                elif line.startswith('endloop'):
+                    continue
+                elif line.startswith('endfacet'):
+                    triangles.append(triangle)
+                    triangle = {
+                        "normal": [0, 0, 0],
+                        "points": list()
+                    }
+                    continue
+    else:  # binary
+        with open(filename, "rb") as fd:
+            data = fd.read()
+            count = int.from_bytes(data[80:84], byteorder='little')
+            for offset in range(84, 84+count*(12*4+2), 12*4+2):
+                try:
+                    triangle = {
+                        'points': list()
+                    }
+                    triangle['normal'] = list(
+                        struct.unpack('fff', data[offset:offset+12]))
+                    for p in range(1,4):
+                        pnt = struct.unpack('fff',
+                            data[offset+p*12:offset+p*12+12])
+                        triangle['points'].append(pnt)
+                    triangles.append(triangle)
+                except struct.error:
+                    print("Invalid binary stl format")
+                    return None
 
     return Mesh(
         triangles=triangles
@@ -86,6 +111,14 @@ class Mesh():
 
 def validateSTL(filename):
     mesh = read_stl(filename);
+
+    if mesh is None:
+        print("Loading error")
+        return False
+
+    if len(mesh.triangles) < 1:
+        print("No triangles found")
+        return False
     
     if len([n[i] for i in range(0,3) for n in mesh.points if math.isinf(n[i]) or math.isnan(n[i])]):
         print("NaN of Inf vertices found")

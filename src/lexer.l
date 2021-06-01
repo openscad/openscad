@@ -34,10 +34,11 @@
 #include "parsersettings.h"
 #include "Assignment.h"
 #include "parser.hxx"
-#include "FileModule.h"
+#include "SourceFile.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
@@ -57,7 +58,7 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
-extern FileModule *rootmodule;
+extern SourceFile *rootfile;
 
 #define YY_INPUT(buf,result,max_size) {   \
   if (yyin && yyin != stdin) {            \
@@ -154,7 +155,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 							BEGIN(INITIAL);
 							fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
 							if (fullpath.empty()) {
-								PRINTB("WARNING: Can't open library '%s'.", filename);
+							LOG(message_group::Warning,Location::NONE,"","Can't open library '%1$s'.",filename);
 								parserlval.text = strdup(filename.c_str());
 							} else {
 								handle_dep(fullpath.generic_string());
@@ -294,6 +295,11 @@ std::shared_ptr<fs::path>  sourcefile()
   return parser_sourcefile;
 }
 
+bool lexer_is_main_file()
+{
+  return loc_stack.empty();
+}
+
 /*
   Rules for include <path/file>
   1) include <sourcepath/path/file>
@@ -306,11 +312,11 @@ void includefile(const Location& loc)
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcefile()->parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootmodule->registerInclude(localpath.generic_string(), fullpath.generic_string(), loc_stack.empty() ? loc : Location::NONE);
+    rootfile->registerInclude(localpath.generic_string(), fullpath.generic_string(), lexer_is_main_file() ? loc : Location::NONE);
   }
   else {
-    rootmodule->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
-    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
+    rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
+    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
     return;
   };
 
@@ -323,7 +329,7 @@ void includefile(const Location& loc)
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open include file '%s'.", localpath.generic_string());
+    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();
     return;
   }

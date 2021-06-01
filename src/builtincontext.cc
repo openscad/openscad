@@ -1,53 +1,56 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "builtincontext.h"
 #include "builtin.h"
+#include "builtincontext.h"
 #include "expression.h"
 #include "function.h"
 #include "ModuleInstantiation.h"
 #include "printutils.h"
-#include "evalcontext.h"
+#include "boost-utils.h"
 
-BuiltinContext::BuiltinContext() : Context()
+BuiltinContext::BuiltinContext(EvaluationSession* session) : Context(session)
 {
 }
 
 void BuiltinContext::init()
 {
 	for(const auto &assignment : Builtins::instance()->getAssignments()) {
-		this->set_variable(assignment->name, assignment->expr->evaluate(shared_from_this()));
+		this->set_variable(assignment->getName(), assignment->getExpr()->evaluate(shared_from_this()));
 	}
 
-	this->set_constant("PI", ValuePtr(M_PI));
+	this->set_variable("PI", M_PI);
 }
 
-ValuePtr BuiltinContext::evaluate_function(const std::string &name, const std::shared_ptr<EvalContext>& evalctx) const
+boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const std::string &name, const Location &loc) const
 {
 	const auto &search = Builtins::instance()->getFunctions().find(name);
 	if (search != Builtins::instance()->getFunctions().end()) {
-		AbstractFunction *f = search->second;
-		if (f->is_enabled()) return f->evaluate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), evalctx);
-		else PRINTB("WARNING: Experimental builtin function '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
+		BuiltinFunction *f = search->second;
+		if (f->is_enabled()) {
+			return CallableFunction{f};
+		}
+		
+		LOG(message_group::Warning,loc,documentRoot(),"Experimental builtin function '%1$s' is not enabled",name);
 	}
-	return Context::evaluate_function(name, evalctx);
+	return Context::lookup_local_function(name, loc);
 }
 
-class AbstractNode *BuiltinContext::instantiate_module(const class ModuleInstantiation &inst, const std::shared_ptr<EvalContext>& evalctx) const
+boost::optional<InstantiableModule> BuiltinContext::lookup_local_module(const std::string &name, const Location &loc) const
 {
-	const std::string &name = inst.name();
 	const auto &search = Builtins::instance()->getModules().find(name);
 	if (search != Builtins::instance()->getModules().end()) {
 		AbstractModule *m = search->second;
 		if (!m->is_enabled()) {
-			PRINTB("WARNING: Experimental builtin module '%s' is not enabled, %s", name % evalctx->loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Warning,loc,documentRoot(),"Experimental builtin module '%1$s' is not enabled",name);
 		}
 		std::string replacement = Builtins::instance()->instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("The %s() module will be removed in future releases. Use %s instead. %s", name % replacement % evalctx->loc.toRelativeString(this->documentPath()));
+			LOG(message_group::Deprecated,loc,documentRoot(),"The %1$s() module will be removed in future releases. Use %2$s instead.",name,replacement);
 		}
-		return m->instantiate((const_cast<BuiltinContext *>(this))->get_shared_ptr(), &inst, evalctx);
+		if (m->is_enabled()) {
+			return InstantiableModule{get_shared_ptr(), m};
+		}
 	}
-	return Context::instantiate_module(inst, evalctx);
+	return Context::lookup_local_module(name, loc);
 }
-

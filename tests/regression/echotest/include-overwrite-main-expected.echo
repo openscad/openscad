@@ -1,6 +1,6 @@
-WARNING: overwritten was assigned on line 12 but was overwritten on line 16
-WARNING: after was assigned on line 15 of "include-overwrite-main.scad" but was overwritten on line 2 of "include-overwrite-after.scad"
-WARNING: overwriteInuse was assigned on line 1 of "include-overwrite-use.scad" but was overwritten on line 2
+WARNING: overwritten was assigned on line 12 but was overwritten in file include-overwrite-main.scad, line 16
+WARNING: after was assigned on line 15 of "include-overwrite-main.scad" but was overwritten in file include-overwrite-after.scad, line 2
+WARNING: overwriteInuse was assigned on line 1 of "include-overwrite-use.scad" but was overwritten in file include-overwrite-use.scad, line 2
 ECHO: "Can a variable be used when it assigned later? true"
 ECHO: "Is overwriting possible? true"
 ECHO: "Does an include before the assignment take priority? false"

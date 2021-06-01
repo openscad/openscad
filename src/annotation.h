@@ -9,12 +9,11 @@ class Annotation
 {
 public:
 	Annotation(const std::string &name, shared_ptr<class Expression> expr);
-	virtual ~Annotation();
 	
-	virtual void print(std::ostream &stream, const std::string &indent) const;
-	const std::string &getName() const;
-	virtual class ValuePtr evaluate(std::shared_ptr<class Context> ctx) const;
-	
+	void print(std::ostream &stream, const std::string &indent) const;
+	const std::string &getName() const { return name; }
+	const shared_ptr<Expression>& getExpr() const { return expr; }
+
 private:
 	std::string name;
 	shared_ptr<Expression> expr;

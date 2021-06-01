@@ -63,16 +63,30 @@ primitives, each having a CSG type associated with it.
 	A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
 */
 
+shared_ptr<CSGNode> CSGNode::createEmptySet() {
+	return shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), "empty()", 0));
+}
+
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
 {
-	// In case we're creating a CSG terms from a pruned tree, left/right can be nullptr
-	if (!right) {
+	// Note that shared_ptr<CSGNode> == nullptr is different from having a CSGNode with shared_ptr<Geometry> geom == nullptr
+	// The former indicates lack of a geometry node (could be echo or assert node), and the latter represents the empty set of geometry.
+	if (!left && !right) {
+		return CSGNode::createEmptySet();
+	} else if (!left && right) {
+		return right;
+	} else if (left && !right) {
+		return left;
+	} else {
+		// In case we're creating a CSG term from a pruned tree, left or right may be the empty set
+		if (right->isEmptySet()) {
 		if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE) return left;
 		else return right;
 	}
-	if (!left) {
+		if (left->isEmptySet()) {
 		if (type == OpenSCADOperator::UNION) return right;
 		else return left;
+	}
 	}
 
   // Pruning the tree. For details, see "Solid Modeling" by Goldfeather:
@@ -85,7 +99,7 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
 		BoundingBox newbox(newmin, newmax);
 		if (newbox.isNull()) {
-			return shared_ptr<CSGNode>(); // Prune entire product
+			return CSGNode::createEmptySet(); // Prune entire product
 		}
 	}
 	else if (type == OpenSCADOperator::DIFFERENCE) {
@@ -100,8 +114,8 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
 	return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: label(label), matrix(matrix), color(color)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label, const int index)
+	: label(label), matrix(matrix), color(color), index(index)
 {
 	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
@@ -180,10 +194,10 @@ std::string CSGOperation::dump() const
 			}
 
 			out << '(';
-			
+
 			// mark current node as postfix before (maybe) pushing left child
 			ispostfix = std::get<2>(callstack.top()) = true;
-			
+
 			if(auto opl = dynamic_pointer_cast<CSGOperation>(node->left())) {
 				callstack.emplace(opl.get(), lpostfix, false);
 				continue;
@@ -191,9 +205,9 @@ std::string CSGOperation::dump() const
 				out << node->left()->dump() << lpostfix;
 			}
 		}
-		
+
 		// postfix traversal of node, handle right child
-		if (ispostfix) { 
+		if (ispostfix) {
 			callstack.pop();
 			if(auto opr = dynamic_pointer_cast<CSGOperation>(node->right())) {
 				callstack.emplace(opr.get(), ")", false);
@@ -216,10 +230,10 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 	do {
 		auto args = callstack.top();
 		callstack.pop();
-		csgnode = std::get<0>(args); 
-		type = std::get<1>(args); 
+		csgnode = std::get<0>(args);
+		type = std::get<1>(args);
 		flags = std::get<2>(args);
-			
+
 		auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
 		if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
@@ -232,7 +246,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 			else if (type == OpenSCADOperator::INTERSECTION) {
 				this->currentlist = &this->currentproduct->intersections;
 			}
-			this->currentlist->push_back(CSGChainObject(leaf, newflags));
+			this->currentlist->emplace_back(leaf, newflags);
 		} else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
 			assert(op->left() && op->right());
 			callstack.emplace(op->right(), op->getType(), newflags);

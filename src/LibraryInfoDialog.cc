@@ -25,7 +25,7 @@ void LibraryInfoDialog::update_library_info(const QString& rendererInfo)
     info += rendererInfo;
 
     //Parse infos and make it html
-    info = info.replace("\n", "<br/>");
+    info = info.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br/>");
 
     auto end = false;
     int startIndex = 0;

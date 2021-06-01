@@ -10,6 +10,7 @@
 #include "PlatformUtils.h"
 #include "openscad.h"
 #include "version.h"
+#include "feature.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -32,8 +33,18 @@
 #define LIBZIP_VERSION "<not enabled>"
 #endif
 
+#ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+#ifndef OPENCSG_VERSION_STRING
+#define OPENCSG_VERSION_STRING "unknown, < 1.3.2"
+#endif
+#else
+#define OPENCSG_VERSION_STRING "<not enabled>"
+#endif
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
+extern const std::string get_cairo_version();
 extern const std::string get_lib3mf_version();
 extern const std::string get_fontconfig_version();
 extern const std::string get_harfbuzz_version();
@@ -74,10 +85,6 @@ std::string LibraryInfo::info()
 	std::string debugstatus("Yes");
 #else
 	std::string debugstatus("No");
-#endif
-
-#ifndef OPENCSG_VERSION_STRING
-#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
 
 #ifdef QT_VERSION
@@ -129,9 +136,12 @@ std::string LibraryInfo::info()
 	  << "\nfontconfig version: " << get_fontconfig_version()
 	  << "\nfreetype version: " << get_freetype_version()
 	  << "\nharfbuzz version: " << get_harfbuzz_version()
+	  << "\ncairo version: " << get_cairo_version()
 	  << "\nlib3mf version: " << get_lib3mf_version()
+#ifdef ENABLE_EXPERIMENTAL
 	  << "\nFeatures: " << Feature::features()
-	  << "\nApplication Path: " << PlatformUtils::applicationPath()
+#endif	  
+		<< "\nApplication Path: " << PlatformUtils::applicationPath()
 	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
 	  << "\nUser Documents Path: " << PlatformUtils::userDocumentsPath()
 	  << "\nResource Path: " << PlatformUtils::resourceBasePath()
@@ -141,15 +151,15 @@ std::string LibraryInfo::info()
 	  << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
 	  << "\nOpenSCAD library path:\n";
 
-	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
-		s << "  " << *it << "\n";
+	for (const auto &path : librarypath) {
+		s << "  " << path << "\n";
 	}
 
 	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == nullptr ? "<not set>" : env_font_path)
 	  << "\nOpenSCAD font path:\n";
 	
-	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {
-		s << "  " << *it << "\n";
+	for (const auto &path : fontpath) {
+		s << "  " << path << "\n";
 	}
 
 	return s.str();

@@ -11,19 +11,27 @@
 
 /**
  * Feature registration map/list for later lookup. This must be initialized
- * before the static feature instances as those register with this map. 
+ * before the static feature instances as those register with this map.
+ * NOTE: All features double-register pointers to themselves in these two
+ * structures, and can be accessed from either.
  */
-Feature::map_t Feature::feature_map;
-Feature::list_t Feature::feature_list;
+Feature::map_t Feature::feature_map;  // Double-listed values. ----v
+Feature::list_t Feature::feature_list;  // Double-listed values. --^
 
 /*
  * List of features, the names given here are used in both command line
  * argument to enable the option and for saving the option value in GUI
  * context.
+ * NOTE: The order of features listed in the gui is determined by the
+ * (well-defined) order of object construction, matching the order of the
+ * const Features listed below.
  */
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
-const Feature Feature::ExperimentalFunctionLiterals("function-literals", "Enable support for function literals");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");
+const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing", "Enable indexing in vertex object renderers");
+const Feature Feature::ExperimentalVxORenderersDirect("vertex-object-renderers-direct", "Enable direct buffer writes in vertex object renderers");
+const Feature Feature::ExperimentalVxORenderersPrealloc("vertex-object-renderers-prealloc", "Enable preallocating buffers in vertex object renderers");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -40,34 +48,39 @@ const std::string &Feature::get_name() const
 {
 	return name;
 }
-    
+
 const std::string &Feature::get_description() const
 {
 	return description;
 }
-    
+
 bool Feature::is_enabled() const
 {
+#ifdef ENABLE_EXPERIMENTAL
 	return enabled;
+#else
+	return false;
+#endif
 }
 
 void Feature::enable(bool status)
 {
 	enabled = status;
 }
-    
+
+// Note, features are also accessed by iterator with begin/end.
 void Feature::enable_feature(const std::string &feature_name, bool status)
 {
 	auto it = feature_map.find(feature_name);
 	if (it != feature_map.end()) {
 		it->second->enable(status);
 	} else {
-		PRINTB("WARNING: Ignoring request to enable unknown feature '%s'.", feature_name);
+		LOG(message_group::Warning,Location::NONE,"","Ignoring request to enable unknown feature '%1$s'.",feature_name);
 	}
 }
 
 Feature::iterator Feature::begin()
-{	
+{
 	return feature_list.begin();
 }
 

@@ -67,7 +67,9 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		if (err) { 
+			LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
+		}
 		else {
 			append_geometry(ps, mesh);
 		}
@@ -90,16 +92,16 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
 	const auto& v = mesh.vertices.getArray();
 	size_t numverts = mesh.vertices.size();
-	for (size_t i=0;i<numverts;i++) {
+	for (size_t i=0; i<numverts; ++i) {
 		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
 	}
 	size_t cnt = 0;
-	for (size_t i=0;i<mesh.numfaces;i++) {
+	for (size_t i=0; i<mesh.numfaces; ++i) {
 		size_t nverts = 0;
 		while (mesh.indices[cnt++] != -1) nverts++;
 		output << nverts;
 		cnt -= nverts + 1;
-		for (size_t n=0;n<nverts;n++) output << " " << mesh.indices[cnt++];
+		for (size_t n=0; n<nverts; ++n) output << " " << mesh.indices[cnt++];
 		output << "\n";
         cnt++; // Skip the -1 marker
 	}

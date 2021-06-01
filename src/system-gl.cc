@@ -35,7 +35,7 @@ std::string glew_extensions_dump()
 	if ( gl_version() >= 3.0 ) {
     GLint numexts = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &numexts);
-    for ( int i=0;i<numexts;i++ ) {
+    for ( int i=0; i<numexts; ++i ) {
 			tmp += (const char *) glGetStringi(GL_EXTENSIONS, i);
 			tmp += " ";
 		}
@@ -47,7 +47,7 @@ std::string glew_extensions_dump()
 	std::sort(extensions.begin(), extensions.end());
 	std::ostringstream out;
 	out << "GL Extensions:";
-	for (unsigned int i=0;i<extensions.size();i++) {
+	for (unsigned int i=0; i<extensions.size(); ++i) {
 		out << extensions[i] << "\n";
 	}
 	return out.str();

@@ -201,12 +201,16 @@ void QGLView::paintGL()
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
+  if (!mouse_drag_active) {
+    mouse_drag_moved = false;
+  }
+
   mouse_drag_active = true;
   last_mouse = event->globalPos();
 }
 
 void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
-
+	this->makeCurrent();
 	setupCamera();
 
 	int viewport[4];
@@ -217,14 +221,20 @@ void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-	double x = event->pos().x() * this->getDPI();
-	double y = viewport[3] - event->pos().y() * this->getDPI();
+	const double dpi = this->getDPI();
+	const double x = event->pos().x() * dpi;
+	const double y = viewport[3] - event->pos().y() * dpi;
 	GLfloat z = 0;
 
 	glGetError(); // clear error state so we don't pick up previous errors
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 	auto glError = glGetError();
 	if (glError != GL_NO_ERROR) {
+		if (statusLabel) {
+			auto status = QString("Center View: OpenGL Error reading Pixel: %s")
+				.arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
+			statusLabel->setText(status);
+		}
 		return;
 	}
 
@@ -249,60 +259,64 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
-  auto this_mouse = event->globalPos();
-  double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
-  double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
-  if (mouse_drag_active) {
-    if (event->buttons() & Qt::LeftButton
+	auto this_mouse = event->globalPos();
+	double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
+	double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
+	if (mouse_drag_active) {
+    mouse_drag_moved = true;
+		if (event->buttons() & Qt::LeftButton
 #ifdef Q_OS_MAC
-            && !(event->modifiers() & Qt::MetaModifier)
+				&& !(event->modifiers() & Qt::MetaModifier)
 #endif
-      ) {
-      // Left button rotates in xz, Shift-left rotates in xy
-      // On Mac, Ctrl-Left is handled as right button on other platforms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-                rotate(dy, dx, 0.0, true);
-	}
-      else {
-                rotate(dy, 0.0, dx, true);
-	}
+				) {
+			// Left button rotates in xz, Shift-left rotates in xy
+			// On Mac, Ctrl-Left is handled as right button on other platforms
+			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+				rotate(dy, dx, 0.0, true);
+			} else {
+				rotate(dy, 0.0, dx, true);
+			}
 
-      normalizeAngle(cam.object_rot.x());
-      normalizeAngle(cam.object_rot.y());
-      normalizeAngle(cam.object_rot.z());
-    } else {
-      // Right button pans in the xz plane
-      // Middle button pans in the xy plane
-      // Shift-right and Shift-middle zooms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        zoom(-12.0 * dy, true);
-      } else {
-        double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-        double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
-        double my = 0;
-#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-                if (event->buttons() & Qt::MidButton) {
-#else
-                if (event->buttons() & Qt::MiddleButton) {
-#endif
-                    my = mz;
-                    mz = 0;
-                    // actually lock the x-position
-                    // (turns out to be easier to use than xy panning)
-                    mx = 0;
-                }
+			normalizeAngle(cam.object_rot.x());
+			normalizeAngle(cam.object_rot.y());
+			normalizeAngle(cam.object_rot.z());
+		} else {
+			// Right button pans in the xz plane
+			// Middle button pans in the xy plane
+			// Shift-right and Shift-middle zooms
+			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+				zoom(-12.0 * dy, true);
+			} else {
+				double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+				double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+				double my = 0;
+				if (event->buttons() & Qt::MiddleButton) {
+					my = mz;
+					mz = 0;
+					// actually lock the x-position
+					// (turns out to be easier to use than xy panning)
+					mx = 0;
+				}
 
-                translate(mx, my, mz, true);
-            }
-        }
-    }
-    last_mouse = this_mouse;
+				translate(mx, my, mz, true);
+			}
+		}
+	}
+	last_mouse = this_mouse;
 }
 
-void QGLView::mouseReleaseEvent(QMouseEvent*)
+void QGLView::mouseReleaseEvent(QMouseEvent *event)
 {
   mouse_drag_active = false;
   releaseMouse();
+
+  if (!mouse_drag_moved
+      && (event->button() == Qt::RightButton)) {
+    QPoint point = event->pos();
+    //point.setY(this->height() - point.y());
+    emit doSelectObject(point);
+  }
+  mouse_drag_moved = false;
 }
 
 const QImage & QGLView::grabFrame()
@@ -317,7 +331,7 @@ const QImage & QGLView::grabFrame()
 	return this->frame;
 }
 
-bool QGLView::save(const char *filename)
+bool QGLView::save(const char *filename) const
 {
   return this->frame.save(filename, "PNG");
 }
@@ -341,17 +355,13 @@ void QGLView::setColorScheme(const ColorScheme &cs) {
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-  const auto pos = event->pos();
-#if QT_VERSION >= 0x050000
-    const int v = event->angleDelta().y();
-#else
-    const int v = event->delta();
-#endif
-    if(this->mouseCentricZoom){
-        zoomCursor(pos.x(), pos.y(), v);
-    }else{
-        zoom(v, true);
-    }
+	const auto pos = event->pos();
+	const int v = event->angleDelta().y();
+	if (this->mouseCentricZoom) {
+		zoomCursor(pos.x(), pos.y(), v);
+	} else {
+		zoom(v, true);
+	}
 }
 
 void QGLView::ZoomIn(void)
@@ -375,7 +385,7 @@ void QGLView::zoomCursor(int x, int y, int zoom)
   const auto old_dist = cam.zoomValue();
   this->cam.zoom(zoom, true);
   const auto dist = cam.zoomValue();
-  const auto ratio = old_dist / dist - 1.0; 
+  const auto ratio = old_dist / dist - 1.0;
   // screen coordinates from -1 to 1
   const auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
   const auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;

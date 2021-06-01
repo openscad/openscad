@@ -13,7 +13,7 @@ PolySet *import_off(const std::string &filename, const Location &loc)
 	CGAL_Polyhedron poly;
 	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
 	if (!file.good()) {
-		PRINTB("WARNING: Can't open import file '%s', import() at line %d", filename % loc.firstLine());
+		LOG(message_group::Warning,Location::NONE,"","Can't open import file '%1$s', import() at line %2$d",filename,loc.firstLine());
 	}
 	else {
 		file >> poly;
@@ -21,7 +21,7 @@ PolySet *import_off(const std::string &filename, const Location &loc)
 		CGALUtils::createPolySetFromPolyhedron(poly, *p);
 	}
 #else
-	PRINTB("WARNING: OFF import requires CGAL, import() at line %d", loc.firstLine());
+	LOG(message_group::Warning,Location::NONE,"","OFF import requires CGAL, import() at line %2$d",filename,loc.firstLine());
 #endif
 	return p;
 }

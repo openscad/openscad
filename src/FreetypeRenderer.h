@@ -56,25 +56,25 @@ public:
         void set_segments(double segments) {
             this->segments = segments;
         }
-        void set_text(std::string text) {
+        void set_text(const std::string &text) {
             this->text = text;
         }
-        void set_font(std::string font) {
+        void set_font(const std::string &font) {
             this->font = font;
         }
-        void set_direction(std::string direction) {
+        void set_direction(const std::string &direction) {
             this->direction = direction;
         }
-        void set_language(std::string language) {
+        void set_language(const std::string &language) {
             this->language = language;
         }
-        void set_script(std::string script) {
+        void set_script(const std::string &script) {
             this->script = script;
         }
-        void set_halign(std::string halign) {
+        void set_halign(const std::string &halign) {
             this->halign = halign;
         }
-        void set_valign(std::string valign) {
+        void set_valign(const std::string &valign) {
             this->valign = valign;
         }
         friend std::ostream & operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
@@ -106,6 +106,7 @@ public:
 	std::vector<const class Geometry *> render(const FreetypeRenderer::Params &params) const;
 private:
 	  const static double scale;
+	  const static double unscale;
     FT_Outline_Funcs funcs;
     
     class GlyphData {
@@ -113,10 +114,10 @@ private:
         GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos) {}
         unsigned int get_idx() const { return idx; };
         FT_Glyph get_glyph() const { return glyph; };
-        double get_x_offset() const { return glyph_pos->x_offset / 64.0 / 16.0; };
-        double get_y_offset() const { return glyph_pos->y_offset / 64.0 / 16.0; };
-        double get_x_advance() const { return glyph_pos->x_advance / 64.0 / 16.0; };
-        double get_y_advance() const { return glyph_pos->y_advance / 64.0 / 16.0; };
+        double get_x_offset() const { return glyph_pos->x_offset * unscale; };
+        double get_y_offset() const { return glyph_pos->y_offset * unscale; };
+        double get_x_advance() const { return glyph_pos->x_advance * unscale; };
+        double get_y_advance() const { return glyph_pos->y_advance * unscale; };
     private:
         FT_Glyph glyph;
         unsigned int idx;

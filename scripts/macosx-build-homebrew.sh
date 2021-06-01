@@ -49,7 +49,16 @@ $TAP tap openscad/homebrew-tap
 # Python 2 conflicts with Python 3 links
 brew unlink python@2
 
-for formula in pkg-config eigen boost cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache; do
+for formula in boost; do
+  log "Installing or updating formula $formula"
+  if brew ls --versions $formula; then
+    time brew upgrade $formula
+  else
+    time brew install $formula
+  fi
+done
+
+for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
@@ -66,4 +75,4 @@ for formula in gettext qt5 qscintilla2; do
   time brew link --force $formula
 done
 
-$TAP untap openscad/homebrew-tap
+$TAP untap openscad/homebrew-tap || true

@@ -112,7 +112,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 /*!
   Capture framebuffer from OpenGL and write it to the given ostream
 */
-bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
 {
   if (!ctx) return false;
   // Read pixels from OpenGL

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # see doc/translation.txt for more info
+BASEDIR=$PWD
 
 updatepot()
 {
@@ -48,7 +49,7 @@ updatepot()
   echo error running xgettext
   exit 1
  fi
-
+ # Try --no-fuzzy-matching ?
  cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot ./locale/appdata-strings.pot"
  echo $cmd
  $cmd
@@ -77,6 +78,7 @@ updatepo()
 
 updatemo()
 {
+ SUFFIX="$1"
  for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
   mkdir -p ./locale/$LANGCODE/LC_MESSAGES
   OPTS='-c -v'
@@ -108,6 +110,14 @@ updatemo()
   fi
   cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
  fi
+
+ if test -n "$SUFFIX"
+ then
+  echo "using suffix '$SUFFIX'"
+ fi
+ cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
+ sed -i -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
+ sed -i -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
 GETTEXT_PATH=""
@@ -117,14 +127,14 @@ GETTEXT_PATH=""
 
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
+CURDIR="`realpath --relative-to=\"$TOPDIR\" \"$BASEDIR\"`"
 
 cd "$TOPDIR" || exit 1
 
 if [ "x$1" = xupdatemo ]; then
- updatemo
+ updatemo "$2"
 else
  echo "Generating POTFILES..."
- ./scripts/generate-potfiles.sh > locale/POTFILES
- updatepot && updatepo && updatemo
+ ./scripts/generate-potfiles.sh "$CURDIR" > locale/POTFILES
+ updatepot && updatepo && updatemo ""
 fi
-

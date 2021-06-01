@@ -1,5 +1,5 @@
+[![GitHub (master)](https://img.shields.io/github/checks-status/openscad/openscad/master.svg?logo=github&label=build&logoColor=black&colorA=f9d72c&style=plastic)](https://github.com/openscad/openscad/actions)
 [![Travis (master)](https://img.shields.io/travis/openscad/openscad/master.svg?logo=travis&logoColor=black&colorA=f9d72c&style=plastic)](https://travis-ci.org/openscad/openscad/)
-[![AppVeyor (master)](https://img.shields.io/appveyor/ci/kintel/openscad/master.svg?logo=appveyor&logoColor=black&colorA=f9d72c&style=plastic)](https://ci.appveyor.com/project/kintel/openscad)
 [![CircleCI (master)](https://img.shields.io/circleci/project/github/openscad/openscad/master.svg?logo=circleci&logoColor=black&colorA=f9d72c&style=plastic)](https://circleci.com/gh/openscad/openscad/tree/master)
 [![Coverity Scan](https://img.shields.io/coverity/scan/2510.svg?colorA=f9d72c&logoColor=black&style=plastic)](https://scan.coverity.com/projects/2510)
 
@@ -111,7 +111,7 @@ Follow the instructions for the platform you're compiling on below.
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
 * [cmake (2.8 ->, required by CGAL and the test framework)](https://cmake.org/)
-* [boost (1.35 ->)](https://www.boost.org/)
+* [boost (1.56 ->)](https://www.boost.org/)
 * [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)

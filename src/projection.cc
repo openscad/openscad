@@ -27,8 +27,8 @@
 #include "projectionnode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
-#include "printutils.h"
+#include "children.h"
+#include "parameters.h"
 #include "builtin.h"
 #include "polyset.h"
 
@@ -36,37 +36,17 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-class ProjectionModule : public AbstractModule
-{
-public:
-	ProjectionModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
-
-AbstractNode *ProjectionModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
+static AbstractNode* builtin_projection(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
 	auto node = new ProjectionNode(inst);
 
-	AssignmentList args{assignment("cut")};
-	AssignmentList optargs{assignment("convexity")};
-	
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
-	inst->scope.apply(evalctx);
-
-	auto convexity = c->lookup_variable("convexity", true);
-	auto cut = c->lookup_variable("cut", true);
-
-	node->convexity = static_cast<int>(convexity->toDouble());
-
-	if (cut->type() == Value::ValueType::BOOL) {
-		node->cut_mode = cut->toBool();
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"cut"}, {"convexity"});
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+	if (parameters["cut"].type() == Value::Type::BOOL) {
+		node->cut_mode = parameters["cut"].toBool();
 	}
 
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string ProjectionNode::toString() const
@@ -77,7 +57,7 @@ std::string ProjectionNode::toString() const
 
 void register_builtin_projection()
 {
-	Builtins::init("projection", new ProjectionModule(),
+	Builtins::init("projection", new BuiltinModule(builtin_projection),
 				{
 					"projection(cut = false)",
 				});
