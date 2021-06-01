@@ -107,7 +107,7 @@ namespace CGALUtils {
 			}
 		}
 		catch (const CGAL::Failure_exception &e) {
-			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DPolyhedron: %1$s", e.what());
+			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DHybrid: %1$s", e.what());
 		}
 		return nullptr;
 	}

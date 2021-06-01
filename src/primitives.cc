@@ -630,7 +630,9 @@ static AbstractNode* builtin_polyhedron(const ModuleInstantiation *inst, Argumen
 				}
 				pointIndexIndex++;
 			}
-			node->faces.push_back(std::move(face));
+			if (face.size() >= 3) {
+				node->faces.push_back(std::move(face));
+			}
 		}
 		faceIndex++;
 	}
