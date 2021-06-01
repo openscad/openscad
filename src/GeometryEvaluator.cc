@@ -1137,6 +1137,73 @@ Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*
 	return Response::AbortTraversal;
 }
 
+shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode &node)
+{
+	shared_ptr<const class Geometry> geom;
+	shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+	if (newgeom) {
+		auto Nptr = CGALUtils::getGeometryAsNefPolyhedron(newgeom);
+		if (Nptr && !Nptr->isEmpty()) {
+			Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
+			if (poly) {
+				poly->setConvexity(node.convexity);
+				geom.reset(poly);
+			}
+		}
+	}
+	return geom;
+}
+
+shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode &node)
+{
+	shared_ptr<const class Geometry> geom;
+	std::vector<const Polygon2d *> tmp_geom;
+	BoundingBox bounds;
+	for(const auto &item : this->visitedchildren[node.index()]) {
+		const AbstractNode *chnode = item.first;
+		const shared_ptr<const Geometry> &chgeom = item.second;
+		if (chnode->modinst->isBackground()) continue;
+
+		const Polygon2d *poly = nullptr;
+
+		// Clipper version of Geometry projection
+		// Clipper doesn't handle meshes very well.
+		// It's better in V6 but not quite there. FIXME: stand-alone example.
+		// project chgeom -> polygon2d
+		auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
+		if (chPS) poly = PolysetUtils::project(*chPS);
+
+		if (poly) {
+			bounds.extend(poly->getBoundingBox());
+			tmp_geom.push_back(poly);
+		}
+
+	}
+	int pow2 = ClipperUtils::getScalePow2(bounds);
+
+	ClipperLib::Clipper sumclipper;
+	for(auto poly : tmp_geom) {
+		ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly, pow2);
+		// Using NonZero ensures that we don't create holes from polygons sharing
+		// edges since we're unioning a mesh
+		result = ClipperUtils::process(result, ClipperLib::ctUnion, ClipperLib::pftNonZero);
+		// Add correctly winded polygons to the main clipper
+		sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
+		delete poly;
+	}
+
+	ClipperLib::PolyTree sumresult;
+	// This is key - without StrictlySimple, we tend to get self-intersecting results
+	sumclipper.StrictlySimple(true);
+	sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+	if (sumresult.Total() > 0) {
+		geom.reset(ClipperUtils::toPolygon2d(sumresult, pow2));
+	}
+
+	return geom;
+}
+
+
 /*!
 	input: List of 3D objects
 	output: Polygon2d
@@ -1149,86 +1216,20 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isSmartCached(node)) {
-
-			if (!node.cut_mode) {
-				ClipperLib::Clipper sumclipper;
-				for(const auto &item : this->visitedchildren[node.index()]) {
-					const AbstractNode *chnode = item.first;
-					const shared_ptr<const Geometry> &chgeom = item.second;
-					if (chnode->modinst->isBackground()) continue;
-
-					const Polygon2d *poly = nullptr;
-
-// CGAL version of Geometry projection
-// Causes crashes in createNefPolyhedronFromGeometry() for this model:
-// projection(cut=false) {
-//    cube(10);
-//    difference() {
-//      sphere(10);
-//      cylinder(h=30, r=5, center=true);
-//    }
-// }
-#if 0
-					auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
-					const PolySet *ps2d = nullptr;
-					if (chPS) ps2d = PolysetUtils::flatten(*chPS);
-					if (ps2d) {
-						auto N2d = CGALUtils::createNefPolyhedronFromGeometry(*ps2d);
-						poly = N2d->convertToPolygon2d();
-					}
-#endif
-
-// Clipper version of Geometry projection
-// Clipper doesn't handle meshes very well.
-// It's better in V6 but not quite there. FIXME: stand-alone example.
-#if 1
-					// project chgeom -> polygon2d
-					auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
-					if (chPS) poly = PolysetUtils::project(*chPS);
-#endif
-
-					if (poly) {
-						ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly);
-						// Using NonZero ensures that we don't create holes from polygons sharing
-						// edges since we're unioning a mesh
-						result = ClipperUtils::process(result,
-																					 ClipperLib::ctUnion,
-																					 ClipperLib::pftNonZero);
-						// Add correctly winded polygons to the main clipper
-						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
-					}
-
-					delete poly;
-				}
-				ClipperLib::PolyTree sumresult;
-				// This is key - without StrictlySimple, we tend to get self-intersecting results
-				sumclipper.StrictlySimple(true);
-				sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-				if (sumresult.Total() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
-			}
-			else {
-				shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
-				if (newgeom) {
-					auto Nptr = CGALUtils::getGeometryAsNefPolyhedron(newgeom);
-					if (Nptr && !Nptr->isEmpty()) {
-						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
-						if (poly) {
-							poly->setConvexity(node.convexity);
-							geom.reset(poly);
-						}
-					}
-				}
-			}
-		}
-		else {
+		if (isSmartCached(node)) {
 			geom = smartCacheGet(node, false);
+		} else {
+			if (node.cut_mode) {
+				geom = projectionCut(node);
+			} else {
+				geom = projectionNoCut(node);
+			}
 		}
 		addToParent(state, node, geom);
 		node.progress_report();
 	}
 	return Response::ContinueTraversal;
-}		
+}
 
 /*!
 	input: List of 2D or 3D objects (not mixed)
