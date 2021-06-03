@@ -7,6 +7,7 @@ thick = 10;
 rounding = 2;
 corner_size = 30;
 
+list_icons = false;
 selected_icon = undef;
 
 font = "Open Sans:style=Regular";
@@ -37,6 +38,15 @@ icons = [
     ["new"],
     ["save"],
     ["open"],
+    ["reset-view"],
+    ["view-right"],
+    ["view-top"],
+    ["view-bottom"],
+    ["view-left"],
+    ["view-front"],
+    ["view-back"],
+    ["perspective"],
+    ["orthogonal"]
 ];
 
 icon(selected_icon) {
@@ -64,20 +74,32 @@ icon(selected_icon) {
     new();
     save();
     open();
+    reset_view();
+    view_right();
+    view_top();
+    view_bottom();
+    view_left();
+    view_front();
+    view_back();
+    perspective();
+    orthogonal();
 }
 
-for (a = [ 0 : len(icons) - 1 ]) {
-    echo(icon = icons[a][0]);
+if (list_icons) {
+    for (a = [ 0 : len(icons) - 1 ]) {
+        echo(icon = icons[a][0]);
+    }
 }
 
 module icon(icon) {
     assert(len(icons) == $children, "list of icon names needs to be same length as number of child modules to icon()");
     cnt = $children;
-    cols = ceil(sqrt(cnt));
+    cols = ceil(pow(cnt, 0.55));
     if (is_undef(icon)) {
         for (i = [0:cnt - 1]) {
             pos = 200 * [i % cols + 1, floor(i / cols) + 1];
             translate(pos) {
+                %translate([width / 2, -40]) text(icons[i][0], 20, halign = "center");
                 box();
                 children(i);
             }
@@ -100,6 +122,18 @@ module inset(w) {
     difference() {
         children();
         offset(delta = -w) children();
+    }
+}
+
+module connect_points(cnt, pos) {
+    for (idx = [0:cnt - 1]) {
+        p = pos(idx);
+        hull() {
+            translate(p[0])
+                children();
+            translate(p[1])
+                children();
+        }
     }
 }
 
@@ -179,17 +213,17 @@ module line_dotted() {
     }
 }
 
-module preview_cube() {
+module preview_cube(size = 40) {
     offset(2) {
         children(0);
         rotate(-60) children(0);
         rotate(60) children(0);
-        translate([0, 40]) rotate(-60) children(0);
-        translate([0, 40]) rotate(60) children(0);
-        translate([-sin(60) * 40, cos(60) * 40]) children(0);
-        translate([sin(60) * 40, cos(60) * 40]) children(0);
-        translate([-sin(60) * 40, cos(60) * 40 + 40]) rotate(-60) children(0);
-        translate([sin(60) * 40, cos(60) * 40 + 40]) rotate(60) children(0);
+        translate([0, size]) rotate(-60) children(0);
+        translate([0, size]) rotate(60) children(0);
+        translate([-sin(60) * size, cos(60) * size]) children(0);
+        translate([sin(60) * size, cos(60) * size]) children(0);
+        translate([-sin(60) * size, cos(60) * size + size]) rotate(-60) children(0);
+        translate([sin(60) * size, cos(60) * size + size]) rotate(60) children(0);
     }
 }
 
@@ -373,4 +407,109 @@ module save() {
 	translate([6,4]*u) square([20,2]*u);
 	translate([6,8]*u) square([20,2]*u);
 	translate([6,12]*u) square([20,2]*u);
+}
+
+module reset_view() {
+    r = 0.35 * width;
+    translate([width / 2, height / 2]) {
+        difference() {
+            outline(thin) circle(r);
+            polygon([[0, 0], [-width, -width / 2], [-width, width / 2]]);
+        }
+        rotate(60) translate([0, r + thin / 2]) rotate(-10)
+            polygon([[-thin, 0], [thick, -thick], [thick, thick]]);
+    }
+}
+
+module view_direction_cube() {
+    l = 35;
+    difference() {
+        translate([0, l])
+            polygon([[0, l / 2], [thick, -thick], [-thick, -thick]]);
+        translate([0, l - 16.2])
+            scale([2, 1]) circle(thick);
+    }
+    translate([0, -l])
+        preview_cube(l)
+            line(l);
+}
+
+module view_right() {
+    translate([width / 2, height / 2]) {
+        rotate(-90)
+            view_direction_cube();
+    }
+}
+
+module view_top() {
+    translate([width / 2, height / 2]) {
+        view_direction_cube();
+    }
+}
+
+module view_bottom() {
+    translate([width / 2, height / 2]) {
+        rotate(180)
+            view_direction_cube();
+    }
+}
+
+module view_left() {
+    translate([width / 2, height / 2]) {
+        rotate(90)
+            view_direction_cube();
+    }
+}
+
+module view_front() {
+    translate([width / 2, height / 2]) {
+        l = 35;
+        translate([0, -l]) {
+            preview_cube(l)
+                line(l);
+
+            hull() {
+                circle();
+                translate([0, l]) circle();
+                translate([-sin(60) * l, cos(60) * l]) circle();
+                translate([-sin(60) * l, l + cos(60) * l]) circle();
+            }
+        }
+    }
+}
+
+module view_back() {
+    translate([width / 2, height / 2]) {
+        l = 35;
+        translate([0, -l])
+            preview_cube(l)
+                line(l);
+
+        hull() {
+            circle();
+            translate([0, l]) circle();
+            translate([-sin(-60) * l, cos(60) * l]) circle();
+            translate([-sin(-60) * l, cos(60) * l - l]) circle();
+        }
+    }
+}
+
+module perspective() {
+    s1 = 25;
+    s2 = 5;
+    o1 = [30, 30];
+    o2 = [90, 90];
+    p = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
+    connect_points(4, function(i) [o1 + s1 * p[i], o1 + s1 * p[(i + 1) % 4]]) circle(d = thin);
+    connect_points(2, function(i) [o2 + s2 * p[i], o2 + s2 * p[(i + 1) % 4]]) circle(d = thin);
+    connect_points(3, function(i) [o1 + s1 * p[i], o2 + s2 * p[i]]) circle(d = thin);
+}
+
+module orthogonal() {
+    o1 = [40, 40];
+    o2 = [60, 60];
+    p = 30 * [[-1, 1], [1, 1], [1, -1], [-1, -1]];
+    connect_points(4, function(i) [o1 + p[i], o1 + p[(i + 1) % 4]]) circle(d = thin);
+    connect_points(4, function(i) [o2 + p[i], o2 + p[(i + 1) % 4]]) circle(d = thin);
+    connect_points(4, function(i) [o1 + p[i], o2 + p[i]]) circle(d = thin);
 }

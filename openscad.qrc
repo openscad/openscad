@@ -6,8 +6,6 @@
     <file>icons/prefsInput.png</file>
     <file>icons/prefsInputAxis.png</file>
     <file>icons/prefsInputButtons.png</file>
-    <file>images/Command-Reset-32-white.png</file>
-    <file>images/Command-Reset-32.png</file>
     <file>icons/close.png</file>
     <file>icons/information-icons-error.png</file>
     <file>icons/information-icons-info.png</file>
@@ -27,33 +25,17 @@
     <file>images/export.png</file>
     <file>images/axes.png</file>
     <file>images/export-white.png</file>
-    <file>images/back.png</file>
-    <file>images/front.png</file>
     <file>images/grid.png</file>
     <file>images/openscad.png</file>
-    <file>images/right.png</file>
-    <file>images/up.png</file>
-    <file>images/bottom.png</file>
-    <file>images/left.png</file>
-    <file>images/blackUp.png</file>
     <file>images/Rotation-32.png</file>
     <file>images/Shape-Cube-32.png</file>
-    <file>images/blackbottom.png</file>
-    <file>images/rightright.png</file>
-    <file>images/blackleft.png</file>
-    <file>images/blackfront.png</file>
-    <file>images/blackback.png</file>
     <file>images/blackaxes.png</file>
     <file>images/wireframe1.png</file>
     <file>images/surface.png</file>
     <file>images/surfaceWhite.png</file>
     <file>images/wireframeWhite.png</file>
-    <file>images/orthogonal.png</file>
     <file>images/cross.png</file>
-    <file>images/perspective1.png</file>
     <file>images/animate.png</file>
-    <file>images/orthogonalwhite.png</file>
-    <file>images/perspective1white.png</file>
     <file>images/crosswhite.png</file>
     <file>icons/background.png</file>
     <file>images/scalemarkers.png</file>
@@ -107,5 +89,23 @@
     <file>resources/icons/svg-default/zoom-text-in-white.svg</file>
     <file>resources/icons/svg-default/zoom-text-out.svg</file>
     <file>resources/icons/svg-default/zoom-text-out-white.svg</file>
+    <file>resources/icons/svg-default/reset-view.svg</file>
+    <file>resources/icons/svg-default/reset-view-white.svg</file>
+    <file>resources/icons/svg-default/view-right.svg</file>
+    <file>resources/icons/svg-default/view-right-white.svg</file>
+    <file>resources/icons/svg-default/view-top.svg</file>
+    <file>resources/icons/svg-default/view-top-white.svg</file>
+    <file>resources/icons/svg-default/view-bottom.svg</file>
+    <file>resources/icons/svg-default/view-bottom-white.svg</file>
+    <file>resources/icons/svg-default/view-left.svg</file>
+    <file>resources/icons/svg-default/view-left-white.svg</file>
+    <file>resources/icons/svg-default/view-front.svg</file>
+    <file>resources/icons/svg-default/view-front-white.svg</file>
+    <file>resources/icons/svg-default/view-back.svg</file>
+    <file>resources/icons/svg-default/view-back-white.svg</file>
+    <file>resources/icons/svg-default/perspective.svg</file>
+    <file>resources/icons/svg-default/perspective-white.svg</file>
+    <file>resources/icons/svg-default/orthogonal.svg</file>
+    <file>resources/icons/svg-default/orthogonal-white.svg</file>
   </qresource>
 </RCC>

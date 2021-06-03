@@ -16,7 +16,7 @@ fi
 
 set -e
 
-for i in `"$OPENSCAD" -o - --export-format echo "$ICONSCAD" | sed -e 's/ECHO: icon = //;' | tr -d '"'`
+for i in `"$OPENSCAD" -o - --export-format echo -Dlist_icons=true "$ICONSCAD" | sed -e 's/ECHO: icon = //;' | tr -d '"'`
 do
 	echo "Generating $i icon..."
         SVG="$ICONDIR"/"$i.svg"
