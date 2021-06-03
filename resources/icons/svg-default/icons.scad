@@ -1,4 +1,6 @@
-$fn = 60;
+$fa = $preview ? 5 : 1;
+$fs = $preview ? 1 : 0.2;
+
 width = 100;
 height = 100;
 paper_width = 80;
@@ -46,7 +48,15 @@ icons = [
     ["view-front"],
     ["view-back"],
     ["perspective"],
-    ["orthogonal"]
+    ["orthogonal"],
+    ["axes"],
+    ["scalemarkers"],
+    ["show-edges"],
+    ["crosshairs"],
+    ["animate"],
+    ["surface"],
+    ["wireframe"],
+    ["throwntogether"],
 ];
 
 icon(selected_icon) {
@@ -83,6 +93,14 @@ icon(selected_icon) {
     view_back();
     perspective();
     orthogonal();
+    axes();
+    scalemarkers();
+    show_edges();
+    crosshairs();
+    animate();
+    surface_();
+    wireframe();
+    throwntogether();
 }
 
 if (list_icons) {
@@ -134,6 +152,19 @@ module connect_points(cnt, pos) {
             translate(p[1])
                 children();
         }
+    }
+}
+
+module connect_points_dotted(cnt, pos, step = 1) {
+    for (idx = [0:cnt - 1]) {
+        p = pos(idx);
+        v = p[1] - p[0];
+        l = norm(v);
+        cnt = ceil(l / step);
+        s = l / cnt;
+        for (a = [0 : cnt])
+            translate(p[0] + a * s * v / l)
+                children();
     }
 }
 
@@ -512,4 +543,103 @@ module orthogonal() {
     connect_points(4, function(i) [o1 + p[i], o1 + p[(i + 1) % 4]]) circle(d = thin);
     connect_points(4, function(i) [o2 + p[i], o2 + p[(i + 1) % 4]]) circle(d = thin);
     connect_points(4, function(i) [o1 + p[i], o2 + p[i]]) circle(d = thin);
+}
+
+module axes() {
+    p = [ for (r = [10, 40], a = [0, -90, 135]) r * [-sin(a), cos(a) ] ];
+    
+    translate([width / 2, height / 2]) {
+        connect_points(2, function(i) [p[i], p[i + 3]]) circle(d = thin);
+        connect_points_dotted(1, function(i) [p[i + 2], p[i + 5]], 1.2 * thin) circle(d = 0.8 * thin);
+        circle(thin);
+    }
+}
+
+module scalemarkers() {
+    module markers() {
+        connect_points(3, function(i) let(x = 18 + 10 * i) [[x, 0], [x, 8]]) circle(d = 0.5 * thin);
+    }
+
+    axes();
+    translate([width - 8, 10]) text("10", 30, font = font, halign="right", spacing = 0.8);
+    translate([width / 2, height / 2]) {
+        markers();
+        rotate(90) mirror([0, 1, 0]) markers();
+        rotate(225) mirror([0, 1, 0]) markers();
+    }
+}
+
+module show_edges() {
+    p = [[-35, 25], [35, 25], [35, -25], [-35, -25]];
+
+    translate([width / 2, height / 2]) {
+        for (p = p) translate(p) circle(d = thick);
+        difference() {
+            offset(thin/2) polygon(p);
+            offset(-thin/2) polygon(p);
+            for (p = p) translate(p) square(3 * thick, center = true);
+        }
+    }
+}
+
+module crosshairs() {
+    r1 = 15;
+    r2 = 40;
+
+    translate([width / 2, height / 2]) {
+        for (a = [20, -20]) {
+            hull() {
+                translate(r1 * [cos(a), sin(a)]) circle(d = thin);
+                translate(r1 * [-cos(-a), sin(-a)]) circle(d = thin);
+            }
+        }
+        for (a = [30, -30]) {
+            hull() {
+                translate(r2 * [sin(a), cos(a)]) circle(d = thin);
+                translate(r2 * [sin(-a), -cos(-a)]) circle(d = thin);
+            }
+        }
+    }
+}
+
+module animate() {
+    translate([width / 2, height / 2]) {
+        outline(thin) circle(d = 0.8 * width);
+        outline(thin) circle(d = 0.5 * width, $fn = 3);
+    }
+}
+
+module surface_() {
+    translate([width / 2, height / 2]) {
+        circle(d = 0.8 * width);
+    }
+}
+
+module wireframe() {
+    r = 0.4 * width;
+    translate([width / 2, height / 2]) {
+        outline(thin) circle(r = r - thin / 2);
+        difference() {
+            outline(thin) scale([0.3, 1]) circle(r = r - thin / 2);
+            translate([0, -height / 2]) square([width, height]);
+        }
+        for (a = [20, -20]) {
+            hull() {
+                translate(r * [cos(a), sin(a)]) circle(d = thin);
+                translate(r * [-cos(a), sin(a)]) circle(d = thin);
+            }
+        }
+    }
+}
+
+module throwntogether() {
+    module c() translate([10, 50]) preview_cube(15) line(15);
+    
+    translate([width / 2, 10]) {
+        difference() {
+            preview_cube(35) line(35);
+                hull() c();
+        }
+        c();
+    }
 }

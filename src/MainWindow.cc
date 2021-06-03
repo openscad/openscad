@@ -514,8 +514,8 @@ MainWindow::MainWindow(const QStringList &filenames)
 	initActionIcon(editActionZoomTextOut, ":/resources/icons/svg-default/zoom-text-out.svg", ":/resources/icons/svg-default/zoom-text-out-white.svg");
 	initActionIcon(designActionRender, ":/resources/icons/svg-default/render.svg", ":/resources/icons/svg-default/render-white.svg");
 	initActionIcon(designAction3DPrint, ":/resources/icons/svg-default/send.svg", ":/resources/icons/svg-default/send-white.svg");
-	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
-	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
+	initActionIcon(viewActionShowAxes, ":/resources/icons/svg-default/axes.svg", ":/resources/icons/svg-default/axes-white.svg");
+	initActionIcon(viewActionShowEdges, ":/resources/icons/svg-default/show-edges.svg", ":/resources/icons/svg-default/show-edges-white.svg");
 	initActionIcon(viewActionZoomIn, ":/resources/icons/svg-default/zoom-in.svg", ":/resources/icons/svg-default/zoom-in-white.svg");
 	initActionIcon(viewActionZoomOut, ":/resources/icons/svg-default/zoom-out.svg", ":/resources/icons/svg-default/zoom-out-white.svg");
 	initActionIcon(viewActionTop, ":/resources/icons/svg-default/view-top.svg", ":/resources/icons/svg-default/view-top-white.svg");
@@ -524,13 +524,14 @@ MainWindow::MainWindow(const QStringList &filenames)
 	initActionIcon(viewActionRight, ":/resources/icons/svg-default/view-right.svg", ":/resources/icons/svg-default/view-right-white.svg");
 	initActionIcon(viewActionFront, ":/resources/icons/svg-default/view-front.svg", ":/resources/icons/svg-default/view-front-white.svg");
 	initActionIcon(viewActionBack, ":/resources/icons/svg-default/view-back.svg", ":/resources/icons/svg-default/view-back-white.svg");
-	initActionIcon(viewActionSurfaces, ":/images/surface.png", ":/images/surfaceWhite.png");
-	initActionIcon(viewActionWireframe, ":/images/wireframe1.png", ":/images/wireframeWhite.png");
-	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
+	initActionIcon(viewActionSurfaces, ":/resources/icons/svg-default/surface.svg", ":/resources/icons/svg-default/surface-white.svg");
+	initActionIcon(viewActionWireframe, ":/resources/icons/svg-default/wireframe.svg", ":/resources/icons/svg-default/wireframe-white.svg");
+	initActionIcon(viewActionShowCrosshairs, ":/resources/icons/svg-default/crosshairs.svg", ":/resources/icons/svg-default/crosshairs-white.svg");
+	initActionIcon(viewActionThrownTogether, ":/resources/icons/svg-default/throwntogether.svg", ":/resources/icons/svg-default/throwntogether-white.svg");
 	initActionIcon(viewActionPerspective, ":/resources/icons/svg-default/perspective.svg", ":/resources/icons/svg-default/perspective-white.svg");
 	initActionIcon(viewActionOrthogonal, ":/resources/icons/svg-default/orthogonal.svg", ":/resources/icons/svg-default/orthogonal-white.svg");
 	initActionIcon(designActionPreview, ":/resources/icons/svg-default/preview.svg", ":/resources/icons/svg-default/preview-white.svg");
-	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
+	initActionIcon(viewActionAnimate, ":/resources/icons/svg-default/animate.svg", ":/resources/icons/svg-default/animate-white.svg");
 	initActionIcon(fileActionExportSTL, ":/resources/icons/svg-default/export-stl.svg", ":/resources/icons/svg-default/export-stl-white.svg");
 	initActionIcon(fileActionExportAMF, ":/resources/icons/svg-default/export-amf.svg", ":/resources/icons/svg-default/export-amf-white.svg");
 	initActionIcon(fileActionExport3MF, ":/resources/icons/svg-default/export-3mf.svg", ":/resources/icons/svg-default/export-3mf-white.svg");
@@ -546,7 +547,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	initActionIcon(editActionUnindent, ":/resources/icons/svg-default/unindent.svg", ":/resources/icons/svg-default/unindent-white.svg");
 	initActionIcon(editActionIndent, ":/resources/icons/svg-default/indent.svg", ":/resources/icons/svg-default/indent-white.svg");
 	initActionIcon(viewActionResetView, ":/resources/icons/svg-default/reset-view.svg", ":/resources/icons/svg-default/reset-view-white.svg");
-	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
+	initActionIcon(viewActionShowScaleProportional, ":/resources/icons/svg-default/scalemarkers.svg", ":/resources/icons/svg-default/scalemarkers-white.svg");
 
 	// fetch window states to be restored after restoreState() call
 	bool hideConsole = settings.value("view/hideConsole").toBool();

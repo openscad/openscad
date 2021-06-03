@@ -1,11 +1,21 @@
 <RCC>
   <qresource prefix="/">
-    <file>icons/prefs3DPrint.png</file>
     <file>src/PrintInitDialog.html</file>
     <file>src/OctoPrintInfo.html</file>
+    <file>src/AboutDialog.html</file>
+
+    <file>sounds/complete.wav</file>
+
+    <file>icons/prefs3DPrint.png</file>
     <file>icons/prefsInput.png</file>
     <file>icons/prefsInputAxis.png</file>
     <file>icons/prefsInputButtons.png</file>
+    <file>icons/prefsFeatures.png</file>
+    <file>icons/prefsAdvanced.png</file>
+    <file>icons/prefs3DView.png</file>
+    <file>icons/prefsEditor.png</file>
+    <file>icons/prefsUpdate.png</file>
+
     <file>icons/close.png</file>
     <file>icons/information-icons-error.png</file>
     <file>icons/information-icons-info.png</file>
@@ -15,32 +25,9 @@
     <file>icons/openscad-nightly.png</file>
     <file>icons/button.png</file>
     <file>icons/background-welcome-screen.svg</file>
-    <file>icons/prefsFeatures.png</file>
     <file>icons/stopbutton.png</file>
-    <file>icons/prefsAdvanced.png</file>
-    <file>icons/prefs3DView.png</file>
-    <file>icons/prefsEditor.png</file>
-    <file>icons/prefsUpdate.png</file>
-    <file>src/AboutDialog.html</file>
-    <file>images/export.png</file>
-    <file>images/axes.png</file>
-    <file>images/export-white.png</file>
-    <file>images/grid.png</file>
-    <file>images/openscad.png</file>
-    <file>images/Rotation-32.png</file>
-    <file>images/Shape-Cube-32.png</file>
-    <file>images/blackaxes.png</file>
-    <file>images/wireframe1.png</file>
-    <file>images/surface.png</file>
-    <file>images/surfaceWhite.png</file>
-    <file>images/wireframeWhite.png</file>
-    <file>images/cross.png</file>
-    <file>images/animate.png</file>
-    <file>images/crosswhite.png</file>
     <file>icons/background.png</file>
-    <file>images/scalemarkers.png</file>
-    <file>images/scalemarkers-white.png</file>
-    <file>sounds/complete.wav</file>
+
     <file>resources/icons/svg-default/export-3mf.svg</file>
     <file>resources/icons/svg-default/export-3mf-white.svg</file>
     <file>resources/icons/svg-default/export-amf.svg</file>
@@ -107,5 +94,21 @@
     <file>resources/icons/svg-default/perspective-white.svg</file>
     <file>resources/icons/svg-default/orthogonal.svg</file>
     <file>resources/icons/svg-default/orthogonal-white.svg</file>
+    <file>resources/icons/svg-default/axes.svg</file>
+    <file>resources/icons/svg-default/axes-white.svg</file>
+    <file>resources/icons/svg-default/scalemarkers.svg</file>
+    <file>resources/icons/svg-default/scalemarkers-white.svg</file>
+    <file>resources/icons/svg-default/show-edges.svg</file>
+    <file>resources/icons/svg-default/show-edges-white.svg</file>
+    <file>resources/icons/svg-default/crosshairs.svg</file>
+    <file>resources/icons/svg-default/crosshairs-white.svg</file>
+    <file>resources/icons/svg-default/animate.svg</file>
+    <file>resources/icons/svg-default/animate-white.svg</file>
+    <file>resources/icons/svg-default/surface.svg</file>
+    <file>resources/icons/svg-default/surface-white.svg</file>
+    <file>resources/icons/svg-default/wireframe.svg</file>
+    <file>resources/icons/svg-default/wireframe-white.svg</file>
+    <file>resources/icons/svg-default/throwntogether.svg</file>
+    <file>resources/icons/svg-default/throwntogether-white.svg</file>
   </qresource>
 </RCC>
