@@ -957,8 +957,8 @@ static Outline2d splitOutlineByFn(
 		double metric() const { return max_edgelen / (segment_count + 0.5); }
 		bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric();	}
 		bool close_match(const segment_tracker &other) const {
-			// Edges are grouped when metrics match by at least 90%
-			constexpr double APPROX_EQ_RATIO = 0.90;
+			// Edges are grouped when metrics match by at least 99.9%
+			constexpr double APPROX_EQ_RATIO = 0.999;
 			double l1 = this->metric(), l2 = other.metric();
 			return std::min(l1, l2) / std::max(l1, l2) >= APPROX_EQ_RATIO;
 		}
