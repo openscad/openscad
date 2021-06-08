@@ -32,6 +32,11 @@
 #include "grid.h"
 #include "degree_trig.h"
 
+// Linear interpolate.  Can replace with std::lerp in C++20  
+double Calc::lerp(double a, double b, double t) {
+	return (1 - t) * a + t * b;
+}
+
 /*!
 	Returns the number of subdivision of a whole circle, given radius and
 	the three special variables $fn, $fs and $fa

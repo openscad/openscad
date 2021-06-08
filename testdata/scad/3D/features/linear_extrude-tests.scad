@@ -9,7 +9,7 @@ linear_extrude(height=10) square([10,10]);
 translate([19,5,0]) linear_extrude(height=10, center=true) difference() {circle(5); circle(3);}
 translate([31.5,2.5,0]) linear_extrude(height=10, twist=-45) polygon(points = [[-5,-2.5], [5,-2.5], [0,2.5]]);
 
-translate([1,21,0]) linear_extrude(height=20, twist=30, slices=2) {
+translate([1,21,0]) linear_extrude(height=20, twist=30, slices=2, segments=0) {
     difference() {
         translate([-1,-1]) square([10,10]);
         square([8,8]);

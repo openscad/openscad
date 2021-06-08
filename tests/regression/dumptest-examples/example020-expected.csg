@@ -1,6 +1,6 @@
 multmatrix([[1, 0, 0, -30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	group() {
-		linear_extrude(height = 100, center = false, convexity = 8, twist = 411.429, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+		linear_extrude(height = 100, twist = 411.429, $fn = 0, $fa = 12, $fs = 2, convexity = 8) {
 			difference() {
 				circle($fn = 0, $fa = 12, $fs = 2, r = 20);
 				group() {
@@ -50,7 +50,7 @@ multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			cylinder($fn = 6, $fa = 12, $fs = 2, h = 20, r1 = 30, r2 = 30, center = false);
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 				group() {
-					linear_extrude(height = 40, center = false, convexity = 3, twist = 164.571, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+					linear_extrude(height = 40, twist = 164.571, $fn = 0, $fa = 12, $fs = 2, convexity = 3) {
 						difference() {
 							circle($fn = 0, $fa = 12, $fs = 2, r = 21);
 							group() {
@@ -98,7 +98,7 @@ multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 group() {
-	linear_extrude(height = 100, center = false, convexity = 5, twist = 1500, scale = [1, 1], $fn = 19.2, $fa = 12, $fs = 2) {
+	linear_extrude(height = 100, twist = 1500, $fn = 19.2, $fa = 12, $fs = 2, convexity = 5) {
 		group() {
 			group() {
 				group() {
