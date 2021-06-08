@@ -22,6 +22,11 @@
 #include "TabManager.h"
 #include <memory>
 
+#ifdef STATIC_QT_SVG_PLUGIN
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QSvgPlugin)
+#endif
+
 class MouseSelector;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
