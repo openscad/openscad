@@ -243,11 +243,11 @@
          <addaction name="viewActionResetView"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
+         <addaction name="viewActionLeft"/>
+         <addaction name="viewActionBack"/>
+         <addaction name="viewActionFront"/>
          <addaction name="viewActionTop"/>
          <addaction name="viewActionBottom"/>
-         <addaction name="viewActionLeft"/>
-         <addaction name="viewActionFront"/>
-         <addaction name="viewActionBack"/>
          <addaction name="separator"/>
          <addaction name="viewActionPerspective"/>
          <addaction name="viewActionOrthogonal"/>
@@ -724,10 +724,6 @@
    </widget>
   </widget>
   <action name="fileActionNew">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;New File</string>
    </property>
@@ -741,10 +737,6 @@
    </property>
   </action>
   <action name="fileActionOpen">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Open File</string>
    </property>
@@ -758,10 +750,6 @@
    </property>
   </action>
   <action name="fileActionSave">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Save-32.png</normaloff>:/images/Save-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -805,10 +793,6 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Command-Undo-32.png</normaloff>:/images/Command-Undo-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -820,10 +804,6 @@
    </property>
   </action>
   <action name="editActionRedo">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Command-Redo-32.png</normaloff>:/images/Command-Redo-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -876,10 +856,6 @@
    </property>
   </action>
   <action name="editActionIndent">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Increase-Indent-32.png</normaloff>:/images/Increase-Indent-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
@@ -983,10 +959,6 @@
    </property>
   </action>
   <action name="designActionPreview">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/preview-32.png</normaloff>:/images/preview-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Preview</string>
    </property>
@@ -995,10 +967,6 @@
    </property>
   </action>
   <action name="designActionRender">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/render-32.png</normaloff>:/images/render-32.png</iconset>
-   </property>
    <property name="text">
     <string>R&amp;ender</string>
    </property>
@@ -1007,10 +975,6 @@
    </property>
   </action>
   <action name="designAction3DPrint">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/3dprint-32.png</normaloff>:/images/3dprint-32.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;3D Print</string>
    </property>
@@ -1039,10 +1003,6 @@
    </property>
   </action>
   <action name="fileActionExportSTL">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/STL.png</normaloff>:/images/STL.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
    </property>
@@ -1051,10 +1011,6 @@
    </property>
   </action>
   <action name="fileActionExportOFF">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/OFF.png</normaloff>:/images/OFF.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;OFF...</string>
    </property>
@@ -1107,10 +1063,6 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Rotation-32.png</normaloff>:/images/Rotation-32.png</iconset>
-   </property>
    <property name="text">
     <string>Show Edges</string>
    </property>
@@ -1121,10 +1073,6 @@
   <action name="viewActionShowAxes">
    <property name="checkable">
     <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackaxes.png</normaloff>:/images/blackaxes.png</iconset>
    </property>
    <property name="text">
     <string>Show Axes</string>
@@ -1137,10 +1085,6 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/cross.png</normaloff>:/images/cross.png</iconset>
-   </property>
    <property name="text">
     <string>Show Crosshairs</string>
    </property>
@@ -1151,10 +1095,6 @@
   <action name="viewActionShowScaleProportional">
    <property name="checkable">
     <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/scalemarkers.png</normaloff>:/images/scalemarkers.png</iconset>
    </property>
    <property name="text">
     <string>Show Scale Markers</string>
@@ -1169,10 +1109,6 @@
    </property>
   </action>
   <action name="viewActionTop">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackUp.png</normaloff>:/images/blackUp.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Top</string>
    </property>
@@ -1181,10 +1117,6 @@
    </property>
   </action>
   <action name="viewActionBottom">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackbottom.png</normaloff>:/images/blackbottom.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Bottom</string>
    </property>
@@ -1193,10 +1125,6 @@
    </property>
   </action>
   <action name="viewActionLeft">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackleft.png</normaloff>:/images/blackleft.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Left</string>
    </property>
@@ -1205,10 +1133,6 @@
    </property>
   </action>
   <action name="viewActionRight">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/rightright.png</normaloff>:/images/rightright.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Right</string>
    </property>
@@ -1217,10 +1141,6 @@
    </property>
   </action>
   <action name="viewActionFront">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackfront.png</normaloff>:/images/blackfront.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Front</string>
    </property>
@@ -1229,10 +1149,6 @@
    </property>
   </action>
   <action name="viewActionBack">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/blackback.png</normaloff>:/images/blackback.png</iconset>
-   </property>
    <property name="text">
     <string>Bac&amp;k</string>
    </property>
@@ -1260,10 +1176,6 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/perspective1.png</normaloff>:/images/perspective1.png</iconset>
-   </property>
    <property name="text">
     <string>&amp;Perspective</string>
    </property>
@@ -1271,10 +1183,6 @@
   <action name="viewActionOrthogonal">
    <property name="checkable">
     <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/orthogonal.png</normaloff>:/images/orthogonal.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Orthogonal</string>
@@ -1310,10 +1218,6 @@
    </property>
   </action>
   <action name="fileActionExportDXF">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/DXF.png</normaloff>:/images/DXF.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;DXF...</string>
    </property>
@@ -1401,19 +1305,11 @@
    </property>
   </action>
   <action name="fileActionExportImage">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/PNG.png</normaloff>:/images/PNG.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;Image...</string>
    </property>
   </action>
   <action name="fileActionExportCSG">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/CSG.png</normaloff>:/images/CSG.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;CSG...</string>
    </property>
@@ -1429,10 +1325,6 @@
    </property>
   </action>
   <action name="viewActionResetView">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Command-Reset-32.png</normaloff>:/images/Command-Reset-32.png</iconset>
-   </property>
    <property name="text">
     <string>Reset View</string>
    </property>
@@ -1443,37 +1335,21 @@
    </property>
   </action>
   <action name="fileActionExportSVG">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/CSG.png</normaloff>:/images/CSG.png</iconset>
-   </property>
    <property name="text">
     <string>Export as S&amp;VG...</string>
    </property>
   </action>
   <action name="fileActionExportAMF">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/AMF.png</normaloff>:/images/AMF.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;AMF...</string>
    </property>
   </action>
   <action name="fileActionExport3MF">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/3MF.png</normaloff>:/images/3MF.png</iconset>
-   </property>
    <property name="text">
     <string>Export as &amp;3MF...</string>
    </property>
   </action>
   <action name="viewActionZoomIn">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/zoomin.png</normaloff>:/images/zoomin.png</iconset>
-   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
@@ -1482,10 +1358,6 @@
    </property>
   </action>
   <action name="viewActionZoomOut">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/zoomout.png</normaloff>:/images/zoomout.png</iconset>
-   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
@@ -1494,10 +1366,6 @@
    </property>
   </action>
   <action name="viewActionViewAll">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/zoom-all.png</normaloff>:/images/zoom-all.png</iconset>
-   </property>
    <property name="text">
     <string>View All</string>
    </property>
@@ -1543,10 +1411,6 @@
    </property>
   </action>
   <action name="editActionUnindent">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/Decrease-Indent-32.png</normaloff>:/images/Decrease-Indent-32.png</iconset>
-   </property>
    <property name="text">
     <string>U&amp;nindent</string>
    </property>
@@ -1571,10 +1435,6 @@
    </property>
   </action>
   <action name="fileActionExportPDF">
-   <property name="icon">
-    <iconset resource="../openscad.qrc">
-     <normaloff>:/images/PDF.png</normaloff>:/images/PDF.png</iconset>
-   </property>
    <property name="text">
     <string>Export as PDF...</string>
    </property>
