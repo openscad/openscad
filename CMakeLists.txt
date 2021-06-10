@@ -349,7 +349,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
   set(CMAKE_AUTOUIC_OPTIONS --tr q_)
-  find_package(Qt5 5.9 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
+  find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
