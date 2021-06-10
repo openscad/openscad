@@ -99,6 +99,7 @@ parts:
     - qt5-default
     - qtbase5-dev
     - qtmultimedia5-dev
+    - libqt5svg5-dev
     - libqt5opengl5-dev
     - libqt5gamepad5-dev
     - qt5-qmake
@@ -146,6 +147,7 @@ parts:
     - libmpfr6
     - libogg0
     - libpulse0
+    - libqt5svg5
     - libqt5gamepad5
     - libqt5multimedia5
     - libqt5printsupport5
