@@ -42,11 +42,11 @@ icons = [
     ["open"],
     ["reset-view"],
     ["view-right"],
+    ["view-left"],
+    ["view-back"],
+    ["view-front"],
     ["view-top"],
     ["view-bottom"],
-    ["view-left"],
-    ["view-front"],
-    ["view-back"],
     ["perspective"],
     ["orthogonal"],
     ["axes"],
@@ -86,11 +86,11 @@ icon(selected_icon) {
     open();
     reset_view();
     view_right();
+    view_left();
+    view_back();
+    view_front();
     view_top();
     view_bottom();
-    view_left();
-    view_front();
-    view_back();
     perspective();
     orthogonal();
     axes();
@@ -452,77 +452,75 @@ module reset_view() {
     }
 }
 
-module view_direction_cube() {
-    l = 35;
+module view_axes(eyepos) {
+  b = 3;
+  L = 33;
+  Lo = L/2-1;
+  projection() rotate([-65, 0, 0]) rotate([0, 0, -25]) {
+    translate([Lo, 0, 0]) cube([L, b, b], center=true);
+    translate([-Lo, 0, 0]) cube([L, b, b], center=true);
+    translate([0, Lo, 0]) cube([b, L, b], center=true);
+    translate([0, -Lo, 0]) cube([b, L, b], center=true);
+    translate([0, 0, Lo]) cube([b, b, L], center=true);
+    translate([0, 0, -Lo]) cube([b, b, L], center=true);
+  }
+
+  translate(eyepos) {
     difference() {
-        translate([0, l])
-            polygon([[0, l / 2], [thick, -thick], [-thick, -thick]]);
-        translate([0, l - 16.2])
-            scale([2, 1]) circle(thick);
+      intersection() {
+        translate([0, 20]) circle(30);
+        translate([0, -20]) circle(30);
+      }
+      circle(9);
     }
-    translate([0, -l])
-        preview_cube(l)
-            line(l);
+  }
+}
+
+module view_cube_pos() {
+    translate([width / 2 - 8, height / 2 + 5])
+        children();
+}
+
+module view_text(t) {
+    translate([width - 2, 0])
+        resize([38, 40])
+            text(t, 40, font = font, halign="right", spacing = 0.8);
 }
 
 module view_right() {
-    translate([width / 2, height / 2]) {
-        rotate(-90)
-            view_direction_cube();
-    }
-}
-
-module view_top() {
-    translate([width / 2, height / 2]) {
-        view_direction_cube();
-    }
-}
-
-module view_bottom() {
-    translate([width / 2, height / 2]) {
-        rotate(180)
-            view_direction_cube();
-    }
+    view_cube_pos()
+        view_axes([40, +2]);
+    view_text("+X");
 }
 
 module view_left() {
-    translate([width / 2, height / 2]) {
-        rotate(90)
-            view_direction_cube();
-    }
-}
-
-module view_front() {
-    translate([width / 2, height / 2]) {
-        l = 35;
-        translate([0, -l]) {
-            preview_cube(l)
-                line(l);
-
-            hull() {
-                circle();
-                translate([0, l]) circle();
-                translate([-sin(60) * l, cos(60) * l]) circle();
-                translate([-sin(60) * l, l + cos(60) * l]) circle();
-            }
-        }
-    }
+    view_cube_pos()
+        view_axes([-27, 15]);
+    view_text("-X");
 }
 
 module view_back() {
-    translate([width / 2, height / 2]) {
-        l = 35;
-        translate([0, -l])
-            preview_cube(l)
-                line(l);
+    view_cube_pos()
+        view_axes([28, 24]);
+    view_text("+Y");
+}
 
-        hull() {
-            circle();
-            translate([0, l]) circle();
-            translate([-sin(-60) * l, cos(60) * l]) circle();
-            translate([-sin(-60) * l, cos(60) * l - l]) circle();
-        }
-    }
+module view_front() {
+    view_cube_pos()
+        view_axes([-28, -23]);
+    view_text("-Y");
+}
+
+module view_top() {
+    view_cube_pos()
+        view_axes([0, 41]);
+    view_text("+Z");
+}
+
+module view_bottom() {
+    view_cube_pos()
+        view_axes([0, -41]);
+    view_text("-Z");
 }
 
 module perspective() {
@@ -605,7 +603,7 @@ module crosshairs() {
 module animate() {
     translate([width / 2, height / 2]) {
         outline(thin) circle(d = 0.8 * width);
-        outline(thin) circle(d = 0.5 * width, $fn = 3);
+        circle(d = 0.5 * width, $fn = 3);
     }
 }
 

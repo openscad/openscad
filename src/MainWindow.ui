@@ -243,11 +243,11 @@
          <addaction name="viewActionResetView"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
+         <addaction name="viewActionLeft"/>
+         <addaction name="viewActionBack"/>
+         <addaction name="viewActionFront"/>
          <addaction name="viewActionTop"/>
          <addaction name="viewActionBottom"/>
-         <addaction name="viewActionLeft"/>
-         <addaction name="viewActionFront"/>
-         <addaction name="viewActionBack"/>
          <addaction name="separator"/>
          <addaction name="viewActionPerspective"/>
          <addaction name="viewActionOrthogonal"/>
