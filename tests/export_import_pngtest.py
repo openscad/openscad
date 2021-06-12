@@ -22,7 +22,7 @@
 #
 # The CSG file tests do not include the use<fontfile> statements, so to allow the
 # export tests to find the font files in the test data directory, the OPENSCAD_FONT_PATH
-# is set to the testdata/ttf directory.
+# is set to the tests/data/ttf directory.
 #
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
@@ -131,7 +131,7 @@ if args.format != 'csg':
 create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:', file=sys.stderr)
 print(' '.join(create_png_cmd), file=sys.stderr)
-fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "testdata/ttf"))
+fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 result = subprocess.call(create_png_cmd, env = fontenv);

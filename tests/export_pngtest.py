@@ -73,7 +73,7 @@ inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
 exportfile = os.path.join(outputdir, os.path.splitext(inputfilename)[0] + '.' + args.format)
 
-fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "testdata/ttf"))
+fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
 fontenv = os.environ.copy();
 fontenv["OPENSCAD_FONT_PATH"] = fontdir;
 export_cmd = [args.openscad, inputfile, '-o', exportfile] + remaining_args
