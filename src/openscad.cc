@@ -934,9 +934,8 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef ENABLE_CGAL
-	// Causes CGAL errors to abort directly instead of throwing exceptions
-	// (which we don't catch). This gives us stack traces without rerunning in gdb.
-	CGAL::set_error_behaviour(CGAL::ABORT);
+	// Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
+	CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 #endif
 	Builtins::instance()->initialize();
 

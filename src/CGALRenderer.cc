@@ -57,7 +57,7 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(ps->getDimension() == 3);
 		// We need to tessellate here, in case the generated PolySet contains concave polygons
-		// See testdata/scad/3D/features/polyhedron-concave-test.scad
+		// See tests/data/scad/3D/features/polyhedron-concave-test.scad
 		auto ps_tri = new PolySet(3, ps->convexValue());
 		ps_tri->setConvexity(ps->getConvexity());
 		PolysetUtils::tessellate_faces(*ps, *ps_tri);

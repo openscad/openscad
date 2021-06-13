@@ -577,7 +577,7 @@ if [ $BUILD_TESTS ]; then
         # as above, we use tar as a somewhat portable way to do 'exclude'
         # while copying.
         rm -f ./ostests.tar
-        for subdir in tests testdata; do
+        for subdir in tests tests/data; do
           tar prvf ./ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.cc --exclude=*.h --exclude=CMake* --exclude=*.a $subdir
         done
         cd $DEPLOYDIR

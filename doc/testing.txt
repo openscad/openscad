@@ -76,7 +76,7 @@ cmd-line, e.g.: cmake -DOPENSCAD_UPLOAD_TESTS=1 .
 Adding a new test:
 ------------------
 
-1) create a test file at an appropriate location under testdata/
+1) create a test file at an appropriate location under tests/data/
 2) if the test is non-obvious, create a human readable description as comments in the test (or in another file in the same directory in case the file isn't human readable)
 3) if a new test app was written, this must be added to tests/CMakeLists.txt
 4) Add the tests to the test apps for which you want them to run (in tests/CMakeLists.txt)

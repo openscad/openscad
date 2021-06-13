@@ -85,6 +85,7 @@ jobs:
               make install DESTDIR=../AppDir
               cd ..
               export PATH=/appimage/usr/bin:"$PATH"
+              export EXTRA_QT_PLUGINS=svg
               VERSION="$OPENSCAD_VERSION" linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done

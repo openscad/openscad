@@ -1,5 +1,8 @@
 echo(version=version());
 
+$fs = 1;
+$fa = 3;
+
 bodywidth = dxf_dim(file = "example009.dxf", name = "bodywidth");
 fanwidth = dxf_dim(file = "example009.dxf", name = "fanwidth");
 platewidth = dxf_dim(file = "example009.dxf", name = "platewidth");

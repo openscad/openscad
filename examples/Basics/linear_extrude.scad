@@ -21,7 +21,7 @@ color("cyan")
 // combining both relatively complex shapes can be created
 color("gray")
     translate([0, 30, 0])
-        linear_extrude(height = 40, twist = -360, scale = 0, center = true, slices = 200)
+        linear_extrude(height = 40, twist = -360, scale = 0, center = true, $fs=1, $fa=1)
             square([20, 10], center = true);
 
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
