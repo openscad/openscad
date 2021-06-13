@@ -319,7 +319,7 @@ module_id
         ;
 
 single_module_instantiation
-        : module_id '(' arguments ')'
+        : module_id '(' arguments optional_commas ')'
             {
                 $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
                 free($1);
@@ -544,7 +544,7 @@ expr_or_empty
 /* The last set element may not be a "let" (as that would instead
    be parsed as an expression) */
 list_comprehension_elements
-        : TOK_LET '(' arguments ')' list_comprehension_elements_p
+        : TOK_LET '(' arguments optional_commas ')' list_comprehension_elements_p
             {
               $$ = new LcLet(*$3, $5, LOCD("lclet", @$));
               delete $3;
