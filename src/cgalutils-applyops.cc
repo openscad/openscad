@@ -129,7 +129,7 @@ namespace CGALUtils {
 				if (item.first) item.first->progress_report();
 			}
 		}
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+		// union && difference assert triggered by tests/data/scad/bugs/rotate-diff-nonmanifold-crash.scad and tests/data/scad/bugs/issue204.scad
 		catch (const CGAL::Failure_exception &e) {
 			std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
 			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s",opstr,e.what());

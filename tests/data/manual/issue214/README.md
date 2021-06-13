@@ -38,7 +38,7 @@ for f in [gb]*.scad; do echo $f; $scad -o ,.stl $f; done
 And here's the output:
 ```
 bad-include-synerr.scad
-ERROR: Parser error in file "/res/doug/src/openscad/testdata/manual/issue214/syntax-error-in-line-2.scad", line 2: syntax error
+ERROR: Parser error in file "/res/doug/src/openscad/tests/data/manual/issue214/syntax-error-in-line-2.scad", line 2: syntax error
 
 Can't parse file 'bad-include-synerr.scad'!
 
@@ -46,7 +46,7 @@ bad-includeX.scad
 WARNING: Can't open import file '"cube.stl"'.
 Current top level object is empty.
 bad-synerr.scad
-ERROR: Parser error in file "/res/doug/src/openscad/testdata/manual/issue214/bad-synerr.scad", line 3: syntax error
+ERROR: Parser error in file "/res/doug/src/openscad/tests/data/manual/issue214/bad-synerr.scad", line 3: syntax error
 
 Can't parse file 'bad-synerr.scad'!
 
