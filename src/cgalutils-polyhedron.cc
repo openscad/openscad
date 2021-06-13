@@ -249,7 +249,6 @@ namespace CGALUtils {
 	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p)
 	{
 		bool err = false;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL_Build_PolySet<Polyhedron> builder(ps);
 			p.delegate(builder);
@@ -258,7 +257,6 @@ namespace CGALUtils {
 			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
 			err = true;
 		}
-		CGAL::set_error_behaviour(old_behaviour);
 		return err;
 	}
 
