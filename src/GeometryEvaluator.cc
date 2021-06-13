@@ -109,8 +109,6 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem &item, unsigned 
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
-	CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
-
 	unsigned int dim = 0;
 	for(const auto &item : this->visitedchildren[node.index()]) {
 		if (!isValidDim(item, dim)) break;
@@ -202,7 +200,6 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	if (points.size() > 0) {
 		// Apply hull
 		std::list<CGALPoint2> result;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
 			// Construct Polygon2d
@@ -214,8 +211,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 		}
 		catch (const CGAL::Failure_exception &e) {
 			LOG(message_group::Warning,Location::NONE,"","GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s",e.what());
-}
-		CGAL::set_error_behaviour(old_behaviour);
+		}
 	}
 	return geometry;
 }

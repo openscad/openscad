@@ -79,7 +79,6 @@ namespace CGALUtils {
 	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
 		CGAL_Nef_polyhedron *N = nullptr;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
 		bool foundFirst = false;
@@ -135,7 +134,6 @@ namespace CGALUtils {
 			LOG(message_group::Error,Location::NONE,"","CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s",opstr,e.what());
 
 		}
-		CGAL::set_error_behaviour(old_behaviour);
 		return N;
 	}
 
@@ -230,7 +228,6 @@ namespace CGALUtils {
 		// Apply hull
 		bool success = false;
 		if (points.size() >= 4) {
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {
 				CGAL::Polyhedron_3<K> r;
 				CGAL::convex_hull_3(points.begin(), points.end(), r);
@@ -243,7 +240,6 @@ namespace CGALUtils {
 			catch (const CGAL::Failure_exception &e) {
 				LOG(message_group::Error,Location::NONE,"","CGAL error in applyHull(): %1$s",e.what());
 			}
-			CGAL::set_error_behaviour(old_behaviour);
 		}
 		return success;
 	}
@@ -254,7 +250,6 @@ namespace CGALUtils {
 	*/
 	Geometry const * applyMinkowski(const Geometry::Geometries &children)
 	{
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		CGAL::Timer t,t_tot;
 		assert(children.size() >= 2);
 		Geometry::Geometries::const_iterator it = children.begin();
@@ -444,7 +439,6 @@ namespace CGALUtils {
 			t_tot.stop();
 			PRINTDB("Minkowski: Total execution time %f s", t_tot.time());
 			t_tot.reset();
-			CGAL::set_error_behaviour(old_behaviour);
 			return operands[0];
 		}
 		catch (...) {
@@ -452,7 +446,6 @@ namespace CGALUtils {
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
 			CGAL_Nef_polyhedron *N = applyOperator3D(children, OpenSCADOperator::MINKOWSKI);
-			CGAL::set_error_behaviour(old_behaviour);
 			return N;
 		}
 	}
