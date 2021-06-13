@@ -156,6 +156,7 @@ set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL REQUIRED)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
+add_definitions(-DCGAL_USE_GMPXX)
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL)
   message(STATUS "CGAL: Using target CGAL::CGAL")
@@ -605,10 +606,22 @@ set(CORE_SOURCES
 set(CGAL_SOURCES
   src/cgalutils.cc
   src/cgalutils-applyops.cc
+  src/cgalutils-applyops-hybrid.cc
+  src/cgalutils-closed.cc
+  src/cgalutils-convex.cc
+  src/cgalutils-corefine.cc
+  src/cgalutils-hybrid.cc
+  src/cgalutils-kernel.cc
+  src/cgalutils-mesh.cc
+  src/cgalutils-minkowski.cc
+  src/cgalutils-nef.cc
+  src/cgalutils-orient.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
+  src/cgalutils-triangulate.cc
   src/export_nef.cc
+  src/CGALHybridPolyhedron.cc
   src/import_nef.cc
   src/CGAL_Nef_polyhedron.cc
   src/CGALCache.cc

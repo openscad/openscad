@@ -55,7 +55,7 @@ public:
   static void printRenderingTime(std::chrono::milliseconds ms);
   
   /**
-   * Actually print the statistic based on the given Geometry
+   * Actaully print the statistic based on the given Geometry
    * @arg geom A Geometry-derived object statistic for which we should print.
    */
   void print(const Geometry &geom);
@@ -66,6 +66,7 @@ protected:
   void visit(const class Polygon2d &node) override;
 #ifdef ENABLE_CGAL
   void visit(const class CGAL_Nef_polyhedron &node) override;
+  void visit(const class CGALHybridPolyhedron &node) override;
 #endif // ENABLE_CGAL
 };
 

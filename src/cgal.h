@@ -24,6 +24,7 @@
 #include <CGAL/minkowski_sum_3.h>
 #include <CGAL/bounding_box.h>
 #include <CGAL/utils.h>
+#include <CGAL/version.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
@@ -48,6 +49,7 @@ typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
 typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
 
 typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
+typedef CGAL::Vector_3<CGAL_Kernel3> CGAL_Vector_3;
 typedef CGAL::Triangle_3<CGAL_Kernel3> CGAL_Triangle_3;
 typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
 typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
@@ -57,5 +59,41 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
+
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4, 6, 0)
+
+#define FAST_CSG_AVAILABLE
+
+// CGAL::Epeck is faster than CGAL::Cartesian<CGAL::Gmpq> (because of filtering)...
+// except in some pathological cases. It can also use a lot or memory (because
+// of laziness, see https://github.com/openscad/openscad/issues/481).
+// For both reasons, we regularly force its numbers to exact values (either after
+// each fast-csg operation, and/or inside corefinement callbacks, see
+// Feature::ExperimentalFastCsgExactCallback).
+//
+// Conversions between CGAL::Epeck and CGAL_Kernel3 are cheap
+// (see cgalutils-kernel.cc) and require -DCGAL_USE_GMPXX.
+//
+// Ideally we'll want to use a filtered but non-lazy kernel for all our code.
+#ifdef FAST_CSG_USE_SAME_KERNEL
+
+#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(5, 2, 0)
+#pragma error("Cannot use the same kernel for corefinement before CGAL 5.2.1 "
+              "(see https://github.com/CGAL/cgal/issues/5322)")
+#endif
+
+typedef CGAL_Kernel3 CGAL_HybridKernel3;
+
+#else // not FAST_CSG_USE_SAME_KERNEL
+
+#define FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#define FAST_CSG_KERNEL_IS_LAZY
+typedef CGAL::Epeck CGAL_HybridKernel3;
+
+#endif // FAST_CSG_USE_SAME_KERNEL
+
+#else // not FAST_CSG_AVAILABLE
+#pragma message("[fast-csg] No support for fast-csg with this version of CGAL.")
+#endif // FAST_CSG_AVAILABLE
 
 #endif /* ENABLE_CGAL */

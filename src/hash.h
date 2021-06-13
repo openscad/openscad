@@ -1,6 +1,7 @@
 #pragma once
 
 #include "linalg.h"
+#include "Geometry.h"
 
 typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
 

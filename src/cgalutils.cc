@@ -15,9 +15,11 @@
 #include "cgal.h"
 #pragma push_macro("NDEBUG")
 #undef NDEBUG
+#include <CGAL/Aff_transformation_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
+#include <CGAL/Surface_mesh.h>
 
 #include <CGAL/config.h> 
 #include <CGAL/version.h> 
@@ -29,6 +31,7 @@
 #include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"
+#include "CGALHybridPolyhedron.h"
 
 #include <map>
 #include <queue>
@@ -119,15 +122,40 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &po
 
 namespace CGALUtils {
 
-	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N)
 	{
-		CGAL_Iso_cuboid_3 result(0,0,0,0,0,0);
-		CGAL_Nef_polyhedron3::Vertex_const_iterator vi;
-		std::vector<CGAL_Nef_polyhedron3::Point_3> points;
+		CGAL::Iso_cuboid_3<K> result(0,0,0,0,0,0);
+		typename CGAL::Nef_polyhedron_3<K>::Vertex_const_iterator vi;
+		std::vector<typename CGAL::Point_3<K>> points;
 		// can be optimized by rewriting bounding_box to accept vertices
 		CGAL_forall_vertices(vi, N) points.push_back(vi->point());
 		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
 		return result;
+	}
+	template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+
+	CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
+		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
+			return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
+		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
+			return boundingBox(*nef->p3);
+		} else {
+			assert(!"Unsupported geometry type in boundingBox");
+			return CGAL_Iso_cuboid_3(0,0,0,0,0,0);
+		}
+	}
+
+	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid) {
+		CGAL_Vector_3 d(cuboid.min(), cuboid.max());
+		return cuboid.min() + d * NT3(0.5);
+	}
+
+	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
+	{
+		return CGAL_Iso_cuboid_3(
+			vector_convert<CGAL_Point_3>(bbox.min()),
+			vector_convert<CGAL_Point_3>(bbox.max()));
 	}
 
 	namespace {
@@ -242,26 +270,32 @@ namespace CGALUtils {
 	}
 
 
-	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
+	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const Geometry &geom)
 	{
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
-			return createNefPolyhedronFromPolySet(*ps);
+			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
 		}
+#ifdef FAST_CSG_AVAILABLE
+		else if (auto poly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
+			return createNefPolyhedronFromHybrid(*poly);
+		}
+#endif
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
-			return createNefPolyhedronFromPolygon2d(*poly2d);
+			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
 		}
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return nullptr;
 	}
 
 /*
-	Create a PolySet from a Nef Polyhedron 3. return false on success, 
-	true on failure. The trick to this is that Nef Polyhedron3 faces have 
-	'holes' in them. . . while PolySet (and many other 3d polyhedron 
-	formats) do not allow for holes in their faces. The function documents 
+	Create a PolySet from a Nef Polyhedron 3. return false on success,
+	true on failure. The trick to this is that Nef Polyhedron3 faces have
+	'holes' in them. . . while PolySet (and many other 3d polyhedron
+	formats) do not allow for holes in their faces. The function documents
 	the method used to deal with this
 */
-	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	template <typename K>
+	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps)
 	{
 		// 1. Build Indexed PolyMesh
 		// 2. Validate mesh (manifoldness)
@@ -270,15 +304,17 @@ namespace CGALUtils {
 		// 4. Validate mesh (manifoldness)
 		// 5. Create PolySet
 
+		typedef CGAL::Nef_polyhedron_3<K> Nef;
+
 		bool err = false;
 
 		// 1. Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
 		std::vector<std::vector<IndexedFace>> polygons;
 
-		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		typename Nef::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {
-			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			CGAL::Plane_3<K> plane(hfaceti->plane());
 			// Since we're downscaling to float, vertices might merge during this conversion.
 			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
 			// vertices.
@@ -286,14 +322,14 @@ namespace CGALUtils {
 			auto &faces = polygons.back();
 			// the 0-mark-volume is the 'empty' volume of space. skip it.
 			if (!hfaceti->incident_volume()->mark()) {
-				CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+				typename Nef::Halffacet_cycle_const_iterator cyclei;
 				CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
-					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
-					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+					typename Nef::SHalfedge_around_facet_const_circulator c1(cyclei);
+					typename Nef::SHalfedge_around_facet_const_circulator c2(c1);
 					faces.push_back(IndexedFace());
 					auto &currface = faces.back();
 					CGAL_For_all(c1, c2) {
-						CGAL_Point_3 p = c1->source()->center_vertex()->point();
+						auto p = c1->source()->center_vertex()->point();
 						// Create vertex indices and remove consecutive duplicate vertices
 						auto idx = allVertices.lookup(vector_convert<Vector3f>(p));
 						if (currface.empty() || idx != currface.back()) currface.push_back(idx);
@@ -390,6 +426,138 @@ namespace CGALUtils {
 #endif // debug
 
 		return err;
+	}
+
+	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, PolySet &ps);
+#endif
+
+	template <typename K>
+	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix) {
+		return CGAL::Aff_transformation_3<K>(
+			matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+			matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+			matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+	}
+#ifdef FAST_CSG_AVAILABLE
+	template CGAL::Aff_transformation_3<CGAL_HybridKernel3> createAffineTransformFromMatrix(const Transform3d &matrix);
+#endif
+
+	template <typename K>
+	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		N.transform(createAffineTransformFromMatrix<K>(matrix));
+	}
+
+	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
+#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+	template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
+#endif
+
+	template <typename K>
+	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		auto t = createAffineTransformFromMatrix<K>(matrix);
+
+		for (auto v : mesh.vertices())
+		{
+			auto &pt = mesh.point(v);
+			pt = t(pt);
+		}
+	}
+#ifdef FAST_CSG_AVAILABLE
+	template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, const Transform3d &matrix);
+#endif
+
+	// Copied from CGAL_Nef_Polyhedron verbatim. Should put in common.
+	template <typename K>
+	Transform3d computeResizeTransform(
+		const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize)
+	{
+		// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
+
+		// The numeric type is our kernel's field type.
+		typedef typename K::FT NT;
+
+		std::vector<NT> scale, bbox_size;
+		for (unsigned int i=0; i<3; ++i) {
+			scale.push_back(NT(1));
+			bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
+		}
+		int newsizemax_index = 0;
+		for (unsigned int i=0; i<dimension; ++i) {
+			if (newsize[i]) {
+				if (bbox_size[i] == NT(0)) {
+					LOG(message_group::Warning,Location::NONE,"","Resize in direction normal to flat object is not implemented");
+					return Transform3d::Identity();
+				}
+				else {
+					scale[i] = NT(newsize[i]) / bbox_size[i];
+				}
+				if (newsize[i] > newsize[newsizemax_index]) newsizemax_index = i;
+			}
+		}
+
+		auto autoscale = NT(1);
+		if (newsize[newsizemax_index] != 0) {
+			autoscale = NT(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
+		}
+		for (unsigned int i=0; i<dimension; ++i) {
+			if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
+		}
+
+		Eigen::Matrix4d t;
+		t << CGAL::to_double(scale[0]),           0,        0,        0,
+					0,        CGAL::to_double(scale[1]),           0,        0,
+					0,        0,        CGAL::to_double(scale[2]),           0,
+					0,        0,        0,                                   1;
+
+		return Transform3d(t);
+	}
+
+	template Transform3d computeResizeTransform(
+		const CGAL_Iso_cuboid_3& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize);
+#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+	template Transform3d computeResizeTransform(
+		const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize);
+#endif
+
+	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+			return ps;
+		}
+		if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			auto ps = make_shared<PolySet>(3);
+			ps->setConvexity(N->getConvexity());
+			if (!N->isEmpty()) {
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");
+				}
+			}
+			return ps;
+		}
+#ifdef FAST_CSG_AVAILABLE
+		if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+			return hybrid->toPolySet();
+		}
+#endif
+		return nullptr;
+	}
+
+	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			return nef;
+		}
+		return geom ? shared_ptr<const CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromGeometry(*geom)) : nullptr;
 	}
 }; // namespace CGALUtils
 
