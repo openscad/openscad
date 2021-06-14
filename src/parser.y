@@ -144,10 +144,10 @@ bool fileEnded=false;
 %type <expr> exponent
 %type <expr> unary
 %type <expr> primary
-%type <vec> vector_expr
+%type <vec> vector_elements
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
-%type <expr> list_comprehension_elements_or_expr
+%type <expr> vector_element
 %type <expr> expr_or_empty
 
 %type <inst> module_instantiation
@@ -156,7 +156,9 @@ bool fileEnded=false;
 %type <inst> single_module_instantiation
 
 %type <args> arguments
+%type <args> argument_list
 %type <args> parameters
+%type <args> parameter_list
 
 %type <arg> argument
 %type <arg> parameter
@@ -186,7 +188,7 @@ statement
               if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
-        | TOK_MODULE TOK_ID '(' parameters optional_commas ')'
+        | TOK_MODULE TOK_ID '(' parameters ')'
             {
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->parameters = *$4;
@@ -200,10 +202,10 @@ statement
             {
                 scope_stack.pop();
             }
-        | TOK_FUNCTION TOK_ID '(' parameters optional_commas ')' '=' expr ';'
+        | TOK_FUNCTION TOK_ID '(' parameters ')' '=' expr ';'
             {
               scope_stack.top()->addFunction(
-                make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($8), LOCD("function", @$))
+                make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($7), LOCD("function", @$))
               );
               free($2);
               delete $4;
@@ -319,7 +321,7 @@ module_id
         ;
 
 single_module_instantiation
-        : module_id '(' arguments optional_commas ')'
+        : module_id '(' arguments ')'
             {
                 $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
                 free($1);
@@ -329,9 +331,9 @@ single_module_instantiation
 
 expr
         : logic_or
-        | TOK_FUNCTION '(' parameters optional_commas ')' expr %prec NO_ELSE
+        | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
-              $$ = new FunctionDefinition($6, *$3, LOCD("anonfunc", @$));
+              $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
               delete $3;
             }
         | logic_or '?' expr ':' expr
@@ -520,11 +522,11 @@ primary
             {
               $$ = new Range($2, $4, $6, LOCD("range", @$));
             }
-        | '[' optional_commas ']'
+        | '[' ']'
             {
               $$ = new Vector(LOCD("vector", @$));
             }
-        | '[' vector_expr optional_commas ']'
+        | '[' vector_elements optional_trailing_comma ']'
             {
               $$ = $2;
             }
@@ -544,31 +546,31 @@ expr_or_empty
 /* The last set element may not be a "let" (as that would instead
    be parsed as an expression) */
 list_comprehension_elements
-        : TOK_LET '(' arguments optional_commas ')' list_comprehension_elements_p
+        : TOK_LET '(' arguments ')' list_comprehension_elements_p
             {
               $$ = new LcLet(*$3, $5, LOCD("lclet", @$));
               delete $3;
             }
-        | TOK_EACH list_comprehension_elements_or_expr
+        | TOK_EACH vector_element
             {
               $$ = new LcEach($2, LOCD("lceach", @$));
             }
-        | TOK_FOR '(' arguments ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' arguments ')' vector_element
             {
               $$ = new LcFor(*$3, $5, LOCD("lcfor", @$));
               delete $3;
             }
-        | TOK_FOR '(' arguments ';' expr ';' arguments ')' list_comprehension_elements_or_expr
+        | TOK_FOR '(' arguments ';' expr ';' arguments ')' vector_element
             {
               $$ = new LcForC(*$3, *$7, $5, $9, LOCD("lcforc", @$));
               delete $3;
               delete $7;
             }
-        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr %prec NO_ELSE
+        | TOK_IF '(' expr ')' vector_element %prec NO_ELSE
             {
               $$ = new LcIf($3, $5, 0, LOCD("lcif", @$));
             }
-        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr TOK_ELSE list_comprehension_elements_or_expr
+        | TOK_IF '(' expr ')' vector_element TOK_ELSE vector_element
             {
               $$ = new LcIf($3, $5, $7, LOCD("lcifelse", @$));
             }
@@ -583,32 +585,27 @@ list_comprehension_elements_p
             }
         ;
 
-list_comprehension_elements_or_expr
-        : list_comprehension_elements_p
-        | expr
-        ;
-
-optional_commas
+optional_trailing_comma
         : /* empty */
-		| ',' optional_commas
+        | ','
         ;
 
-vector_expr
-        : expr
+vector_elements
+        : vector_element
             {
               $$ = new Vector(LOCD("vector", @$));
               $$->emplace_back($1);
             }
-        |  list_comprehension_elements
-            {
-              $$ = new Vector(LOCD("vector", @$));
-              $$->emplace_back($1);
-            }
-        | vector_expr ',' optional_commas list_comprehension_elements_or_expr
+        | vector_elements ',' vector_element
             {
               $$ = $1;
-              $$->emplace_back($4);
+              $$->emplace_back($3);
             }
+        ;
+
+vector_element
+        : list_comprehension_elements_p
+        | expr
         ;
 
 parameters
@@ -616,15 +613,19 @@ parameters
             {
                 $$ = new AssignmentList();
             }
-        | parameter
+        | parameter_list optional_trailing_comma
+        ;
+
+parameter_list
+        : parameter
             {
                 $$ = new AssignmentList();
                 $$->emplace_back($1);
             }
-        | parameters ',' optional_commas parameter
+        | parameter_list ',' parameter
             {
                 $$ = $1;
-                $$->emplace_back($4);
+                $$->emplace_back($3);
             }
         ;
 
@@ -646,15 +647,19 @@ arguments
             {
                 $$ = new AssignmentList();
             }
-        | argument
+        | argument_list optional_trailing_comma
+        ;
+
+argument_list
+        : argument
             {
                 $$ = new AssignmentList();
                 $$->emplace_back($1);
             }
-        | arguments ',' optional_commas argument
+        | argument_list ',' argument
             {
                 $$ = $1;
-                $$->emplace_back($4);
+                $$->emplace_back($3);
             }
         ;
 
