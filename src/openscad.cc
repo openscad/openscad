@@ -987,7 +987,7 @@ int main(int argc, char **argv)
 		("hardwarnings", "Stop on the first warning")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
-		("debug", po::value<string>(), "special debug info")
+		("debug", po::value<string>(), "special debug info - specify \"all\" or a set of source file names")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 		;
