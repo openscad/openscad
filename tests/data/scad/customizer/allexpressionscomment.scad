@@ -8,7 +8,7 @@ d = a;//parameter
 //description
 e = $fn;//parameter
 //description
-f1 = [1,,];//parameter
+f1 = [1,];//parameter
 //description
 f2 = [1,2,3];//parameter
 //description
