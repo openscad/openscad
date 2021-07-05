@@ -272,7 +272,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Apply lazy-union to *all* tests for comprehensive testing of this experimental feature.
       # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
       # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
-      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=multi-processing")
 
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL)

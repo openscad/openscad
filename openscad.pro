@@ -117,6 +117,10 @@ mingw* {
   debug: QMAKE_CXXFLAGS += -O1
 }
 
+unix:!macx {
+  LIBS += -lrt
+}
+
 CONFIG += qt object_parallel_to_source
 QT += widgets concurrent multimedia network
 CONFIG += scintilla
@@ -414,7 +418,8 @@ HEADERS += src/version_check.h \
            src/input/InputDriverManager.h \
            src/input/AxisConfigWidget.h \
            src/input/ButtonConfigWidget.h \
-           src/input/WheelIgnorer.h
+           src/input/WheelIgnorer.h \
+           src/custom_SNC_io_parser.h
 
 SOURCES += \
            src/libsvg/libsvg.cc \
@@ -673,6 +678,7 @@ HEADERS += src/cgal.h \
 
 SOURCES += src/cgalutils.cc \
            src/cgalutils-applyops.cc \
+           src/cgalutils-multithreaded.cc \
            src/cgalutils-project.cc \
            src/cgalutils-tess.cc \
            src/cgalutils-polyhedron.cc \
