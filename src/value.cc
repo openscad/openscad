@@ -1350,7 +1350,7 @@ void ObjectType::set(const std::string& key, Value&& value)
         ptr->values.emplace_back(std::move(value));
 }
 
-const std::vector<std::string> ObjectType::keys() const
+const std::vector<std::string>& ObjectType::keys() const
 {
         return ptr->keys;
 }

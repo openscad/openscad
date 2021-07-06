@@ -281,19 +281,29 @@ void FreetypeRenderer::Params::set(Parameters &parameters)
     // Probably some of them are not needed by some callers.
     // However, we populate them here rather than "knowing" which
     // ones are and are not needed.
-	set_fn(parameters["$fn"].toDouble());
-	set_fa(parameters["$fa"].toDouble());
-	set_fs(parameters["$fs"].toDouble());
 
-	set_size(parameters.get("size", 10.0));
-	set_text(parameters.get("text", ""));
-	set_spacing(parameters.get("spacing", 1.0));
-	set_font(parameters.get("font", ""));
-	set_direction(parameters.get("direction", ""));
-	set_language(parameters.get("language", "en"));
-	set_script(parameters.get("script", ""));
-	set_halign(parameters.get("halign", "default"));
-	set_valign(parameters.get("valign", "default"));
+    (void) parameters.valid("size", Value::Type::NUMBER);
+    (void) parameters.valid("text", Value::Type::STRING);
+    (void) parameters.valid("spacing", Value::Type::NUMBER);
+    (void) parameters.valid("font", Value::Type::STRING);
+    (void) parameters.valid("direction", Value::Type::STRING);
+    (void) parameters.valid("script", Value::Type::STRING);
+    (void) parameters.valid("halign", Value::Type::STRING);
+    (void) parameters.valid("valign", Value::Type::STRING);
+
+    set_fn(parameters["$fn"].toDouble());
+    set_fa(parameters["$fa"].toDouble());
+    set_fs(parameters["$fs"].toDouble());
+
+    set_size(parameters.get("size", 10.0));
+    set_text(parameters.get("text", ""));
+    set_spacing(parameters.get("spacing", 1.0));
+    set_font(parameters.get("font", ""));
+    set_direction(parameters.get("direction", ""));
+    set_language(parameters.get("language", "en"));
+    set_script(parameters.get("script", ""));
+    set_halign(parameters.get("halign", "default"));
+    set_valign(parameters.get("valign", "default"));
 }
 
 

@@ -51,6 +51,7 @@ static AbstractNode* builtin_text(const ModuleInstantiation *inst, Arguments arg
 		{"text", "size", "font"},
 		{"direction", "language", "script", "halign", "valign", "spacing"}
 	);
+	parameters.set_caller("text");
 
 	node->params.set_loc(inst->location());
 	node->params.set_documentPath(arguments.documentRoot());

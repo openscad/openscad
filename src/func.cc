@@ -61,38 +61,6 @@ int process_id = getpid();
 
 std::mt19937 deterministic_rng( std::time(nullptr) + process_id );
 #include <array>
-static void print_argCnt_warning(
-	const char *name,
-	int found,
-	const std::string& expected,
-	const Location& loc,
-	const std::string& documentRoot
-){
-	LOG(message_group::Warning,loc,documentRoot,"%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found),name);
-}
-static void print_argConvert_warning(
-	const char *name,
-	const std::string& where,
-	Value::Type found,
-	std::vector<Value::Type> expected,
-	const Location& loc,
-	const std::string& documentRoot
-){
-	std::stringstream message;
-	message << name << "() parameter could not be converted: " << where << ": expected ";
-	if (expected.size() == 1) {
-		message << Value::typeName(expected[0]);
-	} else {
-		assert(expected.size() > 0);
-		message << "one of (" << Value::typeName(expected[0]);
-		for (size_t i = 1; i < expected.size(); i++) {
-			message << ", " << Value::typeName(expected[i]);
-		}
-		message << ")";
-	}
-	message << ", found " << Value::typeName(found);
-	LOG(message_group::Warning,loc,documentRoot,"%1$s",message.str());
-}
 
 static inline bool check_arguments(const char* function_name, const Arguments& arguments, const Location& loc, int expected_count, bool warn = true)
 {
@@ -820,6 +788,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
         { "text", "size", "font" },
         { "direction", "language", "script", "halign", "valign", "spacing" }
     );
+    parameters.set_caller("textmetrics");
 
     FreetypeRenderer::Params ftparams;
     ftparams.set_loc(loc);
@@ -867,6 +836,7 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
     Parameters parameters = Parameters::parse(std::move(arguments), loc,
         { "size", "font" }
     );
+    parameters.set_caller("fontmetrics");
 
     FreetypeRenderer::Params ftparams;
     ftparams.set_loc(loc);

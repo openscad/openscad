@@ -525,7 +525,7 @@ public:
     Value operator<=(const ObjectType &v) const;
     Value operator>=(const ObjectType &v) const;
     const Value& operator[](const str_utf8_wrapper &v) const;
-    const std::vector<std::string> keys() const;
+    const std::vector<std::string>& keys() const;
   };
 
 private:
