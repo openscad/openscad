@@ -287,6 +287,7 @@ void FreetypeRenderer::Params::set(Parameters &parameters)
     (void) parameters.valid("spacing", Value::Type::NUMBER);
     (void) parameters.valid("font", Value::Type::STRING);
     (void) parameters.valid("direction", Value::Type::STRING);
+    (void) parameters.valid("language", Value::Type::STRING);
     (void) parameters.valid("script", Value::Type::STRING);
     (void) parameters.valid("halign", Value::Type::STRING);
     (void) parameters.valid("valign", Value::Type::STRING);
