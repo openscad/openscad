@@ -692,6 +692,13 @@ experimental_tests(echotest_function-literal-tests)
 experimental_tests(echotest_function-literal-compare)
 experimental_tests(echotest_isobject-test)
 experimental_tests(echotest_textmetrics-test)
+experimental_tests(dumptest_textmetrics)
+experimental_tests(cgalpngtest_textmetrics)
+experimental_tests(opencsgtest_textmetrics)
+experimental_tests(csgpngtest_textmetrics)
+experimental_tests(throwntogethertest_textmetrics)
+experimental_tests(dxfpngtest_textmetrics)
+experimental_tests(svgpngtest_textmetrics)
 
 # Test config handling
 

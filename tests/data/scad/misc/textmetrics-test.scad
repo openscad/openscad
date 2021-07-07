@@ -1,3 +1,5 @@
+use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
+
 echo("Normal...");
 
 // Force Liberation Sans since it's present on all platforms.
