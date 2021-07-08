@@ -1,4 +1,4 @@
-use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
+use <../../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
 
 t = "OpenSCAD";
 dir = [
