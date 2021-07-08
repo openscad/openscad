@@ -491,7 +491,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/root-modifiers.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/root-modifier-for.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/use-order-test/use-order-test.scad
-            ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/textmetrics-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/text-metrics-test.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -691,14 +691,14 @@ experimental_tests(astdumptest_allexpressions)
 experimental_tests(echotest_function-literal-tests)
 experimental_tests(echotest_function-literal-compare)
 experimental_tests(echotest_isobject-test)
-experimental_tests(echotest_textmetrics-test)
-experimental_tests(dumptest_textmetrics)
-experimental_tests(cgalpngtest_textmetrics)
-experimental_tests(opencsgtest_textmetrics)
-experimental_tests(csgpngtest_textmetrics)
-experimental_tests(throwntogethertest_textmetrics)
-experimental_tests(dxfpngtest_textmetrics)
-experimental_tests(svgpngtest_textmetrics)
+experimental_tests(echotest_text-metrics-test)
+experimental_tests(dumptest_text-metrics)
+experimental_tests(cgalpngtest_text-metrics)
+experimental_tests(opencsgtest_text-metrics)
+experimental_tests(csgpngtest_text-metrics)
+experimental_tests(throwntogethertest_text-metrics)
+experimental_tests(dxfpngtest_text-metrics)
+experimental_tests(svgpngtest_text-metrics)
 
 # Test config handling
 
