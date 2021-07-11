@@ -715,6 +715,12 @@ void registerDefaultIcon(QString) { }
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
+	auto qsf = QSurfaceFormat::defaultFormat();
+	if (!qsf.hasAlpha()) {
+		qsf.setAlphaBufferSize(8);
+		QSurfaceFormat::setDefaultFormat(qsf);
+	}
+
 	OpenSCADApp app(argc, argv);
 	// remove ugly frames in the QStatusBar when using additional widgets
 	app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
@@ -773,6 +779,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	// the screen retrace interval causing them to queue up.
 	// (see https://bugreports.qt-project.org/browse/QTBUG-39370
 	fmt.setSwapInterval(0);
+	fmt.setAlpha(true); 
+	fmt.setAlphaBufferSize(8);
+	
 	QGLFormat::setDefaultFormat(fmt);
 #endif
 

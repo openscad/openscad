@@ -1074,12 +1074,13 @@ add_failing_test(parsererrors EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SO
 add_failing_test(hardwarnings EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 --hardwarnings --export-format echo -o - FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/errors-warnings.scad)
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
-#add_cmdline_test(openscad-colorscheme-cornfield-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Cornfield -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
+add_cmdline_test(openscad-colorscheme-starnight-alphafail EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Starnight -o SUFFIX png FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
 
-# The "expected image" supplied for this "alphafail" test has the alpha channel for all background pixels cleared (a==0), when they should be opaque (a==1) for this colorscheme.  so if test framework is functioning properly then the image comparison should fail
-# Commented out because the master branch isn't capable of making the expected image yet. Also TEST_GENERATE=1 makes an expected image that makes the test fail.
-#set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
-
+# The "expected image" supplied for this "alphafail" test
+# has the background color's alpha channel cleared (a==0),
+# when it should be opaque (a==1) for this colorscheme.
+# So if test framework is functioning properly then the image comparison is **expected to fail**.
+set_property(TEST openscad-colorscheme-starnight-alphafail_logo PROPERTY WILL_FAIL TRUE)
 
 #
 # Customizer tests
@@ -1254,10 +1255,22 @@ add_cmdline_test(openscad-colorscheme-starnight EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Starnight -o 
                  SUFFIX png 
                  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
+add_cmdline_test(openscad-colorscheme-starnight-transparent EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Starnight\ Transparent -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
 add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Monotone -o 
                  SUFFIX png 
                  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
+add_cmdline_test(openscad-colorscheme-transparent EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Transparent\ Background -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad)
+add_cmdline_test(openscad-colorscheme-transparent EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Transparent\ Background -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-and-background-modifier.scad)
 add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic --render -o 
                  SUFFIX png 

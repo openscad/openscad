@@ -1893,7 +1893,11 @@ void MainWindow::csgRender()
 			}
 			// Force reading from front buffer. Some configurations will read from the back buffer here.
 			glReadBuffer(GL_FRONT);
-			QImage img = this->qglview->grabFrameBuffer();
+			#ifdef USE_QOPENGLWIDGET
+				QImage img = this->qglview->grabFrameBuffer();
+			#else
+				QImage img = this->qglview->grabFrameBuffer(true); // include alpha
+			#endif
 			QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
 			img.save(filename, "PNG");
 		}
@@ -3191,7 +3195,8 @@ void MainWindow::preferences()
 void MainWindow::setColorScheme(const QString &scheme)
 {
 	RenderSettings::inst()->colorscheme = scheme.toStdString();
-	this->qglview->setColorScheme(scheme.toStdString());
+	this->qglview->setColorSchemeByName(scheme.toStdString());
+	this->update(); // needed to update background of QOpenGLWidget in case of transparent GL background
 	this->qglview->updateGL();
 }
 

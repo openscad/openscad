@@ -155,16 +155,16 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
+    args = ["(", expectedfilename, "-background", "magenta", "-flatten", ")", "(", resultfilename, "-background", "magenta", "-flatten", ")", "-compose", "difference", "-composite", "-black-threshold", "10%", "-white-threshold", "10%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
     if options.comparator == 'old':
-      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
+      args = ["(", expectedfilename, "-background", "magenta", "-flatten", ")", "(", resultfilename, "-background", "magenta", "-flatten", ")", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
 
     if options.comparator == 'ncc':
       # for systems where imagemagick crashes when using the above comparators
-      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
+      args = ["(", expectedfilename, "-background", "magenta", "-flatten", ")", "(", resultfilename, "-background", "magenta", "-flatten", ")", "-compose", "difference", "-metric", "NCC", "tmp.png"]
       options.comparison_exec = 'compare'
       compare_method = 'NCC'
 
@@ -235,6 +235,15 @@ def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
             except OSError as e:
                 if e.errno != 17: raise e # catch File Exists to allow parallel runs
         outputname = expectedfilename
+
+        # alphafail is a special test which generates an "expected" image that differs from the actual.
+        # The only difference is the alpha value of the background,
+        # for the purpose of verifying that image comparison tests pay attention to alpha channel.
+        if testname.endswith("alphafail"):
+            for i,arg in enumerate(args):
+                if arg.startswith("--colorscheme="):
+                    # Only test starnight, since we want black background
+                    args[i] = "--colorscheme=Starnight Transparent"
     else:
         if not os.path.exists(actualdir):
             try:

@@ -34,7 +34,7 @@ bool export_png(const shared_ptr<const Geometry> &root_geom, const ViewOptions& 
 
 	glview->setCamera(camera);
 	glview->setRenderer(&cgalRenderer);
-	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->setColorSchemeByName(RenderSettings::inst()->colorscheme);
 	glview->setShowFaces(!options["wireframe"]);
 	glview->setShowCrosshairs(options["crosshairs"]);
 	glview->setShowAxes(options["axes"]);
@@ -89,7 +89,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& op
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
-	glview->setColorScheme(RenderSettings::inst()->colorscheme);
+	glview->setColorSchemeByName(RenderSettings::inst()->colorscheme);
 	glview->setShowAxes(options["axes"]);
 	glview->setShowScaleProportional(options["scales"]);
 	glview->setShowEdges(options["edges"]);

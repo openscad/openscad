@@ -10,7 +10,7 @@ void GLView::showSmallaxes(const Color4f &col) {}
 void GLView::showAxes(const Color4f &col) {}
 void GLView::showCrosshairs(const Color4f &col) {}
 void GLView::setColorScheme(const ColorScheme &cs){assert(false && "not implemented");}
-void GLView::setColorScheme(const std::string &cs) {assert(false && "not implemented");}
+void GLView::setColorSchemeByName(const std::string &cs) {assert(false && "not implemented");}
 
 #include "ThrownTogetherRenderer.h"
 
