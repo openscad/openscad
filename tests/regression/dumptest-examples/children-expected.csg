@@ -184,7 +184,7 @@ color([0, 1, 1, 1]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, $fn = 0, $fa = 12, $fs = 2) {
-										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 									}
 								}
 							}
@@ -204,7 +204,7 @@ color([0, 1, 1, 1]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, $fn = 0, $fa = 12, $fs = 2) {
-										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 									}
 								}
 							}
@@ -224,7 +224,7 @@ color([0, 1, 1, 1]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, $fn = 0, $fa = 12, $fs = 2) {
-										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 									}
 								}
 							}
@@ -244,7 +244,7 @@ color([0, 1, 1, 1]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
 									linear_extrude(height = 2, center = true, $fn = 0, $fa = 12, $fs = 2) {
-										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+										text(text = "SCAD", size = 8, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 									}
 								}
 							}

@@ -24,7 +24,6 @@
  *
  */
 
-#include "calc.h"
 #include "children.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
@@ -52,36 +51,13 @@ static AbstractNode* builtin_text(const ModuleInstantiation *inst, Arguments arg
 		{"text", "size", "font"},
 		{"direction", "language", "script", "halign", "valign", "spacing"}
 	);
+	parameters.set_caller("text");
 
-	const auto &fn = parameters["$fn"].toDouble();
-	const auto &fa = parameters["$fa"].toDouble();
-	const auto &fs = parameters["$fs"].toDouble();
+	node->params.set_loc(inst->location());
+	node->params.set_documentPath(arguments.documentRoot());
 
-	node->params.set_fn(fn);
-	node->params.set_fa(fa);
-	node->params.set_fs(fs);
-
-	auto size = parameters.get("size", 10.0);
-	auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
-	// The curved segments of most fonts are relatively short, so
-	// by using a fraction of the number of full circle segments
-	// the resolution will be better matching the detail level of
-	// other objects.
-	auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
-
-	node->params.set_size(size);
-	node->params.set_segments(text_segments);
-	node->params.set_text(parameters.get("text", ""));
-	node->params.set_spacing(parameters.get("spacing", 1.0));
-	node->params.set_font(parameters.get("font", ""));
-	node->params.set_direction(parameters.get("direction", ""));
-	node->params.set_language(parameters.get("language", "en"));
-	node->params.set_script(parameters.get("script", ""));
-	node->params.set_halign(parameters.get("halign", "left"));
-	node->params.set_valign(parameters.get("valign", "baseline"));
-
-	FreetypeRenderer renderer;
-	renderer.detect_properties(node->params);
+	node->params.set(parameters);
+	node->params.detect_properties();
 
 	return node;
 }

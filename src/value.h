@@ -332,7 +332,8 @@ public:
     VECTOR,
     EMBEDDED_VECTOR,
     RANGE,
-    FUNCTION
+    FUNCTION,
+    OBJECT
   };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -501,6 +502,32 @@ public:
     static Value Empty() { return EmbeddedVectorType(nullptr); }
   };
 
+  class ObjectType {
+  protected:
+    struct ObjectObject;
+    struct ObjectObjectDeleter {
+      void operator()(ObjectObject* obj);
+    };
+
+  private:
+    explicit ObjectType(const shared_ptr<ObjectObject> &copy);
+
+  public:
+    shared_ptr<ObjectObject> ptr;
+    ObjectType(class EvaluationSession* session);
+    ObjectType clone() const;
+    const Value& get(const std::string& key) const;
+    void set(const std::string& key, Value&& value);
+    Value operator==(const ObjectType &v) const;
+    Value operator< (const ObjectType &v) const;
+    Value operator> (const ObjectType &v) const;
+    Value operator!=(const ObjectType &v) const;
+    Value operator<=(const ObjectType &v) const;
+    Value operator>=(const ObjectType &v) const;
+    const Value& operator[](const str_utf8_wrapper &v) const;
+    const std::vector<std::string>& keys() const;
+  };
+
 private:
   Value() : value(UndefType()) { } // Don't default construct empty Values.  If "undefined" needed, use reference to Value::undefined, or call Value::undef() for return by value
 public:
@@ -536,6 +563,7 @@ public:
   EmbeddedVectorType &toEmbeddedVectorNonConst();
   const RangeType& toRange() const;
   const FunctionType& toFunction() const;
+  const ObjectType &toObject() const;
 
   // Other conversion utility functions
   bool getDouble(double &v) const;
@@ -579,13 +607,27 @@ public:
     return stream;
   }
 
-  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
-  static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
+  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType> Variant;
+
+
+  static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   const Variant& getVariant() const { return value; }
 
 private:
   Variant value;
 };
 
+// The object type which ObjectType's shared_ptr points to.
+struct Value::ObjectType::ObjectObject {
+    using obj_t = std::unordered_map<std::string, Value>;
+    obj_t map;
+    class EvaluationSession* evaluation_session = nullptr;
+    std::vector<std::string> keys;
+    std::vector<Value> values;
+};
+
+std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
+
 using VectorType = Value::VectorType;
 using EmbeddedVectorType = Value::EmbeddedVectorType;
+using ObjectType = Value::ObjectType;

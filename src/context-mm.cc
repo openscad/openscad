@@ -58,6 +58,7 @@ struct IdentifierVisitor : public boost::static_visitor<ValueIdentifier>
 	
 	ValueIdentifier operator()(const VectorType& value) const { return value.ptr.get(); }
 	ValueIdentifier operator()(const EmbeddedVectorType& value) const { return value.ptr.get(); }
+	ValueIdentifier operator()(const ObjectType& value) const { return value.ptr.get(); }
 	ValueIdentifier operator()(const FunctionPtr& value) const { return value.get().get(); }
 };
 
@@ -71,6 +72,7 @@ struct UseCountVisitor : public boost::static_visitor<int>
 	
 	int operator()(const VectorType& value) const { return value.ptr.use_count(); }
 	int operator()(const EmbeddedVectorType& value) const { return value.ptr.use_count(); }
+	int operator()(const ObjectType& value) const { return value.ptr.use_count(); }
 	int operator()(const FunctionPtr& value) const { return value.get().use_count(); }
 };
 
@@ -84,6 +86,7 @@ struct EmbeddedValuesVisitor : public boost::static_visitor<const std::vector<Va
 
 	const std::vector<Value>* operator()(const VectorType& value) const { return &value.ptr->vec; }
 	const std::vector<Value>* operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
+	const std::vector<Value>* operator()(const ObjectType& value) const { return &value.ptr->values; }
 	const std::vector<Value>* operator()(const FunctionPtr&) const { return nullptr; }
 };
 
@@ -97,6 +100,7 @@ struct ReferencedContextVisitor : public boost::static_visitor<const std::shared
 
 	const std::shared_ptr<const Context>* operator()(const VectorType&) const { return nullptr; }
 	const std::shared_ptr<const Context>* operator()(const EmbeddedVectorType&) const { return nullptr; }
+	const std::shared_ptr<const Context>* operator()(const ObjectType&) const { return nullptr; }
 	const std::shared_ptr<const Context>* operator()(const FunctionPtr& value) const { return &value->getContext(); }
 };
 

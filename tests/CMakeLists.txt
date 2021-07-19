@@ -237,7 +237,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union" "--enable=textmetrics")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -472,6 +472,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/isnum-test.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/isbool-test.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/isstring-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/isobject-test.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/operators-tests.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/expression-precedence.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/builtins-calling-vec3vec2.scad
@@ -490,6 +491,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/root-modifiers.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/root-modifier-for.scad
             ${CMAKE_CURRENT_SOURCE_DIR}/data/use-order-test/use-order-test.scad
+            ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/text-metrics-test.scad
             )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -688,6 +690,15 @@ experimental_tests(echotest_allexpressions)
 experimental_tests(astdumptest_allexpressions)
 experimental_tests(echotest_function-literal-tests)
 experimental_tests(echotest_function-literal-compare)
+experimental_tests(echotest_isobject-test)
+experimental_tests(echotest_text-metrics-test)
+experimental_tests(dumptest_text-metrics)
+experimental_tests(cgalpngtest_text-metrics)
+experimental_tests(opencsgtest_text-metrics)
+experimental_tests(csgpngtest_text-metrics)
+experimental_tests(throwntogethertest_text-metrics)
+experimental_tests(dxfpngtest_text-metrics)
+experimental_tests(svgpngtest_text-metrics)
 
 # Test config handling
 

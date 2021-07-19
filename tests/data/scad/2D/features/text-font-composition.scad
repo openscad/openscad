@@ -1,4 +1,4 @@
-use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
+use <../../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
 
 // Validate correct behavior with overlapping combining chars.
 // The U+030A (COMBINING RING ABOVE) should be unioned to the
