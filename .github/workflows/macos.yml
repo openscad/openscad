@@ -35,4 +35,4 @@ jobs:
       if: ${{ always() }}
       with:
         name: Test Result Report (MacOS)
-        path: tests/Testing/Temporary/*_report.html
+        path: build/tests/Testing/Temporary/*_report.html
