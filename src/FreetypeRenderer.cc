@@ -179,7 +179,12 @@ hb_direction_t FreetypeRenderer::Params::get_direction(const hb_script_t script)
 	}
 
 	hb_direction_t direction = hb_script_get_horizontal_direction(script);
-	PRINTDB("Detected direction '%s' for %s", hb_direction_to_string(direction) % text.c_str());
+    if (param_direction != HB_DIRECTION_INVALID) {
+        PRINTDB("Detected direction '%s' for %s", hb_direction_to_string(direction) % text.c_str());
+    } else {
+        PRINTDB("Unknown direction for %s; defaulting to LTR", text.c_str());
+        direction = HB_DIRECTION_LTR;
+    }
 	return direction;
 }
 
