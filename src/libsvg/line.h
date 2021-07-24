@@ -45,6 +45,8 @@ public:
     const std::string& get_name() const override { return line::name; };
     
     static const std::string name;
+
+	shape* clone() const override { return new line(*this); };
 };
 
 }

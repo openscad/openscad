@@ -593,6 +593,7 @@ set(CORE_SOURCES
   src/libsvg/text.cc
   src/libsvg/transformation.cc
   src/libsvg/tspan.cc
+  src/libsvg/use.cc
   src/libsvg/util.cc
   src/parameter/parameterobject.cc
   src/parameter/parameterset.cc

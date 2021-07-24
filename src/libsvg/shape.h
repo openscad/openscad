@@ -27,6 +27,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <iostream>
 
@@ -46,7 +47,7 @@ class shape {
 private:
     shape *parent;
     std::vector<shape *> children;
-    
+
 protected:
     std::string id;
     double x;
@@ -65,7 +66,7 @@ protected:
     void draw_ellipse(path_t& path, double x, double y, double rx, double ry);
     void offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap);
     void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
-    
+
 public:
     shape();
     virtual ~shape();
@@ -74,22 +75,25 @@ public:
     virtual void set_parent(shape *s) { parent = s; }
     virtual void add_child(shape *s) { children.push_back(s); s->set_parent(this); }
     virtual const std::vector<shape *>& get_children() const { return children; }
-    
+
     virtual const std::string& get_id() const { return id; }
     virtual double get_x() const { return x; }
     virtual double get_y() const { return y; }
 
     virtual const path_list_t& get_path_list() const { return path_list; }
-    
+
     virtual bool is_container() const { return false; }
-    
+
     virtual void apply_transform();
-   
+
     virtual const std::string& get_name() const = 0;
     virtual void set_attrs(attr_map_t& attrs);
     virtual const std::string dump() const { return ""; }
 
     static shape * create_from_name(const char *name);
+
+	virtual shape* clone() const = 0;
+	std::vector<std::shared_ptr<shape>> clone_children();
 
 private:
     friend std::ostream & operator<<(std::ostream &os, const shape& s);

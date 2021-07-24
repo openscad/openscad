@@ -432,6 +432,7 @@ SOURCES += \
            src/libsvg/path.cc \
            src/libsvg/shape.cc \
            src/libsvg/transformation.cc \
+           src/libsvg/use.cc \
            src/libsvg/util.cc \
            \
            src/version_check.cc
