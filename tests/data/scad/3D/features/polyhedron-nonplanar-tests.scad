@@ -12,18 +12,6 @@ points=[
     [0.999848,-0.0000000000000271051,-0.0174524],
     [0,0,0]]);
 
-// Really non-planar polyhedron
-translate([2,0,0]) polyhedron(faces=[[3,2,1,0],[7,6,5,4],[0,1,6,7],[1,2,5,6],[2,3,4,5],[3,0,7,4]],
-points=[
-    [0,0,1],
-    [1,0.2,1],
-    [1,1,1],
-    [0,1,1],
-    [0,1,0],
-    [1,1,0],
-    [1,0,0],
-    [0,0,0]]);
-
 // Real-world example: truncated icosidodecahedron
 translate([4.5,0.5,0.5]) scale(0.02) polyhedron(points = [
 [-10., -13.090169943749475, -34.270509831248425], 
