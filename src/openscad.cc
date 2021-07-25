@@ -854,8 +854,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	InputDriverManager::instance()->init();
 	int rc = app.exec();
-  const auto &windows = scadApp->windowManager.getWindows();
-  while (!windows.empty()) delete *windows.begin();
+	const auto &windows = scadApp->windowManager.getWindows();
+	while (!windows.empty()) delete *windows.begin();
 	return rc;
 }
 #else // OPENSCAD_QTGUI
