@@ -40,6 +40,7 @@
 #include "polygon.h"
 #include "polyline.h"
 #include "rect.h"
+#include "use.h"
 
 namespace fs = boost::filesystem;
 
@@ -50,6 +51,8 @@ namespace libsvg {
 static bool in_defs = false;
 static shapes_list_t stack;
 static shapes_list_t *shape_list;
+
+using shapes_defs_list_t = std::map<std::string, shared_ptr<shape>>;
 
 #if SVG_DEBUG
 static std::string dump_stack() {
@@ -77,7 +80,7 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 	return attrs;
 }
 
-void processNode(xmlTextReaderPtr reader)
+void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, shapes_list_t* temp_defs_storage)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
 	if (name == nullptr) name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
@@ -100,21 +103,38 @@ void processNode(xmlTextReaderPtr reader)
 		if (std::string("defs") == name) {
 			in_defs = true;
 		}
-		
+
 		auto s = shared_ptr<shape>(shape::create_from_name(name));
-		if (!in_defs && s) {
+		if (s) {
 			attr_map_t attrs = read_attributes(reader);
 			s->set_attrs(attrs);
-			shape_list->push_back(s);
 			if (!stack.empty()) {
 				stack.back()->add_child(s.get());
 			}
 			if (s->is_container()) {
 				stack.push_back(s);
 			}
-			s->apply_transform();
+
+			//handle the "use" tag
+			if (use::name == s->get_name()) {
+				use* currentuse = dynamic_cast<use*>(s.get());
+				if (defs_lookup_list->find(currentuse->get_href_id()) != defs_lookup_list->end()) {
+					auto to_clone_child = (*defs_lookup_list)[currentuse->get_href_id()];
+					auto cloned_children = currentuse->set_clone_child(to_clone_child.get());
+					shape_list->insert(shape_list->end(), cloned_children.begin(), cloned_children.end());
+				}
+			}
+
+			if (!in_defs) {
+				shape_list->push_back(s);
+			} else {
+				if (!s->get_id().empty()) {
+					defs_lookup_list->insert(std::make_pair(s->get_id(), s));
+				}
+				temp_defs_storage->push_back(s);
+			}
 		}
-	}	
+	}
 	if (!isEmpty) {
 		break;
 	}
@@ -123,9 +143,6 @@ void processNode(xmlTextReaderPtr reader)
 	{
 		if (std::string("defs") == name) {
 			in_defs = false;
-		}
-		if (in_defs) {
-			return;
 		}
 
 		if (std::string("g") == name) {
@@ -165,6 +182,9 @@ void processNode(xmlTextReaderPtr reader)
 int streamFile(const char *filename)
 {
 	xmlTextReaderPtr reader;
+	// The temp storage is needed for items in a def that don't have an id, but have a parent with an id
+	shapes_list_t temp_defs_storage;
+	shapes_defs_list_t defs_lookup_list;
 
 	in_defs = false;
 	reader = xmlNewTextReaderFilename(filename);
@@ -172,7 +192,7 @@ int streamFile(const char *filename)
 	if (reader != nullptr) {
 		int ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
-			processNode(reader);
+			processNode(reader, &defs_lookup_list, &temp_defs_storage);
 			ret = xmlTextReaderRead(reader);
 		}
 		xmlFreeTextReader(reader);
@@ -182,6 +202,11 @@ int streamFile(const char *filename)
 	} else {
 		throw SvgException((boost::format("Can't open file '%1%'") % filename).str());
 	}
+
+	for (const auto shape : (*shape_list)) {
+		shape->apply_transform();
+	}
+
 	return 0;
 }
 

@@ -26,28 +26,38 @@
       <g transform="translate(400,0)">
         <text x="50" y="210">large-arc-flag=0</text>
         <text x="50" y="250">sweep-flag=0</text>
-        <use xlink:href="#baseEllipses"/>
         <path d="M 125,75 a100,50 0 0,0 100,50"
               fill="none" stroke="red" stroke-width="6" />
       </g>
       <g transform="translate(800,0)">
         <text x="50" y="210">large-arc-flag=0</text>
         <text x="50" y="250">sweep-flag=1</text>
-        <use xlink:href="#baseEllipses"/>
         <path d="M 125,75 a100,50 0 0,1 100,50"
               fill="none" stroke="red" stroke-width="6" />
       </g>
       <g transform="translate(400,250)">
         <text x="50" y="210">large-arc-flag=1</text>
         <text x="50" y="250">sweep-flag=0</text>
-        <use xlink:href="#baseEllipses"/>
         <path d="M 125,75 a100,50 0 1,0 100,50"
               fill="none" stroke="red" stroke-width="6" />
       </g>
       <g transform="translate(800,250)">
         <text x="50" y="210">large-arc-flag=1</text>
         <text x="50" y="250">sweep-flag=1</text>
+        <path d="M 125,75 a100,50 0 1,1 100,50"
+              fill="none" stroke="red" stroke-width="6" />
+      </g>
+      <g transform="translate(1200,0)">
+        <text x="50" y="210">large-arc-flag=1</text>
+        <text x="50" y="250">sweep-flag=1</text>
         <use xlink:href="#baseEllipses"/>
+        <path d="M 125,75 a100,50 0 1,1 100,50"
+              fill="none" stroke="red" stroke-width="6" />
+      </g>
+      <g transform="translate(1200,250)">
+        <text x="50" y="210">large-arc-flag=1</text>
+        <text x="50" y="250">sweep-flag=1</text>
+        <use x="50" y= "50" xlink:href="#baseEllipses"/>
         <path d="M 125,75 a100,50 0 1,1 100,50"
               fill="none" stroke="red" stroke-width="6" />
       </g>

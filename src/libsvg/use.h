@@ -24,37 +24,37 @@
  */
 #pragma once
 
-#include <cmath>
-#include <string>
+#include <vector>
+#include <memory>
 #include "shape.h"
 
 namespace libsvg {
 
-class path : public shape {
+class use : public shape {
 protected:
-    std::string data;
-
-private:
-    inline double t(double t, int exp) const {
-			return std::pow(1.0 - t, exp);
-    }
-
-    bool is_open_path(path_t& path) const;
-    void arc_to(path_t& path, double x, double y, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep);
-    void curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2);
-    void curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2);
+	std::string href;
+	double width;
+	double height;
 
 public:
-    path();
-    ~path();
+	use();
+	~use();
 
-    void set_attrs(attr_map_t& attrs) override;
-    const std::string dump() const override;
-    const std::string& get_name() const override { return path::name; };
-    
-    static const std::string name;
+	bool is_container() const override { return false; }
 
-	shape* clone() const override { return new path(*this); };
+	void set_attrs(attr_map_t& attrs) override;
+	const std::string dump() const override;
+	const std::string& get_name() const override { return use::name; };
+
+	static const std::string name;
+
+	const std::string get_href() const { return href; };
+	const std::string get_href_id() const;
+
+	// I'm hoping here something else can find the href for us.
+	std::vector<std::shared_ptr<shape>> set_clone_child(shape* child);
+
+	shape* clone() const override { return new use(*this); };
 };
 
 }
