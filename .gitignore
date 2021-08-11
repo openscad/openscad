@@ -78,6 +78,10 @@ CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 OpenSCAD_autogen
+resources/CMakeFiles
+resources/Makefile
+resources/cmake_install.cmake
+resources/docs/OpenSCADUserDocs
 /local.pri
 testdata/scad/issues/issue2342.scad
 testdata/python/gen_issue2342.py

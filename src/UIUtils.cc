@@ -176,6 +176,17 @@ void UIUtils::openUserManualURL()
     openVersionedURL("https://www.openscad.org/documentation.html?version=%1");
 }
 
+void UIUtils::openOfflineUserManualURL()
+{
+    fs::path resPath = PlatformUtils::resourcePath("resources");
+    fs::path fullPath = resPath/"docs"/"OpenSCADUserDocs"/"openscad_docs"/"OpenSCAD_User_Manual.html";
+    if (fs::exists(fullPath) && fs::is_regular_file(fullPath)) 
+    {
+        QString docPath = QString::fromStdString(fullPath.string());
+        QDesktopServices::openUrl(QUrl(docPath));
+    }
+}
+
 void UIUtils::openCheatSheetURL()
 {
 #ifdef OPENSCAD_SNAPSHOT

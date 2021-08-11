@@ -459,6 +459,18 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
+		
+	// Checks if the Documentation has been downloaded and hides the Action otherwise
+	fs::path resPath = PlatformUtils::resourcePath("resources");
+    fs::path fullPath = resPath/"docs"/"OpenSCADUserDocs"/"openscad_docs"/"OpenSCAD_User_Manual.html";
+	if (fs::exists(fullPath) && fs::is_regular_file(fullPath)) 
+	{
+		connect(this->helpActionOfflineManual, SIGNAL(triggered()), this, SLOT(helpOfflineManual()));
+	}
+	else
+	{
+		this->helpActionOfflineManual->setVisible(false);
+	}
 
 #ifdef OPENSCAD_UPDATER
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
@@ -3128,6 +3140,11 @@ void MainWindow::helpHomepage()
 void MainWindow::helpManual()
 {
 	UIUtils::openUserManualURL();
+}
+
+void MainWindow::helpOfflineManual()
+{
+	UIUtils::openOfflineUserManualURL();
 }
 
 void MainWindow::helpCheatSheet()

@@ -424,6 +424,7 @@
     <addaction name="helpActionAbout"/>
     <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
+    <addaction name="helpActionOfflineManual"/>
     <addaction name="helpActionCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
@@ -1302,6 +1303,11 @@
   <action name="helpActionManual">
    <property name="text">
     <string>&amp;Documentation</string>
+   </property>
+  </action>
+  <action name="helpActionOfflineManual">
+   <property name="text">
+    <string>&amp;Offline Documentation</string>
    </property>
   </action>
   <action name="fileActionClearRecent">
