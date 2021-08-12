@@ -744,6 +744,10 @@ colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
 
+shaders.path = "$$PREFIX/share/$${FULLNAME}/shaders/"
+shaders.files = shaders/*
+INSTALLS += shaders
+
 templates.path = "$$PREFIX/share/$${FULLNAME}/templates/"
 templates.files = templates/*
 INSTALLS += templates

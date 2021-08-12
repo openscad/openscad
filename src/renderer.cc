@@ -6,6 +6,7 @@
 #include "colormap.h"
 #include "printutils.h"
 #include "feature.h"
+#include "PlatformUtils.h"
 
 #include "polyset-utils.h"
 #include "grid.h"
@@ -34,51 +35,10 @@ Renderer::Renderer() : colorscheme(nullptr)
 
 	setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-	const char *vs_source = R"VS_PROG(
-          #version 110
-
-          uniform vec4 color1;        // face color
-          uniform vec4 color2;        // edge color
-          attribute vec3 barycentric; // barycentric form of vertex coord
-                                      // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
-          varying vec3 vBC;           // varying barycentric coords
-          varying float shading;      // multiplied by color1. color2 is without lighting
-
-          void main(void) {
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-            vBC = barycentric;
-            vec3 normal, lightDir;
-            normal = normalize(gl_NormalMatrix * gl_Normal);
-            lightDir = normalize(vec3(gl_LightSource[0].position));
-            shading = 0.2 + abs(dot(normal, lightDir));
-          }
-        )VS_PROG";
-
-        const char *fs_source = R"FS_PROG(
-          #version 110
-
-          uniform vec4 color1, color2;
-          varying vec3 vBC;
-          varying float shading;
-
-          vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
-            vec3 t;
-            t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-            return t * t * (3.0 - 2.0 * t);
-          }
-
-          float edgeFactor() {
-            const float th = 1.414; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
-            const float fade = 1.414; // thickness of fade (antialiasing) in screen pixels
-            vec3 d = fwidth(vBC);
-            vec3 a3 = smoothstep((th-fade)*d, th*d, vBC);
-            return min(min(a3.x, a3.y), a3.z);
-          }
-
-          void main(void) {
-            gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
-          }
-        )FS_PROG";
+	std::string vs_str = Renderer::loadShaderSource("Preview.vert");
+	std::string fs_str = Renderer::loadShaderSource("Preview.frag");
+	const char* vs_source = vs_str.c_str();
+	const char* fs_source = fs_str.c_str();
 
 	GLint status;
 	GLenum err;
@@ -151,8 +111,8 @@ Renderer::Renderer() : colorscheme(nullptr)
 	renderer_shader.progid = edgeshader_prog; // 0
 	renderer_shader.type = EDGE_RENDERING;
 	renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
-        renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-        renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+	renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
+	renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
 
 	PRINTD("Renderer() end");
 }
@@ -171,10 +131,22 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 	return false;
 }
 
+std::string Renderer::loadShaderSource(const std::string& name) {
+	std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
+	std::stringstream buffer;
+	std::ifstream f(shaderPath);
+	if (f.is_open()) {
+		buffer << f.rdbuf();
+	} else {
+		LOG(message_group::UI_Error, Location::NONE,"","Cannot open shader source file: '%1$s'", shaderPath);
+	}
+	return buffer.str();
+}
+
 Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) const {
-    int csgmode = highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
-    if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
-    return csgmode_e(csgmode);
+	int csgmode = highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
+	if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
+	return csgmode_e(csgmode);
 }
 
 void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const
