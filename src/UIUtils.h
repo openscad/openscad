@@ -47,7 +47,7 @@ namespace UIUtils {
 
     void openUserManualURL();
 
-    void openOfflineUserManualURL();
+    bool hasOfflineUserManual(bool openManual);
 
     void openCheatSheetURL();
 }
