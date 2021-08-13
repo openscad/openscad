@@ -48,16 +48,11 @@ void MouseSelector::init_shader() {
     Attributes:
       * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
   */
-  const char *vs_source =
-    "void main() {\n"
-    "  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-    "}\n";
 
-  const char *fs_source =
-    "uniform vec3 frag_idcolor;\n"
-    "void main() {\n"
-    "  gl_FragColor = vec4(frag_idcolor, 1.0);\n"
-    "}\n";
+  std::string vs_str = Renderer::loadShaderSource("MouseSelector.vert");
+  std::string fs_str = Renderer::loadShaderSource("MouseSelector.frag");
+  const char* vs_source = vs_str.c_str();
+  const char* fs_source = fs_str.c_str();
 
   int shaderstatus;
 
