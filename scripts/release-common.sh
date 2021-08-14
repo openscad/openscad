@@ -318,6 +318,11 @@ if [ -n $COLORSCHEMESDIR ]; then
   mkdir -p $COLORSCHEMESDIR
   cp -a color-schemes/* $COLORSCHEMESDIR
 fi
+if [ -n $SHADERSDIR ]; then
+  echo $SHADERSDIR
+  mkdir -p $SHADERSDIR
+  cp -a shaders/* $SHADERSDIR
+fi
 if [ -n $TEMPLATESDIR ]; then
   echo $TEMPLATESDIR
   mkdir -p $TEMPLATESDIR
