@@ -200,3 +200,19 @@ void UIUtils::openCheatSheetURL()
     openVersionedURL("https://www.openscad.org/cheatsheet/index.html?version=%1");
 #endif
 }
+
+bool UIUtils::hasOfflineCheatSheet(bool openCheatSheet = false)
+{
+	fs::path resPath = PlatformUtils::resourcePath("resources");
+    fs::path fullPath = resPath/"docs"/"OpenSCADUserDocs"/"openscad_docs"/"CheatSheet.html";
+    if (fs::exists(fullPath) && fs::is_regular_file(fullPath))
+	{
+		if (openCheatSheet)
+		{
+			QString docPath = QString::fromStdString(fullPath.string());
+			QDesktopServices::openUrl(QUrl(docPath));
+		}
+		return true;
+	}
+	return false;
+}

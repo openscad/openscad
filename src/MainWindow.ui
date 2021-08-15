@@ -426,6 +426,7 @@
     <addaction name="helpActionManual"/>
     <addaction name="helpActionOfflineManual"/>
     <addaction name="helpActionCheatSheet"/>
+    <addaction name="helpActionOfflineCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
    </widget>
@@ -1308,6 +1309,11 @@
   <action name="helpActionOfflineManual">
    <property name="text">
     <string>&amp;Offline Documentation</string>
+   </property>
+  </action>
+  <action name="helpActionOfflineCheatSheet">
+   <property name="text">
+    <string>&amp;Offline Cheat Sheet</string>
    </property>
   </action>
   <action name="fileActionClearRecent">

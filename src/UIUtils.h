@@ -50,4 +50,6 @@ namespace UIUtils {
     bool hasOfflineUserManual(bool openManual);
 
     void openCheatSheetURL();
+
+    bool hasOfflineCheatSheet(bool openCheatSheet);
 }

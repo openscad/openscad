@@ -469,7 +469,14 @@ MainWindow::MainWindow(const QStringList &filenames)
 	{
 		this->helpActionOfflineManual->setVisible(false);
 	}
-
+	if (UIUtils::hasOfflineCheatSheet(false)) 
+	{
+		connect(this->helpActionOfflineCheatSheet, SIGNAL(triggered()), this, SLOT(helpOfflineCheatSheet()));
+	}
+	else
+	{
+		this->helpActionOfflineCheatSheet->setVisible(false);
+	}
 #ifdef OPENSCAD_UPDATER
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
@@ -3148,6 +3155,11 @@ void MainWindow::helpOfflineManual()
 void MainWindow::helpCheatSheet()
 {
 	UIUtils::openCheatSheetURL();
+}
+
+void MainWindow::helpOfflineCheatSheet()
+{
+	bool temp = UIUtils::hasOfflineCheatSheet(true);
 }
 
 void MainWindow::helpLibrary()

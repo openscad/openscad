@@ -310,6 +310,7 @@ public slots:
 	void helpManual();
 	void helpOfflineManual();
 	void helpCheatSheet();
+	void helpOfflineCheatSheet();
 	void helpLibrary();
 	void helpFontInfo();
 	void quit();
