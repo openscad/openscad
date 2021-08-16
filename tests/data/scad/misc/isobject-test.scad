@@ -1,0 +1,15 @@
+echo("returning true");
+echo(is_object(fontmetrics()));
+echo("--------");
+echo("returning false");
+echo(is_object(1));
+echo(is_object(1/0));
+echo(is_object(((1/0)/(1/0))));
+echo(is_object("test"));
+echo(is_object(true));
+echo(is_object(false));
+echo(is_object([]));
+echo("--------");
+echo("causing warnings:");
+echo(is_object());
+echo(is_object(1,2));

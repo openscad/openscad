@@ -370,18 +370,25 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 
 Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
-	const Value &v = this->expr->evaluate(context);
+    const Value &v = this->expr->evaluate(context);
 
-	if (v.type() == Value::Type::VECTOR) {
-		if (this->member == "x") return v[0];
-		if (this->member == "y") return v[1];
-		if (this->member == "z") return v[2];
-	} else if (v.type() == Value::Type::RANGE) {
-		if (this->member == "begin") return v[0];
-		if (this->member == "step") return v[1];
-		if (this->member == "end") return v[2];
-	}
-	return Value::undefined.clone();
+    switch(v.type()) {
+    case Value::Type::VECTOR:
+        if (this->member == "x") return v[0];
+        if (this->member == "y") return v[1];
+        if (this->member == "z") return v[2];
+        break;
+    case Value::Type::RANGE:
+        if (this->member == "begin") return v[0];
+        if (this->member == "step") return v[1];
+        if (this->member == "end") return v[2];
+        break;
+    case Value::Type::OBJECT:
+        return v[this->member];
+    default:
+        break;
+    }
+    return Value::undefined.clone();
 }
 
 void MemberLookup::print(std::ostream &stream, const std::string &) const
@@ -809,50 +816,56 @@ static inline ContextHandle<Context> forContext(const std::shared_ptr<const Cont
 }
 
 static void doForEach(
-	const AssignmentList& assignments,
-	const Location& location,
-	const std::function<void(const std::shared_ptr<const Context>&)>& operation,
-	size_t assignment_index,
-	const std::shared_ptr<const Context>& context
+    const AssignmentList& assignments,
+    const Location& location,
+    const std::function<void(const std::shared_ptr<const Context>&)>& operation,
+    size_t assignment_index,
+    const std::shared_ptr<const Context>& context
 ) {
-	if (assignment_index >= assignments.size()) {
-		operation(context);
-		return;
-	}
-	
-	const std::string& variable_name = assignments[assignment_index]->getName();
-	Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
-	
-	if (variable_values.type() == Value::Type::RANGE) {
-		const RangeType &range = variable_values.toRange();
-		uint32_t steps = range.numValues();
-		if (steps >= 1000000) {
-			LOG(message_group::Warning,location,context->documentRoot(),
-				"Bad range parameter in for statement: too many elements (%1$lu)",steps);
-		} else {
-			for (double value : range) {
-				doForEach(assignments, location, operation, assignment_index + 1,
-					*forContext(context, variable_name, value)
-				);
-			}
-		}
-	} else if (variable_values.type() == Value::Type::VECTOR) {
-		for (const auto& value : variable_values.toVector()) {
-			doForEach(assignments, location, operation, assignment_index + 1,
-				*forContext(context, variable_name, value.clone())
-			);
-		}
-	} else if (variable_values.type() == Value::Type::STRING) {
-		for (auto value : variable_values.toStrUtf8Wrapper()) {
-			doForEach(assignments, location, operation, assignment_index + 1,
-				*forContext(context, variable_name, Value(std::move(value)))
-			);
-		}
-	} else if (variable_values.type() != Value::Type::UNDEFINED) {
-		doForEach(assignments, location, operation, assignment_index + 1,
-			*forContext(context, variable_name, std::move(variable_values))
-		);
-	}
+    if (assignment_index >= assignments.size()) {
+        operation(context);
+        return;
+    }
+
+    const std::string& variable_name = assignments[assignment_index]->getName();
+    Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
+
+    if (variable_values.type() == Value::Type::RANGE) {
+        const RangeType &range = variable_values.toRange();
+        uint32_t steps = range.numValues();
+        if (steps >= 1000000) {
+            LOG(message_group::Warning,location,context->documentRoot(),
+                "Bad range parameter in for statement: too many elements (%1$lu)",steps);
+        } else {
+            for (double value : range) {
+                doForEach(assignments, location, operation, assignment_index + 1,
+                    *forContext(context, variable_name, value)
+                );
+            }
+        }
+    } else if (variable_values.type() == Value::Type::VECTOR) {
+        for (const auto& value : variable_values.toVector()) {
+            doForEach(assignments, location, operation, assignment_index + 1,
+                *forContext(context, variable_name, value.clone())
+            );
+        }
+    } else if (variable_values.type() == Value::Type::OBJECT) {
+        for (auto key : variable_values.toObject().keys()) {
+            doForEach(assignments, location, operation, assignment_index + 1,
+                *forContext(context, variable_name, key)
+            );
+        }
+    } else if (variable_values.type() == Value::Type::STRING) {
+        for (auto value : variable_values.toStrUtf8Wrapper()) {
+            doForEach(assignments, location, operation, assignment_index + 1,
+                *forContext(context, variable_name, Value(std::move(value)))
+            );
+        }
+    } else if (variable_values.type() != Value::Type::UNDEFINED) {
+        doForEach(assignments, location, operation, assignment_index + 1,
+            *forContext(context, variable_name, std::move(variable_values))
+        );
+    }
 }
 
 void LcFor::forEach(const AssignmentList& assignments, const Location &loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation)

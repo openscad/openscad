@@ -29,14 +29,16 @@
 #include "expression.h"
 #include "parameters.h"
 
-Parameters::Parameters(ContextFrame&& frame):
-	frame(std::move(frame)),
-	handle(&this->frame)
+Parameters::Parameters(ContextFrame&& frame, const Location &loc):
+    frame(std::move(frame)),
+    handle(&this->frame),
+    loc(loc)
 {}
 
 Parameters::Parameters(Parameters&& other):
-	frame(std::move(other).to_context_frame()),
-	handle(&this->frame)
+    frame(std::move(other).to_context_frame()),
+    handle(&this->frame),
+    loc(other.location())
 {}
 
 boost::optional<const Value&> Parameters::lookup(const std::string& name) const
@@ -67,6 +69,37 @@ const std::string& Parameters::get(const std::string& name, const std::string& d
 {
 	boost::optional<const Value&> value = lookup(name);
 	return (value && value->type() == Value::Type::STRING) ? value->toStrUtf8Wrapper().toString() : default_value;
+}
+
+bool Parameters::valid(const std::string& name, const Value& value,
+    Value::Type type)
+{
+    if (value.type() == type) {
+        return true;
+    }
+    print_argConvert_warning(caller, name, value.type(), {type}, loc,
+        documentRoot());
+    return false;
+}
+
+bool Parameters::valid_required(const std::string& name, Value::Type type)
+{
+    boost::optional<const Value&> value = lookup(name);
+    if (!value) {
+        LOG(message_group::Warning, loc, documentRoot(),
+            "%1$s: missing argument \"%2$s\"", caller, name);
+        return false;
+    }
+    return valid(name, *value, type);
+}
+
+bool Parameters::valid(const std::string& name, Value::Type type)
+{
+    boost::optional<const Value&> value = lookup(name);
+    if (!value || value->isUndefined()) {
+        return true;
+    }
+    return valid(name, *value, type);
 }
 
 ContextFrame Parameters::to_context_frame() &&
@@ -160,7 +193,7 @@ Parameters Parameters::parse(
 		}
 	}
 	
-	return Parameters{std::move(frame)};
+	return Parameters{std::move(frame), loc};
 }
 
 Parameters Parameters::parse(
@@ -183,5 +216,44 @@ Parameters Parameters::parse(
 		}
 	}
 	
-	return Parameters{std::move(frame)};
+	return Parameters{std::move(frame), loc};
+}
+
+void Parameters::set_caller(const std::string &caller)
+{
+    this->caller = caller;
+}
+
+void print_argCnt_warning(
+    const std::string& name,
+    int found,
+    const std::string& expected,
+    const Location& loc,
+    const std::string& documentRoot
+){
+    LOG(message_group::Warning,loc,documentRoot,"%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found),name);
+}
+
+void print_argConvert_warning(
+    const std::string& name,
+    const std::string& where,
+    Value::Type found,
+    std::vector<Value::Type> expected,
+    const Location& loc,
+    const std::string& documentRoot
+){
+    std::stringstream message;
+    message << name << "() parameter could not be converted: " << where << ": expected ";
+    if (expected.size() == 1) {
+        message << Value::typeName(expected[0]);
+    } else {
+        assert(expected.size() > 0);
+        message << "one of (" << Value::typeName(expected[0]);
+        for (size_t i = 1; i < expected.size(); i++) {
+            message << ", " << Value::typeName(expected[i]);
+        }
+        message << ")";
+    }
+    message << ", found " << Value::typeName(found);
+    LOG(message_group::Warning,loc,documentRoot,"%1$s",message.str());
 }
