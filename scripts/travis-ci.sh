@@ -20,29 +20,16 @@ travis_finish() {
   echo -en "\ntravis_time:end:$travis_timer_id:start=$travis_start_time,finish=$travis_end_time,duration=$duration\r\033[0m"
 }
 
-PARALLEL=-j2
+travis_start cmake "Building OpenSCAD using cmake"
 
-# This should be set via .travis.yml depending on the OS/Distribution
-# PARALLEL_CTEST=-j1
-
-travis_start qmake "Building OpenSCAD using qmake"
 export PATH="/usr/local/opt/gettext/bin:$PATH"
-qmake CONFIG+=experimental CONFIG+=nogui && make $PARALLEL
-travis_finish qmake
-
-travis_start cmake "Building tests using cmake"
-
-cd tests
-cmake .
-if [[ $? != 0 ]]; then
-  echo "Error configuring test suite"
-  exit 1
-fi
+mkdir build && cd build
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DEXPERIMENTAL=ON \
+    -DSNAPSHOT=ON \
+    -DHEADLESS=ON
 make $PARALLEL
-if [[ $? != 0 ]]; then
-  echo "Error building test suite"
-  exit 1
-fi
 
 travis_finish cmake
 
@@ -59,6 +46,7 @@ travis_start ctest "Running tests using ctest"
 # throwntogethertest_issue1089
 # throwntogethertest_issue1215
 
+cd tests
 ctest $PARALLEL_CTEST -E "\
 opencsgtest_rotate_extrude-tests|\
 opencsgtest_render-tests|\

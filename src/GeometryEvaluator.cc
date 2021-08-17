@@ -109,8 +109,6 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem &item, unsigned 
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
-	CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
-
 	unsigned int dim = 0;
 	for(const auto &item : this->visitedchildren[node.index()]) {
 		if (!isValidDim(item, dim)) break;
@@ -202,7 +200,6 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	if (points.size() > 0) {
 		// Apply hull
 		std::list<CGALPoint2> result;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
 			// Construct Polygon2d
@@ -214,8 +211,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 		}
 		catch (const CGAL::Failure_exception &e) {
 			LOG(message_group::Warning,Location::NONE,"","GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s",e.what());
-}
-		CGAL::set_error_behaviour(old_behaviour);
+		}
 	}
 	return geometry;
 }
@@ -778,6 +774,13 @@ int sgn_vdiff(const Vector2d &v1, const Vector2d &v2) {
 }
 
 /*
+	Enable/Disable experimental 4-way split quads for linear_extrude, with added midpoint.
+	These look very nice when(and only when) diagonals are near equal.
+	This typically happens when an edge is colinear with the origin.
+*/
+//#define LINEXT_4WAY
+
+/*
 	Attempt to triangulate quads in an ideal way.
 	Each quad is composed of two adjacent outline vertices: (prev1, curr1)
 	and their corresponding transformed points one step up: (prev2, curr2).
@@ -792,9 +795,10 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 {
 	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
 	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
+#ifdef LINEXT_4WAY
 	Eigen::Affine2d trans_mid(Eigen::Scaling((scale1+scale2)/2) * Eigen::Affine2d(rotate_degrees(-(rot1+rot2)/2)));
-	
 	bool is_straight = rot1==rot2 && scale1[0]==scale1[1] && scale2[0]==scale2[1];
+#endif
 	bool any_zero = scale2[0] == 0 || scale2[1] == 0;
 	bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
 	// Not likely to matter, but when no twist (rot2 == rot1),
@@ -819,10 +823,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 			int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
 			bool splitfirst = diff_sign == -1 || (diff_sign == 0 && !flip);
 
-// Enable/Disable testing of 4-way split quads, with added midpoint.
-// These look very nice when(and only when) diagonals are near equal.
-// This typically happens when an edge is colinear with the origin.
-#if 0
+#ifdef LINEXT_4WAY
 			// Diagonals should be equal whenever an edge is co-linear with the origin (edge itself need not touch it)
 			if (!is_straight && diff_sign == 0) {
 				// Split into 4 triangles, with an added midpoint.
@@ -878,49 +879,185 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	}
 }
 
+// Insert vertices for segments interpolated between v0 and v1.  
+// The last vertex (t==1) is not added here to avoid duplicate vertices,
+// since it will be the first vertex of the *next* edge.
+static void add_segmented_edge(Outline2d& o, const Vector2d& v0, const Vector2d& v1, unsigned int edge_segments) {
+	for (unsigned int j = 0; j < edge_segments; ++j) {
+		double t = static_cast<double>(j) / edge_segments;
+		o.vertices.push_back((1 - t) * v0 + t * v1);
+	}
+}
+
+// For each edge in original outline, find its max length over all slice transforms,
+// and divide into segments no longer than fs.
+static Outline2d splitOutlineByFs(
+      const Outline2d &o,
+      const double twist, const double scale_x, const double scale_y,
+      const double fs, unsigned int slices)
+{
+	const auto sz = o.vertices.size();
+
+	Vector2d v0 = o.vertices[0];
+	Outline2d o2;
+	o2.positive = o.positive;
+
+	// non-uniform scaling requires iterating over each slice transform
+	// to find maximum length of a given edge.
+	if (scale_x != scale_y)
+	{
+		for (size_t i = 1; i <= sz; ++i)
+		{
+			Vector2d v1 = o.vertices[i % sz];
+			double max_edgelen = 0.0; // max length for single edge over all transformed slices
+			for (unsigned int j = 0; j <= slices; j++)
+			{
+				double t = static_cast<double>(j) / slices;
+				Vector2d scale(Calc::lerp(1, scale_x, t), Calc::lerp(1, scale_y, t));
+				double rot = twist * t;
+				Eigen::Affine2d trans(Eigen::Scaling(scale) * Eigen::Affine2d(rotate_degrees(-rot)));
+				double edgelen = (trans * v1 - trans * v0).norm();
+				max_edgelen = std::max(max_edgelen, edgelen);
+			}
+			unsigned int edge_segments = static_cast<unsigned int>(std::ceil(max_edgelen / fs));
+			add_segmented_edge(o2, v0, v1, edge_segments);
+			v0 = v1;
+		}
+	} else { // uniform scaling
+		double max_scale = std::max(scale_x, 1.0);
+		for (size_t i = 1; i <= sz; ++i)
+		{
+			Vector2d v1 = o.vertices[i % sz];
+			unsigned int edge_segments = static_cast<unsigned int>(std::ceil((v1-v0).norm() * max_scale / fs));
+			add_segmented_edge(o2, v0, v1, edge_segments);
+			v0 = v1;
+		}
+	}
+	return o2;
+}
+
+// While total outline segments < fn, increment segment_count for edge with largest
+// (max_edge_length / segment_count).
+static Outline2d splitOutlineByFn(
+      const Outline2d &o,
+      const double twist, const double scale_x, const double scale_y,
+      const double fn, unsigned int slices)
+{
+
+	struct segment_tracker {
+		size_t edge_index;
+		double max_edgelen;
+		unsigned int segment_count;
+		segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len), segment_count(1u)	{ }
+		// metric for comparison: average between (max segment length, and max segment length after split)
+		double metric() const { return max_edgelen / (segment_count + 0.5); }
+		bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric();	}
+		bool close_match(const segment_tracker &other) const {
+			// Edges are grouped when metrics match by at least 99.9%
+			constexpr double APPROX_EQ_RATIO = 0.999;
+			double l1 = this->metric(), l2 = other.metric();
+			return std::min(l1, l2) / std::max(l1, l2) >= APPROX_EQ_RATIO;
+		}
+	};
+
+	const auto sz = o.vertices.size();
+	std::vector<unsigned int> segment_counts(sz, 1);
+	std::priority_queue<segment_tracker, std::vector<segment_tracker>> q;
+
+	Vector2d v0 = o.vertices[0];
+	// non-uniform scaling requires iterating over each slice transform
+	// to find maximum length of a given edge.
+	if (scale_x != scale_y)
+	{
+		for (size_t i = 1; i <= sz; ++i)
+		{
+			Vector2d v1 = o.vertices[i % sz];
+			double max_edgelen = 0.0; // max length for single edge over all transformed slices
+			for (unsigned int j = 0; j <= slices; j++)
+			{
+				double t = static_cast<double>(j) / slices;
+				Vector2d scale(Calc::lerp(1, scale_x, t), Calc::lerp(1, scale_y, t));
+				double rot = twist * t;
+				Eigen::Affine2d trans(Eigen::Scaling(scale) * Eigen::Affine2d(rotate_degrees(-rot)));
+				double edgelen = (trans * v1 - trans * v0).norm();
+				max_edgelen = std::max(max_edgelen, edgelen);
+			}
+			q.emplace(i-1, max_edgelen);
+			v0 = v1;
+		}
+	} else { // uniform scaling
+		double max_scale = std::max(scale_x, 1.0);
+		for (size_t i = 1; i <= sz; ++i)
+		{
+			Vector2d v1 = o.vertices[i % sz];
+			double max_edgelen = (v1-v0).norm() * max_scale;
+			q.emplace(i-1, max_edgelen);
+			v0 = v1;
+		}
+	}
+
+	std::vector<segment_tracker> tmp_q;
+	// Process priority_queue until number of segments is reached.
+	size_t seg_total = sz;
+	while (seg_total < fn) {
+		auto current = q.top();
+
+		// Group similar length segmented edges to keep result roughly symmetrical.
+		while (!q.empty() && (tmp_q.empty() || current.close_match(tmp_q.front())))
+		{
+			q.pop();
+			tmp_q.push_back(current);
+			current = q.top();
+		}
+
+		if (seg_total+tmp_q.size() <= fn) {
+			while (!tmp_q.empty()) {
+				current = tmp_q.back();
+				tmp_q.pop_back();
+				++current.segment_count;
+				++segment_counts[current.edge_index];
+				++seg_total;
+				q.push(std::move(current));
+			}
+		} else {
+			// fn too low to segment last group, push back onto queue without change.
+			while (!tmp_q.empty()) {
+				current = tmp_q.back();
+				tmp_q.pop_back();
+				q.push(std::move(current));
+			}
+			break;
+		}
+	}
+
+	// Create final segmented edges.
+	Outline2d o2;
+	o2.positive = o.positive;
+	v0 = o.vertices[0];
+	for (size_t i = 1; i <= sz; ++i) {
+		Vector2d v1 = o.vertices[i % sz];
+		add_segmented_edge(o2, v0, v1, segment_counts[i-1]);
+		v0 = v1;
+	}
+
+	assert(o2.vertices.size() <= fn);
+	return o2;
+}
+
+
 /*!
 	Input to extrude should be sanitized. This means non-intersecting, correct winding order
 	etc., the input coming from a library like Clipper.
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
+	bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
 	boost::tribool isConvex{poly.is_convex()};
-	// Twise or non-uniform scale makes convex polygons into unknown polyhedrons
-	if (isConvex && (node.twist != 0 || node.scale_x != node.scale_y)) isConvex = unknown;
+	// Twist or non-uniform scale makes convex polygons into unknown polyhedrons
+	if (isConvex && non_linear) isConvex = unknown;
 	PolySet *ps = new PolySet(3, isConvex);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
-
-	double h1, h2;
-
-	if (node.center) {
-		h1 = -node.height/2.0;
-		h2 = +node.height/2.0;
-	} else {
-		h1 = 0;
-		h2 = node.height;
-	}
-
-	PolySet *ps_bottom = poly.tessellate(); // bottom
-	
-	// Flip vertex ordering for bottom polygon
-	for(auto &p : ps_bottom->polygons) {
-		std::reverse(p.begin(), p.end());
-	}
-	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
-
-	ps->append(*ps_bottom);
-	delete ps_bottom;
-	// If either scale components are 0, then top will be zero-area, so skip it.
-	if (node.scale_x > 0 && node.scale_y > 0) {
-		Polygon2d top_poly(poly);
-		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
-		top_poly.transform(trans); // top
-		PolySet *ps_top = top_poly.tessellate();
-		translate_PolySet(*ps_top, Vector3d(0,0,h2));
-		ps->append(*ps_top);
-		delete ps_top;
-	}
 
 	size_t slices;
 	if (node.has_slices) {
@@ -952,6 +1089,71 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		slices = 1;
 	}
 
+	// Calculate outline segments if appropriate.
+	Polygon2d seg_poly;
+	bool is_segmented  = false;
+	if (node.has_segments) {
+		// Set segments = 0 to disable
+		if (node.segments > 0) {
+			for (const auto& o : poly.outlines()) {
+				if (o.vertices.size() >= node.segments) {
+					seg_poly.addOutline(o);
+				} else {
+					seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, slices));
+				}
+			}
+			is_segmented = true;
+		}
+	} else if (non_linear) {
+		if (node.fn > 0.0) {
+			for (const auto& o : poly.outlines()) {
+				if (o.vertices.size() >= node.fn) {
+					seg_poly.addOutline(o);
+				} else {
+					seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, slices));
+				}
+			}
+		} else { // $fs and $fa based segmentation
+			unsigned int fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
+			for(const auto &o : poly.outlines()) {
+				if (o.vertices.size() >= fa_segs) {
+					seg_poly.addOutline(o);
+				} else {
+					// try splitting by $fs, then check if $fa results in less segments
+					auto fsOutline = splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, slices);
+					if (fsOutline.vertices.size() >= fa_segs) {
+						seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, slices));
+					} else {
+						seg_poly.addOutline(std::move(fsOutline));
+					}
+				}
+			}
+		}
+		is_segmented = true;
+	}
+
+	const Polygon2d& polyref = is_segmented ? seg_poly : poly;
+
+	double h1, h2;
+	if (node.center) {
+		h1 = -node.height/2.0;
+		h2 = +node.height/2.0;
+	} else {
+		h1 = 0;
+		h2 = node.height;
+	}
+
+	// Create bottom face.
+	PolySet *ps_bottom = polyref.tessellate(); // bottom
+	// Flip vertex ordering for bottom polygon
+	for(auto &p : ps_bottom->polygons) {
+		std::reverse(p.begin(), p.end());
+	}
+	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
+	ps->append(*ps_bottom);
+	delete ps_bottom;
+
+	// Create slice sides.
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*(j+1) / slices;
@@ -961,7 +1163,19 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 										1 - (1-node.scale_y)*j / slices);
 		Vector2d scale2(1 - (1-node.scale_x)*(j+1) / slices,
 										1 - (1-node.scale_y)*(j+1) / slices);
-		add_slice(ps, poly, rot1, rot2, height1, height2, scale1, scale2);
+		add_slice(ps, polyref, rot1, rot2, height1, height2, scale1, scale2);
+	}
+
+	// Create top face.
+	// If either scale components are 0, then top will be zero-area, so skip it.
+	if (node.scale_x != 0 && node.scale_y != 0) {
+		Polygon2d top_poly(polyref);
+		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
+		top_poly.transform(trans);
+		PolySet *ps_top = top_poly.tessellate();
+		translate_PolySet(*ps_top, Vector3d(0,0,h2));
+		ps->append(*ps_top);
+		delete ps_top;
 	}
 
 	return ps;
@@ -973,7 +1187,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	operation:
 		o Union all children
 		o Perform extrude
- */			
+ */
 Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -1046,11 +1260,11 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a,
 */
 static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
-	if (node.angle == 0) return nullptr; 
+	if (node.angle == 0) return nullptr;
 
 	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
-	
+
 	double min_x = 0;
 	double max_x = 0;
 	unsigned int fragments = 0;
@@ -1069,7 +1283,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 
 	bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
-	
+
 	if (node.angle != 360) {
 		PolySet *ps_start = poly.tessellate(); // starting face
 		Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
@@ -1121,7 +1335,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 			}
 		}
 	}
-	
+
 	return ps;
 }
 
@@ -1131,7 +1345,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	operation:
 		o Union all children
 		o Perform extrude
- */			
+ */
 Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -1173,116 +1387,115 @@ Response GeometryEvaluator::visit(State & /*state*/, const AbstractPolyNode & /*
 	return Response::AbortTraversal;
 }
 
+shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode &node)
+{
+	shared_ptr<const class Geometry> geom;
+	shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+	if (newgeom) {
+		shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);
+		if (!Nptr) {
+			Nptr.reset(CGALUtils::createNefPolyhedronFromGeometry(*newgeom));
+		}
+		if (!Nptr->isEmpty()) {
+			Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
+			if (poly) {
+				poly->setConvexity(node.convexity);
+				geom.reset(poly);
+			}
+		}
+	}
+	return geom;
+}
+
+shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode &node)
+{
+	shared_ptr<const class Geometry> geom;
+	std::vector<const Polygon2d *> tmp_geom;
+	BoundingBox bounds;
+	for(const auto &item : this->visitedchildren[node.index()]) {
+		const AbstractNode *chnode = item.first;
+		const shared_ptr<const Geometry> &chgeom = item.second;
+		if (chnode->modinst->isBackground()) continue;
+
+		const Polygon2d *poly = nullptr;
+
+		// Clipper version of Geometry projection
+		// Clipper doesn't handle meshes very well.
+		// It's better in V6 but not quite there. FIXME: stand-alone example.
+		// project chgeom -> polygon2d
+		shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
+		if (!chPS) {
+			shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+			if (chN && !chN->isEmpty()) {
+				PolySet *ps = new PolySet(3);
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+				if (err) {
+					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
+				}
+				else {
+					chPS.reset(ps);
+				}
+			}
+		}
+		if (chPS) poly = PolysetUtils::project(*chPS);
+
+		if (poly) {
+			bounds.extend(poly->getBoundingBox());
+			tmp_geom.push_back(poly);
+		}
+
+	}
+	int pow2 = ClipperUtils::getScalePow2(bounds);
+
+	ClipperLib::Clipper sumclipper;
+	for(auto poly : tmp_geom) {
+		ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly, pow2);
+		// Using NonZero ensures that we don't create holes from polygons sharing
+		// edges since we're unioning a mesh
+		result = ClipperUtils::process(result, ClipperLib::ctUnion, ClipperLib::pftNonZero);
+		// Add correctly winded polygons to the main clipper
+		sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
+		delete poly;
+	}
+
+	ClipperLib::PolyTree sumresult;
+	// This is key - without StrictlySimple, we tend to get self-intersecting results
+	sumclipper.StrictlySimple(true);
+	sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+	if (sumresult.Total() > 0) {
+		geom.reset(ClipperUtils::toPolygon2d(sumresult, pow2));
+	}
+
+	return geom;
+}
+
+
 /*!
 	input: List of 3D objects
 	output: Polygon2d
 	operation:
 		o Union all children
 		o Perform projection
- */			
+ */
 Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isSmartCached(node)) {
-
-			if (!node.cut_mode) {
-				ClipperLib::Clipper sumclipper;
-				for(const auto &item : this->visitedchildren[node.index()]) {
-					const AbstractNode *chnode = item.first;
-					const shared_ptr<const Geometry> &chgeom = item.second;
-					if (chnode->modinst->isBackground()) continue;
-
-					const Polygon2d *poly = nullptr;
-
-// CGAL version of Geometry projection
-// Causes crashes in createNefPolyhedronFromGeometry() for this model:
-// projection(cut=false) {
-//    cube(10);
-//    difference() {
-//      sphere(10);
-//      cylinder(h=30, r=5, center=true);
-//    }
-// }
-#if 0
-					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
-					const PolySet *ps2d = nullptr;
-					shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-					if (chN) chPS.reset(chN->convertToPolyset());
-					if (chPS) ps2d = PolysetUtils::flatten(*chPS);
-					if (ps2d) {
-						CGAL_Nef_polyhedron *N2d = CGALUtils::createNefPolyhedronFromGeometry(*ps2d);
-						poly = N2d->convertToPolygon2d();
-					}
-#endif
-
-// Clipper version of Geometry projection
-// Clipper doesn't handle meshes very well.
-// It's better in V6 but not quite there. FIXME: stand-alone example.
-#if 1
-					// project chgeom -> polygon2d
-					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
-					if (!chPS) {
-						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-						if (chN && !chN->isEmpty()) {
-							PolySet *ps = new PolySet(3);
-							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
-							if (err) {
-								LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
-							}
-							else {
-								chPS.reset(ps);
-							}
-						}
-					}
-					if (chPS) poly = PolysetUtils::project(*chPS);
-#endif
-
-					if (poly) {
-						ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly);
-						// Using NonZero ensures that we don't create holes from polygons sharing
-						// edges since we're unioning a mesh
-						result = ClipperUtils::process(result, 
-																					 ClipperLib::ctUnion, 
-																					 ClipperLib::pftNonZero);
-						// Add correctly winded polygons to the main clipper
-						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
-					}
-
-					delete poly;
-				}
-				ClipperLib::PolyTree sumresult;
-				// This is key - without StrictlySimple, we tend to get self-intersecting results
-				sumclipper.StrictlySimple(true);
-				sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-				if (sumresult.Total() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
-			}
-			else {
-				shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
-				if (newgeom) {
-					shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);
-					if (!Nptr) {
-						Nptr.reset(CGALUtils::createNefPolyhedronFromGeometry(*newgeom));
-					}
-					if (!Nptr->isEmpty()) {
-						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
-						if (poly) {
-							poly->setConvexity(node.convexity);
-							geom.reset(poly);
-						}
-					}
-				}
-			}
-		}
-		else {
+		if (isSmartCached(node)) {
 			geom = smartCacheGet(node, false);
+		} else {
+			if (node.cut_mode) {
+				geom = projectionCut(node);
+			} else {
+				geom = projectionNoCut(node);
+			}
 		}
 		addToParent(state, node, geom);
 		node.progress_report();
 	}
 	return Response::ContinueTraversal;
-}		
+}
 
 /*!
 	input: List of 2D or 3D objects (not mixed)

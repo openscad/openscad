@@ -127,7 +127,7 @@ public:
 		}
 	}
 	void clear() override { data_.clear(); }
-	void remove(size_t count) { data_.erase(data_.end()-(count*C), data_.end()); }
+	void remove(size_t count) override { data_.erase(data_.end()-(count*C), data_.end()); }
 	inline const GLbyte* toBytes() const override { return (GLbyte *)(data_.data()); }
 	
 	inline void addData(GLbyte value) override { add_data((T)value); }

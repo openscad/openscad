@@ -45,6 +45,7 @@ public:
 	virtual void resize(int w, int h);
 	virtual inline const Renderer::shaderinfo_t &getShader() const { return renderer_shader; }
 
+	static std::string loadShaderSource(const std::string& name);
 	virtual void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) {}
 	virtual void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const = 0;
 	virtual BoundingBox getBoundingBox() const = 0;

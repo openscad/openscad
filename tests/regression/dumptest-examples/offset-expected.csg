@@ -1,10 +1,10 @@
-linear_extrude(height = 20, center = false, convexity = 1, scale = [0.5, 0.5], $fn = 40, $fa = 12, $fs = 2) {
+linear_extrude(height = 20, scale = 0.5, $fn = 40, $fa = 12, $fs = 2) {
 	offset(r = 10, $fn = 40, $fa = 12, $fs = 2) {
 		square(size = [50, 50], center = true);
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 20], [0, 0, 0, 1]]) {
-	linear_extrude(height = 20, center = false, convexity = 1, scale = [1, 1], $fn = 40, $fa = 12, $fs = 2) {
+	linear_extrude(height = 20, $fn = 40, $fa = 12, $fs = 2) {
 		group() {
 			difference() {
 				offset(r = 1, $fn = 40, $fa = 12, $fs = 2) {

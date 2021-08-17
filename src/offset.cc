@@ -28,7 +28,8 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
+#include "children.h"
+#include "parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
@@ -42,52 +43,33 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-class OffsetModule : public AbstractModule
+static AbstractNode* builtin_offset(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-public:
-	OffsetModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
+	auto node = new OffsetNode(inst);
 
-AbstractNode *OffsetModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new OffsetNode(inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
 
-	AssignmentList args{assignment("r")};
-	AssignmentList optargs{assignment("delta"),assignment("chamfer")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args, optargs);
-	inst->scope.apply(evalctx);
-
-	node->fn = c->lookup_variable("$fn").toDouble();
-	node->fs = c->lookup_variable("$fs").toDouble();
-	node->fa = c->lookup_variable("$fa").toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
 	// default with no argument at all is (r = 1, chamfer = false)
 	// radius takes precedence if both r and delta are given.
 	node->delta = 1;
 	node->chamfer = false;
 	node->join_type = ClipperLib::jtRound;
-	const auto &r = c->lookup_variable("r", true);
-	const auto &delta = c->lookup_variable("delta", true);
-	const auto &chamfer = c->lookup_variable("chamfer", true);
-
-	if (r.isDefinedAs(Value::Type::NUMBER)) {
-		r.getDouble(node->delta);
-	} else if (delta.isDefinedAs(Value::Type::NUMBER)) {
-		delta.getDouble(node->delta);
+	if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
+		node->delta = parameters["r"].toDouble();
+	} else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
+		node->delta = parameters["delta"].toDouble();
 		node->join_type = ClipperLib::jtMiter;
-		if (chamfer.isDefinedAs(Value::Type::BOOL) && chamfer.toBool()) {
+		if (parameters["chamfer"].isDefinedAs(Value::Type::BOOL) && parameters["chamfer"].toBool()) {
 			node->chamfer = true;
 			node->join_type = ClipperLib::jtSquare;
 		}
 	}
 
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
-	return node;
+	return children.instantiate(node);
 }
 
 std::string OffsetNode::toString() const
@@ -110,7 +92,7 @@ std::string OffsetNode::toString() const
 
 void register_builtin_offset()
 {
-	Builtins::init("offset", new OffsetModule(),
+	Builtins::init("offset", new BuiltinModule(builtin_offset),
 				{
 					"offset(r = number)",
 					"offset(delta = number)",

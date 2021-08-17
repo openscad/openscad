@@ -22,6 +22,7 @@ class tostring_visitor;
 class tostream_visitor;
 class Context;
 class Expression;
+class Value;
 
 class QuotedString : public std::string
 {
@@ -166,6 +167,7 @@ public:
 
   const T& operator*() const { return *value; }
   const T* operator->() const { return value.get(); }
+  const std::shared_ptr<T>& get() const { return value; }
 
 private:
   std::shared_ptr<T> value;
@@ -250,8 +252,8 @@ private:
 
 class FunctionType {
 public:
-  FunctionType(std::shared_ptr<Context> ctx, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> args)
-    : ctx(ctx), expr(expr), args(args) { }
+  FunctionType(std::shared_ptr<const Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
+    : context(context), expr(expr), parameters(parameters) { }
   Value operator==(const FunctionType &other) const;
   Value operator!=(const FunctionType &other) const;
   Value operator< (const FunctionType &other) const;
@@ -259,13 +261,13 @@ public:
   Value operator<=(const FunctionType &other) const;
   Value operator>=(const FunctionType &other) const;
 
-  const std::shared_ptr<Context>& getCtx() const { return ctx; }
+  const std::shared_ptr<const Context>& getContext() const { return context; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
-  const std::shared_ptr<AssignmentList>& getArgs() const { return args; }
+  const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
 private:
-  std::shared_ptr<Context> ctx;
+  std::shared_ptr<const Context> context;
   std::shared_ptr<Expression> expr;
-  std::shared_ptr<AssignmentList> args;
+  std::shared_ptr<AssignmentList> parameters;
 };
 
 using FunctionPtr = ValuePtr<FunctionType>;
@@ -330,7 +332,8 @@ public:
     VECTOR,
     EMBEDDED_VECTOR,
     RANGE,
-    FUNCTION
+    FUNCTION,
+    OBJECT
   };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -368,10 +371,13 @@ public:
       using size_type = vec_t::size_type;
       vec_t vec;
       size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
+      class EvaluationSession* evaluation_session = nullptr; // Used for heap size bookkeeping. May be null for vectors of known small maximum size.
       size_type size() const { return vec.size() + embed_excess;  }
     };
     using vec_t = VectorObject::vec_t;
+  public:
     shared_ptr<VectorObject> ptr;
+  protected:
 
     // A Deleter is used on the shared_ptrs to avoid stack overflow in cases
     // of destructing a very large list of nested embedded vectors, such as from a
@@ -446,14 +452,14 @@ public:
       bool operator!=(const iterator &other) const { return this->vo != other.vo || this->index != other.index; }
     };
     using const_iterator = const iterator;
-    VectorType() : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
-    VectorType(double x, double y, double z);
+    VectorType(class EvaluationSession* session);// : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
+    VectorType(class EvaluationSession* session, double x, double y, double z);
     VectorType(const VectorType &) = delete;            // never copy, move instead
     VectorType& operator=(const VectorType &) = delete; // never copy, move instead
     VectorType(VectorType&&) = default;
     VectorType& operator=(VectorType&&) = default;
     VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
-    static Value Empty() { return VectorType(); }
+    static Value Empty() { return VectorType(nullptr); }
 
     const_iterator begin() const { return iterator(ptr.get()); }
     const_iterator   end() const { return iterator(ptr.get(), true); }
@@ -474,17 +480,18 @@ public:
     Value operator!=(const VectorType &v) const;
     Value operator<=(const VectorType &v) const;
     Value operator>=(const VectorType &v) const;
+    class EvaluationSession* evaluation_session() const { return ptr->evaluation_session; }
 
     void emplace_back(Value&& val);
     void emplace_back(EmbeddedVectorType&& mbed);
-    template<typename... Args> void emplace_back(Args&&... args) { ptr->vec.emplace_back(std::forward<Args>(args)...); }
+    template<typename... Args> void emplace_back(Args&&... args) { emplace_back(Value(std::forward<Args>(args)...)); }
   };
 
   class EmbeddedVectorType : public VectorType {
   private:
       explicit EmbeddedVectorType(const shared_ptr<VectorObject> &copy) : VectorType(copy) { } // called by clone()
   public:
-    EmbeddedVectorType() : VectorType() {};
+    EmbeddedVectorType(class EvaluationSession* session) : VectorType(session) {};
     EmbeddedVectorType(const EmbeddedVectorType &) = delete;
     EmbeddedVectorType& operator=(const EmbeddedVectorType &) = delete;
     EmbeddedVectorType(EmbeddedVectorType&&) = default;
@@ -492,7 +499,33 @@ public:
 
     EmbeddedVectorType(VectorType&& v) : VectorType(std::move(v)) {}; // converting constructor
     EmbeddedVectorType clone() const { return EmbeddedVectorType(this->ptr); }
-    static Value Empty() { return EmbeddedVectorType(); }
+    static Value Empty() { return EmbeddedVectorType(nullptr); }
+  };
+
+  class ObjectType {
+  protected:
+    struct ObjectObject;
+    struct ObjectObjectDeleter {
+      void operator()(ObjectObject* obj);
+    };
+
+  private:
+    explicit ObjectType(const shared_ptr<ObjectObject> &copy);
+
+  public:
+    shared_ptr<ObjectObject> ptr;
+    ObjectType(class EvaluationSession* session);
+    ObjectType clone() const;
+    const Value& get(const std::string& key) const;
+    void set(const std::string& key, Value&& value);
+    Value operator==(const ObjectType &v) const;
+    Value operator< (const ObjectType &v) const;
+    Value operator> (const ObjectType &v) const;
+    Value operator!=(const ObjectType &v) const;
+    Value operator<=(const ObjectType &v) const;
+    Value operator>=(const ObjectType &v) const;
+    const Value& operator[](const str_utf8_wrapper &v) const;
+    const std::vector<std::string>& keys() const;
   };
 
 private:
@@ -513,6 +546,7 @@ public:
   static Value undef(const std::string &why); // creation of undef requires a reason!
 
   const std::string typeName() const;
+  static std::string typeName(Type type);
   Type type() const { return static_cast<Type>(this->value.which()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }
@@ -529,6 +563,7 @@ public:
   EmbeddedVectorType &toEmbeddedVectorNonConst();
   const RangeType& toRange() const;
   const FunctionType& toFunction() const;
+  const ObjectType &toObject() const;
 
   // Other conversion utility functions
   bool getDouble(double &v) const;
@@ -572,12 +607,27 @@ public:
     return stream;
   }
 
-  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr> Variant;
-  static_assert(sizeof(Variant) <= 24, "Memory size of Value too big");
+  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType> Variant;
+
+
+  static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
+  const Variant& getVariant() const { return value; }
 
 private:
   Variant value;
 };
 
+// The object type which ObjectType's shared_ptr points to.
+struct Value::ObjectType::ObjectObject {
+    using obj_t = std::unordered_map<std::string, Value>;
+    obj_t map;
+    class EvaluationSession* evaluation_session = nullptr;
+    std::vector<std::string> keys;
+    std::vector<Value> values;
+};
+
+std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
+
 using VectorType = Value::VectorType;
 using EmbeddedVectorType = Value::EmbeddedVectorType;
+using ObjectType = Value::ObjectType;

@@ -6,18 +6,18 @@
 
 #
 # This program 'pretty prints' the ctest output, including
-# - log files from builddir/Testing/Temporary/ 
+# - log files from builddir/Testing/Temporary/
 # - .png and .txt files from testname-output/*
 #
 # The result is a single html report file with images data-uri encoded
 # into the file. It can be uploaded as a single static file to a web server
-# or the 'test_upload.py' script can be used. 
+# or the 'test_upload.py' script can be used.
 
 
 # Design philosophy
 #
 # 1. parse the data (images, logs) into easy-to-use data structures
-# 2. wikifiy the data 
+# 2. wikifiy the data
 # 3. save the wikified data to disk
 # 4. generate html, including base64 encoding of images
 # 5. save html file
@@ -29,16 +29,9 @@
 
 from __future__ import print_function
 
-import string
-import sys
-import re
-import os
-import hashlib
-import subprocess
-import time
-import platform
-import html
-import base64
+import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
+
+
 try:
     from urllib.error import URLError
     from urllib.request import urlopen
@@ -58,7 +51,7 @@ def tryread(filename):
         debug( "couldn't open file: [" + filename + "]" )
         debug( str(type(e))+str(e) )
         if filename==None:
-            # don't write a bunch of extra errors during test output. 
+            # don't write a bunch of extra errors during test output.
             # the reporting of test failure is sufficient to indicate a problem
             pass
     return data
@@ -83,9 +76,9 @@ def ezsearch(pattern, str):
     x = re.search(pattern,str,re.DOTALL|re.MULTILINE)
     if x and len(x.groups())>0: return x.group(1).strip()
     return ''
-    
+
 def read_gitinfo():
-    # won't work if run from outside of branch. 
+    # won't work if run from outside of branch.
     try:
         data = subprocess.Popen(['git', 'remote', '-v'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
         origin = ezsearch('^origin *?(.*?)\(fetch.*?$', data)
@@ -146,7 +139,7 @@ class Test:
         self.fulltestlog = log
         self.actualfile_data = None
         self.expectedfile_data = None
-        
+
     def info(self):
         x = 'fullname: ' + self.fullname
         x+= '\nactualfile: ' + self.actualfile
@@ -171,10 +164,10 @@ def parsetest(teststring):
         'Command:.*?-s" "(.*?)"', # type
         "^ actual .*?:(.*?)\n",
         "^ expected .*?:(.*?)\n",
-        'Command:.*?(testdata.*?)"' # scadfile 
+        'Command:.*?(tests/data.*?)"' # scadfile
         ]
     hits = list(map(lambda pattern: ezsearch(pattern, teststring), patterns))
-    test = Test(hits[0], hits[1], hits[2]=='Passed', hits[3], hits[4], hits[5], 
+    test = Test(hits[0], hits[1], hits[2]=='Passed', hits[3], hits[4], hits[5],
                 hits[6], hits[7], teststring)
     if len(test.actualfile) > 0:
         test.actualfile_data = tryread(test.actualfile)
@@ -229,7 +222,7 @@ def findlogfile(builddir):
     return logfilename
 
 # --- Templating ---
-    
+
 class Templates(object):
     html_template = '''<html>
     <head><title>Test run for {sysid}</title>
@@ -244,7 +237,7 @@ class Templates(object):
         <p>
             <b>Result summary</b>:  {numpassed} / {numtests} tests passed ({percent}%)
         </p>
-        
+
         <p>
             <b>System info</b>
         </p>
@@ -453,12 +446,12 @@ def main():
     global builddir, debug_test_pp
     global maxretry, dry, include_passed
     project_name = 'OpenSCAD'
-    
+
     if bool(os.getenv("TEST_GENERATE")):
         sys.exit(0)
-    
+
     # --- Command Line Parsing ---
-    
+
     if '--debug' in ' '.join(sys.argv):
         debug_test_pp = True
     maxretry = 10
@@ -487,7 +480,7 @@ def main():
     # to CTEST_CUSTOM_POST_TEST
     if bool(os.getenv("OPENSCAD_UPLOAD_TESTS")):
         upload = True
-    
+
     # --- End Command Line Parsing ---
 
     sysinfo, sysid = read_sysinfo(os.path.join(builddir, 'sysinfo.txt'))

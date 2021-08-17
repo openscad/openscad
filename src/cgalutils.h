@@ -23,18 +23,6 @@ namespace /* anonymous */ {
 
 namespace CGALUtils {
 
-	class CGALErrorBehaviour {
-	public:
-		CGALErrorBehaviour(CGAL::Failure_behaviour behaviour) {
-			old_behaviour = CGAL::set_error_behaviour(behaviour);
-		}
-		~CGALErrorBehaviour() {
-			CGAL::set_error_behaviour(old_behaviour);
-		}
-	private:
-		CGAL::Failure_behaviour old_behaviour;
-	};
-
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	CGAL_Nef_polyhedron *applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	CGAL_Nef_polyhedron *applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
@@ -45,7 +33,6 @@ namespace CGALUtils {
 	bool is_approximately_convex(const PolySet &ps);
 	Geometry const* applyMinkowski(const Geometry::Geometries &children);
 
-	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 	template <class Polyhedron_A, class Polyhedron_B> 

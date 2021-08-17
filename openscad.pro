@@ -82,7 +82,7 @@ else {
 }
 FULLNAME = openscad$${SUFFIX}
 APPLICATIONID = org.openscad.OpenSCAD
-!isEmpty(SUFFIX): DEFINES += INSTALL_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
+!isEmpty(SUFFIX): DEFINES += OPENSCAD_SUFFIX="\"\\\"$${SUFFIX}\\\"\""
 
 macx {
   snapshot {
@@ -236,11 +236,17 @@ FORMS   += src/MainWindow.ui \
            src/FontListDialog.ui \
            src/PrintInitDialog.ui \
            src/ProgressWidget.ui \
-           src/launchingscreen.ui \
+           src/LaunchingScreen.ui \
            src/LibraryInfoDialog.ui \
            src/Console.ui \
            src/parameter/ParameterWidget.ui \
-           src/parameter/ParameterEntryWidget.ui \
+           src/parameter/ParameterCheckBox.ui \
+           src/parameter/ParameterComboBox.ui \
+           src/parameter/ParameterDescriptionWidget.ui \
+           src/parameter/ParameterSlider.ui \
+           src/parameter/ParameterSpinBox.ui \
+           src/parameter/ParameterText.ui \
+           src/parameter/ParameterVector.ui \
            src/input/ButtonConfigWidget.ui \
            src/input/AxisConfigWidget.ui
 
@@ -250,12 +256,13 @@ BISONSOURCES += src/parser.y
 
 HEADERS += src/AST.h \
            src/ModuleInstantiation.h \
-           src/Package.h \
            src/Assignment.h \
            src/expression.h \
            src/function.h \
            src/module.h \           
            src/UserModule.h \
+           src/SourceFile.h \
+           src/SourceFileCache.h
 
 SOURCES += src/AST.cc \
            src/ModuleInstantiation.cc \
@@ -265,7 +272,9 @@ SOURCES += src/AST.cc \
            src/function.cc \
            src/module.cc \
            src/UserModule.cc \
-           src/annotation.cc
+           src/annotation.cc \
+           src/SourceFile.cc \
+           src/SourceFileCache.cc
 
 # Comment parser
 FLEXSOURCES += src/comment_lexer.l
@@ -278,7 +287,7 @@ HEADERS += src/version_check.h \
            src/renderer.h \
 	   src/VertexArray.h \
            src/VBORenderer.h \
-           src/settings.h \
+           src/Settings.h \
            src/rendersettings.h \
            src/colormap.h \
            src/ThrownTogetherRenderer.h \
@@ -286,27 +295,30 @@ HEADERS += src/version_check.h \
            src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
-           src/tabmanager.h \
-           src/tabwidget.h \
+           src/TabManager.h \
+           src/TabWidget.h \
            src/OpenSCADApp.h \
            src/WindowManager.h \
-           src/initConfig.h \
+           src/InitConfigurator.h \
            src/Preferences.h \
            src/SettingsWriter.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
            src/FontListTableView.h \
-           src/GroupModule.h \
-           src/FileModule.h \
            src/StatCache.h \
-           src/scadapi.h \
+           src/ScadApi.h \
            src/builtin.h \
            src/calc.h \
+           src/evaluationsession.h \
            src/context.h \
+           src/contextframe.h \
+           src/context-mm.h \
            src/builtincontext.h \
            src/modcontext.h \
-           src/evalcontext.h \
+           src/arguments.h \
+           src/children.h \
+           src/parameters.h \
            src/csgops.h \
            src/CSGTreeNormalizer.h \
            src/CSGTreeEvaluator.h \
@@ -345,12 +357,11 @@ HEADERS += src/version_check.h \
            src/fileutils.h \
            src/value.h \
            src/progress.h \
-           src/editor.h \
+           src/Editor.h \
            src/NodeVisitor.h \
            src/state.h \
            src/nodecache.h \
            src/nodedumper.h \
-           src/ModuleCache.h \
            src/GeometryCache.h \
            src/GeometryEvaluator.h \
            src/Tree.h \
@@ -365,7 +376,7 @@ HEADERS += src/version_check.h \
            src/LibraryInfo.h \
            src/RenderStatistic.h \
            src/svg.h \
-           src/mouseselector.h \
+           src/MouseSelector.h \
            \
            src/OffscreenView.h \
            src/OffscreenContext.h \
@@ -379,24 +390,23 @@ HEADERS += src/version_check.h \
            src/Console.h \
            src/ErrorLog.h \
            src/AutoUpdater.h \
-           src/launchingscreen.h \
+           src/LaunchingScreen.h \
            src/LibraryInfoDialog.h \
            \
            src/comment.h\
            \
            src/parameter/ParameterWidget.h \
            src/parameter/parameterobject.h \
-           src/parameter/parameterextractor.h \
-           src/parameter/parametervirtualwidget.h \
-           src/parameter/parameterspinbox.h \
-           src/parameter/parametercombobox.h \
-           src/parameter/parameterslider.h \
-           src/parameter/parametercheckbox.h \
-           src/parameter/parametertext.h \
-           src/parameter/parametervector.h \
-           src/parameter/groupwidget.h \
+           src/parameter/ParameterVirtualWidget.h \
+           src/parameter/ParameterSpinBox.h \
+           src/parameter/ParameterComboBox.h \
+           src/parameter/ParameterSlider.h \
+           src/parameter/ParameterCheckBox.h \
+           src/parameter/ParameterText.h \
+           src/parameter/ParameterVector.h \
+           src/parameter/GroupWidget.h \
            src/parameter/parameterset.h \
-           src/parameter/ignoreWheelWhenNotFocused.h \
+           src/parameter/IgnoreWheelWhenNotFocused.h \
            src/QWordSearchField.h \
            src/QSettingsCached.h \
            src/input/InputDriver.h \
@@ -422,6 +432,7 @@ SOURCES += \
            src/libsvg/path.cc \
            src/libsvg/shape.cc \
            src/libsvg/transformation.cc \
+           src/libsvg/use.cc \
            src/libsvg/util.cc \
            \
            src/version_check.cc
@@ -437,10 +448,15 @@ SOURCES += \
            src/localscope.cc \
            src/feature.cc \
            src/node.cc \
+           src/evaluationsession.cc \
            src/context.cc \
+           src/contextframe.cc \
+           src/context-mm.cc \
            src/builtincontext.cc \
            src/modcontext.cc \
-           src/evalcontext.cc \
+           src/arguments.cc \
+           src/children.cc \
+           src/parameters.cc \
            src/csgnode.cc \
            src/CSGTreeNormalizer.cc \
            src/CSGTreeEvaluator.cc \
@@ -477,29 +493,27 @@ SOURCES += \
            src/nodedumper.cc \
            src/NodeVisitor.cc \
            src/GeometryEvaluator.cc \
-           src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
 	       src/DrawingCallback.cc \
 	       src/FreetypeRenderer.cc \
 	       src/FontCache.cc \
            \
-           src/settings.cc \
+           src/Settings.cc \
            src/rendersettings.cc \
-           src/initConfig.cc \
+           src/InitConfigurator.cc \
            src/Preferences.cc \
            src/SettingsWriter.cc \
            src/OpenCSGWarningDialog.cc \
-           src/editor.cc \
+           src/Editor.cc \
            src/GLView.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \
            \
            src/hash.cc \
            src/GroupModule.cc \
-           src/FileModule.cc \
            src/StatCache.cc \
-           src/scadapi.cc \
+           src/ScadApi.cc \
            src/builtin.cc \
            src/calc.cc \
            src/export.cc \
@@ -530,9 +544,9 @@ SOURCES += \
            \
            src/version.cc \
            src/openscad.cc \
-           src/mainwin.cc \
-           src/tabmanager.cc \
-           src/tabwidget.cc \
+           src/MainWindow.cc \
+           src/TabManager.cc \
+           src/TabWidget.cc \
            src/OpenSCADApp.cc \
            src/WindowManager.cc \
            src/UIUtils.cc \
@@ -541,25 +555,24 @@ SOURCES += \
            src/ErrorLog.cc \
            src/FontListDialog.cc \
            src/FontListTableView.cc \
-           src/launchingscreen.cc \
+           src/LaunchingScreen.cc \
            src/LibraryInfoDialog.cc\
            \
-           src/comment.cpp \
-           src/mouseselector.cc \
+           src/comment.cc \
+           src/MouseSelector.cc \
            \
            src/parameter/ParameterWidget.cc\
-           src/parameter/parameterobject.cpp \
-           src/parameter/parameterextractor.cpp \
-           src/parameter/parameterspinbox.cpp \
-           src/parameter/parametercombobox.cpp \
-           src/parameter/parameterslider.cpp \
-           src/parameter/parametercheckbox.cpp \
-           src/parameter/parametertext.cpp \
-           src/parameter/parametervector.cpp \
-           src/parameter/groupwidget.cpp \
-           src/parameter/parameterset.cpp \
-           src/parameter/parametervirtualwidget.cpp \
-           src/parameter/ignoreWheelWhenNotFocused.cpp \
+           src/parameter/parameterobject.cc \
+           src/parameter/ParameterSpinBox.cc \
+           src/parameter/ParameterComboBox.cc \
+           src/parameter/ParameterSlider.cc \
+           src/parameter/ParameterCheckBox.cc \
+           src/parameter/ParameterText.cc \
+           src/parameter/ParameterVector.cc \
+           src/parameter/GroupWidget.cc \
+           src/parameter/parameterset.cc \
+           src/parameter/ParameterVirtualWidget.cc \
+           src/parameter/IgnoreWheelWhenNotFocused.cc \
            src/QWordSearchField.cc\
            src/QSettingsCached.cc \
            \
@@ -656,7 +669,7 @@ HEADERS += src/cgal.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
-           src/cgalworker.h \
+           src/CGALWorker.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
@@ -667,7 +680,7 @@ SOURCES += src/cgalutils.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
-           src/cgalworker.cc \
+           src/CGALWorker.cc \
            src/Polygon2d-CGAL.cc \
            src/import_nef.cc
 }
@@ -730,6 +743,10 @@ INSTALLS += fonts
 colorschemes.path = "$$PREFIX/share/$${FULLNAME}/color-schemes/"
 colorschemes.files = color-schemes/*
 INSTALLS += colorschemes
+
+shaders.path = "$$PREFIX/share/$${FULLNAME}/shaders/"
+shaders.files = shaders/*
+INSTALLS += shaders
 
 templates.path = "$$PREFIX/share/$${FULLNAME}/templates/"
 templates.files = templates/*

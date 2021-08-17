@@ -19,8 +19,8 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h> 
-#include <CGAL/version.h> 
+#include <CGAL/config.h>
+#include <CGAL/version.h>
 
 #include <CGAL/convex_hull_3.h>
 #pragma pop_macro("NDEBUG")
@@ -69,7 +69,6 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 
 	CGAL_Nef_polyhedron3 *N = nullptr;
 	auto plane_error = false;
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
 		auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
@@ -107,7 +106,6 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		catch (const CGAL::Assertion_exception &e) {
 			LOG(message_group::Error,Location::NONE,"","Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s",e.what());
 		}
-	CGAL::set_error_behaviour(old_behaviour);
 	return new CGAL_Nef_polyhedron(N);
 }
 

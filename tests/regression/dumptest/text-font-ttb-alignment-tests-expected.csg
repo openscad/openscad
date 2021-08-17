@@ -1,0 +1,71 @@
+group() {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [20, 1], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, -135], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [1, 135], center = false);
+			}
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ttb", language = "en", script = "Latn", halign = "default", valign = "top", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [20, 1], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, -135], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [1, 135], center = false);
+			}
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ttb", language = "en", script = "Latn", halign = "default", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 100], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [20, 1], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, -135], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [1, 135], center = false);
+			}
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ttb", language = "en", script = "Latn", halign = "default", valign = "bottom", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 200], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [20, 1], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, -135], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [1, 135], center = false);
+			}
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ttb", language = "en", script = "Latn", halign = "left", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 260], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [20, 1], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, -135], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [1, 135], center = false);
+			}
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ttb", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 320], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			square(size = [20, 1], center = false);
+		}
+		color([0, 0, 1, 1]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, -135], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				square(size = [1, 135], center = false);
+			}
+		}
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ttb", language = "en", script = "Latn", halign = "right", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+

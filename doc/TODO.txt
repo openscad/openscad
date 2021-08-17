@@ -6,7 +6,7 @@ o Tesselation via GLU sometimes produces strange results
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
 o Look into the polygon winding and rotate_extrude() problem reported by Britton
 o CGAL Aff_transformation_3 doesn't support non-affine transformations (non-aff-matrix.scad)
-o 2D union of polygons with a touching vertex doesn't work. see testdata/scad/bugs/polygon-touch.scad
+o 2D union of polygons with a touching vertex doesn't work. see tests/data/scad/bugs/polygon-touch.scad
 
 STL Import BUGS (FIXME: Verify and move these to github)
 --------------------------------------------------------
@@ -115,7 +115,7 @@ o Misc
   - Show design info/stats (sizes, caches etc.)
   - Support Voice Over and related technologies for vision-impaired users
 o Cmd-line
-  - Add verbose option (PRINT command from mainwin.cc and progress output)
+  - Add verbose option (PRINT command from MainWindow.cc and progress output)
 
 OpenCSG-related
 ---------------

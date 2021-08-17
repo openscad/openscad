@@ -2,65 +2,40 @@
 #include "modcontext.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
+#include "node.h"
 #include "UserModule.h"
 #include "expression.h"
 #include "function.h"
 #include "annotation.h"
 #include "UserModule.h"
 
-LocalScope::LocalScope()
-{
-}
-
-LocalScope::~LocalScope()
-{
-}
-
-void LocalScope::addChild(shared_ptr<ASTNode> node)
-{
-	// FIXME: Move this out of the ASTNode subtype
-	if (auto modinst = dynamic_pointer_cast<ModuleInstantiation>(node)) {
-		this->addModuleInst(std::move(modinst));
-	}
-	if (auto module = dynamic_pointer_cast<UserModule>(node)) {
-		this->addModule(std::move(module));
-	}
-	if (auto function = dynamic_pointer_cast<UserFunction>(node)) {
-		this->addFunction(std::move(function));
-	}
-	if (auto assignment = dynamic_pointer_cast<Assignment>(node)) {
-		this->addAssignment(std::move(assignment));
-	}
-	this->children.emplace_back(std::move(node));
-}
-
-void LocalScope::addModuleInst(shared_ptr<ModuleInstantiation> &&modinst)
+void LocalScope::addModuleInst(const shared_ptr<ModuleInstantiation>& modinst)
 {
 	assert(modinst);
-	this->children_inst.emplace_back(std::move(modinst));
+	this->moduleInstantiations.push_back(modinst);
 }
 
-void LocalScope::addModule(shared_ptr<class UserModule> &&module)
+void LocalScope::addModule(const shared_ptr<class UserModule>& module)
 {
 	assert(module);
 	auto it=this->modules.find(module->name);
 	if(it!=this->modules.end()) it->second=module;
 	else this->modules.emplace(module->name, module);
-	this->astModules.emplace_back(module->name, std::move(module));
+	this->astModules.emplace_back(module->name, module);
 }
 
-void LocalScope::addFunction(shared_ptr<class UserFunction> &&func)
+void LocalScope::addFunction(const shared_ptr<class UserFunction>& func)
 {
 	assert(func);
 	auto it=this->functions.find(func->name);
 	if(it!=this->functions.end()) it->second=func;
 	else this->functions.emplace(func->name, func);
-	this->astFunctions.emplace_back(func->name, std::move(func));
+	this->astFunctions.emplace_back(func->name, func);
 }
 
-void LocalScope::addAssignment(shared_ptr<Assignment> &&ass)
+void LocalScope::addAssignment(const shared_ptr<Assignment>& ass)
 {
-	this->assignments.emplace_back(std::move(ass));
+	this->assignments.push_back(ass);
 }
 
 void LocalScope::print(std::ostream &stream, const std::string &indent, const bool inlined) const
@@ -74,32 +49,30 @@ void LocalScope::print(std::ostream &stream, const std::string &indent, const bo
 	for (const auto &ass : this->assignments) {
 		ass->print(stream, indent);
 	}
-	for (const auto &inst : this->children_inst) {
+	for (const auto &inst : this->moduleInstantiations) {
 		inst->print(stream, indent, inlined);
 	}
 }
 
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const std::shared_ptr<Context> &evalctx) const
+AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<const Context> &context, AbstractNode* target) const
 {
-	std::vector<AbstractNode*> childnodes;
-	for(const auto &modinst : this->children_inst) {
-		AbstractNode *node = modinst->evaluate(evalctx);
-		if (node) childnodes.push_back(node);
+	for(const auto &modinst : this->moduleInstantiations) {
+		AbstractNode *node = modinst->evaluate(context);
+		if (node) {
+			target->children.push_back(node);
+		}
 	}
-
-	return childnodes;
+	return target;
 }
 
-/*!
-	When instantiating a module which can take a scope as parameter (i.e. non-leaf nodes),
-	use this method to apply the local scope definitions to the evaluation context.
-	This will enable variables defined in local blocks.
-	NB! for loops are special as the local block may depend on variables evaluated by the
-	for loop parameters. The for loop code will handle this specially.
-*/
-void LocalScope::apply(const std::shared_ptr<Context> &ctx) const
+AbstractNode* LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, AbstractNode* target, const std::vector<size_t>& indices) const
 {
-	for(const auto &assignment : this->assignments) {
-		ctx->set_variable(assignment->getName(), assignment->getExpr()->evaluate(ctx));
+	for (size_t index : indices) {
+		assert(index < this->moduleInstantiations.size());
+		AbstractNode *node = moduleInstantiations[index]->evaluate(context);
+		if (node) {
+			target->children.push_back(node);
+		}
 	}
+	return target;
 }

@@ -1,6 +1,6 @@
 #include "compiler_specific.h"
+#include "context.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "expression.h"
 #include "exceptions.h"
 #include "printutils.h"
@@ -14,22 +14,6 @@ ModuleInstantiation::~ModuleInstantiation()
 
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
 {
-}
-
-/*!
-	Returns the absolute path to the given filename, unless it's empty.
-
-	NB! This will actually search for the file, to be backwards compatible with <= 2013.01
-	(see issue #217)
-*/
-std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
-{
-	if (!filename.empty() && !fs::path(filename).is_absolute()) {
-		return fs::absolute(fs::path(this->modpath) / filename).string();
-	}
-	else {
-		return filename;
-	}
 }
 
 void ModuleInstantiation::print(std::ostream &stream, const std::string &indent, const bool inlined) const
@@ -83,33 +67,27 @@ void IfElseModuleInstantiation::print(std::ostream &stream, const std::string &i
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
 */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<Context> ctx){
-	LOG(message_group::Trace,mod->location(),ctx->documentPath(),"called by '%1$s'",mod->name());
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context> context){
+	LOG(message_group::Trace,mod->location(),context->documentRoot(),"called by '%1$s'",mod->name());
 }
 
-AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<Context> ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const
 {
-	ContextHandle<EvalContext> c{Context::create<EvalContext>(ctx, this->arguments, this->loc, &this->scope)};
-
-#if 0 && DEBUG
-	LOG(message_group::None,Location::NONE,"","New eval ctx:");
-	c.dump(nullptr, this);
-#endif
+	boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
+	if (!module) {
+		return nullptr;
+	}
+	
 	try{
-		AbstractNode *node = ctx->instantiate_module(*this, c.ctx); // Passes c as evalctx
+		AbstractNode *node = module->module->instantiate(module->defining_context, this, context);
 		return node;
 	}catch(EvaluationException &e){
 		if(e.traceDepth>0){
-			print_trace(this, ctx);
+			print_trace(this, context);
 			e.traceDepth--;
 		}
 		throw;
 	}
-}
-
-std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const std::shared_ptr<Context> evalctx) const
-{
-	return this->scope.instantiateChildren(evalctx);
 }
 
 LocalScope* IfElseModuleInstantiation::makeElseScope()
@@ -117,9 +95,3 @@ LocalScope* IfElseModuleInstantiation::makeElseScope()
 	this->else_scope = std::make_unique<LocalScope>();
 	return this->else_scope.get();
 }
-
-std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const std::shared_ptr<Context> evalctx) const
-{
-	return this->else_scope->instantiateChildren(evalctx);
-}
-

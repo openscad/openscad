@@ -27,14 +27,13 @@ jobs:
       - name: Build OpenSCAD
         run: |
           git submodule update --init --recursive
-          qmake openscad.pro CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot CONFIG+=info
-          mingw32-make.exe -j2
-          cd tests
-          EIGENDIR=/mingw64/include/eigen3 /mingw64/bin/cmake.exe -G 'MSYS Makefiles' .
+          mkdir build && cd build
+          cmake .. -G"MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
           mingw32-make.exe -j2
       - name: Run Test Suite
         run: |
-          cp -v /mingw64/bin/opengl32.dll release/
+          cd build
+          cp -v "${RUNNER_TEMP}/msys/msys64/mingw64/bin/opengl32.dll" .
           cd tests
           ctest -j2 -E 'opencsgtest_issue1165|opencsgtest_issue1215|throwntogethertest_issue1089|throwntogethertest_issue1215|openscad-nonascii|import_3mf|3mfpngtest|3mfexport|pdfexporttest_centered'
       - name: Upload Test Result Report
@@ -43,5 +42,5 @@ jobs:
         with:
           name: Test Result Report (Windows)
           path: |
-            tests/output/
-            tests/Testing/Temporary/*_report.html
+            build/tests/output/
+            build/tests/Testing/Temporary/*_report.html

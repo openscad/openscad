@@ -5,8 +5,8 @@
 
 #include "qtgettext.h"
 #include "ui_Preferences.h"
-#include "settings.h"
-#include "initConfig.h"
+#include "Settings.h"
+#include "InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences,public InitConfigurator
 {
@@ -134,7 +134,7 @@ private:
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	/** Set value from combobox to settings */
-	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntry& entry);
+	void applyComboBox(QComboBox * comboBox, int val, Settings::SettingsEntryEnum& entry);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<const QAction *, QWidget *> prefPages;

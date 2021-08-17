@@ -24,7 +24,7 @@
  *
  */
 
-#include "settings.h"
+#include "Settings.h"
 #include "OctoPrint.h"
 #include "printutils.h"
 #include "PlatformUtils.h"
@@ -39,12 +39,12 @@ OctoPrint::~OctoPrint()
 
 const QString OctoPrint::url() const
 {
-	return QString::fromStdString(Settings::Settings::inst()->get(Settings::Settings::octoPrintUrl).toString());
+	return QString::fromStdString(Settings::Settings::octoPrintUrl.value());
 }
 
 const std::string OctoPrint::apiKey() const
 {
-	return Settings::Settings::inst()->get(Settings::Settings::octoPrintApiKey).toString();
+	return Settings::Settings::octoPrintApiKey.value();
 }
 
 const QJsonDocument OctoPrint::getJsonData(const QString endpoint) const

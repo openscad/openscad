@@ -32,7 +32,7 @@ void Builtins::init(const std::string &name, class AbstractModule *module, const
 	Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const std::string &name, class AbstractFunction *function, const std::vector<std::string> &calltipList)
+void Builtins::init(const std::string &name, class BuiltinFunction *function, const std::vector<std::string> &calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
 	if (function->is_experimental()) return;
@@ -108,10 +108,14 @@ Builtins::Builtins()
 	this->assignments.emplace_back(new Assignment("$fs", make_shared<Literal>(2.0)) );
 	this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
 	this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
-	this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>(Value::undefined.clone())) ); //undef as should always be overwritten.
-	this->assignments.emplace_back(new Assignment("$vpt", make_shared<Literal>(VectorType(0.0, 0.0, 0.0))) );
-	this->assignments.emplace_back(new Assignment("$vpr", make_shared<Literal>(VectorType(0.0, 0.0, 0.0))) );
-	this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500)) );
+	this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>(boost::none)) ); //undef as should always be overwritten.
+	auto zeroVector = make_shared<Vector>(Location::NONE);
+	zeroVector->emplace_back(new Literal(0.0));
+	zeroVector->emplace_back(new Literal(0.0));
+	zeroVector->emplace_back(new Literal(0.0));
+	this->assignments.emplace_back(new Assignment("$vpt", zeroVector) );
+	this->assignments.emplace_back(new Assignment("$vpr", zeroVector) );
+	this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500.0)) );
 	this->assignments.emplace_back(new Assignment("$vpf", make_shared<Literal>(22.5)) );
 }
 

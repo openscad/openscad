@@ -38,7 +38,7 @@ class QSettingsCached {
             // qsettingsPointer->sync();
         }
 
-        inline bool contains(const QString &key) {
+        inline bool contains(const QString &key) const {
             return qsettingsPointer->contains(key);
         }
 

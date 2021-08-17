@@ -36,6 +36,7 @@
 
 #include "value.h"
 #include "expression.h"
+#include "evaluationsession.h"
 #include "printutils.h"
 #include "boost-utils.h"
 #include "double-conversion/double-conversion.h"
@@ -46,7 +47,7 @@
 namespace fs=boost::filesystem;
 
 const Value Value::undefined;
-const VectorType VectorType::EMPTY;
+const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0,0,0};
 
 /* Define values for double-conversion library. */
@@ -207,6 +208,7 @@ Value Value::clone() const {
   case Type::STRING:    return boost::get<str_utf8_wrapper>(this->value).clone();
   case Type::RANGE:     return boost::get<RangePtr>(this->value).clone();
   case Type::VECTOR:    return boost::get<VectorType>(this->value).clone();
+  case Type::OBJECT:    return boost::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return boost::get<FunctionPtr>(this->value).clone();
   default: assert(false && "unknown Value variant type"); return Value();
   }
@@ -217,18 +219,24 @@ Value Value::undef(const std::string &why)
   return Value{UndefType{why}};
 }
 
-const std::string Value::typeName() const
+std::string Value::typeName(Type type)
 {
-  switch (this->type()) {
+  switch (type) {
   case Type::UNDEFINED: return "undefined";
   case Type::BOOL:      return "bool";
   case Type::NUMBER:    return "number";
   case Type::STRING:    return "string";
   case Type::VECTOR:    return "vector";
   case Type::RANGE:     return "range";
+  case Type::OBJECT:    return "object";
   case Type::FUNCTION:  return "function";
   default: assert(false && "unknown Value variant type"); return "<unknown>";
   }
+}
+
+const std::string Value::typeName() const
+{
+  return typeName(this->type());
 }
 
 // free functions for use by static_visitor templated functions in creating undef messages.
@@ -237,6 +245,7 @@ std::string getTypeName(bool) { return "bool"; }
 std::string getTypeName(double) { return "number"; }
 std::string getTypeName(const str_utf8_wrapper&) { return "string"; }
 std::string getTypeName(const VectorType&) { return "vector"; }
+std::string getTypeName(const ObjectType&) { return "object"; }
 std::string getTypeName(const RangePtr&) { return "range"; }
 std::string getTypeName(const FunctionPtr&) { return "function"; }
 
@@ -249,6 +258,7 @@ bool Value::toBool() const
   case Type::STRING:    return !boost::get<str_utf8_wrapper>(this->value).empty();
   case Type::VECTOR:    return !boost::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
+  case Type::OBJECT:    return true;
   case Type::FUNCTION:  return true;
   default: assert(false && "unknown Value variant type"); return false;
   }
@@ -278,12 +288,6 @@ bool Value::getFiniteDouble(double &v) const
     return true;
   }
   return false;
-}
-
-VectorType::VectorType(double x, double y, double z) : ptr(make_shared<VectorObject>()) {
-  this->emplace_back(x);
-  this->emplace_back(y);
-  this->emplace_back(z);
 }
 
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
@@ -337,6 +341,10 @@ public:
     }
     stream << ']';
     return stream.str();
+  }
+
+  std::string operator()(const ObjectType &v) const {
+    return STR(v);
   }
 
   std::string operator()(const RangePtr &v) const {
@@ -531,12 +539,30 @@ std::string Value::chrString() const
   return boost::apply_visitor(chr_visitor(), this->value);
 }
 
+VectorType::VectorType(EvaluationSession* session):
+  ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
+{
+  ptr->evaluation_session = session;
+}
+
+VectorType::VectorType(class EvaluationSession* session, double x, double y, double z):
+  ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
+{
+  ptr->evaluation_session = session;
+  emplace_back(x);
+  emplace_back(y);
+  emplace_back(z);
+}
+
 void VectorType::emplace_back(Value&& val)
 {
   if (val.type() == Value::Type::EMBEDDED_VECTOR) {
     emplace_back(std::move(val.toEmbeddedVectorNonConst()));
   } else {
     ptr->vec.push_back(std::move(val));
+    if (ptr->evaluation_session) {
+      ptr->evaluation_session->accounting().addVectorElement(1);
+    }
   }
 }
 
@@ -548,6 +574,9 @@ void VectorType::emplace_back(EmbeddedVectorType&& mbed)
     // the embedded vector itself already counts towards an element in the parent's size, so subtract 1 from its size.
     ptr->embed_excess += mbed.size()-1;
     ptr->vec.emplace_back(std::move(mbed));
+    if (ptr->evaluation_session) {
+      ptr->evaluation_session->accounting().addVectorElement(1);
+    }
   } else if (mbed.size() == 1) {
     // If embedded vector contains only one value, then insert a copy of that element
     // Due to the above mentioned "-1" count, putting it in directaly as an EmbeddedVector
@@ -566,11 +595,19 @@ void VectorType::flatten() const
   for (const auto& el : *this) ret.emplace_back(el.clone());
   assert(ret.size() == this->size());
   ptr->embed_excess = 0;
+  if (ptr->evaluation_session) {
+    ptr->evaluation_session->accounting().addVectorElement(ret.size());
+    ptr->evaluation_session->accounting().removeVectorElement(ptr->vec.size());
+  }
   ptr->vec = std::move(ret);
 }
 
 void VectorType::VectorObjectDeleter::operator()(VectorObject* v)
 {
+  if (v->evaluation_session) {
+    v->evaluation_session->accounting().removeVectorElement(v->vec.size());
+  }
+
   VectorObject *orig = v;
   shared_ptr<VectorObject> curr;
   std::vector<shared_ptr<VectorObject>> purge;
@@ -597,7 +634,7 @@ void VectorType::VectorObjectDeleter::operator()(VectorObject* v)
 
 const VectorType &Value::toVector() const
 {
-  static const VectorType empty;
+  static const VectorType empty(nullptr);
   const VectorType *v = boost::get<VectorType>(&this->value);
   return v ? *v : empty;
 }
@@ -605,6 +642,13 @@ const VectorType &Value::toVector() const
 VectorType &Value::toVectorNonConst()
 {
   return boost::get<VectorType>(this->value);
+}
+
+const ObjectType &Value::toObject() const
+{
+  static const ObjectType empty(nullptr);
+  const ObjectType *v = boost::get<ObjectType>(&this->value);
+  return v ? *v : empty;
 }
 
 EmbeddedVectorType &Value::toEmbeddedVectorNonConst()
@@ -704,6 +748,25 @@ Value UndefType::operator<=(const UndefType &other) const {
 }
 Value UndefType::operator>=(const UndefType &other) const {
   return Value::undef("operation undefined (undefined >= undefined)");
+}
+
+Value ObjectType::operator==(const ObjectType &other) const {
+  return Value::undef("operation undefined (object == object)");
+}
+Value ObjectType::operator!=(const ObjectType &other) const {
+  return Value::undef("operation undefined (object != object)");
+}
+Value ObjectType::operator< (const ObjectType &other) const {
+  return Value::undef("operation undefined (object < object)");
+}
+Value ObjectType::operator> (const ObjectType &other) const {
+  return Value::undef("operation undefined (object > object)");
+}
+Value ObjectType::operator<=(const ObjectType &other) const {
+  return Value::undef("operation undefined (object <= object)");
+}
+Value ObjectType::operator>=(const ObjectType &other) const {
+  return Value::undef("operation undefined (object >= object)");
 }
 
 Value VectorType::operator==(const VectorType &v) const {
@@ -862,7 +925,7 @@ public:
   }
 
   Value operator()(const VectorType &op1, const VectorType &op2) const {
-    VectorType sum;
+    VectorType sum(op1.evaluation_session());
     // FIXME: should we really truncate to shortest vector here?
     //   Maybe better to either "add zeroes" and return longest
     //   and/or issue an warning/error about length mismatch.
@@ -893,7 +956,7 @@ public:
   }
 
   Value operator()(const VectorType &op1, const VectorType &op2) const {
-    VectorType sum;
+    VectorType sum(op1.evaluation_session());
     for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
       sum.emplace_back(op1[i] - op2[i]);
     }
@@ -909,7 +972,7 @@ Value Value::operator-(const Value &v) const
 Value multvecnum(const VectorType &vecval, const Value &numval)
 {
   // Vector * Number
-  VectorType dstv;
+  VectorType dstv(vecval.evaluation_session());
   for(const auto &val : vecval) {
     dstv.emplace_back(val * numval);
   }
@@ -919,7 +982,7 @@ Value multvecnum(const VectorType &vecval, const Value &numval)
 Value multmatvec(const VectorType &matrixvec, const VectorType &vectorvec)
 {
   // Matrix * Vector
-  VectorType dstv;
+  VectorType dstv(matrixvec.evaluation_session());
 	for (size_t i=0;i<matrixvec.size();++i) {
 		if (matrixvec[i].type() != Value::Type::VECTOR ||
 				matrixvec[i].toVector().size() != vectorvec.size()) {
@@ -944,7 +1007,7 @@ Value multvecmat(const VectorType &vectorvec, const VectorType &matrixvec)
 {
   assert(vectorvec.size() == matrixvec.size());
   // Vector * Matrix
-  VectorType dstv;
+  VectorType dstv(matrixvec[0].toVector().evaluation_session());
   size_t firstRowSize = matrixvec[0].toVector().size();
   for (size_t i = 0; i < firstRowSize; ++i) {
     double r_e = 0.0;
@@ -1010,7 +1073,7 @@ public:
       } else if (eltype2 == Value::Type::VECTOR) {
         if ((*first1).toVector().size() == op2.size()) {
           // Matrix * Matrix
-          VectorType dstv;
+          VectorType dstv(op1.evaluation_session());
           size_t i = 0;
           for (const auto &srcrow : op1) {
             const auto &srcrowvec = srcrow.toVector();
@@ -1045,14 +1108,14 @@ Value Value::operator/(const Value &v) const
     return this->toDouble() / v.toDouble();
   }
   else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
-    VectorType dstv;
+    VectorType dstv(this->toVector().evaluation_session());
     for (const auto &vecval : this->toVector()) {
       dstv.emplace_back(vecval / v);
     }
     return std::move(dstv);
   }
   else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
-    VectorType dstv;
+    VectorType dstv(v.toVector().evaluation_session());
     for (const auto &vecval : v.toVector()) {
       dstv.emplace_back(*this / vecval);
     }
@@ -1075,7 +1138,7 @@ Value Value::operator-() const
     return Value(-this->toDouble());
   }
   else if (this->type() == Type::VECTOR) {
-    VectorType dstv;
+    VectorType dstv(this->toVector().evaluation_session());
     for (const auto &vecval : this->toVector()) {
       dstv.emplace_back(-vecval);
     }
@@ -1122,6 +1185,10 @@ public:
     return Value::undef(STR("index " << i << " out of bounds for vector of size " << vec.size()));
   }
 
+  Value operator()(const ObjectType &obj, const str_utf8_wrapper &key) const {
+    return obj[key].clone();
+  }
+
   Value operator()(const RangePtr &range, const double &idx) const {
     const auto i = convert_to_uint32(idx);
     switch(i) {
@@ -1133,7 +1200,7 @@ public:
   }
 
   template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
-    //std::cout << "generic bracket_visitor\n";
+    //std::cout << "generic bracket_visitor " << getTypeName(op1) << " " << getTypeName(op2) << "\n";
     return Value::undef(STR("undefined operation " << getTypeName(op1) << "[" << getTypeName(op2) << "]"));
   }
 };
@@ -1245,13 +1312,71 @@ std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
 {
   stream << "function(";
   bool first = true;
-  for (const auto& arg : *(f.getArgs())) {
-    stream << (first ? "" : ", ") << arg->getName();
-    if (arg->getExpr()) {
-      stream << " = " << *arg->getExpr();
+  for (const auto& parameter : *(f.getParameters())) {
+    stream << (first ? "" : ", ") << parameter->getName();
+    if (parameter->getExpr()) {
+      stream << " = " << *parameter->getExpr();
     }
     first = false;
   }
   stream << ") " << *f.getExpr();
   return stream;
+}
+
+// called by clone()
+ObjectType::ObjectType(const shared_ptr<ObjectObject> &copy)
+    : ptr(copy)
+{
+}
+
+ObjectType::ObjectType(EvaluationSession* session):
+  ptr(shared_ptr<ObjectObject>(new ObjectObject()))
+{
+  ptr->evaluation_session = session;
+}
+
+const Value& ObjectType::get(const std::string& key) const
+{
+    auto result = ptr->map.find(key);
+    // NEEDSWORK it would be nice to have a "cause" for the undef, but Value::undef(...)
+    // does not appear compatible with Value&.
+    return result == ptr->map.end() ? Value::undefined : result->second;
+}
+
+void ObjectType::set(const std::string& key, Value&& value)
+{
+        ptr->map.emplace(key, std::move(value));
+        ptr->keys.emplace_back(key);
+        ptr->values.emplace_back(std::move(value));
+}
+
+const std::vector<std::string>& ObjectType::keys() const
+{
+        return ptr->keys;
+}
+
+const Value& ObjectType::operator[](const str_utf8_wrapper &v) const
+{
+    return this->get(v.toString());
+}
+
+// Copy explicitly only when necessary
+ObjectType ObjectType::clone() const
+{
+    return ObjectType(this->ptr);
+}
+
+std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+{
+    stream << "{ ";
+    auto iter = v.ptr->keys.begin();
+    if (iter != v.ptr->keys.end()) {
+        str_utf8_wrapper k(*iter);
+        for (; iter != v.ptr->keys.end(); ++iter) {
+            str_utf8_wrapper k2(*iter);
+            stream << k2.toString() << " = " << v[k2] << "; ";
+        }
+    }
+    stream << "}";
+    return stream;
 }

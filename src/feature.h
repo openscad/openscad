@@ -20,6 +20,7 @@ public:
 	static const Feature ExperimentalVxORenderersIndexing;
 	static const Feature ExperimentalVxORenderersDirect;
 	static const Feature ExperimentalVxORenderersPrealloc;
+	static const Feature ExperimentalTextMetricsFunctions;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

@@ -10,17 +10,31 @@
 #  TODO
 #   find packages for spnav, hidapi
 
-
-if(APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
-endif()
-cmake_minimum_required(VERSION 3.3)
+# Ubuntu Xenial (16.04LTS): 3.5.1, Debian 9 (stretch): 3.7.2
+cmake_minimum_required(VERSION 3.5)
 
 if(POLICY CMP0071)
+  # Let AUTOMOC and AUTOUIC process GENERATED files.
   cmake_policy(SET CMP0071 OLD)
 endif()
+if(POLICY CMP0072)
+  # FindOpenGL prefers GLVND by default when available.
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
 project(openscad)
+
+# GNUInstallDirs must be done before BuildParameters
+include(GNUInstallDirs)
+
+# Strict c++14, e.g. no GNU extensions
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
@@ -29,6 +43,9 @@ option(HEADLESS "Build without GUI frontend" OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
+option(MXECROSS "Enable setup for MXE cross platform build" OFF)
+set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
+set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -53,9 +70,22 @@ if(IDPREFIX)
   add_definitions(-DIDPREFIX)
 endif()
 
+if (NOT "${SUFFIX}" STREQUAL "")
+  set(SUFFIX_WITH_DASH "-${SUFFIX}")
+  add_definitions(-DOPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
+endif()
+
+if (MXECROSS)
+  add_definitions(-DGLEW_STATIC)
+  add_definitions(-DLIBXML_STATIC)
+  add_definitions(-DSTATIC_QT_SVG_PLUGIN)
+  list(APPEND PLATFORM_LIBS -lbcrypt)
+  add_subdirectory(winconsole)
+  set(CMAKE_WIN32_EXECUTABLE ON)
+endif()
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/objects")
-set(AUTOGEN_BUILD_DIR "${CMAKE_BINARY_DIR}/objects")
-file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
+make_directory(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 # Default to Release build
 #if(NOT CMAKE_BUILD_TYPE)
@@ -68,10 +98,10 @@ file(MAKE_DIRECTORY ${AUTOGEN_BUILD_DIR})
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-set(CMAKE_CXX_STANDARD 14)
 add_definitions(-D_REENTRANT -DUNICODE -D_UNICODE)
+
 # Stack size 8MB; github issue 116
-add_definitions(-DSTACKSIZE=8388608)
+add_definitions("-DSTACKSIZE=${STACKSIZE}") # used as default in src/PlatformUtils.h
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -90,9 +120,10 @@ macro(find_graphics)
   if(NULLGL)
     add_definitions(-DNULLGL)
   else()
-    set(OpenGL_GL_PREFERENCE "GLVND")
-    find_package(OpenGL REQUIRED QUIET)
-    list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
+    find_package(OpenCSG REQUIRED QUIET)
+    list(APPEND COMMON_LIBRARIES ${OPENCSG_LIBRARY})
+    message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
+    add_definitions(-DENABLE_OPENCSG)
 
     if(MSVC)
       find_package(GLEW CONFIG REQUIRED QUIET)
@@ -111,11 +142,10 @@ macro(find_graphics)
       find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
       include_directories("${OPENCSG_INCLUDE_DIRS}")
     endif()
-    find_library(OPENCSG_LIBRARY opencsg)
-    list(APPEND COMMON_LIBRARIES ${OPENCSG_LIBRARY})
 
-    message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
-    add_definitions(-DENABLE_OPENCSG)
+    find_package(OpenGL REQUIRED QUIET)
+    list(APPEND COMMON_LIBRARIES ${OPENGL_LIBRARIES})
+    message(STATUS "OpenGL: ${OPENGL_LIBRARIES}")
   endif()
 endmacro(find_graphics)
 
@@ -138,7 +168,6 @@ endif()
 if (CGAL_MODULE_PATH_IS_SET)
   set(CMAKE_MODULE_PATH ORIGINAL_CMAKE_MODULE_PATH)
 endif()
-
 
 if (MSVC)
   # Flex lexer options
@@ -179,10 +208,11 @@ if (MSVC)
 
   # needed for Qt5QScintilla, maybe others
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
 else()
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-  set(CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+  if(NOT "$ENV{OPENSCAD_LIBRARIES}" STREQUAL "")
+    list(APPEND CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+  endif()
 
   find_package(Eigen3 QUIET)
   if (NOT Eigen3_FOUND)
@@ -219,12 +249,14 @@ else()
   include_directories(${GLIB2_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${GLIB2_LIBRARIES})
 
-  list(APPEND COMMON_LIBRARIES double-conversion)
+  find_package(DoubleConversion REQUIRED QUIET)
+  list(APPEND COMMON_LIBRARIES ${DoubleConversion_LIBRARIES})
 
   find_graphics()
 endif()
 
 find_package(LibZip REQUIRED QUIET)
+message(STATUS "libzip: ${LIBZIP_VERSION}")
 include_directories(${LIBZIP_INCLUDE_DIR_ZIP})
 include_directories(${LIBZIP_INCLUDE_DIR_ZIPCONF})
 list(APPEND COMMON_LIBRARIES ${LIBZIP_LIBRARY})
@@ -240,14 +272,35 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
-find_package(Cairo 1.14 QUIET)
-if (CAIRO_VERSION)
-  message(STATUS "Cairo: ${CAIRO_VERSION}")
-  include_directories(${CAIRO_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${CAIRO_LIBRARIES})
-  add_definitions(-DENABLE_CAIRO)
+option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+if(ENABLE_HIDAPI)
+  find_package(HidAPI 0.10 QUIET)
+  if(HIDAPI_FOUND)
+    message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
+    set(INPUT_DRIVER_HIDAPI_SOURCES src/input/HidApiInputDriver.cc)
+    include_directories(${HIDAPI_INCLUDE_DIR})
+    list(APPEND COMMON_LIBRARIES ${HIDAPI_LIBRARY})
+    add_definitions(-DENABLE_HIDAPI)
+  else()
+    message(STATUS "HIDAPI: disabled")
+  endif()
 else()
-  message(STATUS "Cairo: disabled")
+  message(STATUS "HIDAPI: disabled per user request")
+endif()
+
+option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
+if(ENABLE_CAIRO)
+  find_package(Cairo 1.14 QUIET)
+  if (CAIRO_VERSION)
+    message(STATUS "Cairo: ${CAIRO_VERSION}")
+    include_directories(${CAIRO_INCLUDE_DIRS})
+    list(APPEND COMMON_LIBRARIES ${CAIRO_LIBRARIES})
+    add_definitions(-DENABLE_CAIRO)
+  else()
+    message(STATUS "Cairo: disabled")
+  endif()
+else()
+  message(STATUS "Cairo: disabled per user request")
 endif()
 
 find_package(FLEX REQUIRED QUIET)
@@ -258,13 +311,12 @@ message(STATUS "Bison: ${BISON_VERSION}")
 
 if(NOT MSVC)
   find_package(Lib3MF REQUIRED QUIET)
+  message(STATUS "lib3mf: ${LIB3MF_VERSION}")
   add_definitions(${LIB3MF_CFLAGS})
   include_directories(${LIB3MF_INCLUDE_DIRS})
   list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
 endif()
 
-# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
-set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 # Use clang-tidy if run with -DCLANG_TIDY=1
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
@@ -289,11 +341,15 @@ if(NOT HEADLESS)
   if (APPLE AND EXISTS /usr/local/opt/qt)
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
   endif()
+  if (APPLE AND EXISTS /usr/local/opt/qt@5)
+    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
+  endif()
 
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
-  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
+  set(CMAKE_AUTOUIC_OPTIONS --tr q_)
+  find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -310,43 +366,57 @@ if(NOT HEADLESS)
   add_definitions(-DUSE_SCINTILLA_EDITOR)
   add_definitions(-DENABLE_MDI)
 
-  find_package(Qt5DBus QUIET)
-  if (Qt5DBus_FOUND)
-    message(STATUS "DBus input driver enabled")
-    add_definitions(-DENABLE_DBUS)
-    set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
-    qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
-    qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+  option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON)
+  if(ENABLE_QTDBUS)
+    find_package(Qt5DBus QUIET)
+    if (Qt5DBus_FOUND)
+      message(STATUS "DBus input driver enabled")
+      add_definitions(-DENABLE_DBUS)
+      set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
+      qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
+      qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+    else()
+      message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+    endif()
   else()
-    message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+    message(STATUS "DBus input driver disabled per user request.")
   endif()
 
-  find_package(Qt5Gamepad QUIET)
-  if (Qt5Gamepad_FOUND)
-    message(STATUS "Gamepad input driver enabled")
-    set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
-    add_definitions(-DENABLE_QGAMEPAD)
+  option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON)
+  if(ENABLE_GAMEPAD)
+    find_package(Qt5Gamepad QUIET)
+    if (Qt5Gamepad_FOUND)
+      message(STATUS "Qt5Gamepad input driver enabled")
+      set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
+      add_definitions(-DENABLE_QGAMEPAD)
+    else()
+      message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+    endif()
   else()
-    message(STATUS "Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+    message(STATUS "Qt5Gamepad input driver disabled per user request.")
   endif()
 
 endif()
 
-
 # Setup ccache (if available) to speed up recompiles. It's especially useful
 # when switching back and forth between branches where large numbers of files
 # would otherwise need to be re-compiled each time.
-find_program(CCACHE_PATH ccache)
-if (CCACHE_PATH)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+option(USE_CCACHE "Use ccache to speed up compilation." ON)
+if(USE_CCACHE)
+  find_program(CCACHE_PATH ccache)
+  if (CCACHE_PATH)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PATH})
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PATH})
+  endif()
 endif()
 
 #
 # Version
 #
-string(TIMESTAMP VERSION "%Y.%m.%d")
-string(REPLACE "-" ";" SPLITVERSION ${VERSION})
+if ("${OPENSCAD_VERSION}" STREQUAL "")
+string(TIMESTAMP OPENSCAD_VERSION "%Y.%m.%d")
+endif()
+string(REPLACE "-" ";" SPLITVERSION ${OPENSCAD_VERSION})
 list(GET SPLITVERSION 0 OPENSCAD_SHORTVERSION)
 string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" VERSIONLIST "${OPENSCAD_SHORTVERSION}")
 list(GET VERSIONLIST 0 OPENSCAD_YEAR)
@@ -358,7 +428,7 @@ if (${VERSIONLEN} EQUAL 3)
   math(EXPR OPENSCAD_DAY ${OPENSCAD_DAY}) # get rid of leading zero
 endif()
 
-add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
+add_definitions(-DOPENSCAD_VERSION=${OPENSCAD_VERSION} -DOPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
 if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
@@ -381,7 +451,7 @@ if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextCGL.mm)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
-  set(PLATFORM_LIBS ${COCOA_LIBRARY})
+  list(APPEND PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
   message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
   set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
@@ -390,7 +460,7 @@ elseif(UNIX)
   else()
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextGLX.cc)
     find_library(X11_LIBRARY X11)
-    set(PLATFORM_LIBS ${X11_LIBRARY})
+    list(APPEND PLATFORM_LIBS ${X11_LIBRARY})
   endif()
 elseif(WIN32)
   add_definitions(-DNOGDI)
@@ -409,23 +479,27 @@ include_directories("src/ext/libtess2/Include")
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
   src/annotation.cc
+  src/arguments.cc
   src/boost-utils.cc
   src/builtin.cc
   src/builtincontext.cc
   src/calc.cc
   src/cgaladv.cc
+  src/children.cc
   src/clipper-utils.cc
   src/color.cc
   src/colormap.cc
   src/context.cc
+  src/contextframe.cc
+  src/context-mm.cc
   src/control.cc
-  src/comment.cpp
+  src/comment.cc
   src/csgnode.cc
   src/csgops.cc
   src/degree_trig.cc
   src/dxfdata.cc
   src/dxfdim.cc
-  src/evalcontext.cc
+  src/evaluationsession.cc
   src/export.cc
   src/export_3mf.cc
   src/export_amf.cc
@@ -455,6 +529,7 @@ set(CORE_SOURCES
   src/node.cc
   src/nodedumper.cc
   src/offset.cc
+  src/parameters.cc
   src/parsersettings.cc
   src/polyset.cc
   src/polyset-utils.cc
@@ -477,7 +552,6 @@ set(CORE_SOURCES
   src/Camera.cc
   src/CSGTreeNormalizer.cc
   src/DrawingCallback.cc
-  src/FileModule.cc
   src/FontCache.cc
   src/FreetypeRenderer.cc
   src/Geometry.cc
@@ -486,11 +560,12 @@ set(CORE_SOURCES
   src/GroupModule.cc
   src/LibraryInfo.cc
   src/ModuleInstantiation.cc
-  src/ModuleCache.cc
   src/NodeVisitor.cc
   src/PlatformUtils.cc
   src/Polygon2d.cc
   src/RenderStatistic.cc
+  src/SourceFile.cc
+  src/SourceFileCache.cc
   src/StatCache.cc
   src/UserModule.cc
   src/Tree.cc
@@ -518,8 +593,10 @@ set(CORE_SOURCES
   src/libsvg/text.cc
   src/libsvg/transformation.cc
   src/libsvg/tspan.cc
+  src/libsvg/use.cc
   src/libsvg/util.cc
-  src/parameter/parameterset.cpp
+  src/parameter/parameterobject.cc
+  src/parameter/parameterset.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -579,30 +656,25 @@ endif()
 
 set(INPUT_DRIVER_SOURCES
   ${PLATFORM_INPUT_DRIVER_SOURCES}
+  ${INPUT_DRIVER_HIDAPI_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
   ${GUI_SOURCES}
-  src/cgalworker.cc
-  src/editor.cc
-  src/initConfig.cc
-  src/launchingscreen.cc
-  src/mainwin.cc
-  src/mouseselector.cc
-  src/scadapi.cc
-  src/scadlexer.cpp
-  src/scintillaeditor.cpp
-  src/settings.cc
-  src/tabmanager.cc
-  src/tabwidget.cc
   src/AutoUpdater.cc
+  src/CGALWorker.cc
   src/Console.cc
   src/Dock.cc
+  src/Editor.cc
   src/ErrorLog.cc
   src/EventFilter.h
   src/FontListDialog.cc
   src/FontListTableView.cc
+  src/InitConfigurator.cc
+  src/LaunchingScreen.cc
   src/LibraryInfoDialog.cc
+  src/MainWindow.cc
+  src/MouseSelector.cc
   src/OctoPrint.cc
   src/OpenCSGWarningDialog.cc
   src/OpenSCADApp.cc
@@ -613,34 +685,37 @@ set(GUI_SOURCES
   src/QGLView.cc
   src/QSettingsCached.cc
   src/QWordSearchField.cc
+  src/ScadApi.cc
+  src/ScadLexer.cc
+  src/ScintillaEditor.cc
+  src/Settings.cc
   src/SettingsWriter.cc
+  src/TabManager.cc
+  src/TabWidget.cc
   src/UIUtils.cc
   src/WindowManager.cc
-  src/parameter/groupwidget.cpp
-  src/parameter/ignoreWheelWhenNotFocused.cpp
-  src/parameter/parametercheckbox.cpp
-  src/parameter/parametercombobox.cpp
-  src/parameter/parameterextractor.cpp
-  src/parameter/parameterobject.cpp
-  src/parameter/parameterslider.cpp
-  src/parameter/parameterspinbox.cpp
-  src/parameter/parametertext.cpp
-  src/parameter/parametervector.cpp
-  src/parameter/parametervirtualwidget.cpp
-  src/parameter/ParameterWidget.cc
   src/input/AxisConfigWidget.cc
   src/input/ButtonConfigWidget.cc
   src/input/InputDriver.cc
   src/input/InputDriverManager.cc
   src/input/InputEventMapper.cc
   src/input/WheelIgnorer.cc
+  src/parameter/GroupWidget.cc
+  src/parameter/IgnoreWheelWhenNotFocused.cc
+  src/parameter/ParameterCheckBox.cc
+  src/parameter/ParameterComboBox.cc
+  src/parameter/ParameterSlider.cc
+  src/parameter/ParameterSpinBox.cc
+  src/parameter/ParameterText.cc
+  src/parameter/ParameterVector.cc
+  src/parameter/ParameterVirtualWidget.cc
+  src/parameter/ParameterWidget.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
 # header-only code
 set(GUI_HEADERS
   src/AboutDialog.h
-  src/MainWindow.h
   src/Network.h
   src/NetworkSignal.h
   )
@@ -658,8 +733,10 @@ endif()
 if (SNAPSHOT)
   add_definitions(-DOPENSCAD_SNAPSHOT)
   set(RESOURCE_FILES icons/icon-nightly.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32-nightly.rc)
 else()
   set(RESOURCE_FILES icons/OpenSCAD.icns)
+  set(WINDOWS_RESOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/openscad_win32.rc)
 endif()
 
 if(ENABLE_SPNAV)
@@ -667,7 +744,10 @@ if(ENABLE_SPNAV)
   list(APPEND Sources src/input/SpaceNavInputDriver.cc)
 endif()
 
-add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES})
+add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
+add_custom_command(TARGET OpenSCAD POST_BUILD
+    COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
+    COMMENT "Compiling language files")
 
 if(APPLE)
   set_target_properties(OpenSCAD PROPERTIES
@@ -678,27 +758,57 @@ if(APPLE)
     MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
     RESOURCE "${RESOURCE_FILES}"
   )
+elseif(MINGW)
+  set_target_properties(OpenSCAD PROPERTIES
+    LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
+  )
 elseif(UNIX)
   set_target_properties(OpenSCAD PROPERTIES
-    OUTPUT_NAME openscad
+    OUTPUT_NAME openscad${SUFFIX_WITH_DASH}
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
-    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:8388608"
+    LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"
   )
 endif()
 
 if(ENABLE_SPNAV)
-  target_link_libraries(OpenSCAD spnav)
+  target_link_libraries(OpenSCAD PRIVATE spnav)
 endif()
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+endif()
+if(MXECROSS)
+  target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
+endif()
+
+if(NOT APPLE)
+install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME openscad${SUFFIX_WITH_DASH})
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME openscad${SUFFIX_WITH_DASH}.xml)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".uuid" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".git*" EXCLUDE)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*.json")
 endif()
 
 if(INFO)
   include(info)
 endif()
 
-add_subdirectory(tests)
+option(ENABLE_TESTS "Run testsuite after building." ON)
+if(ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()

@@ -45,4 +45,4 @@ find_library(HARFBUZZ_LIBRARIES NAMES harfbuzz
 set(HARFBUZZ_VERSION ${PC_HARFBUZZ_VERSION})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(harfbuzz DEFAULT_MSG HARFBUZZ_INCLUDE_DIRS HARFBUZZ_LIBRARIES)
+find_package_handle_standard_args(HarfBuzz DEFAULT_MSG HARFBUZZ_INCLUDE_DIRS HARFBUZZ_LIBRARIES)

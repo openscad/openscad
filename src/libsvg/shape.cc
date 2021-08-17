@@ -43,6 +43,7 @@
 #include "svgpage.h"
 #include "path.h"
 #include "group.h"
+#include "use.h"
 
 #include "transformation.h"
 #include "degree_trig.h"
@@ -84,6 +85,8 @@ shape::create_from_name(const char *name)
 		return new path();
 	} else if (group::name == name) {
 		return new group();
+	} else if (use::name == name) {
+		return new use();
 	} else {
 		return nullptr;
 	}
@@ -290,6 +293,21 @@ shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry) {
 		const double yy = ry * cos_degrees(a) + y;
 		path.push_back(Eigen::Vector3d(xx, yy, 0));
 	}
+}
+
+std::vector<std::shared_ptr<shape>>
+shape::clone_children() {
+	std::vector<std::shared_ptr<shape>> ret_vector;
+	std::vector<shape *> children_backup = this->get_children();
+	this->children.clear();
+	for (const auto& c : children_backup) {
+		shape* clone = c->clone();
+		this->add_child(clone);
+		auto cloned_children = clone->clone_children();
+		ret_vector.push_back(std::shared_ptr<shape>(clone));
+		ret_vector.insert(ret_vector.end(), cloned_children.begin(), cloned_children.end());
+	}
+	return ret_vector;
 }
 
 std::ostream & operator<<(std::ostream &os, const shape& s)

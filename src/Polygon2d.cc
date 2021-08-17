@@ -1,6 +1,15 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 
+
+BoundingBox Outline2d::getBoundingBox() const {
+	BoundingBox bbox;
+	for (const auto &v : this->vertices) {
+		bbox.extend(Vector3d(v[0], v[1], 0));
+	}
+	return bbox;
+}
+
 /*!
 	Class for holding 2D geometry.
 	
@@ -30,9 +39,7 @@ BoundingBox Polygon2d::getBoundingBox() const
 {
 	BoundingBox bbox;
 	for (const auto &o : this->outlines()) {
-		for (const auto &v : o.vertices) {
-			bbox.extend(Vector3d(v[0], v[1], 0));
-		}
+		bbox.extend(o.getBoundingBox());
 	}
 	return bbox;
 }

@@ -64,8 +64,8 @@ linconv=mingw_cross_info.linux_convert #'/usr/bin/convert'
 linoslib='OPENSCADPATH='+linbase+'/tests/../libraries'
 winoslib='OPENSCADPATH='+winbase+'/tests/../libraries'
 
-lintestdata=linbase+'/tests/../testdata'
-wintestdata=winbase+'/tests/../testdata'
+lintestdata=linbase+'/tests/data'
+wintestdata=winbase+'/tests/data'
 
 linexamples=linbase+'/tests/../examples'
 winexamples=winbase+'/tests/../examples'
@@ -180,13 +180,13 @@ def processfile(infilename, winconv):
 
 def process_templates():
     cmakebase = winbase.replace('\\','/')+'/tests'
-    templatepath = winbase + r'\testdata\scad\templates'
+    templatepath = winbase + r'\tests\data\scad\templates'
     # iterate over scad cmake templates
     for filename in os.listdir(templatepath):
         if filename.endswith("-template.scad"):
             scadname = filename.replace("-template","")
             # search for path of template output
-            scadpath = find_single_file(scadname, winbase + r'\testdata\scad')
+            scadpath = find_single_file(scadname, winbase + r'\tests\data\scad')
             if scadpath != None:
                 print('Ovewriting ' + scadpath + ' based on ' + filename + ' using path ' + cmakebase)
                 fout = open(scadpath, 'w')
