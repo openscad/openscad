@@ -28,6 +28,8 @@
 #include <QStringList>
 #include <QFileInfoList>
 
+#include "boost-utils.h"
+
 namespace UIUtils {
     static const int maxRecentFiles = 10;
 
@@ -47,9 +49,17 @@ namespace UIUtils {
 
     void openUserManualURL();
 
-    bool hasOfflineUserManual(bool openManual);
+    fs::path returnOfflineUserManualPath();
+
+    bool hasOfflineUserManual();
+
+    void openOfflineUserManual();
 
     void openCheatSheetURL();
 
-    bool hasOfflineCheatSheet(bool openCheatSheet);
+    fs::path returnOfflineCheatSheetPath();
+
+    bool hasOfflineCheatSheet();
+
+    void openOfflineCheatSheet();
 }

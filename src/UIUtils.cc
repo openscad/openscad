@@ -176,20 +176,31 @@ void UIUtils::openUserManualURL()
     openVersionedURL("https://www.openscad.org/documentation.html?version=%1");
 }
 
-bool UIUtils::hasOfflineUserManual(bool openManual = false)
+fs::path UIUtils::returnOfflineUserManualPath()
 {
 	fs::path resPath = PlatformUtils::resourcePath("resources");
     fs::path fullPath = resPath/"docs"/"OpenSCADUserDocs"/"openscad_docs"/"OpenSCAD_User_Manual.html";
+	return fullPath;
+}
+
+bool UIUtils::hasOfflineUserManual()
+{
+	fs::path fullPath = returnOfflineUserManualPath();
     if (fs::exists(fullPath) && fs::is_regular_file(fullPath))
 	{
-		if (openManual)
-		{
-			QString docPath = QString::fromStdString(fullPath.string());
-			QDesktopServices::openUrl(QUrl(docPath));
-		}
 		return true;
 	}
 	return false;
+}
+
+void UIUtils::openOfflineUserManual()
+{
+	fs::path fullPath = returnOfflineUserManualPath();
+	if(UIUtils::hasOfflineUserManual())
+	{
+		QString docPath = QString::fromStdString(fullPath.string());
+		QDesktopServices::openUrl(QUrl(docPath));
+	}
 }
 
 void UIUtils::openCheatSheetURL()
@@ -201,18 +212,29 @@ void UIUtils::openCheatSheetURL()
 #endif
 }
 
-bool UIUtils::hasOfflineCheatSheet(bool openCheatSheet = false)
+fs::path UIUtils::returnOfflineCheatSheetPath()
 {
 	fs::path resPath = PlatformUtils::resourcePath("resources");
     fs::path fullPath = resPath/"docs"/"OpenSCADUserDocs"/"openscad_docs"/"CheatSheet.html";
+	return fullPath;
+}
+
+bool UIUtils::hasOfflineCheatSheet()
+{
+	fs::path fullPath = returnOfflineCheatSheetPath();
     if (fs::exists(fullPath) && fs::is_regular_file(fullPath))
 	{
-		if (openCheatSheet)
-		{
-			QString docPath = QString::fromStdString(fullPath.string());
-			QDesktopServices::openUrl(QUrl(docPath));
-		}
-		return true;
+	return true;
 	}
 	return false;
+}
+
+void UIUtils::openOfflineCheatSheet()
+{
+	fs::path fullPath = returnOfflineCheatSheetPath();
+	if (UIUtils::hasOfflineCheatSheet())
+	{
+		QString docPath = QString::fromStdString(fullPath.string());
+		QDesktopServices::openUrl(QUrl(docPath));
+	}
 }

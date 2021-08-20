@@ -461,7 +461,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 		
 	// Checks if the Documentation has been downloaded and hides the Action otherwise
-	if (UIUtils::hasOfflineUserManual(false)) 
+	if (UIUtils::hasOfflineUserManual()) 
 	{
 		connect(this->helpActionOfflineManual, SIGNAL(triggered()), this, SLOT(helpOfflineManual()));
 	}
@@ -469,7 +469,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	{
 		this->helpActionOfflineManual->setVisible(false);
 	}
-	if (UIUtils::hasOfflineCheatSheet(false)) 
+	if (UIUtils::hasOfflineCheatSheet()) 
 	{
 		connect(this->helpActionOfflineCheatSheet, SIGNAL(triggered()), this, SLOT(helpOfflineCheatSheet()));
 	}
@@ -3149,7 +3149,7 @@ void MainWindow::helpManual()
 
 void MainWindow::helpOfflineManual()
 {
-	bool temp = UIUtils::hasOfflineUserManual(true);
+	UIUtils::openOfflineUserManual();
 }
 
 void MainWindow::helpCheatSheet()
@@ -3159,7 +3159,7 @@ void MainWindow::helpCheatSheet()
 
 void MainWindow::helpOfflineCheatSheet()
 {
-	bool temp = UIUtils::hasOfflineCheatSheet(true);
+	UIUtils::openOfflineCheatSheet();
 }
 
 void MainWindow::helpLibrary()
