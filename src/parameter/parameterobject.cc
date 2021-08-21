@@ -275,9 +275,11 @@ json EnumParameter::jsonValue() const
 	json options;
 	for (const auto& item : items) {
 		json option;
-		option["label"] = item.key;
+		option["name"] = item.key;
 		set_enum_value(option, "value", item);
+		options.push_back(option);
 	}
+	o["options"] = options;
 
 	return o;
 }
