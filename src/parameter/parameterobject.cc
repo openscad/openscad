@@ -371,7 +371,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 	if (groupAnnotation) {
 		const Literal* expression = dynamic_cast<const Literal*>(groupAnnotation->getExpr().get());
 		if (expression && expression->isString()) {
-			group = *expression->toString();
+			group = boost::algorithm::trim_copy(*expression->toString());
+
 		}
 		if (group == "Hidden") return nullptr;
 	}
