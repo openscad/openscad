@@ -10,11 +10,14 @@ varying vec4 screenPosition;
 varying vec3 normal; 
 varying vec4 camnormal; 
 varying vec3 lightDir; 
+varying vec3 worldPosition;
   varying vec3 vN;
 
 void main(void) {
 	  camnormal= (gl_ModelViewProjectionMatrix) * vec4(0.,-1.,0.,-1.);
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+  	worldPosition=gl_Vertex.xyz;
+
   vBC = barycentric;
   // vec3 normal, lightDir;
   normal = normalize(gl_NormalMatrix * gl_Normal);

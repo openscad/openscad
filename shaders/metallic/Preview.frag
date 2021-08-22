@@ -10,24 +10,17 @@ varying vec4 camnormal;
 varying vec3 vN;
 
 
-// cosine based palette, 4 vec3 params
-// https://iquilezles.org/www/articles/palettes/palettes.htm
-vec3 palette( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
-{
-    return a + b*cos( 6.28318*(c*t+d) );
-}
+
 
 void main(void) {
-	vec3 col=color1.rgb;
-	vec3 skycol,skycolx,skycoly,skycolz ;
-	                                   // 0.5, 0.5, 0.5	          	0.5, 0.5, 0.5	       1.0, 1.0, 0.5       	0.80, 0.90, 0.30	
-	skycolx= 1. *palette(abs(vN.x) ,vec3(0.5, 0.5, 0.5),vec3(		0.5, 0.5, 0.5	),vec3(1.0, 1.0, 0.5),vec3(	3.00, 6.00, 1.40));
-    skycolx=normalize(skycolx)*.5;                            // 0.5, 0.5, 0.5		        0.5, 0.5, 0.5	       1.0, 0.7, 0.4	    0.00, 0.15, 0.20
-	skycoly= 1. *palette(vN.y*.5+0.5,vec3(0.5, 0.5, 0.5),vec3(		0.5, 0.5, 0.5	),vec3(1.0, 0.7, 0.4),vec3(	4.00, 8.00, 1.40));
-	skycoly=normalize(skycoly)*.75;                            // 0.5, 0.5, 0.5		        0.5, 0.5, 0.5	       1.0, 0.7, 0.4	    0.00, 0.15, 0.20
-	skycolz= 1.*palette(vN.z*.6+0.3,vec3(0.5, 0.55, 0.65),vec3(		0.5, 0.5, 0.75	),vec3(1.0, 1.0, 1.0),vec3(	0.00, 0.10, 0.20));
-    skycol=mix(skycolx,skycoly,.5);
-	skycol=mix(skycol,skycolz,.75);
+	float elevation=((sqrt(abs(vN.z))*sign(vN.z))/2.)+.5;
+	vec3 skycol;
+	vec3 c1=vec3(74. ,56. ,0.)/255.; 	vec3 c2=vec3(200. ,230. ,237.)/255.;
+	vec3 c3=vec3(167.,174. ,255. )/255.; 	vec3 c4=vec3(77.,94. ,177. )/255.;
+	vec3 c12=mix(c1,c2,elevation);	vec3 c23=mix(c2,c3,elevation);
+	vec3 c34=mix(c3,c4,elevation);	vec3 c1223=mix(c12,c23,elevation);
+	vec3 c2334=mix(c23,c34,elevation);
+	skycol=mix(c1223,c2334,elevation);
 
-  gl_FragColor =  vec4( mix(skycol,color1.xyz*shading,.75)  ,color1.a) ;
+  gl_FragColor =  vec4( mix(skycol,color1.rgb*shading,.5)  ,color1.a) ;
 }
