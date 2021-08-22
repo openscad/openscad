@@ -459,7 +459,24 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
-
+		
+	// Checks if the Documentation has been downloaded and hides the Action otherwise
+	if (UIUtils::hasOfflineUserManual()) 
+	{
+		connect(this->helpActionOfflineManual, SIGNAL(triggered()), this, SLOT(helpOfflineManual()));
+	}
+	else
+	{
+		this->helpActionOfflineManual->setVisible(false);
+	}
+	if (UIUtils::hasOfflineCheatSheet()) 
+	{
+		connect(this->helpActionOfflineCheatSheet, SIGNAL(triggered()), this, SLOT(helpOfflineCheatSheet()));
+	}
+	else
+	{
+		this->helpActionOfflineCheatSheet->setVisible(false);
+	}
 #ifdef OPENSCAD_UPDATER
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
@@ -3132,9 +3149,19 @@ void MainWindow::helpManual()
 	UIUtils::openUserManualURL();
 }
 
+void MainWindow::helpOfflineManual()
+{
+	UIUtils::openOfflineUserManual();
+}
+
 void MainWindow::helpCheatSheet()
 {
 	UIUtils::openCheatSheetURL();
+}
+
+void MainWindow::helpOfflineCheatSheet()
+{
+	UIUtils::openOfflineCheatSheet();
 }
 
 void MainWindow::helpLibrary()
