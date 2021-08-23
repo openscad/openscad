@@ -80,9 +80,8 @@ matrix:
 notifications:
   irc:
     channels:
-      - "chat.freenode.net#openscad"
-    on_success: change
-    use_notice: false
+      - "irc.libera.chat#openscad"
+    use_notice: true
 
 branches:
   only:
