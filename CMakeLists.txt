@@ -475,6 +475,7 @@ elseif(WIN32)
 endif()
 
 include_directories("src/ext/libtess2/Include")
+include_directories("src/ext/json")
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
@@ -509,6 +510,7 @@ set(CORE_SOURCES
   src/export_pdf.cc
   src/export_stl.cc
   src/export_svg.cc
+  src/export_param.cc
   src/expr.cc
   src/feature.cc
   src/fileutils.cc

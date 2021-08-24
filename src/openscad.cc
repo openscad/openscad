@@ -511,6 +511,13 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 		});
 		fs::current_path(cmd.original_path);
 	}
+	else if (curFormat == FileFormat::PARAM) {
+		fs::current_path(fparent); // Force exported filenames to be relative to document path
+		with_output(cmd.is_stdout, filename_str, [&root_file, &fpath](std::ostream &stream) {
+			export_param(root_file, fpath, stream);
+		});
+		fs::current_path(cmd.original_path);
+	}
 	else if (curFormat == FileFormat::AST) {
 		fs::current_path(fparent); // Force exported filenames to be relative to document path
 		with_output(cmd.is_stdout, filename_str, [root_file](std::ostream &stream) {

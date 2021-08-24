@@ -17,12 +17,13 @@ public:
 						 shared_ptr<class Expression> expr = shared_ptr<class Expression>(),
 						 const Location &loc = Location::NONE)
 		: ASTNode(loc), name(name), expr(expr) { }
-	
+
 	void print(std::ostream &stream, const std::string &indent) const override;
-	const std::string& getName() const { return name; };
-	const shared_ptr<Expression>& getExpr() const { return expr; };
+	const std::string& getName() const { return name; }
+	const shared_ptr<Expression>& getExpr() const { return expr; }
+	const AnnotationMap& getAnnotations() const { return annotations; }
 	// setExpr used by customizer parameterobject etc.
-	void setExpr(shared_ptr<Expression> e) { expr = std::move(e); };
+	void setExpr(shared_ptr<Expression> e) { expr = std::move(e); }
 
 	virtual void addAnnotations(AnnotationList *annotations);
 	virtual bool hasAnnotations() const;
