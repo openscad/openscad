@@ -30,7 +30,7 @@ for (text_array_idx = [0:(len(texts_array)-1)])
 	echo( "[", text_array_idx, "] = ", texts_array[text_array_idx], " of len=", len(texts_array[text_array_idx]), ":"  );
     for (text_idx = [0:(len(texts_array[text_array_idx])-1)])
     {
-	    echo( "    [", text_idx, ,"]=", texts_array[text_array_idx][text_idx]  );
+	    echo( "    [", text_idx, "]=", texts_array[text_array_idx][text_idx]  );
     }
 }
 
