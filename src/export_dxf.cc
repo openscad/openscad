@@ -35,61 +35,84 @@
 void export_dxf(const Polygon2d &poly, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
-	output << "  0\n"
-				 <<	"SECTION\n"
-				 <<	"  2\n"
-				 <<	"BLOCKS\n"
-				 <<	"  0\n"
-				 << "ENDSEC\n"
-				 << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "ENTITIES\n";
+	output  << "  0\n" << "SECTION\n"
+			<< "  2\n" << "BLOCKS\n"
+			<< "  0\n" << "ENDSEC\n";
+
+	output  << "  0\n" << "SECTION\n"
+			<< "  2\n" << "ENTITIES\n";
+
+	// Some importers (e.g. Inkscape v1.1) needs a layer to be specified, but just once is enough
+	output  << "  8\n" << "0\n"; // layer 0
 
 	for(const auto &o : poly.outlines()) {
-		for (unsigned int i=0; i<o.vertices.size(); ++i) {
-			const Vector2d &p1 = o.vertices[i];
-			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
-			double x1 = p1[0];
-			double y1 = p1[1];
-			double x2 = p2[0];
-			double y2 = p2[1];
-			output << "  0\n"
-						 << "LINE\n";
-			// Some importers (e.g. Inkscape) needs a layer to be specified
-      // The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
+		// Entity Types / Layers: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-3610039E-27D1-4E23-B6D3-7E60B22BB5BD
+		switch( o.vertices.size() ) {
+		case 1: {
+			// just in case point and lines are supported in the future
+			// POINT: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-9C6AD32D-769D-4213-85A4-CA9CCB5C5317
+			const Vector2d &p = o.vertices[0];
+			output  << "  0\n" << "POINT\n"
+					<< " 10\n" << p[0] << "\n"  // x
+					<< " 20\n" << p[1] << "\n"; // y
+			} break;
+		case 2: {
+			// just in case point and lines are supported in the future
+			// LINE: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
+			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
 			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2] order.
-			output << "  8\n"
-						 << "0\n"
-						 << " 10\n"
-						 << x1 << "\n"
-						 << " 20\n"
-						 << y1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
-						 << " 21\n"
-						 << y2 << "\n";
+			const Vector2d &p1 = o.vertices[0];
+			const Vector2d &p2 = o.vertices[1];
+			output  << "  0\n" << "LINE\n"
+					<< " 10\n" << p1[0] << "\n"  // x1
+					<< " 20\n" << p1[1] << "\n"  // y1
+					<< " 11\n" << p2[0] << "\n"  // x2
+					<< " 21\n" << p2[1] << "\n"; // y2
+			} break;
+		default:
+			// LWPOLYLINE: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-748FC305-F3F2-4F74-825A-61F04D757A50
+			output  << "  0\n" << "LWPOLYLINE\n"
+					<< " 90\n" << o.vertices.size() << "\n" // number of vertices
+					<< " 70\n" << "1\n";                     // closed = 1
+			for (unsigned int i=0; i<o.vertices.size(); ++i) {
+				const Vector2d &p = o.vertices[i];
+				output  << " 10\n" << p[0] << "\n"
+						<< " 20\n" << p[1] << "\n";
+			}
+			// close the polygon
+			const Vector2d &p0 = o.vertices[0];
+			output  << " 10\n" << p0[0] << "\n"
+					<< " 20\n" << p0[1] << "\n";
+			break;
 		}
+
+		// each segment as separate line
+		// for (unsigned int i=0; i<o.vertices.size(); ++i) {
+		// 	const Vector2d &p1 = o.vertices[i];
+		// 	const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
+		// 	output  << "  0\n" << "LINE\n"
+		// 			<< " 10\n" << p1[0] << "\n"  // x1
+		// 			<< " 20\n" << p1[1] << "\n"  // y1
+		// 			<< " 11\n" << p2[0] << "\n"  // x2
+		// 			<< " 21\n" << p2[1] << "\n"; // y2
+		// }
 	}
 
-	output << "  0\n"
-				 << "ENDSEC\n";
+	output << "  0\n" << "ENDSEC\n";
 
-	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "OBJECTS\n"
-				 << "  0\n"
-				 << "DICTIONARY\n"
-				 << "  0\n"
-				 << "ENDSEC\n";
+	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry.
+	// as of Inkscape 1.1, not needed anymore
+	// output
+	// 	<< "  0\n" << "SECTION\n"
+	// 	<< "  2\n" << "OBJECTS\n"
+	// 	<< "  0\n" << "DICTIONARY\n"
+	// 	<< "  0\n" << "ENDSEC\n";
 
-	output << "  0\n"
-				 <<"EOF\n";
+	output << "  0\n" << "EOF\n";
 
-	setlocale(LC_NUMERIC, "");      // Set default locale
+	setlocale(LC_NUMERIC, ""); // set default locale
 }
 
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
