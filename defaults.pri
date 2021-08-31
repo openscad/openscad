@@ -1,1 +1,0 @@
-macx:CONFIG += mdi
