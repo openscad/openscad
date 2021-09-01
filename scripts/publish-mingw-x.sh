@@ -24,7 +24,7 @@ if [ ! -e $MXEDIR ]; then
   exit 1
 fi
 
-if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+if [ ! -f $OPENSCADDIR/openscad.qrc ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 1
 fi
