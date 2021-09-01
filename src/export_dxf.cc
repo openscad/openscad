@@ -36,7 +36,8 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
-	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+	// Some importers needs a BLOCKS section to be present
+	// e.g. Inkscape 1.1 still needs it 
 	output  << "  0\n" << "SECTION\n"
 			<< "  2\n" << "BLOCKS\n"
 			<< "  0\n" << "ENDSEC\n";
@@ -44,47 +45,57 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 	output  << "  0\n" << "SECTION\n"
 			<< "  2\n" << "ENTITIES\n";
 
-	// Some importers (e.g. Inkscape v1.1) needs a layer to be specified, but just once is enough
-	output  << "  8\n" << "0\n"; // layer 0
-
+	// ENTITIES:
+    // https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-3610039E-27D1-4E23-B6D3-7E60B22BB5BD
+	// https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-795d.htm
+    // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-7a3d.htm
+    
 	for(const auto &o : poly.outlines()) {
-		// Entity Types / Layers: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-3610039E-27D1-4E23-B6D3-7E60B22BB5BD
 		switch( o.vertices.size() ) {
 		case 1: {
-			// just in case point and lines are supported in the future
-			// POINT: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-9C6AD32D-769D-4213-85A4-CA9CCB5C5317
+			// POINT: just in case it's supported in the future
+			// https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-9C6AD32D-769D-4213-85A4-CA9CCB5C5317
+            // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79f2.htm
 			const Vector2d &p = o.vertices[0];
 			output  << "  0\n" << "POINT\n"
+					<< "100\n" << "AcDbEntity\n"
+					<< "  8\n" << "0\n" 		// layer 0
+					<< "100\n" << "AcDbPoint\n"
 					<< " 10\n" << p[0] << "\n"  // x
-					<< " 20\n" << p[1] << "\n"; // y
+					<< " 20\n" << p[1] << "\n"; // y					
 			} break;
 		case 2: {
-			// just in case point and lines are supported in the future
-			// LINE: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
+			// LINE: just in case it's supported in the future
+            // https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
+            // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79fe.htm
 			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
 			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2] order.
 			const Vector2d &p1 = o.vertices[0];
 			const Vector2d &p2 = o.vertices[1];
 			output  << "  0\n" << "LINE\n"
+					<< "100\n" << "AcDbEntity\n"
+					<< "  8\n" << "0\n" 		 // layer 0
+					<< "100\n" << "AcDbLine\n"
 					<< " 10\n" << p1[0] << "\n"  // x1
 					<< " 20\n" << p1[1] << "\n"  // y1
 					<< " 11\n" << p2[0] << "\n"  // x2
-					<< " 21\n" << p2[1] << "\n"; // y2
+					<< " 21\n" << p2[1] << "\n"; // y2				
 			} break;
 		default:
-			// LWPOLYLINE: https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-748FC305-F3F2-4F74-825A-61F04D757A50
+			// LWPOLYLINE
+            // https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-748FC305-F3F2-4F74-825A-61F04D757A50
+            // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79fc.htm
 			output  << "  0\n" << "LWPOLYLINE\n"
+					<< "100\n" << "AcDbEntity\n"
+					<< "  8\n" << "0\n" 		            // layer 0
+					<< "100\n" << "AcDbPolyline\n"
 					<< " 90\n" << o.vertices.size() << "\n" // number of vertices
-					<< " 70\n" << "1\n";                     // closed = 1
+					<< " 70\n" << "1\n";                    // closed = 1					
 			for (unsigned int i=0; i<o.vertices.size(); ++i) {
 				const Vector2d &p = o.vertices[i];
 				output  << " 10\n" << p[0] << "\n"
 						<< " 20\n" << p[1] << "\n";
 			}
-			// close the polygon
-			const Vector2d &p0 = o.vertices[0];
-			output  << " 10\n" << p0[0] << "\n"
-					<< " 20\n" << p0[1] << "\n";
 			break;
 		}
 
@@ -93,6 +104,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 		// 	const Vector2d &p1 = o.vertices[i];
 		// 	const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
 		// 	output  << "  0\n" << "LINE\n"
+		//			<< "100\n" << "AcDbEntity\n"
+		//			<< "  8\n" << "0\n" 		 // layer 0
+		//			<< "100\n" << "AcDbLine\n"
 		// 			<< " 10\n" << p1[0] << "\n"  // x1
 		// 			<< " 20\n" << p1[1] << "\n"  // y1
 		// 			<< " 11\n" << p2[0] << "\n"  // x2
@@ -103,7 +117,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 	output << "  0\n" << "ENDSEC\n";
 
 	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry.
-	// as of Inkscape 1.1, not needed anymore
+	// as of Inkscape 1.0, not needed anymore
 	// output
 	// 	<< "  0\n" << "SECTION\n"
 	// 	<< "  2\n" << "OBJECTS\n"
@@ -123,8 +137,7 @@ void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 		}
 	} else if (dynamic_pointer_cast<const PolySet>(geom)) {
 		assert(false && "Unsupported file format");
-	}
-	else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
+	} else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		export_dxf(*poly, output);
 	} else {
 		assert(false && "Export as DXF for this geometry type is not supported");
