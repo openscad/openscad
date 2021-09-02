@@ -35,9 +35,12 @@
 
 void export_dxf_header(std::ostream &output,double xMin,double yMin,double xMax,double yMax) {
 	
+	// https://dxfwrite.readthedocs.io/en/latest/headervars.html
+	// http://paulbourke.net/dataformats/dxf/min3d.html
+
 	// based on: https://github.com/mozman/ezdxf/tree/master/examples_dxf
 	// note: Minimal_DXF_AC1009.dxf - does not work in Adobe Illustrator
-	// Minimal_DXF_AC1006.dxf
+	// Minimal_DXF_AC1006.dxf - with some changes, as is, it's not compatible with LibreCAD
 
 	output
 		<< "999\n" << "DXF from OpenSCAD\n";
@@ -70,10 +73,11 @@ void export_dxf_header(std::ostream &output,double xMin,double yMin,double xMax,
 		<< "  2\n" << "HEADER\n"
 		<< "  9\n" << "$ACADVER\n"
 		<< "  1\n" << "AC1006\n"
-		<< "  9\n" << "$INSBASE\n"
+		<< "  9\n" << "$INSBASE\n" // for 3D only?
 		<< " 10\n" << "0.0\n"
 		<< " 20\n" << "0.0\n"
-		<< " 30\n" << "0.0\n";
+		<< " 30\n" << "0.0\n"
+		;
 
 	/* --- LIMITS ---
 	9
@@ -106,6 +110,7 @@ void export_dxf_header(std::ostream &output,double xMin,double yMin,double xMax,
 
 	// might not be necessary to set the actual limits
 	// but some apps might rely on it
+
 	output
 		<< "  9\n" << "$EXTMIN\n"
 		<< " 10\n" << xMin << "\n"
@@ -131,7 +136,7 @@ void export_dxf_header(std::ostream &output,double xMin,double yMin,double xMax,
 
 	output
 		<< "  0\n" << "SECTION\n";
-
+	
 	output
 		<< "  2\n" << "TABLES\n";
 
@@ -216,15 +221,9 @@ void export_dxf_header(std::ostream &output,double xMin,double yMin,double xMax,
 		<< " 70\n" << "6\n"
 
 		<< "  0\n" << "LAYER\n"
-		<< "  2\n" << "1\n"
+		<< "  2\n" << "0\n"           // layer name
 		<< " 70\n" << "64\n"
-		<< " 62\n" << "7\n"
-		<< "  6\n" << "CONTINUOUS\n"
-
-		<< "  0\n" << "LAYER\n"
-		<< "  2\n" << "2\n"
-		<< " 70\n" << "64\n"
-		<< " 62\n" << "7\n"
+		<< " 62\n" << "7\n"           // color
 		<< "  6\n" << "CONTINUOUS\n"
 
 		<< "  0\n" << "ENDTAB\n";
@@ -291,45 +290,40 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 	export_dxf_header(output,xMin,yMin,xMax,yMax);
 
-	// --- TO BE DELETED ---
-	// // Some importers needs a BLOCKS section to be present
-	// // e.g. Inkscape 1.1 still needs it 
-	// // output  << "  0\n" << "SECTIONxxx\n"
-	// // 		<< "  2\n" << "BLOCKS\n"
-	// // 		<< "  0\n" << "ENDSEC\n";
-	// output  << "  0\n" << "SECTION\n"
-	// 		<< "  2\n" << "ENTITIES\n";
+	// REFERENCE:
+	// DXF (AutoCAD Drawing Interchange Format) Family, ASCII variant
+	//    https://www.loc.gov/preservation/digital/formats/fdd/fdd000446.shtml#specs
+	// About the DXF Format (DXF)
+	//    https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-235B22E0-A567-4CF6-92D3-38A2306D73F3
+    // About ASCII DXF Files
+	//    https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-20172853-157D-4024-8E64-32F3BD64F883
+	// DXF Format
+	//    https://documentation.help/AutoCAD-DXF/WSfacf1429558a55de185c428100849a0ab7-5f35.htm
 
-	// ENTITIES:
-    // https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-3610039E-27D1-4E23-B6D3-7E60B22BB5BD
-	// https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-795d.htm
-    // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-7a3d.htm
-    
+	output  << "  0\n" << "SECTION\n"
+			<< "  2\n" << "ENTITIES\n";
+
 	for(const auto &o : poly.outlines()) {
 		switch( o.vertices.size() ) {
 		case 1: {
 			// POINT: just in case it's supported in the future
-			// https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-9C6AD32D-769D-4213-85A4-CA9CCB5C5317
-            // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79f2.htm
 			const Vector2d &p = o.vertices[0];
 			output  << "  0\n" << "POINT\n"
 					<< "100\n" << "AcDbEntity\n"
-					<< "  8\n" << "1\n" 		// layer 1
+					<< "  8\n" << "0\n" 		// layer 0
 					<< "100\n" << "AcDbPoint\n"
 					<< " 10\n" << p[0] << "\n"  // x
 					<< " 20\n" << p[1] << "\n"; // y
 			} break;
 		case 2: {
 			// LINE: just in case it's supported in the future
-            // https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-FCEF5726-53AE-4C43-B4EA-C84EB8686A66
-            // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79fe.htm
 			// The [X1 Y1 X2 Y2] order is the most common and can be parsed linearly.
 			// Some libraries, like the python libraries dxfgrabber and ezdxf, cannot open [X1 X2 Y1 Y2] order.
 			const Vector2d &p1 = o.vertices[0];
 			const Vector2d &p2 = o.vertices[1];
 			output  << "  0\n" << "LINE\n"
 					<< "100\n" << "AcDbEntity\n"
-					<< "  8\n" << "1\n" 		 // layer 1
+					<< "  8\n" << "0\n" 		 // layer 0
 					<< "100\n" << "AcDbLine\n"
 					<< " 10\n" << p1[0] << "\n"  // x1
 					<< " 20\n" << p1[1] << "\n"  // y1
@@ -338,11 +332,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 			} break;
 		default:
 			// LWPOLYLINE
-            // https://help.autodesk.com/view/ACD/2017/ENU/?guid=GUID-748FC305-F3F2-4F74-825A-61F04D757A50
-            // https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79fc.htm
 			output  << "  0\n" << "LWPOLYLINE\n"
 					<< "100\n" << "AcDbEntity\n"
-					<< "  8\n" << "1\n" 		            // layer 1
+					<< "  8\n" << "0\n" 		            // layer 0
 					<< "100\n" << "AcDbPolyline\n"
 					<< " 90\n" << o.vertices.size() << "\n" // number of vertices
 					<< " 70\n" << "1\n";                    // closed = 1
@@ -353,34 +345,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 			}
 			break;
 		}
-
-		// --- TO BE DELETED ---
-		// each segment as separate line
-		// for (unsigned int i=0; i<o.vertices.size(); ++i) {
-		// 	const Vector2d &p1 = o.vertices[i];
-		// 	const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
-		// 	output  << "  0\n" << "LINE\n"
-		//			<< "100\n" << "AcDbEntity\n"
-		//			<< "  8\n" << "0\n" 		 // layer 0
-		//			<< "100\n" << "AcDbLine\n"
-		// 			<< " 10\n" << p1[0] << "\n"  // x1
-		// 			<< " 20\n" << p1[1] << "\n"  // y1
-		// 			<< " 11\n" << p2[0] << "\n"  // x2
-		// 			<< " 21\n" << p2[1] << "\n"; // y2
-		// }
 	}
 
 	output << "  0\n" << "ENDSEC\n";
-
-	// --- TO BE DELETED ---
-	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry.
-	// as of Inkscape 1.0, not needed anymore
-	// output
-	// 	<< "  0\n" << "SECTION\n"
-	// 	<< "  2\n" << "OBJECTS\n"
-	// 	<< "  0\n" << "DICTIONARY\n"
-	// 	<< "  0\n" << "ENDSEC\n";
-
 	output << "  0\n" << "EOF\n";
 
 	setlocale(LC_NUMERIC, ""); // set default locale
