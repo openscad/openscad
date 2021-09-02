@@ -51,15 +51,17 @@ CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d &points)
 std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Polygon2d &poly)
 {
 	std::vector<CGAL_Polygon_with_holes_2> ret;
-	PolyTree polytree = ClipperUtils::sanitize(ClipperUtils::fromPolygon2d(poly));
+
+	int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
+	PolyTree polytree = ClipperUtils::sanitize(ClipperUtils::fromPolygon2d(poly, scale_pow2));
 
 	// lambda for recursive walk through polytree
 	std::function<void (PolyNode *)> walk = [&](PolyNode *c) {
 		// outer path
-		CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(ClipperUtils::fromPath(c->Contour)));
+		CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(ClipperUtils::fromPath(c->Contour, scale_pow2)));
 		// holes
 		for (auto cc : c->Childs) {
-			c_poly.add_hole(to_cgal_polygon_2(ClipperUtils::fromPath(cc->Contour)));
+			c_poly.add_hole(to_cgal_polygon_2(ClipperUtils::fromPath(cc->Contour, scale_pow2)));
 			for (auto ccc : cc->Childs)
 				walk(ccc);
 		}
@@ -125,10 +127,11 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 
 		// floor
 		{
-			// pass poly through clipper as for straight skeleton
+			// pass poly through clipper as we have done for the roof
 			// because this may change vertices coordinates
+			int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
 			Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(ClipperUtils::sanitize(
-						ClipperUtils::fromPolygon2d(poly)));
+						ClipperUtils::fromPolygon2d(poly, scale_pow2)), scale_pow2);
 			PolySet *tess = poly_sanitized->tessellate();
 			for (std::vector<Vector3d> triangle : tess->polygons) {
 				Polygon floor;

@@ -5,23 +5,24 @@ namespace ClipperUtils {
 
 	const int CLIPPER_BITS{ std::ilogb(ClipperLib::hiRange) };
 
-	int getScalePow2(const BoundingBox& bounds)
+	int getScalePow2(const BoundingBox& bounds, int bits)
 	{
-
 		double maxCoeff = std::max({
 			bounds.min().cwiseAbs().maxCoeff(),
 			bounds.max().cwiseAbs().maxCoeff(),
 			bounds.sizes().maxCoeff()
 		});
 		int exp = std::ilogb(maxCoeff) + 1;
-		return (CLIPPER_BITS-1) - exp;
+		int _bits = (bits == 0) ? CLIPPER_BITS : bits;
+		return (_bits - 1) - exp;
 	}
         
-	VectorOfVector2d fromPath(ClipperLib::Path path)
+	VectorOfVector2d fromPath(ClipperLib::Path path, int pow2)
 	{
+		double scale = std::ldexp(1.0, -pow2);
 		VectorOfVector2d ret;
 		for (auto v : path) {
-			ret.emplace_back(1.0 * v.X / CLIPPER_SCALE, 1.0 * v.Y / CLIPPER_SCALE);
+			ret.emplace_back(v.X * scale, v.Y * scale);
 		}
 		return ret;
 	}

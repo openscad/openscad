@@ -5,31 +5,24 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "evalcontext.h"
 #include "fileutils.h"
 #include "builtin.h"
+#include "parameters.h"
+#include "children.h"
 #include "roofnode.h"
 
-class RoofModule : public AbstractModule
+static AbstractNode* builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-public:
-	RoofModule() { }
-	AbstractNode *instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const override;
-};
+	auto node = new RoofNode(inst);
 
-AbstractNode *RoofModule::instantiate(const std::shared_ptr<Context>& ctx, const ModuleInstantiation *inst, const std::shared_ptr<EvalContext>& evalctx) const
-{
-	auto node = new RoofNode(inst, evalctx);
+	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+		{},
+		{"method"}
+	);
 
-	AssignmentList args{assignment("method")};
-
-	ContextHandle<Context> c{Context::create<Context>(ctx)};
-	c->setVariables(evalctx, args);
-	inst->scope.apply(evalctx);
-
-	node->fa = c->lookup_variable("$fa").toDouble();
-	node->fs = c->lookup_variable("$fs").toDouble();
-	node->fn = c->lookup_variable("$fn").toDouble();
+	node->fn = parameters["$fn"].toDouble();
+	node->fs = parameters["$fs"].toDouble();
+	node->fa = parameters["$fa"].toDouble();
 
 	node->fa = std::max(node->fa, 0.01);
 	node->fs = std::max(node->fs, 0.01);
@@ -38,14 +31,17 @@ AbstractNode *RoofModule::instantiate(const std::shared_ptr<Context>& ctx, const
 		node->fs = 0.0;
 	}
 
-	node->method = c->lookup_variable_with_default("method", "voronoi diagram");
-
-	if (node->method != "voronoi diagram" && node->method != "straight skeleton") {
+	if (parameters["method"].isUndefined()) {
 		node->method = "voronoi diagram";
+	} else {
+		node->method = parameters["method"].toString();
+		// method can only be one of...
+		if (node->method != "voronoi diagram" && node->method != "straight skeleton") {
+			node->method = "voronoi diagram";
+		}
 	}
 
-	auto instantiatednodes = inst->instantiateChildren(evalctx);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	children.instantiate(node);
 
 	return node;
 }
@@ -65,7 +61,7 @@ std::string RoofNode::toString() const
 
 void register_builtin_roof()
 {
-	Builtins::init("roof", new RoofModule(), {
+	Builtins::init("roof", new BuiltinModule(builtin_roof), {
 			"roof(method = \"voronoi diagram\")"
 	});
 }

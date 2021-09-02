@@ -19,7 +19,7 @@
 
 namespace roof_vd {
 
-typedef ClipperLib::cInt VD_int;
+typedef int32_t VD_int;
 
 typedef ::boost::polygon::voronoi_diagram<double> voronoi_diagram;
 
@@ -27,14 +27,18 @@ struct Point {
 	VD_int a;
 	VD_int b;
 	Point(VD_int x, VD_int y) : a(x), b(y) {}
-	friend std::ostream& operator<<(std::ostream& os, const Point& point);
+	friend std::ostream& operator<<(std::ostream& os, const Point& point) {
+		return os << "(" << point.a << ", " << point.b << ")";
+	}
 };
 
 struct Segment {
 	Point p0;
 	Point p1;
 	Segment(VD_int x1, VD_int y1, VD_int x2, VD_int y2) : p0(x1, y1), p1(x2, y2) {}
-	friend std::ostream& operator<<(std::ostream& os, const Segment& segment);
+	friend std::ostream& operator<<(std::ostream& os, const Segment& segment) {
+		return os << segment.p0 << " -- " << segment.p1;
+	}
 };
 
 } // roof_vd
@@ -276,6 +280,9 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram &vd,
 				segment.p0 : segment.p1;
 			while (!( edge->is_secondary() && edge->prev()->is_secondary() )) {
 				edge = edge->next();
+				if (edge == cell->incident_edge()) {
+					RAISE_ROOF_EXCEPTION("Voronoi error");
+				}
 			}
 
 			auto add_triangle = [&ret,&point](const Vector2d &v0, const Vector2d &v1) {
@@ -326,7 +333,11 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 
 	try {
 
-		ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly);
+		// input data for voronoi diagram is 32 bit integers
+		int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
+		double scale = std::ldexp(1.0, scale_pow2);
+
+		ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
 		std::vector<Segment> segments;
 
 		for (auto path : paths) {
@@ -339,7 +350,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 
 		voronoi_diagram vd;
 		::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
-		Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, ClipperUtils::CLIPPER_SCALE * fs);
+		Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, scale * fs);
 
 		// roof
 		for (std::vector<Vector2d> face : inner_faces.faces) {
@@ -357,11 +368,10 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 				for (Vector3d tv : triangle) {
 					Vector2d v;
 					v << tv[0], tv[1];
-					auto d = ClipperUtils::CLIPPER_SCALE;
 					if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
 						RAISE_ROOF_EXCEPTION("Voronoi error");
 					}
-					roof.push_back(Vector3d(v[0] / d, v[1] / d, inner_faces.heights[v] / d));
+					roof.push_back(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale));
 				}
 				hat->append_poly(roof);
 			}
@@ -373,7 +383,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 			// pass poly through clipper, as for voronoi diagram
 			// because this may change vertices coordinates
 			Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(ClipperUtils::sanitize(
-						ClipperUtils::fromPolygon2d(poly)));
+						ClipperUtils::fromPolygon2d(poly, scale_pow2)), scale_pow2);
 			PolySet *tess = poly_sanitized->tessellate();
 			for (std::vector<Vector3d> triangle : tess->polygons) {
 				Polygon floor;

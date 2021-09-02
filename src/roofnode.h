@@ -12,7 +12,7 @@ class RoofNode : public AbstractPolyNode
 {
 public:
 	VISITABLE();
-	RoofNode(const ModuleInstantiation *mi, const std::shared_ptr<EvalContext> &ctx) : AbstractPolyNode(mi, ctx) {}
+	RoofNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
 	std::string toString() const override;
 	std::string name() const override { return "roof"; }
 
