@@ -48,12 +48,9 @@ CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d &points)
 }
 
 // break a list of outlines into polygons with holes
-std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Polygon2d &poly)
+std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const ClipperLib::PolyTree &polytree, int scale_pow2)
 {
 	std::vector<CGAL_Polygon_with_holes_2> ret;
-
-	int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-	PolyTree polytree = ClipperUtils::sanitize(ClipperUtils::fromPolygon2d(poly, scale_pow2));
 
 	// lambda for recursive walk through polytree
 	std::function<void (PolyNode *)> walk = [&](PolyNode *c) {
@@ -79,9 +76,14 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 {
 	PolySet *hat = new PolySet(3);
 
+	int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
+	ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+	ClipperLib::PolyTree polytree = ClipperUtils::sanitize(paths);
+	Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(polytree, scale_pow2);
+
 	try {
 		// roof
-		std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(poly);
+		std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(polytree, scale_pow2);
 		for (CGAL_Polygon_with_holes_2 shape : shapes) {
 			CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
 			// store heights of vertices
@@ -127,11 +129,8 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 
 		// floor
 		{
-			// pass poly through clipper as we have done for the roof
-			// because this may change vertices coordinates
-			int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-			Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(ClipperUtils::sanitize(
-						ClipperUtils::fromPolygon2d(poly, scale_pow2)), scale_pow2);
+			// poly has to go through clipper just as it does for the roof
+			// because this may change coordinates
 			PolySet *tess = poly_sanitized->tessellate();
 			for (std::vector<Vector3d> triangle : tess->polygons) {
 				Polygon floor;
@@ -143,8 +142,9 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 				hat->append_poly(floor);
 			}
 			delete tess;
-			delete poly_sanitized;
 		}
+
+		delete poly_sanitized;
 
 		return hat;
 	} catch (RoofNode::roof_exception &e) {

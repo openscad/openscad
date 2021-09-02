@@ -380,22 +380,27 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 
 		// floor
 		{
-			// pass poly through clipper, as for voronoi diagram
-			// because this may change vertices coordinates
-			Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(ClipperUtils::sanitize(
-						ClipperUtils::fromPolygon2d(poly, scale_pow2)), scale_pow2);
-			PolySet *tess = poly_sanitized->tessellate();
+			// poly has to go through clipper just as it does for the roof
+			// because this may change coordinates
+			Polygon2d poly_floor;
+			for (auto path : paths) {
+				Outline2d o;
+				for (auto p : path) {
+					o.vertices.push_back({p.X / scale, p.Y / scale});
+				}
+				poly_floor.addOutline(o);
+			}
+			PolySet *tess = poly_floor.tessellate();
 			for (std::vector<Vector3d> triangle : tess->polygons) {
 				Polygon floor;
 				for (Vector3d tv : triangle) {
 					floor.push_back(tv);
 				}
-				// floor has wrong orientation
+				// floor has reverse orientation
 				std::reverse(floor.begin(), floor.end());
 				hat->append_poly(floor);
 			}
 			delete tess;
-			delete poly_sanitized;
 		}
 	} catch (RoofNode::roof_exception &e) {
 		delete hat;
