@@ -338,6 +338,8 @@ PolySet *voronoi_diagram_roof(const Polygon2d &poly, double fa, double fs)
 		double scale = std::ldexp(1.0, scale_pow2);
 
 		ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+		// sanitize is important e.g. when after converting to 32 bit integers we have double points
+		ClipperLib::PolyTreeToPaths(ClipperUtils::sanitize(paths), paths);
 		std::vector<Segment> segments;
 
 		for (auto path : paths) {
