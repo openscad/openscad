@@ -39,8 +39,15 @@ void export_dxf_header(std::ostream &output,double xMin,double yMin,double xMax,
 	// http://paulbourke.net/dataformats/dxf/min3d.html
 
 	// based on: https://github.com/mozman/ezdxf/tree/master/examples_dxf
-	// note: Minimal_DXF_AC1009.dxf - does not work in Adobe Illustrator
-	// Minimal_DXF_AC1006.dxf - with some changes, as is, it's not compatible with LibreCAD
+	// Minimal_DXF_AC1009.dxf - not working in Adobe Illustrator
+	// Minimal_DXF_AC1006.dxf - not working with LibreCAD (due to 3DFACE?)
+
+	// tested to work on:
+	// - InkScape 1.0.0
+	// - LibreCAD
+	// - Adobe Illustrator
+	// - https://sharecad.org
+	// - generic cutters
 
 	output
 		<< "999\n" << "DXF from OpenSCAD\n";
