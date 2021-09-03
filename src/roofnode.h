@@ -17,6 +17,7 @@ public:
 	std::string name() const override { return "roof"; }
 
 	double fa, fs, fn;
+	int convexity = 1;
 	std::string method;
 
 	class roof_exception: public std::exception {

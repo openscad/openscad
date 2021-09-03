@@ -16,8 +16,8 @@ static AbstractNode* builtin_roof(const ModuleInstantiation *inst, Arguments arg
 	auto node = new RoofNode(inst);
 
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-		{},
-		{"method"}
+		{"method"},
+		{"convexity"}
 	);
 
 	node->fn = parameters["$fn"].toDouble();
@@ -40,6 +40,12 @@ static AbstractNode* builtin_roof(const ModuleInstantiation *inst, Arguments arg
 			node->method = "voronoi diagram";
 		}
 	}
+
+	double tmp_convexity = 0.0;
+	parameters["convexity"].getFiniteDouble(tmp_convexity);
+	node->convexity = static_cast<int>(tmp_convexity);
+	if (node->convexity <= 0)
+		node->convexity = 1;
 
 	children.instantiate(node);
 
