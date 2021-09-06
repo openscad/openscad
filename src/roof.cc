@@ -69,7 +69,7 @@ std::string RoofNode::toString() const
 
 void register_builtin_roof()
 {
-	Builtins::init("roof", new BuiltinModule(builtin_roof), {
+	Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof), {
 			"roof(method = \"voronoi\")"
 	});
 }

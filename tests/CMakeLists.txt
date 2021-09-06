@@ -237,7 +237,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union" "--enable=textmetrics")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -686,6 +686,7 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 #
 # Add experimental features tests
 #
+experimental_tests(examples_roof)
 experimental_tests(echotest_allexpressions)
 experimental_tests(astdumptest_allexpressions)
 experimental_tests(echotest_function-literal-tests)
