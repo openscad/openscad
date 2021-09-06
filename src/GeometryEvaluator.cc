@@ -1603,9 +1603,9 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
 {
 	PolySet *roof;
-	if (node.method == "voronoi diagram") {
+	if (node.method == "voronoi") {
 		roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
-	} else if (node.method == "straight skeleton") {
+	} else if (node.method == "straight") {
 		roof = roof_ss::straight_skeleton_roof(poly);
 	} else {
 		assert(false && "Invalid roof method");

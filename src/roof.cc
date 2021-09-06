@@ -32,12 +32,14 @@ static AbstractNode* builtin_roof(const ModuleInstantiation *inst, Arguments arg
 	}
 
 	if (parameters["method"].isUndefined()) {
-		node->method = "voronoi diagram";
+		node->method = "voronoi";
 	} else {
 		node->method = parameters["method"].toString();
 		// method can only be one of...
-		if (node->method != "voronoi diagram" && node->method != "straight skeleton") {
-			node->method = "voronoi diagram";
+		if (node->method != "voronoi" && node->method != "straight") {
+			LOG(message_group::Warning,inst->location(), parameters.documentRoot(),
+							"Unknown roof method '" + node->method + "'. Using 'voronoi'.");
+			node->method = "voronoi";
 		}
 	}
 
@@ -68,6 +70,6 @@ std::string RoofNode::toString() const
 void register_builtin_roof()
 {
 	Builtins::init("roof", new BuiltinModule(builtin_roof), {
-			"roof(method = \"voronoi diagram\")"
+			"roof(method = \"voronoi\")"
 	});
 }
