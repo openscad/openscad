@@ -80,7 +80,7 @@ matrix:
 notifications:
   irc:
     channels:
-      - "chat.freenode.net#openscad"
+      - "irc.libera.chat#openscad"
     on_success: change
     use_notice: false
 
@@ -148,6 +148,6 @@ addons:
       name: "openscad/openscad"
       description: "The Programmers Solid 3D CAD Modeller"
     notification_email: dev@openscad.org
-    build_command_prepend: qmake CONFIG-=debug CONFIG+=experimental CONFIG+=snapshot
+    build_command_prepend: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DHEADLESS=ON
     build_command: make
     branch_pattern: coverity_scan
