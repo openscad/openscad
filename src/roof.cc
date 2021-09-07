@@ -62,6 +62,7 @@ std::string RoofNode::toString() const
 		<< ", $fa = " << this->fa
 		<< ", $fs = " << this->fs
 		<< ", $fn = " << this->fn
+		<< ", convexity = " << this->convexity
 		<< ")";
 
 	return stream.str();

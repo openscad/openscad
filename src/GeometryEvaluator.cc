@@ -1610,6 +1610,9 @@ static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
 	} else {
 		assert(false && "Invalid roof method");
 	}
+
+	roof->setConvexity(node.convexity);
+
 	return roof;
 }
 

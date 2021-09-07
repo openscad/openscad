@@ -686,7 +686,7 @@ list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
 #
 # Add experimental features tests
 #
-experimental_tests(examples_roof)
+experimental_tests(dumptest-examples_roof)
 experimental_tests(echotest_allexpressions)
 experimental_tests(astdumptest_allexpressions)
 experimental_tests(echotest_function-literal-tests)
