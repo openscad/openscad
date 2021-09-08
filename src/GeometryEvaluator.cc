@@ -9,6 +9,9 @@
 #include "offsetnode.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
+#include "roofnode.h"
+#include "roof_ss.h"
+#include "roof_vd.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"
@@ -1593,6 +1596,52 @@ Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &
 		}
 		addToParent(state, node, geom);
 		node.progress_report();
+	}
+	return Response::ContinueTraversal;
+}
+
+static Geometry *roofOverPolygon(const RoofNode &node, const Polygon2d &poly)
+{
+	PolySet *roof;
+	if (node.method == "voronoi") {
+		roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+	} else if (node.method == "straight") {
+		roof = roof_ss::straight_skeleton_roof(poly);
+	} else {
+		assert(false && "Invalid roof method");
+	}
+
+	roof->setConvexity(node.convexity);
+
+	return roof;
+}
+
+Response GeometryEvaluator::visit(State &state, const RoofNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+			if (geometry) {
+				auto *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				Geometry *roof;
+				try {
+					roof = roofOverPolygon(node, *polygons);
+				} catch (RoofNode::roof_exception &e) {
+					LOG(message_group::Error,node.modinst->location(),this->tree.getDocumentPath(),
+							"Skeleton computation error. " + e.message());
+					roof = new PolySet(3);
+				}
+				assert(roof);
+				geom.reset(roof);
+				delete geometry;
+			}
+		}
+		else {
+			geom = smartCacheGet(node, false);
+		}
+		addToParent(state, node, geom);
 	}
 	return Response::ContinueTraversal;
 }

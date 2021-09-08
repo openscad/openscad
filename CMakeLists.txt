@@ -154,12 +154,12 @@ endmacro(find_graphics)
 #   because it looks for Boost itself, so it has to be called
 #   before we look for our own required boost libraries.
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-find_package(CGAL REQUIRED)
+find_package(CGAL REQUIRED COMPONENTS Core)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
 if(TARGET CGAL::CGAL)
-  list(APPEND COMMON_LIBRARIES CGAL::CGAL)
-  message(STATUS "CGAL: Using target CGAL::CGAL")
+  list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
+  message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
 else()
   list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
   list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
@@ -542,6 +542,9 @@ set(CORE_SOURCES
   src/projection.cc
   src/render.cc
   src/rendersettings.cc
+  src/roof.cc
+  src/roof_ss.cc
+  src/roof_vd.cc
   src/rotateextrude.cc
   src/stackcheck.h
   src/surface.cc

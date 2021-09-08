@@ -23,6 +23,7 @@ public:
 	Response visit(State &state, const AbstractPolyNode &node) override;
 	Response visit(State &state, const LinearExtrudeNode &node) override;
 	Response visit(State &state, const RotateExtrudeNode &node) override;
+	Response visit(State &state, const RoofNode &node) override;
 	Response visit(State &state, const ListNode &node) override;
 	Response visit(State &state, const GroupNode &node) override;
 	Response visit(State &state, const RootNode &node) override;

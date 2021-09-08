@@ -1,0 +1,30 @@
+roof(method = "straight", $fa = 12, $fs = 2, $fn = 0, convexity = 1) {
+	group() {
+		polygon(points = [[-5, -1], [-0.15, -1], [0, 0], [0.15, -1], [5, -1], [5, -0.1], [4, 0], [5, 0.1], [5, 1], [-5, 1]], paths = undef, convexity = 1);
+	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, -5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	roof(method = "voronoi", $fa = 12, $fs = 2, $fn = 0, convexity = 1) {
+		group() {
+			polygon(points = [[-5, -1], [-0.15, -1], [0, 0], [0.15, -1], [5, -1], [5, -0.1], [4, 0], [5, 0.1], [5, 1], [-5, 1]], paths = undef, convexity = 1);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, -8], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	roof(method = "voronoi", $fa = 90, $fs = 0, $fn = 4, convexity = 1) {
+		group() {
+			polygon(points = [[-5, -1], [-0.15, -1], [0, 0], [0.15, -1], [5, -1], [5, -0.1], [4, 0], [5, 0.1], [5, 1], [-5, 1]], paths = undef, convexity = 1);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 6], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	roof(method = "straight", $fa = 12, $fs = 2, $fn = 0, convexity = 1) {
+		text(text = "straight skeleton", size = 2, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+multmatrix([[1, 0, 0, 6], [0, 1, 0, -7], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	roof(method = "voronoi", $fa = 12, $fs = 2, $fn = 0, convexity = 1) {
+		text(text = "Voronoi diagram", size = 2, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "left", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+
