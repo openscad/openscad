@@ -48,7 +48,6 @@
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
-#include "RenderStatistic.h"
 #include "ScintillaEditor.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
@@ -998,7 +997,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		compileErrors = 0;
 		compileWarnings = 0;
 
-		this->renderingTime.start();
+		this->renderStatistic.start();
 
 		// Reload checks the timestamp of the toplevel file and refreshes if necessary,
 		if (reload) {
@@ -1262,7 +1261,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
-			RenderStatistic::printCacheStatistic();
+			renderStatistic.printCacheStatistic();
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
@@ -1345,8 +1344,7 @@ void MainWindow::compileCSG()
 																														this->highlights_products,
 																														this->background_products);
 		LOG(message_group::None,Location::NONE,"","Compile and preview finished.");
-		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
-		RenderStatistic::printRenderingTime(ms);
+		renderStatistic.printRenderingTime();
 		this->processEvents();
 	}catch(const HardWarningException&){
 		exceptionCleanup();
@@ -2131,13 +2129,8 @@ void MainWindow::cgalRender()
 void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
-	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
-	RenderStatistic::printCacheStatistic();
-	RenderStatistic::printRenderingTime(ms);
 	if (root_geom) {
-		if (!root_geom->isEmpty()) {
-			RenderStatistic().print(*root_geom);
-		}
+		renderStatistic.printAll(root_geom);
 		LOG(message_group::None,Location::NONE,"","Rendering finished.");
 
 		this->root_geom = root_geom;
@@ -2152,8 +2145,9 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
-	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() &&
-		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
+	const bool renderSoundEnabled = Preferences::inst()->getValue("advanced/enableSoundNotification").toBool();
+	const uint soundThreshold = Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
+	if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000)
 	{
 		QSound::play(":sounds/complete.wav");
 	}

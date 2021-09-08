@@ -543,7 +543,7 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 #ifdef ENABLE_CGAL
 
 		// start measuring render time
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		RenderStatistic renderStatistic;
 		GeometryEvaluator geomevaluator(tree);
 		unique_ptr<OffscreenView> glview;
 		shared_ptr<const Geometry> root_geom;
@@ -573,12 +573,7 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 			}
 		}
 
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		RenderStatistic::printCacheStatistic();
-		RenderStatistic::printRenderingTime( std::chrono::duration_cast<std::chrono::milliseconds>(end-begin) );
-		if (root_geom && !root_geom->isEmpty()) {
-			RenderStatistic().print(*root_geom);
-		}
+		renderStatistic.printAll(root_geom);
 
         if( curFormat == FileFormat::ASCIISTL ||
             curFormat == FileFormat::STL ||

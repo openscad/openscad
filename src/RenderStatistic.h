@@ -38,21 +38,36 @@ class RenderStatistic: protected GeometryVisitor
 {
 public:
   /**
-   * Construct a statistic printer for the given geometry
+   * Construct a statistic printer for the given geometry with current
+   * time as start time.
    */
-  RenderStatistic() {};
-  
+  RenderStatistic();
+
+  /**
+   * Set start time when reusing a RenderStatistic instance.
+   */
+  void start();
+
+  /**
+   * Return render time in milliseconds.
+   */
+  std::chrono::milliseconds ms();
+
+  /**
+   * Print all available statistic information.
+   */
+  void printAll(const shared_ptr<const Geometry> geom);
+
   /**
    * Print some statistic on cache usage. Namely, stats on the @ref GeometryCache
    * and @ref CGALCache (if enabled).
    */
-  static void printCacheStatistic();
+  void printCacheStatistic();
   
   /**
    * Format and print time elapsed by rendering.
-   * @arg time elapsed by rendering in seconds
    */
-  static void printRenderingTime(std::chrono::milliseconds ms);
+  void printRenderingTime();
   
   /**
    * Actually print the statistic based on the given Geometry
@@ -67,6 +82,9 @@ protected:
 #ifdef ENABLE_CGAL
   void visit(const class CGAL_Nef_polyhedron &node) override;
 #endif // ENABLE_CGAL
+
+private:
+  std::chrono::steady_clock::time_point begin;
 };
 
 #endif // RENDERSTATISTIC_H

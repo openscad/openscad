@@ -36,6 +36,22 @@
 #include "RenderStatistic.h"
 
 
+RenderStatistic::RenderStatistic() : begin(std::chrono::steady_clock::now())
+{
+}
+
+void RenderStatistic::start()
+{
+	begin = std::chrono::steady_clock::now();
+}
+
+std::chrono::milliseconds RenderStatistic::ms()
+{
+	const std::chrono::steady_clock::time_point end{std::chrono::steady_clock::now()};
+	const std::chrono::milliseconds ms{std::chrono::duration_cast<std::chrono::milliseconds>(end-begin)};
+	return ms;
+}
+
 void RenderStatistic::printCacheStatistic()
 {
   GeometryCache::instance()->print();
@@ -44,13 +60,24 @@ void RenderStatistic::printCacheStatistic()
 #endif
 }
 
-void RenderStatistic::printRenderingTime(std::chrono::milliseconds ms)
+void RenderStatistic::printRenderingTime()
 {
+	const std::chrono::steady_clock::time_point end{std::chrono::steady_clock::now()};
+	const std::chrono::milliseconds ms{std::chrono::duration_cast<std::chrono::milliseconds>(end-begin)};
   LOG(message_group::None,Location::NONE,"","Total rendering time: %1$d:%2$02d:%3$02d.%4$03d",
     (ms.count() /1000/60/60     ),
     (ms.count() /1000/60 % 60   ),
     (ms.count() /1000    % 60   ),
     (ms.count()          % 1000 ));
+}
+
+void RenderStatistic::printAll(const shared_ptr<const Geometry> geom)
+{
+	printCacheStatistic();
+	printRenderingTime();
+	if (geom && !geom->isEmpty()) {
+		print(*geom);
+	}
 }
 
 void RenderStatistic::print(const Geometry &geom)
