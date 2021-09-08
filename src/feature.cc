@@ -81,6 +81,13 @@ void Feature::enable_feature(const std::string &feature_name, bool status)
 	}
 }
 
+void Feature::enable_all(bool status)
+{
+	for (const auto& f : boost::make_iterator_range(Feature::begin(), Feature::end())) {
+		f->enable(status);
+	}
+}
+
 Feature::iterator Feature::begin()
 {
 	return feature_list.begin();

@@ -962,7 +962,7 @@ int main(int argc, char **argv)
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string>>(), ("enable experimental features: " +
+		("enable", po::value<vector<string>>(), ("enable experimental features (specify 'all' for enabling all available features): " +
 		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
 		                                               [](const Feature *feature) {
 		                                                   return feature->get_name();
@@ -995,7 +995,7 @@ int main(int argc, char **argv)
 		("hardwarnings", "Stop on the first warning")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
-		("debug", po::value<string>(), "special debug info - specify \"all\" or a set of source file names")
+		("debug", po::value<string>(), "special debug info - specify 'all' or a set of source file names")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 		;
@@ -1108,6 +1108,10 @@ int main(int argc, char **argv)
 	}
 	if (vm.count("enable")) {
 		for(const auto &feature : vm["enable"].as<vector<string>>()) {
+			if (feature == "all") {
+				Feature::enable_all();
+				break;
+			}
 			Feature::enable_feature(feature);
 		}
 	}

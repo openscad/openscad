@@ -34,6 +34,7 @@ public:
 
 	static std::string features();
 	static void enable_feature(const std::string &feature_name, bool status = true);
+	static void enable_all(bool status = true);
 
 private:
 	bool enabled;
