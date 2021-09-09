@@ -2130,7 +2130,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
 	if (root_geom) {
-		renderStatistic.printAll(root_geom);
+		renderStatistic.printAll(root_geom, qglview->cam);
 		LOG(message_group::None,Location::NONE,"","Rendering finished.");
 
 		this->root_geom = root_geom;
