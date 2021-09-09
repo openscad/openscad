@@ -27,6 +27,16 @@ bool CGALCache::insert(const std::string &id, const shared_ptr<const CGAL_Nef_po
 	return inserted;
 }
 
+size_t CGALCache::size() const
+{
+	return cache.size();
+}
+
+size_t CGALCache::totalCost() const
+{
+	return cache.totalCost();
+}
+
 size_t CGALCache::maxSizeMB() const
 {
 	return this->cache.maxCost()/(1024*1024);
