@@ -47,6 +47,7 @@ struct StatisticVisitor: public GeometryVisitor
 	constexpr static auto CAMERA = "camera";
 	constexpr static auto GEOMETRY = "geometry";
 	constexpr static auto BOUNDING_BOX = "bounding-box";
+	constexpr static auto AREA = "area";
 
 	StatisticVisitor(const std::vector<std::string>& options)
 		: all(std::find(options.begin(), options.end(), "all") != options.end())
@@ -204,6 +205,10 @@ void LogVisitor::visit(const Polygon2d& poly)
 		LOG(message_group::None,Location::NONE,"","Bounding box:");
 		LOG(message_group::None,Location::NONE,"","   Min: %1$.2f, %2$.2f", bb.min().x(), bb.min().y());
 		LOG(message_group::None,Location::NONE,"","   Max: %1$.2f, %2$.2f", bb.max().x(), bb.max().y());
+	}
+	if (is_enabled(AREA)) {
+		LOG(message_group::None,Location::NONE,"","Measurements:");
+		LOG(message_group::None,Location::NONE,"","   Area: %1$.2f", poly.area());
 	}
 }
 
