@@ -42,13 +42,6 @@ namespace {
 
 struct StatisticVisitor: public GeometryVisitor
 {
-	constexpr static auto CACHE = "cache";
-	constexpr static auto TIME = "time";
-	constexpr static auto CAMERA = "camera";
-	constexpr static auto GEOMETRY = "geometry";
-	constexpr static auto BOUNDING_BOX = "bounding-box";
-	constexpr static auto AREA = "area";
-
 	StatisticVisitor(const std::vector<std::string>& options)
 		: all(std::find(options.begin(), options.end(), "all") != options.end())
 	  , options(options) { }
@@ -78,6 +71,8 @@ struct LogVisitor: public StatisticVisitor
 	void printCacheStatistic() override;
 	void printRenderingTime(std::chrono::milliseconds) override;
 	void finish() override;
+private:
+	void printBoundingBox3(const BoundingBox& bb);
 };
 
 struct StreamVisitor: public StatisticVisitor
@@ -109,9 +104,11 @@ static nlohmann::json getBoundingBox2(G geometry)
 	const auto& bb = geometry.getBoundingBox();
 	const std::array<double, 2> min = { bb.min().x(), bb.min().y() };
 	const std::array<double, 2> max = { bb.max().x(), bb.max().y() };
+	const std::array<double, 2> size = { bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y() };
 	nlohmann::json bbJson;
 	bbJson["min"] = min;
 	bbJson["max"] = max;
+	bbJson["size"] = size;
 	return bbJson;
 }
 
@@ -121,9 +118,11 @@ static nlohmann::json getBoundingBox3(G geometry)
 	const auto& bb = geometry.getBoundingBox();
 	const std::array<double, 3> min = { bb.min().x(), bb.min().y(), bb.min().z() };
 	const std::array<double, 3> max = { bb.max().x(), bb.max().y(), bb.max().z() };
+	const std::array<double, 3> size = { bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y(), bb.max().z() - bb.min().z() };
 	nlohmann::json bbJson;
 	bbJson["min"] = min;
 	bbJson["max"] = max;
+	bbJson["size"] = size;
 	return bbJson;
 }
 
@@ -200,15 +199,26 @@ void LogVisitor::visit(const Polygon2d& poly)
 {
 	LOG(message_group::None,Location::NONE,"","Top level object is a 2D object:");
 	LOG(message_group::None,Location::NONE,"","   Contours:   %1$6d", poly.outlines().size());
-	if (is_enabled(BOUNDING_BOX)) {
+	if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
 		const auto& bb = poly.getBoundingBox();
 		LOG(message_group::None,Location::NONE,"","Bounding box:");
-		LOG(message_group::None,Location::NONE,"","   Min: %1$.2f, %2$.2f", bb.min().x(), bb.min().y());
-		LOG(message_group::None,Location::NONE,"","   Max: %1$.2f, %2$.2f", bb.max().x(), bb.max().y());
+		LOG(message_group::None,Location::NONE,"","   Min:  %1$.2f, %2$.2f", bb.min().x(), bb.min().y());
+		LOG(message_group::None,Location::NONE,"","   Max:  %1$.2f, %2$.2f", bb.max().x(), bb.max().y());
+		LOG(message_group::None,Location::NONE,"","   Size: %1$.2f, %2$.2f", bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y());
 	}
-	if (is_enabled(AREA)) {
+	if (is_enabled(RenderStatistic::AREA)) {
 		LOG(message_group::None,Location::NONE,"","Measurements:");
 		LOG(message_group::None,Location::NONE,"","   Area: %1$.2f", poly.area());
+	}
+}
+
+void LogVisitor::printBoundingBox3(const BoundingBox& bb)
+{
+	if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
+		LOG(message_group::None,Location::NONE,"","Bounding box:");
+		LOG(message_group::None,Location::NONE,"","   Min:  %1$.2f, %2$.2f, %3$.2f", bb.min().x(), bb.min().y(), bb.min().z());
+		LOG(message_group::None,Location::NONE,"","   Max:  %1$.2f, %2$.2f, %3$.2f", bb.max().x(), bb.max().y(), bb.max().z());
+		LOG(message_group::None,Location::NONE,"","   Size: %1$.2f, %2$.2f, %3$.2f", bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y(), bb.max().z() - bb.min().z());
 	}
 }
 
@@ -217,12 +227,7 @@ void LogVisitor::visit(const PolySet& ps)
 	assert(ps.getDimension() == 3);
 	LOG(message_group::None,Location::NONE,"","Top level object is a 3D object:");
 	LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d", ps.numFacets());
-	if (is_enabled(BOUNDING_BOX)) {
-		const auto& bb = ps.getBoundingBox();
-		LOG(message_group::None,Location::NONE,"","Bounding box:");
-		LOG(message_group::None,Location::NONE,"","   Min: %1$.2f, %2$.2f, %3$.2f", bb.min().x(), bb.min().y(), bb.min().z());
-		LOG(message_group::None,Location::NONE,"","   Max: %1$.2f, %2$.2f, %3$.2f", bb.max().x(), bb.max().y(), bb.max().z());
-	}
+	printBoundingBox3(ps.getBoundingBox());
 }
 
 #ifdef ENABLE_CGAL
@@ -241,19 +246,14 @@ void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
     if (!simple) {
       LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
     }
-		if (is_enabled(BOUNDING_BOX)) {
-			const auto& bb = nef.getBoundingBox();
-			LOG(message_group::None,Location::NONE,"","Bounding box:");
-			LOG(message_group::None,Location::NONE,"","   Min: %1$.2f, %2$.2f, %3$.2f", bb.min().x(), bb.min().y(), bb.min().z());
-			LOG(message_group::None,Location::NONE,"","   Max: %1$.2f, %2$.2f, %3$.2f", bb.max().x(), bb.max().y(), bb.max().z());
-		}
+    printBoundingBox3(nef.getBoundingBox());
   }
 }
 #endif // ENABLE_CGAL
 
 void LogVisitor::printCamera(const Camera& camera)
 {
-	if (is_enabled(CAMERA)) {
+	if (is_enabled(RenderStatistic::CAMERA)) {
 		LOG(message_group::None,Location::NONE,"","Camera:");
 		LOG(message_group::None,Location::NONE,"","   Translation: %1$.2f, %2$.2f, %3$.2f", camera.getVpt().x(), camera.getVpt().y(), camera.getVpt().z());
 		LOG(message_group::None,Location::NONE,"","   Rotation:    %1$.2f, %2$.2f, %3$.2f", camera.getVpr().x(), camera.getVpr().y(), camera.getVpr().z());
@@ -291,12 +291,12 @@ void StreamVisitor::visit(const GeometryList& geomlist)
 
 void StreamVisitor::visit(const Polygon2d& poly)
 {
-	if (is_enabled(GEOMETRY)) {
+	if (is_enabled(RenderStatistic::GEOMETRY)) {
 		nlohmann::json geometryJson;
 		geometryJson["dimensions"] = 2;
 		geometryJson["convex"] = poly.is_convex();
 		geometryJson["contours"] = poly.outlines().size();
-		if (is_enabled(BOUNDING_BOX)) {
+		if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
 			geometryJson["bounding_box"] = getBoundingBox2(poly);
 		}
 		json["geometry"] = geometryJson;
@@ -305,13 +305,13 @@ void StreamVisitor::visit(const Polygon2d& poly)
 
 void StreamVisitor::visit(const PolySet& ps)
 {
-	if (is_enabled(GEOMETRY)) {
+	if (is_enabled(RenderStatistic::GEOMETRY)) {
 		assert(ps.getDimension() == 3);
 		nlohmann::json geometryJson;
 		geometryJson["dimensions"] = 3;
 		geometryJson["convex"] = ps.is_convex();
 		geometryJson["facets"] = ps.numFacets();
-		if (is_enabled(BOUNDING_BOX)) {
+		if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
 			geometryJson["bounding_box"] = getBoundingBox3(ps);
 		}
 		json["geometry"] = geometryJson;
@@ -321,7 +321,7 @@ void StreamVisitor::visit(const PolySet& ps)
 #ifdef ENABLE_CGAL
 void StreamVisitor::visit(const CGAL_Nef_polyhedron& nef)
 {
-	if (is_enabled(GEOMETRY)) {
+	if (is_enabled(RenderStatistic::GEOMETRY)) {
 		nlohmann::json geometryJson;
 		geometryJson["dimensions"] = 3;
 		geometryJson["simple"] = nef.p3->is_simple();
@@ -329,7 +329,7 @@ void StreamVisitor::visit(const CGAL_Nef_polyhedron& nef)
 		geometryJson["edges"] = nef.p3->number_of_edges();
 		geometryJson["facets"] = nef.p3->number_of_facets();
 		geometryJson["volumes"] = nef.p3->number_of_volumes();
-		if (is_enabled(BOUNDING_BOX)) {
+		if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
 			geometryJson["bounding_box"] = getBoundingBox3(nef);
 		}
 		json["geometry"] = geometryJson;
@@ -339,7 +339,7 @@ void StreamVisitor::visit(const CGAL_Nef_polyhedron& nef)
 
 void StreamVisitor::printCamera(const Camera& camera)
 {
-	if (is_enabled(CAMERA)) {
+	if (is_enabled(RenderStatistic::CAMERA)) {
 		const std::array<double, 3> translation = { camera.getVpt().x(), camera.getVpt().y(), camera.getVpt().z() };
 		const std::array<double, 3> rotation = { camera.getVpr().x(), camera.getVpr().y(), camera.getVpr().z() };
 		nlohmann::json cameraJson;
@@ -353,7 +353,7 @@ void StreamVisitor::printCamera(const Camera& camera)
 
 void StreamVisitor::printCacheStatistic()
 {
-	if (is_enabled(CACHE)) {
+	if (is_enabled(RenderStatistic::CACHE)) {
 		nlohmann::json cacheJson;
 		cacheJson["geometry_cache"] = getCache(GeometryCache::instance());
 #ifdef ENABLE_CGAL
@@ -365,7 +365,7 @@ void StreamVisitor::printCacheStatistic()
 
 void StreamVisitor::printRenderingTime(const std::chrono::milliseconds ms)
 {
-	if (is_enabled(TIME)) {
+	if (is_enabled(RenderStatistic::TIME)) {
 		nlohmann::json timeJson;
 		timeJson["time"] = (boost::format("%1$d:%2$02d:%3$02d.%4$03d")
 						% (ms.count() / 1000 / 60 / 60)

@@ -689,6 +689,24 @@ void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
 	writeSettings();
 }
 
+void Preferences::on_checkBoxSummaryCamera_toggled(bool checked)
+{
+	Settings::Settings::summaryCamera.setValue(checked);
+	writeSettings();
+}
+
+void Preferences::on_checkBoxSummaryArea_toggled(bool checked)
+{
+	Settings::Settings::summaryArea.setValue(checked);
+	writeSettings();
+}
+
+void Preferences::on_checkBoxSummaryBoundingBox_toggled(bool checked)
+{
+	Settings::Settings::summaryBoundingBox.setValue(checked);
+	writeSettings();
+}
+
 void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
 {
 	Settings::Settings::inputEnableDriverHIDAPILog.setValue(checked);
@@ -930,6 +948,11 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
 	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(Settings::Settings::exportUseAsciiSTL.value());
+
+	BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)->setChecked(Settings::Settings::summaryCamera.value());
+	BlockSignals<QCheckBox *>(this->checkBoxSummaryArea)->setChecked(Settings::Settings::summaryArea.value());
+	BlockSignals<QCheckBox *>(this->checkBoxSummaryBoundingBox)->setChecked(Settings::Settings::summaryBoundingBox.value());
+
 	BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(Settings::Settings::inputEnableDriverHIDAPILog.value());
 	BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());

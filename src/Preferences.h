@@ -52,6 +52,9 @@ public slots:
 	void on_enableParameterCheckBox_toggled(bool);
 	void on_enableRangeCheckBox_toggled(bool);
 	void on_useAsciiSTLCheckBox_toggled(bool);
+	void on_checkBoxSummaryCamera_toggled(bool);
+	void on_checkBoxSummaryArea_toggled(bool);
+	void on_checkBoxSummaryBoundingBox_toggled(bool);
 	void on_enableHidapiTraceCheckBox_toggled(bool);
 	void on_checkBoxShowWarningsIn3dView_toggled(bool);
 	void on_checkBoxMouseCentricZoom_toggled(bool);

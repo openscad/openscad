@@ -36,6 +36,13 @@
 class RenderStatistic
 {
 public:
+  constexpr static auto CACHE = "cache";
+  constexpr static auto TIME = "time";
+  constexpr static auto CAMERA = "camera";
+  constexpr static auto GEOMETRY = "geometry";
+  constexpr static auto BOUNDING_BOX = "bounding-box";
+  constexpr static auto AREA = "area";
+
   /**
    * Construct a statistic printer for the given geometry with current
    * time as start time.
