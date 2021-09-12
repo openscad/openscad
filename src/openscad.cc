@@ -981,8 +981,8 @@ int main(int argc, char **argv)
 		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
-    ("summary", po::value<vector<string>>(), "enable additional render summary and statistics: camera | bounding-box")
-    ("summary-file", po::value<string>(), "output summary information in JSON format to the given file")
+    ("summary", po::value<vector<string>>(), "enable additional render summary and statistics: all | cache | time | camera | geometry | bounding-box | area")
+    ("summary-file", po::value<string>(), "output summary information in JSON format to the given file, using '-' outputs to stdout")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
 		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",
 		                                           [](const std::string& colorScheme) {
