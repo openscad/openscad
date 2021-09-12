@@ -32,6 +32,5 @@ for p in params:
     svg_preserveAspectRatio = "preserveAspectRatio=\"{}\"".format(aspectParam)
     out = svg.replace('__VIEWBOX__', svg_viewBox).replace('__PRESERVE_ASPECT_RATIO__', svg_preserveAspectRatio)
     outfile = sys.argv[1] + "/viewbox_{}x{}_{}.svg".format(width, height, aspectFile)
-    print(outfile)
     with open(outfile, "w") as f:
         f.write(out)
