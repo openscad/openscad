@@ -68,6 +68,19 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 	return !this->p3 || this->p3->is_empty();
 }
 
+BoundingBox CGAL_Nef_polyhedron::getBoundingBox() const
+{
+	if (isEmpty()) {
+		return BoundingBox();
+	}
+	auto bb = CGALUtils::boundingBox(*this->p3).bbox();
+
+	BoundingBox result;
+	result.extend(Vector3d(bb.xmin(), bb.ymin(), bb.zmin()));
+	result.extend(Vector3d(bb.xmax(), bb.ymax(), bb.zmax()));
+	return result;
+}
+
 void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
                                  const Eigen::Matrix<bool,3,1> &autosize)
 {

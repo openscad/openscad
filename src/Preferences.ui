@@ -2050,6 +2050,36 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_Summary">
+              <property name="title">
+               <string>Render Summary</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_Summary">
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryCamera">
+                 <property name="text">
+                  <string>Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryBoundingBox">
+                 <property name="text">
+                  <string>Bounding Box</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryArea">
+                 <property name="text">
+                  <string>Measurements: Area</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>

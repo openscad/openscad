@@ -17,7 +17,7 @@ public:
 
 	size_t memsize() const override;
 	// FIXME: Implement, but we probably want a high-resolution BBox..
-	BoundingBox getBoundingBox() const override { assert(false && "not implemented"); return BoundingBox(); }
+	BoundingBox getBoundingBox() const override;
 	std::string dump() const override;
 	unsigned int getDimension() const override { return 3; }
 	// Empty means it is a geometric node which has zero area/volume

@@ -330,6 +330,8 @@ struct CommandLine
 	const Camera& camera;
 	const boost::optional<FileFormat> export_format;
 	unsigned animate_frames;
+	const std::vector<std::string> summaryOptions;
+	const std::string summaryFile;
 };
 
 struct RenderVariables
@@ -543,7 +545,7 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 #ifdef ENABLE_CGAL
 
 		// start measuring render time
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		RenderStatistic renderStatistic;
 		GeometryEvaluator geomevaluator(tree);
 		unique_ptr<OffscreenView> glview;
 		shared_ptr<const Geometry> root_geom;
@@ -571,13 +573,6 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 			} else {
 				root_geom.reset(new CGAL_Nef_polyhedron());
 			}
-		}
-
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		RenderStatistic::printCacheStatistic();
-		RenderStatistic::printRenderingTime( std::chrono::duration_cast<std::chrono::milliseconds>(end-begin) );
-		if (root_geom && !root_geom->isEmpty()) {
-			RenderStatistic().print(*root_geom);
 		}
 
         if( curFormat == FileFormat::ASCIISTL ||
@@ -608,9 +603,12 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 					success = export_png(*glview, stream);
 			}
 			}, std::ios::out | std::ios::binary);
-			return (success && wrote) ? 0 : 1;
+			if (!success || !wrote) {
+				return 1;
+			}
 		}
 
+		renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
 #else
 		LOG(message_group::None,Location::NONE,"","OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
@@ -983,6 +981,8 @@ int main(int argc, char **argv)
 		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
+    ("summary", po::value<vector<string>>(), "enable additional render summary and statistics: all | cache | time | camera | geometry | bounding-box | area")
+    ("summary-file", po::value<string>(), "output summary information in JSON format to the given file, using '-' outputs to stdout")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
 		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",
 		                                           [](const std::string& colorScheme) {
@@ -1193,7 +1193,22 @@ int main(int argc, char **argv)
 					const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
 					const bool is_stdout = filename == "-";
 					const std::string output_file = is_stdout ? "<stdout>" : filename;
-					const CommandLine cmd{is_stdin, input_file, is_stdout, output_file, deps_output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format, animate_frames};
+					const CommandLine cmd{
+						is_stdin,
+						input_file,
+						is_stdout,
+						output_file,
+						deps_output_file,
+						original_path,
+						parameterFile,
+						parameterSet,
+						viewOptions,
+						camera,
+						export_format,
+						animate_frames,
+						vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
+						vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""
+					};
 					rc |= cmdline(cmd);
 				}
 			}

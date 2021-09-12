@@ -34,6 +34,7 @@ public:
 	};
 	void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
 	class PolySet *tessellate() const;
+	double area() const;
 
 	typedef std::vector<Outline2d> Outlines2d;
 	const Outlines2d &outlines() const { return theoutlines; }
