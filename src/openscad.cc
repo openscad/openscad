@@ -387,10 +387,10 @@ int cmdline(const CommandLine& cmd)
 		text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
 	} else {
 		std::ifstream ifs(cmd.filename);
-	if (!ifs.is_open()) {
+		if (!ifs.is_open()) {
 			LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", cmd.filename);
-		return 1;
-	}
+			return 1;
+		}
 		handle_dep(cmd.filename);
 		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	}
@@ -466,6 +466,8 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 	auto filename_str = fs::path(cmd.output_file).generic_string();
 	auto fpath = fs::absolute(fs::path(cmd.filename));
 	auto fparent = fpath.parent_path();
+
+	// set CWD relative to source file
 	fs::current_path(fparent);
 
 	EvaluationSession session{fparent.string()};
@@ -484,6 +486,9 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 		camera.updateView(file_context, true);
 	}
 
+	// restore CWD after module instantiation finished
+	fs::current_path(cmd.original_path);
+
 	// Do we have an explicit root node (! modifier)?
 	const AbstractNode *root_node;
 	const Location *nextLocation = nullptr;
@@ -496,7 +501,6 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 	Tree tree(root_node, fparent.string());
 
 	if (cmd.deps_output_file) {
-		fs::current_path(cmd.original_path);
 		std::string deps_out(cmd.deps_output_file);
 		std::string geom_out(cmd.output_file);
 		int result = write_deps(deps_out, geom_out);
@@ -507,16 +511,14 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 	}
 
 	if (curFormat == FileFormat::CSG) {
+		// https://github.com/openscad/openscad/issues/128
+		// When I use the csg ouptput from the command line the paths in 'import'
+		// statements become relative. But unfortunately they become relative to
+		// the current working dir and neither to the location of the input nor
+		// the output.
 		fs::current_path(fparent); // Force exported filenames to be relative to document path
 		with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream &stream) {
 			stream << tree.getString(*root_node, "\t") << "\n";
-		});
-		fs::current_path(cmd.original_path);
-	}
-	else if (curFormat == FileFormat::PARAM) {
-		fs::current_path(fparent); // Force exported filenames to be relative to document path
-		with_output(cmd.is_stdout, filename_str, [&root_file, &fpath](std::ostream &stream) {
-			export_param(root_file, fpath, stream);
 		});
 		fs::current_path(cmd.original_path);
 	}
@@ -526,6 +528,11 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 			stream << root_file->dump("");
 		});
 		fs::current_path(cmd.original_path);
+	}
+	else if (curFormat == FileFormat::PARAM) {
+		with_output(cmd.is_stdout, filename_str, [&root_file, &fpath](std::ostream &stream) {
+			export_param(root_file, fpath, stream);
+		});
 	}
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
