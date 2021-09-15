@@ -295,6 +295,7 @@
      </property>
      <addaction name="fileActionExportSTL"/>
      <addaction name="fileActionExportOFF"/>
+     <addaction name="fileActionExportWRL"/>
      <addaction name="fileActionExportAMF"/>
      <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
@@ -1015,6 +1016,11 @@
   <action name="fileActionExportOFF">
    <property name="text">
     <string>Export as &amp;OFF...</string>
+   </property>
+  </action>
+  <action name="fileActionExportWRL">
+   <property name="text">
+    <string>Export as &amp;WRL...</string>
    </property>
   </action>
   <action name="viewActionPreview">

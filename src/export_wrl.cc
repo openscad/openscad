@@ -1,7 +1,5 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
- *                          Marius Kintel <marius@kintel.net>
  *  Copyright (C) 2021      Konstantin Podsvirov <konstantin@podsvirov.pro>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -31,28 +29,46 @@
 
 #include "IndexedMesh.h"
 
-void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
+void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	IndexedMesh mesh;
-	mesh.append_geometry(geom);
+    IndexedMesh mesh;
+    mesh.append_geometry(geom);
 
-	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const auto& v = mesh.vertices.getArray();
-	size_t numverts = mesh.vertices.size();
-	for (size_t i=0; i<numverts; ++i) {
-		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
-	}
-	size_t cnt = 0;
-	for (size_t i=0; i<mesh.numfaces; ++i) {
-		size_t nverts = 0;
-		while (mesh.indices[cnt++] != -1) nverts++;
-		output << nverts;
-		cnt -= nverts + 1;
-		for (size_t n=0; n<nverts; ++n) output << " " << mesh.indices[cnt++];
-		output << "\n";
-		cnt++; // Skip the -1 marker
-	}
+    output << "#Inventor V2.1 ascii\n\n";
 
+    output << "Separator {\n\n";
+
+    output << "Coordinate3 {\n";
+    output << "point [\n";
+    const auto& v = mesh.vertices.getArray();
+    size_t numverts = mesh.vertices.size();
+    for (size_t i=0; i<numverts; ++i) {
+        output << v[i][0] << " " << v[i][1] << " " << v[i][2];
+        if (i < numverts - 1) {
+            output << ",";
+        }
+        output << "\n";
+    }
+    output << "]\n";
+    output << "}\n\n";
+
+    output << "IndexedFaceSet {\n";
+    output << "coordIndex [\n";
+    size_t cnt = 0;
+    const size_t numindices = mesh.indices.size();
+    for (size_t i=0; i < numindices; ++i) {
+        output << mesh.indices[i];
+        if (i < numindices - 1) {
+            output << ",";
+        }
+        if (mesh.indices[i] == -1) {
+            output << "\n";
+        }
+    }
+    output << "]\n";
+    output << "}\n\n";
+
+    output << "}\n";
 }
 
 #endif // ENABLE_CGAL

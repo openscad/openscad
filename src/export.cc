@@ -60,6 +60,9 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 	case FileFormat::OFF:
 		export_off(root_geom, output);
 		break;
+	case FileFormat::WRL:
+		export_wrl(root_geom, output);
+		break;
 	case FileFormat::AMF:
 		export_amf(root_geom, output);
 		break;
