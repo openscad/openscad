@@ -34,14 +34,15 @@ void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output)
     IndexedMesh mesh;
     mesh.append_geometry(geom);
 
-    output << "#Inventor V2.1 ascii\n\n";
+    output << "#VRML V2.0 utf8\n\n";
 
-    output << "Separator {\n\n";
+    output << "Shape {\n\n";
 
-    output << "Coordinate3 {\n";
-    output << "point [\n";
+    output << "geometry IndexedFaceSet {\n\n";
+
+    output << "coord Coordinate { point [\n";
     const auto& v = mesh.vertices.getArray();
-    size_t numverts = mesh.vertices.size();
+    const size_t numverts = mesh.vertices.size();
     for (size_t i=0; i<numverts; ++i) {
         output << v[i][0] << " " << v[i][1] << " " << v[i][2];
         if (i < numverts - 1) {
@@ -49,12 +50,9 @@ void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output)
         }
         output << "\n";
     }
-    output << "]\n";
-    output << "}\n\n";
+    output << "] }\n\n";
 
-    output << "IndexedFaceSet {\n";
     output << "coordIndex [\n";
-    size_t cnt = 0;
     const size_t numindices = mesh.indices.size();
     for (size_t i=0; i < numindices; ++i) {
         output << mesh.indices[i];
@@ -65,7 +63,8 @@ void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output)
             output << "\n";
         }
     }
-    output << "]\n";
+    output << "]\n\n";
+
     output << "}\n\n";
 
     output << "}\n";
