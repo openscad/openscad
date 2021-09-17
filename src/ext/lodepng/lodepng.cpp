@@ -4021,7 +4021,7 @@ static void Adam7_getpassvalues(unsigned passw[7], unsigned passh[7], size_t fil
     filter_passstart[i + 1] = filter_passstart[i]
                             + ((passw[i] && passh[i]) ? passh[i] * (1u + (passw[i] * bpp + 7u) / 8u) : 0);
     /*bits padded if needed to fill full byte at end of each scanline*/
-    padded_passstart[i + 1] = padded_passstart[i] + passh[i] * ((passw[i] * bpp + 7u) / 8u);
+    padded_passstart[i + 1] = padded_passstart[i] + static_cast<unsigned long>(passh[i]) * ((passw[i] * bpp + 7u) / 8u);
     /*only padded at end of reduced image*/
     passstart[i + 1] = passstart[i] + (passh[i] * passw[i] * bpp + 7u) / 8u;
   }
@@ -4351,7 +4351,7 @@ static unsigned postProcessScanlines(unsigned char* out, unsigned char* in,
   if(info_png->interlace_method == 0) {
     if(bpp < 8 && w * bpp != ((w * bpp + 7u) / 8u) * 8u) {
       CERROR_TRY_RETURN(unfilter(in, in, w, h, bpp));
-      removePaddingBits(out, in, w * bpp, ((w * bpp + 7u) / 8u) * 8u, h);
+      removePaddingBits(out, in, static_cast<size_t>(w) * bpp, ((w * bpp + 7u) / 8u) * 8u, h);
     }
     /*we can immediately filter into the out buffer, no other steps needed*/
     else CERROR_TRY_RETURN(unfilter(out, in, w, h, bpp));
@@ -4368,7 +4368,7 @@ static unsigned postProcessScanlines(unsigned char* out, unsigned char* in,
       if(bpp < 8) {
         /*remove padding bits in scanlines; after this there still may be padding
         bits between the different reduced images: each reduced image still starts nicely at a byte*/
-        removePaddingBits(&in[passstart[i]], &in[padded_passstart[i]], passw[i] * bpp,
+        removePaddingBits(&in[passstart[i]], &in[padded_passstart[i]], static_cast<size_t>(passw[i]) * bpp,
                           ((passw[i] * bpp + 7u) / 8u) * 8u, passh[i]);
       }
     }
@@ -5758,10 +5758,10 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
     if(!error) {
       /*non multiple of 8 bits per scanline, padding bits needed per scanline*/
       if(bpp < 8 && w * bpp != ((w * bpp + 7u) / 8u) * 8u) {
-        unsigned char* padded = (unsigned char*)lodepng_malloc(h * ((w * bpp + 7u) / 8u));
+        unsigned char* padded = (unsigned char*)lodepng_malloc(static_cast<size_t>(h) * ((w * bpp + 7u) / 8u));
         if(!padded) error = 83; /*alloc fail*/
         if(!error) {
-          addPaddingBits(padded, in, ((w * bpp + 7u) / 8u) * 8u, w * bpp, h);
+          addPaddingBits(padded, in, ((static_cast<size_t>(w) * bpp + 7u) / 8u) * 8u, static_cast<size_t>(w) * bpp, h);
           error = filter(*out, padded, w, h, &info_png->color, settings);
         }
         lodepng_free(padded);
@@ -5793,7 +5793,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
           unsigned char* padded = (unsigned char*)lodepng_malloc(padded_passstart[i + 1] - padded_passstart[i]);
           if(!padded) ERROR_BREAK(83); /*alloc fail*/
           addPaddingBits(padded, &adam7[passstart[i]],
-                         ((passw[i] * bpp + 7u) / 8u) * 8u, passw[i] * bpp, passh[i]);
+                         ((passw[i] * bpp + 7u) / 8u) * 8u, static_cast<size_t>(passw[i]) * bpp, passh[i]);
           error = filter(&(*out)[filter_passstart[i]], padded,
                          passw[i], passh[i], &info_png->color, settings);
           lodepng_free(padded);
