@@ -391,6 +391,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
 	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
@@ -552,6 +553,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	initActionIcon(fileActionExportAMF, ":/resources/icons/svg-default/export-amf.svg", ":/resources/icons/svg-default/export-amf-white.svg");
 	initActionIcon(fileActionExport3MF, ":/resources/icons/svg-default/export-3mf.svg", ":/resources/icons/svg-default/export-3mf-white.svg");
 	initActionIcon(fileActionExportOFF, ":/resources/icons/svg-default/export-off.svg", ":/resources/icons/svg-default/export-off-white.svg");
+	initActionIcon(fileActionExportWRL, ":/resources/icons/svg-default/export-wrl.svg", ":/resources/icons/svg-default/export-wrl-white.svg");
 	initActionIcon(fileActionExportDXF, ":/resources/icons/svg-default/export-dxf.svg", ":/resources/icons/svg-default/export-dxf-white.svg");
 	initActionIcon(fileActionExportSVG, ":/resources/icons/svg-default/export-svg.svg", ":/resources/icons/svg-default/export-svg-white.svg");
 	initActionIcon(fileActionExportCSG, ":/resources/icons/svg-default/export-csg.svg", ":/resources/icons/svg-default/export-csg-white.svg");
@@ -2509,6 +2511,11 @@ void MainWindow::actionExport3MF()
 void MainWindow::actionExportOFF()
 {
 	actionExport(FileFormat::OFF, "OFF", ".off", 3);
+}
+
+void MainWindow::actionExportWRL()
+{
+	actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
 }
 
 void MainWindow::actionExportAMF()

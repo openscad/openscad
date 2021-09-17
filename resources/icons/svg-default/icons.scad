@@ -18,6 +18,7 @@ export_font = "Open Sans:style=Bold";
 icons = [
     ["export-stl"],
     ["export-off"],
+    ["export-wrl"],
     ["export-amf"],
     ["export-3mf"],
     ["export-dxf"],
@@ -62,6 +63,7 @@ icons = [
 icon(selected_icon) {
     export("STL");
     export("OFF");
+    export("WRL");
     export("AMF");
     export("3MF");
     export("DXF");

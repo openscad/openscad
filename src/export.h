@@ -16,6 +16,7 @@ enum class FileFormat {
   ASCIISTL,
 	STL,
 	OFF,
+	WRL,
 	AMF,
 	_3MF,
 	DXF,
@@ -47,6 +48,7 @@ void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary=true);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -66,6 +68,7 @@ struct ExportFileFormatOptions {
 		{"binstl", FileFormat::STL},
 		{"stl", FileFormat::ASCIISTL},  // Deprecated.  Later to FileFormat::STL
 		{"off", FileFormat::OFF},
+		{"wrl", FileFormat::WRL},
 		{"amf", FileFormat::AMF},
 		{"3mf", FileFormat::_3MF},
 		{"dxf", FileFormat::DXF},
