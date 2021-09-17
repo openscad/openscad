@@ -38,7 +38,16 @@ void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 
     output << "Shape {\n\n";
 
+    output << "appearance Appearance { material Material {\n";
+    output << "ambientIntensity 0.3\n";
+    output << "diffuseColor 0.97647 0.843137 0.172549\n";
+    output << "specularColor 0.2 0.2 0.2\n";
+    output << "shininess 0.3\n";
+    output << "} }\n\n";
+
     output << "geometry IndexedFaceSet {\n\n";
+
+    output << "creaseAngle 0.5\n\n";
 
     output << "coord Coordinate { point [\n";
     const auto& v = mesh.vertices.getArray();
