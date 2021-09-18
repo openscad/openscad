@@ -32,13 +32,12 @@ bool save_framebuffer(const OffscreenContext *ctx, const char *filename)
 bool save_framebuffer_common(const OffscreenContext *ctx, std::ostream &output)
 {
 	if (!ctx) return false;
-	int samplesPerPixel = 4; // R, G, B and A
-	std::vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);
+	const size_t samplesPerPixel = 4; // R, G, B and A
+	std::vector<GLubyte> pixels(samplesPerPixel * ctx->width * ctx->height);
 	glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
 	// Flip it vertically - images read from OpenGL buffers are upside-down
-	int rowBytes = samplesPerPixel * ctx->width;
-
+	const size_t rowBytes = samplesPerPixel * ctx->width;
 	unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
 	if (!flippedBuffer) {
 		std::cerr << "Unable to allocate flipped buffer for corrected image.";

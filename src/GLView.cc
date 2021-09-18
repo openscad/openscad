@@ -271,7 +271,7 @@ void GLView::showSmallaxes(const Color4f &col)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glTranslatef(-0.8f, -0.8f, 0.0f);
-  auto scale = 90;
+  auto scale = 90.0;
   glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
