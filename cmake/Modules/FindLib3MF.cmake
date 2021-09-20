@@ -13,20 +13,38 @@
 # We still fall back to the rest of detection code here.
 # Travis CI Ubuntu Trusty environment has some issue with pkg-config
 # not finding the version.
-pkg_check_modules(LIB3MF lib3MF)
+find_package(PkgConfig REQUIRED QUIET)
+pkg_check_modules(PC_LIB3MF lib3MF)
+set(LIB3MF_VERSION ${PC_LIB3MF_VERSION})
+
+find_path(LIB3MF_INCLUDE_DIRS
+    NAMES Model/COM/NMR_DLLInterfaces.h
+    HINTS $ENV{LIB3MF_INCLUDEDIR}
+          ${PC_LIB3MF_INCLUDEDIR}
+          ${PC_LIB3MF_INCLUDE_DIRS}
+    PATH_SUFFIXES lib3mf
+)
+
+find_library(LIB3MF_LIBRARIES
+    NAMES 3mf 3MF
+    HINTS $ENV{LIB3MF_LIBDIR}
+          ${PC_LIB3MF_LIBDIR}
+          ${PC_LIB3MF_LIBRARY_DIRS}
+)
+
+if("${LIB3MF_LIBRARIES}" STREQUAL "LIB3MF_LIBRARIES-NOTFOUND")
+  set(LIB3MF_LIBRARIES "")
+endif()
 
 # default to uppercase for 1.0 library name
 set(LIB3MF_LIB "3MF")
+set(LIB3MF_API "API 1.x")
 
 # some distribution packages are missing version information for 2.0
 if (LIB3MF_VERSION STREQUAL "" AND LIB3MF_FOUND)
   if (EXISTS "/usr/include/lib3mf" AND EXISTS "/usr/include/lib3mf/lib3mf_implicit.hpp")
     set(LIB3MF_VERSION "2.0.0")
   endif()
-endif()
-
-if (LIB3MF_VERSION VERSION_EQUAL 1.8.1 OR LIB3MF_VERSION VERSION_GREATER 1.8.1)
-  set(LIB3MF_API "API 1.x")
 endif()
 
 if (LIB3MF_VERSION VERSION_EQUAL 2.0.0 OR LIB3MF_VERSION VERSION_GREATER 2.0.0)
@@ -43,7 +61,7 @@ if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   endif()
 endif()
 
-if ("${LIB3MF_LIBDIR}" STREQUAL "")
+if ("${LIB3MF_LIBRARIES}" STREQUAL "")
   if (EXISTS "/opt/include/lib3mf/Model/COM/NMR_DLLInterfaces.h")
     set(LIB3MF_INCLUDE_DIRS "/opt/include/lib3mf" "/opt/include/lib3mf/Model/COM")
     set(LIB3MF_LIBDIR "/opt/lib")
@@ -60,13 +78,16 @@ if ("${LIB3MF_LIBDIR}" STREQUAL "")
   endif()
 endif()
 
-if (NOT ${LIB3MF_LIBDIR} STREQUAL "")
+if (NOT "${LIB3MF_LIBDIR}" STREQUAL "")
+  set(LIB3MF_LIBRARIES "-L${LIB3MF_LIBDIR}" "-l${LIB3MF_LIB}")
+endif()
+
+if (NOT "${LIB3MF_LIBRARIES}" STREQUAL "")
   find_library(LIBZ_LIBRARY NAMES z)
   find_library(LIBZIP_LIBRARY NAMES zip)
-  set(LIB3MF_LIBRARIES "-L${LIB3MF_LIBDIR}" "-l${LIB3MF_LIB} ${LIBZIP_LIBRARY} ${LIBZ_LIBRARY}")
+  set(LIB3MF_LIBRARIES "${LIB3MF_LIBRARIES}" "${LIBZIP_LIBRARY}" "${LIBZ_LIBRARY}")
   set(LIB3MF_CFLAGS "-D__GCC -DENABLE_LIB3MF")
   set(LIB3MF_FOUND TRUE)
 else()
   set(LIB3MF_API "disabled")
-  message(STATUS "Could not find lib3mf.")
 endif()
