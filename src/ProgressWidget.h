@@ -2,7 +2,7 @@
 
 #include "qtgettext.h"
 #include "ui_ProgressWidget.h"
-#include <QTime>
+#include <QElapsedTimer>
 
 class ProgressWidget : public QWidget, public Ui::ProgressWidget
 {
@@ -25,5 +25,5 @@ signals:
 
 private:
 	bool wascanceled;
-	QTime starttime;
+	QElapsedTimer starttime;
 };
