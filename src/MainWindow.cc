@@ -665,7 +665,7 @@ void MainWindow::openFileFromPath(QString path,int line)
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
-	int defaultcolor = viewerToolBar->palette().background().color().lightness();
+	int defaultcolor = viewerToolBar->palette().window().color().lightness();
 	const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
 	action->setIcon(QIcon(resource));
 }
