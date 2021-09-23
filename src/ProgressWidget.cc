@@ -4,6 +4,8 @@
 ProgressWidget::ProgressWidget(QWidget *parent)
 	:QWidget(parent)
 {
+	QElapsedTimer timer;
+
 	setupUi(this);
 	setRange(0, 1000);
 	setValue(0);
