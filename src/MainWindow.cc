@@ -2321,7 +2321,7 @@ void MainWindow::actionDisplayAST()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_file) {
@@ -2340,7 +2340,7 @@ void MainWindow::actionDisplayCSGTree()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
@@ -2360,7 +2360,7 @@ void MainWindow::actionDisplayCSGProducts()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
