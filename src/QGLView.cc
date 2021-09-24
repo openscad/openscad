@@ -52,6 +52,8 @@
 #  include <opencsg.h>
 #endif
 
+#include "qt-obsolete.h"
+
 QGLView::QGLView(QWidget *parent) :
 #ifdef USE_QOPENGLWIDGET
 	QOpenGLWidget(parent)
@@ -327,7 +329,7 @@ bool QGLView::save(const char *filename) const
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-	const auto pos = event->position();
+	const auto pos = Q_WHEEL_EVENT_POSITION(event);
 	const int v = event->angleDelta().y();
 	if (this->mouseCentricZoom) {
 		zoomCursor(pos.x(), pos.y(), v);

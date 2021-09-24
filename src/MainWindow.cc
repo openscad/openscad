@@ -126,6 +126,8 @@
 #include <memory>
 #include <QtNetwork>
 
+#include "qt-obsolete.h"
+
 static const int autoReloadPollingPeriodMS = 200;
 
 // Global application state
