@@ -986,7 +986,6 @@ bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
 
 bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 {
-    static bool wasChanged = false;
     static bool previewAfterUndo = false;
 
 #ifdef Q_OS_MAC
@@ -1006,20 +1005,15 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
         case Qt::Key_Up:
         case Qt::Key_Down:
             if (keyEvent->type() == QEvent::KeyPress) {
-                if (!wasChanged) qsci->beginUndoAction();
                 if (modifyNumber(keyEvent->key())) {
-                    wasChanged = true;
                     previewAfterUndo = true;
                 }
-                if (!wasChanged) qsci->endUndoAction();
             }
             return true;
         }
     }
     if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
         int k = keyEvent->key() | keyEvent->modifiers();
-        if (wasChanged) qsci->endUndoAction();
-        wasChanged = false;
         auto *cmd = qsci->standardCommands()->boundTo(k);
         if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
             QTimer::singleShot(0, this, SIGNAL(previewRequest()));
@@ -1034,8 +1028,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
 {
     auto modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
-    bool modifier;    
-    static bool wasChanged = false;
+    bool modifier;
     static bool previewAfterUndo = false;
 
     if(modifierNumberScrollWheel=="Alt")
@@ -1048,18 +1041,15 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
     }
     else
     {
-        modifier = (wheelEvent->buttons() & Qt::LeftButton) | (wheelEvent->modifiers() & Qt::AltModifier);    
+        modifier = (wheelEvent->buttons() & Qt::LeftButton) | (wheelEvent->modifiers() & Qt::AltModifier);
     }
 
     if (modifier)
      {
-        if (!wasChanged) qsci->beginUndoAction();
-
         if (wheelEvent->delta() < 0)
         {
-            if (modifyNumber(Qt::Key_Down)) 
+            if (modifyNumber(Qt::Key_Down))
             {
-                wasChanged = true;
                 previewAfterUndo = true;
             }
         }
@@ -1068,11 +1058,9 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
             // wheelEvent->delta() > 0
             if (modifyNumber(Qt::Key_Up))
             {
-                wasChanged = true;
                 previewAfterUndo = true;
             }
         }
-        if (!wasChanged) qsci->endUndoAction();
 
         return true;
     }
@@ -1080,8 +1068,6 @@ bool ScintillaEditor::handleWheelEventNavigateNumber (QWheelEvent *wheelEvent)
     if (previewAfterUndo)
     {
         int k = wheelEvent->buttons() & Qt::LeftButton;
-        if (wasChanged) qsci->endUndoAction();
-        wasChanged = false;
         auto *cmd = qsci->standardCommands()->boundTo(k);
         if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
             QTimer::singleShot(0, this, SIGNAL(previewRequest()));
@@ -1179,6 +1165,7 @@ bool ScintillaEditor::modifyNumber(int key)
     }
     if (negative) newnr.prepend('-');
     else if (sign) newnr.prepend('+');
+    qsci->beginUndoAction();
     qsci->setSelection(line, begin, line, end);
     qsci->replaceSelectedText(newnr);
 
@@ -1188,6 +1175,7 @@ bool ScintillaEditor::modifyNumber(int key)
         qsci->setSelection(lineFrom, indexFrom, lineTo, indexTo);
     }
     qsci->setCursorPosition(line, begin+newnr.length()-tail);
+    qsci->endUndoAction();
     emit previewRequest();
     return true;
 }
