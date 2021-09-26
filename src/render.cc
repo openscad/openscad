@@ -41,9 +41,8 @@ static AbstractNode* builtin_render(const ModuleInstantiation *inst, Arguments a
 	auto node = new RenderNode(inst);
 
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
-	if (parameters["convexity"].type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
-	}
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	return children.instantiate(node);
 }
@@ -57,6 +56,6 @@ void register_builtin_render()
 {
 	Builtins::init("render", new BuiltinModule(builtin_render),
 				{
-					"render(convexity = 1)",
+					"render(convexity = " QUOTED(DEFAULT_CONVEXITY) ")",
 				});
 }

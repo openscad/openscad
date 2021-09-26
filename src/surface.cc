@@ -58,7 +58,7 @@ class SurfaceNode : public LeafNode
 {
 public:
 	VISITABLE();
-	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false) { }
 	std::string toString() const override;
 	std::string name() const override { return "surface"; }
 
@@ -95,9 +95,8 @@ static AbstractNode* builtin_surface(const ModuleInstantiation *inst, Arguments 
 		node->center = parameters["center"].toBool();
 	}
 
-	if (parameters["convexity"].type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
-	}
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	if (parameters["invert"].type() == Value::Type::BOOL) {
 		node->invert = parameters["invert"].toBool();
@@ -310,6 +309,7 @@ std::string SurfaceNode::toString() const
 	stream << this->name() << "(file = " << this->filename
 		<< ", center = " << (this->center ? "true" : "false")
 		<< ", invert = " << (this->invert ? "true" : "false")
+		<< ", convexity = " << this->convexity
 				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
 				 << ")";
 

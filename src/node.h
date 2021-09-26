@@ -138,3 +138,7 @@ public:
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);
 AbstractNode *find_root_tag(AbstractNode *node, const Location **nextLocation = nullptr);
+
+#define DEFAULT_CONVEXITY 10
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)

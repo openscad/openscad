@@ -42,6 +42,7 @@ static AbstractNode* builtin_projection(const ModuleInstantiation *inst, Argumen
 
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"cut"}, {"convexity"});
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 	if (parameters["cut"].type() == Value::Type::BOOL) {
 		node->cut_mode = parameters["cut"].toBool();
 	}

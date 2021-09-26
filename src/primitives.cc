@@ -516,7 +516,7 @@ public:
 	
 	std::vector<point3d> points;
 	std::vector<std::vector<size_t>> faces;
-	int convexity = 1;
+	int convexity;
 };
 
 std::string PolyhedronNode::toString() const
@@ -635,8 +635,8 @@ static AbstractNode* builtin_polyhedron(const ModuleInstantiation *inst, Argumen
 		faceIndex++;
 	}
 
-	node->convexity = (int)parameters["convexity"].toDouble();
-	if (node->convexity < 1) node->convexity = 1;
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	return node;
 }
@@ -802,7 +802,7 @@ public:
 	
 	std::vector<point2d> points;
 	std::vector<std::vector<size_t>> paths;
-	int convexity = 1;
+	int convexity;
 };
 
 std::string PolygonNode::toString() const
@@ -931,8 +931,8 @@ static AbstractNode* builtin_polygon(const ModuleInstantiation *inst, Arguments 
 		return node;
 	}
 
-	node->convexity = (int)parameters["convexity"].toDouble();
-	if (node->convexity < 1) node->convexity = 1;
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	return node;
 }

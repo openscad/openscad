@@ -42,6 +42,7 @@ static AbstractNode* builtin_minkowski(const ModuleInstantiation *inst, Argument
 	
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	return children.instantiate(node);
 }
@@ -62,6 +63,7 @@ static AbstractNode* builtin_resize(const ModuleInstantiation *inst, Arguments a
 
 	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"newsize", "auto", "convexity"});
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 	node->newsize << 0,0,0;
 	if ( parameters["newsize"].type() == Value::Type::VECTOR ) {
 		const auto &vs = parameters["newsize"].toVector();

@@ -55,7 +55,7 @@ Parameters parse_parameters(Arguments arguments, const Location& location)
 	{
 		Parameters normal_parse = Parameters::parse(arguments.clone(), location,
 			{"file", "layer", "height", "origin", "scale", "center", "twist", "slices", "segments"},
-			{"convexity"}
+			{"convexity", "h"}
 		);
 		if (normal_parse["height"].isDefined()) {
 			return normal_parse;
@@ -69,7 +69,7 @@ Parameters parse_parameters(Arguments arguments, const Location& location)
 	// then assume it should be the height.
 	return Parameters::parse(std::move(arguments), location,
 		{"height", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
-		{"convexity"}
+		{"convexity", "h"}
 	);
 }
 
@@ -92,13 +92,14 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arg
 
 	if (parameters["height"].isDefined()) {
 		parameters["height"].getFiniteDouble(node->height);
-	}
+	} else if (parameters["h"].isDefined()) {
+		parameters["h"].getFiniteDouble(node->height);
+    }
 
 	node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
 
-	double tmp_convexity = 0.0;
-	parameters["convexity"].getFiniteDouble(tmp_convexity);
-	node->convexity = static_cast<int>(tmp_convexity);
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
@@ -117,9 +118,6 @@ static AbstractNode* builtin_linear_extrude(const ModuleInstantiation *inst, Arg
 		node->center = parameters["center"].toBool();
 
 	if (node->height <= 0) node->height = 0;
-
-	if (node->convexity <= 0)
-		node->convexity = 1;
 
 	if (node->scale_x < 0) node->scale_x = 0;
 	if (node->scale_y < 0) node->scale_y = 0;
@@ -190,9 +188,7 @@ std::string LinearExtrudeNode::toString() const
 	if (!(this->has_slices && this->has_segments)) {
 		stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs;
 	}
-	if (this->convexity > 1) {
-		stream << ", convexity = " << this->convexity;
-	}
+    stream << ", convexity = " << this->convexity;
 	stream << ")";
 	return stream.str();
 }
@@ -202,7 +198,9 @@ void register_builtin_dxf_linear_extrude()
 	Builtins::init("dxf_linear_extrude", new BuiltinModule(builtin_linear_extrude));
 
 	Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
-				{
-					"linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, [slices, segments, $fn, $fs, $fa])",
-				});
+        {
+            "linear_extrude(height|h = 100, center = false, convexity = "
+            QUOTED(DEFAULT_CONVEXITY)
+            ", twist = 0, scale = 1.0, [slices, segments, $fn, $fs, $fa])",
+        });
 }

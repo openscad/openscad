@@ -64,6 +64,7 @@ static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, Arg
 
 	node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
 	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 	bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
 	originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
 	if (parameters["origin"].isDefined() && !originOk){
@@ -72,9 +73,6 @@ static AbstractNode* builtin_rotate_extrude(const ModuleInstantiation *inst, Arg
 	node->scale = parameters["scale"].toDouble();
 	node->angle = 360;
 	parameters["angle"].getFiniteDouble(node->angle);
-
-	if (node->convexity <= 0)
-		node->convexity = 2;
 
 	if (node->scale <= 0)
 		node->scale = 1;
@@ -122,6 +120,7 @@ void register_builtin_dxf_rotate_extrude()
 
 	Builtins::init("rotate_extrude", new BuiltinModule(builtin_rotate_extrude),
 				{
-					"rotate_extrude(angle = 360, convexity = 2)",
+					"rotate_extrude(angle = 360, convexity = "
+                    QUOTED(DEFAULT_CONVEXITY) ")",
 				});
 }

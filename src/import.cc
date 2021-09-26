@@ -112,9 +112,9 @@ static AbstractNode* do_import(const ModuleInstantiation *inst, Arguments argume
 			node->layername = "";
 		}
 	}
-	node->convexity = (int)parameters["convexity"].toDouble();
 
-	if (node->convexity <= 0) node->convexity = 1;
+	node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+    if (node->convexity <= 0) node->convexity = DEFAULT_CONVEXITY;
 
 	const auto &origin = parameters["origin"];
 	node->origin_x = node->origin_y = 0;
