@@ -124,8 +124,8 @@ jobs:
               LIBRARIES_CACHE=libraries-circleci.tar.bz2
               mkdir /tmp/out
               mkdir -p "$OPENSCAD_LIBRARIES"
-              ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" ) || true
-              ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -O https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" ) || true
+              ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -S --insecure -O https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" ) || true
+              ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -S --insecure -O https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" ) || true
               sudo mkdir -p /opt/local
               sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
               if [ -f /opt/local/bin/port ]; then
@@ -188,7 +188,7 @@ jobs:
               else
                   echo "MacPorts not found, installing $MACPORTS"
                   MACPORTSFILE="$MACPORTS".tar.bz2
-                  curl -s -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
+                  curl -s -S --insecure -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
                   if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
                       echo "Failed to match sha512 for $MACPORTSFILE"
                       exit 1
