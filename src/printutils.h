@@ -6,8 +6,17 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <utility>
+
 #include <libintl.h>
+// Undefine some defines from libintl.h to presolve
+// some collisions in boost headers later
+#if defined snprintf
 #undef snprintf
+#endif
+#if defined vsnprintf
+#undef vsnprintf
+#endif
+
 #include <locale.h>
 #include "AST.h"
 #include <set>
