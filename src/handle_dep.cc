@@ -21,7 +21,24 @@ void handle_dep(const std::string &filename)
     dependencies.insert(dep);
 
     if (make_command && !fs::exists(filepath)) {
-        system(STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'").c_str()); // FIXME: Handle error
+        // This should only happen from command-line execution.
+        // If changed, add an alternate error-reporting process.
+        auto cmd = STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'");
+        int res = system(cmd.c_str());
+        if (res == -1) {
+            perror("ERROR: system(make_cmd) failed");
+        }
+        else if (WIFEXITED(res)) {
+            int cmd_res = WEXITSTATUS(res);
+            if (cmd_res != 0) {
+                std::cerr << "ERROR: " << cmd.c_str() << ": Exit status "
+                    << cmd_res << std::endl;
+            }
+        }
+        else {
+            std::cerr << "ERROR: " << cmd.c_str()
+                << ": Process terminated abnormally!" << std::endl;
+        }
     }
 }
 
