@@ -24,21 +24,37 @@ void handle_dep(const std::string &filename)
         // This should only happen from command-line execution.
         // If changed, add an alternate error-reporting process.
         auto cmd = STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'");
+        errno = 0;
         int res = system(cmd.c_str());
-        if (res == -1) {
+
+        // Could not launch system() correctly
+#ifdef _WIN32
+        if ((res == 0 || res == -1) && errno != 0) {
+#else // NOT _WIN32
+        if (res == -1 && errno != 0) {
+#endif // _WIN32 / NOT _WIN32
             perror("ERROR: system(make_cmd) failed");
         }
-        else if (WIFEXITED(res)) {
-            int cmd_res = WEXITSTATUS(res);
-            if (cmd_res != 0) {
-                std::cerr << "ERROR: " << cmd.c_str() << ": Exit status "
-                    << cmd_res << std::endl;
-            }
-        }
-        else {
+
+#ifndef _WIN32 // NOT _WIN32
+        // Abnormal process failure (e.g., segfault, killed, etc)
+        else if (!WIFEXITED(res)) {
             std::cerr << "ERROR: " << cmd.c_str()
                 << ": Process terminated abnormally!" << std::endl;
         }
+#endif // NOT _WIN32
+
+        // Error code from process.
+#ifdef _WIN32
+        else if (0 != res) {
+#else // NOT _WIN32
+        else if (0 != (res = WEXITSTATUS(res))) {
+#endif // _WIN32 / NOT _WIN32
+            std::cerr << "ERROR: " << cmd.c_str() << ": Exit status "
+                << res << std::endl;
+        }
+
+        // Otherwise, success!
     }
 }
 
