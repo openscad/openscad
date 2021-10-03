@@ -2080,7 +2080,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
+             <spacer name="verticalSpacer_1">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2109,7 +2109,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
+             <spacer name="verticalSpacer_4">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2126,7 +2126,7 @@
               <property name="title">
                <string>Debugging</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_16">
+              <layout class="QVBoxLayout" name="verticalLayout_17">
                <item>
                 <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
                  <property name="text">
