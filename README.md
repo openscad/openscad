@@ -150,7 +150,7 @@ Prerequisites:
 
 Install Dependencies:
 
-After building dependencies using one of the following three options, follow the instructions in the *Compilation* section.
+After building dependencies using one of the following options, follow the instructions in the *Compilation* section.
 
 1. **From source**
 
