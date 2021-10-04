@@ -755,8 +755,13 @@ done
 
 OPTION_PACKAGES="${@:$OPTIND}"
 
+OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_VERSION >= 14 )); then
+if (( $OSX_MAJOR_VERSION >= 11 )); then
+  echo "Detected BigSur (11.x) or later"
+elif (( $OSX_VERSION >= 15 )); then
+  echo "Detected Catalina (10.15) or later"
+elif (( $OSX_VERSION >= 14 )); then
   echo "Detected Mojave (10.14) or later"
 elif (( $OSX_VERSION >= 13 )); then
   echo "Detected High Sierra (10.13) or later"
