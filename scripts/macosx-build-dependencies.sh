@@ -42,7 +42,7 @@ PACKAGES=(
     "libzip 1.5.1"
     "libxml2 2.9.9"
     "fontconfig 2.13.1"
-    "hidapi 0.9.0"
+    "hidapi 0.11.0"
     "libuuid 1.6.2"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
