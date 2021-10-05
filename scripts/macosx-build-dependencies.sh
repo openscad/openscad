@@ -1,8 +1,9 @@
 #!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
-# The libraries will be build in 64-bit mode and backwards compatible with 10.8 "Mountain Lion".
-# 
+# The libraries will be build in 64-bit mode and backwards compatible
+# with 10.13 "High Sierra".
+#
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
@@ -24,7 +25,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.9
+MAC_OSX_VERSION_MIN=10.13
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 
@@ -51,7 +52,7 @@ PACKAGES=(
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.3"
-    "qt5 5.9.9"
+    "qt5 5.15.2"
     "opencsg 1.4.2"
     "qscintilla 2.11.6"
 )
@@ -164,24 +165,16 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-    curl -LO http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
+  rm -rf qt-everywhere-src-$version
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  set +e
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  if [ $? != 0 ]; then
-    rm -f qt-everywhere-opensource-src-$version.tar.xz
-    curl -LO http://download.qt.io/archive/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
-  fi
-  set -e
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  cd qt-everywhere-opensource-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.9.7-macos.patch
+  tar xzf qt-everywhere-src-$version.tar.xz
+  cd qt-everywhere-src-$version
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp -no-qml-debug \
+		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
