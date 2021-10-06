@@ -127,7 +127,7 @@ GETTEXT_PATH=""
 
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
-CURDIR="`realpath --relative-to=\"$TOPDIR\" \"$BASEDIR\"`"
+CURDIR="`python -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR'), '$TOPDIR'))"`"
 
 cd "$TOPDIR" || exit 1
 
