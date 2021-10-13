@@ -44,6 +44,7 @@ option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
+option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
@@ -78,6 +79,7 @@ endif()
 if (MXECROSS)
   add_definitions(-DGLEW_STATIC)
   add_definitions(-DLIBXML_STATIC)
+  add_definitions(-DSTATIC_QT_SVG_PLUGIN)
   list(APPEND PLATFORM_LIBS -lbcrypt)
   add_subdirectory(winconsole)
   set(CMAKE_WIN32_EXECUTABLE ON)
@@ -152,13 +154,13 @@ endmacro(find_graphics)
 #   because it looks for Boost itself, so it has to be called
 #   before we look for our own required boost libraries.
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-find_package(CGAL REQUIRED)
+find_package(CGAL REQUIRED COMPONENTS Core)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
 add_definitions(-DCGAL_USE_GMPXX)
 if(TARGET CGAL::CGAL)
-  list(APPEND COMMON_LIBRARIES CGAL::CGAL)
-  message(STATUS "CGAL: Using target CGAL::CGAL")
+  list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
+  message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
 else()
   list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
   list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
@@ -310,11 +312,15 @@ find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
 if(NOT MSVC)
-  find_package(Lib3MF REQUIRED QUIET)
-  message(STATUS "lib3mf: ${LIB3MF_VERSION}")
-  add_definitions(${LIB3MF_CFLAGS})
-  include_directories(${LIB3MF_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+  find_package(Lib3MF QUIET)
+  if (LIB3MF_FOUND)
+    message(STATUS "lib3mf: ${LIB3MF_VERSION}")
+    add_definitions(${LIB3MF_CFLAGS})
+    include_directories(${LIB3MF_INCLUDE_DIRS})
+    list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
+  else()
+    message(STATUS "lib3mf: disabled")
+  endif()
 endif()
 
 # Use clang-tidy if run with -DCLANG_TIDY=1
@@ -349,7 +355,7 @@ if(NOT HEADLESS)
   set(CMAKE_AUTOUIC ON)
   set(CMAKE_AUTORCC ON)
   set(CMAKE_AUTOUIC_OPTIONS --tr q_)
-  find_package(Qt5 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network REQUIRED QUIET)
+  find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -474,6 +480,7 @@ elseif(WIN32)
 endif()
 
 include_directories("src/ext/libtess2/Include")
+include_directories("src/ext/json")
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
@@ -500,14 +507,17 @@ set(CORE_SOURCES
   src/dxfdata.cc
   src/dxfdim.cc
   src/evaluationsession.cc
+  src/IndexedMesh.cc
   src/export.cc
   src/export_3mf.cc
   src/export_amf.cc
   src/export_dxf.cc
   src/export_off.cc
+  src/export_wrl.cc
   src/export_pdf.cc
   src/export_stl.cc
   src/export_svg.cc
+  src/export_param.cc
   src/expr.cc
   src/feature.cc
   src/fileutils.cc
@@ -539,6 +549,9 @@ set(CORE_SOURCES
   src/projection.cc
   src/render.cc
   src/rendersettings.cc
+  src/roof.cc
+  src/roof_ss.cc
+  src/roof_vd.cc
   src/rotateextrude.cc
   src/stackcheck.h
   src/surface.cc
@@ -593,6 +606,7 @@ set(CORE_SOURCES
   src/libsvg/text.cc
   src/libsvg/transformation.cc
   src/libsvg/tspan.cc
+  src/libsvg/use.cc
   src/libsvg/util.cc
   src/parameter/parameterobject.cc
   src/parameter/parameterset.cc
@@ -789,7 +803,10 @@ endif()
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+endif()
+if(MXECROSS)
+  target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
 endif()
 
 if(NOT APPLE)
@@ -805,10 +822,11 @@ install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-256.pn
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad${SUFFIX_WITH_DASH}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".git*" EXCLUDE)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".uuid" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*.json")
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".git*" EXCLUDE)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*.json")
 endif()
 
 if(INFO)
@@ -818,4 +836,8 @@ endif()
 option(ENABLE_TESTS "Run testsuite after building." ON)
 if(ENABLE_TESTS)
   add_subdirectory(tests)
+endif()
+
+if(OFFLINE_DOCS)
+  add_subdirectory(resources)
 endif()

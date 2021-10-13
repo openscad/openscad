@@ -19,6 +19,8 @@
 #define HPOINTS 842.
 #define MARGIN 30.
 
+#define FONT "Liberation Sans"
+
 const std::string get_cairo_version() {
 	return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
 }
@@ -30,6 +32,7 @@ enum class OriginPosition{
 
 void draw_text(const char *text, cairo_t *cr,double x,double y, double fontSize){
 
+    cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, fontSize);
     cairo_move_to(cr,x,y);
     cairo_show_text(cr,text);
@@ -41,6 +44,7 @@ double mm_to_points(double mm){
 }
 
 void draw_axis(cairo_t *cr, OriginPosition pos){
+    cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 6.);
     cairo_set_line_width(cr, 0.4);
     double offset = mm_to_points(10.);

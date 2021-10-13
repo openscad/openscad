@@ -4,7 +4,6 @@ path_classifiers:
     - exclude: /
     # Classify all files in the top-level directories test/ and testsuites/ as test code.
     - tests
-    - testdata
   library:
     - src/ext/hidapi
     - src/ext/libtess2

@@ -261,6 +261,7 @@ case $OS in
         FONTDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/fonts
         TRANSLATIONDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/locale
         COLORSCHEMESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/color-schemes
+        SHADERSDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/shaders
         TEMPLATESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/templates
     ;;
     UNIX_CROSS_WIN)
@@ -270,6 +271,7 @@ case $OS in
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
         COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
+        SHADERSDIR=$DEPLOYDIR/openscad-$VERSION/shaders/
         TEMPLATESDIR=$DEPLOYDIR/openscad-$VERSION/templates/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
@@ -280,6 +282,7 @@ case $OS in
         FONTDIR=openscad-$VERSION/fonts/
         TRANSLATIONDIR=openscad-$VERSION/locale/
         COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
+        SHADERSDIR=openscad-$VERSION/shaders/
         TEMPLATESDIR=openscad-$VERSION/templates/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
@@ -314,6 +317,11 @@ if [ -n $COLORSCHEMESDIR ]; then
   echo $COLORSCHEMESDIR
   mkdir -p $COLORSCHEMESDIR
   cp -a color-schemes/* $COLORSCHEMESDIR
+fi
+if [ -n $SHADERSDIR ]; then
+  echo $SHADERSDIR
+  mkdir -p $SHADERSDIR
+  cp -a shaders/* $SHADERSDIR
 fi
 if [ -n $TEMPLATESDIR ]; then
   echo $TEMPLATESDIR
@@ -577,7 +585,7 @@ if [ $BUILD_TESTS ]; then
         # as above, we use tar as a somewhat portable way to do 'exclude'
         # while copying.
         rm -f ./ostests.tar
-        for subdir in tests testdata; do
+        for subdir in tests tests/data; do
           tar prvf ./ostests.tar --exclude=.git* --exclude=*.cc.obj --exclude=*.cc --exclude=*.h --exclude=CMake* --exclude=*.a $subdir
         done
         cd $DEPLOYDIR

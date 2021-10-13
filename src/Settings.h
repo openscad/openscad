@@ -187,6 +187,10 @@ public:
 
 	static SettingsEntryBool   exportUseAsciiSTL;
 
+	static SettingsEntryBool   summaryCamera;
+	static SettingsEntryBool   summaryArea;
+	static SettingsEntryBool   summaryBoundingBox;
+
 	static SettingsEntryBool   inputEnableDriverHIDAPI;
 	static SettingsEntryBool   inputEnableDriverHIDAPILog;
 	static SettingsEntryBool   inputEnableDriverSPNAV;

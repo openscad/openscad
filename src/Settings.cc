@@ -124,6 +124,10 @@ SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintS
 
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
 
+SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
+SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);
+SettingsEntryBool Settings::summaryBoundingBox("summary", "boundingBox", false);
+
 SettingsEntryBool   Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", false);
 SettingsEntryBool   Settings::inputEnableDriverHIDAPILog("input", "enableDriverHIDAPILog", false);
 SettingsEntryBool   Settings::inputEnableDriverSPNAV("input", "enableDriverSPNAV", false);

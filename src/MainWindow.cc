@@ -48,7 +48,6 @@
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #include "LibraryInfoDialog.h"
-#include "RenderStatistic.h"
 #include "ScintillaEditor.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
@@ -126,6 +125,8 @@
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
+
+#include "qt-obsolete.h"
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -392,6 +393,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
 	connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
 	connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
 	connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
@@ -459,7 +461,24 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
-
+		
+	// Checks if the Documentation has been downloaded and hides the Action otherwise
+	if (UIUtils::hasOfflineUserManual()) 
+	{
+		connect(this->helpActionOfflineManual, SIGNAL(triggered()), this, SLOT(helpOfflineManual()));
+	}
+	else
+	{
+		this->helpActionOfflineManual->setVisible(false);
+	}
+	if (UIUtils::hasOfflineCheatSheet()) 
+	{
+		connect(this->helpActionOfflineCheatSheet, SIGNAL(triggered()), this, SLOT(helpOfflineCheatSheet()));
+	}
+	else
+	{
+		this->helpActionOfflineCheatSheet->setVisible(false);
+	}
 #ifdef OPENSCAD_UPDATER
 	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
@@ -507,45 +526,48 @@ MainWindow::MainWindow(const QStringList &filenames)
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
 
-	initActionIcon(fileActionNew, ":/images/blackNew.png", ":/images/Document-New-128.png");
-	initActionIcon(fileActionOpen, ":/images/Open-32.png", ":/images/Open-128.png");
-	initActionIcon(fileActionSave, ":/images/Save-32.png", ":/images/Save-128.png");
-	initActionIcon(editActionZoomTextIn, ":/images/zoom-text-in.png", ":/images/zoom-text-in-white.png");
-	initActionIcon(editActionZoomTextOut, ":/images/zoom-text-out.png", ":/images/zoom-text-out-white.png");
-	initActionIcon(designActionRender, ":/images/render-32.png", ":/images/render-32-white.png");
-	initActionIcon(designAction3DPrint, ":/images/3dprint-32.png", ":/images/3dprint-32-white.png");
-	initActionIcon(viewActionShowAxes, ":/images/blackaxes.png", ":/images/axes.png");
-	initActionIcon(viewActionShowEdges, ":/images/Rotation-32.png", ":/images/grid.png");
-	initActionIcon(viewActionZoomIn, ":/images/zoomin.png", ":/images/Zoom-In-32.png");
-	initActionIcon(viewActionZoomOut, ":/images/zoomout.png", ":/images/Zoom-Out-32.png");
-	initActionIcon(viewActionTop, ":/images/blackUp.png", ":/images/up.png");
-	initActionIcon(viewActionBottom, ":/images/blackbottom.png", ":/images/bottom.png");
-	initActionIcon(viewActionLeft, ":/images/blackleft.png", ":/images/left.png");
-	initActionIcon(viewActionRight, ":/images/rightright.png", ":/images/right.png");
-	initActionIcon(viewActionFront, ":/images/blackfront.png", ":/images/front.png");
-	initActionIcon(viewActionBack, ":/images/blackback.png", ":/images/back.png");
-	initActionIcon(viewActionSurfaces, ":/images/surface.png", ":/images/surfaceWhite.png");
-	initActionIcon(viewActionWireframe, ":/images/wireframe1.png", ":/images/wireframeWhite.png");
-	initActionIcon(viewActionShowCrosshairs, ":/images/cross.png", ":/images/crosswhite.png");
-	initActionIcon(viewActionPerspective, ":/images/perspective1.png", ":/images/perspective1white.png");
-	initActionIcon(viewActionOrthogonal, ":/images/orthogonal.png", ":/images/orthogonalwhite.png");
-	initActionIcon(designActionPreview, ":/images/preview-32.png", ":/images/preview-32-white.png");
-	initActionIcon(viewActionAnimate, ":/images/animate.png", ":/images/animate.png");
-	initActionIcon(fileActionExportSTL, ":/images/STL.png", ":/images/STL-white.png");
-	initActionIcon(fileActionExportAMF, ":/images/AMF.png", ":/images/AMF-white.png");
-	initActionIcon(fileActionExport3MF, ":/images/3MF.png", ":/images/3MF-white.png");
-	initActionIcon(fileActionExportOFF, ":/images/OFF.png", ":/images/OFF-white.png");
-	initActionIcon(fileActionExportDXF, ":/images/DXF.png", ":/images/DXF-white.png");
-	initActionIcon(fileActionExportSVG, ":/images/SVG.png", ":/images/SVG-white.png");
-	initActionIcon(fileActionExportCSG, ":/images/CSG.png", ":/images/CSG-white.png");
-	initActionIcon(fileActionExportImage, ":/images/PNG.png", ":/images/PNG-white.png");
-	initActionIcon(viewActionViewAll, ":/images/zoom-all.png", ":/images/zoom-all-white.png");
-	initActionIcon(editActionUndo, ":/images/Command-Undo-32.png", ":/images/Command-Undo-32-white.png");
-	initActionIcon(editActionRedo, ":/images/Command-Redo-32.png", ":/images/Command-Redo-32-white.png");
-	initActionIcon(editActionUnindent, ":/images/Decrease-Indent-32.png", ":/images/Decrease-Indent-32-white.png");
-	initActionIcon(editActionIndent, ":/images/Increase-Indent-32.png", ":/images/Increase-Indent-32-white.png");
-	initActionIcon(viewActionResetView, ":/images/Command-Reset-32.png", ":/images/Command-Reset-32-white.png");
-	initActionIcon(viewActionShowScaleProportional, ":/images/scalemarkers.png", ":/images/scalemarkers-white.png");
+	initActionIcon(fileActionNew, ":/resources/icons/svg-default/new.svg", ":/resources/icons/svg-default/new-white.svg");
+	initActionIcon(fileActionOpen, ":/resources/icons/svg-default/open.svg", ":/resources/icons/svg-default/open-white.svg");
+	initActionIcon(fileActionSave, ":/resources/icons/svg-default/save.svg", ":/resources/icons/svg-default/save-white.svg");
+	initActionIcon(editActionZoomTextIn, ":/resources/icons/svg-default/zoom-text-in.svg", ":/resources/icons/svg-default/zoom-text-in-white.svg");
+	initActionIcon(editActionZoomTextOut, ":/resources/icons/svg-default/zoom-text-out.svg", ":/resources/icons/svg-default/zoom-text-out-white.svg");
+	initActionIcon(designActionRender, ":/resources/icons/svg-default/render.svg", ":/resources/icons/svg-default/render-white.svg");
+	initActionIcon(designAction3DPrint, ":/resources/icons/svg-default/send.svg", ":/resources/icons/svg-default/send-white.svg");
+	initActionIcon(viewActionShowAxes, ":/resources/icons/svg-default/axes.svg", ":/resources/icons/svg-default/axes-white.svg");
+	initActionIcon(viewActionShowEdges, ":/resources/icons/svg-default/show-edges.svg", ":/resources/icons/svg-default/show-edges-white.svg");
+	initActionIcon(viewActionZoomIn, ":/resources/icons/svg-default/zoom-in.svg", ":/resources/icons/svg-default/zoom-in-white.svg");
+	initActionIcon(viewActionZoomOut, ":/resources/icons/svg-default/zoom-out.svg", ":/resources/icons/svg-default/zoom-out-white.svg");
+	initActionIcon(viewActionTop, ":/resources/icons/svg-default/view-top.svg", ":/resources/icons/svg-default/view-top-white.svg");
+	initActionIcon(viewActionBottom, ":/resources/icons/svg-default/view-bottom.svg", ":/resources/icons/svg-default/view-bottom-white.svg");
+	initActionIcon(viewActionLeft, ":/resources/icons/svg-default/view-left.svg", ":/resources/icons/svg-default/view-left-white.svg");
+	initActionIcon(viewActionRight, ":/resources/icons/svg-default/view-right.svg", ":/resources/icons/svg-default/view-right-white.svg");
+	initActionIcon(viewActionFront, ":/resources/icons/svg-default/view-front.svg", ":/resources/icons/svg-default/view-front-white.svg");
+	initActionIcon(viewActionBack, ":/resources/icons/svg-default/view-back.svg", ":/resources/icons/svg-default/view-back-white.svg");
+	initActionIcon(viewActionSurfaces, ":/resources/icons/svg-default/surface.svg", ":/resources/icons/svg-default/surface-white.svg");
+	initActionIcon(viewActionWireframe, ":/resources/icons/svg-default/wireframe.svg", ":/resources/icons/svg-default/wireframe-white.svg");
+	initActionIcon(viewActionShowCrosshairs, ":/resources/icons/svg-default/crosshairs.svg", ":/resources/icons/svg-default/crosshairs-white.svg");
+	initActionIcon(viewActionThrownTogether, ":/resources/icons/svg-default/throwntogether.svg", ":/resources/icons/svg-default/throwntogether-white.svg");
+	initActionIcon(viewActionPerspective, ":/resources/icons/svg-default/perspective.svg", ":/resources/icons/svg-default/perspective-white.svg");
+	initActionIcon(viewActionOrthogonal, ":/resources/icons/svg-default/orthogonal.svg", ":/resources/icons/svg-default/orthogonal-white.svg");
+	initActionIcon(designActionPreview, ":/resources/icons/svg-default/preview.svg", ":/resources/icons/svg-default/preview-white.svg");
+	initActionIcon(viewActionAnimate, ":/resources/icons/svg-default/animate.svg", ":/resources/icons/svg-default/animate-white.svg");
+	initActionIcon(fileActionExportSTL, ":/resources/icons/svg-default/export-stl.svg", ":/resources/icons/svg-default/export-stl-white.svg");
+	initActionIcon(fileActionExportAMF, ":/resources/icons/svg-default/export-amf.svg", ":/resources/icons/svg-default/export-amf-white.svg");
+	initActionIcon(fileActionExport3MF, ":/resources/icons/svg-default/export-3mf.svg", ":/resources/icons/svg-default/export-3mf-white.svg");
+	initActionIcon(fileActionExportOFF, ":/resources/icons/svg-default/export-off.svg", ":/resources/icons/svg-default/export-off-white.svg");
+	initActionIcon(fileActionExportWRL, ":/resources/icons/svg-default/export-wrl.svg", ":/resources/icons/svg-default/export-wrl-white.svg");
+	initActionIcon(fileActionExportDXF, ":/resources/icons/svg-default/export-dxf.svg", ":/resources/icons/svg-default/export-dxf-white.svg");
+	initActionIcon(fileActionExportSVG, ":/resources/icons/svg-default/export-svg.svg", ":/resources/icons/svg-default/export-svg-white.svg");
+	initActionIcon(fileActionExportCSG, ":/resources/icons/svg-default/export-csg.svg", ":/resources/icons/svg-default/export-csg-white.svg");
+	initActionIcon(fileActionExportPDF, ":/resources/icons/svg-default/export-pdf.svg", ":/resources/icons/svg-default/export-pdf-white.svg");
+	initActionIcon(fileActionExportImage, ":/resources/icons/svg-default/export-png.svg", ":/resources/icons/svg-default/export-png-white.svg");
+	initActionIcon(viewActionViewAll, ":/resources/icons/svg-default/zoom-all.svg", ":/resources/icons/svg-default/zoom-all-white.svg");
+	initActionIcon(editActionUndo, ":/resources/icons/svg-default/undo.svg", ":/resources/icons/svg-default/undo-white.svg");
+	initActionIcon(editActionRedo, ":/resources/icons/svg-default/redo.svg", ":/resources/icons/svg-default/redo-white.svg");
+	initActionIcon(editActionUnindent, ":/resources/icons/svg-default/unindent.svg", ":/resources/icons/svg-default/unindent-white.svg");
+	initActionIcon(editActionIndent, ":/resources/icons/svg-default/indent.svg", ":/resources/icons/svg-default/indent-white.svg");
+	initActionIcon(viewActionResetView, ":/resources/icons/svg-default/reset-view.svg", ":/resources/icons/svg-default/reset-view-white.svg");
+	initActionIcon(viewActionShowScaleProportional, ":/resources/icons/svg-default/scalemarkers.svg", ":/resources/icons/svg-default/scalemarkers-white.svg");
 
 	// fetch window states to be restored after restoreState() call
 	bool hideConsole = settings.value("view/hideConsole").toBool();
@@ -643,7 +665,7 @@ void MainWindow::openFileFromPath(QString path,int line)
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
-	int defaultcolor = viewerToolBar->palette().background().color().lightness();
+	int defaultcolor = viewerToolBar->palette().window().color().lightness();
 	const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
 	action->setIcon(QIcon(resource));
 }
@@ -979,7 +1001,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 		compileErrors = 0;
 		compileWarnings = 0;
 
-		this->renderingTime.start();
+		this->renderStatistic.start();
 
 		// Reload checks the timestamp of the toplevel file and refreshes if necessary,
 		if (reload) {
@@ -1243,7 +1265,7 @@ void MainWindow::compileCSG()
 			this->processEvents();
 			this->csgRoot = csgrenderer.buildCSGTree(*root_node);
 #endif
-			RenderStatistic::printCacheStatistic();
+			renderStatistic.printCacheStatistic();
 			this->processEvents();
 		}
 		catch (const ProgressCancelException &) {
@@ -1326,8 +1348,7 @@ void MainWindow::compileCSG()
 																														this->highlights_products,
 																														this->background_products);
 		LOG(message_group::None,Location::NONE,"","Compile and preview finished.");
-		std::chrono::milliseconds ms{this->renderingTime.elapsed()};
-		RenderStatistic::printRenderingTime(ms);
+		renderStatistic.printRenderingTime();
 		this->processEvents();
 	}catch(const HardWarningException&){
 		exceptionCleanup();
@@ -2112,13 +2133,18 @@ void MainWindow::cgalRender()
 void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 {
 	progress_report_fin();
-	std::chrono::milliseconds ms{this->renderingTime.elapsed()};
-	RenderStatistic::printCacheStatistic();
-	RenderStatistic::printRenderingTime(ms);
 	if (root_geom) {
-		if (!root_geom->isEmpty()) {
-			RenderStatistic().print(*root_geom);
+		std::vector<std::string> options;
+		if (Settings::Settings::summaryCamera.value()) {
+			options.push_back(RenderStatistic::CAMERA);
 		}
+		if (Settings::Settings::summaryArea.value()) {
+			options.push_back(RenderStatistic::AREA);
+		}
+		if (Settings::Settings::summaryBoundingBox.value()) {
+			options.push_back(RenderStatistic::BOUNDING_BOX);
+		}
+		renderStatistic.printAll(root_geom, qglview->cam, options);
 		LOG(message_group::None,Location::NONE,"","Rendering finished.");
 
 		this->root_geom = root_geom;
@@ -2133,8 +2159,9 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 
 	updateStatusBar(nullptr);
 
-	if (Preferences::inst()->getValue("advanced/enableSoundNotification").toBool() &&
-		Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt() <= ms.count()/1000)
+	const bool renderSoundEnabled = Preferences::inst()->getValue("advanced/enableSoundNotification").toBool();
+	const uint soundThreshold = Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
+	if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000)
 	{
 		QSound::play(":sounds/complete.wav");
 	}
@@ -2296,7 +2323,7 @@ void MainWindow::actionDisplayAST()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_file) {
@@ -2315,7 +2342,7 @@ void MainWindow::actionDisplayCSGTree()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (this->root_node) {
@@ -2335,7 +2362,7 @@ void MainWindow::actionDisplayCSGProducts()
 	auto e = new QTextEdit(this);
 	e->setAttribute(Qt::WA_DeleteOnClose);
 	e->setWindowFlags(Qt::Window);
-	e->setTabStopWidth(tabStopWidth);
+	e->setTabStopDistance(tabStopWidth);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
@@ -2486,6 +2513,11 @@ void MainWindow::actionExport3MF()
 void MainWindow::actionExportOFF()
 {
 	actionExport(FileFormat::OFF, "OFF", ".off", 3);
+}
+
+void MainWindow::actionExportWRL()
+{
+	actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
 }
 
 void MainWindow::actionExportAMF()
@@ -3130,9 +3162,19 @@ void MainWindow::helpManual()
 	UIUtils::openUserManualURL();
 }
 
+void MainWindow::helpOfflineManual()
+{
+	UIUtils::openOfflineUserManual();
+}
+
 void MainWindow::helpCheatSheet()
 {
 	UIUtils::openCheatSheetURL();
+}
+
+void MainWindow::helpOfflineCheatSheet()
+{
+	UIUtils::openOfflineCheatSheet();
 }
 
 void MainWindow::helpLibrary()

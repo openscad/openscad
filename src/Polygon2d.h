@@ -7,7 +7,7 @@
 
 /*!
 	A single contour.
-	positive is (optionally) used to distinguish between polygon contours and hold contours.
+	positive is (optionally) used to distinguish between polygon contours and hole contours.
 */
 struct Outline2d {
 	Outline2d() : positive(true) {}
@@ -32,8 +32,9 @@ public:
 			[](size_t a, const Outline2d& b) { return a + b.vertices.size(); }
 		);
 	};
-	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
+	void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
 	class PolySet *tessellate() const;
+	double area() const;
 
 	typedef std::vector<Outline2d> Outlines2d;
 	const Outlines2d &outlines() const { return theoutlines; }

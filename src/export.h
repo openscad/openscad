@@ -16,6 +16,7 @@ enum class FileFormat {
   ASCIISTL,
 	STL,
 	OFF,
+	WRL,
 	AMF,
 	_3MF,
 	DXF,
@@ -27,7 +28,8 @@ enum class FileFormat {
 	TERM,
 	ECHO,
     PNG,
-    PDF
+    PDF,
+	PARAM
 };
 
 struct ExportInfo {
@@ -46,6 +48,7 @@ void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary=true);
 void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
+void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
@@ -65,6 +68,7 @@ struct ExportFileFormatOptions {
 		{"binstl", FileFormat::STL},
 		{"stl", FileFormat::ASCIISTL},  // Deprecated.  Later to FileFormat::STL
 		{"off", FileFormat::OFF},
+		{"wrl", FileFormat::WRL},
 		{"amf", FileFormat::AMF},
 		{"3mf", FileFormat::_3MF},
 		{"dxf", FileFormat::DXF},
@@ -72,6 +76,7 @@ struct ExportFileFormatOptions {
 		{"nefdbg", FileFormat::NEFDBG},
 		{"nef3", FileFormat::NEF3},
 		{"csg", FileFormat::CSG},
+		{"param", FileFormat::PARAM},
 		{"ast", FileFormat::AST},
 		{"term", FileFormat::TERM},
 		{"echo", FileFormat::ECHO},
@@ -115,9 +120,10 @@ struct ViewOptions {
 
 class OffscreenView;
 
-std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& options, Camera camera);
-bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera camera, std::ostream &output);
+std::unique_ptr<OffscreenView> prepare_preview(Tree &tree, const ViewOptions& options, Camera& camera);
+bool export_png(const shared_ptr<const class Geometry> &root_geom, const ViewOptions& options, Camera& camera, std::ostream &output);
 bool export_png(const OffscreenView &glview, std::ostream &output);
+bool export_param(SourceFile *root, const fs::path& path, std::ostream &output);
 
 namespace Export {
 

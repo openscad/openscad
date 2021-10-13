@@ -42,6 +42,7 @@
 bool canPreview(const FileFormat format) {
 	return (format == FileFormat::AST ||
 					format == FileFormat::CSG ||
+					format == FileFormat::PARAM ||
 					format == FileFormat::ECHO ||
 					format == FileFormat::TERM ||
 					format == FileFormat::PNG);
@@ -58,6 +59,9 @@ void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &outpu
 		break;
 	case FileFormat::OFF:
 		export_off(root_geom, output);
+		break;
+	case FileFormat::WRL:
+		export_wrl(root_geom, output);
 		break;
 	case FileFormat::AMF:
 		export_amf(root_geom, output);

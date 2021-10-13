@@ -301,7 +301,6 @@ namespace CGALUtils {
 	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation, bool use_grid)
 	{
 		bool err = false;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL_Build_PolySet<Polyhedron> builder(ps, invert_orientation, use_grid);
 			p.delegate(builder);
@@ -310,7 +309,6 @@ namespace CGALUtils {
 			LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
 			err = true;
 		}
-		CGAL::set_error_behaviour(old_behaviour);
 		return err;
 	}
 
@@ -386,19 +384,6 @@ namespace CGALUtils {
 			*out << ']';
     }
 	};
-
-	template <typename Polyhedron>
-	std::string printPolyhedron(const Polyhedron &p) {
-		std::ostringstream sstream;
-		sstream.precision(20);
-
-    Polyhedron_writer writer;
-    generic_print_polyhedron(sstream, p, writer);
-		
-		return sstream.str();
-	}
-
-	template std::string printPolyhedron(const CGAL_Polyhedron &p);
 
 }; // namespace CGALUtils
 

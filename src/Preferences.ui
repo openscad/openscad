@@ -2050,7 +2050,37 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
+             <widget class="QGroupBox" name="groupBox_Summary">
+              <property name="title">
+               <string>Render Summary</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_Summary">
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryCamera">
+                 <property name="text">
+                  <string>Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryBoundingBox">
+                 <property name="text">
+                  <string>Bounding Box</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryArea">
+                 <property name="text">
+                  <string>Measurements: Area</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_1">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2079,7 +2109,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
+             <spacer name="verticalSpacer_4">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2096,7 +2126,7 @@
               <property name="title">
                <string>Debugging</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_16">
+              <layout class="QVBoxLayout" name="verticalLayout_17">
                <item>
                 <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
                  <property name="text">

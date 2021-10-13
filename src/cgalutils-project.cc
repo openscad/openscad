@@ -18,8 +18,8 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h> 
-#include <CGAL/version.h> 
+#include <CGAL/config.h>
+#include <CGAL/version.h>
 
 #include <CGAL/convex_hull_3.h>
 #pragma pop_macro("NDEBUG")
@@ -185,7 +185,6 @@ namespace CGALUtils {
 
 		CGAL_Nef_polyhedron newN;
 		if (cut) {
-			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 			try {
 				CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0,0,1,0);
 				newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
@@ -214,7 +213,6 @@ namespace CGALUtils {
 			}
 				
 			if (!newN.p3 || newN.p3->is_empty()) {
-				CGAL::set_error_behaviour(old_behaviour);
 				LOG(message_group::Warning,Location::NONE,"","Projection() failed.");
 				return poly;
 			}
@@ -241,7 +239,6 @@ namespace CGALUtils {
 			}
 			PRINTD("</svg>");
 				
-			CGAL::set_error_behaviour(old_behaviour);
 		}
 		// In projection mode all the triangles are projected manually into the XY plane
 		else {

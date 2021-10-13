@@ -20,7 +20,13 @@
 #include "input/InputDriver.h"
 #include "Editor.h"
 #include "TabManager.h"
+#include "RenderStatistic.h"
 #include <memory>
+
+#ifdef STATIC_QT_SVG_PLUGIN
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QSvgPlugin)
+#endif
 
 class MouseSelector;
 
@@ -42,7 +48,7 @@ public:
 
 	QTimer *autoReloadTimer;
 	QTimer *waitAfterReloadTimer;
-	QTime renderingTime;
+	RenderStatistic renderStatistic;
 
 	SourceFile *root_file;      // Result of parsing
 	SourceFile *parsed_file;		// Last parse for include list
@@ -227,6 +233,7 @@ private slots:
 	void actionExportSTL();
 	void actionExport3MF();
 	void actionExportOFF();
+	void actionExportWRL();
 	void actionExportAMF();
 	void actionExportDXF();
 	void actionExportSVG();
@@ -308,7 +315,9 @@ public slots:
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();
+	void helpOfflineManual();
 	void helpCheatSheet();
+	void helpOfflineCheatSheet();
 	void helpLibrary();
 	void helpFontInfo();
 	void quit();

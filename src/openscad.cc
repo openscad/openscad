@@ -330,6 +330,8 @@ struct CommandLine
 	const Camera& camera;
 	const boost::optional<FileFormat> export_format;
 	unsigned animate_frames;
+	const std::vector<std::string> summaryOptions;
+	const std::string summaryFile;
 };
 
 struct RenderVariables
@@ -385,10 +387,10 @@ int cmdline(const CommandLine& cmd)
 		text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
 	} else {
 		std::ifstream ifs(cmd.filename);
-	if (!ifs.is_open()) {
+		if (!ifs.is_open()) {
 			LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", cmd.filename);
-		return 1;
-	}
+			return 1;
+		}
 		handle_dep(cmd.filename);
 		text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	}
@@ -464,6 +466,8 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 	auto filename_str = fs::path(cmd.output_file).generic_string();
 	auto fpath = fs::absolute(fs::path(cmd.filename));
 	auto fparent = fpath.parent_path();
+
+	// set CWD relative to source file
 	fs::current_path(fparent);
 
 	EvaluationSession session{fparent.string()};
@@ -482,6 +486,9 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 		camera.updateView(file_context, true);
 	}
 
+	// restore CWD after module instantiation finished
+	fs::current_path(cmd.original_path);
+
 	// Do we have an explicit root node (! modifier)?
 	const AbstractNode *root_node;
 	const Location *nextLocation = nullptr;
@@ -494,7 +501,6 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 	Tree tree(root_node, fparent.string());
 
 	if (cmd.deps_output_file) {
-		fs::current_path(cmd.original_path);
 		std::string deps_out(cmd.deps_output_file);
 		std::string geom_out(cmd.output_file);
 		int result = write_deps(deps_out, geom_out);
@@ -505,6 +511,11 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 	}
 
 	if (curFormat == FileFormat::CSG) {
+		// https://github.com/openscad/openscad/issues/128
+		// When I use the csg ouptput from the command line the paths in 'import'
+		// statements become relative. But unfortunately they become relative to
+		// the current working dir and neither to the location of the input nor
+		// the output.
 		fs::current_path(fparent); // Force exported filenames to be relative to document path
 		with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream &stream) {
 			stream << tree.getString(*root_node, "\t") << "\n";
@@ -517,6 +528,11 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 			stream << root_file->dump("");
 		});
 		fs::current_path(cmd.original_path);
+	}
+	else if (curFormat == FileFormat::PARAM) {
+		with_output(cmd.is_stdout, filename_str, [&root_file, &fpath](std::ostream &stream) {
+			export_param(root_file, fpath, stream);
+		});
 	}
 	else if (curFormat == FileFormat::TERM) {
 		CSGTreeEvaluator csgRenderer(tree);
@@ -536,7 +552,7 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 #ifdef ENABLE_CGAL
 
 		// start measuring render time
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		RenderStatistic renderStatistic;
 		GeometryEvaluator geomevaluator(tree);
 		unique_ptr<OffscreenView> glview;
 		shared_ptr<const Geometry> root_geom;
@@ -566,16 +582,10 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 			}
 		}
 
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		RenderStatistic::printCacheStatistic();
-		RenderStatistic::printRenderingTime( std::chrono::duration_cast<std::chrono::milliseconds>(end-begin) );
-		if (root_geom && !root_geom->isEmpty()) {
-			RenderStatistic().print(*root_geom);
-		}
-
         if( curFormat == FileFormat::ASCIISTL ||
             curFormat == FileFormat::STL ||
             curFormat == FileFormat::OFF ||
+            curFormat == FileFormat::WRL ||
             curFormat == FileFormat::AMF ||
             curFormat == FileFormat::_3MF ||
             curFormat == FileFormat::NEFDBG ||
@@ -601,9 +611,12 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 					success = export_png(*glview, stream);
 			}
 			}, std::ios::out | std::ios::binary);
-			return (success && wrote) ? 0 : 1;
+			if (!success || !wrote) {
+				return 1;
+			}
 		}
 
+		renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
 #else
 		LOG(message_group::None,Location::NONE,"","OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
@@ -854,7 +867,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	InputDriverManager::instance()->init();
 	int rc = app.exec();
-	for (auto &mainw : scadApp->windowManager.getWindows()) delete mainw;
+	const auto &windows = scadApp->windowManager.getWindows();
+	while (!windows.empty()) delete *windows.begin();
 	return rc;
 }
 #else // OPENSCAD_QTGUI
@@ -934,9 +948,9 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef ENABLE_CGAL
-	// Causes CGAL errors to abort directly instead of throwing exceptions
-	// (which we don't catch). This gives us stack traces without rerunning in gdb.
-	CGAL::set_error_behaviour(CGAL::ABORT);
+	// Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
+	CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
 #endif
 	Builtins::instance()->initialize();
 
@@ -950,12 +964,12 @@ int main(int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
-		("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
+		("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
 		("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
 		("p,p", po::value<string>(), "customizer parameter file")
 		("P,P", po::value<string>(), "customizer parameter set")
 #ifdef ENABLE_EXPERIMENTAL
-		("enable", po::value<vector<string>>(), ("enable experimental features: " +
+		("enable", po::value<vector<string>>(), ("enable experimental features (specify 'all' for enabling all available features): " +
 		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
 		                                               [](const Feature *feature) {
 		                                                   return feature->get_name();
@@ -976,6 +990,8 @@ int main(int argc, char **argv)
 		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
+    ("summary", po::value<vector<string>>(), "enable additional render summary and statistics: all | cache | time | camera | geometry | bounding-box | area")
+    ("summary-file", po::value<string>(), "output summary information in JSON format to the given file, using '-' outputs to stdout")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
 		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",
 		                                           [](const std::string& colorScheme) {
@@ -988,7 +1004,7 @@ int main(int argc, char **argv)
 		("hardwarnings", "Stop on the first warning")
 		("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
 		("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
-		("debug", po::value<string>(), "special debug info")
+		("debug", po::value<string>(), "special debug info - specify 'all' or a set of source file names")
 		("s,s", po::value<string>(), "stl_file deprecated, use -o")
 		("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 		;
@@ -1101,6 +1117,10 @@ int main(int argc, char **argv)
 	}
 	if (vm.count("enable")) {
 		for(const auto &feature : vm["enable"].as<vector<string>>()) {
+			if (feature == "all") {
+				Feature::enable_all();
+				break;
+			}
 			Feature::enable_feature(feature);
 		}
 	}
@@ -1182,7 +1202,22 @@ int main(int argc, char **argv)
 					const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
 					const bool is_stdout = filename == "-";
 					const std::string output_file = is_stdout ? "<stdout>" : filename;
-					const CommandLine cmd{is_stdin, input_file, is_stdout, output_file, deps_output_file, original_path, parameterFile, parameterSet, viewOptions, camera, export_format, animate_frames};
+					const CommandLine cmd{
+						is_stdin,
+						input_file,
+						is_stdout,
+						output_file,
+						deps_output_file,
+						original_path,
+						parameterFile,
+						parameterSet,
+						viewOptions,
+						camera,
+						export_format,
+						animate_frames,
+						vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
+						vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""
+					};
 					rc |= cmdline(cmd);
 				}
 			}

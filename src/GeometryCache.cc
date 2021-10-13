@@ -34,6 +34,16 @@ bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometr
 	return inserted;
 }
 
+size_t GeometryCache::size() const
+{
+	return cache.size();
+}
+
+size_t GeometryCache::totalCost() const
+{
+	return cache.totalCost();
+}
+
 size_t GeometryCache::maxSizeMB() const
 {
 	return this->cache.maxCost()/(1024*1024);

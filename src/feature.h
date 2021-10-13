@@ -16,12 +16,14 @@ public:
 
 	static const Feature ExperimentalFastCsg;
 	static const Feature ExperimentalFastCsgExactCallback;
+	static const Feature ExperimentalRoof;
 	static const Feature ExperimentalInputDriverDBus;
 	static const Feature ExperimentalLazyUnion;
 	static const Feature ExperimentalVxORenderers;
 	static const Feature ExperimentalVxORenderersIndexing;
 	static const Feature ExperimentalVxORenderersDirect;
 	static const Feature ExperimentalVxORenderersPrealloc;
+	static const Feature ExperimentalTextMetricsFunctions;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;
@@ -34,6 +36,7 @@ public:
 
 	static std::string features();
 	static void enable_feature(const std::string &feature_name, bool status = true);
+	static void enable_all(bool status = true);
 
 private:
 	bool enabled;

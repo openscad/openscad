@@ -42,18 +42,6 @@ namespace /* anonymous */ {
 
 namespace CGALUtils {
 
-	class CGALErrorBehaviour {
-	public:
-		CGALErrorBehaviour(CGAL::Failure_behaviour behaviour) {
-			old_behaviour = CGAL::set_error_behaviour(behaviour);
-		}
-		~CGALErrorBehaviour() {
-			CGAL::set_error_behaviour(old_behaviour);
-		}
-	private:
-		CGAL::Failure_behaviour old_behaviour;
-	};
-
 	bool applyHull(const Geometry::Geometries &children, PolySet &P);
 	template<typename K>
 	bool is_weakly_convex(const CGAL::Polyhedron_3<K> & p);
@@ -80,7 +68,6 @@ namespace CGALUtils {
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 
-	template <typename Polyhedron> std::string printPolyhedron(const Polyhedron &p);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation = true, bool use_grid = true);
 	template <class InputKernel, class OutputKernel>

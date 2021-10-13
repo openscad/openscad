@@ -104,15 +104,15 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* A C++ compiler supporting C++14
+* A C++ compiler supporting C++17
+* [cmake (3.5 ->)](https://cmake.org/)
 * [Qt (5.4 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (4.9 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
-* [cmake (2.8 ->, required by CGAL and the test framework)](https://cmake.org/)
 * [boost (1.56 ->)](https://www.boost.org/)
-* [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
+* [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)
 * [glib2 (2.x)](https://developer.gnome.org/glib/)
@@ -150,13 +150,13 @@ Prerequisites:
 
 Install Dependencies:
 
-After building dependencies using one of the following three options, follow the instructions in the *Compilation* section.
+After building dependencies using one of the following options, follow the instructions in the *Compilation* section.
 
 1. **From source**
 
     Run the script that sets up the environment variables:
 
-        source setenv_mac.sh
+        source scripts/setenv-macos.sh
 
     Then run the script to compile all the dependencies:
 
@@ -165,19 +165,6 @@ After building dependencies using one of the following three options, follow the
 1. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
         ./scripts/macosx-build-homebrew.sh
-
-1. **MacPorts** (assumes [MacPorts](https://www.macports.org/) is already installed)
-
-    For the adventurous, it might be possible to build OpenSCAD using _MacPorts_. The main challenge is that MacPorts have partially broken libraries, but that tends to change from time to time.
-
-    NB! MacPorts currently doesn't support Qt5 very well, so using Qt4
-    is the only working option at the moment. However, MacPorts' Qt4
-    has a broken `moc` command, causing OpenSCAD compilation to
-    break. This may be fixed in MacPorts by the time you read this.
-```
-        sudo port install opencsg qscintilla boost cgal pkgconfig eigen3 harfbuzz fontconfig
-```
-
 
 ### Building for Linux/BSD
 
@@ -246,22 +233,13 @@ installer:
 
     ./scripts/release-common.sh mingw64
 
-If you wish you can only build the `openscad.exe` binary:
-
-    cd mingw64
-    qmake ../openscad.pro CONFIG+=mingw-cross-env
-    make
-
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
 ### Compilation
 
-First, run `qmake openscad.pro` from Qt to generate a Makefile.
+First, run `mkdir build && cd build && cmake ..` to generate a Makefile.
 
-On some systems, depending on which version(s) of Qt you have installed, you may need to specify which version you want to use, e.g. by running `qmake4`, `qmake-qt4`, `qmake -qt=qt5`, or something alike. 
-
-Then run `make`. Finally you might run `make install` as root or simply copy the
-'openscad' binary (`OpenSCAD.app` on Mac OS X) to the bin directory of your choice.
+Then run `make`. Finally, on Linux you might run `make install` as root.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).

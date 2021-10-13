@@ -8,6 +8,7 @@ d = (c + 9);
 assert(true);
 assert("t1");
 assert((a * b));
+assert((a * b));
 assert(condition = (a * b));
 assert(true) cube(8, center = true);
 translate([0, 20, 0]) assert(condition = 2) sphere(5);

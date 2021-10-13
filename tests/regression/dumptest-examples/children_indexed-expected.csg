@@ -2,8 +2,8 @@ color([1, 0, 0, 1]) {
 	multmatrix([[1, 0, 0, -100], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			group() {
-				linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "Nothing...", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+				linear_extrude(height = 1, center = true, $fn = 0, $fa = 12, $fs = 2) {
+					text(text = "Nothing...", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 				}
 			}
 		}
@@ -13,8 +13,8 @@ color([1, 1, 0, 1]) {
 	multmatrix([[1, 0, 0, -50], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			group() {
-				linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "one object", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+				linear_extrude(height = 1, center = true, $fn = 0, $fa = 12, $fs = 2) {
+					text(text = "one object", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 				}
 				group() {
 					group() {
@@ -35,8 +35,8 @@ color([0, 1, 1, 1]) {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			group() {
-				linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "2 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+				linear_extrude(height = 1, center = true, $fn = 0, $fa = 12, $fs = 2) {
+					text(text = "2 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 				}
 				group() {
 					group() {
@@ -80,8 +80,8 @@ color([0, 0.501961, 0, 1]) {
 	multmatrix([[1, 0, 0, 50], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			group() {
-				linear_extrude(height = 1, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-					text(text = "3 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+				linear_extrude(height = 1, center = true, $fn = 0, $fa = 12, $fs = 2) {
+					text(text = "3 objects ", size = 6, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 				}
 				group() {
 					group() {

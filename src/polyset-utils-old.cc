@@ -144,7 +144,6 @@ namespace PolysetUtils {
 	bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles, projection_t projection )
 	{
 		bool err = false;
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CDT cdt;
 			std::vector<Vertex_handle> vhandles;
@@ -199,7 +198,6 @@ namespace PolysetUtils {
 			LOG(message_group::None,Location::NONE,"","CGAL error in triangulate_polygon(): %1$s",e.what());
 			err = true;
 		}
-		CGAL::set_error_behaviour(old_behaviour);
 		return err;
 	}
 

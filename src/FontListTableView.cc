@@ -48,7 +48,7 @@ void FontListTableView::startDrag(Qt::DropActions supportedActions)
 	mimeData->setText(text);
 
 	QFontMetrics fm(font());
-	QRect rect(0, 0, fm.width(text) + 8, fm.height() + 8);
+	QRect rect(0, 0, fm.boundingRect(text).width() + 8, fm.height() + 8);
 	QPixmap pixmap(rect.width(), rect.height());
 	pixmap.fill({240, 240, 240, 160});
 

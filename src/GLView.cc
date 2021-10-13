@@ -271,7 +271,7 @@ void GLView::showSmallaxes(const Color4f &col)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glTranslatef(-0.8f, -0.8f, 0.0f);
-  auto scale = 90;
+  auto scale = 90.0;
   glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
@@ -343,31 +343,29 @@ void GLView::showSmallaxes(const Color4f &col)
 
 void GLView::showAxes(const Color4f &col)
 {
-  auto l = cam.zoomValue();
-
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
 
   glBegin(GL_LINES);
-  glVertex3d(0, 0, 0);
-  glVertex3d(+l, 0, 0);
-  glVertex3d(0, 0, 0);
-  glVertex3d(0, +l, 0);
-  glVertex3d(0, 0, 0);
-  glVertex3d(0, 0, +l);
+  glVertex4d(0, 0, 0, 1);
+  glVertex4d(1, 0, 0, 0); // w = 0 goes to infinity
+  glVertex4d(0, 0, 0, 1);
+  glVertex4d(0, 1, 0, 0);
+  glVertex4d(0, 0, 0, 1);
+  glVertex4d(0, 0, 1, 0);
   glEnd();
 
   glPushAttrib(GL_LINE_BIT);
   glEnable(GL_LINE_STIPPLE);
   glLineStipple(3, 0xAAAA);
   glBegin(GL_LINES);
-  glVertex3d(0, 0, 0);
-  glVertex3d(-l, 0, 0);
-  glVertex3d(0, 0, 0);
-  glVertex3d(0, -l, 0);
-  glVertex3d(0, 0, 0);
-  glVertex3d(0, 0, -l);
+  glVertex4d(0, 0, 0, 1);
+  glVertex4d(-1, 0, 0, 0);
+  glVertex4d(0, 0, 0, 1);
+  glVertex4d(0, -1, 0, 0);
+  glVertex4d(0, 0, 0, 1);
+  glVertex4d(0, 0, -1, 0);
   glEnd();
   glPopAttrib();
 }

@@ -35,12 +35,14 @@ const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG o
 const Feature Feature::ExperimentalFastCsgExactCallback("fast-csg-exact-callbacks", "Force lazy numbers to exact during corefinement using callbacks rather than at the end of each operation. Only works with fast-csg-mesh for now.");
 #endif // FAST_CSG_KERNEL_IS_LAZY
 #endif
+const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing", "Enable indexing in vertex object renderers");
 const Feature Feature::ExperimentalVxORenderersDirect("vertex-object-renderers-direct", "Enable direct buffer writes in vertex object renderers");
 const Feature Feature::ExperimentalVxORenderersPrealloc("vertex-object-renderers-prealloc", "Enable preallocating buffers in vertex object renderers");
+const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)
@@ -85,6 +87,13 @@ void Feature::enable_feature(const std::string &feature_name, bool status)
 		it->second->enable(status);
 	} else {
 		LOG(message_group::Warning,Location::NONE,"","Ignoring request to enable unknown feature '%1$s'.",feature_name);
+	}
+}
+
+void Feature::enable_all(bool status)
+{
+	for (const auto& f : boost::make_iterator_range(Feature::begin(), Feature::end())) {
+		f->enable(status);
 	}
 }
 

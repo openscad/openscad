@@ -87,8 +87,28 @@ mark_domains(CDT &cdt)
 
 }
 
+double Polygon2d::area() const
+{
+	const PolySet *p = tessellate();
+	if (p == nullptr) {
+		return 0;
+	}
+
+	double area = 0.0;
+	for (const auto& poly : p->polygons) {
+		const auto& v1 = poly[0];
+		const auto& v2 = poly[1];
+		const auto& v3 = poly[2];
+		area += 0.5 * (
+					v1.x() * (v2.y() - v3.y())
+				+ v2.x() * (v3.y() - v1.y())
+				+ v3.x() * (v1.y() - v2.y()));
+	}
+	return area;
+}
+
 /*!
-	Triangulates this polygon2d and returns a 2D PolySet.
+	Triangulates this polygon2d and returns a 2D-in-3D PolySet.
 */
 PolySet *Polygon2d::tessellate() const
 {
@@ -97,7 +117,6 @@ PolySet *Polygon2d::tessellate() const
 
 	Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 
 	// Adds all vertices, and add all contours as constraints.
@@ -116,10 +135,8 @@ PolySet *Polygon2d::tessellate() const
   }
 	catch (const CGAL::Precondition_exception &e) {
 		LOG(message_group::None,Location::NONE,"","CGAL error in Polygon2d::tesselate(): %1$s",e.what());
-		CGAL::set_error_behaviour(old_behaviour);
 		return nullptr;
 	}
-	CGAL::set_error_behaviour(old_behaviour);
   
 	// To extract triangles which is part of our polygon, we need to filter away
 	// triangles inside holes.

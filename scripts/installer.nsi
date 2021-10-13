@@ -15,6 +15,7 @@ File /r /x mingw-cross-env libraries
 File /r /x mingw-cross-env fonts
 File /r /x mingw-cross-env locale
 File /r /x mingw-cross-env color-schemes
+File /r /x mingw-cross-env shaders
 File /r /x mingw-cross-env templates
 ${registerExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"
 SetShellVarContext all
@@ -43,6 +44,7 @@ RMDir /r $INSTDIR\templates
 RMDir /r $INSTDIR\examples
 RMDir /r $INSTDIR\libraries\mcad
 RMDir /r $INSTDIR\locale
+RMDir /r $INSTDIR\shaders
 Delete $INSTDIR\libraries\boxes.scad
 Delete $INSTDIR\libraries\shapes.scad
 RMDir $INSTDIR\libraries

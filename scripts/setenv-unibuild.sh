@@ -7,7 +7,7 @@
 setenv_common()
 {
  if [ ! $BASEDIR ]; then
-  if [ -f openscad.pro ]; then
+  if [ -f openscad.qrc ]; then
     # if in main openscad dir, put under $HOME
     BASEDIR=$HOME/openscad_deps
   else
