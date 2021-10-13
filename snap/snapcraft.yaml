@@ -65,6 +65,10 @@ parts:
     source: https://github.com/CGAL/cgal/releases/download/v5.3/CGAL-5.3-library.tar.xz
     plugin: cmake
     cmake-parameters: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=/usr" ]
+    override-build: |
+      patch -d "$SNAPCRAFT_PART_SRC" -p1 < "$SNAPCRAFT_STAGE/001-remove-demo-install.patch"
+      snapcraftctl build
+    after: [ patches ]
     build-packages:
     - cmake
     - libboost-dev
@@ -182,3 +186,9 @@ parts:
       - locales-all
       - xdg-user-dirs
       - fcitx-frontend-qt5
+
+  patches:
+    source: snap/local/patches
+    plugin: dump
+    prime:
+      - -*
