@@ -216,64 +216,60 @@ list(APPEND FAST_CSG_FAILING_TESTS
 # These tests are run twice (w/ and without fast-csg).
 list(APPEND FAST_CSG_FAILING_SCADFILES
   # Corefinement leaves some polyhedra in a state that we can't build Nefs from
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/mirror-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/mirror-tests.scad
   # Resize issue!
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/resize-convexity-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/resize-convexity-tests.scad
   # Needs investigation:
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1246.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1246.scad
 )
 
 # Tests for which fast-csg works but produces different expectation files.
 # These tests are run twice (w/ and without fast-csg).
 list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   # This one no longer crashes, yay!
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/issue1455.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue1455.scad
   # These are less broken than before:
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue591.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue791.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/polyhedron-tests.scad
 
   # No more green faces from differences.
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/text_on_cube.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example001.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example002.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example003.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example004.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example005.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example006.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example009.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example012.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example016.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example024.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Parametric/sign.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/2D/features/highlight-modifier-2d.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/difference-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/highlight-modifier2.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/minkowski3-erosion.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/features/render-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105b.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105c.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1105d.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1165.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1215c.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1223.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue1803.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue3158.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue835.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue911.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/issues/issue913.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/3D/misc/view-options-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/let-module-tests.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/2D/features/highlight-modifier-2d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/difference-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/highlight-modifier.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/highlight-modifier2.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/minkowski3-erosion.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/render-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105b.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1165.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1215c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1223.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1803.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue3158.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue835.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue911.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue913.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/misc/view-options-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/internal-cavity-polyhedron.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/internal-cavity.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/let-module-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate_extrude-hole.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate-empty-bbox.scad
 )
 
 #

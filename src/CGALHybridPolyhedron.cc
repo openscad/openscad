@@ -321,7 +321,6 @@ bool CGALHybridPolyhedron::polyBinOp(
 	auto previousOtherData = other.data;
 
 	auto success = false;
-	CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 	try {
 		auto &lhs = convertToMesh();
 		auto &rhs = other.convertToMesh();

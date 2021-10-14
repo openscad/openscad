@@ -61,7 +61,6 @@ namespace CGALUtils {
 			}
 		};
 
-		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			Geometry::Geometries children;
 			children.insert(children.end(), chbegin, chend);
@@ -123,7 +122,6 @@ namespace CGALUtils {
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
 		bool foundFirst = false;
 
-		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			for(const auto &item : children) {
 				auto chN = item.second ? CGALUtils::createHybridPolyhedronFromGeometry(*item.second) : nullptr;

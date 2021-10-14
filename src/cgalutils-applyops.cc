@@ -51,7 +51,7 @@ namespace CGALUtils {
 #endif // FAST_CSG_AVAILABLE
 
 		CGAL_Nef_polyhedron *N = nullptr;
-		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
+		// CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
 		bool foundFirst = false;
@@ -131,7 +131,7 @@ namespace CGALUtils {
 		};
 		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
-		CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
+		// CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			// sort children by fewest faces
 			for (auto it = chbegin; it != chend; ++it) {
@@ -439,7 +439,6 @@ namespace CGALUtils {
 			PRINTD("Minkowski: Falling back to Nef Minkowski");
 
 			auto N = shared_ptr<const Geometry>(applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
-			CGAL::set_error_behaviour(old_behaviour);
 			return N;
 		}
 	}
