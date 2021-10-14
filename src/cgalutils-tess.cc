@@ -3,8 +3,6 @@
 //#include "cgal.h"
 //#include "tess.h"
 
-#pragma push_macro("NDEBUG")
-#undef NDEBUG
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4,11,0)
   #include <CGAL/Triangulation_2_projection_traits_3.h>
@@ -12,7 +10,6 @@
   #include <CGAL/Triangulation_2_filtered_projection_traits_3.h>
 #endif
 #include <CGAL/Triangulation_face_base_with_info_2.h>
-#pragma pop_macro("NDEBUG")
 
 struct FaceInfo {
   int nesting_level;
