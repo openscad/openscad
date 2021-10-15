@@ -109,13 +109,13 @@
 
 #ifdef ENABLE_CGAL
 
+#include "cgal.h"
+#include "cgalutils.h"
 #include "CGALCache.h"
 #include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
 #include "CGALWorker.h"
-#include "cgalutils.h"
 
 #endif // ENABLE_CGAL
 

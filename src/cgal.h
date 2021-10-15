@@ -2,6 +2,22 @@
 
 #ifdef ENABLE_CGAL
 
+#if 0 // No extra setup needed if mimalloc is linked statically and built with MI_OVERRIDE.
+      // Keeping code as an example for now, in case some platforms need it.
+#ifdef USE_MIMALLOC
+  #include <mimalloc.h>
+  // If using CGAL_ALLOCATOR to override, then make sure to define it as the first thing
+  /****** NOTE: THIS MEANS cgal.h SHOULD ALWAYS COME BEFORE OTHER CGAL INCLUDES! ******/
+  #define CGAL_ALLOCATOR(t) mi_stl_allocator<t>
+
+  // gmp requires function signature with extra oldsize parameters for some reason.
+  inline void *gmp_realloc (void *ptr, size_t /*oldsize*/, size_t newsize) { return mi_realloc(ptr, newsize); }
+  inline void gmp_free (void *ptr, size_t /*oldsize*/) { mi_free(ptr); }
+  #include <gmp.h>
+  inline void init_mimalloc() { mp_set_memory_functions(mi_malloc, gmp_realloc, gmp_free); }
+#endif
+#endif
+
 #include "ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>

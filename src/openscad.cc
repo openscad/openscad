@@ -55,6 +55,13 @@
 #include <fstream>
 
 #ifdef ENABLE_CGAL
+
+#if 0 // Override of C++ new/delete apparently not needed if mimalloc is statically linked.
+  #ifdef USE_MIMALLOC
+  #include <mimalloc-new-delete.h>
+  #endif
+#endif
+
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #endif
@@ -939,6 +946,13 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst();
 
+#if 0 // Not necessary if mimalloc is linked statically and built with MI_OVERRIDE defined
+  #if defined(CGAL_ENABLED) && defined(USE_MIMALLOC)
+	// call init_mimalloc before any GMP variables are initialized. (defined in src/cgal.h)
+	init_mimalloc();
+  #endif
+#endif
+
 #ifdef OPENSCAD_QTGUI
 	{   // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
 		QCoreApplication app(argc, argv);
@@ -947,7 +961,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
