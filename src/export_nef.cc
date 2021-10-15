@@ -32,10 +32,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
-#pragma push_macro("NDEBUG")
-#undef NDEBUG
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h> // for dumping .nef3
-#pragma pop_macro("NDEBUG")
 
 void export_nefdbg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
