@@ -39,6 +39,7 @@ PACKAGES=(
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
+    "libz 1.2.11"
     "libzip 1.5.1"
     "libxml2 2.9.9"
     "fontconfig 2.13.1"
@@ -432,6 +433,25 @@ build_freetype()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/freetype.version
 }
  
+build_libz()
+{
+  version="$1"
+
+  echo "Building libz $version..."
+  cd "$BASEDIR"/src
+  rm -rf "zlib-$version"
+  if [ ! -f "zlib-$version.tar.gz" ]; then
+    curl -L "https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz" -o zlib-$version.tar.gz
+  fi
+  tar xzf "zlib-$version.tar.gz"
+  cd "zlib-$version"
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  make -j$NUMCPU
+  make install
+  install_name_tool -id @rpath/libz.1.dylib $DEPLOYDIR/lib/libz.1.dylib
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libz.version
+}
+
 build_libzip()
 {
   version="$1"

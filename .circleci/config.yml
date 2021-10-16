@@ -116,7 +116,7 @@ jobs:
               export COLUMNS=80 # needed by some macports tool
               MACPORTS_SHA512=396b457e698848a4e56902162dc8ceee6d71c4d520fa57d2387e9d52363390fffe33a2d0a6e690bd90e9131d036d06db642891beff23eb5956b501423cf8d29f
               MACPORTS_CACHE_SHA512=8236594a3c3d0f4c0b0c96f8a7ffbe0d5773a3b78fca148f40b2c2be2463eec41e0635ffe61337de154b2b5301c3f7d51edb654d37a3092cf2401d7ca94150e8
-              LIBRARIES_CACHE_SHA512=95192c6bc2cbbe8d4c1dfafdda4febd7bc9061c5722b21ab7ac5a32072746745f18e9553e26f9bf5141a71d32bddf0a2b7ea61bfd655827b9ed61f2cd4c29887
+              LIBRARIES_CACHE_SHA512=ae31c15ef7baf3c55fd83cd82280f32d745dbe4e838c41b2c84ca1630d3b74f271d3776ca2c8bf638df0680da67ebfd76d02eeda03f9b0b74d2fcf15891d9d03
               CI_BASEDIR=/Users/distiller/project
               export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
               MACPORTS=MacPorts-2.7.1
@@ -148,6 +148,10 @@ jobs:
                   fi    
                   echo "Start building dependencies: $(date)"
                   export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
+                  # Avoid pkg-config picking up MacPorts libs instead of system libs (e.g. zlib)
+                  export PKG_CONFIG_LIBDIR="/usr/lib/"
+                  # Avoid having cmake pick up MacPorts libraries
+                  export CMAKE_IGNORE_PATH=/opt/local/lib/
                   export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
                   export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
                   echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
@@ -162,6 +166,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh freetype
                   ./scripts/macosx-build-dependencies.sh ragel
                   ./scripts/macosx-build-dependencies.sh harfbuzz
+                  ./scripts/macosx-build-dependencies.sh libz
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
@@ -185,6 +190,8 @@ jobs:
                   echo "Start building OpenSCAD: $(date)"
                   export NUMCPU=4
                   time ./scripts/release-common.sh -snapshot
+                  echo "Sanity check of the app bundle..."
+                  ./scripts/macosx-sanity-check.py build/OpenSCAD.app/Contents/MacOS/OpenSCAD
                   cd build
                   OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
                   shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256

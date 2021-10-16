@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 
 #ifdef __APPLE__
+ #define GL_SILENCE_DEPRECATION
  #include <OpenGL/OpenGL.h>
 #else
  #include <GL/gl.h>
