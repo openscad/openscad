@@ -166,6 +166,7 @@ jobs:
                   ./scripts/macosx-build-dependencies.sh freetype
                   ./scripts/macosx-build-dependencies.sh ragel
                   ./scripts/macosx-build-dependencies.sh harfbuzz
+                  ./scripts/macosx-build-dependencies.sh libz
                   ./scripts/macosx-build-dependencies.sh libzip
                   ./scripts/macosx-build-dependencies.sh libxml2
                   ./scripts/macosx-build-dependencies.sh fontconfig || true
