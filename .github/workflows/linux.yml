@@ -33,7 +33,9 @@ jobs:
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }})
-        path: b/tests/Testing/Temporary/*_report.html
+        path: |
+          b/tests/Testing/Temporary/*_report.html
+          b/tests/Testing/Temporary/LastTest.log
     - name: Upload Code Coverage Report
       uses: actions/upload-artifact@v2
       with:
