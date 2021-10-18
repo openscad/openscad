@@ -51,7 +51,7 @@ PACKAGES=(
     "poppler 21.01.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
-    "cgal 5.2"
+    "cgal 5.3"
     "qt5 5.9.9"
     "opencsg 1.4.2"
     "qscintilla 2.11.6"
@@ -294,6 +294,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
+  patch -p1 < $OPENSCADDIR/patches/CGAL-remove-demo-install.patch
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
