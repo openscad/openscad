@@ -216,20 +216,19 @@ case $OS in
         # make main openscad.exe
         cd $DEPLOYDIR
         if [ $FAKEMAKE ]; then
-            echo "notexe. debugging build process" > OpenSCAD.exe
+            echo "notexe. debugging build process" > openscad.exe
         else
             make -j$NUMCPU
         fi
-        if [ ! -e OpenSCAD.exe ]; then
-            echo "can't find OpenSCAD.exe. build failed. stopping."
+        if [ ! -e openscad.exe ]; then
+            echo "can't find openscad.exe. build failed. stopping."
             exit
         fi
-        if [ ! -e winconsole/OpenSCAD.com ]; then
-            echo "can't find OpenSCAD.com. build failed. stopping."
+        if [ ! -e winconsole/openscad.com ]; then
+            echo "can't find openscad.com. build failed. stopping."
             exit
         fi
-	mv -v OpenSCAD.exe openscad.exe
-	mv -v winconsole/OpenSCAD.com openscad.com
+	mv -v winconsole/openscad.com openscad.com
         cd $OPENSCADDIR
     ;;
     LINUX)

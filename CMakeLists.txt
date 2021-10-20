@@ -81,6 +81,9 @@ if (MXECROSS)
   add_definitions(-DLIBXML_STATIC)
   add_definitions(-DSTATIC_QT_SVG_PLUGIN)
   list(APPEND PLATFORM_LIBS -lbcrypt)
+endif()
+
+if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
   set(CMAKE_WIN32_EXECUTABLE ON)
 endif()
@@ -762,8 +765,10 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
+find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
 add_custom_command(TARGET OpenSCAD POST_BUILD
-    COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
+    COMMAND "${SHELL_EXE}"
+    ARGS "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
 
 if(APPLE)
@@ -778,10 +783,6 @@ if(APPLE)
 elseif(MINGW)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
-  )
-elseif(UNIX)
-  set_target_properties(OpenSCAD PROPERTIES
-    OUTPUT_NAME openscad${SUFFIX_WITH_DASH}
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
@@ -802,7 +803,9 @@ if(MXECROSS)
 endif()
 
 if(NOT APPLE)
-install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME openscad${SUFFIX_WITH_DASH})
+set_target_properties(OpenSCAD PROPERTIES
+  OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
