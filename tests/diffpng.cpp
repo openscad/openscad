@@ -75,6 +75,9 @@ LodePNG Examples
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#include <iso646.h>
+#endif
 #ifndef M_PI
 #define M_PI 3.14159265f
 #endif
