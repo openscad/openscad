@@ -78,11 +78,15 @@ if ( QScintilla_FIND_VERSION AND QT5QSCINTILLA_VERSION_STRING )
   endif ()
 endif ()
 
-
-find_library ( QT5QSCINTILLA_LIBRARY
-  NAMES qt5scintilla2 qscintilla2-qt5 qscintilla2 qscintilla2_qt5
-  HINTS ${Qt5Widgets_LIBRARIES}
-)
+if (MSVC)
+  # Force loading of the vcpkg build of the Qt5 libraries, rather than whatever find_library() may find
+  set(QT5QSCINTILLA_LIBRARY "${VCPKG_LIBRARY_DIR}/qscintilla2_qt5${VCPKG_LIBRARY_SUFFIX}.lib")
+else (MSVC)
+  find_library ( QT5QSCINTILLA_LIBRARY
+    NAMES qt5scintilla2 qscintilla2-qt5 qscintilla2 qscintilla2_qt5
+    HINTS ${Qt5Widgets_LIBRARIES}
+  )
+endif (MSVC)
 
 set ( QT5QSCINTILLA_LIBRARIES ${QT5QSCINTILLA_LIBRARY} )
 

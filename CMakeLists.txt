@@ -115,13 +115,41 @@ set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
 
 find_package(PkgConfig)
 
+if (MSVC)
+  # Disable distracting warning messages
+  add_definitions(/wd4003)  # not enough arguments for function-like macro invocation
+  add_definitions(/wd4005)  # macro redefinition
+  add_definitions(/wd4244)  # conversion, possible loss of data
+  add_definitions(/wd4267)  # size mismatch
+  add_definitions(/wd4305)  # '': truncation from '' to ''
+
+  # pkg-config is required to build OpenSCAD, but is not installed by default as a part of Windows.
+  # Installation instructions are available online e.g. as a comment posted by "E_net4 the curator":
+  #   https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows
+  #
+  find_path(PKGCONFIG_EXE pkg-config.exe REQUIRED)
+  if (NOT PKGCONFIG_EXE)
+    message(FATAL_ERROR "pkg-config was not found; installation instructions may be found here: https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows")
+  else()
+    message(STATUS "Found pkg-config in '${PKGCONFIG_EXE}'")
+  endif()
+
+  # Save the CMAKE_MODULE_PATH, as it is overwritten by the FindCGAL.cmake script
+  if ("${CMAKE_MODULE_PATH}" STREQUAL "")
+    set(ORIGINAL_CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+  else()
+    set(ORIGINAL_CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
+  endif()
+  message(STATUS "saving CMAKE_MODULE_PATH '${ORIGINAL_CMAKE_MODULE_PATH}' before running FindCGAL")
+endif()
+
 macro(find_graphics)
   # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
   # Most tests will fail, but it can be used for testing/experiments
   if(NULLGL)
     add_definitions(-DNULLGL)
   else()
-    find_package(OpenCSG REQUIRED QUIET)
+    find_package(OpenCSG REQUIRED)
     list(APPEND COMMON_LIBRARIES ${OPENCSG_LIBRARY})
     message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
     add_definitions(-DENABLE_OPENCSG)
@@ -171,12 +199,23 @@ else()
 endif()
 # revert any changes to module path from CGAL_Macros.cmake
 if (CGAL_MODULE_PATH_IS_SET)
-  set(CMAKE_MODULE_PATH ORIGINAL_CMAKE_MODULE_PATH)
+  set(CMAKE_MODULE_PATH "${ORIGINAL_CMAKE_MODULE_PATH}")
 endif()
+message(STATUS "restored CMAKE_MODULE_PATH='${CMAKE_MODULE_PATH}', after FindCGAL")
 
 if (MSVC)
+  # Library files are in a well-known common triplet-specific folder, and may end in "d" for Debug builds.
+  if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    set(VCPKG_LIBRARY_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib)
+    set(VCPKG_LIBRARY_SUFFIX d)
+  else()
+    set(VCPKG_LIBRARY_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
+    set(VCPKG_LIBRARY_SUFFIX "")
+  endif()
+  set(VCPKG_INCLUDE_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+
   # Flex lexer options
-  set(WINCOMPAT "--wincompat --nounistd")
+  set(WINCOMPAT "--nounistd")
   add_definitions(-D_USE_MATH_DEFINES)
 
   message("COMMON_LIBRARIES ${COMMON_LIBRARIES}")
@@ -195,20 +234,25 @@ if (MSVC)
   include_directories(${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   list(APPEND COMMON_LIBRARIES harfbuzz::harfbuzz)
 
-  find_package(unofficial-fontconfig CONFIG REQUIRED)
-  list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
+  find_package(fontconfig REQUIRED)
+  list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/fontconfig.lib)
 
-  find_package(unofficial-glib CONFIG REQUIRED)
+  find_package(glib2 REQUIRED)
   include_directories(${GLIB2_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+  list(APPEND COMMON_LIBRARIES
+    ${VCPKG_LIBRARY_DIR}/gio-2.0.lib
+    ${VCPKG_LIBRARY_DIR}/glib-2.0.lib
+    ${VCPKG_LIBRARY_DIR}/gmodule-2.0.lib
+    ${VCPKG_LIBRARY_DIR}/gobject-2.0.lib
+    )
 
   find_package(double-conversion CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
 
-  find_library(GETTEXT_LIBRARY libintl)
-  list(APPEND COMMON_LIBRARIES ${GETTEXT_LIBRARY})
+  find_library(GETTEXT_LIBRARY intl)  
+  list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/intl.lib) # In MSVC, 'libintl' is called 'intl'
 
-  # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
+  set(OPENCSG_LIBRARY "${VCPKG_LIBRARY_DIR}/opencsg.lib")
   find_graphics()
 
   # needed for Qt5QScintilla, maybe others
@@ -795,6 +839,7 @@ endif()
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
 if(NOT HEADLESS)
+  message(STATUS "Using Qt5 from '${QT5QSCINTILLA_LIBRARY}'")
   target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
 endif()
 if(MXECROSS)
