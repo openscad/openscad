@@ -941,7 +941,11 @@ bool Yee_Compare_Engine(CompareArgs &args)
 
 	assert(args.MaxPyramidLevels >= 2); // ?? >2 or >=2
 
+#if defined(_MSC_VER)
+	float *F_freq = (float *)_alloca((args.MaxPyramidLevels - 2) * sizeof(float));
+#else
 	float F_freq[args.MaxPyramidLevels - 2];
+#endif
 	for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; ++i)
 	{
 		F_freq[i] = csf_max / csf(cpd[i], 100.0f);
@@ -956,7 +960,12 @@ bool Yee_Compare_Engine(CompareArgs &args)
 		for (unsigned x = 0u; x < w; ++x)
 		{
 			const unsigned index = x + y * w;
+#if defined(_MSC_VER)
+			float *contrast = (float *)_alloca((args.MaxPyramidLevels - 2) * sizeof(float));
+#else
 			float contrast[args.MaxPyramidLevels - 2];
+#endif
+
 			float sum_contrast = 0;
 			for (unsigned i = 0u; i < args.MaxPyramidLevels - 2; ++i)
 			{
@@ -979,7 +988,11 @@ bool Yee_Compare_Engine(CompareArgs &args)
 			{
 				sum_contrast = 1e-5f;
 			}
+#if defined(_MSC_VER)
+			float *F_mask = (float *)_alloca((args.MaxPyramidLevels - 2) * sizeof(float));
+#else
 			float F_mask[args.MaxPyramidLevels - 2];
+#endif
 			float adapt = la.Get_Value(x, y, adaptation_level) +
 						 lb.Get_Value(x, y, adaptation_level);
 			adapt *= 0.5f;
