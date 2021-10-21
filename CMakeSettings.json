@@ -9,7 +9,7 @@
 			],
 			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
 			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\installDebug\\${name}",
-			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
+			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\" -DVS_DEBUGGING=ON",
 			"buildCommandArgs": "-v",
 			"ctestCommandArgs": ""
 		},
@@ -35,7 +35,7 @@
 			],
 			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
 			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
+			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\" -DVS_DEBUGGING=ON",
 			"buildCommandArgs": "-v",
 			"ctestCommandArgs": ""
 		},

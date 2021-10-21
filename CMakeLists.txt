@@ -140,7 +140,16 @@ if (MSVC)
   else()
     set(ORIGINAL_CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
   endif()
-  message(STATUS "saving CMAKE_MODULE_PATH '${ORIGINAL_CMAKE_MODULE_PATH}' before running FindCGAL")
+  message(STATUS "Saving CMAKE_MODULE_PATH '${ORIGINAL_CMAKE_MODULE_PATH}' before running FindCGAL")
+
+  # Override the location of the installation to cause "Build|install <project-name>" to copy the resource
+  # files to the build\x64-Debug folder, which is required to debug the program from within the IDE.
+  # Comment out this line to produce a standard install
+  if(VS_DEBUGGING)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}")
+  endif()
+  message(STATUS "Running the Visual Studio 'Build|install ${PROJECT_NAME}' menu command will copy resources to '${CMAKE_INSTALL_PREFIX}'.
+    Change this behaviour by editing CMakeSettings.json and modifying the '-DVS_DEBUGGING=...' BOOLEAN setting in the \"cmakeCommandArgs\" field.")
 endif()
 
 macro(find_graphics)
