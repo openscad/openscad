@@ -76,8 +76,10 @@ remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
-if not os.path.exists(args.openscad):
-    failquit('cant find openscad executable named: ' + args.openscad)
+
+openscad_binary = os.environ["OPENSCAD_BINARY"] if (args.openscad is None) else args.openscad
+if not os.path.exists(openscad_binary):
+    failquit('cant find openscad executable named: ' + openscad_binary)
 
 outputdir = os.path.dirname(pngfile)
 inputpath, inputfilename = os.path.split(inputfile)
@@ -106,7 +108,7 @@ tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in re
 if export_format is not None:
     tmpargs.extend(['--export-format', export_format])
 
-export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
+export_cmd = [openscad_binary, inputfile, '-o', exportfile] + tmpargs
 print('Running OpenSCAD #1:', file=sys.stderr)
 print(' '.join(export_cmd), file=sys.stderr)
 sys.stderr.flush()
@@ -128,7 +130,7 @@ if args.format != 'csg':
     newscadfile += '.scad'
     createImport(exportfile, newscadfile)
 
-create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
+create_png_cmd = [openscad_binary, newscadfile, '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:', file=sys.stderr)
 print(' '.join(create_png_cmd), file=sys.stderr)
 fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))

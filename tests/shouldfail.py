@@ -46,13 +46,16 @@ remaining_args.extend(["--export-format=" + args.suffix, "-o", "-"])
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
-if not os.path.exists(args.openscad):
-    failquit('cant find openscad executable named: ' + args.openscad)
+
+
+openscad_binary = os.environ["OPENSCAD_BINARY"] if (args.openscad is None) else args.openscad
+if not os.path.exists(openscad_binary):
+    failquit('cant find openscad executable named: ' + openscad_binary)
 
 inputpath, inputfilename = os.path.split(inputfile)
 inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
-export_cmd = [args.openscad, inputfile] + remaining_args
+export_cmd = [openscad_binary, inputfile] + remaining_args
 print('Running OpenSCAD:')
 print(' '.join(export_cmd))
 sys.stdout.flush()
