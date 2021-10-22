@@ -33,7 +33,7 @@ def createImport(inputfile, scadfile):
 # Parse arguments
 #
 parser = argparse.ArgumentParser()
-parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
+parser.add_argument('--openscad', required=False, help='Specify OpenSCAD executable, default to env["OPENSCAD_BINARY"] if absent.')
 parser.add_argument('--retval', required=True, help='Expected return value')
 args,remaining_args = parser.parse_known_args()
 
@@ -42,13 +42,16 @@ remaining_args = remaining_args[1:]    # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
-if not os.path.exists(args.openscad):
-    failquit('cant find openscad executable named: ' + args.openscad)
+
+
+openscad_binary = os.environ["OPENSCAD_BINARY"] if (args.openscad is None) else args.openscad
+if not os.path.exists(openscad_binary):
+    failquit('cant find openscad executable named: ' + openscad_binary)
 
 inputpath, inputfilename = os.path.split(inputfile)
 inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
-export_cmd = [args.openscad, inputfile] + remaining_args
+export_cmd = [openscad_binary, inputfile] + remaining_args
 print('Running OpenSCAD:')
 print(' '.join(export_cmd))
 result = subprocess.call(export_cmd)
