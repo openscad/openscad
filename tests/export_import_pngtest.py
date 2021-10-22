@@ -31,14 +31,14 @@ import sys, os, re, subprocess, argparse
 from validatestl import validateSTL
 
 def failquit(*args):
-    if len(args)!=0: print(args)
-    print('export_import_pngtest args:',str(sys.argv))
-    print('exiting export_import_pngtest.py with failure')
+    if len(args)!=0: print(args, file=sys.stderr)
+    print('export_import_pngtest args:',str(sys.argv), file=sys.stderr)
+    print('exiting export_import_pngtest.py with failure', file=sys.stderr)
     sys.exit(1)
 
 def createImport(inputfile, scadfile):
         inputfilename = os.path.split(inputfile)[1]
-        print ('createImport: ' + inputfile + " " + scadfile)
+        print ('createImport: ' + inputfile + " " + scadfile, file=sys.stderr)
         outputdir = os.path.dirname(scadfile)
         try:
                 if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
@@ -54,7 +54,8 @@ def createImport(inputfile, scadfile):
 #
 formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
-parser.add_argument('--openscad', required=False, help='Specify OpenSCAD executable, default to env["OPENSCAD_BINARY"] if absent.')
+parser.add_argument('--openscad', required=False, default=os.environ["OPENSCAD_BINARY"],
+    help='Specify OpenSCAD executable, default to env["OPENSCAD_BINARY"] if absent.')
 parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify 3d export format')
 parser.add_argument('--require-manifold', dest='requiremanifold', action='store_true', help='Require STL output to be manifold')
 parser.set_defaults(requiremanifold=False)
@@ -77,9 +78,8 @@ remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
 
-openscad_binary = os.environ["OPENSCAD_BINARY"] if (args.openscad is None) else args.openscad
-if not os.path.exists(openscad_binary):
-    failquit('cant find openscad executable named: ' + openscad_binary)
+if not os.path.exists(args.openscad):
+    failquit('cant find openscad executable named: ' + args.openscad)
 
 outputdir = os.path.dirname(pngfile)
 inputpath, inputfilename = os.path.split(inputfile)
@@ -108,9 +108,10 @@ tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in re
 if export_format is not None:
     tmpargs.extend(['--export-format', export_format])
 
-export_cmd = [openscad_binary, inputfile, '-o', exportfile] + tmpargs
+export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
 print('Running OpenSCAD #1:', file=sys.stderr)
 print(' '.join(export_cmd), file=sys.stderr)
+sys.stderr.flush()
 result = subprocess.call(export_cmd)
 if result != 0:
     failquit('OpenSCAD #1 failed with return code ' + str(result))
@@ -129,12 +130,13 @@ if args.format != 'csg':
     newscadfile += '.scad'
     createImport(exportfile, newscadfile)
 
-create_png_cmd = [openscad_binary, newscadfile, '-o', pngfile] + remaining_args
+create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:', file=sys.stderr)
 print(' '.join(create_png_cmd), file=sys.stderr)
 fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
 fontenv = os.environ.copy()
 fontenv["OPENSCAD_FONT_PATH"] = fontdir
+sys.stderr.flush()
 result = subprocess.call(create_png_cmd, env = fontenv)
 if result != 0:
     failquit('OpenSCAD #2 failed with return code ' + str(result))

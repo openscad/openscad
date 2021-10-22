@@ -330,17 +330,18 @@ function(add_cmdline_test TESTCMD_BASENAME)
 endfunction()
 
 #
-# Usage add_failing_test(testbasename RETVAL <expected return value>
-#                        [EXE <executable>] [SCRIPT <script>] [ARGS <args to exe>]
-#                        FILES <test files>)
+# Usage add_failing_test(testbasename  RETVAL <expected return value>  SUFFIX <suffix>  FILES <test files>
+#                        [EXE <executable>] [SCRIPT <script>] [ARGS <args to exe>])
 #
 function(add_failing_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "" "RETVAL" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;SUFFIX" "FILES;ARGS" ${ARGN})
 
+  if ("${TESTCMD_SUFFIX}" STREQUAL "") # Suffix "off" counts as a falsy value, so check diectly for empty string.
+    message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
+  endif()
   if (NOT TESTCMD_EXE)
     set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
   endif()
-
   if (NOT TESTCMD_SCRIPT)
     set(TESTCMD_SCRIPT ${SHOULDFAIL_PY})
   endif()
@@ -372,7 +373,7 @@ function(add_failing_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -1062,11 +1063,11 @@ add_cmdline_test(dxfpngtest            SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} ARGS -
 add_cmdline_test(svgpngtest            SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
 
 # Failing tests
-add_failing_test(stlfailedtest         ARGS --retval=1 -o SUFFIX stl FILES ${TEST_SCAD_DIR}/misc/empty-union.scad)
-add_failing_test(offfailedtest         ARGS --retval=1 -o SUFFIX off FILES ${TEST_SCAD_DIR}/misc/empty-union.scad)
-add_failing_test(parsererrors          ARGS --retval=1 -o SUFFIX stl FILES ${FAILING_FILES})
+add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
+add_failing_test(offfailedtest         SUFFIX off  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
+add_failing_test(parsererrors          SUFFIX stl  FILES ${FAILING_FILES} ARGS --retval=1)
 # Hardwarning Test
-add_failing_test(hardwarnings          ARGS --retval=1 --hardwarnings --export-format echo -o - FILES ${TEST_SCAD_DIR}/misc/errors-warnings.scad)
+add_failing_test(hardwarnings          SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/errors-warnings.scad ARGS --retval=1 --hardwarnings)
 
 # Verify that test framework is paying attention to alpha channel, issue 1492
 #add_cmdline_test(openscad-colorscheme-cornfield-alphafail  ARGS --colorscheme=Cornfield SUFFIX png FILES ${EXAMPLES_DIR}/Basics/logo.scad)
