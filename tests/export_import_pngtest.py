@@ -76,7 +76,6 @@ remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
-
 if not os.path.exists(args.openscad):
     failquit('cant find openscad executable named: ' + args.openscad)
 

@@ -40,14 +40,12 @@ parser.add_argument('-s', dest="suffix", required=True, help='Suffix of openscad
 
 args,remaining_args = parser.parse_known_args()
 
-print("remaining args = ", remaining_args)
 inputfile = remaining_args[0]         # Can be .scad file or a file to be imported
 remaining_args = remaining_args[1:]    # Passed on to the OpenSCAD executable
 remaining_args.extend(["--export-format=" + args.suffix, "-o", "-"])
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
-
 if not os.path.exists(args.openscad):
     failquit('cant find openscad executable named: ' + args.openscad)
 
