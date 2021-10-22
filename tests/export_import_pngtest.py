@@ -41,13 +41,12 @@ def createImport(inputfile, scadfile):
         print ('createImport: ' + inputfile + " " + scadfile, file=sys.stderr)
         outputdir = os.path.dirname(scadfile)
         try:
-                if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
-                f = open(scadfile,'w')
-                f.write('import("'+inputfilename+'");'+os.linesep)
-                f.close()
+            if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
+            f = open(scadfile,'w')
+            f.write('import("'+inputfilename+'");'+os.linesep)
+            f.close()
         except:
-                failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
-
+            failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
 
 #
 # Parse arguments
@@ -77,7 +76,6 @@ remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
     failquit('cant find input file named: ' + inputfile)
-
 if not os.path.exists(args.openscad):
     failquit('cant find openscad executable named: ' + args.openscad)
 
@@ -86,18 +84,18 @@ inputpath, inputfilename = os.path.split(inputfile)
 inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
 if args.format == 'csg':
-        # Must export to same folder for include/use/import to work
-        exportfile = os.path.abspath(inputfile + '.' + args.format)
+    # Must export to same folder for include/use/import to work
+    exportfile = os.path.abspath(inputfile + '.' + args.format)
 else:
-        exportfile = os.path.join(outputdir, inputfilename)
-        if args.format != inputsuffix[1:]: exportfile += '.' + args.format
+    exportfile = os.path.join(outputdir, inputfilename)
+    if args.format != inputsuffix[1:]: exportfile += '.' + args.format
 
 # If we're not reading an .scad or .csg file, we need to import it.
 if inputsuffix != '.scad' and inputsuffix != '.csg':
-        # FIXME: Remove tempfile if created
-        tempfile = os.path.join(outputdir, inputfilename + '.scad')
-        createImport(inputfile, tempfile)
-        inputfile = tempfile
+    # FIXME: Remove tempfile if created
+    tempfile = os.path.join(outputdir, inputfilename + '.scad')
+    createImport(inputfile, tempfile)
+    inputfile = tempfile
 
 #
 # First run: Just export the given filetype
