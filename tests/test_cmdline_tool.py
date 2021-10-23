@@ -6,7 +6,7 @@
 #
 # If the -g option is given or the TEST_GENERATE environment variable is set to 1,
 # *-expected.<suffix> files will be generated instead of running the tests.
-# 
+#
 # Any generated output is written to the file `basename <argument`-actual.<suffix>
 # Any warning or errors are written to stderr.
 #
@@ -18,7 +18,7 @@
 # Returns 0 on passed test
 #         1 on error
 #         2 on invalid cmd-line options
-# 
+#
 # Author: Marius Kintel <marius@kintel.net>
 #
 
@@ -106,7 +106,7 @@ def normalize_string(s):
     This also normalizes away import paths from 'file = ' arguments."""
 
     s = re.sub(', timestamp = [0-9]+', '', s)
-    
+
     """ Don't replace floats after implementing double-conversion library
     def floatrep(match):
         value = float(match.groups()[0])
@@ -142,7 +142,7 @@ def compare_default(resultfilename):
     expected_text = get_normalized_text(expectedfilename)
     actual_text = get_normalized_text(resultfilename)
     if not expected_text == actual_text:
-        if resultfilename: 
+        if resultfilename:
             differences = difflib.unified_diff(
                 [line for line in expected_text.splitlines()],
                 [line for line in actual_text.splitlines()])
@@ -228,7 +228,7 @@ def post_process_3mf(filename):
 def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
     cmdname = os.path.split(options.cmd)[1]
 
-    if options.generate: 
+    if options.generate:
         if not os.path.exists(expecteddir):
             try:
                 os.makedirs(expecteddir)
@@ -257,7 +257,12 @@ def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
         args[0] = "-"
 
     try:
-        cmdline = [cmd] + args + ['-' if redirect_stdout else outputname]
+        is_openscad = os.path.split(cmd)[1].lower().startswith("openscad")
+        if(is_openscad):
+            outargs = ['-o', '-'] if (redirect_stdout) else ['-o', outputname]
+        else:
+            outargs = [outputname]
+        cmdline = [cmd] + args + outargs
         sys.stderr.flush()
         print('run_test() cmdline:', ' '.join(cmdline))
         fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
@@ -339,7 +344,7 @@ if __name__ == '__main__':
             options.testname = a
         elif o in ("-f", "--file"):
             options.filename = a
-        elif o in ("-c", "--compare-exec"): 
+        elif o in ("-c", "--compare-exec"):
             options.comparison_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
