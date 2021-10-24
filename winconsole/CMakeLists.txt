@@ -6,4 +6,6 @@ set(CMAKE_EXECUTABLE_SUFFIX_C .com)
 
 add_executable(winconsole winconsole.c)
 
-set_target_properties(winconsole PROPERTIES OUTPUT_NAME OpenSCAD)
+set_target_properties(winconsole PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+
+install(TARGETS winconsole RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
