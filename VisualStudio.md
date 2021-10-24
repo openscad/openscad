@@ -129,7 +129,7 @@ C:\> md openscad && cd openscad
 C:\openscad> git clone https://github.com/openscad/openscad.git
 ```
 
-Start Visual Studio and "open" the ```openscad``` folder. Visual Studio will detect that it is a CMake project and load and configure itself to build OpenSCAD using CMake. Wait until the Output Window shows that the initial configuration is complete; scroll to the bottom of the Output Window and it should look something like this:
+Start Visual Studio and open the ```openscad``` folder. Visual Studio will detect that it is a CMake project and load and configure itself to build OpenSCAD using CMake. Wait until the Output Window shows that the initial configuration is complete; scroll to the bottom of the Output Window and it should look something like this:
 
 ```
 [...]
@@ -149,7 +149,5 @@ but the location of the Build files will naturally depend on your particular set
 Run the ```Build|Build All``` menu command (or hit ```F6```) to build and link OpenSCAD. Once it has built, run the ```Build|install openscad``` menu command to install some extra resources to the output folder (such as the shaders).
 
 Assuming that you have got this far, you should finally now be able to run OpenSCAD under Visual Studio by hitting ```F5```. Have fun!
-
-TODO: Do we need to use any particular versions of packages, the forked version of MCAD?
 
 DP October 2021
