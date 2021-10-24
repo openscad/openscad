@@ -3,8 +3,7 @@
 # Export-import test
 #
 #
-# Usage: <script> <inputfile> --openscad=<executable-path> --format=<format> --require-manifold [<openscad args>] file.png
-#
+# Usage: <script> <inputfile> [--openscad=<executable-path>] --format=<format> --require-manifold [<openscad args>] file.png
 #
 # step 1. If the input file is _not_ an .scad file, create a temporary .scad file importing the input file.
 # step 2. Run OpenSCAD on the .scad file, output an export format (csg, stl, off, dxf, svg, amf, 3mf)
@@ -15,7 +14,7 @@
 #
 # All the optional openscad args are passed on to OpenSCAD both in step 2 and 4.
 # Exception: In any --render arguments are passed, the first pass (step 2) will always
-# be run with --render=cgal while the second pass (step 4) will use the passed --render 
+# be run with --render=cgal while the second pass (step 4) will use the passed --render
 # argument.
 #
 # This script should return 0 on success, not-0 on error.
@@ -32,30 +31,30 @@ import sys, os, re, subprocess, argparse
 from validatestl import validateSTL
 
 def failquit(*args):
-    if len(args)!=0: print(args)
-    print('export_import_pngtest args:',str(sys.argv))
-    print('exiting export_import_pngtest.py with failure')
+    if len(args)!=0: print(args, file=sys.stderr)
+    print('export_import_pngtest args:',str(sys.argv), file=sys.stderr)
+    print('exiting export_import_pngtest.py with failure', file=sys.stderr)
     sys.exit(1)
 
 def createImport(inputfile, scadfile):
         inputfilename = os.path.split(inputfile)[1]
-        print ('createImport: ' + inputfile + " " + scadfile)
+        print ('createImport: ' + inputfile + " " + scadfile, file=sys.stderr)
         outputdir = os.path.dirname(scadfile)
         try:
-                if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
-                f = open(scadfile,'w')
-                f.write('import("'+inputfilename+'");'+os.linesep)
-                f.close()
+            if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
+            f = open(scadfile,'w')
+            f.write('import("'+inputfilename+'");'+os.linesep)
+            f.close()
         except:
-                failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
-        
+            failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
 
 #
 # Parse arguments
 #
 formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
-parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
+parser.add_argument('--openscad', required=False, default=os.environ["OPENSCAD_BINARY"],
+    help='Specify OpenSCAD executable, default to env["OPENSCAD_BINARY"] if absent.')
 parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify 3d export format')
 parser.add_argument('--require-manifold', dest='requiremanifold', action='store_true', help='Require STL output to be manifold')
 parser.set_defaults(requiremanifold=False)
@@ -85,18 +84,18 @@ inputpath, inputfilename = os.path.split(inputfile)
 inputbasename,inputsuffix = os.path.splitext(inputfilename)
 
 if args.format == 'csg':
-        # Must export to same folder for include/use/import to work
-        exportfile = os.path.abspath(inputfile + '.' + args.format)
+    # Must export to same folder for include/use/import to work
+    exportfile = os.path.abspath(inputfile + '.' + args.format)
 else:
-        exportfile = os.path.join(outputdir, inputfilename)
-        if args.format != inputsuffix[1:]: exportfile += '.' + args.format
+    exportfile = os.path.join(outputdir, inputfilename)
+    if args.format != inputsuffix[1:]: exportfile += '.' + args.format
 
 # If we're not reading an .scad or .csg file, we need to import it.
 if inputsuffix != '.scad' and inputsuffix != '.csg':
-        # FIXME: Remove tempfile if created
-        tempfile = os.path.join(outputdir, inputfilename + '.scad')
-        createImport(inputfile, tempfile)
-        inputfile = tempfile
+    # FIXME: Remove tempfile if created
+    tempfile = os.path.join(outputdir, inputfilename + '.scad')
+    createImport(inputfile, tempfile)
+    inputfile = tempfile
 
 #
 # First run: Just export the given filetype
@@ -110,6 +109,7 @@ if export_format is not None:
 export_cmd = [args.openscad, inputfile, '-o', exportfile] + tmpargs
 print('Running OpenSCAD #1:', file=sys.stderr)
 print(' '.join(export_cmd), file=sys.stderr)
+sys.stderr.flush()
 result = subprocess.call(export_cmd)
 if result != 0:
     failquit('OpenSCAD #1 failed with return code ' + str(result))
@@ -132,9 +132,10 @@ create_png_cmd = [args.openscad, newscadfile, '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:', file=sys.stderr)
 print(' '.join(create_png_cmd), file=sys.stderr)
 fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
-fontenv = os.environ.copy();
-fontenv["OPENSCAD_FONT_PATH"] = fontdir;
-result = subprocess.call(create_png_cmd, env = fontenv);
+fontenv = os.environ.copy()
+fontenv["OPENSCAD_FONT_PATH"] = fontdir
+sys.stderr.flush()
+result = subprocess.call(create_png_cmd, env = fontenv)
 if result != 0:
     failquit('OpenSCAD #2 failed with return code ' + str(result))
 

@@ -45,6 +45,11 @@ option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will br
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
 option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
+
+if(APPLE)
+  option(APPLE_UNIX "Build OpenSCAD in Unix mode in MaxOS X instead of an Apple Bundle" OFF)
+endif()
+
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
@@ -81,6 +86,9 @@ if (MXECROSS)
   add_definitions(-DLIBXML_STATIC)
   add_definitions(-DSTATIC_QT_SVG_PLUGIN)
   list(APPEND PLATFORM_LIBS -lbcrypt)
+endif()
+
+if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
   set(CMAKE_WIN32_EXECUTABLE ON)
 endif()
@@ -405,6 +413,9 @@ if(NOT HEADLESS)
   endif()
   if (APPLE AND EXISTS /usr/local/opt/qt@5)
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
+  endif()
+  if (APPLE AND EXISTS /opt/homebrew/opt/qt@5)
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
   endif()
 
   set(CMAKE_AUTOMOC ON)
@@ -815,26 +826,32 @@ if(ENABLE_SPNAV)
 endif()
 
 add_executable(OpenSCAD ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
+find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
 add_custom_command(TARGET OpenSCAD POST_BUILD
-    COMMAND "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
+    COMMAND "${SHELL_EXE}"
+    ARGS "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
 
-if(APPLE)
+if(APPLE AND NOT APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_ICON_FILE ${MACOSX_BUNDLE_ICON_FILE}
-    MACOSX_BUNDLE_BUNDLE_VERSION 2017.03
-    MACOSX_BUNDLE_SHORT_VERSION_STRING 2017.03
+    MACOSX_BUNDLE_BUNDLE_VERSION ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
     RESOURCE "${RESOURCE_FILES}"
   )
+  set(BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/OpenSCAD.app/Contents/Resources)
+  file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/libraries DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/locale DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 elseif(MINGW)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
-  )
-elseif(UNIX)
-  set_target_properties(OpenSCAD PROPERTIES
-    OUTPUT_NAME openscad${SUFFIX_WITH_DASH}
   )
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
@@ -855,8 +872,9 @@ if(MXECROSS)
   target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
 endif()
 
-if(NOT APPLE)
-install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME openscad${SUFFIX_WITH_DASH})
+if(NOT APPLE OR APPLE_UNIX)
+set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
 install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
