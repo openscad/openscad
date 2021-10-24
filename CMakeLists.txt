@@ -146,7 +146,7 @@ if (MSVC)
   # files to the build\x64-Debug folder, which is required to debug the program from within the IDE.
   # Comment out this line to produce a standard install
   if(VS_DEBUGGING)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/..")
   endif()
   message(STATUS "Running the Visual Studio 'Build|install ${PROJECT_NAME}' menu command will copy resources to '${CMAKE_INSTALL_PREFIX}'.
     Change this behaviour by editing CMakeSettings.json and modifying the '-DVS_DEBUGGING=...' BOOLEAN setting in the \"cmakeCommandArgs\" field.")
