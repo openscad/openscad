@@ -93,7 +93,7 @@ def read_gitinfo():
 
 def read_sysinfo(filename):
     data = tryread(filename)
-    if not data: 
+    if not data:
         sinfo = platform.sys.platform
         sinfo += '\nsystem cannot create offscreen GL framebuffer object'
         sinfo += '\nsystem cannot create GL based images'
@@ -344,7 +344,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
     templates = Templates()
     for test in report_tests:
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf'):
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off'):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
