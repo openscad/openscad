@@ -134,6 +134,7 @@ bool fileEnded=false;
 %nonassoc TOK_ELSE
 
 %type <expr> expr
+%type <inst> targeted_module
 %type <expr> call
 %type <expr> logic_or
 %type <expr> logic_and
@@ -357,6 +358,7 @@ expr
             }
         ;
 
+
 logic_or
         : logic_and
         | logic_or OR logic_and
@@ -467,9 +469,9 @@ exponent
 
 call
         : primary
-        | call '(' arguments ')'
+        | call '(' arguments ')' targeted_module
             {
-              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$), shared_ptr<ModuleInstantiation>($5));
               delete $3;
             }
         | call '[' expr ']'
@@ -482,6 +484,17 @@ call
               free($3);
             }
 		;
+
+targeted_module
+        :
+            {
+              $$ = nullptr;
+            }
+        | '@' module_instantiation
+            {
+              $$ = $2;
+            }
+        ;
 
 primary
         : TOK_TRUE

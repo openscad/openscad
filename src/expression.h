@@ -111,7 +111,7 @@ public:
 	bool isString() const { return !!toString(); }
 	const std::string* toString() const { return boost::get<std::string>(&value); }
 	bool isUndefined() const { return !!boost::get<boost::none_t>(&value); }
-	
+
 	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
 	bool isLiteral() const override { return true;}
@@ -175,7 +175,7 @@ private:
 class FunctionCall : public Expression
 {
 public:
-	FunctionCall(Expression *expr, const AssignmentList &arglist, const Location &loc);
+	FunctionCall(Expression *expr, const AssignmentList &arglist, const Location &loc, shared_ptr<ModuleInstantiation> targetedModule = nullptr);
 	boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<const Context>& context) const;
 	Value evaluate(const std::shared_ptr<const Context>& context) const override;
 	void print(std::ostream &stream, const std::string &indent) const override;
@@ -186,6 +186,7 @@ public:
 	std::string name;
 	shared_ptr<Expression> expr;
 	AssignmentList arguments;
+	shared_ptr<ModuleInstantiation> targetedModule;
 };
 
 class FunctionDefinition : public Expression

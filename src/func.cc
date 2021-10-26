@@ -36,6 +36,12 @@
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
 #include "parameters.h"
+#include "GeometryEvaluator.h"
+#include "polyset.h"
+#include "Tree.h"
+#ifdef ENABLE_CGAL
+#include "CGAL_Nef_polyhedron.h"
+#endif
 
 #include <cmath>
 #include <sstream>
@@ -43,6 +49,7 @@
 #include <limits>
 #include <algorithm>
 #include <random>
+
 
 #include"boost-utils.h"
 /*Unicode support for string lengths and array accesses*/
@@ -130,7 +137,7 @@ Value builtin_rands(Arguments arguments, const Location& loc)
 			return Value::undefined.clone();
 		}
 	}
-	
+
 	double min = arguments[0]->toDouble();
 	if (std::isinf(min) || std::isnan(min)){
 		LOG(message_group::Warning,loc,arguments.documentRoot(),"rands() range min cannot be infinite");
@@ -435,7 +442,7 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
 		LOG(message_group::Warning,loc,arguments.documentRoot(),"lookup(%1$s, ...) first argument is not a number",arguments[0]->toEchoString());
 		return Value::undefined.clone();
 	}
-	
+
 	double low_p, low_v, high_p, high_v;
 	const auto &vec = arguments[1]->toVector();
 
@@ -710,7 +717,7 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
 	} else {
 		d = arguments[0]->toDouble();
 	}
-	
+
 	int n = trunc(d);
 	int s = UserModule::stack_size();
 	if (n < 0) {
@@ -747,7 +754,7 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 	if (!check_arguments("cross", arguments, loc, { Value::Type::VECTOR, Value::Type::VECTOR })) {
 		return Value::undefined.clone();
 	}
-	
+
 	const auto &v0 = arguments[0]->toVector();
 	const auto &v1 = arguments[1]->toVector();
 	if ((v0.size() == 2) && (v1.size() == 2)) {
@@ -774,11 +781,11 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 			return Value::undefined.clone();
 		}
 	}
-	
+
 	double x = v0[1].toDouble() * v1[2].toDouble() - v0[2].toDouble() * v1[1].toDouble();
 	double y = v0[2].toDouble() * v1[0].toDouble() - v0[0].toDouble() * v1[2].toDouble();
 	double z = v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble();
-	
+
 	return VectorType(arguments.session(), x, y, z);
 }
 
@@ -930,6 +937,149 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
         return Value::undefined.clone();
     }
     return Value(arguments[0]->isDefinedAs(Value::Type::OBJECT));
+}
+
+#ifdef ENABLE_CGAL
+
+static void get_mesh_data(const CGAL_Nef_polyhedron &root_N, EvaluationSession* session, VectorType& vertices_out, VectorType& indices_out)
+{
+	if (!root_N.p3->is_simple()) {
+		LOG(message_group::Warning,Location::NONE,"","Acquiring mesh data failed, the object isn't a valid 2-manifold.");
+		return;
+	}
+	try {
+		CGAL_Polyhedron P;
+		root_N.p3->convert_to_polyhedron(P);
+
+		typedef CGAL_Polyhedron::Point_iterator PCI;
+		typedef CGAL_Polyhedron::Facet_iterator FCI;
+		typedef CGAL_Polyhedron::Halfedge_around_facet_circulator HFCC;
+
+		for (PCI pi = P.points_begin(); pi != P.points_end(); ++pi) {
+			VectorType pc(session,
+										CGAL::to_double(pi->x()),
+										CGAL::to_double(pi->y()),
+										CGAL::to_double(pi->z()));
+			vertices_out.emplace_back(std::move(pc));
+		}
+
+		for (  FCI i = P.facets_begin(); i != P.facets_end(); ++i) {
+        HFCC j = i->facet_begin();
+        CGAL_assertion( CGAL::circulator_size(j) >= 3);
+				VectorType facet(session);
+        do {
+						double idx = std::distance(P.vertices_begin(), j->vertex());
+						facet.emplace_back(idx);
+        } while ( ++j != i->facet_begin());
+        indices_out.emplace_back(std::move(facet));
+    }
+
+	} catch (CGAL::Assertion_exception& e) {
+		LOG(message_group::Error,Location::NONE,"","CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s",e.what());
+	}
+}
+#endif
+
+static void get_mesh_data(const shared_ptr<const Geometry> &geom, EvaluationSession* session, VectorType& points, VectorType& faces, VectorType& paths)
+{
+	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+		for(const auto &item : geomlist->getChildren()) {
+			get_mesh_data(item.second, session, points, faces,	paths);
+		}
+	}
+
+#ifdef ENABLE_CGAL
+
+	if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+		if (!N->isEmpty()) get_mesh_data(*N, session, points, faces);
+	} else
+
+#endif
+
+	if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+		for(const auto &p : ps->polygons)	{
+			VectorType polygon_indices(session);
+			for(const auto &v : p) {
+				VectorType vc(session, v.x(), v.y(), v.z());
+				polygon_indices.emplace_back((double)points.size());
+				points.emplace_back(std::move(vc));
+			}
+			faces.emplace_back(std::move(polygon_indices));
+		}
+	}
+	else if (const auto N = dynamic_pointer_cast<const Polygon2d>(geom)) {
+		for(const auto &o : N->outlines()) {
+
+			VectorType polygon_indices(session);
+			for(const auto &v : o.vertices) {
+				VectorType vc(session);
+				double x = v.x();
+				double y = v.y();
+				vc.emplace_back(x);
+				vc.emplace_back(y);
+				polygon_indices.emplace_back((double)points.size());
+				points.emplace_back(std::move(vc));
+			}
+			paths.emplace_back(std::move(polygon_indices));
+		}
+	} else {
+		assert(false && "Not implemented");
+	}
+}
+
+Value builtin_data_render(Arguments arguments, const Location& loc, AbstractNode* node = nullptr)
+{
+		if(!node)
+			return Value::undefined.clone();
+
+		Tree tree(node);
+		GeometryEvaluator geomevaluator(tree);
+		auto geom = shared_ptr<const Geometry>(geomevaluator.evaluateGeometry(*tree.root(), true));
+
+		if(!geom)
+			return Value::undefined.clone();
+
+		auto boundingBox = geom->getBoundingBox();
+
+		Value boudning_box_min = VectorType(arguments.session(),
+																				boundingBox.min().x(),
+																				boundingBox.min().y(),
+																				boundingBox.min().z());
+
+		Value boudning_box_max = VectorType(arguments.session(),
+																				boundingBox.max().x(),
+																				boundingBox.max().y(),
+																				boundingBox.max().z());
+
+		Value boudning_box_center = VectorType(	arguments.session(),
+																						boundingBox.center().x(),
+																						boundingBox.center().y(),
+																						boundingBox.center().z());
+
+		Value boudning_box_size = VectorType(	arguments.session(),
+																					boundingBox.max().x()-boundingBox.min().x(),
+																					boundingBox.max().y()-boundingBox.min().y(),
+																					boundingBox.max().z()-boundingBox.min().z());
+
+    ObjectType info(arguments.session());
+    info.set("min", std::move(boudning_box_min));
+    info.set("max", std::move(boudning_box_max));
+		info.set("center", std::move(boudning_box_center));
+		info.set("size", std::move(boudning_box_size));
+
+		VectorType points(arguments.session());
+		VectorType faces(arguments.session());
+		VectorType paths(arguments.session());
+
+		get_mesh_data(geom, arguments.session(), points, faces, paths);
+
+		info.set("points", std::move(points));
+		if(faces.size()>0)
+			info.set("faces", std::move(faces));
+		if(paths.size()>0)
+			info.set("paths", std::move(paths));
+
+		return std::move(info);
 }
 
 void register_builtin_functions()
@@ -1148,5 +1298,11 @@ void register_builtin_functions()
         &Feature::ExperimentalTextMetricsFunctions),
 				{
 					"is_object(arg) -> boolean",
+				});
+
+	Builtins::init("render", new BuiltinFunction(&builtin_data_render,
+				&Feature::ExperimentalDataRender),
+				{
+					"render() -> object",
 				});
 }
