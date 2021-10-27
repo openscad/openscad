@@ -37,6 +37,7 @@
 #include "FreetypeRenderer.h"
 #include "parameters.h"
 #include "GeometryEvaluator.h"
+#include "Reindexer.h"
 #include "polyset.h"
 #include "Tree.h"
 #ifdef ENABLE_CGAL
@@ -997,19 +998,24 @@ static void get_mesh_data(const shared_ptr<const Geometry> &geom, EvaluationSess
 #endif
 
 	if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+		Reindexer<Vector3d> reindexer;
 		for(const auto &p : ps->polygons)	{
 			VectorType polygon_indices(session);
 			for(const auto &v : p) {
-				VectorType vc(session, v.x(), v.y(), v.z());
-				polygon_indices.emplace_back((double)points.size());
-				points.emplace_back(std::move(vc));
+				int point_idx = reindexer.lookup(v);
+				if(point_idx == points.size()) {
+					VectorType vc(session, v.x(), v.y(), v.z());
+					polygon_indices.emplace_back((double)points.size());
+					points.emplace_back(std::move(vc));
+				} else {
+					polygon_indices.emplace_back((double)point_idx);
+				}
 			}
 			faces.emplace_back(std::move(polygon_indices));
 		}
 	}
 	else if (const auto N = dynamic_pointer_cast<const Polygon2d>(geom)) {
 		for(const auto &o : N->outlines()) {
-
 			VectorType polygon_indices(session);
 			for(const auto &v : o.vertices) {
 				VectorType vc(session);
