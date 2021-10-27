@@ -72,7 +72,7 @@ Renderer::Renderer() : colorscheme(nullptr)
 		int loglen;
 		char logbuffer[1000];
 		glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-		PRINTDB("OpenGL Program Compile Fragement Shader Error:\n%s", logbuffer);
+		PRINTDB("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
 		return;
 	}
 
