@@ -471,7 +471,11 @@ call
         : primary
         | call '(' arguments ')' targeted_module
             {
-              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$), shared_ptr<ModuleInstantiation>($5));
+              shared_ptr<ModuleInstantiation> ptr = nullptr;
+              if($5)
+                ptr = shared_ptr<ModuleInstantiation>($5);
+
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$), ptr);
               delete $3;
             }
         | call '[' expr ']'
@@ -487,13 +491,25 @@ call
 
 targeted_module
         :
+          {
+            $$ = nullptr;
+          }
+
+        | '{' child_statements '}'
+          {
+            $$ = nullptr;
+            if(!scope_stack.empty())
             {
-              $$ = nullptr;
+              $$ = new ModuleInstantiation("group", AssignmentList(), LOCD("modulecall", @$));
+              for(int i=0;i<scope_stack.top()->moduleInstantiations.size();i++)
+                $$->scope.addModuleInst(scope_stack.top()->moduleInstantiations[i]);
+              scope_stack.top()->moduleInstantiations.clear();
             }
-        | '@' module_instantiation
-            {
-              $$ = $2;
-            }
+          }
+        | single_module_instantiation
+          {
+            $$ = $1;
+          }
         ;
 
 primary
