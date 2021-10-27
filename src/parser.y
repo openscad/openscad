@@ -494,7 +494,6 @@ targeted_module
           {
             $$ = nullptr;
           }
-
         | '{' child_statements '}'
           {
             $$ = nullptr;

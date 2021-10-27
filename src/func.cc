@@ -1047,31 +1047,31 @@ Value builtin_data_render(Arguments arguments, const Location& loc, AbstractNode
 
 		auto boundingBox = geom->getBoundingBox();
 
-		Value boudning_box_min = VectorType(arguments.session(),
+		Value bounding_box_min = VectorType(arguments.session(),
 																				boundingBox.min().x(),
 																				boundingBox.min().y(),
 																				boundingBox.min().z());
 
-		Value boudning_box_max = VectorType(arguments.session(),
+		Value bounding_box_max = VectorType(arguments.session(),
 																				boundingBox.max().x(),
 																				boundingBox.max().y(),
 																				boundingBox.max().z());
 
-		Value boudning_box_center = VectorType(	arguments.session(),
+		Value bounding_box_center = VectorType(	arguments.session(),
 																						boundingBox.center().x(),
 																						boundingBox.center().y(),
 																						boundingBox.center().z());
 
-		Value boudning_box_size = VectorType(	arguments.session(),
+		Value bounding_box_size = VectorType(	arguments.session(),
 																					boundingBox.max().x()-boundingBox.min().x(),
 																					boundingBox.max().y()-boundingBox.min().y(),
 																					boundingBox.max().z()-boundingBox.min().z());
 
     ObjectType info(arguments.session());
-    info.set("min", std::move(boudning_box_min));
-    info.set("max", std::move(boudning_box_max));
-		info.set("center", std::move(boudning_box_center));
-		info.set("size", std::move(boudning_box_size));
+    info.set("min", std::move(bounding_box_min));
+    info.set("max", std::move(bounding_box_max));
+		info.set("center", std::move(bounding_box_center));
+		info.set("size", std::move(bounding_box_size));
 
 		VectorType points(arguments.session());
 		VectorType faces(arguments.session());
