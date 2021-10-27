@@ -500,9 +500,10 @@ targeted_module
             $$ = nullptr;
             if(!scope_stack.empty())
             {
-              $$ = new ModuleInstantiation("group", AssignmentList(), LOCD("modulecall", @$));
-              for(int i=0;i<scope_stack.top()->moduleInstantiations.size();i++)
-                $$->scope.addModuleInst(scope_stack.top()->moduleInstantiations[i]);
+              $$ = new ModuleInstantiation("union", AssignmentList(), LOCD("modulecall", @$));
+              for(const auto& moduleInstantiation :  scope_stack.top()->moduleInstantiations ) {
+                $$->scope.addModuleInst(moduleInstantiation);
+              }
               scope_stack.top()->moduleInstantiations.clear();
             }
           }
