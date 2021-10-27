@@ -94,7 +94,7 @@ This variable will be used by `CMake` when you open the `openscad` folder in `Vi
 
 ## Install Python
 
-OpenSCAD uses MCAD and building that requires that you have a copy of [Python](https://www.python.org/) available on the PATH. The version that comes with `vcpkg` appears to work, so you can add that folder (`C:\vcpkg\installed\x64-windows\tools\python3`) to your PATH, rather than go to the trouble of installing a separate standalone-copy of it. 
+OpenSCAD uses MCAD and building that requires that you have a copy of [Python](https://www.python.org/) available on the PATH. The version that comes with `vcpkg` appears to work, so you can add that folder (`C:\vcpkg\installed\x64-windows\tools\python3`) to your PATH, rather than go to the trouble of installing a separate standalone-copy of it. Note that the folder may not exist at this point, but it is safe to add it to the PATH because it will be created as part of the package installation, described below.
 
 ## Install Microsoft MPI
 
@@ -175,35 +175,16 @@ This will configure Visual Studio so that the build process can automatically lo
 Now it is time to use `vcpkg` to build all of the dependencies for OpenSCAD. This step is likely to take several hours, unless you already have most of the dependencies installed.
 
 ```
-boost
-cairo
-cgal
-qscintilla
-opencsg
-eigen3
-mpfr
-libxml2
-libzip
-glib
-
 vcpkg install boost cairo cgal qscintilla opencsg eigen3 mpfr libxml2 libzip glib
 ```
 
-While that is going on, you may find it saves a bit of time if you skip to the next section to install `flex` and `bison` and then return here.
-
 If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above. Especially the ones that talk about installing ```Microsoft MPI```, `pkg-config` or some of the optional modules (ATL, MFC etc) for Visual Studio.
 
-If that is the case, fix that problem and rerun the above command; `vcpkg` will quickly detect and skip any packages that have already been installed, and resume building the remainder.
+If that is the case, fix the problem(s) and rerun the above command; `vcpkg` will skip any packages that have already been installed, and resume building the remainder.
 
 ## Build OpenSCAD using Visual Studio
 
-Download the OpenSCAD source code from [Github](https://github.com/openscad) to a suitable folder, e.g.
-
-```
-C:\> git clone https://github.com/openscad/openscad.git
-```
-
-Start Visual Studio and open the `openscad` folder that was created by that command. Visual Studio will detect and load the CMakeLists.txt file and it will automatically configure itself to build OpenSCAD using CMake.
+Start Visual Studio and open the `openscad` folder that was created when you downloaded the source at the start. Visual Studio will detect and load the CMakeLists.txt file and it will automatically configure itself to build OpenSCAD using CMake.
 
 Wait until the Output Window shows that the initial configuration is complete; scroll to the bottom of the Output Window and verify that there are no errors. It should end with something like this:
 
@@ -225,8 +206,6 @@ Wait until the Output Window shows that the initial configuration is complete; s
 Run the ```Build|Build All``` menu command (or hit ```F6```) to build and link OpenSCAD.
 
 Once it has built, run the ```Build|install openscad``` menu command to install some extra resources (such as the shaders) to the output folder.
-
-## Run it!
 
 If all is well, you should finally now be able to run OpenSCAD under Visual Studio by hitting ```F5```.
 
