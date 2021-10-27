@@ -32,6 +32,7 @@ static std::string lookupResourcesPath()
 	    "../../..",       // Dev location
 	    "../../../..",    // Test location (cmake)
 	    "..",             // Test location
+	    RESOURCE_FOLDER("../share/openscad"), // Unix mode
 	    nullptr
 	};
 #else

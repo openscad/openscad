@@ -5,11 +5,8 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
 
-#pragma push_macro("NDEBUG")
-#undef NDEBUG
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#pragma pop_macro("NDEBUG")
 typedef CGAL::Epick K;
 typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;

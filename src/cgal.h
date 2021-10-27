@@ -2,13 +2,6 @@
 
 #ifdef ENABLE_CGAL
 
-// NDEBUG must be disabled when including CGAL headers, otherwise CGAL assertions
-// will not be thrown, causing OpenSCAD's CGAL error checking to fail.
-// To be on the safe side, this has to be done when including any CGAL header file.
-// FIXME: It might be possible to rewrite the error checking to get rid of this
-// requirement. kintel 20111206.
-#pragma push_macro("NDEBUG")
-#undef NDEBUG
 #include "ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
@@ -28,7 +21,6 @@
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
-#pragma pop_macro("NDEBUG")
 
 typedef CGAL::Gmpq NT2;
 typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;

@@ -148,7 +148,7 @@ private:
 	std::vector<T> data_;
 };
 
-// Storeage and access class for multiple AttributeData that make up one vertex.
+// Storage and access class for multiple AttributeData that make up one vertex.
 class VertexData
 {
 public:
