@@ -111,7 +111,7 @@ PolySet *straight_skeleton_roof(const Polygon2d &poly)
 					RAISE_ROOF_EXCEPTION("A non-simple face in straight skeleton, likely cause is cgal issue #5177");
 				}
 
-				// do convex partition if necesary
+				// do convex partition if necessary
 				std::vector<CGAL_PT::Polygon_2> facets;
 				CGAL::approx_convex_partition_2(face.vertices_begin(), face.vertices_end(),
 						std::back_inserter(facets));

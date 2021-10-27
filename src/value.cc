@@ -78,7 +78,7 @@ inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpo
 
   int cont = TRIM_TRAILINGZEROES_CONTINUE;
 
-  //we have exhaused all positions from end to start
+  //we have exhausted all positions from end to start
   if(currentpos <= buffer)
     return TRIM_TRAILINGZEROES_DONE;
 
