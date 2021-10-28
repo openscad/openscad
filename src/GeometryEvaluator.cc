@@ -285,9 +285,8 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 {
 	const std::string &key = this->tree.getIdString(node);
 
-	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-	if (N) {
-		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
+	if (CGALCache::acceptsGeometry(geom)) {
+		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, geom);
 	}
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
