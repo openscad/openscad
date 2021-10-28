@@ -51,7 +51,7 @@ PACKAGES=(
     "poppler 21.01.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
-    "cgal 5.2"
+    "cgal 5.3"
     "qt5 5.9.9"
     "opencsg 1.4.2"
     "qscintilla 2.11.6"

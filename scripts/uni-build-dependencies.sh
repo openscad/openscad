@@ -400,7 +400,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  ver5_2_x="git clone --depth 1 http://github.com/CGAL/cgal --branch 5.2.x-branch --single-branch CGAL-5.2.x"
+  ver5_3="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.3/CGAL-5.3-library.tar.xz --output CGAL-5.3.tar.xz"
   ver5_2="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.2/CGAL-5.2-library.tar.xz --output CGAL-5.2.tar.xz"
   ver5_1="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.1/CGAL-5.1-library.tar.xz --output CGAL-5.1.tar.xz"
   ver4_11="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.11/CGAL-4.11.tar.xz"
@@ -875,7 +875,7 @@ build_gmp 6.0.0
 build_mpfr 3.1.1
 build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 5.2
+build_cgal 5.3
 build_glew 1.9.0
 build_opencsg 1.4.2
 build_gettext 0.18.3.1
