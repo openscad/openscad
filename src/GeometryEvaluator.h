@@ -50,8 +50,14 @@ private:
 		ResultObject(shared_ptr<Geometry> &g) : is_const(false), pointer(g) {}
 		bool isConst() const { return is_const; }
 		shared_ptr<Geometry> ptr() { assert(!is_const); return pointer; }
-		shared_ptr<const Geometry> constptr() const { 
+		shared_ptr<const Geometry> constptr() const {
 			return is_const ? const_pointer : static_pointer_cast<const Geometry>(pointer);
+		}
+		shared_ptr<Geometry> asMutableGeometry() {
+			if (isConst())
+				return shared_ptr<Geometry>(constptr() ? constptr()->copy() : nullptr);
+			else
+				return ptr();
 		}
 	private:
 		bool is_const;
