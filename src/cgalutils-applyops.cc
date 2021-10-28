@@ -309,6 +309,8 @@ namespace CGALUtils {
 				std::vector<Hull_kernel::Point_3> points[2];
 				std::vector<Hull_kernel::Point_3> minkowski_points;
 
+				CGAL::Cartesian_converter<CGAL_Kernel3, Hull_kernel> conv;
+
 				for (size_t i = 0; i < P[0].size(); ++i) {
 					for (size_t j = 0; j < P[1].size(); ++j) {
 						t.start();
@@ -324,7 +326,7 @@ namespace CGALUtils {
 
 							for (CGAL_Polyhedron::Vertex_const_iterator pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
 								CGAL_Polyhedron::Point_3 const& p = pi->point();
-								points[k].push_back(Hull_kernel::Point_3(to_double(p[0]),to_double(p[1]),to_double(p[2])));
+								points[k].push_back(conv(p));
 							}
 						}
 
