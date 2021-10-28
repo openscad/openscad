@@ -400,8 +400,13 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver5_3="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.3/CGAL-5.3-library.tar.xz --output CGAL-5.3.tar.xz"
+  ver5_2="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.2/CGAL-5.2-library.tar.xz --output CGAL-5.2.tar.xz"
+  ver5_1="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.1/CGAL-5.1-library.tar.xz --output CGAL-5.1.tar.xz"
+  ver4_11="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.11/CGAL-4.11.tar.xz"
   ver4_8="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8/CGAL-4.8.tar.xz"
   ver4_7="curl -L --insecure -O https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.7/CGAL-4.7.tar.gz"
+  ver4_6="curl -L --insecure -O https://github.com/CGAL/cgal/archive/releases/CGAL-4.6.tar.gz"
   ver4_4="curl --insecure -O https://gforge.inria.fr/frs/download.php/file/33524/CGAL-4.4.tar.bz2"
   ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
@@ -422,6 +427,9 @@ build_cgal()
   if [ -e CGAL-$version.tar.xz ]; then
     download_cmd=vernull;
   fi
+  if [ -d CGAL-$version ]; then
+    download_cmd=vernull;
+  fi
 
   eval echo "$"$download_cmd
   `eval echo "$"$download_cmd`
@@ -437,8 +445,10 @@ build_cgal()
     suffix=xz
   fi
 
-  $zipper -f -d CGAL-$version.tar.$suffix;
-  tar xf CGAL-$version.tar
+  if [ ! -d CGAL-$version ]; then
+    $zipper -f -d CGAL-$version.tar.$suffix;
+    tar xf CGAL-$version.tar
+  fi
 
   cd CGAL-$version
 
@@ -802,7 +812,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal 4.4 use-sys-libs
+    build_cgal ${CGAL_VERSION:-5.2} use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
@@ -865,7 +875,7 @@ build_gmp 6.0.0
 build_mpfr 3.1.1
 build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.7
+build_cgal 5.3
 build_glew 1.9.0
 build_opencsg 1.4.2
 build_gettext 0.18.3.1
