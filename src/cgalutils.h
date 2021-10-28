@@ -37,7 +37,8 @@ namespace CGALUtils {
 	void copyPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 
-	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+	template <typename K>
+	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
