@@ -37,7 +37,6 @@
 #include "ext/lodepng/lodepng.h"
 
 #include <cstdint>
-#include <array>
 #include <sstream>
 #include <fstream>
 #include "boost-utils.h"
@@ -69,8 +68,8 @@ public:
     storage_type min_value() { return min_val; }   // *std::min_element(storage.begin(), storage.end());
 
 public:
-    unsigned int height;
-    unsigned int width;
+    unsigned int height;    // rows
+    unsigned int width;     // columns
     storage_type min_val;
     std::vector<storage_type> storage;
 
@@ -149,9 +148,10 @@ void SurfaceNode::convert_image(img_data_t &data, std::vector<uint8_t> &img, uns
 
 bool SurfaceNode::is_png(std::vector<uint8_t> &png) const
 {
-	return (png.size() >= 8 &&
-					std::memcmp(png.data(),
-											std::array<uint8_t, 8>({{0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}}).data(), 8) == 0);
+    const size_t pngHeaderLength = 8;
+    const uint8_t pngHeader[pngHeaderLength] = {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
+	return (png.size() >= pngHeaderLength &&
+			std::memcmp(png.data(), pngHeader, pngHeaderLength) == 0);
 }
 
 img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
@@ -350,6 +350,7 @@ const Geometry *SurfaceNode::createGeometry() const
     // the bottom of the shape, making it semi-solid (but usually co-planar with black)
 	if (columns > 1 && lines > 1) {
 		p->append_poly();
+        p->polygons.back().reserve( 2*(columns-1) + 2*(lines-1) );  // inelegant, could vertex count be argument to append_poly?  or separate call poly_reserve(x)?
 		for (int i = 0; i < columns-1; ++i)
 			p->insert_vertex(ox + i, oy + 0, min_val);
 		for (int i = 0; i < lines-1; ++i)
