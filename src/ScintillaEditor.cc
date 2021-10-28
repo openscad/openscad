@@ -23,7 +23,7 @@ namespace fs=boost::filesystem;
 
 const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 
-// In setCursorPosition, how many lines should be visible above and below the curser
+// In setCursorPosition, how many lines should be visible above and below the cursor
 const int setCursorPositionVisibleLines = 3;
 
 
