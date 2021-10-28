@@ -209,11 +209,12 @@ namespace /* anonymous */ {
 		}
 	};
 
-	// This code is from CGAL/demo/Polyhedron/Scene_nef_polyhedron_item.cpp
-	// quick hacks to convert polyhedra from exact to inexact and vice-versa
-	template <class Polyhedron_input, class Polyhedron_output>
-	struct Copy_polyhedron_to : public CGAL::Modifier_base<typename Polyhedron_output::HalfedgeDS>
+	template <class InputKernel, class OutputKernel>
+	struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron_3<OutputKernel>::HalfedgeDS>
 	{
+		typedef CGAL::Polyhedron_3<OutputKernel> Polyhedron_output;
+		typedef CGAL::Polyhedron_3<InputKernel> Polyhedron_input;
+
 		Copy_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
 
 		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds) override
@@ -223,19 +224,20 @@ namespace /* anonymous */ {
 			CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
 
 			typedef typename Polyhedron_input::Vertex_const_iterator Vertex_const_iterator;
-			typedef typename Polyhedron_input::Facet_const_iterator  Facet_const_iterator;
+			typedef typename Polyhedron_input::Facet_const_iterator	Facet_const_iterator;
 			typedef typename Polyhedron_input::Halfedge_around_facet_const_circulator HFCC;
 
 			builder.begin_surface(in_poly.size_of_vertices(),
 														in_poly.size_of_facets(),
 														in_poly.size_of_halfedges());
-			
+
+			auto converter = CGALUtils::getCartesianConverter<InputKernel, OutputKernel>();
 			for (Vertex_const_iterator
 						vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
 					vi != end ; ++vi) {
-				typename Polyhedron_output::Point_3 p(::CGAL::to_double(vi->point().x()),
-													  ::CGAL::to_double(vi->point().y()),
-													  ::CGAL::to_double(vi->point().z()));
+				typename Polyhedron_output::Point_3 p(converter(vi->point().x()),
+														converter(vi->point().y()),
+														converter(vi->point().z()));
 				builder.add_vertex(p);
 			}
 
@@ -266,15 +268,21 @@ namespace /* anonymous */ {
 
 namespace CGALUtils {
 
-	template <class Polyhedron_A, class Polyhedron_B>
-	void copyPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b)
+	template <class InputKernel, class OutputKernel>
+	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b)
 	{
-		Copy_polyhedron_to<Polyhedron_A, Polyhedron_B> modifier(poly_a);
+		// Copy is also used in "append" cases.
+		poly_b.reserve(
+			poly_b.size_of_vertices() + poly_a.size_of_vertices(),
+			poly_b.size_of_halfedges() + poly_a.size_of_halfedges(),
+			poly_b.size_of_facets() + poly_a.size_of_facets());
+
+		Copy_polyhedron_to<InputKernel, OutputKernel> modifier(poly_a);
 		poly_b.delegate(modifier);
 	}
 
-	template void copyPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL_Polyhedron &);
-	template void copyPolyhedron(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
+	template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick> &, CGAL_Polyhedron &);
+	template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
 
 	template <typename Polyhedron>
 	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation, bool use_grid)

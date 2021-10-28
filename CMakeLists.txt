@@ -633,6 +633,7 @@ set(CORE_SOURCES
 set(CGAL_SOURCES
   src/cgalutils.cc
   src/cgalutils-applyops.cc
+  src/cgalutils-kernel.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
