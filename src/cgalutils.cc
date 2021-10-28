@@ -237,13 +237,13 @@ namespace CGALUtils {
 	}
 
 
-	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
+	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const Geometry &geom)
 	{
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
-			return createNefPolyhedronFromPolySet(*ps);
+			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
 		}
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
-			return createNefPolyhedronFromPolygon2d(*poly2d);
+			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
 		}
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return nullptr;
@@ -385,6 +385,32 @@ namespace CGALUtils {
 #endif // debug
 
 		return err;
+	}
+	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+			return ps;
+		}
+		if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			auto ps = make_shared<PolySet>(3);
+			ps->setConvexity(N->getConvexity());
+			if (!N->isEmpty()) {
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");
+				}
+			}
+			return ps;
+		}
+		return nullptr;
+	}
+
+	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			return nef;
+		}
+		return geom ? shared_ptr<const CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromGeometry(*geom)) : nullptr;
 	}
 }; // namespace CGALUtils
 

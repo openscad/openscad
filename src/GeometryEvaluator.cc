@@ -50,7 +50,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 {
 	const std::string &key = this->tree.getIdString(node);
 	if (!GeometryCache::instance()->contains(key)) {
-		shared_ptr<const CGAL_Nef_polyhedron> N;
+		shared_ptr<const Geometry> N;
 		if (CGALCache::instance()->contains(key)) {
 			N = CGALCache::instance()->get(key);
 		}
@@ -63,20 +63,10 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->traverse(node);
 		}
 
-		if (!allownef) {
-			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-				PolySet *ps = new PolySet(3);
-				ps->setConvexity(N->getConvexity());
-				this->root.reset(ps);
-				if (!N->isEmpty()) {
-					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-					if (err) {
-						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");					}
-				}
-			}
 
+		if (!allownef) {
 			// We cannot render concave polygons, so tessellate any 3D PolySets
-			auto ps = dynamic_pointer_cast<const PolySet>(this->root);
+			auto ps = CGALUtils::getGeometryAsPolySet(this->root);
 			if (ps && !ps->isEmpty()) {
 				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
@@ -129,7 +119,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OpenSCADOperator::HULL) {
-		PolySet *ps = new PolySet(3, true);
+		PolySet *ps = new PolySet(3, /* convex */ true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
 			return ps;
@@ -1391,11 +1381,8 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
 	shared_ptr<const class Geometry> geom;
 	shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
 	if (newgeom) {
-		shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);
-		if (!Nptr) {
-			Nptr.reset(CGALUtils::createNefPolyhedronFromGeometry(*newgeom));
-		}
-		if (!Nptr->isEmpty()) {
+		auto Nptr = CGALUtils::getGeometryAsNefPolyhedron(newgeom);
+		if (Nptr && !Nptr->isEmpty()) {
 			Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
 			if (poly) {
 				poly->setConvexity(node.convexity);
@@ -1422,20 +1409,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNo
 		// Clipper doesn't handle meshes very well.
 		// It's better in V6 but not quite there. FIXME: stand-alone example.
 		// project chgeom -> polygon2d
-		shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
-		if (!chPS) {
-			shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (chN && !chN->isEmpty()) {
-				PolySet *ps = new PolySet(3);
-				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
-				if (err) {
-					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
-				}
-				else {
-					chPS.reset(ps);
-				}
-			}
-		}
+		auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
 		if (chPS) poly = PolysetUtils::project(*chPS);
 
 		if (poly) {
