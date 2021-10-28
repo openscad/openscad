@@ -152,6 +152,7 @@ void PolySet::append(const PolySet &ps)
 	if (!dirty && !this->bbox.isNull()) {
 		this->bbox.extend(ps.getBoundingBox());
 	}
+	if (convex) convex = unknown;
 }
 
 void PolySet::transform(const Transform3d &mat)
