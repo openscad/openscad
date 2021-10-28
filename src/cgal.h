@@ -32,7 +32,12 @@ typedef CGAL::Polygon_2<CGAL_ExactKernel2> CGAL_Poly2;
 typedef CGAL::Polygon_with_holes_2<CGAL_ExactKernel2> CGAL_Poly2h;
 
 typedef CGAL::Gmpq NT3;
+// #ifdef FAST_CSG_USE_SAME_KERNEL
+// typedef CGAL::Epeck CGAL_Kernel3;
+// #else
 typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
+// #endif
+
 //typedef CGAL::Exact_predicates_exact_constructions_kernel::FT NT3;
 //typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_Kernel3;
 typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
@@ -73,6 +78,8 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 #pragma error("Cannot use the same kernel for corefinement before CGAL 5.2.1 "
               "(see https://github.com/CGAL/cgal/issues/5322)")
 #endif
+
+#pragma message("[fast-csg] Using same kernel for CGAL_Kernel3 and CGAL_HybridKernel3.")
 
 typedef CGAL_Kernel3 CGAL_HybridKernel3;
 

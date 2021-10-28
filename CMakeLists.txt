@@ -457,6 +457,10 @@ if(DEFINED OPENSCAD_COMMIT)
   add_definitions(-DOPENSCAD_COMMIT=${OPENSCAD_COMMIT})
 endif()
 
+if(DEFINED FAST_CSG_USE_SAME_KERNEL)
+  add_definitions(-DFAST_CSG_USE_SAME_KERNEL=${FAST_CSG_USE_SAME_KERNEL})
+endif()
+
 #
 # Platform specific settings
 #
