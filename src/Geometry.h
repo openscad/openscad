@@ -29,6 +29,9 @@ public:
 	unsigned int getConvexity() const { return convexity; }
 	void setConvexity(int c) { this->convexity = c; }
 
+	virtual void transform(const Transform3d &mat) { assert(!"transform not implemented!"); }
+	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize) { assert(!"resize not implemented!"); };
+
 	virtual void accept(class GeometryVisitor &visitor) const = 0;
 protected:
 	int convexity;
