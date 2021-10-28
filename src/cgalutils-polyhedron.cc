@@ -4,6 +4,7 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "polyset-utils.h"
+#include "Reindexer.h"
 #include "grid.h"
 
 #include "cgal.h"
@@ -23,7 +24,10 @@ namespace /* anonymous */ {
 		typedef typename CGAL_Polybuilder::Point_3 CGALPoint;
 
 		const PolySet &ps;
-		CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
+		bool invert_orientation;
+		bool use_grid;
+		CGAL_Build_PolySet(const PolySet &ps, bool invert_orientation, bool use_grid)
+			: ps(ps), invert_orientation(invert_orientation), use_grid(use_grid) { }
 
 /*
 	Using Grid here is important for performance reasons. See following model.
@@ -39,26 +43,36 @@ namespace /* anonymous */ {
 	rotate([0,90,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
   }
 */
-#if 1 // Use Grid
 		void operator()(HDS& hds) override {
+			if (use_grid) {
 			CGAL_Polybuilder B(hds, true);
-		
+
 			Grid3d<int> grid(GRID_FINE);
 			std::vector<CGALPoint> vertices;
 			std::vector<std::vector<size_t>> indices;
 
 			// Align all vertices to grid and build vertex array in vertices
 			for(const auto &p : ps.polygons) {
-				indices.push_back(std::vector<size_t>());
+				indices.emplace_back(std::initializer_list<size_t>{});
 				indices.back().reserve(p.size());
-				for (auto v : boost::adaptors::reverse(p)) {
-					// align v to the grid; the CGALPoint will receive the aligned vertex
-					size_t idx = grid.align(v);
-					if (idx == vertices.size()) {
-						CGALPoint p(v[0], v[1], v[2]);
-						vertices.push_back(p);
+				if (invert_orientation) {
+					for (auto v : boost::adaptors::reverse(p)) {
+						// align v to the grid; the CGALPoint will receive the aligned vertex
+						size_t idx = grid.align(v);
+						if (idx == vertices.size()) {
+							vertices.emplace_back(v[0], v[1], v[2]);
+						}
+						indices.back().push_back(idx);
 					}
-					indices.back().push_back(idx);
+				} else {
+					for (auto v : p) {
+						// align v to the grid; the CGALPoint will receive the aligned vertex
+						size_t idx = grid.align(v);
+						if (idx == vertices.size()) {
+							vertices.emplace_back(v[0], v[1], v[2]);
+						}
+						indices.back().push_back(idx);
+					}
 				}
 			}
 
@@ -71,6 +85,11 @@ namespace /* anonymous */ {
 				B.add_vertex(p);
 			}
 			for(auto &pindices : indices) {
+				if (pindices.empty()) {
+					// Example: testdata/scad/3D/features/polyhedron-tests.scad + fast-csg
+					continue;
+				}
+
 #ifdef GEN_SURFACE_DEBUG
 				if (pidx++ > 0) printf(",");
 #endif
@@ -87,9 +106,16 @@ namespace /* anonymous */ {
 #ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
-				for (auto i : boost::adaptors::reverse(pindices)) {
-					if (fidx++ > 0) printf(",");
-					printf("%ld", i);
+				if (invert_orientation) {
+					for (auto i : boost::adaptors::reverse(pindices)) {
+						if (fidx++ > 0) printf(",");
+						printf("%ld", i);
+					}
+				} else {
+					for (auto i : pindices) {
+						if (fidx++ > 0) printf(",");
+						printf("%ld", i);
+					}
 				}
 				printf("]");
 #endif
@@ -107,10 +133,8 @@ namespace /* anonymous */ {
 			}
 			printf("]);\n");
 #endif
-		}
-#else // Don't use Grid
-		void operator()(HDS& hds)
-			{
+		} else {
+			// Don't use Grid
 				CGAL_Polybuilder B(hds, true);
 				Reindexer<Vector3d> vertices;
 				std::vector<size_t> indices(3);
@@ -126,12 +150,22 @@ namespace /* anonymous */ {
 					if (pidx++ > 0) printf(",");
 #endif
 					indices.clear();
-					for (const auto &v, boost::adaptors::reverse(p)) {
-						size_t s = vertices.size();
-						size_t idx = vertices.lookup(v);
-						// If we added a vertex, also add it to the CGAL builder
-						if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
-						indices.push_back(idx);
+					if (invert_orientation) {
+						for (const auto &v : boost::adaptors::reverse(p)) {
+							size_t s = vertices.size();
+							size_t idx = vertices.lookup(v);
+							// If we added a vertex, also add it to the CGAL builder
+							if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
+							indices.push_back(idx);
+						}
+					} else {
+						for (const auto &v : p) {
+							size_t s = vertices.size();
+							size_t idx = vertices.lookup(v);
+							// If we added a vertex, also add it to the CGAL builder
+							if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
+							indices.push_back(idx);
+						}
 					}
 					// We perform this test since there is a bug in CGAL's
 					// Polyhedron_incremental_builder_3::test_facet() which
@@ -172,7 +206,7 @@ namespace /* anonymous */ {
 				printf("]);\n");
 #endif
 			}
-#endif
+		}
 	};
 
 	// This code is from CGAL/demo/Polyhedron/Scene_nef_polyhedron_item.cpp
@@ -243,11 +277,11 @@ namespace CGALUtils {
 	template void copyPolyhedron(const CGAL_Polyhedron &, CGAL::Polyhedron_3<CGAL::Epick> &);
 
 	template <typename Polyhedron>
-	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p)
+	bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation, bool use_grid)
 	{
 		bool err = false;
 		try {
-			CGAL_Build_PolySet<Polyhedron> builder(ps);
+			CGAL_Build_PolySet<Polyhedron> builder(ps, invert_orientation, use_grid);
 			p.delegate(builder);
 		}
 		catch (const CGAL::Assertion_exception &e) {
@@ -257,8 +291,7 @@ namespace CGALUtils {
 		return err;
 	}
 
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
-	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL::Polyhedron_3<CGAL::Epick> &p);
+	template bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p, bool invert_orientation, bool use_grid);
 
 	template <typename Polyhedron>
 	bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)

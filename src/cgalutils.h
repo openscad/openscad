@@ -31,9 +31,9 @@ namespace CGALUtils {
 	Geometry const* applyMinkowski(const Geometry::Geometries &children);
 
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
-	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 	template <class Polyhedron_A, class Polyhedron_B> 
 	void copyPolyhedron(const Polyhedron_A &poly_a, Polyhedron_B &poly_b);
+	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation = true, bool use_grid = true);
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
