@@ -114,6 +114,19 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &po
 
 namespace CGALUtils {
 
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N)
+	{
+		CGAL::Iso_cuboid_3<K> result(0,0,0,0,0,0);
+		typename CGAL::Nef_polyhedron_3<K>::Vertex_const_iterator vi;
+		std::vector<typename CGAL::Point_3<K>> points;
+		// can be optimized by rewriting bounding_box to accept vertices
+		CGAL_forall_vertices(vi, N) points.push_back(vi->point());
+		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
+		return result;
+	}
+	template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
 	{
 		CGAL_Iso_cuboid_3 result(0,0,0,0,0,0);
