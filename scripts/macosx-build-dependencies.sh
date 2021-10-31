@@ -48,7 +48,6 @@ PACKAGES=(
     "lib3mf 1.8.1"
     "glib2 2.56.3"
     "boost 1.74.0"
-    "poppler 21.01.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.3"
@@ -673,37 +672,6 @@ build_lib3mf()
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/lib3mf.version
-}
-
-build_poppler()
-{
-  version=$1
-  POPPLER_DIR="poppler-${version}"
-  POPPLER_FILENAME="${POPPLER_DIR}.tar.xz"
-
-  echo "Building poppler" $version "..."
-
-  cd $BASEDIR/src
-  rm -rf "$POPPLER_DIR"
-  if [ ! -f "${POPPLER_FILENAME}" ]; then
-    curl -LO https://poppler.freedesktop.org/"${POPPLER_FILENAME}"
-  fi
-  tar xzf "${POPPLER_FILENAME}"
-  cd "$POPPLER_DIR"
-  mkdir build
-  cd build
-  cmake .. \
-        -DCMAKE_INSTALL_PREFIX="$DEPLOYDIR" \
-        -DCMAKE_OSX_ARCHITECTURES="x86_64" \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" \
-        -DBUILD_GTK_TESTS=OFF -DBUILD_QT5_TESTS=OFF -DBUILD_QT6_TESTS=OFF \
-        -DBUILD_CPP_TESTS=OFF -DENABLE_GTK_DOC=OFF -DENABLE_QT5=OFF \
-        -DENABLE_QT6=OFF -DENABLE_LIBOPENJPEG=none -DENABLE_DCTDECODER=none \
-        -DENABLE_UTILS=OFF
-  make -j"$NUMCPU" install
-  otool -L $DEPLOYDIR/lib/"libpoppler.dylib"
-  install_name_tool -id @rpath/libpoppler.dylib $DEPLOYDIR/lib/"libpoppler.dylib"
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/poppler.version
 }
 
 build_pixman()
