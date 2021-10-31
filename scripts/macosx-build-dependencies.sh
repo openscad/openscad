@@ -54,7 +54,7 @@ PACKAGES=(
     "cgal 5.3"
     "qt5 5.15.2"
     "opencsg 1.4.2"
-    "qscintilla 2.11.6"
+    "qscintilla 2.13.1"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.21.3"
@@ -195,13 +195,13 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  QSCINTILLA_FILENAME="QScintilla-$version.tar.gz"
+  QSCINTILLA_FILENAME="QScintilla_src-$version.tar.gz"
   rm -rf "${QSCINTILLA_FILENAME}"
   if [ ! -f "${QSCINTILLA_FILENAME}" ]; then
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
-  cd QScintilla*/Qt4Qt5
+  cd QScintilla*/src
   #patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake qscintilla.pro
   make -j"$NUMCPU" install
