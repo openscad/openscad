@@ -253,6 +253,10 @@ set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL REQUIRED COMPONENTS Core)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 add_definitions(-DENABLE_CGAL)
+# The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
+# Enabling CGAL assertions is necessary for us to catch them before they cause a crash
+# on bad geometry input.
+add_definitions(-DCGAL_DEBUG)
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
   message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
