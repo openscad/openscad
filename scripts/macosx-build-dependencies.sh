@@ -31,11 +31,11 @@ OPTION_FORCE=0
 PACKAGES=(
     "double_conversion 3.1.5"
     "eigen 3.3.7"
-    "gmp 6.1.2"
+    "gmp 6.2.1"
     "mpfr 4.0.2"
     "glew 2.1.0"
     "gettext 0.21"
-    "libffi 3.2.1"
+    "libffi 3.4.2"
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
@@ -520,7 +520,7 @@ build_libffi()
   cd "$BASEDIR"/src
   rm -rf "libffi-$version"
   if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+    curl --insecure -LO "https://github.com/libffi/libffi/releases/download/v$version/libffi-$version.tar.gz"
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
