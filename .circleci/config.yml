@@ -111,6 +111,8 @@ jobs:
           no_output_timeout: 18000
           command: |
               system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
+              CI_BASEDIR="$(pwd)"
+              echo "PWD = $CI_BASEDIR"
               export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
               echo "PATH = $PATH"
               export COLUMNS=80 # needed by some macports tool
@@ -129,6 +131,7 @@ jobs:
               sudo mkdir -p /opt/local
               sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
               if [ -f /opt/local/bin/port ]; then
+                  echo "MacPorts found: $(port version)"
                   MACPORTS_CACHE_FILE_SHA512="$(shasum -a 512 /tmp/"$MACPORTS_CACHE" | cut -d ' ' -f 1)"
                   if [ "$MACPORTS_CACHE_FILE_SHA512" != "$MACPORTS_CACHE_SHA512" ]; then
                       echo "Failed to match sha512 for $MACPORTS_CACHE"

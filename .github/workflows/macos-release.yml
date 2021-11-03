@@ -18,46 +18,55 @@ jobs:
         submodules: 'recursive'
     - name: Setup MacPorts, Libraries & Build
       run: |
-        CI_BASEDIR="$(pwd)"
-        export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
-        export COLUMNS=80 # needed by some macports tool
-        export OPENSCAD_LIBRARIES=/Users/runner/work/openscad/libraries/install/
-        echo "PWD = $CI_BASEDIR"
-        echo "PATH = $PATH"
         system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
-        MACPORTS=MacPorts-2.6.4
-        MACPORTS_FILE="$MACPORTS".tar.gz
-        MACPORTS_CACHE=macports-gh.tar.gz
-        LIBRARIES_CACHE=libraries-gh.tar.gz
-        MACPORTS_SHA512=bc3b53de684eb1b5e493f5f6ff163ccd65930918292f19c593fd19eefea676a6f1832bd1563273034e37e7d7aca5153fcd3d56206d86374603d25becc9773e41
+        CI_BASEDIR="$(pwd)"
+        echo "PWD = $CI_BASEDIR"
+        export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+        echo "PATH = $PATH"
+        export COLUMNS=80 # needed by some macports tool
+        MACPORTS_SHA512=396b457e698848a4e56902162dc8ceee6d71c4d520fa57d2387e9d52363390fffe33a2d0a6e690bd90e9131d036d06db642891beff23eb5956b501423cf8d29f
         MACPORTS_CACHE_SHA512=a2e50ac2840ab579e7d76cc88fea54c834c1d35df28bd0b3113bd36bbd172530b709f299f9ad8ed13f351169399e602eb2a26a83fcea66e1bd59cf67e1b25c34
         LIBRARIES_CACHE_SHA512=3317f3ef7eacf01bbed7207a30497ba2f56115d5a393ffc11a13da2c3027e72e165aceb4a73314c49a405a0096edb6c77b1097ac18aa6bfe2743dba8ba3ff9cc
-        ( echo "Loading macports cache..." ; cd /tmp && wget -q https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" && ls -la "$MACPORTS_CACHE") || true
-        ( echo "Loading libraries cache..." ; cd /tmp && wget -q https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" && ls -la "$LIBRARIES_CACHE") || true
+        CI_BASEDIR=/Users/runner/work/openscad/openscad
+        export OPENSCAD_LIBRARIES=/Users/runner/work/openscad/libraries/install/
+        MACPORTS=MacPorts-2.7.1
+        MACPORTS_CACHE=macports-gh.tar.bz2
+        LIBRARIES_CACHE=libraries-gh.tar.bz2
         mkdir /tmp/out
+        mkdir -p "$OPENSCAD_LIBRARIES"
+        ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -S --insecure -O https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" ) || true
+        ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -S --insecure -O https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" ) || true
         sudo mv -iv /usr/local/Cellar /usr/local/.Cellar. || true
         sudo mkdir -p /opt/local
-        sudo tar -x -z -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
+        sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
         if [ -f /opt/local/bin/port ]; then
             echo "MacPorts found: $(port version)"
-            if [ "$(shasum -a 512 /tmp/$MACPORTS_CACHE | cut -d ' ' -f 1)" != "$MACPORTS_CACHE_SHA512" ]; then
+            MACPORTS_CACHE_FILE_SHA512="$(shasum -a 512 /tmp/"$MACPORTS_CACHE" | cut -d ' ' -f 1)"
+            if [ "$MACPORTS_CACHE_FILE_SHA512" != "$MACPORTS_CACHE_SHA512" ]; then
                 echo "Failed to match sha512 for $MACPORTS_CACHE"
+                echo "Expected: $MACPORTS_CACHE_SHA512"
+                echo "Actual:   $MACPORTS_CACHE_FILE_SHA512"
                 exit 1
             fi
-            mkdir -p "$OPENSCAD_LIBRARIES"
             if [ -f /tmp/"$LIBRARIES_CACHE" ]; then
-                tar -x -z -C "$OPENSCAD_LIBRARIES" -f /tmp/"$LIBRARIES_CACHE" || true
-                if [ "$(shasum -a 512 /tmp/$LIBRARIES_CACHE | cut -d ' ' -f 1)" != "$LIBRARIES_CACHE_SHA512" ]; then
+                tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/"$LIBRARIES_CACHE" || true
+                LIBRARIES_CACHE_FILE_SHA512="$(shasum -a 512 /tmp/"$LIBRARIES_CACHE" | cut -d ' ' -f 1)"
+                if [ "$LIBRARIES_CACHE_FILE_SHA512" != "$LIBRARIES_CACHE_SHA512" ]; then
                     echo "Failed to match sha512 for $LIBRARIES_CACHE"
+                    echo "Expected: $LIBRARIES_CACHE_SHA512"
+                    echo "Actual:   $LIBRARIES_CACHE_FILE_SHA512"
                     exit 1
                 fi
             fi
             echo "Start building dependencies: $(date)"
             export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
+            # Avoid pkg-config picking up MacPorts libs instead of system libs (e.g. zlib)
+            export PKG_CONFIG_LIBDIR="/usr/lib/"
+            # Avoid having cmake pick up MacPorts libraries
+            export CMAKE_IGNORE_PATH=/opt/local/lib/
             export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
             export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
             echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-            # Our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             ./scripts/macosx-build-dependencies.sh double_conversion
             ./scripts/macosx-build-dependencies.sh eigen
@@ -69,6 +78,7 @@ jobs:
             ./scripts/macosx-build-dependencies.sh freetype
             ./scripts/macosx-build-dependencies.sh ragel
             ./scripts/macosx-build-dependencies.sh harfbuzz
+            ./scripts/macosx-build-dependencies.sh libz
             ./scripts/macosx-build-dependencies.sh libzip
             ./scripts/macosx-build-dependencies.sh libxml2
             ./scripts/macosx-build-dependencies.sh fontconfig || true
@@ -85,13 +95,13 @@ jobs:
             ./scripts/macosx-build-dependencies.sh opencsg
             ./scripts/macosx-build-dependencies.sh qscintilla
             ./scripts/macosx-build-dependencies.sh -d sparkle
-            tar -c -z -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
+            tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
             shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
-            export GMP_DIR="$OPENSCAD_LIBRARIES"
-            export MPFR_DIR="$OPENSCAD_LIBRARIES"
             echo "Start building OpenSCAD: $(date)"
             export NUMCPU=4
             time ./scripts/release-common.sh
+            echo "Sanity check of the app bundle..."
+            ./scripts/macosx-sanity-check.py build/OpenSCAD.app/Contents/MacOS/OpenSCAD
             cd build
             OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
             shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
@@ -100,19 +110,24 @@ jobs:
             echo "Finished building OpenSCAD: $(date)"
         else
             echo "MacPorts not found, installing $MACPORTS"
-            wget https://distfiles.macports.org/MacPorts/"$MACPORTS_FILE"
-            if [ "$(shasum -a 512 "$MACPORTS_FILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
-                echo "Failed to match sha512 for $MACPORTS_FILE"
+            MACPORTSFILE="$MACPORTS".tar.bz2
+            curl -s -S --insecure -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
+            if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
+                echo "Failed to match sha512 for $MACPORTSFILE"
+                echo "Expected: $MACPORTS_SHA512"
+                echo "Actual:   $(shasum -a 512 "$MACPORTSFILE")"
                 exit 1
             fi
-            tar -x -z -f "$MACPORTS_FILE"
+            tar xjf "$MACPORTSFILE"
             cd "$MACPORTS"
             ./configure
             make
             sudo make install
-            sudo port -v selfupdate
-            sudo port install cmake curl pkgconfig autoconf automake libtool
-            tar -c -z -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
+            sudo port -d selfupdate
+            sudo port -N install cmake curl pkgconfig autoconf automake libtool python39
+            sudo port select --set python python39
+            sudo port select --set python3 python39
+            tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
             shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
         fi
     - name: Upload Artifacts
