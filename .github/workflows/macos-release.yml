@@ -25,7 +25,7 @@ jobs:
         echo "PATH = $PATH"
         export COLUMNS=80 # needed by some macports tool
         MACPORTS_SHA512=396b457e698848a4e56902162dc8ceee6d71c4d520fa57d2387e9d52363390fffe33a2d0a6e690bd90e9131d036d06db642891beff23eb5956b501423cf8d29f
-        MACPORTS_CACHE_SHA512=a2e50ac2840ab579e7d76cc88fea54c834c1d35df28bd0b3113bd36bbd172530b709f299f9ad8ed13f351169399e602eb2a26a83fcea66e1bd59cf67e1b25c34
+        MACPORTS_CACHE_SHA512=918a21e561a10484e0d68a612e4f74a8202de538ecc9cc2cb3b340a250fbf4de0715fb789622aec31105ff2aab25e44e7e78cda0f9520374714a991085da0687
         LIBRARIES_CACHE_SHA512=3317f3ef7eacf01bbed7207a30497ba2f56115d5a393ffc11a13da2c3027e72e165aceb4a73314c49a405a0096edb6c77b1097ac18aa6bfe2743dba8ba3ff9cc
         CI_BASEDIR=/Users/runner/work/openscad/openscad
         export OPENSCAD_LIBRARIES=/Users/runner/work/openscad/libraries/install/
