@@ -40,8 +40,6 @@ PACKAGES=(
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
-    "libz 1.2.11"
-    "libzip 1.5.1"
     "libxml2 2.9.9"
     "fontconfig 2.13.1"
     "hidapi 0.11.0"
@@ -427,44 +425,6 @@ build_freetype()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/freetype.version
 }
  
-build_libz()
-{
-  version="$1"
-
-  echo "Building libz $version..."
-  cd "$BASEDIR"/src
-  rm -rf "zlib-$version"
-  if [ ! -f "zlib-$version.tar.gz" ]; then
-    curl -L "https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz" -o zlib-$version.tar.gz
-  fi
-  tar xzf "zlib-$version.tar.gz"
-  cd "zlib-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libz.1.dylib $DEPLOYDIR/lib/libz.1.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libz.version
-}
-
-build_libzip()
-{
-  version="$1"
-
-  echo "Building libzip $version..."
-  cd "$BASEDIR"/src
-  rm -rf "libzip-$version"
-  if [ ! -f "libzip-$version.tar.gz" ]; then
-    curl -LO "https://libzip.org/download/libzip-$version.tar.gz"
-  fi
-  tar xzf "libzip-$version.tar.gz"
-  cd "libzip-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libzip.version
-}
-
 build_libxml2()
 {
   version="$1"
@@ -683,7 +643,8 @@ build_pixman()
   fi
   tar xzf "${PIXMAN_FILENAME}"
   cd "$PIXMAN_DIR"
-  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
+  ./configure --disable-libpng --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
   make -j"$NUMCPU" install
   otool -L $DEPLOYDIR/lib/"libpixman-1.dylib"
   install_name_tool -id @rpath/libpixman-1.dylib $DEPLOYDIR/lib/"libpixman-1.dylib"
