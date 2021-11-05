@@ -12,7 +12,8 @@ jobs:
   build:
     runs-on: macos-latest
     env:
-      OPENSCAD_LIBRARIES: /Users/runner/work/actions-test/libraries/install/
+      OPENSCAD_LIBRARIES: /Users/runner/work/openscad/libraries/install/
+      LIBRARIES_CACHE: libraries.tar.gz
     steps:
     - name: Checkout OpenSCAD
       uses: actions/checkout@v2
