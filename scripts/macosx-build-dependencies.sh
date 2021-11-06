@@ -40,6 +40,7 @@ PACKAGES=(
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
+    "libzip 1.5.1"
     "libxml2 2.9.9"
     "fontconfig 2.13.1"
     "hidapi 0.11.0"
@@ -425,6 +426,25 @@ build_freetype()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/freetype.version
 }
  
+build_libzip()
+{
+  version="$1"
+
+  echo "Building libzip $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libzip-$version"
+  if [ ! -f "libzip-$version.tar.gz" ]; then
+    curl -LO "https://libzip.org/download/libzip-$version.tar.gz"
+  fi
+  tar xzf "libzip-$version.tar.gz"
+  cd "libzip-$version"
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  make -j$NUMCPU
+  make install
+  install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libzip.version
+}
+
 build_libxml2()
 {
   version="$1"
