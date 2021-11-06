@@ -32,12 +32,11 @@ jobs:
         restore-keys: ${{ runner.os }}-libraries-
     - name: Build Dependencies
       run: |
-        echo "PWD = $CI_BASEDIR"
-        export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
-        echo "PATH = $PATH"
         export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
         export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
         export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
+        echo "PWD = $CI_BASEDIR"
+        echo "PATH = $PATH"
         echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
         # Pick up our own Qt
         export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
@@ -45,17 +44,20 @@ jobs:
         mkdir -p ${{ runner.temp }}/out
         tar cz -C "$OPENSCAD_LIBRARIES" -f ${{ runner.temp }}/out/"$LIBRARIES_CACHE" .
         shasum -a 512 ${{ runner.temp }}/out/"$LIBRARIES_CACHE" > ${{ runner.temp }}/out/"$LIBRARIES_CACHE".sha512
-#    - name: Build OpenSCAD
-#      run: |
-#        echo "Start building OpenSCAD: $(date)"
-#        export NUMCPU=4
-#        time ./scripts/release-common.sh
-#        cd build
-#        OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
-#        shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
-#        shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
-#        cp -v "$OPENSCAD_NAME"* ${{ runner.temp }}/out/
-#        echo "Finished building OpenSCAD: $(date)"
+    - name: Build OpenSCAD
+      run: |
+        echo "Start building OpenSCAD: $(date)"
+        export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
+        export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
+        export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
+        export NUMCPU=4
+        time ./scripts/release-common.sh
+        cd build
+        OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
+        shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
+        shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
+        cp -v "$OPENSCAD_NAME"* ${{ runner.temp }}/out/
+        echo "Finished building OpenSCAD: $(date)"
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
