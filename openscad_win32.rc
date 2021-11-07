@@ -1,6 +1,7 @@
 # if defined(UNDER_CE)
 #  include <winbase.h>
 # else
+#  define _AMD64_
 #  include <winver.h>
 # endif
 
