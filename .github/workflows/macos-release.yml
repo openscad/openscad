@@ -65,7 +65,6 @@ jobs:
         ./scripts/macosx-sanity-check.py ./build/OpenSCAD.app/Contents/MacOS/OpenSCAD
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
-      if: ${{ always() }}
       with:
         name: Build Artifacts
         path: ${{ runner.temp }}/out/
