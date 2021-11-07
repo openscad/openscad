@@ -41,6 +41,8 @@ jobs:
         # Pick up our own Qt
         export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
         ./scripts/macosx-build-dependencies.sh -d
+    - name: Package Dependencies as an artifact
+      run: |
         mkdir -p ${{ runner.temp }}/out
         tar cz -C "$OPENSCAD_LIBRARIES" -f ${{ runner.temp }}/out/"$LIBRARIES_CACHE" .
         shasum -a 512 ${{ runner.temp }}/out/"$LIBRARIES_CACHE" > ${{ runner.temp }}/out/"$LIBRARIES_CACHE".sha512
@@ -50,7 +52,7 @@ jobs:
         export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
         export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
         export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
-        export NUMCPU=4
+        export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         time ./scripts/release-common.sh
         cd build
         OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
