@@ -44,3 +44,4 @@ jobs:
           path: |
             build/tests/output/
             build/tests/Testing/Temporary/*_report.html
+            build/tests/Testing/Temporary/LastTest.log

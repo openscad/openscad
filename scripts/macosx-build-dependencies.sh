@@ -1,8 +1,9 @@
 #!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
-# The libraries will be build in 64-bit mode and backwards compatible with 10.8 "Mountain Lion".
-# 
+# The libraries will be build in 64-bit mode and backwards compatible
+# with 10.13 "High Sierra".
+#
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
@@ -24,18 +25,18 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.9
+MAC_OSX_VERSION_MIN=10.13
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 
 PACKAGES=(
     "double_conversion 3.1.5"
     "eigen 3.3.7"
-    "gmp 6.1.2"
+    "gmp 6.2.1"
     "mpfr 4.0.2"
     "glew 2.1.0"
     "gettext 0.21"
-    "libffi 3.2.1"
+    "libffi 3.4.2"
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
@@ -48,13 +49,12 @@ PACKAGES=(
     "lib3mf 1.8.1"
     "glib2 2.56.3"
     "boost 1.74.0"
-    "poppler 21.01.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
-    "cgal 5.2"
-    "qt5 5.9.9"
+    "cgal 5.3"
+    "qt5 5.15.2"
     "opencsg 1.4.2"
-    "qscintilla 2.11.6"
+    "qscintilla 2.13.1"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.21.3"
@@ -165,24 +165,17 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-    curl -LO http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
+  rm -rf qt-everywhere-src-$version
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  set +e
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  if [ $? != 0 ]; then
-    rm -f qt-everywhere-opensource-src-$version.tar.xz
-    curl -LO http://download.qt.io/archive/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
-  fi
-  set -e
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  cd qt-everywhere-opensource-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.9.7-macos.patch
+  tar xzf qt-everywhere-src-$version.tar.xz
+  cd qt-everywhere-src-$version
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp -no-qml-debug \
+		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
@@ -202,13 +195,13 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  QSCINTILLA_FILENAME="QScintilla-$version.tar.gz"
+  QSCINTILLA_FILENAME="QScintilla_src-$version.tar.gz"
   rm -rf "${QSCINTILLA_FILENAME}"
   if [ ! -f "${QSCINTILLA_FILENAME}" ]; then
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
-  cd QScintilla*/Qt4Qt5
+  cd QScintilla*/src
   #patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake qscintilla.pro
   make -j"$NUMCPU" install
@@ -294,6 +287,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
+  patch -p1 < $OPENSCADDIR/patches/CGAL-remove-demo-install.patch
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
@@ -519,7 +513,7 @@ build_libffi()
   cd "$BASEDIR"/src
   rm -rf "libffi-$version"
   if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+    curl --insecure -LO "https://github.com/libffi/libffi/releases/download/v$version/libffi-$version.tar.gz"
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
@@ -672,37 +666,6 @@ build_lib3mf()
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/lib3mf.version
-}
-
-build_poppler()
-{
-  version=$1
-  POPPLER_DIR="poppler-${version}"
-  POPPLER_FILENAME="${POPPLER_DIR}.tar.xz"
-
-  echo "Building poppler" $version "..."
-
-  cd $BASEDIR/src
-  rm -rf "$POPPLER_DIR"
-  if [ ! -f "${POPPLER_FILENAME}" ]; then
-    curl -LO https://poppler.freedesktop.org/"${POPPLER_FILENAME}"
-  fi
-  tar xzf "${POPPLER_FILENAME}"
-  cd "$POPPLER_DIR"
-  mkdir build
-  cd build
-  cmake .. \
-        -DCMAKE_INSTALL_PREFIX="$DEPLOYDIR" \
-        -DCMAKE_OSX_ARCHITECTURES="x86_64" \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" \
-        -DBUILD_GTK_TESTS=OFF -DBUILD_QT5_TESTS=OFF -DBUILD_QT6_TESTS=OFF \
-        -DBUILD_CPP_TESTS=OFF -DENABLE_GTK_DOC=OFF -DENABLE_QT5=OFF \
-        -DENABLE_QT6=OFF -DENABLE_LIBOPENJPEG=none -DENABLE_DCTDECODER=none \
-        -DENABLE_UTILS=OFF
-  make -j"$NUMCPU" install
-  otool -L $DEPLOYDIR/lib/"libpoppler.dylib"
-  install_name_tool -id @rpath/libpoppler.dylib $DEPLOYDIR/lib/"libpoppler.dylib"
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/poppler.version
 }
 
 build_pixman()

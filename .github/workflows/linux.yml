@@ -12,6 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-18.04, ubuntu-20.04 ]
+        include:
+          - os: ubuntu-18.04
+            distro: bionic
+          - os: ubuntu-20.04
+            distro: focal
 
     runs-on: ${{ matrix.os }}
 
@@ -23,7 +28,7 @@ jobs:
     - name: Submodules
       run: git submodule update --init --recursive
     - name: Install dependencies
-      run: ./scripts/travis-ci-before-install-linux.sh bionic
+      run: ./scripts/travis-ci-before-install-linux.sh ${{ matrix.distro }}
     - name: Dependency fixup
       run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
@@ -33,7 +38,9 @@ jobs:
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }})
-        path: b/tests/Testing/Temporary/*_report.html
+        path: |
+          b/tests/Testing/Temporary/*_report.html
+          b/tests/Testing/Temporary/LastTest.log
     - name: Upload Code Coverage Report
       uses: actions/upload-artifact@v2
       with:

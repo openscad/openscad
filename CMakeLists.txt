@@ -22,7 +22,7 @@ if(POLICY CMP0072)
   cmake_policy(SET CMP0072 NEW)
 endif()
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
 
 project(openscad)
 
@@ -166,7 +166,7 @@ macro(find_graphics)
   if(NULLGL)
     add_definitions(-DNULLGL)
   else()
-    find_package(OpenCSG REQUIRED)
+    find_package(OpenCSG REQUIRED QUIET)
     list(APPEND COMMON_LIBRARIES ${OPENCSG_LIBRARY})
     message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
     add_definitions(-DENABLE_OPENCSG)
@@ -195,30 +195,12 @@ macro(find_graphics)
   endif()
 endmacro(find_graphics)
 
-# NOTE FindCGAL.cmake resets the BOOST_* and Boost_* variables,
-#   because it looks for Boost itself, so it has to be called
-#   before we look for our own required boost libraries.
-set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-find_package(CGAL REQUIRED COMPONENTS Core)
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
-add_definitions(-DENABLE_CGAL)
-# The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
-# Enabling CGAL assertions is necessary for us to catch them before they cause a crash
-# on bad geometry input.
-add_definitions(-DCGAL_DEBUG)
-if(TARGET CGAL::CGAL)
-  list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
-  message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
-else()
-  list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
-  list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
-  list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
+if (NOT MSVC)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  if(NOT "$ENV{OPENSCAD_LIBRARIES}" STREQUAL "")
+    list(APPEND CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+  endif()
 endif()
-# revert any changes to module path from CGAL_Macros.cmake
-if (CGAL_MODULE_PATH_IS_SET)
-  set(CMAKE_MODULE_PATH "${ORIGINAL_CMAKE_MODULE_PATH}")
-endif()
-message(STATUS "restored CMAKE_MODULE_PATH='${CMAKE_MODULE_PATH}', after FindCGAL")
 
 if (MSVC)
   # Library files are in a well-known common triplet-specific folder, and may end in "d" for Debug builds.
@@ -270,16 +252,13 @@ if (MSVC)
   list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/intl.lib) # In MSVC, 'libintl' is called 'intl'
 
   set(OPENCSG_LIBRARY "${VCPKG_LIBRARY_DIR}/opencsg.lib")
+
+  # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
   find_graphics()
 
   # needed for Qt5QScintilla, maybe others
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 else()
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-  if(NOT "$ENV{OPENSCAD_LIBRARIES}" STREQUAL "")
-    list(APPEND CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
-  endif()
-
   find_package(Eigen3 QUIET)
   if (NOT Eigen3_FOUND)
     # Ubuntu Trusty Eigen package installs FindEigen3.cmake but assumes cmake-2.8, not cmake3
@@ -320,6 +299,32 @@ else()
 
   find_graphics()
 endif()
+
+# Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
+# Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
+set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
+find_package(CGAL REQUIRED COMPONENTS Core)
+message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+add_definitions(-DENABLE_CGAL)
+# The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
+# Enabling CGAL assertions is necessary for us to catch them before they cause a crash
+# on bad geometry input.
+add_definitions(-DCGAL_DEBUG)
+if(TARGET CGAL::CGAL)
+  list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
+  message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
+else()
+  list(APPEND COMMON_LIBRARIES ${CGAL_LIBRARY})
+  list(APPEND COMMON_LIBRARIES ${GMP_LIBRARIES})
+  list(APPEND COMMON_LIBRARIES ${MPFR_LIBRARIES})
+endif()
+# revert any changes to module path from CGAL_Macros.cmake; see note above
+# Commented out code should work in CGAL>= 5.4
+#if (CGAL_MODULE_PATH_IS_SET)
+#  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+#endif()
+set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "libzip: ${LIBZIP_VERSION}")

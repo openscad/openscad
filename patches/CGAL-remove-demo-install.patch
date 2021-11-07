@@ -1,0 +1,17 @@
+Common subdirectories: CGAL-5.3.orig/auxiliary and CGAL-5.3/auxiliary
+Common subdirectories: CGAL-5.3.orig/cmake and CGAL-5.3/cmake
+diff -u CGAL-5.3.orig/CMakeLists.txt CGAL-5.3/CMakeLists.txt
+--- CGAL-5.3.orig/CMakeLists.txt	2021-06-20 21:00:10.000000000 +0200
++++ CGAL-5.3/CMakeLists.txt	2021-07-24 19:27:55.091506592 +0200
+@@ -660,9 +660,6 @@
+ cache_get(CGAL_3RD_PARTY_LIBRARIES_DIRS)
+ 
+ install(DIRECTORY "${CGAL_GRAPHICSVIEW_PACKAGE_DIR}/include/CGAL/Qt/" DESTINATION "${CGAL_INSTALL_INC_DIR}/CGAL/Qt" COMPONENT CGAL_Qt5)
+-install(DIRECTORY "${CGAL_GRAPHICSVIEW_PACKAGE_DIR}/demo/resources/" DESTINATION "${CGAL_INSTALL_CMAKE_DIR}/demo/resources" COMPONENT CGAL_Qt5)
+-install(DIRECTORY "${CGAL_GRAPHICSVIEW_PACKAGE_DIR}/demo/icons/" DESTINATION "${CGAL_INSTALL_CMAKE_DIR}/demo/icons" COMPONENT CGAL_Qt5)
+-
+ 
+ #
+ # Variables used when WITH_{demos|examples|tests} are TRUE
+Common subdirectories: CGAL-5.3.orig/include and CGAL-5.3/include
+Common subdirectories: CGAL-5.3.orig/lib and CGAL-5.3/lib
