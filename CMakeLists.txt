@@ -128,8 +128,9 @@ if (MSVC)
   add_definitions(/wd4003)  # not enough arguments for function-like macro invocation
   add_definitions(/wd4005)  # macro redefinition
   add_definitions(/wd4244)  # conversion, possible loss of data
-  add_definitions(/wd4267)  # size mismatch
+  add_definitions(/wd4267)  # '': conversion from '' to '', possible loss of data
   add_definitions(/wd4305)  # '': truncation from '' to ''
+  add_definitions(/wd4996)  # '': This function or variable may be unsafe. Consider using [...]
 
   # pkg-config is required to build OpenSCAD, but is not installed by default as a part of Windows.
   # Installation instructions are available online e.g. as a comment posted by "E_net4 the curator":
@@ -195,12 +196,12 @@ macro(find_graphics)
   endif()
 endmacro(find_graphics)
 
-if (NOT MSVC)
+#if (NOT MSVC)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
   if(NOT "$ENV{OPENSCAD_LIBRARIES}" STREQUAL "")
     list(APPEND CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
   endif()
-endif()
+#endif()
 
 if (MSVC)
   # Library files are in a well-known common triplet-specific folder, and may end in "d" for Debug builds.
