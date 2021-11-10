@@ -36,6 +36,7 @@ protected:
 	BoundingBox bbox;
 	unsigned int flags;
 
+	friend class CSGProduct;
 	friend class CSGProducts;
 };
 
