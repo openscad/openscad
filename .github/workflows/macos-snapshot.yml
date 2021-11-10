@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-11
     env:
       OPENSCAD_LIBRARIES: /Users/runner/work/openscad/libraries/install/
       LIBRARIES_CACHE: libraries.tar.gz
