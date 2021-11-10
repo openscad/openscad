@@ -27,8 +27,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.OPENSCAD_LIBRARIES }}
-        key: ${{ runner.os }}-libraries-${{ hashFiles('./scripts/macosx-build-dependencies.sh', '.github/workflows/macos-release.yml') }}
-        restore-keys: ${{ runner.os }}-libraries-
+        key: ${{ runner.os }}-libraries2-${{ hashFiles('./scripts/macosx-build-dependencies.sh', '.github/workflows/macos-release.yml') }}
+        restore-keys: ${{ runner.os }}-libraries2-
     - name: Build Dependencies
       run: |
         export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
