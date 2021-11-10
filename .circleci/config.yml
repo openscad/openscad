@@ -103,7 +103,7 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: 12.3.0
+      xcode: 12.5.1
     steps:
       - checkout
       - run: git submodule update --init
@@ -118,8 +118,8 @@ jobs:
             brew install automake libtool cmake pkg-config
       - restore_cache:
           keys:
-            - macos-libraries-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
-            - macos-libraries-
+            - macos-libraries2-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+            - macos-libraries2-
       - run:
           name: Build Dependencies
           command: |
@@ -132,7 +132,7 @@ jobs:
             echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-            ./scripts/macosx-build-dependencies.sh -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 fontconfig hidapi libuuid lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
+            ./scripts/macosx-build-dependencies.sh -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
       - run:
           name: Package Dependencies as an artifact
           command: |
@@ -142,7 +142,7 @@ jobs:
             tar cz -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
             shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
       - save_cache:
-          key: macos-libraries-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+          key: macos-libraries2-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - /Users/distiller/libraries/install
       - run:
