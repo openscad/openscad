@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-11
     env:
       OPENSCAD_LIBRARIES: /Users/runner/work/openscad/libraries/install/
       LIBRARIES_CACHE: libraries.tar.gz
@@ -27,8 +27,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.OPENSCAD_LIBRARIES }}
-        key: ${{ runner.os }}-libraries-${{ hashFiles('./scripts/macosx-build-dependencies.sh', '.github/workflows/macos-release.yml') }}
-        restore-keys: ${{ runner.os }}-libraries-
+        key: ${{ runner.os }}-libraries-1-${{ hashFiles('./scripts/macosx-build-dependencies.sh', '.github/workflows/macos-release.yml') }}
+        restore-keys: ${{ runner.os }}-libraries-1-
     - name: Build Dependencies
       run: |
         export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"

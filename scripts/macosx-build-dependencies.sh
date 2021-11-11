@@ -43,9 +43,9 @@ PACKAGES=(
     "libz 1.2.11"
     "libzip 1.5.1"
     "libxml2 2.9.9"
+    "libuuid 1.6.2"
     "fontconfig 2.13.1"
     "hidapi 0.11.0"
-    "libuuid 1.6.2"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
     "boost 1.74.0"
@@ -487,6 +487,24 @@ build_libxml2()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libxml2.version
 }
 
+build_libuuid()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf uuid-$version
+  if [ ! -f uuid-$version.tar.gz ]; then
+    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
+  fi
+  tar xzf uuid-$version.tar.gz
+  cd uuid-$version
+  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
+  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+  make -j"$NUMCPU"
+  make install
+  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libuuid.version
+}
+
 build_fontconfig()
 {
   version=$1
@@ -633,24 +651,6 @@ build_hidapi()
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libhidapi.dylib $DEPLOYDIR/lib/libhidapi.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/hidapi.version
-}
-
-build_libuuid()
-{
-  version=$1
-  cd $BASEDIR/src
-  rm -rf uuid-$version
-  if [ ! -f uuid-$version.tar.gz ]; then
-    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
-  fi
-  tar xzf uuid-$version.tar.gz
-  cd uuid-$version
-  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
-  make -j"$NUMCPU"
-  make install
-  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libuuid.version
 }
 
 build_lib3mf()
