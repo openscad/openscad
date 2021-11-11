@@ -276,20 +276,20 @@ BoundingBox CSGProduct::getBoundingBox(bool throwntogether) const
 					this->intersections.cbegin()+1,
 					this->intersections.cend(),
 					this->intersections.front().leaf->bbox,
-					[throwntogether](const BoundingBox&a, const CSGChainObject& b) { return a.merged(b.leaf->bbox); }
+					[](const BoundingBox&a, const CSGChainObject& b) { return a.merged(b.leaf->bbox); }
 			);
 			bbox = std::accumulate(
 					this->subtractions.cbegin(),
 					this->subtractions.cend(),
 					bbox,
-					[throwntogether](const BoundingBox&a, const CSGChainObject& b) { return a.merged(b.leaf->bbox); }
+					[](const BoundingBox&a, const CSGChainObject& b) { return a.merged(b.leaf->bbox); }
 			);
 		} else {
 			bbox = std::accumulate(
 					this->intersections.cbegin()+1,
 					this->intersections.cend(),
 					this->intersections.front().leaf->bbox,
-					[throwntogether](const BoundingBox&a, const CSGChainObject& b) { return a.intersection(b.leaf->bbox); }
+					[](const BoundingBox&a, const CSGChainObject& b) { return a.intersection(b.leaf->bbox); }
 			);
 		}
 	}
