@@ -267,7 +267,7 @@ std::string CSGProduct::dump() const
 	return dump.str();
 }
 
-BoundingBox CSGProduct::getBoundingBox() const
+BoundingBox CSGProduct::getBoundingBox(bool throwntogether) const
 {
 	BoundingBox bbox;
 	if (!this->intersections.empty()) {
@@ -275,7 +275,9 @@ BoundingBox CSGProduct::getBoundingBox() const
 				this->intersections.cbegin()+1,
 				this->intersections.cend(),
 				this->intersections.front().leaf->bbox,
-				[](const BoundingBox&a, const CSGChainObject& b) { return a.intersection(b.leaf->bbox); }
+				[throwntogether](const BoundingBox&a, const CSGChainObject& b) { 
+					return throwntogether ? a.merged(b.leaf->bbox) : a.intersection(b.leaf->bbox); 
+				}
 		);
 	}
 	return bbox;
@@ -291,11 +293,11 @@ std::string CSGProducts::dump() const
 	return dump.str();
 }
 
-BoundingBox CSGProducts::getBoundingBox() const
+BoundingBox CSGProducts::getBoundingBox(bool throwntogether) const
 {
 	BoundingBox bbox;
 	for(const auto &product : this->products) {
-		bbox.extend(product.getBoundingBox());
+		bbox.extend(product.getBoundingBox(throwntogether));
 	}
 	return bbox;
 }
