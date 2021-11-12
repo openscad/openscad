@@ -36,6 +36,7 @@ protected:
 	BoundingBox bbox;
 	unsigned int flags;
 
+	friend class CSGProduct;
 	friend class CSGProducts;
 };
 
@@ -121,7 +122,7 @@ public:
 	~CSGProduct() {}
 
 	std::string dump() const;
-	BoundingBox getBoundingBox() const;
+	BoundingBox getBoundingBox(bool throwntogether = false) const;
 
 	std::vector<CSGChainObject> intersections;
 	std::vector<CSGChainObject> subtractions;
@@ -137,7 +138,7 @@ public:
 
 	void import(shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OpenSCADOperator::UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
 	std::string dump() const;
-	BoundingBox getBoundingBox() const;
+	BoundingBox getBoundingBox(bool throwntogether = false) const;
 
 	std::vector<CSGProduct> products;
 
