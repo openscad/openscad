@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - macos-release-build
+      - macos-release-github
     tags:
       - '*'
 
