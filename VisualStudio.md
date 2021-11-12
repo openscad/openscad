@@ -6,7 +6,7 @@
 
 * The OpenSCAD README.md states that C++17 is required to compile OpenSCAD, but the CMakeLists.txt implies that only C++14 is required.
 
-* This instructions were created using Visual Studio Community 2019 and versions of software that were available as of October 2021. Other versions may or may not work.
+* This instructions appear to work with either Visual Studio Community 2019 or 2022, along with versions of software that were available as of November 2021. Other versions may or may not work.
 
 # TL; DR
 
