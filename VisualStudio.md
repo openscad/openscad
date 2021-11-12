@@ -48,7 +48,7 @@ If you are unsure of how to do some or all of the above steps, please consult th
 
 These instructions describe the steps required to build a 64-bit version of OpenSCAD on Windows 10, using the dynamic CRT libraries. Other build types may or may not work, such as: a different version of Windows; using a static instead of dynamic CRT build; targetting 32-bits instead of 64-bits.
 
-This description assumes that you have a working installation of Visual Studio (the author uses Community Edition 2019) that includes support for building C++ programs and also the following modules:
+This description assumes that you have a working installation of Visual Studio that includes support for building C++ programs and also the following modules:
   1. C++ CMake tools for Windows;
   1. ATL/MFC support, which is needed for the Qt library.
 
