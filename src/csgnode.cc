@@ -29,6 +29,7 @@
 #include "linalg.h"
 #include "printutils.h"
 
+#include <numeric>
 #include <sstream>
 #include <stack>
 #include <tuple>
@@ -142,14 +143,10 @@ void CSGOperation::initBoundingBox()
 	Vector3d newmin, newmax;
 	switch (this->type) {
 	case OpenSCADOperator::UNION:
-		newmin = leftbox.min().array().cwiseMin( rightbox.min().array() );
-		newmax = leftbox.max().array().cwiseMax( rightbox.max().array() );
-		this->bbox = BoundingBox( newmin, newmax );
+		this->bbox = leftbox.merged(rightbox);
 		break;
 	case OpenSCADOperator::INTERSECTION:
-		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
-		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
-		this->bbox = BoundingBox( newmin, newmax );
+		this->bbox = leftbox.intersection(rightbox);
 		break;
 	case OpenSCADOperator::DIFFERENCE:
 		this->bbox = leftbox;
@@ -270,14 +267,30 @@ std::string CSGProduct::dump() const
 	return dump.str();
 }
 
-BoundingBox CSGProduct::getBoundingBox() const
+BoundingBox CSGProduct::getBoundingBox(bool throwntogether) const
 {
 	BoundingBox bbox;
-	for(const auto &csgobj : this->intersections) {
-		if (csgobj.leaf->geom) {
-			auto psbox = csgobj.leaf->geom->getBoundingBox();
-			// FIXME: Should intersect rather than extend
-			if (!psbox.isEmpty()) bbox.extend(csgobj.leaf->matrix * psbox);
+	if (!this->intersections.empty()) {
+		if (throwntogether) {
+			bbox = std::accumulate(
+					this->intersections.cbegin()+1,
+					this->intersections.cend(),
+					this->intersections.front().leaf->bbox,
+					[](const BoundingBox&a, const CSGChainObject& b) { return a.merged(b.leaf->bbox); }
+			);
+			bbox = std::accumulate(
+					this->subtractions.cbegin(),
+					this->subtractions.cend(),
+					bbox,
+					[](const BoundingBox&a, const CSGChainObject& b) { return a.merged(b.leaf->bbox); }
+			);
+		} else {
+			bbox = std::accumulate(
+					this->intersections.cbegin()+1,
+					this->intersections.cend(),
+					this->intersections.front().leaf->bbox,
+					[](const BoundingBox&a, const CSGChainObject& b) { return a.intersection(b.leaf->bbox); }
+			);
 		}
 	}
 	return bbox;
@@ -293,11 +306,11 @@ std::string CSGProducts::dump() const
 	return dump.str();
 }
 
-BoundingBox CSGProducts::getBoundingBox() const
+BoundingBox CSGProducts::getBoundingBox(bool throwntogether) const
 {
 	BoundingBox bbox;
 	for(const auto &product : this->products) {
-		bbox.extend(product.getBoundingBox());
+		bbox.extend(product.getBoundingBox(throwntogether));
 	}
 	return bbox;
 }
