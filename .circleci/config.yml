@@ -104,6 +104,11 @@ jobs:
   openscad-macos:
     macos:
       xcode: 12.5.1
+    environment:
+      OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
+      PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
+      DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
+      DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
     steps:
       - checkout
       - run: git submodule update --init
@@ -118,41 +123,32 @@ jobs:
             brew install automake libtool cmake pkg-config
       - restore_cache:
           keys:
-            - macos-libraries2-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
-            - macos-libraries2-
+            # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
+            # from a library cache), the safest, change the MAOS_CACHE_VERSION variable to a random value at
+            # https://app.circleci.com/settings/project/github/openscad/openscad/environment-variables.
+            - macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+            # Fetch the most recently saved cache
+            - macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-
       - run:
           name: Build Dependencies
           command: |
-            export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
-            export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
-            export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
-            export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
-            echo "PWD = $CI_BASEDIR"
-            echo "PATH = $PATH"
-            echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             ./scripts/macosx-build-dependencies.sh -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
       - run:
           name: Package Dependencies as an artifact
           command: |
-            export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
-            export LIBRARIES_CACHE=libraries-circleci.tar.bz2
             mkdir -p /tmp/out
-            tar cz -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
-            shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
+            tar cz -C "$OPENSCAD_LIBRARIES" -f /tmp/out/libraries.tar.bz2 .
+            shasum -a 512 /tmp/out/libraries.tar.bz2 > /tmp/out/libraries.tar.bz2.sha512
       - save_cache:
-          key: macos-libraries2-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+          key: macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - /Users/distiller/libraries/install
       - run:
           name: Build OpenSCAD
           command: |
-            export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
-            export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
-            export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
-            export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
-            export NUMCPU=4
+            export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
             time ./scripts/release-common.sh -snapshot
             cd build
             OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
