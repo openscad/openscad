@@ -50,17 +50,12 @@
 #include "boost-utils.h"
 #include"parameter/parameterobject.h"
 #include"parameter/parameterset.h"
+#include "openscad_mimalloc.h"
 #include <string>
 #include <vector>
 #include <fstream>
 
 #ifdef ENABLE_CGAL
-
-#if 0 // Override of C++ new/delete apparently not needed if mimalloc is statically linked.
-  #ifdef USE_MIMALLOC
-  #include <mimalloc-new-delete.h>
-  #endif
-#endif
 
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
@@ -946,11 +941,9 @@ int main(int argc, char **argv)
 	int rc = 0;
 	StackCheck::inst();
 
-#if 0 // Not necessary if mimalloc is linked statically and built with MI_OVERRIDE defined
-  #if defined(CGAL_ENABLED) && defined(USE_MIMALLOC)
-	// call init_mimalloc before any GMP variables are initialized. (defined in src/cgal.h)
+#if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
+	// call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
 	init_mimalloc();
-  #endif
 #endif
 
 #ifdef OPENSCAD_QTGUI

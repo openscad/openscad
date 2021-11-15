@@ -64,7 +64,7 @@ if(PROFILE)
   string(REPLACE "-O3" "-O0" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 else()
   # Use same optimization as qmake build for Release
-  string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+  #string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 endif()
 
 if (NULLGL)
@@ -166,9 +166,9 @@ if (USE_MIMALLOC)
   set(MI_BUILD_SHARED OFF CACHE BOOL "" FORCE)
   set(MI_BUILD_STATIC ON  CACHE BOOL "" FORCE)
   set(MI_BUILD_TESTS  OFF CACHE BOOL "" FORCE)
-  set(MI_OVERRIDE     ON  CACHE BOOL "" FORCE)
-  set(MI_INTERPOSE    ON  CACHE BOOL "" FORCE) # Use interpose to override standard malloc on macOS
-  set(MI_OSX_ZONE     OFF CACHE BOOL "" FORCE) # Use malloc zone to override standard malloc on macOS
+  set(MI_OVERRIDE     OFF CACHE BOOL "" FORCE)
+  set(MI_INTERPOSE    OFF CACHE BOOL "" FORCE) # Use interpose to override standard malloc on macOS
+  set(MI_OSX_ZONE     ON  CACHE BOOL "" FORCE) # Use malloc zone to override standard malloc on macOS
   include_directories(submodules/mimalloc/include)
   add_subdirectory(submodules/mimalloc EXCLUDE_FROM_ALL)
   list(APPEND COMMON_LIBRARIES mimalloc-static)
