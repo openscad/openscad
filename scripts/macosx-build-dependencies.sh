@@ -769,7 +769,7 @@ fi
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
-  NUMCPU=$(sysctl -n hw.ncpu)
+  NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
   echo "Setting number of CPUs to $NUMCPU"
 fi
 
