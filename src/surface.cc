@@ -55,7 +55,7 @@ namespace fs = boost::filesystem;
 typedef struct img_data_t
 {
 public:
-    typedef double storage_type;
+    typedef double storage_type;    // float could be enough here
     
     img_data_t() { min_val = 0; height = width = 0; }
     
@@ -66,8 +66,6 @@ public:
     void resize(size_t x) { storage.resize(x); }
     
     storage_type& operator[](int x) { return storage[x]; }
-    
-    void push_value(storage_type z) { storage.push_back(z); }
 
     storage_type min_value() { return min_val; }   // *std::min_element(storage.begin(), storage.end());
 
@@ -248,7 +246,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
     data.min_val = min_val;
  
     // Now convert the unordered, possibly non-rectangular data into a well ordered vector
-    // for faster access.
+    // for faster access and reduced memory usage.
     data.resize( lines * columns );
 	for (int i = 0; i < lines; ++i)
         for (int j = 0; j < columns; ++j)
