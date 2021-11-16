@@ -39,7 +39,9 @@
 #include <cstdint>
 #include <sstream>
 #include <fstream>
+#include <unordered_map>
 #include "boost-utils.h"
+#include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -60,6 +62,8 @@ public:
     void clear(void) { min_val = 0; height = width = 0; storage.clear(); }
     
     void reserve(size_t x) { storage.reserve(x); }
+    
+    void resize(size_t x) { storage.resize(x); }
     
     storage_type& operator[](int x) { return storage[x]; }
     
@@ -205,8 +209,12 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 
 	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
+ 
+    // We use an unordered map because the data file may not be rectangular,
+    // and we may need to fill in some bits.
+    typedef std::unordered_map<std::pair<int,int>, double, boost::hash<std::pair<int,int>>> unordered_image_data_t;
+    unordered_image_data_t unordered_data;
 
-    int first_col = 0;
 	while (!stream.eof()) {
 		std::string line;
 		while (!stream.eof() && (line.size() == 0 || line[0] == '#')) {
@@ -220,38 +228,31 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 		try {
 			for(const auto &token : tokens) {
 				auto v = boost::lexical_cast<double>(token);
-                data.push_value( v );
-                if (col == 0 && lines == 0)
-                    min_val = v;
-                else
-                    min_val = std::min(v, min_val);
-                col++;
+                unordered_data[ std::make_pair(lines, col++) ] = v;
 				if (col > columns) columns = col;
+                min_val = std::min(v, min_val);
 			}
 		}
 		catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
 				LOG(message_group::Warning,Location::NONE,"","Illegal value in '%1$s': %2$s",filename,blc.what());
 			}
-            data.clear();
-            return data;
-        }
-        
-        if (lines == 0)
-            first_col = columns;
-        else if (columns != first_col) {
-            // Non rectangular data layout could cause a crash later.
-            LOG(message_group::Warning,Location::NONE,"","Data in '%1$s' is not rectangular",filename);
-            data.clear();
             return data;
         }
         
 		lines++;
 	}
- 
+    
     data.width = columns;
     data.height = lines;
     data.min_val = min_val;
+ 
+    // Now convert the unordered, possibly non-rectangular data into a well ordered vector
+    // for faster access.
+    data.resize( lines * columns );
+	for (int i = 0; i < lines; ++i)
+        for (int j = 0; j < columns; ++j)
+            data[ i*columns + j ] = unordered_data[std::make_pair(i, j)];
 
 	return data;
 }
