@@ -103,127 +103,64 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: 12.2.0
+      xcode: 12.5.1
+    environment:
+      OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
+      PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
+      DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
+      DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
     steps:
       - checkout
+      - run: git submodule update --init
       - run:
-          name: Build OpenSCAD MacOS
-          no_output_timeout: 18000
+          name: System Info
           command: |
-              system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
-              export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
-              echo "PATH = $PATH"
-              export COLUMNS=80 # needed by some macports tool
-              MACPORTS_SHA512=396b457e698848a4e56902162dc8ceee6d71c4d520fa57d2387e9d52363390fffe33a2d0a6e690bd90e9131d036d06db642891beff23eb5956b501423cf8d29f
-              MACPORTS_CACHE_SHA512=8236594a3c3d0f4c0b0c96f8a7ffbe0d5773a3b78fca148f40b2c2be2463eec41e0635ffe61337de154b2b5301c3f7d51edb654d37a3092cf2401d7ca94150e8
-              LIBRARIES_CACHE_SHA512=ae31c15ef7baf3c55fd83cd82280f32d745dbe4e838c41b2c84ca1630d3b74f271d3776ca2c8bf638df0680da67ebfd76d02eeda03f9b0b74d2fcf15891d9d03
-              CI_BASEDIR=/Users/distiller/project
-              export OPENSCAD_LIBRARIES=/Users/distiller/libraries/install
-              MACPORTS=MacPorts-2.7.1
-              MACPORTS_CACHE=macports-circleci.tar.bz2
-              LIBRARIES_CACHE=libraries-circleci.tar.bz2
-              mkdir /tmp/out
-              mkdir -p "$OPENSCAD_LIBRARIES"
-              ( echo "Loading macports cache..." ; cd /tmp && curl -f -s -S --insecure -O https://files.openscad.org/ci-cache/"$MACPORTS_CACHE" ) || true
-              ( echo "Loading libraries cache..." ; cd /tmp && curl -f -s -S --insecure -O https://files.openscad.org/ci-cache/"$LIBRARIES_CACHE" ) || true
-              sudo mkdir -p /opt/local
-              sudo tar xj -C /opt/local -f /tmp/"$MACPORTS_CACHE" || true
-              if [ -f /opt/local/bin/port ]; then
-                  MACPORTS_CACHE_FILE_SHA512="$(shasum -a 512 /tmp/"$MACPORTS_CACHE" | cut -d ' ' -f 1)"
-                  if [ "$MACPORTS_CACHE_FILE_SHA512" != "$MACPORTS_CACHE_SHA512" ]; then
-                      echo "Failed to match sha512 for $MACPORTS_CACHE"
-                      echo "Expected: $MACPORTS_CACHE_SHA512"
-                      echo "Actual:   $MACPORTS_CACHE_FILE_SHA512"
-                      exit 1
-                  fi
-                  if [ -f /tmp/"$LIBRARIES_CACHE" ]; then
-                      tar xj -C "$OPENSCAD_LIBRARIES" -f /tmp/"$LIBRARIES_CACHE" || true
-                      LIBRARIES_CACHE_FILE_SHA512="$(shasum -a 512 /tmp/"$LIBRARIES_CACHE" | cut -d ' ' -f 1)"
-                      if [ "$LIBRARIES_CACHE_FILE_SHA512" != "$LIBRARIES_CACHE_SHA512" ]; then
-                          echo "Failed to match sha512 for $LIBRARIES_CACHE"
-                          echo "Expected: $LIBRARIES_CACHE_SHA512"
-                          echo "Actual:   $LIBRARIES_CACHE_FILE_SHA512"
-                          exit 1
-                      fi
-                  fi    
-                  echo "Start building dependencies: $(date)"
-                  export PKG_CONFIG_PATH="$OPENSCAD_LIBRARIES/lib/pkgconfig"
-                  # Avoid pkg-config picking up MacPorts libs instead of system libs (e.g. zlib)
-                  export PKG_CONFIG_LIBDIR="/usr/lib/"
-                  # Avoid having cmake pick up MacPorts libraries
-                  export CMAKE_IGNORE_PATH=/opt/local/lib/
-                  export DYLD_LIBRARY_PATH="$OPENSCAD_LIBRARIES/lib"
-                  export DYLD_FRAMEWORK_PATH="$OPENSCAD_LIBRARIES/lib"
-                  echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-                  export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-                  ./scripts/macosx-build-dependencies.sh double_conversion
-                  ./scripts/macosx-build-dependencies.sh eigen
-                  ./scripts/macosx-build-dependencies.sh gmp
-                  ./scripts/macosx-build-dependencies.sh mpfr
-                  ./scripts/macosx-build-dependencies.sh glew
-                  ./scripts/macosx-build-dependencies.sh gettext
-                  ./scripts/macosx-build-dependencies.sh libffi
-                  ./scripts/macosx-build-dependencies.sh freetype
-                  ./scripts/macosx-build-dependencies.sh ragel
-                  ./scripts/macosx-build-dependencies.sh harfbuzz
-                  ./scripts/macosx-build-dependencies.sh libz
-                  ./scripts/macosx-build-dependencies.sh libzip
-                  ./scripts/macosx-build-dependencies.sh libxml2
-                  ./scripts/macosx-build-dependencies.sh fontconfig || true
-                  ./scripts/macosx-build-dependencies.sh hidapi
-                  ./scripts/macosx-build-dependencies.sh libuuid
-                  ./scripts/macosx-build-dependencies.sh lib3mf
-                  ./scripts/macosx-build-dependencies.sh poppler
-                  ./scripts/macosx-build-dependencies.sh pixman
-                  ./scripts/macosx-build-dependencies.sh cairo
-                  ./scripts/macosx-build-dependencies.sh glib2
-                  ./scripts/macosx-build-dependencies.sh boost
-                  ./scripts/macosx-build-dependencies.sh cgal
-                  ./scripts/macosx-build-dependencies.sh qt5
-                  ./scripts/macosx-build-dependencies.sh opencsg
-                  ./scripts/macosx-build-dependencies.sh qscintilla
-                  ./scripts/macosx-build-dependencies.sh -d sparkle
-                  tar cj -C "$OPENSCAD_LIBRARIES" -f /tmp/out/"$LIBRARIES_CACHE" .
-                  shasum -a 512 /tmp/out/"$LIBRARIES_CACHE" > /tmp/out/"$LIBRARIES_CACHE".sha512
-                  export GMP_DIR="$OPENSCAD_LIBRARIES"
-                  export MPFR_DIR="$OPENSCAD_LIBRARIES"
-                  echo "Start building OpenSCAD: $(date)"
-                  export NUMCPU=4
-                  time ./scripts/release-common.sh -snapshot
-                  echo "Sanity check of the app bundle..."
-                  ./scripts/macosx-sanity-check.py build/OpenSCAD.app/Contents/MacOS/OpenSCAD
-                  cd build
-                  OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
-                  shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
-                  shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
-                  cp -v "$OPENSCAD_NAME"* /tmp/out/
-                  echo "Finished building OpenSCAD: $(date)"
-              else
-                  echo "MacPorts not found, installing $MACPORTS"
-                  MACPORTSFILE="$MACPORTS".tar.bz2
-                  curl -s -S --insecure -O https://distfiles.macports.org/MacPorts/"$MACPORTSFILE"
-                  if [ "$(shasum -a 512 "$MACPORTSFILE" | cut -d ' ' -f 1)" != "$MACPORTS_SHA512" ]; then
-                      echo "Failed to match sha512 for $MACPORTSFILE"
-                      echo "Expected: $MACPORTS_SHA512"
-                      echo "Actual:   $(shasum -a 512 "$MACPORTSFILE")"
-                      exit 1
-                  fi
-                  tar xjf "$MACPORTSFILE"
-                  cd "$MACPORTS"
-                  ./configure
-                  make
-                  sudo make install
-                  sudo port -d selfupdate
-                  sudo port -N install cmake curl pkgconfig autoconf automake libtool python39
-                  sudo port select --set python python39
-                  sudo port select --set python3 python39
-                  tar cj -C /opt/local -f /tmp/out/"$MACPORTS_CACHE" .
-                  shasum -a 512 /tmp/out/"$MACPORTS_CACHE"
-              fi
+            system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
+      - run:
+          name: Install Homebrew packages
+          command: |
+            brew update
+            brew install automake libtool cmake pkg-config
+      - restore_cache:
+          keys:
+            # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
+            # from a library cache), the safest, change the MAOS_CACHE_VERSION variable to a random value at
+            # https://app.circleci.com/settings/project/github/openscad/openscad/environment-variables.
+            - macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+            # Fetch the most recently saved cache
+            - macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-
+      - run:
+          name: Build Dependencies
+          command: |
+            # Pick up our own Qt
+            export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
+            ./scripts/macosx-build-dependencies.sh -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
+      - run:
+          name: Package Dependencies as an artifact
+          command: |
+            mkdir -p /tmp/out
+            tar cz -C "$OPENSCAD_LIBRARIES" -f /tmp/out/libraries.tar.bz2 .
+            shasum -a 512 /tmp/out/libraries.tar.bz2 > /tmp/out/libraries.tar.bz2.sha512
+      - save_cache:
+          key: macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - /Users/distiller/libraries/install
+      - run:
+          name: Build OpenSCAD
+          command: |
+            export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
+            time ./scripts/release-common.sh -snapshot
+            cd build
+            OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
+            shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
+            shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
+            cp -v "$OPENSCAD_NAME"* /tmp/out/
+      - run:
+          name: Verify OpenSCAD binary
+          command: |
+            ./scripts/macosx-sanity-check.py build/OpenSCAD.app/Contents/MacOS/OpenSCAD
       - store_artifacts:
           path: /tmp/out
-          destination: build
-
 workflows:
   version: 2
   master-build:

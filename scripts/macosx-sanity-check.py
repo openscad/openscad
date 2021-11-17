@@ -2,7 +2,7 @@
 
 #
 # This is used to verify that all the dependent libraries of a Mac OS X executable
-# are present and that they are backwards compatible with at least 10.9.
+# are present and that they are backwards compatible with at least 10.13.
 # Run with an executable as parameter
 # Will return 0 if the executable an all libraries are OK
 # Returns != 0 and prints some textural description on error
@@ -95,7 +95,7 @@ def validate_lib(lib):
         print("Error: LC_VERSION_MIN_MACOSX not found in " + lib)
         return False
     deploymenttarget = m.group(2)
-    if StrictVersion(deploymenttarget) > StrictVersion('10.9'):
+    if StrictVersion(deploymenttarget) > StrictVersion('10.13'):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 # We don't support Snow Leopard anymore
