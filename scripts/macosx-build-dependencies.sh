@@ -730,16 +730,19 @@ if [ ! -f $OPENSCADDIR/openscad.qrc ]; then
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
-while getopts '3lcdfv' c
+TIME_LIMIT=1440 # one day
+while getopts 'dfvl:' c
 do
   case $c in
     d) OPTION_DEPLOY=true;;
     f) OPTION_FORCE=1;;
     v) echo verbose on;;
+    l) TIME_LIMIT=${OPTARG}; if [ "$TIME_LIMIT" -gt 0 ]; then echo time limit $TIME_LIMIT minutes; else printUsage;exit 1; fi;;
     *) printUsage;exit 1;;
   esac
 done
 
+STOP_TIME=$(( $(date +%s) / 60 + $TIME_LIMIT ))
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
@@ -800,9 +803,16 @@ fi
 echo "Building packages: $OPTION_PACKAGES"
 echo
 
+rm -f .timeout
 for package in $OPTION_PACKAGES; do
   if [[ $ALL_PACKAGES =~ $package ]]; then
     build $package $(package_version $package)
+    CURRENT_TIME=$(( $(date +%s) / 60 ))
+    if [ $CURRENT_TIME -ge $STOP_TIME ]; then
+      touch .timeout
+      echo "Timeout after building package $package"
+      exit 0
+    fi
   else
     echo "Skipping unknown package $package"
   fi
