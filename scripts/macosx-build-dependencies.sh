@@ -742,7 +742,8 @@ do
   esac
 done
 
-STOP_TIME=$(( $(date +%s) / 60 + $TIME_LIMIT ))
+START_TIME=$(( $(date +%s) / 60 ))
+STOP_TIME=$(( $START_TIME + $TIME_LIMIT ))
 OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
@@ -805,6 +806,13 @@ echo
 
 rm -f .timeout
 for package in $OPTION_PACKAGES; do
+  ELAPSED=$(( $(date +%s) / 60 - $START_TIME ))
+  echo "Elapsed build time: $ELAPSED minutes"
+  if [ "qt5" = $package -a $TIME_LIMIT -le 60 -a $ELAPSED -gt 2 ]; then
+    touch .timeout
+    echo "Timeout before building package $package"
+    exit 0
+  fi
   if [[ $ALL_PACKAGES =~ $package ]]; then
     build $package $(package_version $package)
     CURRENT_TIME=$(( $(date +%s) / 60 ))
