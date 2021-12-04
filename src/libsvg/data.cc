@@ -37,9 +37,9 @@ data::~data()
 }
 
 void
-data::set_attrs(attr_map_t& attrs)
+data::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs, context);
 	this->text = attrs["text"];
 }
 

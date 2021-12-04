@@ -50,7 +50,7 @@ private:
 using shapes_list_t = std::vector<shared_ptr<shape>>;
 
 shapes_list_t *
-libsvg_read_file(const char *filename);
+libsvg_read_file(const char *filename, void *context);
 
 void
 libsvg_free(shapes_list_t *shapes);

@@ -83,9 +83,21 @@ vector_angle(double ux, double uy, double vx, double vy)
 	return angle;
 }
 
+static inline
+unsigned long CalcFn(double fn, unsigned long minimum) {
+    unsigned long result = 3;
+	if (fn > 3.0)           // > 0.0 && > 3
+        result = static_cast<unsigned long>(fn);
+    if (result < minimum)
+        result = minimum;
+    return result;
+}
+
 void
-path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep)
+path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep, void *context)
 {
+	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
+    
 	// http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
 	
 	// (F.6.5.1))
@@ -132,7 +144,10 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 		delta -= 360;
 	}
 	
-	int steps = std::fabs(delta) * 10.0 / 180 + 4;
+	unsigned long fn = CalcFn( fValues->fn, 20 ); // preserve the old minimum
+	int steps = (std::fabs(delta) * 10.0 / 180) + 4;
+    if (steps < fn)     // use the maximum of calculated steps and user specified steps
+        steps = fn;
 	for (int a = 0; a <= steps; ++a) {
 		double phi = theta + delta * a / steps;
 
@@ -143,10 +158,12 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	}
 }
 
+
 void
-path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2)
+path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2, void *context)
 {
-	unsigned long fn = 20;
+	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
+	unsigned long fn = CalcFn( fValues->fn, 20 ); // preserve the old minimum
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
@@ -156,9 +173,10 @@ path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double 
 }
 
 void
-path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2)
+path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context)
 {
-	unsigned long fn = 20;
+	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
+	unsigned long fn = CalcFn( fValues->fn, 20 ); // preserve the old minimum
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;
@@ -200,11 +218,11 @@ static std::vector<std::string> split_dots(const std::string& str)
 }
 
 void
-path::set_attrs(attr_map_t& attrs)
+path::set_attrs(attr_map_t& attrs, void *context)
 {
 	std::string commands = "-zmlcqahvstZMLCQAHVST";
 
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs, context);
 	this->data = attrs["d"];
 
 	boost::char_separator<char> sep(" ,", commands.c_str());
@@ -289,7 +307,7 @@ path::set_attrs(attr_map_t& attrs)
 				break;
 			case 6:
 				yy = cmd == 'a' ? y + p : p;
-				arc_to(path_list.back(), x, y, rx, ry, xx, yy, angle, large, sweep);
+				arc_to(path_list.back(), x, y, rx, ry, xx, yy, angle, large, sweep, context);
 				x = xx;
 				y = yy;
 				point = -1;
@@ -339,7 +357,7 @@ path::set_attrs(attr_map_t& attrs)
 				cy1 = cmd == 'c' ? y + cy1 : cy1;
 				cx2 = cmd == 'c' ? x + cx2 : cx2;
 				cy2 = cmd == 'c' ? y + cy2 : cy2;
-				curve_to(path_list.back(), x, y, cx1, cy1, cx2, cy2, xx, yy);
+				curve_to(path_list.back(), x, y, cx1, cy1, cx2, cy2, xx, yy, context);
 				x = xx;
 				y = yy;
 				point = -1;
@@ -374,7 +392,7 @@ path::set_attrs(attr_map_t& attrs)
 				yy = cmd == 's' ? y + p : p;
 				cx2 = cmd == 's' ? x + cx2 : cx2;
 				cy2 = cmd == 's' ? y + cy2 : cy2;
-				curve_to(path_list.back(), x, y, cx1, cy1, cx2, cy2, xx, yy);
+				curve_to(path_list.back(), x, y, cx1, cy1, cx2, cy2, xx, yy, context);
 				x = xx;
 				y = yy;
 				point = -1;
@@ -399,7 +417,7 @@ path::set_attrs(attr_map_t& attrs)
 				yy = cmd == 'q' ? y + p : p;
 				cx1 = cmd == 'q' ? x + cx1 : cx1;
 				cy1 = cmd == 'q' ? y + cy1 : cy1;
-				curve_to(path_list.back(), x, y, cx1, cy1, xx, yy);
+				curve_to(path_list.back(), x, y, cx1, cy1, xx, yy, context);
 				x = xx;
 				y = yy;
 				point = -1;
@@ -426,7 +444,7 @@ path::set_attrs(attr_map_t& attrs)
 				break;
 			case 1:
 				yy = cmd == 't' ? y + p : p;
-				curve_to(path_list.back(), x, y, cx1, cy1, xx, yy);
+				curve_to(path_list.back(), x, y, cx1, cy1, xx, yy, context);
 				x = xx;
 				y = yy;
 				point = -1;

@@ -80,7 +80,7 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 	return attrs;
 }
 
-void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, shapes_list_t* temp_defs_storage)
+void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, shapes_list_t* temp_defs_storage, void *context)
 {
 	const char *name = reinterpret_cast<const char *> (xmlTextReaderName(reader));
 	if (name == nullptr) name = reinterpret_cast<const char *> (xmlStrdup(BAD_CAST "--"));
@@ -107,7 +107,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, 
 		auto s = shared_ptr<shape>(shape::create_from_name(name));
 		if (s) {
 			attr_map_t attrs = read_attributes(reader);
-			s->set_attrs(attrs);
+			s->set_attrs(attrs, context);
 			if (!stack.empty()) {
 				stack.back()->add_child(s.get());
 			}
@@ -166,7 +166,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, 
 		attr_map_t attrs;
 		attrs["text"] = reinterpret_cast<const char *>(value);
 		auto s = shared_ptr<shape>(shape::create_from_name("data"));
-		s->set_attrs(attrs);
+		s->set_attrs(attrs, context);
 		shape_list->push_back(s);
 		if (!stack.empty()) {
 			stack.back()->add_child(s.get());
@@ -179,7 +179,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, 
 	xmlFree((void *) (name));
 }
 
-int streamFile(const char *filename)
+int streamFile(const char *filename, void *context)
 {
 	xmlTextReaderPtr reader;
 	// The temp storage is needed for items in a def that don't have an id, but have a parent with an id
@@ -192,7 +192,7 @@ int streamFile(const char *filename)
 	if (reader != nullptr) {
 		int ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
-			processNode(reader, &defs_lookup_list, &temp_defs_storage);
+			processNode(reader, &defs_lookup_list, &temp_defs_storage, context);
 			ret = xmlTextReaderRead(reader);
 		}
 		xmlFreeTextReader(reader);
@@ -221,10 +221,10 @@ void dump(int idx, shape *s) {
 }
 
 shapes_list_t *
-libsvg_read_file(const char *filename)
+libsvg_read_file(const char *filename, void *context)
 {
 	shape_list = new shapes_list_t();
-	streamFile(filename);
+	streamFile(filename, context);
 
 //#ifdef DEBUG
 //	if (!shape_list->empty()) {
