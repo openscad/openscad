@@ -9,14 +9,14 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-04 20:09+0100\n"
-"PO-Revision-Date: 2021-01-08 17:26+0100\n"
+"PO-Revision-Date: 2021-12-04 20:17+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -691,9 +691,8 @@ msgid "Export as &OFF..."
 msgstr "&OFF exportieren..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1036
-#, fuzzy
 msgid "Export as &WRL..."
-msgstr "&STL exportieren..."
+msgstr "&WRL exportieren..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1037
 msgid "Preview"
@@ -844,14 +843,12 @@ msgid "&Documentation"
 msgstr "&Dokumentation"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1104
-#, fuzzy
 msgid "&Offline Documentation"
-msgstr "&Dokumentation"
+msgstr "Offline Dokumentation"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1105
-#, fuzzy
 msgid "&Offline Cheat Sheet"
-msgstr "&Befehlsübersicht"
+msgstr "&Offline Befehlsübersicht"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1106
 msgid "Clear Recent"
@@ -1264,9 +1261,8 @@ msgid "Description Only"
 msgstr "Nur Beschreibung"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:148
-#, fuzzy
 msgid "<design default>"
-msgstr "Standardwerte des Designs"
+msgstr "<Standardwerte des Designs>"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:151
 msgid "preset selection"
@@ -1692,11 +1688,11 @@ msgstr "Konsole"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1795
 msgid "Maximum lines for Console to keep:"
-msgstr ""
+msgstr "Maximale Anzahl von Zeilen in der Konsole:"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1796
 msgid "(0 for unlimited)"
-msgstr ""
+msgstr "(0 = unbegrenzt)"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1798
 msgid "OpenSCAD Language Features"
@@ -1716,19 +1712,19 @@ msgstr "Parameter Bereiche für System-Module prüfen"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1802
 msgid "Render Summary"
-msgstr ""
+msgstr "Zusammenfassung"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1803
 msgid "Camera"
-msgstr ""
+msgstr "Kamera"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1804
 msgid "Bounding Box"
-msgstr ""
+msgstr "Begrenzungsrahmen "
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1805
 msgid "Measurements: Area"
-msgstr ""
+msgstr "Messungen: Fläche"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1806
 msgid "Export Features"
@@ -2050,7 +2046,7 @@ msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
 
 #: src/parameter/ParameterWidget.cc:239
 msgid "New set "
-msgstr ""
+msgstr "Neue Parameter Liste"
 
 #: src/input/AxisConfigWidget.h:84
 msgid ""
