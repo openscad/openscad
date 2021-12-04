@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-12 20:36+0300\n"
+"POT-Creation-Date: 2021-12-04 20:09+0100\n"
 "PO-Revision-Date: 2021-10-12 23:22+0300\n"
 "Last-Translator: Alexander Kurachenko <alexander@basealt.ru>\n"
 "Language-Team: \n"
@@ -1762,6 +1762,16 @@ msgstr ""
 msgid "Save console content"
 msgstr "Сохранить содержимое консоли"
 
+#: src/export.cc:108
+#, c-format
+msgid "Can't open file \"%1$s\" for export"
+msgstr "Не удалось открыть файл \"%1$s\" для экспорта"
+
+#: src/export.cc:123
+#, c-format
+msgid "\"%1$s\" write error. (Disk full?)"
+msgstr "Ошибка записи: \"%1$s\". (Диск переполнен?)"
+
 #: src/MainWindow.cc:1117
 msgid "Compile error."
 msgstr "Ошибка компиляции."
@@ -2006,16 +2016,6 @@ msgid ""
 msgstr ""
 "%1 уже существует.\n"
 "Перезаписать?"
-
-#: src/export.cc:108
-#, c-format
-msgid "Can't open file \"%1$s\" for export"
-msgstr "Не удалось открыть файл \"%1$s\" для экспорта"
-
-#: src/export.cc:123
-#, c-format
-msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "Ошибка записи: \"%1$s\". (Диск переполнен?)"
 
 #: src/parameter/ParameterWidget.cc:92
 msgid "Saving presets"
