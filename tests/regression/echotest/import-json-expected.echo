@@ -1,0 +1,6 @@
+ECHO: { array-mixed = ["one", 1, false]; array-string = ["one", "two", "three"]; array_number = [0, 1, 2, 3, 5]; bool = true; float = 3.5e-10; number = 2; object = { name = "The object name"; nested = { value = 42; }; number = 4; }; string = "hallo world!"; }
+ECHO: "hallo world!"
+ECHO: [0, 1, 2, 3, 5]
+ECHO: ["one", "two", "three"]
+ECHO: "The object name"
+ECHO: 42
