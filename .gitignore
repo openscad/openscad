@@ -65,6 +65,7 @@ src/*.debug
 /Testing
 .DS_Store
 /build
+/build_xcode
 /release
 tests/DartConfiguration.tcl
 tests/__pycache__/
