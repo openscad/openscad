@@ -1,0 +1,14 @@
+{
+	"number": 2,
+	"float": 3.5e-10,
+	"bool": true,
+	"string": "hallo world!",
+        "array_number": [ 0, 1, 2, 3, 5 ],
+	"array-string": [ "one", "two", "three" ],
+	"array-mixed": [ "one", 1, false ],
+	"object": {
+		"name": "The object name",
+		"nested": { "value": 42 },
+		"number": 4
+	}
+}

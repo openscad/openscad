@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 #include <stdio.h>
+#include <math.h>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,7 @@
 
 #include "transformation.h"
 #include "degree_trig.h"
+#include "calc.h"
 
 namespace libsvg {
 
@@ -93,7 +95,7 @@ shape::create_from_name(const char *name)
 }
 
 void
-shape::set_attrs(attr_map_t& attrs)
+shape::set_attrs(attr_map_t& attrs, void *context)
 {
 	this->id = attrs["id"];
 	this->transform = attrs["transform"];
@@ -285,8 +287,11 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 }
 
 void
-shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry) {
-	unsigned long fn = 40;
+shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context) {
+	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
+    double rmax = fmax( rx, ry );
+	unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
+    if (fn < 40) fn = 40;       // preserve the old minimum value
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * 360.0 / fn;
 		const double xx = rx * sin_degrees(a) + x;

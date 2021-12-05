@@ -135,6 +135,7 @@ if [ "x$1" = xupdatemo ]; then
  updatemo "$2"
 else
  echo "Generating POTFILES..."
- ./scripts/generate-potfiles.sh "$CURDIR" > locale/POTFILES
+ BUILDDIR=$(find "$CURDIR" -name ui_MainWindow.h | grep OpenSCAD_autogen/include/ui_MainWindow.h | sed -e 's,/*OpenSCAD_autogen/include/ui_MainWindow.h,,')
+ ./scripts/generate-potfiles.sh "$BUILDDIR" > locale/POTFILES
  updatepot && updatepo && updatemo ""
 fi
