@@ -36,6 +36,7 @@
 
 #include "path.h"
 #include "degree_trig.h"
+#include "calc.h"
 
 namespace libsvg {
 
@@ -144,7 +145,9 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 		delta -= 360;
 	}
 	
-	unsigned long fn = CalcFn( fValues->fn, 20 ); // preserve the old minimum
+    double rmax = fmax( rx, ry );
+	unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
+    fn = (unsigned long) ceil( fn * fabs(delta) / 360.0 );  // beause we are implementing a section of an ellipse, not the full ellipse
 	int steps = (std::fabs(delta) * 10.0 / 180) + 4;
     if (steps < fn)     // use the maximum of calculated steps and user specified steps
         steps = fn;
