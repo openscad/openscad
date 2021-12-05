@@ -37,9 +37,9 @@ text::~text()
 }
 
 void
-text::set_attrs(attr_map_t& attrs)
+text::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs,context);
 	this->x = parse_double(attrs["x"]);
 	this->y = parse_double(attrs["y"]);
 	this->dx = parse_double(attrs["dx"]);

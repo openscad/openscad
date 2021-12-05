@@ -39,9 +39,9 @@ polyline::~polyline()
 }
 
 void
-polyline::set_attrs(attr_map_t& attrs)
+polyline::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs, context);
 	this->points = attrs["points"];
 	
 	using tokenizer = boost::tokenizer<boost::char_separator<char> >;

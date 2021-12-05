@@ -37,6 +37,20 @@
 #include "util.h"
 #include "ext/polyclipping/clipper.hpp"
 
+
+// ccox - I don't like putting this here, but the svg library code did not plan ahead for app customization.
+// And this is one of the few sensible places to put it without adding new header files.
+typedef struct fnContext {
+public:
+    fnContext( double fNN, double fSS, double fAA ) : fn(fNN), fs(fSS), fa(fAA) {}
+
+public:
+    double fn;
+    double fs;
+    double fa;
+} fnContext;
+
+
 namespace libsvg {
 
 using path_t = std::vector<Eigen::Vector3d>;
@@ -63,7 +77,7 @@ protected:
     ClipperLib::EndType get_stroke_linecap() const;
     ClipperLib::JoinType get_stroke_linejoin() const;
     const std::string get_style(std::string name) const;
-    void draw_ellipse(path_t& path, double x, double y, double rx, double ry);
+    void draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context);
     void offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap);
     void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
 
@@ -87,7 +101,7 @@ public:
     virtual void apply_transform();
 
     virtual const std::string& get_name() const = 0;
-    virtual void set_attrs(attr_map_t& attrs);
+    virtual void set_attrs(attr_map_t& attrs, void *context);
     virtual const std::string dump() const { return ""; }
 
     static shape * create_from_name(const char *name);
