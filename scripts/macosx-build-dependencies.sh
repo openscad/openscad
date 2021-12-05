@@ -172,6 +172,7 @@ build_qt5()
   tar xzf qt-everywhere-src-$version.tar.xz
   cd qt-everywhere-src-$version
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
@@ -744,7 +745,9 @@ OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_MAJOR_VERSION >= 11 )); then
+if (( $OSX_MAJOR_VERSION >= 12 )); then
+  echo "Detected Monterey (12.x) or later"
+elif (( $OSX_MAJOR_VERSION >= 11 )); then
   echo "Detected BigSur (11.x) or later"
 elif (( $OSX_VERSION >= 15 )); then
   echo "Detected Catalina (10.15) or later"
