@@ -203,7 +203,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 	}
 
 	int lines = 0, columns = 0;
-	double min_val = 0;
+	double min_val = 1; // this balances out with the (min_val-1) inside createGeometry, to match old behavior
 
 	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 	boost::char_separator<char> sep(" \t");
@@ -264,7 +264,7 @@ const Geometry *SurfaceNode::createGeometry() const
 
 	int lines = data.height;
 	int columns = data.width;
-	double min_val = data.min_value();
+	double min_val = data.min_value() - 1;  // make the bottom solid, and match old code
  
     // reserve the polygon vector size so we don't have to reallocate as often
     p->polygons.reserve( (lines-1)*(columns-1)*4 + (lines-1)*2 + (columns-1)*2 + 1 );
@@ -346,7 +346,7 @@ const Geometry *SurfaceNode::createGeometry() const
 		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
 
-    // the bottom of the shape, making it semi-solid (but usually co-planar with black)
+    // the bottom of the shape (one less than the real minimum value), making it a solid volume
 	if (columns > 1 && lines > 1) {
 		p->append_poly();
         p->polygons.back().reserve( 2*(columns-1) + 2*(lines-1) );  // inelegant, could vertex count be argument to append_poly?  or separate call poly_reserve(x)?
