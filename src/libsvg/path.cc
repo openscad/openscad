@@ -147,7 +147,7 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 	
     double rmax = fmax( rx, ry );
 	unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
-    fn = (unsigned long) ceil( fn * fabs(delta) / 360.0 );  // beause we are implementing a section of an ellipse, not the full ellipse
+    fn = (unsigned long) ceil( fn * fabs(delta) / 360.0 );  // beause we are creating a section of an ellipse, not the full ellipse
 	int steps = (std::fabs(delta) * 10.0 / 180) + 4;
     if (steps < fn)     // use the maximum of calculated steps and user specified steps
         steps = fn;
@@ -165,6 +165,7 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2, void *context)
 {
+    // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
 	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
 	unsigned long fn = CalcFn( fValues->fn, 20 ); // preserve the old minimum
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
@@ -178,6 +179,7 @@ path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double 
 void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context)
 {
+    // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
 	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
 	unsigned long fn = CalcFn( fValues->fn, 20 ); // preserve the old minimum
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
