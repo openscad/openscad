@@ -134,7 +134,7 @@ void SurfaceNode::convert_image(img_data_t &data, std::vector<uint8_t> &img, uns
 {
     data.width = width;
     data.height = height;
-    data.reserve( width * height );
+    data.reserve( (size_t)width * height );
 	double min_val = 200;
 	for (unsigned int y = 0; y < height; ++y) {
 		for (unsigned int x = 0; x < width; ++x) {
@@ -247,7 +247,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
  
     // Now convert the unordered, possibly non-rectangular data into a well ordered vector
     // for faster access and reduced memory usage.
-    data.resize( lines * columns );
+    data.resize( (size_t)lines * columns );
 	for (int i = 0; i < lines; ++i)
         for (int j = 0; j < columns; ++j)
             data[ i*columns + j ] = unordered_data[std::make_pair(i, j)];
