@@ -175,18 +175,19 @@ build_qt5()
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
-		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp \
-                -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
-                -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
-                -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
-                -skip qtconnectivity -skip qtwebsockets -skip qtwebchannel -skip qtsensors \
-                -skip qtdatavis3d -skip qtcharts -skip qtwinextras \
-                -skip qtgraphicaleffects -skip qtquickcontrols2 -skip qtquickcontrols \
-                -skip qtvirtualkeyboard -skip qtlocation -skip qtwebengine -skip qtwebview \
-                -skip qtscript -skip qttranslations -skip qtdoc \
-                -no-feature-openal -no-feature-avfoundation
-  make -j"$NUMCPU" 
+		-no-xcb -no-glib -no-harfbuzz -no-cups \
+		-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtconnectivity -skip qtdatavis3d \
+		-skip qtdeclarative -skip qtdoc -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtlottie \
+		-skip qtnetworkauth -skip qtpurchasing -skip qtquick3d -skip qtquickcontrols \
+		-skip qtquickcontrols2 -skip qtquicktimeline -skip qtremoteobjects -skip qtscript -skip qtscxml -skip qtsensors \
+		-skip qtserialbus -skip qtserialport -skip qtspeech -skip qttranslations -skip qtvirtualkeyboard \
+		-skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview \
+		-skip qtwinextras -skip qtx11extras -skip qtxmlpatterns \
+		-no-feature-assistant -no-feature-designer -no-feature-distancefieldgenerator -no-feature-kmap2qmap \
+		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
+		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
+		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer
+  make -j"$NUMCPU"
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
 }
