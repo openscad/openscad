@@ -267,7 +267,7 @@ build_mpfr()
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
-  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN"
+  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$ARCH-apple-darwin --host=aarch64-apple-darwin17.0.0
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
