@@ -376,7 +376,9 @@ build_sparkle()
   mkdir Sparkle-$version
   cd Sparkle-$version
   tar xjf ../Sparkle-$version.tar.xz
-  cp -Rf Sparkle.framework $DEPLOYDIR/lib/ 
+  # Make sure the destination dir is clean before overwriting
+  rm -rf $DEPLOYDIR/lib/Sparkle.framework
+  cp -Rf Sparkle.framework $DEPLOYDIR/lib/
 
 # Build from source:
 #  v=$1
