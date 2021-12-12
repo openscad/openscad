@@ -11,8 +11,7 @@
 #  -f   Force build even if package is installed
 #  -v   Verbose
 #
-# Prerequisites:
-# - MacPorts: curl, cmake
+# Prerequisites: automake, libtool, cmake, pkg-config
 #
 
 set -e
@@ -40,7 +39,6 @@ PACKAGES=(
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
-    "libz 1.2.11"
     "libzip 1.5.1"
     "libxml2 2.9.9"
     "libuuid 1.6.2"
@@ -426,28 +424,6 @@ build_freetype()
   make install
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/freetype.version
-}
-
-# Note: libz come with macOS, so it's not necessary to build it ourselves. This build is a workaround for a weakness
-# in MacPorts' CMake, which will always prefer MacPorts libraries over our own configuration.
-# Future fix is to remove MacPorts' CMake everywhere.
-build_libz()
-{
-  version="$1"
-
-  echo "Building libz $version..."
-  cd "$BASEDIR"/src
-  rm -rf "zlib-$version"
-  if [ ! -f "zlib-$version.tar.gz" ]; then
-    curl -L "https://github.com/madler/zlib/archive/refs/tags/v${version}.tar.gz" -o zlib-$version.tar.gz
-  fi
-  tar xzf "zlib-$version.tar.gz"
-  cd "zlib-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libz.1.dylib $DEPLOYDIR/lib/libz.1.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libz.version
 }
 
 build_libzip()
