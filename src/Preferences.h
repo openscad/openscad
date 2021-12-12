@@ -52,6 +52,8 @@ public slots:
 	void on_enableParameterCheckBox_toggled(bool);
 	void on_enableRangeCheckBox_toggled(bool);
 	void on_useAsciiSTLCheckBox_toggled(bool);
+	void on_comboBoxToolbarExport3D_activated(int);
+	void on_comboBoxToolbarExport2D_activated(int);
 	void on_checkBoxSummaryCamera_toggled(bool);
 	void on_checkBoxSummaryArea_toggled(bool);
 	void on_checkBoxSummaryBoundingBox_toggled(bool);
@@ -119,6 +121,7 @@ signals:
 	void autocompleteChanged(bool status) const;
 	void characterThresholdChanged(int val) const;
 	void stepSizeChanged(int val) const;
+	void toolbarExportChanged() const;
 
 private slots:
     void on_lineEditStepSize_textChanged(const QString &arg1);
