@@ -135,8 +135,7 @@ jobs:
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             # Limit to 30 minutes
-            # ./scripts/macosx-build-dependencies.sh -l 30 -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
-            ./scripts/macosx-build-dependencies.sh -l 30 -d -f qt5
+            ./scripts/macosx-build-dependencies.sh -l 30 -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
       - run:
           name: Package Dependencies as an artifact
           command: |

@@ -185,7 +185,7 @@ build_qt5()
 		-no-feature-assistant -no-feature-designer -no-feature-distancefieldgenerator -no-feature-kmap2qmap \
 		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
 		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
-		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer
+		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer \
 		-device-option QMAKE_APPLE_DEVICE_ARCHS=$ARCH
   make -j"$NUMCPU" 
   make install
