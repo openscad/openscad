@@ -42,6 +42,7 @@
 #include "printutils.h"
 #include <boost/bind.hpp>
 #include "boost-utils.h"
+#include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -371,19 +372,20 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
     const Value &v = this->expr->evaluate(context);
+    static const boost::regex re_swizzle_validation("^([xyzw]{1,4}|[rgba]{1,4})$");
 
     switch(v.type()) {
     case Value::Type::VECTOR:
-        if (this->member.length() > 1)
+        if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation))
         {
           VectorType ret(context->session());
           for(const char& ch : this->member)
             switch(ch)
             {
-              case 'x': ret.emplace_back(v[0]); break;
-              case 'y': ret.emplace_back(v[1]); break;
-              case 'z': ret.emplace_back(v[2]); break;
-              case 'w': ret.emplace_back(v[3]); break;
+              case 'r': case 'x': ret.emplace_back(v[0]); break;
+              case 'g': case 'y': ret.emplace_back(v[1]); break;
+              case 'b': case 'z': ret.emplace_back(v[2]); break;
+              case 'a': case 'w': ret.emplace_back(v[3]); break;
             }
           return ret;
         }
@@ -391,6 +393,10 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
         if (this->member == "y") return v[1];
         if (this->member == "z") return v[2];
         if (this->member == "w") return v[3];
+        if (this->member == "r") return v[0];
+        if (this->member == "g") return v[1];
+        if (this->member == "b") return v[2];
+        if (this->member == "a") return v[3];
         break;
     case Value::Type::RANGE:
         if (this->member == "begin") return v[0];
