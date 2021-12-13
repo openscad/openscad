@@ -27,6 +27,8 @@ DEPLOYDIR=$BASEDIR/install
 MAC_OSX_VERSION_MIN=10.13
 OPTION_DEPLOY=false
 OPTION_FORCE=0
+OPTION_ARM64=false
+OPTION_X86_64=false
 
 PACKAGES=(
     "double_conversion 3.1.5"
@@ -60,11 +62,14 @@ DEPLOY_PACKAGES=(
 
 printUsage()
 {
-  echo "Usage: $0 [-cdfv] [<package>]"
+  echo "Usage: $0 [-dflaxv] [<package>]"
   echo
-  echo "  -d   Build for deployment"
-  echo "  -f   Force build even if package is installed"
-  echo "  -v   Verbose"
+  echo "  -d          Build for deployment"
+  echo "  -f          Force build even if package is installed"
+  echo "  -l MINUTES  Build time limit in minutes"
+  echo "  -a          Build arm64 binaries"
+  echo "  -x          Build x86_64 binaries"
+  echo "  -v          Verbose"
   echo
   echo "  If <package> is not specified, builds all packages"
 }
@@ -171,7 +176,7 @@ build_double_conversion()
   fi
   tar xzf "double-conversion-$version.tar.gz"
   cd "double-conversion-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCH" .
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j$NUMCPU
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/double_conversion.version
@@ -207,7 +212,7 @@ build_qt5()
 		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
 		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
 		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer \
-		-device-option QMAKE_APPLE_DEVICE_ARCHS=$ARCH
+		-device-option QMAKE_APPLE_DEVICE_ARCHS=$ARCHS_COMBINED
   make -j"$NUMCPU" 
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
@@ -244,7 +249,6 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  # Note: We're building against the core2 CPU profile as that's the minimum required hardware for running OS X 10.9
   ./configure --prefix=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
   make -j"$NUMCPU" install
 
@@ -290,7 +294,7 @@ build_boost()
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
   BOOST_TOOLSET="toolset=clang"
   echo "using clang ;" >> tools/build/user-config.jam 
-  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH -headerpad_max_install_names" install
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCHS_COMBINED" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCHS_COMBINED -headerpad_max_install_names" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/boost.version
 }
 
@@ -311,7 +315,7 @@ build_cgal()
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
   patch -p1 < $OPENSCADDIR/patches/CGAL-remove-demo-install.patch
-  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCH" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
   if [[ $version =~ 4.* ]]; then
@@ -335,7 +339,7 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  make GLEW_PREFIX=$DEPLOYDIR GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" POPT="-Os" STRIP= install
+  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCHS_COMBINED" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCHS_COMBINED" POPT="-Os" STRIP= install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glew.version
 }
 
@@ -376,7 +380,7 @@ build_eigen()
   cd eigen-$version
   mkdir build
   cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCH" ..
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" ..
   make -j"$NUMCPU" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/eigen.version
 }
@@ -434,7 +438,6 @@ build_sparkle()
 build_freetype()
 {
   version="$1"
-  extra_config_flags="--without-png"
 
   echo "Building freetype $version..."
   cd "$BASEDIR"/src
@@ -447,7 +450,7 @@ build_freetype()
 
   export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
   export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
-  PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --without-png --without-harfbuzz
   make -j"$NUMCPU"
   make install
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
@@ -468,7 +471,7 @@ build_libzip()
   fi
   tar xzf "libzip-$version.tar.gz"
   cd "libzip-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
@@ -492,7 +495,7 @@ build_libuuid()
   tar xzf uuid-$version.tar.gz
   cd uuid-$version
   patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix $DEPLOYDIR --without-perl --without-php --without-pgsql
   make -j"$NUMCPU"
   make install
   install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
@@ -514,7 +517,7 @@ build_fontconfig()
   patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
   # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
   # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" ac_cv_func_mkostemp=no
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --enable-libxml2 LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib" ac_cv_func_mkostemp=no
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
@@ -539,8 +542,7 @@ build_gettext()
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-  #patch -p1 < $OPENSCADDIR/patches/gettext.patch
-  ./configure --with-included-glib --disable-java --disable-csharp --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib"
+  ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos13.0" CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --with-included-glib --disable-java --disable-csharp LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib"
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
@@ -585,9 +587,7 @@ remove_ragel()
 
 build_harfbuzz()
 {
-    set -x
   version=$1
-  extra_config_flags="--with-coretext=auto --with-glib=no --disable-gtk-doc-html"
 
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
@@ -597,7 +597,7 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN CXXFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos13.0" CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
@@ -617,7 +617,7 @@ build_hidapi()
   unzip "hidapi-$version.zip"
   cd "hidapi-hidapi-$version"
   ./bootstrap # Needed when building from github sources
-  ./configure --prefix=$DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix=$DEPLOYDIR
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libhidapi.dylib $DEPLOYDIR/lib/libhidapi.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/hidapi.version
@@ -635,7 +635,7 @@ build_lib3mf()
   fi
   tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
-  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/lib3mf.version
@@ -657,7 +657,7 @@ build_pixman()
   tar xzf "${PIXMAN_FILENAME}"
   cd "$PIXMAN_DIR"
   # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
-  ./configure --disable-libpng --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix=$DEPLOYDIR --disable-libpng
   make -j"$NUMCPU" install
   otool -L $DEPLOYDIR/lib/"libpixman-1.dylib"
   install_name_tool -id @rpath/libpixman-1.dylib $DEPLOYDIR/lib/"libpixman-1.dylib"
@@ -679,10 +679,7 @@ build_cairo()
   fi
   tar xzf "${CAIRO_FILENAME}"
   cd "$CAIRO_DIR"
-  ./configure --prefix=$DEPLOYDIR \
-        CXXFLAGS="$CXXSTDFLAGS" \
-        CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
-        LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix=$DEPLOYDIR \
         --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
         --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
         --enable-win32-font=no --enable-png=no --enable-ps=no \
@@ -701,13 +698,15 @@ fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
 
 TIME_LIMIT=1440 # one day
-while getopts 'dfvl:' c
+while getopts 'dfl:axv' c
 do
   case $c in
     d) OPTION_DEPLOY=true;;
     f) OPTION_FORCE=1;;
-    v) echo verbose on;;
     l) TIME_LIMIT=${OPTARG}; if [ "$TIME_LIMIT" -gt 0 ]; then echo time limit $TIME_LIMIT minutes; else printUsage;exit 1; fi;;
+    a) OPTION_ARM64=true;;
+    x) OPTION_X86_64=true;;
+    v) echo verbose on;;
     *) printUsage;exit 1;;
   esac
 done
@@ -742,8 +741,21 @@ else
   echo "Detected Lion (10.7) or earlier"
 fi
 
-ARCH=`uname -m`
-echo "Building for $ARCH"
+LOCAL_ARCH=`uname -m`
+ARCHS=()
+if $OPTION_ARM64 || $OPTION_X86_64; then
+    if $OPTION_ARM64; then
+	ARCHS+=(arm64)
+    fi
+    if $OPTION_X86_64; then
+	ARCHS+=(x86_64)
+    fi
+else
+    ARCHS+=($LOCAL_ARCH)
+fi
+ARCHS_COMBINED=$(IFS=\; ; echo "${ARCHS[*]}")
+echo "Building on $LOCAL_ARCH for $ARCHS_COMBINED"
+
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
