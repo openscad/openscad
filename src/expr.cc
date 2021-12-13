@@ -374,9 +374,23 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
 
     switch(v.type()) {
     case Value::Type::VECTOR:
+        if (this->member.length() > 1)
+        {
+          VectorType ret(context->session());
+          for(const char& ch : this->member)
+            switch(ch)
+            {
+              case 'x': ret.emplace_back(v[0]); break;
+              case 'y': ret.emplace_back(v[1]); break;
+              case 'z': ret.emplace_back(v[2]); break;
+              case 'w': ret.emplace_back(v[3]); break;
+            }
+          return ret;
+        }
         if (this->member == "x") return v[0];
         if (this->member == "y") return v[1];
         if (this->member == "z") return v[2];
+        if (this->member == "w") return v[3];
         break;
     case Value::Type::RANGE:
         if (this->member == "begin") return v[0];
