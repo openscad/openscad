@@ -532,6 +532,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
+  ${TEST_SCAD_DIR}/misc/data-render.scad
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
