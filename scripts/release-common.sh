@@ -90,6 +90,7 @@ fi
 case $OS in
     MACOSX)
         . ./scripts/setenv-macos.sh
+        CMAKE_CONFIG="$CMAKE_CONFIG -DCMAKE_OSX_ARCHITECTURES=arm64"
     ;;
     LINUX)
         TARGET=
