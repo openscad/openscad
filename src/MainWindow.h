@@ -143,6 +143,7 @@ private:
   class FontListDialog *font_list_dialog;
 
 public slots:
+	void updateExportActions();
 	void updateRecentFiles(EditorInterface *edt);
 	void updateRecentFileActions();
 	void handleFileDrop(const QUrl& url);

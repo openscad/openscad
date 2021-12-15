@@ -40,7 +40,7 @@ svgpage::~svgpage()
 }
 
 void
-svgpage::set_attrs(attr_map_t& attrs)
+svgpage::set_attrs(attr_map_t& attrs, void *context)
 {
 	this->x = 0;
 	this->y = 0;

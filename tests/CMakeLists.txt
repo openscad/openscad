@@ -273,7 +273,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -532,6 +532,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
+  ${TEST_SCAD_DIR}/json/import-json.scad
   ${TEST_SCAD_DIR}/misc/data-render.scad
 )
 
@@ -744,6 +745,7 @@ experimental_tests(csgpngtest_text-metrics)
 experimental_tests(throwntogethertest_text-metrics)
 experimental_tests(dxfpngtest_text-metrics)
 experimental_tests(svgpngtest_text-metrics)
+experimental_tests(echotest_import-json)
 
 # Test config handling
 

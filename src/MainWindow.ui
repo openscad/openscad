@@ -540,7 +540,6 @@
        <addaction name="designActionPreview"/>
        <addaction name="designActionRender"/>
        <addaction name="separator"/>
-       <addaction name="fileActionExportSTL"/>
        <addaction name="designAction3DPrint"/>
       </widget>
      </item>

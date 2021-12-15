@@ -40,9 +40,9 @@ group::~group()
 }
 
 void
-group::set_attrs(attr_map_t& attrs)
+group::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs, context);
 }
 
 const std::string

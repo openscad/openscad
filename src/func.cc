@@ -36,6 +36,7 @@
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
 #include "parameters.h"
+#include "import.h"
 #include "GeometryEvaluator.h"
 #include "Reindexer.h"
 #include "polyset.h"
@@ -940,6 +941,13 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
     return Value(arguments[0]->isDefinedAs(Value::Type::OBJECT));
 }
 
+Value builtin_import(Arguments arguments, const Location& loc)
+{
+	const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
+	std::string file = parameters.get("file", "");
+	return import_json(file, arguments.session(), loc);
+}
+
 #ifdef ENABLE_CGAL
 
 static void get_mesh_data(const CGAL_Nef_polyhedron &root_N, EvaluationSession* session, VectorType& vertices_out, VectorType& indices_out)
@@ -1306,7 +1314,11 @@ void register_builtin_functions()
 					"is_object(arg) -> boolean",
 				});
 
-	Builtins::init("render", new BuiltinFunction(&builtin_data_render,
+	Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
+				{
+					"import(file) -> object",
+
+  Builtins::init("render", new BuiltinFunction(&builtin_data_render,
 				&Feature::ExperimentalDataRender),
 				{
 					"render() -> object",
