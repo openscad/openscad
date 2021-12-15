@@ -11,7 +11,7 @@
 #  -f   Force build even if package is installed
 #  -v   Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config
+# Prerequisites: automake, libtool, cmake, pkg-config, wget
 #
 
 set -e
