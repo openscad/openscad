@@ -246,7 +246,7 @@ build_mpfr()
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
-  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH" --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
+  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH" --build=$ARCH_GNU-apple-darwin --host=$ARCH_GNU-apple-darwin17.0.0
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
@@ -759,6 +759,12 @@ fi
 
 ARCH=`uname -m`
 echo "Building for $ARCH"
+
+# Older autoconf doesn't recognize arm64; use aarch64 instead.
+# This is only needed for mpfr
+if [ "$ARCH" = "arm64" ]; then
+    ARCH_GNU=aarch64
+fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
