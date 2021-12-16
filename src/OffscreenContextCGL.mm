@@ -28,9 +28,7 @@ std::string offscreen_context_getinfo(OffscreenContext *)
 
   SInt32 majorVersion,minorVersion,bugFixVersion;
   
-  Gestalt(gestaltSystemVersionMajor, &majorVersion);
-  Gestalt(gestaltSystemVersionMinor, &minorVersion);
-  Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
+  std::string osVersion = [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
 
   const char *arch = "unknown";
   if (sizeof(int*) == 4) arch = "32-bit";
@@ -39,7 +37,7 @@ std::string offscreen_context_getinfo(OffscreenContext *)
   std::ostringstream out;
   out << "GL context creator: Cocoa / CGL\n"
       << "PNG generator: Core Foundation\n"
-      << "OS info: Mac OS X " << majorVersion << "." << minorVersion << "." << bugFixVersion << " (" << name.machine << " kernel)\n"
+      << "OS info: Mac OS X " << osVersion << " (" << name.machine << " kernel)\n"
       << "Machine: " << arch << "\n";
   return out.str();
 }
