@@ -9,7 +9,7 @@
 
 std::string PlatformUtils::pathSeparatorChar()
 {
-	return ":";
+	return "/";
 }
 
 std::string PlatformUtils::userDocumentsPath()
