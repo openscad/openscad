@@ -36,16 +36,19 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
   int bitsPerComponent = 8;
   CGContextRef contextRef = CGBitmapContextCreate(pixels, width, height, 
-																									bitsPerComponent, rowBytes, 
+                                                  bitsPerComponent, rowBytes,
                                                   colorSpace, bitmapInfo);
   if (!contextRef) {
     std::cerr << "Unable to create CGContextRef.";
+    CGColorSpaceRelease(colorSpace);
     return false;
   }
 
   CGImageRef imageRef = CGBitmapContextCreateImage(contextRef);
   if (!imageRef) {
     std::cerr <<  "Unable to create CGImageRef.";
+    CFRelease(contextRef);
+    CGColorSpaceRelease(colorSpace);
     return false;
   }
 
@@ -72,6 +75,10 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
                                                                              fileDict);
   if (!imageDest) {
     std::cerr <<  "Unable to create CGImageDestinationRef.";
+    CFRelease(dataconsumer);
+    CGImageRelease(imageRef);
+    CFRelease(contextRef);
+    CGColorSpaceRelease(colorSpace);
     return false;
   }
 
