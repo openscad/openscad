@@ -94,12 +94,6 @@ namespace PolysetUtils {
         outps.polygons.reserve( polygons.size() );
 
 		for (const auto &faces : polygons) {
-#if 1
-// ccox - I can't reproduce the error seen on the CI builds, and the errors aren't uploading correctly to give details.
-// So I'll try to guess which change could make it fail.
-// This should be the only change which could affect actual geometry in the failing tests.
-// if this passes, then I'll remove the code properly.
-// Removing this code DOES NOT AFFECT THE RESULT!  the 1105 tests still fail only on the Mac VM!
 			if (faces[0].size() == 3) {
                 // trivial case - triangles cannot be concave or have holes
                 outps.append_poly();
@@ -107,12 +101,9 @@ namespace PolysetUtils {
                 outps.append_vertex(verts[faces[0][1]]);
                 outps.append_vertex(verts[faces[0][2]]);
 			}
-        
             // Quads seem trivial, but can be concave, and can have degenerate cases.
             // So everything more complex than triangles goes into the general case.
-			else
-#endif
-            {
+			else {
                 triangles.clear();
 				auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
                 if (!err) {
