@@ -96,8 +96,9 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   //CFRelease(fileURL);
   //CFRelease(fname);
   CFRelease(imageProps);
-  CGColorSpaceRelease(colorSpace);
   CGImageRelease(imageRef);
+  CFRelease(contextRef);
+  CGColorSpaceRelease(colorSpace);
   return true;
 }
 
