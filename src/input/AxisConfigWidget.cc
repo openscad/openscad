@@ -133,11 +133,14 @@ void AxisConfigWidget::init() {
 	initUpdateCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
 	initUpdateCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
 
-	auto *wheelIgnorer = new WheelIgnorer(this);
 	auto comboBoxes = this->findChildren<QComboBox *>();
-	for (auto comboBox : comboBoxes) {
-		comboBox->installEventFilter(wheelIgnorer);
-	}
+    if (comboBoxes.size() > 0) {     // only allocate if there are comboboxes to use the function
+        auto *wheelIgnorer = new WheelIgnorer(this);
+        for (auto comboBox : comboBoxes) {
+            comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
+        }
+    }
+    // clang generates a bogus warning that wheelIgnorer may be leaked
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		std::string s = std::to_string(i);
