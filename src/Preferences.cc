@@ -196,6 +196,8 @@ void Preferences::init() {
 
 	initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
 	initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
+	initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
+	initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
 	Settings::Settings::visit(SettingsReader());
 
@@ -606,7 +608,7 @@ void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 	QSettingsCached settings;
 	settings.setValue("advanced/enableSoundNotification", state);
 	this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(state);
-	this->secLabel->setEnabled(state);
+	this->secLabelOnRenderCompleteSound->setEnabled(state);
 	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(state);
 }
 
@@ -687,6 +689,18 @@ void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
 {
 	Settings::Settings::exportUseAsciiSTL.setValue(checked);
 	writeSettings();
+}
+
+void Preferences::on_comboBoxToolbarExport3D_activated(int val)
+{
+	applyComboBox(this->comboBoxToolbarExport3D, val, Settings::Settings::toolbarExport3D);
+	emit toolbarExportChanged();
+}
+
+void Preferences::on_comboBoxToolbarExport2D_activated(int val)
+{
+	applyComboBox(this->comboBoxToolbarExport2D, val, Settings::Settings::toolbarExport2D);
+	emit toolbarExportChanged();
 }
 
 void Preferences::on_checkBoxSummaryCamera_toggled(bool checked)
@@ -948,6 +962,8 @@ void Preferences::updateGUI()
 	BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
 	BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
 	BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(Settings::Settings::exportUseAsciiSTL.value());
+	updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
+	updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
 	BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)->setChecked(Settings::Settings::summaryCamera.value());
 	BlockSignals<QCheckBox *>(this->checkBoxSummaryArea)->setChecked(Settings::Settings::summaryArea.value());
@@ -958,7 +974,7 @@ void Preferences::updateGUI()
 	BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
 	BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
 
-	this->secLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
+	this->secLabelOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
 	this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
