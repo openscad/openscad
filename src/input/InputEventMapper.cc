@@ -87,6 +87,11 @@ int InputEventMapper::getMaxAxis(){
     return max_axis;
 }
 
+/*
+    -1 -> 0.196
+    0 -> 0
+    1 ->  10.72
+*/
 double InputEventMapper::scale(double val)
 {
     double x = 4 * val;
