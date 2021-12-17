@@ -37,9 +37,9 @@ tspan::~tspan()
 }
 
 void
-tspan::set_attrs(attr_map_t& attrs)
+tspan::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs,context);
 	this->x = parse_double(attrs["x"]);
 	this->y = parse_double(attrs["y"]);
 	this->dx = parse_double(attrs["dx"]);

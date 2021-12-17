@@ -1886,14 +1886,68 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="secLabel">
+                  <widget class="QLabel" name="secLabelOnRenderCompleteSound">
                    <property name="text">
                     <string>sec</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <spacer name="horizontalSpacer_40">
+                  <spacer name="horizontalSpacerOnRenderCompleteSound">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport3D">
+                 <item>
+                  <widget class="QLabel" name="labelToolbarExport3D">
+                   <property name="text">
+                    <string>Toolbar Export 3D</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxToolbarExport3D"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerToolbarExport3D">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport2D">
+                 <item>
+                  <widget class="QLabel" name="labelToolbarExport2D">
+                   <property name="text">
+                    <string>Toolbar Export 2D</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxToolbarExport2D"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerToolbarExport2D">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1994,6 +2048,107 @@
                  </item>
                  <item>
                   <spacer name="horizontalSpacer_35">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutExport3D">
+                 <item>
+                  <widget class="QLabel" name="labelExport3D">
+                   <property name="text">
+                    <string>Toolbar Export Format 3D</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxExport3D">
+                   <item>
+                    <property name="text">
+                     <string>STL</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>OFF</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>WRL</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>AMF</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>3MF</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerExport3D">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutExport2D">
+                 <item>
+                  <widget class="QLabel" name="labelExport2D">
+                   <property name="text">
+                    <string>Toolbar Export Format 2D</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxExport2D">
+                   <item>
+                    <property name="text">
+                     <string>none</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>DXF</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>SVG</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PDF</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerExport2D">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>

@@ -379,8 +379,8 @@ Renderer::ColorMode ThrownTogetherRenderer::getColorMode(const CSGNode::Flag &fl
 BoundingBox ThrownTogetherRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
-	if (this->root_products) bbox = this->root_products->getBoundingBox();
-	if (this->highlight_products) bbox.extend(this->highlight_products->getBoundingBox());
-	if (this->background_products) bbox.extend(this->background_products->getBoundingBox());
+	if (this->root_products) bbox = this->root_products->getBoundingBox(true);
+	if (this->highlight_products) bbox.extend(this->highlight_products->getBoundingBox(true));
+	if (this->background_products) bbox.extend(this->background_products->getBoundingBox(true));
 	return bbox;
 }

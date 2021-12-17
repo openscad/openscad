@@ -1,4 +1,4 @@
-name: macos
+name: macos-tests
 
 on:
   push:
@@ -12,10 +12,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Checkout MCAD
-      run: |
-        git submodule update --init --recursive
-    - name: Setup Homebrew
+      with:
+        submodules: 'recursive'
+    - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
@@ -25,14 +24,15 @@ jobs:
         mkdir build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
-        make -j2
+        export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
+        make -j$NUMCPU
     - name: Run Test Suite
       run: |
         cd build/tests
-        ctest -j2 -E 'edges_view-options-tests|nef3_broken'
+        export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
+        ctest -j$NUMCPU -E 'edges_view-options-tests|nef3_broken'
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2
-      if: ${{ always() }}
       with:
         name: Test Result Report (MacOS)
         path: |
