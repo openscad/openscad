@@ -85,6 +85,8 @@ if (MXECROSS)
   add_definitions(-DGLEW_STATIC)
   add_definitions(-DLIBXML_STATIC)
   add_definitions(-DSTATIC_QT_SVG_PLUGIN)
+  add_definitions(-DWINVER=0x0601)
+  add_definitions(-D_WIN32_WINNT=0x0601)
   list(APPEND PLATFORM_LIBS -lbcrypt)
 endif()
 
