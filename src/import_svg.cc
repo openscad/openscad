@@ -80,10 +80,14 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 
 }
 
-Polygon2d *import_svg(const std::string &filename, const double dpi, const bool center, const Location &loc)
+
+Polygon2d *import_svg(double fn, double fs, double fa,
+                    const std::string &filename, const double dpi, const bool center, const Location &loc)
 {
 	try {
-		const auto shapes = libsvg::libsvg_read_file(filename.c_str());
+        fnContext scadContext(fn, fs, fa);
+        
+		const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *) &scadContext );
 
 		double width_mm = 0.0;
 		double height_mm = 0.0;

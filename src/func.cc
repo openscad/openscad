@@ -36,6 +36,7 @@
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
 #include "parameters.h"
+#include "import.h"
 
 #include <cmath>
 #include <sstream>
@@ -932,6 +933,13 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
     return Value(arguments[0]->isDefinedAs(Value::Type::OBJECT));
 }
 
+Value builtin_import(Arguments arguments, const Location& loc)
+{
+	const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
+	std::string file = parameters.get("file", "");
+	return import_json(file, arguments.session(), loc);
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1148,5 +1156,10 @@ void register_builtin_functions()
         &Feature::ExperimentalTextMetricsFunctions),
 				{
 					"is_object(arg) -> boolean",
+				});
+
+	Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
+				{
+					"import(file) -> object",
 				});
 }
