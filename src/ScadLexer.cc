@@ -27,7 +27,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 	keywordSet[3] =
 		"cube sphere cylinder polyhedron square circle polygon text "
 		"minkowski hull resize child children echo union difference "
-		"intersection linear_extrude rotate_extrude import group  "
+		"intersection linear_extrude rotate_extrude import group "
 		"projection render surface scale rotate mirror translate "
 		"multmatrix color offset intersection_for roof";
 
@@ -83,11 +83,11 @@ const char *ScadLexer::keywords(int set) const
 #include "lexertl/lookup.hpp"
 
 
-// DEBUGGING
+#if DEBUG_LEXERTL
 #include "lexertl/debug.hpp"
 #include <fstream>
 #include <iostream>
-
+#endif
 
 
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
@@ -98,17 +98,44 @@ Lex::Lex()
 
 void Lex::rules(){
 
+/*
+for keywords, see
+    void Builtins::initialize()
+    
+Questionable:
+    assign
+    class
+    see
+    brief
+    undef
+    namespace
+    package
+    interface
+    param
+    file
+    typedef
+
+TODO - need a double quoted string type
+ */
 	int s_size = sizeof(std::string);
-	std::string keywords[] = {"var", "module", "function", "use", "echo", "include", "import", "group", "projection", "render", "surface","def", "enum", "struct", "fn", "typedef", "file", "namespace", "package", "interface", "param", "see","return", "class", "brief", "if", "else", "let", "for", "undef"};
+	std::string keywords[] = {"var", "module", "function", "use", "echo", "include", "import", "group",
+                            "projection", "render", "surface", "def", "enum", "struct", "fn", "typedef",
+                            "file", "namespace", "package", "interface", "param", "see", "return", "class",
+                            "brief", "if", "else", "let", "for", "undef"};
 	int keywords_count = (sizeof(keywords)/s_size);
 
-	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude", "rotate_extrude", "resize", "mirror", "multmatrix", "color", "offset", "hull", "minkowski", "children", "assign", "intersection_for"};
+	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude",
+                                    "rotate_extrude", "resize", "mirror", "multmatrix", "color",
+                                    "offset", "hull", "minkowski", "children", "assign", "intersection_for"};
 	int transformations_count = (sizeof(transformations)/s_size);
 
 	 std::string booleans[] = {"union", "difference", "intersection", "true", "false"};
 	int booleans_count = (sizeof(booleans)/s_size);
 
-	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos", "tan", "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt", "exp", "len", "log", "ln", "str", "chr", "concat", "lookup", "search", "version", "version_num", "norm", "cross", "parent_module", "dxf_dim", "dxf_cross"};
+	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos", "tan",
+                                "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt", "exp", "len",
+                                "log", "ln", "str", "chr", "concat", "lookup", "search", "version",
+                                "version_num", "norm", "cross", "parent_module", "dxf_dim", "dxf_cross"};
 	int functions_count = (sizeof(functions)/s_size);
 	 
 	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon", "text", "circle"};
@@ -138,9 +165,10 @@ void Lex::rules(){
 	rules_.push(".|\n", etext);
 	lexertl::generator::build(rules_, sm);
 
-// DEBUGGING
+#if DEBUG_LEXERTL
 std::ofstream fout("file1.txt", std::fstream::trunc);
 lexertl::debug::dump(sm, fout);
+#endif
 
 }
 
@@ -191,8 +219,11 @@ std::cout<< "start: "<<start<<std::endl;
     QString source(data);
     const std::string input(source.toStdString());
     pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
-// DEBUGGING
+
+#if DEBUG_LEXERTL
 std::cout << "its being called" <<std::endl;
+#endif
+
     l->lex_results(input, start, this);
     this->fold(start, end);
 
@@ -274,8 +305,11 @@ int ScadLexer2::getStyleAt(int pos)
 void ScadLexer2::highlighting(int start, const std::string& input, lexertl::smatch results)
 {
 	std::string token = results.str();
-// DEBUGGING
+
+#if DEBUG_LEXERTL
 std::cout << "highlighting:" <<token<<std::endl;
+#endif
+
 	int style = results.id;
 	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.first));      // fishy, was results.start

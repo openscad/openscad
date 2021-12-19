@@ -458,9 +458,6 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		newLexer->setColor(textColor);
 		newLexer->setPaper(paperColor);
 
-// TODO - fill in the colors from the EditorColorScheme
-// TODO - update sample colorSchemes to match new lexer values
-
         const auto& colors = pt.get_child("colors");
 
 /* categories that match */
