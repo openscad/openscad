@@ -43,7 +43,7 @@ class LexInterface
 {
 	public:
 	virtual void highlighting(int start, const std::string& input, lexertl::smatch results) = 0;
-	virtual int getStyleAt(int) = 0;
+	virtual int getStyleAt(int position) = 0;
 };
 
 class Lex
@@ -53,11 +53,11 @@ class Lex
     
     //typedef lexertl::basic_rules<char_type, char_type, id_type> rules_;
 	lexertl::rules rules_;
-	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, enumber, evariable, especialVariable, ecomment, etext };
+	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, eQuotedString, enumber, evariable, especialVariable, ecomment, etext };
 
 	Lex();
 	void rules();
-	void defineRules(std::string words[], int, int);
+	void defineRules(std::string words[], size_t size, int id);
 	void lex_results(const std::string& input, int start, LexInterface* const obj);
 };
 
@@ -72,18 +72,22 @@ public:
 	    Function = 4,
 	    Model = 5,
 	    Operator = 6,
-	    Number = 7,
-	    Variable = 8,
-	    SpecialVariable = 9,
-	    Comment = 10,
-	    Modifier1 = 12,
-	    Block1 = 13,
-	    Modifier2 = 14,
-	    Block2 = 15,
-        Modifier3 = 16,
-	    Block3 = 17,
-	    Modifier4= 18,
-	    Block4 = 19
+        String = 7,
+	    Number = 8,
+	    Variable = 9,
+	    SpecialVariable = 10,
+	    Comment = 11,
+        OtherText = 12,
+
+// unused???
+	    Modifier1 = 13,
+	    Block1 = 14,
+	    Modifier2 = 15,
+	    Block2 = 16,
+        Modifier3 = 17,
+	    Block3 = 18,
+	    Modifier4= 19,
+	    Block4 = 20,
         };
 
 	Lex *l;
@@ -94,7 +98,7 @@ public:
     void styleText(int start, int end);
 	void autoScroll(int error_pos);
 	int getStyleAt(int pos);
-	void fold(int, int);
+	void fold(int start, int end);
 
     const char *blockEnd(int *style = 0) const;
 	const char *blockStart(int *style = 0) const;
@@ -106,15 +110,8 @@ public:
 
 private:
 	ScadLexer2(const ScadLexer &);
-	ScadLexer2 &operator=(const ScadLexer &);
-	QStringList keywordsList;
-	QStringList transformationsList;
-	QStringList booleansList;
-	QStringList functionsList;
-	QStringList modelsList;
-	QStringList numbers;
-	QStringList operatorsList;
-	int pos;
+	ScadLexer2 &operator=(const ScadLexer2 &);
+
 };
 
 #endif

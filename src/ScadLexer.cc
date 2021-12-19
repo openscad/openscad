@@ -82,6 +82,7 @@ const char *ScadLexer::keywords(int set) const
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 
+#define DEBUG_LEXERTL   1
 
 #if DEBUG_LEXERTL
 #include "lexertl/debug.hpp"
@@ -103,46 +104,49 @@ for keywords, see
     void Builtins::initialize()
     
 Questionable:
+    struct
+    enum
+    def
     assign
     class
     see
     brief
-    undef
     namespace
     package
     interface
     param
     file
     typedef
+    fn
 
-TODO - need a double quoted string type
  */
-	int s_size = sizeof(std::string);
+	const size_t s_size = sizeof(std::string);
 	std::string keywords[] = {"var", "module", "function", "use", "echo", "include", "import", "group",
-                            "projection", "render", "surface", "def", "enum", "struct", "fn", "typedef",
+                            "projection", "render",
+                            "def", "enum", "struct", "fn", "typedef",
                             "file", "namespace", "package", "interface", "param", "see", "return", "class",
                             "brief", "if", "else", "let", "for", "undef"};
-	int keywords_count = (sizeof(keywords)/s_size);
+	const size_t keywords_count = sizeof(keywords)/s_size;
 
 	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude",
                                     "rotate_extrude", "resize", "mirror", "multmatrix", "color",
                                     "offset", "hull", "minkowski", "children", "assign", "intersection_for"};
-	int transformations_count = (sizeof(transformations)/s_size);
+	const size_t transformations_count = sizeof(transformations)/s_size;
 
-	 std::string booleans[] = {"union", "difference", "intersection", "true", "false"};
-	int booleans_count = (sizeof(booleans)/s_size);
+    std::string booleans[] = {"union", "difference", "intersection", "true", "false"};
+	const size_t booleans_count = sizeof(booleans)/s_size;
 
 	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos", "tan",
                                 "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt", "exp", "len",
                                 "log", "ln", "str", "chr", "concat", "lookup", "search", "version",
                                 "version_num", "norm", "cross", "parent_module", "dxf_dim", "dxf_cross"};
-	int functions_count = (sizeof(functions)/s_size);
+	const size_t functions_count = sizeof(functions)/s_size;
 	 
-	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon", "text", "circle"};
-	int models_count = (sizeof(models)/s_size);
+	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon", "text", "circle", "surface"};
+	const size_t models_count = sizeof(models)/s_size;
 
 	std::string operators[] = {"<=", ">=", "==", "!=", "&&", "="};
-	int operators_count = (sizeof(operators)/s_size);
+	const size_t operators_count = sizeof(operators)/s_size;
 
 
 	rules_.push_state("COMMENT");
@@ -153,9 +157,24 @@ TODO - need a double quoted string type
 	defineRules(models, models_count, emodel);
 	defineRules(operators, operators_count, eoperator);
  
-	rules_.push("[0-9]+", enumber);
-	rules_.push("[a-zA-Z0-9_]+", evariable);
-	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
+    
+ // first match is returned by enum, so string must come before number or variable!
+ // "[\"]([ -\\x10ffff]{-}[\"\\\\]|\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))*[\"]");
+ 
+// "\"[^\"\\n\\r]*[\"\\n\\r]"   -- not working
+// "\"([^\\\"])*\"" - not working
+// "\"[^\\\"]*\"" - not working
+// "\"[a-zA-Z0-9]*\"" - not working
+// "\"[.*]\""           - not working
+// "\"(.*)\"" - not working
+
+// "[\"][^\\\"]*[\"]"  -- works for all but \" and unicode
+// "[\"].*[^\\][\"]" -- works, but includes ; and ) after closing
+	rules_.push("[\"][^\\\"]*[\"]", eQuotedString); // enum 7
+    
+	rules_.push("([-+]?((([0-9]+[.]?|([0-9]*[.][0-9]+))([eE][-+]?[0-9]+)?)))", enumber);    // enum 8
+	rules_.push("[a-zA-Z0-9_]+", evariable); // enum 9
+	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);  // enum 10
 
 	rules_.push("INITIAL", "\"/*\"",  ecomment, "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
@@ -163,6 +182,8 @@ TODO - need a double quoted string type
 
 	rules_.push("[/][/].*$", ecomment);
 	rules_.push(".|\n", etext);
+ 
+ 
 	lexertl::generator::build(rules_, sm);
 
 #if DEBUG_LEXERTL
@@ -172,16 +193,18 @@ lexertl::debug::dump(sm, fout);
 
 }
 
-void Lex::defineRules(std::string words[], int size, int id){
+void Lex::defineRules(std::string words[], size_t size, int id){
 
-	for(int it = 0; it < size; it++) {
+	for(size_t it = 0; it < size; it++) {
 		rules_.push(words[it], id);
 	}
 }
 
 void Lex::lex_results(const std::string& input, int start, LexInterface* const obj){
 
+#if DEBUG_LEXERTL
 	std::cout << "called lexer" <<std::endl;
+#endif
 	lexertl::smatch results (input.begin(), input.end());
 
 	int isstyle = obj->getStyleAt(start-1);
@@ -210,7 +233,9 @@ ScadLexer2::~ScadLexer2()
 
 void ScadLexer2::styleText(int start, int end)
 {
-std::cout<< "start: "<<start<<std::endl;
+#if DEBUG_LEXERTL
+    std::cout<< "start: "<<start<<std::endl;
+#endif
     if(!editor())
         return;
 
@@ -218,10 +243,11 @@ std::cout<< "start: "<<start<<std::endl;
     editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
     QString source(data);
     const std::string input(source.toStdString());
-    pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
 
 #if DEBUG_LEXERTL
-std::cout << "its being called" <<std::endl;
+    auto pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
+
+    std::cout << "its being called" <<std::endl;
 #endif
 
     l->lex_results(input, start, this);
@@ -305,12 +331,12 @@ int ScadLexer2::getStyleAt(int pos)
 void ScadLexer2::highlighting(int start, const std::string& input, lexertl::smatch results)
 {
 	std::string token = results.str();
+	int style = results.id;
 
 #if DEBUG_LEXERTL
-std::cout << "highlighting:" <<token<<std::endl;
+    std::cout << "highlighting ( " << style << " ):" << token << std::endl;
 #endif
 
-	int style = results.id;
 	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.first));      // fishy, was results.start
 	setStyling(word.length(), style);

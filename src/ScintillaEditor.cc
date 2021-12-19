@@ -464,11 +464,10 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		newLexer->setColor(readColor(colors, "operator", textColor), ScadLexer2::Operator);
 		newLexer->setColor(readColor(colors, "comment", textColor), ScadLexer2::Comment);
 		newLexer->setColor(readColor(colors, "number", textColor), ScadLexer2::Number);
+		newLexer->setColor(readColor(colors, "string", textColor), ScadLexer2::String);
 
 
   /*
-TODO: need string type in lexertl
-
 OLD
     keyword1 = "if else let for each module function true false undef include use assert";
         ==> keywords
@@ -489,29 +488,19 @@ OLD
 		"multmatrix color offset intersection_for roof";
             ==> models
 
-        newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
-        newLexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
-        newLexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
-        newLexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
-        
-        newLexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
-        newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
-        newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
-        newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
   */
 
 
 		newLexer->setColor(readColor(colors, "keyword1", textColor), ScadLexer2::Keyword);      // was keywords
 		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Transformation);    // was transformations
-		newLexer->setColor(readColor(colors, "booleans", textColor), ScadLexer2::Boolean);
-        
+		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Boolean);         // was booleans
 		newLexer->setColor(readColor(colors, "keyword2", textColor), ScadLexer2::Function);     // was functions
-        
 		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Model);      // was models
         
-		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);
-		newLexer->setColor(readColor(colors, "special-variables", textColor), ScadLexer2::SpecialVariable);
+		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);    // was variables
+		newLexer->setColor(readColor(colors, "keyword1", textColor), ScadLexer2::SpecialVariable); // was special-variables
         
+// unused?????
 		newLexer->setColor(readColor(colors, "modifier1", textColor), ScadLexer2::Modifier1);
 		newLexer->setColor(readColor(colors, "block1", textColor), ScadLexer2::Block1);
         
