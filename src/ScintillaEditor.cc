@@ -448,7 +448,6 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
-// TODO - do we need a new object, or just change the color settings on the existing lexer?
         auto *newLexer = new ScadLexer2(this);
         setLexer(newLexer);
 
@@ -463,22 +462,68 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 // TODO - update sample colorSchemes to match new lexer values
 
         const auto& colors = pt.get_child("colors");
-		newLexer->setColor(readColor(colors, "keywords", textColor), ScadLexer2::Keyword);
-		newLexer->setColor(readColor(colors, "transformations", textColor), ScadLexer2::Transformation);
+
+/* categories that match */
+		newLexer->setColor(readColor(colors, "operator", textColor), ScadLexer2::Operator);
+		newLexer->setColor(readColor(colors, "comment", textColor), ScadLexer2::Comment);
+		newLexer->setColor(readColor(colors, "number", textColor), ScadLexer2::Number);
+
+
+  /*
+TODO: need string type in lexertl
+
+OLD
+    keyword1 = "if else let for each module function true false undef include use assert";
+        ==> keywords
+        
+    keyword2 = "abs sign rands min max sin cos asin acos tan atan atan2 "
+		"round ceil floor pow sqrt exp len log ln str chr ord concat is_undef is_list is_num is_bool is_string is_function "
+		"lookup search version version_num norm cross parent_module dxf_dim dxf_cross";
+        ==> functions
+
+// er, I don't think OpenSCAD uses these keywords
+    keyword3 = "struct union enum fn var def typedef file namespace package interface param see return class brief";
+        ==> transformations
+    
+    keyword4 = "cube sphere cylinder polyhedron square circle polygon text "
+		"minkowski hull resize child children echo union difference "
+		"intersection linear_extrude rotate_extrude import group "
+		"projection render surface scale rotate mirror translate "
+		"multmatrix color offset intersection_for roof";
+            ==> models
+
+        newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
+        newLexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
+        newLexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
+        newLexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
+        
+        newLexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+        newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
+        newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
+        newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
+  */
+
+
+		newLexer->setColor(readColor(colors, "keyword1", textColor), ScadLexer2::Keyword);      // was keywords
+		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Transformation);    // was transformations
 		newLexer->setColor(readColor(colors, "booleans", textColor), ScadLexer2::Boolean);
-		newLexer->setColor(readColor(colors, "functions", textColor), ScadLexer2::Function);
-		newLexer->setColor(readColor(colors, "models", textColor), ScadLexer2::Model);
-		newLexer->setColor(readColor(colors, "operators", textColor), ScadLexer2::Operator);
-		newLexer->setColor(readColor(colors, "comments", textColor), ScadLexer2::Comment);
-		newLexer->setColor(readColor(colors, "numbers", textColor), ScadLexer2::Number);
+        
+		newLexer->setColor(readColor(colors, "keyword2", textColor), ScadLexer2::Function);     // was functions
+        
+		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Model);      // was models
+        
 		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);
 		newLexer->setColor(readColor(colors, "special-variables", textColor), ScadLexer2::SpecialVariable);
+        
 		newLexer->setColor(readColor(colors, "modifier1", textColor), ScadLexer2::Modifier1);
 		newLexer->setColor(readColor(colors, "block1", textColor), ScadLexer2::Block1);
+        
 		newLexer->setColor(readColor(colors, "modifier2", textColor), ScadLexer2::Modifier2);
 		newLexer->setColor(readColor(colors, "block2", textColor), ScadLexer2::Block2);
+        
 		newLexer->setColor(readColor(colors, "modifier3", textColor), ScadLexer2::Modifier3);
 		newLexer->setColor(readColor(colors, "block3", textColor), ScadLexer2::Block3);
+        
 		newLexer->setColor(readColor(colors, "modifier4", textColor), ScadLexer2::Modifier4);
 		newLexer->setColor(readColor(colors, "block4", textColor), ScadLexer2::Block4);
 

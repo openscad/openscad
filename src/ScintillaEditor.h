@@ -22,7 +22,7 @@
 class ScadLexer;
 class ScadLexer2;
 
-//#define ENABLE_LEXERTL  1
+#define ENABLE_LEXERTL  1
 
 
 class EditorColorScheme

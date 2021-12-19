@@ -71,7 +71,7 @@ const char *ScadLexer::keywords(int set) const
 /***************************************************************/
 /***************************************************************/
 
-//#define ENABLE_LEXERTL  1
+#define ENABLE_LEXERTL  1
 
 #if ENABLE_LEXERTL
 
