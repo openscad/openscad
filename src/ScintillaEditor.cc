@@ -15,6 +15,7 @@
 #include "PlatformUtils.h"
 #include "Settings.h"
 #include "QSettingsCached.h"
+#include "ScadLexer.h"
 
 #include <QWheelEvent>
 #include<QPoint>
@@ -191,7 +192,12 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
     qsci->setMarginWidth(symbolMargin, 0);
     qsci->setMarginMarkerMask(symbolMargin, 1 << errMarkerNumber | 1 << bmMarkerNumber);
 
+#if ENABLE_LEXERTL
+    setLexer(new ScadLexer2(this));
+#else
     setLexer(new ScadLexer(this));
+#endif
+
     initMargin();
 
     connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
@@ -409,6 +415,16 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
     }
 }
 
+#if ENABLE_LEXERTL
+void ScintillaEditor::setLexer(ScadLexer2 *newLexer)
+{
+    delete this->api;
+    this->qsci->setLexer(newLexer);
+    this->api = new ScadApi(this->qsci, newLexer);
+    delete this->lexer;
+    this->lexer = newLexer;
+}
+#else
 void ScintillaEditor::setLexer(ScadLexer *newLexer)
 {
     delete this->api;
@@ -417,16 +433,57 @@ void ScintillaEditor::setLexer(ScadLexer *newLexer)
     delete this->lexer;
     this->lexer = newLexer;
 }
+#endif
 
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
     const auto & pt = colorScheme->propertyTree();
 
     try {
-          auto font = this->lexer->font(this->lexer->defaultStyle());
+        auto font = this->lexer->font(this->lexer->defaultStyle());
         const QColor textColor(pt.get<std::string>("text").c_str());
         const QColor paperColor(pt.get<std::string>("paper").c_str());
 
+#if ENABLE_LEXERTL
+
+/// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
+
+// TODO - do we need a new object, or just change the color settings on the existing lexer?
+        auto *newLexer = new ScadLexer2(this);
+        setLexer(newLexer);
+
+
+		// All other properties must be set after attaching to QSCintilla so
+		// the editor gets the change events and updates itself to match
+		newLexer->setFont(font);
+		newLexer->setColor(textColor);
+		newLexer->setPaper(paperColor);
+
+// TODO - fill in the colors from the EditorColorScheme
+// TODO - update sample colorSchemes to match new lexer values
+
+        const auto& colors = pt.get_child("colors");
+		newLexer->setColor(readColor(colors, "keywords", textColor), ScadLexer2::Keyword);
+		newLexer->setColor(readColor(colors, "transformations", textColor), ScadLexer2::Transformation);
+		newLexer->setColor(readColor(colors, "booleans", textColor), ScadLexer2::Boolean);
+		newLexer->setColor(readColor(colors, "functions", textColor), ScadLexer2::Function);
+		newLexer->setColor(readColor(colors, "models", textColor), ScadLexer2::Model);
+		newLexer->setColor(readColor(colors, "operators", textColor), ScadLexer2::Operator);
+		newLexer->setColor(readColor(colors, "comments", textColor), ScadLexer2::Comment);
+		newLexer->setColor(readColor(colors, "numbers", textColor), ScadLexer2::Number);
+		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);
+		newLexer->setColor(readColor(colors, "special-variables", textColor), ScadLexer2::SpecialVariable);
+		newLexer->setColor(readColor(colors, "modifier1", textColor), ScadLexer2::Modifier1);
+		newLexer->setColor(readColor(colors, "block1", textColor), ScadLexer2::Block1);
+		newLexer->setColor(readColor(colors, "modifier2", textColor), ScadLexer2::Modifier2);
+		newLexer->setColor(readColor(colors, "block2", textColor), ScadLexer2::Block2);
+		newLexer->setColor(readColor(colors, "modifier3", textColor), ScadLexer2::Modifier3);
+		newLexer->setColor(readColor(colors, "block3", textColor), ScadLexer2::Block3);
+		newLexer->setColor(readColor(colors, "modifier4", textColor), ScadLexer2::Modifier4);
+		newLexer->setColor(readColor(colors, "block4", textColor), ScadLexer2::Block4);
+
+
+#else
         auto *newLexer = new ScadLexer(this);
 
         // Keywords must be set before the lexer is attached to QScintilla
@@ -449,8 +506,6 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
         newLexer->setFont(font);
         newLexer->setColor(textColor);
         newLexer->setPaper(paperColor);
-                // Somehow, the margin font got lost when we deleted the old lexer
-                qsci->setMarginsFont(font);
 
         const auto& colors = pt.get_child("colors");
         newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
@@ -465,6 +520,11 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
         newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
         newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
         newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
+
+#endif  // ENABLE_LEXERTL
+        
+        // Somehow, the margin font got lost when we deleted the old lexer
+        qsci->setMarginsFont(font);
 
         const auto& caret = pt.get_child("caret");
         qsci->setCaretWidth(readInt(caret, "width", 1));

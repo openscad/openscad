@@ -15,8 +15,15 @@
 #include "Editor.h"
 #include "memory.h"
 #include "ScadApi.h"
-#include "ScadLexer.h"
 #include "parsersettings.h"
+
+
+// don't need the full definition
+class ScadLexer;
+class ScadLexer2;
+
+//#define ENABLE_LEXERTL  1
+
 
 class EditorColorScheme
 {
@@ -88,7 +95,11 @@ private:
     bool modifyNumber(int key);
     void noColor();
 
+#if ENABLE_LEXERTL
+    void setLexer(ScadLexer2 *lexer);
+#else
     void setLexer(ScadLexer *lexer);
+#endif
     void replaceSelectedText(QString &);
     void addTemplate(const fs::path path);
     void updateSymbolMarginVisibility();
@@ -149,7 +160,11 @@ private:
     static const int errMarkerNumber = 2;
     static const int bmMarkerNumber = 3;
 
+#if ENABLE_LEXERTL
+    ScadLexer2 *lexer;
+#else
     ScadLexer *lexer;
+#endif
     QFont currentFont;
     ScadApi *api;
     QStringList userList;
