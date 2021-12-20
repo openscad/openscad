@@ -78,7 +78,7 @@ public:
 	    SpecialVariable = 10,
 	    Comment = 11,
         OtherText = 12,
-
+#if 0
 // unused???
 	    Modifier1 = 13,
 	    Block1 = 14,
@@ -88,6 +88,7 @@ public:
 	    Block3 = 18,
 	    Modifier4= 19,
 	    Block4 = 20,
+#endif
         };
 
 	Lex *l;

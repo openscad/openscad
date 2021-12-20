@@ -82,7 +82,7 @@ const char *ScadLexer::keywords(int set) const
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 
-#define DEBUG_LEXERTL   1
+//#define DEBUG_LEXERTL   1
 
 #if DEBUG_LEXERTL
 #include "lexertl/debug.hpp"
