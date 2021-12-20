@@ -102,47 +102,33 @@ void Lex::rules(){
 /*
 for keywords, see
     void Builtins::initialize()
-    
-Questionable:
-    struct
-    enum
-    def
-    assign
-    class
-    see
-    brief
-    namespace
-    package
-    interface
-    param
-    file
-    typedef
-    fn
 
+REMOVED:
+    "var", "def", "enum", "struct", "fn", "typedef", "file", "namespace", "package", "interface", "param", "see", "class", "brief",
  */
 	const size_t s_size = sizeof(std::string);
-	std::string keywords[] = {"var", "module", "function", "use", "echo", "include", "import", "group",
-                            "projection", "render",
-                            "def", "enum", "struct", "fn", "typedef",
-                            "file", "namespace", "package", "interface", "param", "see", "return", "class",
-                            "brief", "if", "else", "let", "for", "undef"};
+	std::string keywords[] = {"module", "function", "use", "echo", "include", "import", "group",
+                            "projection", "render", "return", "if", "else", "let", "for", "each",
+                            "intersection_for", "undef", "assert"};
 	const size_t keywords_count = sizeof(keywords)/s_size;
 
 	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude",
                                     "rotate_extrude", "resize", "mirror", "multmatrix", "color",
-                                    "offset", "hull", "minkowski", "children", "assign", "intersection_for"};
+                                    "offset", "hull", "minkowski", "children"};
 	const size_t transformations_count = sizeof(transformations)/s_size;
 
     std::string booleans[] = {"union", "difference", "intersection", "true", "false"};
 	const size_t booleans_count = sizeof(booleans)/s_size;
 
-	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos", "tan",
-                                "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt", "exp", "len",
-                                "log", "ln", "str", "chr", "concat", "lookup", "search", "version",
-                                "version_num", "norm", "cross", "parent_module", "dxf_dim", "dxf_cross"};
+	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos",
+                                "tan", "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt",
+                                "exp", "len", "log", "ln", "str", "chr", "ord", "concat", "lookup",
+                                "search", "version", "version_num", "norm", "cross", "parent_module",
+                                "dxf_dim", "dxf_cross"};
 	const size_t functions_count = sizeof(functions)/s_size;
 	 
-	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon", "text", "circle", "surface"};
+	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon",
+                            "text", "circle", "surface" };
 	const size_t models_count = sizeof(models)/s_size;
 
 	std::string operators[] = {"<=", ">=", "==", "!=", "&&", "="};
@@ -156,11 +142,24 @@ Questionable:
 	defineRules(functions, functions_count, efunction);
 	defineRules(models, models_count, emodel);
 	defineRules(operators, operators_count, eoperator);
- 
-    
- // first match is returned by enum, so string must come before number or variable!
+
+
+/*
  // "[\"]([ -\\x10ffff]{-}[\"\\\\]|\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))*[\"]");
  
+ {"Backslash", "[\\\\]|\"??/\""},
+{"EscapeSequence",
+    "{Backslash}([abfnrtv?'\"]|{Backslash}|x{HexDigit}+|"
+    "{OctalDigit}{OctalDigit}?{OctalDigit}?)"},
+ 	{"L?([\"]({EscapeSequence}|{UniversalChar}|"
+    "{any}{-}[\n\r\\\\\"]|\\\\{Newline})*[\"])", T_STRINGLIT},
+    
+    
+    rules_.insert_macro("escape", "\\\\([^xc]|x\\d+|\\d{3}|c[@a-zA-Z]|"
+        "p[{](C[cfos]?|L[Clmotu]?|M[cen]?|N[dlo]?|P[cdefios]?|S[ckmo]?|"
+        "Z[lps]?)[}])");
+    rules_.push("[\"]({escape}|[^\"])*[\"]", eString);
+    
 // "\"[^\"\\n\\r]*[\"\\n\\r]"   -- not working
 // "\"([^\\\"])*\"" - not working
 // "\"[^\\\"]*\"" - not working
@@ -168,19 +167,22 @@ Questionable:
 // "\"[.*]\""           - not working
 // "\"(.*)\"" - not working
 
-// "[\"][^\\\"]*[\"]"  -- works for all but \" and unicode
+// "[\"][^\\\"]*[\"]"  -- works for all but \"
 // "[\"].*[^\\][\"]" -- works, but includes ; and ) after closing
-	rules_.push("[\"][^\\\"]*[\"]", eQuotedString); // enum 7
-    
-	rules_.push("([-+]?((([0-9]+[.]?|([0-9]*[.][0-9]+))([eE][-+]?[0-9]+)?)))", enumber);    // enum 8
-	rules_.push("[a-zA-Z0-9_]+", evariable); // enum 9
-	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);  // enum 10
+
+*/
+
+    rules_.push("[\"](([\\\\][\"])|[^\"])*[\"]", eQuotedString);
+
+	rules_.push("([-+]?((([0-9]+[.]?|([0-9]*[.][0-9]+))([eE][-+]?[0-9]+)?)))", enumber);
+	rules_.push("[a-zA-Z0-9_]+", evariable);
+	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
 	rules_.push("INITIAL", "\"/*\"",  ecomment, "COMMENT");
 	rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
 	rules_.push("COMMENT", "\"*/\"", ecomment , "INITIAL");
-
 	rules_.push("[/][/].*$", ecomment);
+    
 	rules_.push(".|\n", etext);
  
  
