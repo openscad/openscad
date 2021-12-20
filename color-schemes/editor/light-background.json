@@ -19,6 +19,7 @@
         "number" : "DarkRed",
         "string" : "DarkMagenta",
         "operator" : "Blue",
+        "variables" : "DarkSlateGray",
         "whitespace-foreground" : "#272822",
         "selection-foreground" : "#ffffff",
         "selection-background" : "#4a90d9",

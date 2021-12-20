@@ -19,6 +19,7 @@
         "number" : "#d33682",
         "string" : "#b58900",
         "operator" : "#cb4b16",
+        "variables" : "DarkSlateGray",
         "whitespace-foreground" : "#657b83",
         "selection-foreground" : "#fdf6e3",
         "selection-background" : "#657b83",
