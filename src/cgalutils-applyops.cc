@@ -102,7 +102,10 @@ namespace CGALUtils {
 				
 				// Intersecting something with nothing results in nothing
 				if (!chN || chN->isEmpty()) {
-					if (op == OpenSCADOperator::INTERSECTION) N = nullptr;
+					if (op == OpenSCADOperator::INTERSECTION) {
+                        if (N != nullptr) delete N;     // safety!
+                        N = nullptr;
+                    }
 					continue;
 				}
 				
