@@ -18,7 +18,7 @@
 #include "parsersettings.h"
 
 
-// don't need the full definition
+// don't need the full definition, because it confuses Qt
 class ScadLexer;
 class ScadLexer2;
 

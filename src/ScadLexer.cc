@@ -3,6 +3,8 @@
 
 #include "ScadLexer.h"
 
+#if !ENABLE_LEXERTL
+
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
 {
 	// -> Style: Keyword (lexer.l)
@@ -67,11 +69,11 @@ const char *ScadLexer::keywords(int set) const
 	return keywordSet[set - 1].c_str();
 }
 
-/***************************************************************/
-/***************************************************************/
-/***************************************************************/
+#endif
 
-#define ENABLE_LEXERTL  1
+/***************************************************************/
+/***************************************************************/
+/***************************************************************/
 
 #if ENABLE_LEXERTL
 
@@ -97,7 +99,8 @@ Lex::Lex()
 {
 }
 
-void Lex::rules(){
+void Lex::rules()
+{
 
 /*
 for keywords, see
@@ -107,7 +110,7 @@ REMOVED:
     "var", "def", "enum", "struct", "fn", "typedef", "file", "namespace", "package", "interface", "param", "see", "class", "brief",
  */
 	const size_t s_size = sizeof(std::string);
-	std::string keywords[] = {"module", "function", "use", "echo", "include", "import", "group",
+	std::string keywords[] = {"module", "function", "use", "echo", "include", "import",
                             "projection", "render", "return", "if", "else", "let", "for", "each",
                             "intersection_for", "undef", "assert"};
 	const size_t keywords_count = sizeof(keywords)/s_size;
@@ -117,14 +120,15 @@ REMOVED:
                                     "offset", "hull", "minkowski", "children"};
 	const size_t transformations_count = sizeof(transformations)/s_size;
 
-    std::string booleans[] = {"union", "difference", "intersection", "true", "false"};
+    std::string booleans[] = {"group", "union", "difference", "intersection", "true", "false"};
 	const size_t booleans_count = sizeof(booleans)/s_size;
 
 	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos",
                                 "tan", "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt",
                                 "exp", "len", "log", "ln", "str", "chr", "ord", "concat", "lookup",
                                 "search", "version", "version_num", "norm", "cross", "parent_module",
-                                "dxf_dim", "dxf_cross"};
+                                "dxf_dim", "dxf_cross", "is_undef", "is_list", "is_num", "is_bool",
+                                "is_string", "is_function", "is_object" };
 	const size_t functions_count = sizeof(functions)/s_size;
 	 
 	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon",

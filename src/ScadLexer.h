@@ -1,8 +1,15 @@
 #pragma once
 
 #include <QObject>
-
 #include <Qsci/qsciglobal.h>
+#include <string>
+
+#define ENABLE_LEXERTL  1
+
+/***************************************************************/
+
+#if !ENABLE_LEXERTL
+
 #include <Qsci/qscilexercpp.h>
 
 class ScadLexer : public QsciLexerCPP
@@ -21,11 +28,11 @@ private:
 	ScadLexer &operator=(const ScadLexer &);
 };
 
-/***************************************************************/
-/***************************************************************/
-/***************************************************************/
+#endif
 
-#define ENABLE_LEXERTL  1
+/***************************************************************/
+/***************************************************************/
+/***************************************************************/
 
 #if ENABLE_LEXERTL
 
@@ -34,7 +41,6 @@ private:
 #include "lexertl/dot.hpp"
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
-#include <string>
 
 #include <Qsci/qscilexercustom.h>
 #include <Qsci/qsciscintilla.h>
@@ -50,9 +56,8 @@ class Lex
 {
 	public:
 	lexertl::state_machine sm;
-    
-    //typedef lexertl::basic_rules<char_type, char_type, id_type> rules_;
 	lexertl::rules rules_;
+    
 	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, eQuotedString, enumber, evariable, especialVariable, ecomment, etext };
 
 	Lex();
@@ -110,7 +115,7 @@ public:
     QString description(int style) const;
 
 private:
-	ScadLexer2(const ScadLexer &);
+	ScadLexer2(const ScadLexer2 &);
 	ScadLexer2 &operator=(const ScadLexer2 &);
 
 };

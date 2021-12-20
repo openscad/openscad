@@ -449,6 +449,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
         auto *newLexer = new ScadLexer2(this);
+        
+// maybe make rules definition explicit after setting keywords?
         setLexer(newLexer);
 
 		// All other properties must be set after attaching to QSCintilla so
