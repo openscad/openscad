@@ -387,7 +387,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
               case 'b': case 'z': ret.emplace_back(v[2]); break;
               case 'a': case 'w': ret.emplace_back(v[3]); break;
             }
-          return ret;
+          return Value(std::move(ret));
         }
         if (this->member == "x") return v[0];
         if (this->member == "y") return v[1];
