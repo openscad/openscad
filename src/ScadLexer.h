@@ -18,7 +18,7 @@ public:
 	ScadLexer(QObject *parent);
 	virtual ~ScadLexer();
 	const char *language() const override;
-	const char *keywords(int set) const override;	
+	const char *keywords(int set) const override;
 
     void setKeywords(int set, const std::string& keywords);
 
@@ -58,11 +58,16 @@ class Lex
 	lexertl::state_machine sm;
 	lexertl::rules rules_;
     
-	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, eQuotedString, enumber, evariable, especialVariable, ecomment, etext };
+	enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, eQuotedString, enumber,
+            ecustom1, ecustom2, ecustom3, ecustom4, ecustom5, ecustom6, ecustom7, ecustom8, ecustom9, ecustom10,
+            evariable, especialVariable, ecomment, etext };
 
 	Lex();
-	void rules();
-	void defineRules(std::string words[], size_t size, int id);
+    
+	void default_rules();
+    void defineRules(const std::string &keyword_list, int id);
+	void finalize_rules();
+    
 	void lex_results(const std::string& input, int start, LexInterface* const obj);
 };
 
@@ -79,26 +84,27 @@ public:
 	    Operator = 6,
         String = 7,
 	    Number = 8,
-	    Variable = 9,
-	    SpecialVariable = 10,
-	    Comment = 11,
-        OtherText = 12,
-#if 0
-// unused???
-	    Modifier1 = 13,
-	    Block1 = 14,
-	    Modifier2 = 15,
-	    Block2 = 16,
-        Modifier3 = 17,
-	    Block3 = 18,
-	    Modifier4= 19,
-	    Block4 = 20,
-#endif
+        Custom1 = 9,
+        Custom2 = 10,
+        Custom3 = 11,
+        Custom4 = 12,
+        Custom5 = 13,
+        Custom6 = 14,
+        Custom7 = 15,
+        Custom8 = 16,
+        Custom9 = 17,
+        Custom10 = 18,
+	    Variable = 19,
+	    SpecialVariable = 20,
+	    Comment = 21,
+        OtherText = 22,
         };
 
-	Lex *l;
+	Lex *my_lexer;
+    
 	ScadLexer2(QObject *parent);
 	virtual ~ScadLexer2();
+    
 	const char *language() const;
 
     void styleText(int start, int end);
@@ -113,6 +119,13 @@ public:
 
 	void highlighting(int start, const std::string& input, lexertl::smatch results);
     QString description(int style) const;
+    
+    void addKeywords(const std::string& keywords, int id) {
+        my_lexer->defineRules(keywords, id);
+    }
+    void finalizeLexer() {
+        my_lexer->finalize_rules();
+    }
 
 private:
 	ScadLexer2(const ScadLexer2 &);

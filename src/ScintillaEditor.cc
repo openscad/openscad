@@ -449,8 +449,23 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
         auto *newLexer = new ScadLexer2(this);
-        
-// maybe make rules definition explicit after setting keywords?
+
+        // Custom keywords must be set before the lexer is constructed/finalized
+        boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
+        if (keywords.is_initialized()) {
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom1", ""), ScadLexer2::Custom1 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom2", ""), ScadLexer2::Custom2 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom3", ""), ScadLexer2::Custom3 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom4", ""), ScadLexer2::Custom4 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom5", ""), ScadLexer2::Custom5 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom6", ""), ScadLexer2::Custom6 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom7", ""), ScadLexer2::Custom7 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom8", ""), ScadLexer2::Custom8 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom9", ""), ScadLexer2::Custom9 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom10", ""), ScadLexer2::Custom10 );
+        }
+
+        newLexer->finalizeLexer();
         setLexer(newLexer);
 
 		// All other properties must be set after attaching to QSCintilla so
@@ -477,29 +492,17 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);
 		newLexer->setColor(readColor(colors, "keyword1", textColor), ScadLexer2::SpecialVariable); // was special-variables
 
-/*
-Missing
-        newLexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
-///
-        newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
-        newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
-        newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
-*/
+		newLexer->setColor(readColor(colors, "keyword-custom1", textColor), ScadLexer2::Custom1);
+		newLexer->setColor(readColor(colors, "keyword-custom2", textColor), ScadLexer2::Custom2);
+		newLexer->setColor(readColor(colors, "keyword-custom3", textColor), ScadLexer2::Custom3);
+		newLexer->setColor(readColor(colors, "keyword-custom4", textColor), ScadLexer2::Custom4);
+		newLexer->setColor(readColor(colors, "keyword-custom5", textColor), ScadLexer2::Custom5);
+		newLexer->setColor(readColor(colors, "keyword-custom6", textColor), ScadLexer2::Custom6);
+		newLexer->setColor(readColor(colors, "keyword-custom7", textColor), ScadLexer2::Custom7);
+		newLexer->setColor(readColor(colors, "keyword-custom8", textColor), ScadLexer2::Custom8);
+		newLexer->setColor(readColor(colors, "keyword-custom9", textColor), ScadLexer2::Custom9);
+		newLexer->setColor(readColor(colors, "keyword-custom10", textColor), ScadLexer2::Custom10);
 
-#if 0
-// unused?????
-		newLexer->setColor(readColor(colors, "modifier1", textColor), ScadLexer2::Modifier1);
-		newLexer->setColor(readColor(colors, "block1", textColor), ScadLexer2::Block1);
-        
-		newLexer->setColor(readColor(colors, "modifier2", textColor), ScadLexer2::Modifier2);
-		newLexer->setColor(readColor(colors, "block2", textColor), ScadLexer2::Block2);
-        
-		newLexer->setColor(readColor(colors, "modifier3", textColor), ScadLexer2::Modifier3);
-		newLexer->setColor(readColor(colors, "block3", textColor), ScadLexer2::Block3);
-        
-		newLexer->setColor(readColor(colors, "modifier4", textColor), ScadLexer2::Modifier4);
-		newLexer->setColor(readColor(colors, "block4", textColor), ScadLexer2::Block4);
-#endif
 
 #else
         auto *newLexer = new ScadLexer(this);

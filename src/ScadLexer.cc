@@ -1,5 +1,7 @@
-#include <boost/algorithm/string.hpp>
 #include <string>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+
 
 #include "ScadLexer.h"
 
@@ -92,93 +94,67 @@ const char *ScadLexer::keywords(int set) const
 #include <iostream>
 #endif
 
-
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
 Lex::Lex()
 {
 }
 
-void Lex::rules()
+void Lex::default_rules()
 {
-
-/*
-for keywords, see
-    void Builtins::initialize()
-
-REMOVED:
-    "var", "def", "enum", "struct", "fn", "typedef", "file", "namespace", "package", "interface", "param", "see", "class", "brief",
- */
-	const size_t s_size = sizeof(std::string);
-	std::string keywords[] = {"module", "function", "use", "echo", "include", "import",
-                            "projection", "render", "return", "if", "else", "let", "for", "each",
-                            "intersection_for", "undef", "assert"};
-	const size_t keywords_count = sizeof(keywords)/s_size;
-
-	std::string transformations[] = {"translate", "rotate", "child", "scale", "linear_extrude",
-                                    "rotate_extrude", "resize", "mirror", "multmatrix", "color",
-                                    "offset", "hull", "minkowski", "children"};
-	const size_t transformations_count = sizeof(transformations)/s_size;
-
-    std::string booleans[] = {"group", "union", "difference", "intersection", "true", "false"};
-	const size_t booleans_count = sizeof(booleans)/s_size;
-
-	std::string functions[] = {"abs", "sign", "rands", "min", "max", "sin", "cos", "asin", "acos",
-                                "tan", "atan", "atan2", "round", "ceil", "floor", "pow", "sqrt",
-                                "exp", "len", "log", "ln", "str", "chr", "ord", "concat", "lookup",
-                                "search", "version", "version_num", "norm", "cross", "parent_module",
-                                "dxf_dim", "dxf_cross", "is_undef", "is_list", "is_num", "is_bool",
-                                "is_string", "is_function", "is_object" };
-	const size_t functions_count = sizeof(functions)/s_size;
-	 
-	std::string models[] = {"sphere", "cube", "cylinder", "polyhedron", "square", "polygon",
-                            "text", "circle", "surface" };
-	const size_t models_count = sizeof(models)/s_size;
-
-	std::string operators[] = {"<=", ">=", "==", "!=", "&&", "="};
-	const size_t operators_count = sizeof(operators)/s_size;
-
-
 	rules_.push_state("COMMENT");
-	defineRules(keywords, keywords_count, ekeyword);
-	defineRules(transformations, transformations_count, etransformation);
-	defineRules(booleans, booleans_count, eboolean);
-	defineRules(functions, functions_count, efunction);
-	defineRules(models, models_count, emodel);
-	defineRules(operators, operators_count, eoperator);
 
+	std::string keywords( "module function use echo include import projection render "
+                          "return if else let for each intersection_for undef assert" );
+	defineRules(keywords, ekeyword);
 
-/*
- // "[\"]([ -\\x10ffff]{-}[\"\\\\]|\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))*[\"]");
- 
- {"Backslash", "[\\\\]|\"??/\""},
-{"EscapeSequence",
-    "{Backslash}([abfnrtv?'\"]|{Backslash}|x{HexDigit}+|"
-    "{OctalDigit}{OctalDigit}?{OctalDigit}?)"},
- 	{"L?([\"]({EscapeSequence}|{UniversalChar}|"
-    "{any}{-}[\n\r\\\\\"]|\\\\{Newline})*[\"])", T_STRINGLIT},
+	std::string transformations( "translate rotate child scale linear_extrude "
+                                "rotate_extrude resize mirror multmatrix color "
+                                "offset hull minkowski children" );
+	defineRules(transformations, etransformation);
+
+    std::string booleans( "group union difference intersection true false" );
+	defineRules(booleans, eboolean);
     
+	std::string functions( "abs sign rands min max sin cos asin acos tan atan atan2 round "
+                            "ceil floor pow sqrt exp len log ln str chr ord concat lookup "
+                            "search version version_num norm cross parent_module dxf_dim "
+                            "dxf_cross is_undef is_list is_num is_bool is_string "
+                            "is_function is_object" );
+	defineRules(functions, efunction);
     
-    rules_.insert_macro("escape", "\\\\([^xc]|x\\d+|\\d{3}|c[@a-zA-Z]|"
-        "p[{](C[cfos]?|L[Clmotu]?|M[cen]?|N[dlo]?|P[cdefios]?|S[ckmo]?|"
-        "Z[lps]?)[}])");
-    rules_.push("[\"]({escape}|[^\"])*[\"]", eString);
-    
-// "\"[^\"\\n\\r]*[\"\\n\\r]"   -- not working
-// "\"([^\\\"])*\"" - not working
-// "\"[^\\\"]*\"" - not working
-// "\"[a-zA-Z0-9]*\"" - not working
-// "\"[.*]\""           - not working
-// "\"(.*)\"" - not working
+	std::string models( "sphere cube cylinder polyhedron square polygon text circle surface" );
+	defineRules(models, emodel);
 
-// "[\"][^\\\"]*[\"]"  -- works for all but \"
-// "[\"].*[^\\][\"]" -- works, but includes ; and ) after closing
+	std::string operators( "<= >= == != && =" );
+	defineRules(operators, eoperator);
 
-*/
 
     rules_.push("[\"](([\\\\][\"])|[^\"])*[\"]", eQuotedString);
 
 	rules_.push("([-+]?((([0-9]+[.]?|([0-9]*[.][0-9]+))([eE][-+]?[0-9]+)?)))", enumber);
+    
+    // comments and variables come later, after any custom keywords are added
+}
+
+void Lex::defineRules(const std::string &keyword_list, int id)
+{
+	std::string trimmedKeywords(keyword_list);
+    boost::algorithm::trim(trimmedKeywords);
+	if (trimmedKeywords.empty())
+		return;
+
+  	std::vector<std::string> words;
+	boost::split(words, trimmedKeywords, boost::is_any_of(" "));
+	for (const auto& keyword : words) {
+		rules_.push(keyword, id);
+    }
+}
+
+// default and custom rules must be set before this
+void Lex::finalize_rules()
+{
+    // these need to come after keywords, so they don't accidentally match custom keywords
 	rules_.push("[a-zA-Z0-9_]+", evariable);
 	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
@@ -188,33 +164,25 @@ REMOVED:
 	rules_.push("[/][/].*$", ecomment);
     
 	rules_.push(".|\n", etext);
- 
- 
+    
+    // build our lexer
 	lexertl::generator::build(rules_, sm);
 
 #if DEBUG_LEXERTL
 std::ofstream fout("file1.txt", std::fstream::trunc);
 lexertl::debug::dump(sm, fout);
 #endif
-
 }
 
-void Lex::defineRules(std::string words[], size_t size, int id){
-
-	for(size_t it = 0; it < size; it++) {
-		rules_.push(words[it], id);
-	}
-}
-
-void Lex::lex_results(const std::string& input, int start, LexInterface* const obj){
-
+void Lex::lex_results(const std::string& input, int start, LexInterface* const obj)
+{
 #if DEBUG_LEXERTL
 	std::cout << "called lexer" <<std::endl;
 #endif
 	lexertl::smatch results (input.begin(), input.end());
 
 	int isstyle = obj->getStyleAt(start-1);
-	if(isstyle == 10)
+	if(isstyle == ecomment)           // WARNING - hardcoded number, not positive about this!
 		 results.state = 1;
 	lexertl::lookup(sm, results);
 
@@ -228,13 +196,13 @@ void Lex::lex_results(const std::string& input, int start, LexInterface* const o
 
 ScadLexer2::ScadLexer2(QObject *parent) : QsciLexerCustom(parent), LexInterface()
 {
-	l = new Lex();
-	l->rules();
+	my_lexer = new Lex();
+	my_lexer->default_rules();
 }
 
 ScadLexer2::~ScadLexer2()
 {
-	delete l;
+	delete my_lexer;
 }
 
 void ScadLexer2::styleText(int start, int end)
@@ -256,7 +224,7 @@ void ScadLexer2::styleText(int start, int end)
     std::cout << "its being called" <<std::endl;
 #endif
 
-    l->lex_results(input, start, this);
+    my_lexer->lex_results(input, start, this);
     this->fold(start, end);
 
     delete [] data;
@@ -316,16 +284,14 @@ void ScadLexer2::fold(int start, int end)
 
 const char *ScadLexer2::blockStart(int *style) const
 {
-    if (style)
-        *style = 11;
+    // don't change the style
     return "{ [";
 }
 
 const char *ScadLexer2::blockEnd(int *style) const
 {
-    if (style)
-        *style = 11;
-    return "}";
+    // don't change the style
+    return "} ]";
 }
 
 int ScadLexer2::getStyleAt(int pos)
@@ -344,7 +310,7 @@ void ScadLexer2::highlighting(int start, const std::string& input, lexertl::smat
 #endif
 
 	QString word = QString::fromStdString(token);
-	startStyling(start + std::distance(input.begin(), results.first));      // fishy, was results.start
+	startStyling(start + std::distance(input.begin(), results.first));
 	setStyling(word.length(), style);
 }
 
@@ -384,10 +350,34 @@ QString ScadLexer2::description(int style) const
             return "Boolean";
         case Function:
             return "Function";
+        case Model:
+            return "Model";
         case Operator:
             return "Operator";
+        case String:
+            return "String";
         case Number:
-            return tr("Number");
+            return "Number";
+        case Custom1:
+            return "Custom1";
+        case Custom2:
+            return "Custom2";
+        case Custom3:
+            return "Custom3";
+        case Custom4:
+            return "Custom4";
+        case Custom5:
+            return "Custom5";
+        case Custom6:
+            return "Custom6";
+        case Custom7:
+            return "Custom7";
+        case Custom8:
+            return "Custom8";
+        case Custom9:
+            return "Custom9";
+        case Custom10:
+            return "Custom10";
         case Variable:
             return "Variable";
         case SpecialVariable:
