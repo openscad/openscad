@@ -154,7 +154,8 @@ void Lex::defineRules(const std::string &keyword_list, int id)
 // default and custom rules must be set before this
 void Lex::finalize_rules()
 {
-    // these need to come after keywords, so they don't accidentally match custom keywords
+    // These need to come after keywords, so they don't accidentally match.
+    // Sadly, ordef of definition matters, as well as enum.
 	rules_.push("[a-zA-Z0-9_]+", evariable);
 	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
@@ -169,8 +170,8 @@ void Lex::finalize_rules()
 	lexertl::generator::build(rules_, sm);
 
 #if DEBUG_LEXERTL
-std::ofstream fout("file1.txt", std::fstream::trunc);
-lexertl::debug::dump(sm, fout);
+    std::ofstream fout("file1.txt", std::fstream::trunc);
+    lexertl::debug::dump(sm, fout);
 #endif
 }
 
@@ -256,9 +257,10 @@ void ScadLexer2::fold(int start, int end)
         style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i-1) == 10);
         startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == 10);
 
-        if ((ch == '{') || (ch == '[') || ((!style) && (startstyle))) {
+        // decide where collapsable sections start and end
+        if ((ch == '{') || (ch == '[') || (ch == '/' && chNext == '*') || ((!style) && (startstyle))) {
             levelCurrent++;
-        } else 	if ((ch == '}') || (ch == ']') || ((style) && (!startstyle))) {
+        } else 	if ((ch == '}') || (ch == ']') || (ch == '*' && chNext == '/')  || ((style) && (!startstyle))) {
             levelCurrent--;
         }
             
@@ -282,17 +284,6 @@ void ScadLexer2::fold(int start, int end)
 	editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
 }
 
-const char *ScadLexer2::blockStart(int *style) const
-{
-    // don't change the style
-    return "{ [";
-}
-
-const char *ScadLexer2::blockEnd(int *style) const
-{
-    // don't change the style
-    return "} ]";
-}
 
 int ScadLexer2::getStyleAt(int pos)
 {

@@ -112,9 +112,6 @@ public:
 	int getStyleAt(int pos);
 	void fold(int start, int end);
 
-    const char *blockEnd(int *style = 0) const;
-	const char *blockStart(int *style = 0) const;
-
     QColor defaultColor(int style) const;
 
 	void highlighting(int start, const std::string& input, lexertl::smatch results);
