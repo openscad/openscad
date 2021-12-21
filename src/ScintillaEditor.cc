@@ -438,6 +438,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
             newLexer->setKeywords(3, readString(keywords.get(), "keyword-set-doc", ""));
             newLexer->setKeywords(4, readString(keywords.get(), "keyword-set3", ""));
         }
+        
+        // See https://github.com/openscad/openscad/issues/1172 for details about why we can't do syntax coloring with # lines
+        newLexer->setStylePreprocessor(true);  // does not work on first word, but allows remaining words to be syntax colored
 
         setLexer(newLexer);
 

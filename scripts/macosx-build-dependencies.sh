@@ -11,7 +11,7 @@
 #  -f   Force build even if package is installed
 #  -v   Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config
+# Prerequisites: automake, libtool, cmake, pkg-config, wget
 #
 
 set -e
@@ -39,7 +39,7 @@ PACKAGES=(
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
-    "libzip 1.5.1"
+    "libzip 1.8.0"
     "libxml2 2.9.9"
     "libuuid 1.6.2"
     "fontconfig 2.13.1"
@@ -55,7 +55,7 @@ PACKAGES=(
     "qscintilla 2.13.1"
 )
 DEPLOY_PACKAGES=(
-    "sparkle 1.21.3"
+    "sparkle 1.27.1"
 )
 
 printUsage()
@@ -150,7 +150,7 @@ build_double_conversion()
   fi
   tar xzf "double-conversion-$version.tar.gz"
   cd "double-conversion-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" .
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCH" .
   make -j$NUMCPU
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/double_conversion.version
@@ -171,6 +171,7 @@ build_qt5()
   cd qt-everywhere-src-$version
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
+  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/qt-split-arch.patch
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-cups \
@@ -184,8 +185,9 @@ build_qt5()
 		-no-feature-assistant -no-feature-designer -no-feature-distancefieldgenerator -no-feature-kmap2qmap \
 		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
 		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
-		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer
-  make -j"$NUMCPU"
+		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer \
+		-device-option QMAKE_APPLE_DEVICE_ARCHS=$ARCH
+  make -j"$NUMCPU" 
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
 }
@@ -222,7 +224,7 @@ build_gmp()
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
   # Note: We're building against the core2 CPU profile as that's the minimum required hardware for running OS X 10.9
-  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --host=core2-apple-darwin13.0.0
+  ./configure --prefix=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
@@ -244,7 +246,7 @@ build_mpfr()
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
-  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64"
+  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH"
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
@@ -267,7 +269,7 @@ build_boost()
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
   BOOST_TOOLSET="toolset=clang"
   echo "using clang ;" >> tools/build/user-config.jam 
-  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 -headerpad_max_install_names" install
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH -headerpad_max_install_names" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/boost.version
 }
 
@@ -288,7 +290,7 @@ build_cgal()
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
   patch -p1 < $OPENSCADDIR/patches/CGAL-remove-demo-install.patch
-  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCH" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
   if [[ $version =~ 4.* ]]; then
@@ -312,7 +314,7 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" POPT="-Os" STRIP= install
+  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" POPT="-Os" STRIP= install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glew.version
 }
 
@@ -353,7 +355,7 @@ build_eigen()
   cd eigen-$version
   mkdir build
   cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" ..
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCH" ..
   make -j"$NUMCPU" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/eigen.version
 }
@@ -368,13 +370,15 @@ build_sparkle()
   version=$1
   cd $BASEDIR/src
   rm -rf Sparkle-$version
-  if [ ! -f Sparkle-$version.tar.bz2 ]; then
-    curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.bz2
+  if [ ! -f Sparkle-$version.tar.xz ]; then
+    curl -LO https://github.com/sparkle-project/Sparkle/releases/download/$version/Sparkle-$version.tar.xz
   fi
   mkdir Sparkle-$version
   cd Sparkle-$version
-  tar xjf ../Sparkle-$version.tar.bz2
-  cp -Rf Sparkle.framework $DEPLOYDIR/lib/ 
+  tar xjf ../Sparkle-$version.tar.xz
+  # Make sure the destination dir is clean before overwriting
+  rm -rf $DEPLOYDIR/lib/Sparkle.framework
+  cp -Rf Sparkle.framework $DEPLOYDIR/lib/
 
 # Build from source:
 #  v=$1
@@ -435,7 +439,9 @@ build_libzip()
   cd "$BASEDIR"/src
   rm -rf "libzip-$version"
   if [ ! -f "libzip-$version.tar.gz" ]; then
-    curl -LO "https://libzip.org/download/libzip-$version.tar.gz"
+    # Using wget instead of curl for now, due to a macOS 12 OpenSSL bug:
+    # curl: (35) error:06FFF089:digital envelope routines:CRYPTO_internal:bad key length
+    wget "https://libzip.org/download/libzip-$version.tar.gz"
   fi
   tar xzf "libzip-$version.tar.gz"
   cd "libzip-$version"
@@ -495,6 +501,7 @@ build_fontconfig()
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
+  patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
   # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
   # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
   ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" ac_cv_func_mkostemp=no
@@ -750,6 +757,8 @@ else
   echo "Detected Lion (10.7) or earlier"
 fi
 
+ARCH=`uname -m`
+echo "Building for $ARCH"
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
