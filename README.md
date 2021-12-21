@@ -10,7 +10,7 @@
 [![Flattr this git repo](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
 
 OpenSCAD is a software for creating solid 3D CAD objects. It is free software
-and available for Linux/UNIX, MS Windows and Mac OS X.
+and available for Linux/UNIX, MS Windows and macOS.
 
 Unlike most free software for creating 3D models (such as the famous
 application Blender), OpenSCAD focuses on the CAD aspects rather than the 
@@ -39,7 +39,7 @@ STL and OFF file formats.
     - [Building OpenSCAD](#building-openscad)
         - [Prerequisites](#prerequisites)
         - [Getting the source code](#getting-the-source-code)
-        - [Building for Mac OS X](#building-for-mac-os-x)
+        - [Building for macOS](#building-for-mac-os-x)
         - [Building for Linux/BSD](#building-for-linuxbsd)
         - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
         - [Building for Windows](#building-for-windows)
@@ -138,15 +138,12 @@ To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
     cd openscad
     git submodule update --init
 
-### Building for Mac OS X
+### Building for macOS
 
 Prerequisites:
 
 * Xcode
-* curl
-* cmake
-* pkgconfig
-* autoconf automake libtool (for HIDAPI / InputDevice support)
+* automake, libtool, cmake, pkg-config, wget (we recommend installing these using Homebrew)
 
 Install Dependencies:
 
