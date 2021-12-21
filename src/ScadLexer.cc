@@ -155,7 +155,7 @@ void Lex::defineRules(const std::string &keyword_list, int id)
 void Lex::finalize_rules()
 {
     // These need to come after keywords, so they don't accidentally match.
-    // Sadly, ordef of definition matters, as well as enum.
+    // Sadly, order of definition matters, as well as enum.
 	rules_.push("[a-zA-Z0-9_]+", evariable);
 	rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
@@ -221,7 +221,6 @@ void ScadLexer2::styleText(int start, int end)
 
 #if DEBUG_LEXERTL
     auto pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
-
     std::cout << "its being called" <<std::endl;
 #endif
 
@@ -307,9 +306,9 @@ QColor ScadLexer2::defaultColor(int style) const
         case Keyword:
             return Qt::blue;
         case Comment:
-            return Qt::red;
-        case Number:
             return Qt::green;
+        case Number:
+            return Qt::red;
         case Transformation:
             return "#f32222";
         case Boolean:
@@ -317,7 +316,7 @@ QColor ScadLexer2::defaultColor(int style) const
         case Function:
             return "#2222f3";
         case Model:
-            return Qt::red;
+            return Qt::blue;
         case Default:
             return Qt::black;
     }

@@ -476,21 +476,17 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 
         const auto& colors = pt.get_child("colors");
 
-// categories that mostly match
 		newLexer->setColor(readColor(colors, "operator", textColor), ScadLexer2::Operator);
 		newLexer->setColor(readColor(colors, "comment", textColor), ScadLexer2::Comment);
 		newLexer->setColor(readColor(colors, "number", textColor), ScadLexer2::Number);
 		newLexer->setColor(readColor(colors, "string", textColor), ScadLexer2::String);
-
-// categories that needed some mapping
-		newLexer->setColor(readColor(colors, "keyword1", textColor), ScadLexer2::Keyword);      // was keywords
-		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Transformation);    // was transformations
-		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Boolean);         // was booleans
-		newLexer->setColor(readColor(colors, "keyword2", textColor), ScadLexer2::Function);     // was functions
-		newLexer->setColor(readColor(colors, "keyword3", textColor), ScadLexer2::Model);      // was models
-        
 		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);
-		newLexer->setColor(readColor(colors, "keyword1", textColor), ScadLexer2::SpecialVariable); // was special-variables
+		newLexer->setColor(readColor(colors, "keywords", textColor), ScadLexer2::Keyword);  // formerly keyword1
+		newLexer->setColor(readColor(colors, "transformations", textColor), ScadLexer2::Transformation);  // formerly keyword3
+		newLexer->setColor(readColor(colors, "booleans", textColor), ScadLexer2::Boolean);  // formerly keyword3
+		newLexer->setColor(readColor(colors, "functions", textColor), ScadLexer2::Function);  // formerly keyword2
+		newLexer->setColor(readColor(colors, "models", textColor), ScadLexer2::Model);  // formerly keyword3
+		newLexer->setColor(readColor(colors, "special-variables", textColor), ScadLexer2::SpecialVariable);  // formerly keyword1
 
 		newLexer->setColor(readColor(colors, "keyword-custom1", textColor), ScadLexer2::Custom1);
 		newLexer->setColor(readColor(colors, "keyword-custom2", textColor), ScadLexer2::Custom2);
@@ -502,7 +498,6 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 		newLexer->setColor(readColor(colors, "keyword-custom8", textColor), ScadLexer2::Custom8);
 		newLexer->setColor(readColor(colors, "keyword-custom9", textColor), ScadLexer2::Custom9);
 		newLexer->setColor(readColor(colors, "keyword-custom10", textColor), ScadLexer2::Custom10);
-
 
 #else
         auto *newLexer = new ScadLexer(this);
