@@ -193,7 +193,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
     qsci->setMarginMarkerMask(symbolMargin, 1 << errMarkerNumber | 1 << bmMarkerNumber);
 
 #if ENABLE_LEXERTL
-    setLexer(new ScadLexer2(this));
+    auto newLexer = new ScadLexer2(this);
+    newLexer->finalizeLexer();
+    setLexer(newLexer);
 #else
     setLexer(new ScadLexer(this));
 #endif
