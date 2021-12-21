@@ -245,25 +245,21 @@ void ScadLexer2::fold(int start, int end)
     int lineCurrent = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, start);
     int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
     int levelCurrent = levelPrev;
-    char ch;
-    bool atEOL;
-    bool style, startstyle;
     for (int i = start; i < end; i++) {
-        ch = chNext;
+        char ch = chNext;
         chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, i+1);
         
-        atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
+        bool atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
 
-        style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i-1) == 10);
-        startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == 10);
-
-        // decide where collapsable sections start and end
-        if ((ch == '{') || (ch == '[') || (ch == '/' && chNext == '*') || ((!style) && (startstyle))) {
+        bool style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i-1) == Comment);
+        bool startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == Comment);
+        
+        if ((ch == '{') || (ch == '[') || ((!style) && (startstyle))) {
             levelCurrent++;
-        } else 	if ((ch == '}') || (ch == ']') || (ch == '*' && chNext == '/')  || ((style) && (!startstyle))) {
+        } else 	if ((ch == '}') || (ch == ']') || ((style) && (!startstyle))) {
             levelCurrent--;
         }
-            
+        
         if (atEOL || (i == (end-1))) {
             int lev = levelPrev;
         
