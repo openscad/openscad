@@ -26,6 +26,7 @@ private:
     std::string keywordSet[4];
 	ScadLexer(const ScadLexer &);
 	ScadLexer &operator=(const ScadLexer &);
+	QStringList autoCompletionWordSeparators() const override;
 };
 
 #endif
@@ -105,17 +106,18 @@ public:
 	ScadLexer2(QObject *parent);
 	virtual ~ScadLexer2();
     
-	const char *language() const;
+	const char *language() const override;
 
-    void styleText(int start, int end);
+    void styleText(int start, int end) override;
 	void autoScroll(int error_pos);
-	int getStyleAt(int pos);
+	int getStyleAt(int pos) override;
 	void fold(int start, int end);
 
-    QColor defaultColor(int style) const;
+    QColor defaultColor(int style) const override;
 
-	void highlighting(int start, const std::string& input, lexertl::smatch results);
-    QString description(int style) const;
+	void highlighting(int start, const std::string& input, lexertl::smatch results) override;
+    QString description(int style) const override;
+	QStringList autoCompletionWordSeparators() const override;
     
     void addKeywords(const std::string& keywords, int id) {
         my_lexer->defineRules(keywords, id);

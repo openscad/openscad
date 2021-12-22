@@ -12,6 +12,11 @@ static void add_librarydir(const std::string &libdir)
 	librarypath.push_back(libdir);
 }
 
+const std::vector<std::string>& get_library_path()
+{
+	return librarypath;
+}
+
 /*!
 	Searces for the given file in library paths and returns the full path if found.
 	Returns an empty path if file cannot be found or filename is a directory.

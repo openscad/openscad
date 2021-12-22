@@ -71,6 +71,15 @@ const char *ScadLexer::keywords(int set) const
 	return keywordSet[set - 1].c_str();
 }
 
+QStringList ScadLexer::autoCompletionWordSeparators() const
+{
+	QStringList wl;
+	wl << "."; // dot notation, not used yet, but preparation for object support
+	wl << "<"; // for include/use auto complete
+	wl << "/"; // for include/use directory auto complete
+	return wl;
+}
+
 #endif
 
 /***************************************************************/
@@ -377,6 +386,15 @@ QString ScadLexer2::description(int style) const
 const char *ScadLexer2::language() const
 {
 	return "SCAD";
+}
+
+QStringList ScadLexer2::autoCompletionWordSeparators() const
+{
+	QStringList wl;
+	wl << "."; // dot notation, not used yet, but preparation for object support
+	wl << "<"; // for include/use auto complete
+	wl << "/"; // for include/use directory auto complete
+	return wl;
 }
 
 #endif
