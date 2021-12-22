@@ -1318,6 +1318,8 @@ void register_builtin_functions()
 				{
 					"import(file) -> object",
 
+				});
+				
   Builtins::init("render", new BuiltinFunction(&builtin_data_render,
 				&Feature::ExperimentalDataRender),
 				{
